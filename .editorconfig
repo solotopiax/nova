@@ -1,0 +1,58 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+charset = utf-8-bom-off
+
+# 命名规范（与 csharp-code-style.md 对齐）
+dotnet_naming_rule.private_fields_should_have_m_prefix.severity = warning
+dotnet_naming_rule.private_fields_should_have_m_prefix.symbols = private_fields
+dotnet_naming_rule.private_fields_should_have_m_prefix.style = m_prefix_style
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, protected, internal
+dotnet_naming_symbols.private_fields.required_modifiers =
+
+dotnet_naming_style.m_prefix_style.required_prefix = m_
+dotnet_naming_style.m_prefix_style.capitalization = pascal_case
+
+dotnet_naming_rule.constants_should_have_c_prefix.severity = warning
+dotnet_naming_rule.constants_should_have_c_prefix.symbols = constants
+dotnet_naming_rule.constants_should_have_c_prefix.style = c_prefix_style
+
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+
+dotnet_naming_style.c_prefix_style.required_prefix = c_
+dotnet_naming_style.c_prefix_style.capitalization = pascal_case
+
+dotnet_naming_rule.static_fields_should_have_s_prefix.severity = warning
+dotnet_naming_rule.static_fields_should_have_s_prefix.symbols = static_fields
+dotnet_naming_rule.static_fields_should_have_s_prefix.style = s_prefix_style
+
+dotnet_naming_symbols.static_fields.applicable_kinds = field
+dotnet_naming_symbols.static_fields.required_modifiers = static
+
+dotnet_naming_style.s_prefix_style.required_prefix = s_
+dotnet_naming_style.s_prefix_style.capitalization = pascal_case
+
+# 代码风格
+dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_property = false:warning
+csharp_prefer_braces = true:warning
+csharp_new_line_before_open_brace = all
+csharp_space_after_keywords_in_control_flow_statements = true
+
+[*.json]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false

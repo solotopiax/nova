@@ -1,0 +1,65 @@
+{
+  "name": "com.solotopia.nova.framework",
+  "version": "0.5.30",
+  "license": "MIT",
+  "displayName": "Nova Framework",
+  "description": "基于 Unity 引擎深度定制的游戏客户端通用解决方案",
+  "unity": "6000.4",
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.9",
+    "com.unity.nuget.newtonsoft-json": "3.2.2",
+    "com.unity.inputsystem": "1.19.0",
+    "com.solotopia.hybridclr": "10.0.0",
+    "com.solotopia.unitask": "10.0.0",
+    "com.solotopia.sqlcipher4unity3d": "10.0.0",
+    "com.solotopia.simplediskutils": "1.0.2",
+    "com.solotopia.excelio": "1.0.1",
+    "com.solotopia.nicevibrations": "10.0.0",
+    "com.solotopia.luban": "10.0.0",
+    "com.solotopia.yooasset": "1.0.3"
+  },
+  "samples": [
+    {
+      "displayName": "MainDemo",
+      "description": "Nova Framework 全接口代码与效果演示。建议升级前先删除旧版本目录。",
+      "path": "Samples~/MainDemo"
+    }
+  ],
+  "keywords": [
+    "nova",
+    "framework",
+    "solotopia",
+    "game"
+  ],
+  "nova": {
+    "requiredLibraries": {
+      "com.solotopia.simplediskutils": {
+        "displayName": "Simple Disk Utils",
+        "defineSymbols": [
+          "NOVA_SIMPLEDISKUTILS"
+        ]
+      },
+      "com.onevcat.uniwebview": {
+        "displayName": "UniWebView",
+        "defineSymbols": [
+          "NOVA_UNIWEBVIEW"
+        ]
+      },
+      "com.solotopia.webglsupport": {
+        "displayName": "WebGL Support",
+        "defineSymbols": [
+          "NOVA_WEBGLSUPPORT"
+        ]
+      },
+      "com.solotopia.nicevibrations": {
+        "displayName": "Nice Vibrations",
+        "defineSymbols": [
+          "NOVA_NICEVIBRATIONS"
+        ]
+      }
+    }
+  },
+  "author": {
+    "name": "Solotopia"
+  }
+}

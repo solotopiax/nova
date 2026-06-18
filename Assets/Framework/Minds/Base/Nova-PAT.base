@@ -1,0 +1,69 @@
+filters:
+  and:
+    - file.inFolder("2-Areas/Patterns")
+    - file.ext == "md"
+formulas:
+  status_icon: if(status == "active", "✅", if(status == "superseded", "🗄️", "❓"))
+  age_days: (today() - date(date)).days
+properties:
+  id:
+    displayName: ID
+  title:
+    displayName: 标题
+  status:
+    displayName: 状态
+  category:
+    displayName: 分类
+  date:
+    displayName: 立项日期
+  summary:
+    displayName: 一句话摘要
+  formula.age_days:
+    displayName: 存活天数
+views:
+  - type: table
+    name: 全部方法论（按分类分组）
+    groupBy:
+      property: category
+      direction: ASC
+    order:
+      - formula.status_icon
+      - id
+      - title
+      - status
+      - category
+      - summary
+    columnSize:
+      note.id: 85
+  - type: table
+    name: 在用 active
+    filters:
+      and:
+        - status == "active"
+    groupBy:
+      property: category
+      direction: ASC
+    order:
+      - formula.status_icon
+      - id
+      - title
+      - category
+      - summary
+      - formula.age_days
+  - type: table
+    name: 已废弃
+    filters:
+      and:
+        - status == "superseded"
+    order:
+      - id
+      - title
+      - category
+      - summary
+      - date
+  - type: list
+    name: 标题速览
+    order:
+      - id
+      - title
+      - summary

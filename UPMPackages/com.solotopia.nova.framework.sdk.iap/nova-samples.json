@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "IAPDemo",
+      "description": "com.solotopia.nova.framework.sdk.iap 演示示例：BaseDemoView 三段式骨架的 sample 工程",
+      "sampleName": "IAPDemo",
+      "sourceDir": "Assets/Samples/IAPDemo",
+      "expectedNamespace": "NovaFramework.Sdk.IAP.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/IAPDemo"
+    }
+  ]
+}

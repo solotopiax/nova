@@ -1,0 +1,15 @@
+{
+    "name": "com.solotopia.nova.framework.sdk.facebook",
+    "version": "0.0.3",
+    "license": "MIT",
+    "coreVersion": "0.0.1",
+    "displayName": "Nova Framework - SDK - Facebook",
+    "description": "Facebook 登录插件，提供社交账号认证服务",
+    "category": "Runtime",
+    "unity": "2021.3",
+    "keywords": ["nova", "sdk", "facebook", "auth", "login"],
+    "author": { "name": "Solotopia" },
+    "dependencies": {
+        "com.solotopia.nova.framework": "0.5.22"
+    }
+}

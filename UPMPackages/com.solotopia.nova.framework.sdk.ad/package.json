@@ -1,0 +1,14 @@
+{
+  "name": "com.solotopia.nova.framework.sdk.ad",
+  "version": "1.0.12",
+  "license": "MIT",
+  "coreVersion": "1.0.0",
+  "displayName": "Nova Framework - SDK - AD",
+  "description": "广告聚合插件基类，支持 RV/Inter/Banner/AppOpen/InGameDisplay，内置打点",
+  "unity": "6000.4",
+  "keywords": ["ad", "ads", "monetization", "plugin"],
+  "author": { "name": "Solotopia" },
+  "dependencies": {
+    "com.solotopia.nova.framework": "0.5.28"
+  }
+}

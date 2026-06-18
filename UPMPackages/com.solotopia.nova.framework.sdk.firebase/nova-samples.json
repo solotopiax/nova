@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "FirebaseDemo",
+      "description": "com.solotopia.nova.framework.sdk.firebase 演示示例：BaseDemoView 三段式骨架的 sample 工程",
+      "sampleName": "FirebaseDemo",
+      "sourceDir": "Assets/Samples/FirebaseDemo",
+      "expectedNamespace": "NovaFramework.Sdk.Firebase.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/FirebaseDemo"
+    }
+  ]
+}

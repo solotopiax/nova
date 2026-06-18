@@ -1,0 +1,25 @@
+{
+  "name": "com.solotopia.nova.framework.kit.network.gamesave",
+  "version": "0.0.12",
+  "license": "MIT",
+  "coreVersion": "0.0.2",
+  "displayName": "Nova Framework - Kit - Network - GameSave",
+  "description": "游戏存档业务网络模块，封装云存档获取与上传协议及类型",
+  "category": "Runtime",
+  "unity": "6000.4",
+  "keywords": [
+    "nova",
+    "network",
+    "gamesave",
+    "protobuf",
+    "kit"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
+  "dependencies": {
+    "com.solotopia.nova.framework": "0.5.22",
+    "com.solotopia.unitask": "1.0.0",
+    "com.solotopia.luban": "1.0.0"
+  }
+}

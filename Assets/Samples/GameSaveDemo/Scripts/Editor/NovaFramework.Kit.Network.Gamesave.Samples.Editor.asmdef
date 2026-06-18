@@ -1,0 +1,23 @@
+{
+    "name": "NovaFramework.Kit.Network.GameSave.Samples.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9933936cdf5d28e4c8108450606f9a90",
+        "GUID:261d4fd0d318de940ad629c842a4426d",
+        "GUID:c383f449023b7fd42adcb2698d5622e0",
+        "GUID:0512abb2d947429c81dee2f8a05377d6",
+        "GUID:4d1926c9df5b052469a1c63448b7609a",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

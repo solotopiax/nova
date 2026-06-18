@@ -1,0 +1,10 @@
+﻿{
+  "NetworkCmds": [
+    {
+      "Name": "TGAServerUrl",
+      "Way": "HTTP_URL",
+      "HostKey": "TGAServer",
+      "Path": ""
+    }
+  ]
+}

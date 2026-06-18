@@ -1,0 +1,12 @@
+{
+  "UI1": [
+    {
+      "Name": "DemoFirebaseView",
+      "Desc": "Firebase 演示 Demo 视图",
+      "AssetLocation": "DemoFirebaseView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    }
+  ]
+}

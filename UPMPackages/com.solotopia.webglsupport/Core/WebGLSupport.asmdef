@@ -1,0 +1,22 @@
+{
+    "name": "WebGLSupport",
+    "rootNamespace": "WebGLSupport",
+    "references": [
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.textmeshpro",
+            "expression": "",
+            "define": "TMP_WEBGL_SUPPORT"
+        }
+    ],
+    "noEngineReferences": false
+}

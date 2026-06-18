@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dfaab8119e7041728b92d6d28ff7998, type: 3}
+  m_Name: ConfigRuntime
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
+  DevelopMode: 0
+  Namespace: NovaFramework.Sdk.Ad.Samples.Runtime
+  Common:
+    AppID: 1007
+    AppAesKey: ada87355fc39d643
+    AppAesIV: e461ae0bc82d1130
+  Platform: 1
+  Channel: 2
+  EnabledSDKConfigs:
+  - rid: 2238161839428206798
+  - rid: 2238161839428206799
+  EnabledKitConfigs:
+  - rid: 2238161839428206800
+  GameEntranceProcedureName: ProcedurePreload
+  AotMetadataDlls:
+  - m_AssetLocation: mscorlib.dll
+  - m_AssetLocation: System.dll
+  - m_AssetLocation: System.Core.dll
+  - m_AssetLocation: UniTask.dll
+  - m_AssetLocation: Newtonsoft.Json.dll
+  - m_AssetLocation: UnityEngine.CoreModule.dll
+  - m_AssetLocation: Unity.TextMeshPro.dll
+  - m_AssetLocation: NovaFramework.Runtime.dll
+  - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+  - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+  - m_AssetLocation: NovaFramework.SDK.AdPlugin.Runtime.dll
+  - m_AssetLocation: NovaFramework.SDK.MaxAdPlugin.Runtime.dll
+  GameDlls:
+  - m_AssetLocation: NovaFramework.Sdk.Ad.Samples.Runtime.dll
+  references:
+    version: 2
+    RefIds:
+    - rid: 2238161839428206798
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2238161839428206799
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2238161839428206801
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2238161839428206800
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: 
+        m_DeleteCmdName: 
+    - rid: 2238161839428206801
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1

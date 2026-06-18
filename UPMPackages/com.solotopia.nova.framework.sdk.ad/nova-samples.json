@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "AdDemo",
+      "description": "com.solotopia.nova.framework.sdk.ad 演示示例：BaseDemoView 三段式骨架的 sample 工程",
+      "sampleName": "AdDemo",
+      "sourceDir": "Assets/Samples/AdDemo",
+      "expectedNamespace": "NovaFramework.Sdk.Ad.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/AdDemo"
+    }
+  ]
+}

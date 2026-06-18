@@ -1,0 +1,20 @@
+{
+  "name": "com.solotopia.luban",
+  "version": "10.0.6",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "coreVersion": "4.7.0",
+  "displayName": "Luban",
+  "description": "鲁班是一个功能强大，易于使用，优雅稳定的游戏配置解决方案。",
+  "category": "Runtime",
+  "unity": "2021.3",
+  "documentationUrl": "https://www.datable.cn/docs/intro",
+  "licensesUrl": "https://github.com/focus-creative-games/luban_unity/blob/main/LICENSE",
+  "keywords": [
+    "luban",
+    "focus-creative-games",
+    "solotopia"
+  ],
+  "author": {
+    "name": "Solotopia"
+  }
+}

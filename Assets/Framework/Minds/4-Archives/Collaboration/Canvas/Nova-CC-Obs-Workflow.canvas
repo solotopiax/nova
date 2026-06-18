@@ -1,0 +1,36 @@
+{
+	"nodes":[
+		{"id":"g500000000000010","type":"group","x":-1360,"y":120,"width":2720,"height":680,"color":"6","label":"PARA 流转：Inbox → Areas → Archives"},
+		{"id":"r600000000000001","type":"group","x":-1360,"y":920,"width":2720,"height":300,"color":"1","label":"红线（零容忍）"},
+		{"id":"a200000000000001","type":"text","text":"# Claude Code × Obs 双通道工作流\n\n关键字命中 → hook 注入硬提醒 → memory 短链 + obs skill 起草到 Inbox → 用户评审入 Areas → 必要时 Archive 闭环。\n\n**写权限分层（零容忍）：AI 仅可写 `1-Inbox/`；2-Areas / 4-Archives / Snapshots 由 PreToolUse hook 拦截。**","x":-1360,"y":-840,"width":2720,"height":160,"color":"1"},
+		{"id":"u200000000000001","type":"text","text":"## 用户消息触发\n\n命中关键字：规范 / 规则 / 铁律 / 决策 / 拍板 / 名词 / 术语 / 资源 / 沉淀 / 落库 / obs","x":-260,"y":-640,"width":520,"height":120,"color":"3"},
+		{"id":"h300000000000001","type":"text","text":"## UserPromptSubmit hook\n\n`.claude/hooks/nova-obs-keyword-guard.sh` 注入硬提醒，要求双通道落地（PAT-16 / PAT-57）","x":-260,"y":-480,"width":520,"height":120,"color":"1"},
+		{"id":"h300000000000002","type":"text","text":"## 通道 ① memory（短期 / 指针）\n\n路径：`~/.claude/projects/-Users-taoye-Desktop-Nova/memory/`\n\n写 `feedback_*.md` + 同步 `MEMORY.md` 索引（≤ 30 字摘要 + 指针）","x":-1160,"y":-200,"width":520,"height":180,"color":"5"},
+		{"id":"h300000000000004","type":"text","text":"## frontmatter 必填\n\n`status: draft` + `summary: <≤30字>` + `category: <枚举>`\n\n枚举值见 `0-Index.md`「frontmatter 必填字段」节","x":40,"y":-180,"width":520,"height":180,"color":"4"},
+		{"id":"h300000000000005","type":"text","text":"## 回复末尾铁律\n\n必须一行：\n`obs 落地：1-Inbox/<filename>.md`\n或\n`obs 已覆盖：<已有条目名>`","x":610,"y":-180,"width":520,"height":180,"color":"3"},
+		{"id":"h300000000000003","type":"text","text":"## 通道 ② obs skill 起草\n\n按内容选 skill，落到 `1-Inbox/`：\n- 规范 → `/nova-obs patterns-to-inbox`\n- 决策 → `/nova-obs adr-to-inbox`\n- 术语 → `/nova-obs glossary-to-inbox`\n- 资源 → `/nova-obs resource-to-inbox`","x":-540,"y":-200,"width":520,"height":220,"color":"6"},
+		{"id":"i520000000000001","type":"text","text":"## 0-Index/ —— 索引层\n\n`0-Index.md`（Layer 0，AI 协作规则） · `0-Index-{ADR,PAT,GLO,RES,MOC}.md`（Layer 1，**自动生成**） · `0-Index-Terms.md`（强制术语） · `0-Index-FolderGuide.md`（手工） · `0-Log.md`（append-only 时序日志）\n\n**`0-Log.md`**：ingest / migrate / archive / supersede / lint / index-rebuild / bulk-update 任一动作必 append `## [YYYY-MM-DD HH:MM] <type> | <title>` + 一行说明（PAT-92）","x":-1320,"y":600,"width":2640,"height":160,"color":"6"},
+		{"id":"i510000000000003","type":"text","text":"## 2-Areas/ （Vault 长期资产）\n\n`ADR/` 决策（项目内）\n`Patterns/` 方法论（跨项目）\n`Glossary/` 术语\n`MOC/` 21 张图谱\n`Snapshots/` 自动审计快照\n\n**PreToolUse hook 拦 AI 直写**","x":10,"y":360,"width":520,"height":160,"color":"5"},
+		{"id":"i510000000000004","type":"text","text":"## 3-Resources/\n\n外部链接 / SDK 文档 / 工具速查\n\n`RES-NN-*.md` 扁平命名","x":10,"y":170,"width":520,"height":160,"color":"3"},
+		{"id":"i510000000000005","type":"text","text":"## 4-Archives/\n\n通道：`/nova-obs areas-to-archives` / `/nova-obs resources-to-archives` / `/nova-obs all-to-archives`\n\n`status: superseded` 必填；保留原 ID","x":940,"y":265,"width":380,"height":190,"color":"2"},
+		{"id":"i510000000000002","type":"text","text":"## 评审入库通道\n\n`/nova-obs inbox-to-areas`（默认）\n`/nova-obs inbox-to-all`（批量调度）\n\n**直接入库例外**：用户明示「直接入库 / 跳过 inbox」→ Write 直入 `2-Areas/`（PAT-86）","x":-680,"y":250,"width":520,"height":190,"color":"4"},
+		{"id":"i510000000000001","type":"text","text":"## 1-Inbox/ （AI 写）\n\n`ADR-DRAFT-YYYY-MM-DD-*.md`\n`PAT-DRAFT-*.md`\n`GLO-DRAFT-*.md`\n`RES-DRAFT-*.md`\n`ARC-DRAFT-*.md`\n\nPostToolUse 监控草稿名规范（草稿前缀必须）","x":-1320,"y":210,"width":520,"height":270,"color":"6"},
+		{"id":"r610000000000001","type":"text","text":"### Obs 类红线\n\n- 关键字命中只写 memory 不调 obs skill\n- AI 直接写入 `2-Areas/` / `Snapshots/` / `4-Archives/`\n- 「直接入库」未明说仍走 Inbox 默认路径","x":-1340,"y":970,"width":760,"height":120,"color":"1"},
+		{"id":"r610000000000002","type":"text","text":"### memory ↔ obs 分工铁律（PAT-17）\n\n- memory 留指针 + ≤30 字；obs 留全文\n- 禁互相复制（一处改另一处过期）\n- memory 写 `feedback_*.md` 必同步 `MEMORY.md`","x":-560,"y":970,"width":760,"height":120,"color":"1"},
+		{"id":"r610000000000003","type":"text","text":"### 前置类红线（任何 agent 接活前）\n\n- 未做 Vault 前置查询直接动手（PAT-82）\n- 报告 / 产出顶部缺「知识库前置匹配」节\n- 命中条目却未说明遵循 / 推翻 / 部分违反","x":220,"y":970,"width":800,"height":120,"color":"1"},
+		{"id":"r610000000000004","type":"text","text":"### 作用域红线\n\nMinds 知识库**仅约束 NovaFramework.* 程序集**；非 Nova 开头程序集不归 Minds 管，业务术语 / 业务架构选择**不入** GLO / PAT / ADR（PAT-34）","x":-1340,"y":1100,"width":2360,"height":100,"color":"1"}
+	],
+	"edges":[
+		{"id":"y100000000000001","fromNode":"u200000000000001","fromSide":"bottom","toNode":"h300000000000001","toSide":"top"},
+		{"id":"y100000000000002","fromNode":"h300000000000001","fromSide":"bottom","toNode":"h300000000000002","toSide":"top","label":"通道 ①"},
+		{"id":"y100000000000003","fromNode":"h300000000000001","fromSide":"bottom","toNode":"h300000000000003","toSide":"top","label":"通道 ②"},
+		{"id":"y100000000000004","fromNode":"h300000000000003","fromSide":"right","toNode":"h300000000000004","toSide":"left"},
+		{"id":"y100000000000005","fromNode":"h300000000000004","fromSide":"right","toNode":"h300000000000005","toSide":"left"},
+		{"id":"y100000000000006","fromNode":"h300000000000003","fromSide":"bottom","toNode":"i510000000000001","toSide":"top","label":"起草落地"},
+		{"id":"y100000000000007","fromNode":"i510000000000001","fromSide":"right","toNode":"i510000000000002","toSide":"left"},
+		{"id":"y100000000000008","fromNode":"i510000000000002","fromSide":"right","toNode":"i510000000000003","toSide":"left","label":"用户评审"},
+		{"id":"y100000000000009","fromNode":"i510000000000003","fromSide":"right","toNode":"i510000000000005","toSide":"left","label":"废弃 → 归档"},
+		{"id":"y10000000000000a","fromNode":"i510000000000004","fromSide":"right","toNode":"i510000000000005","toSide":"left","label":"废弃 → 归档"},
+		{"id":"4b6a336ef5cbe358","fromNode":"i510000000000002","fromSide":"right","toNode":"i510000000000004","toSide":"left"}
+	]
+}

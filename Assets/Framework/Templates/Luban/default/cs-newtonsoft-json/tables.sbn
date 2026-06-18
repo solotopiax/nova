@@ -1,0 +1,68 @@
+using Newtonsoft.Json.Linq;
+
+{{namespace_with_grace_begin __namespace}}
+public partial class {{__name}} : NovaFramework.Runtime.ILubanTables
+{
+    {{~for table in __tables ~}}
+{{~if table.comment != '' ~}}
+    /// <summary>
+    /// {{escape_comment table.comment}}
+    /// </summary>
+{{~end~}}
+    public {{table.full_name}} {{format_property_name __code_style table.name}} {get; }
+    {{~end~}}
+
+    public {{__name}}(global::System.Func<string, JArray> loader)
+    {
+        {{~for table in __tables ~}}
+        {{format_property_name __code_style table.name}} = new {{table.full_name}}(loader("{{table.output_data_file}}"));
+        {{~end~}}
+    }
+
+    public void ResolveRef()
+    {
+        {{~for table in __tables ~}}
+        {{format_property_name __code_style table.name}}.ResolveRef(this);
+        {{~end~}}
+    }
+
+    public global::System.Collections.Generic.IReadOnlyList<NovaFramework.Runtime.ITable> GetAllTables()
+    {
+        return new NovaFramework.Runtime.ITable[]
+        {
+            {{~for table in __tables ~}}
+            {{format_property_name __code_style table.name}},
+            {{~end~}}
+        };
+    }
+
+    /// <summary>
+    /// 获取指定类型的 Luban 表实例。
+    /// </summary>
+    /// <typeparam name="T">Luban 表类型。</typeparam>
+    /// <returns>表实例，不存在时返回 null。</returns>
+    public T GetTable<T>() where T : class, NovaFramework.Runtime.ITable
+    {
+        return GetTable(typeof(T)) as T;
+    }
+
+    /// <summary>
+    /// 根据类型获取 Luban 表实例。
+    /// </summary>
+    /// <param name="type">表类型。</param>
+    /// <returns>表实例，不存在时返回 null。</returns>
+    public NovaFramework.Runtime.ITable GetTable(global::System.Type type)
+    {
+        global::System.Collections.Generic.IReadOnlyList<NovaFramework.Runtime.ITable> allTables = GetAllTables();
+        for (int i = 0; i < allTables.Count; i++)
+        {
+            if (allTables[i].GetType() == type)
+            {
+                return allTables[i];
+            }
+        }
+        return null;
+    }
+}
+
+{{namespace_with_grace_end __namespace}}

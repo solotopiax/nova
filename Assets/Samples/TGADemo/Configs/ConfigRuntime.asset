@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dfaab8119e7041728b92d6d28ff7998, type: 3}
+  m_Name: ConfigRuntime
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
+  DevelopMode: 0
+  Namespace: NovaFramework.Sdk.Tga.Samples.Runtime
+  Common:
+    AppID: 1007
+    AppAesKey: ada87355fc39d643
+    AppAesIV: e461ae0bc82d1130
+  Platform: 1
+  Channel: 2
+  EnabledSDKConfigs:
+  - rid: 2238161838255112324
+  EnabledKitConfigs:
+  - rid: 2238161838255112325
+  GameEntranceProcedureName: ProcedurePreload
+  AotMetadataDlls:
+  - m_AssetLocation: mscorlib.dll
+  - m_AssetLocation: System.dll
+  - m_AssetLocation: System.Core.dll
+  - m_AssetLocation: UniTask.dll
+  - m_AssetLocation: Newtonsoft.Json.dll
+  - m_AssetLocation: UnityEngine.CoreModule.dll
+  - m_AssetLocation: Unity.TextMeshPro.dll
+  - m_AssetLocation: NovaFramework.Runtime.dll
+  - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+  - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+  GameDlls:
+  - m_AssetLocation: NovaFramework.Sdk.Tga.Samples.Runtime.dll
+  references:
+    version: 2
+    RefIds:
+    - rid: 2238161838255112324
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2238161838255112325
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 

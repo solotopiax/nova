@@ -1,0 +1,27 @@
+{
+  "name": "com.solotopia.nova.framework.sdk.firebase",
+  "version": "0.0.17",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "coreVersion": "12.10.1",
+  "displayName": "Nova Framework - SDK - Firebase",
+  "description": "Firebase \u805a\u5408\u63d2\u4ef6\uff0c\u7edf\u4e00\u63a5\u5165\u5206\u6790\u3001\u5d29\u6e83\u3001\u63a8\u9001\u3001\u8fdc\u7a0b\u914d\u7f6e",
+  "category": "Runtime",
+  "unity": "2021.3",
+  "keywords": [
+    "nova",
+    "sdk",
+    "firebase",
+    "analytics",
+    "messaging"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
+  "assemblies": [
+    "NovaFramework.SDK.FirebasePlugin.Runtime"
+  ],
+  "dependencies": {
+    "com.solotopia.nova.framework": "0.5.22",
+    "com.google.external-dependency-manager": "1.2.186"
+  }
+}

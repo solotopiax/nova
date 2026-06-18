@@ -1,0 +1,23 @@
+{
+  "name": "com.solotopia.nova.framework.sdk.tga",
+  "version": "0.0.17",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "coreVersion": "3.4.6",
+  "displayName": "Nova Framework - SDK - TGA",
+  "description": "TGA 数据埋点插件，提供事件追踪服务",
+  "category": "Runtime",
+  "unity": "6000.4",
+  "keywords": [
+    "nova",
+    "sdk",
+    "tga",
+    "analytics",
+    "track"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
+  "assemblies": [
+    "NovaFramework.SDK.TGAPlugin.Runtime"
+  ]
+}

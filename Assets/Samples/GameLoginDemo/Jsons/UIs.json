@@ -1,0 +1,12 @@
+﻿{
+  "UI1": [
+    {
+      "Name": "DemoGameLoginView",
+      "Desc": "Kit Network Login 登录演示",
+      "AssetLocation": "DemoGameLoginView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+    "name": "com.solotopia.nova.framework.sdk.iap.thirdpay",
+    "version": "0.0.1",
+    "license": "MIT",
+    "coreVersion": "0.0.1",
+    "displayName": "Nova Framework - SDK - IAP - ThirdPay",
+    "description": "第三方支付 store（WebView / 系统浏览器）",
+    "category": "Runtime",
+    "unity": "2021.3",
+    "keywords": ["nova", "sdk", "iap", "thirdpay", "webview"],
+    "author": { "name": "Solotopia" },
+    "dependencies": {
+        "com.solotopia.nova.framework": "0.5.22",
+        "com.solotopia.nova.framework.sdk.iap": "0.0.1",
+        "com.solotopia.unitask": "1.0.0"
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "name": "NovaFramework.SDK.MaxAdPlugin.Editor",
+    "rootNamespace": "",
+    "references": [
+        "NovaFramework.Runtime",
+        "NovaFramework.Editor",
+        "NovaFramework.SDK.AdPlugin.Runtime",
+        "NovaFramework.SDK.MaxAdPlugin.Runtime",
+        "GUID:a10a05a8449c42519fd80f2b8b580de3"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

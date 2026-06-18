@@ -1,0 +1,292 @@
+﻿{
+  "UI1": [
+    {
+      "Name": "DemoNavTreeView",
+      "Desc": "演示导航树视图",
+      "AssetLocation": "DemoNavTreeView",
+      "UIGroupName": "Menu",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoFrameworkComponentView",
+      "Desc": "Core 1.1 FrameworkComponent",
+      "AssetLocation": "DemoFrameworkComponentView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": true
+    },
+    {
+      "Name": "DemoFrameworkManagerView",
+      "Desc": "Core 1.2 FrameworkManager",
+      "AssetLocation": "DemoFrameworkManagerView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": true
+    },
+    {
+      "Name": "DemoFsmView",
+      "Desc": "Core 1.3 Fsm",
+      "AssetLocation": "DemoFsmView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": true
+    },
+    {
+      "Name": "DemoReferenceView",
+      "Desc": "Core 1.4 Reference",
+      "AssetLocation": "DemoReferenceView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": true
+    },
+    {
+      "Name": "DemoLogView",
+      "Desc": "Core 1.5 Log",
+      "AssetLocation": "DemoLogView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": true
+    },
+    {
+      "Name": "DemoUtilView",
+      "Desc": "Core 1.6 Util",
+      "AssetLocation": "DemoUtilView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": true
+    },
+    {
+      "Name": "DemoCollectionsView",
+      "Desc": "Core 1.7 Collections",
+      "AssetLocation": "DemoCollectionsView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": true
+    },
+    {
+      "Name": "DemoExtensionsView",
+      "Desc": "Core 1.8 Extensions",
+      "AssetLocation": "DemoExtensionsView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": true
+    },
+    {
+      "Name": "DemoEdgeCasesView",
+      "Desc": "Core 1.9 Edge Cases",
+      "AssetLocation": "DemoEdgeCasesView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": true
+    },
+    {
+      "Name": "DemoAppView",
+      "Desc": "Modules 2.1 App",
+      "AssetLocation": "DemoAppView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoAssetView",
+      "Desc": "Modules 2.2 Asset",
+      "AssetLocation": "DemoAssetView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoPrefabView",
+      "Desc": "Modules 2.3 Prefab",
+      "AssetLocation": "DemoPrefabView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoConfigView",
+      "Desc": "Modules 2.4 Config",
+      "AssetLocation": "DemoConfigView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoEventView",
+      "Desc": "Modules 2.5 Event",
+      "AssetLocation": "DemoEventView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoTableView",
+      "Desc": "Modules 2.6 Table",
+      "AssetLocation": "DemoTableView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoLocalizationView",
+      "Desc": "Modules 2.7 Localization",
+      "AssetLocation": "DemoLocalizationView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoUIView",
+      "Desc": "Modules 2.8 UI",
+      "AssetLocation": "DemoUIView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoNetworkView",
+      "Desc": "Modules 2.9 Network",
+      "AssetLocation": "DemoNetworkView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoProcedureView",
+      "Desc": "Modules 2.10 Procedure",
+      "AssetLocation": "DemoProcedureView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoObjectPoolView",
+      "Desc": "Modules 2.11 ObjectPool",
+      "AssetLocation": "DemoObjectPoolView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoPersistView",
+      "Desc": "Modules 2.12 Persist",
+      "AssetLocation": "DemoPersistView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoSoundView",
+      "Desc": "Modules 2.13 Sound",
+      "AssetLocation": "DemoSoundView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoVibrateView",
+      "Desc": "Modules 2.14 Vibrate",
+      "AssetLocation": "DemoVibrateView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoSDKView",
+      "Desc": "Modules 2.15 SDK",
+      "AssetLocation": "DemoSDKView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoDebugView",
+      "Desc": "Modules 2.16 Debug",
+      "AssetLocation": "DemoDebugView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoHybridClrAotMetadataView",
+      "Desc": "HybridCLR 3.1 AOT metadata",
+      "AssetLocation": "DemoHybridClrAotMetadataView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoHybridClrGameDllView",
+      "Desc": "HybridCLR 3.2 业务 dll",
+      "AssetLocation": "DemoHybridClrGameDllView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoHybridClrProcedureRegisterView",
+      "Desc": "HybridCLR 3.3 Procedure 注册时序",
+      "AssetLocation": "DemoHybridClrProcedureRegisterView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoIntegrationUiLocalizationView",
+      "Desc": "Integration 4.1 UI+Localization",
+      "AssetLocation": "DemoIntegrationUiLocalizationView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoIntegrationUiAssetView",
+      "Desc": "Integration 4.2 UI+Asset",
+      "AssetLocation": "DemoIntegrationUiAssetView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoIntegrationProcedureAssetView",
+      "Desc": "Integration 4.3 Procedure+Asset",
+      "AssetLocation": "DemoIntegrationProcedureAssetView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoIntegrationEventNetworkView",
+      "Desc": "Integration 4.4 Event+Network",
+      "AssetLocation": "DemoIntegrationEventNetworkView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoIntegrationConfigHybridClrView",
+      "Desc": "Integration 4.5 Config+HybridCLR",
+      "AssetLocation": "DemoIntegrationConfigHybridClrView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoToastView",
+      "Desc": "Demo 辅助 Toast 弹窗",
+      "AssetLocation": "DemoToastView",
+      "UIGroupName": "DemoSub",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoDialogView",
+      "Desc": "Demo 辅助 Dialog 弹窗",
+      "AssetLocation": "DemoDialogView",
+      "UIGroupName": "DemoSub",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    }
+  ]
+}

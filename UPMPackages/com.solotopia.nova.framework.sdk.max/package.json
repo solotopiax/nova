@@ -1,0 +1,67 @@
+{
+  "name": "com.solotopia.nova.framework.sdk.max",
+  "version": "0.0.12",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "coreVersion": "0.0.1",
+  "displayName": "Nova Framework - SDK - MAX",
+  "description": "MAX \u5e7f\u544a\u805a\u5408\u63d2\u4ef6\uff0c\u63d0\u4f9b\u5e7f\u544a\u5c55\u793a\u670d\u52a1",
+  "category": "Runtime",
+  "unity": "2021.3",
+  "keywords": [
+    "nova",
+    "sdk",
+    "max",
+    "advertisement",
+    "ads"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
+  "dependencies": {
+    "com.solotopia.nova.framework.sdk.ad": "1.0.11",
+    "com.applovin.mediation.ads": "8.5.0",
+    "com.applovin.mediation.adapters.bidmachine.android": "3010101.0.0",
+    "com.applovin.mediation.adapters.bidmachine.ios": "301020000.0.0",
+    "com.applovin.mediation.adapters.bigoads.android": "5010001.0.0",
+    "com.applovin.mediation.adapters.bigoads.ios": "4060000.0.0",
+    "com.applovin.mediation.adapters.bytedance.android": "707000200.0.0",
+    "com.applovin.mediation.adapters.bytedance.ios": "707000500.0.0",
+    "com.applovin.mediation.adapters.chartboost.android": "9070004.0.0",
+    "com.applovin.mediation.adapters.chartboost.ios": "9070002.0.0",
+    "com.applovin.mediation.adapters.facebook.android": "6200000.0.0",
+    "com.applovin.mediation.adapters.facebook.ios": "6200100.0.0",
+    "com.applovin.mediation.adapters.fyber.android": "8040200.0.0",
+    "com.applovin.mediation.adapters.fyber.ios": "8040200.0.0",
+    "com.applovin.mediation.adapters.google.android": "25030000.0.0",
+    "com.applovin.mediation.adapters.google.ios": "12110000.0.0",
+    "com.applovin.mediation.adapters.googleadmanager.android": "25030000.0.0",
+    "com.applovin.mediation.adapters.googleadmanager.ios": "12110000.0.0",
+    "com.applovin.mediation.adapters.inmobi.android": "11010100.0.0",
+    "com.applovin.mediation.adapters.inmobi.ios": "11010000.0.0",
+    "com.applovin.mediation.adapters.ironsource.android": "902000000.0.0",
+    "com.applovin.mediation.adapters.ironsource.ios": "902000000.0.0",
+    "com.applovin.mediation.adapters.mintegral.android": "16099100.0.0",
+    "com.applovin.mediation.adapters.mintegral.ios": "707090000.0.0",
+    "com.applovin.mediation.adapters.moloco.android": "4040000.0.0",
+    "com.applovin.mediation.adapters.moloco.ios": "4020000.0.0",
+    "com.applovin.mediation.adapters.pubmatic.android": "4030000.0.0",
+    "com.applovin.mediation.adapters.pubmatic.ios": "4030000.0.0",
+    "com.applovin.mediation.adapters.unityads.android": "4160400.0.0",
+    "com.applovin.mediation.adapters.unityads.ios": "4160400.0.0",
+    "com.applovin.mediation.adapters.vungle.android": "7060000.0.0",
+    "com.applovin.mediation.adapters.vungle.ios": "7060100.0.0"
+  },
+  "nova": {
+    "scopedRegistries": [
+      {
+        "name": "AppLovin MAX Unity",
+        "url": "https://unity.packages.applovin.com/",
+        "scopes": [
+          "com.applovin.mediation.ads",
+          "com.applovin.mediation.adapters",
+          "com.applovin.mediation.dsp"
+        ]
+      }
+    ]
+  }
+}

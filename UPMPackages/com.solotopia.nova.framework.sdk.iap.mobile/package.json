@@ -1,0 +1,26 @@
+{
+  "name": "com.solotopia.nova.framework.sdk.iap.mobile",
+  "version": "0.0.5",
+  "license": "MIT",
+  "coreVersion": "0.0.1",
+  "displayName": "Nova Framework - SDK - IAP - Mobile",
+  "description": "Google Play + iOS App Store \u5b98\u65b9\u5185\u8d2d store",
+  "category": "Runtime",
+  "unity": "2021.3",
+  "keywords": [
+    "nova",
+    "sdk",
+    "iap",
+    "googleplay",
+    "appstore"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
+  "dependencies": {
+    "com.solotopia.nova.framework": "0.5.22",
+    "com.solotopia.nova.framework.sdk.iap": "0.0.1",
+    "com.solotopia.unitask": "1.0.0",
+    "com.unity.purchasing": "5.3.1"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "UI1": [
+    {
+      "Name": "DemoAppsflyerView",
+      "Desc": "Appsflyer 演示 Demo 视图",
+      "AssetLocation": "DemoAppsflyerView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    }
+  ]
+}

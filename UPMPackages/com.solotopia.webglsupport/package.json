@@ -1,0 +1,17 @@
+{
+  "name": "com.solotopia.webglsupport",
+  "version": "1.0.8",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "coreVersion": "1.0.2",
+  "displayName": "WebGL Support",
+  "description": "网页端输入与窗口适配工具",
+  "unity": "2021.3",
+  "keywords": [
+    "webgl",
+    "input",
+    "browser"
+  ],
+  "author": {
+    "name": "Solotopia"
+  }
+}

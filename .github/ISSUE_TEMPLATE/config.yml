@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability / 安全漏洞
+    url: https://github.com/solotopia/nova/security/advisories/new
+    about: "Report security issues privately, do NOT open a public issue / 请私密报告安全问题，勿公开提 issue"

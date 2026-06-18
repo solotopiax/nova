@@ -1,0 +1,26 @@
+{
+    "name": "com.solotopia.yooasset",
+  "version": "1.0.6",
+  "license": "SEE LICENSE IN LICENSE.md",
+    "coreVersion": "3.0.0-beta",
+    "displayName": "YooAsset",
+    "description": "Unity 资源管理与热更新解决方案",
+    "unity": "6000.4",
+    "category": "Asset",
+    "keywords": [
+        "yooasset",
+        "asset",
+        "assetbundle",
+        "hotupdate",
+        "tuyoogame"
+    ],
+    "author": {
+        "name": "Solotopia"
+    },
+    "dependencies": {
+        "com.unity.scriptablebuildpipeline": "1.21.25",
+        "com.unity.modules.assetbundle": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0",
+        "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
+    }
+}

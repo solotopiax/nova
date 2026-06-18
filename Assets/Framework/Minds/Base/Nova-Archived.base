@@ -1,0 +1,49 @@
+filters:
+  and:
+    - file.inFolder("4-Archives")
+    - file.ext == "md"
+    - '!file.inFolder("4-Archives/Audits")'
+    - id != null
+    - file.basename.startsWith("ARC-") || file.basename.startsWith("ADR-") || file.basename.startsWith("PAT-") || file.basename.startsWith("GLO-") || file.basename.startsWith("RES-") || file.basename.startsWith("MOC-")
+formulas:
+  origin_type: if(file.basename.startsWith("ARC-"), "ARC", if(file.basename.startsWith("ADR-"), "ADR", if(file.basename.startsWith("PAT-"), "PAT", if(file.basename.startsWith("GLO-"), "GLO", if(file.basename.startsWith("RES-"), "RES", if(file.basename.startsWith("MOC-"), "MOC", "?"))))))
+properties:
+  id:
+    displayName: 原 ID
+  title:
+    displayName: 标题
+  status:
+    displayName: 状态
+  category:
+    displayName: 分类
+  date:
+    displayName: 立项日期
+  summary:
+    displayName: 摘要
+  formula.origin_type:
+    displayName: 类型
+views:
+  - type: table
+    name: 废弃归档（按类型分组）
+    groupBy:
+      property: formula.origin_type
+      direction: ASC
+    order:
+      - formula.origin_type
+      - id
+      - title
+      - status
+      - category
+      - summary
+      - date
+  - type: table
+    name: 按分类切片
+    groupBy:
+      property: category
+      direction: ASC
+    order:
+      - formula.origin_type
+      - id
+      - title
+      - summary
+      - date

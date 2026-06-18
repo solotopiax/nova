@@ -1,0 +1,145 @@
+// =====================================================================
+// 谷歌 / 苹果 原生内购
+// =====================================================================
+syntax = "proto3";
+package NovaFramework.IAP.Mobile.Runtime;
+
+option csharp_namespace = "NovaFramework.SDK.IAP.Mobile.Runtime";
+
+import "pb_net_header.proto";
+
+// =====================================================================
+// 谷歌查询支付成功未校验订单
+// post: "/mobile_pay/google/query_pending_order"
+// =====================================================================
+
+// 谷歌查询未完成订单请求
+message PbNetGoogleQueryPendingOrderReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+}
+
+// 谷歌查询未完成订单响应
+message PbNetGoogleQueryPendingOrderResp {
+    NovaFramework.Runtime.PbNetRespHeader head       = 1;  // 响应公共头
+    repeated PbNetGoogleQueryPendingOrderInfo order_list 		 = 2;  // 未完成订单列表
+}
+
+// 谷歌未完成订单信息
+message PbNetGoogleQueryPendingOrderInfo {
+    int64  table_id   = 1;  // 商品配置表 ID
+    string product_id = 2;  // 应用内商品 SKU
+    string token      = 3;  // 谷歌 purchase token
+    int32  status     = 4;  // 订单状态
+    string parameter  = 5;  // 透传参数
+}
+
+// =====================================================================
+// 谷歌内购验单（普通订单）
+// post: "/mobile_pay/google/verify_iap"
+// =====================================================================
+
+// 谷歌内购验单请求
+message PbNetGoogleVerifyIapReq {
+    NovaFramework.Runtime.PbNetReqHeader head       = 1;  // 请求公共头
+    repeated PbNetGoogleVerifyIapOrderItem           order_list = 2;  // 订单列表
+}
+
+// 谷歌内购验单订单项
+message PbNetGoogleVerifyIapOrderItem {
+    string product_id = 1;  // 应用内商品 SKU
+    string token      = 2;  // 谷歌 purchase token
+    float  price      = 3;  // 商品价格
+}
+
+// =====================================================================
+// 谷歌订阅验单（订阅订单；请求体与回复同普通验单，仅 URL 不同）
+// post: "/mobile_pay/google/verify_subscribe"
+// =====================================================================
+
+// 谷歌订阅验单请求
+message PbNetGoogleVerifySubscribeReq {
+    NovaFramework.Runtime.PbNetReqHeader head       = 1;  // 请求公共头
+    repeated PbNetGoogleVerifyIapOrderItem           order_list = 2;  // 订单列表（复用普通验单订单项）
+}
+
+// =====================================================================
+// 苹果查询支付成功未校验订单
+// post: "/mobile_pay/apple/query_pending_order"
+// =====================================================================
+
+// 苹果查询未完成订单请求
+message PbNetAppleQueryPendingOrderReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+}
+
+// 苹果查询未完成订单响应
+message PbNetAppleQueryPendingOrderResp {
+    NovaFramework.Runtime.PbNetRespHeader head       = 1;  // 响应公共头
+    repeated PbNetAppleQueryPendingOrderInfo          order_list = 2;  // 未完成订单列表
+}
+
+// 苹果未完成订单信息
+message PbNetAppleQueryPendingOrderInfo {
+    int64  table_id  = 1;  // 商品配置表 ID
+    string order_id  = 2;  // 商店订单号
+    int32  status    = 3;  // 订单状态
+    string parameter = 4;  // 透传参数
+}
+
+// =====================================================================
+// 苹果内购验单（普通订单）
+// post: "/mobile_pay/apple/verify_iap"
+// =====================================================================
+
+// 苹果内购验单请求
+message PbNetAppleVerifyIapReq {
+    NovaFramework.Runtime.PbNetReqHeader head       = 1;  // 请求公共头
+    repeated PbNetAppleVerifyIapOrderItem            order_list = 2;  // 订单列表
+}
+
+// 苹果内购验单订单项
+message PbNetAppleVerifyIapOrderItem {
+    string order_id = 1;  // 商店订单号
+    float  price    = 2;  // 商品价格
+}
+
+// =====================================================================
+// 苹果订阅验单（订阅订单；请求体与回复同普通验单，仅 URL 不同）
+// post: "/mobile_pay/apple/verify_subscribe"
+// =====================================================================
+
+// 苹果订阅验单请求
+message PbNetAppleVerifySubscribeReq {
+    NovaFramework.Runtime.PbNetReqHeader head       = 1;  // 请求公共头
+    repeated PbNetAppleVerifyIapOrderItem            order_list = 2;  // 订单列表（复用普通验单订单项）
+}
+
+// =====================================================================
+// 验单响应（谷歌内购 / 苹果内购 / 谷歌订阅 / 苹果订阅 共用）
+// =====================================================================
+
+// 验单订单状态
+enum PbNetMobileVerifyOrderStatus {
+    PB_NET_MOBILE_VERIFY_ORDER_STATUS_UNSPECIFIED    = 0;  // 未指定
+    PB_NET_MOBILE_VERIFY_ORDER_STATUS_PENDING_VERIFY = 1;  // 客户端还未发过校验协议
+    PB_NET_MOBILE_VERIFY_ORDER_STATUS_VERIFIED       = 2;  // 校验完毕
+    PB_NET_MOBILE_VERIFY_ORDER_STATUS_REISSUED       = 3;  // 奖励已经通过其他渠道发过，已补发
+    PB_NET_MOBILE_VERIFY_ORDER_STATUS_DELIVERED      = 4;  // 已经校验过一次，又发了一次，已发货
+    PB_NET_MOBILE_VERIFY_ORDER_STATUS_INVALID        = 5;  // 无效订单，直接删除订单
+}
+
+// 验单统一响应
+message PbNetMobileVerifyResp {
+    NovaFramework.Runtime.PbNetRespHeader head       = 1;  // 响应公共头
+    repeated PbNetMobileVerifyOrderResult             order_list = 2;  // 验单结果列表
+}
+
+// 验单订单结果
+message PbNetMobileVerifyOrderResult {
+    int64                        table_id      = 1;  // 商品配置表 ID
+    string                       order_id      = 2;  // 商店订单号
+    PbNetMobileVerifyOrderStatus status        = 3;  // 订单状态
+    string                       parameter     = 4;  // 透传参数
+    optional int64               expire_time   = 5;  // 到期时间戳（仅订阅：谷歌订阅 / 苹果订阅）
+    optional int32               purchase_type = 6;  // 购买类型：沙盒或正式（仅苹果：苹果内购 / 苹果订阅）
+}

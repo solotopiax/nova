@@ -1,0 +1,136 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dfaab8119e7041728b92d6d28ff7998, type: 3}
+  m_Name: ConfigRuntime
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
+  DevelopMode: 0
+  Namespace: NovaFramework.Sdk.IAP.Samples.Runtime
+  Common:
+    AppID: 1007
+    AppAesKey: ada87355fc39d643
+    AppAesIV: e461ae0bc82d1130
+  Platform: 1
+  Channel: 2
+  EnabledSDKConfigs:
+  - rid: 2238161866011181056
+  - rid: 2238161866011181057
+  - rid: 2238161866011181058
+  - rid: 2238161866011181059
+  EnabledKitConfigs:
+  - rid: 2238161866011181060
+  GameEntranceProcedureName: ProcedurePreload
+  AotMetadataDlls:
+  - m_AssetLocation: mscorlib.dll
+  - m_AssetLocation: System.dll
+  - m_AssetLocation: System.Core.dll
+  - m_AssetLocation: UniTask.dll
+  - m_AssetLocation: Newtonsoft.Json.dll
+  - m_AssetLocation: UnityEngine.CoreModule.dll
+  - m_AssetLocation: Unity.TextMeshPro.dll
+  - m_AssetLocation: NovaFramework.Runtime.dll
+  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+  - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+  - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+  - m_AssetLocation: NovaFramework.SDK.IAP.Runtime.dll
+  - m_AssetLocation: NovaFramework.SDK.IAP.Mobile.Runtime.dll
+  GameDlls:
+  - m_AssetLocation: NovaFramework.Sdk.IAP.Samples.Runtime.dll
+  references:
+    version: 2
+    RefIds:
+    - rid: 2238161866011181056
+      type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
+      data:
+        m_DevKey: YOUR_APPSFLYER_DEV_KEY
+        m_AppId: YOUR_APPSFLYER_APP_ID
+        m_LogEnable: 1
+        m_OneLinkHost: your-app.onelink.me
+        m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
+        m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
+        m_ReportCmdName: AppsFlyerReport
+    - rid: 2238161866011181057
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2238161866011181058
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2238161866011181059
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 2238161866011181061
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 2238161866011181060
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161866011181061
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription

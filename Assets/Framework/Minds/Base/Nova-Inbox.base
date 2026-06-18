@@ -1,0 +1,44 @@
+filters:
+  and:
+    - file.inFolder("1-Inbox")
+    - file.ext == "md"
+formulas:
+  draft_type: if(file.basename.startsWith("ADR-DRAFT"), "ADR", if(file.basename.startsWith("PAT-DRAFT"), "PAT", if(file.basename.startsWith("GLO-DRAFT"), "GLO", if(file.basename.startsWith("RES-DRAFT"), "RES", if(file.basename.startsWith("ARC-DRAFT"), "ARC", "?")))))
+  age_days: (today() - file.ctime).days
+  stale_flag: if((today() - file.ctime).days > 7, "🔴 待评审 >7d", if((today() - file.ctime).days > 3, "🟡 待评审 >3d", "🟢 新鲜"))
+properties:
+  formula.draft_type:
+    displayName: 类型
+  formula.age_days:
+    displayName: 天数
+  formula.stale_flag:
+    displayName: 状态
+  summary:
+    displayName: 摘要
+  category:
+    displayName: 分类
+views:
+  - type: table
+    name: 草稿待评审（按类型分组）
+    groupBy:
+      property: formula.draft_type
+      direction: ASC
+    order:
+      - formula.stale_flag
+      - formula.draft_type
+      - file.name
+      - summary
+      - category
+      - formula.age_days
+      - file.ctime
+  - type: table
+    name: 陈旧草稿（>3 天）
+    filters:
+      and:
+        - (today() - file.ctime).days > 3
+    order:
+      - formula.draft_type
+      - file.name
+      - summary
+      - formula.age_days
+      - file.ctime

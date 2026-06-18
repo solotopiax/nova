@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package NovaFramework.Kit.Network.GameLogin.Runtime;
+
+import "pb_net_header.proto";
+
+// 账号状态枚举：服务端返回的当前账号可用状态
+enum PbNetAccountStatus {
+    PbNetAccountStatus_UNSPECIFIED = 0;  // 未指定（默认值，禁止实际使用）
+    PbNetAccountStatus_NORMAL = 1;       // 正常，可继续后续业务
+    PbNetAccountStatus_LOCKED = 2;       // 已锁定，通常需申诉解锁
+    PbNetAccountStatus_BANNED = 3;       // 已封禁，禁止登录
+    PbNetAccountStatus_DELETED = 4;      // 已删除
+}
+
+// 登录请求
+message PbNetLoginReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+    string open_id = 2;            // 渠道侧返回的用户唯一标识（或 token）
+    bool force_new_account = 3;    // 是否强制创建新账号（用于绑定/切换账号场景）
+}
+
+// 登录响应
+message PbNetLoginResp {
+    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
+    string uid = 2;                    // 服务端分配的用户唯一 ID
+    int32 register_time = 3;           // 账号注册时间（秒级 Unix 时间戳）
+    int32 login_time = 4;              // 本次登录时间（秒级 Unix 时间戳）
+    string country = 5;                // 根据 IP 解析出的国家/地区代码
+    PbNetAccountStatus status = 6;     // 当前账号状态
+    bool is_new_account = 7;           // 是否为本次新注册账号（true 时走新手流程）
+}

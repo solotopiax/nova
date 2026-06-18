@@ -1,0 +1,19 @@
+{
+    "name": "NovaFramework.SDK.AdPlugin.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:06c9a5981cd1ebf46b9dfe22c5ece009",
+        "GUID:261d4fd0d318de940ad629c842a4426d"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

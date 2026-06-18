@@ -1,0 +1,17 @@
+{
+    "name": "com.solotopia.nova.framework.sdk.iap.voucher",
+    "version": "0.0.1",
+    "license": "MIT",
+    "coreVersion": "0.0.1",
+    "displayName": "Nova Framework - SDK - IAP - Voucher",
+    "description": "代金券/金币虚拟货币 store",
+    "category": "Runtime",
+    "unity": "2021.3",
+    "keywords": ["nova", "sdk", "iap", "voucher", "coin"],
+    "author": { "name": "Solotopia" },
+    "dependencies": {
+        "com.solotopia.nova.framework": "0.5.22",
+        "com.solotopia.nova.framework.sdk.iap": "0.0.1",
+        "com.solotopia.unitask": "1.0.0"
+    }
+}

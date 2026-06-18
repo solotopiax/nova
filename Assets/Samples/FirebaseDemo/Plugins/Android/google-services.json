@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "403266651294",
+    "project_id": "novasamples-ec535",
+    "storage_bucket": "novasamples-ec535.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:403266651294:android:3bc7e80e7b7a76bc73278f",
+        "android_client_info": {
+          "package_name": "com.solotopia.nova.samples"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzZsbPf8Zsd8u39l1bqaFB7rsVWxyEH0w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

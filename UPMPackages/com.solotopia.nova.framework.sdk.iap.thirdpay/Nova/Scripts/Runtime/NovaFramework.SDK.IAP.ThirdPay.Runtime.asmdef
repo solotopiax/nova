@@ -1,0 +1,19 @@
+{
+    "name": "NovaFramework.SDK.IAP.ThirdPay.Runtime",
+    "rootNamespace": "NovaFramework.SDK.IAP.ThirdPay.Runtime",
+    "references": [
+        "NovaFramework.Runtime",
+        "NovaFramework.SDK.IAP.Runtime",
+        "NovaFramework.Kit.Network.Runtime",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

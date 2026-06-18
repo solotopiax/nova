@@ -1,0 +1,12 @@
+{
+  "UI1": [
+    {
+      "Name": "DemoIAPView",
+      "Desc": "IAP 演示 Demo 视图",
+      "AssetLocation": "DemoIAPView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    }
+  ]
+}

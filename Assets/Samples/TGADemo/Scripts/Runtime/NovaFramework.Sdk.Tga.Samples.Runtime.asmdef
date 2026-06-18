@@ -1,0 +1,25 @@
+﻿{
+    "name": "NovaFramework.Sdk.Tga.Samples.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:2a81c6962524d424a8ef5072bd3b0fa0",
+        "GUID:c383f449023b7fd42adcb2698d5622e0",
+        "GUID:09050f5d4c5704179a399890e7b2e700",
+        "GUID:cce7d9d7bfae342f58b28f2937c81fe1",
+        "GUID:01479ff0889041078101b4ea98bd07d0",
+        "GUID:eefb1ff27a1ade74997e65e36187daca",
+        "GUID:e7789ceed48adbd45922bd4c934604e9",
+        "GUID:06c9a5981cd1ebf46b9dfe22c5ece009",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

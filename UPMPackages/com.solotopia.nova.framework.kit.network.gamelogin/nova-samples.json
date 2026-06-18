@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "GameLoginDemo",
+      "description": "com.solotopia.nova.framework.kit.network.gamelogin 演示示例：DemoLoginView 展示 Nova.Network.Kit<Login>().Async(uid, openId, forceNewAccount) 登录与 Clear() 清空登录态 API，由 ProcedurePlaying 直接打开",
+      "sampleName": "GameLoginDemo",
+      "sourceDir": "Assets/Samples/GameLoginDemo",
+      "expectedNamespace": "NovaFramework.Kit.Network.GameLogin.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/GameLoginDemo"
+    }
+  ]
+}

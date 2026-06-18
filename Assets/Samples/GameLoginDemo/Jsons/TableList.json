@@ -1,0 +1,84 @@
+﻿{
+  "Demo_Item": [
+    {
+      "Id": 1001,
+      "Name": "demo_sword",
+      "Icon": "icon_coin",
+      "Price": 100
+    },
+    {
+      "Id": 1002,
+      "Name": "demo_shield",
+      "Icon": "icon_coin",
+      "Price": 200
+    },
+    {
+      "Id": 1003,
+      "Name": "demo_bow",
+      "Icon": "icon_coin",
+      "Price": 150
+    },
+    {
+      "Id": 1004,
+      "Name": "demo_staff",
+      "Icon": "icon_coin",
+      "Price": 300
+    },
+    {
+      "Id": 1005,
+      "Name": "demo_potion",
+      "Icon": "icon_coin",
+      "Price": 50
+    },
+    {
+      "Id": 1006,
+      "Name": "demo_helmet",
+      "Icon": "icon_coin",
+      "Price": 120
+    },
+    {
+      "Id": 1007,
+      "Name": "demo_armor",
+      "Icon": "icon_coin",
+      "Price": 250
+    },
+    {
+      "Id": 1008,
+      "Name": "demo_boots",
+      "Icon": "icon_coin",
+      "Price": 80
+    },
+    {
+      "Id": 1009,
+      "Name": "demo_ring",
+      "Icon": "icon_coin",
+      "Price": 400
+    },
+    {
+      "Id": 1010,
+      "Name": "demo_necklace",
+      "Icon": "icon_coin",
+      "Price": 500
+    }
+  ],
+  "ListA": [
+    {
+      "ID": 1,
+      "Desc": "示例内容-随表TableListA导出（搜集所有无#号的Sheet页数据统一导出）",
+      "IntValue": 32768,
+      "FloatValue": 3.1415925,
+      "BoolValue": true,
+      "StringValue": "A"
+    }
+  ],
+  "ListB": [
+    {
+      "ID": 1,
+      "Desc": "示例内容-随表TableListB导出（搜集所有无#号的Sheet页数据统一导出）",
+      "IntValue": 32768,
+      "FloatValue": 3.1415925,
+      "BoolValue": true,
+      "StringValue": "A"
+    }
+  ]
+}

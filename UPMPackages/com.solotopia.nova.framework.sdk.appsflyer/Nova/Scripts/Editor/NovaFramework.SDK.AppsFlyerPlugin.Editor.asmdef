@@ -1,0 +1,20 @@
+{
+    "name": "NovaFramework.SDK.AppsFlyerPlugin.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e7789ceed48adbd45922bd4c934604e9",
+        "GUID:261d4fd0d318de940ad629c842a4426d",
+        "GUID:c383f449023b7fd42adcb2698d5622e0"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

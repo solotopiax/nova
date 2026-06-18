@@ -1,0 +1,1256 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &198464008340910521
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8158470041802060565}
+  - component: {fileID: 1883624282997543242}
+  m_Layer: 0
+  m_Name: SDK
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8158470041802060565
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 198464008340910521}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1883624282997543242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 198464008340910521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4c1aec5a44230944b10b22036800559, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_CurManagerTypeName: NovaFramework.Runtime.SDKManager
+  m_PluginEntries:
+  - TypeName: NovaFramework.SDK.TGAPlugin.Runtime.TGAPlugin, NovaFramework.SDK.TGAPlugin.Runtime,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Enabled: 1
+    Priority: 100
+  - TypeName: NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePlugin, NovaFramework.SDK.FirebasePlugin.Runtime,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Enabled: 1
+    Priority: 100
+  - TypeName: NovaFramework.SDK.AppsFlyerPlugin.Runtime.AppsFlyerPlugin, NovaFramework.SDK.AppsFlyerPlugin.Runtime,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Enabled: 1
+    Priority: 100
+  - TypeName: NovaFramework.SDK.AdPlugin.Runtime.AdPlugin, NovaFramework.SDK.AdPlugin.Runtime,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Enabled: 1
+    Priority: 100
+  - TypeName: NovaFramework.SDK.IAP.Runtime.IAPPlugin, NovaFramework.SDK.IAP.Runtime,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Enabled: 1
+    Priority: 100
+--- !u!1 &214000469982186650
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3385143688772100779}
+  - component: {fileID: 3066975180919252665}
+  m_Layer: 0
+  m_Name: Debug
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3385143688772100779
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 214000469982186650}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3066975180919252665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 214000469982186650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be140f5cb37d22643b64196c610cb99f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_DebuggerActiveType: 0
+  m_MaximumConsoleEntries: 3000
+  m_CurManagerTypeName: NovaFramework.Runtime.DebugManager
+  m_DiskCheckingConfigs:
+  - Enabled: 0
+    PlatformName: Editor
+    AvailableSpaces: 
+    AvailableSpacesIntervals: []
+  - Enabled: 0
+    PlatformName: Android
+    AvailableSpaces: 
+    AvailableSpacesIntervals: []
+  - Enabled: 0
+    PlatformName: iOS
+    AvailableSpaces: 
+    AvailableSpacesIntervals: []
+--- !u!1 &1322823987047859436
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6925861541305817589}
+  - component: {fileID: 5434970512992072839}
+  m_Layer: 0
+  m_Name: Table
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6925861541305817589
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1322823987047859436}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5434970512992072839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1322823987047859436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73237b7500ca033419e091904e3dea70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_CurManagerTypeName: NovaFramework.Runtime.TableManager
+  m_Setting:
+    SourceDirPath: Assets/Samples/MainDemo/Excels/Tables
+    TableUnitsSettings:
+    - SourcePath: TableList.xlsx
+      DatasExportPath: Assets/Samples/MainDemo/Jsons/TableList.json
+      ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
+      TableMode: 0
+      IndexField: 
+      AssetLocation: TableList
+      DataTypeNames:
+      - Demo_Item
+      - ListA
+      - ListB
+    - SourcePath: TableMap.xlsx
+      DatasExportPath: Assets/Samples/MainDemo/Jsons/TableMap.json
+      ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
+      TableMode: 1
+      IndexField: Name
+      AssetLocation: TableMap
+      DataTypeNames:
+      - Map1
+--- !u!1 &1990458234707485856
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6843088735249363648}
+  - component: {fileID: 2901006627018902308}
+  m_Layer: 0
+  m_Name: Asset
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6843088735249363648
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1990458234707485856}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2901006627018902308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1990458234707485856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8675386940674cacbc7fb4bc77682be2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_CurAssetManagerTypeName: NovaFramework.Runtime.AssetManager
+  m_EditorPlayMode: 0
+  m_RuntimePlayMode: 1
+  m_Packages:
+  - Default
+  m_DefaultPackageName: Default
+  m_AutoCleanupOnSceneUnload: 1
+  m_EnableHotfix: 0
+  m_AutoHotfix: 1
+  m_QuitOnFailedOrCancel: 0
+  m_MaxDownloadConcurrency: 5
+  m_RetryDownloadCount: 3
+  m_LaunchHotfixTags: []
+  m_AutoClearUnusedCacheOnHotfix: 0
+  m_CheckTimeout: 5
+  m_IdleTimeout: 20
+  m_HostServerUrlDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
+  m_HostServerUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
+  m_HostServerUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
+  m_HostServerUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
+  m_DecryptorType: 0
+--- !u!1 &3308748334323488271
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3760798730955577934}
+  - component: {fileID: 6597444941306578024}
+  m_Layer: 0
+  m_Name: Nova
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3760798730955577934
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3308748334323488271}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3842739183453933456}
+  - {fileID: 6843088735249363648}
+  - {fileID: 1071974108294402321}
+  - {fileID: 4610341584833140942}
+  - {fileID: 3225579552615393266}
+  - {fileID: 6925861541305817589}
+  - {fileID: 3717188589904265850}
+  - {fileID: 8571591876977689200}
+  - {fileID: 8219699071599488966}
+  - {fileID: 4147039323042217157}
+  - {fileID: 5732674830609525720}
+  - {fileID: 8552108720000466657}
+  - {fileID: 3333894605293078042}
+  - {fileID: 5582307180730387873}
+  - {fileID: 8158470041802060565}
+  - {fileID: 3385143688772100779}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6597444941306578024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3308748334323488271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 156877032a524809878695da3b7f4ab4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_FrameRate: 60
+  m_GameSpeed: 1
+  m_RunInBackground: 1
+  m_NeverSleep: 1
+  m_ReferenceStrictCheckType: 0
+  m_CurTxtHelperTypeName: NovaFramework.Runtime.TxtHelper
+  m_CurLogHelperTypeName: NovaFramework.Runtime.LogHelper
+  m_CurReferenceHelperTypeName: NovaFramework.Runtime.ReferenceHelper
+--- !u!1 &3536320537575043565
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6649879192969594200}
+  - component: {fileID: 1535269306669633361}
+  - component: {fileID: 8585251058638225543}
+  m_Layer: 0
+  m_Name: EventSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6649879192969594200
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3536320537575043565}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3225579552615393266}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1535269306669633361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3536320537575043565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_FirstSelected: {fileID: 0}
+  m_sendNavigationEvents: 1
+  m_DragThreshold: 10
+--- !u!114 &8585251058638225543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3536320537575043565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.UI.InputSystemUIInputModule
+  m_SendPointerHoverToParent: 1
+  m_MoveRepeatDelay: 0.5
+  m_MoveRepeatRate: 0.1
+  m_XRTrackingOrigin: {fileID: 0}
+  m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_MoveAction: {fileID: -8784545083839296357, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_SubmitAction: {fileID: 392368643174621059, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_CancelAction: {fileID: 7727032971491509709, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_LeftClickAction: {fileID: 3001919216989983466, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_MiddleClickAction: {fileID: -2185481485913320682, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_RightClickAction: {fileID: -4090225696740746782, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_DeselectOnBackgroundClick: 1
+  m_PointerBehavior: 0
+  m_CursorLockBehavior: 0
+  m_ScrollDeltaPerTick: 6
+--- !u!1 &3798698612979853491
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3225579552615393266}
+  - component: {fileID: 7916191892018868461}
+  m_Layer: 0
+  m_Name: Event
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3225579552615393266
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3798698612979853491}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 6649879192969594200}
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7916191892018868461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3798698612979853491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 959b4d4cdd8b90048b65521d231bc3e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_CurManagerTypeName: NovaFramework.Runtime.EventManager
+  m_EventPoolMode: 3
+  m_MaxDispatchPerFrame: 0
+--- !u!1 &3867858473517062863
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8552108720000466657}
+  - component: {fileID: 4535200693437177459}
+  m_Layer: 0
+  m_Name: Persist
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8552108720000466657
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3867858473517062863}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4535200693437177459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3867858473517062863}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7ab778198a772245971b839b1294b44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_CurPlayerPrefsManagerTypeName: NovaFramework.Runtime.PlayerPrefsManager
+  m_UseAESForPlayerPrefs: 1
+  m_AutoSaveIntervalPlayerPrefs: 60
+  m_CurFileFragmentManagerTypeName: NovaFramework.Runtime.FileFragmentManager
+  m_UseAESForFileFragment: 1
+  m_AutoSaveIntervalFileFragment: 60
+  m_CurSQLiteManagerTypeName: NovaFramework.Runtime.SQLiteManager
+  m_UseAESForSQLite: 1
+  m_SQLiteCipherPassword: 
+  m_AutoSaveIntervalSQLite: 60
+--- !u!1 &4032060246794574045
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8219699071599488966}
+  - component: {fileID: 7684810507095310089}
+  m_Layer: 0
+  m_Name: Network
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8219699071599488966
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4032060246794574045}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7684810507095310089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4032060246794574045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f9a86e2ebc800a46ba25a6979427d1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_CurNetworkManagerTypeName: NovaFramework.Runtime.NetworkManager
+  m_CurHttpManagerTypeName: NovaFramework.Runtime.HttpManager
+  m_CurDoHManagerTypeName: NovaFramework.Runtime.DoHManager
+  m_CurWebSocketManagerTypeName: NovaFramework.Runtime.WebSocketManager
+  m_Settings:
+    HostKeySettings:
+      SourceDirPath: Assets/Samples/MainDemo/Excels/Networks/HostKeys
+      DatasExportPath: 
+      ClassesExportPath: 
+      HostKeyUnits:
+      - SourcePath: NetworkHostKeys.xlsx
+        DatasExportPath: Assets/Samples/MainDemo/Jsons/NetworkHostKeys.json
+        ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Networks/HostKeys
+        AssetLocation: NetworkHostKeys
+        DataTypeNames:
+        - NetworkHostKeys
+    NetCmdSettings:
+      SourceDirPath: Assets/Samples/MainDemo/Excels/Networks/Cmds
+      DatasExportPath: 
+      ClassesExportPath: 
+      NetCmdUnits:
+      - SourcePath: NetworkCmds.xlsx
+        DatasExportPath: Assets/Samples/MainDemo/Jsons/NetworkCmds.json
+        ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Networks/Cmds
+        AssetLocation: NetworkCmds
+        DataTypeNames:
+        - NetworkCmds
+  m_HttpSettings:
+    ConnectTimeout: 20
+    RequestTimeout: 60
+  m_DoHSettings:
+    UseDoH: 0
+    DnsTimeoutSeconds: 0
+  m_WebSocketSettings:
+    ConnectTimeout: 10
+    AuthenticateTimeout: 10
+    HeartBeatTimeInterval: 20
+    HeartBeatTimeout: 10
+    EnableAutoReconnect: 1
+    AutoReconnectMaxCounter: 5
+    AutoReconnectTimeInterval: 3
+    AutoReconnectFailedUIAssetLocation: 
+  m_ProtoSettings:
+    ProtoSourceDirPath: Assets/Samples/MainDemo/Protos
+    ProtoUnits:
+    - SourcePath: a.proto
+      CSharpExportPath: 
+    - SourcePath: pb_net_save.proto
+      CSharpExportPath: Assets
+    - SourcePath: pb_net_header.proto
+      CSharpExportPath: Assets
+    - SourcePath: pb_net_base_response.proto
+      CSharpExportPath: Assets
+    - SourcePath: pb_net_delete.proto
+      CSharpExportPath: Assets
+    - SourcePath: pb_net_login.proto
+      CSharpExportPath: Assets
+    - SourcePath: ../../../Framework/Protos/pb_net_base_response.proto
+      CSharpExportPath: Assets
+    - SourcePath: ../../../Framework/Protos/pb_net_delete.proto
+      CSharpExportPath: Assets
+    - SourcePath: ../../../Framework/Protos/pb_net_header.proto
+      CSharpExportPath: Assets
+    - SourcePath: ../../../Framework/Protos/pb_net_login.proto
+      CSharpExportPath: Assets
+    - SourcePath: ../../../Framework/Protos/pb_net_save.proto
+      CSharpExportPath: Assets
+--- !u!1 &4040515769347014561
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5582307180730387873}
+  - component: {fileID: 6372012296189289527}
+  m_Layer: 0
+  m_Name: Vibrate
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5582307180730387873
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4040515769347014561}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6372012296189289527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4040515769347014561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66d7f600309844b9394ea28268b89f6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.VibrateComponent
+  m_DevelopMode: 0
+  m_CurManagerTypeName: NovaFramework.Runtime.VibrateManager
+  m_Settings:
+    EmphasisSourceDirPath: Assets/Samples/MainDemo/Excels/Vibrates/Emphasis
+    CustomSourceDirPath: Assets/Samples/MainDemo/Excels/Vibrates/Customs
+    EmphasisUnitsSettings:
+    - SourcePath: VibrateEmphasis.xlsx
+      DatasExportPath: Assets/Samples/MainDemo/Jsons/VibrateEmphasis.json
+      ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Vibrates/Emphasis
+      AssetLocation: VibrateEmphasis
+      DataTypeNames:
+      - Demo_VibrateEmphasis
+    CustomUnitsSettings:
+    - SourcePath: VibrateCustom.xlsx
+      DatasExportPath: Assets/Samples/MainDemo/Jsons/VibrateCustoms.json
+      ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Vibrates/Custom
+      AssetLocation: VibrateCustoms
+      DataTypeNames:
+      - Demo_VibrateCustom
+--- !u!1 &4048263310547660259
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1071974108294402321}
+  - component: {fileID: 6285176399534083603}
+  m_Layer: 0
+  m_Name: Prefab
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1071974108294402321
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4048263310547660259}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6285176399534083603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4048263310547660259}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46760a6bb750a4cff9132327d1201ab7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.PrefabComponent
+  m_DevelopMode: 0
+  m_CurPrefabManagerTypeName: NovaFramework.Runtime.PrefabManager
+--- !u!1 &4327427505166334195
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5732674830609525720}
+  - component: {fileID: 7452428062424239592}
+  m_Layer: 0
+  m_Name: ObjectPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5732674830609525720
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4327427505166334195}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7452428062424239592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4327427505166334195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c14fffec0b027d64793a1a525d92739f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_CurManagerTypeName: NovaFramework.Runtime.ObjectPoolManager
+--- !u!1 &4574806457801953685
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3333894605293078042}
+  - component: {fileID: 819773186674650590}
+  m_Layer: 0
+  m_Name: Sound
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3333894605293078042
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4574806457801953685}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &819773186674650590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4574806457801953685}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b829444137a94955a759eb380509817, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.SoundComponent
+  m_DevelopMode: 0
+  m_CurManagerTypeName: NovaFramework.Runtime.SoundManager
+  m_AudioMixer: {fileID: 0}
+  m_SoundGroupShells:
+  - m_Name: BGM
+    m_AvoidBeingReplacedBySamePriority: 0
+    m_Mute: 0
+    m_Volume: 1
+    m_AgentCount: 2
+  - m_Name: SFX
+    m_AvoidBeingReplacedBySamePriority: 0
+    m_Mute: 0
+    m_Volume: 1
+    m_AgentCount: 4
+  m_Settings:
+    SourceDirPath: Assets/Samples/MainDemo/Excels/Sounds
+    TemplatePath: Assets/Framework/Templates/SoundTemplate.xlsx
+    SoundUnitsSettings:
+    - SourcePath: Sounds.xlsx
+      DatasExportPath: Assets/Samples/MainDemo/Jsons/Sounds.json
+      ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Sounds
+      AssetLocation: Sounds
+      DataTypeNames:
+      - Demo_Sound
+--- !u!1 &5431121861835738401
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8571591876977689200}
+  - component: {fileID: 7514479087540692999}
+  m_Layer: 0
+  m_Name: UI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8571591876977689200
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5431121861835738401}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 400235957583911453}
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7514479087540692999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5431121861835738401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fc99c9f8ac65a54cbdea53d3682b92b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_CurUIManagerTypeName: NovaFramework.Runtime.UIManager
+  m_CurUIGroupHelperTypeName: NovaFramework.Runtime.UIGroupHelper
+  m_InstanceAutoReleaseInterval: 60
+  m_InstanceCapacity: 16
+  m_InstanceExpireTime: 60
+  m_InstancePriority: 0
+  m_ScreenDesignedResolution: {x: 768, y: 1666}
+  m_ScreenWidthHeightMatchValue: 0
+  m_DestroyMaxNumPerFrame: 10
+  m_InstanceRoot: {fileID: 400235957583911453}
+  m_GroupDepthFactor: 1000
+  m_ViewDepthFactor: 10
+  m_UIGroups:
+  - m_Name: Menu
+    m_Depth: 0
+  - m_Name: Demo
+    m_Depth: 1
+  - m_Name: DemoSub
+    m_Depth: 2
+  m_UISettings:
+    SourceDirPath: Assets/Samples/MainDemo/Excels/UIs
+    TemplatePath: Assets/Framework/Templates/UITemplate.xlsx
+    UIUnitsSettings:
+    - SourcePath: UIs.xlsx
+      DatasExportPath: Assets/Samples/MainDemo/Jsons/UIs.json
+      ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/UIs
+      AssetLocation: UIs
+      DataTypeNames:
+      - UI1
+--- !u!1 &6077226297666554022
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4610341584833140942}
+  - component: {fileID: 5237658480799859176}
+  m_Layer: 0
+  m_Name: Config
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4610341584833140942
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6077226297666554022}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5237658480799859176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6077226297666554022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9abcd4f1f7704555845845a214fbf776, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_CurManagerTypeName: NovaFramework.Runtime.ConfigManager
+  m_AssetLocation: ConfigRuntime
+--- !u!1 &6488887511863957975
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4147039323042217157}
+  - component: {fileID: 7240096784383541459}
+  m_Layer: 0
+  m_Name: Procedure
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4147039323042217157
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6488887511863957975}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7240096784383541459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6488887511863957975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fd9606bda5cedb42bdde065e35812bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_DevelopMode: 0
+  m_CurManagerTypeName: NovaFramework.Runtime.ProcedureManager
+  m_EntranceProcedureTypeName: NovaFramework.Runtime.ProcedureSplash
+  m_LauncherSettings:
+    m_SplashDuration: 2
+    m_SplashPanelPrefab: BuiltIn/Prefabs/LauncherSplashPanel
+    m_ProgressPanelPrefab: BuiltIn/Prefabs/LauncherProgressPanel
+    m_DialogPanelPrefab: BuiltIn/Prefabs/LauncherDialogPanel
+    m_LocalizationJsonPathTemplate: BuiltIn/Jsons/LocalizationTexts_{0}
+--- !u!1 &7654906232351280899
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3842739183453933456}
+  - component: {fileID: 8596829632786430674}
+  m_Layer: 0
+  m_Name: App
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3842739183453933456
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7654906232351280899}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8596829632786430674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7654906232351280899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2623765eceed94e7f9f80356bb61aae5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.AppComponent
+  m_DevelopMode: 0
+  m_CurManagerTypeName: NovaFramework.Runtime.AppManager
+  m_AppDownloadCheckUrlDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/Android/Default/AppDownloadRules.json
+  m_AppDownloadCheckUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/Android/Default/AppDownloadRules.json
+  m_AppDownloadCheckUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/Android/Default/AppDownloadRules.json
+  m_AppDownloadCheckUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/Android/Default/AppDownloadRules.json
+  m_TimeoutSeconds: 5
+  m_DownloadRoute: 0
+  m_AndroidStoreUrl: https://www.google.com.hk
+  m_AppStoreUrl: https://www.apple.com
+  m_PrimaryDownloadUrl: 
+  m_FallbackDownloadUrl: 
+  m_UseRecommendedDownloadRule: 1
+  m_UseForcedDownloadRule: 1
+--- !u!1 &8726854288946261100
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 400235957583911453}
+  - component: {fileID: 520275224129642504}
+  - component: {fileID: 2714531147320223080}
+  - component: {fileID: 8908503810972359960}
+  m_Layer: 0
+  m_Name: UIViewInstancesRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &400235957583911453
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8726854288946261100}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8571591876977689200}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 0}
+--- !u!223 &520275224129642504
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8726854288946261100}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
+--- !u!114 &2714531147320223080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8726854288946261100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_UiScaleMode: 1
+  m_ReferencePixelsPerUnit: 100
+  m_ScaleFactor: 1
+  m_ReferenceResolution: {x: 768, y: 1666}
+  m_ScreenMatchMode: 0
+  m_MatchWidthOrHeight: 0
+  m_PhysicalUnit: 3
+  m_FallbackScreenDPI: 96
+  m_DefaultSpriteDPI: 96
+  m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 0
+--- !u!114 &8908503810972359960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8726854288946261100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!1 &9152947940753774209
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3717188589904265850}
+  - component: {fileID: 3015432987591676535}
+  m_Layer: 0
+  m_Name: Localization
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3717188589904265850
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9152947940753774209}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3760798730955577934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3015432987591676535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9152947940753774209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36f28a4d43698b443a570a7db6f6a449, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.LocalizationComponent
+  m_DevelopMode: 0
+  m_CurLocalizationManagerTypeName: NovaFramework.Runtime.LocalizationManager
+  m_EditorLanguage: 0
+  m_RuntimeLanguagePrefer: 1
+  m_FallbackLanguage: 14
+  m_AutoFontAdapt: 0
+  m_LocalizationSettings:
+    TextSourceDirPath: Assets/Samples/MainDemo/Excels/Localizations/Texts
+    FontSourceDirPath: Assets/Samples/MainDemo/Excels/Localizations/Fonts
+    TextUnitsSettings:
+    - SourcePath: LocalizationTexts.xlsx
+      DatasExportPath: Assets/Samples/MainDemo/Jsons/LocalizationTexts_{0}.json
+      ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Localizations/Texts
+      AssetLocation: LocalizationTexts_{0}
+      DataTypeNames:
+      - Demo_Localization
+    FontUnitsSettings:
+    - SourcePath: LocalizationFonts.xlsx
+      DatasExportPath: Assets/Samples/MainDemo/Jsons/LocalizationFonts.json
+      ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Localizations/Fonts
+      AssetLocation: LocalizationFonts
+      DataTypeNames:
+      - LocalizationFonts
+  m_SupportedLanguagesAssetLocation: LocalizationSupportedLanguages
+  m_TextTemplatePath: Assets/Framework/Templates/LocalizationTextTemplate.xlsx
+  m_FontTemplatePath: Assets/Framework/Templates/LocalizationFontTemplate.xlsx
+  m_SupportedLanguagesJsonExportPath: Assets/Samples/MainDemo/Jsons/LocalizationSupportedLanguages.json

@@ -1,0 +1,22 @@
+{
+  "name": "com.solotopia.unitask",
+  "displayName": "UniTask",
+  "author": {
+    "name": "Solotopia",
+    "url": "https://cysharp.co.jp/en/"
+  },
+  "version": "10.0.5",
+  "coreVersion": "2.5.10",
+  "unity": "2018.4",
+  "description": "Unitask 高性能异步任务库",
+  "keywords": [
+    "async/await",
+    "async",
+    "Task",
+    "UniTask"
+  ],
+  "license": "SEE LICENSE IN LICENSE.md",
+  "category": "Task",
+  "dependencies": {},
+  "_fingerprint": "a85b92a8e443881fb431d60fa3d8daad5288db75"
+}

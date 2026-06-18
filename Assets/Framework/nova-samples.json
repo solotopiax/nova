@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "MainDemo",
+      "description": "Nova Framework 全接口代码与效果演示。建议升级前先删除旧版本目录。",
+      "sampleName": "MainDemo",
+      "sourceDir": "Assets/Samples/MainDemo",
+      "expectedNamespace": "NovaFramework.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/MainDemo"
+    }
+  ]
+}

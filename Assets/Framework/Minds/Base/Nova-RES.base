@@ -1,0 +1,40 @@
+filters:
+  and:
+    - file.inFolder("3-Resources")
+    - file.ext == "md"
+    - file.basename != "ExternalLinks"
+formulas:
+  status_icon: if(status == "active", "✅", if(status == "superseded", "🗄️", "❓"))
+properties:
+  id:
+    displayName: ID
+  title:
+    displayName: 资源
+  status:
+    displayName: 状态
+  category:
+    displayName: 分类
+  summary:
+    displayName: 用途速记
+  source:
+    displayName: 来源
+views:
+  - type: table
+    name: 全部资源
+    groupBy:
+      property: category
+      direction: ASC
+    order:
+      - formula.status_icon
+      - id
+      - title
+      - category
+      - summary
+      - source
+  - type: cards
+    name: 资源卡片
+    order:
+      - id
+      - title
+      - summary
+      - formula.status_icon

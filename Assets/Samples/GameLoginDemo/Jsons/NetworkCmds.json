@@ -1,0 +1,22 @@
+﻿{
+  "NetworkCmds": [
+    {
+      "Name": "GameAccountLogin",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/loginV1"
+    },
+    {
+      "Name": "GameAccountDelete",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/delete"
+    },
+    {
+      "Name": "TGAServerUrl",
+      "Way": "HTTP_URL",
+      "HostKey": "TGAServer",
+      "Path": ""
+    }
+  ]
+}

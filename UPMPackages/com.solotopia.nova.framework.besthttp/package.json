@@ -1,0 +1,39 @@
+{
+  "name": "com.solotopia.nova.framework.besthttp",
+  "version": "0.0.6",
+  "license": "MIT",
+  "coreVersion": "0.0.1",
+  "displayName": "Nova Framework - BestHTTP",
+  "description": "Nova Framework 的 BestHTTP 可选 HTTP 后端适配包",
+  "category": "Runtime",
+  "unity": "6000.4",
+  "keywords": [
+    "nova",
+    "framework",
+    "besthttp",
+    "network",
+    "http"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
+  "dependencies": {
+    "com.solotopia.nova.framework": "0.5.22",
+    "com.solotopia.unitask": "10.0.0",
+    "com.unity.nuget.newtonsoft-json": "3.2.2",
+    "com.tivadar.best.http": "3.0.17",
+    "com.tivadar.best.tlssecurity": "3.0.4"
+  },
+  "nova": {
+    "requiredLibraries": {
+      "com.tivadar.best.http": {
+        "displayName": "Best HTTP",
+        "purchaseUrl": "https://assetstore.unity.com/packages/tools/network/best-http-267636"
+      },
+      "com.tivadar.best.tlssecurity": {
+        "displayName": "Best TLS Security",
+        "purchaseUrl": "https://assetstore.unity.com/packages/tools/network/best-tls-security-267637"
+      }
+    }
+  }
+}

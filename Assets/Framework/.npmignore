@@ -1,0 +1,12 @@
+# 开发期占位目录,publish 时 rename 为 Samples~ 才被收录
+Samples~.dev/
+Samples~.dev.meta
+
+# Obs 知识库不入 UPM 包
+Minds/
+Minds.meta
+
+# 发版描述符仅开发期使用，不入 UPM tarball：外部工程 Unity 会因其落到只读
+# Packages/<pkg>/ 而对 .meta 不认（immutable folder 警告），并触发 SamplePathRewriter 重跑
+nova-samples.json
+nova-samples.json.meta

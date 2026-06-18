@@ -1,0 +1,25 @@
+{
+    "name": "NovaFramework.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9933936cdf5d28e4c8108450606f9a90",
+        "GUID:c383f449023b7fd42adcb2698d5622e0",
+        "GUID:5dcaa7c28ba9de042a11ef79db487161",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:2373f786d14518f44b0f475db77ba4de",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:4d1926c9df5b052469a1c63448b7609a",
+        "GUID:e34a5702dd353724aa315fb8011f08c3"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

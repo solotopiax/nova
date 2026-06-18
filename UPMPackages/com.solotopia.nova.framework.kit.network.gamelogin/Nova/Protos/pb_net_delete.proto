@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package NovaFramework.Kit.Network.GameLogin.Runtime;
+
+import "pb_net_header.proto";
+import "pb_net_login.proto";
+
+// 删除用户请求
+message PbNetDeleteReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+}
+
+// 删除用户响应
+message PbNetDeleteResp {
+    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
+    PbNetAccountStatus status = 2;     // 当前账号状态
+}

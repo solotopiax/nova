@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package NovaFramework.SDK.FirebasePlugin.Runtime;
+
+import "pb_net_header.proto";
+
+// 上报 Firebase 标识请求（登录成功或 SDK 就绪后调用，只更新非空字段）
+message PbNetReportFirebaseReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+    string firebase_push_token = 2;             // Firebase 云推送令牌
+    string firebase_analytics_instance_id = 3;  // Firebase 客户端实例化 ID
+}
+
+// 上报 Firebase 标识响应
+message PbNetReportFirebaseResp {
+    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
+}

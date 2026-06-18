@@ -1,0 +1,2 @@
+# Force LF line endings for shell scripts (git hooks must not have CRLF)
+.githooks/* text eol=lf

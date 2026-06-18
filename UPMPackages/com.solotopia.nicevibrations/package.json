@@ -1,0 +1,20 @@
+{
+  "name": "com.solotopia.nicevibrations",
+  "displayName": "Nice Vibrations",
+  "author": {
+    "name": "Solotopia",
+    "url": "https://lofelt.com/"
+  },
+  "version": "10.0.5",
+  "coreVersion": "4.1.0",
+  "unity": "2018.4",
+  "description": "跨平台触觉反馈库",
+  "keywords": [
+    "haptic",
+    "vibration",
+    "feedback"
+  ],
+  "license": "SEE LICENSE IN LICENSE.md",
+  "category": "Haptic",
+  "dependencies": {}
+}

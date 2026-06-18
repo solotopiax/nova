@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "AppsflyerDemo",
+      "description": "com.solotopia.nova.framework.sdk.appsflyer 演示示例：BaseDemoView 三段式骨架的 sample 工程",
+      "sampleName": "AppsflyerDemo",
+      "sourceDir": "Assets/Samples/AppsflyerDemo",
+      "expectedNamespace": "NovaFramework.Sdk.Appsflyer.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/AppsflyerDemo"
+    }
+  ]
+}

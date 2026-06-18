@@ -1,0 +1,18 @@
+{
+    "name": "NovaFramework.SDK.TGAPlugin.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:c383f449023b7fd42adcb2698d5622e0",
+        "GUID:ff4bf6c59d1ac413a8f34ced5be76ecd"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

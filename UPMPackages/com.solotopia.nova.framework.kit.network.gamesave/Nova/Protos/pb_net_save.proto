@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package NovaFramework.Kit.Network.GameSave.Runtime;
+
+import "pb_net_header.proto";
+
+// 键值对数据节点
+message PbNetGameDataNode {
+  string key   = 1;   // 数据名称
+  string value = 2;   // JSON 序列化后的内容
+}
+
+// 获取存档请求
+message PbNetGetGameDataReq {
+  NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+  bool full = 2;              // 是否全量；true = 忽略 keys 拉取全部存档
+  repeated string keys = 3;   // 要获取的 key 列表
+}
+
+// 获取存档响应
+message PbNetGetGameDataResp {
+  NovaFramework.Runtime.PbNetRespHeader head   = 1;   // 响应头
+  string game_version = 2;    			// 游戏存档版本号
+  string app_version = 3;     			// 应用版本号
+  string last_device_id = 4;  			// 最近一次的设备ID
+  int64 last_timestamp = 5;			    // 最近一次的时间戳
+  repeated PbNetGameDataNode datas  = 6;   	// 数据节点集合
+}
+
+// 上传存档请求
+message PbNetSetGameDataReq {
+  NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+  bool full = 2;                    // 是否全量覆盖；true = 用 datas 整体替换该用户存档
+  string game_version = 3;    			// 游戏存档版本号
+  string app_version = 4;     			// 应用版本号
+  string last_device_id = 5;  			// 最近一次的设备ID
+  repeated PbNetGameDataNode datas = 6;   	// 要同步的数据节点
+}
+
+// 上传存档响应
+message PbNetSetGameDataResp {
+  NovaFramework.Runtime.PbNetRespHeader head   = 1;   // 响应头
+  int32 effect = 2;   // 影响条数
+}

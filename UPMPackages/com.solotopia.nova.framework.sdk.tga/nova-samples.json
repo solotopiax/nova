@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "TGADemo",
+      "description": "com.solotopia.nova.framework.sdk.tga 演示示例：BaseDemoView 三段式骨架的 sample 工程",
+      "sampleName": "TGADemo",
+      "sourceDir": "Assets/Samples/TGADemo",
+      "expectedNamespace": "NovaFramework.Sdk.Tga.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/TGADemo"
+    }
+  ]
+}

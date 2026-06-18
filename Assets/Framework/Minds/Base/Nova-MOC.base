@@ -1,0 +1,46 @@
+filters:
+  and:
+    - file.inFolder("2-Areas/MOC")
+    - file.ext == "md"
+formulas:
+  status_icon: if(status == "active", "🟢", if(status == "superseded", "🗄️", "❓"))
+  module_layer: if(category == "arch", "框架核心", if(category == "asset", "资源/数据", if(category == "module", "模块", if(category == "workflow", "工作流", if(category == "ai-collab", "协作", category)))))
+properties:
+  id:
+    displayName: MOC ID
+  title:
+    displayName: 图谱标题
+  status:
+    displayName: 状态
+  category:
+    displayName: 分类
+  summary:
+    displayName: 速查摘要
+  formula.module_layer:
+    displayName: 层级
+views:
+  - type: table
+    name: 21 张 MOC（按层级分组）
+    groupBy:
+      property: formula.module_layer
+      direction: ASC
+    order:
+      - formula.status_icon
+      - id
+      - title
+      - formula.module_layer
+      - category
+      - summary
+  - type: cards
+    name: 图谱卡片
+    order:
+      - id
+      - title
+      - summary
+      - formula.status_icon
+  - type: list
+    name: 图谱速览
+    order:
+      - id
+      - title
+      - summary

@@ -1,0 +1,50 @@
+filters:
+  and:
+    - file.inFolder("2-Areas/Glossary")
+    - file.ext == "md"
+formulas:
+  status_icon: if(status == "active", "✅", if(status == "superseded", "🗄️", "❓"))
+properties:
+  id:
+    displayName: ID
+  title:
+    displayName: 术语
+  status:
+    displayName: 状态
+  category:
+    displayName: 分类
+  summary:
+    displayName: 一句话定义
+views:
+  - type: table
+    name: 全部术语（按分类分组）
+    groupBy:
+      property: category
+      direction: ASC
+    order:
+      - formula.status_icon
+      - id
+      - title
+      - status
+      - category
+      - summary
+  - type: table
+    name: 在用 active
+    filters:
+      and:
+        - status == "active"
+    groupBy:
+      property: category
+      direction: ASC
+    order:
+      - formula.status_icon
+      - id
+      - title
+      - category
+      - summary
+  - type: list
+    name: 术语速览
+    order:
+      - id
+      - title
+      - summary

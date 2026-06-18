@@ -1,0 +1,1256 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e9d17fb1ec904d88aed1cb3be70705a, type: 3}
+  m_Name: ConfigMaster
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigMasterSO
+  Namespace: NovaFramework.Kit.Network.GameLogin.Samples.Runtime
+  EnabledSDKs:
+  - NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+  EnabledKits:
+  - NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+  CommonMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 1
+  SDKMasks:
+  - TypeName: NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.AppsFlyerPlugin.Runtime.AppsFlyerPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  KitMasks:
+  - TypeName: NovaFramework.Kit.Network.GameSave.Runtime.SaveKitConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  NamespaceMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  HybridCLRMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  YooAssetMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  NamespaceOverrides: []
+  HybridCLROverrides: []
+  YooAssetOverrides: []
+  CurrentDevelopMode: 0
+  CurrentPlatform: 1
+  CurrentChannel: 2
+  ExportTarget: {fileID: 11400000, guid: 5862059d833b4884b22edc608a5350dc, type: 2}
+  GameEntranceProcedureName: ProcedurePreload
+  YooAssetSettingsPath: Assets/Samples/GameLoginDemo/Editor/YooAssetSettings.asset
+  BundleCollectorSettingPath: Assets/Samples/GameLoginDemo/Editor/BundleCollectorSetting.asset
+  LinkXmlTargetPath: Assets/Samples/GameLoginDemo/Editor/link.xml
+  AotMetadataDlls:
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+    m_AssetLocation: mscorlib.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/System.dll.bytes
+    m_AssetLocation: System.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/System.Core.dll.bytes
+    m_AssetLocation: System.Core.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/UniTask.dll.bytes
+    m_AssetLocation: UniTask.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+    m_AssetLocation: Newtonsoft.Json.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+    m_AssetLocation: UnityEngine.CoreModule.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+    m_AssetLocation: Unity.TextMeshPro.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.Runtime.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.TGAPlugin.Runtime.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/NovaFramework.SDK.TGAPlugin.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameLogin.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+  GameDlls:
+  - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Samples.Runtime.dll
+    m_TargetLocation: Assets/Samples/GameLoginDemo/Dlls/GameDlls/NovaFramework.Kit.Network.GameLogin.Samples.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Samples.Runtime.dll
+  m_Entries:
+  - Platform: 1
+    Channel: 1
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728985
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728986
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816306
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816307
+  - Platform: 1
+    Channel: 2
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 3589942986135568568
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728987
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 3589943518543479036
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816308
+  - Platform: 1
+    Channel: 3
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728988
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728989
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816309
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816310
+  - Platform: 1
+    Channel: 4
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728990
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728991
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816311
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816312
+  - Platform: 1
+    Channel: 5
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728992
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728993
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816313
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816314
+  - Platform: 1
+    Channel: 6
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728994
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728995
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816315
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816316
+  - Platform: 2
+    Channel: 1
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728996
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728997
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816317
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816318
+  - Platform: 2
+    Channel: 2
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728998
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728999
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816319
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816320
+  - Platform: 2
+    Channel: 3
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729000
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729001
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816321
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816322
+  - Platform: 2
+    Channel: 4
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729002
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729003
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816323
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816324
+  - Platform: 2
+    Channel: 5
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729004
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729005
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816325
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816326
+  - Platform: 2
+    Channel: 6
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729006
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729007
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816327
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816328
+  - Platform: 3
+    Channel: 1
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729008
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729009
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816329
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816330
+  - Platform: 3
+    Channel: 2
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729010
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729011
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816331
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816332
+  - Platform: 3
+    Channel: 3
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729012
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729013
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816333
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816334
+  - Platform: 3
+    Channel: 4
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729014
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729015
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816335
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816336
+  - Platform: 3
+    Channel: 5
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729016
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729017
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816337
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816338
+  - Platform: 3
+    Channel: 6
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729018
+      - rid: 209362707701039362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360729019
+      - rid: 209362707701039362
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816339
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543479000
+      - rid: 2533177010352816340
+  references:
+    version: 2
+    RefIds:
+    - rid: 209362707701039362
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 209362707701039396
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 209362707701039396
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728985
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728986
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728987
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728988
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728989
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728990
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728991
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728992
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728993
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728994
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728995
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728996
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728997
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728998
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728999
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729000
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729001
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729002
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729003
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729004
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729005
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729006
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729007
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729008
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729009
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729010
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729011
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729012
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729013
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729014
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729015
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729016
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729017
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729018
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729019
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177010352816306
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816307
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816308
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816309
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816310
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816311
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816312
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816313
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816314
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816315
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816316
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816317
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816318
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816319
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816320
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816321
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816322
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816323
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816324
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816325
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816326
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816327
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816328
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816329
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816330
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816331
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816332
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816333
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816334
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816335
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816336
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816337
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816338
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816339
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 2533177010352816340
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 3589942986135568532
+      type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
+      data:
+        m_DevKey: YOUR_APPSFLYER_DEV_KEY
+        m_AppId: YOUR_APPSFLYER_APP_ID
+        m_LogEnable: 1
+        m_OneLinkHost: your-app.onelink.me
+        m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
+        m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
+        m_ReportCmdName: AppsFlyerReport
+    - rid: 3589942986135568568
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 3589943518543479000
+      type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
+      data:
+        m_GetCmdName: 
+        m_SetCmdName: 
+    - rid: 3589943518543479036
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete

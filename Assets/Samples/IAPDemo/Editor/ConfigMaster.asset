@@ -1,0 +1,4610 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e9d17fb1ec904d88aed1cb3be70705a, type: 3}
+  m_Name: ConfigMaster
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigMasterSO
+  Namespace: NovaFramework.Sdk.IAP.Samples.Runtime
+  EnabledSDKs:
+  - NovaFramework.SDK.IAP.Runtime.IAPPluginConfig
+  - NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+  - NovaFramework.SDK.AppsFlyerPlugin.Runtime.AppsFlyerPluginConfig
+  - NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePluginConfig
+  EnabledKits:
+  - NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+  CommonMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 1
+  SDKMasks:
+  - TypeName: NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.AppsFlyerPlugin.Runtime.AppsFlyerPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.IAP.Runtime.IAPPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.IAP.Runtime.IAPPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  KitMasks:
+  - TypeName: NovaFramework.Kit.Network.GameSave.Runtime.SaveKitConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  NamespaceMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  HybridCLRMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  YooAssetMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 1
+  NamespaceOverrides: []
+  HybridCLROverrides: []
+  YooAssetOverrides:
+  - Platform: 0
+    Channel: 0
+    DevelopMode: 1
+    YooAssetSettingsPath: Assets/Samples/IAPDemo/Editor/YooAssetSettings.asset
+    BundleCollectorSettingPath: Assets/Samples/IAPDemo/Editor/BundleCollectorSetting.asset
+  - Platform: 0
+    Channel: 0
+    DevelopMode: 0
+    YooAssetSettingsPath: Assets/Samples/IAPDemo/Editor/YooAssetSettings.asset
+    BundleCollectorSettingPath: Assets/Samples/IAPDemo/Editor/BundleCollectorSetting.asset
+  CurrentDevelopMode: 0
+  CurrentPlatform: 1
+  CurrentChannel: 2
+  ExportTarget: {fileID: 11400000, guid: 3974ef6769864e9ba2de5e9bf90d4b09, type: 2}
+  GameEntranceProcedureName: ProcedurePreload
+  YooAssetSettingsPath: Assets/Samples/IAPDemo/Editor/YooAssetSettings.asset
+  BundleCollectorSettingPath: Assets/Samples/IAPDemo/Editor/BundleCollectorSetting.asset
+  LinkXmlTargetPath: Assets/Samples/IAPDemo/Editor/link.xml
+  AotMetadataDlls:
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+    m_AssetLocation: mscorlib.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/System.dll.bytes
+    m_AssetLocation: System.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/System.Core.dll.bytes
+    m_AssetLocation: System.Core.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/UniTask.dll.bytes
+    m_AssetLocation: UniTask.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+    m_AssetLocation: Newtonsoft.Json.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+    m_AssetLocation: UnityEngine.CoreModule.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+    m_AssetLocation: Unity.TextMeshPro.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.Runtime.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.TGAPlugin.Runtime.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/NovaFramework.SDK.TGAPlugin.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameLogin.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.IAP.Runtime.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/NovaFramework.SDK.IAP.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.SDK.IAP.Runtime.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.IAP.Mobile.Runtime.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/NovaFramework.SDK.IAP.Mobile.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.SDK.IAP.Mobile.Runtime.dll
+  GameDlls:
+  - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.IAP.Samples.Runtime.dll
+    m_TargetLocation: Assets/Samples/IAPDemo/Dlls/GameDlls/NovaFramework.Sdk.IAP.Samples.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.Sdk.IAP.Samples.Runtime.dll
+  m_Entries:
+  - Platform: 1
+    Channel: 1
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728913
+      - rid: 2533177004360728671
+      - rid: 2533177004360729497
+      - rid: 1394692385303429512
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728914
+      - rid: 2533177004360728673
+      - rid: 2533177004360729498
+      - rid: 1394692385303429514
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188229
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188230
+  - Platform: 1
+    Channel: 2
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 3589942986135568568
+      - rid: 209362707701039362
+      - rid: 2533177004360729499
+      - rid: 2238161573846188195
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728915
+      - rid: 2533177004360728675
+      - rid: 2533177004360729500
+      - rid: 1394692385303429516
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188231
+  - Platform: 1
+    Channel: 3
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728916
+      - rid: 2533177004360728677
+      - rid: 2533177004360729501
+      - rid: 1394692385303429518
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728917
+      - rid: 2533177004360728679
+      - rid: 2533177004360729502
+      - rid: 1394692385303429520
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188232
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188233
+  - Platform: 1
+    Channel: 4
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728918
+      - rid: 2533177004360728681
+      - rid: 2533177004360729503
+      - rid: 1394692385303429522
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728919
+      - rid: 2533177004360728683
+      - rid: 2533177004360729504
+      - rid: 1394692385303429524
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188234
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188235
+  - Platform: 1
+    Channel: 5
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728920
+      - rid: 2533177004360728685
+      - rid: 2533177004360729505
+      - rid: 1394692385303429526
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728921
+      - rid: 2533177004360728687
+      - rid: 2533177004360729506
+      - rid: 1394692385303429528
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188236
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188237
+  - Platform: 1
+    Channel: 6
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728922
+      - rid: 2533177004360728689
+      - rid: 2533177004360729507
+      - rid: 1394692385303429530
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728923
+      - rid: 2533177004360728691
+      - rid: 2533177004360729508
+      - rid: 1394692385303429532
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188238
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188239
+  - Platform: 2
+    Channel: 1
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728924
+      - rid: 2533177004360728693
+      - rid: 2533177004360729509
+      - rid: 1394692385303429534
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728925
+      - rid: 2533177004360728695
+      - rid: 2533177004360729510
+      - rid: 1394692385303429536
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188240
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188241
+  - Platform: 2
+    Channel: 2
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728926
+      - rid: 2533177004360728697
+      - rid: 2533177004360729511
+      - rid: 1394692385303429538
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728927
+      - rid: 2533177004360728699
+      - rid: 2533177004360729512
+      - rid: 1394692385303429540
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188242
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188243
+  - Platform: 2
+    Channel: 3
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728928
+      - rid: 2533177004360728701
+      - rid: 2533177004360729513
+      - rid: 1394692385303429542
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728929
+      - rid: 2533177004360728703
+      - rid: 2533177004360729514
+      - rid: 1394692385303429544
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188244
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188245
+  - Platform: 2
+    Channel: 4
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728930
+      - rid: 2533177004360728705
+      - rid: 2533177004360729515
+      - rid: 1394692385303429546
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728931
+      - rid: 2533177004360728707
+      - rid: 2533177004360729516
+      - rid: 1394692385303429548
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188246
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188247
+  - Platform: 2
+    Channel: 5
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728932
+      - rid: 2533177004360728709
+      - rid: 2533177004360729517
+      - rid: 1394692385303429550
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728933
+      - rid: 2533177004360728711
+      - rid: 2533177004360729518
+      - rid: 1394692385303429552
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188248
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188249
+  - Platform: 2
+    Channel: 6
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728934
+      - rid: 2533177004360728713
+      - rid: 2533177004360729519
+      - rid: 1394692385303429554
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728935
+      - rid: 2533177004360728715
+      - rid: 2533177004360729520
+      - rid: 1394692385303429556
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188250
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188251
+  - Platform: 3
+    Channel: 1
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728936
+      - rid: 2533177004360728717
+      - rid: 2533177004360729521
+      - rid: 1394692385303429558
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728937
+      - rid: 2533177004360728719
+      - rid: 2533177004360729522
+      - rid: 1394692385303429560
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188252
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188253
+  - Platform: 3
+    Channel: 2
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728938
+      - rid: 2533177004360728721
+      - rid: 2533177004360729523
+      - rid: 1394692385303429562
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728939
+      - rid: 2533177004360728723
+      - rid: 2533177004360729524
+      - rid: 1394692385303429564
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188254
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188255
+  - Platform: 3
+    Channel: 3
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728940
+      - rid: 2533177004360728725
+      - rid: 2533177004360729525
+      - rid: 1394692385303429566
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728941
+      - rid: 2533177004360728727
+      - rid: 2533177004360729526
+      - rid: 1394692385303429568
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188256
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188257
+  - Platform: 3
+    Channel: 4
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728942
+      - rid: 2533177004360728729
+      - rid: 2533177004360729527
+      - rid: 1394692385303429570
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728943
+      - rid: 2533177004360728731
+      - rid: 2533177004360729528
+      - rid: 1394692385303429572
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188258
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188259
+  - Platform: 3
+    Channel: 5
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728944
+      - rid: 2533177004360728733
+      - rid: 2533177004360729529
+      - rid: 1394692385303429574
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728945
+      - rid: 2533177004360728735
+      - rid: 2533177004360729530
+      - rid: 1394692385303429576
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188260
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188261
+  - Platform: 3
+    Channel: 6
+    CommonByMode:
+    - Mode: 0
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    - Mode: 1
+      Config:
+        AppID: 1007
+        AppAesKey: ada87355fc39d643
+        AppAesIV: e461ae0bc82d1130
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728946
+      - rid: 2533177004360728737
+      - rid: 2533177004360729531
+      - rid: 1394692385303429578
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728947
+      - rid: 2533177004360728739
+      - rid: 2533177004360729532
+      - rid: 1394692385303429580
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188262
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 2238161573846188263
+  references:
+    version: 2
+    RefIds:
+    - rid: 209362707701039362
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 209362707701039396
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 209362707701039396
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1394692385303429512
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429513
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429513
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429514
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429515
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429515
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429516
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429517
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429517
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429518
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429519
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429519
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429520
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429521
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429521
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429522
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429523
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429523
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429524
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429525
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429525
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429526
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429527
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429527
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429528
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429529
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429529
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429530
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429531
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429531
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429532
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429533
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429533
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429534
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429535
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429535
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429536
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429537
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429537
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429538
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429539
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429539
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429540
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429541
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429541
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429542
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429543
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429543
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429544
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429545
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429545
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429546
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429547
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429547
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429548
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429549
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429549
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429550
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429551
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429551
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429552
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429553
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429553
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429554
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429555
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429555
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429556
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429557
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429557
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429558
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429559
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429559
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429560
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429561
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429561
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429562
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429563
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429563
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429564
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429565
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429565
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429566
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429567
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429567
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429568
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429569
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429569
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429570
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429571
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429571
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429572
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429573
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429573
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429574
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429575
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429575
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429576
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429577
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429577
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429578
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429579
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429579
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 1394692385303429580
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1394692385303429581
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 1394692385303429581
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 2238161573846188195
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 2238161587531940547
+        m_Products:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u666E\u901A\u5546\u54C11"
+            m_ProductID: com.nova.temp.test.0.99
+            m_ThirdProductID: com.nova.temp.test.0.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C11"
+          - m_TableId: 2
+            m_Name: "\u666E\u901A\u5546\u54C12"
+            m_ProductID: com.nova.temp.test.1.99
+            m_ThirdProductID: com.nova.temp.test.1.99
+            m_ProductType: 0
+            m_SubGroupID: 0
+            m_Price: 1.99
+            m_Currency: USD
+            m_EditorNote: "\u666E\u901A\u5546\u54C12"
+          - m_TableId: 3
+            m_Name: "\u5468\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_week.test.0.99
+            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 0.99
+            m_Currency: USD
+            m_EditorNote: "\u5468\u8BA2\u9605"
+          - m_TableId: 4
+            m_Name: "\u6708\u8BA2\u9605"
+            m_ProductID: com.nova.temp.sub_month.test.9.99
+            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
+            m_ProductType: 2
+            m_SubGroupID: 1
+            m_Price: 9.99
+            m_Currency: USD
+            m_EditorNote: "\u6708\u8BA2\u9605"
+    - rid: 2238161573846188229
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188230
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188231
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188232
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188233
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188234
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188235
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188236
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188237
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188238
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188239
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188240
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188241
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188242
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188243
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188244
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188245
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188246
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188247
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188248
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188249
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188250
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188251
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188252
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188253
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188254
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188255
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188256
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188257
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188258
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188259
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188260
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188261
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188262
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161573846188263
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 2238161587531940547
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 2533177004360728671
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728672
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728672
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728673
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728674
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728674
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728675
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728676
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728676
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728677
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728678
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728678
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728679
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728680
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728680
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728681
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728682
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728682
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728683
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728684
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728684
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728685
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728686
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728686
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728687
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728688
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728688
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728689
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728690
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728690
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728691
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728692
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728692
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728693
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728694
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728694
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728695
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728696
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728696
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728697
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728698
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728698
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728699
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728700
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728700
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728701
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728702
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728702
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728703
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728704
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728704
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728705
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728706
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728706
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728707
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728708
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728708
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728709
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728710
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728710
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728711
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728712
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728712
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728713
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728714
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728714
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728715
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728716
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728716
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728717
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728718
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728718
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728719
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728720
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728720
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728721
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728722
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728722
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728723
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728724
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728724
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728725
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728726
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728726
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728727
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728728
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728728
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728729
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728730
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728730
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728731
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728732
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728732
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728733
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728734
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728734
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728735
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728736
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728736
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728737
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728738
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728738
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728739
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728740
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 2533177004360728740
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - 87975430aba706c2
+        m_InterPlacementIds:
+        - d9b8697dc2e038bd
+        m_BannerPlacementIds:
+        - 25a5c931bc79b3e7
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728913
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728914
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728915
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728916
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728917
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728918
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728919
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728920
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728921
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728922
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728923
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728924
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728925
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728926
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728927
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728928
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728929
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728930
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728931
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728932
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728933
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728934
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728935
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728936
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728937
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728938
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728939
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728940
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728941
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728942
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728943
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728944
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728945
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728946
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360728947
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 2533177004360729497
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729498
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729499
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729500
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729501
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729502
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729503
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729504
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729505
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729506
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729507
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729508
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729509
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729510
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729511
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729512
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729513
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729514
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729515
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729516
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729517
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729518
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729519
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729520
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729521
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729522
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729523
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729524
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729525
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729526
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729527
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729528
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729529
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729530
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729531
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 2533177004360729532
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 3589942986135568532
+      type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
+      data:
+        m_DevKey: YOUR_APPSFLYER_DEV_KEY
+        m_AppId: YOUR_APPSFLYER_APP_ID
+        m_LogEnable: 1
+        m_OneLinkHost: your-app.onelink.me
+        m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
+        m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
+        m_ReportCmdName: AppsFlyerReport
+    - rid: 3589942986135568568
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 3589943518543478928
+      type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
+      data:
+        m_GetCmdName: 
+        m_SetCmdName: 
+    - rid: 3589943518543478964
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 

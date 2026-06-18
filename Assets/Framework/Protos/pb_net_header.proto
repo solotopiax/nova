@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package NovaFramework.Runtime;
+
+// 客户端运行平台枚举：用于服务端做平台分流、统计与风控
+enum PbNetPlatform {
+    PbNetPlatform_UNSPECIFIED = 0;  // 未指定（默认值，禁止实际使用）
+    PbNetPlatform_IOS = 1;          // iOS 平台
+    PbNetPlatform_ANDROID = 2;      // Android 平台
+    PbNetPlatform_WEBGL = 3;        // WebGL 平台
+}
+
+// 第三方登录渠道枚举
+enum PbNetChannel {
+    PbNetChannel_UNSPECIFIED = 0;  // 未指定（默认值，禁止实际使用）
+    PbNetChannel_FACEBOOK = 1;     // Facebook 渠道
+    PbNetChannel_GOOGLE = 2;       // Google 渠道
+    PbNetChannel_APPLE = 3;        // Apple 渠道
+    PbNetChannel_WECHAT = 4;       // 微信渠道
+}
+
+// 请求公共头：每个业务请求都需要携带，供服务端做身份识别与多维统计
+message PbNetReqHeader {
+    int32 app_id = 1;            // 应用 ID，用于区分不同产品/包体
+    string uid = 2;              // 用户唯一 ID，未登录时可为空
+    string version = 3;          // 客户端版本号，用于版本控制与强更判断
+    string language = 4;         // 客户端当前语言（如 zh-CN、en-US）
+    string device_id = 5;        // 设备唯一标识，用于设备维度统计与风控
+    PbNetPlatform platform = 6;  // 客户端运行平台
+    PbNetChannel channel = 7;    // 客户端第三方渠道
+}
+
+// 响应公共头：每个业务响应都会携带
+message PbNetRespHeader {
+    int64 timestamp = 1;  // 服务端时间戳（毫秒），用于客户端校时与日志追踪
+    int32 app_id = 2;     // 应用 ID，用于区分不同产品/包体
+    string uid = 3;       // 用户唯一 ID，未登录时可为空
+}

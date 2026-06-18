@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package NovaFramework.SDK.AppsFlyerPlugin.Runtime;
+
+import "pb_net_header.proto";
+
+// 上报 AppsFlyer 标识请求（登录成功或 SDK 就绪后调用，只更新非空字段）
+message PbNetReportAppsFlyerReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+    string appsflyer_id = 2;  // AppsFlyer 设备 ID
+}
+
+// 上报 AppsFlyer 标识响应
+message PbNetReportAppsFlyerResp {
+    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
+}

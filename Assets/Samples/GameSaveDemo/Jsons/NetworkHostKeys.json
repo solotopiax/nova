@@ -1,0 +1,12 @@
+﻿{
+  "NetworkHostKeys": [
+    {
+      "Name": "TGAServer",
+      "Value": "https://report.lolipopmobi.com"
+    },
+    {
+      "Name": "GameServer",
+      "Value": "https://t-solo-api-game.ahameet.com"
+    }
+  ]
+}

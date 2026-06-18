@@ -1,0 +1,16 @@
+{
+    "name": "NovaFramework.SDK.Facebook.Runtime",
+    "rootNamespace": "NovaFramework.SDK.Facebook",
+    "references": [
+        "NovaFramework.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
