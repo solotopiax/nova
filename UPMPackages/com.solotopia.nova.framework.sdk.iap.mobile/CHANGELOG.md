@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.6] - 2026-06-19
+
+### Changed
+
+- 依赖对齐：`com.solotopia.nova.framework`→`0.5.31`、`com.solotopia.nova.framework.sdk.iap`→`0.0.11`、`com.solotopia.unitask`→`10.0.5`。
+
 ## [0.0.5] - 2026-06-18
 
 ### Changed

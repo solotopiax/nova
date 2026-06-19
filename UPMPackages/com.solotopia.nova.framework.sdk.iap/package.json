@@ -1,6 +1,6 @@
 {
     "name": "com.solotopia.nova.framework.sdk.iap",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "license": "MIT",
     "coreVersion": "0.0.1",
     "displayName": "Nova Framework - SDK - IAP",
@@ -10,7 +10,7 @@
     "keywords": ["nova", "sdk", "iap", "purchase", "payment"],
     "author": { "name": "Solotopia" },
     "dependencies": {
-        "com.solotopia.nova.framework": "0.5.22",
-        "com.solotopia.unitask": "1.0.0"
+        "com.solotopia.nova.framework": "0.5.31",
+        "com.solotopia.unitask": "10.0.5"
     }
 }

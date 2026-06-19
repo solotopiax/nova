@@ -1,5 +1,11 @@
 # Changelog — com.solotopia.nova.framework
 
+## [0.5.31] - 2026-06-18
+
+### Changed
+
+- PlugPals 公共仓库默认地址暂定为内网 IP（`http://172.16.22.175:4873`）；后续公网 IP 很快开放，敬请期待。
+
 ## [0.5.30] - 2026-06-18
 
 ### Changed

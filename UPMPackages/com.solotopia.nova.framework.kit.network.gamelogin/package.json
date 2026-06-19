@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.kit.network.gamelogin",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - Kit - Network - GameLogin",
@@ -18,8 +18,8 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.5.22",
-    "com.solotopia.unitask": "1.0.0",
-    "com.solotopia.luban": "1.0.0"
+    "com.solotopia.nova.framework": "0.5.31",
+    "com.solotopia.unitask": "10.0.5",
+    "com.solotopia.luban": "10.0.6"
   }
 }

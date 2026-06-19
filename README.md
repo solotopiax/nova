@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.5.29-blue.svg)
+![release](https://img.shields.io/badge/release-v0.5.31-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -152,14 +152,14 @@ Nova 以**主包 + 子包**的方式交付，各包独立版本、按需引入�
 | com.unity.textmeshpro | 3.0.9 | 文本渲染 |
 | com.unity.nuget.newtonsoft-json | 3.2.2 | JSON 序列化 |
 | com.unity.inputsystem | 1.19.0 | 新输入系统 |
-| com.solotopia.hybridclr | 10.0.0 | 代码热更 |
-| com.solotopia.unitask | 10.0.0 | 零 GC 异步 |
-| com.solotopia.yooasset | 1.0.3 | 资源管理 |
-| com.solotopia.luban | 10.0.0 | 配置表生成 |
-| com.solotopia.sqlcipher4unity3d | 10.0.0 | 加密数据库 |
-| com.solotopia.nicevibrations | 10.0.0 | 触觉反馈 |
-| com.solotopia.excelio | 1.0.1 | Excel 读写 |
-| com.solotopia.simplediskutils | 1.0.2 | 磁盘工具 |
+| com.solotopia.hybridclr | 10.0.6 | 代码热更 |
+| com.solotopia.unitask | 10.0.5 | 零 GC 异步 |
+| com.solotopia.yooasset | 1.0.6 | 资源管理 |
+| com.solotopia.luban | 10.0.6 | 配置表生成 |
+| com.solotopia.sqlcipher4unity3d | 10.0.5 | 加密数据库 |
+| com.solotopia.nicevibrations | 10.0.5 | 触觉反馈 |
+| com.solotopia.excelio | 1.0.6 | Excel 读写 |
+| com.solotopia.simplediskutils | 1.0.7 | 磁盘工具 |
 
 ## 安装
 

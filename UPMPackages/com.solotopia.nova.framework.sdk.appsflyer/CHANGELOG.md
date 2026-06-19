@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.20] - 2026-06-19
+
+### Changed
+
+- 依赖对齐：`com.solotopia.nova.framework`→`0.5.31`。
+
 ## [0.0.19] - 2026-06-18
 
 ### Changed

@@ -1,7 +1,7 @@
 # Nova Framework
 
 > 包名：`com.solotopia.nova.framework`
-> 当前版本：`0.5.29`
+> 当前版本：`0.5.31`
 > Unity：`6000.4`
 
 Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、各业务 Component 入口与默认 MainDemo Sample。
@@ -12,7 +12,7 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework": "0.5.29"
+  "com.solotopia.nova.framework": "0.5.31"
 }
 ```
 
@@ -50,14 +50,14 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 | com.unity.textmeshpro | 3.0.9 |
 | com.unity.nuget.newtonsoft-json | 3.2.2 |
 | com.unity.inputsystem | 1.19.0 |
-| com.solotopia.hybridclr | 10.0.0 |
-| com.solotopia.unitask | 10.0.0 |
-| com.solotopia.sqlcipher4unity3d | 10.0.0 |
-| com.solotopia.simplediskutils | 1.0.2 |
-| com.solotopia.excelio | 1.0.1 |
-| com.solotopia.nicevibrations | 10.0.0 |
-| com.solotopia.luban | 10.0.0 |
-| com.solotopia.yooasset | 1.0.3 |
+| com.solotopia.hybridclr | 10.0.6 |
+| com.solotopia.unitask | 10.0.5 |
+| com.solotopia.sqlcipher4unity3d | 10.0.5 |
+| com.solotopia.simplediskutils | 1.0.7 |
+| com.solotopia.excelio | 1.0.6 |
+| com.solotopia.nicevibrations | 10.0.5 |
+| com.solotopia.luban | 10.0.6 |
+| com.solotopia.yooasset | 1.0.6 |
 
 ## 可选商业依赖
 

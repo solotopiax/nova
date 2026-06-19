@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.appsflyer",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "6.17.81",
   "displayName": "Nova Framework - SDK - AppsFlyer",
@@ -21,7 +21,7 @@
     "NovaFramework.SDK.AppsFlyerPlugin.Runtime"
   ],
   "dependencies": {
-    "com.solotopia.nova.framework": "0.5.22",
+    "com.solotopia.nova.framework": "0.5.31",
     "com.google.external-dependency-manager": "1.2.186"
   }
 }

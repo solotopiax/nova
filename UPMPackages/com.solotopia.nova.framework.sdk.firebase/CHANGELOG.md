@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.18] - 2026-06-18
+
+### Changed
+
+- Firebase 桌面调试原生库（`Firebase/Plugins/x86_64/FirebaseCppApp-*.bundle/.so/.dll`，单文件超 100MB、仅 Editor 桌面播放态使用）不再随**开源仓（git/GitHub）**分发，以符合公开仓库单文件体积限制；**UPM 包（npm tarball）仍正常包含桌面库**，真机 Android/iOS 构建不依赖该库。
+- 依赖对齐：`com.solotopia.nova.framework` 依赖下界提升至 `0.5.31`。
+
+### Added
+
+- 新增 `FirebaseDesktopLibraryGuard` 编辑器检查：当从 git 拉取源码、当前平台缺失对应桌面库时，在 Console 与弹窗中引导从 Firebase 官方页面（https://firebase.google.com/download/unity）下载补全；真机构建不依赖该桌面库。
+
 ## [0.0.17] - 2026-06-18
 
 ### Changed

@@ -10,6 +10,6 @@
     "keywords": ["nova", "sdk", "facebook", "auth", "login"],
     "author": { "name": "Solotopia" },
     "dependencies": {
-        "com.solotopia.nova.framework": "0.5.22"
+        "com.solotopia.nova.framework": "0.5.31"
     }
 }

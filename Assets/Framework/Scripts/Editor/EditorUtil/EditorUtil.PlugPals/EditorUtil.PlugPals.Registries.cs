@@ -25,7 +25,7 @@ namespace NovaFramework.Editor
             private const string c_RegistriesRelPath = "ProjectSettings/Nova/PlugPalsRegistries.json";
 
             /// <summary>
-            /// 公网 registry 默认地址。内网 IP 硬编码（内网地址，外网不可达，无需脱敏；将来可替换为公网域名）。
+            /// 公网 registry 默认地址（公网域名）。
             /// </summary>
             private const string c_DefaultExternalUrl = "http://172.16.22.175:4873";
 
@@ -77,7 +77,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 读取 registry 配置；文件缺失或字段空时回退默认（公网 4873、内部云 4874）。
+            /// 读取 registry 配置；文件缺失或字段空时回退默认（公网 172.16.22.175:4873、内部云内网地址）。
             /// </summary>
             public static RegistriesConfig LoadRegistries()
             {
@@ -137,7 +137,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 归一化配置：空白 externalUrl 回退默认 4873、空白 internalUrl 回退默认 4874，空 name 回退默认名。
+            /// 归一化配置：空白 externalUrl 回退默认公网地址、空白 internalUrl 回退默认内网地址，空 name 回退默认名。
             /// </summary>
             private static RegistriesConfig NormalizeRegistries(RegistriesConfig config)
             {

@@ -137,7 +137,7 @@ public static IReadOnlyList<Sample> GetPackageSamples(string packageName, string
 /// 异步获取指定包版本的更新日志，优先命中本地缓存（永久缓存）；
 /// 缓存缺失时从 Verdaccio 下载 tarball 解出 CHANGELOG.md 并缓存。
 /// </summary>
-/// <param name="registryUrl">Verdaccio 仓库地址（如 http://<verdaccio-host>:4873）。</param>
+/// <param name="registryUrl">Verdaccio 仓库地址（如 https://upm.solotopiax.com）。</param>
 /// <param name="packageName">UPM 包名。</param>
 /// <param name="version">目标版本号。</param>
 /// <param name="token">取消令牌。</param>
@@ -157,7 +157,7 @@ public static async Task<string> FetchChangelogAsync(string registryUrl, string 
 
 ### 安装前依赖预检与缺失库引导（CheckDependencies）
 
-触发时机：点击某包的「安装/更新」按钮时，`CheckDependencies` 立即执行，使用 `PlugPalsWindow` 打开时已 fetch 到内存的外网（4873）与内部云（4874）包列表做判定，**零额外联网**。
+触发时机：点击某包的「安装/更新」按钮时，`CheckDependencies` 立即执行，使用 `PlugPalsWindow` 打开时已 fetch 到内存的外网（upm.solotopiax.com）与内部云（4874）包列表做判定，**零额外联网**。
 
 判定数据源：目标包的 `dependencies` 字段（必须完整声明，不遗漏）。`nova.requiredLibraries` 仅作展示/提醒元数据（`displayName`、`purchaseUrl`），不参与命中判定。
 
@@ -211,19 +211,19 @@ BestHTTP 后端的依赖约定：
 ```csharp
 // CheckUpdate 内部用法示例
 VerdaccioPackageInfo[] remotePackages = await EditorUtil.PlugPals.FetchRemotePackagesAsync(
-    "http://<verdaccio-host>:4873",
+    "https://upm.solotopiax.com",
     "/-/verdaccio/data/packages",
     CancellationToken.None);
 
 List<EditorUtil.PlugPals.PackageDisplayEntry> entries =
-    EditorUtil.PlugPals.BuildDisplayEntries(remotePackages, "http://<verdaccio-host>:4873");
+    EditorUtil.PlugPals.BuildDisplayEntries(remotePackages, "https://upm.solotopiax.com");
 ```
 
 ### 拉取 CHANGELOG
 
 ```csharp
 string changelogPath = await EditorUtil.PlugPals.FetchChangelogAsync(
-    "http://<verdaccio-host>:4873",
+    "https://upm.solotopiax.com",
     "com.solotopia.nova.framework",
     "1.2.0",
     cancellationToken);
