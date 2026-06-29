@@ -16,10 +16,10 @@ using UnityEngine;
 namespace NovaFramework.SDK.FirebasePlugin.Editor
 {
     /// <summary>
-    /// Firebase 桌面核心原生库缺失检测与导入引导。
-    /// <para>开源仓为控制体积、且 Firebase 官方将桌面支持定位为「仅开发期 beta、不用于发布」，</para>
-    /// <para>未随包分发 x86_64 桌面核心库（FirebaseCppApp）。真机构建（Android / iOS）不依赖该库、不受影响；</para>
-    /// <para>仅在 Editor 中调试 Firebase 时需要，缺失时本类在 Console 与弹窗给出导入引导。</para>
+    /// Firebase 桌面核心原生库缺失检测与导入引导（LFS 兜底）。
+    /// <para>桌面核心库（FirebaseCppApp）现已由 Git LFS 承载、随开源仓分发，正常 clone 会自动 smudge 还原。</para>
+    /// <para>仅当用户未安装 Git LFS 客户端导致拿到指针文件、或手动删除了该库时，本类作为兜底在 Console 与弹窗给出补齐引导。</para>
+    /// <para>Firebase 官方将桌面支持定位为「仅开发期 beta、不用于发布」，真机构建（Android / iOS）不依赖该库、不受影响。</para>
     /// </summary>
     [InitializeOnLoad]
     internal static class FirebaseDesktopLibraryGuard
@@ -75,13 +75,16 @@ namespace NovaFramework.SDK.FirebasePlugin.Editor
             string message =
                 "检测到 Firebase 桌面（Editor）核心原生库缺失：\n" +
                 "  " + c_LibName + "\n\n" +
-                "该库是 Firebase 官方的 beta 桌面库（仅供 Editor 开发期模拟使用，官方明确不用于真机发布），" +
-                "因单文件体积超过 GitHub 100MB 限制、且属「仅开发用」性质，未随开源仓分发。\n" +
+                "该库现由 Git LFS 承载、随开源仓分发，正常 clone 会自动还原。本提示通常意味着：\n" +
+                "  · 你未安装 Git LFS 客户端，clone 时只拿到了指针文件而非真实内容；\n" +
+                "  · 或该库被手动删除。\n\n" +
+                "Firebase 官方将该桌面库定位为 beta（仅供 Editor 开发期模拟，不用于真机发布），" +
                 "真机构建（Android / iOS）不依赖该库，不受影响。\n\n" +
-                "若需在 Editor 中调试 Firebase 功能，请从 Firebase 官方 Unity SDK 补齐：\n" +
-                "  1. 下载：" + c_DownloadUrl + "\n" +
-                "  2. 解压后，在 Unity 中 Assets > Import Package > Custom Package 导入对应 .unitypackage；\n" +
-                "  3. 或手动将 SDK 内 Firebase/Plugins/x86_64/ 下的 FirebaseCppApp 桌面库拷回本包同名目录：\n" +
+                "补齐方式（任选其一）：\n" +
+                "  1. 安装 Git LFS 后在仓库根目录执行 git lfs pull，拉取真实内容；\n" +
+                "  2. 从 Firebase 官方 Unity SDK 补齐：" + c_DownloadUrl + "\n" +
+                "     解压后 Assets > Import Package > Custom Package 导入对应 .unitypackage；\n" +
+                "     或手动将 SDK 内 Firebase/Plugins/x86_64/ 下的 FirebaseCppApp 桌面库拷回：\n" +
                 "     " + libDir;
 
             Debug.LogWarning("[Nova][Firebase] " + message);

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.19] - 2026-06-29
+
+### Changed
+
+- Firebase 桌面核心原生库（`Firebase/Plugins/x86_64/FirebaseCppApp-*.bundle/.so/.dll`）改由 **Git LFS** 承载、随开源仓分发：正常 `git clone` 自动 smudge 还原，clone 即用，不再需要手动从官方 SDK 补齐。
+- `FirebaseDesktopLibraryGuard` 由「缺库即引导下载」改为「LFS 兜底」：仅在用户未安装 Git LFS 客户端（拿到指针文件）或手动删除该库时提示，引导首选 `git lfs pull`，次选官方 SDK 补齐。
+- 同步刷新 README 桌面库章节（中英双语）与本包 `.gitignore`/`.gitattributes` 注释，移除「未随开源仓分发 / 超 GitHub 100MB 限制」等已不成立的措辞。
+
 ## [0.0.18] - 2026-06-18
 
 ### Changed

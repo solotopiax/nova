@@ -1,7 +1,7 @@
 # Nova Framework - SDK - Firebase
 
 > 包名：`com.solotopia.nova.framework.sdk.firebase`
-> 当前版本：`0.0.15`
+> 当前版本：`0.0.19`
 
 Firebase 聚合插件，统一接入分析、崩溃、推送、远程配置
 
@@ -32,12 +32,12 @@ Firebase 聚合插件，统一接入分析、崩溃、推送、远程配置
 
 ## Firebase 桌面库说明 / Firebase Desktop Libraries
 
-为控制仓库体积、且 Firebase 官方将桌面支持定位为「仅开发期 beta、不用于发布」，本包**未随仓分发** Firebase 桌面（Editor）核心原生库 `FirebaseCppApp-*`（macOS `.bundle` / Linux `.so` / Windows `.dll`，位于 `Firebase/Plugins/x86_64/`）。
+Firebase 桌面（Editor）核心原生库 `FirebaseCppApp-*`（macOS `.bundle` / Linux `.so` / Windows `.dll`，位于 `Firebase/Plugins/x86_64/`）现由 **Git LFS** 承载、随开源仓分发。正常 `git clone` 会自动 smudge 还原为真实内容，无需额外操作。
 
 - **真机构建（Android / iOS）不依赖这些桌面库，不受任何影响。**
-- 仅当你需要在 **Editor 播放模式**下调试 Firebase 时才需要它们；缺失时 `FirebaseDesktopLibraryGuard` 会在 Console 与弹窗给出提示。
-- 补齐方式：从 [Firebase 官方 Unity SDK](https://firebase.google.com/download/unity) 下载解压，通过 `Assets > Import Package > Custom Package` 导入对应 `.unitypackage`；或手动将 SDK 内 `Firebase/Plugins/x86_64/` 下的 `FirebaseCppApp` 桌面库拷回本包同名目录。
+- Firebase 官方将桌面支持定位为「仅开发期 beta、不用于发布」，仅在 **Editor 播放模式**调试 Firebase 时需要。
+- 兜底：若未安装 Git LFS 客户端导致 clone 只拿到指针文件，`FirebaseDesktopLibraryGuard` 会在 Console 与弹窗提示补齐——执行 `git lfs pull`，或从 [Firebase 官方 Unity SDK](https://firebase.google.com/download/unity) 下载解压后通过 `Assets > Import Package > Custom Package` 导入 / 手动拷回同名目录。
 
 ---
 
-To keep the repository size down — and because Firebase officially treats desktop support as "development-only beta, not for shipping" — this package does **not** ship the Firebase desktop (Editor) core native libraries `FirebaseCppApp-*` (`.bundle` / `.so` / `.dll` under `Firebase/Plugins/x86_64/`). Device builds (Android / iOS) do not depend on them. To debug Firebase in the Editor, import them from the [official Firebase Unity SDK](https://firebase.google.com/download/unity); `FirebaseDesktopLibraryGuard` will prompt when they are missing.
+The Firebase desktop (Editor) core native libraries `FirebaseCppApp-*` (`.bundle` / `.so` / `.dll` under `Firebase/Plugins/x86_64/`) are now managed by **Git LFS** and shipped with the open-source repo. A normal `git clone` auto-smudges them into real content — no extra steps required. Device builds (Android / iOS) do not depend on them. Fallback: if you cloned without Git LFS installed and only got pointer files, `FirebaseDesktopLibraryGuard` will prompt — run `git lfs pull`, or import from the [official Firebase Unity SDK](https://firebase.google.com/download/unity).
