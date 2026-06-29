@@ -1,0 +1,24 @@
+﻿{
+  "Demo_Localization": [
+    {
+      "Name": "Demo_Greet",
+      "Value": "Hello"
+    },
+    {
+      "Name": "Demo_Confirm",
+      "Value": "Confirm"
+    },
+    {
+      "Name": "Demo_Cancel",
+      "Value": "Cancel"
+    },
+    {
+      "Name": "Demo_Toast_Tip",
+      "Value": "Demo Tip"
+    },
+    {
+      "Name": "Demo_Switch_Lang",
+      "Value": "Switch Language"
+    }
+  ]
+}

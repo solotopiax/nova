@@ -1,0 +1,22 @@
+{
+    "name": "NovaFramework.SDK.AppleSignIn.EditorTests",
+    "rootNamespace": "NovaFramework.SDK.AppleSignIn.Tests.Editor",
+    "references": [
+        "NovaFramework.Runtime",
+        "NovaFramework.SDK.AppleSignIn.Runtime",
+        "UniTask"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

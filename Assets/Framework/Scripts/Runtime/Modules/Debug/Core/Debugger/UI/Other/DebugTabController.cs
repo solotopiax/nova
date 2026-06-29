@@ -29,6 +29,14 @@ namespace NovaFramework.Runtime
 
         [RequiredField] public Text TabHeaderText;
 
+        public Sprite ConsoleIcon;
+
+        public Sprite OptionsIcon;
+
+        public Sprite ProfilerIcon;
+
+        public Sprite SystemIcon;
+
         public DebugTab ActiveTab
         {
             get { return _activeTab; }
@@ -60,9 +68,9 @@ namespace NovaFramework.Runtime
                     extraContent.SetParent(button.ExtraContentContainer, false);
                 }
 
+                button.SetIcon(GetIconForTab(tab));
                 button.IsActive = false;
-                button.IconStyleComponent.StyleKey = tab.IconStyleKey;
-                button.IconStyleComponent.Refresh(true);
+                button.RefreshVisualState();
 
                 button.Button.onClick.AddListener(() => MakeActive(tab));
 
@@ -78,6 +86,23 @@ namespace NovaFramework.Runtime
             }
         }
 
+
+        private Sprite GetIconForTab(DebugTab tab)
+        {
+            switch (tab.IconStyleKey)
+            {
+                case "Icon_Console":
+                    return ConsoleIcon;
+                case "Icon_Options":
+                    return OptionsIcon;
+                case "Icon_Profiler":
+                    return ProfilerIcon;
+                case "Icon_System":
+                    return SystemIcon;
+                default:
+                    return null;
+            }
+        }
         private void MakeActive(DebugTab tab)
         {
             if (!_tabs.Contains(tab))

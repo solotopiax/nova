@@ -111,8 +111,7 @@ namespace NovaFramework.Editor
                         var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(regionDirPath, settings, c_TargetName, c_ManagerName);
                         ctx.RegionUnits = units;
                         ctx.OutputCodeDir = classExportPath;
-                        EditorUtil.Luban.Pipeline.ExportAll(ctx);
-                        return true;
+                        return EditorUtil.Luban.Pipeline.ExportAll(ctx);
                     }
                     finally
                     {
@@ -145,8 +144,7 @@ namespace NovaFramework.Editor
                         var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(regionDirPath, settings, c_TargetName, c_ManagerName);
                         ctx.RegionUnits = units;
                         ctx.OutputCodeDir = classExportPath;
-                        EditorUtil.Luban.Pipeline.ExportCode(ctx);
-                        return true;
+                        return EditorUtil.Luban.Pipeline.ExportCode(ctx);
                     }
                     finally
                     {
@@ -177,8 +175,7 @@ namespace NovaFramework.Editor
                         NetworkExcelPreFilter.FilterAll(regionDirPath, tempDir);
                         var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(regionDirPath, settings, c_TargetName, c_ManagerName);
                         ctx.RegionUnits = units;
-                        EditorUtil.Luban.Pipeline.ExportData(ctx);
-                        return true;
+                        return EditorUtil.Luban.Pipeline.ExportData(ctx);
                     }
                     finally
                     {

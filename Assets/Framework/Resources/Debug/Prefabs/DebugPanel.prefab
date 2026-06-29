@@ -209,6 +209,10 @@ MonoBehaviour:
   TabContentsContainer: {fileID: 22408644}
   TabHeaderContentContainer: {fileID: 22493820}
   TabHeaderText: {fileID: 11408732}
+  ConsoleIcon: {fileID: 21300000, guid: b07075cb163d9b8489a1ee90ce068409, type: 3}
+  OptionsIcon: {fileID: 21300000, guid: 76eac9450dc776147b628586aac2b0d0, type: 3}
+  ProfilerIcon: {fileID: 21300000, guid: b5b46026463fb334bb8a3b95b303b224, type: 3}
+  SystemIcon: {fileID: 21300000, guid: 4ea5932536416924bab8eb9b5bab3874, type: 3}
 --- !u!114 &11408648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -230,7 +234,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 108648}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3cc3afaacd56e9b4f9f2b6201ec85267, type: 3}
   m_Name: 
@@ -731,7 +735,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 108664}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 395e9c70b6db8df408e038114524cc0b, type: 3}
   m_Name: 
@@ -2110,7 +2114,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.015686275, g: 0.19607843, b: 0.3882353, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2280,8 +2284,8 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 0.25882354, g: 0.25882354, b: 0.25882354, a: 0}
     m_HighlightedColor: {r: 0.3254902, g: 0.3254902, b: 0.3254902, a: 1}
-    m_PressedColor: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
-    m_SelectedColor: {r: 0.3254902, g: 0.3254902, b: 0.3254902, a: 1}
+    m_PressedColor: {r: 0.015686275, g: 0.19607843, b: 0.3882353, a: 1}
+    m_SelectedColor: {r: 0.015686275, g: 0.19607843, b: 0.3882353, a: 1}
     m_DisabledColor: {r: 0.25882354, g: 0.25882354, b: 0.25882354, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -2340,7 +2344,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 112432}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73ae1b6eac706814a9cd427288a3c5c9, type: 3}
   m_Name: 
@@ -2410,9 +2414,9 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 0.25882354, g: 0.25882354, b: 0.25882354, a: 0}
-    m_HighlightedColor: {r: 0.3254902, g: 0.3254902, b: 0.3254902, a: 1}
-    m_PressedColor: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
-    m_SelectedColor: {r: 0.3254902, g: 0.3254902, b: 0.3254902, a: 1}
+    m_HighlightedColor: {r: 0.32156864, g: 0.32156864, b: 0.32156864, a: 1}
+    m_PressedColor: {r: 0.015686275, g: 0.19607843, b: 0.3882353, a: 1}
+    m_SelectedColor: {r: 0.015686275, g: 0.19607843, b: 0.3882353, a: 1}
     m_DisabledColor: {r: 0.25882354, g: 0.25882354, b: 0.25882354, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -2487,7 +2491,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 117650}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73ae1b6eac706814a9cd427288a3c5c9, type: 3}
   m_Name: 
@@ -2517,8 +2521,8 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 0.25882354, g: 0.25882354, b: 0.25882354, a: 0}
     m_HighlightedColor: {r: 0.3254902, g: 0.3254902, b: 0.3254902, a: 1}
-    m_PressedColor: {r: 0.15294118, g: 0.15294118, b: 0.15294118, a: 1}
-    m_SelectedColor: {r: 0.3254902, g: 0.3254902, b: 0.3254902, a: 1}
+    m_PressedColor: {r: 0.015686275, g: 0.19607843, b: 0.3882353, a: 1}
+    m_SelectedColor: {r: 0.015686275, g: 0.19607843, b: 0.3882353, a: 1}
     m_DisabledColor: {r: 0.25882354, g: 0.25882354, b: 0.25882354, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -2754,7 +2758,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.015686275, g: 0.19607843, b: 0.3882353, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

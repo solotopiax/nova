@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "GoogleSigninDemo",
+      "description": "com.solotopia.nova.framework.sdk.googlesignin 演示示例：BaseDemoView 三段式骨架的 sample 工程",
+      "sampleName": "GoogleSigninDemo",
+      "sourceDir": "Assets/Samples/GoogleSigninDemo",
+      "expectedNamespace": "NovaFramework.Sdk.Googlesignin.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/GoogleSigninDemo"
+    }
+  ]
+}

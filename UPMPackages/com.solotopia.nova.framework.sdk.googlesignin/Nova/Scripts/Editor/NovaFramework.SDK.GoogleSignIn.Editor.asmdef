@@ -1,0 +1,20 @@
+{
+    "name": "NovaFramework.SDK.GoogleSignIn.Editor",
+    "rootNamespace": "",
+    "references": [
+        "NovaFramework.Runtime",
+        "NovaFramework.Editor",
+        "NovaFramework.SDK.GoogleSignIn.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

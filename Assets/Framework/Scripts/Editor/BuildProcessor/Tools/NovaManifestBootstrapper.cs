@@ -23,7 +23,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// Activity configChanges 常量，覆盖所有常见配置变化类型。
         /// </summary>
-        private const string c_ConfigChanges = "fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen";
+        public const string c_ConfigChanges = "fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen";
 
         /// <summary>
         /// 将 PlayerSettings 中的动态构建参数注入到指定的 CustomAndroidManifest 实例。

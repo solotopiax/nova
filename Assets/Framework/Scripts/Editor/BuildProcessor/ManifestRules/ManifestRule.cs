@@ -29,6 +29,11 @@ namespace NovaFramework.Editor
         /// 已存在时合并属性，不存在时新增。
         /// </summary>
         Merge,
+
+        /// <summary>
+        /// 存在时删除节点。
+        /// </summary>
+        Remove,
     }
 
     /// <summary>
@@ -239,6 +244,16 @@ namespace NovaFramework.Editor
         /// activity 的 android:exported 属性值；为 null 时不写入该属性。
         /// </summary>
         public bool? Exported;
+
+        /// <summary>
+        /// activity 的 android:configChanges 属性值；为 null 时不写入该属性。
+        /// </summary>
+        public string ConfigChanges;
+
+        /// <summary>
+        /// activity 的 android:theme 属性值；为 null 时不写入该属性。
+        /// </summary>
+        public string Theme;
 
         /// <summary>
         /// 该 activity 节点下的 intent-filter 规则数组。

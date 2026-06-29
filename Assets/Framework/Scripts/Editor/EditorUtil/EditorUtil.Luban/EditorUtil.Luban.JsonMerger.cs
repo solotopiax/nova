@@ -129,21 +129,48 @@ namespace NovaFramework.Editor
                     foreach (XmlNode node in tables)
                     {
                         string input = node.Attributes?["input"]?.Value ?? "";
-                        int atIndex = input.IndexOf('@');
-                        string sheetName = atIndex >= 0 ? input.Substring(0, atIndex) : "";
-                        string filePart = atIndex >= 0 ? input.Substring(atIndex + 1) : input;
-
-                        if (NormalizePath(filePart) == normalizedInputPath)
+                        if (!TryGetMatchedSheetName(input, normalizedInputPath, out string sheetName))
                         {
-                            string tableName = node.Attributes?["name"]?.Value ?? "";
-                            if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(sheetName))
-                            {
-                                result[tableName] = sheetName;
-                            }
+                            continue;
+                        }
+
+                        string tableName = node.Attributes?["name"]?.Value ?? "";
+                        if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(sheetName))
+                        {
+                            result[tableName] = sheetName;
                         }
                     }
 
                     return result;
+                }
+
+                /// <summary>
+                /// 从 table input 中匹配单元路径并提取 Sheet 名。
+                /// </summary>
+                /// <param name="input">__tables__.xml 的 input 值。</param>
+                /// <param name="normalizedInputPath">单元 Luban 输入路径。</param>
+                /// <param name="sheetName">匹配到的 Sheet 名。</param>
+                /// <returns>是否匹配。</returns>
+                private static bool TryGetMatchedSheetName(string input, string normalizedInputPath, out string sheetName)
+                {
+                    sheetName = "";
+                    int atIndex = input.IndexOf('@');
+                    if (atIndex >= 0)
+                    {
+                        sheetName = input.Substring(0, atIndex);
+                        string filePart = input.Substring(atIndex + 1);
+                        return NormalizePath(filePart) == normalizedInputPath;
+                    }
+
+                    string normalizedInput = NormalizePath(input);
+                    string normalizedDir = normalizedInputPath.TrimEnd('/');
+                    if (!normalizedInput.StartsWith(normalizedDir + "/", StringComparison.Ordinal))
+                    {
+                        return false;
+                    }
+
+                    sheetName = Util.SysIO.Path.GetFileNameWithoutExtension(normalizedInput);
+                    return !string.IsNullOrEmpty(sheetName);
                 }
 
                 /// <summary>

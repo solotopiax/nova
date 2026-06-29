@@ -1,0 +1,12 @@
+{
+  "UI1": [
+    {
+      "Name": "DemoGoogleSigninView",
+      "Desc": "GoogleSignin 演示 Demo 视图",
+      "AssetLocation": "DemoGoogleSigninView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    }
+  ]
+}

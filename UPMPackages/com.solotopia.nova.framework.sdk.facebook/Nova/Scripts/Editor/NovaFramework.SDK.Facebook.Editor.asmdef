@@ -1,0 +1,23 @@
+{
+    "name": "NovaFramework.SDK.Facebook.Editor",
+    "rootNamespace": "",
+    "references": [
+        "NovaFramework.Runtime",
+        "NovaFramework.Editor",
+        "NovaFramework.SDK.Facebook.Runtime",
+        "GUID:08462833fafe743b8bd59914b9f52696",
+        "GUID:c49f2b3ca212b47fc9cd8ce655177c89",
+        "GUID:137a102f808364a0fb444bedefe2575d"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

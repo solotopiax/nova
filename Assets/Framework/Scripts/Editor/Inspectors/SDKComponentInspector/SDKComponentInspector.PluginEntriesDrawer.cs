@@ -23,7 +23,7 @@ namespace NovaFramework.Editor
         /// 职责：
         ///   1. 反射扫描所有非抽象 ISDKPlugin 实现类（含跨程序集）
         ///   2. 与序列化的 m_PluginEntries 做双向同步（新增 append / 缺失标 IsMissing）
-        ///   3. 按接口族分组，每族一行 Popup 单选（对齐 TypesSelector 视觉风格）
+        ///   3. 按接口族分组，每族一行 Popup 单选（对齐 TypesSelector 视觉风格）；账号登录族例外，为可复选下拉框
         ///   4. Missing 区域：红色警告 + "清理所有 Missing"按钮（逆序 DeleteArrayElementAtIndex）
         /// </summary>
         internal sealed class PluginEntriesDrawer : IDisposable
@@ -284,8 +284,8 @@ namespace NovaFramework.Editor
             #region Draw Methods
 
             /// <summary>
-            /// 按接口族分组，每族一行 Popup 单选，对齐 TypesSelector 视觉风格。
-            /// 选中项 Enabled=true，同族其余条目 Enabled=false。
+            /// 按接口族分组绘制：除账号登录族走可复选下拉框外，其余各族一行 Popup 单选，对齐 TypesSelector 视觉风格。
+            /// 单选族选中项 Enabled=true，同族其余条目 Enabled=false；账号登录族不互斥，可同时启用多个。
             /// </summary>
             /// <param name="entriesProp">m_PluginEntries 的 SerializedProperty。</param>
             /// <param name="so">持有 entriesProp 的 SerializedObject。</param>
@@ -299,7 +299,7 @@ namespace NovaFramework.Editor
                 DrawGroupSelector("变现埋点", entriesProp, entries, so, IsMonetizeTrackPlugin);
                 DrawGroupSelector("广告", entriesProp, entries, so, IsAdPlugin);
                 DrawGroupSelector("归因埋点", entriesProp, entries, so, IsAttributionPlugin);
-                DrawGroupSelector("账号登录", entriesProp, entries, so, IsAccountPlugin);
+                DrawAccountMultiSelect(entriesProp, entries, so);
                 DrawGroupSelector("云服务", entriesProp, entries, so, IsCloudPlugin);
                 DrawGroupSelector("支付", entriesProp, entries, so, IsIAPPlugin);   
             }
@@ -379,6 +379,89 @@ namespace NovaFramework.Editor
                         entryProp.FindPropertyRelative("Enabled").boolValue = (newPopupIndex > 0 && i == newPopupIndex - 1);
                     }
                     so.ApplyModifiedProperties();
+                }
+
+                EditorGUILayout.EndHorizontal();
+                EditorGUI.EndDisabledGroup();
+            }
+
+            /// <summary>
+            /// 绘制"账号登录"族的可复选下拉框。
+            /// 外观与单选族的下拉 Popup 一致，但点击后弹出带勾选标记的 GenericMenu，可同时勾选多个登录渠道
+            /// （Google + Facebook + Apple 共存），不互斥。按钮上显示已启用渠道的逗号摘要，全不勾显示"无"。
+            /// 其余族维持单选语义不变。
+            /// </summary>
+            /// <param name="entriesProp">m_PluginEntries 属性。</param>
+            /// <param name="entries">运行时 Entry 只读列表（含 IsMissing 标记）。</param>
+            /// <param name="so">持有 entriesProp 的 SerializedObject。</param>
+            private static void DrawAccountMultiSelect(SerializedProperty entriesProp, IReadOnlyList<SDKPluginEntry> entries, SerializedObject so)
+            {
+                // 收集账号族所有有效（非 Missing）条目。
+                var groupIndices = new List<int>();
+                var groupTypes = new List<Type>();
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    SDKPluginEntry entry = entries[i];
+                    if (entry == null || entry.IsMissing) continue;
+                    Type t = Type.GetType(entry.TypeName);
+                    if (t != null && IsAccountPlugin(t))
+                    {
+                        groupIndices.Add(i);
+                        groupTypes.Add(t);
+                    }
+                }
+
+                EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("账号登录", GUILayout.Width(180f));
+
+                if (groupIndices.Count == 0)
+                {
+                    // 该族无任何已安装的 Plugin，展示禁用的"无"占位，提示用户安装对应 UPM 包。
+                    EditorGUI.BeginDisabledGroup(true);
+                    EditorGUILayout.DropdownButton(GUIContent.none, FocusType.Passive);
+                    EditorGUI.EndDisabledGroup();
+                }
+                else
+                {
+                    // 摘要：已启用渠道的短类名，逗号分隔；无则显示"无"。
+                    var enabledShortNames = new List<string>();
+                    for (int i = 0; i < groupIndices.Count; i++)
+                    {
+                        SerializedProperty entryProp = entriesProp.GetArrayElementAtIndex(groupIndices[i]);
+                        if (entryProp.FindPropertyRelative("Enabled").boolValue)
+                        {
+                            enabledShortNames.Add(ExtractShortName(groupTypes[i].AssemblyQualifiedName));
+                        }
+                    }
+                    string summary = enabledShortNames.Count > 0
+                        ? string.Join(", ", enabledShortNames)
+                        : "无";
+
+                    // 下拉按钮：点击后弹出可复选菜单。菜单关闭后由 GenericMenu 回调逐条写回 Enabled。
+                    GUIContent buttonContent = new GUIContent(summary);
+                    Rect buttonRect = EditorGUILayout.GetControlRect(false, GUILayout.ExpandWidth(true));
+                    if (EditorGUI.DropdownButton(buttonRect, buttonContent, FocusType.Passive))
+                    {
+                        var menu = new GenericMenu();
+                        for (int i = 0; i < groupIndices.Count; i++)
+                        {
+                            SerializedProperty entryProp = entriesProp.GetArrayElementAtIndex(groupIndices[i]);
+                            SerializedProperty enabledProp = entryProp.FindPropertyRelative("Enabled");
+                            string shortName = ExtractShortName(groupTypes[i].AssemblyQualifiedName);
+                            bool current = enabledProp.boolValue;
+
+                            // 闭包捕获 index，避免循环变量复用问题；Lambda 在菜单项被点击时执行翻转。
+                            int capturedIndex = i;
+                            menu.AddItem(new GUIContent(shortName), current, () =>
+                            {
+                                SerializedProperty ep = entriesProp.GetArrayElementAtIndex(groupIndices[capturedIndex]);
+                                ep.FindPropertyRelative("Enabled").boolValue = !ep.FindPropertyRelative("Enabled").boolValue;
+                                so.ApplyModifiedProperties();
+                            });
+                        }
+                        menu.DropDown(buttonRect);
+                    }
                 }
 
                 EditorGUILayout.EndHorizontal();

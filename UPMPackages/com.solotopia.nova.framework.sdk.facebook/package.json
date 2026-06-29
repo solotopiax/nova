@@ -1,15 +1,29 @@
 {
-    "name": "com.solotopia.nova.framework.sdk.facebook",
-    "version": "0.0.3",
-    "license": "MIT",
-    "coreVersion": "0.0.1",
-    "displayName": "Nova Framework - SDK - Facebook",
-    "description": "Facebook 登录插件，提供社交账号认证服务",
-    "category": "Runtime",
-    "unity": "2021.3",
-    "keywords": ["nova", "sdk", "facebook", "auth", "login"],
-    "author": { "name": "Solotopia" },
-    "dependencies": {
-        "com.solotopia.nova.framework": "0.5.31"
-    }
+  "name": "com.solotopia.nova.framework.sdk.facebook",
+  "version": "0.0.4",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "coreVersion": "18.0.0",
+  "displayName": "Nova Framework - SDK - Facebook",
+  "description": "Facebook SDK plugin package. Contains the official Facebook Unity SDK core files and Nova integration skeleton.",
+  "category": "Runtime",
+  "unity": "6000.4",
+  "keywords": [
+    "nova",
+    "sdk",
+    "facebook",
+    "auth",
+    "login",
+    "analytics",
+    "sharing"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
+  "assemblies": [
+    "NovaFramework.SDK.Facebook.Runtime"
+  ],
+  "dependencies": {
+    "com.solotopia.nova.framework": "0.5.31",
+    "com.google.external-dependency-manager": "1.2.186"
+  }
 }

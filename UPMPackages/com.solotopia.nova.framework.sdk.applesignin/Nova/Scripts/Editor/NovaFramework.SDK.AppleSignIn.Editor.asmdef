@@ -1,0 +1,21 @@
+{
+    "name": "NovaFramework.SDK.AppleSignIn.Editor",
+    "rootNamespace": "",
+    "references": [
+        "NovaFramework.Runtime",
+        "NovaFramework.Editor",
+        "NovaFramework.SDK.AppleSignIn.Runtime",
+        "AppleAuth.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

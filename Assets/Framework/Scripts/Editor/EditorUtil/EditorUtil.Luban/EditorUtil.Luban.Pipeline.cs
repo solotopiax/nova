@@ -126,13 +126,19 @@ namespace NovaFramework.Editor
                             return false;
                         }
 
+                        bool mergeSuccess;
                         if (ctx.TargetUnit != null)
                         {
-                            JsonMerger.MergeForUnit(tempDir, ctx.TablesXmlPath, ctx.TargetUnit, ctx.TopModule);
+                            mergeSuccess = JsonMerger.MergeForUnit(tempDir, ctx.TablesXmlPath, ctx.TargetUnit, ctx.TopModule);
                         }
                         else
                         {
-                            JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.EffectiveUnits, ctx.TopModule);
+                            mergeSuccess = JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.EffectiveUnits, ctx.TopModule);
+                        }
+
+                        if (!mergeSuccess)
+                        {
+                            return false;
                         }
 
                         return true;
@@ -219,7 +225,10 @@ namespace NovaFramework.Editor
                         }
 
                         Dictionary<string, int> dataResults = new Dictionary<string, int>();
-                        JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.EffectiveUnits, ctx.TopModule, dataResults);
+                        if (!JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.EffectiveUnits, ctx.TopModule, dataResults))
+                        {
+                            return false;
+                        }
                         Dictionary<string, int> mapPropResults = MapPropGen.GenerateAll(ctx.EffectiveUnits, ctx.TopModule);
 
                         Dictionary<string, string> codeFiles = hasCodeDir ? CliRunner.GetGeneratedCodeFiles(ctx.OutputCodeDir, ctx.RelevantFileNames) : null;

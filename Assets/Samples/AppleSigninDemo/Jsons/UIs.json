@@ -1,0 +1,12 @@
+{
+  "UI1": [
+    {
+      "Name": "DemoAppleSigninView",
+      "Desc": "AppleSignin 演示 Demo 视图",
+      "AssetLocation": "DemoAppleSigninView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    }
+  ]
+}

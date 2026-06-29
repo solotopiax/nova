@@ -17,4 +17,5 @@
   <assembly fullname="NovaFramework.Kit.Network.GameSave.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.FirebasePlugin.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.Kit.Network.GameLogin.Runtime" preserve="all" />
+  <assembly fullname="NovaFramework.BestHTTP.Runtime" preserve="all" />
 </linker>

@@ -178,6 +178,35 @@ namespace NovaFramework.Editor
         private string BoolToString(bool exported) => exported ? "true" : "false";
 
         /// <summary>
+        /// 设置或追加 android 命名空间属性。
+        /// </summary>
+        /// <param name="node">目标节点。</param>
+        /// <param name="key">属性名。</param>
+        /// <param name="value">属性值。</param>
+        private void SetOrAppendAndroidAttribute(XmlNode node, string key, string value)
+        {
+            if (string.IsNullOrEmpty(value)) return;
+            var attr = node.Attributes?[$"android:{key}"];
+            if (attr != null)
+                attr.Value = value;
+            else
+                node.Attributes?.Append(CreateAndroidAttribute(key, value));
+        }
+
+        /// <summary>
+        /// 设置 Activity 专属属性。
+        /// </summary>
+        /// <param name="node">activity 节点。</param>
+        /// <param name="rule">activity 规则。</param>
+        private void ApplyActivityAttributes(XmlNode node, ActivityRule rule)
+        {
+            if (rule.Exported.HasValue)
+                SetOrAppendAndroidAttribute(node, "exported", BoolToString(rule.Exported.Value));
+            SetOrAppendAndroidAttribute(node, "configChanges", rule.ConfigChanges);
+            SetOrAppendAndroidAttribute(node, "theme", rule.Theme);
+        }
+
+        /// <summary>
         /// 在指定节点上按 Mode 设置 tools:node 属性，或依据 mode 推导默认值。
         /// </summary>
         /// <param name="node">目标节点。</param>
@@ -376,6 +405,12 @@ namespace NovaFramework.Editor
                 XmlNode existing = rule.UseMainActivity
                     ? GetActivityWithLaunchIntent()
                     : FindChildByAndroidName(m_ApplicationElement, "activity", rule.Name);
+                if (rule.Mode == ManifestRuleMode.Remove)
+                {
+                    if (existing != null)
+                        m_ApplicationElement.RemoveChild(existing);
+                    continue;
+                }
                 if (rule.Mode == ManifestRuleMode.Replace && existing != null)
                 {
                     m_ApplicationElement.RemoveChild(existing);
@@ -385,22 +420,14 @@ namespace NovaFramework.Editor
                 {
                     var node = CreateElement("activity");
                     node.Attributes.Append(CreateAndroidAttribute("name", rule.Name));
-                    if (rule.Exported.HasValue)
-                        node.Attributes.Append(CreateAndroidAttribute("exported", BoolToString(rule.Exported.Value)));
+                    ApplyActivityAttributes(node, rule);
                     ApplyToolsNode(node, rule);
                     ApplyIntentFilters(node, rule.IntentFilters);
                     m_ApplicationElement.AppendChild(node);
                 }
                 else if (rule.Mode == ManifestRuleMode.Merge)
                 {
-                    if (rule.Exported.HasValue)
-                    {
-                        var expAttr = existing.Attributes?["android:exported"];
-                        if (expAttr != null)
-                            expAttr.Value = BoolToString(rule.Exported.Value);
-                        else
-                            existing.Attributes?.Append(CreateAndroidAttribute("exported", BoolToString(rule.Exported.Value)));
-                    }
+                    ApplyActivityAttributes(existing, rule);
                     ApplyToolsNode(existing, rule);
                     ApplyIntentFilters(existing, rule.IntentFilters);
                 }

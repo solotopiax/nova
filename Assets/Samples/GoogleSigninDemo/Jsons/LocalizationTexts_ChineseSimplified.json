@@ -1,0 +1,24 @@
+﻿{
+  "Demo_Localization": [
+    {
+      "Name": "Demo_Greet",
+      "Value": "你好"
+    },
+    {
+      "Name": "Demo_Confirm",
+      "Value": "确定"
+    },
+    {
+      "Name": "Demo_Cancel",
+      "Value": "取消"
+    },
+    {
+      "Name": "Demo_Toast_Tip",
+      "Value": "演示提示"
+    },
+    {
+      "Name": "Demo_Switch_Lang",
+      "Value": "切换语言"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "AppleSigninDemo",
+      "description": "com.solotopia.nova.framework.sdk.applesignin 演示示例：BaseDemoView 三段式骨架的 sample 工程",
+      "sampleName": "AppleSigninDemo",
+      "sourceDir": "Assets/Samples/AppleSigninDemo",
+      "expectedNamespace": "NovaFramework.Sdk.Applesignin.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/AppleSigninDemo"
+    }
+  ]
+}

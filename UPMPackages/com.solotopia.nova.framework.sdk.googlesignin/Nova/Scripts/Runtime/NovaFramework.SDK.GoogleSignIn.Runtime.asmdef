@@ -1,0 +1,17 @@
+{
+    "name": "NovaFramework.SDK.GoogleSignIn.Runtime",
+    "rootNamespace": "NovaFramework.SDK.GoogleSignIn",
+    "references": [
+        "NovaFramework.Runtime",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

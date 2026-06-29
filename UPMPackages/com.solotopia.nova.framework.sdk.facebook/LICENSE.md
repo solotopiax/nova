@@ -1,38 +1,32 @@
+# License Notice
+
+This file describes the license boundary of `com.solotopia.nova.framework.sdk.facebook`. It does not re-license the whole package as a single Solotopia MIT package.
+
+## License Boundary
+
+| Path | Ownership / source | License and obligations |
+|---|---|---|
+| `Nova/**` | Solotopia / Nova adapter layer | Solotopia / Nova MIT License below. |
+| Root package metadata and docs authored by Solotopia, including `package.json`, `README.md`, `CHANGELOG.md`, `LICENSE.md`, and `THIRD_PARTY_NOTICES.md` | Solotopia / Nova UPM packaging and documentation | Solotopia / Nova MIT License below. |
+| `Core/FacebookSDK/**` | Upstream Facebook Unity SDK material | Upstream Facebook SDK license, platform terms, developer policies, and notice requirements. See `Core/FacebookSDK/LICENSE.txt`. |
+| `Core/Editor/DisableBitcode.cs` | Imported with the Facebook SDK package | Treated as upstream SDK material unless replaced by a Solotopia-owned implementation. |
+
+The Solotopia / Nova MIT License does not override the original license, policy, EULA, trademark, or third-party notice chain for content under `Core/**`.
+
+## Solotopia / Nova MIT License
+
 MIT License
 
 Copyright (c) 2026 Solotopia
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of the Solotopia-authored package layer and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Solotopia-authored package layer.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+## Redistribution Notes
 
-# MIT 许可证（中文翻译，仅供参考，以上方英文版本为准）
-
-版权所有 (c) 2026 Solotopia
-
-特此免费授予任何获得本软件及相关文档文件（“软件”）副本的人不受限制地处置本软件
-的权利，包括但不限于使用、复制、修改、合并、发布、分发、再许可和/或销售本软件副本
-的权利，并允许获得本软件的人在符合以下条件的前提下这样做：
-
-上述版权声明和本许可声明应包含在本软件的所有副本或重要部分中。
-
-本软件按“原样”提供，不提供任何形式的明示或暗示担保，包括但不限于对适销性、特定
-用途适用性和非侵权性的担保。在任何情况下，作者或版权持有人均不对任何索赔、损害或
-其他责任负责，无论是在合同诉讼、侵权行为还是其他方面，由本软件或本软件的使用或其
-他交易引起、产生或与之相关。
+- Public distribution must retain `LICENSE.md`, `THIRD_PARTY_NOTICES.md`, and `Core/FacebookSDK/LICENSE.txt`.
+- Do not describe this package as a pure MIT package. It combines Solotopia-authored MIT content with upstream Facebook SDK content.
+- Recheck the current Facebook SDK license, platform policies, developer terms, App Review requirements, and trademark usage requirements at release time.

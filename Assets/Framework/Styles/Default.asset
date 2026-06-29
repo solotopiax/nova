@@ -167,7 +167,7 @@ MonoBehaviour:
     DisabledColor: {r: 1, g: 1, b: 1, a: 1}
     HoverColor: {r: 1, g: 1, b: 1, a: 1}
     Image: {fileID: 0}
-    NormalColor: {r: 0.17254902, g: 0.17254902, b: 0.17254902, a: 0.78431374}
+    NormalColor: {r: 0, g: 0.101960786, b: 0.23137255, a: 1}
   - ActiveColor: {r: 1, g: 1, b: 1, a: 1}
     DisabledColor: {r: 1, g: 1, b: 1, a: 1}
     HoverColor: {r: 1, g: 1, b: 1, a: 1}

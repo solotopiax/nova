@@ -1,0 +1,21 @@
+{
+  "Launcher_Localization": [
+    { "Name": "Downloading", "Value": "Downloading......" },
+    { "Name": "TitleForcedDownload", "Value": "Update Required" },
+    { "Name": "ContentForcedDownload", "Value": "A new version is available. Please update to continue." },
+    { "Name": "ConfirmForcedDownload", "Value": "Update Now" },
+    { "Name": "CancelForcedDownload", "Value": "Exit Game" },
+    { "Name": "TitleRecommendedDownload", "Value": "Update Available" },
+    { "Name": "ContentRecommendedDownload", "Value": "A new version is available. Would you like to update now?" },
+    { "Name": "ConfirmRecommendedDownload", "Value": "Update Now" },
+    { "Name": "CancelRecommendedDownload", "Value": "Later" },
+    { "Name": "TitleHotfixFailed", "Value": "Update Failed" },
+    { "Name": "ContentHotfixFailed", "Value": "Update Failed, Try Again?" },
+    { "Name": "ConfirmHotfixFailed", "Value": "Retry" },
+    { "Name": "CancelHotfixFailed", "Value": "Exit Game" },
+    { "Name": "TitlePreloadFailed", "Value": "Preload Failed" },
+    { "Name": "ContentPreloadFailed", "Value": "Preload Failed, Try Again?" },
+    { "Name": "ConfirmPreloadFailed", "Value": "Retry" },
+    { "Name": "CancelPreloadFailed", "Value": "Exit" }
+  ]
+}

@@ -1,0 +1,46 @@
+﻿{
+  "LocalizationFonts": [
+    {
+      "Language": "ChineseSimplified",
+      "Mark": "Main",
+      "AssetLocation": "Font_CN_Regular",
+      "MaterialName": "",
+      "FontSizeScaleRatio": 1
+    },
+    {
+      "Language": "ChineseSimplified",
+      "Mark": "Title",
+      "AssetLocation": "Font_CN_Bold",
+      "MaterialName": "",
+      "FontSizeScaleRatio": 1.1
+    },
+    {
+      "Language": "ChineseSimplified",
+      "Mark": "Special",
+      "AssetLocation": "Font_CN_Outline",
+      "MaterialName": "Mat_CN_Outline",
+      "FontSizeScaleRatio": 1
+    },
+    {
+      "Language": "English",
+      "Mark": "Main",
+      "AssetLocation": "Font_EN_Regular",
+      "MaterialName": "",
+      "FontSizeScaleRatio": 1
+    },
+    {
+      "Language": "English",
+      "Mark": "Title",
+      "AssetLocation": "Font_EN_Bold",
+      "MaterialName": "",
+      "FontSizeScaleRatio": 1.05
+    },
+    {
+      "Language": "English",
+      "Mark": "Special",
+      "AssetLocation": "Font_EN_Outline",
+      "MaterialName": "Mat_EN_Outline",
+      "FontSizeScaleRatio": 0.9
+    }
+  ]
+}

@@ -1,10 +1,17 @@
 # Changelog — com.solotopia.nova.framework
 
+## [0.5.32] - 2026-06-19
+
+### Changed
+
+- PlugPals 公共仓库默认地址恢复为公网 `https://upm.solotopiax.com`（`c_DefaultExternalUrl` 常量与 nova-publish 技能默认值同步切回公网；内网云 `4874` 不受影响）。
+- 随上轮 Debug 面板、BuildProcessor、EditorUtil.Luban/Network 等已提交改动一并发版。
+
 ## [0.5.31] - 2026-06-18
 
 ### Changed
 
-- PlugPals 公共仓库默认地址暂定为内网 IP（`http://172.16.22.175:4873`）；后续公网 IP 很快开放，敬请期待。
+- PlugPals 公共仓库默认地址恢复为公网 `https://upm.solotopiax.com`。
 
 ## [0.5.30] - 2026-06-18
 

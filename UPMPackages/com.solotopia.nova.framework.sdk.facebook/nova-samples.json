@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "FacebookDemo",
+      "description": "com.solotopia.nova.framework.sdk.facebook 演示示例：BaseDemoView 三段式骨架的 sample 工程",
+      "sampleName": "FacebookDemo",
+      "sourceDir": "Assets/Samples/FacebookDemo",
+      "expectedNamespace": "NovaFramework.Sdk.Facebook.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/FacebookDemo"
+    }
+  ]
+}

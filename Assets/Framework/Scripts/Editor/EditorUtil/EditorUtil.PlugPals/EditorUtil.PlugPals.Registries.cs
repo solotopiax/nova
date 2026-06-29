@@ -27,7 +27,7 @@ namespace NovaFramework.Editor
             /// <summary>
             /// 公网 registry 默认地址（公网域名）。
             /// </summary>
-            private const string c_DefaultExternalUrl = "http://172.16.22.175:4873";
+            private const string c_DefaultExternalUrl = "https://upm.solotopiax.com";
 
             /// <summary>
             /// 公网 registry 默认名称。
@@ -77,7 +77,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 读取 registry 配置；文件缺失或字段空时回退默认（公网 172.16.22.175:4873、内部云内网地址）。
+            /// 读取 registry 配置；文件缺失或字段空时回退默认（公网 upm.solotopiax.com、内部云内网地址）。
             /// </summary>
             public static RegistriesConfig LoadRegistries()
             {

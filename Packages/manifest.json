@@ -13,10 +13,12 @@
     "com.solotopia.nova.framework.kit.network.gamesave": "file:../UPMPackages/com.solotopia.nova.framework.kit.network.gamesave",
     "com.solotopia.nova.framework.sdk.ad": "file:../UPMPackages/com.solotopia.nova.framework.sdk.ad",
     "com.solotopia.nova.framework.sdk.appsflyer": "file:../UPMPackages/com.solotopia.nova.framework.sdk.appsflyer",
+    "com.solotopia.nova.framework.sdk.facebook": "file:../UPMPackages/com.solotopia.nova.framework.sdk.facebook",
     "com.solotopia.nova.framework.sdk.firebase": "file:../UPMPackages/com.solotopia.nova.framework.sdk.firebase",
+    "com.solotopia.nova.framework.sdk.googlesignin": "file:../UPMPackages/com.solotopia.nova.framework.sdk.googlesignin",
+    "com.solotopia.nova.framework.sdk.applesignin": "file:../UPMPackages/com.solotopia.nova.framework.sdk.applesignin",
     "com.solotopia.nova.framework.sdk.iap": "file:../UPMPackages/com.solotopia.nova.framework.sdk.iap",
     "com.solotopia.nova.framework.sdk.iap.mobile": "file:../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile",
-    "com.solotopia.nova.framework.sdk.max": "file:../UPMPackages/com.solotopia.nova.framework.sdk.max",
     "com.solotopia.nova.framework.sdk.tga": "file:../UPMPackages/com.solotopia.nova.framework.sdk.tga",
     "com.solotopia.simplediskutils": "file:../UPMPackages/com.solotopia.simplediskutils",
     "com.solotopia.sqlcipher4unity3d": "file:../UPMPackages/com.solotopia.sqlcipher4unity3d",
@@ -75,6 +77,10 @@
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
   },
+  "testables": [
+    "com.solotopia.nova.framework.sdk.googlesignin",
+    "com.solotopia.nova.framework.sdk.applesignin"
+  ],
   "scopedRegistries": [
     {
       "name": "Solotopia-Internal",
@@ -82,15 +88,6 @@
       "scopes": [
         "com.tivadar",
         "com.onevcat"
-      ]
-    },
-    {
-      "name": "AppLovin MAX Unity",
-      "url": "https://unity.packages.applovin.com/",
-      "scopes": [
-        "com.applovin.mediation.ads",
-        "com.applovin.mediation.adapters",
-        "com.applovin.mediation.dsp"
       ]
     },
     {
