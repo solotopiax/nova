@@ -206,11 +206,5 @@ ProjectSettings/Nova/Globals.json
 AGENTS.md
 AGENTS.md.meta
 
-# Firebase 桌面（Editor beta）核心原生库：单文件超 GitHub 100MB 限制，且 Firebase 官方定位「仅开发期、不用于发布」；
-# 不随开源仓分发，缺失时由 FirebaseDesktopLibraryGuard 引导从官方 SDK 补齐（真机 Android/iOS 构建不依赖）
-/UPMPackages/com.solotopia.nova.framework.sdk.firebase/Firebase/Plugins/x86_64/FirebaseCppApp-*.bundle
-/UPMPackages/com.solotopia.nova.framework.sdk.firebase/Firebase/Plugins/x86_64/FirebaseCppApp-*.bundle.meta
-/UPMPackages/com.solotopia.nova.framework.sdk.firebase/Firebase/Plugins/x86_64/FirebaseCppApp-*.so
-/UPMPackages/com.solotopia.nova.framework.sdk.firebase/Firebase/Plugins/x86_64/FirebaseCppApp-*.so.meta
-/UPMPackages/com.solotopia.nova.framework.sdk.firebase/Firebase/Plugins/x86_64/FirebaseCppApp-*.dll
-/UPMPackages/com.solotopia.nova.framework.sdk.firebase/Firebase/Plugins/x86_64/FirebaseCppApp-*.dll.meta
+# Firebase 桌面（Editor beta）核心原生库：经 Git LFS 管理后随开源仓分发，不再 ignore；
+# 单文件超 GitHub 100MB 限制的部分（.bundle/.so）由 LFS 承载，clone 即用，无需再由 FirebaseDesktopLibraryGuard 引导补齐。
