@@ -53,7 +53,6 @@ SDKComponent
 |---|---|
 | `IFileFragmentManager` | Store 持久化读写 |
 | `ITrackPlugin` | 支付打点 |
-| `IUIManager` | 默认 Loading 面板加载和显示 |
 | `INetworkManager` | 网络可用性与 NetCmd 解析 |
 | `DevelopMode` | 来自 `IConfigManager.DevelopMode`，供 Store 打点 Debug 字段判断 |
 | `IIAPStoreEventBridge` | Store 向 `IAPPlugin.Events` 上报初始化、支付、Restore 结果 |

@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.14] - 2026-06-30
+
+### Changed
+
+- 依赖对齐：`com.solotopia.nova.framework`→`0.5.32`，修复公网 registry 仅有 0.5.32 而旧声明 0.5.31 缺失导致安装 404 的问题。
+
 ## [1.0.13] - 2026-06-19
 
 ### Changed

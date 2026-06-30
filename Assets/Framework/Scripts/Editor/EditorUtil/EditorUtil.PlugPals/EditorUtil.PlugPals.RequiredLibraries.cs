@@ -34,6 +34,7 @@ namespace NovaFramework.Editor
             /// <param name="installedPackageNames">本地已安装包名集合。</param>
             /// <param name="knownRegistryPackages">内存 registry 包列表（包名 -> 命中来源）。</param>
             /// <param name="nova">待装包的展示元数据（提供 displayName/purchaseUrl）。</param>
+            /// <param name="projectScopedRegistries">项目 manifest 当前已配置的 scopedRegistries；用户手工配的 OpenUPM 等私有仓库在此放行，避免误判为缺库。</param>
             /// <param name="dependentName">待装包名（用于缺库信息回溯）。</param>
             /// <param name="dependentDisplayName">待装包显示名。</param>
             internal static DependencyCheckResult CheckDependencies(
@@ -41,6 +42,7 @@ namespace NovaFramework.Editor
                 ISet<string> installedPackageNames,
                 IReadOnlyDictionary<string, RegistrySource> knownRegistryPackages,
                 NovaPackageMetadata nova,
+                IReadOnlyList<ScopedRegistry> projectScopedRegistries,
                 string dependentName,
                 string dependentDisplayName)
             {
@@ -57,6 +59,7 @@ namespace NovaFramework.Editor
                         IsSolotopiaPackageName(dependencyName) ||
                         IsUnityPackageName(dependencyName) ||
                         IsCoveredByDeclaredRegistries(dependencyName, nova) ||
+                        IsCoveredByProjectScopedRegistries(dependencyName, projectScopedRegistries) ||
                         (installedPackageNames != null && installedPackageNames.Contains(dependencyName)))
                     {
                         continue;
@@ -101,12 +104,30 @@ namespace NovaFramework.Editor
             /// </summary>
             private static bool IsCoveredByDeclaredRegistries(string dependencyName, NovaPackageMetadata nova)
             {
-                if (nova?.scopedRegistries == null || string.IsNullOrEmpty(dependencyName))
+                return IsCoveredByAnyScopedRegistry(dependencyName, nova?.scopedRegistries);
+            }
+
+            /// <summary>
+            /// 判断依赖名是否被项目 manifest.json 当前已配置的 scopedRegistries 任一 scope 前缀覆盖。
+            /// 命中表示用户已为该依赖手工配置好私有仓库（如 OpenUPM 提供的 com.google.external-dependency-manager），
+            /// 依赖检测应放行——既不判缺库也不自动配 scope，避免误改用户配置，交由 UPM 解析拉取。
+            /// </summary>
+            private static bool IsCoveredByProjectScopedRegistries(string dependencyName, IReadOnlyList<ScopedRegistry> projectScopedRegistries)
+            {
+                return IsCoveredByAnyScopedRegistry(dependencyName, projectScopedRegistries);
+            }
+
+            /// <summary>
+            /// scope 前缀覆盖判定共享 helper：dependencyName 等于 scope 或以 scope + "." 起始即视为命中。
+            /// </summary>
+            private static bool IsCoveredByAnyScopedRegistry(string dependencyName, IEnumerable<ScopedRegistry> registries)
+            {
+                if (registries == null || string.IsNullOrEmpty(dependencyName))
                 {
                     return false;
                 }
 
-                foreach (ScopedRegistry registry in nova.scopedRegistries)
+                foreach (ScopedRegistry registry in registries)
                 {
                     if (registry?.scopes == null)
                     {
@@ -137,7 +158,17 @@ namespace NovaFramework.Editor
                 IReadOnlyDictionary<string, RegistrySource> knownRegistryPackages,
                 NovaPackageMetadata nova)
             {
-                return CheckDependencies(dependencies, installedPackageNames, knownRegistryPackages, nova, "com.solotopia.test.package", "Test Package");
+                return CheckDependencies(dependencies, installedPackageNames, knownRegistryPackages, nova, null, "com.solotopia.test.package", "Test Package");
+            }
+
+            internal static DependencyCheckResult CheckDependenciesForTest(
+                IReadOnlyDictionary<string, string> dependencies,
+                ISet<string> installedPackageNames,
+                IReadOnlyDictionary<string, RegistrySource> knownRegistryPackages,
+                NovaPackageMetadata nova,
+                IReadOnlyList<ScopedRegistry> projectScopedRegistries)
+            {
+                return CheckDependencies(dependencies, installedPackageNames, knownRegistryPackages, nova, projectScopedRegistries, "com.solotopia.test.package", "Test Package");
             }
         }
     }

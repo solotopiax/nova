@@ -8,7 +8,6 @@
     "com.solotopia.luban": "file:../UPMPackages/com.solotopia.luban",
     "com.solotopia.nicevibrations": "file:../UPMPackages/com.solotopia.nicevibrations",
     "com.solotopia.nova.framework": "file:../Assets/Framework",
-    "com.solotopia.nova.framework.besthttp": "file:../UPMPackages/com.solotopia.nova.framework.besthttp",
     "com.solotopia.nova.framework.kit.network.gamelogin": "file:../UPMPackages/com.solotopia.nova.framework.kit.network.gamelogin",
     "com.solotopia.nova.framework.kit.network.gamesave": "file:../UPMPackages/com.solotopia.nova.framework.kit.network.gamesave",
     "com.solotopia.nova.framework.sdk.ad": "file:../UPMPackages/com.solotopia.nova.framework.sdk.ad",
@@ -75,15 +74,44 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
+    "com.unity.modules.xr": "1.0.0",
+    "com.onevcat.uniwebview": "5.11.1",
+    "com.solotopia.nova.framework.sdk.max": "0.0.13",
+    "com.applovin.mediation.ads": "8.5.0",
+    "com.applovin.mediation.adapters.bidmachine.android": "3010101.0.0",
+    "com.applovin.mediation.adapters.bidmachine.ios": "301020000.0.0",
+    "com.applovin.mediation.adapters.bigoads.android": "5010001.0.0",
+    "com.applovin.mediation.adapters.bigoads.ios": "4060000.0.0",
+    "com.applovin.mediation.adapters.bytedance.android": "707000200.0.0",
+    "com.applovin.mediation.adapters.bytedance.ios": "707000500.0.0",
+    "com.applovin.mediation.adapters.chartboost.android": "9070004.0.0",
+    "com.applovin.mediation.adapters.chartboost.ios": "9070002.0.0",
+    "com.applovin.mediation.adapters.facebook.android": "6200000.0.0",
+    "com.applovin.mediation.adapters.facebook.ios": "6200100.0.0",
+    "com.applovin.mediation.adapters.fyber.android": "8040200.0.0",
+    "com.applovin.mediation.adapters.fyber.ios": "8040200.0.0",
+    "com.applovin.mediation.adapters.google.android": "25030000.0.0",
+    "com.applovin.mediation.adapters.google.ios": "12110000.0.0",
+    "com.applovin.mediation.adapters.googleadmanager.android": "25030000.0.0",
+    "com.applovin.mediation.adapters.googleadmanager.ios": "12110000.0.0",
+    "com.applovin.mediation.adapters.inmobi.android": "11010100.0.0",
+    "com.applovin.mediation.adapters.inmobi.ios": "11010000.0.0",
+    "com.applovin.mediation.adapters.ironsource.android": "902000000.0.0",
+    "com.applovin.mediation.adapters.ironsource.ios": "902000000.0.0",
+    "com.applovin.mediation.adapters.mintegral.android": "16099100.0.0",
+    "com.applovin.mediation.adapters.mintegral.ios": "707090000.0.0",
+    "com.applovin.mediation.adapters.moloco.android": "4040000.0.0",
+    "com.applovin.mediation.adapters.moloco.ios": "4020000.0.0",
+    "com.applovin.mediation.adapters.pubmatic.android": "4030000.0.0",
+    "com.applovin.mediation.adapters.pubmatic.ios": "4030000.0.0",
+    "com.applovin.mediation.adapters.unityads.android": "4160400.0.0",
+    "com.applovin.mediation.adapters.unityads.ios": "4160400.0.0",
+    "com.applovin.mediation.adapters.vungle.android": "7060000.0.0",
+    "com.applovin.mediation.adapters.vungle.ios": "7060100.0.0"
   },
-  "testables": [
-    "com.solotopia.nova.framework.sdk.googlesignin",
-    "com.solotopia.nova.framework.sdk.applesignin"
-  ],
   "scopedRegistries": [
     {
-      "name": "Solotopia-Internal",
+      "name": "Solotopia Internal",
       "url": "http://172.16.22.175:4874",
       "scopes": [
         "com.tivadar",
@@ -95,6 +123,22 @@
       "url": "https://package.openupm.com",
       "scopes": [
         "com.google.external-dependency-manager"
+      ]
+    },
+    {
+      "name": "Solotopia",
+      "url": "https://upm.solotopiax.com",
+      "scopes": [
+        "com.solotopia"
+      ]
+    },
+    {
+      "name": "AppLovin MAX Unity",
+      "url": "https://unity.packages.applovin.com/",
+      "scopes": [
+        "com.applovin.mediation.ads",
+        "com.applovin.mediation.adapters",
+        "com.applovin.mediation.dsp"
       ]
     }
   ]

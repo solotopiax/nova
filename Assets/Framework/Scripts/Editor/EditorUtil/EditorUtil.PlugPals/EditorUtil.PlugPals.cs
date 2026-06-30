@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -284,6 +285,39 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 按 name 同步 manifest 中已存在 registry 的 url（改名/改址迁移用）。
+            /// 仅当 manifest 中存在同名 registry 且其 url 与 newUrl 不同时，更新 url 并回写 manifest；
+            /// 不存在同名 registry 时视为未配置，不做任何写入（避免凭空创建空域）。
+            /// </summary>
+            /// <param name="manifestPath">manifest.json 绝对路径。</param>
+            /// <param name="registryName">目标 registry 名称（如 Solotopia / Solotopia Internal）。</param>
+            /// <param name="newUrl">新仓库地址。</param>
+            /// <returns>是否实际发生了 url 更新。</returns>
+            public static bool SyncScopedRegistryUrl(string manifestPath, string registryName, string newUrl)
+            {
+                if (string.IsNullOrEmpty(registryName) || string.IsNullOrEmpty(newUrl))
+                {
+                    return false;
+                }
+
+                ManifestData manifest = ReadManifest(manifestPath);
+                if (manifest?.scopedRegistries == null)
+                {
+                    return false;
+                }
+
+                ScopedRegistry registry = manifest.scopedRegistries.FirstOrDefault(r => r.name == registryName);
+                if (registry == null || registry.url == newUrl)
+                {
+                    return false;
+                }
+
+                registry.url = newUrl;
+                SaveManifest(manifestPath, manifest);
+                return true;
+            }
+
+            /// <summary>
             /// 安装指定包：先按 dependencies + registry 命中检测缺库，缺失则引导并中止；
             /// 全命中则为命中依赖自动配 scope 并写 manifest 触发 UPM 解析安装。
             /// </summary>
@@ -316,6 +350,7 @@ namespace NovaFramework.Editor
                     installedPackageNames,
                     knownRegistryPackages,
                     entry.Nova,
+                    manifest.scopedRegistries,
                     entry.Name,
                     entry.DisplayName);
 

@@ -968,6 +968,27 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 在指定 Rect 内绘制可编辑文本框（Rect 值版本，带变更检测，返回新值）。
+            /// 适用于"显示值与写入目标分离"的场景：显示取只读解析值，写入由调用方在 onChange 回调中
+            /// 按需懒创建 Override 后再落盘（如 ConfigWindow Dll 列表元素字段按维度批量配置）。
+            /// </summary>
+            /// <param name="rect">绘制区域。</param>
+            /// <param name="value">当前显示值。</param>
+            /// <param name="onChange">值变化时的回调，参数为新值。</param>
+            /// <param name="disableOnPlaying">是否在运行时禁用。</param>
+            public static void TextField(Rect rect, string value, Action<string> onChange = null, bool disableOnPlaying = true)
+            {
+                EditorGUI.BeginDisabledGroup(disableOnPlaying && EditorApplication.isPlaying);
+                EditorGUI.BeginChangeCheck();
+                string newValue = EditorGUI.TextField(rect, value ?? string.Empty);
+                if (EditorGUI.EndChangeCheck() && onChange != null && newValue != value)
+                {
+                    onChange(newValue);
+                }
+                EditorGUI.EndDisabledGroup();
+            }
+
+            /// <summary>
             /// 暗黄小字说明标签的文本颜色（wordWrap 自动换行，hover/focused/active 同色避免变色）。
             /// </summary>
             private static readonly Color s_HintLabelColor = new Color(0.78f, 0.62f, 0.20f);

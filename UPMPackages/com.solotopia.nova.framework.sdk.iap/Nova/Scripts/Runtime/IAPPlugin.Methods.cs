@@ -166,7 +166,6 @@ namespace NovaFramework.SDK.IAP.Runtime
         private IAPStoreContext BuildStoreContext(IAPPluginConfig config)
         {
             IFileFragmentManager persistManager = FrameworkManagersGroup.GetManager<IFileFragmentManager>();
-            IUIManager uiManager = FrameworkManagersGroup.GetManager<IUIManager>();
             INetworkManager networkManager = FrameworkManagersGroup.GetManager<INetworkManager>();
             IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
             DevelopMode developMode = configManager?.DevelopMode ?? DevelopMode.Debug;
@@ -178,7 +177,7 @@ namespace NovaFramework.SDK.IAP.Runtime
                 sdkComponent.TryGet<ITrackPlugin>(out trackPlugin);
             }
 
-            return new IAPStoreContext(persistManager, trackPlugin, uiManager, networkManager, config.EnableAlwaysPaySucceed, config.RetryValidateMaxNum, config.SkipLoadingForReplenish, config.LoadingPanelPrefab, this, developMode);
+            return new IAPStoreContext(persistManager, trackPlugin, networkManager, config.EnableAlwaysPaySucceed, config.RetryValidateMaxNum, config.SkipLoadingForReplenish, config.LoadingPanelPrefab, this, developMode);
         }
 
         /// <summary>

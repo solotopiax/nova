@@ -15,7 +15,7 @@ namespace NovaFramework.SDK.IAP.Runtime
     /// <summary>
     /// IAP store 运行时上下文接口。
     /// 在 IIAPInternalStore.InitializeAsync 阶段由插件层注入，
-    /// 供各 store 实现访问持久化、埋点、UI、网络等跨模块能力。
+    /// 供各 store 实现访问持久化、埋点、网络等跨模块能力。
     /// </summary>
     public interface IIAPStoreContext
     {
@@ -29,11 +29,6 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// 可为 null（未接入埋点时），store 实现需做 null 检查。
         /// </summary>
         ITrackPlugin TrackPlugin { get; }
-
-        /// <summary>
-        /// UI 管理器，用于控制支付中间页、加载遮罩等 UI 元素。
-        /// </summary>
-        IUIManager UIManager { get; }
 
         /// <summary>
         /// 网络管理器，用于服务端订单验证等网络请求。
@@ -60,7 +55,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <summary>
         /// 游戏启动补单时是否跳过 Loading 页面，由 IAPPluginConfig.SkipLoadingForReplenish 注入。
         /// 为 true 时各 store 在初始化成功后的补单阶段应让 Loading 静默执行，不阻塞加载流程；
-        /// 为 false 时补单期间各 store 自行通过 UIManager 维持 Loading 展示。具体如何控制 Loading 由各 store 自决。
+        /// 为 false 时补单期间各 store 自行维持 Loading 展示。具体如何控制 Loading 由各 store 自决。
         /// </summary>
         bool SkipLoadingForReplenish { get; }
 

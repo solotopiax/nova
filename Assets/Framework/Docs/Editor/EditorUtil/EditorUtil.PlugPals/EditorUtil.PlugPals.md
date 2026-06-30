@@ -163,10 +163,12 @@ public static async Task<string> FetchChangelogAsync(string registryUrl, string 
 
 每个依赖按以下顺序短路判定，命中任一即跳过（不进入缺失集）：
 
-1. **本地已安装**：`ReadInstalledVersions()` 中包含该依赖名。
-2. **`com.solotopia.` 前缀**（`IsSolotopiaPackageName`）：主包本身及同源包，安装时 scope 已配，UPM 可自动解析。
-3. **`com.unity.` 前缀**（`IsUnityPackageName`）：Unity 官方默认 registry 兜底，无需额外配置。
-4. **命中内存 registry 包列表**：依赖名存在于已 fetch 的外网或内部云包列表中 → 记为「待自动配 scope 安装」（进 `ToAutoScope`），并记录来源（`RegistrySource`：外网/内部云）。
+1. **`com.solotopia.` 前缀**（`IsSolotopiaPackageName`）：主包本身及同源包，安装时 scope 已配，UPM 可自动解析。
+2. **`com.unity.` 前缀**（`IsUnityPackageName`）：Unity 官方默认 registry 兜底，无需额外配置。
+3. **被包自带 `nova.scopedRegistries` scope 前缀覆盖**（`IsCoveredByDeclaredRegistries`）：依赖由包声明的私有仓库提供（如 MAX 包声明的 AppLovin 仓库），随主包写 manifest 后 UPM 自动解析。
+4. **被项目 `manifest.json` 已配 `scopedRegistries` scope 前缀覆盖**（`IsCoveredByProjectScopedRegistries`）：用户已为该依赖手工配置好私有仓库（典型场景：OpenUPM 提供 `com.google.external-dependency-manager`），不再误判缺库、也不再尝试自动配 scope，交由 UPM 解析拉取。
+5. **本地已安装**：`ReadInstalledVersions()` 中包含该依赖名。
+6. **命中内存 registry 包列表**：依赖名存在于已 fetch 的外网或内部云包列表中 → 记为「待自动配 scope 安装」（进 `ToAutoScope`），并记录来源（`RegistrySource`：外网/内部云）。
 
 以上均不命中 → 判为**缺失库**（进 `Missing`）。
 

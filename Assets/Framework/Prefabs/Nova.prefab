@@ -67,6 +67,18 @@ MonoBehaviour:
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Enabled: 1
     Priority: 100
+  - TypeName: NovaFramework.SDK.GoogleSignIn.GoogleSignInPlugin, NovaFramework.SDK.GoogleSignIn.Runtime,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Enabled: 1
+    Priority: 100
+  - TypeName: NovaFramework.SDK.Facebook.FacebookPlugin, NovaFramework.SDK.Facebook.Runtime,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Enabled: 0
+    Priority: 100
+  - TypeName: NovaFramework.SDK.AppleSignIn.AppleSignInPlugin, NovaFramework.SDK.AppleSignIn.Runtime,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    Enabled: 0
+    Priority: 100
 --- !u!1 &214000469982186650
 GameObject:
   m_ObjectHideFlags: 0

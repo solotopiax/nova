@@ -910,6 +910,62 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
+                /// 只读查找当前坐标在 HybridCLROverrides 中匹配的首个条目索引。
+                /// 不创建条目；IsGlobal 或无命中时返回 -1。供面板 Dll 列表在不触发懒创建的前提下
+                /// 解析显示用的 SerializedProperty 路径（无命中时调用方回落顶层字段）。
+                /// </summary>
+                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
+                /// <param name="curCoord">当前坐标格。</param>
+                /// <returns>命中条目索引；IsGlobal 或无命中时返回 -1。</returns>
+                public static int FindHybridCLROverrideIndexAtCoord(ConfigMasterSO master, Coord curCoord)
+                {
+                    if (master == null) return -1;
+                    PanelDimensionMask mask = master.HybridCLRMask;
+                    if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return -1;
+                    Coord clipped = ClipCoordToMask(mask, curCoord);
+                    for (int i = 0; i < master.HybridCLROverrides.Count; i++)
+                    {
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.HybridCLROverrides[i]), clipped)) continue;
+                        return i;
+                    }
+                    return -1;
+                }
+
+                /// <summary>
+                /// 确保当前坐标在 HybridCLROverrides 中存在对应条目并返回其索引，供面板 Dll 列表绑定 SerializedProperty。
+                /// 进入坐标即建份语义：mask 非全局且无命中条目时，新建条目并以当前坐标 ResolveHybridCLR 结果
+                /// （含顶层回落的 Dll 列表快照与字符串字段）填充，使 ReorderableList 绑定 Override 内嵌列表时
+                /// 显示与顶层一致，所有后续写入（增删改/拖拽排序/选择按钮）天然落该坐标份而不污染全局顶层。
+                /// IsGlobal 时返回 -1，调用方应改绑顶层字段。
+                /// </summary>
+                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
+                /// <param name="curCoord">当前坐标格。</param>
+                /// <returns>命中或新建条目的索引；IsGlobal 时返回 -1。</returns>
+                public static int EnsureHybridCLROverrideIndexAtCoord(ConfigMasterSO master, Coord curCoord)
+                {
+                    if (master == null) return -1;
+                    PanelDimensionMask mask = master.HybridCLRMask;
+                    if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return -1;
+                    Coord clipped = ClipCoordToMask(mask, curCoord);
+                    for (int i = 0; i < master.HybridCLROverrides.Count; i++)
+                    {
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.HybridCLROverrides[i]), clipped)) continue;
+                        return i;
+                    }
+                    // 新建条目并以当前坐标 Resolve 结果填充（Dll 列表深拷贝顶层快照 + 字符串字段）
+                    DimensionalResolver.HybridCLRResult snapshot = DimensionalResolver.ResolveHybridCLR(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
+                    HybridCLROverride entry = new HybridCLROverride
+                    {
+                        Platform = clipped.Platform,
+                        Channel = clipped.Channel,
+                        DevelopMode = clipped.Mode,
+                    };
+                    ApplyHybridCLRResult(entry, snapshot);
+                    master.HybridCLROverrides.Add(entry);
+                    return master.HybridCLROverrides.Count - 1;
+                }
+
+                /// <summary>
                 /// 确保当前坐标在 HybridCLROverrides 中存在对应条目并返回其引用，供面板字段控件直接写入单字段。
                 /// 当 HybridCLRMask 为全不勾（IsGlobal）时返回 null，调用方应改写顶层字段。
                 /// </summary>
@@ -918,23 +974,8 @@ namespace NovaFramework.Editor
                 /// <returns>命中或新建的 HybridCLROverride 条目引用；IsGlobal 时返回 null。</returns>
                 public static HybridCLROverride EnsureHybridCLROverrideAtCoord(ConfigMasterSO master, Coord curCoord)
                 {
-                    if (master == null) return null;
-                    PanelDimensionMask mask = master.HybridCLRMask;
-                    if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return null;
-                    Coord clipped = ClipCoordToMask(mask, curCoord);
-                    for (int i = 0; i < master.HybridCLROverrides.Count; i++)
-                    {
-                        if (!IsOverrideInGroup(mask, OverrideCoord(master.HybridCLROverrides[i]), clipped)) continue;
-                        return master.HybridCLROverrides[i];
-                    }
-                    HybridCLROverride entry = new HybridCLROverride
-                    {
-                        Platform = clipped.Platform,
-                        Channel = clipped.Channel,
-                        DevelopMode = clipped.Mode,
-                    };
-                    master.HybridCLROverrides.Add(entry);
-                    return entry;
+                    int idx = EnsureHybridCLROverrideIndexAtCoord(master, curCoord);
+                    return idx < 0 ? null : master.HybridCLROverrides[idx];
                 }
 
                 /// <summary>

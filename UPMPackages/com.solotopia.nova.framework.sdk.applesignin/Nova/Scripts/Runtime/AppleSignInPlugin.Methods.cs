@@ -3,7 +3,7 @@
  * All Rights Reserved.
  * -------------------------------------------------------------
  * filename:  AppleSignInPlugin.Methods.cs
- * author:    Codex
+ * author:    yingzheng
  * created:   2026/6/25
  * descrip:   AppleSignInPlugin 非公开方法
  ***************************************************************/

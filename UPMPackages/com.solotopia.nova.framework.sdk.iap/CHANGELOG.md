@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.12] - 2026-06-30
+
+### Changed
+
+- 依赖对齐：`com.solotopia.nova.framework`→`0.5.32`，修复公网 registry 仅有 0.5.32 而旧声明 0.5.31 缺失导致安装 404 的问题。
+
+### Removed
+
+- `IIAPStoreContext` 移除 `IUIManager UIManager` 成员，`IAPStoreContext` 构造器同步移除 `IUIManager` 参数（破坏性变更）。全仓 grep 确认无消费方引用该成员，消费方 store 实现仅透传 context，编译不受影响；`iap.mobile` 对本包依赖下界已提升至 0.0.12。
+
 ## [0.0.11] - 2026-06-19
 
 ### Changed

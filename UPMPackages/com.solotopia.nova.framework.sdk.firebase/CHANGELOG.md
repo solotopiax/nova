@@ -9,6 +9,7 @@
 - 同步刷新 README 桌面库章节（中英双语）与本包 `.gitignore`/`.gitattributes` 注释，移除「未随开源仓分发 / 超 GitHub 100MB 限制」等已不成立的措辞。
 
 ## [0.0.18] - 2026-06-18
+- 依赖对齐：`com.solotopia.nova.framework`→`0.5.32`，修复公网 registry 仅有 0.5.32 而旧声明 0.5.31 缺失导致安装 404 的问题。
 
 ### Changed
 

@@ -40,8 +40,8 @@ UnityEngine.ScriptableObject
 | `CurrentChannel` | `ChannelType` | `None` | 当前编辑态选中渠道，ConfigWindow 下拉切换写入 |
 | `ExportTarget` | `ConfigRuntimeSO` | `null` | 导出目标资产引用；ConfigWindow TopBar 的 ObjectField 直接写入此字段，Pipify Step `export.config` 通过 `AssetDatabase.GetAssetPath(master.ExportTarget)` 取路径后调用 Exporter.Export |
 | `GameEntranceProcedureName` | `string` | `null` | 业务入口 Procedure 相对类名（不含 namespace），如 `ProcedurePreload`；由 ConfigWindow → **HybridCLR 配置** 面板编辑 |
-| `AotMetadataDlls` | `List<DllMasterAssetEntry>` | `new()` | AOT 元数据 DLL 列表（编辑期三字段）；ConfigWindow **HybridCLR 配置** 面板编辑，导出到 ConfigRuntimeSO（单字段 DllAssetEntry）；供 `EditorUtil.HybridCLR.CopyAotDlls` 消费 |
-| `GameDlls` | `List<DllMasterAssetEntry>` | `new()` | 业务 DLL 列表（编辑期三字段）；同上面板编辑，导出到 ConfigRuntimeSO（单字段 DllAssetEntry）；供 `EditorUtil.HybridCLR.CopyGameDlls` 消费 |
+| `AotMetadataDlls` | `List<DllMasterAssetEntry>` | `new()` | AOT 元数据 DLL 列表（编辑期三字段）；ConfigWindow **HybridCLR 配置** 面板编辑，导出到 ConfigRuntimeSO（单字段 DllAssetEntry）；供 `EditorUtil.HybridCLR.CopyAotDlls` 消费。`HybridCLRMask` 全不勾时为全局顶层默认值；勾选维度后由 `HybridCLROverrides` 按坐标覆盖，面板经 `ResolveHybridCLRDllListProp` 进入坐标即建份（含顶层快照），写入落 Override 份 |
+| `GameDlls` | `List<DllMasterAssetEntry>` | `new()` | 业务 DLL 列表（编辑期三字段）；同上面板编辑，导出到 ConfigRuntimeSO（单字段 DllAssetEntry）；供 `EditorUtil.HybridCLR.CopyGameDlls` 消费。维度化语义同 `AotMetadataDlls` |
 | `YooAssetSettingsPath` | `string`（`#if UNITY_EDITOR`） | `null` | YooAssetSettings.asset 的项目根相对路径；仅 Editor 期消费；由 ConfigWindow 设置，由 `EditorUtil.Config.YooAssetInjector` 注入到 `YooAssetConfiguration` |
 | `BundleCollectorSettingPath` | `string`（`#if UNITY_EDITOR`） | `null` | BundleCollectorSetting.asset 的项目根相对路径；仅 Editor 期消费；替代 `AssetDatabase.FindAssets` 全工程扫描，精确定位收集器配置 |
 | `CommonMask` | `PanelDimensionMask` | `new()` | 应用配置（CommonConfig）面板的维度掩码；全不勾 = 全局唯一 |

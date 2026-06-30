@@ -3,7 +3,7 @@
  * All Rights Reserved.
  * -------------------------------------------------------------
  * filename:  AppleSignInPluginConfig.cs
- * author:    Codex
+ * author:    yingzheng
  * created:   2026/6/25
  * descrip:   Apple 登录插件配置
  ***************************************************************/

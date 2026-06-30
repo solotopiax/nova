@@ -20,7 +20,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs` | `ConfigWindow` | 右面板：`DrawRightPanel`、`DrawVerticalSeparator`、`DrawNamespacePanel`、`DrawCommonPanel`、`DrawSDKPanel`、`DrawKitPanel`；标题+掩码内联行：`DrawPanelTitleWithMask`（从 mask 字段读掩码后委托 `DrawTitleWithMaskCore` 绘制标题+三 toggle 行，HelpBox 留本方法；供 Common/Namespace/SDK/Kit/HybridCLR 五面板统一调用）、`DrawTitleWithMaskCore`（矩阵五面板与 YooAsset 面板共用的「标题+三 toggle」核心渲染，toggle 间统一无分隔符，渲染微差由 `titleTrailingSpace` 参数吸收（矩阵 30f / YooAsset 0f），HelpBox 由调用方各自绘制）；Namespace 提交：`CommitNamespaceValue`（按 IsGlobal 双分支写 Namespace，IsGlobal 写 SerializedProperty，否则调 `SetNamespaceAtCoord` 写 Override 并刷新 SerializedObject）；`DrawNamespacePanel` 使用普通 `TextField` 实时提交，按键有变化即触发 `CommitNamespaceValue`（Bug 1 修复后已无 DelayedTextField） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.Luban.cs` | `ConfigWindow` | Luban 面板：`DrawLubanSection`、`DrawLubanStatusAndButtons`、`DrawLubanWindowsExportWarning`、`DrawLubanInstallGuide`、`ResolveDotnetStatusText`、`ResolveLubanDllStatusText`、`IsDotnetReady`、`GetLubanWindowsExportWarningText` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.Python3.cs` | `ConfigWindow` | Python3 面板：`DrawPython3Section`、`DrawPython3StatusAndButtons`、`ResolvePython3StatusText` |
-| `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.HybridCLR.cs` | `ConfigWindow` | HybridCLR 面板：`DrawHybridCLRPanel`、`DrawHybridCLREntranceSection`、`DrawHybridCLRAotMetadataSection`、`DrawHybridCLRGameDllSection`；ReorderableList 辅助：`EnsureHybridCLRAotMetadataDllsList`、`EnsureHybridCLRGameDllsList`、`DrawHybridCLRDllEntryElementCore`（三字段：源位置 / 目标位置 / Asset 地址）、`OnAddHybridCLRAotMetadataDllEntry`、`OnAddHybridCLRGameDllEntry` |
+| `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.HybridCLR.cs` | `ConfigWindow` | HybridCLR 面板：`DrawHybridCLRPanel`、`DrawHybridCLREntranceSection`、`DrawHybridCLRAotMetadataSection`、`DrawHybridCLRGameDllSection`；ReorderableList 辅助：`EnsureHybridCLRAotMetadataDllsList`、`EnsureHybridCLRGameDllsList`、`DrawHybridCLRDllEntryElementCore`（三字段：源位置 / 目标位置 / Asset 地址）、`OnAddHybridCLRAotMetadataDllEntry`、`OnAddHybridCLRGameDllEntry`、`OnAddHybridCLRDllEntry`；维度化接线：`ResolveHybridCLRDllListProp`（按当前坐标+HybridCLRMask 解析 Dll 列表 SerializedProperty，IsGlobal 回落顶层，mask 非全局时进入坐标即建份经 `EnsureHybridCLROverrideIndexAtCoord` 含顶层快照，list 绑 Override 内嵌列表）、`CommitHybridCLRDllEntryField`（单字段写入经 Ensure 懒创建落 Override 份）、`OnPickFolderForRelativePathForDllEntry`（Dll 元素"选择"按钮，写回走 Commit）、`PickRelativeFolder`（弹面板+算相对路径共享逻辑）、`SyncFoldoutCapacity`（折叠状态容量同步）；两个 Dll 列表与字符串字段同等遵循平台/渠道/开发模式批量部署 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.YooAsset.cs` | `ConfigWindow` | YooAsset 配置面板：`DrawRightPanelYooAsset`、`DrawYooAssetSettingsPathRow`、`DrawBundleCollectorSettingPathRow`、`BrowseYooAssetSettingsPath`、`BrowseBundleCollectorSettingPath`、`ToProjectRelativePath`（绝对路径 → 项目根相对）；内联标题行：`DrawYooAssetTitleWithMask`（标题+三 toggle 行委托 `DrawTitleWithMaskCore` 渲染，HelpBox 留本方法；toggle 回调作用于真实资产 m_Master，改完即时 SetDirty + SaveAssetIfDirty + `ReInjectYooAsset`）；`ReInjectYooAsset`（调 `DimensionalResolver.ResolveYooAsset` + `YooAssetInjector.InjectByPath`）；`SyncYooAssetDimensionToWorkingCopy`（维度 toggle 直写 m_Master 后将 YooAssetMask/YooAssetOverrides 补同步到 WorkingCopy） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.BindGuide.cs` | `ConfigWindow` | 绑定引导面板（m_Master 为 null 时显示）：`DrawBindGuide`、`BrowseAndBindConfigMaster`、`CreateAndBindConfigMaster`、`BindMaster` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Dialogs.cs` | `ConfigWindow` | 弹框：`ConfirmDiscardDirty`、`HasAnyError`、`ShowValidationDialog`、`PromptMissingRefsIfAny`（启动时检测并可清理 SDK / Kit 的缺失 `SerializeReference`） |
@@ -236,15 +236,17 @@ DrawHybridCLRPanel()
 
   DrawHybridCLRAotMetadataSection()
     标题：Label("AOT 元数据 DLL 列表", m_SectionTitleStyle)
-    EnsureHybridCLRAotMetadataDllsList() → 懒初始化 m_HybridCLRAotMetadataDllsList
+    aotProp = ResolveHybridCLRDllListProp(curCoord, "AotMetadataDlls")  // IsGlobal 回落顶层；mask 非全局时进入坐标即建份（含顶层快照），返回 Override 内嵌列表 prop
+    EnsureHybridCLRAotMetadataDllsList(workingSrc, curCoord, aotProp) → 路径变化时重建 list
     m_HybridCLRAotMetadataDllsList.DoLayoutList()
-      每条目：DrawHybridCLRDllEntryElementCore（三行：源位置 / 目标位置 / Asset 地址，labelWidth=80f，elementHeight=singleLineHeight*3+10f）
+      每条目：DrawHybridCLRDllEntryElementCore（三行：源位置 / 目标位置 / Asset 地址，labelWidth=80f，elementHeight=singleLineHeight*3+10f；显示读 listProp 元素，写入经 CommitHybridCLRDllEntryField 懒创建落 Override 份）
 
   DrawHybridCLRGameDllSection()
     标题：Label("业务 DLL 列表", m_SectionTitleStyle)
-    EnsureHybridCLRGameDllsList() → 懒初始化 m_HybridCLRGameDllsList
+    gameProp = ResolveHybridCLRDllListProp(curCoord, "GameDlls")  // 同上维度化解析
+    EnsureHybridCLRGameDllsList(workingSrc, curCoord, gameProp) → 路径变化时重建 list
     m_HybridCLRGameDllsList.DoLayoutList()
-      每条目：DrawHybridCLRDllEntryElementCore（三行：源位置 / 目标位置 / Asset 地址，布局同上）
+      每条目：DrawHybridCLRDllEntryElementCore（三行：源位置 / 目标位置 / Asset 地址，布局同上；写入同上经 Commit 落 Override 份）
 ```
 
 ### Luban 面板布局（DrawLubanSection）

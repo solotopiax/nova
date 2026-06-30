@@ -15,7 +15,7 @@ namespace NovaFramework.SDK.IAP.Runtime
     /// <summary>
     /// IIAPStoreContext 的具体实现。
     /// 由 IAPPlugin 在初始化阶段构造，传入各 IIAPInternalStore.InitializeAsync。
-    /// 封装持久化、埋点、UI、网络四个跨模块依赖，避免 store 层直接访问 Nova 框架入口。
+    /// 封装持久化、埋点、网络等跨模块依赖，避免 store 层直接访问 Nova 框架入口。
     /// </summary>
     public sealed class IAPStoreContext : IIAPStoreContext
     {
@@ -28,11 +28,6 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// 埋点插件，用于上报支付漏斗事件。可为 null。
         /// </summary>
         public ITrackPlugin TrackPlugin { get; }
-
-        /// <summary>
-        /// UI 管理器，用于控制支付相关 UI 元素。
-        /// </summary>
-        public IUIManager UIManager { get; }
 
         /// <summary>
         /// 网络管理器，用于服务端订单验证等网络请求。
@@ -75,7 +70,6 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// </summary>
         /// <param name="persistManager">持久化管理器。</param>
         /// <param name="trackPlugin">埋点插件，可为 null。</param>
-        /// <param name="uiManager">UI 管理器。</param>
         /// <param name="networkManager">网络管理器。</param>
         /// <param name="enableAlwaysPaySucceed">是否开启始终支付成功的调试模式。</param>
         /// <param name="retryValidateMaxNum">验单失败时的最大重试次数。</param>
@@ -83,11 +77,10 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="loadingPanelPrefab">支付期 Loading 进度面板 Prefab 路径（相对于 Resources/）。</param>
         /// <param name="eventBridge">IAP 事件桥接，由 IAPPlugin 注入自身。</param>
         /// <param name="developMode">当前运行时开发模式。</param>
-        public IAPStoreContext(IPersistManager persistManager, ITrackPlugin trackPlugin, IUIManager uiManager, INetworkManager networkManager, bool enableAlwaysPaySucceed, int retryValidateMaxNum, bool skipLoadingForReplenish, string loadingPanelPrefab, IIAPStoreEventBridge eventBridge, DevelopMode developMode = DevelopMode.Debug)
+        public IAPStoreContext(IPersistManager persistManager, ITrackPlugin trackPlugin, INetworkManager networkManager, bool enableAlwaysPaySucceed, int retryValidateMaxNum, bool skipLoadingForReplenish, string loadingPanelPrefab, IIAPStoreEventBridge eventBridge, DevelopMode developMode = DevelopMode.Debug)
         {
             PersistManager = persistManager;
             TrackPlugin = trackPlugin;
-            UIManager = uiManager;
             NetworkManager = networkManager;
             EnableAlwaysPaySucceed = enableAlwaysPaySucceed;
             DevelopMode = developMode;

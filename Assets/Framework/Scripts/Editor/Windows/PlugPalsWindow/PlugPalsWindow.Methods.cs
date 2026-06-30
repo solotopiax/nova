@@ -407,6 +407,11 @@ namespace NovaFramework.Editor
             m_InternalUrl = normalized.internalUrl;
             m_InternalName = normalized.internalName;
 
+            // 改址后同步 manifest：把同名 registry 的 url 刷新为新地址，否则 UPM 仍走旧 url 拉包。
+            string manifestPath = GetManifestFullPath();
+            EditorUtil.PlugPals.SyncScopedRegistryUrl(manifestPath, m_ExternalName, m_ExternalUrl);
+            EditorUtil.PlugPals.SyncScopedRegistryUrl(manifestPath, m_InternalName, m_InternalUrl);
+
             FetchPackages();
         }
 

@@ -42,7 +42,7 @@ PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必�
 **PlugPals 工具机制（`NovaFramework.Editor`）**
 
 - 点安装/更新 → `CheckDependencies` 遍历包 `dependencies`，用 `PlugPalsWindow` 打开时已 fetch 到内存的外网(upm.solotopiax.com)+内部云(4874) registry 包列表判命中（零额外联网）。
-- 每个依赖按序短路：本地已装 / 前缀 `com.solotopia.` / 前缀 `com.unity.` / 命中 registry（→ `ToAutoScope`）；皆不满足 → 缺失库（`Missing`）。
+- 每个依赖按序短路：前缀 `com.solotopia.` / 前缀 `com.unity.` / 被包自带 `nova.scopedRegistries` 任一 scope 前缀覆盖 / 被**项目 `manifest.json` 当前已配 `scopedRegistries` 任一 scope 前缀覆盖**（用户手工配的 OpenUPM 等私有仓库在此放行，避免误判 EDM/IronSource 等公共第三方库为缺库）/ 本地已装 / 命中 registry（→ `ToAutoScope`）；皆不满足 → 缺失库（`Missing`）。
 - 有缺失库 → `PlugPalsMissingRequiredLibrariesWindow` 弹购买/内部云引导，**中止安装不写 manifest**。
 - 无缺失库 → 对命中依赖按来源 `EnsureScopedRegistry` 自动配 scope，再为主包配 scope、写 `manifest.dependencies`、`ResolvePackages`，命中依赖随主包被 UPM 一并解析安装。
 
@@ -78,7 +78,7 @@ PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必�
 
 - 文件：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RequiredLibraries.cs`（`CheckDependencies`）、`EditorUtil.PlugPals.cs`（`InstallPackage`）、`PlugPalsWindow/PlugPalsWindow.Methods.cs`（`BuildKnownRegistryPackages`）、`UPMPackages/com.solotopia.nova.framework.besthttp/package.json` 与 `Nova/Runtime/NovaFramework.BestHTTP.Runtime.asmdef`。
 - grep 自查：`CheckDependencies` / `RegistrySource` 存在；全仓 `defineSymbols` / `PlugPalsInjectedDefines` / `RunRequiredLibraryAudit` 应零残留。
-- 测试：`PlugPalsRequiredLibraryTests`（`CheckDependencies_*`）+ `BestHttpOptionalDependencyTests`，EditMode 59/59 全绿。
+- 测试：`PlugPalsRequiredLibraryTests`（`CheckDependencies_*`，含 `CheckDependencies_CoveredByProjectScopedRegistries_PassesThrough_20260630` 等项目 scope 放行三测）+ `BestHttpOptionalDependencyTests`，EditMode 全绿。
 - 设计/计划：`docs/superpowers/specs/2026-06-15-plugpals-missing-required-libraries-design.md`（v2）、`docs/superpowers/plans/2026-06-15-plugpals-missing-required-libraries.md`（v2）。
 
 ## 关联
