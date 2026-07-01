@@ -13,41 +13,33 @@
 
 ## 核心能力
 
-Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.*` 静态门面暴露，调用契约一致、风格统一。整体采用分层架构，依依赖方向自底向上组织：
+Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.*` 静态门面暴露，调用契约一致、风格统一：
 
-<table>
-<tr><td colspan="2" style="background-color:#e8f0fe; padding:4px 10px"><b>基础设施</b></td></tr>
-<tr><td><code>Nova</code></td><td>框架全局根节点与静态访问器门面，挂载于场景即完成全部子系统的统一注册与生命周期接线，业务侧仅通过 <code>Nova.*</code> 调用。</td></tr>
-<tr><td><code>Nova.Event</code></td><td>事件总线，支持泛型订阅 / 注销与按类型派发，事件参数基于引用池复用实现零 GC，跨模块通信的首选通道。</td></tr>
-<tr><td><code>Nova.ObjectPool</code></td><td>对象池与引用池双轨：纯 C# 对象走 <code>IReference</code> 栈式分配回收，GameObject 走通用容器，覆盖高频实例化与销毁场景。</td></tr>
-<tr><td><code>Nova.Debug</code></td><td>运行时调试面板与诊断工具，提供运行期日志查看、性能指标监控与变量检视，便于真机与开发期问题定位。</td></tr>
-<tr><td colspan="2" style="background-color:#e8f0fe; padding:4px 10px"><b>数据与配置</b></td></tr>
-<tr><td><code>Nova.Config</code></td><td>运行时配置访问层，承载 SDK 插件配置与 Kit 套件配置的注入、查询与变更通知，业务侧不直接持有配置实例。</td></tr>
-<tr><td><code>Nova.Persist</code></td><td>多后端本地存档，统一封装 <code>PlayerPrefs</code>、分片文件 <code>FileFragment</code> 与加密 <code>SQLite</code>，按数据规模与安全要求择优落盘。</td></tr>
-<tr><td colspan="2" style="background-color:#e8f0fe; padding:4px 10px"><b>资源</b></td></tr>
-<tr><td><code>Nova.Asset</code></td><td>资源加载、下载、缓存与热更，基于 YooAsset 封装，提供同步 / 异步加载、引用计数与场景加载，释放由加载方负责。</td></tr>
-<tr><td colspan="2" style="background-color:#e8f0fe; padding:4px 10px"><b>表现</b></td></tr>
-<tr><td><code>Nova.Prefab</code></td><td>预制体实例化与回收，内部复用对象池，适合子弹、特效、列表项等高频生成销毁场景，避免运行期 GC 抖动。</td></tr>
-<tr><td><code>Nova.Table</code></td><td>基于 Luban 导出的表格数据查询，按类型强类型取表与取行，支持运行期按需加载与表存在性判断。</td></tr>
-<tr><td><code>Nova.Localization</code></td><td>多语言运行时切换，文本键取值、缺失检测与字体适配，支持运行期切换语言而无需重启。</td></tr>
-<tr><td><code>Nova.Sound</code></td><td>音频播放与声音组管理，按组独立调节音量与静音，区分 BGM、音效与 UI 音，支持播放暂停与释放。</td></tr>
-<tr><td><code>Nova.Vibrate</code></td><td>触觉振动反馈，封装 Nice Vibrations，提供预设振动模式与自定义波形，适配 iOS / Android 差异。</td></tr>
-<tr><td colspan="2" style="background-color:#e8f0fe; padding:4px 10px"><b>UI</b></td></tr>
-<tr><td><code>Nova.UI</code></td><td>界面生命周期与栈式管理，支持异步 / 同步打开关闭、界面分组与层级控制，自动复用实例池，覆盖弹窗、主界面与多层叠加场景。</td></tr>
-<tr><td colspan="2" style="background-color:#e8f0fe; padding:4px 10px"><b>通信与集成</b></td></tr>
-<tr><td><code>Nova.Network</code></td><td>网络通信层，封装 HTTP / WebSocket 请求与 DNS over HTTPS，支持连接复用、超时重试与统一错误处理，对接 BestHTTP 底层。</td></tr>
-<tr><td><code>Nova.SDK</code></td><td>第三方 SDK 装配与初始化，统一管理广告（AdMob / MAX）、登录（Facebook / Apple / Google）、支付（IAP）、统计（AppsFlyer / Firebase）等插件。</td></tr>
-<tr><td colspan="2" style="background-color:#e8f0fe; padding:4px 10px"><b>流程与生命周期</b></td></tr>
-<tr><td><code>Nova.Procedure</code></td><td>基于有限状态机的启动流程编排，串联闪屏、版本检查、强更 / 热更、业务 DLL 加载等节点，节点间切换受控且可观测。</td></tr>
-<tr><td><code>Nova.App</code></td><td>应用入口，负责版本检查、强制更新与新安装包下载，协调各子系统按启动阶段顺序就绪，是运行期的顶层编排者。</td></tr>
-<tr><td colspan="2" style="background-color:#e8f0fe; padding:4px 10px"><b>编辑器与工具链</b></td></tr>
-<tr><td><code>Inspectors</code></td><td>各 Component 的自定义 Inspector，配置字段在 Unity 面板内可视化编辑与校验，配合 HelpBox 提示约束，降低误配风险。</td></tr>
-<tr><td><code>Windows</code></td><td>配置、环境、流水线、包管理等编辑器工具面板，集中管理框架与项目级设置，提供可视化操作入口。</td></tr>
-<tr><td><code>DataPipeline</code></td><td>配置与资源的数据导出 / 处理流水线，串联 Luban 导出、Excel 读取与中间产物清理，保障表格数据从源到运行时的一致性。</td></tr>
-<tr><td><code>BuildProcessor</code></td><td>构建预 / 后处理流程，覆盖 Android / iOS 平台、Manifest 规则、Gradle 模板与构建上下文，自动对齐发布设置。</td></tr>
-<tr><td><code>EditorUtil</code></td><td>可复用编辑器基础设施，聚合 asmdef、Asset、Build、HybridCLR、Luban、Network、Pipify、PlugPals 等工具集，支撑上层工具开发。</td></tr>
-<tr><td><code>Tools</code></td><td>更高层级的部署与一键工具入口，封装常用编辑器操作为可复用命令，便于团队定制与自动化。</td></tr>
-</table>
+| 子系统 | 访问 | 职责 |
+|---|---|---|
+| 入口 | `Nova` | 框架全局根节点与静态访问器门面，挂载于场景即完成全部子系统的统一注册与生命周期接线，业务侧仅通过 `Nova.*` 调用。 |
+| 事件 | `Nova.Event` | 支持泛型订阅 / 注销与按类型派发，事件参数基于引用池复用实现零 GC，跨模块通信的首选通道。 |
+| 对象池 | `Nova.ObjectPool` | 对象池与引用池双轨：纯 C# 对象走 `IReference` 栈式分配回收，GameObject 走通用容器，覆盖高频实例化与销毁场景。 |
+| 调试 | `Nova.Debug` | 运行时调试面板与诊断工具，提供运行期日志查看、性能指标监控与变量检视，便于真机与开发期问题定位。 |
+| 配置 | `Nova.Config` | 运行时配置访问层，承载 SDK 插件配置与 Kit 套件配置的注入、查询与变更通知，业务侧不直接持有配置实例。 |
+| 持久化 | `Nova.Persist` | 多后端本地存档，统一封装 `PlayerPrefs`、分片文件 `FileFragment` 与加密 `SQLite`，按数据规模与安全要求择优落盘。 |
+| 资源管理 | `Nova.Asset` | 资源加载、下载、缓存与热更，基于 YooAsset 封装，提供同步 / 异步加载、引用计数与场景加载，释放由加载方负责。 |
+| 预制体 | `Nova.Prefab` | 预制体实例化与回收，内部复用对象池，适合子弹、特效、列表项等高频生成销毁场景，避免运行期 GC 抖动。 |
+| 数据表 | `Nova.Table` | 基于 Luban 导出的表格数据查询，按类型强类型取表与取行，支持运行期按需加载与表存在性判断。 |
+| 本地化 | `Nova.Localization` | 多语言运行时切换，文本键取值、缺失检测与字体适配，支持运行期切换语言而无需重启。 |
+| 音频 | `Nova.Sound` | 音频播放与声音组管理，按组独立调节音量与静音，区分 BGM、音效与 UI 音，支持播放暂停与释放。 |
+| 触觉 | `Nova.Vibrate` | 触觉振动反馈，封装 Nice Vibrations，提供预设振动模式与自定义波形，适配 iOS / Android 差异。 |
+| 界面 | `Nova.UI` | 界面生命周期与栈式管理，支持异步 / 同步打开关闭、界面分组与层级控制，自动复用实例池，覆盖弹窗、主界面与多层叠加场景。 |
+| 网络 | `Nova.Network` | 网络通信层，封装 HTTP / WebSocket 请求与 DNS over HTTPS，支持连接复用、超时重试与统一错误处理，对接 BestHTTP 底层。 |
+| SDK 接入 | `Nova.SDK` | 第三方 SDK 装配与初始化，统一管理广告（AdMob / MAX）、登录（Facebook / Apple / Google）、支付（IAP）、统计（AppsFlyer / Firebase）等插件。 |
+| 流程 | `Nova.Procedure` | 基于有限状态机的启动流程编排，串联闪屏、版本检查、强更 / 热更、业务 DLL 加载等节点，节点间切换受控且可观测。 |
+| 应用 | `Nova.App` | 应用入口，负责版本检查、强制更新与新安装包下载，协调各子系统按启动阶段顺序就绪，是运行期的顶层编排者。 |
+| 检查器 (Editor) | `Inspectors` | 各 Component 的自定义 Inspector，配置字段在 Unity 面板内可视化编辑与校验，配合 HelpBox 提示约束，降低误配风险。 |
+| 窗口 (Editor) | `Windows` | 配置、环境、流水线、包管理等编辑器工具面板，集中管理框架与项目级设置，提供可视化操作入口。 |
+| 数据流水线 (Editor) | `DataPipeline` | 配置与资源的数据导出 / 处理流水线，串联 Luban 导出、Excel 读取与中间产物清理，保障表格数据从源到运行时的一致性。 |
+| 构建处理 (Editor) | `BuildProcessor` | 构建预 / 后处理流程，覆盖 Android / iOS 平台、Manifest 规则、Gradle 模板与构建上下文，自动对齐发布设置。 |
+| 编辑器工具 (Editor) | `EditorUtil` | 可复用编辑器基础设施，聚合 asmdef、Asset、Build、HybridCLR、Luban、Network、Pipify、PlugPals 等工具集，支撑上层工具开发。 |
+| 工具 (Editor) | `Tools` | 更高层级的部署与一键工具入口，封装常用编辑器操作为可复用命令，便于团队定制与自动化。 |
 
 ---
 
