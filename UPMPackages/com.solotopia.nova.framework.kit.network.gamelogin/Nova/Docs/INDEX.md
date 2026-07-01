@@ -9,13 +9,17 @@
 
 | 类型 | 说明 | 文档 |
 |---|---|---|
-| `Login` | 登录业务 Service（Async / Clear / SetDebugMode / UID 属性） | [Login.md](./Login.md) |
-| `LoginKitConfig` | 登录 Kit 固有配置（CmdName），在 ConfigWindow 一次配置后 Login.Async 内部自动取用 | [LoginKitConfig.md](./LoginKitConfig.md) |
-| `LoginErrorCode` | 登录业务错误码（约定段位 7000~7999，待填充） | [LoginErrorCode.md](./LoginErrorCode.md) |
+| `Login` | 登录业务 Service（Async / BindResolveAsync / DeleteAsync / Clear / SetDebugMode / UID 属性） | [Login.md](./Login.md) |
+| `LoginKitConfig` | 登录 Kit 固有配置（LoginCmdName / DeleteCmdName / BindResolveCmdName），在 ConfigWindow 一次配置后 Login 内部自动取用 | [LoginKitConfig.md](./LoginKitConfig.md) |
+| `LoginErrorCode` | 登录/绑定业务错误码（服务端段 10000~10499 + 客户端段 7000~7999 预留） | [LoginErrorCode.md](./LoginErrorCode.md) |
+
+## 协议
+
+- [LoginBind.md](./LoginBind.md) — 登录绑定二选一协议（`BindSummary` / `PbNetBindResolveReq` / `PbNetBindResolveResp`），登录返回 10402 时触发
 
 ## 错误码
 
-- [LoginErrorCode.md](./LoginErrorCode.md) — 登录段错误码（7000~7999）
+- [LoginErrorCode.md](./LoginErrorCode.md) — 登录/绑定段错误码（10000~10499）
 - 通用网络错误码由底层公共网络层返回，本包只维护登录业务段错误码。
 
 ## Sample 演示
@@ -35,3 +39,4 @@ GameLoginDemo（`Assets/Samples/GameLoginDemo/`）是本包附带的示例工程
 - [Login.md](./Login.md) — 登录业务 Service
 - [LoginKitConfig.md](./LoginKitConfig.md) — 登录 Kit 配置
 - [LoginErrorCode.md](./LoginErrorCode.md) — 登录业务错误码
+- [LoginBind.md](./LoginBind.md) — 登录绑定二选一协议

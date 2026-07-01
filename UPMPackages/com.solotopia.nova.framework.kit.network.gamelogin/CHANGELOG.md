@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.8] - 2026-07-01
+
+### Added
+
+- 登录绑定二选一协议对齐 `/v1/user/loginV1`：`PbNetLoginResp` 新增 `guest_summary`(field 8) / `existing_summary`(field 9) 两个 `BindSummary` 字段，仅在 `ErrBindConflict`(10402) 时返回。
+- 新增 proto message：`BindSummary`（账号进度摘要）、`PbNetBindResolveReq` / `PbNetBindResolveResp`（二选一请求/响应），均定义于 `pb_net_login.proto`。
+- `LoginErrorCode` 填充登录/绑定业务错误码常量（OK/ErrUserNotFound/ErrInvalidUID/ErrDeviceIdRequired/ErrAccountLocked/ErrAccountBanned/ErrAccountDeleted/ErrKicked/ErrOpenidAlreadyBound/ErrBindConflict/ErrThirdPartyAuthFailed/ErrAccountNotFound），段位说明修正为服务端段 10000~10499 + 客户端段 7000~7999 预留。
+- `Login` 新增 `BindResolveAsync(provider, openId, choice, verifyCode)` 业务入口；`LoginKitConfig` 新增 `BindResolveCmdName` 配置字段。
+- `Login.SendAsync` / `SendBindResolveAsync` 失败分支按 `LoginErrorCode` 归类码值打可读日志（`LogLoginError`），不改变返回值。
+- 新增文档 `Nova/Docs/LoginBind.md`，同步刷新 `LoginErrorCode.md` / `Login.md` / `LoginKitConfig.md` / `INDEX.md`。
+
 ## [0.0.7] - 2026-06-30
 
 ### Changed

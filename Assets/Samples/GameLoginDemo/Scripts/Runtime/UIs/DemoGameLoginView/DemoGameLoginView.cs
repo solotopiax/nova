@@ -7,7 +7,7 @@
  * created:   2026/06/01
  * descrip:   Login Kit 演示 View — 生命周期与公开接口
  *            职责：演示 Nova.Network.Kit<Login>().Async(openId, forceNewAccount)、
- *            Clear() 与 DeleteAsync() 三个核心 API。
+ *            Clear()、DeleteAsync() 与 BindResolveAsync(provider, openId, choice, verifyCode) 四个核心 API。
  ***************************************************************/
 
 namespace NovaFramework.Kit.Network.GameLogin.Samples.Runtime
@@ -46,6 +46,12 @@ namespace NovaFramework.Kit.Network.GameLogin.Samples.Runtime
             {
                 m_DeleteButton.onClick.AddListener(OnDeleteButtonClick);
                 SetButtonApiHint(m_DeleteButton, "Nova.Network.Kit<Login>().DeleteAsync()");
+            }
+
+            if (m_BindResolveButton != null)
+            {
+                m_BindResolveButton.onClick.AddListener(OnBindResolveButtonClick);
+                SetButtonApiHint(m_BindResolveButton, "Nova.Network.Kit<Login>().BindResolveAsync(provider, openId, choice, verifyCode)");
             }
         }
 

@@ -49,5 +49,24 @@ namespace NovaFramework.Kit.Network.GameLogin.Samples.Runtime
         /// </summary>
 
         [SerializeField] private Button m_DeleteButton;
+
+        /// <summary>
+        /// 绑定冲突二选一二次验证码输入框；可空，按业务需要填写（高危操作防盗号）。
+        /// </summary>
+
+        [SerializeField] private TMP_InputField m_VerifyCodeInput;
+
+        /// <summary>
+        /// 二选一选择开关；勾选=existing（保留云端进度），不勾=guest（保留当前进度）。
+        /// </summary>
+
+        [SerializeField] private Toggle m_BindChoiceToggle;
+
+        /// <summary>
+        /// 绑定冲突二选一按钮；点击后触发 Nova.Network.Kit<Login>().BindResolveAsync(provider, openId, choice, verifyCode) 调用。
+        /// provider 写死 (int)PbNetChannel.Google(2)，openId 复用 m_OpenIdInput，choice 由 m_BindChoiceToggle 决定。
+        /// </summary>
+
+        [SerializeField] private Button m_BindResolveButton;
     }
 }

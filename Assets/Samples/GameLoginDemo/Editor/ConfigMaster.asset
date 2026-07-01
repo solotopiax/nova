@@ -138,11 +138,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816306
+      - rid: 4930909460539375925
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816307
+      - rid: 4930909460539375926
   - Platform: 1
     Channel: 2
     CommonByMode:
@@ -175,7 +175,7 @@ MonoBehaviour:
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816308
+      - rid: 4930909460539375927
   - Platform: 1
     Channel: 3
     CommonByMode:
@@ -204,11 +204,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816309
+      - rid: 4930909460539375928
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816310
+      - rid: 4930909460539375929
   - Platform: 1
     Channel: 4
     CommonByMode:
@@ -237,11 +237,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816311
+      - rid: 4930909460539375930
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816312
+      - rid: 4930909460539375931
   - Platform: 1
     Channel: 5
     CommonByMode:
@@ -270,11 +270,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816313
+      - rid: 4930909460539375932
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816314
+      - rid: 4930909460539375933
   - Platform: 1
     Channel: 6
     CommonByMode:
@@ -303,11 +303,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816315
+      - rid: 4930909460539375934
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816316
+      - rid: 4930909460539375935
   - Platform: 2
     Channel: 1
     CommonByMode:
@@ -336,11 +336,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816317
+      - rid: 4930909460539375936
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816318
+      - rid: 4930909460539375937
   - Platform: 2
     Channel: 2
     CommonByMode:
@@ -369,11 +369,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816319
+      - rid: 4930909460539375938
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816320
+      - rid: 4930909460539375939
   - Platform: 2
     Channel: 3
     CommonByMode:
@@ -402,11 +402,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816321
+      - rid: 4930909460539375940
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816322
+      - rid: 4930909460539375941
   - Platform: 2
     Channel: 4
     CommonByMode:
@@ -435,11 +435,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816323
+      - rid: 4930909460539375942
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816324
+      - rid: 4930909460539375943
   - Platform: 2
     Channel: 5
     CommonByMode:
@@ -468,11 +468,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816325
+      - rid: 4930909460539375944
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816326
+      - rid: 4930909460539375945
   - Platform: 2
     Channel: 6
     CommonByMode:
@@ -501,11 +501,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816327
+      - rid: 4930909460539375946
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816328
+      - rid: 4930909460539375947
   - Platform: 3
     Channel: 1
     CommonByMode:
@@ -534,11 +534,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816329
+      - rid: 4930909460539375948
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816330
+      - rid: 4930909460539375949
   - Platform: 3
     Channel: 2
     CommonByMode:
@@ -567,11 +567,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816331
+      - rid: 4930909460539375950
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816332
+      - rid: 4930909460539375951
   - Platform: 3
     Channel: 3
     CommonByMode:
@@ -600,11 +600,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816333
+      - rid: 4930909460539375952
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816334
+      - rid: 4930909460539375953
   - Platform: 3
     Channel: 4
     CommonByMode:
@@ -633,11 +633,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816335
+      - rid: 4930909460539375954
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816336
+      - rid: 4930909460539375955
   - Platform: 3
     Channel: 5
     CommonByMode:
@@ -666,11 +666,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816337
+      - rid: 4930909460539375956
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816338
+      - rid: 4930909460539375957
   - Platform: 3
     Channel: 6
     CommonByMode:
@@ -699,11 +699,11 @@ MonoBehaviour:
     - Mode: 0
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816339
+      - rid: 4930909460539375958
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543479000
-      - rid: 2533177010352816340
+      - rid: 4930909460539375959
   references:
     version: 2
     RefIds:
@@ -1050,181 +1050,6 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 2533177010352816306
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816307
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816308
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816309
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816310
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816311
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816312
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816313
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816314
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816315
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816316
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816317
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816318
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816319
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816320
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816321
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816322
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816323
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816324
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816325
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816326
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816327
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816328
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816329
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816330
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816331
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816332
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816333
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816334
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816335
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816336
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816337
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816338
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816339
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
-    - rid: 2533177010352816340
-      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
-      data:
-        m_LoginCmdName: GameAccountLogin
-        m_DeleteCmdName: GameAccountDelete
     - rid: 3589942986135568532
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
@@ -1254,3 +1079,214 @@ MonoBehaviour:
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375925
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375926
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375927
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375928
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375929
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375930
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375931
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375932
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375933
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375934
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375935
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375936
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375937
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375938
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375939
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375940
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375941
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375942
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375943
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375944
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375945
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375946
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375947
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375948
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375949
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375950
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375951
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375952
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375953
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375954
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375955
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375956
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375957
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375958
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 4930909460539375959
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve

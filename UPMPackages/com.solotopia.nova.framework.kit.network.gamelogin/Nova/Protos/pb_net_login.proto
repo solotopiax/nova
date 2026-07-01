@@ -29,4 +29,32 @@ message PbNetLoginResp {
     string country = 5;                // 根据 IP 解析出的国家/地区代码
     PbNetAccountStatus status = 6;     // 当前账号状态
     bool is_new_account = 7;           // 是否为本次新注册账号（true 时走新手流程）
+    BindSummary guest_summary = 8;     // 仅 ErrBindConflict(10402) 时有值：当前账号（guest）摘要
+    BindSummary existing_summary = 9;  // 仅 ErrBindConflict(10402) 时有值：已有账号（existing）摘要
+}
+
+// 二选一账号摘要：登录触发绑定冲突时，用于客户端展示双方进度供玩家选择
+message BindSummary {
+    int64 uid = 1;        // 账号 ID
+    int32 level = 2;      // 等级
+    int32 vip_level = 3;  // VIP 等级
+    int64 gold = 4;       // 金币
+    int64 diamond = 5;    // 钻石
+    int64 exp = 6;        // 经验
+}
+
+// 绑定冲突二选一请求：登录返回 ErrBindConflict(10402) 后，由客户端发起让玩家在 guest / existing 间二选一
+message PbNetBindResolveReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头（uid 即 guest_uid，经 device_id 顶号校验）
+    int32 provider = 2;     // 三方平台（与 PbNetChannel 枚举值对齐，直接透传）
+    string open_id = 3;     // 冲突的三方标识（服务端自查 existing_uid，不接受客户端传）
+    string choice = 4;      // guest=保留当前进度 / existing=保留云端进度
+    string verify_code = 5; // 二次验证（高危操作防盗号，按业务开启）
+}
+
+// 绑定冲突二选一响应
+message PbNetBindResolveResp {
+    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
+    string uid = 2;            // 最终选中的主账号
+    string abandoned_uid = 3;  // 被放弃但保留的 uid
 }

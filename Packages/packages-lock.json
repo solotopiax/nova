@@ -294,12 +294,25 @@
         "com.solotopia.yooasset": "1.0.6"
       }
     },
+    "com.solotopia.nova.framework.besthttp": {
+      "version": "0.0.8",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.solotopia.nova.framework": "0.5.32",
+        "com.solotopia.unitask": "10.0.5",
+        "com.unity.nuget.newtonsoft-json": "3.2.2",
+        "com.tivadar.best.http": "3.0.17",
+        "com.tivadar.best.tlssecurity": "3.0.4"
+      },
+      "url": "https://upm.solotopiax.com"
+    },
     "com.solotopia.nova.framework.kit.network.gamelogin": {
       "version": "file:../UPMPackages/com.solotopia.nova.framework.kit.network.gamelogin",
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.5.31",
+        "com.solotopia.nova.framework": "0.5.32",
         "com.solotopia.unitask": "10.0.5",
         "com.solotopia.luban": "10.0.6"
       }
@@ -309,7 +322,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.5.31",
+        "com.solotopia.nova.framework": "0.5.32",
         "com.solotopia.unitask": "10.0.5",
         "com.solotopia.luban": "10.0.6"
       }
@@ -319,7 +332,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.5.31"
+        "com.solotopia.nova.framework": "0.5.32"
       }
     },
     "com.solotopia.nova.framework.sdk.applesignin": {
@@ -327,7 +340,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.5.31"
+        "com.solotopia.nova.framework": "0.5.32"
       }
     },
     "com.solotopia.nova.framework.sdk.appsflyer": {
@@ -335,7 +348,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.5.31",
+        "com.solotopia.nova.framework": "0.5.32",
         "com.google.external-dependency-manager": "1.2.186"
       }
     },
@@ -353,7 +366,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.5.31",
+        "com.solotopia.nova.framework": "0.5.32",
         "com.google.external-dependency-manager": "1.2.186"
       }
     },
@@ -362,7 +375,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.5.31",
+        "com.solotopia.nova.framework": "0.5.32",
         "com.google.external-dependency-manager": "1.2.186"
       }
     },
@@ -371,7 +384,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.5.31",
+        "com.solotopia.nova.framework": "0.5.32",
         "com.solotopia.unitask": "10.0.5"
       }
     },
@@ -380,8 +393,8 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.5.31",
-        "com.solotopia.nova.framework.sdk.iap": "0.0.11",
+        "com.solotopia.nova.framework": "0.5.32",
+        "com.solotopia.nova.framework.sdk.iap": "0.0.12",
         "com.solotopia.unitask": "10.0.5",
         "com.unity.purchasing": "5.3.1"
       }

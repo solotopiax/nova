@@ -21,9 +21,9 @@ MonoBehaviour:
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 2533177010586910943
+  - rid: 4930909460539375960
   EnabledKitConfigs:
-  - rid: 2533177010586910944
+  - rid: 4930909460539375961
   GameEntranceProcedureName: ProcedurePreload
   AotMetadataDlls:
   - m_AssetLocation: mscorlib.dll
@@ -34,6 +34,7 @@ MonoBehaviour:
   - m_AssetLocation: UnityEngine.CoreModule.dll
   - m_AssetLocation: Unity.TextMeshPro.dll
   - m_AssetLocation: NovaFramework.Runtime.dll
+  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
   - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
   - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
   GameDlls:
@@ -41,7 +42,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2533177010586910943
+    - rid: 4930909460539375960
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -50,8 +51,9 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 2533177010586910944
+    - rid: 4930909460539375961
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: GameAccountDelete
+        m_BindResolveCmdName: GameAccountBindResolve
