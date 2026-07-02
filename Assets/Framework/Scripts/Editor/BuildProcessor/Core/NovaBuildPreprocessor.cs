@@ -61,12 +61,13 @@ namespace NovaFramework.Editor
         private void PreprocessAndroid(BuildReport report)
         {
             var ctx = NovaBuildShared.Context;
-            string templateFullPath = Util.SysIO.Path.GetFullPath(NovaBuildShared.c_UnityManifestTemplatePath);
+            string templateAssetPath = NovaBuildShared.ResolveUnityManifestTemplatePath();
+            string templateFullPath = !string.IsNullOrEmpty(templateAssetPath) ? Util.SysIO.Path.GetFullPath(templateAssetPath) : null;
             string manifestFullPath = Util.SysIO.Path.GetFullPath(NovaBuildShared.c_AndroidManifestPath);
 
-            if (!Util.SysIO.File.Exists(templateFullPath))
+            if (string.IsNullOrEmpty(templateFullPath) || !Util.SysIO.File.Exists(templateFullPath))
             {
-                Log.Warning(LogTag.Editor, $"[NovaBuildPreprocessor] UnityManifest.xml 模板不存在，路径：{templateFullPath}");
+                Log.Warning(LogTag.Editor, $"[NovaBuildPreprocessor] UnityManifest.xml 模板不存在。开发态路径：{NovaBuildShared.c_UnityManifestTemplatePath}");
                 return;
             }
 

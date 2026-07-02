@@ -57,8 +57,8 @@ MonoBehaviour:
     - rid: 2238162017076380323
       type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
       data:
-        m_FacebookAppId: 2704927663220433
-        m_FacebookClientToken: f5c530e84d8456c8000d21ec435417fe
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
         m_AutoDownloadAvatarOnLogin: 1
         m_AvatarSize: 100
     - rid: 2238162017076380324

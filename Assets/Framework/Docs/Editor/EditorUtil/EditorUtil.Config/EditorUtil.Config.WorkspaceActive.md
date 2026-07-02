@@ -33,11 +33,13 @@
 public static ConfigMasterSO Get();
 
 // 获取当前激活 ConfigMaster 所配对的 ConfigRuntimeSO。
-// 通过 Get() 锚定激活 master，再按 ADR-033 布局约定（DemoRoot/Configs/ConfigRuntime.asset）加载配对 SO。
-// 三种 null 成因（Warning 文案可区分）：
+// 通过 Get() 锚定激活 master，首选 master.ExportTarget 序列化引用（导出时记录，GUID 追踪，资产可置于任意位置，不强制布局）；
+// ExportTarget 为 null 时回退 ADR-033 布局约定（DemoRoot/Configs/ConfigRuntime.asset）兜底加载。
+// 四种 null 成因（Warning 文案可区分）：
 //   ① 无激活 master（Get() 返回 null）
-//   ② masterPath 为空（AssetDatabase.GetAssetPath 返回空字符串）或 demoRoot 层级不足（路径上溯两级后为空）
-//   ③ ConfigRuntime 未导出（文件不存在于 DemoRoot/Configs/ConfigRuntime.asset）
+//   ② ExportTarget 为 null 且 masterPath 为空（AssetDatabase.GetAssetPath 返回空字符串）
+//   ③ ExportTarget 为 null 且路径上溯层级不足（上溯两级后为空）
+//   ④ ExportTarget 为 null 且布局约定下 ConfigRuntime.asset 不存在（未导出）
 public static ConfigRuntimeSO GetActiveRuntime();
 
 // 显式设置激活 ConfigMasterSO；以 GUID + pathHint 原子写入 Globals.json

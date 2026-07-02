@@ -40,6 +40,14 @@ related:
 - 团队 clone 后能直接命中当前 master，但首次绑定需要人工确认一次。
 - `Globals.json` 必须入 git，不能当作本地缓存丢掉。
 
+## amendment（2026-07-02）：runtime 定位策略升级为首选 ExportTarget
+
+原 runtime 定位依赖 ADR-033 布局约定，即 `EditorUtil.Config.WorkspaceActive.GetActiveRuntime()` 按 `DemoRoot/Configs/ConfigRuntime.asset` 硬拼路径，会强制用户把 `ConfigRuntime.asset` 放在固定子目录位置。
+
+现改为首选 `master.ExportTarget` 序列化引用（ConfigWindow 导出时已记录，GUID 追踪，资产可置于任意位置都成立），ADR-033 布局约定降为 `ExportTarget` 未配置时的兜底回退。动机是框架不应约束用户的文件放置规则。
+
+回退兼容：未配 `ExportTarget` 的老工程或新 sample 走原布局约定兜底，零迁移。
+
 ## 关联
 
 - 相关 ADR：`ADR-033`、`ADR-049`

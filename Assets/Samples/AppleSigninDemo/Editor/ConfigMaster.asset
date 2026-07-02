@@ -825,9 +825,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1482,9 +1482,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1507,9 +1507,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1532,9 +1532,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1557,9 +1557,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1582,9 +1582,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1607,9 +1607,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1632,9 +1632,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1657,9 +1657,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1682,9 +1682,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1707,9 +1707,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1732,9 +1732,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1757,9 +1757,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1782,9 +1782,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1807,9 +1807,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1832,9 +1832,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1857,9 +1857,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1882,9 +1882,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1907,9 +1907,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1932,9 +1932,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1957,9 +1957,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -1982,9 +1982,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2007,9 +2007,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2032,9 +2032,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2057,9 +2057,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2082,9 +2082,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2107,9 +2107,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2132,9 +2132,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2157,9 +2157,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2182,9 +2182,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2207,9 +2207,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2232,9 +2232,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2257,9 +2257,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2282,9 +2282,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2307,9 +2307,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []
@@ -2332,9 +2332,9 @@ MonoBehaviour:
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
-        m_AppKey: 2Q3UbCfSGuIPR3906vN-egwmGIzXLhAO6DtiQW9gOS5rVFrb8DZnvTW9mUh6AtVG5MzWu7CHZH63Wyfe9DQ2hy
-        m_AdMobAppIdAndroid: ca-app-pub-4467584754731918~4558957023
-        m_AdMobAppIdIOS: ca-app-pub-4467584754731918~1358078612
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds: []
         m_InterPlacementIds: []
         m_BannerPlacementIds: []

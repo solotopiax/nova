@@ -3,7 +3,7 @@
 **类签名**：`public static class RuntimeProvider`（嵌套于 `EditorUtil.Config` 的 partial）
 **命名空间**：`NovaFramework.Editor`
 
-按需从激活 ConfigMasterSO 配对关系中读取 ConfigRuntimeSO 的 Editor 端访问器。通过 `WorkspaceActive` 锚点定位激活 master，再按 ADR-033 布局约定（`DemoRoot/Configs/ConfigRuntime.asset`）加载配对 SO，根除多 sample 共存时 `FindAssets` 玄学命中问题（见 ADR-047）。
+按需从激活 ConfigMasterSO 配对关系中读取 ConfigRuntimeSO 的 Editor 端访问器。通过 `WorkspaceActive` 锚点定位激活 master，首选激活 master 的 ExportTarget 序列化引用（资产可置于任意位置），ExportTarget 为 null 时回退 ADR-033 布局约定兜底，根除多 sample 共存时 `FindAssets` 玄学命中问题（见 ADR-047）。
 
 ---
 
@@ -35,8 +35,9 @@ EditorUtil (public static partial class)
 
 ```csharp
 // 获取当前激活 ConfigMaster 配对的 ConfigRuntimeSO。
-// 经 WorkspaceActive 锚定激活 master，按 ADR-033 布局约定（DemoRoot/Configs/ConfigRuntime.asset）定位配对 SO；
-// 无激活 master 或 ConfigRuntime 未导出时返回 null。
+// 经 WorkspaceActive 锚定激活 master，首选 master.ExportTarget 序列化引用（资产可置于任意位置）；
+// ExportTarget 为 null 时回退 ADR-033 布局约定（DemoRoot/Configs/ConfigRuntime.asset）兜底加载。
+// 无激活 master 或定位失败时返回 null。
 public static ConfigRuntimeSO GetCurrent();
 
 // 获取当前运行时 Namespace。
@@ -56,13 +57,14 @@ GetCurrent():
   → WorkspaceActive.GetActiveRuntime()
       ① Get() 获取激活 ConfigMasterSO
       ② 无激活 master → Warning + return null
-      ③ AssetDatabase.GetAssetPath(master) → masterPath
-      ④ 上溯两级：GetDirectoryName(GetDirectoryName(masterPath)) → demoRoot
-      ⑤ demoRoot 为空 → Warning（master 路径层级不足，无法上溯至 DemoRoot）+ return null
-      ⑥ runtimePath = "{demoRoot}/Configs/ConfigRuntime.asset"
-      ⑦ LoadAssetAtPath<ConfigRuntimeSO>(runtimePath) → runtime
-      ⑧ runtime == null → Warning（ConfigRuntime 未导出）+ return null
-      ⑨ return runtime
+      ③ master.ExportTarget 非空 → 直接返回（GUID 追踪，资产可置于任意位置）
+      ④ ExportTarget 为 null → 回退 ADR-033 布局约定兜底：
+         AssetDatabase.GetAssetPath(master) → masterPath
+         上溯两级拼 {demoRoot}/Configs/ConfigRuntime.asset 加载
+         masterPath 为空 → Warning + return null
+         上溯层级不足 → Warning + return null
+         ConfigRuntime.asset 不存在（未导出）→ Warning + return null
+      ⑤ return runtime
 ```
 
 ---
@@ -75,6 +77,7 @@ GetCurrent():
 | 替代 ConfigLookup 读取 Namespace | 本类是 ConfigLookup 的继任者，优先通过 `GetNamespace()` 读取；旧的 `ConfigLookup` 已删除 |
 | 找不到资产时返回 null 未处理 | `GetNamespace()` 找不到时返回 `string.Empty`；`GetCurrent()` 找不到时返回 null，调用方须判空 |
 | 多 sample 共存时会选错 ConfigRuntimeSO | WorkspaceActive 锚点保证始终定位到激活 master 配对的 ConfigRuntime，不再有字典序歧义 |
+| 认为必须把 ConfigRuntime.asset 放在 DemoRoot/Configs/ 下 | 已不再强制，ExportTarget 记录的位置即权威，布局约定仅作未配置时的兜底 |
 
 ---
 

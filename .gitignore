@@ -108,8 +108,7 @@ __pycache__/
 Assets/Samples/*/Excels/**/_configs/
 Assets/Samples/*/Excels/**/_configs.meta
 Assets/Samples/*/Excels/**/_luban_temp_*/
-# 项目根 Docs/（设计/计划文档 + Android 签名凭据，跟人不跟版本，禁入 git）
-# 前导斜杠锚定仓库根，避免误伤 Assets/Framework/Docs/
+# Android 签名私钥与证书（最高危，永不入仓）；其余 /Docs/ 内容进 GitLab 版本管理、不进公开仓（由 sync 排除）
 /Docs/
 
 # TMP 导入资源（由 TMP Essentials 一键再生，跟人不跟版本）
@@ -119,10 +118,6 @@ Assets/TextMesh Pro.meta
 # AppLovin MAX SDK（第三方导入，跟人不跟版本，与 EDM/Plugins 同例）
 Assets/MaxSdk/
 Assets/MaxSdk.meta
-
-# 开源脱敏凭据备份（本地专用，含真实密钥/域名，禁入 git）
-/Assets/Samples/_credentials-backup.local.md
-/Assets/Samples/_credentials-backup.local.md.meta
 
 # Personal Claude config
 .claude/CLAUDE.local.md
@@ -143,10 +138,6 @@ ProjectSettings/AndroidResolverDependencies.xml
 # （全自动生成目录，保留 .meta 在干净 clone 上会变孤儿 meta 被 Unity 删除，制造无谓 diff）。
 /[Aa]ssets/[Pp]lugins/
 /[Aa]ssets/[Pp]lugins.meta
-
-# Assets/Tests：测试套件只在主/内部仓维护运行，公开框架仓不随带测试源码，整目录不入库。
-/[Aa]ssets/[Tt]ests/
-/[Aa]ssets/[Tt]ests.meta
 
 # 第三方工具：SQLiteStudio 为 GPLv3 GUI 二进制（缺失时由 EditorUtil.FileSystem.OpenSQLiteStudio
 # 弹下载引导，无需随仓携带），不入库。
@@ -194,17 +185,6 @@ ProjectSettings/GvhProjectSettings.xml
 
 # Nova 工作区激活 ConfigMaster 锚点：跟人不跟版本（编辑器按当前 sample/scene 自动重建）
 ProjectSettings/Nova/Globals.json
-
-# AI / IDE 工具配置与脚手架：研发侧专用，不进公开仓
-/.agents/
-/.cursor/
-/.claude/
-/.mcp.json
-/.claudeignore
-/.nova/
-# 散落各目录的 AI 路由文档 AGENTS.md（任意位置）及其 Unity meta
-AGENTS.md
-AGENTS.md.meta
 
 # Firebase 桌面（Editor beta）核心原生库：经 Git LFS 管理后随开源仓分发，不再 ignore；
 # 单文件超 GitHub 100MB 限制的部分（.bundle/.so）由 LFS 承载，clone 即用，无需再由 FirebaseDesktopLibraryGuard 引导补齐。

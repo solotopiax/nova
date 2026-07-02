@@ -63,10 +63,10 @@ MonoBehaviour:
         2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 9,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
-        false,\n  \"BuildAppBundle\": false,\n  \"SplitApplicationBinary\": false,\n 
-        \"OutputFolderPath\": \"/Users/solar/Desktop/Nova-ios \"\n}"
+        false,\n  \"BuildAppBundle\": false,\n  \"SplitApplicationBinary\": false,\n
+        \"OutputFolderPath\": \"Builds/iOS\"\n}"
     - m_StepId: shell.open_folder
-      m_ParamsJson: "{\n  \"Path\": \"/Users/solar/Desktop/Nova-ios \"\n}"
+      m_ParamsJson: "{\n  \"Path\": \"Builds/iOS\"\n}"
   - m_Name: "Hybrid+YooAsset\u8054\u5408\u7F16\u8BD1"
     m_Description: "Hybrid\u4E0EYooAsset\u8054\u5408\u7F16\u8BD1"
     m_Items:

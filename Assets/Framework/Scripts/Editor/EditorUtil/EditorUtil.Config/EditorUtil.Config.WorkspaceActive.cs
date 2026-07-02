@@ -149,12 +149,13 @@ namespace NovaFramework.Editor
 
                 /// <summary>
                 /// 获取当前激活 ConfigMasterSO 所配对的 ConfigRuntimeSO。
-                /// <para>通过 WorkspaceActive.Get() 锚定激活 master，再按 ADR-033 布局约定</para>
-                /// <para>（master 在 DemoRoot/Editor/ConfigMaster.asset，runtime 在 DemoRoot/Configs/ConfigRuntime.asset）</para>
-                /// <para>从 masterPath 上溯两级得到 DemoRoot，拼出 runtime 路径并加载返回。</para>
+                /// <para>经 WorkspaceActive.Get() 锚定激活 master（见 ADR-047），按以下顺序定位配对 ConfigRuntimeSO：</para>
+                /// <para>① 首选 master.ExportTarget 序列化引用 —— 由 ConfigWindow 导出时记录，GUID 追踪，资产可置于任意位置，不强制布局；</para>
+                /// <para>② ExportTarget 为 null 时，回退 ADR-033 布局约定（master 在 DemoRoot/Editor/ConfigMaster.asset，runtime 在 DemoRoot/Configs/ConfigRuntime.asset），从 masterPath 上溯两级拼路径加载，覆盖未配 ExportTarget 的老工程与新 sample。</para>
                 /// <para>无激活 master 时 Warning 并返回 null（成因①）；</para>
-                /// <para>路径上溯异常（master 不在预期 Samples 布局下）时 Warning 并返回 null（成因②）；</para>
-                /// <para>配对 ConfigRuntime.asset 不存在（未导出）时 Warning 并返回 null（成因③）。</para>
+                /// <para>ExportTarget 为 null 且 masterPath 为空时 Warning 并返回 null（成因②）；</para>
+                /// <para>ExportTarget 为 null 且路径上溯层级不足（master 不在预期布局下）时 Warning 并返回 null（成因③）；</para>
+                /// <para>ExportTarget 为 null 且布局约定下 ConfigRuntime.asset 不存在（未导出）时 Warning 并返回 null（成因④）。</para>
                 /// </summary>
                 /// <returns>激活 master 配对的 ConfigRuntimeSO；任一失败条件时返回 null。</returns>
                 public static ConfigRuntimeSO GetActiveRuntime()
@@ -166,10 +167,28 @@ namespace NovaFramework.Editor
                         return null;
                     }
 
+                    // ① 首选 ExportTarget 序列化引用：放任意位置都成立，GUID 追踪资产移动
+                    if (master.ExportTarget != null)
+                    {
+                        return master.ExportTarget;
+                    }
+
+                    // ② 兜底：ADR-033 布局约定（未配 ExportTarget 的老工程 / 新 sample）
+                    return TryResolveByLayoutConvention(master);
+                }
+
+                /// <summary>
+                /// 按 ADR-033 布局约定从 masterPath 上溯 DemoRoot，拼 Configs/ConfigRuntime.asset 加载。
+                /// <para>仅作 ExportTarget 未配置时的兜底，不强制用户使用此布局。</para>
+                /// </summary>
+                /// <param name="master">已锚定的激活 ConfigMasterSO（调用方保证非 null）。</param>
+                /// <returns>布局约定下配对的 ConfigRuntimeSO；任一失败条件时 Warning 并返回 null。</returns>
+                private static ConfigRuntimeSO TryResolveByLayoutConvention(ConfigMasterSO master)
+                {
                     string masterPath = AssetDatabase.GetAssetPath(master);
                     if (string.IsNullOrEmpty(masterPath))
                     {
-                        Log.Warning(LogTag.Editor, "[WorkspaceActive] 激活 ConfigMaster 的 AssetDatabase 路径为空，无法定位 ConfigRuntime。");
+                        Log.Warning(LogTag.Editor, "[WorkspaceActive] 激活 ConfigMaster 的 AssetDatabase 路径为空，无法按布局约定定位 ConfigRuntime。");
                         return null;
                     }
 
@@ -188,7 +207,7 @@ namespace NovaFramework.Editor
                     ConfigRuntimeSO runtime = AssetDatabase.LoadAssetAtPath<ConfigRuntimeSO>(runtimePath);
                     if (runtime == null)
                     {
-                        Log.Warning(LogTag.Editor, "[WorkspaceActive] 激活 master 的 ConfigRuntime 未导出：{0}", runtimePath);
+                        Log.Warning(LogTag.Editor, "[WorkspaceActive] 激活 master 的 ConfigRuntime 未导出（布局约定兜底未命中）：{0}", runtimePath);
                         return null;
                     }
 

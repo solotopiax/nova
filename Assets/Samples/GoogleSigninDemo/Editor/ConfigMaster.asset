@@ -846,7 +846,7 @@ MonoBehaviour:
     - rid: 2238162042808172756
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -854,7 +854,7 @@ MonoBehaviour:
     - rid: 2238162044843720808
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -862,7 +862,7 @@ MonoBehaviour:
     - rid: 2238162044843720809
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -870,7 +870,7 @@ MonoBehaviour:
     - rid: 2238162044843720810
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -878,7 +878,7 @@ MonoBehaviour:
     - rid: 2238162044843720811
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -886,7 +886,7 @@ MonoBehaviour:
     - rid: 2238162044843720812
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -894,7 +894,7 @@ MonoBehaviour:
     - rid: 2238162044843720813
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -902,7 +902,7 @@ MonoBehaviour:
     - rid: 2238162044843720814
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -910,7 +910,7 @@ MonoBehaviour:
     - rid: 2238162044843720815
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -918,7 +918,7 @@ MonoBehaviour:
     - rid: 2238162044843720816
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -926,7 +926,7 @@ MonoBehaviour:
     - rid: 2238162044843720817
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -934,7 +934,7 @@ MonoBehaviour:
     - rid: 2238162044843720818
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -942,7 +942,7 @@ MonoBehaviour:
     - rid: 2238162044843720819
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -950,7 +950,7 @@ MonoBehaviour:
     - rid: 2238162044843720820
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -958,7 +958,7 @@ MonoBehaviour:
     - rid: 2238162044843720821
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -966,7 +966,7 @@ MonoBehaviour:
     - rid: 2238162044843720822
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -974,7 +974,7 @@ MonoBehaviour:
     - rid: 2238162044843720823
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -982,7 +982,7 @@ MonoBehaviour:
     - rid: 2238162044843720824
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -990,7 +990,7 @@ MonoBehaviour:
     - rid: 2238162044843720825
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -998,7 +998,7 @@ MonoBehaviour:
     - rid: 2238162044843720826
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1006,7 +1006,7 @@ MonoBehaviour:
     - rid: 2238162044843720827
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1014,7 +1014,7 @@ MonoBehaviour:
     - rid: 2238162044843720828
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1022,7 +1022,7 @@ MonoBehaviour:
     - rid: 2238162044843720829
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1030,7 +1030,7 @@ MonoBehaviour:
     - rid: 2238162044843720830
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1038,7 +1038,7 @@ MonoBehaviour:
     - rid: 2238162044843720831
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1046,7 +1046,7 @@ MonoBehaviour:
     - rid: 2238162044843720832
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1054,7 +1054,7 @@ MonoBehaviour:
     - rid: 2238162044843720833
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1062,7 +1062,7 @@ MonoBehaviour:
     - rid: 2238162044843720834
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1070,7 +1070,7 @@ MonoBehaviour:
     - rid: 2238162044843720835
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1078,7 +1078,7 @@ MonoBehaviour:
     - rid: 2238162044843720836
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1086,7 +1086,7 @@ MonoBehaviour:
     - rid: 2238162044843720837
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1094,7 +1094,7 @@ MonoBehaviour:
     - rid: 2238162044843720838
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1102,7 +1102,7 @@ MonoBehaviour:
     - rid: 2238162044843720839
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1110,7 +1110,7 @@ MonoBehaviour:
     - rid: 2238162044843720840
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1118,7 +1118,7 @@ MonoBehaviour:
     - rid: 2238162044843720841
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
@@ -1126,7 +1126,7 @@ MonoBehaviour:
     - rid: 2238162044843720842
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
