@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.5.32-blue.svg)
+![release](https://img.shields.io/badge/release-v0.5.33-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -66,7 +66,7 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
     }
   ],
   "dependencies": {
-    "com.solotopia.nova.framework": "0.5.32",
+    "com.solotopia.nova.framework": "0.5.33",
     "com.solotopia.nova.framework.besthttp": "0.0.7",
     "com.google.external-dependency-manager": "1.2.186",
     "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v9.7.1"

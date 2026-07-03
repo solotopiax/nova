@@ -22,6 +22,7 @@ auto_generated: true
 - [ADR-040 跨 asmdef 写共享状态禁绕跳板字段](../2-Areas/ADR/ADR-040-cross-asmdef-no-jump-board-state.md) — 跨 asmdef 写共享状态走静态门面禁多层跳板
 - [ADR-057 基础网络编排层从独立 Kit 包下沉进框架 Network 模块](../2-Areas/ADR/ADR-057-network-kit-base-sink-into-framework.md) — 基础网络编排下沉框架，删 Kit 基础包
 - [ADR-062 Proto 引用公共 header 统一用 NovaFramework.Runtime](../2-Areas/ADR/ADR-062-proto-header-namespace-convention.md) — Proto 公共 header 引用统一去 Kit 段
+- [ADR-067 登录/绑定/云存档三端职责分离](../2-Areas/ADR/ADR-067-login-bind-save-separation.md) — login 鉴权 / bind 独立包裁决归属 / 覆盖交 save 编排
 
 ## asset
 
@@ -76,6 +77,7 @@ auto_generated: true
 - [ADR-054 Kit 配置进三维矩阵 + Network 表删维度列 PreFilter 降级纯拷贝（反转 ADR-053 决策 3）](../2-Areas/ADR/ADR-054-kit-config-three-dim-matrix.md) — 环境差异上移 Config 三维矩阵，网络表降纯拷贝
 - [ADR-058 ConfigWindow per-panel 可勾选维度（PanelDimensionMask + DimensionProjector + Override 旁路）](../2-Areas/ADR/ADR-058-per-panel-dimension-mask.md) — 面板级维度掩码 + Override 旁路按需多维配置
 - [ADR-063 TGA 插件 ServerCmdName 与 ReportCmdName 双通道不可合并](../2-Areas/ADR/ADR-063-tga-dual-cmd-channel-separation.md) — TGA 埋点上报与账号绑定双通道禁合并
+- [ADR-069 云存档支持按 target_uid 跨用户查询](../2-Areas/ADR/ADR-069-gamesave-cross-user-query.md) — GetGameData 加 target_uid，为空查自身、有值查指定 uid，鉴权归服务端
 
 ## quality
 
@@ -85,6 +87,7 @@ auto_generated: true
 ## runtime
 
 - [ADR-041 UIDepthConfig 静态常量下线，深度换算系数散到 UIComponent Inspector](../2-Areas/ADR/ADR-041-ui-depth-factor-to-inspector.md) — 深度因子静态常量改 Inspector 字段
+- [ADR-068 网络业务失败响应也解析并携带业务体](../2-Areas/ADR/ADR-068-netresponse-fail-carries-data.md) — 业务失败码也解析业务体，Fail 加带 data 重载
 
 ## workflow
 
@@ -94,4 +97,4 @@ auto_generated: true
 
 
 ---
-_共 52 条，分布于 10 个 category。_
+_共 55 条，分布于 10 个 category。_

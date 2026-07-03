@@ -26,10 +26,11 @@
 | 签名 | 说明 |
 |---|---|
 | `public void SetDebugMode(bool debugMode)` | 设置本实例调试模式覆盖；仅影响本实例发出的请求；`false` 时不等于关闭全局，仅取消覆盖 |
-| `public UniTask<NetResponse<PbNetLoginResp>> Async(string uid, string openId, bool forceNewAccount = false)` | 发起登录请求（极简入口）；`uid` 非空时优先填入请求 Header，否则沿用 `NetService.Uid`（登录态自动写回值）；cmdName 从 `LoginKitConfig.LoginCmdName` 取，channel 从 `Nova.Config.Channel` 取；`LoginKitConfig` 未配置时抛 `KitConfigMissingException`；成功后自动写回 UID |
+| `public UniTask<NetResponse<PbNetLoginResp>> Async(string uid, string openId, bool forceNewAccount = false)` | 发起登录请求（极简入口）；`uid` 非空时优先填入请求 Header，否则沿用 `NetService.Uid`（登录态自动写回值）；`openId` 仅用于"读"绑定关系找 uid 登入，未绑返回 `LoginErrorCode.ErrAccountNotFound`(10404)，不做绑定副作用；cmdName 从 `LoginKitConfig.LoginCmdName` 取，channel 从 `Nova.Config.Channel` 取；`LoginKitConfig` 未配置时抛 `KitConfigMissingException`；成功后自动写回 UID |
 | `public UniTask<NetResponse<PbNetDeleteResp>> DeleteAsync()` | 删除当前登录账号（极简入口）；身份靠 `Header.Uid`（即 `NetService.Uid`，当前登录态）识别，业务侧无需传参；cmdName 取自 `LoginKitConfig.DeleteCmdName`；`LoginKitConfig` 未配置时抛 `KitConfigMissingException`；删除成功后自动清空本实例 `UID` 与 `NetService.Uid`（语义等同登出） |
-| `public UniTask<NetResponse<PbNetBindResolveResp>> BindResolveAsync(int provider, string openId, string choice, string verifyCode = null)` | 绑定冲突二选一入口；登录返回 `LoginErrorCode.ErrBindConflict`(10402) 且响应带 `guest_summary`/`existing_summary` 时调用；身份靠 `Header.Uid`（即 guest_uid）识别，服务端自查 existing_uid；cmdName 取自 `LoginKitConfig.BindResolveCmdName`；`LoginKitConfig` 未配置时抛 `KitConfigMissingException`；成功后最终选中主账号 uid 自动写回 `UID` 与 `NetService.Uid` |
 | `public void Clear()` | 清空本实例 `UID` 与 `NetService.Uid` 静态字段；后续请求 Header 不再携带 Uid |
+
+> 为当前账号绑定三方 openId 请使用 `GameBind` 模块的 `Nova.Network.Kit<Bind>()`，登录与绑定职责分离。
 
 ---
 
@@ -73,8 +74,8 @@ login.Clear();
 - **`ChannelType` 映射范围**：`ChannelType.Google / Apple / WeChat` 有明确 Proto 映射；`TikTok / Official / Alipay` 及其他渠道统一映射为 `PbNetChannel.Unspecified`。
 - **`Head` 自动填充**：`NetBuilder.BuildHeader()` 在 `SendAsync` 内部调用，业务侧无需手动构建 Header。
 - **依赖主框架公共网络编排层**：`NetService.SendAsync` / `NetBuilder.BuildHeader` / `NetResponse<T>` 均来自主框架包 `com.solotopia.nova.framework` 的 Network Kit 公共层。
-- **失败分支码值归类**：`SendAsync` / `SendBindResolveAsync` 失败时调 `LogLoginError`，按 `LoginErrorCode` 常量归类码值打可读日志；不改变返回值，业务侧仍按 `resp.ErrorCode` 自行分支。命中 `ErrBindConflict`(10402) 时日志提示走 `BindResolveAsync`。
-- **绑定二选一流程**：登录返回 `ErrBindConflict`(10402) 且响应带 `guest_summary` / `existing_summary` 时，业务侧读取双方摘要展示给玩家，再调 `BindResolveAsync` 二选一；成功后最终选中主账号 uid 自动写回 `UID` 与 `NetService.Uid`。详见 [LoginBind.md](./LoginBind.md)。
+- **失败分支码值归类**：`SendAsync` 失败时调 `LogLoginError`，按 `LoginErrorCode` 常量归类码值打可读日志；不改变返回值，业务侧仍按 `resp.ErrorCode` 自行分支。
+- **登录不做绑定副作用**：`Async` 传入 `openId` 时服务端只"读"绑定关系（查 open_id 已绑的 uid 并登入），未绑返回 `ErrAccountNotFound`(10404)；为当前账号绑定三方号是 `GameBind` 模块的独立职责。
 
 ---
 
@@ -82,4 +83,4 @@ login.Clear();
 
 - 同包：[LoginErrorCode.md](./LoginErrorCode.md) — 登录业务段错误码
 - 同包：[LoginKitConfig.md](./LoginKitConfig.md) — 登录 Kit 配置
-- 同包：[LoginBind.md](./LoginBind.md) — 绑定二选一协议
+- 跨包：`com.solotopia.nova.framework.kit.network.gamebind` — 账号绑定业务 Kit（`Bind`）

@@ -35,7 +35,8 @@ namespace NovaFramework.Runtime
         public string ErrorMessage { get; }
 
         /// <summary>
-        /// 业务响应数据，失败时为 default。
+        /// 业务响应数据。成功时为业务响应；失败时通常为 default，但当服务端在业务错误码下仍返回业务体
+        /// （如绑定冲突返回 existing_uid）且解析成功时，此处会携带解析后的数据。
         /// </summary>
         public T Data { get; }
 
@@ -73,6 +74,20 @@ namespace NovaFramework.Runtime
         public static NetResponse<T> Fail(int errorCode, string errorMessage)
         {
             return new NetResponse<T>(false, errorCode, errorMessage, default);
+        }
+
+        /// <summary>
+        /// 创建携带业务数据的失败响应。
+        /// 用于服务端在业务错误码下仍返回业务体的场景（如绑定冲突 10402 返回 existing_uid），
+        /// 业务侧可在 IsSuccess=false 时读取 Data 获取附带信息。
+        /// </summary>
+        /// <param name="errorCode">错误码。</param>
+        /// <param name="errorMessage">错误描述。</param>
+        /// <param name="data">业务响应数据（可为 default）。</param>
+        /// <returns>失败的 NetResponse 实例。</returns>
+        public static NetResponse<T> Fail(int errorCode, string errorMessage, T data)
+        {
+            return new NetResponse<T>(false, errorCode, errorMessage, data);
         }
     }
 }

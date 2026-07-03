@@ -106,11 +106,24 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime
 
         /// <summary>
         /// 获取存档（全量）。cmdName 取自 ConfigWindow 配置的 SaveKitConfig.GetCmdName；走全量分支（full=true）。
+        /// 拉取当前登录用户（Header.Uid）自身的全部存档。
         /// </summary>
         /// <returns>包含响应数据或错误信息的 NetResponse。</returns>
         public UniTask<NetResponse<PbNetGetGameDataResp>> GetFullAsync()
         {
-            return SendGetFullAsync(ResolveGetCmdRow());
+            return SendGetFullAsync(ResolveGetCmdRow(), string.Empty);
+        }
+
+        /// <summary>
+        /// 获取指定用户存档（全量）。cmdName 取自 ConfigWindow 配置的 SaveKitConfig.GetCmdName；走全量分支（full=true），并携带 target_uid。
+        /// target_uid 为空时等价于 <see cref="GetFullAsync()"/>（拉自身）；有值时拉取该 uid 的全部存档。
+        /// 跨用户查询由服务端做权限校验，客户端仅负责透传目标 uid。
+        /// </summary>
+        /// <param name="targetUid">要查询的目标用户 uid。</param>
+        /// <returns>包含响应数据或错误信息的 NetResponse。</returns>
+        public UniTask<NetResponse<PbNetGetGameDataResp>> GetFullAsync(string targetUid)
+        {
+            return SendGetFullAsync(ResolveGetCmdRow(), targetUid);
         }
 
         /// <summary>
@@ -186,12 +199,13 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime
         /// </summary>
         /// <param name="cmdRow">NetCmd 指令行数据。</param>
         /// <returns>包含响应数据或错误信息的 NetResponse。</returns>
-        private async UniTask<NetResponse<PbNetGetGameDataResp>> SendGetFullAsync(INetworkCmdRow cmdRow)
+        private async UniTask<NetResponse<PbNetGetGameDataResp>> SendGetFullAsync(INetworkCmdRow cmdRow, string targetUid)
         {
             var body = new PbNetGetGameDataReq
             {
                 Head = NetBuilder.BuildHeader(),
                 Full = true,
+                TargetUid = targetUid ?? string.Empty,
             };
             return await NetService.SendAsync(cmdRow, body, PbNetGetGameDataResp.Parser, m_DebugModeOverride);
         }

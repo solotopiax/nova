@@ -22,11 +22,6 @@ namespace NovaFramework.Kit.Network.GameSave.Samples.Runtime
     public sealed partial class DemoGameSaveView
     {
         /// <summary>
-        /// 默认测试用 openId，当输入框为空时使用。
-        /// </summary>
-        private const string c_DefaultOpenId = "gamesave_demo_user";
-
-        /// <summary>
         /// 默认存档 key，当输入框为空时使用。
         /// </summary>
         private const string c_DefaultKey = "player";
@@ -85,6 +80,14 @@ namespace NovaFramework.Kit.Network.GameSave.Samples.Runtime
         }
 
         /// <summary>
+        /// 查询指定 uid 存档按钮点击回调，启动异步拉取指定用户存档流程。
+        /// </summary>
+        private void OnQueryByUidButtonClick()
+        {
+            QueryByUidAsync().Forget();
+        }
+
+        /// <summary>
         /// 全量写入按钮点击回调，启动全量写入流程。
         /// </summary>
         private void OnSetFullButtonClick()
@@ -97,7 +100,8 @@ namespace NovaFramework.Kit.Network.GameSave.Samples.Runtime
         /// </summary>
         private async UniTaskVoid LoginAsync()
         {
-            string openId = ReadInput(m_OpenIdInput, c_DefaultOpenId);
+            // openId 以页面输入为准：有值则传入登录，为空则走游客/设备登录，不做默认回退
+            string openId = ReadInput(m_OpenIdInput, string.Empty);
             AppendFeedback($"Nova.Network.Kit<Login>().Async(\"\", \"{openId}\", false) → 登录中...");
 
             NetResponse<PbNetLoginResp> resp = await Nova.Network.Kit<Login>().Async(string.Empty, openId, false);
@@ -172,6 +176,22 @@ namespace NovaFramework.Kit.Network.GameSave.Samples.Runtime
 
             NetResponse<PbNetGetGameDataResp> resp = await Nova.Network.Kit<Save>().GetFullAsync();
             AppendGetResult("GetFullAsync", resp);
+        }
+
+        /// <summary>
+        /// 查询指定 uid 存档：读取目标 uid 输入框，调用 GameSave.GetFullAsync(targetUid) 全量拉取指定用户存档。
+        /// target_uid 为空时等价于查当前登录用户；跨用户查询由服务端做权限校验。
+        /// </summary>
+        private async UniTaskVoid QueryByUidAsync()
+        {
+            string targetUid = (m_TargetUidInput != null && !string.IsNullOrWhiteSpace(m_TargetUidInput.text))
+                ? m_TargetUidInput.text.Trim()
+                : string.Empty;
+
+            AppendFeedback($"GetFullAsync(\"{targetUid}\") → 查询指定用户存档中...");
+
+            NetResponse<PbNetGetGameDataResp> resp = await Nova.Network.Kit<Save>().GetFullAsync(targetUid);
+            AppendGetResult($"GetFullAsync(\"{targetUid}\")", resp);
         }
 
         /// <summary>

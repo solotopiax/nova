@@ -188,3 +188,9 @@ ProjectSettings/Nova/Globals.json
 
 # Firebase 桌面（Editor beta）核心原生库：经 Git LFS 管理后随开源仓分发，不再 ignore；
 # 单文件超 GitHub 100MB 限制的部分（.bundle/.so）由 LFS 承载，clone 即用，无需再由 FirebaseDesktopLibraryGuard 引导补齐。
+
+# 截图输出目录（放仓库根，不入 Unity AssetDatabase，不入 git）
+/Screenshots/
+# 残留在 Assets 下的旧截图目录同样忽略（迁移过渡期）
+/Assets/Screenshots/
+/Assets/Screenshots.meta

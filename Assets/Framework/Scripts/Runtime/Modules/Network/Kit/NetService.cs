@@ -167,6 +167,20 @@ namespace NovaFramework.Runtime
                 if (parseResult.Code != NetErrorCode.SUCCESS)
                 {
                     Log.Warning(LogTag.Network, "NetService.SendAsync：服务端返回业务错误，name={0}，code={1}，msg={2}。", netCmdName, parseResult.Code, parseResult.Message);
+                    // 业务错误码下服务端仍可能携带业务体（如绑定冲突返回 existing_uid）；尝试解析并随失败响应带回，
+                    // 解析失败或无业务体则降级为不带 data 的失败响应，不影响错误码/描述的透传。
+                    if (parseResult.BusinessData != null && parseResult.BusinessData.Length > 0)
+                    {
+                        try
+                        {
+                            TResp errorData = parser.ParseFrom(parseResult.BusinessData);
+                            return NetResponse<TResp>.Fail(parseResult.Code, parseResult.Message, errorData);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Warning(LogTag.Network, "NetService.SendAsync：业务错误响应体解析失败，降级为不带 data，name={0}，error={1}。", netCmdName, e.Message);
+                        }
+                    }
                     return NetResponse<TResp>.Fail(parseResult.Code, parseResult.Message);
                 }
 

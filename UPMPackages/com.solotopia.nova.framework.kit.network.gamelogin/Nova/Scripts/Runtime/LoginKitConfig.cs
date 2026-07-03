@@ -46,17 +46,6 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         public string DeleteCmdName => m_DeleteCmdName;
 
         /// <summary>
-        /// 绑定冲突二选一协议 NetCmd 指令名序列化字段与属性。
-        /// 登录返回 ErrBindConflict(10402) 后，由 BindResolveAsync 拉取此协议名发起二选一请求。
-        /// </summary>
-        [SerializeField, Tooltip("用于绑定冲突二选一的协议名。登录返回 10402 后调用 BindResolveAsync 时使用，填写 NetCmd 表中的名称。")]
-        private string m_BindResolveCmdName;
-        /// <summary>
-        /// 绑定冲突二选一协议 NetCmd 指令名。
-        /// </summary>
-        public string BindResolveCmdName => m_BindResolveCmdName;
-
-        /// <summary>
         /// ConfigWindow 左树展示的名称。
         /// </summary>
         public string DisplayName => "Login 登录";

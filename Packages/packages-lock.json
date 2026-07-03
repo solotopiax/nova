@@ -229,14 +229,21 @@
       "hash": "fd8ff1fb700caf062eb5cce364c1d0a85f99ebe6"
     },
     "com.coplaydev.unity-mcp": {
-      "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v9.7.1",
+      "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.0.0",
       "depth": 0,
       "source": "git",
       "dependencies": {
+        "com.unity.modules.animation": "1.0.0",
+        "com.unity.modules.imageconversion": "1.0.0",
+        "com.unity.modules.physics": "1.0.0",
+        "com.unity.modules.physics2d": "1.0.0",
+        "com.unity.modules.uielements": "1.0.0",
+        "com.unity.modules.screencapture": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0",
         "com.unity.nuget.newtonsoft-json": "3.0.2",
         "com.unity.test-framework": "1.1.31"
       },
-      "hash": "78ee5418415953b79c358bfe6355fcc3fde7912b"
+      "hash": "d49ae2953580f3481beb1e084a1da2682f0b5610"
     },
     "com.google.external-dependency-manager": {
       "version": "1.2.186",
@@ -306,6 +313,16 @@
         "com.tivadar.best.tlssecurity": "3.0.4"
       },
       "url": "https://upm.solotopiax.com"
+    },
+    "com.solotopia.nova.framework.kit.network.gamebind": {
+      "version": "file:../UPMPackages/com.solotopia.nova.framework.kit.network.gamebind",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.solotopia.nova.framework": "0.5.32",
+        "com.solotopia.unitask": "10.0.5",
+        "com.solotopia.luban": "10.0.6"
+      }
     },
     "com.solotopia.nova.framework.kit.network.gamelogin": {
       "version": "file:../UPMPackages/com.solotopia.nova.framework.kit.network.gamelogin",

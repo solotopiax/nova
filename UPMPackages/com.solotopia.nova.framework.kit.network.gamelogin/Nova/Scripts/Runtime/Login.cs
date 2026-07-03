@@ -35,10 +35,12 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
 
         /// <summary>
         /// 登录（业务入口，极简形态）。
-        /// cmdName 取自 ConfigWindow 配置的 LoginKitConfig.LoginCmdName，渠道由 BuildHeader 自动填充，业务侧只需提供 openId。
+        /// open_id 仅用于"读"绑定关系找 uid 登入，不做绑定副作用——服务端查 open_id 已绑的 uid 并登入，未绑返回 <see cref="LoginErrorCode.ErrAccountNotFound"/>(10404)。
+        /// 为当前账号绑定三方 open_id 请使用 gamebind 模块的 Bind 服务（Nova.Network.Kit 泛型获取 Bind 实例后调 BindAsync）。
+        /// cmdName 取自 ConfigWindow 配置的 LoginKitConfig.LoginCmdName，渠道由 BuildHeader 自动填充。
         /// </summary>
         /// <param name="uid">显式指定请求 Header 中的 Uid；传入非空值时优先使用此值填充，否则沿用 NetService.Uid（登录态自动写回值）。</param>
-        /// <param name="openId">第三方平台返回的用户唯一标识。</param>
+        /// <param name="openId">第三方平台返回的用户唯一标识；用于读取 open_id 绑定关系找 uid 登入，未绑返回 10404。</param>
         /// <param name="forceNewAccount">是否强制注册新账号，默认 false。</param>
         /// <returns>包含登录响应数据或错误信息的 NetResponse。</returns>
         public UniTask<NetResponse<PbNetLoginResp>> Async(string uid, string openId, bool forceNewAccount = false)
@@ -67,28 +69,6 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
                 throw new KitConfigMissingException(typeof(LoginKitConfig).FullName);
             }
             return SendDeleteAsync(Nova.Network.ResolveNetCmdRow(config.DeleteCmdName));
-        }
-
-        /// <summary>
-        /// 绑定冲突二选一（业务入口，极简形态）。
-        /// 登录返回 <see cref="LoginErrorCode.ErrBindConflict"/>(10402) 且响应带 guest_summary / existing_summary 时，由客户端发起让玩家在 guest / existing 间二选一。
-        /// 身份由请求 Header.Uid（即 guest_uid，当前登录态）识别，经 device_id 顶号校验；服务端自查 existing_uid，不接受客户端传。
-        /// 渠道（provider）建议与登录时的 channel 保持一致；cmdName 取自 ConfigWindow 配置的 LoginKitConfig.BindResolveCmdName。
-        /// 成功后最终选中的主账号 uid 自动写回本实例与 NetService.Uid，后续请求 Header 自动带新 Uid。
-        /// </summary>
-        /// <param name="provider">三方平台（与 PbNetChannel 枚举值对齐，直接透传；建议与登录 channel 一致）。</param>
-        /// <param name="openId">冲突的三方标识（与触发冲突的登录 openId 一致）。</param>
-        /// <param name="choice">guest=保留当前进度 / existing=保留云端进度。</param>
-        /// <param name="verifyCode">二次验证码（高危操作防盗号，按业务开启；无则传 null 或空）。</param>
-        /// <returns>包含二选一响应数据或错误信息的 NetResponse。</returns>
-        public UniTask<NetResponse<PbNetBindResolveResp>> BindResolveAsync(int provider, string openId, string choice, string verifyCode = null)
-        {
-            LoginKitConfig config = Nova.Config.GetKitConfig<LoginKitConfig>();
-            if (config == null)
-            {
-                throw new KitConfigMissingException(typeof(LoginKitConfig).FullName);
-            }
-            return SendBindResolveAsync(Nova.Network.ResolveNetCmdRow(config.BindResolveCmdName), provider, openId, choice, verifyCode);
         }
 
         /// <summary>

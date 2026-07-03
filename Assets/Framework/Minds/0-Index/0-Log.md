@@ -186,3 +186,12 @@ date: 2026-06-05
 
 ## [2026-06-17 18:40] direct-ingest | ADR-066 EDM 公共依赖与 OpenUPM 工程固定策略
 直接入库 1 份 ADR-066（workflow）：EDM 经 OpenUPM 工程固定供给、scoped-registry 链须完整覆盖传递依赖、AppLovin 正确 registry（unity.packages.applovin.com/）、PlugPals 安装写顶层。跳过 Inbox 中转；rebuild-index + keyword（463 keywords）已收口。
+
+## [2026-07-02 23:58] direct-ingest | ADR-067 登录/绑定/云存档三端职责分离
+直接入库 1 份 ADR-067（arch）：login 只鉴权取 uid、bind 新建独立包只裁决归属（BindAsync/QueryConflictAsync/ResolveAsync）、数据覆盖交 save 业务层编排；删 login 的 BindResolveAsync/summary 字段/绑定错误码。跳过 Inbox 中转；rebuild-index 已收口。
+
+## [2026-07-03 04:30] direct-ingest | ADR-068 + PAT-140 绑定分离后续
+直接入库 2 份：ADR-068（runtime，网络业务失败响应也解析并携带业务体）、PAT-140（module，UPM 包依赖 vs sample 依赖边界）。跳过 Inbox；rebuild-index + keyword 已收口。
+
+## [2026-07-03 05:10] direct-ingest | ADR-069 云存档跨用户查询
+直接入库 1 份：ADR-069（module，PbNetGetGameDataReq 加 target_uid 支持按指定 uid 查存档，为空查自身，跨用户鉴权归服务端）。跳过 Inbox；rebuild-index + keyword 已收口。

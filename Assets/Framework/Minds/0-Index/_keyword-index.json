@@ -1,5 +1,5 @@
 {
-  "version": "2026-06-17-0008",
+  "version": "2026-07-03-1716",
   "generated_by": "nova-obs keyword-rebuild",
   "prelookup_keywords": [
     "ADR-001",
@@ -54,6 +54,9 @@
     "ADR-064",
     "ADR-065",
     "ADR-066",
+    "ADR-067",
+    "ADR-068",
+    "ADR-069",
     "AOT",
     "ARCHITECTURE.md",
     "Addressable",
@@ -263,6 +266,7 @@
     "PAT-137",
     "PAT-138",
     "PAT-139",
+    "PAT-140",
     "PAT-18",
     "PAT-19",
     "PAT-20",
@@ -441,6 +445,7 @@
     "热更",
     "热更链路图谱",
     "界面",
+    "登录/绑定/云存档三端职责分离",
     "禁止手改 Prefab YAML",
     "第三方接入图谱",
     "编辑器",
@@ -489,6 +494,6 @@
     "Config": "MOC-Config",
     "Prefab": "MOC-Prefab"
   },
-  "note_count": 178,
-  "suggestions_count": 2
+  "note_count": 182,
+  "suggestions_count": 6
 }

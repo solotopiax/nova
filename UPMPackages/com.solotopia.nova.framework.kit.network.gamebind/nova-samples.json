@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "GameBindDemo",
+      "description": "com.solotopia.nova.framework.kit.network.gamebind 演示示例：DemoGameBindView 展示先登录取得当前账号，再 Nova.Network.Kit<Bind>().BindAsync / QueryConflictAsync / ResolveAsync 三段绑定流程与冲突二选一 UI，由 ProcedurePlaying 直接打开。示例前置依赖 gamelogin 包（登录步骤使用其 Login 服务）",
+      "sampleName": "GameBindDemo",
+      "sourceDir": "Assets/Samples/GameBindDemo",
+      "expectedNamespace": "NovaFramework.Kit.Network.GameBind.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/GameBindDemo"
+    }
+  ]
+}

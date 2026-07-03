@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- 登录与账号绑定职责分离：`Login` 聚焦鉴权与取 uid，账号绑定（含冲突二选一）迁至独立的 `com.solotopia.nova.framework.kit.network.gamebind` 模块。
+- `Login.Async` 的 `openId` 语义收窄为只读取绑定关系找 uid 登入，未绑返回 `ErrAccountNotFound`(10404)，不再执行绑定副作用。
+- `PbNetLoginResp` 精简为登录响应本体（head / uid / register_time / login_time / country / status / is_new_account）；register_time、login_time 类型为 int64。
+
+### Removed
+
+- `Login.BindResolveAsync`、`LoginKitConfig.BindResolveCmdName`，以及 `PbNetLoginResp` 中的绑定冲突摘要字段。
+- `LoginErrorCode` 移除绑定业务码（10401 / 10402 / 10403），改由 `BindErrorCode` 维护。
+
 ## [0.0.8] - 2026-07-01
 
 ### Added

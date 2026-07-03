@@ -13,6 +13,18 @@
       "Path": "/v1/user/delete"
     },
     {
+      "Name": "GameAccountBind",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind"
+    },
+    {
+      "Name": "GameAccountBindConflict",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind/conflict"
+    },
+    {
       "Name": "GameAccountBindResolve",
       "Way": "HTTP_POST",
       "HostKey": "GameServer",

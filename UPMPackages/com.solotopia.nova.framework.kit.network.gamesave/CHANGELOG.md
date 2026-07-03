@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.15] - 2026-07-03
+
+### Added
+
+- `Save.GetFullAsync(string targetUid)` 重载，支持跨用户存档查询（ADR-069）：`targetUid` 为空时等价拉取当前登录用户自身存档，有值时拉取该 uid 的全部存档；跨用户查询权限由服务端校验，客户端仅透传目标 uid。
+
+### Changed
+
+- `PbNetGetGameDataReq` 新增 `target_uid` 字段，protobuf 重新生成；`SendGetFullAsync` 内部携带 `TargetUid` 透传。
+
 ## [0.0.14] - 2026-06-30
 
 ### Changed

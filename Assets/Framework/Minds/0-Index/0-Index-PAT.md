@@ -95,6 +95,7 @@ auto_generated: true
 
 ## module
 
+- [PAT-140 UPM 包依赖与 sample 依赖的边界](../2-Areas/Patterns/PAT-140-upm-package-vs-sample-dependency.md) — dependencies 管安装 / asmdef 管编译 / sample 跨包依赖不自动解析
 - [PAT-33 新增 SDK Plugin 的 6 步 SOP](../2-Areas/Patterns/PAT-33-sdk-plugin-sop.md) — SDK Plugin SOP UPM包加ISDKPlugin
 - [PAT-69 UGUI 等比铺满父宽的零脚本配置法](../2-Areas/Patterns/PAT-69-ugui-aspect-fit-fill-width.md) — ARF+水平 stretch 实现等比满宽零脚本
 
@@ -163,4 +164,4 @@ auto_generated: true
 
 
 ---
-_共 97 条，分布于 18 个 category。_
+_共 98 条，分布于 18 个 category。_

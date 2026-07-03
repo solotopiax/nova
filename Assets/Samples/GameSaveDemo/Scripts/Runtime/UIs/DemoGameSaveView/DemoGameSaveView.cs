@@ -71,6 +71,12 @@ namespace NovaFramework.Kit.Network.GameSave.Samples.Runtime
                 m_SetFullButton.onClick.AddListener(OnSetFullButtonClick);
                 SetButtonApiHint(m_SetFullButton, "Nova.Network.Kit<Save>().SetFullAsync(value)");
             }
+
+            if (m_QueryByUidButton != null)
+            {
+                m_QueryByUidButton.onClick.AddListener(OnQueryByUidButtonClick);
+                SetButtonApiHint(m_QueryByUidButton, "Nova.Network.Kit<Save>().GetFullAsync(targetUid)");
+            }
         }
 
         /// <summary>

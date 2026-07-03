@@ -1,0 +1,52 @@
+﻿{
+  "NetworkCmds": [
+    {
+      "Name": "GameAccountLogin",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/loginV1"
+    },
+    {
+      "Name": "GameAccountDelete",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/delete"
+    },
+    {
+      "Name": "GameAccountBind",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind"
+    },
+    {
+      "Name": "GameAccountBindConflict",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind/conflict"
+    },
+    {
+      "Name": "GameAccountBindResolve",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind/resolve"
+    },
+    {
+      "Name": "GameSaveGet",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/gamedata"
+    },
+    {
+      "Name": "GameSaveSet",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/syncdata"
+    },
+    {
+      "Name": "TGAServerUrl",
+      "Way": "HTTP_URL",
+      "HostKey": "TGAServer",
+      "Path": ""
+    }
+  ]
+}

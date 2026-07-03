@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package NovaFramework.Kit.Network.GameBind.Runtime;
+
+import "pb_net_header.proto";
+
+// 账号进度摘要：用于绑定冲突展示，仅 existing 侧由服务端返回，guest 侧由客户端本地取
+message BindSummary {
+  string uid       = 1;  // 账号 ID
+  int64  timestamp = 2;  // 最后一次上传到服务器的时间（秒级 Unix），辅助玩家决策
+}
+
+// 绑定请求：为当前账号（head.uid）绑定一个三方 open_id
+message PbNetBindReq {
+  NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头（head.uid = 被绑定的当前账号）
+  int32  provider = 2;  // 三方平台（与 PbNetChannel 枚举值对齐，直接透传）
+  string open_id  = 3;  // 要绑定的三方号
+}
+
+// 绑定响应
+message PbNetBindResp {
+  NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
+  string existing_uid = 2;  // 仅 ErrBindConflict(10402) 时有值：冲突的对方账号 uid
+}
+
+// 冲突查询请求：拉取对方账号进度摘要供玩家二选一决策
+message PbNetBindConflictReq {
+  NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头（head.uid = guest_uid 当前账号）
+  string open_id = 2;  // 冲突的三方号
+}
+
+// 冲突查询响应
+message PbNetBindConflictResp {
+  NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
+  BindSummary existing_summary = 2;  // 对方账号进度摘要
+}
+
+// 裁决请求：玩家二选一后由服务端做账号归属裁决（不碰存档数据）
+message PbNetBindResolveReq {
+  NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头（head.uid = guest_uid）
+  string open_id     = 2;  // 冲突的三方号
+  string choice      = 3;  // "guest"=保留当前账号 / "existing"=保留对方账号
+  string verify_code = 4;  // 二次验证（高危防盗号，可选；无则空）
+}
+
+// 裁决响应：纯账号归属，数据覆盖由业务层用云存档编排
+message PbNetBindResolveResp {
+  NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
+  string final_uid     = 2;  // 裁决后的主账号 uid
+  string abandoned_uid = 3;  // 被放弃但保留的 uid
+}

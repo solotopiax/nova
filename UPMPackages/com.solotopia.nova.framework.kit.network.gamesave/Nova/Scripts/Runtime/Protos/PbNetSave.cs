@@ -26,28 +26,28 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
           string.Concat(
             "ChFwYl9uZXRfc2F2ZS5wcm90bxIqTm92YUZyYW1ld29yay5LaXQuTmV0d29y",
             "ay5HYW1lU2F2ZS5SdW50aW1lGhNwYl9uZXRfaGVhZGVyLnByb3RvIi8KEVBi",
-            "TmV0R2FtZURhdGFOb2RlEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCSJm",
+            "TmV0R2FtZURhdGFOb2RlEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCSJ6",
             "ChNQYk5ldEdldEdhbWVEYXRhUmVxEjMKBGhlYWQYASABKAsyJS5Ob3ZhRnJh",
             "bWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXISDAoEZnVsbBgCIAEoCBIM",
-            "CgRrZXlzGAMgAygJIvUBChRQYk5ldEdldEdhbWVEYXRhUmVzcBI0CgRoZWFk",
-            "GAEgASgLMiYuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVzcEhlYWRl",
-            "chIUCgxnYW1lX3ZlcnNpb24YAiABKAkSEwoLYXBwX3ZlcnNpb24YAyABKAkS",
-            "FgoObGFzdF9kZXZpY2VfaWQYBCABKAkSFgoObGFzdF90aW1lc3RhbXAYBSAB",
-            "KAMSTAoFZGF0YXMYBiADKAsyPS5Ob3ZhRnJhbWV3b3JrLktpdC5OZXR3b3Jr",
-            "LkdhbWVTYXZlLlJ1bnRpbWUuUGJOZXRHYW1lRGF0YU5vZGUi6QEKE1BiTmV0",
-            "U2V0R2FtZURhdGFSZXESMwoEaGVhZBgBIAEoCzIlLk5vdmFGcmFtZXdvcmsu",
-            "UnVudGltZS5QYk5ldFJlcUhlYWRlchIMCgRmdWxsGAIgASgIEhQKDGdhbWVf",
-            "dmVyc2lvbhgDIAEoCRITCgthcHBfdmVyc2lvbhgEIAEoCRIWCg5sYXN0X2Rl",
-            "dmljZV9pZBgFIAEoCRJMCgVkYXRhcxgGIAMoCzI9Lk5vdmFGcmFtZXdvcmsu",
-            "S2l0Lk5ldHdvcmsuR2FtZVNhdmUuUnVudGltZS5QYk5ldEdhbWVEYXRhTm9k",
-            "ZSJcChRQYk5ldFNldEdhbWVEYXRhUmVzcBI0CgRoZWFkGAEgASgLMiYuTm92",
-            "YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVzcEhlYWRlchIOCgZlZmZlY3QY",
-            "AiABKAViBnByb3RvMw=="));
+            "CgRrZXlzGAMgAygJEhIKCnRhcmdldF91aWQYBCABKAki9QEKFFBiTmV0R2V0",
+            "R2FtZURhdGFSZXNwEjQKBGhlYWQYASABKAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1",
+            "bnRpbWUuUGJOZXRSZXNwSGVhZGVyEhQKDGdhbWVfdmVyc2lvbhgCIAEoCRIT",
+            "CgthcHBfdmVyc2lvbhgDIAEoCRIWCg5sYXN0X2RldmljZV9pZBgEIAEoCRIW",
+            "Cg5sYXN0X3RpbWVzdGFtcBgFIAEoAxJMCgVkYXRhcxgGIAMoCzI9Lk5vdmFG",
+            "cmFtZXdvcmsuS2l0Lk5ldHdvcmsuR2FtZVNhdmUuUnVudGltZS5QYk5ldEdh",
+            "bWVEYXRhTm9kZSLpAQoTUGJOZXRTZXRHYW1lRGF0YVJlcRIzCgRoZWFkGAEg",
+            "ASgLMiUuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVxSGVhZGVyEgwK",
+            "BGZ1bGwYAiABKAgSFAoMZ2FtZV92ZXJzaW9uGAMgASgJEhMKC2FwcF92ZXJz",
+            "aW9uGAQgASgJEhYKDmxhc3RfZGV2aWNlX2lkGAUgASgJEkwKBWRhdGFzGAYg",
+            "AygLMj0uTm92YUZyYW1ld29yay5LaXQuTmV0d29yay5HYW1lU2F2ZS5SdW50",
+            "aW1lLlBiTmV0R2FtZURhdGFOb2RlIlwKFFBiTmV0U2V0R2FtZURhdGFSZXNw",
+            "EjQKBGhlYWQYASABKAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRS",
+            "ZXNwSGVhZGVyEg4KBmVmZmVjdBgCIAEoBWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGameDataNode), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGameDataNode.Parser, new[]{ "Key", "Value" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataReq), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataReq.Parser, new[]{ "Head", "Full", "Keys" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataReq), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataReq.Parser, new[]{ "Head", "Full", "Keys", "TargetUid" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataResp), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataResp.Parser, new[]{ "Head", "GameVersion", "AppVersion", "LastDeviceId", "LastTimestamp", "Datas" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetSetGameDataReq), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetSetGameDataReq.Parser, new[]{ "Head", "Full", "GameVersion", "AppVersion", "LastDeviceId", "Datas" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetSetGameDataResp), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetSetGameDataResp.Parser, new[]{ "Head", "Effect" }, null, null, null, null)
@@ -342,6 +342,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       head_ = other.head_ != null ? other.head_.Clone() : null;
       full_ = other.full_;
       keys_ = other.keys_.Clone();
+      targetUid_ = other.targetUid_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -395,6 +396,21 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       get { return keys_; }
     }
 
+    /// <summary>Field number for the "target_uid" field.</summary>
+    public const int TargetUidFieldNumber = 4;
+    private string targetUid_ = "";
+    /// <summary>
+    /// 要查询的目标用户 uid；为空拉取 head.uid 自身存档，有值拉取指定 uid 存档（服务端须做权限校验）
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string TargetUid {
+      get { return targetUid_; }
+      set {
+        targetUid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -413,6 +429,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       if (!object.Equals(Head, other.Head)) return false;
       if (Full != other.Full) return false;
       if(!keys_.Equals(other.keys_)) return false;
+      if (TargetUid != other.TargetUid) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -423,6 +440,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       if (head_ != null) hash ^= Head.GetHashCode();
       if (Full != false) hash ^= Full.GetHashCode();
       hash ^= keys_.GetHashCode();
+      if (TargetUid.Length != 0) hash ^= TargetUid.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -450,6 +468,10 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
         output.WriteBool(Full);
       }
       keys_.WriteTo(output, _repeated_keys_codec);
+      if (TargetUid.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(TargetUid);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -469,6 +491,10 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
         output.WriteBool(Full);
       }
       keys_.WriteTo(ref output, _repeated_keys_codec);
+      if (TargetUid.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(TargetUid);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -486,6 +512,9 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
         size += 1 + 1;
       }
       size += keys_.CalculateSize(_repeated_keys_codec);
+      if (TargetUid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(TargetUid);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -508,6 +537,9 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
         Full = other.Full;
       }
       keys_.Add(other.keys_);
+      if (other.TargetUid.Length != 0) {
+        TargetUid = other.TargetUid;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -542,6 +574,10 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
             keys_.AddEntriesFrom(input, _repeated_keys_codec);
             break;
           }
+          case 34: {
+            TargetUid = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -574,6 +610,10 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
           }
           case 26: {
             keys_.AddEntriesFrom(ref input, _repeated_keys_codec);
+            break;
+          }
+          case 34: {
+            TargetUid = input.ReadString();
             break;
           }
         }

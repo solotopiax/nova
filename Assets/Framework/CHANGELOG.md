@@ -1,5 +1,18 @@
 # Changelog — com.solotopia.nova.framework
 
+## [0.5.33] - 2026-07-03
+
+### Added
+
+- `NetResponse<T>` 新增 `Fail(int errorCode, string errorMessage, T data)` 工厂重载，支持失败响应携带业务数据（ADR-068）：服务端在业务错误码下仍返回业务体（如绑定冲突返回 existing_uid）时，业务侧可在 `IsSuccess=false` 时读取 `Data` 获取附带信息。
+
+### Changed
+
+- `NetService.SendAsync` 业务错误码分支增强：服务端返回业务错误且携带业务体时，尝试解析并随失败响应带回；解析失败或无业务体则降级为不带 data 的失败响应，不影响错误码 / 描述透传。
+- BuildProcessor 的 `UnityManifest.xml` 模板路径解析重构：新增 `NovaBuildShared.ResolveUnityManifestTemplatePath()`，开发态优先 `Assets/Framework` 路径，UPM 引用态回退包 `resolvedPath` / `assetPath` / `AssetDatabase.FindAssets` 三级定位，修复 UPM 引用态模板缺失导致 Android 构建漏复制 UnityManifest 的问题。
+- `EditorUtil.Config.WorkspaceActive.GetActiveRuntime` 定位策略增强（ADR-047）：首选 `ConfigMasterSO.ExportTarget` 序列化引用（GUID 追踪，资产可置于任意位置），`ExportTarget` 为 null 时回退 ADR-033 布局约定兜底，覆盖未配 ExportTarget 的老工程与新 sample。
+- 同步刷新 Minds / Docs / AGENTS.md 文档（ADR-067 登录 / 绑定 / 云存档三端分离、ADR-068 网络失败携带数据、ADR-069 云存档跨用户查询、PAT-140 UPM 包与 sample 依赖关系）。
+
 ## [0.5.32] - 2026-06-19
 
 ### Changed

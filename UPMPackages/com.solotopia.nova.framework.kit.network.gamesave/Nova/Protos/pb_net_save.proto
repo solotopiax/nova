@@ -15,6 +15,7 @@ message PbNetGetGameDataReq {
   NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
   bool full = 2;              // 是否全量；true = 忽略 keys 拉取全部存档
   repeated string keys = 3;   // 要获取的 key 列表
+  string target_uid = 4;      // 要查询的目标用户 uid；为空拉取 head.uid 自身存档，有值拉取指定 uid 存档（服务端须做权限校验）
 }
 
 // 获取存档响应

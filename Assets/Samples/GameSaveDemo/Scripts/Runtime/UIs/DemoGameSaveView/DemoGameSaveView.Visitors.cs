@@ -78,5 +78,17 @@ namespace NovaFramework.Kit.Network.GameSave.Samples.Runtime
         /// </summary>
 
         [SerializeField] private Button m_SetFullButton;
+
+        /// <summary>
+        /// 目标 uid 输入框；查询指定用户存档时填入要查询的 uid，为空则查当前登录用户自身。
+        /// </summary>
+
+        [SerializeField] private TMP_InputField m_TargetUidInput;
+
+        /// <summary>
+        /// 查询指定 uid 存档按钮；点击后触发 GameSave.GetFullAsync(targetUid) 拉取指定用户的云端存档。
+        /// </summary>
+
+        [SerializeField] private Button m_QueryByUidButton;
     }
 }

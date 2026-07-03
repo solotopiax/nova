@@ -6,6 +6,16 @@
 
 ---
 
+## [0.5.33] - 2026-07-03
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.33]` 节。
+
+主要内容：
+- 主包 framework 升级到 0.5.33：`NetResponse<T>` 新增携带业务数据的失败工厂重载、`NetService` 业务错误体解析（ADR-068）；BuildProcessor `UnityManifest.xml` 模板路径三级定位重构；`WorkspaceActive.GetActiveRuntime` 增强 ExportTarget 优先定位（ADR-047）。
+- 子包 `com.solotopia.nova.framework.kit.network.gamebind` 首次发布 0.0.1：账号绑定业务网络模块（ADR-067）。
+- 子包 `com.solotopia.nova.framework.kit.network.gamelogin` 升级到 0.0.8。
+- 子包 `com.solotopia.nova.framework.kit.network.gamesave` 升级到 0.0.15：`Save.GetFullAsync(targetUid)` 跨用户存档查询（ADR-069）。
+
 ## [0.5.26] - 2026-06-15
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.26]` 节。

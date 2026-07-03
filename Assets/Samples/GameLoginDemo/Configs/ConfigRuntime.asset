@@ -56,4 +56,3 @@ MonoBehaviour:
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: GameAccountDelete
-        m_BindResolveCmdName: GameAccountBindResolve
