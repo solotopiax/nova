@@ -19,6 +19,17 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.solotopia.nicevibrations",
+            "expression": "10.0.5",
+            "define": "NOVA_NICEVIBRATIONS"
+        },
+        {
+            "name": "com.solotopia.simplediskutils",
+            "expression": "1.0.7",
+            "define": "NOVA_SIMPLEDISKUTILS"
+        }
+    ],
     "noEngineReferences": false
 }

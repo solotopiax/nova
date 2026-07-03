@@ -6,6 +6,13 @@
 
 ---
 
+## [0.5.34] - 2026-07-03
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.34]` 节。
+
+主要内容：
+- 主包 framework 升级到 0.5.34：`NOVA_NICEVIBRATIONS` / `NOVA_SIMPLEDISKUTILS` 宏定义从 `package.json` 的 `nova.requiredLibraries.defineSymbols` 迁移至 `NovaFramework.Runtime.asmdef` 的 `versionDefines`（装包自动跨平台定义，ADR-064 后半步）；删除 `NOVA_UNIWEBVIEW` / `NOVA_WEBGLSUPPORT` 死宏声明（孤儿宏根除，全仓无 `#if` 引用）；Debug `Settings.asset` 默认 `_isEnabled` 置为 0。
+
 ## [0.5.33] - 2026-07-03
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.33]` 节。

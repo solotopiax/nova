@@ -1,5 +1,19 @@
 # Changelog — com.solotopia.nova.framework
 
+## [0.5.34] - 2026-07-03
+
+### Changed
+
+- 宏定义迁移至 asmdef versionDefines（ADR-064 后半步）：`NOVA_NICEVIBRATIONS`（`com.solotopia.nicevibrations` ≥ 10.0.5）、`NOVA_SIMPLEDISKUTILS`（`com.solotopia.simplediskutils` ≥ 1.0.7）改由 `NovaFramework.Runtime.asmdef` 的 `versionDefines` 声明，装包即自动跨平台定义；`package.json` 的 `nova.requiredLibraries` 移除对应 `defineSymbols` 展示字段（requiredLibraries 仅作 PlugPals 展示，宏定义权威改由 asmdef 承载）。
+
+### Removed
+
+- 删除 `NOVA_UNIWEBVIEW`、`NOVA_WEBGLSUPPORT` 死宏声明（孤儿宏根除）：`package.json` 的 `nova.requiredLibraries` 中 `com.onevcat.uniwebview`、`com.solotopia.webglsupport` 移除 `defineSymbols`，asmdef 不再重新定义（全仓无 `#if` 引用，确认为死宏）。
+
+### Fixed
+
+- Debug 模块 `Settings.asset` 默认 `_isEnabled` 置为 0（关闭），避免开发态 Debug 面板误启用。
+
 ## [0.5.33] - 2026-07-03
 
 ### Added

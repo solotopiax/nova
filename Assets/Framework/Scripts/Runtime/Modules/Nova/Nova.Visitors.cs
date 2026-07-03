@@ -24,7 +24,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// Nova 版本号。
         /// </summary>
-        public const string Version = "0.5.33";
+        public const string Version = "0.5.34";
 
         /// <summary>
         /// Nova 自身引用。
