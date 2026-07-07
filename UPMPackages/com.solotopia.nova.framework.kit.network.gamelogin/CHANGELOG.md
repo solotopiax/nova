@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.9] - 2026-07-08
+
+### Fixed
+
+- 清理 sample asmdef 克隆残留引用：删除代码未使用的 gamesave / tga / appsflyer / ad 跨包程序集引用（从 MainDemo 模板克隆时带入，GameLoginDemo 实际未调用），避免消费工程未安装这些无关包时编译报 CS0234。
+
 ## [Unreleased]
 
 ### Changed

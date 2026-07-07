@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.19] - 2026-07-08
+
+### Fixed
+
+- 清理 sample asmdef 克隆残留引用：删除代码未使用的 gamesave / appsflyer / ad 跨包程序集引用（从 MainDemo 模板克隆时带入，TGADemo 实际未调用），避免消费工程未安装这些无关包时编译报 CS0234。
+- 补全 sample 依赖声明：package.json dependencies 增加 com.solotopia.nova.framework.kit.network.gamelogin（TGADemo 的登录/绑定/存档演示实际使用），修复消费工程 import sample 后缺对应程序集的编译失败。
+- 移除断链程序集引用（GUID 09050f5d… 在项目中已无归属，Unity 报 Missing Reference）。
+- 补全包级依赖：package.json 此前无 dependencies 字段，新增 com.solotopia.nova.framework（本包 Runtime 与 sample 均依赖框架），修复独立安装时缺框架程序集。
+
 ## [0.0.18] - 2026-07-08
 
 ### Changed

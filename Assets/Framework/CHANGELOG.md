@@ -1,5 +1,11 @@
 # Changelog — com.solotopia.nova.framework
 
+## [0.5.36] - 2026-07-08
+
+### Fixed
+
+- 清理 MainDemo 示例 asmdef 克隆残留引用：`NovaFramework.Samples.Runtime` 删除代码未使用的 gamelogin / gamesave / tga / appsflyer / ad 跨包程序集引用（MainDemo Runtime 实际仅依赖框架自身），避免消费工程仅安装框架、import MainDemo 后因缺这些子包程序集编译报 CS0234。此为 sample 模板根因清理——`nova-create-sample` 由 MainDemo 克隆子 sample 时不再继承这批残留引用。
+
 ## [0.5.35] - 2026-07-08
 
 ### Changed

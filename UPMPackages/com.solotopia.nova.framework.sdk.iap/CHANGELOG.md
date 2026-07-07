@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.13] - 2026-07-08
+
+### Fixed
+
+- 清理 sample asmdef 克隆残留引用：删除代码未使用的 gamesave / tga / appsflyer / ad 跨包程序集引用（从 MainDemo 模板克隆时带入，IAPDemo 实际未调用），避免消费工程未安装这些无关包时编译报 CS0234。
+- 补全 sample 依赖声明：package.json dependencies 增加 com.solotopia.nova.framework.kit.network.gamelogin（IAPDemo 的登录演示实际使用），修复消费工程 import sample 后缺对应程序集的编译失败。
+- 保留 iap.mobile 程序集引用：IAPDemo 的移动端订阅演示（`DemoIAPBridge.Mobile.cs`）使用 `NovaFramework.SDK.IAP.Runtime` 命名空间下、由 iap.mobile 程序集实现的 `IIAPMobileSubscriptionCapable` 等能力，故 asmdef 保留该引用（该演示需搭配安装 `com.solotopia.nova.framework.sdk.iap.mobile`；因 iap.mobile 反向依赖本包，无法在本包 dependencies 声明，属伴生包软要求）。
+
 ## [0.0.12] - 2026-06-30
 
 ### Changed

@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.tga",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "3.4.6",
   "displayName": "Nova Framework - SDK - TGA",
@@ -19,5 +19,9 @@
   },
   "assemblies": [
     "NovaFramework.SDK.TGAPlugin.Runtime"
-  ]
+  ],
+  "dependencies": {
+    "com.solotopia.nova.framework": "0.5.35",
+    "com.solotopia.nova.framework.kit.network.gamelogin": "0.0.8"
+  }
 }

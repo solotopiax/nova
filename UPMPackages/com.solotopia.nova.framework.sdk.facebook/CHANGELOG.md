@@ -2,6 +2,13 @@
 
 This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`.
 
+## [0.0.6] - 2026-07-08
+
+### Fixed
+
+- 清理 sample asmdef 克隆残留引用：删除代码未使用的 gamesave / tga / appsflyer / ad 跨包程序集引用（从 MainDemo 模板克隆时带入，FacebookDemo 实际未调用），避免消费工程未安装这些无关包时编译报 CS0234。
+- 补全 sample 依赖声明：package.json dependencies 增加 com.solotopia.nova.framework.kit.network.gamelogin + com.solotopia.nova.framework.kit.network.gamebind（FacebookDemo 的登录/绑定/存档演示实际使用），修复消费工程 import sample 后缺对应程序集的编译失败。
+
 ## [0.0.5] - 2026-07-08
 
 ### Changed
