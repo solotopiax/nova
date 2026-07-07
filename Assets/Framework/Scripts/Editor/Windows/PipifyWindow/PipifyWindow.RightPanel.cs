@@ -366,6 +366,13 @@ namespace NovaFramework.Editor
         private void DrawStringParamField(Rect valueRect, FieldInfo field, object paramsInstance, object currentValue)
         {
             string v = currentValue as string ?? string.Empty;
+            if (field.GetCustomAttribute<PipifyPasswordAttribute>() != null)
+            {
+                string password = EditorGUI.PasswordField(valueRect, v);
+                field.SetValue(paramsInstance, password);
+                return;
+            }
+
             PipifyDropdownAttribute dropdown = field.GetCustomAttribute<PipifyDropdownAttribute>();
             if (dropdown != null)
             {

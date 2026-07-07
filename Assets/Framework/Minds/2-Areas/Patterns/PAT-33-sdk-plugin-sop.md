@@ -85,6 +85,8 @@ related:
 - **多接口实现**：一个 Plugin 可同时实现多个业务接口（如 `FirebasePlugin : IMonetizeTrackPlugin, IPushPlugin, IRemoteConfigPlugin`）；序列化层一个 Type 一条 Entry，查询层 `GetAll<I>` 自动扇出
 - **失败处理**：`InitializeAsync` 内部不要 `try/catch + return`；让异常抛出，由 SDKManager 统一捕获置 `IsAvailable=false`
 - **主线程契约**：Plugin 完成点（UniTask continuation）+ Event/Action 触发前必须 `await UniTask.SwitchToMainThread(ct)`（详 [[ADR-022-sdk-plugin-architecture]] 决策 6）
+- **启用与注入口径已演进（2026-07）**：当前 SDK 启用真相源为 `ConfigMaster.EnabledSDKs`（ConfigWindow 勾选），config 经 `IConfigManager` 注入；**不属能力族**的插件（如纯远程配置 / ABTest 类，只继承 `SDKPluginBase` 不实现能力接口）由 `SDKManager` 按 EnabledSDKs 补充实例化，无需也无法在 SDK 面板勾选，详 [[ADR-070-sdk-enable-via-configmaster-enabledsdks|ADR-070]]。本文步骤 4 面板勾选适用于能力族插件；步骤 5 的 `SetConfig` 为早期口径，现以 ConfigMaster 配置为准。
+- **第三方封装只读**：封装原厂 SDK 时对其源目录只读、文件完整搬入不增删改，详 [[PAT-141-vendor-source-readonly|PAT-141]]。
 
 ## 反模式
 

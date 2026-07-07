@@ -67,6 +67,8 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
 {
 public partial class TbNetworkHostKeys
 {
+    public NetworkHostKeys GameServer => GetOrDefault("GameServer");
+
     public NetworkHostKeys TGAServer => GetOrDefault("TGAServer");
 
 }

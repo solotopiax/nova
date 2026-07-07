@@ -30,33 +30,20 @@ namespace NovaFramework.Runtime
         public SDKManager() { }
 
         /// <summary>
-        /// 同步初始化：按 PluginEntries 遍历，反射实例化启用且非 Missing 的插件，建立 Type→Plugin 索引。
-        /// Missing / Disabled 条目跳过实例化并记录日志。
-        /// 不执行 Plugin.InitializeAsync；完成后按 Priority 升序排序。
+        /// 同步初始化：缓存 Manager 依赖；不读取 PluginEntries 作为运行时启用或排序来源。
+        /// 不在 Start 期实例化插件；插件启用与实例化统一延后到 InitializeAsync 中按 ConfigMaster.EnabledSDKs 执行。
         /// </summary>
         /// <param name="config">由 SDKComponent.Start() 构造并传入的配置 DTO，包含 PluginEntries 列表。</param>
         public override void Initialize(SDKManagerConfig config)
         {
-            if (config == null || config.PluginEntries == null)
-            {
-                Log.Debug(LogTag.SDK, "SDKManager.Initialize：PluginEntries 为空，跳过实例化。");
-                return;
-            }
 
-            for (int i = 0; i < config.PluginEntries.Count; i++)
-            {
-                InstantiateEntry(config.PluginEntries[i]);
-            }
-
-            SortPluginsByPriority();
             m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
             m_ConfigManager = FrameworkManagersGroup.GetManager<IConfigManager>();
-            Log.Debug(LogTag.SDK, Txt.Format("SDKManager.Initialize 完成，共实例化 {0} 个插件。", m_Plugins.Count));
+            Log.Debug(LogTag.SDK, "SDKManager.Initialize 完成，已缓存 Manager 依赖。");
         }
-
         /// <summary>
-        /// 异步批量初始化所有已实例化的插件。
-        /// 按 Priority 升序分桶，同桶内 UniTask.WhenAll 并行；桶间串行执行降低启动期 CPU 峰值。
+        /// 异步批量初始化 ConfigMaster.EnabledSDKs 启用的插件。
+        /// 按插件自身 Priority 升序分桶，同桶内 UniTask.WhenAll 并行；桶间串行执行降低启动期 CPU 峰值。
         /// 单插件失败隔离：catch 后记录 Log.Error，不向上传播。
         /// 所有桶完成后 m_IsInitialized = true 并解锁 WaitForInitializedAsync。
         /// </summary>
@@ -69,6 +56,11 @@ namespace NovaFramework.Runtime
                 Log.Warning(LogTag.SDK, "SDKManager.InitializeAsync：已初始化，重复调用已忽略。");
                 return;
             }
+
+            // Config 已在 Procedure 加载流程就绪（Initialize 处于 Unity Start 期，早于 Config 加载）。
+            // 此处以 ConfigMaster.EnabledSDKs 为唯一启用源实例化插件，排序使用 ISDKPlugin.Priority。
+            InstantiateEnabledPluginsFromConfig();
+            SortPluginsByPriority();
 
             try
             {
@@ -152,7 +144,7 @@ namespace NovaFramework.Runtime
         {
             foreach (ISDKPlugin plugin in m_Plugins.Values)
             {
-                if (plugin is TPlugin typed)
+                if (plugin is TPlugin typed && plugin.IsAvailable)
                 {
                     return typed;
                 }
@@ -171,7 +163,7 @@ namespace NovaFramework.Runtime
         {
             foreach (ISDKPlugin candidate in m_Plugins.Values)
             {
-                if (candidate is TPlugin typed)
+                if (candidate is TPlugin typed && candidate.IsAvailable)
                 {
                     plugin = typed;
                     return true;
@@ -184,10 +176,10 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 获取所有实现指定接口且当前可用（IsAvailable == true）的插件列表。
-        /// 按 m_SortedPlugins 的 Priority 升序顺序遍历，同一插件实现多个接口时在各接口查询中均出现（同一对象引用）。
+        /// 按 m_SortedPlugins 的插件自身 Priority 升序顺序遍历，同一插件实现多个接口时在各接口查询中均出现（同一对象引用）。
         /// </summary>
         /// <typeparam name="TInterface">目标插件接口类型，必须为 class 且实现 ISDKPlugin。</typeparam>
-        /// <returns>可用插件实例的只读列表，按 Priority 升序；若无可用实例返回空列表。</returns>
+        /// <returns>可用插件实例的只读列表，按插件自身 Priority 升序；若无可用实例返回空列表。</returns>
         public override IReadOnlyList<TInterface> GetAll<TInterface>()
         {
             List<TInterface> result = new List<TInterface>();

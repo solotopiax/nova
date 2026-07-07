@@ -21,6 +21,8 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
         /// </summary>
         [SerializeField] private Button m_LoginButton = null;
 
+        [SerializeField] private Button m_BindButton = null;
+
         /// <summary>
         /// 登出按钮。
         /// </summary>
@@ -35,5 +37,7 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
         /// Google 插件。
         /// </summary>
         private GoogleSignInPlugin m_Plugin;
+
+        private string m_CurrentGoogleId;
     }
 }

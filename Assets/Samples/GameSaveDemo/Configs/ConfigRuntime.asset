@@ -15,16 +15,16 @@ MonoBehaviour:
   DevelopMode: 0
   Namespace: NovaFramework.Kit.Network.GameSave.Samples.Runtime
   Common:
-    AppID: 1007
-    AppAesKey: ada87355fc39d643
-    AppAesIV: e461ae0bc82d1130
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 2533177010586910935
+  - rid: 791343954436554770
   EnabledKitConfigs:
-  - rid: 2533177010586910936
-  - rid: 2533177010586910937
+  - rid: 791343954436554771
+  - rid: 791343954436554772
   GameEntranceProcedureName: ProcedurePreload
   AotMetadataDlls:
   - m_AssetLocation: mscorlib.dll
@@ -35,6 +35,7 @@ MonoBehaviour:
   - m_AssetLocation: UnityEngine.CoreModule.dll
   - m_AssetLocation: Unity.TextMeshPro.dll
   - m_AssetLocation: NovaFramework.Runtime.dll
+  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
   - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
   - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
   - m_AssetLocation: NovaFramework.Kit.Network.GameSave.Runtime.dll
@@ -43,7 +44,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2533177010586910935
+    - rid: 791343954436554770
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -52,12 +53,12 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 2533177010586910936
+    - rid: 791343954436554771
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:
         m_GetCmdName: GameSaveGet
         m_SetCmdName: GameSaveSet
-    - rid: 2533177010586910937
+    - rid: 791343954436554772
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin

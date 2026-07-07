@@ -69,6 +69,12 @@ public partial class TbNetworkCmds
 {
     public NetworkCmds GameAccountLogin => GetOrDefault("GameAccountLogin");
 
+    public NetworkCmds GameAccountBind => GetOrDefault("GameAccountBind");
+
+    public NetworkCmds GameAccountBindConflict => GetOrDefault("GameAccountBindConflict");
+
+    public NetworkCmds GameAccountBindResolve => GetOrDefault("GameAccountBindResolve");
+
     public NetworkCmds TGAServerUrl => GetOrDefault("TGAServerUrl");
 
 }

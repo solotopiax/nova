@@ -2,7 +2,7 @@
 
 **类签名**：`public static class WorkspaceActive`（`EditorUtil.Config` 的嵌套 partial）
 **命名空间**：`NovaFramework.Editor`
-**全局访问**：`EditorUtil.Config.WorkspaceActive`
+**全局访问**：`EditorUtil.Config.WorkspaceActive` / `EditorUtil.Config.Events`
 
 工程级激活 ConfigMaster 锚点；通过 `ProjectSettings/Nova/Globals.json` 持久化当前激活 ConfigMasterSO 的 GUID，根除多 Sample 共存时 `FindAssets` 玄学命中问题。
 
@@ -16,7 +16,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.cs` | `EditorUtil.Config.WorkspaceActive` | 全部逻辑：Get / Set / TryInferFromOpenedSampleScene / WriteGlobals / GetProjectRoot + 内嵌 `GlobalsJson` 序列化模型 |
+| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.cs` | `EditorUtil.Config.WorkspaceActive` / `EditorUtil.Config.Events` | active ConfigMaster 锚点逻辑；同文件还承载 Config 编辑侧保存事件 |
 
 ---
 
@@ -47,6 +47,17 @@ public static ConfigRuntimeSO GetActiveRuntime();
 public static void Set(ConfigMasterSO master);
 ```
 
+### Events
+
+```csharp
+// 当前激活 ConfigMaster 保存成功后触发；供 Inspector 等编辑器界面刷新派生视图
+public static event Action<ConfigMasterSO> ActiveConfigMasterSaved;
+
+// ConfigWindow 保存真实 ConfigMasterSO 后调用，内部广播 ActiveConfigMasterSaved
+internal static void NotifyActiveConfigMasterSaved(ConfigMasterSO master);
+```
+
+该事件只表达“真实 ConfigMasterSO 已保存成功”，不承载 WorkingCopy 的未保存状态。SDKComponent Inspector 使用它在 ConfigWindow 保存后刷新 active `EnabledSDKs` 映射出的可见 Plugin 列表。
 ---
 
 ## §11 使用示例

@@ -27,15 +27,15 @@ namespace NovaFramework.Runtime
         public override int Priority => 16;
 
         /// <summary>
-        /// 同步初始化：按 PluginEntries 反射实例化启用的插件，建立 Type→Plugin 索引。
-        /// 不执行 Plugin.InitializeAsync；Missing / Disabled 的条目跳过实例化并记录日志。
+        /// 同步初始化：缓存 Manager 依赖，不按 PluginEntries 实例化插件。
+        /// 不执行 Plugin.InitializeAsync；插件启用与实例化统一在 InitializeAsync 中按 ConfigMaster.EnabledSDKs 执行。
         /// </summary>
         /// <param name="config">由 SDKComponent.Start() 构造并传入的配置 DTO，包含 PluginEntries 列表。</param>
         public abstract void Initialize(SDKManagerConfig config);
 
         /// <summary>
-        /// 异步批量初始化所有已实例化的插件。
-        /// 按 Priority 升序分桶，同桶内 UniTask.WhenAll 并行；单插件失败隔离（不影响其他插件与主流程）。
+        /// 异步批量初始化 ConfigMaster.EnabledSDKs 启用的插件。
+        /// 按 ISDKPlugin.Priority 升序分桶，同桶内 UniTask.WhenAll 并行；单插件失败隔离（不影响其他插件与主流程）。
         /// 完成后 IsInitialized 置为 true。
         /// </summary>
         /// <param name="ct">取消令牌；传入 CancellationToken.None 时不可取消。</param>

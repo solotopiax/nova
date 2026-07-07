@@ -47,7 +47,7 @@ iOS pods resolved by EDM4U:
 
 | Risk | Observed example | Scope note | Required action |
 |---|---|---|---|
-| Real-looking sample `clientTokens` | `f5c530e84d8456c8000d21ec435417fe` in `Assets/Samples/FacebookDemo/Resources/FacebookSettings.asset` | Outside this Facebook package documentation scope. | Verify whether it is public-safe test data. Remove, rotate, or replace before public release if needed. |
-| Public `appIds` | `2704927663220433` in `Assets/Samples/FacebookDemo/Resources/FacebookSettings.asset` | Outside this Facebook package documentation scope. | Confirm whether public disclosure is intended. Replace with placeholder sample data if not. |
+| Real-looking sample `clientTokens` | `YOUR_FACEBOOK_CLIENT_TOKEN` in `Assets/Samples/FacebookDemo/Resources/FacebookSettings.asset` | Outside this Facebook package documentation scope. | Verify whether it is public-safe test data. Remove, rotate, or replace before public release if needed. |
+| Public `appIds` | `YOUR_FACEBOOK_APP_ID` in `Assets/Samples/FacebookDemo/Resources/FacebookSettings.asset` | Outside this Facebook package documentation scope. | Confirm whether public disclosure is intended. Replace with placeholder sample data if not. |
 | Local Android keystore path | `androidKeystorePath: D:\SoloGames-X\nova\Docs\Programs\Certificates\Android\solotopia.keystore` | The path points outside the package scan scope and should be separately checked/sanitized before public release. | Remove local absolute paths from public samples and verify the referenced keystore is not published. |
 | Platform policy drift | Facebook login, friends, sharing, ATT, and profile data policies can change. | Current docs describe current package behavior only. | Recheck policy and App Review requirements at release time. |

@@ -369,6 +369,16 @@
         "com.google.external-dependency-manager": "1.2.186"
       }
     },
+    "com.solotopia.nova.framework.sdk.datamaster.abtest": {
+      "version": "file:../UPMPackages/com.solotopia.nova.framework.sdk.datamaster.abtest",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.solotopia.nova.framework": "0.5.34",
+        "com.unity.collections": "2.4.3",
+        "com.starlus.sdk.datamaster": "1.0.1"
+      }
+    },
     "com.solotopia.nova.framework.sdk.facebook": {
       "version": "file:../UPMPackages/com.solotopia.nova.framework.sdk.facebook",
       "depth": 0,
@@ -496,6 +506,15 @@
         "com.unity.modules.unitywebrequest": "1.0.0",
         "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
       }
+    },
+    "com.starlus.sdk.datamaster": {
+      "version": "1.0.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.collections": "2.4.3"
+      },
+      "url": "http://172.16.22.175:4874"
     },
     "com.tivadar.best.http": {
       "version": "3.0.17",
@@ -646,7 +665,7 @@
     },
     "com.unity.collections": {
       "version": "6.4.0",
-      "depth": 2,
+      "depth": 1,
       "source": "builtin",
       "dependencies": {
         "com.unity.burst": "1.8.23",
@@ -687,15 +706,6 @@
       },
       "url": "https://packages.unity.com"
     },
-    "com.unity.ide.traecn": {
-      "version": "https://github.com/dennyguotf/com.unity.ide.traeCN.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {
-        "com.unity.test-framework": "1.1.9"
-      },
-      "hash": "bab10dde3bbc0bd2cd1954bfcbeee14f1c761a41"
-    },
     "com.unity.ide.visualstudio": {
       "version": "2.0.27",
       "depth": 0,
@@ -731,7 +741,7 @@
     },
     "com.unity.nuget.mono-cecil": {
       "version": "1.11.6",
-      "depth": 3,
+      "depth": 2,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -843,7 +853,7 @@
     },
     "com.unity.test-framework.performance": {
       "version": "3.4.0",
-      "depth": 3,
+      "depth": 2,
       "source": "registry",
       "dependencies": {
         "com.unity.test-framework": "1.1.33",

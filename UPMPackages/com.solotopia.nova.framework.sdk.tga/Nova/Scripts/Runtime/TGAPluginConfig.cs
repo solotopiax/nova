@@ -52,7 +52,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         /// 上报 TGA 标识协议 NetCmd 指令名序列化字段与属性。
         /// </summary>
         [SerializeField, Tooltip("用于向业务服务器上报 TGA 用户标识的协议名。填写 NetCmd 表中的名称，如 TGAReport。")]
-        private string m_ReportCmdName = "TGAReport";
+        private string m_ReportCmdName;
 
         /// <summary>
         /// 测试用户标识序列化字段，对应 TGA 字段 nova_test。

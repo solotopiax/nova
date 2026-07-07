@@ -258,14 +258,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -301,14 +301,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -344,14 +344,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -387,14 +387,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -430,14 +430,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -473,14 +473,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -516,14 +516,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -559,14 +559,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -602,14 +602,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -645,14 +645,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -688,14 +688,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -731,14 +731,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -774,14 +774,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -817,14 +817,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -860,14 +860,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -903,14 +903,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -946,14 +946,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -989,14 +989,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1049,15 +1049,25 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
+    - rid: 791343950849900544
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
     - rid: 2533177004360728671
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1077,11 +1087,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1105,11 +1115,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1133,11 +1143,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1161,11 +1171,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1189,11 +1199,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1217,11 +1227,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1245,11 +1255,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1273,11 +1283,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1301,11 +1311,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1329,11 +1339,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1357,11 +1367,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1385,11 +1395,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1413,11 +1423,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1441,11 +1451,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1469,11 +1479,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1497,11 +1507,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1525,11 +1535,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1553,11 +1563,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1581,11 +1591,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1609,11 +1619,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1637,11 +1647,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1665,11 +1675,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1693,11 +1703,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1721,11 +1731,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1749,11 +1759,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1777,11 +1787,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1805,11 +1815,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1833,11 +1843,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1861,11 +1871,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1889,11 +1899,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1917,11 +1927,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1945,11 +1955,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1973,11 +1983,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2001,11 +2011,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2029,11 +2039,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2516,7 +2526,7 @@ MonoBehaviour:
     - rid: 2533177598672896523
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
-        m_ClientId: 
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
         m_RequestEmail: 1
         m_FilterByAuthorizedAccounts: 1
         m_AutoSelectEnabled: 1
@@ -2802,8 +2812,8 @@ MonoBehaviour:
     - rid: 2533177598672896559
       type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
       data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
         m_AutoDownloadAvatarOnLogin: 1
         m_AvatarSize: 100
     - rid: 2533177598672896560
@@ -3214,7 +3224,8 @@ MonoBehaviour:
         m_SkipLoadingForReplenish: 0
         m_LoadingPanelPrefab: IAP/IAPLoadingPanel
         m_StoreConfigList:
-          m_Items: []
+          m_Items:
+          - rid: 791343950849900544
         m_Products:
           m_Items: []
     - rid: 2533177598672896632
@@ -3640,5 +3651,5 @@ MonoBehaviour:
     - rid: 3589943518543478964
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
-        m_LoginCmdName: 
+        m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 

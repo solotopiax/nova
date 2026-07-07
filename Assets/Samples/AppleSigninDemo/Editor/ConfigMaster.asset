@@ -15,7 +15,9 @@ MonoBehaviour:
   Namespace: NovaFramework.Sdk.Applesignin.Samples.Runtime
   EnabledSDKs:
   - NovaFramework.SDK.AppleSignIn.AppleSignInPluginConfig
-  EnabledKits: []
+  EnabledKits:
+  - NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+  - NovaFramework.Kit.Network.GameBind.Runtime.BindKitConfig
   CommonMask:
     ByPlatform: 0
     ByChannel: 0
@@ -63,6 +65,11 @@ MonoBehaviour:
       ByChannel: 0
       ByDevelopMode: 0
   - TypeName: NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.Kit.Network.GameBind.Runtime.BindKitConfig
     Mask:
       ByPlatform: 0
       ByChannel: 0
@@ -128,12 +135,18 @@ MonoBehaviour:
   - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
     m_TargetLocation: Assets/Samples/AppleSigninDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
     m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    m_TargetLocation: Assets/Samples/AppleSigninDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameLogin.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
   - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.AppleSignIn.Runtime.dll
     m_TargetLocation: Assets/Samples/AppleSigninDemo/Dlls/AOTMetas/NovaFramework.SDK.AppleSignIn.Runtime.dll.bytes
     m_AssetLocation: NovaFramework.SDK.AppleSignIn.Runtime.dll
   - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/AppleAuth.dll
     m_TargetLocation: Assets/Samples/AppleSigninDemo/Dlls/AOTMetas/AppleAuth.dll.bytes
     m_AssetLocation: AppleAuth.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+    m_TargetLocation: Assets/Samples/AppleSigninDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
   GameDlls:
   - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Applesignin.Samples.Runtime.dll
     m_TargetLocation: Assets/Samples/AppleSigninDemo/Dlls/GameDlls/NovaFramework.Sdk.Applesignin.Samples.Runtime.dll.bytes
@@ -144,14 +157,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -181,14 +194,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -197,6 +210,9 @@ MonoBehaviour:
       - rid: 209362707701039362
       - rid: 2533177004360729499
       - rid: 2238162044843720883
+      - rid: 791343950796423168
+      - rid: 791343950796423169
+      - rid: 791343950796423170
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -209,6 +225,7 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 3589943518543478964
+      - rid: 791343951146647556
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
@@ -218,14 +235,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -255,14 +272,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -292,14 +309,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -329,14 +346,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -366,14 +383,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -403,14 +420,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -440,14 +457,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -477,14 +494,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -514,14 +531,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -551,14 +568,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -588,14 +605,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -625,14 +642,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -662,14 +679,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -699,14 +716,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -736,14 +753,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -773,14 +790,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -808,8 +825,6 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
     - rid: 209362707701039362
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -828,13 +843,60 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds: []
-        m_InterPlacementIds: []
-        m_BannerPlacementIds: []
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
+    - rid: 791343950796423168
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 791343950796423169
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 791343950796423170
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 791343950796423171
+        m_Products:
+          m_Items: []
+    - rid: 791343950796423171
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 791343951146647556
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
     - rid: 2238162044843720881
       type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
       data:
@@ -1465,7 +1527,7 @@ MonoBehaviour:
     - rid: 3589943518543478964
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
-        m_LoginCmdName: 
+        m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
     - rid: 5906436324736369196
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}

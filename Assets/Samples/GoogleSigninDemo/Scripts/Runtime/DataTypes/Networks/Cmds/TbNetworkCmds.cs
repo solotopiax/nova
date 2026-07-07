@@ -68,6 +68,10 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
 public partial class TbNetworkCmds
 {
     public NetworkCmds TGAServerUrl => GetOrDefault("TGAServerUrl");
+    public NetworkCmds GameAccountLogin => GetOrDefault("GameAccountLogin");
+    public NetworkCmds GameAccountBind => GetOrDefault("GameAccountBind");
+    public NetworkCmds GameAccountBindConflict => GetOrDefault("GameAccountBindConflict");
+    public NetworkCmds GameAccountBindResolve => GetOrDefault("GameAccountBindResolve");
 
 }
 }

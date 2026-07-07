@@ -1,0 +1,12 @@
+{
+  "UI1": [
+    {
+      "Name": "DemoDataMasterView",
+      "Desc": "DataMaster 演示 Demo 视图",
+      "AssetLocation": "DemoDataMasterView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    }
+  ]
+}

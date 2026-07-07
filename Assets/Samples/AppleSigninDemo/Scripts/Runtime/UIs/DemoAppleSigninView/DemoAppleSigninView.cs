@@ -24,6 +24,12 @@ namespace NovaFramework.Sdk.Applesignin.Samples.Runtime
                 SetButtonApiHint(m_LoginButton, "AppleSignInPlugin.LoginAsync(\"Apple\")");
             }
 
+            if (m_BindButton != null)
+            {
+                m_BindButton.onClick.AddListener(OnBindButtonClick);
+                SetButtonApiHint(m_BindButton, "appleID -> Login.Async(...) -> Bind.BindAsync(Apple, appleID)");
+            }
+
             if (m_LogoutButton != null)
             {
                 m_LogoutButton.onClick.AddListener(OnLogoutButtonClick);

@@ -73,6 +73,7 @@ namespace NovaFramework.Editor
 
             Util.SysIO.File.Copy(templateFullPath, manifestFullPath, overwrite: true);
             ctx.AndroidManifest = new CustomAndroidManifest(manifestFullPath);
+            ctx.SetDefaultActivityName(ctx.AndroidManifest.SelectUnityLauncherActivity(PlayerSettings.Android.applicationEntry));
 
             NovaBuildShared.Processors.Sort((a, b) => a.PreprocessPriority.CompareTo(b.PreprocessPriority));
             foreach (var processor in NovaBuildShared.Processors)

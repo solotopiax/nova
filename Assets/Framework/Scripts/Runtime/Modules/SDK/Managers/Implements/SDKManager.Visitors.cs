@@ -22,9 +22,10 @@ namespace NovaFramework.Runtime
         private readonly Dictionary<Type, ISDKPlugin> m_Plugins = new Dictionary<Type, ISDKPlugin>();
 
         /// <summary>
-        /// 按 Priority 升序排列的插件列表，用于有序初始化、有序广播与 GetAll 遍历。
+        /// 按插件自身 Priority 升序排列的插件列表，用于有序初始化、有序广播与 GetAll 遍历。
         /// </summary>
         private readonly List<ISDKPlugin> m_SortedPlugins = new List<ISDKPlugin>();
+
 
         /// <summary>
         /// 初始化完成信号源，InitializeAsync 完成后调用 TrySetResult。
@@ -43,7 +44,7 @@ namespace NovaFramework.Runtime
         private IEventManager m_EventManager;
 
         /// <summary>
-        /// 配置管理器引用，在 Initialize 中通过 FrameworkManagersGroup 注入，供 InitializePluginAsync 按 RequiredConfigType 拉取 PluginConfig。
+        /// 配置管理器引用，在 Initialize 中通过 FrameworkManagersGroup 注入，供 InitializeAsync 按 EnabledSDKs 实例化并按 RequiredConfigType 拉取 PluginConfig。
         /// </summary>
         private IConfigManager m_ConfigManager;
 

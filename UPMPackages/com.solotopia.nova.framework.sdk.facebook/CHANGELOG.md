@@ -2,6 +2,13 @@
 
 This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`.
 
+## [0.0.5] - 2026-07-08
+
+### Changed
+
+- 首次纳入正常发版（此前在发布脚本禁发名单，现移除）；FacebookDemo sample 的真实 App ID / Client Token 在发版时自动脱敏为占位后才进公开侧，主仓保留真值。
+- 物料配置对齐。
+
 ## [0.0.4] - 2026-06-23
 
 ### Changed

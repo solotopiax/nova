@@ -14,13 +14,13 @@ namespace NovaFramework.Runtime
 {
     /// <summary>
     /// SDK 管理器构造配置 DTO，由 SDKComponent.Start() 构造后传入 ISDKManager.Initialize。
-    /// 携带 Inspector 序列化的插件条目列表，Manager 据此反射实例化并建立索引。
+    /// 携带 Inspector 序列化的插件条目列表。运行时启用和排序不依赖该列表。
     /// </summary>
     public sealed class SDKManagerConfig
     {
         /// <summary>
         /// Inspector 序列化的插件条目列表，来自 SDKComponent.m_PluginEntries。
-        /// Manager.Initialize 按此列表进行反射实例化，跳过 Enabled==false 与 IsMissing==true 的条目。
+        /// Manager.Initialize 不按此列表实例化插件；运行时启用统一来自 ConfigMaster.EnabledSDKs，排序使用 ISDKPlugin.Priority。
         /// </summary>
         public IReadOnlyList<SDKPluginEntry> PluginEntries;
     }

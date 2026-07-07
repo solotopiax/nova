@@ -28,7 +28,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// 上报 Firebase 标识协议 NetCmd 指令名序列化字段与属性。
         /// </summary>
         [SerializeField, Tooltip("用于向业务服务器上报 Firebase 标识信息的协议名。填写 NetCmd 表中的名称，如 FirebaseReport。")]
-        private string m_ReportCmdName = "FirebaseReport";
+        private string m_ReportCmdName;
         /// <summary>
         /// 上报 Firebase 标识协议 NetCmd 指令名。
         /// </summary>

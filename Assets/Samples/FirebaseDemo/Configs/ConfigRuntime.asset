@@ -15,16 +15,16 @@ MonoBehaviour:
   DevelopMode: 0
   Namespace: NovaFramework.Sdk.Firebase.Samples.Runtime
   Common:
-    AppID: 1007
-    AppAesKey: ada87355fc39d643
-    AppAesIV: e461ae0bc82d1130
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 2238161821007872134
-  - rid: 2238161821007872135
+  - rid: 791343954436554762
+  - rid: 791343954436554763
   EnabledKitConfigs:
-  - rid: 2238161821007872136
+  - rid: 791343954436554764
   GameEntranceProcedureName: ProcedurePreload
   AotMetadataDlls:
   - m_AssetLocation: mscorlib.dll
@@ -35,6 +35,7 @@ MonoBehaviour:
   - m_AssetLocation: UnityEngine.CoreModule.dll
   - m_AssetLocation: Unity.TextMeshPro.dll
   - m_AssetLocation: NovaFramework.Runtime.dll
+  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
   - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
   - m_AssetLocation: NovaFramework.SDK.FirebasePlugin.Runtime.dll
   - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
@@ -43,7 +44,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2238161821007872134
+    - rid: 791343954436554762
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -52,11 +53,11 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 2238161821007872135
+    - rid: 791343954436554763
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 2238161821007872136
+    - rid: 791343954436554764
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin

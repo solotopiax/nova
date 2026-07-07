@@ -223,3 +223,17 @@
 - [PipifyStepAttribute.md](./PipifyStepAttribute.md)
 - [EditorUtil.BundleBuilder.md](../EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md)
 - [Editor.md](../../Editor.md)
+
+## Android Signing In `build.package`
+
+`build.package` exposes Android signing parameters on `PackageParams`:
+
+- `UseAndroidKeystore`
+- `AndroidKeystoreName`
+- `AndroidKeystorePass`
+- `AndroidKeyaliasName`
+- `AndroidKeyaliasPass`
+
+These fields are visible only for Android builds, and the four value fields are visible only when `UseAndroidKeystore` is enabled. Password fields use `PipifyPasswordAttribute`, so `PipifyWindow` renders them with `PasswordField`; the stored value is still a normal string for `PipifySettingsSO` and CLI overrides.
+
+When enabled, the Step temporarily writes `PlayerSettings.Android.useCustomKeystore`, `keystoreName`, `keystorePass`, `keyaliasName`, and `keyaliasPass`, calls `EditorUtil.Build.BuildPackage`, then restores the previous PlayerSettings values in `finally`. Missing signing fields fail before `BuildPlayer` runs.

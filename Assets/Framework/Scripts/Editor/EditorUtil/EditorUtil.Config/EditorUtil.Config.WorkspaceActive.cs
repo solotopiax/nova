@@ -23,6 +23,25 @@ namespace NovaFramework.Editor
         public static partial class Config
         {
             /// <summary>
+            /// Config 编辑侧事件集。
+            /// </summary>
+            public static class Events
+            {
+                /// <summary>
+                /// 当前激活 ConfigMaster 保存成功后触发，供 Inspector 等编辑器界面刷新派生视图。
+                /// </summary>
+                public static event Action<ConfigMasterSO> ActiveConfigMasterSaved;
+
+                /// <summary>
+                /// 通知当前激活 ConfigMaster 已保存。
+                /// </summary>
+                /// <param name="master">已保存的 ConfigMaster。</param>
+                internal static void NotifyActiveConfigMasterSaved(ConfigMasterSO master)
+                {
+                    ActiveConfigMasterSaved?.Invoke(master);
+                }
+            }
+            /// <summary>
             /// 工程级激活 ConfigMaster 锚点。
             /// <para>通过 ProjectSettings/Nova/Globals.json 持久化当前激活 ConfigMaster 的 GUID，</para>
             /// <para>提供四段回退加载策略，根除多 sample 共存时 FindAssets 玄学命中问题。</para>

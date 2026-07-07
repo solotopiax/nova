@@ -24,6 +24,12 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
                 SetButtonApiHint(m_LoginButton, "GoogleSignInPlugin.LoginAsync(\"Google\")");
             }
 
+            if (m_BindButton != null)
+            {
+                m_BindButton.onClick.AddListener(OnBindButtonClick);
+                SetButtonApiHint(m_BindButton, "googleID -> Login.Async(...) -> Bind.BindAsync(Google, googleID)");
+            }
+
             if (m_LogoutButton != null)
             {
                 m_LogoutButton.onClick.AddListener(OnLogoutButtonClick);

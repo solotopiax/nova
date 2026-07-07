@@ -24,7 +24,7 @@ namespace NovaFramework.Runtime
         public string CurManagerTypeName => m_CurManagerTypeName;
 
         /// <summary>
-        /// Inspector 序列化的插件条目列表，Manager.Initialize 据此反射实例化插件。
+        /// Inspector 序列化的插件条目列表；运行时启用与排序分别由 ConfigMaster.EnabledSDKs 和 ISDKPlugin.Priority 决定。
         /// </summary>
         [SerializeField]
         private List<SDKPluginEntry> m_PluginEntries = new List<SDKPluginEntry>();
@@ -35,6 +35,11 @@ namespace NovaFramework.Runtime
         /// </summary>
         private ISDKManager m_SDKManager;
         public ISDKManager SDKManager => m_SDKManager;
+
+        /// <summary>
+        /// Manager 是否已接收 PluginEntries 元数据；用于防止 Start 与 InitializeTask 双路径重复同步初始化。
+        /// </summary>
+        private bool m_IsManagerConfigured;
 
         /// <summary>
         /// InitializeTask 的缓存，首次访问时由 GetOrCreateInitializeTask 创建。

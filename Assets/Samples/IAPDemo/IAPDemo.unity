@@ -233,7 +233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.size
-      value: 6
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.data[4].Enabled
@@ -241,6 +241,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.data[5].Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_PluginEntries.Array.data[6].Enabled
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
@@ -258,8 +262,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.data[5].TypeName
-      value: NovaFramework.Sdk.IAP.Samples.Tests.IAPTrackReasonTests+RecordingTrackPlugin,
-        NovaFramework.Sdk.IAP.Samples.Tests, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      value: NovaFramework.SDK.GoogleSignIn.GoogleSignInPlugin, NovaFramework.SDK.GoogleSignIn.Runtime,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      objectReference: {fileID: 0}
+    - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_PluginEntries.Array.data[6].TypeName
+      value: NovaFramework.SDK.Facebook.FacebookPlugin, NovaFramework.SDK.Facebook.Runtime,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      objectReference: {fileID: 0}
+    - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_PluginEntries.Array.data[7].TypeName
+      value: NovaFramework.SDK.AppleSignIn.AppleSignInPlugin, NovaFramework.SDK.AppleSignIn.Runtime,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      objectReference: {fileID: 0}
+    - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_PluginEntries.Array.data[8].Priority
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_PluginEntries.Array.data[8].TypeName
+      value: NovaFramework.SDK.AppleSignIn.AppleSignInPlugin, NovaFramework.SDK.AppleSignIn.Runtime,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       objectReference: {fileID: 0}
     - target: {fileID: 2901006627018902308, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_EnableHotfix
@@ -300,6 +323,10 @@ PrefabInstance:
     - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].ClassesExportPath
       value: Assets/Samples/IAPDemo/Scripts/Runtime/DataTypes/Localizations/Texts
+      objectReference: {fileID: 0}
+    - target: {fileID: 3066975180919252665, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_DebuggerActiveType
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3308748334323488271, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Name

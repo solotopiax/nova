@@ -45,34 +45,7 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 
 ## 安装
 
-### 方式一：火种脚本
-
-下载 [NovaSpark2.0.cs](./NovaSpark2.0.cs)，拖入 Unity 工程，等待编译结束即可。
-
-### 方式二：手动修改 `Packages/manifest.json`
-
-```json
-{
-  "scopedRegistries": [
-    {
-      "name": "Solotopia",
-      "url": "https://upm.solotopiax.com",
-      "scopes": ["com.solotopia"]
-    },
-    {
-      "name": "package.openupm.com",
-      "url": "https://package.openupm.com",
-      "scopes": ["com.google.external-dependency-manager"]
-    }
-  ],
-  "dependencies": {
-    "com.solotopia.nova.framework": "0.5.34",
-    "com.solotopia.nova.framework.besthttp": "0.0.7",
-    "com.google.external-dependency-manager": "1.2.186",
-    "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v9.7.1"
-  }
-}
-```
+下载火种脚本 [NovaSpark2.0.cs](./NovaSpark2.0.cs)，拖入 Unity 工程，等待编译结束即可。
 
 ---
 

@@ -8,8 +8,10 @@
  * descrip:   Pipify 内置 Step 合集 —— 打包分组（1 个 Step）
  ***************************************************************/
 
+using System;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
+using UnityEditor;
 
 namespace NovaFramework.Editor
 {
@@ -37,10 +39,87 @@ namespace NovaFramework.Editor
             {
                 Log.Warning(LogTag.Editor, "[Pipify] 未找到激活 ConfigRuntimeSO，文件名开发模式段降级为 Debug，请先导出 Config。");
             }
-            EditorUtil.Build.BuildPackage(
-                p.Target, p.OutputFolderPath, p.DevelopmentBuild,
-                p.BuildMode, p.BuildAppBundle, p.SplitApplicationBinary, developMode);
-            return UniTask.CompletedTask;
+            AndroidSigningSettingsSnapshot signingSnapshot = ApplyAndroidSigningSettings(p);
+            try
+            {
+                EditorUtil.Build.BuildPackage(
+                    p.Target, p.OutputFolderPath, p.DevelopmentBuild,
+                    p.BuildMode, p.BuildAppBundle, p.SplitApplicationBinary, developMode);
+                return UniTask.CompletedTask;
+            }
+            finally
+            {
+                RestoreAndroidSigningSettings(signingSnapshot);
+            }
+        }
+
+        private static AndroidSigningSettingsSnapshot ApplyAndroidSigningSettings(PackageParams p)
+        {
+            if (p == null || p.Target != BuildTarget.Android || !p.UseAndroidKeystore)
+            {
+                return null;
+            }
+
+            ValidateAndroidSigningSettings(p);
+
+            AndroidSigningSettingsSnapshot snapshot = new AndroidSigningSettingsSnapshot
+            {
+                UseCustomKeystore = PlayerSettings.Android.useCustomKeystore,
+                KeystoreName = PlayerSettings.Android.keystoreName,
+                KeystorePass = PlayerSettings.Android.keystorePass,
+                KeyaliasName = PlayerSettings.Android.keyaliasName,
+                KeyaliasPass = PlayerSettings.Android.keyaliasPass
+            };
+
+            PlayerSettings.Android.useCustomKeystore = true;
+            PlayerSettings.Android.keystoreName = p.AndroidKeystoreName;
+            PlayerSettings.Android.keystorePass = p.AndroidKeystorePass;
+            PlayerSettings.Android.keyaliasName = p.AndroidKeyaliasName;
+            PlayerSettings.Android.keyaliasPass = p.AndroidKeyaliasPass;
+            return snapshot;
+        }
+
+        private static void RestoreAndroidSigningSettings(AndroidSigningSettingsSnapshot snapshot)
+        {
+            if (snapshot == null)
+            {
+                return;
+            }
+
+            PlayerSettings.Android.useCustomKeystore = snapshot.UseCustomKeystore;
+            PlayerSettings.Android.keystoreName = snapshot.KeystoreName;
+            PlayerSettings.Android.keystorePass = snapshot.KeystorePass;
+            PlayerSettings.Android.keyaliasName = snapshot.KeyaliasName;
+            PlayerSettings.Android.keyaliasPass = snapshot.KeyaliasPass;
+        }
+
+        private static void ValidateAndroidSigningSettings(PackageParams p)
+        {
+            if (string.IsNullOrWhiteSpace(p.AndroidKeystoreName))
+            {
+                throw new InvalidOperationException("[Pipify] 启用 UseAndroidKeystore 时必须填写 Android keystore 路径。");
+            }
+            if (string.IsNullOrWhiteSpace(p.AndroidKeystorePass))
+            {
+                throw new InvalidOperationException("[Pipify] 启用 UseAndroidKeystore 时必须填写 Android keystore 密码。");
+            }
+            if (string.IsNullOrWhiteSpace(p.AndroidKeyaliasName))
+            {
+                throw new InvalidOperationException("[Pipify] 启用 UseAndroidKeystore 时必须填写 Android key alias 名称。");
+            }
+            if (string.IsNullOrWhiteSpace(p.AndroidKeyaliasPass))
+            {
+                throw new InvalidOperationException("[Pipify] 启用 UseAndroidKeystore 时必须填写 Android key alias 密码。");
+            }
+        }
+
+        private sealed class AndroidSigningSettingsSnapshot
+        {
+            public bool UseCustomKeystore;
+            public string KeystoreName;
+            public string KeystorePass;
+            public string KeyaliasName;
+            public string KeyaliasPass;
         }
     }
 }

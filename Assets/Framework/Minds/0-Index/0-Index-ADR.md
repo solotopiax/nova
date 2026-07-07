@@ -78,6 +78,8 @@ auto_generated: true
 - [ADR-058 ConfigWindow per-panel 可勾选维度（PanelDimensionMask + DimensionProjector + Override 旁路）](../2-Areas/ADR/ADR-058-per-panel-dimension-mask.md) — 面板级维度掩码 + Override 旁路按需多维配置
 - [ADR-063 TGA 插件 ServerCmdName 与 ReportCmdName 双通道不可合并](../2-Areas/ADR/ADR-063-tga-dual-cmd-channel-separation.md) — TGA 埋点上报与账号绑定双通道禁合并
 - [ADR-069 云存档支持按 target_uid 跨用户查询](../2-Areas/ADR/ADR-069-gamesave-cross-user-query.md) — GetGameData 加 target_uid，为空查自身、有值查指定 uid，鉴权归服务端
+- [ADR-070 SDK 启用真相源归 ConfigMaster.EnabledSDKs，插件统一按启用配置实例化](../2-Areas/ADR/ADR-070-sdk-enable-via-configmaster-enabledsdks.md) — EnabledSDKs 为唯一启用源，SDK 插件统一按配置实例化
+- [ADR-071 DataMaster 读参 topicId 实为 Params 字典 key（topic_name），非 experiment.topicId](../2-Areas/ADR/ADR-071-datamaster-topicid-is-params-key.md) — 读参传 Params 字典 key（cfa3ee9f），非 experiment.topicId
 
 ## quality
 
@@ -97,4 +99,4 @@ auto_generated: true
 
 
 ---
-_共 55 条，分布于 10 个 category。_
+_共 57 条，分布于 10 个 category。_

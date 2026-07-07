@@ -7,6 +7,24 @@
       "Path": "/v1/user/loginV1"
     },
     {
+      "Name": "GameAccountBind",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind"
+    },
+    {
+      "Name": "GameAccountBindConflict",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind/conflict"
+    },
+    {
+      "Name": "GameAccountBindResolve",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind/resolve"
+    },
+    {
       "Name": "TGAServerUrl",
       "Way": "HTTP_URL",
       "HostKey": "TGAServer",

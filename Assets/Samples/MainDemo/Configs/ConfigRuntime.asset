@@ -15,9 +15,9 @@ MonoBehaviour:
   DevelopMode: 0
   Namespace: NovaFramework.Samples.Runtime
   Common:
-    AppID: 1007
-    AppAesKey: ada87355fc39d643
-    AppAesIV: e461ae0bc82d1130
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs: []

@@ -11,7 +11,7 @@
 职责：
 
 - 在 `Awake` 中通过 `Util.TypeCreator.Create<ISDKManager>()` 创建 Manager。
-- 在 `Start` 中把 Inspector 序列化的 `PluginEntries` 传给 `ISDKManager.Initialize(...)`。
+- 在 `Start` 中把 Inspector 序列化的 `PluginEntries` 元数据传给 `ISDKManager.Initialize(...)`。
 - 对外暴露 `InitializeTask`、`Get`、`TryGet`、`GetAll`、`Login`。
 - 把 `OnApplicationPause` / `OnApplicationFocus` / `OnApplicationQuit` 转发给 Manager。
 
@@ -23,8 +23,8 @@
 
 职责：
 
-- 按 `SDKPluginEntry` 反射实例化启用的插件。
-- 按 `Priority` 升序分桶初始化，同桶并行。
+- 在 `InitializeAsync` 中按 `ConfigMaster.EnabledSDKs` 反射实例化启用的插件。
+- 按 `ISDKPlugin.Priority` 升序分桶初始化，同桶并行。
 - 通过 `IConfigManager.GetSDKPluginConfig(requiredConfigType)` 给需要配置的插件注入配置。
 - 统一处理可用性、失败隔离、生命周期广播与登录事件转发。
 
@@ -54,7 +54,7 @@
 职责：
 
 - `SDKPluginEntry` 负责 Inspector 中的启用状态、类型名和优先级。
-- `SDKManagerConfig` 只承载 `PluginEntries` 列表。
+- `SDKManagerConfig` 只承载 `PluginEntries` 元数据列表。
 - `ISDKPluginConfig` 负责插件配置对象统一类型约束，实际配置由 `ConfigManager` 提供。
 
 ### 5. 数据与事件层
@@ -71,7 +71,7 @@
 ## 当前初始化链路
 
 1. `SDKComponent.Awake()` 创建 `ISDKManager`。
-2. `SDKComponent.Start()` 调用 `Initialize(new SDKManagerConfig { PluginEntries = m_PluginEntries })`。
+2. `SDKComponent.Start()` 调用 `Initialize(new SDKManagerConfig { PluginEntries = m_PluginEntries })`，只同步 Manager 依赖。
 3. 首次访问 `InitializeTask` 时，`SDKComponent` 调用 `InitializeAsync(ct)`。
 4. `SDKManager` 读取每个插件的 `RequiredConfigType`，再从 `IConfigManager` 拉取配置并注入。
 5. 初始化完成后，业务层通过 `Nova.SDK.Get<T>()` / `TryGet<T>()` / `GetAll<T>()` 访问能力。

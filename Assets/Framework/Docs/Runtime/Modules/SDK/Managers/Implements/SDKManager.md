@@ -11,15 +11,15 @@
 |---|---|
 | `SDKManager.cs` | 公开 override：`Initialize`、`InitializeAsync`、`DisposeAsync`、`Get`、`TryGet`、`GetAll`、`Broadcast*`、`Login`、`Update`、`Shutdown` |
 | `SDKManager.Visitors.cs` | 内部字段与属性 |
-| `SDKManager.Methods.cs` | `InstantiateEntry`、`InitializePluginAsync`、`GroupByPriority` 等私有方法 |
+| `SDKManager.Methods.cs` | `InstantiateEnabledPluginsFromConfig`、`InitializePluginAsync`、`GroupByPriority` 等私有方法 |
 
 ## 当前关键字段
 
 | 字段 | 说明 |
 |---|---|
 | `m_Plugins` | 以插件具体 `Type` 为键保存实例 |
-| `m_SortedPlugins` | 按 `Priority` 升序保存实例，用于初始化、广播和 `GetAll` |
-| `m_InitializedTcs` | `WaitForInitializedAsync` 的完成信号 |
+| `m_SortedPlugins` | 按 `ISDKPlugin.Priority` 升序保存实例，用于初始化、广播和 `GetAll` |
+| m_InitializedTcs | WaitForInitializedAsync 的完成信号 |
 | `m_IsInitialized` | 异步初始化是否已完成 |
 | `m_EventManager` | `Login` 时发送 `SDKEventData.UserLogin` |
 | `m_ConfigManager` | 按 `RequiredConfigType` 拉取插件配置 |
@@ -30,14 +30,13 @@
 
 ### Initialize
 
-- 遍历 `SDKManagerConfig.PluginEntries`
-- 跳过 `Enabled == false` 或 `IsMissing == true` 的条目
-- 用 `Activator.CreateInstance(pluginType)` 反射实例化插件
-- 排序后缓存 `IEventManager` 和 `IConfigManager`
+- 不按 `PluginEntries` 实例化插件，也不读取 Entry Priority 参与排序
+- 缓存 `IEventManager` 和 `IConfigManager`
+- 不在 `Initialize` 阶段实例化插件
 
 ### InitializeAsync
 
-- 先按 `Priority` 分桶
+- 先按 `ConfigMaster.EnabledSDKs` 实例化插件，再按`ISDKPlugin.Priority` 分桶
 - 再按桶顺序执行 `UniTask.WhenAll`
 - 单插件初始化失败只记日志，不中断其他插件
 - 全部完成后设置 `m_IsInitialized = true`
@@ -51,9 +50,9 @@
 
 ## 查询语义
 
-- `Get<T>()` / `TryGet<T>()` 通过遍历 `m_Plugins.Values` 做 `candidate is T` 判断。
+- `Get<T>()` / `TryGet<T>()` 通过遍历 `m_Plugins.Values` 做 `candidate is T && candidate.IsAvailable` 判断。
 - 这意味着查询既支持具体插件类型，也支持接口类型。
-- `GetAll<T>()` 只返回 `IsAvailable == true` 的实例，并保持 `Priority` 升序。
+- `GetAll<T>()` 只返回 `IsAvailable == true` 的实例，并保持`ISDKPlugin.Priority` 升序。
 
 ## 生命周期与关闭
 

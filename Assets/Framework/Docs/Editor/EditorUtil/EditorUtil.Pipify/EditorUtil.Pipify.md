@@ -32,6 +32,7 @@
 | `EditorUtil.Pipify/Definitions/PipifyDropdownAttribute.cs` | `PipifyDropdownAttribute` | string 字段渲染特性：以接口实现类下拉框形式编辑（存储 FullName） |
 | `EditorUtil.Pipify/Definitions/PipifyDynamicDropdownAttribute.cs` | `PipifyDynamicDropdownAttribute` | string 字段渲染特性：动态选项下拉框（每帧调用 Provider 取 string[]） |
 | `EditorUtil.Pipify/Definitions/PipifyDynamicDefaultAttribute.cs` | `PipifyDynamicDefaultAttribute` | string 字段渲染特性：值为空时显示动态默认值占位（不写回字段） |
+| `EditorUtil.Pipify/Definitions/PipifyPasswordAttribute.cs` | `PipifyPasswordAttribute` | string 字段渲染特性：PipifyWindow 使用 PasswordField，存储仍为普通字符串 |
 | `EditorUtil.Pipify/Definitions/PipifyVisibleWhenAttribute.cs` | `PipifyVisibleWhenAttribute` | 字段显隐特性：依赖另一字段当前整型化值匹配 AnyOf 时才显示 |
 | `EditorUtil.Pipify/Steps/PipifySteps.Build.cs` | `PipifySteps` | 内置 Step：打包分组 1 个 Step |
 | `EditorUtil.Pipify/Steps/PipifySteps.Export.cs` | `PipifySteps` | 内置 Step：导出分组 2 个 Step（Config + 表格） |
@@ -145,6 +146,7 @@ await EditorUtil.Pipify.RunBatchForCliAsync(batch, null);
 - [PipifyDropdownAttribute.md](./PipifyDropdownAttribute.md)
 - [PipifyDynamicDropdownAttribute.md](./PipifyDynamicDropdownAttribute.md)
 - [PipifyDynamicDefaultAttribute.md](./PipifyDynamicDefaultAttribute.md)
+- [PipifyPasswordAttribute.md](./PipifyPasswordAttribute.md)
 - [PipifyVisibleWhenAttribute.md](./PipifyVisibleWhenAttribute.md)
 - [IPipifyProgressReporter.md](./IPipifyProgressReporter.md)
 - [Batch.md](./Batch.md)

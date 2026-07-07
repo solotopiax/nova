@@ -11,6 +11,8 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using NovaFramework.Kit.Network.GameBind.Runtime;
+using NovaFramework.Kit.Network.GameLogin.Runtime;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.GoogleSignIn;
 
@@ -21,6 +23,11 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
         private void OnLoginButtonClick()
         {
             LoginAsync().Forget();
+        }
+
+        private void OnBindButtonClick()
+        {
+            BindGoogleAccountAsync().Forget();
         }
 
         private void OnLogoutButtonClick()
@@ -42,9 +49,10 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
                 return;
             }
 
+            m_CurrentGoogleId = userData.UserId;
             AppendFeedback($"用户 ID：{Fallback(userData.UserId)}");
             AppendFeedback($"邮箱：{Fallback(userData.Email)}");
-            AppendFeedback($"名称：{Fallback(userData.DisplayName)}");
+            AppendFeedback($"昵称：{Fallback(userData.DisplayName)}");
             AppendFeedback($"头像：{Fallback(userData.AvatarUrl)}");
         }
 
@@ -58,12 +66,13 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
             try
             {
                 AuthResult result = await plugin.LoginAsync("Google", CancellationToken.None);
-                if (!result.Success)
+                if (result == null || !result.Success)
                 {
-                    AppendFeedback($"Google 登录失败：{result.ErrorMessage}", FeedbackLevel.Error);
+                    AppendFeedback($"Google 登录失败：{result?.ErrorMessage ?? "null"}", FeedbackLevel.Error);
                     return;
                 }
 
+                m_CurrentGoogleId = result.UserId;
                 AppendFeedback($"Google 登录成功：{result.UserId}", FeedbackLevel.Success);
                 OnCurrentUserButtonClick();
             }
@@ -77,6 +86,65 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
             }
         }
 
+        private async UniTaskVoid BindGoogleAccountAsync()
+        {
+            if (string.IsNullOrEmpty(m_CurrentGoogleId))
+            {
+                AppendFeedback("请先完成 Google 登录，绑定流程会使用登录成功后缓存的 googleID。", FeedbackLevel.Warn);
+                return;
+            }
+
+            if (!await EnsureGameLoginAsync())
+            {
+                return;
+            }
+
+            try
+            {
+                AppendFeedback($"正在请求 Nova.Network.Kit<Bind>().BindAsync(Google, \"{m_CurrentGoogleId}\")...");
+                NetResponse<PbNetBindResp> resp = await Nova.Network.Kit<Bind>().BindAsync((int)PbNetChannel.Google, m_CurrentGoogleId);
+                if (resp.IsSuccess)
+                {
+                    AppendFeedback("Google 账号绑定成功。", FeedbackLevel.Success);
+                }
+                else if (resp.ErrorCode == BindErrorCode.ErrBindConflict)
+                {
+                    string existingUid = resp.Data != null ? resp.Data.ExistingUid : string.Empty;
+                    AppendFeedback("Google 账号绑定冲突：existing_uid=" + existingUid, FeedbackLevel.Warn);
+                    AppendFeedback("业务层应继续调用 QueryConflictAsync + ResolveAsync，让玩家选择保留游客账号或使用已有账号。", FeedbackLevel.Info);
+                }
+                else
+                {
+                    AppendFeedback("Google 账号绑定失败：ErrorCode=" + resp.ErrorCode + ", ErrorMessage=" + resp.ErrorMessage, FeedbackLevel.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendFeedback("Google 账号绑定异常：" + ex.Message, FeedbackLevel.Error);
+            }
+        }
+
+        private async UniTask<bool> EnsureGameLoginAsync()
+        {
+            Login login = Nova.Network.Kit<Login>();
+            if (login.IsLoggedIn)
+            {
+                return true;
+            }
+
+            AppendFeedback("当前没有游戏账号登录态，先执行 Nova.Network.Kit<Login>().Async(string.Empty, string.Empty, false)...");
+            NetResponse<PbNetLoginResp> resp = await login.Async(string.Empty, string.Empty, false);
+            if (resp.IsSuccess)
+            {
+                string uid = resp.Data != null ? resp.Data.Uid : string.Empty;
+                AppendFeedback("游戏账号登录成功：UID=" + uid, FeedbackLevel.Success);
+                return true;
+            }
+
+            AppendFeedback("游戏账号登录失败：ErrorCode=" + resp.ErrorCode + ", ErrorMessage=" + resp.ErrorMessage, FeedbackLevel.Error);
+            return false;
+        }
+
         private async UniTaskVoid LogoutAsync()
         {
             if (!TryGetGoogleSignInPlugin(out GoogleSignInPlugin plugin))
@@ -87,6 +155,7 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
             try
             {
                 await plugin.LogoutAsync(CancellationToken.None);
+                m_CurrentGoogleId = null;
                 AppendFeedback("Google 已登出。", FeedbackLevel.Success);
             }
             catch (OperationCanceledException)
@@ -99,9 +168,6 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
             }
         }
 
-        /// <summary>
-        /// 获取 Google 插件。
-        /// </summary>
         private bool TryGetGoogleSignInPlugin(out GoogleSignInPlugin plugin)
         {
             plugin = null;
@@ -113,7 +179,7 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
 
             if (!Nova.SDK.TryGet(out plugin) || plugin == null)
             {
-                AppendFeedback("GoogleSignInPlugin 不可用，请确认 Google SDK 配置已启用并初始化完成。", FeedbackLevel.Error);
+                AppendFeedback("GoogleSignInPlugin 不可用，请确认 Google SDK 配置已启用并完成初始化。", FeedbackLevel.Error);
                 return false;
             }
 
@@ -124,6 +190,7 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
         private void ClearPluginReference()
         {
             m_Plugin = null;
+            m_CurrentGoogleId = null;
         }
 
         private static string Fallback(string value)

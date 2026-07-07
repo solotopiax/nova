@@ -20,8 +20,8 @@ SDK 管理器构造配置 DTO，由 SDKComponent.Start() 构造后传入 ISDKMan
 ```csharp
 public sealed class SDKManagerConfig
 {
-    /// Inspector 序列化的插件条目列表，来自 SDKComponent.m_PluginEntries。
-    /// Manager.Initialize 按此列表进行反射实例化，跳过 Enabled==false 与 IsMissing==true 的条目。
+    /// Inspector 序列化的插件条目元数据列表，来自 SDKComponent.m_PluginEntries。
+    /// Manager.Initialize 不按此列表实例化插件；运行时启用统一来自 ConfigMaster.EnabledSDKs。排序使用 ISDKPlugin.Priority。
     public IReadOnlyList<SDKPluginEntry> PluginEntries;
 }
 ```

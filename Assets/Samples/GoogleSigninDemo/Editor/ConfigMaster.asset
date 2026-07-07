@@ -15,7 +15,11 @@ MonoBehaviour:
   Namespace: NovaFramework.Sdk.Googlesignin.Samples.Runtime
   EnabledSDKs:
   - NovaFramework.SDK.GoogleSignIn.GoogleSignInPluginConfig
-  EnabledKits: []
+  - NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+  - NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
+  EnabledKits:
+  - NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+  - NovaFramework.Kit.Network.GameBind.Runtime.BindKitConfig
   CommonMask:
     ByPlatform: 0
     ByChannel: 0
@@ -61,6 +65,11 @@ MonoBehaviour:
       ByPlatform: 0
       ByChannel: 0
       ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.IAP.Runtime.IAPPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
   KitMasks:
   - TypeName: NovaFramework.Kit.Network.GameSave.Runtime.SaveKitConfig
     Mask:
@@ -68,6 +77,11 @@ MonoBehaviour:
       ByChannel: 0
       ByDevelopMode: 0
   - TypeName: NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.Kit.Network.GameBind.Runtime.BindKitConfig
     Mask:
       ByPlatform: 0
       ByChannel: 0
@@ -139,6 +153,9 @@ MonoBehaviour:
   - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.GoogleSignIn.Runtime.dll
     m_TargetLocation: Assets/Samples/GoogleSigninDemo/Dlls/AOTMetas/NovaFramework.SDK.GoogleSignIn.Runtime.dll.bytes
     m_AssetLocation: NovaFramework.SDK.GoogleSignIn.Runtime.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+    m_TargetLocation: Assets/Samples/GoogleSigninDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
   GameDlls:
   - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Googlesignin.Samples.Runtime.dll
     m_TargetLocation: Assets/Samples/GoogleSigninDemo/Dlls/GameDlls/NovaFramework.Sdk.Googlesignin.Samples.Runtime.dll.bytes
@@ -149,27 +166,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728913
-      - rid: 2533177004360728671
+      - rid: 791343951335391302
       - rid: 2533177004360729497
       - rid: 2238162044843720808
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728914
-      - rid: 2533177004360728673
+      - rid: 791343951335391304
       - rid: 2533177004360729498
       - rid: 2238162044843720809
     KitConfigsByMode:
@@ -186,14 +203,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -202,11 +219,13 @@ MonoBehaviour:
       - rid: 209362707701039362
       - rid: 2533177004360729499
       - rid: 2238162042808172756
+      - rid: 791343950839152640
+      - rid: 791343950839152641
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728915
-      - rid: 2533177004360728675
+      - rid: 791343951335391306
       - rid: 2533177004360729500
       - rid: 2238162044843720810
     KitConfigsByMode:
@@ -214,6 +233,7 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 3589943518543478964
+      - rid: 791343951146647552
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
@@ -223,27 +243,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728916
-      - rid: 2533177004360728677
+      - rid: 791343951335391308
       - rid: 2533177004360729501
       - rid: 2238162044843720811
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728917
-      - rid: 2533177004360728679
+      - rid: 791343951335391310
       - rid: 2533177004360729502
       - rid: 2238162044843720812
     KitConfigsByMode:
@@ -260,27 +280,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728918
-      - rid: 2533177004360728681
+      - rid: 791343951335391312
       - rid: 2533177004360729503
       - rid: 2238162044843720813
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728919
-      - rid: 2533177004360728683
+      - rid: 791343951335391314
       - rid: 2533177004360729504
       - rid: 2238162044843720814
     KitConfigsByMode:
@@ -297,27 +317,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728920
-      - rid: 2533177004360728685
+      - rid: 791343951335391316
       - rid: 2533177004360729505
       - rid: 2238162044843720815
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728921
-      - rid: 2533177004360728687
+      - rid: 791343951335391318
       - rid: 2533177004360729506
       - rid: 2238162044843720816
     KitConfigsByMode:
@@ -334,27 +354,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728922
-      - rid: 2533177004360728689
+      - rid: 791343951335391320
       - rid: 2533177004360729507
       - rid: 2238162044843720817
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728923
-      - rid: 2533177004360728691
+      - rid: 791343951335391322
       - rid: 2533177004360729508
       - rid: 2238162044843720818
     KitConfigsByMode:
@@ -371,27 +391,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728924
-      - rid: 2533177004360728693
+      - rid: 791343951335391324
       - rid: 2533177004360729509
       - rid: 2238162044843720819
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728925
-      - rid: 2533177004360728695
+      - rid: 791343951335391326
       - rid: 2533177004360729510
       - rid: 2238162044843720820
     KitConfigsByMode:
@@ -408,27 +428,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728926
-      - rid: 2533177004360728697
+      - rid: 791343951335391328
       - rid: 2533177004360729511
       - rid: 2238162044843720821
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728927
-      - rid: 2533177004360728699
+      - rid: 791343951335391330
       - rid: 2533177004360729512
       - rid: 2238162044843720822
     KitConfigsByMode:
@@ -445,27 +465,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728928
-      - rid: 2533177004360728701
+      - rid: 791343951335391332
       - rid: 2533177004360729513
       - rid: 2238162044843720823
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728929
-      - rid: 2533177004360728703
+      - rid: 791343951335391334
       - rid: 2533177004360729514
       - rid: 2238162044843720824
     KitConfigsByMode:
@@ -482,27 +502,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728930
-      - rid: 2533177004360728705
+      - rid: 791343951335391336
       - rid: 2533177004360729515
       - rid: 2238162044843720825
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728931
-      - rid: 2533177004360728707
+      - rid: 791343951335391338
       - rid: 2533177004360729516
       - rid: 2238162044843720826
     KitConfigsByMode:
@@ -519,27 +539,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728932
-      - rid: 2533177004360728709
+      - rid: 791343951335391340
       - rid: 2533177004360729517
       - rid: 2238162044843720827
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728933
-      - rid: 2533177004360728711
+      - rid: 791343951335391342
       - rid: 2533177004360729518
       - rid: 2238162044843720828
     KitConfigsByMode:
@@ -556,27 +576,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728934
-      - rid: 2533177004360728713
+      - rid: 791343951335391344
       - rid: 2533177004360729519
       - rid: 2238162044843720829
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728935
-      - rid: 2533177004360728715
+      - rid: 791343951335391346
       - rid: 2533177004360729520
       - rid: 2238162044843720830
     KitConfigsByMode:
@@ -593,27 +613,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728936
-      - rid: 2533177004360728717
+      - rid: 791343951335391348
       - rid: 2533177004360729521
       - rid: 2238162044843720831
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728937
-      - rid: 2533177004360728719
+      - rid: 791343951335391350
       - rid: 2533177004360729522
       - rid: 2238162044843720832
     KitConfigsByMode:
@@ -630,27 +650,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728938
-      - rid: 2533177004360728721
+      - rid: 791343951335391352
       - rid: 2533177004360729523
       - rid: 2238162044843720833
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728939
-      - rid: 2533177004360728723
+      - rid: 791343951335391354
       - rid: 2533177004360729524
       - rid: 2238162044843720834
     KitConfigsByMode:
@@ -667,27 +687,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728940
-      - rid: 2533177004360728725
+      - rid: 791343951335391356
       - rid: 2533177004360729525
       - rid: 2238162044843720835
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728941
-      - rid: 2533177004360728727
+      - rid: 791343951335391358
       - rid: 2533177004360729526
       - rid: 2238162044843720836
     KitConfigsByMode:
@@ -704,27 +724,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728942
-      - rid: 2533177004360728729
+      - rid: 791343951335391360
       - rid: 2533177004360729527
       - rid: 2238162044843720837
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728943
-      - rid: 2533177004360728731
+      - rid: 791343951335391362
       - rid: 2533177004360729528
       - rid: 2238162044843720838
     KitConfigsByMode:
@@ -741,27 +761,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728944
-      - rid: 2533177004360728733
+      - rid: 791343951335391364
       - rid: 2533177004360729529
       - rid: 2238162044843720839
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728945
-      - rid: 2533177004360728735
+      - rid: 791343951335391366
       - rid: 2533177004360729530
       - rid: 2238162044843720840
     KitConfigsByMode:
@@ -778,27 +798,27 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728946
-      - rid: 2533177004360728737
+      - rid: 791343951335391368
       - rid: 2533177004360729531
       - rid: 2238162044843720841
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360728947
-      - rid: 2533177004360728739
+      - rid: 791343951335391370
       - rid: 2533177004360729532
       - rid: 2238162044843720842
     KitConfigsByMode:
@@ -813,8 +833,6 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
     - rid: 209362707701039362
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -834,11 +852,1027 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343950839152640
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 791343950839152641
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 791343950839152642
+        m_Products:
+          m_Items: []
+    - rid: 791343950839152642
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 791343951146647552
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343951335391302
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391303
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391303
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391304
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391305
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391305
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391306
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391307
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391307
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391308
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391309
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391309
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391310
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391311
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391311
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391312
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391313
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391313
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391314
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391315
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391315
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391316
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391317
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391317
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391318
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391319
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391319
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391320
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391321
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391321
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391322
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391323
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391323
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391324
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391325
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391325
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391326
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391327
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391327
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391328
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391329
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391329
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391330
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391331
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391331
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391332
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391333
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391333
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391334
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391335
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391335
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391336
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391337
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391337
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391338
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391339
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391339
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391340
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391341
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391341
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391342
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391343
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391343
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391344
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391345
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391345
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391346
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391347
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391347
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391348
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391349
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391349
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391350
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391351
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391351
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391352
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391353
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391353
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391354
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391355
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391355
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391356
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391357
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391357
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391358
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391359
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391359
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391360
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391361
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391361
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391362
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391363
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391363
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391364
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391365
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391365
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391366
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391367
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391367
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391368
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391369
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391369
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343951335391370
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343951335391371
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343951335391371
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1131,986 +2165,6 @@ MonoBehaviour:
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
         m_AutoRestoreOnInitialize: 0
-    - rid: 2533177004360728671
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728672
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728672
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728673
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728674
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728674
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728675
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728676
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728676
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728677
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728678
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728678
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728679
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728680
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728680
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728681
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728682
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728682
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728683
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728684
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728684
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728685
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728686
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728686
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728687
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728688
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728688
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728689
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728690
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728690
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728691
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728692
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728692
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728693
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728694
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728694
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728695
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728696
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728696
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728697
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728698
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728698
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728699
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728700
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728700
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728701
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728702
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728702
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728703
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728704
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728704
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728705
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728706
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728706
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728707
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728708
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728708
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728709
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728710
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728710
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728711
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728712
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728712
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728713
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728714
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728714
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728715
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728716
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728716
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728717
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728718
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728718
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728719
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728720
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728720
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728721
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728722
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728722
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728723
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728724
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728724
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728725
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728726
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728726
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728727
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728728
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728728
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728729
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728730
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728730
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728731
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728732
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728732
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728733
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728734
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728734
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728735
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728736
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728736
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728737
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728738
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728738
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
-    - rid: 2533177004360728739
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 2533177004360728740
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 2533177004360728740
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - 87975430aba706c2
-        m_InterPlacementIds:
-        - d9b8697dc2e038bd
-        m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
     - rid: 2533177004360728913
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
@@ -2597,5 +2651,5 @@ MonoBehaviour:
     - rid: 3589943518543478964
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
-        m_LoginCmdName: 
+        m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 

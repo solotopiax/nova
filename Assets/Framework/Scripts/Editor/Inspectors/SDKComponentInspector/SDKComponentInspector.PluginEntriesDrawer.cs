@@ -21,29 +21,35 @@ namespace NovaFramework.Editor
         /// <summary>
         /// Plugin 条目列表绘制器。
         /// 职责：
-        ///   1. 反射扫描所有非抽象 ISDKPlugin 实现类（含跨程序集）
-        ///   2. 与序列化的 m_PluginEntries 做双向同步（新增 append / 缺失标 IsMissing）
+        ///   1. 读取当前 active ConfigMaster.EnabledSDKs，并映射出可见 ISDKPlugin 实现类
+        ///   2. 与序列化的 m_PluginEntries 做同步（新增 append / 缺失标 IsMissing，inactive 旧条目保留但不显示）
         ///   3. 按接口族分组，每族一行 Popup 单选（对齐 TypesSelector 视觉风格）；账号登录族例外，为可复选下拉框
         ///   4. Missing 区域：红色警告 + "清理所有 Missing"按钮（逆序 DeleteArrayElementAtIndex）
         /// </summary>
         internal sealed class PluginEntriesDrawer : IDisposable
         {
-            #region Constants
-
-            /// <summary>
-            /// Missing 条目默认 Priority（用于新 append 的初始值）。
-            /// </summary>
-            private const int c_DefaultPriority = 100;
-
-            #endregion
-
             #region Fields
 
             /// <summary>
-            /// 反射扫描得到的所有非抽象 ISDKPlugin 实现类型（不含接口、抽象类）。
-            /// 编译后随 SyncEntries 刷新。
+            /// 当前 active ConfigMaster 启用配置映射出的 Plugin 类型列表。
+            /// 编译或 ConfigMaster 保存后随 SyncEntries 刷新。
             /// </summary>
             private List<Type> m_ScannedPluginTypes = new List<Type>();
+
+            /// <summary>
+            /// 当前 active ConfigMaster 启用配置映射出的可见 Plugin 类型名集合（AssemblyQualifiedName）。
+            /// </summary>
+            private readonly HashSet<string> m_VisiblePluginTypeNames = new HashSet<string>();
+
+            /// <summary>
+            /// 上次刷新时的 active ConfigMaster 资产路径。
+            /// </summary>
+            private string m_LastActiveMasterAssetPath;
+
+            /// <summary>
+            /// 上次刷新时 EnabledSDKs 的稳定签名。
+            /// </summary>
+            private string m_LastEnabledSDKSignature;
 
             /// <summary>
             /// 红色标签样式（Missing 条目显示）。
@@ -89,6 +95,15 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 强制下次 SyncEntries 重建 active ConfigMaster 可见 Plugin 缓存。
+            /// </summary>
+            public void ForceRefresh()
+            {
+                m_LastActiveMasterAssetPath = null;
+                m_LastEnabledSDKSignature = null;
+            }
+
+            /// <summary>
             /// 释放资源：释放运行时 GUIStyle。
             /// </summary>
             public void Dispose()
@@ -101,18 +116,99 @@ namespace NovaFramework.Editor
             #region Sync Methods
 
             /// <summary>
-            /// 通过 UnityEditor.TypeCache 重新扫描所有非抽象 ISDKPlugin 实现类，写入 m_ScannedPluginTypes。
+            /// 按当前 active ConfigMaster.EnabledSDKs 刷新可见 SDK Plugin 类型。
+            /// EnabledSDKs 存储的是 ISDKPluginConfig 类型全名，因此需要通过 SDKPluginBase.RequiredConfigType 映射到 Plugin 类型。
             /// </summary>
             private void RefreshScannedTypes()
             {
+                ConfigMasterSO master = EditorUtil.Config.WorkspaceActive.Get();
+                string masterAssetPath = master != null ? AssetDatabase.GetAssetPath(master) : string.Empty;
+                string enabledSignature = BuildEnabledSDKSignature(master);
+                if (masterAssetPath == m_LastActiveMasterAssetPath && enabledSignature == m_LastEnabledSDKSignature)
+                {
+                    return;
+                }
+
+                m_LastActiveMasterAssetPath = masterAssetPath;
+                m_LastEnabledSDKSignature = enabledSignature;
                 m_ScannedPluginTypes.Clear();
+                m_VisiblePluginTypeNames.Clear();
+
+                if (master?.EnabledSDKs == null || master.EnabledSDKs.Count == 0)
+                {
+                    return;
+                }
+
+                HashSet<string> enabledConfigTypeNames = new HashSet<string>(master.EnabledSDKs);
                 var derived = UnityEditor.TypeCache.GetTypesDerivedFrom<ISDKPlugin>();
                 foreach (Type t in derived)
                 {
-                    if (!t.IsAbstract && !t.IsInterface)
+                    if (t == null || t.IsAbstract || t.IsInterface || t.GetConstructor(Type.EmptyTypes) == null)
                     {
-                        m_ScannedPluginTypes.Add(t);
+                        continue;
                     }
+
+                    if (!TryGetRequiredConfigType(t, out Type requiredConfigType) || requiredConfigType == null)
+                    {
+                        continue;
+                    }
+
+                    if (!enabledConfigTypeNames.Contains(requiredConfigType.FullName))
+                    {
+                        continue;
+                    }
+
+                    string aqn = t.AssemblyQualifiedName;
+                    if (string.IsNullOrEmpty(aqn))
+                    {
+                        continue;
+                    }
+
+                    m_ScannedPluginTypes.Add(t);
+                    m_VisiblePluginTypeNames.Add(aqn);
+                }
+            }
+
+            /// <summary>
+            /// 构建 EnabledSDKs 的稳定签名，用于避免 Inspector 每帧重复反射扫描。
+            /// </summary>
+            /// <param name="master">当前 active ConfigMaster。</param>
+            /// <returns>按序排序后的 EnabledSDKs 签名。</returns>
+            private static string BuildEnabledSDKSignature(ConfigMasterSO master)
+            {
+                if (master?.EnabledSDKs == null || master.EnabledSDKs.Count == 0)
+                {
+                    return string.Empty;
+                }
+
+                List<string> enabled = new List<string>(master.EnabledSDKs);
+                enabled.Sort(StringComparer.Ordinal);
+                return string.Join("|", enabled);
+            }
+
+            /// <summary>
+            /// 尝试读取 SDKPluginBase 插件声明的 RequiredConfigType。
+            /// </summary>
+            /// <param name="pluginType">候选 Plugin 类型。</param>
+            /// <param name="requiredConfigType">命中的配置类型。</param>
+            /// <returns>成功读取返回 true。</returns>
+            private static bool TryGetRequiredConfigType(Type pluginType, out Type requiredConfigType)
+            {
+                requiredConfigType = null;
+                if (!typeof(SDKPluginBase).IsAssignableFrom(pluginType))
+                {
+                    return false;
+                }
+
+                try
+                {
+                    SDKPluginBase plugin = (SDKPluginBase)Activator.CreateInstance(pluginType);
+                    requiredConfigType = plugin.RequiredConfigType;
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
                 }
             }
 
@@ -140,7 +236,7 @@ namespace NovaFramework.Editor
                 for (int i = 0; i < existingCount; i++)
                 {
                     string existingTypeName = entriesProp.GetArrayElementAtIndex(i).FindPropertyRelative("TypeName").stringValue;
-                    if (string.IsNullOrEmpty(existingTypeName)) continue;
+                    if (string.IsNullOrEmpty(existingTypeName) || !m_VisiblePluginTypeNames.Contains(existingTypeName)) continue;
                     Type existingType = Type.GetType(existingTypeName);
                     if (existingType == null) continue;
                     if (!hasExistingNormal && IsNormalTrackPlugin(existingType)) hasExistingNormal = true;
@@ -232,7 +328,6 @@ namespace NovaFramework.Editor
                     SerializedProperty newEntry = entriesProp.GetArrayElementAtIndex(newIdx);
                     newEntry.FindPropertyRelative("TypeName").stringValue = aqn;
                     newEntry.FindPropertyRelative("Enabled").boolValue = enabledDefault;
-                    newEntry.FindPropertyRelative("Priority").intValue = c_DefaultPriority;
                     dirty = true;
                 }
                 return dirty;
@@ -260,6 +355,19 @@ namespace NovaFramework.Editor
                     if (entry == null) continue;
                     entry.IsMissing = !string.IsNullOrEmpty(entry.TypeName) && Type.GetType(entry.TypeName) == null;
                 }
+            }
+
+            /// <summary>
+            /// 判断序列化 Entry 是否属于当前 active ConfigMaster 启用配置映射出的可见 Plugin。
+            /// </summary>
+            /// <param name="entry">SDK Plugin Entry。</param>
+            /// <returns>可见返回 true。</returns>
+            private bool IsEntryVisible(SDKPluginEntry entry)
+            {
+                return entry != null
+                    && !entry.IsMissing
+                    && !string.IsNullOrEmpty(entry.TypeName)
+                    && m_VisiblePluginTypeNames.Contains(entry.TypeName);
             }
 
             /// <summary>
@@ -293,7 +401,7 @@ namespace NovaFramework.Editor
             {
                 SDKComponent component = entriesProp.serializedObject.targetObject as SDKComponent;
                 IReadOnlyList<SDKPluginEntry> entries = component?.PluginEntries;
-                if (entries == null || entries.Count == 0) return;
+                if (entries == null) return;
 
                 DrawGroupSelector("普通埋点", entriesProp, entries, so, IsNormalTrackPlugin);
                 DrawGroupSelector("变现埋点", entriesProp, entries, so, IsMonetizeTrackPlugin);
@@ -301,7 +409,7 @@ namespace NovaFramework.Editor
                 DrawGroupSelector("归因埋点", entriesProp, entries, so, IsAttributionPlugin);
                 DrawAccountMultiSelect(entriesProp, entries, so);
                 DrawGroupSelector("云服务", entriesProp, entries, so, IsCloudPlugin);
-                DrawGroupSelector("支付", entriesProp, entries, so, IsIAPPlugin);   
+                DrawGroupSelector("支付", entriesProp, entries, so, IsIAPPlugin);
             }
 
             /// <summary>
@@ -315,14 +423,14 @@ namespace NovaFramework.Editor
             /// <param name="entries">运行时 Entry 只读列表（含 IsMissing 标记）。</param>
             /// <param name="so">持有 entriesProp 的 SerializedObject。</param>
             /// <param name="groupFilter">判断 Plugin 是否属于此族的谓词。</param>
-            private static void DrawGroupSelector(string groupName, SerializedProperty entriesProp, IReadOnlyList<SDKPluginEntry> entries, SerializedObject so, Func<Type, bool> groupFilter)
+            private void DrawGroupSelector(string groupName, SerializedProperty entriesProp, IReadOnlyList<SDKPluginEntry> entries, SerializedObject so, Func<Type, bool> groupFilter)
             {
                 var groupIndices = new List<int>();
                 var groupTypes = new List<Type>();
                 for (int i = 0; i < entries.Count; i++)
                 {
                     SDKPluginEntry entry = entries[i];
-                    if (entry == null || entry.IsMissing) continue;
+                    if (!IsEntryVisible(entry)) continue;
                     Type t = Type.GetType(entry.TypeName);
                     if (t != null && groupFilter(t))
                     {
@@ -388,13 +496,13 @@ namespace NovaFramework.Editor
             /// <summary>
             /// 绘制"账号登录"族的可复选下拉框。
             /// 外观与单选族的下拉 Popup 一致，但点击后弹出带勾选标记的 GenericMenu，可同时勾选多个登录渠道
-            /// （Google + Facebook + Apple 共存），不互斥。按钮上显示已启用渠道的逗号摘要，全不勾显示"无"。
+            /// （Google + Facebook + Apple 共存），不互斥。按钮摘要未选显示"无"、单选显示完整类型名、多选显示 Multiple Selected。
             /// 其余族维持单选语义不变。
             /// </summary>
             /// <param name="entriesProp">m_PluginEntries 属性。</param>
             /// <param name="entries">运行时 Entry 只读列表（含 IsMissing 标记）。</param>
             /// <param name="so">持有 entriesProp 的 SerializedObject。</param>
-            private static void DrawAccountMultiSelect(SerializedProperty entriesProp, IReadOnlyList<SDKPluginEntry> entries, SerializedObject so)
+            private void DrawAccountMultiSelect(SerializedProperty entriesProp, IReadOnlyList<SDKPluginEntry> entries, SerializedObject so)
             {
                 // 收集账号族所有有效（非 Missing）条目。
                 var groupIndices = new List<int>();
@@ -402,7 +510,7 @@ namespace NovaFramework.Editor
                 for (int i = 0; i < entries.Count; i++)
                 {
                     SDKPluginEntry entry = entries[i];
-                    if (entry == null || entry.IsMissing) continue;
+                    if (!IsEntryVisible(entry)) continue;
                     Type t = Type.GetType(entry.TypeName);
                     if (t != null && IsAccountPlugin(t))
                     {
@@ -419,24 +527,29 @@ namespace NovaFramework.Editor
                 {
                     // 该族无任何已安装的 Plugin，展示禁用的"无"占位，提示用户安装对应 UPM 包。
                     EditorGUI.BeginDisabledGroup(true);
-                    EditorGUILayout.DropdownButton(GUIContent.none, FocusType.Passive);
+                    EditorGUILayout.DropdownButton(new GUIContent("无"), FocusType.Passive);
                     EditorGUI.EndDisabledGroup();
                 }
                 else
                 {
-                    // 摘要：已启用渠道的短类名，逗号分隔；无则显示"无"。
-                    var enabledShortNames = new List<string>();
+                    // 摘要：未选显示"无"，单选显示完整类型名，多选显示 Multiple Selected。
+                    int enabledCount = 0;
+                    string singleEnabledFullName = null;
                     for (int i = 0; i < groupIndices.Count; i++)
                     {
                         SerializedProperty entryProp = entriesProp.GetArrayElementAtIndex(groupIndices[i]);
                         if (entryProp.FindPropertyRelative("Enabled").boolValue)
                         {
-                            enabledShortNames.Add(ExtractShortName(groupTypes[i].AssemblyQualifiedName));
+                            enabledCount++;
+                            singleEnabledFullName = GetTypeFullName(groupTypes[i]);
                         }
                     }
-                    string summary = enabledShortNames.Count > 0
-                        ? string.Join(", ", enabledShortNames)
-                        : "无";
+
+                    string summary = enabledCount == 0
+                        ? "无"
+                        : enabledCount == 1
+                            ? singleEnabledFullName
+                            : "Multiple Selected";
 
                     // 下拉按钮：点击后弹出可复选菜单。菜单关闭后由 GenericMenu 回调逐条写回 Enabled。
                     GUIContent buttonContent = new GUIContent(summary);
@@ -448,12 +561,12 @@ namespace NovaFramework.Editor
                         {
                             SerializedProperty entryProp = entriesProp.GetArrayElementAtIndex(groupIndices[i]);
                             SerializedProperty enabledProp = entryProp.FindPropertyRelative("Enabled");
-                            string shortName = ExtractShortName(groupTypes[i].AssemblyQualifiedName);
+                            string fullName = GetTypeFullName(groupTypes[i]);
                             bool current = enabledProp.boolValue;
 
                             // 闭包捕获 index，避免循环变量复用问题；Lambda 在菜单项被点击时执行翻转。
                             int capturedIndex = i;
-                            menu.AddItem(new GUIContent(shortName), current, () =>
+                            menu.AddItem(new GUIContent(fullName), current, () =>
                             {
                                 SerializedProperty ep = entriesProp.GetArrayElementAtIndex(groupIndices[capturedIndex]);
                                 ep.FindPropertyRelative("Enabled").boolValue = !ep.FindPropertyRelative("Enabled").boolValue;
@@ -618,6 +731,17 @@ namespace NovaFramework.Editor
             #endregion
 
             #region Helper Methods
+
+            /// <summary>
+            /// 获取类型完整显示名，优先使用 FullName，兜底 Name。
+            /// </summary>
+            /// <param name="type">Plugin 类型。</param>
+            /// <returns>完整类型名。</returns>
+            private static string GetTypeFullName(Type type)
+            {
+                if (type == null) return string.Empty;
+                return string.IsNullOrEmpty(type.FullName) ? type.Name : type.FullName;
+            }
 
             /// <summary>
             /// 从 AssemblyQualifiedName 提取短类名（最后一段命名空间后的类名部分）。

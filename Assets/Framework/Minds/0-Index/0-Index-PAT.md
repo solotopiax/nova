@@ -96,6 +96,9 @@ auto_generated: true
 ## module
 
 - [PAT-140 UPM 包依赖与 sample 依赖的边界](../2-Areas/Patterns/PAT-140-upm-package-vs-sample-dependency.md) — dependencies 管安装 / asmdef 管编译 / sample 跨包依赖不自动解析
+- [PAT-141 封装第三方 SDK 时源目录只读，文件完整搬入不增删改](../2-Areas/Patterns/PAT-141-vendor-source-readonly.md) — 第三方源目录只读，封装是复制入包，不写不删不改不省略
+- [PAT-143 厂商 SDK 缺公开 API 时，接入层用现有 public 方法在 Nova 层补口](../2-Areas/Patterns/PAT-143-vendor-sdk-missing-api-nova-layer-fill.md) — 源只读前提下，接入层用现有 public API 组合补厂商缺失能力
+- [PAT-144 反射调厂商私有方法是源只读约束下的最后手段，须标注版本升级复核](../2-Areas/Patterns/PAT-144-reflection-private-vendor-method.md) — 反射调私有厂商方法属权宜，须注释标版本复核点
 - [PAT-33 新增 SDK Plugin 的 6 步 SOP](../2-Areas/Patterns/PAT-33-sdk-plugin-sop.md) — SDK Plugin SOP UPM包加ISDKPlugin
 - [PAT-69 UGUI 等比铺满父宽的零脚本配置法](../2-Areas/Patterns/PAT-69-ugui-aspect-fit-fill-width.md) — ARF+水平 stretch 实现等比满宽零脚本
 
@@ -156,6 +159,7 @@ auto_generated: true
 - [PAT-13 UPM 发版默认不级联依赖](../2-Areas/Patterns/PAT-13-publish-no-cascade.md) — UPM发版不级联连带兄弟包
 - [PAT-130 UPM Sample 只读 Prefab 路径靠 scene override + import 重写（修订版）](../2-Areas/Patterns/PAT-130-sample-readonly-prefab-path-override-revised.md) — 只读 prefab 路径走 scene override
 - [PAT-132 单主题 sample 用 ProcedurePlaying 直开入口 View](../2-Areas/Patterns/PAT-132-procedure-playing-direct-open-entry-view.md) — 单主题 demo OnEnter 直开入口 View
+- [PAT-142 社交登录 Sample 接入 GameBind 配置闭环](../2-Areas/Patterns/PAT-142-social-signin-bind-sample-checklist.md) — 社交登录示例接入绑定需同步代码、配置、AOT、link 与表源
 - [PAT-53 发版前校验 CHANGELOG 当前版本节存在，不靠人工自觉](../2-Areas/Patterns/PAT-53-changelog-grep-script-enforce.md) — 发版前校验 CHANGELOG 当前版本节
 - [PAT-55 Python 工具脚本优先用 cwd 或环境变量解析项目根](../2-Areas/Patterns/PAT-55-python-script-cwd-or-env-root.md) — 工具脚本不要把项目根硬绑定到 `__file__` 的目录深度
 - [PAT-62 README / CHANGELOG 双层同步铁律](../2-Areas/Patterns/PAT-62-readme-changelog-dual-sync.md) — 发版前工程根与包内两层文档全字段对齐，禁单层更新
@@ -164,4 +168,4 @@ auto_generated: true
 
 
 ---
-_共 98 条，分布于 18 个 category。_
+_共 102 条，分布于 18 个 category。_

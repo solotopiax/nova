@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.facebook",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "18.0.0",
   "displayName": "Nova Framework - SDK - Facebook",

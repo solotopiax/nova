@@ -240,6 +240,7 @@ namespace NovaFramework.Editor
             m_IsDirty = false;
             // 保存后重建 WorkingCopy，保持后续编辑基于最新已落盘状态
             RebuildWorkingCopy();
+            EditorUtil.Config.Events.NotifyActiveConfigMasterSaved(m_Master);
         }
 
         /// <summary>

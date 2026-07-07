@@ -36,6 +36,7 @@ namespace NovaFramework.Editor
 
             m_Drawer = new PluginEntriesDrawer();
             m_Drawer.SyncEntries(m_PluginEntries, serializedObject);
+            EditorUtil.Config.Events.ActiveConfigMasterSaved += OnActiveConfigMasterSaved;
         }
 
         /// <summary>
@@ -43,8 +44,21 @@ namespace NovaFramework.Editor
         /// </summary>
         private void OnDisable()
         {
+            EditorUtil.Config.Events.ActiveConfigMasterSaved -= OnActiveConfigMasterSaved;
             m_Drawer?.Dispose();
             m_Drawer = null;
+        }
+
+        /// <summary>
+        /// ConfigMaster 保存后刷新 SDK Plugin 可见列表。
+        /// </summary>
+        /// <param name="master">刚保存的 ConfigMaster。</param>
+        private void OnActiveConfigMasterSaved(ConfigMasterSO master)
+        {
+            serializedObject.Update();
+            m_Drawer?.ForceRefresh();
+            m_Drawer?.SyncEntries(m_PluginEntries, serializedObject);
+            Repaint();
         }
 
         /// <summary>

@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Swagger UI - /v1/params/evaluate</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    body {
+      margin: 0;
+      background: #fafafa;
+    }
+    .topbar {
+      display: none;
+    }
+    .fallback {
+      max-width: 980px;
+      margin: 24px auto;
+      padding: 16px 20px;
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .fallback pre {
+      overflow: auto;
+      padding: 12px;
+      background: #f6f8fa;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <noscript>
+    <div class="fallback">需要启用 JavaScript 才能渲染 Swagger UI。</div>
+  </noscript>
+
+  <script id="swagger-spec" type="application/json">
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "POST /v1/params/evaluate",
+    "description": "客户端通过 HTTP JSON 调用的实验参数查询接口。字段名使用 JSON 形式，例如 appId、playerId、deviceId、userProperties。",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/params/evaluate": {
+      "post": {
+        "summary": "POST /v1/params/evaluate",
+        "description": "根据应用、玩家、设备、实验进组信息和用户属性，返回命中的实验参数。本文档只描述 HTTP JSON 调用，不展示后端实现名称。",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1GetParamsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetParamsResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "v1GetParamsRequest": {
+      "type": "object",
+      "properties": {
+        "appId": {
+          "type": "string",
+          "title": "应用ID。服务端按 appId 选择应用配置。",
+          "example": "com.example.game"
+        },
+        "playerId": {
+          "type": "string",
+          "title": "玩家ID。用于玩家维度实验分桶、命中状态查询和返回结果归属。",
+          "example": "player_12345"
+        },
+        "deviceId": {
+          "type": "string",
+          "title": "设备ID。集成测试、设备白名单或设备维度灰度可使用该字段；没有设备维度规则时可为空。",
+          "example": "device_abc"
+        },
+        "experiments": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1Experiment"
+          },
+          "title": "实验参数集合 (key = topic_id)",
+          "example": {
+            "topic_growth": {
+              "topicId": "topic_growth",
+              "caseId": "case_a",
+              "enterTimeMs": "1707200000000"
+            }
+          }
+        },
+        "userProperties": {
+          "$ref": "#/definitions/v1UserProperties",
+          "title": "用户属性映射。除文档列出的常用字段外，可以继续传业务自定义属性。",
+          "example": {
+            "level": 10,
+            "is_vip": true,
+            "country_code": "US",
+            "app_version": "3",
+            "platform": 2
+          }
+        }
+      },
+      "example": {
+        "appId": "com.example.game",
+        "playerId": "player_12345",
+        "deviceId": "device_abc",
+        "experiments": {
+          "topic_growth": {
+            "topicId": "topic_growth",
+            "caseId": "case_a",
+            "enterTimeMs": "1707200000000"
+          }
+        },
+        "userProperties": {
+          "level": 10,
+          "is_vip": true,
+          "country_code": "US",
+          "app_version": "3",
+          "platform": 2
+        }
+      }
+    },
+    "v1GetParamsResponse": {
+      "type": "object",
+      "properties": {
+        "environment": {
+          "$ref": "#/definitions/v1Environment",
+          "title": "当前运行环境（客户端应校验此字段）"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/configappdata_masterv1Params"
+          },
+          "title": "实验参数集合 (key = topic_id)"
+        }
+      },
+      "example": {
+        "environment": "ENV_PRODUCTION",
+        "params": {
+          "topic_growth": {
+            "experiment": {
+              "topicId": "topic_growth",
+              "caseId": "case_a",
+              "enterTimeMs": "1707200000000"
+            },
+            "schema": {
+              "welcome_text": "PARAM_TYPE_TEXT",
+              "max_life": "PARAM_TYPE_NUMBER",
+              "new_ui": "PARAM_TYPE_BOOLEAN",
+              "reward_rule": "PARAM_TYPE_CONFIG"
+            },
+            "values": {
+              "welcome_text": "hello",
+              "max_life": 5,
+              "new_ui": true,
+              "reward_rule": {
+                "daily": {
+                  "coin": 100
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "v1Experiment": {
+      "type": "object",
+      "properties": {
+        "topicId": {
+          "type": "string",
+          "title": "话题ID (实验层)"
+        },
+        "caseId": {
+          "type": "string",
+          "title": "实验用例ID"
+        },
+        "enterTimeMs": {
+          "type": "string",
+          "format": "int64",
+          "title": "进组时间 (Unix毫秒)"
+        },
+        "exposureTimeMs": {
+          "type": "string",
+          "format": "int64",
+          "title": "曝光时间 (可选，首次请求默认无)"
+        }
+      },
+      "example": {
+        "topicId": "topic_growth",
+        "caseId": "case_a",
+        "enterTimeMs": "1707200000000"
+      }
+    },
+    "configappdata_masterv1Params": {
+      "type": "object",
+      "title": "参数集合（按实验分组）",
+      "description": "schema 定义每个参数的预期类型；values 存储参数实际值，使用 google.protobuf.Value 支持动态类型。NUMBER 类型中，整数 <= 2^53-1 可用 number，超过 JS 安全整数时用 string。",
+      "properties": {
+        "experiment": {
+          "$ref": "#/definitions/v1Experiment",
+          "title": "实验信息"
+        },
+        "schema": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/v1ParamType"
+          },
+          "title": "参数类型定义 (key = 参数名)"
+        },
+        "values": {
+          "type": "object",
+          "additionalProperties": {},
+          "title": "参数值 (key = 参数名)"
+        }
+      }
+    },
+    "v1UserProperties": {
+      "type": "object",
+      "title": "用户属性映射",
+      "description": "userProperties 是 JSON 动态对象，用于受众条件、版本切片、地区/平台等规则匹配。字段值可按业务需要使用 string、number、boolean、object 或 array。",
+      "properties": {
+        "platform": {
+          "$ref": "#/definitions/commonv1Platform"
+        },
+        "app_version": {
+          "type": "string",
+          "title": "客户端应用版本 / build number",
+          "description": "用于版本切片和受众条件匹配。JSON 调用建议传字符串以避免跨语言整数精度问题；服务端规则通常按数值语义比较，例如 \"3\"、\"10023\"。",
+          "example": "3"
+        },
+        "country_code": {
+          "type": "string",
+          "title": "国家码",
+          "description": "ISO 3166-1 alpha-2 大写国家码，例如 US、CN、BR。用于地区受众条件或地区相关参数规则。",
+          "example": "US"
+        },
+        "level": {
+          "type": "number",
+          "title": "示例：玩家等级"
+        },
+        "is_vip": {
+          "type": "boolean",
+          "title": "示例：是否 VIP"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "commonv1Platform": {
+      "type": "integer",
+      "format": "int32",
+      "title": "平台",
+      "description": "来自 common.v1.Platform。JSON 调用传枚举数值：0=PLATFORM_NONE，1=PLATFORM_IOS，2=PLATFORM_GOOGLE，3=PLATFORM_AMAZON，4=PLATFORM_UNITY_EDITOR，5=PLATFORM_FACEBOOK。若业务受众规则使用字符串平台值，需要与规则中的取值保持一致。",
+      "enum": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "default": 0,
+      "example": 2
+    },
+    "v1ParamType": {
+      "type": "string",
+      "title": "参数类型。params.schema 的 value 引用该定义。",
+      "description": "- PARAM_TYPE_UNSPECIFIED: 未指定\n- PARAM_TYPE_TEXT: 文本\n- PARAM_TYPE_ENUM: 枚举值\n- PARAM_TYPE_NUMBER: 数字 (int/float, 超过 2^53-1 的 int64 用 string 传输)\n- PARAM_TYPE_BOOLEAN: 布尔\n- PARAM_TYPE_CONFIG: 复杂对象 (JSON/Struct)",
+      "enum": [
+        "PARAM_TYPE_UNSPECIFIED",
+        "PARAM_TYPE_TEXT",
+        "PARAM_TYPE_ENUM",
+        "PARAM_TYPE_NUMBER",
+        "PARAM_TYPE_BOOLEAN",
+        "PARAM_TYPE_CONFIG"
+      ],
+      "default": "PARAM_TYPE_UNSPECIFIED"
+    },
+    "v1Environment": {
+      "type": "string",
+      "title": "运行环境（用于客户端校验，防止正式包调用测试接口）",
+      "description": "- ENV_UNKNOWN: 未知环境\n- ENV_PRODUCTION: 生产环境\n- ENV_DEV: 开发环境",
+      "enum": [
+        "ENV_UNKNOWN",
+        "ENV_PRODUCTION",
+        "ENV_DEV"
+      ],
+      "default": "ENV_UNKNOWN"
+    }
+  }
+}
+  </script>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script>
+    (function () {
+      const spec = JSON.parse(document.getElementById("swagger-spec").textContent);
+
+      if (window.SwaggerUIBundle) {
+        window.SwaggerUIBundle({
+          dom_id: "#swagger-ui",
+          spec,
+          deepLinking: true,
+          displayOperationId: false,
+          defaultModelsExpandDepth: 2,
+          defaultModelExpandDepth: 2,
+          docExpansion: "list",
+          presets: [window.SwaggerUIBundle.presets.apis]
+        });
+        return;
+      }
+
+      document.getElementById("swagger-ui").innerHTML =
+        '<div class="fallback"><h1>/v1/params/evaluate</h1>' +
+        '<p>Swagger UI 资源加载失败。下面是内嵌 OpenAPI/Swagger JSON。</p>' +
+        '<pre>' + JSON.stringify(spec, null, 2).replace(/[&<>]/g, function (ch) {
+          return {"&": "&amp;", "<": "&lt;", ">": "&gt;"}[ch];
+        }) + '</pre></div>';
+    })();
+  </script>
+</body>
+</html>

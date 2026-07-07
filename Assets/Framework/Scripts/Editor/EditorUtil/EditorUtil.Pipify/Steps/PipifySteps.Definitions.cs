@@ -58,6 +58,39 @@ namespace NovaFramework.Editor
             public bool SplitApplicationBinary;
 
             /// <summary>
+            /// 是否在本次打包期间临时应用 Android keystore 签名配置。
+            /// 为 false 时，Pipify 不修改当前 PlayerSettings 中的 Android 签名配置。
+            /// </summary>
+            [PipifyVisibleWhen(nameof(Target), (int)BuildTarget.Android)]
+            public bool UseAndroidKeystore;
+
+            /// <summary>
+            /// Android keystore 路径。Unity 支持项目相对路径或绝对路径。
+            /// </summary>
+            [PipifyVisibleWhen(nameof(UseAndroidKeystore), 1)]
+            public string AndroidKeystoreName;
+
+            /// <summary>
+            /// Android keystore 密码。
+            /// </summary>
+            [PipifyVisibleWhen(nameof(UseAndroidKeystore), 1)]
+            [PipifyPassword]
+            public string AndroidKeystorePass;
+
+            /// <summary>
+            /// Android keystore 内的 key alias 名称。
+            /// </summary>
+            [PipifyVisibleWhen(nameof(UseAndroidKeystore), 1)]
+            public string AndroidKeyaliasName;
+
+            /// <summary>
+            /// Android key alias 密码。
+            /// </summary>
+            [PipifyVisibleWhen(nameof(UseAndroidKeystore), 1)]
+            [PipifyPassword]
+            public string AndroidKeyaliasPass;
+
+            /// <summary>
             /// 导出文件夹路径（遵循项目根相对路径规范；产物文件名按固定格式自动生成）。
             /// 格式：{productName字母数字}_{Debug|Release}_{bundleVersion}_{yyyy_MM_dd_HH_mm}[.apk|.aab]。
             /// 绝对路径直接使用；相对路径基于项目根解析；文件夹不存在时自动创建。

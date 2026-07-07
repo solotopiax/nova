@@ -15,16 +15,16 @@ MonoBehaviour:
   DevelopMode: 0
   Namespace: NovaFramework.Sdk.Ad.Samples.Runtime
   Common:
-    AppID: 1007
-    AppAesKey: ada87355fc39d643
-    AppAesIV: e461ae0bc82d1130
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 2238161839428206798
-  - rid: 2238161839428206799
+  - rid: 791343954436554752
+  - rid: 791343954436554753
   EnabledKitConfigs:
-  - rid: 2238161839428206800
+  - rid: 791343954436554754
   GameEntranceProcedureName: ProcedurePreload
   AotMetadataDlls:
   - m_AssetLocation: mscorlib.dll
@@ -35,6 +35,7 @@ MonoBehaviour:
   - m_AssetLocation: UnityEngine.CoreModule.dll
   - m_AssetLocation: Unity.TextMeshPro.dll
   - m_AssetLocation: NovaFramework.Runtime.dll
+  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
   - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
   - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
   - m_AssetLocation: NovaFramework.SDK.AdPlugin.Runtime.dll
@@ -44,7 +45,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2238161839428206798
+    - rid: 791343954436554752
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -53,23 +54,23 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 2238161839428206799
+    - rid: 791343954436554753
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206801
+          - rid: 791343954436554755
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206800
+    - rid: 791343954436554754
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
-        m_LoginCmdName: 
+        m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 2238161839428206801
+    - rid: 791343954436554755
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -77,11 +78,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1

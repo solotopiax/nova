@@ -68,6 +68,7 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
 public partial class TbNetworkHostKeys
 {
     public NetworkHostKeys TGAServer => GetOrDefault("TGAServer");
+    public NetworkHostKeys GameServer => GetOrDefault("GameServer");
 
 }
 }

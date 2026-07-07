@@ -40,4 +40,6 @@
     <!-- TDAnalytics disable C# Exception start -->
     <!-- <bool name="DisableCSharpException">true</bool> -->
     <!-- TDAnalytics disable C# Exception end -->
+    <string-array name="TDDisPresetProperties">
+    </string-array>
 </resources>

@@ -1,5 +1,5 @@
 {
-  "version": "2026-07-03-1716",
+  "version": "2026-07-07-1623",
   "generated_by": "nova-obs keyword-rebuild",
   "prelookup_keywords": [
     "ADR-001",
@@ -57,6 +57,8 @@
     "ADR-067",
     "ADR-068",
     "ADR-069",
+    "ADR-070",
+    "ADR-071",
     "AOT",
     "ARCHITECTURE.md",
     "Addressable",
@@ -119,6 +121,7 @@
     "GLO-05",
     "GLO-06",
     "GLO-07",
+    "GLO-08",
     "GM工具图谱",
     "GameDlls",
     "Get",
@@ -267,6 +270,10 @@
     "PAT-138",
     "PAT-139",
     "PAT-140",
+    "PAT-141",
+    "PAT-142",
+    "PAT-143",
+    "PAT-144",
     "PAT-18",
     "PAT-19",
     "PAT-20",
@@ -494,6 +501,6 @@
     "Config": "MOC-Config",
     "Prefab": "MOC-Prefab"
   },
-  "note_count": 182,
-  "suggestions_count": 6
+  "note_count": 189,
+  "suggestions_count": 13
 }

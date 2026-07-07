@@ -15,15 +15,15 @@ MonoBehaviour:
   DevelopMode: 0
   Namespace: NovaFramework.Kit.Network.GameLogin.Samples.Runtime
   Common:
-    AppID: 1007
-    AppAesKey: ada87355fc39d643
-    AppAesIV: e461ae0bc82d1130
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 4930909460539375960
+  - rid: 791343954436554768
   EnabledKitConfigs:
-  - rid: 4930909460539375961
+  - rid: 791343954436554769
   GameEntranceProcedureName: ProcedurePreload
   AotMetadataDlls:
   - m_AssetLocation: mscorlib.dll
@@ -42,7 +42,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 4930909460539375960
+    - rid: 791343954436554768
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -51,7 +51,7 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 4930909460539375961
+    - rid: 791343954436554769
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin

@@ -133,3 +133,20 @@ catch (InvalidOperationException ex)
 
 - [EditorUtil.md](../EditorUtil.md)
 - [EditorUtil.ProcessRunner.md](../EditorUtil.ProcessRunner/EditorUtil.ProcessRunner.md)
+
+## Pipify Android Signing
+
+`EditorUtil.Build.BuildPackage` still owns only package output naming and Android AAB/split temporary settings. Android keystore signing for Pipify is applied by the `build.package` Step immediately around the `BuildPackage` call, then restored in `finally`.
+
+This keeps `EditorUtil.Build` as a thin BuildPipeline wrapper while allowing Pipify batches to carry Android keystore path, keystore password, key alias, and key alias password without requiring manual PlayerSettings edits before each build.
+
+## Android Manifest Launcher Selection
+
+Android builds use `Assets/Framework/Scripts/Editor/BuildProcessor/Android/UnityManifest.xml` as a clean manifest baseline. The baseline contains both Unity default launcher candidates:
+
+- `com.unity3d.player.UnityPlayerActivity`
+- `com.unity3d.player.UnityPlayerGameActivity`
+
+`NovaBuildPreprocessor` normalizes the copied `Assets/Plugins/Android/AndroidManifest.xml` before SDK processors run. It reads `PlayerSettings.Android.applicationEntry`, keeps the matching Unity launcher activity, removes the other default launcher block, and records the selected activity as the build context default.
+
+SDK processors may still override `NovaBuildContext.ActivityName` through `RegisterActivityName`, for example Firebase FCM replacing the launcher activity class. Manifest rules that need to modify the launcher should use `UseMainActivity` instead of hardcoding `UnityPlayerActivity`, because the actual launcher may be Activity or GameActivity depending on Unity PlayerSettings.

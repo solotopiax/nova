@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.googlesignin",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "1.0.0",
   "displayName": "Nova Framework - SDK - Google Sign-In",

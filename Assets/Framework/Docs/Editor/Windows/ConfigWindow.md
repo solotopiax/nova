@@ -14,7 +14,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 |------|----|------|
 | `Editor/Windows/ConfigWindow/ConfigWindow.cs` | `ConfigWindow` | public 开口：`Open`、`OpenLubanSection` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Visitors.cs` | `ConfigWindow` | 字段：常量 + 运行时状态字段 + `LeftTreeGroup` + `LeftTreeItem` 枚举；新增延迟切坐标守卫字段：`m_HasPendingCoordSwitch`、`m_PendingPlatform`、`m_PendingChannel`、`m_PendingDevelopMode` |
-| `Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs` | `ConfigWindow` | 总调度：`OnEnable`、`OnDisable`、`OnGUI`、`DrawBody`、`DrawMainTitle`、`ApplyPendingCoordSwitch`（延迟切坐标，DrawRightPanel 后调用）、`PollChannelChangeForRepaint`、`RefreshPluginCache`、`RunLubanCheck`、`RunPython3Check`、`RestoreExportTargetFromPrefs`、`SaveExportTargetToPrefs`；`EnsureStyles`（GUIStyle 懒初始化） |
+| `Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs` | `ConfigWindow` | 总调度：`OnEnable`、`OnDisable`、`OnGUI`、`DrawBody`、`DrawMainTitle`、`ApplyPendingCoordSwitch`、`PollChannelChangeForRepaint`、`RefreshPluginCache`、`RunLubanCheck`、`RunPython3Check`、`CommitWorkingCopyToAsset`（保存后广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`）；`EnsureStyles`（GUIStyle 懒初始化） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs` | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyPlatformChannel`（延迟写坐标，见 PAT-22 升级）、`TryApplyDevelopMode`（延迟写坐标，见 PAT-22 升级）、`OnClickExport`（导出成功后追加场景 `DevelopMode` 快照回写） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.LeftTree.cs` | `ConfigWindow` | 左树：`DrawLeftTree`、`DrawLeftTreeItem`、`DrawSDKTreeItem`、`DrawKitGroupItems`、`DrawKitTreeItem`；SDK/Kit 勾选写 WorkingCopy（`workingSrc.EnabledSDKs/EnabledKits`）+ `m_IsDirty=true`，不直写 `m_Master`，延迟保存机制对齐；`TryChangeSelection` 清除键盘焦点（`GUI.FocusControl(null)` + `EditorGUIUtility.editingTextField=false`）后更新选中状态 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs` | `ConfigWindow` | 右面板：`DrawRightPanel`、`DrawVerticalSeparator`、`DrawNamespacePanel`、`DrawCommonPanel`、`DrawSDKPanel`、`DrawKitPanel`；标题+掩码内联行：`DrawPanelTitleWithMask`（从 mask 字段读掩码后委托 `DrawTitleWithMaskCore` 绘制标题+三 toggle 行，HelpBox 留本方法；供 Common/Namespace/SDK/Kit/HybridCLR 五面板统一调用）、`DrawTitleWithMaskCore`（矩阵五面板与 YooAsset 面板共用的「标题+三 toggle」核心渲染，toggle 间统一无分隔符，渲染微差由 `titleTrailingSpace` 参数吸收（矩阵 30f / YooAsset 0f），HelpBox 由调用方各自绘制）；Namespace 提交：`CommitNamespaceValue`（按 IsGlobal 双分支写 Namespace，IsGlobal 写 SerializedProperty，否则调 `SetNamespaceAtCoord` 写 Override 并刷新 SerializedObject）；`DrawNamespacePanel` 使用普通 `TextField` 实时提交，按键有变化即触发 `CommitNamespaceValue`（Bug 1 修复后已无 DelayedTextField） |
@@ -62,7 +62,7 @@ UnityEditor.EditorWindow
 | `m_ExportTargetAsset` | `ConfigRuntimeSO` | `null` | （已废弃字段，原用于跨会话 EditorPrefs 恢复；现导出目标改由 `m_Master.ExportTarget` 持久化，此字段不再使用） |
 | `m_GroupExpandedEnvironment` | `bool` | `true` | 左侧一级组"环境检测"折叠状态 |
 | `m_GroupExpandedCommon` | `bool` | `true` | 左侧一级组"通用配置"折叠状态 |
-| `m_IsDirty` | `bool` | `false` | 右侧配置面板是否有未保存改动；`DrawRightPanel` 的 `EditorGUI.ChangeCheck` 置 `true`；以下 2 处重置为 `false`：`OnClickSave`、`RebindMaster`；**切换导出目标（ObjectField 变更回调 / `OnClickSelectExportAsset`）不清零** |
+| `m_IsDirty` | `bool` | `false` | 右侧配置面板是否有未保存改动；`DrawRightPanel` 的 `EditorGUI.ChangeCheck` 置 `true`；以下 2 处重置为 `false`：`OnClickSave`、`RebindMaster`；保存成功后会广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`；**切换导出目标（ObjectField 变更回调 / `OnClickSelectExportAsset`）不清零** |
 | `m_GroupExpandedSDK` | `bool` | `true` | 左侧一级组"SDK 配置"折叠状态 |
 | `m_GroupExpandedKit` | `bool` | `true` | 左侧一级组"Kit 配置"折叠状态 |
 | `m_LubanCheckResult` | `EnvironmentCheckResult` | `default` | Luban 环境检查结果缓存 |
@@ -194,6 +194,22 @@ OnGUI()
   SuccessButton("导出", 64f)
   DisabledScope(m_Master.ExportTarget==null) → Button("打开文件夹", 90f)
 ```
+
+
+### 保存流（CommitWorkingCopyToAsset）
+
+```
+CommitWorkingCopyToAsset()
+  ├─ EditorUtility.CopySerialized(m_WorkingCopy, m_Master)
+  ├─ 还原资产文件名，避免 CopySerialized 带入 (Clone) 后缀
+  ├─ EditorUtility.SetDirty(m_Master)
+  ├─ AssetDatabase.SaveAssets()
+  ├─ m_IsDirty = false
+  ├─ RebuildWorkingCopy()
+  └─ EditorUtil.Config.Events.NotifyActiveConfigMasterSaved(m_Master)
+```
+
+保存事件在 WorkingCopy 写回真实资产并落盘后触发。SDKComponent Inspector 依赖该事件刷新当前 active `EnabledSDKs` 对应的 Plugin 可见列表。
 
 ### 导出附加动作
 

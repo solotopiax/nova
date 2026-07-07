@@ -66,7 +66,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         /// 上报 AppsFlyer 标识协议 NetCmd 指令名序列化字段与属性。
         /// </summary>
         [SerializeField, Tooltip("用于向业务服务器上报 AppsFlyer 设备标识的协议名。填写 NetCmd 表中的名称，如 AppsFlyerReport。")]
-        private string m_ReportCmdName = "AppsFlyerReport";
+        private string m_ReportCmdName;
 
         /// <summary>
         /// AppsFlyer Dev Key，对应 AFDevKey。

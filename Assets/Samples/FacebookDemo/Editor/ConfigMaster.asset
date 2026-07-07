@@ -16,8 +16,10 @@ MonoBehaviour:
   EnabledSDKs:
   - NovaFramework.SDK.Facebook.FacebookPluginConfig
   - NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+  - NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
   EnabledKits:
   - NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+  - NovaFramework.Kit.Network.GameBind.Runtime.BindKitConfig
   CommonMask:
     ByPlatform: 0
     ByChannel: 0
@@ -58,6 +60,11 @@ MonoBehaviour:
       ByPlatform: 0
       ByChannel: 0
       ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.AppleSignIn.AppleSignInPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
   KitMasks:
   - TypeName: NovaFramework.Kit.Network.GameSave.Runtime.SaveKitConfig
     Mask:
@@ -65,6 +72,11 @@ MonoBehaviour:
       ByChannel: 0
       ByDevelopMode: 0
   - TypeName: NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.Kit.Network.GameBind.Runtime.BindKitConfig
     Mask:
       ByPlatform: 0
       ByChannel: 0
@@ -123,9 +135,12 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.Facebook.Runtime.dll
       m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.SDK.Facebook.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.SDK.Facebook.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Facebook.Unity.Android.dll
-      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Facebook.Unity.Android.dll.bytes
-      m_AssetLocation: Facebook.Unity.Android.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Facebook.Unity.IOS.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Facebook.Unity.IOS.dll.bytes
+      m_AssetLocation: Facebook.Unity.IOS.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
     GameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Facebook.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/GameDlls/NovaFramework.Sdk.Facebook.Samples.Runtime.dll.bytes
@@ -175,6 +190,9 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Facebook.Unity.Android.dll
       m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Facebook.Unity.Android.dll.bytes
       m_AssetLocation: Facebook.Unity.Android.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
     GameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Facebook.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/GameDlls/NovaFramework.Sdk.Facebook.Samples.Runtime.dll.bytes
@@ -224,6 +242,9 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Facebook.Unity.Android.dll
       m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Facebook.Unity.Android.dll.bytes
       m_AssetLocation: Facebook.Unity.Android.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+      m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
     GameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Facebook.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/GameDlls/NovaFramework.Sdk.Facebook.Samples.Runtime.dll.bytes
@@ -289,6 +310,9 @@ MonoBehaviour:
   - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Facebook.Unity.IOS.dll
     m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/Facebook.Unity.IOS.dll.bytes
     m_AssetLocation: Facebook.Unity.IOS.dll
+  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+    m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+    m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
   GameDlls:
   - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Facebook.Samples.Runtime.dll
     m_TargetLocation: Assets/Samples/FacebookDemo/Dlls/GameDlls/NovaFramework.Sdk.Facebook.Samples.Runtime.dll.bytes
@@ -299,14 +323,14 @@ MonoBehaviour:
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -327,23 +351,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453801
+      - rid: 791343946899652608
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453802
+      - rid: 791343946899652609
   - Platform: 1
     Channel: 2
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -352,6 +378,8 @@ MonoBehaviour:
       - rid: 209362707701039362
       - rid: 2533177004360729499
       - rid: 2238162003408453767
+      - rid: 791343945928671232
+      - rid: 791343945928671233
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -364,23 +392,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 3589943518543478964
+      - rid: 791343946899652610
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453803
+      - rid: 791343946899652611
   - Platform: 1
     Channel: 3
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -401,23 +431,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453804
+      - rid: 791343946899652612
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453805
+      - rid: 791343946899652613
   - Platform: 1
     Channel: 4
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -438,23 +470,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453806
+      - rid: 791343946899652614
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453807
+      - rid: 791343946899652615
   - Platform: 1
     Channel: 5
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -475,23 +509,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453808
+      - rid: 791343946899652616
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453809
+      - rid: 791343946899652617
   - Platform: 1
     Channel: 6
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -512,23 +548,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453810
+      - rid: 791343946899652618
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453811
+      - rid: 791343946899652619
   - Platform: 2
     Channel: 1
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -549,23 +587,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453812
+      - rid: 791343946899652620
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453813
+      - rid: 791343946899652621
   - Platform: 2
     Channel: 2
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -586,23 +626,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453814
+      - rid: 791343946899652622
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453815
+      - rid: 791343946899652623
   - Platform: 2
     Channel: 3
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -623,23 +665,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453816
+      - rid: 791343946899652624
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453817
+      - rid: 791343946899652625
   - Platform: 2
     Channel: 4
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -660,23 +704,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453818
+      - rid: 791343946899652626
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453819
+      - rid: 791343946899652627
   - Platform: 2
     Channel: 5
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -697,23 +743,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453820
+      - rid: 791343946899652628
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453821
+      - rid: 791343946899652629
   - Platform: 2
     Channel: 6
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -734,23 +782,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453822
+      - rid: 791343946899652630
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453823
+      - rid: 791343946899652631
   - Platform: 3
     Channel: 1
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -771,23 +821,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453824
+      - rid: 791343946899652632
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453825
+      - rid: 791343946899652633
   - Platform: 3
     Channel: 2
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -808,23 +860,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453826
+      - rid: 791343946899652634
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453827
+      - rid: 791343946899652635
   - Platform: 3
     Channel: 3
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -845,23 +899,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453828
+      - rid: 791343946899652636
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453829
+      - rid: 791343946899652637
   - Platform: 3
     Channel: 4
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -882,23 +938,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453830
+      - rid: 791343946899652638
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453831
+      - rid: 791343946899652639
   - Platform: 3
     Channel: 5
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -919,23 +977,25 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453832
+      - rid: 791343946899652640
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453833
+      - rid: 791343946899652641
   - Platform: 3
     Channel: 6
     CommonByMode:
     - Mode: 0
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     - Mode: 1
       Config:
-        AppID: 1007
-        AppAesKey: ada87355fc39d643
-        AppAesIV: e461ae0bc82d1130
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -956,15 +1016,15 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453834
+      - rid: 791343946899652642
     - Mode: 1
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 2238162003408453835
+      - rid: 791343946899652643
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
     - rid: 209362707701039362
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -984,15 +1044,262 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
+    - rid: 791343945928671232
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 791343945928671233
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 791343945928671234
+        m_Products:
+          m_Items: []
+    - rid: 791343945928671234
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+    - rid: 791343946899652608
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652609
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652610
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652611
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652612
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652613
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652614
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652615
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652616
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652617
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652618
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652619
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652620
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652621
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652622
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652623
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652624
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652625
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652626
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652627
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652628
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652629
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652630
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652631
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652632
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652633
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652634
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652635
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652636
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652637
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652638
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652639
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652640
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652641
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652642
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343946899652643
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
     - rid: 2238162003408453767
       type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
       data:
@@ -1439,11 +1746,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1467,11 +1774,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1495,11 +1802,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1523,11 +1830,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1551,11 +1858,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1579,11 +1886,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1607,11 +1914,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1635,11 +1942,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1663,11 +1970,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1691,11 +1998,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1719,11 +2026,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1747,11 +2054,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1775,11 +2082,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1803,11 +2110,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1831,11 +2138,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1859,11 +2166,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1887,11 +2194,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1915,11 +2222,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1943,11 +2250,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1971,11 +2278,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1999,11 +2306,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2027,11 +2334,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2055,11 +2362,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2083,11 +2390,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2111,11 +2418,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2139,11 +2446,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2167,11 +2474,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2195,11 +2502,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2223,11 +2530,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2251,11 +2558,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2279,11 +2586,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2307,11 +2614,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2335,11 +2642,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2363,11 +2670,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -2391,11 +2698,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - 87975430aba706c2
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
-        - d9b8697dc2e038bd
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
         m_BannerPlacementIds:
-        - 25a5c931bc79b3e7
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1

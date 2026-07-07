@@ -1,0 +1,18 @@
+{
+    "name": "NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:c383f449023b7fd42adcb2698d5622e0",
+        "GUID:24958e600a87e4b38bab26a0a70814b1"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

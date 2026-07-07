@@ -15,7 +15,7 @@ namespace NovaFramework.Runtime
 {
     /// <summary>
     /// SDK 组件，SDK 系统对外入口。
-    /// 持有 ISDKManager，在 Awake 通过 TypeCreator 创建 Manager，在 Start 调用 Initialize。
+    /// 持有 ISDKManager，在 Awake 通过 TypeCreator 创建 Manager，在 Start 同步配置 Manager 元数据。
     /// 对外暴露 InitializeTask / Get / TryGet / GetAll / Login 等薄委托 API。
     /// OnApplicationPause / OnApplicationFocus / OnApplicationQuit 转发至 Manager，异常逐插件隔离。
     /// </summary>
@@ -32,11 +32,11 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 启动：将 Inspector 序列化的 PluginEntries 传入 Manager.Initialize，完成同步插件实例化。
+        /// 启动：触发 Manager.Initialize 缓存依赖，不在此阶段实例化插件。
         /// </summary>
         private void Start()
         {
-            m_SDKManager.Initialize(new SDKManagerConfig { PluginEntries = m_PluginEntries });
+            ConfigureManagerIfNeeded();
         }
 
         /// <summary>
@@ -45,6 +45,7 @@ namespace NovaFramework.Runtime
         private void OnDestroy()
         {
             m_InitializeTaskCache = null;
+            m_IsManagerConfigured = false;
             m_SDKManager = null;
         }
 
@@ -73,7 +74,7 @@ namespace NovaFramework.Runtime
         /// 获取所有实现指定接口且当前可用的插件列表。
         /// </summary>
         /// <typeparam name="TInterface">目标插件接口类型，必须为 class 且实现 ISDKPlugin。</typeparam>
-        /// <returns>可用插件实例的只读列表，按 Priority 升序；若无可用实例返回空列表。</returns>
+        /// <returns>可用插件实例的只读列表，按插件自身 Priority 升序；若无可用实例返回空列表。</returns>
         public IReadOnlyList<TInterface> GetAll<TInterface>() where TInterface : class, ISDKPlugin
         {
             return m_SDKManager.GetAll<TInterface>();

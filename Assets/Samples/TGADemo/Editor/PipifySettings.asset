@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PipifySettings
   m_EditorClassIdentifier: NovaFramework.Editor::NovaFramework.Editor.PipifySettingsSO
   m_Batches:
-  - m_Name: "\u81EA\u52A8\u90E8\u7F72\u6D4B\u8BD5-\u5168\u91CF"
+  - m_Name: "\u81EA\u52A8\u90E8\u7F72\u6D4B\u8BD5-\u5B89\u5353"
     m_Description: "\u81EA\u52A8\u90E8\u7F72\u6D4B\u8BD5\uFF0C\u5176\u4E2DBundles\u4E3A\u5168\u91CF\u6784\u5EFA\u3002"
     m_Items:
     - m_StepId: edm4u.android_resolve
@@ -38,9 +38,38 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\r\n  \"Target\": 13,\r\n  \"BuildMode\": 1,\r\n  \"DevelopmentBuild\":
         false,\r\n  \"BuildAppBundle\": false,\r\n  \"SplitApplicationBinary\": false,\r\n 
-        \"OutputFolderPath\": \"C:\\\\Users\\\\admin\\\\Desktop\\\\apk\"\r\n}"
+        \"UseAndroidKeystore\": false,\r\n  \"AndroidKeystoreName\": \"\",\r\n 
+        \"AndroidKeystorePass\": \"\",\r\n  \"AndroidKeyaliasName\": \"\",\r\n 
+        \"AndroidKeyaliasPass\": \"\",\r\n  \"OutputFolderPath\": \"Builds/Android\"\r\n}"
     - m_StepId: shell.open_folder
-      m_ParamsJson: "{\r\n  \"Path\": \"C:\\\\Users\\\\admin\\\\Desktop\\\\apk\"\r\n}"
+      m_ParamsJson: "{\r\n  \"Path\": \"Builds/Android\"\r\n}"
+  - m_Name: "\u81EA\u52A8\u90E8\u7F72\u6D4B\u8BD5-IOS"
+    m_Description: "\u81EA\u52A8\u90E8\u7F72\u6D4B\u8BD5\uFF0C\u5176\u4E2DBundles\u4E3A\u5168\u91CF\u6784\u5EFA\u3002"
+    m_Items:
+    - m_StepId: hybridclr.validate_linkxml
+      m_ParamsJson: 
+    - m_StepId: hybridclr.generate_all
+      m_ParamsJson: 
+    - m_StepId: hybridclr.compile_dll_active_build_target
+      m_ParamsJson: 
+    - m_StepId: hybridclr.copy_aot_dll
+      m_ParamsJson: 
+    - m_StepId: hybridclr.copy_game_dll
+      m_ParamsJson: 
+    - m_StepId: bundlebuilder.build
+      m_ParamsJson: "{\r\n  \"Target\": 9,\r\n  \"PackageName\": \"Default\",\r\n 
+        \"BuildVersion\": \"\",\r\n  \"ClearBuildCache\": true,\r\n  \"UseAssetDependencyDB\":
+        false,\r\n  \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\r\n 
+        \"ManifestEncryptorClassName\": \"YooAsset.Editor.ManifestEncryptorNone\",\r\n 
+        \"ManifestDecryptorClassName\": \"YooAsset.Editor.ManifestDecryptorNone\",\r\n 
+        \"Compression\": 2,\r\n  \"FileNameStyle\": 2,\r\n  \"BundledCopyOption\":
+        1,\r\n  \"BundledCopyParams\": \"\"\r\n}"
+    - m_StepId: build.package
+      m_ParamsJson: "{\r\n  \"Target\": 9,\r\n  \"BuildMode\": 1,\r\n  \"DevelopmentBuild\":
+        false,\r\n  \"BuildAppBundle\": false,\r\n  \"SplitApplicationBinary\": false,\r\n 
+        \"OutputFolderPath\": \"Builds/Android\"\r\n}"
+    - m_StepId: shell.open_folder
+      m_ParamsJson: "{\r\n  \"Path\": \"Builds/Android\"\r\n}"
   - m_Name: "Hybrid+YooAsset\u8054\u5408\u7F16\u8BD1"
     m_Description: "Hybrid\u4E0EYooAsset\u8054\u5408\u7F16\u8BD1"
     m_Items:

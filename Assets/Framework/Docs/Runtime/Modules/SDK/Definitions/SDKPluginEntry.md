@@ -3,7 +3,7 @@
 **类签名**：`[Serializable] public sealed class SDKPluginEntry`
 **命名空间**：`NovaFramework.Runtime`
 
-SDK 插件条目，Inspector 序列化结构，一条记录对应一个 Plugin 类型。
+SDK 插件条目，Inspector 序列化结构，一条记录对应一个 Plugin 类型。运行时启用由 ConfigMaster.EnabledSDKs 决定，Entry 不再实例化插件，运行时排序使用 ISDKPlugin.Priority。
 
 ---
 
@@ -21,9 +21,8 @@ SDK 插件条目，Inspector 序列化结构，一条记录对应一个 Plugin �
 [Serializable]
 public sealed class SDKPluginEntry
 {
-    [SerializeField] public string TypeName;   // Plugin AssemblyQualifiedName，用于反射实例化
-    [SerializeField] public bool   Enabled;    // 是否启用；默认 false
-    [SerializeField] public int    Priority;   // 初始化优先级，值越小越先；默认 100
+    [SerializeField] public string TypeName;   // Plugin AssemblyQualifiedName，用于解析插件元数据
+    [SerializeField] public bool   Enabled;    // SDK 面板显式选型标记；不作为运行时启用开关
 
     [NonSerialized]  public bool   IsMissing;  // 运行时：Type.GetType(TypeName) 失败时为 true，不序列化
 }

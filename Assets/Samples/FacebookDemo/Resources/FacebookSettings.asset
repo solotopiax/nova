@@ -24,8 +24,8 @@ MonoBehaviour:
   status: 1
   xfbml: 0
   frictionlessRequests: 1
-  androidKeystorePath: 
-  iosURLSuffix: 
+  androidKeystorePath:
+iosURLSuffix: 
   appLinkSchemes:
   - list: []
   uploadAccessToken: 

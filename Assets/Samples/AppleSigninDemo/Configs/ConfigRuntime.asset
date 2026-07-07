@@ -15,14 +15,16 @@ MonoBehaviour:
   DevelopMode: 0
   Namespace: NovaFramework.Sdk.Applesignin.Samples.Runtime
   Common:
-    AppID: 1007
-    AppAesKey: ada87355fc39d643
-    AppAesIV: e461ae0bc82d1130
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 5906436387824205927
-  EnabledKitConfigs: []
+  - rid: 791343954283986944
+  EnabledKitConfigs:
+  - rid: 791343954283986945
+  - rid: 791343954283986946
   GameEntranceProcedureName: ProcedurePreload
   AotMetadataDlls:
   - m_AssetLocation: mscorlib.dll
@@ -34,14 +36,27 @@ MonoBehaviour:
   - m_AssetLocation: Unity.TextMeshPro.dll
   - m_AssetLocation: NovaFramework.Runtime.dll
   - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+  - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
   - m_AssetLocation: NovaFramework.SDK.AppleSignIn.Runtime.dll
   - m_AssetLocation: AppleAuth.dll
+  - m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
   GameDlls:
   - m_AssetLocation: NovaFramework.Sdk.Applesignin.Samples.Runtime.dll
   references:
     version: 2
     RefIds:
-    - rid: 5906436387824205927
+    - rid: 791343954283986944
       type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
       data:
         m_RequestFullName: 1
+    - rid: 791343954283986945
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 791343954283986946
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve

@@ -55,5 +55,10 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
         /// 当前头像运行时纹理，加载新头像前需要先销毁旧纹理。
         /// </summary>
         private Texture2D m_AvatarTexture;
+
+        /// <summary>
+        /// 最近一次 Facebook 登录成功后返回的用户 ID，绑定流程直接消费该值，不再重复拉起 Facebook 登录。
+        /// </summary>
+        private string m_CurrentFacebookId;
     }
 }

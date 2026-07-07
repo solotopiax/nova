@@ -1,0 +1,24 @@
+{
+  "environment": 2,
+  "metadata": {
+    "appVersion": 1,
+    "platform": 0,
+    "platformName": "All"
+  },
+  "params": {
+    "cfa3ee9f": {
+      "experiment": {
+        "topicId": "topic_VgZav6",
+        "caseId": "",
+        "enterTimeMs": "0"
+      },
+      "schema": {
+        "show_start_button": 4
+      },
+      "values": {
+        "show_start_button": false
+      },
+      "cases": {}
+    }
+  }
+}

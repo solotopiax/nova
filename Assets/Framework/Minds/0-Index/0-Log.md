@@ -195,3 +195,12 @@ date: 2026-06-05
 
 ## [2026-07-03 05:10] direct-ingest | ADR-069 云存档跨用户查询
 直接入库 1 份：ADR-069（module，PbNetGetGameDataReq 加 target_uid 支持按指定 uid 查存档，为空查自身，跨用户鉴权归服务端）。跳过 Inbox；rebuild-index + keyword 已收口。
+
+## [2026-07-05 14:30] direct-ingest | cur-session 直接入库 2 份 + 补强 1 份
+入库 ADR-070（EnabledSDKs 驱动非族 SDK 实例化）、PAT-141（第三方源目录只读），补强 PAT-33（启用口径演进 + 第三方只读指针）；跳过 Inbox；rebuild-index 已收口。
+
+## [2026-07-06 16:30] direct-ingest | PAT-142 社交登录 Sample 接入 GameBind 配置闭环
+直接入库 1 份：PAT-142（workflow），沉淀 Google/Apple/Facebook 等社交登录 Sample 接入 GameBind 时的独立绑定按钮、缓存第三方 ID、ConfigMaster/ConfigRuntime、EnabledKits、AOT metadata DLL、link.xml、Network JSON、Excel 源表和生成表属性同步清单；关联 ADR-067 与 PAT-140，跳过 Inbox，rebuild-index 收口。
+
+## [2026-07-07 16:24] direct-ingest | cur-session 直接入库 4 份
+入库 4 份（ADR-071 / PAT-143 / PAT-144 / GLO-08，DataMaster 二级标识错位 + 接入层补口 + 反射权宜 + 分流属性口径），跳过 Inbox 中转；rebuild-index 已收口。

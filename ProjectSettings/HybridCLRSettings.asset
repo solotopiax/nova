@@ -33,15 +33,17 @@ MonoBehaviour:
   - Unity.TextMeshPro
   - NovaFramework.Runtime
   - NovaFramework.Kit.Network.GameLogin.Runtime
+  - NovaFramework.Kit.Network.GameBind.Runtime
   - NovaFramework.Kit.Network.GameSave.Runtime
   - NovaFramework.SDK.AdPlugin.Runtime
   - NovaFramework.SDK.AdMobAdPlugin.Runtime
   - NovaFramework.SDK.AppsFlyerPlugin.Runtime
   - NovaFramework.SDK.FirebasePlugin.Runtime
-  - NovaFramework.IAP.Runtime
-  - NovaFramework.IAP.Mobile.Runtime
+  - NovaFramework.SDK.IAP.Runtime
+  - NovaFramework.SDK.IAP.Mobile.Runtime
   - NovaFramework.SDK.MaxAdPlugin.Runtime
   - NovaFramework.SDK.TGAPlugin.Runtime
+  - NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
   outputLinkFile: HybridCLRGenerate/link.xml
   outputAOTGenericReferenceFile: HybridCLRGenerate/AOTGenericReferences.cs
   maxGenericReferenceIteration: 10

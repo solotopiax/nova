@@ -15,14 +15,18 @@ MonoBehaviour:
   DevelopMode: 0
   Namespace: NovaFramework.Sdk.Googlesignin.Samples.Runtime
   Common:
-    AppID: 1007
-    AppAesKey: ada87355fc39d643
-    AppAesIV: e461ae0bc82d1130
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 2238162044843720844
-  EnabledKitConfigs: []
+  - rid: 791343954326978560
+  - rid: 791343954326978561
+  - rid: 791343954326978562
+  EnabledKitConfigs:
+  - rid: 791343954326978563
+  - rid: 791343954326978564
   GameEntranceProcedureName: ProcedurePreload
   AotMetadataDlls:
   - m_AssetLocation: mscorlib.dll
@@ -36,12 +40,33 @@ MonoBehaviour:
   - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
   - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
   - m_AssetLocation: NovaFramework.SDK.GoogleSignIn.Runtime.dll
+  - m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
   GameDlls:
   - m_AssetLocation: NovaFramework.Sdk.Googlesignin.Samples.Runtime.dll
   references:
     version: 2
     RefIds:
-    - rid: 2238162044843720844
+    - rid: 791343954326978560
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+    - rid: 791343954326978561
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343954326978565
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343954326978562
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
         m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
@@ -49,3 +74,31 @@ MonoBehaviour:
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
         m_AutoRestoreOnInitialize: 0
+    - rid: 791343954326978563
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 791343954326978564
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 791343954326978565
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1

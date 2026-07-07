@@ -24,10 +24,14 @@ auto_generated: true
 
 - [GLO-05 三级文档体系（L0 / L1 / L2 + INDEX）](../2-Areas/Glossary/GLO-05-three-tier-docs.md) — Docs 由 L0、L1、L2 与 INDEX 组成
 
+## module
+
+- [GLO-08 DataMaster 分流用户属性口径（app_version / install_time 必传）](../2-Areas/Glossary/GLO-08-datamaster-user-properties.md) — app_version/install_time 为必传；版本号=maj×1e6+min×1e3+patch
+
 ## naming
 
 - [GLO-07 AssetLocation / Asset 地址](../2-Areas/Glossary/GLO-07-asset-location.md) — AssetLocation 统一称为 Asset 地址
 
 
 ---
-_共 6 条，分布于 4 个 category。_
+_共 7 条，分布于 5 个 category。_

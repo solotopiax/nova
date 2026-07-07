@@ -15,18 +15,21 @@ MonoBehaviour:
   DevelopMode: 0
   Namespace: NovaFramework.Sdk.IAP.Samples.Runtime
   Common:
-    AppID: 1007
-    AppAesKey: ada87355fc39d643
-    AppAesIV: e461ae0bc82d1130
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 2238161866011181056
-  - rid: 2238161866011181057
-  - rid: 2238161866011181058
-  - rid: 2238161866011181059
+  - rid: 791343954436554773
+  - rid: 791343954436554774
+  - rid: 791343954436554775
+  - rid: 791343954436554776
+  - rid: 791343954436554777
+  - rid: 791343954436554778
+  - rid: 791343954436554779
   EnabledKitConfigs:
-  - rid: 2238161866011181060
+  - rid: 791343954436554780
   GameEntranceProcedureName: ProcedurePreload
   AotMetadataDlls:
   - m_AssetLocation: mscorlib.dll
@@ -47,7 +50,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2238161866011181056
+    - rid: 791343954436554773
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
         m_DevKey: YOUR_APPSFLYER_DEV_KEY
@@ -57,7 +60,7 @@ MonoBehaviour:
         m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
         m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
         m_ReportCmdName: AppsFlyerReport
-    - rid: 2238161866011181057
+    - rid: 791343954436554774
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -66,11 +69,22 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 2238161866011181058
+    - rid: 791343954436554775
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791343954436554781
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791343954436554776
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 2238161866011181059
+    - rid: 791343954436554777
       type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
       data:
         m_EnableAlwaysPaySucceed: 0
@@ -80,51 +94,47 @@ MonoBehaviour:
         m_LoadingPanelPrefab: IAP/IAPLoadingPanel
         m_StoreConfigList:
           m_Items:
-          - rid: 2238161866011181061
+          - rid: 791343954436554782
         m_Products:
-          m_Items:
-          - m_TableId: 1
-            m_Name: "\u666E\u901A\u5546\u54C11"
-            m_ProductID: com.nova.temp.test.0.99
-            m_ThirdProductID: com.nova.temp.test.0.99
-            m_ProductType: 0
-            m_SubGroupID: 0
-            m_Price: 0.99
-            m_Currency: USD
-            m_EditorNote: "\u666E\u901A\u5546\u54C11"
-          - m_TableId: 2
-            m_Name: "\u666E\u901A\u5546\u54C12"
-            m_ProductID: com.nova.temp.test.1.99
-            m_ThirdProductID: com.nova.temp.test.1.99
-            m_ProductType: 0
-            m_SubGroupID: 0
-            m_Price: 1.99
-            m_Currency: USD
-            m_EditorNote: "\u666E\u901A\u5546\u54C12"
-          - m_TableId: 3
-            m_Name: "\u5468\u8BA2\u9605"
-            m_ProductID: com.nova.temp.sub_week.test.0.99
-            m_ThirdProductID: com.nova.temp.sub_week.test.0.99
-            m_ProductType: 2
-            m_SubGroupID: 1
-            m_Price: 0.99
-            m_Currency: USD
-            m_EditorNote: "\u5468\u8BA2\u9605"
-          - m_TableId: 4
-            m_Name: "\u6708\u8BA2\u9605"
-            m_ProductID: com.nova.temp.sub_month.test.9.99
-            m_ThirdProductID: com.nova.temp.sub_month.test.9.99
-            m_ProductType: 2
-            m_SubGroupID: 1
-            m_Price: 9.99
-            m_Currency: USD
-            m_EditorNote: "\u6708\u8BA2\u9605"
-    - rid: 2238161866011181060
+          m_Items: []
+    - rid: 791343954436554778
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 791343954436554779
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 791343954436554780
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 2238161866011181061
+    - rid: 791343954436554781
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791343954436554782
       type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
       data:
         m_Enabled: 1

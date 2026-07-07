@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using NovaFramework.Kit.Network.GameBind.Runtime;
+using NovaFramework.Kit.Network.GameLogin.Runtime;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.Facebook;
 using UnityEngine;
@@ -22,8 +24,8 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
 
             if (m_BindButton != null)
             {
-                m_BindButton.onClick.AddListener(() => LoginAsync("Facebook绑定").Forget());
-                SetButtonApiHint(m_BindButton, "LoginAsync 后取得 Facebook UserId/Token，供业务账号绑定");
+                m_BindButton.onClick.AddListener(() => BindFacebookAccountAsync().Forget());
+                SetButtonApiHint(m_BindButton, "facebookID -> Login.Async(...) -> Bind.BindAsync(Facebook, facebookID)");
             }
 
             if (m_UnbindButton != null)
@@ -50,9 +52,17 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
         /// </summary>
         private async UniTaskVoid LoginAsync(string actionName)
         {
+            await LoginFacebookAsync(actionName);
+        }
+
+        /// <summary>
+        /// 执行 Facebook 登录并返回第三方授权结果；调用方可继续消费 UserId/Token。
+        /// </summary>
+        private async UniTask<AuthResult> LoginFacebookAsync(string actionName)
+        {
             if (!TryGetFacebookPlugin(out FacebookPlugin plugin))
             {
-                return;
+                return null;
             }
 
             try
@@ -62,20 +72,89 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
                 if (result == null || !result.Success)
                 {
                     AppendFeedback(actionName + "失败：" + (result?.ErrorMessage ?? "null"), FeedbackLevel.Error);
-                    return;
+                    return result;
                 }
 
                 AppendFeedback(actionName + "成功：fbID=" + result.UserId, FeedbackLevel.Success);
+                m_CurrentFacebookId = result.UserId;
                 await RefreshProfileAsync(plugin, result.UserId);
+                return result;
             }
             catch (OperationCanceledException)
             {
                 AppendFeedback(actionName + "已取消。", FeedbackLevel.Warn);
+                return null;
             }
             catch (Exception ex)
             {
                 AppendFeedback(actionName + "异常：" + ex.Message, FeedbackLevel.Error);
+                return null;
             }
+        }
+
+        /// <summary>
+        /// Facebook 授权成功后，确保当前已有游戏账号登录态，再自动调用 GameBind 绑定服务。
+        /// </summary>
+        private async UniTaskVoid BindFacebookAccountAsync()
+        {
+            if (string.IsNullOrEmpty(m_CurrentFacebookId))
+            {
+                AppendFeedback("请先完成 Facebook 登录，绑定流程会使用登录成功后缓存的 facebookID。", FeedbackLevel.Warn);
+                return;
+            }
+
+            if (!await EnsureGameLoginAsync())
+            {
+                return;
+            }
+
+            try
+            {
+                AppendFeedback("正在请求 Nova.Network.Kit<Bind>().BindAsync(Facebook, \"" + m_CurrentFacebookId + "\")...");
+                NetResponse<PbNetBindResp> resp = await Nova.Network.Kit<Bind>().BindAsync((int)PbNetChannel.Facebook, m_CurrentFacebookId);
+                if (resp.IsSuccess)
+                {
+                    AppendFeedback("Facebook 账号绑定成功。", FeedbackLevel.Success);
+                }
+                else if (resp.ErrorCode == BindErrorCode.ErrBindConflict)
+                {
+                    string existingUid = resp.Data != null ? resp.Data.ExistingUid : string.Empty;
+                    AppendFeedback("Facebook 账号绑定冲突：existing_uid=" + existingUid, FeedbackLevel.Warn);
+                    AppendFeedback("业务层应继续调用 QueryConflictAsync + ResolveAsync，让玩家选择保留游客账号或使用已有账号。", FeedbackLevel.Info);
+                }
+                else
+                {
+                    AppendFeedback("Facebook 账号绑定失败：ErrorCode=" + resp.ErrorCode + ", ErrorMessage=" + resp.ErrorMessage, FeedbackLevel.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendFeedback("Facebook 账号绑定异常：" + ex.Message, FeedbackLevel.Error);
+            }
+        }
+
+        /// <summary>
+        /// GameBind 依赖 Header.Uid；若尚未登录游戏账号，先走设备/游客登录获取 UID。
+        /// </summary>
+        private async UniTask<bool> EnsureGameLoginAsync()
+        {
+            Login login = Nova.Network.Kit<Login>();
+            if (login.IsLoggedIn)
+            {
+                return true;
+            }
+
+            AppendFeedback("当前没有游戏账号登录态，先执行 Nova.Network.Kit<Login>().Async(string.Empty, string.Empty, false)...");
+            NetResponse<PbNetLoginResp> resp = await login.Async(string.Empty, string.Empty, false);
+            if (resp.IsSuccess)
+            {
+                string uid = resp.Data != null ? resp.Data.Uid : string.Empty;
+                AppendFeedback("游戏账号登录成功：UID=" + uid, FeedbackLevel.Success);
+                return true;
+            }
+
+            AppendFeedback("游戏账号登录失败：ErrorCode=" + resp.ErrorCode + ", ErrorMessage=" + resp.ErrorMessage, FeedbackLevel.Error);
+            return false;
         }
 
         /// <summary>
@@ -91,6 +170,7 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
             try
             {
                 await plugin.LogoutAsync();
+                m_CurrentFacebookId = null;
                 RefreshProfile(null);
                 if (m_FriendsListText != null)
                 {
@@ -117,7 +197,7 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
 
             if (plugin.Share == null)
             {
-                AppendFeedback("Facebook Share 服务不可用。", FeedbackLevel.Error);
+                AppendFeedback("Facebook 分享服务不可用。", FeedbackLevel.Error);
                 return;
             }
 
@@ -133,7 +213,7 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
 
                 if (result == null || !result.Success)
                 {
-                    AppendFeedback("分享未完成：cancelled=" + (result?.Cancelled ?? false) + "，error=" + (result?.ErrorMessage ?? "null"), FeedbackLevel.Warn);
+                    AppendFeedback("分享未完成：已取消=" + (result?.Cancelled ?? false) + "，错误=" + (result?.ErrorMessage ?? "null"), FeedbackLevel.Warn);
                     return;
                 }
 
@@ -157,7 +237,7 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
 
             if (plugin.Friends == null)
             {
-                AppendFeedback("Facebook Friends 服务不可用。", FeedbackLevel.Error);
+                AppendFeedback("Facebook 好友服务不可用。", FeedbackLevel.Error);
                 return;
             }
 

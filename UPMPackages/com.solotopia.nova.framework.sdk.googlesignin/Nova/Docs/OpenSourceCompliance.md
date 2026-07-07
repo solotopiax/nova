@@ -43,6 +43,6 @@ versions for each public release.
 
 | Risk | Current Finding | Release Action |
 |---|---|---|
-| Public Google sample `ClientId` | Sample configs in `Assets/Samples/GoogleSigninDemo/**` contain `403266651294-m8notqg2jgv2ijo4f49eo26a82v9tvv5.apps.googleusercontent.com`. This is a public client identifier, not an OAuth client secret. | Confirm the value is intentionally public for samples or replace it through release config generation. |
+| Public Google sample `ClientId` | Sample configs in `Assets/Samples/GoogleSigninDemo/**` contain `YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com`. This is a public client identifier, not an OAuth client secret. | Confirm the value is intentionally public for samples or replace it through release config generation. |
 | Secrets in requested scan scope | Requested scan scope did not find `client_secret`, `private_key`, production service files, or provisioning profile material. | Do not treat this as a complete release audit. Scan broader certificate, provisioning, service-file, CI, and generated-output locations before release. |
 | Build-time Google/AndroidX dependencies | Gradle artifacts are not vendored in this package and keep upstream licenses or Android SDK terms. | Keep third-party notices current with resolved artifacts and avoid implying MIT relicensing of those dependencies. |

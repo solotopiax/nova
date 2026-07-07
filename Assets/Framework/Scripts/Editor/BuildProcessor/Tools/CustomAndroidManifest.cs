@@ -11,6 +11,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using UnityEditor;
 
 namespace NovaFramework.Editor
 {
@@ -20,6 +21,9 @@ namespace NovaFramework.Editor
     /// </summary>
     public class CustomAndroidManifest : XmlDocument
     {
+        public const string c_UnityPlayerActivity = "com.unity3d.player.UnityPlayerActivity";
+        public const string c_UnityPlayerGameActivity = "com.unity3d.player.UnityPlayerGameActivity";
+
         /// <summary>
         /// Android XML 命名空间 URI。
         /// </summary>
@@ -89,6 +93,30 @@ namespace NovaFramework.Editor
                 "/manifest/application/activity[intent-filter/action/@android:name='android.intent.action.MAIN' and "
                 + "intent-filter/category/@android:name='android.intent.category.LAUNCHER']",
                 m_NameSpaceManager);
+        }
+
+        public string SelectUnityLauncherActivity(AndroidApplicationEntry applicationEntry)
+        {
+            string selectedActivity = applicationEntry.HasFlag(AndroidApplicationEntry.GameActivity)
+                ? c_UnityPlayerGameActivity
+                : c_UnityPlayerActivity;
+            string removedActivity = selectedActivity == c_UnityPlayerGameActivity
+                ? c_UnityPlayerActivity
+                : c_UnityPlayerGameActivity;
+
+            XmlNode selected = FindChildByAndroidName(m_ApplicationElement, "activity", selectedActivity);
+            if (selected == null)
+                throw new System.InvalidOperationException($"[CustomAndroidManifest] AndroidManifest missing Unity launcher activity: {selectedActivity}");
+
+            XmlNode removed = FindChildByAndroidName(m_ApplicationElement, "activity", removedActivity);
+            if (removed != null)
+                m_ApplicationElement.RemoveChild(removed);
+
+            XmlNode launcher = GetActivityWithLaunchIntent();
+            if (launcher == null || launcher.Attributes?["android:name"]?.Value != selectedActivity)
+                throw new System.InvalidOperationException($"[CustomAndroidManifest] Unity launcher activity has no MAIN/LAUNCHER intent-filter: {selectedActivity}");
+
+            return selectedActivity;
         }
 
         /// <summary>

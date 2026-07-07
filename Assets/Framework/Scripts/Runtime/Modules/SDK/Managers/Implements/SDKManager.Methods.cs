@@ -19,50 +19,16 @@ namespace NovaFramework.Runtime
     internal sealed partial class SDKManager
     {
         /// <summary>
-        /// 反射实例化单条 Entry，将结果写入 m_Plugins / m_SortedPlugins。
-        /// Enabled==false 或 IsMissing==true 的条目跳过实例化并记录日志。
+        /// 注册已通过 ConfigMaster.EnabledSDKs 准入的插件实例。
         /// </summary>
-        /// <param name="entry">来自 SDKManagerConfig.PluginEntries 的单条插件配置项。</param>
-        private void InstantiateEntry(SDKPluginEntry entry)
+        private void RegisterPlugin(Type pluginType, ISDKPlugin plugin)
         {
-            if (!entry.Enabled)
-            {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(entry.TypeName))
-            {
-                entry.IsMissing = true;
-                Log.Warning(LogTag.SDK, "SDK 插件条目 TypeName 为空，已跳过实例化。");
-                return;
-            }
-
-            Type pluginType = Type.GetType(entry.TypeName);
-            if (pluginType == null)
-            {
-                entry.IsMissing = true;
-                Log.Warning(LogTag.SDK, Txt.Format("SDK 插件类型未找到，已跳过实例化：{0}", entry.TypeName));
-                return;
-            }
-
-            ISDKPlugin plugin;
-            try
-            {
-                plugin = (ISDKPlugin)Activator.CreateInstance(pluginType);
-            }
-            catch (Exception e)
-            {
-                Log.Error(LogTag.SDK, Txt.Format("SDK 插件反射实例化失败 '{0}'：{1}", pluginType.FullName, e));
-                return;
-            }
-
             m_Plugins[pluginType] = plugin;
             m_SortedPlugins.Add(plugin);
         }
 
         /// <summary>
-        /// 按 Priority 对 m_SortedPlugins 升序排序。
-        /// 在所有 Entry 实例化完毕后调用一次。
+        /// 按插件自身 Priority 对 m_SortedPlugins 升序排序。
         /// </summary>
         private void SortPluginsByPriority()
         {
@@ -118,10 +84,10 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 将 m_SortedPlugins 按 Priority 值分桶，相同 Priority 归入同一桶。
-        /// 返回按 Priority 升序排列的桶列表，每桶包含一个或多个插件。
+        /// 将 m_SortedPlugins 按插件自身 Priority 值分桶，相同 Priority 归入同一桶。
+        /// 返回按插件自身 Priority 升序排列的桶列表，每桶包含一个或多个插件。
         /// </summary>
-        /// <returns>按 Priority 升序排列的分桶列表；每个元素为同 Priority 插件的列表。</returns>
+        /// <returns>按插件自身 Priority 升序排列的分桶列表；每个元素为同 Priority 插件的列表。</returns>
         private List<List<ISDKPlugin>> GroupByPriority()
         {
             List<List<ISDKPlugin>> buckets = new List<List<ISDKPlugin>>();
@@ -168,6 +134,120 @@ namespace NovaFramework.Runtime
             }
 
             await UniTask.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// 依据 ConfigMaster.EnabledSDKs 唯一实例化已启用 SDK 插件。
+        /// RequiredConfigType 为 null（无需配置）的插件不走此路径，避免误启用。
+        /// 多个插件声明同一 ConfigType 时，只注册第一个命中的插件并记录后续冲突。
+        /// </summary>
+        private void InstantiateEnabledPluginsFromConfig()
+        {
+            if (m_ConfigManager == null)
+            {
+                Log.Error(LogTag.SDK, "SDK 插件实例化失败：IConfigManager 不可用。");
+                return;
+            }
+
+            IReadOnlyCollection<ISDKPluginConfig> enabledConfigs = m_ConfigManager.GetAllPluginConfigs();
+            if (enabledConfigs == null || enabledConfigs.Count == 0)
+            {
+                Log.Debug(LogTag.SDK, "SDKManager.InitializeAsync：ConfigMaster 未启用任何 SDK 配置，跳过插件实例化。");
+                return;
+            }
+
+            HashSet<Type> enabledConfigTypes = new HashSet<Type>();
+            foreach (ISDKPluginConfig cfg in enabledConfigs)
+            {
+                if (cfg != null)
+                {
+                    enabledConfigTypes.Add(cfg.GetType());
+                }
+            }
+
+            HashSet<Type> coveredConfigTypes = new HashSet<Type>();
+            foreach (Type pluginType in EnumerateConcreteSDKPluginTypes())
+            {
+                if (m_Plugins.ContainsKey(pluginType))
+                {
+                    continue;
+                }
+
+                ISDKPlugin plugin;
+                try
+                {
+                    plugin = (ISDKPlugin)Activator.CreateInstance(pluginType);
+                }
+                catch (Exception e)
+                {
+                    Log.Warning(LogTag.SDK, Txt.Format("SDK 插件实例化失败 '{0}'：{1}", pluginType.FullName, e.Message));
+                    continue;
+                }
+
+                Type configType = (plugin as SDKPluginBase)?.RequiredConfigType;
+                if (configType == null || !enabledConfigTypes.Contains(configType))
+                {
+                    continue;
+                }
+
+                if (coveredConfigTypes.Contains(configType))
+                {
+                    Log.Warning(LogTag.SDK, Txt.Format("SDK 插件配置类型重复，已跳过后续插件：Config={0}, Plugin={1}", configType.FullName, pluginType.FullName));
+                    continue;
+                }
+
+                RegisterPlugin(pluginType, plugin);
+                coveredConfigTypes.Add(configType);
+                Log.Debug(LogTag.SDK, Txt.Format("SDK 插件按 ConfigMaster 启用实例化：{0}", pluginType.FullName));
+            }
+        }
+
+        /// <summary>
+        /// 枚举当前已加载程序集中所有可实例化的 ISDKPlugin 实现类型（非抽象、非接口、含无参构造）。
+        /// 运行时反射扫描，供 InstantiateEnabledPluginsFromConfig 按启用配置实例化使用。
+        /// 单个程序集类型加载异常被隔离，不影响其余程序集扫描。
+        /// </summary>
+        /// <returns>可实例化的 ISDKPlugin 具体类型集合。</returns>
+        private static List<Type> EnumerateConcreteSDKPluginTypes()
+        {
+            List<Type> result = new List<Type>();
+            Type pluginInterface = typeof(ISDKPlugin);
+
+            foreach (System.Reflection.Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                Type[] types;
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (System.Reflection.ReflectionTypeLoadException e)
+                {
+                    types = e.Types;
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                if (types == null)
+                {
+                    continue;
+                }
+
+                foreach (Type type in types)
+                {
+                    if (type == null || type.IsAbstract || type.IsInterface)
+                    {
+                        continue;
+                    }
+                    if (pluginInterface.IsAssignableFrom(type) && type.GetConstructor(Type.EmptyTypes) != null)
+                    {
+                        result.Add(type);
+                    }
+                }
+            }
+
+            return result;
         }
 
     }

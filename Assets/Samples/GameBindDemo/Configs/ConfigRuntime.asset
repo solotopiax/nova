@@ -15,17 +15,17 @@ MonoBehaviour:
   DevelopMode: 0
   Namespace: NovaFramework.Kit.Network.GameBind.Samples.Runtime
   Common:
-    AppID: 1007
-    AppAesKey: ada87355fc39d643
-    AppAesIV: e461ae0bc82d1130
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 8085688720759194286
+  - rid: 791343950823161857
   EnabledKitConfigs:
-  - rid: 8085688720759194287
-  - rid: 8085688720759194288
-  - rid: 8085688720759194289
+  - rid: 791343950823161858
+  - rid: 791343950823161859
+  - rid: 791343950823161860
   GameEntranceProcedureName: ProcedurePreload
   AotMetadataDlls:
   - m_AssetLocation: mscorlib.dll
@@ -42,7 +42,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 8085688720759194286
+    - rid: 791343950823161857
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -51,17 +51,17 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 8085688720759194287
+    - rid: 791343950823161858
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:
         m_GetCmdName: GameSaveGet
         m_SetCmdName: GameSaveSet
-    - rid: 8085688720759194288
+    - rid: 791343950823161859
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: GameAccountDelete
-    - rid: 8085688720759194289
+    - rid: 791343950823161860
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind

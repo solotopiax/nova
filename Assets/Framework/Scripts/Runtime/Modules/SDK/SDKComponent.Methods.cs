@@ -16,6 +16,21 @@ namespace NovaFramework.Runtime
     public sealed partial class SDKComponent : FrameworkComponent
     {
         /// <summary>
+        /// 确保 Manager 已缓存跨模块依赖。
+        /// Start 与 InitializeTask 都会进入此方法，避免 InitializeTask 早于 Start 被访问时空跑 InitializeAsync。PluginEntries 不参与运行时启用或排序。
+        /// </summary>
+        private void ConfigureManagerIfNeeded()
+        {
+            if (m_SDKManager == null || m_IsManagerConfigured)
+            {
+                return;
+            }
+
+            m_SDKManager.Initialize(new SDKManagerConfig { PluginEntries = m_PluginEntries });
+            m_IsManagerConfigured = true;
+        }
+
+        /// <summary>
         /// 获取或创建 InitializeAsync 惰性任务。
         /// 首次调用时向 Manager 发起 InitializeAsync（使用组件销毁令牌），后续调用返回同一 UniTask。
         /// Manager 为 null（Awake 创建失败）时返回已完成的任务。
@@ -27,6 +42,8 @@ namespace NovaFramework.Runtime
             {
                 return UniTask.CompletedTask;
             }
+
+            ConfigureManagerIfNeeded();
 
             if (m_InitializeTaskCache.HasValue)
             {

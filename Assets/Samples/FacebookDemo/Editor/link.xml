@@ -18,4 +18,5 @@
   <assembly fullname="NovaFramework.Kit.Network.GameLogin.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.Facebook.Runtime" preserve="all" />
   <assembly fullname="Facebook.Unity.Android" preserve="all" />
+  <assembly fullname="NovaFramework.Kit.Network.GameBind.Runtime" preserve="all" />
 </linker>

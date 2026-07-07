@@ -31,11 +31,11 @@ public interface ISDKManager
 
 ## 关键语义
 
-- `Initialize(...)` 只负责根据 `PluginEntries` 反射实例化插件并建立索引，不会执行插件自己的 `InitializeAsync(...)`。
-- `InitializeAsync(...)` 按 `Priority` 升序分桶，同一优先级并行初始化。
+- `Initialize(...)` 只负责读取 `PluginEntries` 元数据并缓存 Manager 依赖，不会实例化插件，也不会执行插件自己的 `InitializeAsync(...)`。
+- `InitializeAsync(...)` 按 `ConfigMaster.EnabledSDKs` 实例化插件，再按 `ISDKPlugin.Priority` 升序分桶，同一优先级并行初始化。
 - 需要配置的插件通过 `RequiredConfigType` 向 `IConfigManager` 申请配置，不再通过 Manager 手写注入。
-- `Get<T>()` / `TryGet<T>()` 既可以传具体插件类型，也可以传单实例接口类型。
-- `GetAll<T>()` 返回所有实现指定接口且 `IsAvailable == true` 的插件，按 `Priority` 升序。
+- `Get<T>()` / `TryGet<T>()` 既可以传具体插件类型，也可以传单实例接口类型，但只返回 `IsAvailable == true` 的插件。
+- `GetAll<T>()` 返回所有实现指定接口且 `IsAvailable == true` 的插件，按 `ISDKPlugin.Priority` 升序。
 
 ## 使用顺序
 

@@ -1,5 +1,16 @@
 # Changelog — com.solotopia.nova.framework
 
+## [0.5.35] - 2026-07-08
+
+### Changed
+
+- SDK 模块重构：`SDKManager` 运行时启用统一以 `ConfigMaster.EnabledSDKs` 为唯一源，排序改用 `ISDKPlugin.Priority`（接口属性）；`SDKComponentInspector` 订阅 `ConfigMaster` 保存事件，`ConfigWindow` 保存后即时刷新 SDK 面板。
+- 明确 DataMaster 接口规范：`topicId` 传 `Params` 字典 key（`topic_name`），非 `experiment.topicId`；补必传分流用户属性 `app_version` / `install_time` 处理。
+
+### Removed
+
+- 删除 `SDKPluginEntry` 的 `[SerializeField] public int Priority` 字段（运行时排序已改用 `ISDKPlugin.Priority`，该序列化字段为冗余残留）。**注意**：旧 `ConfigMaster.asset` 中该字段的存值在反序列化时丢失，属序列化行为变更（不影响跨包编译，无消费方引用该字段）。
+
 ## [0.5.34] - 2026-07-03
 
 ### Changed

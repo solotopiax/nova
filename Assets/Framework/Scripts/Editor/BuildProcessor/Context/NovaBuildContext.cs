@@ -40,10 +40,18 @@ namespace NovaFramework.Editor
         /// </summary>
         private const string c_DefaultActivityName = "com.unity3d.player.UnityPlayerActivity";
 
+        private string m_DefaultActivityName = c_DefaultActivityName;
+
         /// <summary>
         /// 已注册的主 Activity 类名，未注册时为 null。
         /// </summary>
         private string m_ActivityName;
+
+        internal void SetDefaultActivityName(string name)
+        {
+            if (!string.IsNullOrEmpty(name))
+                m_DefaultActivityName = name;
+        }
 
         /// <summary>
         /// 注册主 Activity 类名。先到先得，已注册后忽略后续注册并输出 Warning。
@@ -61,7 +69,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 当前构建的主 Activity 类名。未注册时返回默认值 "com.unity3d.player.UnityPlayerActivity"。
         /// </summary>
-        public string ActivityName => string.IsNullOrEmpty(m_ActivityName) ? c_DefaultActivityName : m_ActivityName;
+        public string ActivityName => string.IsNullOrEmpty(m_ActivityName) ? m_DefaultActivityName : m_ActivityName;
 
         /// <summary>
         /// 已注册的全部 Manifest 规则集列表。
