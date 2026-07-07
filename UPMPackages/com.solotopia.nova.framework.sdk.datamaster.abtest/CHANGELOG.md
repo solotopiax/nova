@@ -3,6 +3,13 @@
 本文件记录 `com.solotopia.nova.framework.sdk.datamaster` 的版本变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [0.0.3] - 2026-07-08
+
+### Fixed
+
+- 补全 sample 依赖声明：`package.json` dependencies 增加 `com.solotopia.nova.framework.kit.network.gamelogin`（DataMasterDemo 的「模拟登录并拉取」演示用登录 Kit，此前漏声明导致消费工程 import sample 后缺 `NovaFramework.Kit.Network.GameLogin` 程序集，编译报 CS0234 失败）。
+- 清理 sample asmdef 克隆残留引用：`NovaFramework.Sdk.Datamaster.Samples.Runtime.asmdef` 删除代码未使用的 tga / appsflyer / ad / gamesave 程序集引用（DataMasterDemo 从 MainDemo 克隆时带入，实际未调用），避免消费工程缺这些无关包时编译失败。
+
 ## [0.0.2] - 2026-07-07
 
 ### Changed
