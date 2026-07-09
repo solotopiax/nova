@@ -77,9 +77,9 @@ auto_generated: true
 - [ADR-054 Kit 配置进三维矩阵 + Network 表删维度列 PreFilter 降级纯拷贝（反转 ADR-053 决策 3）](../2-Areas/ADR/ADR-054-kit-config-three-dim-matrix.md) — 环境差异上移 Config 三维矩阵，网络表降纯拷贝
 - [ADR-058 ConfigWindow per-panel 可勾选维度（PanelDimensionMask + DimensionProjector + Override 旁路）](../2-Areas/ADR/ADR-058-per-panel-dimension-mask.md) — 面板级维度掩码 + Override 旁路按需多维配置
 - [ADR-063 TGA 插件 ServerCmdName 与 ReportCmdName 双通道不可合并](../2-Areas/ADR/ADR-063-tga-dual-cmd-channel-separation.md) — TGA 埋点上报与账号绑定双通道禁合并
-- [ADR-069 云存档支持按 target_uid 跨用户查询](../2-Areas/ADR/ADR-069-gamesave-cross-user-query.md) — GetGameData 加 target_uid，为空查自身、有值查指定 uid，鉴权归服务端
-- [ADR-070 SDK 启用真相源归 ConfigMaster.EnabledSDKs，插件统一按启用配置实例化](../2-Areas/ADR/ADR-070-sdk-enable-via-configmaster-enabledsdks.md) — EnabledSDKs 为唯一启用源，SDK 插件统一按配置实例化
-- [ADR-071 DataMaster 读参 topicId 实为 Params 字典 key（topic_name），非 experiment.topicId](../2-Areas/ADR/ADR-071-datamaster-topicid-is-params-key.md) — 读参传 Params 字典 key（cfa3ee9f），非 experiment.topicId
+- [ADR-069 云存档支持按 target_uid 跨用户查询](../2-Areas/ADR/ADR-069-gamesave-cross-user-query.md) — target_uid 空查自身、非空查指定，鉴权归服务端
+- [ADR-070 SDK 启用真相源归 ConfigMaster.EnabledSDKs，插件统一按启用配置实例化](../2-Areas/ADR/ADR-070-sdk-enable-via-configmaster-enabledsdks.md) — EnabledSDKs 唯一启用源，插件按配置统一实例化
+- [ADR-071 DataMaster 读参 topicId 实为 Params 字典 key（topic_name），非 experiment.topicId](../2-Areas/ADR/ADR-071-datamaster-topicid-is-params-key.md) — 读参 topicId 传 Params 字典 key，非实验字段
 
 ## quality
 

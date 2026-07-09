@@ -1,7 +1,7 @@
 ---
 id: GLO-08
 title: DataMaster 分流用户属性口径（app_version / install_time 必传）
-summary: app_version/install_time 必传；版本号整数合成口径
+summary: 两条必传分流属性的口径：版本号 + 安装时间
 category: module
 status: active
 date: 2026-07-07

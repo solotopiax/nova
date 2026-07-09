@@ -26,7 +26,7 @@ auto_generated: true
 
 ## module
 
-- [GLO-08 DataMaster 分流用户属性口径（app_version / install_time 必传）](../2-Areas/Glossary/GLO-08-datamaster-user-properties.md) — app_version/install_time 为必传；版本号=maj×1e6+min×1e3+patch
+- [GLO-08 DataMaster 分流用户属性口径（app_version / install_time 必传）](../2-Areas/Glossary/GLO-08-datamaster-user-properties.md) — 两条必传分流属性的口径：版本号 + 安装时间
 
 ## naming
 

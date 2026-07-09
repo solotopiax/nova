@@ -3,6 +3,16 @@
 本文件记录 `com.solotopia.nova.framework.sdk.datamaster` 的版本变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [0.0.4] - 2026-07-08
+
+### Added
+
+- 新增 Editor 构建处理器 `DataMasterPluginBuildProcessor`（继承框架 `NovaSDKBuildProcessor`）：构建时按 `ConfigRuntimeSO.DevelopMode` 自动注入 / 移除厂商 SDK 的环境宏 `PRODUCTION_PACKAGE`（Release=正式域名、Debug=测试域名）。编译前记录工程原宏状态（SessionState）、构建完成后精确复原，不污染持久 PlayerSettings；仅在本插件已启用时处理。新增 `NovaFramework.SDK.StarlusDataMaster.ABTest.Editor` 程序集。
+
+### Changed
+
+- 重整 `Nova/Doc/`：`INDEX.md` 重写为清晰导航（主 API → ABTest 科普 → 官方底层文档 → 联调参考）；`DataMasterPlugin.md` 补「构建环境 / `PRODUCTION_PACKAGE` 宏」章节；新增 `官方SDK技术文档.md`（厂商 DataMaster SDK 官方技术文档原文，讲底层数据模型 / 初始化 / 拉取 / 存储与安全，供底层排查参考）。
+
 ## [0.0.3] - 2026-07-08
 
 ### Fixed

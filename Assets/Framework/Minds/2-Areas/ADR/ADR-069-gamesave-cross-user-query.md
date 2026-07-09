@@ -1,7 +1,7 @@
 ---
 id: ADR-069
 title: 云存档支持按 target_uid 跨用户查询
-summary: GetGameData 加 target_uid，为空查自身、有值查指定 uid，鉴权归服务端
+summary: target_uid 空查自身、非空查指定，鉴权归服务端
 category: module
 status: accepted
 date: 2026-07-03

@@ -1,7 +1,7 @@
 ---
 id: ADR-071
 title: DataMaster 读参 topicId 实为 Params 字典 key（topic_name），非 experiment.topicId
-summary: 读参传 Params 字典 key，非 experiment.topicId
+summary: 读参 topicId 传 Params 字典 key，非实验字段
 category: module
 status: accepted
 date: 2026-07-07

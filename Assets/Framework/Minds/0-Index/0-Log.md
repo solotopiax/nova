@@ -204,3 +204,6 @@ date: 2026-06-05
 
 ## [2026-07-07 16:24] direct-ingest | cur-session 直接入库 4 份
 入库 4 份（ADR-071 / PAT-143 / PAT-144 / GLO-08，DataMaster 二级标识错位 + 接入层补口 + 反射权宜 + 分流属性口径），跳过 Inbox 中转；rebuild-index 已收口。
+
+## [2026-07-08 15:20] lint | obs-health 全量体检通过
+跑 --validate-frontmatter + --rebuild-index + --check-bloat + 健康检查节；frontmatter 5 处 summary 超长已修（ADR-069/070/071、PAT-140、GLO-08 收敛到 ≤30 字）；Inbox 空、superseded 0、DRAFT 残留 0、短链 dangling 0、幽灵 stub 0；规模 ADR57/PAT102/GLO7/RES3/Archive77。

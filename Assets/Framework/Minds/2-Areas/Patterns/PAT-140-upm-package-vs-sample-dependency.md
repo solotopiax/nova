@@ -1,7 +1,7 @@
 ---
 id: PAT-140
 title: UPM 包依赖与 sample 依赖的边界
-summary: dependencies 管安装 / asmdef 管编译 / sample 跨包依赖不自动解析
+summary: deps 管安装、asmdef 管编译，sample 依赖须声明
 category: module
 type: pattern
 status: active

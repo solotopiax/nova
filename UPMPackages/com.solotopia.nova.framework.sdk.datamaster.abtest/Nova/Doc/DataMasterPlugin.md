@@ -99,6 +99,24 @@ dm.OnConfigRefreshed += () => ReloadConfigs();
 
 > `topicId` 由 demo 经 `GetTopicNames()` 运行时解析，不硬编码（见「topicId 口径」）。
 
+## 构建环境（正式 / 测试域名切换）
+
+底层厂商 DataMaster SDK 用编译宏 `PRODUCTION_PACKAGE` 区分请求环境（详见 `官方SDK技术文档.md` §1、§11）：
+
+| `PRODUCTION_PACKAGE` | 配置拉取域名 | 事件上报域名 |
+|---|---|---|
+| 未定义（默认） | `features-dev.starlus.net` | `report-dev.starlus.net` |
+| 已定义 | `features.starlus.net` | `report.starlus.net` |
+
+**业务无需手动管理该宏**：本包 Editor 层的 `DataMasterPluginBuildProcessor`（继承框架 `NovaSDKBuildProcessor`）在**构建时**按开发模式自动处理：
+
+- 开发模式 = **Release** → 构建产物注入 `PRODUCTION_PACKAGE`（走正式域名）；
+- 开发模式 = **Debug** → 构建产物不含该宏（走测试域名）。
+
+该处理是**临时的**：编译前记录工程原本的宏状态并存入 `SessionState`，构建完成后精确复原（原有则保留、原无则移除），**不污染工程持久 PlayerSettings**；且仅当本插件已在 `ConfigMaster` 启用时才注入，未启用的工程不受影响。
+
+> 开发模式在 `ConfigWindow` 切换（`ConfigMaster.CurrentDevelopMode`），导出后写入 `ConfigRuntimeSO.DevelopMode`，BuildProcessor 据此判定。改开发模式后需重新构建才切换环境域名。
+
 ## 注意事项
 
 - **Editor 只读默认值**：厂商实现在 `UNITY_EDITOR` 下只返回本地默认值，忽略服务端下发值。服务端下发 / 实验命中需在真机验证。

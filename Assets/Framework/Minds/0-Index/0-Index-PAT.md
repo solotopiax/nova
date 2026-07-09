@@ -95,9 +95,9 @@ auto_generated: true
 
 ## module
 
-- [PAT-140 UPM 包依赖与 sample 依赖的边界](../2-Areas/Patterns/PAT-140-upm-package-vs-sample-dependency.md) — dependencies 管安装 / asmdef 管编译 / sample 跨包依赖不自动解析
+- [PAT-140 UPM 包依赖与 sample 依赖的边界](../2-Areas/Patterns/PAT-140-upm-package-vs-sample-dependency.md) — deps 管安装、asmdef 管编译，sample 依赖须声明
 - [PAT-141 封装第三方 SDK 时源目录只读，文件完整搬入不增删改](../2-Areas/Patterns/PAT-141-vendor-source-readonly.md) — 第三方源目录只读，封装是复制入包，不写不删不改不省略
-- [PAT-143 厂商 SDK 缺公开 API 时，接入层用现有 public 方法在 Nova 层补口](../2-Areas/Patterns/PAT-143-vendor-sdk-missing-api-nova-layer-fill.md) — 源只读前提下，接入层用现有 public API 组合补厂商缺失能力
+- [PAT-143 厂商 SDK 缺公开 API 时，接入层用现有 public 方法在 Nova 层补口](../2-Areas/Patterns/PAT-143-vendor-sdk-missing-api-nova-layer-fill.md) — 源只读下用现有 public API 组合补厂商缺失能力
 - [PAT-144 反射调厂商私有方法是源只读约束下的最后手段，须标注版本升级复核](../2-Areas/Patterns/PAT-144-reflection-private-vendor-method.md) — 反射调私有厂商方法属权宜，须注释标版本复核点
 - [PAT-33 新增 SDK Plugin 的 6 步 SOP](../2-Areas/Patterns/PAT-33-sdk-plugin-sop.md) — SDK Plugin SOP UPM包加ISDKPlugin
 - [PAT-69 UGUI 等比铺满父宽的零脚本配置法](../2-Areas/Patterns/PAT-69-ugui-aspect-fit-fill-width.md) — ARF+水平 stretch 实现等比满宽零脚本

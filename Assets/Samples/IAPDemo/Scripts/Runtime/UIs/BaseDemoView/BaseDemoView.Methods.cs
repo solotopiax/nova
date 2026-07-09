@@ -120,7 +120,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
 
             TextMeshProUGUI newLine = Instantiate(m_FeedbackLineTemplate, m_FeedbackContent);
             newLine.gameObject.SetActive(true);
-            newLine.text = "> " + line;
+            newLine.text = "> " + line.TrimEnd();
             newLine.color = GetFeedbackColor(level);
             m_FeedbackLines.Add(newLine);
 

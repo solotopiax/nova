@@ -1,7 +1,7 @@
 ---
 id: ADR-070
 title: SDK 启用真相源归 ConfigMaster.EnabledSDKs，插件统一按启用配置实例化
-summary: EnabledSDKs 为唯一启用源，SDK 插件统一按配置实例化
+summary: EnabledSDKs 唯一启用源，插件按配置统一实例化
 category: module
 status: accepted
 date: 2026-07-05
