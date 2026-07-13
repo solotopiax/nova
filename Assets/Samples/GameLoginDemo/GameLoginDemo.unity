@@ -233,7 +233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.size
-      value: 5
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.data[4].Priority

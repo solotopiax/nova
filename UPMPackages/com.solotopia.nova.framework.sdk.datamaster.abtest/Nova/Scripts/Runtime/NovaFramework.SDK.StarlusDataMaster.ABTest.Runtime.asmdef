@@ -13,6 +13,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.starlus.sdk.datamaster",
+            "expression": "1.0.1",
+            "define": "NOVA_STARLUS_DATAMASTER"
+        }
+    ],
     "noEngineReferences": false
 }

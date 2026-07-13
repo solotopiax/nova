@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.ad",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "license": "MIT",
   "coreVersion": "1.0.0",
   "displayName": "Nova Framework - SDK - AD",
@@ -16,6 +16,6 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.5.32"
+    "com.solotopia.nova.framework": "0.5.37"
   }
 }

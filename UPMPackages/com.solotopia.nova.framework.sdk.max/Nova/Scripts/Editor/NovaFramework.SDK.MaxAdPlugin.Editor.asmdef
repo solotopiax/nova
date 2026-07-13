@@ -17,6 +17,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.applovin.mediation.ads",
+            "expression": "8.5.0",
+            "define": "NOVA_APPLOVIN_MAX"
+        }
+    ],
     "noEngineReferences": false
 }

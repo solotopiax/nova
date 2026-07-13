@@ -1,12 +1,12 @@
 # Changelog
 
+## [0.0.10] - 2026-07-13
+
+### Changed
+
+- 将 Nova Framework 的最低依赖版本提升至 `0.5.37`，避免安装时解析到仍使用旧契约的框架版本。
+
 ## [0.0.9] - 2026-07-08
-
-### Fixed
-
-- 清理 sample asmdef 克隆残留引用：删除代码未使用的 gamesave / tga / appsflyer / ad 跨包程序集引用（从 MainDemo 模板克隆时带入，GameLoginDemo 实际未调用），避免消费工程未安装这些无关包时编译报 CS0234。
-
-## [Unreleased]
 
 ### Changed
 
@@ -18,6 +18,10 @@
 
 - `Login.BindResolveAsync`、`LoginKitConfig.BindResolveCmdName`，以及 `PbNetLoginResp` 中的绑定冲突摘要字段。
 - `LoginErrorCode` 移除绑定业务码（10401 / 10402 / 10403），改由 `BindErrorCode` 维护。
+
+### Fixed
+
+- 清理 sample asmdef 克隆残留引用：删除代码未使用的 gamesave / tga / appsflyer / ad 跨包程序集引用（从 MainDemo 模板克隆时带入，GameLoginDemo 实际未调用），避免消费工程未安装这些无关包时编译报 CS0234。
 
 ## [0.0.8] - 2026-07-01
 

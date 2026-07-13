@@ -16,7 +16,9 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
+#if NOVA_STARLUS_DATAMASTER
 using StarlusSDK.DataMaster;
+#endif
 using UnityEngine;
 
 namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
@@ -106,6 +108,7 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
                 return UniTask.CompletedTask;
             }
 
+#if NOVA_STARLUS_DATAMASTER
             string defaultJson = m_Config.DefaultConfig != null ? m_Config.DefaultConfig.text : string.Empty;
             DMGetParamsResponse defaultConfig = DataMaster.Instance.ParseConfigJson(defaultJson);
             // 缓存默认配置的 Params.Keys 作为业务可读主题名全集（topic_name，即读参所需的 topicId）。
@@ -120,6 +123,9 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
 
             SubscribeEvents();
             Log.Debug(LogTag.SDK, "DataMaster 初始化完成。");
+#else
+            Log.Warning(LogTag.SDK, "DataMaster SDK（com.starlus.sdk.datamaster）未安装，插件降级为不可用：读参返回兜底值，曝光 / 事件上报 / 服务端拉取均为空操作。");
+#endif
             return UniTask.CompletedTask;
         }
 
@@ -220,7 +226,11 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         /// <returns>参数生效值，或 fallback。</returns>
         public T GetParamValue<T>(string topicId, string paramName, T fallback = default)
         {
+#if NOVA_STARLUS_DATAMASTER
             return DataMaster.Instance.GetParamValue(topicId, paramName, fallback);
+#else
+            return fallback;
+#endif
         }
 
         /// <summary>
@@ -232,7 +242,11 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         /// <returns>参数生效值的 JSON 字符串，或 null。</returns>
         public string GetParamValueJson(string topicId, string paramName)
         {
+#if NOVA_STARLUS_DATAMASTER
             return DataMaster.Instance.GetParamValueJson(topicId, paramName);
+#else
+            return null;
+#endif
         }
 
         /// <summary>
@@ -243,7 +257,9 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         /// <param name="topicId">主题 ID。</param>
         public void MarkExposure(string topicId)
         {
+#if NOVA_STARLUS_DATAMASTER
             DataMaster.Instance.SetTopicExposureTimeMs(topicId, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+#endif
         }
 
         /// <summary>
@@ -254,19 +270,24 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         /// <param name="exposureTimeMs">曝光时间（Unix 毫秒）。</param>
         public void SetExposureTimeMs(string topicId, long exposureTimeMs)
         {
+#if NOVA_STARLUS_DATAMASTER
             DataMaster.Instance.SetTopicExposureTimeMs(topicId, exposureTimeMs);
+#endif
         }
 
+#if NOVA_STARLUS_DATAMASTER
         /// <summary>
         /// 上报一条实验指标事件（主数值写入 primaryValue，供服务端聚合计算实验指标）。
         /// </summary>
         /// <param name="eventName">事件名，不可为空。</param>
         /// <param name="value">主数值（如金额、次数）。</param>
         /// <param name="userContext">用户上下文，承载玩家画像与业务扩展字段。</param>
+        /// <remarks>此重载签名含厂商类型 <c>DMUserContext</c>，仅在已安装 DataMaster SDK（宏 NOVA_STARLUS_DATAMASTER 生效）时可用；未安装时请用无 userContext 的简化重载。</remarks>
         public void LogExperimentEvent(string eventName, double value, DMUserContext userContext)
         {
             DataMaster.Instance.LogEvent(eventName, value, userContext);
         }
+#endif
 
         /// <summary>
         /// 上报一条实验指标事件（简化版，自动以当前登录用户与设备构造用户上下文）。
@@ -276,12 +297,14 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         /// <param name="value">主数值（如金额、次数）。</param>
         public void LogExperimentEvent(string eventName, double value)
         {
+#if NOVA_STARLUS_DATAMASTER
             var userContext = new DMUserContext
             {
                 PlayerId = m_CurrentUserId,
                 DeviceId = ResolveDeviceId(),
             };
             DataMaster.Instance.LogEvent(eventName, value, userContext);
+#endif
         }
 
         /// <summary>
@@ -318,6 +341,7 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         {
             PlayerPrefs.DeleteKey("DM_SEQ_CACHE");
             PlayerPrefs.Save();
+#if NOVA_STARLUS_DATAMASTER
             var mi = typeof(DataMaster).GetMethod(
                 "ResetLocalDatabase",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -334,6 +358,9 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
             {
                 Log.Warning(LogTag.SDK, "DataMaster ClearRuntimeCache：未找到 ResetLocalDatabase，仅清事件序号。");
             }
+#else
+            Log.Warning(LogTag.SDK, "DataMaster SDK 未安装，ClearRuntimeCache 仅清事件序号。");
+#endif
         }
 
         /// <summary>
@@ -344,10 +371,10 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         /// <returns>该主题参数明文信息；非 Editor/Dev 构建返回不可用提示。</returns>
         public string DebugDumpTopic(string topicId)
         {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if (DEVELOPMENT_BUILD || UNITY_EDITOR) && NOVA_STARLUS_DATAMASTER
             return DataMaster.Instance.DebugGetTopicInfo(topicId);
 #else
-            return "调试 dump 仅在 Editor / Development Build 可用。";
+            return "调试 dump 仅在 Editor / Development Build 且已安装 DataMaster SDK 时可用。";
 #endif
         }
 
@@ -358,10 +385,10 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         /// <returns>全部主题的参数明文信息；非 Editor/Dev 构建返回不可用提示。</returns>
         public string DebugDumpAll()
         {
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if (DEVELOPMENT_BUILD || UNITY_EDITOR) && NOVA_STARLUS_DATAMASTER
             return DataMaster.Instance.DebugGetAllTopicsInfo();
 #else
-            return "调试 dump 仅在 Editor / Development Build 可用。";
+            return "调试 dump 仅在 Editor / Development Build 且已安装 DataMaster SDK 时可用。";
 #endif
         }
     }

@@ -32,7 +32,7 @@
 var info = new PipifyStepInfo(attr.Id, attr.DisplayName, attr.Category, attr.ParamsType, method);
 
 // Runner 通过 Id 查找后调用
-var found = registry.FindById("export_config");
+var found = registry.FindById("export.config");
 found.Method.Invoke(null, new object[] { ctx });
 ```
 

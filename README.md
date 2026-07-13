@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.5.36-blue.svg)
+![release](https://img.shields.io/badge/release-v0.5.37-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -45,7 +45,7 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 
 ## 安装
 
-下载火种脚本 [NovaSpark2.1.cs](./NovaSpark2.1.cs)，拖入 Unity 工程，等待编译结束即可。
+下载火种脚本 [NovaSpark2.2.cs](./NovaSpark2.2.cs)，拖入 Unity 工程，等待编译结束即可。
 
 ---
 

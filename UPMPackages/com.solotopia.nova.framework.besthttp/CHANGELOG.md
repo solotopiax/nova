@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.9] - 2026-07-09
+
+### Added
+
+- 新增可选依赖屏蔽宏 `NOVA_BEST_HTTP`（Runtime asmdef `versionDefines`：`com.tivadar.best.http` 存在即定义，遵循 ADR-064「宏交 asmdef」）。`BestHttpTransport` / `BestHttpTransport.Methods` 中所有对付费外部包 Best HTTP（`Best.HTTP` 命名空间：`HTTPRequest` / `HTTPResponse` / `AsyncHTTPException` / `MultipartFormDataStream` 等）的引用均以 `#if NOVA_BEST_HTTP` 包裹：未安装 Best HTTP 时 `BestHttpTransport` 仍实现 `IHttpTransport` 并正常注册，但各请求方法返回「传输不可用」的降级 `HttpResponse`（不再因缺库编译报 CS0246/CS0234）。`BestHttpTransportRegistration` 无第三方类型引用，保持无条件注册。
+
+### Changed
+
+- 将 Nova Framework 的最低依赖版本提升至 `0.5.37`，避免安装时解析到仍使用旧契约的框架版本。
+
 ## [0.0.8] - 2026-06-30
 
 ### Changed

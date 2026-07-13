@@ -28,15 +28,15 @@
 
 ```csharp
 // 无参 Step
-[PipifyStep("export_config", "导出配置", "导出")]
+[PipifyStep("export.config", "导出配置", "导出")]
 public static async UniTask ExportConfigAsync(PipifyContext ctx)
 {
     // ...
 }
 
 // 带参 Step
-[PipifyStep("build_ab", "AB 构建", "打包", ParamsType = typeof(BuildAbParams))]
-public static async UniTask BuildAbAsync(PipifyContext ctx, BuildAbParams p)
+[PipifyStep("bundlebuilder.build", "Bundles", "构建资源", ParamsType = typeof(AssetBundleBuildArgs))]
+public static async UniTask BuildBundlesAsync(PipifyContext ctx, AssetBundleBuildArgs p)
 {
     // ...
 }

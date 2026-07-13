@@ -16,7 +16,6 @@ MonoBehaviour:
   EnabledSDKs:
   - NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.DataMasterPluginConfig
   - NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
-  - NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
   EnabledKits:
   - NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
   CommonMask:

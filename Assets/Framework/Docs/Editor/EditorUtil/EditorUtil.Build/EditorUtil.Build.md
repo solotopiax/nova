@@ -49,7 +49,7 @@ public static BuildReport BuildPlayer(BuildTarget target, string outputPath, boo
 /// <param name="developmentBuild">是否 Unity 开发构建（控制 BuildOptions.Development；与文件名环境段无关）。</param>
 /// <param name="buildMode">打包方式，对应 Build Profiles 中 Build 按钮的三种触发形态。</param>
 /// <param name="buildAppBundle">Android 专用：是否构建 AAB（仅 Android 非工程导出模式生效）。</param>
-/// <param name="splitApplicationBinary">Android 专用：是否拆分应用 Binary（仅 buildAppBundle=true 时生效）。</param>
+/// <param name="splitApplicationBinary">Android 专用：是否拆分应用 Binary。</param>
 /// <param name="developMode">文件名环境段来源（Debug/Release），取自 ConfigRuntimeSO.DevelopMode；与 developmentBuild 独立。默认 Debug。</param>
 /// <returns>Unity 构建结果。</returns>
 public static BuildReport BuildPackage(BuildTarget target, string outputFolder, bool developmentBuild, BuildMode buildMode, bool buildAppBundle, bool splitApplicationBinary, DevelopMode developMode = DevelopMode.Debug)
@@ -68,10 +68,20 @@ public static BuildReport BuildPackage(BuildTarget target, string outputFolder, 
 **BuildPackage 文件名格式：**
 
 ```
-{productName去空格}_{Debug|Release}_{bundleVersion}_{yyyyMMddHHmmss}[后缀]
+{productName字母数字}_{Debug|Release}_{bundleVersion}_{yyyy_MM_dd_HH_mm}[后缀]
 ```
 
 > 文件名中的 Debug/Release 段由 `developMode` 参数（`ConfigRuntimeSO.DevelopMode`）决定，与 `developmentBuild`（Unity 开发构建选项）是两个独立概念。`RunPackage` Step 通过 `EditorUtil.Config.RuntimeProvider.GetCurrent()` 读取激活 ConfigRuntimeSO，未找到时降级为 Debug 并打印 Warning。
+
+**命名兼容边界：**
+
+| 片段 | 当前处理 | 说明 |
+|---|---|---|
+| `productName` | `Regex.Replace(PlayerSettings.productName, "[^a-zA-Z0-9]", "")` | 只保留英文字母和数字；冒号、空格、引号、浪线、中文等都会被删除。当前没有空结果兜底，若产品名全是非字母数字字符，产物名前缀会为空。 |
+| `Debug|Release` | `developMode.ToString()` | 来自枚举值，当前为稳定安全字符串。 |
+| `bundleVersion` | 原样拼入 | 不做特殊字符清洗；建议保持 `1.2.3` 这类数字点号版本，避免空格、冒号、引号、斜杠等路径 / shell 敏感字符。 |
+| 时间戳 | `DateTime.Now.ToString("yyyy_MM_dd_HH_mm")` | 固定数字与下划线。 |
+| `outputFolder` | 相对路径基于项目根解析，绝对路径直接使用 | 不做清洗；`~` 不会展开为用户 Home，而会按普通路径片段处理。 |
 
 **产物后缀规则（`ResolveExtension`）：**
 
@@ -86,6 +96,16 @@ public static BuildReport BuildPackage(BuildTarget target, string outputFolder, 
 `BuildPackage` 仅在 `target == Android` 时快照并临时写入以下两项，构建结束后在 `try/finally` 中还原，不污染工程 Build Settings：
 - `EditorUserBuildSettings.buildAppBundle`
 - `PlayerSettings.Android.splitApplicationBinary`（核实 API：unity_reflect 确认，非 obsolete 的 `useAPKExpansionFiles`）
+
+**iOS Entitlements 命名注意：**
+
+iOS 构建完成后，`NovaBuildPostprocessor` 会为 Xcode capability 注入准备 entitlements 文件路径。该路径当前使用：
+
+```csharp
+Application.productName.Replace(" ", "") + ".entitlements"
+```
+
+这条链路只移除空格，并不复用 `BuildPackage` 的字母数字白名单。Firebase、AppsFlyer、AppleSignIn 等 SDK 在添加 capability 时会使用 `NovaBuildContext.RelativeEntitlementFilePath`。因此 iOS 包如果启用这些 capability，`PlayerSettings.productName` 仍应避免冒号、引号、浪线、斜杠等 Xcode / 文件系统敏感字符。
 
 **异常：**
 - `ArgumentException`：outputPath / outputFolder 为空时抛出。

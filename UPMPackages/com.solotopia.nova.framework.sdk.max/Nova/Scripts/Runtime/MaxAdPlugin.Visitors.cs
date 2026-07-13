@@ -27,6 +27,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// 当前渠道枚举标识，返回 AppLovin MAX。
         /// </summary>
         public override AdChannelType Channel => AdChannelType.MAX;
+#if NOVA_APPLOVIN_MAX
 
         /// <summary>
         /// 激励视频广告位 ID 列表，InitChannelSDKAsync 从 MaxAdChannelConfig 缓存。
@@ -81,6 +82,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// MAX SDK 返回的国家代码，InitializedCallback 中赋值，用于调试和数据上报。
         /// </summary>
         private string m_CountryCode;
+#endif
 
     }
 }

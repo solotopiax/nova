@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.14] - 2026-07-09
+
+### Added
+
+- 新增可选依赖屏蔽宏 `NOVA_APPLOVIN_MAX`（Runtime 与 Editor 两个 asmdef 的 `versionDefines`：`com.applovin.mediation.ads` 存在即定义，遵循 ADR-064「宏交 asmdef」）。所有对外部 AppLovin MAX SDK（全局命名空间 `MaxSdk` / `MaxSdkBase` / `MaxSdkCallbacks` / `MaxSdkUtils` 及 Editor 的 `AppLovinSettings`）的引用均以 `#if NOVA_APPLOVIN_MAX` 包裹：MaxSdk 依赖的分部文件（RV/Inter/AppOpen/Banner/Callbacks/Methods/Track/UserId 及 FacebookAdSetting）整体条件编译，未安装 MAX 时随之移除，`MaxAdPlugin` 仅保留唯一抽象实现 `InitChannelSDKAsync`（降级为记 Warning + `RaiseInitResult(false)`）与 `Name`/`Channel`，其余广告能力回退基类 `AdChannelPluginBase` 的 virtual 空实现；Editor 构建处理器缺库时跳过 `AppLovinSettings` 注入。下游未安装 MAX 时不再编译报 CS0246。
+
 ## [0.0.13] - 2026-06-19
 
 ### Changed

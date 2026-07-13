@@ -1,5 +1,18 @@
 # Changelog — com.solotopia.nova.framework
 
+## [Unreleased]
+
+## [0.5.37] - 2026-07-13
+
+### Changed
+
+- Pipify 的 Android 签名配置统一为 keystore path 与 key alias 命名，已有配置升级后不会自动迁移，需重新保存对应值，否则构建前校验会报配置缺失；Split Application Binary 也可脱离 App Bundle 独立生效。
+- PlugPals 安装带 scoped registry 的包时，第三方依赖保持为 UPM 传递依赖，不再展开到项目顶层 manifest；卸载仍会清理旧版留下的同类条目。
+
+### Removed
+
+- 旧 Spine 槽位换肤与动画时长查询的四个公开扩展入口已删除且不会恢复；外部 Spine 使用方需在升级前迁移到自身适配层或 Spine 官方 API。
+
 ## [0.5.36] - 2026-07-08
 
 ### Fixed

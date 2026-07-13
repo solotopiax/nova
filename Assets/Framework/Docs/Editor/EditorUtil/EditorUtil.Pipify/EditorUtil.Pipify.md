@@ -116,7 +116,7 @@ foreach (var group in EditorUtil.Pipify.Registry.GroupByCategory())
 }
 
 // 按 ID 查找
-PipifyStepInfo step = EditorUtil.Pipify.Registry.FindById("export_config");
+PipifyStepInfo step = EditorUtil.Pipify.Registry.FindById("export.config");
 if (step != null)
     Debug.Log($"找到 Step：{step.DisplayName}");
 
@@ -131,7 +131,7 @@ Runner 由 public 入口间接调用，不对外直接暴露。
 await EditorUtil.Pipify.RunBatchAsync(batch, hostWindow);
 
 // CLI 宿主：纯日志，带参数覆盖
-var overrides = new Dictionary<string, string> { ["export_config.outputPath"] = "/tmp/out" };
+var overrides = new Dictionary<string, string> { ["build.package.OutputFolderPath"] = "/tmp/out" };
 await EditorUtil.Pipify.RunBatchForCliAsync(batch, overrides);
 
 // CLI 宿主：不覆盖参数

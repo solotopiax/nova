@@ -14,6 +14,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 {
     public sealed partial class MaxAdPlugin
     {
+#if NOVA_APPLOVIN_MAX
         /// <summary>
         /// 同步用户登录 userId 到 MAX SDK。
         /// </summary>
@@ -22,5 +23,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         {
             MaxSdk.SetUserId(userId);
         }
+#endif
     }
 }

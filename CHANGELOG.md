@@ -6,6 +6,16 @@
 
 ---
 
+## [0.5.37] - 2026-07-13
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.37]` 节。
+
+主要内容：
+- 主包 framework 升级到 0.5.37：移除旧 Spine 槽位换肤与动画时长查询的四个公开扩展入口；Pipify 统一 Android keystore 与 key alias 命名，并让 Split Application Binary 可独立生效；PlugPals 不再把带 scoped registry 包的第三方传递依赖展开到项目顶层 manifest。
+- 随 framework 依赖下界联动发布 Network Kit：`kit.network.gamebind@0.0.3`、`kit.network.gamelogin@0.0.10`、`kit.network.gamesave@0.0.17`。
+- 随 framework 依赖下界联动发布 SDK：`sdk.ad@1.0.16`、`sdk.applesignin@0.0.4`、`sdk.appsflyer@0.0.24`、`sdk.facebook@0.0.7`、`sdk.firebase@0.0.22`、`sdk.googlesignin@0.0.5`、`sdk.iap@0.0.14`、`sdk.iap.mobile@0.0.8`、`sdk.tga@0.0.20`。
+- 同轮发布 `besthttp@0.0.9`、`sdk.aihelp@0.0.1`、`sdk.datamaster.abtest@0.0.5`、`sdk.max@0.0.14`。
+
 ## [0.5.34] - 2026-07-03
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.34]` 节。

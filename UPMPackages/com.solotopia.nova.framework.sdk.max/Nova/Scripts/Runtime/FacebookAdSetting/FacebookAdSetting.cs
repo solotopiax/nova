@@ -14,6 +14,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 {
    internal sealed class FacebookAdSetting
     {
+#if NOVA_APPLOVIN_MAX
 
         public static void Initialize()
         
@@ -55,5 +56,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             FBAdSettingsBridgeSetAdvertiserTrackingEnabled(advertiserTrackingEnabled);
 #endif
         }
+#endif
     }
 }

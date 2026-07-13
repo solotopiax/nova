@@ -14,5 +14,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.tivadar.best.http",
+            "expression": "3.0.17",
+            "define": "NOVA_BEST_HTTP"
+        }
+    ],
     "noEngineReferences": false
 }

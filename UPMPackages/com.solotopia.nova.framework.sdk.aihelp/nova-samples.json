@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "displayName": "AIHelpDemo",
+      "description": "com.solotopia.nova.framework.sdk.aihelp 演示示例：BaseDemoView 三段式骨架的 sample 工程",
+      "sampleName": "AIHelpDemo",
+      "sourceDir": "Assets/Samples/AIHelpDemo",
+      "expectedNamespace": "NovaFramework.Sdk.Aihelp.Samples.Runtime",
+      "expectedEntranceProcedure": "ProcedurePreload",
+      "sampleManifestRelative": "Editor/SamplePathManifest.asset",
+      "devPathPrefix": "Assets/Samples/AIHelpDemo"
+    }
+  ]
+}

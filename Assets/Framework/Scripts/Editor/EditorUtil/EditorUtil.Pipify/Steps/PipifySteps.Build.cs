@@ -72,9 +72,9 @@ namespace NovaFramework.Editor
             };
 
             PlayerSettings.Android.useCustomKeystore = true;
-            PlayerSettings.Android.keystoreName = p.AndroidKeystoreName;
+            PlayerSettings.Android.keystoreName = p.AndroidKeystorePath;
             PlayerSettings.Android.keystorePass = p.AndroidKeystorePass;
-            PlayerSettings.Android.keyaliasName = p.AndroidKeyaliasName;
+            PlayerSettings.Android.keyaliasName = p.AndroidKeyalias;
             PlayerSettings.Android.keyaliasPass = p.AndroidKeyaliasPass;
             return snapshot;
         }
@@ -95,7 +95,7 @@ namespace NovaFramework.Editor
 
         private static void ValidateAndroidSigningSettings(PackageParams p)
         {
-            if (string.IsNullOrWhiteSpace(p.AndroidKeystoreName))
+            if (string.IsNullOrWhiteSpace(p.AndroidKeystorePath))
             {
                 throw new InvalidOperationException("[Pipify] 启用 UseAndroidKeystore 时必须填写 Android keystore 路径。");
             }
@@ -103,7 +103,7 @@ namespace NovaFramework.Editor
             {
                 throw new InvalidOperationException("[Pipify] 启用 UseAndroidKeystore 时必须填写 Android keystore 密码。");
             }
-            if (string.IsNullOrWhiteSpace(p.AndroidKeyaliasName))
+            if (string.IsNullOrWhiteSpace(p.AndroidKeyalias))
             {
                 throw new InvalidOperationException("[Pipify] 启用 UseAndroidKeystore 时必须填写 Android key alias 名称。");
             }

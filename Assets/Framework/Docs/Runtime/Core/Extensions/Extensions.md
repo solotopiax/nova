@@ -26,4 +26,3 @@ C# 和 Unity 类型的扩展方法，全部为静态类，可在任意层级直�
 | `NovaExtensionForUnity.Vector2.cs` | `Vector2` |
 | `NovaExtensionForUnity.Vector3.cs` | `Vector3` |
 | `NovaExtensionForUnity.Quaternion.cs` | `Quaternion` |
-| `NovaExtensionForUnity.Spine.cs` | Spine `SkeletonAnimation` 等 |

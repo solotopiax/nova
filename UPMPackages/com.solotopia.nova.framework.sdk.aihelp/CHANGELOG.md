@@ -1,0 +1,18 @@
+# Changelog
+
+本文件记录 `com.solotopia.nova.framework.sdk.aihelp` 的版本变更。
+格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
+
+## [0.0.1] - 2026-07-09
+
+### Added
+
+- 首次封装 AIHelp Unity SDK 6.0 为 Nova SDK 插件包：`AIHelpPlugin` 继承 `SDKPluginBase`，由 `SDKManager` 统一编排初始化，提供智能客服会话、帮助中心 FAQ、用户信息同步、未读消息 / 工单数查询、语言切换、推送 token 设置等能力；登录事件自动同步用户身份。
+- 随包 bundle AIHelp Unity SDK 6.0 官方原样代码：managed C#（`Core/AIHelp/`）与 iOS 原生库（`Core/Plugins/iOS/AIHelpSDK/`），业务无需额外安装原厂包。
+- `AIHelpBuildProcessor`：Android 端构建期把 maven 依赖幂等注入导出的 `build.gradle`（含 androidx/jetifier 标志合并）；iOS 端构建期给 UnityFramework 与主 target 追加 `-ObjC` 链接标志，确保 AIHelp framework 的 Objective-C category 符号被正确链接。
+- `AIHelpDemo` Sample：`DemoAIHelpView` 演示 View，覆盖 `Show` / `Login` / `FetchUnreadMessageCount` / `FetchUnreadTaskCount` / `Close` 等接口调用与事件回显。
+- 落地包骨架：`package.json` / 文档三件套 / `THIRD_PARTY_NOTICES.md` / `nova-samples.json` / `Nova/Doc/` 三篇文档。
+
+### Changed
+
+- 将 Nova Framework 的最低依赖版本提升至 `0.5.37`，避免安装时解析到仍使用旧契约的框架版本。

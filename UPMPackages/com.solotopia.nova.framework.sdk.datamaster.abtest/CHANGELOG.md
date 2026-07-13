@@ -3,6 +3,17 @@
 本文件记录 `com.solotopia.nova.framework.sdk.datamaster` 的版本变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [0.0.5] - 2026-07-09
+
+### Added
+
+- 新增可选依赖屏蔽宏 `NOVA_STARLUS_DATAMASTER`（Runtime asmdef `versionDefines`：`com.starlus.sdk.datamaster` 存在即定义，遵循 ADR-064「宏交 asmdef」与 `NOVA_NICEVIBRATIONS` 约定）。所有对厂商 `StarlusSDK.DataMaster` 的调用（`using` / `DataMaster.Instance.*` / `DMUserContext` / `DMGetParamsResponse` / 反射）均以 `#if NOVA_STARLUS_DATAMASTER` 包裹：未安装 DataMaster SDK 时插件优雅降级——读参返回兜底值、曝光 / 事件上报 / 服务端拉取为空操作、`OnInitializeAsync` 记 Warning 并跳过初始化，消费工程不再因缺库编译报 CS0246（补齐 ADR-064「绕过 PlugPals 手写 manifest 装包 UPM 直接报错」的编译期缺口）。
+
+### Changed
+
+- `LogExperimentEvent(string, double, DMUserContext)` 重载因签名含厂商类型 `DMUserContext`，仅在宏 `NOVA_STARLUS_DATAMASTER` 生效（已装 SDK）时暴露；未装 SDK 时请改用无 `userContext` 的简化重载 `LogExperimentEvent(string, double)`。
+- 将 Nova Framework 的最低依赖版本提升至 `0.5.37`，避免安装时解析到仍使用旧契约的框架版本。
+
 ## [0.0.4] - 2026-07-08
 
 ### Added

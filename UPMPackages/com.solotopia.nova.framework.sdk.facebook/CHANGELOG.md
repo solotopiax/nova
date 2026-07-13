@@ -2,6 +2,12 @@
 
 This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`.
 
+## [0.0.7] - 2026-07-13
+
+### Changed
+
+- 将 Nova Framework 的最低依赖版本提升至 `0.5.37`，避免安装时解析到仍使用旧契约的框架版本。
+
 ## [0.0.6] - 2026-07-08
 
 ### Fixed

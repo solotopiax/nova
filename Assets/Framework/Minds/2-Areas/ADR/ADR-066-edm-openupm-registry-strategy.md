@@ -34,14 +34,14 @@ EDM（External Dependency Manager for Unity / EDM4U，Google 维护）作用：�
 1. **AppLovin 正确 registry**：`https://unity.packages.applovin.com/`（**不是** `unity.applovin.com`），scope `com.applovin.mediation.ads` / `com.applovin.mediation.adapters` / `com.applovin.mediation.dsp`。
 2. **EDM 由 OpenUPM 供给**：`com.google.external-dependency-manager` 来源 `https://package.openupm.com`，scope `com.google.external-dependency-manager`。
 3. **OpenUPM 工程级固定，各包不得声明**：Nova 消费工程 `Packages/manifest.json` 固定 OpenUPM registry（团队约定，无单独模板仓），且 max/firebase/appsflyer 等依赖方**禁止**在各自 `nova.scopedRegistries` 重复声明 OpenUPM——EDM 是公共依赖，工程级固定一次覆盖所有依赖方更 DRY。**双保险方案已废弃**（max 0.0.11 曾保留 OpenUPM scope 作双保险，后移除）：PlugPals 卸载某包时按其 `nova.scopedRegistries` 删 registry，靠引用计数（`CollectRegistryUrlsDeclaredByOtherInstalled` 扫其它已装包的声明）判断是否共用；EDM 公共依赖恰好"工程固定、各包不声明"，故若 max 单方声明 OpenUPM，卸 max 时引用计数扫不到 firebase/appsflyer 的声明（它们本就不声明），会连带删掉工程固定的 OpenUPM registry，殃及同样依赖 EDM 的 firebase/appsflyer。结论：公共依赖的 registry 只能工程固定，绝不能由单个包声明。
-4. **PlugPals 写顶层 + 卸载连带移除**：安装时把被声明 registry scope 覆盖的依赖（如 `com.applovin.*`）显式写入 `manifest.dependencies` 顶层——仅作主包传递依赖时 UPM 不保证拉取 scoped-registry 包；卸载时连带移除。`com.solotopia.*` 传递依赖（如 sdk.ad）不写顶层，走 UPM 自动回收。
+4. **PlugPals 只写主包 + scoped registry，不展开 AppLovin 顶层依赖（2026-07-09 修订）**：安装时把主包写入 `manifest.dependencies` 顶层，并把包自带 `nova.scopedRegistries` 写入项目 `scopedRegistries`；被这些 scope 覆盖的依赖（如 `com.applovin.*`）保留为主包 `package.json` 的传递依赖，由 UPM 原生依赖解析安装。旧版 PlugPals 曾显式写入顶层的同类依赖，卸载时继续兼容清理。
 5. **registry 链完整覆盖铁律**：封装带传递依赖的第三方包时，工程 / 包的 scopedRegistries 必须覆盖**整条依赖链**所需的所有 registry，否则传递依赖拉取失败。
 
 ## 后果（Consequences）
 
 ### 正面
 - EDM 一处固定，所有依赖方（firebase/appsflyer/max）共享，避免每包重复声明。
-- AppLovin 全 30+ adapter 经正确 registry + 顶层写入可一键装齐。
+- AppLovin 全 30+ adapter 经正确 registry + UPM 传递依赖解析可一键装齐，项目顶层 manifest 只保留用户直接安装的 MAX 包。
 
 ### 负面
 - 新建 Nova 工程必须预置 OpenUPM registry，漏则装 max/firebase/appsflyer 时报 EDM 找不到（属约定执行问题，非设计缺陷）。

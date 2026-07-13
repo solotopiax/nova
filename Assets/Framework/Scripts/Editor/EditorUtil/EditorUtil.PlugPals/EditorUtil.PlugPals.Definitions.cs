@@ -228,7 +228,7 @@ namespace NovaFramework.Editor
                 /// <summary>
                 /// 包自带声明的作用域仓库（如 MAX 依赖的 AppLovin 官方私有云仓库）。
                 /// 安装/升级时按 url upsert 到 manifest，卸载时按 url 移除整条；
-                /// 被这些 scopes 前缀覆盖的依赖在依赖检测时直接放行。
+                /// 被这些 scopes 前缀覆盖的依赖在依赖检测时直接放行，安装时不展开写入 manifest 顶层。
                 /// </summary>
                 public List<ScopedRegistry> scopedRegistries;
             }

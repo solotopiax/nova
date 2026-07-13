@@ -17,6 +17,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 {
     public sealed partial class MaxAdPlugin
     {
+#if NOVA_APPLOVIN_MAX
         /// <summary>
         /// 发起激励视频加载请求。
         /// </summary>
@@ -164,5 +165,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             });
             TrackMaxRevenue(AdFormat.Rewarded, adUnitId, info);
         }
+#endif
     }
 }

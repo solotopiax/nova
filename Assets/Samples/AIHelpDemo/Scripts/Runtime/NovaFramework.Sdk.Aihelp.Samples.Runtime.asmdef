@@ -1,0 +1,20 @@
+﻿{
+    "name": "NovaFramework.Sdk.Aihelp.Samples.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:2a81c6962524d424a8ef5072bd3b0fa0",
+        "GUID:c383f449023b7fd42adcb2698d5622e0",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:306c6673169be4aa7bb5589c84e53cf1"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

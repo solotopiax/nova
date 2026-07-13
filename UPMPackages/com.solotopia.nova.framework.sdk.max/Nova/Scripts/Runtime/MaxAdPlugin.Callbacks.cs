@@ -17,6 +17,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 {
     public sealed partial class MaxAdPlugin
     {
+#if NOVA_APPLOVIN_MAX
         /// <summary>
         /// 注册各格式 MaxSdk 事件回调；由 OnSdkInitializedCallback 在初始化完成后调用。
         /// 每种格式独立判断 placementId 是否有效，无效则跳过该格式的注册。
@@ -215,5 +216,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             // 反注册开屏广告收益回调
             MaxSdkCallbacks.AppOpen.OnAdRevenuePaidEvent -= OnAppOpenRevenuePaid;
         }
+#endif
     }
 }

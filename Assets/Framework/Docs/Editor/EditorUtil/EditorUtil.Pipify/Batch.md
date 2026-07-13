@@ -27,8 +27,8 @@
 ```csharp
 // 创建 Batch 并添加条目
 var batch = new Batch { Name = "发布流程", Description = "导出 + AB 构建 + 打包" };
-batch.Items.Add(new BatchItem { StepId = "export_config", ParamsJson = "" });
-batch.Items.Add(new BatchItem { StepId = "build_ab", ParamsJson = "" });
+batch.Items.Add(new BatchItem { StepId = "export.config", ParamsJson = "" });
+batch.Items.Add(new BatchItem { StepId = "bundlebuilder.build", ParamsJson = "" });
 settings.Batches.Add(batch);
 ```
 

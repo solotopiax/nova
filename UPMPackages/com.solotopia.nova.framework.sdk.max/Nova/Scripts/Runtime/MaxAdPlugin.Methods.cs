@@ -16,6 +16,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 {
     public sealed partial class MaxAdPlugin
     {
+#if NOVA_APPLOVIN_MAX
         /// <summary>
         /// MAX SDK 初始化完成回调，在 InitializeSdk 异步返回后由 MaxSdkCallbacks.OnSdkInitializedEvent 触发。
         /// 负责打印国家代码、应用静音设置、启用调试开关、注册各广告格式回调，最后通知上层初始化完成。
@@ -48,5 +49,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             // 解除 await 挂起
             initTcs.TrySetResult(true);
         }
+#endif
     }
 }

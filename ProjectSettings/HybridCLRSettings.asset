@@ -44,6 +44,7 @@ MonoBehaviour:
   - NovaFramework.SDK.MaxAdPlugin.Runtime
   - NovaFramework.SDK.TGAPlugin.Runtime
   - NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
+  - NovaFramework.SDK.AIHelp.Runtime
   outputLinkFile: HybridCLRGenerate/link.xml
   outputAOTGenericReferenceFile: HybridCLRGenerate/AOTGenericReferences.cs
   maxGenericReferenceIteration: 10

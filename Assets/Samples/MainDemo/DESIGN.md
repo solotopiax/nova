@@ -392,10 +392,6 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 
 > 具体取哪个 Bgm / Click / Confirm 由资源期 7b 收尾时挑短小（≤ 3s 的 SFX，≤ 30s 的 BGM）的版本。**待补**。
 
-### Spine（0 个）
-
-MainDemo 33 demo 全部不需要 Spine。`Solar/Game/Spines/Role/` 暂不引入。
-
 ### Prefab（4 个，新建）
 
 | Prefab | 路径 | 用途 |

@@ -28,6 +28,8 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
@@ -37,8 +39,8 @@ MonoBehaviour:
         2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
-        true,\n  \"BuildAppBundle\": false,\n  \"SplitApplicationBinary\": false,\n 
-        \"OutputFolderPath\": \"Build\"\n}"
+        true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+        \"UseAndroidKeystore\": false,\n  \"OutputFolderPath\": \"Build\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: "{\n  \"Path\": \"Build\"\n}"
   - m_Name: "\u81EA\u52A8\u90E8\u7F72\u6D4B\u8BD5-\u5168\u91CF\uFF08iOS\uFF09"
@@ -53,6 +55,8 @@ MonoBehaviour:
     - m_StepId: hybridclr.copy_aot_dll
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
+      m_ParamsJson: 
+    - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 9,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
@@ -82,6 +86,8 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
@@ -96,6 +102,8 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
@@ -108,6 +116,8 @@ MonoBehaviour:
   - m_Name: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Description: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Items:
+    - m_StepId: export.config
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
@@ -125,6 +135,8 @@ MonoBehaviour:
     m_Description: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
     m_Items:
     - m_StepId: edm4u.android_resolve
+      m_ParamsJson: 
+    - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"DevelopmentBuild\": false,\n  \"OutputPath\":
@@ -193,4 +205,9 @@ MonoBehaviour:
     - m_StepId: export.table.data
       m_ParamsJson: 
     - m_StepId: export.table.code
+      m_ParamsJson: 
+  - m_Name: "\u5BFC\u51FAconfig"
+    m_Description: 
+    m_Items:
+    - m_StepId: export.config
       m_ParamsJson: 

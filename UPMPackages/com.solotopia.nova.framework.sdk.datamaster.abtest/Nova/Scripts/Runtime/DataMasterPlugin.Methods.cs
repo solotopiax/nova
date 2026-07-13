@@ -10,7 +10,9 @@
 
 using System.Linq;
 using NovaFramework.Runtime;
+#if NOVA_STARLUS_DATAMASTER
 using StarlusSDK.DataMaster;
+#endif
 using UnityEngine;
 
 namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
@@ -63,6 +65,7 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
                 userId, deviceId, m_UserProperties.Count, props);
             Log.Debug(LogTag.SDK, refreshLine);
             OnRefreshTriggered?.Invoke(refreshLine);
+#if NOVA_STARLUS_DATAMASTER
             DataMaster.Instance.RefreshFromServer(
                 userId,
                 deviceId,
@@ -77,6 +80,7 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
                     Log.Warning(LogTag.SDK, Txt.Format("DataMaster 服务端配置拉取失败：{0}", err));
                     OnConfigRefreshFailed?.Invoke(err);
                 });
+#endif
         }
 
         /// <summary>

@@ -11,7 +11,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+#if NOVA_BEST_HTTP
 using Best.HTTP;
+#endif
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NovaFramework.Runtime;
@@ -21,6 +23,7 @@ namespace NovaFramework.BestHTTP.Runtime
 {
     internal sealed partial class BestHttpTransport
     {
+#if NOVA_BEST_HTTP
         private void ApplyTimeoutSettings(HTTPRequest request, float requestTimeout, float connectTimeout)
         {
             float effectiveRequestTimeout = requestTimeout < 0f ? m_RequestTimeout : requestTimeout;
@@ -187,5 +190,6 @@ namespace NovaFramework.BestHTTP.Runtime
             long totalBytes = response.Data != null ? response.Data.Length : -1L;
             return HttpResponse.Create(response.StatusCode, response.DataAsText, response.Data, headers, response.IsSuccess ? null : response.Message, response.IsSuccess, downloadedBytes, totalBytes);
         }
+#endif
     }
 }

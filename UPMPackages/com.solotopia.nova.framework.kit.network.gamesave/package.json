@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.kit.network.gamesave",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "license": "MIT",
   "coreVersion": "0.0.2",
   "displayName": "Nova Framework - Kit - Network - GameSave",
@@ -18,7 +18,7 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.5.32",
+    "com.solotopia.nova.framework": "0.5.37",
     "com.solotopia.unitask": "10.0.5",
     "com.solotopia.luban": "10.0.6",
     "com.solotopia.nova.framework.kit.network.gamelogin": "0.0.8"

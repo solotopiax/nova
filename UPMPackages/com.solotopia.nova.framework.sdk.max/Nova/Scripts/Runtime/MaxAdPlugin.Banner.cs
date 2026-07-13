@@ -16,6 +16,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 {
     public sealed partial class MaxAdPlugin
     {
+#if NOVA_APPLOVIN_MAX
         /// <summary>
         /// 创建并配置 Banner 广告位。
         /// </summary>
@@ -188,5 +189,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         {
             MarkBannerHidden(adUnitId);
         }
+#endif
     }
 }

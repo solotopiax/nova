@@ -1,0 +1,17 @@
+{
+    "name": "NovaFramework.SDK.AIHelp.Editor",
+    "rootNamespace": "",
+    "references": [
+        "NovaFramework.SDK.AIHelp.Runtime",
+        "NovaFramework.Runtime"
+    ],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

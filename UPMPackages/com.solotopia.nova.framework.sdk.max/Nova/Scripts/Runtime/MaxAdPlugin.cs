@@ -28,6 +28,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <returns>异步任务，完成后 RaiseInitResult 已调用。</returns>
         protected override async UniTask InitChannelSDKAsync(IAdChannelConfig config, CancellationToken ct)
         {
+#if NOVA_APPLOVIN_MAX
             var cfg = (MaxAdChannelConfig)config;
 
             // 缓存广告位 ID 列表
@@ -56,11 +57,18 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 
             // 初始化 SDK
             MaxSdk.InitializeSdk();
-            
+
             // 等待初始化完成
             await initTcs.Task;
+#else
+            // AppLovin MAX（com.applovin.mediation.ads）未安装：渠道降级为不可用，标记初始化失败。
+            Log.Warning(LogTag.Max, "AppLovin MAX（com.applovin.mediation.ads）未安装，MAX 广告渠道降级不可用。");
+            RaiseInitResult(false);
+            await UniTask.CompletedTask;
+#endif
         }
 
+#if NOVA_APPLOVIN_MAX
         /// <summary>
         /// 根据广告格式向对应 AdUnit 发起加载请求。
         /// </summary>
@@ -99,6 +107,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 _ => throw new AdFormatNotSupportedException(Name, format),
             };
         }
+#endif
 
     }
 }

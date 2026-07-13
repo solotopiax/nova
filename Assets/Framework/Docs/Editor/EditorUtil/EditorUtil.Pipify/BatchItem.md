@@ -27,7 +27,7 @@
 // 构造一个绑定到特定 Step 的条目
 var item = new BatchItem
 {
-    StepId = "export_config",
+    StepId = "export.config",
     ParamsJson = Util.Json.Serialize(myParams)
 };
 batch.Items.Add(item);

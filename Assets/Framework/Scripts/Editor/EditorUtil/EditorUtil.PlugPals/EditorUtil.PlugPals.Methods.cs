@@ -474,8 +474,8 @@ namespace NovaFramework.Editor
 
             /// <summary>
             /// 收集待装包 dependencies 中被其自身 nova.scopedRegistries 声明 scope 覆盖的依赖（依赖名 -> 版本）。
-            /// 这些依赖由声明的私有仓库提供，安装时随主包显式写入项目 manifest.dependencies 顶层，
-            /// 确保 UPM 作为直接依赖解析安装（仅作传递依赖时 UPM 不保证拉取）；卸载时一并移除。
+            /// 这些依赖由声明的私有仓库提供；当前安装流程保持其为主包 package.json 的传递依赖，
+            /// 本方法仅用于卸载时兼容清理旧版 PlugPals 曾写入 manifest.dependencies 顶层的残留。
             /// </summary>
             /// <param name="entry">待装/待卸载包条目。</param>
             /// <returns>被声明 scope 覆盖的依赖（依赖名 -> 版本）。</returns>

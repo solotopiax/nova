@@ -28,6 +28,8 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
@@ -37,8 +39,10 @@ MonoBehaviour:
         2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
-        false,\n  \"BuildAppBundle\": false,\n  \"SplitApplicationBinary\": false,\n 
-        \"OutputFolderPath\": \"Build\"\n}"
+        false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"solotopia\",\n 
+        \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
+        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: "{\n  \"Path\": \"Build\"\n}"
   - m_Name: "Hybrid+YooAsset\u8054\u5408\u7F16\u8BD1"
@@ -56,6 +60,8 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
@@ -70,6 +76,8 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
@@ -82,11 +90,12 @@ MonoBehaviour:
   - m_Name: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
     m_Description: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
     m_Items:
-    - m_StepId: edm4u.android_resolve
-      m_ParamsJson: 
     - m_StepId: build.package
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"DevelopmentBuild\": false,\n  \"OutputPath\":
-        \"Build/Nova.apk\"\n}"
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
+        false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"solotopia\",\n 
+        \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
+        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: "{\n  \"Path\": \"Build\"\n}"
   - m_Name: "Localization\u5BFC\u51FA\u6D4B\u8BD5"

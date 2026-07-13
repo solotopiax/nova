@@ -360,9 +360,40 @@ namespace NovaFramework.Editor
                     return false;
                 }
 
-                foreach (KeyValuePair<string, RegistrySource> hit in check.ToAutoScope)
+                ApplyInstallManifestChanges(manifest, registryUrl, registryName, entry, check);
+
+                SaveManifest(manifestPath, manifest);
+                ResolvePackages();
+
+                entry.LocalVersion = entry.LatestVersion;
+                entry.Status = PackageStatus.Installed;
+                return true;
+            }
+
+            /// <summary>
+            /// 将安装成功前的 manifest 变更集中到可测 helper：写入主包、补齐所需 scoped registry。
+            /// 第三方包自身 dependencies 保持传递依赖，不再展开写入项目 manifest 顶层。
+            /// </summary>
+            internal static void ApplyInstallManifestChanges(
+                ManifestData manifest,
+                string registryUrl,
+                string registryName,
+                PackageDisplayEntry entry,
+                DependencyCheckResult check)
+            {
+                if (manifest == null || entry == null)
                 {
-                    EnsureScopedRegistry(manifest, hit.Value.Url, hit.Value.Name, hit.Key);
+                    return;
+                }
+
+                manifest.dependencies ??= new Dictionary<string, string>();
+
+                if (check?.ToAutoScope != null)
+                {
+                    foreach (KeyValuePair<string, RegistrySource> hit in check.ToAutoScope)
+                    {
+                        EnsureScopedRegistry(manifest, hit.Value.Url, hit.Value.Name, hit.Key);
+                    }
                 }
 
                 EnsureScopedRegistry(manifest, registryUrl, registryName, entry.Name);
@@ -376,20 +407,6 @@ namespace NovaFramework.Editor
                 }
 
                 manifest.dependencies[entry.Name] = entry.LatestVersion;
-
-                // 被声明 registry scope 覆盖的依赖显式写入顶层，确保 UPM 作为直接依赖解析安装
-                // （仅作主包传递依赖时 UPM 不保证拉取 scoped-registry 包）。
-                foreach (KeyValuePair<string, string> declaredDep in CollectDeclaredRegistryDependencies(entry))
-                {
-                    manifest.dependencies[declaredDep.Key] = declaredDep.Value;
-                }
-
-                SaveManifest(manifestPath, manifest);
-                ResolvePackages();
-
-                entry.LocalVersion = entry.LatestVersion;
-                entry.Status = PackageStatus.Installed;
-                return true;
             }
 
             /// <summary>
@@ -411,7 +428,7 @@ namespace NovaFramework.Editor
                 {
                     manifest.dependencies.Remove(entry.Name);
 
-                    // 移除安装时随主包写入顶层的、被声明 registry scope 覆盖的依赖。
+                    // 兼容清理旧版 PlugPals 曾随主包写入顶层的、被声明 registry scope 覆盖的依赖。
                     foreach (string declaredDepName in CollectDeclaredRegistryDependencies(entry).Keys)
                     {
                         manifest.dependencies.Remove(declaredDepName);

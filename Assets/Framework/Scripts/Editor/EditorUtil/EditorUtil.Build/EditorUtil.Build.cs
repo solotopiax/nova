@@ -64,7 +64,7 @@ namespace NovaFramework.Editor
             /// <param name="developmentBuild">是否 Unity 开发构建（控制 BuildOptions.Development；与文件名环境段无关）。</param>
             /// <param name="buildMode">打包方式，对应 Build Profiles 中 Build 按钮的三种触发形态。</param>
             /// <param name="buildAppBundle">Android 专用：是否构建 AAB（仅 Android 非工程导出模式生效）。</param>
-            /// <param name="splitApplicationBinary">Android 专用：是否拆分应用 Binary（仅 buildAppBundle=true 时生效）。</param>
+            /// <param name="splitApplicationBinary">Android 专用：是否拆分应用 Binary。</param>
             /// <param name="developMode">文件名环境段来源（Debug/Release），取自 ConfigRuntimeSO.DevelopMode；与 developmentBuild 独立。</param>
             /// <returns>Unity 构建结果。</returns>
             public static BuildReport BuildPackage(BuildTarget target, string outputFolder,
@@ -97,7 +97,7 @@ namespace NovaFramework.Editor
                     try
                     {
                         EditorUserBuildSettings.buildAppBundle = buildAppBundle;
-                        PlayerSettings.Android.splitApplicationBinary = buildAppBundle && splitApplicationBinary;
+                        PlayerSettings.Android.splitApplicationBinary = splitApplicationBinary;
                         return BuildPlayer(target, fullPath, developmentBuild, buildMode);
                     }
                     finally

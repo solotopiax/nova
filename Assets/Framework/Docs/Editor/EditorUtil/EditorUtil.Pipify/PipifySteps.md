@@ -156,10 +156,11 @@
 
 典型顺序：
 
-1. 资源导出 Step
-2. `bundlebuilder.build`
-3. `build.package`
-4. `shell.open_folder`
+1. `export.config`
+2. 按需追加其他资源导出 Step
+3. `bundlebuilder.build`
+4. `build.package`
+5. `shell.open_folder`
 
 适合：
 
@@ -188,8 +189,10 @@
 
 ### Bundle / Build
 
-- 前置导出物必须已就绪
+- 构建类 Batch 应在 `bundlebuilder.build` / `build.package` 前先跑 `export.config`
+- 其他前置导出物必须已就绪
 - `build.package` 的产物命名还依赖当前激活 `ConfigRuntimeSO` 的 `DevelopMode`
+- `build.package` 的 `OutputFolderPath` 不做特殊字符清洗；相对路径基于项目根解析，绝对路径直接使用
 
 ## 常见失败点
 
@@ -197,7 +200,8 @@
 - `ConfigMasterSO.ExportTarget` 没配：`export.config` 会中断流水线。
 - HybridCLR 只跑了拷贝，没先生成 DLL：拷贝类 Step 会失去输入产物。
 - Android 没先 `edm4u.android_resolve`：后续构建链可能在依赖目录上失败。
-- `build.package` 前没准备好 Config：文件名开发模式段会降级为 `Debug`，并输出 Warning。
+- 手动移除或跳过 `export.config` 后直接跑 `build.package`：文件名开发模式段会降级为 `Debug`，并输出 Warning。
+- `PlayerSettings.bundleVersion` 或 `OutputFolderPath` 写入路径敏感字符：`BuildPackage` 不会替它们清洗，可能生成不适合 Xcode / shell / 文件系统的路径。
 
 ## 关键源码入口
 
@@ -223,6 +227,27 @@
 - [PipifyStepAttribute.md](./PipifyStepAttribute.md)
 - [EditorUtil.BundleBuilder.md](../EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md)
 - [Editor.md](../../Editor.md)
+
+## Output Naming In `build.package`
+
+`build.package` 调用 `EditorUtil.Build.BuildPackage` 自动生成产物名，格式与清洗规则以 [EditorUtil.Build.md](../EditorUtil.Build/EditorUtil.Build.md) 为准。
+
+当前关键规则：
+
+- `PlayerSettings.productName` 只保留英文字母和数字；冒号、空格、引号、浪线、中文等都会被删除。
+- `ConfigRuntimeSO.DevelopMode` 决定文件名中的 `Debug` / `Release` 段；找不到激活 ConfigRuntimeSO 时降级为 `Debug`。
+- `PlayerSettings.bundleVersion` 原样拼入产物名，不做特殊字符清洗。
+- `PackageParams.OutputFolderPath` 只负责定位输出文件夹；相对路径基于项目根解析，绝对路径直接使用，`~` 不会展开为用户 Home。
+- iOS 后处理里的 entitlements 文件名当前只对 `Application.productName` 去空格，不复用产物名的字母数字白名单；启用 iOS capability 的工程仍应避免在 productName 中使用 Xcode / 文件系统敏感字符。
+
+## Android Output Options In `build.package`
+
+`build.package` exposes Android output options on `PackageParams`:
+
+- `SplitApplicationBinary`
+- `BuildAppBundle`
+
+`SplitApplicationBinary` is declared above `BuildAppBundle`, so PipifyWindow draws it above the AAB switch. Both fields are Android-only output options: `BuildAppBundle` controls `EditorUserBuildSettings.buildAppBundle`, while `SplitApplicationBinary` controls `PlayerSettings.Android.splitApplicationBinary`. The Step passes both values to `EditorUtil.Build.BuildPackage`, which temporarily writes both settings, then restores them in `finally`.
 
 ## Android Signing In `build.package`
 

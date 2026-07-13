@@ -165,7 +165,7 @@ public static async Task<string> FetchChangelogAsync(string registryUrl, string 
 
 1. **`com.solotopia.` 前缀**（`IsSolotopiaPackageName`）：主包本身及同源包，安装时 scope 已配，UPM 可自动解析。
 2. **`com.unity.` 前缀**（`IsUnityPackageName`）：Unity 官方默认 registry 兜底，无需额外配置。
-3. **被包自带 `nova.scopedRegistries` scope 前缀覆盖**（`IsCoveredByDeclaredRegistries`）：依赖由包声明的私有仓库提供（如 MAX 包声明的 AppLovin 仓库），随主包写 manifest 后 UPM 自动解析。
+3. **被包自带 `nova.scopedRegistries` scope 前缀覆盖**（`IsCoveredByDeclaredRegistries`）：依赖由包声明的私有仓库提供（如 MAX 包声明的 AppLovin 仓库），安装时写入该私有仓库的 scoped registry，但依赖本身保持为主包 `package.json` 的传递依赖，不展开写入项目顶层 `manifest.dependencies`。
 4. **被项目 `manifest.json` 已配 `scopedRegistries` scope 前缀覆盖**（`IsCoveredByProjectScopedRegistries`）：用户已为该依赖手工配置好私有仓库（典型场景：OpenUPM 提供 `com.google.external-dependency-manager`），不再误判缺库、也不再尝试自动配 scope，交由 UPM 解析拉取。
 5. **本地已安装**：`ReadInstalledVersions()` 中包含该依赖名。
 6. **命中内存 registry 包列表**：依赖名存在于已 fetch 的外网或内部云包列表中 → 记为「待自动配 scope 安装」（进 `ToAutoScope`），并记录来源（`RegistrySource`：外网/内部云）。
@@ -174,7 +174,7 @@ public static async Task<string> FetchChangelogAsync(string registryUrl, string 
 
 **有缺失库时**：打开 `PlugPalsMissingRequiredLibrariesWindow`，展示各缺失库的 `displayName`（取自 `nova.requiredLibraries`）与 `purchaseUrl`（购买地址），并附「Solotopia 成员请到内部云仓库自行安装」提示。**本次安装中止，不写 manifest**。
 
-**无缺失库时**：对每个 `ToAutoScope` 依赖按其 `RegistrySource`（外网/内部云）调用 `EnsureScopedRegistry` 自动配 scope；再为主包配 scope、写 `manifest.dependencies`、触发 UPM Resolve。命中的依赖随主包由 UPM 一并解析安装。
+**无缺失库时**：对每个 `ToAutoScope` 依赖按其 `RegistrySource`（外网/内部云）调用 `EnsureScopedRegistry` 自动配 scope；再为主包配 scope、写主包到 `manifest.dependencies`、触发 UPM Resolve。被包自带 `nova.scopedRegistries` 覆盖的依赖不写顶层，随主包 package.json dependencies 由 UPM 作为传递依赖解析；旧版 PlugPals 曾写入顶层的同类依赖仍会在卸载主包时兼容清理。
 
 宏机制说明：PlugPals **不再注入或管理任何宏**。旧的 `requiredLibraries.defineSymbols` 注入、`PlugPalsInjectedDefines.json` 账本、后台审计弹窗、会话级抑制、以及「scope 已注册」判据均已移除。可选库的宏改由各 asmdef 的 `versionDefines` / `defineConstraints`（Unity 原生「某包存在→自动定义某宏」机制）自行处理。
 

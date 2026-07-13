@@ -42,20 +42,20 @@ namespace NovaFramework.Editor
             public bool DevelopmentBuild;
 
             /// <summary>
+            /// 是否拆分应用 Binary（Split Application Binary）。
+            /// Android 专用；对应 Android Player Settings → Split Application Binary。
+            /// 实际 API：PlayerSettings.Android.splitApplicationBinary。
+            /// </summary>
+            [PipifyVisibleWhen(nameof(Target), (int)BuildTarget.Android)]
+            public bool SplitApplicationBinary;
+
+            /// <summary>
             /// 是否构建 AAB（Android App Bundle）而非 APK。
             /// 仅在 Target == Android 且非导出 Google Android 工程时生效；
             /// 导出工程模式（EditorUserBuildSettings.exportAsGoogleAndroidProject）下此选项无效。
             /// </summary>
             [PipifyVisibleWhen(nameof(Target), (int)BuildTarget.Android)]
             public bool BuildAppBundle;
-
-            /// <summary>
-            /// 是否拆分应用 Binary（Split Application Binary）。
-            /// 仅在 BuildAppBundle 为 true 时生效；对应 Android Player Settings → Split Application Binary。
-            /// 实际 API：PlayerSettings.Android.splitApplicationBinary。
-            /// </summary>
-            [PipifyVisibleWhen(nameof(BuildAppBundle), 1)]
-            public bool SplitApplicationBinary;
 
             /// <summary>
             /// 是否在本次打包期间临时应用 Android keystore 签名配置。
@@ -68,7 +68,7 @@ namespace NovaFramework.Editor
             /// Android keystore 路径。Unity 支持项目相对路径或绝对路径。
             /// </summary>
             [PipifyVisibleWhen(nameof(UseAndroidKeystore), 1)]
-            public string AndroidKeystoreName;
+            public string AndroidKeystorePath;
 
             /// <summary>
             /// Android keystore 密码。
@@ -81,7 +81,7 @@ namespace NovaFramework.Editor
             /// Android keystore 内的 key alias 名称。
             /// </summary>
             [PipifyVisibleWhen(nameof(UseAndroidKeystore), 1)]
-            public string AndroidKeyaliasName;
+            public string AndroidKeyalias;
 
             /// <summary>
             /// Android key alias 密码。

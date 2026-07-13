@@ -28,6 +28,8 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson:
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
@@ -56,6 +58,8 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson:
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
@@ -70,6 +74,8 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson:
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
@@ -84,6 +90,8 @@ MonoBehaviour:
     m_Items:
     - m_StepId: edm4u.android_resolve
       m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson:
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"DevelopmentBuild\": false,\n  \"OutputPath\":
         \"Build/Nova.apk\"\n}"
@@ -144,7 +152,7 @@ MonoBehaviour:
     m_Description: "Config\u5BFC\u51FA\u6D4B\u8BD5"
     m_Items:
     - m_StepId: export.config
-      m_ParamsJson: 
+      m_ParamsJson:
   - m_Name: "Table\u5BFC\u51FA\u6D4B\u8BD5"
     m_Description: "Table\u5BFC\u51FA\u6D4B\u8BD5"
     m_Items:

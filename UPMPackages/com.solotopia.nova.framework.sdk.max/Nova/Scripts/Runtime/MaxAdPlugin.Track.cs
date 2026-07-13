@@ -17,6 +17,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 {
     public sealed partial class MaxAdPlugin
     {
+#if NOVA_APPLOVIN_MAX
         /// <summary>
         /// 构建加载成功时 MAX 特有的打点属性字典，由各格式 OnXxxLoaded 回调填入 AdLoadResult.CustomProps。
         /// 基类 RaiseAdLoaded 打 nova_ad_fill 事件时会自动将 CustomProps 合并进去。
@@ -102,5 +103,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 }
             }
         }
+#endif
     }
 }

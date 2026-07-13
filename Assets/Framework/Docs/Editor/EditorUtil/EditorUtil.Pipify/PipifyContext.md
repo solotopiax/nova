@@ -30,10 +30,10 @@
 
 ```csharp
 // Step 实现内部使用 ctx
-[PipifyStep("build_ab", "AB 构建", "打包")]
-public static async UniTask BuildAbAsync(PipifyContext ctx)
+[PipifyStep("bundlebuilder.build", "Bundles", "构建资源")]
+public static async UniTask BuildBundlesAsync(PipifyContext ctx)
 {
-    ctx.Reporter.ReportStep(ctx.CurrentStepIndex, "AB 构建", 0f);
+    ctx.Reporter.ReportStep(ctx.CurrentStepIndex, "Bundles", 0f);
     // 响应取消
     ctx.CancellationToken.ThrowIfCancellationRequested();
     await DoHeavyWorkAsync(ctx.CancellationToken);

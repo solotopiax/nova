@@ -79,6 +79,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Editor
                 return;
             }
 
+#if NOVA_APPLOVIN_MAX
             AppLovinSettings settings = AppLovinSettings.Instance;
             if (settings == null)
             {
@@ -102,6 +103,9 @@ namespace NovaFramework.SDK.MaxAdPlugin.Editor
 
             string platform = isAndroid ? "Android" : "iOS";
             Log.Debug(LogTag.Editor, $"[MaxAdPluginBuildProcessor] {platform} AppLovinSettings 已注入：SdkKey 与 AdMob AppId 已写入 AppLovinSettings.asset。");
+#else
+            Log.Warning(LogTag.Editor, "[MaxAdPluginBuildProcessor] AppLovin MAX（com.applovin.mediation.ads）未安装，跳过 AppLovinSettings 注入。");
+#endif
         }
 
 #if UNITY_IOS

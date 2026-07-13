@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Samples/AIHelpDemo/AIHelpDemo.unity
+    guid: d2bd039e26ab46a8a410766efae29778
+  - enabled: 1
     path: Assets/Samples/MainDemo/MainDemo.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   m_configObjects: {}
