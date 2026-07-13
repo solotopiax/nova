@@ -207,3 +207,6 @@ date: 2026-06-05
 
 ## [2026-07-08 15:20] lint | obs-health 全量体检通过
 跑 --validate-frontmatter + --rebuild-index + --check-bloat + 健康检查节；frontmatter 5 处 summary 超长已修（ADR-069/070/071、PAT-140、GLO-08 收敛到 ≤30 字）；Inbox 空、superseded 0、DRAFT 残留 0、短链 dangling 0、幽灵 stub 0；规模 ADR57/PAT102/GLO7/RES3/Archive77。
+
+## [2026-07-13 19:47] direct-ingest | cur-session 直接入库 1 份
+入库 PAT-145（UPM 发布先审真实安装链再判级联），明确 API 契约级联与安装兼容性级联必须分别审计，NovaSpark/Bootstrap → 顶层包 → 远端传递依赖须闭环验证；关联 PAT-13，跳过 Inbox 中转；rebuild-index + keyword 已收口。

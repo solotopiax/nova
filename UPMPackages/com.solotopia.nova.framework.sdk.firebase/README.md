@@ -1,7 +1,7 @@
 # Nova Framework - SDK - Firebase
 
 > 包名：`com.solotopia.nova.framework.sdk.firebase`
-> 当前版本：`0.0.19`
+> 当前版本：`0.0.23`
 
 Firebase 聚合插件，统一接入分析、崩溃、推送、远程配置
 
@@ -11,7 +11,7 @@ Firebase 聚合插件，统一接入分析、崩溃、推送、远程配置
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.firebase": "0.0.8"
+  "com.solotopia.nova.framework.sdk.firebase": "0.0.23"
 }
 ```
 

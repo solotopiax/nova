@@ -160,6 +160,7 @@ auto_generated: true
 - [PAT-130 UPM Sample 只读 Prefab 路径靠 scene override + import 重写（修订版）](../2-Areas/Patterns/PAT-130-sample-readonly-prefab-path-override-revised.md) — 只读 prefab 路径走 scene override
 - [PAT-132 单主题 sample 用 ProcedurePlaying 直开入口 View](../2-Areas/Patterns/PAT-132-procedure-playing-direct-open-entry-view.md) — 单主题 demo OnEnter 直开入口 View
 - [PAT-142 社交登录 Sample 接入 GameBind 配置闭环](../2-Areas/Patterns/PAT-142-social-signin-bind-sample-checklist.md) — 社交登录示例接入绑定需同步代码、配置、AOT、link 与表源
+- [PAT-145 UPM 发布先审真实安装链再判级联](../2-Areas/Patterns/PAT-145-upm-install-chain-cascade-audit.md) — 发版前沿真实安装入口审计依赖级联
 - [PAT-53 发版前校验 CHANGELOG 当前版本节存在，不靠人工自觉](../2-Areas/Patterns/PAT-53-changelog-grep-script-enforce.md) — 发版前校验 CHANGELOG 当前版本节
 - [PAT-55 Python 工具脚本优先用 cwd 或环境变量解析项目根](../2-Areas/Patterns/PAT-55-python-script-cwd-or-env-root.md) — 工具脚本不要把项目根硬绑定到 `__file__` 的目录深度
 - [PAT-62 README / CHANGELOG 双层同步铁律](../2-Areas/Patterns/PAT-62-readme-changelog-dual-sync.md) — 发版前工程根与包内两层文档全字段对齐，禁单层更新
@@ -168,4 +169,4 @@ auto_generated: true
 
 
 ---
-_共 102 条，分布于 18 个 category。_
+_共 103 条，分布于 18 个 category。_

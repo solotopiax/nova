@@ -5,8 +5,8 @@
     "name": "Solotopia",
     "url": "https://cysharp.co.jp/en/"
   },
-  "version": "10.0.5",
-  "coreVersion": "2.5.10",
+  "version": "10.0.6",
+  "coreVersion": "2.5.11",
   "unity": "2018.4",
   "description": "Unitask 高性能异步任务库",
   "keywords": [

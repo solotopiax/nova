@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.10] - 2026-07-13
+
+### Changed
+
+- 将 Nova Framework 与 UniTask 的最低依赖版本分别提升至 `0.5.38`、`10.0.6`，确保 Unity 6000.5 新安装链解析到兼容 Tracker API 的 UniTask 版本。
+
 ## [0.0.9] - 2026-07-09
 
 ### Added

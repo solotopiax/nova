@@ -3,6 +3,12 @@
 本文件记录 `com.solotopia.nova.framework.sdk.datamaster` 的版本变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [0.0.6] - 2026-07-13
+
+### Changed
+
+- 提升 Framework 与 GameLogin 的依赖下界，保证独立安装链最终解析到 `unitask@10.0.6`。
+
 ## [0.0.5] - 2026-07-09
 
 ### Added

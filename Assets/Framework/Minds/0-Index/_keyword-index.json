@@ -1,5 +1,5 @@
 {
-  "version": "2026-07-07-1623",
+  "version": "2026-07-13-1949",
   "generated_by": "nova-obs keyword-rebuild",
   "prelookup_keywords": [
     "ADR-001",
@@ -274,6 +274,7 @@
     "PAT-142",
     "PAT-143",
     "PAT-144",
+    "PAT-145",
     "PAT-18",
     "PAT-19",
     "PAT-20",
@@ -501,6 +502,6 @@
     "Config": "MOC-Config",
     "Prefab": "MOC-Prefab"
   },
-  "note_count": 189,
-  "suggestions_count": 13
+  "note_count": 190,
+  "suggestions_count": 14
 }

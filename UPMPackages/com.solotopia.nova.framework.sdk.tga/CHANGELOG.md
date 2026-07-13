@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.21] - 2026-07-13
+
+### Changed
+
+- 提升 Framework 与 GameLogin 的依赖下界，保证独立安装链最终解析到 `unitask@10.0.6`。
+
 ## [0.0.20] - 2026-07-13
 
 ### Changed

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.5.38] - 2026-07-13
+
+### Fixed
+
+- 将 `com.solotopia.unitask` 最低依赖版本提升至 `10.0.6`，确保 NovaSpark 在 Unity 6000.5 新工程中解析到 bundled UniTask core 2.5.11，避免 Tracker 使用废弃 `TreeViewItem` API 导致 `CS0619`。
+
 ## [0.5.37] - 2026-07-13
 
 ### Changed

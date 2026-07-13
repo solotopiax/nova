@@ -6,6 +6,15 @@
 
 ---
 
+## [0.5.38] - 2026-07-13
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.38]` 节。
+
+### Fixed
+
+- 发布 `com.solotopia.unitask@10.0.6`（bundled core 2.5.11），并沿 NovaSpark → Framework → Kit/SDK 的真实安装链提升依赖下界，修复 Unity 6000.5 新工程仍解析旧 Tracker API 而触发 `CS0619` 的问题。
+- NovaSpark 升级为 `NovaSpark2.3.cs`，固定 Framework `0.5.38` 与 BestHTTP `0.0.10`，确保新安装入口实际获得兼容版本。
+
 ## [0.5.37] - 2026-07-13
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.37]` 节。

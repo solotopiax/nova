@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.9] - 2026-07-13
+
+### Changed
+
+- 提升 Framework、IAP 与 UniTask 的依赖下界，保证独立安装时完整解析到本轮 Unity 6000.5 兼容版本。
+
 ## [0.0.8] - 2026-07-13
 
 ### Changed

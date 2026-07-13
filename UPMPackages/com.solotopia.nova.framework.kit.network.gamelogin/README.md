@@ -1,7 +1,7 @@
 # Nova Framework - Kit - Network - GameLogin
 
 > 包名：`com.solotopia.nova.framework.kit.network.gamelogin`
-> 当前版本：`0.0.1`
+> 当前版本：`0.0.11`
 
 登录业务网络模块，封装登录协议及相关协议类型
 
@@ -11,7 +11,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.kit.network.gamelogin": "0.0.1"
+  "com.solotopia.nova.framework.kit.network.gamelogin": "0.0.11"
 }
 ```
 

@@ -1,7 +1,8 @@
 # UniTask
 
 > 包名：`com.solotopia.unitask`
-> 当前版本：`10.0.3`
+> 当前版本：`10.0.6`
+> 上游核心版本：`2.5.11`
 
 Unitask 高性能异步任务库
 
@@ -11,7 +12,7 @@ Unitask 高性能异步任务库
 
 ```json
 "dependencies": {
-  "com.solotopia.unitask": "10.0.0"
+  "com.solotopia.unitask": "10.0.6"
 }
 ```
 

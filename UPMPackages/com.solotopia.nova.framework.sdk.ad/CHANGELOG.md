@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.17] - 2026-07-13
+
+### Changed
+
+- 将 Nova Framework 的最低依赖版本提升至 `0.5.38`，使独立安装链通过 Framework 获取 `unitask@10.0.6`。
+
 ## [1.0.16] - 2026-07-13
 
 ### Changed

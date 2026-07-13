@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+## [10.0.6] - 2026-07-13
+
+### Changed
+
+- 将 bundled UniTask core 从 `2.5.10` 升级到 `2.5.11`，修复 Unity 6000.5 中 Tracker TreeView 旧 API 导致的编译错误。
+
+---
+
 ## [10.0.5] - 2026-06-18
 
 ### Changed

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.15] - 2026-07-13
+
+### Changed
+
+- 将 SDK Ad 的最低依赖版本提升至 `1.0.17`，使 MAX 独立安装链通过 SDK Ad 与 Framework 获取 `unitask@10.0.6`。
+
 ## [0.0.14] - 2026-07-09
 
 ### Added

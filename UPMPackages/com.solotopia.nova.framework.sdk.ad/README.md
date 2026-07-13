@@ -1,7 +1,7 @@
 # AdPlugin
 
 > 包名：`com.solotopia.nova.framework.sdk.ad`
-> 当前版本：`1.0.10`
+> 当前版本：`1.0.17`
 
 广告聚合插件基类，支持 RV/Inter/Banner/AppOpen/InGameDisplay，内置打点
 
@@ -11,7 +11,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.ad": "1.0.10"
+  "com.solotopia.nova.framework.sdk.ad": "1.0.17"
 }
 ```
 

@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework",
-  "version": "0.5.37",
+  "version": "0.5.38",
   "license": "MIT",
   "displayName": "Nova Framework",
   "description": "基于 Unity 引擎深度定制的游戏客户端通用解决方案",
@@ -10,7 +10,7 @@
     "com.unity.nuget.newtonsoft-json": "3.2.2",
     "com.unity.inputsystem": "1.19.0",
     "com.solotopia.hybridclr": "10.0.6",
-    "com.solotopia.unitask": "10.0.5",
+    "com.solotopia.unitask": "10.0.6",
     "com.solotopia.sqlcipher4unity3d": "10.0.5",
     "com.solotopia.simplediskutils": "1.0.7",
     "com.solotopia.excelio": "1.0.6",
