@@ -15,7 +15,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
 {
     /// <summary>
     /// DemoIAPView 演示 View，派生自 BaseDemoView，遵循三段式骨架（TitleBar / InteractionArea / FeedbackArea）。
-    /// 交互区初始仅有一个登录按钮，点击登录后置灰并展开 4 个支付按钮（2 普通 + 2 订阅）。
+    /// 交互区初始仅有一个登录按钮，点击登录后置灰并展开 5 个支付按钮（2 普通 + 1 非消耗 + 2 订阅）。
     /// </summary>
     public sealed partial class DemoIAPView : BaseDemoView
     {

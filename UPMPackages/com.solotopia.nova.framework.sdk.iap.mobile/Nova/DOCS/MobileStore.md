@@ -108,7 +108,7 @@ MobileStore.InitializeAsync(table, config, ctx, ct)
   └── InitService.InitializeAsync(table, ct)
         ├── 商店连接成功即 Ready
         ├── 商品信息后台 FetchProducts，不阻塞初始化结果
-        └── 商品拉取成功后自动 RestoreTransactions + FetchPurchases，恢复平台 PendingOrder 票据
+        └── 商品拉取成功后自动 RestoreTransactions + FetchPurchases，恢复平台 PendingOrder 票据；若已登录则合并触发一次补单扫描
 ```
 
 初始化失败时 `MobileInitService` 通过 `IAPInitResult.Fail((int)MobileStoreInitFailureReason, detail)` 上报；支付会被基类 `PayGuardAsync` 的 `IsStoreReady` 检查拦截。初始化成功和失败都会通过父包 `IAPStoreBase.Track*` 封装上报 `nova_iap_init`。
@@ -129,7 +129,8 @@ IAPPlugin.PayAsync<IAPResult>(IAPMobileRequest)
                     ├── 写 Purchasing 占位订单
                     ├── 发起平台购买
                     ├── 平台回调后写 PendingValidate 并入验单队列
-                    └── MobileValidationService 批量验单后派发结果
+                    ├── MobileValidationService 批量验单后派发结果
+                    └── 验单通过且持有平台 PendingOrder → 置 AwaitingConfirm + ConfirmPurchase，ack 回调后删除记录
 ```
 
 ## 6.1 补单扫描流程
@@ -145,11 +146,14 @@ IAPPlugin.CheckLocalOrdersAsync
               ├── 优先按服务端返回的 `table_id`（long）将未完成订单 merge 到本地 OrderRecords，`parameter` 解码仅作旧协议兜底
               ├── 服务端返回的 Google token 可补齐本地 Purchasing 占位记录
               ├── 本地扫描 PendingValidate / ValidateFailed / 具备凭据的 Purchasing
+              ├── AwaitingConfirm 跳过，不重发验单；交由本次 FetchPurchases 重新拉取到 PendingOrder 后重试确认
               ├── Google 订单缺少 purchase token 时保留记录，不发送 VerifyGoogleIap
-              └── 本地补单扫描结束后触发一次 CheckEntitlement，刷新订阅和非消耗品权益
+              └── 本地补单扫描结束后触发一次 CheckEntitlement，刷新订阅和非消耗品权益；商品未就绪时延后到 OnProductsFetched 后补跑
 ```
 
-登录前平台回调可能先于业务 `SetUserId` 到达。此时 Mobile 只收集待验单数据，不读写账号存档，也不发起服务端协议；商品拉取后的 `RestoreTransactions` 也只用于唤起平台侧订单补全。业务登录后调用 `CheckLocalOrdersAsync`，才会按“合并暂存订单 → 拉取服务端未完成订单 → 本地验单 → 订阅权益查询”的顺序执行。
+登录前平台回调可能先于业务 `SetUserId` 到达。此时 Mobile 只收集待验单数据，不读写账号存档，也不发起服务端协议；商品拉取后的 `RestoreTransactions` 也只用于唤起平台侧订单补全。业务登录后调用 `CheckLocalOrdersAsync`，才会按“合并暂存订单 → 拉取服务端未完成订单 → 本地验单 → 订阅权益查询”的顺序执行。完整补单流程串行执行；扫描中重复触发只会标记下一轮补跑，避免 QueryPendingOrder、存档合并和权益刷新并发交错。
+
+`CheckEntitlement` 的 `FullyEntitled` 只代表平台侧仍返回持有记录，不直接等价于订阅仍有效。订阅权益回调中会从 `Entitlement.Order.Info.PurchasedProductInfo[*]` 里筛选与当前 `Entitlement.Product` 匹配的条目，再读取 `subscriptionInfo.GetExpireDate()`；如果同一商品有多条历史记录，使用匹配项中的最晚到期时间。这样 iOS 票据中混入其他历史订阅时，不会把其他商品的到期时间误用到当前商品。当当前商品匹配到的到期时间明确已经过期时，本次权益状态按 `NotEntitled` 缓存，不进入 Restore 验单。读取不到当前商品匹配的到期时间时保留平台返回状态，仍交由服务端验单确认。非消耗品不受该过滤影响。
 
 ## 7. 订单状态机
 
@@ -161,6 +165,7 @@ IAPPlugin.CheckLocalOrdersAsync
 | 1 | `PendingValidate` | 平台回调成功，待服务端验单 |
 | 2 | `ValidateFailed` | 验单网络或 HTTP 失败，保留记录等待下次补单 |
 | 3 | `LocalPayFailed` | 平台本地支付失败，启动扫描时直接删除 |
+| 4 | `AwaitingConfirm` | 服务端验单已通过、业务已发货，等待平台 `ConfirmPurchase` 的 ack 回调；收到 `OnPurchaseConfirmed(ConfirmedOrder)` 后删除，ack 失败则保留，等待下次 `FetchPurchases` 重新拉取到 `PendingOrder` 后重试确认（不重发服务端验单）。仅对持有平台 `PendingOrder` 的订单进入该状态；token 补单 / 历史单无 ack 可等，验单成功后直接删除 |
 
 ### 服务端验单状态
 
@@ -171,6 +176,8 @@ IAPPlugin.CheckLocalOrdersAsync
 | 3 | `Reissued` | 奖励已通过其他渠道补发；删除记录并派发成功，`CanDeliver=false` |
 | 4 | `Delivered` | 服务端已处理过订单；删除记录并派发成功，`CanDeliver=true`，客户端仍按本地幂等规则补发奖 |
 | 5 | `Invalid` | 无效订单；删除记录并派发失败 |
+
+上表「删除记录」经 `FinalizeVerifiedOrderRecord` 收尾：若该订单仍持有平台 `PendingOrder`，先置 `AwaitingConfirm` 并落盘、发起 `ConfirmPurchase`，待 ack 回调（`OnPurchaseConfirmed`）到达后再删除；无待确认平台订单时才立即删除。业务发货（`PaySuccess` / 订阅到期更新）在验单成功即刻完成，不等待平台 ack。
 
 `PaySuccess` 派发按 tableId 做运行期去重，不使用平台 `TransactionId` 作为业务判断依据。`MobileStore` 仍维护当前运行期平台订单打点 key 缓存，但只用于平台 Pending / Confirmed 双回调的本地支付成功打点去重：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`。订阅商品只有当前主动 `PayAsync` 对应的订单才走 `PaySuccess`；后台补单、Restore 和订阅刷新只更新订阅到期时间。
 
@@ -326,7 +333,7 @@ if (iap.TryGetCapability<IIAPMobileSubscriptionCapable>(out var sub))
 ## 12. 常见误区
 
 **误区 1：初始化会等待商品拉取完成。**
-当前初始化只等待商店连接成功。商品信息在 `OnStoreConnected` 后后台拉取，`OnProductsFetchFailed` 不会回退初始化结果。
+当前初始化只等待商店连接成功。商品信息在 `OnStoreConnected` 后后台拉取，`OnProductsFetchFailed` 不会回退初始化结果。补单末尾的权益刷新会检查商品拉取状态：商品未成功时不把空结果当作完成，而是延后到 `OnProductsFetched` 后补跑。
 
 **误区 2：直接访问 `StoreController`。**
 所有平台调用必须经 `MobileExtendedService`，不要在其他服务中缓存或绕过它访问 Controller。

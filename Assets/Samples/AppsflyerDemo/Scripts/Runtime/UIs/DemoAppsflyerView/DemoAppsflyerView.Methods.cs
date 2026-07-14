@@ -114,7 +114,7 @@ namespace NovaFramework.Sdk.Appsflyer.Samples.Runtime
         /// </summary>
         private async UniTaskVoid LoginAsync()
         {
-            string openId = "test_openid_guest";
+            string openId = string.Empty;
             bool forceNewAccount = false;
             try
             {

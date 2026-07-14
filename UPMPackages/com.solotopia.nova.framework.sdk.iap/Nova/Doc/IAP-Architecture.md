@@ -110,7 +110,7 @@ SDKEventData.UserLogin → IAPPlugin.SetUserId(uid) → 广播给所有 Store
   └── 遍历 Store.CheckLocalOrdersAsync(ct)
 ```
 
-`CheckLocalOrdersAsync` 可以早于登录事件调用。插件层会把本次调用缓存为延后执行事件，等 `SetUserId` 同步账号 UID 后按入队顺序回放，避免每个 Store 重复实现“等待登录后再跑”的动作缓存逻辑。扫描执行中再次触发时也会缓存一次后续事件，当前扫描结束后继续回放缓存队列。后续其他需要等待账号 UID 或等待当前流程结束的逻辑，应复用同一套事件缓存机制。
+`CheckLocalOrdersAsync` 可以早于登录事件调用。插件层会记录一次延后补单请求，等 `SetUserId` 同步账号 UID 后自动执行，避免每个 Store 重复实现“等待登录后再跑”的动作缓存逻辑。扫描执行中再次触发时只标记当前轮结束后补跑一轮，不并发进入 Store，也不无上限堆积同类补单事件。
 
 ## 6. 错误码与打点 reason 分层
 

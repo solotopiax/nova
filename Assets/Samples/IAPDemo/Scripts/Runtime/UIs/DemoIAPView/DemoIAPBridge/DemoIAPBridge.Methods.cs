@@ -92,7 +92,12 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 return string.Empty;
             }
 
-            return entry.ProductType == IAPProductType.Subscription ? "订阅" : "普通";
+            if (entry.ProductType == IAPProductType.Subscription)
+            {
+                return "订阅";
+            }
+
+            return System.Convert.ToInt32(entry.ProductType) == 1 ? "非消耗" : "普通";
         }
 
         /// <summary>
@@ -123,7 +128,8 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                    + ", ErrorCode=" + result.ErrorCode
                    + ", FailReason=" + result.FailReason
                    + ", IsRecoveredOrder=" + result.IsRecoveredOrder
-                   + ", CanDeliver=" + result.CanDeliver;
+                   + ", CanDeliver=" + result.CanDeliver
+                   + ", ReceiptParam=" + result.ReceiptParam;
         }
     }
 }

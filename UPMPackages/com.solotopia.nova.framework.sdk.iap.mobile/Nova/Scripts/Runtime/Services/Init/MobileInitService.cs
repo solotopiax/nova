@@ -160,7 +160,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             Log.Debug(LogTag.IAPMobile, $"商品拉取成功，共 {products.Count} 个。");
+            ProductFetchState = MobileProductFetchState.Succeeded;
+            m_ProductFetchTcs?.TrySetResult(ProductFetchState);
+            m_ProductFetchTcs = null;
             m_Hub.RestoreService.RequestPlatformRestoreAfterProductsFetched();
+            m_Hub.RestoreService.TryRunPendingEntitlementRefreshAfterProductsFetched();
             m_Hub.ExtendedService.FetchPurchases();
         }
 
@@ -180,6 +184,18 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             {
                 m_Hub.Store.AddUnavailableSkuInternal(def.id);
             }
+
+            // 部分商品拉取失败（此前已收到成功回调）不把整体状态回退为 Failed：
+            // 可用商品已就绪，失败子集由 IsUnavailableSku 在查询/购买时拦截。
+            // 否则 ProductFetchState 会被永久压到 Failed，导致后续权益刷新一直卡在“商品信息尚未就绪”且无再拉取。
+            if (ProductFetchState == MobileProductFetchState.Succeeded)
+            {
+                return;
+            }
+
+            ProductFetchState = MobileProductFetchState.Failed;
+            m_ProductFetchTcs?.TrySetResult(ProductFetchState);
+            m_ProductFetchTcs = null;
         }
 
         /// <summary>
@@ -193,6 +209,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             m_RuntimeContext = null;
             // 标记服务不可用
             IsReady = false;
+            ProductFetchState = MobileProductFetchState.None;
+            m_ProductFetchTcs?.TrySetResult(MobileProductFetchState.Failed);
+            m_ProductFetchTcs = null;
             // 释放可能悬空的 TCS
             m_InitTcs = null;
         }

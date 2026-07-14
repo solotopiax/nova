@@ -48,6 +48,12 @@ namespace NovaFramework.SDK.IAP.Runtime
         public string CustomData { get; }
 
         /// <summary>
+        /// 平台票据透传字符串（最多 16 字符，来自 IAPRequest.ReceiptParam）。
+        /// 由 store 层从平台票据解出后经构造回填，支付/补单/恢复均可带回；无透传时为 null。外部只读。
+        /// </summary>
+        public string ReceiptParam { get; }
+
+        /// <summary>
         /// 支付失败原因描述，IsSuccess 为 true 时为 null。
         /// </summary>
         public string FailReason { get; }
@@ -65,7 +71,8 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="isRecoveredOrder">是否为补单恢复的历史订单。</param>
         /// <param name="canDeliver">是否可以发货。</param>
         /// <param name="customData">调用方传入的自定义数据。</param>
-        public IAPResult(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData)
+        /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
+        public IAPResult(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, string receiptParam = null)
         {
             IsSuccess = true;
             ErrorCode = 0;
@@ -74,6 +81,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             IsRecoveredOrder = isRecoveredOrder;
             CanDeliver = canDeliver;
             CustomData = customData;
+            ReceiptParam = receiptParam;
         }
 
         /// <summary>
@@ -85,10 +93,11 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="canDeliver">是否可以发货。</param>
         /// <param name="customData">调用方传入的自定义数据。</param>
         /// <param name="subscriptionExpireTimeMs">订阅到期时间（毫秒 Unix 时间戳）。</param>
+        /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
         /// <returns>包含订阅到期时间的成功结果实例。</returns>
-        public static IAPResult SuccessWithExpire(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, long subscriptionExpireTimeMs)
+        public static IAPResult SuccessWithExpire(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, long subscriptionExpireTimeMs, string receiptParam = null)
         {
-            return new IAPResult(tableId, orderId, isRecoveredOrder, canDeliver, customData, subscriptionExpireTimeMs);
+            return new IAPResult(tableId, orderId, isRecoveredOrder, canDeliver, customData, subscriptionExpireTimeMs, receiptParam);
         }
 
         /// <summary>
@@ -98,13 +107,15 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="errorCode">store 自定义错误码枚举强转的 int 值。</param>
         /// <param name="failReason">失败原因描述。</param>
         /// <param name="customData">调用方传入的自定义数据。</param>
-        public IAPResult(long tableId, int errorCode, string failReason, string customData)
+        /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
+        public IAPResult(long tableId, int errorCode, string failReason, string customData, string receiptParam = null)
         {
             IsSuccess = false;
             ErrorCode = errorCode;
             TableId = tableId;
             FailReason = failReason;
             CustomData = customData;
+            ReceiptParam = receiptParam;
         }
 
         /// <summary>
@@ -116,7 +127,8 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="canDeliver">是否可以发货。</param>
         /// <param name="customData">调用方传入的自定义数据。</param>
         /// <param name="subscriptionExpireTimeMs">订阅到期时间（毫秒 Unix 时间戳）。</param>
-        private IAPResult(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, long subscriptionExpireTimeMs)
+        /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
+        private IAPResult(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, long subscriptionExpireTimeMs, string receiptParam)
         {
             IsSuccess = true;
             ErrorCode = 0;
@@ -126,6 +138,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             CanDeliver = canDeliver;
             CustomData = customData;
             SubscriptionExpireTimeMs = subscriptionExpireTimeMs;
+            ReceiptParam = receiptParam;
         }
     }
 }

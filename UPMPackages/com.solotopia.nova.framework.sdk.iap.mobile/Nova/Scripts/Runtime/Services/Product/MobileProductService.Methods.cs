@@ -27,7 +27,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             foreach (MobileCheckEntitlementInfo info in m_CheckEntitlements.Values)
             {
                 if (info.ProductType == productType && info.Status == (int)EntitlementStatus.FullyEntitled)
+                {
                     result.Add(info.TableId);
+                }
             }
             return result;
         }

@@ -1,5 +1,5 @@
 /***************************************************************
- * filename:  NovaSpark2.3.cs
+ * filename:  NovaSpark2.4.cs
  * descrip:   Nova 框架一次性引导器（火种）。
  *            把 Nova 框架所需的"火种"——UPM registry、必备依赖与
  *            PlugPals 配置——带入一个全新的 Unity 工程，点燃新征程。
@@ -63,7 +63,7 @@ namespace NovaBootstrap
         private const string c_McpKey = "com.coplaydev.unity-mcp";
 
         /// <summary>Unity MCP 包来源（git url，锁定 tag）。</summary>
-        private const string c_McpValue = "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.0.0";
+        private const string c_McpValue = "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.0";
 
         /// <summary>Nova BestHTTP 封装包键。</summary>
         private const string c_BestHttpKey = "com.solotopia.nova.framework.besthttp";
@@ -75,7 +75,7 @@ namespace NovaBootstrap
         private const string c_EdmKey = "com.google.external-dependency-manager";
 
         /// <summary>EDM 版本（经 openupm registry 解析）。</summary>
-        private const string c_EdmValue = "1.2.187";
+        private const string c_EdmValue = "1.2.188";
 
         /// <summary>
         /// Nova 框架主包键。双重用途：

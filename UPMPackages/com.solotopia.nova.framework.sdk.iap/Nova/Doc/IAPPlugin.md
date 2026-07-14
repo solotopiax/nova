@@ -47,9 +47,9 @@
 | `m_StoreConfigMap` | `Dictionary<IAPStoreType, IIAPStoreConfig>` | StoreType 到配置的映射 |
 | `m_PurchasesTable` | `IIAPProductTable` | 运行期商品表服务 |
 | `m_CurrentUserId` | `string` | 当前已同步到插件层的账号 UID |
-| `m_EventCaches` | `List<Func<UniTask>>` | 条件未满足时缓存的延后执行事件 |
-| `m_IsReplayingEventCaches` | `bool` | 当前是否正在回放缓存事件 |
+| `m_HasDeferredCheckLocalOrders` | `bool` | 登录前是否收到过补单扫描请求 |
 | `m_IsCheckingLocalOrders` | `bool` | 当前是否正在执行补单扫描，用于防并发 |
+| `m_PendingCheckLocalOrders` | `bool` | 扫描中再次触发时标记当前轮结束后补跑一次 |
 | `ProductTable` | `IIAPProductTable` | 商品表只读视图；初始化前或商品表为空时为 null |
 | `Events` | `IAPPluginEvents` | 业务层订阅支付、初始化、Restore 事件 |
 | `m_EventManager` | `IEventManager` | 用于订阅 `SDKEventData.UserLogin` 并自动广播 UID |
@@ -154,7 +154,7 @@ if (!result.IsSuccess)
 渠道特有能力通过 `TryGetCapability<T>` 获取，例如 Mobile 的 `IIAPMobileQueryCapable` 和 `IIAPMobileSubscriptionCapable`。
 
 **误区 4：登录前不能调用补单扫描。**
-业务层可以提前调用 `CheckLocalOrdersAsync`。如果此时 `SetUserId` 尚未执行，`IAPPlugin` 会把本次调用缓存为延后执行事件，并在账号 UID 同步后按入队顺序回放；如果扫描正在执行，再次调用也会缓存一次后续事件，避免并发重复跑。后续其他需要等待账号 UID 或等待当前流程结束的逻辑，也应复用同一套事件缓存机制。
+业务层可以提前调用 `CheckLocalOrdersAsync`。如果此时 `SetUserId` 尚未执行，`IAPPlugin` 会记录一次延后补单请求，并在账号 UID 同步后自动执行；如果扫描正在执行，再次调用只会标记当前轮结束后补跑一轮，避免并发重复跑，也避免无上限堆积同类补单事件。
 
 **误区 5：打点 reason 可以直接传任意对象。**
 父包 `Track*Fail` 只接收 `Enum` 类型的失败原因，并在上报前转成 `int` 写入 `nova_reason`；可读描述写入 `nova_reason_detail`。Store 侧需要先把失败原因收敛到自己的明确枚举，父包不维护跨 Store 的失败原因全集。Mobile 支付过程失败统一使用 `IAPMobileErrorCode`，初始化失败使用独立的 `MobileStoreInitFailureReason`。

@@ -62,6 +62,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         StoreInitFailed = 8,
 
         /// <summary>
+        /// tableId / ReceiptParam / uid 超出平台透传参数的编码范围，为避免账号关联或业务数据被截断而拒绝支付。
+        /// </summary>
+        InvalidPassthroughParam = 9,
+
+        /// <summary>
         /// Unity IAP 当前不可购买。
         /// </summary>
         PurchaseFailurePurchasingUnavailable = 1000,

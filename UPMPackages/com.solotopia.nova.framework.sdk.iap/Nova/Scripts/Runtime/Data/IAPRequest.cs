@@ -31,6 +31,13 @@ namespace NovaFramework.SDK.IAP.Runtime
         public string CustomData;
 
         /// <summary>
+        /// 平台票据透传参数（最多 16 字符）。编码进平台账号字段（ObfuscatedAccountId / AppAccountToken），
+        /// 随平台票据回传，服务端验单时可从票据解出；区别于仅在本地往返的 <see cref="CustomData"/>。
+        /// 超出平台字段容量时 Mobile Store 会拒绝发起支付，避免数据被截断。
+        /// </summary>
+        public string ReceiptParam;
+
+        /// <summary>
         /// 埋点附加属性，由业务层填充后随请求传递给 store 层上报埋点。
         /// </summary>
         public Dictionary<string, object> TrackProperties;

@@ -8,6 +8,7 @@
  * descrip:   IAP 5.x Restore 流程：RestoreTransactions → CheckEntitlement → 分发验单
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -119,6 +120,25 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
+        /// 商品拉取成功后补跑之前因商品未就绪而跳过的权益刷新。
+        /// </summary>
+        internal void TryRunPendingEntitlementRefreshAfterProductsFetched()
+        {
+            if (!m_PendingEntitlementRefreshAfterProductsFetched)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(m_Hub.Store?.GameUID))
+            {
+                return;
+            }
+
+            m_PendingEntitlementRefreshAfterProductsFetched = false;
+            RefreshEntitlementsAsync(CancellationToken.None).Forget();
+        }
+
+        /// <summary>
         /// 登录后补单扫描末尾刷新订阅和非消耗品权益，不重复触发平台 RestoreTransactions。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
@@ -133,6 +153,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             if (string.IsNullOrEmpty(m_Hub.Store?.GameUID))
             {
                 Log.Debug(LogTag.IAPMobile, "账号未登录，跳过权益刷新。");
+                return new List<IAPResult>();
+            }
+
+            MobileProductFetchState productFetchState = await m_Hub.InitService.WaitForProductsFetchedAsync(5000, ct);
+            if (productFetchState != MobileProductFetchState.Succeeded)
+            {
+                m_PendingEntitlementRefreshAfterProductsFetched = true;
+                Log.Warning(LogTag.IAPMobile, $"商品信息尚未就绪，延后权益刷新。状态={productFetchState}");
                 return new List<IAPResult>();
             }
 
@@ -173,17 +201,106 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            Log.Debug(LogTag.IAPMobile, $"权益查询回调：商品ID={productId}，状态={entitlement.Status}");
+            EntitlementStatus status = entitlement.Status;
+            if (status == EntitlementStatus.FullyEntitled &&
+                entitlement.Product?.definition.type == ProductType.Subscription &&
+                TryGetSubscriptionExpireDate(entitlement.Product, entitlement, out DateTime expireDate))
+            {
+                bool isExpired = expireDate <= DateTime.UtcNow;
+                Log.Debug(LogTag.IAPMobile, $"权益查询回调订阅信息：商品ID={productId}，到期时间={expireDate:O}，是否已过期={isExpired}");
+                if (isExpired)
+                {
+                    status = EntitlementStatus.NotEntitled;
+                }
+            }
+
+            Log.Debug(LogTag.IAPMobile, $"权益查询回调：商品ID={productId}，状态={status}");
 
             if (m_Hub.ProductService.m_CheckEntitlements.TryGetValue(productId, out MobileCheckEntitlementInfo info))
             {
-                info.Status = (int)entitlement.Status;
+                info.Status = (int)status;
             }
 
             if (!m_Hub.ProductService.HasPendingCheckEntitlement())
             {
                 ProcessAllEntitlementsCompleted();
             }
+        }
+
+        /// <summary>
+        /// 从 Unity IAP 5.x Entitlement 关联订单中读取当前商品的订阅到期时间。
+        /// </summary>
+        /// <param name="product">当前权益回调对应的商品。</param>
+        /// <param name="entitlement">权益检查结果。</param>
+        /// <param name="expireDate">Unity IAP 解析出的订阅到期 UTC 时间。</param>
+        /// <returns>成功读取到有效到期时间时返回 true。</returns>
+        private static bool TryGetSubscriptionExpireDate(Product product, Entitlement entitlement, out DateTime expireDate)
+        {
+            expireDate = default;
+            if (product == null)
+            {
+                return false;
+            }
+
+            var purchasedProductInfo = entitlement.Order?.Info?.PurchasedProductInfo;
+            if (purchasedProductInfo == null)
+            {
+                return false;
+            }
+
+            bool hasExpireDate = false;
+            DateTime bestExpireDate = default;
+            foreach (IPurchasedProductInfo productInfo in purchasedProductInfo)
+            {
+                if (productInfo == null)
+                {
+                    continue;
+                }
+
+                if (!MatchesPurchasedProduct(productInfo.productId, product))
+                {
+                    continue;
+                }
+
+                SubscriptionInfo subscriptionInfo = productInfo?.subscriptionInfo;
+                if (subscriptionInfo == null)
+                {
+                    continue;
+                }
+
+                DateTime value = subscriptionInfo.GetExpireDate();
+                if (value == default || value == DateTime.MinValue)
+                {
+                    continue;
+                }
+
+                value = value.Kind == DateTimeKind.Utc ? value : value.ToUniversalTime();
+                if (!hasExpireDate || value > bestExpireDate)
+                {
+                    bestExpireDate = value;
+                    hasExpireDate = true;
+                }
+            }
+
+            expireDate = bestExpireDate;
+            return hasExpireDate;
+        }
+
+        /// <summary>
+        /// 判断 PurchasedProductInfo 的商品 ID 是否对应当前权益回调商品。
+        /// </summary>
+        /// <param name="purchasedProductId">Unity IAP PurchasedProductInfo 中的商店商品 ID。</param>
+        /// <param name="product">当前权益回调商品。</param>
+        /// <returns>商品 ID 与当前商品的定义 ID 或商店 ID 匹配时返回 true。</returns>
+        private static bool MatchesPurchasedProduct(string purchasedProductId, Product product)
+        {
+            if (string.IsNullOrEmpty(purchasedProductId) || product?.definition == null)
+            {
+                return false;
+            }
+
+            return string.Equals(purchasedProductId, product.definition.id, StringComparison.Ordinal) ||
+                   string.Equals(purchasedProductId, product.definition.storeSpecificId, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -196,6 +313,20 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             if (!m_IsInRestore)
             {
+                // 补单 / 平台自动恢复 / 服务端未完成订单查询等非协调 Restore 路径下完成的验单：
+                // 订阅与非消耗品的恢复只经 SubscriptionRestored / NonConsumeRestored 通知（PaySuccess 已对二者的补单抑制），
+                // 而协调 Restore 又未开启，此处按类型就地补发单条恢复通知，避免恢复成功却无任何全局通知。
+                if (collectResult)
+                {
+                    if (productType == ProductType.Subscription)
+                    {
+                        RaiseStandaloneSubscriptionRestored(result);
+                    }
+                    else if (productType == ProductType.NonConsumable)
+                    {
+                        RaiseStandaloneNonConsumeRestored(result);
+                    }
+                }
                 return;
             }
 
@@ -254,6 +385,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 Log.Debug(LogTag.IAPMobile, $"平台已有购买拉取完成：待确认商品={product.definition.id}，等待服务端验单后确认。");
                 // 待确认订单必须走购买服务，先解析票据并完成服务端验单，再确认平台订单。
                 m_Hub.PurchaseService.OnPurchasePending(order);
+            }
+
+            if (!string.IsNullOrEmpty(m_Hub.Store?.GameUID))
+            {
+                m_Hub.ValidationService.CheckLocalOrdersAsync(CancellationToken.None).Forget();
             }
         }
 

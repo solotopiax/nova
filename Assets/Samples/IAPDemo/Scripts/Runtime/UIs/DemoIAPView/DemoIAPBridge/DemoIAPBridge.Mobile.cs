@@ -25,6 +25,9 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             IAPMobileRequest request = new IAPMobileRequest
             {
                 TableId = tableId,
+                // 平台票据透传字符串（须 ≤8 位数字）：随平台票据往返，支付/补单/恢复都能带回 IAPResult.ReceiptParam（此处用 tableId 演示）。
+                ReceiptParam = tableId.ToString(),
+                // CustomData 保持自由格式字符串，仅本地往返（与 ReceiptParam 分离）。
                 CustomData = JsonUtility.ToJson(new PayPayload
                 {
                     TableId = tableId,

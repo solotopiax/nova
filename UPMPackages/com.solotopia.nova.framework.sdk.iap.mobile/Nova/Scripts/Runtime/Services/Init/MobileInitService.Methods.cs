@@ -8,7 +8,10 @@
  * descrip:   MobileInitService 内部方法
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
 using NovaFramework.Runtime;
 using UnityEngine.Purchasing;
@@ -22,7 +25,37 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         private void FetchProducts()
         {
+            ProductFetchState = MobileProductFetchState.Fetching;
+            m_ProductFetchTcs = new UniTaskCompletionSource<MobileProductFetchState>();
             m_Hub.ExtendedService?.FetchProducts(m_PendingProductDefs ?? new List<ProductDefinition>());
+        }
+
+        /// <summary>
+        /// 等待商品拉取完成；超时不抛出，返回当前状态，调用方自行决定是否延后补跑。
+        /// </summary>
+        internal async UniTask<MobileProductFetchState> WaitForProductsFetchedAsync(int timeoutMs, CancellationToken ct)
+        {
+            if (ProductFetchState != MobileProductFetchState.Fetching)
+            {
+                return ProductFetchState;
+            }
+
+            UniTaskCompletionSource<MobileProductFetchState> tcs = m_ProductFetchTcs;
+            if (tcs == null)
+            {
+                return ProductFetchState;
+            }
+
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(timeoutMs);
+            try
+            {
+                return await tcs.Task.AttachExternalCancellation(timeoutCts.Token);
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                return ProductFetchState;
+            }
         }
 
         /// <summary>

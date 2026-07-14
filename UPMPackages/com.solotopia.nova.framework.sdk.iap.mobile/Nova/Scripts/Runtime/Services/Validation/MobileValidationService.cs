@@ -45,16 +45,49 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="ct">取消令牌。</param>
         internal async UniTask CheckLocalOrdersAsync(CancellationToken ct)
         {
-            SyncOrderRecordsFromStore();
-            if (!IsUserReadyForValidation())
+            if (m_IsCheckingLocalOrders)
             {
-                Log.Debug(LogTag.IAPMobile, "账号未登录，跳过补单扫描和订阅查询。");
+                m_PendingCheckLocalOrders = true;
+                Log.Debug(LogTag.IAPMobile, "补单扫描正在执行，已标记当前轮结束后补跑一次。");
                 return;
             }
 
-            MergePreLoginOrderRecords();
-            await DoQueryPendingFromServerAsync(ct);
-            await m_Hub.RestoreService.RefreshEntitlementsAsync(ct);
+            m_IsCheckingLocalOrders = true;
+            bool entitlementRefreshed = false;
+            try
+            {
+                do
+                {
+                    m_PendingCheckLocalOrders = false;
+                    EnsurePersistDataLoaded();
+                    if (!IsUserReadyForValidation())
+                    {
+                        Log.Debug(LogTag.IAPMobile, "账号未登录，跳过补单扫描和订阅查询。");
+                        return;
+                    }
+
+                    MergePreLoginOrderRecords();
+                    await DoQueryPendingFromServerAsync(ct);
+
+                    // 补单扫描期间又有新触发（如登录与平台购买拉取并发）时，先把订单扫描再收敛一轮。
+                    if (m_PendingCheckLocalOrders)
+                    {
+                        continue;
+                    }
+
+                    // 权益恢复是平台态查询、与订单扫描无关：无论后续触发落在扫描期还是恢复期，本批只做一次，
+                    // 避免同一已发货商品每次启动被重复验单并重复触发全局恢复事件。
+                    if (!entitlementRefreshed)
+                    {
+                        entitlementRefreshed = true;
+                        await m_Hub.RestoreService.RefreshEntitlementsAsync(ct);
+                    }
+                } while (m_PendingCheckLocalOrders);
+            }
+            finally
+            {
+                m_IsCheckingLocalOrders = false;
+            }
         }
 
         /// <summary>
@@ -78,7 +111,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 await UniTask.Yield(PlayerLoopTiming.Update, ct);
             }
 
-            SyncOrderRecordsFromStore();
+            EnsurePersistDataLoaded();
 
             if (!m_OrderRecords.TryGetValue(requestTableId, out MobileOrderRecord currentRequestRecord) ||
                 !IsPaidUnvalidatedStatus(currentRequestRecord.Status))
@@ -92,8 +125,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 currentRequestRecord.CustomDataParam = customData;
             }
 
-            m_ValidateQueue.Clear();
-            m_ValidateQueue.Enqueue(requestTableId);
+            if (!m_ValidateQueue.Contains(requestTableId))
+            {
+                m_ValidateQueue.Enqueue(requestTableId);
+            }
 
             var payTcs = new UniTaskCompletionSource<IAPResult>();
             CurrentPayTcs = payTcs;
@@ -187,6 +222,48 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal bool HasOrderRecord(long tableId)
         {
             return tableId != 0L && m_OrderRecords.ContainsKey(tableId);
+        }
+
+        /// <summary>
+        /// 平台确认 ack（OnPurchaseConfirmed → ConfirmedOrder）到达时收尾 AwaitingConfirm 记录：
+        /// 命中处于 AwaitingConfirm 的记录则删除并落盘，返回 true；否则返回 false，交由常规确认流程处理。
+        /// </summary>
+        /// <param name="tableId">商品配置表行 ID。</param>
+        /// <returns>命中并完成 AwaitingConfirm 记录时返回 true。</returns>
+        internal bool TryCompleteAwaitingConfirm(long tableId)
+        {
+            if (tableId == 0L ||
+                !m_OrderRecords.TryGetValue(tableId, out MobileOrderRecord record) ||
+                record.Status != MobileOrderStatus.AwaitingConfirm)
+            {
+                return false;
+            }
+
+            m_PendingPlatformOrders.Remove(tableId);
+            m_OrderRecords.Remove(tableId);
+            SaveOrderRecords();
+            return true;
+        }
+
+        /// <summary>
+        /// 对已验单发货但平台确认失败遗留的 AwaitingConfirm 订单，用平台重新拉取到的 PendingOrder 直接重试确认，
+        /// 跳过重复的服务端验单。命中并发起重试时返回 true。
+        /// </summary>
+        /// <param name="tableId">商品配置表行 ID。</param>
+        /// <param name="order">平台重新拉取到的待确认订单。</param>
+        /// <returns>命中 AwaitingConfirm 记录并重试确认时返回 true。</returns>
+        internal bool TryReconfirmAwaitingOrder(long tableId, PendingOrder order)
+        {
+            if (tableId == 0L || order == null ||
+                !m_OrderRecords.TryGetValue(tableId, out MobileOrderRecord record) ||
+                record.Status != MobileOrderStatus.AwaitingConfirm)
+            {
+                return false;
+            }
+
+            m_PendingPlatformOrders[tableId] = order;
+            ConfirmPendingPlatformOrder(tableId);
+            return true;
         }
 
         /// <summary>
@@ -328,29 +405,52 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <returns>待验订单记录；商品配置缺失时返回 null。</returns>
         private MobileOrderRecord EnsureRestoreOrderRecord(long tableId)
         {
-            if (m_OrderRecords.TryGetValue(tableId, out MobileOrderRecord existing))
-            {
-                existing.IsReplenish = true;
-                return existing;
-            }
-
             IAPProductEntry entry = m_Hub.Table?.FindByTableId(tableId);
             if (entry == null)
             {
                 return null;
             }
 
-            m_Hub.ProductService.GetReceiptInfo(entry.ProductID, out string orderId, out string googleToken);
+            if (m_OrderRecords.TryGetValue(tableId, out MobileOrderRecord existing))
+            {
+                existing.IsReplenish = true;
+                FillMissingRestoreCredential(existing, entry);
+                return existing;
+            }
+
             var record = new MobileOrderRecord
             {
-                TransactionId = orderId ?? string.Empty,
                 TableId = tableId,
-                GoogleToken = googleToken,
                 Status = MobileOrderStatus.PendingValidate,
                 IsReplenish = true,
             };
+            FillMissingRestoreCredential(record, entry);
             m_OrderRecords[tableId] = record;
             return record;
+        }
+
+        /// <summary>
+        /// 用最新平台票据回填 Restore 记录缺失的验单凭据，避免商品权益先于 FetchPurchases 到达时固化空 token/orderId。
+        /// </summary>
+        /// <param name="record">待回填的 Restore 订单记录。</param>
+        /// <param name="entry">订单对应商品配置。</param>
+        private void FillMissingRestoreCredential(MobileOrderRecord record, IAPProductEntry entry)
+        {
+            if (record == null || entry == null)
+            {
+                return;
+            }
+
+            m_Hub.ProductService.GetReceiptInfo(entry.ProductID, out string orderId, out string googleToken);
+            if (string.IsNullOrEmpty(record.TransactionId) && !string.IsNullOrEmpty(orderId))
+            {
+                record.TransactionId = orderId;
+            }
+
+            if (string.IsNullOrEmpty(record.GoogleToken) && !string.IsNullOrEmpty(googleToken))
+            {
+                record.GoogleToken = googleToken;
+            }
         }
 
         /// <summary>
@@ -390,6 +490,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             m_PendingPlatformOrders.Clear();
             // 重置队列锁，防止 Dispose 后无法再入队
             m_IsProcessingQueue = false;
+            m_IsCheckingLocalOrders = false;
+            m_PendingCheckLocalOrders = false;
             // 释放可能悬空的 TCS
             CurrentPayTcs = null;
         }

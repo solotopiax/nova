@@ -71,8 +71,9 @@ namespace NovaFramework.SDK.IAP.Runtime
             m_EventManager?.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
             m_EventManager = null;
             m_CurrentUserId = null;
-            m_EventCaches.Clear();
-            m_IsReplayingEventCaches = false;
+            m_HasDeferredCheckLocalOrders = false;
+            m_IsCheckingLocalOrders = false;
+            m_PendingCheckLocalOrders = false;
 
             if (m_Stores == null)
             {
@@ -116,7 +117,11 @@ namespace NovaFramework.SDK.IAP.Runtime
                 m_Stores[i].SetUserId(uid);
             }
 
-            ReplayEventCachesAsync().Forget();
+            if (m_HasDeferredCheckLocalOrders)
+            {
+                m_HasDeferredCheckLocalOrders = false;
+                CheckLocalOrdersAsync(CancellationToken.None).Forget();
+            }
         }
 
         /// <summary>
@@ -182,15 +187,38 @@ namespace NovaFramework.SDK.IAP.Runtime
 
             if (string.IsNullOrEmpty(m_CurrentUserId))
             {
-                CacheEvent(() => CheckLocalOrdersAsync(CancellationToken.None), "补单扫描");
+                m_HasDeferredCheckLocalOrders = true;
                 Log.Debug(LogTag.IAPPlugin, "账号未登录，已缓存补单扫描请求，等待 SetUserId 后自动执行。");
+                return;
             }
-            else
+
+            if (m_IsCheckingLocalOrders)
             {
-                for (int i = 0; i < m_Stores.Count; i++)
+                m_PendingCheckLocalOrders = true;
+                Log.Debug(LogTag.IAPPlugin, "补单扫描正在执行，已标记当前轮结束后补跑一次。");
+                return;
+            }
+
+            m_IsCheckingLocalOrders = true;
+            try
+            {
+                do
                 {
-                    await m_Stores[i].CheckLocalOrdersAsync(ct);
-                }
+                    m_PendingCheckLocalOrders = false;
+                    if (m_Stores == null)
+                    {
+                        return;
+                    }
+
+                    for (int i = 0; i < m_Stores.Count; i++)
+                    {
+                        await m_Stores[i].CheckLocalOrdersAsync(ct);
+                    }
+                } while (m_PendingCheckLocalOrders && !string.IsNullOrEmpty(m_CurrentUserId));
+            }
+            finally
+            {
+                m_IsCheckingLocalOrders = false;
             }
 
         }

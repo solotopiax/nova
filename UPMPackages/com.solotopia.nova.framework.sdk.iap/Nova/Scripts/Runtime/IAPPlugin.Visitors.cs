@@ -79,14 +79,19 @@ namespace NovaFramework.SDK.IAP.Runtime
         private string m_CurrentUserId;
 
         /// <summary>
-        /// 条件未满足时缓存的延后执行事件。
+        /// 登录前收到过补单扫描请求；账号 UID 同步后自动触发一次。
         /// </summary>
-        private readonly List<Func<UniTask>> m_EventCaches = new List<Func<UniTask>>();
+        private bool m_HasDeferredCheckLocalOrders;
 
         /// <summary>
-        /// 是否正在回放缓存事件。
+        /// 是否正在执行补单扫描，防止重复调用并发进入各 Store。
         /// </summary>
-        private bool m_IsReplayingEventCaches;
+        private bool m_IsCheckingLocalOrders;
+
+        /// <summary>
+        /// 补单扫描执行期间又收到扫描请求；当前轮结束后再补跑一轮。
+        /// </summary>
+        private bool m_PendingCheckLocalOrders;
 
     }
 }

@@ -1,7 +1,7 @@
 ﻿# Nova Framework - SDK - IAP - Mobile
 
 > 包名：`com.solotopia.nova.framework.sdk.iap.mobile`
-> 当前版本：`0.0.9`
+> 当前版本：`0.0.10`
 
 Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化、购买、Restore、服务端验单、补单、订阅到期与非消耗品持有状态。
 
@@ -11,19 +11,19 @@ Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.iap.mobile": "0.0.9"
+  "com.solotopia.nova.framework.sdk.iap.mobile": "0.0.10"
 }
 ```
 
 ## 依赖
 
-- `com.solotopia.nova.framework.sdk.iap`: `0.0.1`
+- `com.solotopia.nova.framework.sdk.iap`: `0.0.16`
 - `com.unity.purchasing`: `5.3.1`
 
 ## 当前公开入口
 
 - `MobileStore`：通过父包 `IAPPlugin` 反射发现，不直接手动 new。
-- `IAPMobileRequest`：Mobile 渠道支付请求。
+- `IAPMobileRequest`：Mobile 渠道支付请求；`ReceiptParam` 最多 16 字符，并随平台票据往返。
 - `MobileStoreConfig`：Google / Apple 查单与验单 NetCmd 名配置。
 - `IIAPMobileQueryCapable`：平台商品信息查询能力。
 - `IIAPMobileSubscriptionCapable`：订阅到期与非消耗品持有查询能力。

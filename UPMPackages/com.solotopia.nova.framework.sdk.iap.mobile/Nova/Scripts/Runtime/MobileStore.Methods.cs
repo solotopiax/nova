@@ -22,6 +22,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal void AddUnavailableSkuInternal(string productId) => AddUnavailableSku(productId);
 
         /// <summary>
+        /// 判断指定商品 ID 是否已被平台标记为不可购买（拉取失败），供各内部服务在查询/购买前提前拦截。
+        /// </summary>
+        /// <param name="productId">平台商品 ID。</param>
+        /// <returns>已标记为不可购买时返回 true。</returns>
+        internal bool IsUnavailableSkuInternal(string productId) => IsUnavailableSku(productId);
+
+        /// <summary>
         /// 加载当前账号存档到 m_PersistData，PersistManager 不可用时落回空容器。
         /// 切换 UID 后由 SetAccountID 重新调用。
         /// </summary>

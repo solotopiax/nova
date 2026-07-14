@@ -302,17 +302,16 @@
       }
     },
     "com.solotopia.nova.framework.besthttp": {
-      "version": "0.0.10",
+      "version": "file:../UPMPackages/com.solotopia.nova.framework.besthttp",
       "depth": 0,
-      "source": "registry",
+      "source": "local",
       "dependencies": {
         "com.solotopia.nova.framework": "0.5.38",
         "com.solotopia.unitask": "10.0.6",
         "com.unity.nuget.newtonsoft-json": "3.2.2",
         "com.tivadar.best.http": "3.0.17",
         "com.tivadar.best.tlssecurity": "3.0.4"
-      },
-      "url": "https://upm.solotopiax.com"
+      }
     },
     "com.solotopia.nova.framework.kit.network.gamebind": {
       "version": "file:../UPMPackages/com.solotopia.nova.framework.kit.network.gamebind",
@@ -442,17 +441,17 @@
       "source": "local",
       "dependencies": {
         "com.solotopia.nova.framework": "0.5.38",
-        "com.solotopia.nova.framework.sdk.iap": "0.0.15",
+        "com.solotopia.nova.framework.sdk.iap": "0.0.16",
         "com.solotopia.unitask": "10.0.6",
         "com.unity.purchasing": "5.3.1"
       }
     },
     "com.solotopia.nova.framework.sdk.max": {
-      "version": "0.0.14",
+      "version": "file:../UPMPackages/com.solotopia.nova.framework.sdk.max",
       "depth": 0,
-      "source": "registry",
+      "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework.sdk.ad": "1.0.13",
+        "com.solotopia.nova.framework.sdk.ad": "1.0.17",
         "com.applovin.mediation.ads": "8.5.0",
         "com.applovin.mediation.adapters.bidmachine.android": "3010101.0.0",
         "com.applovin.mediation.adapters.bidmachine.ios": "301020000.0.0",
@@ -484,8 +483,7 @@
         "com.applovin.mediation.adapters.unityads.ios": "4160400.0.0",
         "com.applovin.mediation.adapters.vungle.android": "7060000.0.0",
         "com.applovin.mediation.adapters.vungle.ios": "7060100.0.0"
-      },
-      "url": "https://upm.solotopiax.com"
+      }
     },
     "com.solotopia.nova.framework.sdk.tga": {
       "version": "file:../UPMPackages/com.solotopia.nova.framework.sdk.tga",

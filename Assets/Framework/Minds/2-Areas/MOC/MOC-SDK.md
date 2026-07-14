@@ -17,6 +17,7 @@ related:
   - "[[ADR-008-managerbase-internal-abstract|ADR-008]]"
   - "[[ADR-012-third-party-info-isolation|ADR-012]]"
   - "[[ADR-022-sdk-plugin-architecture|ADR-022]]"
+  - "[[ADR-072-iap-mobile-passthrough-param-layout|ADR-072]]"
   - "[[PAT-33-sdk-plugin-sop|PAT-33]]"
 ---
 

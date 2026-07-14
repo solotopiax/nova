@@ -23,7 +23,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
     public sealed partial class DemoIAPView
     {
         /// <summary>
-        /// 登录按钮点击回调：置灰登录按钮并展开 4 个支付按钮。
+        /// 登录按钮点击回调：置灰登录按钮并展开 5 个支付按钮。
         /// 重复点击直接忽略，避免多次克隆支付按钮。
         /// </summary>
         private void OnLoginClick()
@@ -48,7 +48,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 m_SampleButton.interactable = false;
             }
 
-            string openId = "test_openid_iap";
+            string openId = string.Empty;
             bool forceNewAccount = false;
             try
             {
@@ -91,7 +91,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 构建 4 个支付按钮（2 普通 + 2 订阅）。
+        /// 构建 5 个支付按钮（2 普通 + 1 非消耗 + 2 订阅）。
         /// 逐个 tableId 克隆示例按钮、设置 "ID+表行id+价格" 文本，并绑定支付点击回调。
         /// </summary>
         private void BuildPayButtons()
@@ -103,10 +103,12 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             }
 
             BuildPayButtonGroup(s_NormalProductIds, "普通");
+            BuildPayButtonGroup(s_NonConsumableProductIds, "非消耗");
             BuildPayButtonGroup(s_SubscriptionProductIds, "订阅");
             BuildRestorePurchasesButton();
 
             m_IapBridge?.RefreshMobileProductInfoAsync(s_NormalProductIds).Forget();
+            m_IapBridge?.RefreshMobileProductInfoAsync(s_NonConsumableProductIds).Forget();
             m_IapBridge?.RefreshMobileProductInfoAsync(s_SubscriptionProductIds).Forget();
         }
 

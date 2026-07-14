@@ -20,7 +20,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
     public sealed partial class DemoIAPView
     {
         /// <summary>
-        /// 登录按钮；点击后置灰并展开 4 个支付按钮（复用脚手架生成的示例按钮槽位）。
+        /// 登录按钮；点击后置灰并展开 5 个支付按钮（复用脚手架生成的示例按钮槽位）。
         /// </summary>
         [SerializeField] private Button m_SampleButton;
 
@@ -28,6 +28,11 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// 普通支付（消耗品）商品表行 id 列表，对应 ConfigRuntime 中 type=Consumable 的两条商品。
         /// </summary>
         private static readonly long[] s_NormalProductIds = { 1L, 2L };
+
+        /// <summary>
+        /// 非消耗支付商品表行 id 列表，对应 ConfigRuntime 中 type=NonConsumable 的商品。
+        /// </summary>
+        private static readonly long[] s_NonConsumableProductIds = { 5L };
 
         /// <summary>
         /// 订阅支付商品表行 id 列表，对应 ConfigRuntime 中 type=Subscription 的两条商品。

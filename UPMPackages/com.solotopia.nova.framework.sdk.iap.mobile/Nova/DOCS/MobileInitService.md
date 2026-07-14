@@ -42,6 +42,8 @@ internal sealed partial class MobileInitService
 | `m_RuntimeContext` | `MobileRuntimeContext` | `null` | `private` | 初始化阶段状态机；Dispose 后置 null，阻止后续回调继续执行 |
 | `m_InitTcs` | `UniTaskCompletionSource<bool>` | `null` | `private` | 初始化完成信号，桥接 OnStoreConnected / FailInitialization 到 InitializeAsync 的 await 点 |
 | `m_PendingProductDefs` | `List<ProductDefinition>` | `null` | `private` | InitializeAsync 阶段构建，OnStoreConnected 后触发 FetchProducts 时使用 |
+| `ProductFetchState` | `MobileProductFetchState` | `None` | `internal get` | 商品拉取状态；初始化成功不代表商品拉取完成 |
+| `m_ProductFetchTcs` | `UniTaskCompletionSource<MobileProductFetchState>` | `null` | `private` | 商品拉取完成信号，桥接 OnProductsFetched / OnProductsFetchFailed 到等待方 |
 | `IsReady` | `bool` | `false` | `internal` | Unity IAP 已成功初始化（OnStoreConnected 后置 true，Dispose 后重置） |
 
 ### MobileRuntimeContext
@@ -81,6 +83,9 @@ internal void OnProductsFetched(List<Product> products)
 
 // 商品拉取失败：记录不可用 SKU，不改变初始化结果
 internal void OnProductsFetchFailed(ProductFetchFailed failure)
+
+// 等待商品拉取完成；超时返回当前状态，不抛出超时异常
+internal UniTask<MobileProductFetchState> WaitForProductsFetchedAsync(int timeoutMs, CancellationToken ct)
 ```
 
 ### MobileInitService — 生命周期
@@ -152,8 +157,8 @@ MobileStore.InitializeAsync
         │               MarkReady()
         │               IsReady=true
         │               m_InitTcs.TrySetResult(true)
-        │               FetchProducts()（后台商品拉取）
-        │               → OnProductsFetched 后调用 RestoreTransactions() + FetchPurchases()
+        │               FetchProducts()（后台商品拉取，ProductFetchState=Fetching）
+        │               → OnProductsFetched 标记 ProductFetchState=Succeeded 后调用 RestoreTransactions() + FetchPurchases()
         │               → OnPurchasesFetched 路由到 RestoreService 恢复 PendingOrder 票据
         │     → Connect 抛出异常 → FailInitialization(StoreConnectException)
         │     → 取消 → FailInitialization(InitializationCanceled)

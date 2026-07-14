@@ -99,7 +99,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             if (Context.EnableAlwaysPaySucceed)
             {
                 TrackBuyInternal(request.TableId, null, request.CustomData);
-                return UniTask.FromResult(new IAPResult(request.TableId, "MOCK_ORDER_MOBILE", false, true, request.CustomData));
+                var result = new IAPResult(request.TableId, "MOCK_ORDER_MOBILE", false, true, request.CustomData, request.ReceiptParam);
+                Context.EventBridge?.RaisePaySuccess(result);
+                return UniTask.FromResult(result);
             }
 
             return PayGuardAsync(request, ct, () => m_Hub.PurchaseService.PayAsync(request as IAPMobileRequest, ct));
@@ -107,10 +109,23 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
         /// <summary>
         /// 异步恢复历史已购订单，路由给 MobileRestoreService。
+        /// 用户主动点击恢复：标记已交互并显示通用 Loading，恢复结束后隐藏。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         /// <returns>恢复到的历史订单结果列表。</returns>
-        public override UniTask<IReadOnlyList<IAPResult>> RestorePurchasesAsync(CancellationToken ct) => m_Hub.RestoreService.RestoreAsync(ct);
+        public override async UniTask<IReadOnlyList<IAPResult>> RestorePurchasesAsync(CancellationToken ct)
+        {
+            m_LoadingGuard.HasUserInteracted = true;
+            AddWaitingRef();
+            try
+            {
+                return await m_Hub.RestoreService.RestoreAsync(ct);
+            }
+            finally
+            {
+                SubWaitingRef();
+            }
+        }
 
         /// <summary>
         /// 释放 store 资源，依次释放各服务。

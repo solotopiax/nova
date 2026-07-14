@@ -45,7 +45,7 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 
 ## 安装
 
-下载火种脚本 [NovaSpark2.3.cs](./NovaSpark2.3.cs)，拖入 Unity 工程，等待编译结束即可。
+下载火种脚本 [NovaSpark2.4.cs](./NovaSpark2.4.cs)，拖入 Unity 工程，等待编译结束即可。
 
 ---
 

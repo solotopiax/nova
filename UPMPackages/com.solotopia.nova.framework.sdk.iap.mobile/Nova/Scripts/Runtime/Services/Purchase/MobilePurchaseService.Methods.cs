@@ -79,7 +79,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             try
             {
                 // IAP 5.x：直接通过 Controller 购买（升降级通过 PurchaseProduct 带旧商品 ID 参数不再直接暴露 UpgradeDowngrade API）
-                ApplyPurchaseContext(request.TableId);
+                ApplyPurchaseContext(request.TableId, request.ReceiptParam);
                 Product product = m_Hub.ExtendedService.GetProductById(newEntry.ProductID);
                 if (!m_Hub.ExtendedService.IsAttached || product == null)
                 {
@@ -121,7 +121,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             m_Hub.Store.AddWaitingRef();
             try
             {
-                ApplyPurchaseContext(request.TableId);
+                ApplyPurchaseContext(request.TableId, request.ReceiptParam);
                 if (!m_Hub.ExtendedService.IsAttached || product == null)
                 {
                     return CompleteActivePayFailure(request.TableId, IAPMobileErrorCode.ProductNotFound, "平台商品不可购买。", request.CustomData, true)
@@ -145,13 +145,64 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
-        /// 将 UID + tableId 编码为 UUID，写入平台透传参数（Android: ObfuscatedAccountId/ProfileId；iOS: AppAccountToken）。
+        /// tableId 的 8 位十进制上限（99,999,999）；ReceiptParam / uid 按字符串槽位长度校验。
+        /// </summary>
+        private const long MaxEncodableValue = 99_999_999L;
+
+        /// <summary>
+        /// 校验 tableId 是否在数值范围内，ReceiptParam / uid 是否能放入各自字符串槽位。
+        /// 字符串槽位支持字母，但超出槽位会导致 codec 截断，
+        /// PayAsync 须在发起真实支付前调用本方法拦截，而不是仅在编码时告警。
+        /// </summary>
+        /// <param name="tableId">商品配置表行 ID。</param>
+        /// <param name="receiptParam">本次支付请求携带的平台票据透传字符串。</param>
+        /// <param name="uid">当前登录账号 UID。</param>
+        /// <param name="failReason">校验失败时的具体原因；全部通过时为 null。</param>
+        /// <returns>三者均在合法编码范围内时返回 true。</returns>
+        private static bool TryValidatePassthroughParams(long tableId, string receiptParam, string uid, out string failReason)
+        {
+            if (tableId < 0L || tableId > MaxEncodableValue)
+            {
+                failReason = $"tableId={tableId} 超出 8 位编码范围（0~{MaxEncodableValue}），平台透传参数无法正确回解，请检查商品表配置。";
+                return false;
+            }
+
+            if (GetStringLength(receiptParam) > MobileStoreParameterCodec.ReceiptParamMaxLength)
+            {
+                failReason = $"ReceiptParam='{receiptParam}' 超出 {MobileStoreParameterCodec.ReceiptParamMaxLength} 字符上限，请检查业务传参。";
+                return false;
+            }
+
+            if (GetStringLength(uid) > MobileStoreParameterCodec.UidMaxLength)
+            {
+                failReason = $"uid='{uid}' 超出 {MobileStoreParameterCodec.UidMaxLength} 字符上限，平台透传参数无法正确编码，账号关联不可靠。";
+                return false;
+            }
+
+            failReason = null;
+            return true;
+        }
+
+        /// <summary>
+        /// 获取字符串长度；空串按 0 处理。
+        /// </summary>
+        /// <param name="value">待校验字符串。</param>
+        /// <returns>字符串长度。</returns>
+        private static int GetStringLength(string value)
+        {
+            return string.IsNullOrEmpty(value) ? 0 : value.Length;
+        }
+
+        /// <summary>
+        /// 将 UID + tableId + receiptParam 编码为 UUID，写入平台透传参数（Android: ObfuscatedAccountId/ProfileId；iOS: AppAccountToken）。
+        /// 调用前须已经过 <see cref="TryValidatePassthroughParams"/> 校验（PayAsync 入口保证），此处只做纯编码。
         /// </summary>
         /// <param name="tableId">当前购买商品的配置表行 ID。</param>
-        private void ApplyPurchaseContext(long tableId)
+        /// <param name="receiptParam">当前购买请求携带的平台票据透传字符串。</param>
+        private void ApplyPurchaseContext(long tableId, string receiptParam)
         {
             string uid = m_Hub.Store?.GameUID ?? string.Empty;
-            string uuid = MobileStoreParameterCodec.Encode(uid, tableId);
+            string uuid = MobileStoreParameterCodec.Encode(uid, tableId, receiptParam);
             if (string.IsNullOrEmpty(uuid))
             {
                 return;
@@ -197,6 +248,12 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 }
             }
 
+            if (m_Hub.ValidationService.TryCompleteAwaitingConfirm(tableId))
+            {
+                Log.Debug(LogTag.IAPMobile, $"平台确认 ack 到达，补单确认完成并清理记录，商品表ID={tableId}，商品ID={product.definition.id}");
+                return;
+            }
+
             if (m_PayTcs == null && !m_Hub.ValidationService.HasOrderRecord(tableId))
             {
                 Log.Debug(LogTag.IAPMobile, $"平台订单确认完成，商品表ID={tableId}，商品ID={product.definition.id}");
@@ -216,6 +273,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             m_Hub.ProductService.GetReceiptInfo(product.definition.id, out string orderId, out string googleToken);
+            // 从平台票据解出透传字符串（补单/恢复场景也能带回，区别于只在本地流转的 CustomData）
+            string receiptParam = MobileStoreParameterCodec.DecodeReceiptParam(encodedUuid);
             Log.Debug(LogTag.IAPMobile, $"平台订单确认回调：商品表ID={tableId}，商品ID={product.definition.id}，订单号={orderId}，是否补单={isRecovered}");
 
             var record = new MobileOrderRecord
@@ -226,6 +285,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 Status = MobileOrderStatus.PendingValidate,
                 IsReplenish = isRecovered,
                 CustomDataParam = customData,
+                ReceiptParam = receiptParam,
             };
 
             UniTaskCompletionSource<IAPResult> validateTcs = null;
@@ -266,6 +326,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 }
             }
 
+            if (m_Hub.ValidationService.TryReconfirmAwaitingOrder(tableId, order))
+            {
+                // 已验单发货但上次平台确认失败的订单：直接重试确认，跳过重复验单。
+                Log.Debug(LogTag.IAPMobile, $"检测到待确认补单记录，直接重试平台确认并跳过重复验单，商品表ID={tableId}，商品ID={product.definition.id}");
+                return;
+            }
+
             bool isCurrentPayOrder = m_PayTcs != null && tableId == InPayTableId;
             bool isRecovered = !isCurrentPayOrder;
             var payTcs = isCurrentPayOrder ? m_PayTcs : null;
@@ -278,6 +345,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             m_Hub.ProductService.GetReceiptInfo(product.definition.id, out string orderId, out string googleToken);
+            // 从平台票据解出透传字符串（补单/恢复场景也能带回，区别于只在本地流转的 CustomData）
+            string receiptParam = MobileStoreParameterCodec.DecodeReceiptParam(encodedUuid);
             Log.Debug(LogTag.IAPMobile, $"平台待确认购买回调：商品表ID={tableId}，商品ID={product.definition.id}，订单号={orderId}，是否补单={isRecovered}");
 
             var record = new MobileOrderRecord
@@ -288,6 +357,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 Status = MobileOrderStatus.PendingValidate,
                 IsReplenish = isRecovered,
                 CustomDataParam = customData,
+                ReceiptParam = receiptParam,
             };
 
             m_Hub.ValidationService.RegisterPendingPlatformOrder(tableId, order);
@@ -323,7 +393,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            Log.Warning(LogTag.IAPMobile, $"平台订单确认失败，保留本地订单等待后续补单，商品表ID={tableId}，原因={order.FailureReason}");
+            Log.Warning(LogTag.IAPMobile, $"平台确认失败，保留 AwaitingConfirm 记录，等待下次 FetchPurchases 重新拉取订单后重试确认，商品表ID={tableId}，原因={order.FailureReason}");
         }
 
         /// <summary>

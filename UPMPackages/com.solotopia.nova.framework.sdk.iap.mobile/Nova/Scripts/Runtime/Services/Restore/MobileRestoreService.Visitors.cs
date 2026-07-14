@@ -27,6 +27,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         private bool m_HasRequestedProductFetchedRestore;
 
         /// <summary>
+        /// 商品尚未拉取成功时收到过权益刷新请求；商品成功后补跑一次。
+        /// </summary>
+        private bool m_PendingEntitlementRefreshAfterProductsFetched;
+
+        /// <summary>
         /// Restore 操作完成信号，所有验单结果收集完成后触发。
         /// </summary>
         private UniTaskCompletionSource<IReadOnlyList<IAPResult>> m_RestoreTcs;

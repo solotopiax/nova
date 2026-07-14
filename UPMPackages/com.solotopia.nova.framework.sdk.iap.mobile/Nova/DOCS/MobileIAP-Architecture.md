@@ -32,7 +32,7 @@ IAPPlugin（父包）
 - `MobileRestoreCoordinator`：Restore 双路计数器。
 - `MobileRuntimeContext`：初始化连接态与失败态。
 - `MobileReceiptParser`：Unity IAP Receipt 解析缓存。
-- `MobileStoreParameterCodec`：UID + tableId 编码为平台透传 UUID。
+- `MobileStoreParameterCodec`：UID + tableId + receiptParam 编码为平台透传 UUID。
 
 ## 2. MobileServiceHub
 
@@ -87,7 +87,7 @@ MobileStore.InitializeAsync
 6. `OnProductsFetched` 后先触发一次平台 `RestoreTransactions`，再调用 `FetchPurchases` 拉取平台已有购买
 7. `OnPurchasesFetched` 路由到 RestoreService，缓存历史票据并恢复 PendingOrder
 
-商品拉取成功或失败不再决定初始化结果。网络慢时初始化只等待商店连接，不等待商品信息返回；启动期平台恢复交易和平台已有购买拉取在商品信息成功返回后异步触发。商品拉取后的 `RestoreTransactions` 只唤起平台侧订单补全，不直接发起服务端 QueryPendingOrder / Verify。
+商品拉取成功或失败不再决定初始化结果。网络慢时初始化只等待商店连接，不等待商品信息返回；`MobileInitService` 会记录商品拉取状态，供补单末尾的权益刷新判断是否需要等待或延后补跑。启动期平台恢复交易和平台已有购买拉取在商品信息成功返回后异步触发。商品拉取后的 `RestoreTransactions` 只唤起平台侧订单补全；`FetchPurchases` 回调缓存 receipt / PendingOrder 后，如果账号已登录，会合并触发一次完整补单扫描，由统一补单入口串行执行 QueryPendingOrder / 本地验单 / 权益刷新。
 
 ## 5. 初始化失败原因
 
@@ -153,9 +153,9 @@ StoreController 事件
 
 UID 切换由 `MobileStore.SetUserId` 触发，重新加载整包存档。
 
-补单扫描只能在登录后执行。登录前平台回调先到达时，只将 PendingOrder 解析出的待验订单暂存在内存中，不读写账号存档，也不发送 QueryPendingOrder / Verify 协议。登录后业务调用 `CheckLocalOrdersAsync` 时，流程先合并登录前暂存订单，再请求服务端 QueryPendingOrder，优先使用返回项里的 `table_id`（long）merge 到本地 `OrderRecords`，随后扫描本地待验订单；`parameter` 解码仅作为旧协议兼容兜底。
+补单扫描只能在登录后执行。登录前平台回调先到达时，只将 PendingOrder 解析出的待验订单暂存在内存中，不读写账号存档，也不发送 QueryPendingOrder / Verify 协议。登录后业务调用 `CheckLocalOrdersAsync` 时，流程先合并登录前暂存订单，再请求服务端 QueryPendingOrder，优先使用返回项里的 `table_id`（long）merge 到本地 `OrderRecords`，随后扫描本地待验订单；`parameter` 解码仅作为旧协议兼容兜底。完整补单流程使用 single-flight 保护；扫描中再次触发只标记当前轮结束后补跑一轮，避免服务端查单、存档合并、验单队列和权益刷新并发交错。
 
-Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purchasing` 占位记录缺少 token 时保留等待下次平台回调或服务端 QueryPendingOrder 补齐。iOS Apple 验单协议必须具备 `order_id`（本地 `TransactionId`），缺失时不能发送空订单验单请求，客户端会删除本地待验订单记录并落盘，避免后续启动重复发送无效协议。`TransactionId` 承载平台订单 ID：Android 运行期可写入 Google `OrderId` 供结果和打点回填，但不写入本地存档；iOS 写入 Apple transaction id 并随本地存档保留。它不作为本地存档合并、验单响应匹配或 PaySuccess 去重判断。每次登录后的补单扫描结束后，还会触发一次 `CheckEntitlement` 权益刷新，刷新订阅和非消耗品权益，确保订阅状态不是只依赖倒计时触发；该刷新不重复触发平台 `RestoreTransactions`。
+Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purchasing` 占位记录缺少 token 时保留等待下次平台回调或服务端 QueryPendingOrder 补齐。Restore 权益刷新准备订单时会用最新 receipt 回填已有记录缺失的 token / orderId，避免 CheckEntitlement 早于 FetchPurchases 到达时把空凭据固化到本地记录。iOS Apple 验单协议必须具备 `order_id`（本地 `TransactionId`），缺失时不能发送空订单验单请求，客户端会删除本地待验订单记录并落盘，避免后续启动重复发送无效协议。`TransactionId` 承载平台订单 ID：Android 运行期可写入 Google `OrderId` 供结果和打点回填，但不写入本地存档；iOS 写入 Apple transaction id 并随本地存档保留。它不作为本地存档合并、验单响应匹配或 PaySuccess 去重判断。每次登录后的补单扫描结束后，还会触发一次 `CheckEntitlement` 权益刷新，刷新订阅和非消耗品权益，确保订阅状态不是只依赖倒计时触发；该刷新不重复触发平台 `RestoreTransactions`。Unity IAP 的 `FullyEntitled` 只说明平台侧仍返回持有记录；订阅权益回调会从 `Entitlement.Order.Info.PurchasedProductInfo[*]` 中筛选与当前 `Entitlement.Product` 匹配的条目，读取匹配项 `subscriptionInfo.GetExpireDate()` 的最晚到期时间。当当前商品到期时间明确已过期时，本次状态按 `NotEntitled` 缓存并跳过 Restore 验单；读取不到当前商品匹配的到期时间时仍交由服务端确认。如果商品信息尚未拉取成功，权益刷新会延后，商品成功回调后自动补跑，避免把“平台商品未进入 StoreController”误判为“没有待查询项”。
 
 订阅商品发起购买前会先检查当前 tableId 是否仍在有效期内；命中时本地直接返回 `IAPMobileErrorCode.SubscriptionIsReady`，不写入 `Purchasing` 订单，也不再调用 Unity IAP 平台购买。只有当前商品未订阅时，才继续判断同订阅组内其他有效订阅并进入 Android 升降级或非 Android 已订阅失败分支。
 
@@ -170,6 +170,8 @@ Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purc
 | 3 | `Reissued` | 奖励已通过其他渠道补发；删除订单，成功但 `CanDeliver=false` |
 | 4 | `Delivered` | 服务端已处理过订单；删除订单，成功且 `CanDeliver=true`，客户端仍按本地幂等规则补发奖 |
 | 5 | `Invalid` | 无效订单；删除订单并派发失败 |
+
+上表 `Verified` / `Reissued` / `Delivered` 的「删除订单」经 `FinalizeVerifiedOrderRecord` 收尾：验单成功即刻完成业务发货与订阅到期更新；若该订单仍持有平台 `PendingOrder`，先把本地记录置为 `AwaitingConfirm`（本地状态 4）并落盘，再发起 `ConfirmPurchase`，待平台 ack（`OnPurchaseConfirmed → ConfirmedOrder`）到达后由 `TryCompleteAwaitingConfirm` 删除记录；ack 失败（`FailedOrder`）则保留 `AwaitingConfirm` 记录，等待下次 `FetchPurchases` 重新拉取到 `PendingOrder`，经 `TryReconfirmAwaitingOrder` 直接重试确认、跳过重复验单。无待确认平台订单（token 补单 / 历史单）时验单成功后直接删除。启动本地扫描跳过 `AwaitingConfirm`，不重发服务端验单。
 
 `PaySuccess` 只表达业务需要感知的本地发奖成功。普通商品与补单商品在 `CanDeliver=true` 且当前运行期未派发过同一 tableId 时触发；订阅商品只有当前主动 `PayAsync` 对应的订单才触发，后台补单、Restore 和订阅刷新不走全局 `PaySuccess`。订阅 Restore 通知通过 `SubscriptionRestored` 表达：订阅订单服务端返回 `Verified` 或 `Delivered` 时会收集到 `SubscriptionRestored` 结果列表；`Reissued` 仅更新本地终态和完成 Restore 计数，不进入 `SubscriptionRestored`。如果服务端 QueryPendingOrder 先完成，随后 Unity IAP 又回调同一笔 PendingOrder，客户端按 tableId 合并本地订单并继续走验单终态处理，避免把平台交易号作为业务判断依据。
 

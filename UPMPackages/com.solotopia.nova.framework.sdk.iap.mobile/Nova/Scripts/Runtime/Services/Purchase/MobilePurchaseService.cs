@@ -66,6 +66,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.StoreNotAvailable, "未设置账号 UID，不能发起真实支付。", request.CustomData));
             }
 
+            // tableId/ReceiptParam/uid 任一超出平台透传参数编码范围都直接拒绝支付，
+            // 避免越界值被 codec 截断后仍把钱收了、但透传数据或账号关联是错的。
+            if (!TryValidatePassthroughParams(request.TableId, request.ReceiptParam, m_Hub.Store.GameUID, out string passthroughFailReason))
+            {
+                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.InvalidPassthroughParam, passthroughFailReason, request.CustomData));
+            }
+
             IAPResult localValidationResult = await m_Hub.ValidationService.TryValidatePaidLocalOrdersBeforePayAsync(request.TableId, request.CustomData, ct);
             if (localValidationResult != null)
             {
@@ -81,6 +88,12 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             if (entry == null)
             {
                 return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.ProductNotFound, $"TableId={request.TableId} 未在配置中找到对应商品。", request.CustomData));
+            }
+
+            // 平台已确认不可购买（拉取失败）的商品提前拦截，避免向平台发起必然失败的请求。
+            if (m_Hub.Store.IsUnavailableSkuInternal(entry.ProductID))
+            {
+                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.PurchaseFailureProductUnavailable, $"商品 {entry.ProductID} 平台不可购买（拉取失败）。", request.CustomData));
             }
 
             Product product = m_Hub.ExtendedService.GetProductById(entry.ProductID);

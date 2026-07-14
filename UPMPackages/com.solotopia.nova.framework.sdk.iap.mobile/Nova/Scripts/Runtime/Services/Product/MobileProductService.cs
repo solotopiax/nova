@@ -153,6 +153,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             {
                 foreach (string id in productIds)
                 {
+                    if (m_Hub.Store.IsUnavailableSkuInternal(id))
+                    {
+                        // 拉取失败的商品不会进入 StoreController，提前跳过，避免无谓的查询。
+                        Log.Warning(LogTag.IAPMobile, $"跳过不可购买商品的信息查询，商品ID={id}");
+                        continue;
+                    }
+
                     Product p = m_Hub.ExtendedService.GetProductById(id);
                     if (p != null)
                     {

@@ -57,6 +57,16 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         private bool m_IsProcessingQueue;
 
         /// <summary>
+        /// 是否正在执行完整补单扫描流程，覆盖查服务端、本地扫描和权益刷新。
+        /// </summary>
+        private bool m_IsCheckingLocalOrders;
+
+        /// <summary>
+        /// 完整补单扫描期间又收到扫描请求；当前轮结束后补跑一次。
+        /// </summary>
+        private bool m_PendingCheckLocalOrders;
+
+        /// <summary>
         /// 当前正常支付完成信号（非 recovered order），验单结束后通知 PurchaseService。
         /// </summary>
         internal UniTaskCompletionSource<IAPResult> CurrentPayTcs;

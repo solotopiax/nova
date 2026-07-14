@@ -106,7 +106,11 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
             ct.ThrowIfCancellationRequested();
 
             if (Context.EnableAlwaysPaySucceed)
-                return UniTask.FromResult(new IAPResult(request.TableId, "MOCK_ORDER_VOUCHER", false, true, request.CustomData));
+            {
+                var result = new IAPResult(request.TableId, "MOCK_ORDER_VOUCHER", false, true, request.CustomData);
+                Context.EventBridge?.RaisePaySuccess(result);
+                return UniTask.FromResult(result);
+            }
 
             return PayGuardAsync(request, ct, async () =>
             {

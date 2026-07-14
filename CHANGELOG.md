@@ -6,6 +6,14 @@
 
 ---
 
+## [UPM 2026.07.14-01] - 2026-07-14
+
+### Changed
+
+- 发布 `com.solotopia.nova.framework.sdk.iap@0.0.16`，新增随平台票据往返的 `ReceiptParam`，并收敛补单扫描并发与登录前延迟触发。
+- 发布 `com.solotopia.nova.framework.sdk.iap.mobile@0.0.10`，启用 `uid8 + tableId8 + receiptParam16` 透传布局，修复商品拉取、权益刷新、恢复与平台确认流程中的时序问题。
+- NovaSpark 升级为 `NovaSpark2.4.cs`，固定 EDM `1.2.188` 与 unity-mcp `v10.1.0`。
+
 ## [0.5.38] - 2026-07-13
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.38]` 节。

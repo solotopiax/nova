@@ -102,7 +102,7 @@ Android 运行期可以把 Google `OrderId` 写入 `MobileOrderRecord.Transactio
 **命名空间**：`NovaFramework.SDK.IAP.Mobile.Runtime`
 **文件**：`Utils/MobileStoreParameterCodec.cs`
 
-uid + tableId 与 GUID 字符串互转工具，用于购买时将 UID 和 tableId 编码为 UUID 写入平台透传字段（Android: `ObfuscatedAccountId` / `ObfuscatedProfileId`；iOS: `AppAccountToken`），回调时解码还原 tableId 以精确路由订单。对齐 IAP3Helper 的 `IAP3StoreParameterCodec` 设计。
+uid + tableId + receiptParam 三值与 GUID 字符串互转工具，用于购买时把三者编码为 UUID 写入平台账号字段（Android: `ObfuscatedAccountId` / `ObfuscatedProfileId`；iOS: `AppAccountToken`），随平台票据回传，回调 / 补单 / 恢复时解码还原以精确路由订单并把透传数据带回业务（跨重启不丢）。设计对齐 IAP3Helper 的 `IAP3StoreParameterCodec`。相关决策见 [[ADR-072-iap-mobile-passthrough-param-layout]]。
 
 ### §2 文件表
 
@@ -110,17 +110,31 @@ uid + tableId 与 GUID 字符串互转工具，用于购买时将 UID 和 tableI
 |---|---|---|
 | `Utils/MobileStoreParameterCodec.cs` | `internal static class` | 编解码工具，无状态 |
 
+### §3 GUID 布局（32 hex = 16 字节，8/8/16）
+
+| 段 | hex 范围 | 字节 | 内容 | 编码方式 |
+|---|---|---|---|---|
+| uid | `[0,8)` | 4 | 用户 UID | **字符串原文左补 0**（支持字母数字，业务约束 ≤8 字符） |
+| tableId | `[8,16)` | 4 | 商品配置表行 ID | **数值左补 0**（业务约束 ≤8 位十进制） |
+| receiptParam | `[16,32)` | 8 | 业务票据透传参数 | **字符串原文左补 0**（支持字母数字，业务约束 ≤16 字符） |
+
+> uid / receiptParam 允许包含字母，不再要求能解析为 long；tableId 仍按数值写入。三段组合后正好是标准 `8-4-4-4-12` GUID 字符串。
+
 ### §5 完整公开 API
 
 ```csharp
-// 将 uid + tableId 编码为 GUID 格式字符串（8-4-4-4-12）
-// uid 转 long 失败时 uid 部分填 0，tableId 仍正常编码
-// 返回形如 "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" 的字符串
-internal static string Encode(string uid, long tableId)
+// 将 uid + tableId + receiptParam 编码为 GUID（8-4-4-4-12）
+// uid / receiptParam 按原字符串写入定长槽；tableId 按数值写入 8 hex
+internal static string Encode(string uid, long tableId, string receiptParam)
 
-// 从 GUID 字符串中解码 tableId（取去掉连接符后的后 16 个 hex 字符）
-// 解码失败或 GUID 格式非法时返回 0
+// 解码 tableId（hex [8,16) 数值）；失败返回 0
 internal static long DecodeTableId(string guid)
+
+// 解码 receiptParam（hex [16,32) 字符串原文）；无透传/失败返回 null
+internal static string DecodeReceiptParam(string guid)
+
+// 解码 uid（hex [0,8) 字符串原文）；客户端不依赖，供服务端按同布局对齐
+internal static string DecodeUid(string guid)
 ```
 
 ### §9 关键算法
@@ -128,31 +142,36 @@ internal static long DecodeTableId(string guid)
 **编码（Encode）**：
 
 ```
-uid → long（失败填 0）→ X16 hex（16 字符）
-tableId → X16 hex（16 字符）
-raw = uidHex + tableHex（共 32 字符）
-result = raw[0..8] + "-" + raw[8..12] + "-" + raw[12..16] + "-" + raw[16..20] + "-" + raw[20..32]
+uidHex     = uid.ToUpperInvariant().PadLeft(8, '0') → 8 字符
+tableHex   = tableId.ToString("X").PadLeft(8, '0') → 8 hex
+receiptHex = receiptParam.ToUpperInvariant().PadLeft(16, '0') → 16 字符
+raw    = uidHex + tableHex + receiptHex（共 32 字符）
+result = raw[0..8]-raw[8..12]-raw[12..16]-raw[16..20]-raw[20..32]
 ```
 
-**解码（DecodeTableId）**：
-
-```
-raw = guid.Replace("-", "")   // 去掉连接符，得 32 字符 hex 串
-tableHex = raw[16..32]        // 后 16 位
-tableId = long.Parse(tableHex, HexNumber)
-```
+**解码**：`DecodeTableId` 取 `raw[8..16]` 按 hex 解析；`DecodeReceiptParam` / `DecodeUid` 取对应字符串槽位，去掉左侧补 0，全 0 返回 null。
 
 **iOS `AppAccountToken`**：iOS 要求 UUID 格式的 `Guid`，`Encode` 结果恰好是标准 GUID 字符串，`PurchaseService.ApplyPurchaseContext` 中直接 `Guid.TryParse(uuid, out Guid)` 后写入。
 
+**校验**：范围/长度校验在 `MobilePurchaseService.TryValidatePassthroughParams`，由 `PayAsync` 入口调用——tableId 超 8 位、uid 超 8 字符、receiptParam 超 16 字符任一越界都直接拒绝支付（`IAPMobileErrorCode.InvalidPassthroughParam`），不会发起平台购买。`ApplyPurchaseContext` 只做纯编码，不再重复校验；codec 自身同样只做纯编解码。
+
 ### §10 常见误区
 
-**误区 1：uid 为非数字字符串时编码失败**
+**误区 1：receiptParam / uid 需要能解析为数字**
 
-`Encode` 对 uid 做 `long.TryParse`，非数字字符串会使 uid 部分编码为 `0000000000000000`。tableId 编码不受影响，`DecodeTableId` 仍可正确还原。
+二者是**字符串槽位**，不做 `long.TryParse`，因此支持字母数字混合。只有 tableId 是数值。业务传参超字符上限会被拒绝支付，需自行保证 ≤ 上限。
 
-**误区 2：解码结果为 0 但不判断**
+**误区 2：uid 完整 64 位会进透传参数**
 
-服务端和客户端都可能返回全零 tableId，`DecodeTableId` 返回 0 表示解码失败或 tableId 本身无效。`PurchaseService.TryParseTableId` 检查 `> 0` 才继续，直接使用 0 会导致商品匹配失败。
+uid 槽只有 8 个字符；完整 uid 仍由服务端另行同步（见 [[ADR-072-iap-mobile-passthrough-param-layout]]）。客户端从不依赖解码出的 uid。
+
+**误区 3：解码结果为 0 / null 但不判断**
+
+`DecodeTableId` 返回 0 表示解码失败或无效，`PurchaseService.TryParseTableId` 检查 `> 0` 才继续；`DecodeReceiptParam` 返回 null 表示无透传。直接使用会导致路由或业务数据错误。
+
+**误区 4：旧格式（uid16+tableId16）在途单**
+
+历史版本布局为 uid(16)+tableId(16)，本布局改为 8/8/16，属破坏性 on-wire 变更；升级前发起、升级后回来的在途单可能解错 tableId，靠 `ResolveTableIdFromTable`（productId 反查）+ 服务端优先 `serverTableId` 兜底。
 
 ---
 

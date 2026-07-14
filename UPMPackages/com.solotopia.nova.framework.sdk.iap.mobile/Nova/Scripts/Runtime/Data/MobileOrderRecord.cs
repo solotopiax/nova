@@ -56,5 +56,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// 业务透传数据，原样回传给 IAPResult.CustomData.Param。
         /// </summary>
         public string CustomDataParam;
+
+        /// <summary>
+        /// 平台票据透传字符串（对应 IAPRequest.ReceiptParam）。从平台账号字段解码而来，
+        /// 随存档保留，支付/补单/恢复验单完成后回传至 IAPResult.ReceiptParam；无透传时为 null。
+        /// </summary>
+        public string ReceiptParam;
     }
 }

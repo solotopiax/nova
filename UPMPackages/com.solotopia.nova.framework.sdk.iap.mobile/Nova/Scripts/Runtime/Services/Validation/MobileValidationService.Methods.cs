@@ -21,9 +21,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     internal sealed partial class MobileValidationService
     {
         /// <summary>
-        /// 触发 MobileStore 重新加载共享 PersistData 容器；本服务通过 m_OrderRecords 属性即时跟随。
+        /// 确保共享 PersistData 容器已加载；未加载时触发 MobileStore 加载，本服务通过 m_OrderRecords 属性即时跟随。
         /// </summary>
-        private void SyncOrderRecordsFromStore()
+        private void EnsurePersistDataLoaded()
         {
             if (m_Hub.Store?.PersistData == null)
             {
@@ -194,7 +194,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                     continue;
                 }
 
-                RegisterPendingOrder(tableId, string.Empty, info.Token);
+                string receiptParam = MobileStoreParameterCodec.DecodeReceiptParam(info.Parameter);
+                RegisterPendingOrder(tableId, string.Empty, info.Token, receiptParam);
             }
         }
 #endif
@@ -218,7 +219,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                     continue;
                 }
 
-                RegisterPendingOrder(tableId, info.OrderId, string.Empty);
+                string receiptParam = MobileStoreParameterCodec.DecodeReceiptParam(info.Parameter);
+                RegisterPendingOrder(tableId, info.OrderId, string.Empty, receiptParam);
             }
         }
 #endif
@@ -249,7 +251,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="tableId">商品配置表行 ID。</param>
         /// <param name="serverOrderId">服务端返回的订单号（Apple 透传；Google 无此字段时传空）。</param>
         /// <param name="serverToken">服务端返回的购买 token（Google 透传；Apple 无此字段时传空）。</param>
-        private void RegisterPendingOrder(long tableId, string serverOrderId, string serverToken)
+        /// <param name="receiptParam">从服务端透传参数解出的平台票据透传字符串；非空时回填到记录。</param>
+        private void RegisterPendingOrder(long tableId, string serverOrderId, string serverToken, string receiptParam)
         {
             IAPProductEntry entry = m_Hub.Table?.FindByTableId(tableId);
             if (entry == null)
@@ -280,6 +283,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             else if (!string.IsNullOrEmpty(serverToken))
             {
                 record.GoogleToken = serverToken;
+            }
+
+            if (!string.IsNullOrEmpty(receiptParam))
+            {
+                record.ReceiptParam = receiptParam;
             }
 
             record.Status = MobileOrderStatus.PendingValidate;
@@ -314,6 +322,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                         break;
                     case MobileOrderStatus.LocalPayFailed:
                         toRemove.Add(tableId);
+                        continue;
+                    case MobileOrderStatus.AwaitingConfirm:
+                        // 已验单发货、仅待平台 ack；不重发服务端验单，交由本次 FetchPurchases 重新拉取到 PendingOrder 后重试确认。
                         continue;
                 }
                 if (record.Status == MobileOrderStatus.PendingValidate || record.Status == MobileOrderStatus.ValidateFailed)
@@ -529,7 +540,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            var failResult = new IAPResult(record.TableId, (int)code, reason, BuildCustomData(record));
+            var failResult = new IAPResult(record.TableId, (int)code, reason, BuildCustomData(record), record.ReceiptParam);
             m_Hub.Context.EventBridge?.RaisePayFailed(failResult);
             CurrentPayTcs.TrySetResult(failResult);
             CurrentPayTcs = null;
@@ -720,7 +731,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 }
                 case PbNetMobileVerifyOrderStatus.Invalid:
                     m_Hub.Store.TrackValidateFailFinishInternal(context.Record, context.Product, validateCount, false, 0, "服务端拒绝无效订单。", IAPMobileErrorCode.ValidateInvalid, status.ToString());
-                    ConfirmAndFinish(context.Record, context.Product, false, 0L, false, true, orderResult.OrderId, false);
+                    ConfirmAndFinish(context.Record, context.Product, false, 0L, isSubscription, true, orderResult.OrderId, false);
                     return true;
                 case PbNetMobileVerifyOrderStatus.Unspecified:
                 case PbNetMobileVerifyOrderStatus.PendingVerify:
@@ -788,8 +799,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 m_PendingPlatformOrders.Remove(record.TableId);
                 m_OrderRecords.Remove(record.TableId);
                 SaveOrderRecords();
-                var failResult = new IAPResult(record.TableId, (int)IAPMobileErrorCode.ServerValidationFailed, "服务端拒绝无效订单。", BuildCustomData(record));
+                var failResult = new IAPResult(record.TableId, (int)IAPMobileErrorCode.ServerValidationFailed, "服务端拒绝无效订单。", BuildCustomData(record), record.ReceiptParam);
                 m_Hub.Context.EventBridge?.RaisePayFailed(failResult);
+                if (record.IsReplenish && m_Hub.RestoreService != null)
+                {
+                    ProductType restoreProductType = product?.definition.type ?? (isSubscription ? ProductType.Subscription : ProductType.Consumable);
+                    m_Hub.RestoreService.NotifyValidationComplete(failResult, restoreProductType, false);
+                }
+
                 CurrentPayTcs?.TrySetResult(failResult);
                 CurrentPayTcs = null;
                 return;
@@ -811,13 +828,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 m_Hub.ProductService.m_NonConsumablePurchased.Add(record.TableId);
             }
 
-            m_OrderRecords.Remove(record.TableId);
-            SaveOrderRecords();
-            ConfirmPendingPlatformOrder(record.TableId);
+            FinalizeVerifiedOrderRecord(record);
 
             bool isReplenish = record.IsReplenish;
-            IAPResult result = IAPResult.SuccessWithExpire(record.TableId, record.TransactionId ?? string.Empty, isReplenish, canDeliver, BuildCustomData(record), expireMs);
-            bool shouldRaisePaySuccess = ShouldRaisePaySuccess(record, canDeliver, isSubscription);
+            IAPResult result = IAPResult.SuccessWithExpire(record.TableId, record.TransactionId ?? string.Empty, isReplenish, canDeliver, BuildCustomData(record), expireMs, record.ReceiptParam);
+            // product 为 null（订阅商品拉取失败等）时按表配置的 isSubscription 回退，
+            // 避免订阅被误判为 Consumable 导致 RestoreCoordinator 计数与恢复通知走错分支。
+            ProductType pt = product?.definition.type ?? (isSubscription ? ProductType.Subscription : ProductType.Consumable);
+            bool shouldRaisePaySuccess = ShouldRaisePaySuccess(record, canDeliver, isSubscription, pt);
             m_Hub.Store.MarkRuntimeHandledTransactionInternal(record.TransactionId);
             if (shouldRaisePaySuccess)
             {
@@ -825,8 +843,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 m_Hub.Context.EventBridge?.RaisePaySuccess(result);
             }
 
-            ProductType pt = product?.definition.type ?? ProductType.Consumable;
-              if (isReplenish && m_Hub.RestoreService != null)
+            if (isReplenish && m_Hub.RestoreService != null)
             {
                 bool collectRestoreResult = !isSubscription || collectSubscriptionRestored;
                 m_Hub.RestoreService.NotifyValidationComplete(result, pt, collectRestoreResult);
@@ -839,13 +856,34 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
+        /// 验单成功后收尾本地订单记录：存在待确认平台订单时置 AwaitingConfirm 并发起平台确认，
+        /// 待 OnPurchaseConfirmed(ConfirmedOrder) ack 回调到达后再删除；
+        /// 无待确认平台订单（token 补单 / 历史单，无 ack 可等）时直接删除。
+        /// </summary>
+        /// <param name="record">已验单成功的订单记录。</param>
+        private void FinalizeVerifiedOrderRecord(MobileOrderRecord record)
+        {
+            if (m_PendingPlatformOrders.ContainsKey(record.TableId))
+            {
+                record.Status = MobileOrderStatus.AwaitingConfirm;
+                SaveOrderRecords();
+                // ConfirmPurchase 为异步 ack，成功回调后由 TryCompleteAwaitingConfirm 删除记录；失败则保留等待重试。
+                ConfirmPendingPlatformOrder(record.TableId);
+                return;
+            }
+
+            m_OrderRecords.Remove(record.TableId);
+            SaveOrderRecords();
+        }
+
+        /// <summary>
         /// 判断本次验单完成是否需要派发全局 PaySuccess。
         /// </summary>
         /// <param name="record">已完成验单的订单记录。</param>
         /// <param name="canDeliver">服务端确认本地需要发奖时为 true。</param>
         /// <param name="isSubscription">当前商品是否为订阅类型。</param>
         /// <returns>需要派发 PaySuccess 时返回 true。</returns>
-        private bool ShouldRaisePaySuccess(MobileOrderRecord record, bool canDeliver, bool isSubscription)
+        private bool ShouldRaisePaySuccess(MobileOrderRecord record, bool canDeliver, bool isSubscription, ProductType productType)
         {
             if (!canDeliver)
             {
@@ -858,12 +896,20 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return false;
             }
 
-            if (!isSubscription)
+            // 订阅与非消耗品的恢复/补单只经 SubscriptionRestored / NonConsumeRestored 通知，
+            // PaySuccess 仅用于本次主动购买（IsReplenish=false）；否则已拥有的非消耗品每次启动权益查询回调都会重发 PaySuccess。
+            // 消耗品无恢复通道，补单必须照常发 PaySuccess 才能发货。
+            if (isSubscription)
             {
-                return true;
+                return !record.IsReplenish && CurrentPayTcs != null;
             }
 
-            return !record.IsReplenish && CurrentPayTcs != null;
+            if (productType == ProductType.NonConsumable)
+            {
+                return !record.IsReplenish;
+            }
+
+            return true;
         }
 
         /// <summary>

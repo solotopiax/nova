@@ -31,6 +31,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
+            bool skippedEligibleProductBecauseNotFetched = false;
             foreach (IAPProductEntry entry in m_Hub.Table.Products)
             {
                 if (entry == null)
@@ -43,9 +44,18 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                     continue;
                 }
 
+                if (m_Hub.Store.IsUnavailableSkuInternal(entry.ProductID))
+                {
+                    // 平台已确认不可购买（拉取失败）的商品不会再进入 StoreController，
+                    // 跳过且不置 skippedEligibleProductBecauseNotFetched，避免权益刷新被永久延后挂起。
+                    Log.Warning(LogTag.IAPMobile, $"跳过不可购买商品的权益检查，商品ID={entry.ProductID}");
+                    continue;
+                }
+
                 Product product = m_Hub.ExtendedService.GetProductById(entry.ProductID);
                 if (product == null)
                 {
+                    skippedEligibleProductBecauseNotFetched = true;
                     continue;
                 }
 
@@ -64,7 +74,15 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             else
             {
                 // 无需查询的商品时直接进入汇总阶段，避免 Restore 流程永久挂起
-                Log.Debug(LogTag.IAPMobile, "没有待查询的订阅或非消耗品。");
+                if (skippedEligibleProductBecauseNotFetched)
+                {
+                    m_PendingEntitlementRefreshAfterProductsFetched = true;
+                    Log.Warning(LogTag.IAPMobile, "订阅或非消耗品尚未进入 StoreController，已延后权益刷新。");
+                }
+                else
+                {
+                    Log.Debug(LogTag.IAPMobile, "没有待查询的订阅或非消耗品。");
+                }
                 ProcessAllEntitlementsCompleted();
             }
         }
@@ -150,6 +168,36 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             combined.AddRange(ncResults);
             // 完成 RestoreAsync 的 await 点
             tcs?.TrySetResult(combined);
+        }
+
+        /// <summary>
+        /// 在非协调 Restore 路径下就地补发单条订阅恢复通知，保证订阅恢复成功必有全局 SubscriptionRestored 事件。
+        /// </summary>
+        /// <param name="result">已验单成功的订阅恢复结果。</param>
+        private void RaiseStandaloneSubscriptionRestored(IAPResult result)
+        {
+            if (result == null)
+            {
+                return;
+            }
+
+            var single = new List<IAPResult>(1) { result };
+            m_Hub.Context.EventBridge?.RaiseSubscriptionRestored(single);
+        }
+
+        /// <summary>
+        /// 在非协调 Restore 路径下就地补发单条非消耗品恢复通知，保证非消耗品恢复必有全局 NonConsumeRestored 事件。
+        /// </summary>
+        /// <param name="result">已验单成功的非消耗品恢复结果。</param>
+        private void RaiseStandaloneNonConsumeRestored(IAPResult result)
+        {
+            if (result == null)
+            {
+                return;
+            }
+
+            var single = new List<IAPResult>(1) { result };
+            m_Hub.Context.EventBridge?.RaiseNonConsumeRestored(single);
         }
     }
 }

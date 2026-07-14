@@ -245,40 +245,6 @@ namespace NovaFramework.SDK.IAP.Runtime
         }
 
         /// <summary>
-        /// 缓存一条待条件满足后执行的事件。
-        /// </summary>
-        /// <param name="eventAction">待执行的异步事件。</param>
-        /// <param name="eventName">事件名称，仅用于日志诊断。</param>
-        private void CacheEvent(Func<UniTask> eventAction, string eventName)
-        {
-            if (eventAction == null)
-            {
-                return;
-            }
-
-            m_EventCaches.Add(eventAction);
-            Log.Debug(LogTag.IAPPlugin, "IAPPlugin 已缓存延后执行事件：{0}。", eventName);
-        }
-
-        /// <summary>
-        /// 按入队顺序回放缓存事件。
-        /// </summary>
-        /// <returns>全部可执行缓存事件回放完成的异步任务。</returns>
-        private async UniTask ReplayEventCachesAsync()
-        {   
-            if (m_IsReplayingEventCaches)
-            {
-                Log.Debug(LogTag.IAPPlugin, "IAPPlugin 正在回放缓存事件，跳过。");
-                return;
-            }
-
-            m_IsReplayingEventCaches = true;
-            m_EventCaches.ForEach(async eventAction => await eventAction());
-            m_EventCaches.Clear();
-            m_IsReplayingEventCaches = false;
-        }
-
-        /// <summary>
         /// 接收 store 初始化结果并派发到 Events.InitResult。
         /// </summary>
         /// <param name="result">包含成功标志、失败原因与详情的初始化结果。</param>
