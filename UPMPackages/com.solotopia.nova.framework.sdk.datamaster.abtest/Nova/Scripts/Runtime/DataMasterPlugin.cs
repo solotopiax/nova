@@ -57,6 +57,21 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         private string m_CurrentUserId;
 
         /// <summary>
+        /// 当前可用的归因插件，通过框架接口取得，不依赖 AppsFlyer 具体实现。
+        /// </summary>
+        private IAttributionPlugin m_AttributionPlugin;
+
+        /// <summary>
+        /// 最近一次就绪的归因结果，供每次事件上报实时构造用户上下文。
+        /// </summary>
+        private AttributionData m_Attribution;
+
+        /// <summary>
+        /// 异步等待归因结果的生命周期取消源。
+        /// </summary>
+        private CancellationTokenSource m_AttributionCancellation;
+
+        /// <summary>
         /// 已落库主题名（topic_name）缓存，OnInitializeAsync 时从默认配置 Params.Keys 取得。
         /// 业务读参 / 曝光 / 读原始 JSON 所需的 topicId 实际即此 topic_name（非 experiment.topicId），
         /// 由服务端生成、业务无法预知；但默认配置随包发布、其 Params.Keys 即业务可读主题全集
@@ -122,6 +137,7 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
             m_Initialized = true;
 
             SubscribeEvents();
+            SubscribeAttribution(ct);
             Log.Debug(LogTag.SDK, "DataMaster 初始化完成。");
 #else
             Log.Warning(LogTag.SDK, "DataMaster SDK（com.starlus.sdk.datamaster）未安装，插件降级为不可用：读参返回兜底值，曝光 / 事件上报 / 服务端拉取均为空操作。");
@@ -136,6 +152,16 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         /// <returns>释放完成的异步任务。</returns>
         protected override UniTask OnDisposeAsync(CancellationToken ct)
         {
+            if (m_AttributionPlugin != null)
+            {
+                m_AttributionPlugin.OnAttributionResolved -= OnAttributionResolved;
+                m_AttributionPlugin = null;
+            }
+            m_AttributionCancellation?.Cancel();
+            m_AttributionCancellation?.Dispose();
+            m_AttributionCancellation = null;
+            m_Attribution = null;
+
             if (m_EventManager != null)
             {
                 m_EventManager.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
@@ -160,16 +186,15 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         }
 
         /// <summary>
-        /// 一次性设齐服务端分流所需的两条必传属性：app_version 与 install_time。
-        /// 业务在触发拉取（登录）前调用一次即可，无需自行合成版本号 / 记录安装时间。
+        /// 立即刷新服务端分流所需的两条框架属性：app_version 与 install_time。
+        /// 插件在每次服务端拉取前都会自动执行同样操作；本接口仅保留给需要提前查看属性的兼容场景。
         /// app_version 取 <see cref="GetAppVersionCode"/>（整数版本号，number 类型），
         /// install_time 取 <see cref="GetInstallTimeMs"/>（首次启动毫秒时间戳）。
         /// 其余分流属性（如 country_code）仍由业务按需 <see cref="SetUserProperty"/>。
         /// </summary>
         public void ApplyRequiredUserProperties()
         {
-            m_UserProperties["app_version"] = GetAppVersionCode();
-            m_UserProperties["install_time"] = GetInstallTimeMs();
+            RefreshFrameworkUserProperties();
         }
 
         /// <summary>
@@ -193,7 +218,7 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
         /// 取本设备首次启动的毫秒时间戳作为 install_time 的近似值（number / long，13 位）。
         /// 首次调用以当前 UTC 时间记入 PlayerPrefs 持久化，之后读取存值，保证单设备取值稳定。
         /// 说明：Unity 无「真实首次安装时间」的跨平台 API，故以「本地首次启动」近似；
-        /// 需精确安装时间的业务可自行覆盖（登录前 SetUserProperty("install_time", 真实值)）。
+        /// 该值会在每次刷新前写入 install_time，保证刷新与事件上下文口径一致。
         /// </summary>
         /// <returns>首次启动毫秒时间戳。</returns>
         public long GetInstallTimeMs()
@@ -275,36 +300,31 @@ namespace NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime
 #endif
         }
 
-#if NOVA_STARLUS_DATAMASTER
         /// <summary>
-        /// 上报一条实验指标事件（主数值写入 primaryValue，供服务端聚合计算实验指标）。
+        /// 上报一条实验指标事件，并把调用方字典作为本次事件的扩展上下文。
+        /// 框架会在调用时重新采集全部标准用户字段；扩展字典不缓存、不合并、不修改。
         /// </summary>
         /// <param name="eventName">事件名，不可为空。</param>
         /// <param name="value">主数值（如金额、次数）。</param>
-        /// <param name="userContext">用户上下文，承载玩家画像与业务扩展字段。</param>
-        /// <remarks>此重载签名含厂商类型 <c>DMUserContext</c>，仅在已安装 DataMaster SDK（宏 NOVA_STARLUS_DATAMASTER 生效）时可用；未安装时请用无 userContext 的简化重载。</remarks>
-        public void LogExperimentEvent(string eventName, double value, DMUserContext userContext)
+        /// <param name="extraContext">仅随本次事件上传的业务扩展字段；可为 null。</param>
+        public void LogExperimentEvent(
+            string eventName,
+            double value,
+            Dictionary<string, object> extraContext)
         {
-            DataMaster.Instance.LogEvent(eventName, value, userContext);
-        }
+#if NOVA_STARLUS_DATAMASTER
+            DataMaster.Instance.LogEvent(eventName, value, BuildUserContext(extraContext));
 #endif
+        }
 
         /// <summary>
-        /// 上报一条实验指标事件（简化版，自动以当前登录用户与设备构造用户上下文）。
-        /// 适合大多数业务：无需引用厂商上下文类型。需要携带更多画像字段时用带 DMUserContext 的重载。
+        /// 上报一条实验指标事件（简化版），框架在调用时重新采集标准用户上下文。
         /// </summary>
         /// <param name="eventName">事件名，不可为空。</param>
         /// <param name="value">主数值（如金额、次数）。</param>
         public void LogExperimentEvent(string eventName, double value)
         {
-#if NOVA_STARLUS_DATAMASTER
-            var userContext = new DMUserContext
-            {
-                PlayerId = m_CurrentUserId,
-                DeviceId = ResolveDeviceId(),
-            };
-            DataMaster.Instance.LogEvent(eventName, value, userContext);
-#endif
+            LogExperimentEvent(eventName, value, null);
         }
 
         /// <summary>

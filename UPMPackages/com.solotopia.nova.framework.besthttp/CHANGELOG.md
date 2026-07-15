@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.11] - 2026-07-15
+
+### Changed
+
+- 清理 `BestHttpTransport` 构造函数内已废弃的 TLS/OCSP 配置示例代码，改为保留说明性注释。
+
 ## [0.0.10] - 2026-07-13
 
 ### Changed

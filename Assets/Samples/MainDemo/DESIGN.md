@@ -280,6 +280,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - API 副标题：`Nova.Vibrate.Play(VibrateType.Light) / PlayCustom(...) / StopAll()`
 - 主题：振动 类型/自定义/紧急 三态
 - InteractionArea：VibrateType 下拉 + Play/PlayCustom/PlayEmphasis/StopAll 4 按钮 + IsSupported 卡片
+- PlayCustom 与 PlayEmphasis 即时调用按钮上方各有一组 4 个 float 输入框，按接口参数顺序排列；默认值均为 `1 / 1 / 0 / 1`，每组前两个参数限制在 `0-1`
 - 反馈样例：`> Nova.Vibrate.Play(Light) → ok / supported=true`
 - 数据：xlsx `Demo_VibrateCustom`（2 行）+ `Demo_VibrateEmphasis`（2 行）
 
@@ -539,4 +540,3 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 10. **DemoIntegrationProcedureAsset 4.3 真做热更链路演示还是只读快照**：背景说明"4.3 / 4.5 走只读快照"，但若 EnableHotfix=false 则链路展示无意义，**确认 4.3 仅展示当前总开关 + 节点状态即可，不实际跑下载**。
 
 > 设计稿到此结束。
-

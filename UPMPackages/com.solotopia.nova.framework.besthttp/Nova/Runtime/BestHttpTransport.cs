@@ -30,6 +30,9 @@ namespace NovaFramework.BestHTTP.Runtime
         {
             m_RequestTimeout = requestTimeout;
             m_ConnectTimeout = connectTimeout;
+        //     Best.TLSSecurity.TLSSecurityOptions.OCSP.EnableOCSPQueries = true;
+        //     Best.HTTP.HostSetting.HostManager.Clear();
+        //     Best.TLSSecurity.TLSSecurity.Setup();
         }
 
         public UniTask<HttpResponse> GetAsync(string url, float requestTimeout, float connectTimeout, string headerInfos, string hostHeader)

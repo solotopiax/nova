@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.5.39] - 2026-07-15
+
+### Added
+
+- `Samples~/MainDemo` 震动 Demo（`DemoVibrateView`）新增强度、尖锐度、预持续时间、持续时间的自定义输入框，并对输入参数做范围校验。
+
 ## [0.5.38] - 2026-07-13
 
 ### Fixed

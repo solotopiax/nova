@@ -10,6 +10,7 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Kit.Network.GameLogin.Runtime;
 using NovaFramework.Runtime;
@@ -224,8 +225,8 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
         }
 
         /// <summary>
-        /// 上报实验事件（LogExperimentEvent 简化版）。
-        /// 只带 eventName + 当前登录 uid，服务端按 uid 关联到该玩家的实验分组归因，无需上报"看到哪种按钮风格"。
+        /// 上报实验事件，并演示只随本次事件发送的 ExtraContext。
+        /// UID、设备、归因、渠道、安装时间、国家、语言、版本和平台由框架在调用时实时采集。
         /// </summary>
         private void OnLogEventClick()
         {
@@ -233,8 +234,15 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
             {
                 return;
             }
-            dataMaster.LogExperimentEvent("play_btn_click", 1);
-            AppendFeedback("已上报实验事件：play_btn_click (value=1)", FeedbackLevel.Info);
+            var extraContext = new Dictionary<string, object>
+            {
+                ["source"] = "datamaster_demo",
+                ["button"] = "play",
+            };
+            dataMaster.LogExperimentEvent("play_btn_click", 1, extraContext);
+            AppendFeedback(
+                "已上报实验事件：play_btn_click (value=1, extraContext: source=datamaster_demo, button=play)",
+                FeedbackLevel.Info);
         }
 
         /// <summary>
@@ -253,8 +261,8 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
 
         /// <summary>
         /// 设置分流用户属性（SetUserProperty），供下次拉取分流匹配。
-        /// 两条必传属性 app_version / install_time 直接走插件的 ApplyRequiredUserProperties()，
-        /// 业务无需自行合成版本号 / 记录安装时间；country_code 作为示例分流条件按需单独设置。
+        /// app_version / install_time 会在每次刷新请求发出前由框架自动更新；
+        /// country_code 作为示例分流条件由项目按需设置。
         /// </summary>
         private void OnSetPropertyClick()
         {
@@ -263,9 +271,8 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
                 return;
             }
             dataMaster.SetUserProperty("country_code", "US");
-            dataMaster.ApplyRequiredUserProperties();
             AppendFeedback(
-                $"已设置分流属性：country_code=US, app_version={dataMaster.GetAppVersionCode()}, install_time={dataMaster.GetInstallTimeMs()}（下次拉取生效）",
+                "已设置分流属性：country_code=US；app_version / install_time 将在下次拉取前由框架自动更新。",
                 FeedbackLevel.Info);
         }
 

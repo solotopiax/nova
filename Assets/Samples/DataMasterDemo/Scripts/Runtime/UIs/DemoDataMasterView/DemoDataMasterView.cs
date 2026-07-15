@@ -38,7 +38,10 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
             BindButton(m_ReadParamButton, OnReadParamClick, "GetParamValue<T>(topicId, paramName, fallback)");
             BindButton(m_ReadJsonButton, OnReadJsonClick, "GetParamValueJson(topicId, paramName)");
             BindButton(m_ExposureButton, OnExposureClick, "MarkExposure(topicId)");
-            BindButton(m_LogEventButton, OnLogEventClick, "LogExperimentEvent(eventName, value)");
+            BindButton(
+                m_LogEventButton,
+                OnLogEventClick,
+                "LogExperimentEvent(eventName, value, extraContext)");
         }
 
         /// <summary>

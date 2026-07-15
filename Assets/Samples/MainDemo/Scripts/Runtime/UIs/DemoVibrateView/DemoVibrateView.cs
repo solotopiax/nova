@@ -11,6 +11,7 @@
  *            API：Nova.Vibrate.Play / PlayCustom / PlayEmphasis / StopAll
  ***************************************************************/
 
+using System.Globalization;
 using NovaFramework.Runtime;
 using TMPro;
 using UnityEngine;
@@ -37,6 +38,26 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private Button m_PlayButton;
 
         /// <summary>
+        /// PlayCustom 强度输入，范围为 0-1。
+        /// </summary>
+        [SerializeField] private TMP_InputField m_CustomIntensityInput;
+
+        /// <summary>
+        /// PlayCustom 锐度输入，范围为 0-1。
+        /// </summary>
+        [SerializeField] private TMP_InputField m_CustomSharpnessInput;
+
+        /// <summary>
+        /// PlayCustom 前置延迟输入（秒）。
+        /// </summary>
+        [SerializeField] private TMP_InputField m_CustomPreDurationInput;
+
+        /// <summary>
+        /// PlayCustom 持续时间输入（秒）。
+        /// </summary>
+        [SerializeField] private TMP_InputField m_CustomDurationInput;
+
+        /// <summary>
         /// PlayCustom 按钮，调用 PlayCustom(intensity, sharpness, preDuration, duration)。
         /// </summary>
 
@@ -47,6 +68,26 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
 
         [SerializeField] private Button m_PlayCustomByNameButton;
+
+        /// <summary>
+        /// PlayEmphasis 幅度输入，范围为 0-1。
+        /// </summary>
+        [SerializeField] private TMP_InputField m_EmphasisAmplitudeInput;
+
+        /// <summary>
+        /// PlayEmphasis 频率输入，范围为 0-1。
+        /// </summary>
+        [SerializeField] private TMP_InputField m_EmphasisFrequencyInput;
+
+        /// <summary>
+        /// PlayEmphasis 前置延迟输入（秒）。
+        /// </summary>
+        [SerializeField] private TMP_InputField m_EmphasisPreDurationInput;
+
+        /// <summary>
+        /// PlayEmphasis 间隔输入（秒）。
+        /// </summary>
+        [SerializeField] private TMP_InputField m_EmphasisIntervalInput;
 
         /// <summary>
         /// PlayEmphasis 按钮，调用 PlayEmphasis(amplitude, frequency, preDuration, interval)。
@@ -71,46 +112,6 @@ namespace NovaFramework.Samples.Runtime
         /// </summary>
 
         [SerializeField] private TextMeshProUGUI m_IsSupportedText;
-
-        /// <summary>
-        /// PlayCustom 演示用强度参数。
-        /// </summary>
-        private const float c_CustomIntensity = 0.5f;
-
-        /// <summary>
-        /// PlayCustom 演示用锐度参数。
-        /// </summary>
-        private const float c_CustomSharpness = 0.5f;
-
-        /// <summary>
-        /// PlayCustom 演示用前置延迟参数（秒）。
-        /// </summary>
-        private const float c_CustomPreDuration = 0f;
-
-        /// <summary>
-        /// PlayCustom 演示用持续时间参数（秒）。
-        /// </summary>
-        private const float c_CustomDuration = 0.3f;
-
-        /// <summary>
-        /// PlayEmphasis 演示用幅度参数。
-        /// </summary>
-        private const float c_EmphasisAmplitude = 0.8f;
-
-        /// <summary>
-        /// PlayEmphasis 演示用频率参数。
-        /// </summary>
-        private const float c_EmphasisFrequency = 0.5f;
-
-        /// <summary>
-        /// PlayEmphasis 演示用前置延迟参数（秒）。
-        /// </summary>
-        private const float c_EmphasisPreDuration = 0f;
-
-        /// <summary>
-        /// PlayEmphasis 演示用间隔参数（秒）。
-        /// </summary>
-        private const float c_EmphasisInterval = 0.1f;
 
         /// <summary>
         /// PlayCustom(name) 演示固定 name（来自 Demo_VibrateCustom 数据表首行）。
@@ -199,7 +200,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// PlayCustom 按钮点击：调用 PlayCustom(intensity, sharpness, preDuration, duration) 固定参数。
+        /// PlayCustom 按钮点击：读取配置并调用 PlayCustom(intensity, sharpness, preDuration, duration)。
         /// </summary>
         private void OnPlayCustomButtonClick()
         {
@@ -209,9 +210,17 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            Nova.Vibrate.PlayCustom(c_CustomIntensity, c_CustomSharpness, c_CustomPreDuration, c_CustomDuration);
+            if (!TryReadParameter(m_CustomIntensityInput, "intensity", true, out float intensity) ||
+                !TryReadParameter(m_CustomSharpnessInput, "sharpness", true, out float sharpness) ||
+                !TryReadParameter(m_CustomPreDurationInput, "preDuration", false, out float preDuration) ||
+                !TryReadParameter(m_CustomDurationInput, "duration", false, out float duration))
+            {
+                return;
+            }
+
+            Nova.Vibrate.PlayCustom(intensity, sharpness, preDuration, duration);
             bool supported = Nova.Vibrate.IsSupported;
-            AppendFeedback($"Nova.Vibrate.PlayCustom(intensity={c_CustomIntensity}, sharpness={c_CustomSharpness}, pre={c_CustomPreDuration}, dur={c_CustomDuration}) -> ok / supported={supported}", supported ? FeedbackLevel.Success : FeedbackLevel.Warn);
+            AppendFeedback($"Nova.Vibrate.PlayCustom(intensity={intensity}, sharpness={sharpness}, pre={preDuration}, dur={duration}) -> ok / supported={supported}", supported ? FeedbackLevel.Success : FeedbackLevel.Warn);
         }
 
         /// <summary>
@@ -231,7 +240,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// PlayEmphasis 按钮点击：调用 PlayEmphasis(amplitude, frequency, preDuration, interval) 固定参数。
+        /// PlayEmphasis 按钮点击：读取配置并调用 PlayEmphasis(amplitude, frequency, preDuration, interval)。
         /// </summary>
         private void OnPlayEmphasisButtonClick()
         {
@@ -241,9 +250,17 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            Nova.Vibrate.PlayEmphasis(c_EmphasisAmplitude, c_EmphasisFrequency, c_EmphasisPreDuration, c_EmphasisInterval);
+            if (!TryReadParameter(m_EmphasisAmplitudeInput, "amplitude", true, out float amplitude) ||
+                !TryReadParameter(m_EmphasisFrequencyInput, "frequency", true, out float frequency) ||
+                !TryReadParameter(m_EmphasisPreDurationInput, "preDuration", false, out float preDuration) ||
+                !TryReadParameter(m_EmphasisIntervalInput, "interval", false, out float interval))
+            {
+                return;
+            }
+
+            Nova.Vibrate.PlayEmphasis(amplitude, frequency, preDuration, interval);
             bool supported = Nova.Vibrate.IsSupported;
-            AppendFeedback($"Nova.Vibrate.PlayEmphasis(amp={c_EmphasisAmplitude}, freq={c_EmphasisFrequency}, pre={c_EmphasisPreDuration}, interval={c_EmphasisInterval}) -> ok / supported={supported}", supported ? FeedbackLevel.Success : FeedbackLevel.Warn);
+            AppendFeedback($"Nova.Vibrate.PlayEmphasis(amp={amplitude}, freq={frequency}, pre={preDuration}, interval={interval}) -> ok / supported={supported}", supported ? FeedbackLevel.Success : FeedbackLevel.Warn);
         }
 
         /// <summary>
@@ -275,6 +292,47 @@ namespace NovaFramework.Samples.Runtime
 
             Nova.Vibrate.StopAll();
             AppendFeedback("Nova.Vibrate.StopAll() -> ok", FeedbackLevel.Success);
+        }
+
+        /// <summary>
+        /// 读取单个振动参数；归一化参数会限制到 0-1 并回写输入框。
+        /// </summary>
+        private bool TryReadParameter(TMP_InputField input, string parameterName, bool normalized, out float value)
+        {
+            string raw = input != null ? input.text : null;
+            if (!TryParseParameter(raw, normalized, out value))
+            {
+                AppendFeedback($"{parameterName} 输入 \"{raw}\" 不是有效浮点数", FeedbackLevel.Error);
+                return false;
+            }
+
+            if (normalized)
+            {
+                input.SetTextWithoutNotify(value.ToString("G9", CultureInfo.InvariantCulture));
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 按固定小数点格式解析振动参数，并按需限制到 0-1。
+        /// </summary>
+        private static bool TryParseParameter(string raw, bool normalized, out float value)
+        {
+            if (!float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out value) ||
+                float.IsNaN(value) ||
+                float.IsInfinity(value))
+            {
+                value = 0f;
+                return false;
+            }
+
+            if (normalized)
+            {
+                value = Mathf.Clamp01(value);
+            }
+
+            return true;
         }
 
         /// <summary>

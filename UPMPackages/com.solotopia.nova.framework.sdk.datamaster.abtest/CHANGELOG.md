@@ -3,6 +3,22 @@
 本文件记录 `com.solotopia.nova.framework.sdk.datamaster` 的版本变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [0.0.7] - 2026-07-15
+
+### Added
+
+- `LogExperimentEvent(string, double, Dictionary<string, object>)`：项目可为单次事件传入 `ExtraContext`，字典不缓存、不合并、不修改。
+- 每次事件上报前实时构造 `DMUserContext`，自动填充当前 UID、设备 ID、归因来源与 Campaign、渠道、安装时间、国家、语言、整数版本号及 Android/iOS 平台标识；数据不可用时对应字段留空。
+
+### Changed
+
+- 每次服务端刷新请求发出前强制更新 `m_UserProperties` 中的 `app_version` / `install_time`；`SetUserProperty` 仍允许项目设置任意分流属性。
+- DataMasterDemo 改为演示单次 `extraContext`，并移除登录拉取前显式调用 `ApplyRequiredUserProperties()` 的要求。
+
+### Removed
+
+- 删除公开的 `LogExperimentEvent(string, double, DMUserContext)` 厂商类型重载，标准用户上下文统一由框架实时维护。
+
 ## [0.0.6] - 2026-07-13
 
 ### Changed

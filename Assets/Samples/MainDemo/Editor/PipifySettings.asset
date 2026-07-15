@@ -40,7 +40,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
-        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"solotopia\",\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"/Users/taoye/Desktop/Nova/Docs/certificates/solotopia.keystore\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build\"\n}"
     - m_StepId: shell.open_folder
@@ -93,7 +93,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
-        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"solotopia\",\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"/Users/taoye/Desktop/Nova/Docs/certificates/solotopia.keystore\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build\"\n}"
     - m_StepId: shell.open_folder
