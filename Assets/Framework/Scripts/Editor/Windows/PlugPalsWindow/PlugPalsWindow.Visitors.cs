@@ -48,6 +48,11 @@ namespace NovaFramework.Editor
         private const string c_WindowTitle = "Nova · PlugPals";
 
         /// <summary>
+        /// 窗口内主标题。
+        /// </summary>
+        private const string c_MainTitle = "PlugPals 云插件服务中心";
+
+        /// <summary>
         /// manifest.json 相对工程根目录路径。
         /// </summary>
         private const string c_ManifestPath = "Packages/manifest.json";

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 544ff9499ed3e4a909781df8bbaea594
+guid: 1ff7eb1bfd81c4c788310cd97b4bf06f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8743483343508785341
-    second: Foreground432 1_0
+      213: 8566875800012416929
+    second: Foreground324_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -139,13 +139,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Foreground432 1_0
+      name: Foreground324_0
       rect:
         serializedVersion: 2
-        x: 98
-        y: 71
-        width: 236
-        height: 290
+        x: 73
+        y: 53
+        width: 178
+        height: 218
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -154,8 +154,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3473d9a5938e8a680800000000000000
-      internalID: -8743483343508785341
+      spriteID: 1a761ae9628a3e670800000000000000
+      internalID: 8566875800012416929
       vertices: []
       indices: 
       edges: []
@@ -174,7 +174,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Foreground432 1_0: -8743483343508785341
+      Foreground324_0: 8566875800012416929
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

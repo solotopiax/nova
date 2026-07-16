@@ -114,6 +114,7 @@ namespace NovaFramework.Editor
 
             if (m_FilteredPackages != null)
             {
+                DrawBatchUpgradeButton();
                 DrawHeader();
                 m_ScrollPos = EditorGUILayout.BeginScrollView(m_ScrollPos);
                 for (int i = 0; i < m_FilteredPackages.Count; i++)

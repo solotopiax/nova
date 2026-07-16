@@ -6,6 +6,14 @@
 
 ---
 
+## [0.5.41] - 2026-07-16
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.41]` 节。
+
+### Added
+
+- 发布 `com.solotopia.nova.framework@0.5.41`，为 PlugPals“已安装”页新增一键批量升级入口，并更新服务中心标题与自适应布局。
+
 ## [0.5.40] - 2026-07-16
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.40]` 节。

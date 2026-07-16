@@ -341,12 +341,7 @@ namespace NovaFramework.Editor
         {
             EnsureStyles();
             EditorUtil.Draw.Space(8f);
-            EditorUtil.Draw.Layout.Horizontal(() =>
-            {
-                EditorUtil.Draw.FlexibleSpace();
-                EditorUtil.Draw.Label("Plugin 云插件服务中心", m_MainTitleStyle, false);
-                EditorUtil.Draw.FlexibleSpace();
-            });
+            EditorUtil.Draw.Label(c_MainTitle, m_MainTitleStyle, false, GUILayout.ExpandWidth(true));
             EditorUtil.Draw.Space(8f);
             EditorUtil.Draw.Line();
         }
@@ -728,6 +723,98 @@ namespace NovaFramework.Editor
             }
 
             return HasRemoteUpgrade(entry);
+        }
+
+        /// <summary>
+        /// 从当前已安装页可见条目中收集可升级包。
+        /// </summary>
+        private static List<EditorUtil.PlugPals.PackageDisplayEntry> GetUpgradeableEntries(
+            IReadOnlyList<EditorUtil.PlugPals.PackageDisplayEntry> entries)
+        {
+            var result = new List<EditorUtil.PlugPals.PackageDisplayEntry>();
+            if (entries == null)
+            {
+                return result;
+            }
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                EditorUtil.PlugPals.PackageDisplayEntry entry = entries[i];
+                if (entry != null && entry.Status == EditorUtil.PlugPals.PackageStatus.Upgradeable && CanInstallOrUpgrade(entry))
+                {
+                    result.Add(entry);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 在“已安装”页列表顶部绘制横向拉满的一键升级按钮。
+        /// </summary>
+        private void DrawBatchUpgradeButton()
+        {
+            if (!m_ShowInstalledOnly)
+            {
+                return;
+            }
+
+            List<EditorUtil.PlugPals.PackageDisplayEntry> upgradeableEntries = GetUpgradeableEntries(m_FilteredPackages);
+            EditorUtil.Draw.Space(6f);
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(8f);
+                EditorUtil.Draw.DisabledGroup(m_IsOperating || upgradeableEntries.Count == 0, () =>
+                {
+                    EditorUtil.Draw.SuccessButton("一键升级", false, () => UpgradeAll(upgradeableEntries),
+                        GUILayout.ExpandWidth(true), GUILayout.Height(28f));
+                });
+                EditorUtil.Draw.Space(8f);
+            });
+            EditorUtil.Draw.Space(2f);
+        }
+
+        /// <summary>
+        /// 批量调用既有单包安装升级入口，复用依赖预检与延迟 Resolve 机制。
+        /// </summary>
+        private void UpgradeAll(IReadOnlyList<EditorUtil.PlugPals.PackageDisplayEntry> entries)
+        {
+            if (entries == null || entries.Count == 0 ||
+                !EditorUtility.DisplayDialog("确认一键升级", $"确认升级当前页面中的 {entries.Count} 个可升级包？", "确定", "取消"))
+            {
+                return;
+            }
+
+            m_IsOperating = true;
+            int upgradedCount = 0;
+            try
+            {
+                Dictionary<string, EditorUtil.PlugPals.RegistrySource> knownRegistryPackages = BuildKnownRegistryPackages();
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    EditorUtil.PlugPals.PackageDisplayEntry entry = entries[i];
+                    if (EditorUtil.PlugPals.InstallPackage(
+                        GetManifestFullPath(),
+                        GetRegistryUrl(entry),
+                        GetRegistryName(entry),
+                        entry,
+                        knownRegistryPackages))
+                    {
+                        upgradedCount++;
+                    }
+                }
+
+                ShowNotification(new GUIContent($"已提交 {upgradedCount} 个包的升级"));
+            }
+            catch (Exception e)
+            {
+                m_ErrorMessage = "批量升级失败: " + e.Message;
+            }
+            finally
+            {
+                m_IsOperating = false;
+                Repaint();
+            }
         }
 
         /// <summary>
