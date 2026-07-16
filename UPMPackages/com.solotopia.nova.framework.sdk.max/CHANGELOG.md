@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.16] - 2026-07-16
+
+### Changed
+
+- 将 AppLovin MAX 的 ByteDance Android/iOS mediation adapter 最低版本分别提升至 `801000300.0.0` 与 `801000600.0.0`。
+
 ## [0.0.15] - 2026-07-13
 
 ### Changed

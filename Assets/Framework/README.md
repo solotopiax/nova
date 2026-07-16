@@ -1,7 +1,7 @@
 # Nova Framework
 
 > 包名：`com.solotopia.nova.framework`
-> 当前版本：`0.5.39`
+> 当前版本：`0.5.40`
 > Unity：`6000.4`
 
 Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、各业务 Component 入口与默认 MainDemo Sample。
@@ -12,7 +12,7 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework": "0.5.39"
+  "com.solotopia.nova.framework": "0.5.40"
 }
 ```
 
@@ -69,12 +69,13 @@ HTTP 可选 BestHTTP 后端已拆分为独立包 `com.solotopia.nova.framework.b
 
 ## Samples
 
-包内置 `Samples~/MainDemo`，可在 Unity Package Manager 面板按需导入，导入后会自动检测旧版本残留并提示清理、自动设置启动场景。
+包内置 `Samples~/MainDemo`，可在 Unity Package Manager 面板按需导入；导入后会检测旧版本残留，并在需要调整启动场景时先询问用户，不会静默覆盖 Build Settings。
 
 ## 文档
 
 详细的框架 API 与架构文档位于 `Assets/Framework/Docs/`：
 
+- [START_HERE.md](Docs/START_HERE.md) — Agent 首次接入、场景/资源与验证的渐进式入口
 - `ARCHITECTURE.md` — 架构总览
 - `INDEX.md` — 类型索引
 - `Runtime/` — 运行时 API 文档

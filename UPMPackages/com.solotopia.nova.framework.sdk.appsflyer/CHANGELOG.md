@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.26] - 2026-07-16
+
+### Fixed
+
+- Android 构建前确保 `gradleTemplate.properties` 包含 `android.uniquePackageNames=false`，避免 AppsFlyer 依赖在 AGP 8 构建链中触发重复包名校验错误。
+
 ## [0.0.25] - 2026-07-13
 
 ### Changed

@@ -39,7 +39,7 @@ Nova 使用 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemR
 private static void ResetStatics()
 ```
 
-`OnDestroy()` 中同时调用 `ClearStaticReferences()` 确保运行期退出时也不持有已销毁对象。
+`OnDestroy()` 仅在被销毁实例仍为 `Self` 时执行全局清理，并调用 `ClearStaticReferences()` 确保运行期退出时不持有已销毁对象。重复实例被单例保护销毁时不会关闭主实例的 Manager，也不会清空主实例的静态引用。
 
 ---
 
@@ -150,6 +150,7 @@ FrameworkManagersGroup.Update();
 
 ### OnDestroy()
 ```csharp
+if (Self != this) return;                // 非主实例不执行全局清理
 FrameworkManagersGroup.Shutdown();     // 逆序 Shutdown 所有 Manager
 Application.lowMemory -= OnLowMemory;  // 注销内存预警回调
 ClearStaticReferences();               // 清空所有静态 Component 属性

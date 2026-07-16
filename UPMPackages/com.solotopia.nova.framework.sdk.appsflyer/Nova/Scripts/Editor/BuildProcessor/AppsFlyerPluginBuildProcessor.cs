@@ -8,9 +8,13 @@
  * descrip:   构建时向框架注入 AppsFlyerPlugin OneLink Android/iOS 配置
  ***************************************************************/
 
+using System;
+using System.IO;
+using System.Linq;
 using NovaFramework.Editor;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.AppsFlyerPlugin.Runtime;
+using UnityEditor;
 using UnityEditor.Build.Reporting;
 #if UNITY_IOS
 using UnityEditor.iOS.Xcode;
@@ -23,6 +27,10 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Editor
     /// </summary>
     public sealed class AppsFlyerPluginBuildProcessor : NovaSDKBuildProcessor
     {
+        private const string c_GradleTemplatePropertiesPath = "Assets/Plugins/Android/gradleTemplate.properties";
+        private const string c_UniquePackageNamesKey = "android.uniquePackageNames";
+        private const string c_UniquePackageNamesValue = "false";
+
         /// <summary>
         /// 预处理回调优先级。值越小越早执行；AF 依赖 Firebase 处理器已写入 context.ActivityName，故设为 300。
         /// </summary>
@@ -40,6 +48,9 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Editor
         /// <param name="context">Nova 构建上下文，携带跨处理器共享数据（含 ActivityName）。</param>
         public override void OnPreprocessBuildOnAndroid(BuildReport report, NovaBuildContext context)
         {
+            // AppsFlyer Android 依赖需要关闭 Unity 的唯一包名校验，避免导出 Gradle 工程后包名冲突。
+            EnsureGradleTemplateProperty(c_GradleTemplatePropertiesPath);
+
             var config = GetSDKConfig<AppsFlyerPluginConfig>();
             if (config == null) return;
 
@@ -85,6 +96,33 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Editor
             context.AddManifestRules(ruleSet);
 
             Log.Debug(LogTag.Editor, $"[AppsFlyerPlugin] OneLink 规则已注入：Activity={context.ActivityName}, Host={oneLinkHost}, PathPrefix={oneLinkPathPrefix}, Scheme={oneLinkScheme}");
+        }
+
+        /// <summary>
+        /// 确保 Gradle properties 模板中存在指定属性；已有同名属性时直接覆盖，避免重复追加。
+        /// </summary>
+        /// <param name="path">Unity 工程内 gradleTemplate.properties 路径。</param>
+        private static void EnsureGradleTemplateProperty(string path)
+        {
+            const string key = c_UniquePackageNamesKey;
+            const string value = c_UniquePackageNamesValue;
+
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path));
+
+            var lines = File.Exists(path)
+                ? File.ReadAllLines(path).ToList()
+                : new System.Collections.Generic.List<string>();
+
+            string newLine = $"{key}={value}";
+            int index = lines.FindIndex(line => line.TrimStart().StartsWith(key + "=", StringComparison.Ordinal));
+
+            if (index >= 0)
+                lines[index] = newLine;
+            else
+                lines.Add(newLine);
+
+            File.WriteAllLines(path, lines);
+            AssetDatabase.ImportAsset(path);
         }
 
 #if UNITY_IOS

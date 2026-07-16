@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.max",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - SDK - MAX",
@@ -24,8 +24,8 @@
     "com.applovin.mediation.adapters.bidmachine.ios": "301020000.0.0",
     "com.applovin.mediation.adapters.bigoads.android": "5010001.0.0",
     "com.applovin.mediation.adapters.bigoads.ios": "4060000.0.0",
-    "com.applovin.mediation.adapters.bytedance.android": "707000200.0.0",
-    "com.applovin.mediation.adapters.bytedance.ios": "707000500.0.0",
+    "com.applovin.mediation.adapters.bytedance.android": "801000300.0.0",
+    "com.applovin.mediation.adapters.bytedance.ios": "801000600.0.0",
     "com.applovin.mediation.adapters.chartboost.android": "9070004.0.0",
     "com.applovin.mediation.adapters.chartboost.ios": "9070002.0.0",
     "com.applovin.mediation.adapters.facebook.android": "6200000.0.0",

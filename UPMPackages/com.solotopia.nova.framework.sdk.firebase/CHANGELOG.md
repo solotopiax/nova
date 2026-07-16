@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.24] - 2026-07-16
+
+### Fixed
+
+- 将 Firebase Android Library 的 Manifest package 与 Gradle namespace 改为 Nova 独立命名空间，避免 AGP 8 下与原厂 Firebase 资源库发生命名冲突。
+
 ## [0.0.23] - 2026-07-13
 
 ### Changed

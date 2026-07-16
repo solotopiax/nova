@@ -29,14 +29,14 @@
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.bytedance.android": {
-      "version": "707000200.0.0",
+      "version": "801000300.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.bytedance.ios": {
-      "version": "707000500.0.0",
+      "version": "801000600.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
@@ -229,7 +229,7 @@
       "hash": "fd8ff1fb700caf062eb5cce364c1d0a85f99ebe6"
     },
     "com.coplaydev.unity-mcp": {
-      "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.0.0",
+      "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.0",
       "depth": 0,
       "source": "git",
       "dependencies": {
@@ -243,7 +243,7 @@
         "com.unity.nuget.newtonsoft-json": "3.0.2",
         "com.unity.test-framework": "1.1.31"
       },
-      "hash": "d49ae2953580f3481beb1e084a1da2682f0b5610"
+      "hash": "c14de1e6dc01ab42d2bb358730cff954bce0ce6b"
     },
     "com.google.external-dependency-manager": {
       "version": "1.2.187",
@@ -457,8 +457,8 @@
         "com.applovin.mediation.adapters.bidmachine.ios": "301020000.0.0",
         "com.applovin.mediation.adapters.bigoads.android": "5010001.0.0",
         "com.applovin.mediation.adapters.bigoads.ios": "4060000.0.0",
-        "com.applovin.mediation.adapters.bytedance.android": "707000200.0.0",
-        "com.applovin.mediation.adapters.bytedance.ios": "707000500.0.0",
+        "com.applovin.mediation.adapters.bytedance.android": "801000300.0.0",
+        "com.applovin.mediation.adapters.bytedance.ios": "801000600.0.0",
         "com.applovin.mediation.adapters.chartboost.android": "9070004.0.0",
         "com.applovin.mediation.adapters.chartboost.ios": "9070002.0.0",
         "com.applovin.mediation.adapters.facebook.android": "6200000.0.0",

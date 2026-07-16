@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.12] - 2026-07-16
+
+### Fixed
+
+- 初始化 Best TLS Security 时使用 3.0.4 实际公开的 `SecurityOptions` API，关闭 OCSP 在线查询并执行 TLS 数据库初始化，修复错误类型名导致的 `CS0234`。
+
 ## [0.0.11] - 2026-07-15
 
 ### Changed

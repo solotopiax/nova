@@ -6,6 +6,19 @@
 
 ---
 
+## [0.5.40] - 2026-07-16
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.40]` 节。
+
+### Added
+
+- 发布 `com.solotopia.nova.framework@0.5.40`，新增 ProjectGuard 项目结构校验、Play Mode 错误阻断与渐进式接入文档。
+
+### Fixed
+
+- 发布 `besthttp@0.0.12`、`sdk.appsflyer@0.0.26`、`sdk.firebase@0.0.24`，修复 TLS API、AGP 8 Gradle 属性与 Firebase Android namespace 兼容问题。
+- 发布 `sdk.max@0.0.16`，更新 ByteDance Android/iOS mediation adapter 最低版本。
+
 ## [UPM 2026.07.14-01] - 2026-07-14
 
 ### Changed

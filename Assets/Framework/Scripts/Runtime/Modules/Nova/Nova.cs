@@ -166,6 +166,11 @@ namespace NovaFramework.Runtime
         /// </summary>
         private void OnDestroy()
         {
+            if (Self != this)
+            {
+                return;
+            }
+
             FrameworkManagersGroup.Shutdown();
 
             // 注销内存不足预警回调。

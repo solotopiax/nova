@@ -3,11 +3,48 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.5.39-blue.svg)
+![release](https://img.shields.io/badge/release-v0.5.40-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
 **Nova 是 Solotopia 基于 Unity 深度定制的一套游戏客户端通用解决方案**，把资源、UI、网络、热更、配置、存档、多语言、SDK 接入等通用底座统一收敛、持续维护，让业务团队只需聚焦玩法本身。
+
+---
+
+## 系统需求
+
+- Unity `6000.4.2f1` 或更高版本。
+- 可访问 Solotopia UPM Registry；EDM 依赖通过 OpenUPM 解析。
+- Android / iOS 构建仍需安装相应平台模块、SDK 与签名环境。
+
+## 核心依赖
+
+| 包名 | 版本 |
+|---|---|
+| com.unity.textmeshpro | 3.0.9 |
+| com.unity.nuget.newtonsoft-json | 3.2.2 |
+| com.unity.inputsystem | 1.19.0 |
+| com.solotopia.hybridclr | 10.0.6 |
+| com.solotopia.unitask | 10.0.6 |
+| com.solotopia.sqlcipher4unity3d | 10.0.5 |
+| com.solotopia.simplediskutils | 1.0.7 |
+| com.solotopia.excelio | 1.0.6 |
+| com.solotopia.nicevibrations | 10.0.5 |
+| com.solotopia.luban | 10.0.6 |
+| com.solotopia.yooasset | 1.0.6 |
+
+## 架构概览
+
+```mermaid
+flowchart LR
+    Business[业务代码] --> Nova[Nova.* 静态门面]
+    Nova --> Components[Runtime Components]
+    Components --> Managers[Managers / 生命周期]
+    Components --> Services[资源 · 网络 · UI · 配置 · 存档]
+    Editor[Editor 工具] --> Pipeline[配置与构建流水线]
+    Pipeline --> Components
+    Packages[Kit / SDK 子包] --> Nova
+```
 
 ---
 
@@ -45,7 +82,7 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 
 ## 安装
 
-下载火种脚本 [NovaSpark2.5.cs](./NovaSpark2.5.cs)，拖入 Unity 工程，等待编译结束即可。
+下载火种脚本 [NovaSpark2.6.cs](./NovaSpark2.6.cs)，拖入 Unity 工程，等待编译结束即可。
 
 ---
 

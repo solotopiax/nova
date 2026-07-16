@@ -1,5 +1,7 @@
 # Framework 文档索引
 
+> 首次接入 Nova、接手陌生项目或开始场景/资源/构建任务，先读 [Nova Agent 快速入口](START_HERE.md)。
+>
 > 架构总览、设计规范、陷阱说明见 [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ---
@@ -10,6 +12,8 @@
 
 | 任务 | 必读文档（按顺序） |
 |------|-------------------|
+| **首次接入 / 接手陌生 Nova 项目** | [START_HERE.md · Agent 快速入口](START_HERE.md) → [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md) → [资源工作流](Onboarding/RESOURCE_WORKFLOW.md) → [验证与构建](Onboarding/VALIDATION.md) |
+| **检查 Nova 场景 / Resources 边界** | [EditorUtil.ProjectGuard.md · 集中规则与 Profiles](Editor/EditorUtil/EditorUtil.ProjectGuard.md) → [ProjectGuardWindow.md · 只读窗口](Editor/Windows/ProjectGuardWindow.md) |
 | 理解框架整体架构与设计模式 | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | **新增业务 UI 界面**（UIView 子类） | [UIComponent.md · 泛型 Open API + 注册表](Runtime/Modules/UI/UIComponent.md) → [UIView.md · UIView 继承模板](Runtime/Modules/UI/Definitions/UIView.md) → [UIManager.md · OpenUIView 流程](Runtime/Modules/UI/UIManager/UIManager.md) |
 | **新增全局事件** | [EventManager.md · EventData模板 + 订阅/发布](Runtime/Modules/Event/EventManager.md) |

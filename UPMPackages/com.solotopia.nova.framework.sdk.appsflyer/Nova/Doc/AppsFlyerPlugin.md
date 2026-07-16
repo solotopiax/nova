@@ -224,6 +224,19 @@ SDKComponent.Start()
 
 ---
 
+## §9 Android 构建预处理
+
+`AppsFlyerPluginBuildProcessor` 在 Android 构建预处理阶段会确保
+`Assets/Plugins/Android/gradleTemplate.properties` 包含：
+
+```properties
+android.uniquePackageNames=false
+```
+
+该写入是幂等的：缺失时追加，已有其他值时改为 `false`，已有 `false` 时不重复写入。
+
+---
+
 ## §10 常见误区
 
 **误区 1：初始化后再调用 SetConfig**
@@ -325,7 +338,7 @@ afPlugin.SetUserId(currentUserId);
 
 ---
 
-## §13 关联文档
+## §12 关联文档
 
 | 文档 | 说明 |
 |------|------|

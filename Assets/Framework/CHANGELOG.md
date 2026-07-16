@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.5.40] - 2026-07-16
+
+### Added
+
+- 新增 `EditorUtil.ProjectGuard` 与 `ProjectGuardWindow`，集中校验场景入口、资源目录和项目结构，并在进入 Play Mode 前阻断错误级诊断项。
+- 新增 `START_HERE.md` 及项目结构、资源工作流、验证流程等渐进式接入文档。
+
+### Fixed
+
+- `Nova.OnDestroy` 仅允许当前活动实例执行 Manager 关闭与静态引用清理，避免旧实例销毁时误清理新实例状态。
+
 ## [0.5.39] - 2026-07-15
 
 ### Added

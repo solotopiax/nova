@@ -13,7 +13,7 @@
 | [`Inspectors/`](Inspectors/Inspectors.md) | 各 Runtime 组件的自定义 Inspector |
 | [`Menus/`](Menus/Menus.md) | 菜单项 |
 | [`Tools/`](Tools/Tools.md) | 非窗口型工具与处理器 |
-| [`Windows/`](Windows/ConfigWindow.md) | `ConfigWindow`、`PipifyWindow`、`CheckUpdateWindow`、`PlugPalsWindow`、`KitsViewWindow` |
+| [`Windows/`](Windows/ConfigWindow.md) | `ConfigWindow`、`PipifyWindow`、`ProjectGuardWindow`、`CheckUpdateWindow`、`PlugPalsWindow`、`KitsViewWindow` |
 
 ## 当前 Inspector 模型
 
@@ -51,6 +51,7 @@
 
 - `PlugPalsWindow` 属于 `Windows/`，不是 `Tools/`
 - `KitsViewWindow` 属于 `Windows/`
+- `ProjectGuardWindow` 只展示报告；规则集中在 `EditorUtil.ProjectGuard`
 - 业务侧 Editor UI 以 `EditorUtil.Draw` 为主，不鼓励在 Inspector/Window 里直接扩散原生 IMGUI 写法
 
 ## 阅读顺序建议
