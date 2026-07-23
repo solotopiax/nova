@@ -26,18 +26,26 @@ namespace NovaFramework.Runtime
         void Initialize(DoHManagerConfig config);
 
         /// <summary>
-        /// 遍历所有 NetCmd 中 HTTP 类型的 URL，异步收集各域名的 IP 地址。
+        /// 遍历所有 HostKey URL，异步预热各域名的 IP 地址。
         /// </summary>
-        /// <param name="netCmdDatas">NetCmd 数据表。</param>
+        /// <param name="urls">HostKey URL 集合。</param>
         /// <returns>异步任务。</returns>
         UniTask CollectAllIPAddresses(IEnumerable<string> urls);
 
         /// <summary>
         /// 对指定 URL 进行 DoH DNS 查询，结果写入内部缓存。
         /// </summary>
-        /// <param name="url">目标 URL（支持 http / https）。</param>
+        /// <param name="url">目标 URL（支持 HTTP / HTTPS / WS / WSS）。</param>
         /// <returns>异步任务。</returns>
         UniTask DNSQuery(string url);
+
+        /// <summary>
+        /// 根据 DoH 缓存与即时查询结果构造请求候选 URL。
+        /// </summary>
+        /// <param name="originalUrl">原始请求 URL。</param>
+        /// <param name="canUseIpCandidate">是否允许生成 IP 直连候选。</param>
+        /// <returns>按 IP 候选、原始 URL 顺序排列的候选列表。</returns>
+        UniTask<IReadOnlyList<string>> BuildRequestUrlCandidatesAsync(string originalUrl, bool canUseIpCandidate);
 
         /// <summary>
         /// 从 URL 中提取主机名（域名部分）。
@@ -64,9 +72,16 @@ namespace NovaFramework.Runtime
         IReadOnlyDictionary<string, List<string>> AllCollectedIPAddresses { get; }
 
         /// <summary>
-        /// 所有域名对应的 IP 地址，<主机名, IPAddress 列表>。
+        /// 原始业务域名对应的最终 IP 地址，<原始主机名, IPAddress 列表>。
+        /// CNAME 中间域名不会单独写入该缓存。
         /// </summary>
         IReadOnlyDictionary<string, List<IPAddress>> AllDomainIPAddresses { get; }
+
+        /// <summary>
+        /// 按原始业务域名保存的 DoH 解析诊断树。
+        /// CNAME 中间域名只作为对应原始域名的子节点出现。
+        /// </summary>
+        IReadOnlyDictionary<string, DoHResolutionNode> ResolutionRoots { get; }
 
         /// <summary>
         /// 最近一次 DNSQuery 返回的 DNS 应答集合。

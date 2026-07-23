@@ -395,14 +395,6 @@ PrefabInstance:
       propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].ClassesExportPath
       value: Assets/Samples/AdDemo/Scripts/Runtime/DataTypes/Networks/HostKeys
       objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].DataTypeNames.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].DataTypeNames.Array.size
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

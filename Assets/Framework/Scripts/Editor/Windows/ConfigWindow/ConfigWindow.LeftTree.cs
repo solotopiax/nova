@@ -135,7 +135,11 @@ namespace NovaFramework.Editor
                 case LeftTreeGroup.Environment:
                     return m_SelectedItem == LeftTreeItem.LubanEnv || m_SelectedItem == LeftTreeItem.Python3Env || m_SelectedItem == LeftTreeItem.HybridCLREnv;
                 case LeftTreeGroup.Common:
-                    return m_SelectedItem == LeftTreeItem.AppConfig || m_SelectedItem == LeftTreeItem.NamespaceConfig || m_SelectedItem == LeftTreeItem.HybridCLRConfig || m_SelectedItem == LeftTreeItem.YooAssetConfig;
+                    return m_SelectedItem == LeftTreeItem.AppConfig ||
+                           m_SelectedItem == LeftTreeItem.NamespaceConfig ||
+                           m_SelectedItem == LeftTreeItem.HybridCLRConfig ||
+                           m_SelectedItem == LeftTreeItem.YooAssetConfig ||
+                           m_SelectedItem == LeftTreeItem.CdnDeployment;
                 case LeftTreeGroup.SDK:
                     return m_SelectedItem == LeftTreeItem.SDKNode;
                 case LeftTreeGroup.Kit:
@@ -179,7 +183,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制"通用配置"组内二级条目（应用配置 + 名字空间配置 + HybridCLR 配置 + YooAsset 配置）。
+        /// 绘制"通用配置"组内二级条目（应用配置 + 名字空间配置 + HybridCLR 配置 + YooAsset 配置 + CDN 部署）。
         /// </summary>
         private void DrawCommonGroupItems()
         {
@@ -187,6 +191,7 @@ namespace NovaFramework.Editor
             DrawLeftTreeItem("名字空间配置", LeftTreeItem.NamespaceConfig, null);
             DrawLeftTreeItem("HybridCLR 配置", LeftTreeItem.HybridCLRConfig, null);
             DrawLeftTreeItem("YooAsset 配置", LeftTreeItem.YooAssetConfig, null);
+            DrawLeftTreeItem("CDN 内容分发网络部署", LeftTreeItem.CdnDeployment, null);
         }
 
         /// <summary>

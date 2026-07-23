@@ -40,6 +40,7 @@ namespace NovaFramework.Runtime
         public override void Initialize(WebSocketManagerConfig config)
         {
             m_CoroutineRunner = config.CoroutineRunner;
+            m_DoHManager = config.DoHManager;
             if (m_CoroutineRunner == null)
             {
                 Log.Fatal(LogTag.WebSocket, "ICoroutineRunner 无效。");

@@ -37,6 +37,7 @@ AssetManager 启动配置，由 `AssetComponent.Start()` 现场 `new AssetManage
 | `IdleTimeout` | `int` | `20` | 文件下载空闲超时秒数（连续无新字节流入时中止下载） |
 | `HostServerUrl` | `string` | `null` | 当前节点 `DevelopMode` 已选定的主下载地址 URL；默认直接填写完整 URL 模板 |
 | `HostServerUrlFallback` | `string` | `null` | 当前节点 `DevelopMode` 已选定的备用下载地址 URL |
+| `Channel` | `ChannelType` | `None` | Config 导出时同步到 AssetComponent 的启动期渠道快照 |
 | `DecryptorType` | `AssetDecryptorType` | `None` | AssetBundle 解密器类型 |
 | `LaunchHotfixTags` | `List<string>` | `null` | 启动期热更按 tag 过滤的 tag 列表；非空时 ProcedureHotfix 用 CreateDownloaderByTags 替代整包下载；null/空表示下载整包 |
 | `AutoClearUnusedCacheOnHotfix` | `bool` | `false` | 热更完成后是否自动执行 ClearUnusedCacheAsync 清理冗余磁盘缓存 |
@@ -63,6 +64,7 @@ m_AssetManager.Initialize(new AssetManagerConfig
     IdleTimeout = m_IdleTimeout,
     HostServerUrl = ResolveHostServerUrl(),
     HostServerUrlFallback = ResolveHostServerUrlFallback(),
+    Channel = m_Channel,
     DecryptorType = m_DecryptorType,
     LaunchHotfixTags = m_LaunchHotfixTags,
     AutoClearUnusedCacheOnHotfix = m_AutoClearUnusedCacheOnHotfix,

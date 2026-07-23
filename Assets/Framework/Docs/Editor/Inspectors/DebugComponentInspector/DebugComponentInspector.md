@@ -20,7 +20,7 @@ Debug Inspector 仍只配置 `DebugComponent` 的激活策略、日志条数、M
 |---|---|
 | `DebugComponentInspector.cs` | `OnEnable` 绑定属性，`OnInspectorGUI` 依次绘制配置、磁盘监控、Android 构建安装 |
 | `DebugComponentInspector.Visitors.cs` | `m_DebuggerActiveType`、`m_MaximumConsoleEntries`、`m_CurManagerTypeName`、`m_DiskCheckingConfigs` 及 Android 本地缓存字段 |
-| `DebugComponentInspector.Methods.cs` | `DrawConfigs`、`DrawDiskMonitoring`、`DrawAndroidBuild`、`ReadConfig`、`WriteConfig`、`BuildAAB/APK`、安装脚本调用 |
+| `DebugComponentInspector.Methods.cs` | `DrawConfigs`、`DrawDiskMonitoring`、`DrawAndroidBuild`、`DrawTextFieldWithWrite`、`DrawToolPathRow`、`ReadConfig`、`WriteConfig`、`ResetConfigToDefault`、`BuildAAB` / `BuildAPK`、`InstallAABToDevice` / `InstallAPKToDevice`、`RunPython` |
 
 ## 当前 Inspector 结构
 
@@ -38,11 +38,22 @@ Debug Inspector 仍只配置 `DebugComponent` 的激活策略、日志条数、M
 
 ### 构建安装（Android）
 
-- 签名文件与密码
-- `bundletool` 路径
-- `adb` 路径
-- 构建 `AAB` / `APK`
-- 安装现有包或“构建后立即安装”
+- 签名文件与密码（`SignaturePath` / `SignaturePass` / `SignatureAlias` / `SignatureAliasPass`）
+- `bundletool` 路径（Unity 安装目录 `Editor/Data/PlaybackEngines/AndroidPlayer/Tools` 下）
+- `adb` 路径（Android SDK `platform-tools` 目录下）
+- `编译时清空缓存` Toggle（写入 `BuildOptions.CleanBuildCache`）
+- 构建 `AAB` / `APK`（默认输出至 `<ProjectRoot>/Build/Android/{AAB|APK}/`，文件名为 `{productName}_{version}.{aab|apk}`）
+- 安装现有包到已连接设备（调用 Python 脚本 `install_aab.py` / `install_apk.py`）
+- 构建并安装到设备（先 Build，成功后立即调用对应安装脚本）
+- AAB 安装链路通过 `bundletool` 将 `.aab` 转成 `.apks` 后用 `adb` 安装
+- 当签名四元组或 `bundletool` / `adb` 路径任一缺失时，构建/安装按钮整体 DisabledGroup 灰显
+
+### 路径与缓存
+
+- AAB 默认输出目录：`<ProjectRoot>/Build/Android/AAB`
+- APK 默认输出目录：`<ProjectRoot>/Build/Android/APK`
+- 安装脚本路径：`Packages/com.solotopia.nova.framework/Scripts/Editor/Tools/Deploys/install_aab.py` 与 `install_apk.py`
+- `HistoryAABPath` / `HistoryAPKPath` 仅作为“打开文件面板”时的初始目录，选择其他目录后立即写回缓存
 
 ## 本地配置存储
 

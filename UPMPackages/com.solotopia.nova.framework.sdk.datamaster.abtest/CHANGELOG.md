@@ -3,6 +3,12 @@
 本文件记录 `com.solotopia.nova.framework.sdk.datamaster` 的版本变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [0.0.8] - 2026-07-21
+
+### Changed
+
+- 补充 ABTest 包级协作入口与文档索引，明确运行时分流属性和编辑器配置的责任边界。
+
 ## [0.0.7] - 2026-07-15
 
 ### Added

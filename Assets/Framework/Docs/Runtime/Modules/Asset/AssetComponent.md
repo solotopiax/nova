@@ -115,7 +115,8 @@
 - 所有 `Load*` 方法返回的 Handle 都需要调用方显式释放；这不是组件层自动兜底的事。
 - `EnableHotfix`、`RuntimePlayMode`、热更地址 URL 这些配置不会在运行时二次推导；进入 `AssetManagerConfig` 的就是当前节点 `DevelopMode` 已选定的那一组事实。
 - `EnableHotfix` 现在只控制资源热更检查 / 下载链路，不再决定 App 大版本检测是否执行。
-- URL 中若包含 `{Platform}` / `{Package}` / `{Version}`，仍由 Asset 模块在运行时替换；其中 `{Platform}` = `PlatformType` 枚举名，`{Package}` = 当前资源包名，`{Version}` = `Application.version`。
+- URL 中若包含 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，仍由 Asset 模块在运行时替换；其中 `{Platform}` = `PlatformType` 枚举名，`{Channel}` = Config 导出时同步到 `AssetComponent` 的渠道快照，`{Package}` = 当前资源包名，`{Version}` = `Application.version`。
+- `{Channel}` 快照与同次导出的 `ConfigRuntimeSO.Channel` 同源，但在资源 Bootstrap 前即可读取，避免 Asset 反向依赖尚未加载的运行时配置。
 - `OnDestroy()` 这里只是把 `m_AssetManager` 置空，不是底层资源系统真正销毁点；真正销毁在 `AssetManager.Shutdown()`。
 - `AssetComponent` 只负责资源系统，不负责 Prefab / UI / Config 等上层消费模块。
 

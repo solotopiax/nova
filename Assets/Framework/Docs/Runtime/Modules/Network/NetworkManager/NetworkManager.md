@@ -44,6 +44,7 @@ public override string GetNetCmdUrl<T>(string dtName) where T : class, ITable
 public override string ResolveNetCmdUrl(INetworkCmdRow cmdRow)
 public override INetworkCmdRow ResolveNetCmdRow(string cmdName)
 public override IEnumerable<string> GetAllNetCmdUrls()
+public override IEnumerable<string> GetAllHostKeyUrls()
 
 public override T GetNetCmd<T>() where T : class, ITable
 public override ITable GetNetCmd(string tbName)
@@ -124,6 +125,7 @@ TbHostKey hostTable = Nova.Network.GetNetCmd<TbHostKey>();
 - 业务侧通常通过 `Nova.Network` / `NetworkComponent` 使用这些能力，而不是直接接触 `internal` 的 `NetworkManager` 实现。
 - `GetNetCmdUrl` 的真实键规则是“表类型名 + 行名”，不是仅靠行名。
 - `GetAllNetCmdUrls` 只收集 `HTTP_GET`、`HTTP_POST`、`HTTP_URL` 三类指令。
+- `GetAllHostKeyUrls` 直接遍历全部 HostKey 缓存，过滤空值并去重；启动 DoH 预热使用该集合，不要求 HostKey 被 NetCmd 引用。
 
 ## 关联文档
 

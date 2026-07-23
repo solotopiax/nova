@@ -9,8 +9,6 @@
  ***************************************************************/
 
 using System;
-using System.Collections.Generic;
-
 namespace NovaFramework.Runtime
 {
     /// <summary>
@@ -56,6 +54,7 @@ namespace NovaFramework.Runtime
         /// Luban 输入路径字符串。
         /// </returns>
         protected virtual string GetLubanInputPath() => SourcePath;
+
 #endif
 
         /// <summary>
@@ -87,11 +86,5 @@ namespace NovaFramework.Runtime
         /// </returns>
         protected abstract string GetIndexField();
 
-        /// <summary>
-        /// 数据类型短名称列表（不含命名空间），一个 JSON 可包含多个类型。
-        /// </summary>
-        public List<string> DataTypeNames = new List<string>();
-        /// <inheritdoc />
-        IReadOnlyList<string> IDataTableUnitSetting.DataTypeNames => DataTypeNames;
     }
 }

@@ -47,9 +47,9 @@
 
 ## TableUnitSetting
 
-**类签名**：`[Serializable] public class TableUnitSetting`
+**类签名**：`[Serializable] public class TableUnitSetting : DataTableUnitSettingBase`
 
-单个 Excel 表格的单元设置，描述该表格的导出路径、AB 资源路径、Luban 加载模式、映射索引字段及数据类型列表。
+单个 Excel 表格的单元设置，描述该表格的导出路径、AB 资源路径、Luban 加载模式和映射索引字段。
 
 ### 关键字段/属性
 
@@ -61,7 +61,8 @@
 | `TableMode` | `DataTableMode` | `DataTableMode.List` | — | 表格模式（列表 / 映射 / 单例），`[FormerlySerializedAs("ExportMode")]` |
 | `IndexField` | `string` | `"ID"` | — | 映射模式的索引字段名（仅 Map 模式使用） |
 | `AssetLocation` | `string` | `""` | — | 表格资源的 Asset 地址 |
-| `DataTypeNames` | `List<string>` | `new List<string>()` | — | 表格数据类型短名列表（如 `"HeroData"`，即 Excel Sheet 名），一个 JSON 可包含多个类型。`LubanConfigManager` 生成 `__tables__.xml` 时自动为 Bean 类名添加 `Dt` 前缀（如 `"DtHeroData"`），Table 容器类名添加 `Tb` 前缀（如 `"TbHeroData"`） |
+
+`SourcePath`、两个导出路径和 `AssetLocation` 由 `DataTableUnitSettingBase` 统一声明；本类只声明 Table 特有的模式与索引字段。Excel Sheet 名在导出前由 Editor 扫描，不属于 Runtime 或序列化字段。
 
 ## 公开 API
 
@@ -86,18 +87,14 @@ public class TableSettings : IDataTableSettings
 }
 
 [Serializable]
-public class TableUnitSetting
+public class TableUnitSetting : DataTableUnitSettingBase
 {
-    // UNITY_EDITOR only
-    public string SourcePath;
-    public string DatasExportPath;
-    public string ClassesExportPath;
-
     [FormerlySerializedAs("ExportMode")]
     public DataTableMode TableMode = DataTableMode.List;
     public string IndexField = "ID";
-    public string AssetLocation;
-    public List<string> DataTypeNames = new List<string>();
+
+    protected override DataTableMode GetMode() => TableMode;
+    protected override string GetIndexField() => IndexField;
 }
 ```
 

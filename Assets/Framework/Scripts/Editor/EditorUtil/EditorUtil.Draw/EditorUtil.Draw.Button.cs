@@ -105,6 +105,37 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 绘制使用 Unity 编辑器下划线链接样式的按钮，点击后打开指定 URL。
+            /// </summary>
+            /// <param name="url">目标 URL。</param>
+            /// <param name="label">链接文本；为空时显示 URL。</param>
+            public static void LinkButton(string url, string label = null)
+            {
+                if (string.IsNullOrEmpty(url)) return;
+                GUIStyle style = EditorStyles.linkLabel;
+                GUIContent content = new GUIContent(string.IsNullOrEmpty(label) ? url : label);
+                bool clicked = GUILayout.Button(content, style);
+                Rect buttonRect = GUILayoutUtility.GetLastRect();
+                if (Event.current.type == EventType.Repaint)
+                {
+                    float underlineWidth = Mathf.Min(style.CalcSize(content).x, buttonRect.width - style.padding.horizontal);
+                    Rect underlineRect = new Rect(
+                        buttonRect.x + style.padding.left,
+                        buttonRect.yMax - 2f,
+                        Mathf.Max(0f, underlineWidth),
+                        1f);
+                    Color underlineColor = buttonRect.Contains(Event.current.mousePosition)
+                        ? style.hover.textColor
+                        : style.normal.textColor;
+                    EditorGUI.DrawRect(underlineRect, underlineColor);
+                }
+                if (clicked)
+                {
+                    Application.OpenURL(url);
+                }
+            }
+
+            /// <summary>
             /// 绘制按钮（Rect 手动布局版，供 PropertyDrawer 等自定义布局使用）。
             /// </summary>
             /// <param name="rect">按钮绘制矩形。</param>

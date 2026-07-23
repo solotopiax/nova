@@ -68,15 +68,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             // 注册商店级回调（路由到 StoreService），必须在 Connect 之前完成
             m_Hub.ExtendedService.RegisterStoreCallbacks();
 
-            m_PendingProductDefs = new List<ProductDefinition>();
-            if (table?.Products != null)
-            {
-                foreach (IAPProductEntry entry in table.Products)
-                {
-                    // 框架类型 → Unity IAP 类型
-                    m_PendingProductDefs.Add(new ProductDefinition(entry.ProductID, ToUnityProductType(entry.ProductType)));
-                }
-            }
+            m_PendingProductDefs = BuildProductDefinitionsForStore(table);
 
             try
             {
@@ -214,6 +206,40 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             m_ProductFetchTcs = null;
             // 释放可能悬空的 TCS
             m_InitTcs = null;
+        }
+
+        internal static List<ProductDefinition> BuildProductDefinitionsForStore(IIAPProductTable table)
+        {
+            var definitions = new List<ProductDefinition>();
+            var productIds = new HashSet<string>(StringComparer.Ordinal);
+            if (table?.Products == null)
+            {
+                return definitions;
+            }
+
+            foreach (IAPProductEntry entry in table.Products)
+            {
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                string productId = entry.ProductID?.Trim();
+                if (string.IsNullOrEmpty(productId))
+                {
+                    Log.Warning(LogTag.IAPMobile, $"IAP 商品配置缺少平台商品ID，已跳过注册，tableId={entry.TableId}。");
+                    continue;
+                }
+
+                if (!productIds.Add(productId))
+                {
+                    continue;
+                }
+
+                definitions.Add(new ProductDefinition(productId, ToUnityProductType(entry.ProductType)));
+            }
+
+            return definitions;
         }
     }
 }

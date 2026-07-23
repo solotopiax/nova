@@ -1,0 +1,16 @@
+{
+  "name": "Solotopia.AlibabaCloud.OSS.Runtime",
+  "rootNamespace": "Solotopia.AlibabaCloud.OSS",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "AlibabaCloud.OSS.V2.dll"
+  ],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

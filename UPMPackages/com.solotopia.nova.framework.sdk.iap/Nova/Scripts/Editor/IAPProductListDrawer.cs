@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using NovaFramework.SDK.IAP.Runtime;
+using NovaFramework.Runtime;
 using EdUtil = NovaFramework.Editor.EditorUtil;
 
 namespace NovaFramework.SDK.IAP.Editor
@@ -59,6 +60,16 @@ namespace NovaFramework.SDK.IAP.Editor
         /// 作为 ScrollView viewRect 的固定宽度，支持水平滚动。
         /// </summary>
         private const float c_TotalRowWidth = 1166f;
+
+        /// <summary>
+        /// EditorPrefs 中记录上次导入 SKU Excel 路径的键。
+        /// </summary>
+        private const string c_LastImportPathPrefsKey = "Nova.IAP.ProductExcel.LastImportPath";
+
+        /// <summary>
+        /// EditorPrefs 中记录上次导出 SKU 模板目录的键。
+        /// </summary>
+        private const string c_LastExportDirPrefsKey = "Nova.IAP.ProductExcel.LastExportDir";
 
         /// <summary>
         /// 各列宽度数组（像素），顺序与 s_ColHeaders 及 IAPConfigWindow.s_ColWidths 严格对齐：
@@ -121,6 +132,18 @@ namespace NovaFramework.SDK.IAP.Editor
         /// 重复 ID 集合是否需要重建；arraySize 变化或行字段编辑时置 true，OnGUI 开始时检查并重建。
         /// </summary>
         private bool m_DuplicatesDirty = true;
+
+        /// <summary>
+        /// 导出 SKU 模板对话框是否已进入延迟执行队列。
+        /// 用于避免 IMGUI 焦点切换后重复触发保存面板。
+        /// </summary>
+        private bool m_IsExportDialogPending;
+
+        /// <summary>
+        /// 导入 SKU Excel 对话框是否已进入延迟执行队列。
+        /// 用于避免 IMGUI 焦点切换后重复触发文件选择面板。
+        /// </summary>
+        private bool m_IsImportDialogPending;
 
         /// <summary>
         /// 计算 IAPProductList 属性的总绘制高度：
@@ -345,7 +368,7 @@ namespace NovaFramework.SDK.IAP.Editor
                     EditorGUI.DrawRect(rowRect, s_SelectedRowColor);
                 }
 
-                // 重复 ID 红色高亮（对齐 IAPConfigWindow.DrawRow 的 isDup 逻辑）
+                // 重复 TableId 红色高亮；ProductID 允许被不同 TableId 复用。
                 long tableId = entryProp.FindPropertyRelative("m_TableId")?.longValue ?? 0;
                 if (m_DuplicateTableIds.Contains(tableId))
                 {
@@ -562,14 +585,33 @@ namespace NovaFramework.SDK.IAP.Editor
             }
 
             EditorGUI.EndDisabledGroup();
+            x += delW + 4f;
+
+            float exportW = 110f;
+            if (GUI.Button(new Rect(x, btnY, exportW, btnH), "导出 SKU 模板", EditorStyles.miniButton))
+            {
+                RequestExportSkuTemplate();
+            }
+
+            x += exportW + 4f;
+
+            float importW = 110f;
+            if (GUI.Button(new Rect(x, btnY, importW, btnH), "导入 SKU Excel", EditorStyles.miniButton))
+            {
+                RequestImportSkuExcel(itemsProp);
+            }
+            x += importW + 4f;
 
             // 右侧条数统计（对齐 IAPConfigWindow.DrawListFooter 统计文本）
             int totalCount = itemsProp?.arraySize ?? 0;
             string countInfo = string.IsNullOrEmpty(m_SearchText)
                 ? $"共 {totalCount} 条"
                 : $"共 {totalCount} 条  过滤后 {filteredCount} 条";
-            float infoW = 200f;
-            EdUtil.Draw.Label(new Rect(rect.xMax - infoW - 4f, btnY, infoW, btnH), countInfo, false);
+            float infoW = rect.xMax - x - 4f;
+            if (infoW >= 120f)
+            {
+                EdUtil.Draw.Label(new Rect(x, btnY, infoW, btnH), countInfo, false);
+            }
         }
 
         /// <summary>
@@ -645,6 +687,221 @@ namespace NovaFramework.SDK.IAP.Editor
             m_CachedArraySize = -1;
             m_DuplicatesDirty = true;
             m_SelectedIndices.Clear();
+        }
+
+        /// <summary>
+        /// 请求导出 IAP SKU Excel 模板。
+        /// 文件保存面板和打开外部 Excel 延迟到当前 IMGUI 事件结束后执行，避免焦点返回时重复触发按钮。
+        /// </summary>
+        private void RequestExportSkuTemplate()
+        {
+            if (m_IsExportDialogPending)
+            {
+                return;
+            }
+
+            m_IsExportDialogPending = true;
+            EditorApplication.delayCall += () =>
+            {
+                try
+                {
+                    ExportSkuTemplate();
+                }
+                finally
+                {
+                    m_IsExportDialogPending = false;
+                }
+            };
+        }
+
+        /// <summary>
+        /// 请求从 Excel 导入 IAP SKU 配置。
+        /// 文件选择面板延迟到当前 IMGUI 事件结束后执行，避免系统对话框和外部应用焦点切换造成重复触发。
+        /// </summary>
+        /// <param name="itemsProp">对应 m_Items 的 SerializedProperty（数组）。</param>
+        private void RequestImportSkuExcel(SerializedProperty itemsProp)
+        {
+            if (m_IsImportDialogPending)
+            {
+                return;
+            }
+
+            SerializedProperty copiedItemsProp = itemsProp?.Copy();
+            m_IsImportDialogPending = true;
+            EditorApplication.delayCall += () =>
+            {
+                try
+                {
+                    copiedItemsProp?.serializedObject.Update();
+                    ImportSkuExcel(copiedItemsProp);
+                }
+                finally
+                {
+                    m_IsImportDialogPending = false;
+                }
+            };
+        }
+
+        /// <summary>
+        /// 导出 IAP SKU Excel 模板到用户选择的路径。
+        /// </summary>
+        private void ExportSkuTemplate()
+        {
+            string initialDir = GetLastExistingDirectory(
+                EditorPrefs.GetString(c_LastExportDirPrefsKey, string.Empty),
+                EditorPrefs.GetString(c_LastImportPathPrefsKey, string.Empty));
+
+            string destPath = EditorUtility.SaveFilePanel(
+                "导出 SKU 模板",
+                initialDir,
+                IAPProductExcelImporter.c_DefaultWorkbookName,
+                "xlsx");
+            if (string.IsNullOrEmpty(destPath))
+            {
+                return;
+            }
+
+            try
+            {
+                IAPProductExcelImporter.ExportTemplate(destPath);
+                EditorPrefs.SetString(c_LastExportDirPrefsKey, Util.SysIO.Path.GetDirectoryName(destPath));
+                EditorUtility.OpenWithDefaultApp(destPath);
+            }
+            catch (System.Exception ex)
+            {
+                EditorUtility.DisplayDialog("导出 SKU 模板失败", ex.Message, "确认");
+            }
+        }
+
+        /// <summary>
+        /// 从用户选择的 Excel 文件导入 IAP SKU 配置。
+        /// </summary>
+        /// <param name="itemsProp">对应 m_Items 的 SerializedProperty（数组）。</param>
+        private void ImportSkuExcel(SerializedProperty itemsProp)
+        {
+            if (itemsProp == null)
+            {
+                EditorUtility.DisplayDialog("导入 SKU Excel 失败", "m_Items 属性未找到。", "确认");
+                return;
+            }
+
+            string initialDir = GetLastExistingDirectory(
+                EditorPrefs.GetString(c_LastImportPathPrefsKey, string.Empty),
+                EditorPrefs.GetString(c_LastExportDirPrefsKey, string.Empty));
+            string filePath = EditorUtility.OpenFilePanelWithFilters(
+                "导入 SKU Excel",
+                initialDir,
+                new[] { "Excel 文件", "xlsx,xls" });
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return;
+            }
+
+            EditorPrefs.SetString(c_LastImportPathPrefsKey, filePath);
+            IAPProductExcelImportResult result = IAPProductExcelImporter.ReadFile(filePath);
+            if (!result.Success)
+            {
+                EditorUtility.DisplayDialog("导入 SKU Excel 失败", BuildErrorMessage(result.Errors), "确认");
+                return;
+            }
+
+            int currentCount = itemsProp.arraySize;
+            if (!EditorUtility.DisplayDialog(
+                    "确认导入 SKU Excel",
+                    $"即将使用 Excel 全量覆盖当前 SKU 配置，共导入 {result.Products.Count} 条，当前已有 {currentCount} 条。是否继续？",
+                    "确认导入",
+                    "取消"))
+            {
+                return;
+            }
+
+            try
+            {
+                IAPProductExcelImporter.ApplyProducts(itemsProp, result.Products);
+                m_CachedArraySize = -1;
+                m_DuplicatesDirty = true;
+                m_SelectedIndices.Clear();
+                m_SearchText = string.Empty;
+                m_CachedSearchText = null;
+                m_ScrollPos = Vector2.zero;
+                EditorUtility.DisplayDialog("导入 SKU Excel 完成", $"已导入 {result.Products.Count} 条 SKU 配置。", "确认");
+            }
+            catch (System.Exception ex)
+            {
+                EditorUtility.DisplayDialog("导入 SKU Excel 失败", ex.Message, "确认");
+            }
+        }
+
+        /// <summary>
+        /// 获取最近一次使用且仍存在的目录。
+        /// </summary>
+        /// <param name="primaryPath">优先路径，可为文件或目录。</param>
+        /// <param name="fallbackPath">回退路径，可为文件或目录。</param>
+        /// <returns>存在的目录路径；不存在时返回工程根目录。</returns>
+        private string GetLastExistingDirectory(string primaryPath, string fallbackPath)
+        {
+            string primaryDir = ResolveDirectory(primaryPath);
+            if (!string.IsNullOrEmpty(primaryDir))
+            {
+                return primaryDir;
+            }
+
+            string fallbackDir = ResolveDirectory(fallbackPath);
+            if (!string.IsNullOrEmpty(fallbackDir))
+            {
+                return fallbackDir;
+            }
+
+            return Util.SysIO.Path.GetDirectoryName(Application.dataPath);
+        }
+
+        /// <summary>
+        /// 将文件或目录路径解析为存在的目录路径。
+        /// </summary>
+        /// <param name="path">文件或目录路径。</param>
+        /// <returns>存在的目录路径；无法解析时返回空字符串。</returns>
+        private string ResolveDirectory(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
+            }
+
+            if (Util.SysIO.Directory.Exists(path))
+            {
+                return path;
+            }
+
+            string dir = Util.SysIO.Path.GetDirectoryName(path);
+            return !string.IsNullOrEmpty(dir) && Util.SysIO.Directory.Exists(dir) ? dir : string.Empty;
+        }
+
+        /// <summary>
+        /// 构建导入错误展示文本。
+        /// </summary>
+        /// <param name="errors">错误列表。</param>
+        /// <returns>适合对话框显示的错误文本。</returns>
+        private string BuildErrorMessage(IReadOnlyList<string> errors)
+        {
+            if (errors == null || errors.Count == 0)
+            {
+                return "未知错误。";
+            }
+
+            const int maxDisplayCount = 10;
+            var lines = new List<string>();
+            int count = Mathf.Min(errors.Count, maxDisplayCount);
+            for (int i = 0; i < count; i++)
+            {
+                lines.Add(errors[i]);
+            }
+
+            if (errors.Count > maxDisplayCount)
+            {
+                lines.Add($"还有 {errors.Count - maxDisplayCount} 个错误未显示，请检查 Console。");
+            }
+
+            return string.Join("\n", lines);
         }
 
         /// <summary>

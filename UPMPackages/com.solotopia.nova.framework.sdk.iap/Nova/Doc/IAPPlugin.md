@@ -1,6 +1,6 @@
 ﻿# IAPPlugin
 
-> 最后更新：2026-06-12
+> 最后更新：2026-07-23
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/**`
 
 **类签名**：`public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin`
@@ -30,13 +30,26 @@
 | 属性 | 说明 |
 |---|---|
 | `DisplayName` | 固定为 `IAP 支付` |
-| `EnableAlwaysPaySucceed` | 调试开关；为 true 时 Store 可直接返回成功 |
+| `EnableAlwaysPaySucceed` | Editor 调试开关；为 true 时 Editor 下 Store 可直接返回成功，非 Editor 编译态强制关闭 |
 | `EnableIAPLog` | 详细日志开关 |
 | `RetryValidateMaxNum` | 首次验单重试次数，默认 3 |
 | `SkipLoadingForReplenish` | 补单是否跳过 Loading |
 | `LoadingPanelPrefab` | 支付期 Loading 面板 Resources 路径，默认 `IAP/IAPLoadingPanel` |
 | `StoreConfigs` | `[SerializeReference]` Store 配置只读列表 |
 | `Products` | 内联商品表只读列表 |
+
+### SKU Excel 导入
+
+IAP Products 支持在 Inspector 中通过 Excel 批量维护：
+
+- `导出 SKU 模板`：从包内 `Nova/Templates/IAPProductsTemplate.xlsx` 复制模板到用户选择的位置。
+- `导入 SKU Excel`：读取用户选择的 Excel，校验通过后全量覆盖当前 `IAPPluginConfig.Products`。
+- 导入时优先读取历史固定 Sheet `Products`；若不存在，则读取工作簿中的第一个 Sheet。
+- 模板使用 `##comment`、`##var`、`##type`、`##comment` 元信息行；`##var` 行字段固定为 `TableId`、`Name`、`ProductID`、`ThirdProductID`、`ProductType`、`SubGroupID`、`Price`、`Currency`、`EditorNote`。
+- 为兼容旧表，导入器仍支持第一行直接写上述固定表头的 Excel。
+- `ProductType` 只接受 `IAPProductType` 枚举名：`Consumable`、`NonConsumable`、`Subscription`。
+- 阻断导入的校验项：`TableId` 必填且必须是 `1~4294967295` 范围内的整数且不重复，`ProductType` 必须是枚举名，`SubGroupID` 非空时必须是整数。
+- 其他字段允许为空；`EditorNote` 是编辑器备注，导入后也完全以 Excel 为准。
 
 ## 3. 关键字段
 
@@ -99,7 +112,7 @@ OnInitializeAsync(config, ct)
 
 `DiscoverAndInitializeStoresAsync` 会扫描全部程序集。`config.Enabled == false` 的 Store 会加入 `m_Stores` 但跳过初始化，后续 `SetStoreEnabled(..., true)` 时懒初始化。
 
-`BuildStoreContext` 会从 `IConfigManager.DevelopMode` 读取当前运行模式并写入 `IIAPStoreContext.DevelopMode`。Store 打点里的 Debug 字段应使用该运行模式判断；`EnableAlwaysPaySucceed` 只表示是否跳过真实平台支付，不再作为打点 Debug 依据。
+`BuildStoreContext` 会从 `IConfigManager.DevelopMode` 读取当前运行模式并写入 `IIAPStoreContext.DevelopMode`。Store 打点里的 Debug 字段应使用该运行模式判断；`EnableAlwaysPaySucceed` 只表示 Editor 下是否跳过真实平台支付，不再作为打点 Debug 依据，非 Editor 编译态会被强制注入为 false。
 
 ### 释放
 
@@ -158,3 +171,6 @@ if (!result.IsSuccess)
 
 **误区 5：打点 reason 可以直接传任意对象。**
 父包 `Track*Fail` 只接收 `Enum` 类型的失败原因，并在上报前转成 `int` 写入 `nova_reason`；可读描述写入 `nova_reason_detail`。Store 侧需要先把失败原因收敛到自己的明确枚举，父包不维护跨 Store 的失败原因全集。Mobile 支付过程失败统一使用 `IAPMobileErrorCode`，初始化失败使用独立的 `MobileStoreInitFailureReason`。
+
+**误区 6：把 `EnableAlwaysPaySucceed` 当成移动端可用的运行时功能。**
+该开关只用于 Editor 调试支付链路。移动端编译产物不会包含 Store 的 mock 支付成功分支，且 `IAPPlugin` 构造上下文时会把该值强制置为 false。正式发货仍必须以服务端验单结果为准。

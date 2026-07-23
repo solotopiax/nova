@@ -553,28 +553,17 @@ namespace NovaFramework.Editor
             BatchItem item = batch.Items[itemIndex];
             PipifyStepInfo info = EditorUtil.Pipify.Registry.FindById(item.StepId);
             if (info == null || info.ParamsType == null) return 0f;
-            int visibleCount = CountVisibleFields(itemIndex, item, info);
-            return visibleCount * (c_ParamFieldHeight + 2f) + 4f;
-        }
-
-        /// <summary>
-        /// 计算指定 Item 当前可见参数字段数（按 PipifyVisibleWhen 过滤）。
-        /// </summary>
-        /// <param name="itemIndex">Item 索引。</param>
-        /// <param name="item">BatchItem 数据。</param>
-        /// <param name="info">Step 元信息。</param>
-        /// <returns>可见字段数。</returns>
-        private int CountVisibleFields(int itemIndex, BatchItem item, PipifyStepInfo info)
-        {
             FieldInfo[] fields = info.ParamsType.GetFields(BindingFlags.Public | BindingFlags.Instance);
             object paramsInstance = EnsureParamsInstance(itemIndex, item, info);
-            if (paramsInstance == null) return fields.Length;
-            int visible = 0;
+            float height = 4f;
             for (int i = 0; i < fields.Length; i++)
             {
-                if (IsFieldVisible(fields[i], paramsInstance, info.ParamsType)) visible++;
+                FieldInfo field = fields[i];
+                if (paramsInstance != null && !IsFieldVisible(field, paramsInstance, info.ParamsType)) continue;
+                object currentValue = paramsInstance == null ? null : field.GetValue(paramsInstance);
+                height += GetParamFieldHeight(field, currentValue) + 2f;
             }
-            return visible;
+            return height;
         }
 
         /// <summary>

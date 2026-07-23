@@ -19,11 +19,14 @@ DoH 管理器公开接口，定义 DNS-over-HTTPS 查询与 IP 地址收集的�
 // 初始化
 void Initialize(DoHManagerConfig config)
 
-// 遍历所有 URL，异步收集各域名的 IP 地址
+// 遍历全部 HostKey URL，异步预热各域名的 IP 地址
 UniTask CollectAllIPAddresses(IEnumerable<string> urls)
 
 // 对指定 URL 进行 DoH DNS 查询，结果写入内部缓存
 UniTask DNSQuery(string url)
+
+// 根据 DoH 缓存与即时查询结果构造候选；顺序为 IP 候选 -> 原始 URL
+UniTask<IReadOnlyList<string>> BuildRequestUrlCandidatesAsync(string originalUrl, bool canUseIpCandidate)
 
 // 从 URL 中提取主机名（域名部分）
 string GetHostName(string url)
@@ -40,9 +43,17 @@ IReadOnlyDictionary<string, List<string>> AllCollectedIPAddresses { get; }
 // 所有域名对应的 IP 地址，<主机名, IPAddress 列表>
 IReadOnlyDictionary<string, List<IPAddress>> AllDomainIPAddresses { get; }
 
+// 原始业务域名到解析诊断树根；CNAME 只作为子节点出现
+IReadOnlyDictionary<string, DoHResolutionNode> ResolutionRoots { get; }
+
 // 最近一次 DNSQuery 返回的 DNS 应答集合
 DNSAnswer[] DNSAnswers { get; }
 ```
+
+`DNSQuery` / `GetHostName` / `BuildRequestUrlCandidatesAsync` 接受 HTTP、HTTPS、WS、WSS 绝对 URL。
+候选规划在 DoH 关闭、URL 无效、host 为 `localhost` 或 IP literal 时只返回原始 URL；可查询域名会优先读取缓存，未命中时等待一次 `DNSQuery` 并重读缓存。只有 `canUseIpCandidate = true` 才会生成 IP URL，原始 URL 始终在列表末尾保留一次。
+
+启动预热覆盖全部 HostKey，不要求 HostKey 已被 NetCmd 引用。HostKey 范围外经 HTTP、Asset 或 WebSocket 链路出现的 URL 会在运行时缓存未命中时按需查询，并以 `RuntimeDiscovered` 来源加入 `ResolutionRoots`。
 
 ## 关联文档
 

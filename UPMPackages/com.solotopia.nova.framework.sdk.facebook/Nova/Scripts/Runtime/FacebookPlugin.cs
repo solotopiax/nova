@@ -38,7 +38,7 @@ namespace NovaFramework.SDK.Facebook
                 return result;
             }
 
-            SetLoginState(new FacebookUserData(result.UserId, result.Token));
+            SetLoginState(new FacebookUserData(result.UserId, result.Token), result.Provider);
             if (m_RuntimeConfig == null || m_RuntimeConfig.AutoDownloadAvatarOnLogin)
             {
                 await TryDownloadCurrentAvatarAsync(ct);
@@ -74,7 +74,7 @@ namespace NovaFramework.SDK.Facebook
             AuthResult result = await m_AuthService.EnsureFriendsPermissionAsync(ProviderName, ct);
             if (result.Success)
             {
-                SetLoginState(new FacebookUserData(result.UserId, result.Token, m_CurrentUserData?.AvatarPath));
+                SetLoginState(new FacebookUserData(result.UserId, result.Token, m_CurrentUserData?.AvatarPath), result.Provider);
             }
 
             return result;

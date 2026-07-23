@@ -1,7 +1,7 @@
 # Nova Framework - SDK - DataMaster - ABTest
 
 > 包名：`com.solotopia.nova.framework.sdk.datamaster.abtest`
-> 当前版本：`0.0.7`
+> 当前版本：`0.0.8`
 
 Nova Framework 的 Starlus DataMaster 对接层，封装 `DataMasterPlugin`（继承 `SDKPluginBase`，由 `SDKManager` 统一编排），提供远程配置 / ABTest 读参、曝光打点与实验事件上报能力。
 

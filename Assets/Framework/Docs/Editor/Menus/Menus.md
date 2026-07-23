@@ -22,11 +22,13 @@ Nova 顶级菜单下的所有菜单项实现，按功能分组拆分为独立文
 Nova/
 ├── Open IDE Project              (priority 1010)
 ├── Open Folder/
-│   ├── Data Path                 (priority 1020)
-│   ├── Persistent Data Path      (priority 1021)
-│   ├── Streaming Assets Path     (priority 1022)
-│   ├── Caching Writing Path      (priority 1023)
-│   └── Temporary Cache Path      (priority 1024)
+│   ├── Data Path                       (priority 1020)
+│   ├── Persistent Data Path (Unity)    (priority 1021)
+│   ├── Persistent Data Path (YooAsset) (priority 1022)
+│   ├── Bundle Generated Path           (priority 1023)
+│   ├── Streaming Assets Path           (priority 1024)
+│   ├── Caching Writing Path            (priority 1025)
+│   └── Temporary Cache Path            (priority 1026)
 ├── Enable Logs/
 │   ├── Disable All Logs          (priority 1040)
 │   ├── Enable All Logs           (priority 1041)

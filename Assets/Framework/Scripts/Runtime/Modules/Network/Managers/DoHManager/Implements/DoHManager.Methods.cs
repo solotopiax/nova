@@ -93,9 +93,9 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="url">原始请求 URL。</param>
         /// <param name="answers">DoH 应答数组。</param>
-        private async UniTask CacheDnsAnswersAsync(string url, DNSAnswer[] answers)
+        private async UniTask CacheDnsAnswersAsync(string url, DNSAnswer[] answers, DoHResolutionSource source)
         {
-            if (string.IsNullOrEmpty(url) || answers == null || answers.Length == 0)
+            if (string.IsNullOrEmpty(url))
             {
                 return;
             }
@@ -106,7 +106,17 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            List<IPAddress> resolvedIPs = await ResolveIPAddressesAsync(hostName, answers, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+            DoHResolutionNode root = GetOrCreateResolutionRoot(hostName, source);
+            root.Addresses.Clear();
+            root.Children.Clear();
+            root.FailureReason = null;
+
+            List<IPAddress> resolvedIPs = await ResolveIPAddressesAsync(
+                hostName,
+                answers,
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                root);
+            ApplyResolutionResult(root, resolvedIPs);
             if (resolvedIPs.Count == 0)
             {
                 return;
@@ -126,7 +136,11 @@ namespace NovaFramework.Runtime
         /// <param name="answers">DNS 应答数组。</param>
         /// <param name="visitedHosts">已访问主机名集合，避免循环解析。</param>
         /// <returns>解析出的 IP 地址列表。</returns>
-        private async UniTask<List<IPAddress>> ResolveIPAddressesAsync(string hostName, DNSAnswer[] answers, HashSet<string> visitedHosts)
+        private async UniTask<List<IPAddress>> ResolveIPAddressesAsync(
+            string hostName,
+            DNSAnswer[] answers,
+            HashSet<string> visitedHosts,
+            DoHResolutionNode root)
         {
             List<IPAddress> resolvedIPs = new List<IPAddress>();
             if (answers == null || answers.Length == 0)
@@ -145,17 +159,18 @@ namespace NovaFramework.Runtime
 
             foreach (DNSAnswer answer in answers)
             {
-                if (TryParseIPAddress(answer, out IPAddress parsedIP))
+                if (IsAnswerForHost(answer, normalizedHostName) && TryParseIPAddress(answer, out IPAddress parsedIP))
                 {
                     if (seenIPs.Add(parsedIP.ToString()))
                     {
                         resolvedIPs.Add(parsedIP);
+                        root.Addresses.Add(parsedIP);
                     }
 
                     continue;
                 }
 
-                if (answer?.RecordType == ResourceRecordType.CNAME)
+                if (answer?.RecordType == ResourceRecordType.CNAME && IsAnswerForHost(answer, normalizedHostName))
                 {
                     string cnameHost = NormalizeHostName(answer.Data);
                     if (!string.IsNullOrEmpty(cnameHost) && !visitedHosts.Contains(cnameHost) && !cnameHosts.Contains(cnameHost))
@@ -168,14 +183,16 @@ namespace NovaFramework.Runtime
             for (int i = 0; i < cnameHosts.Count; i++)
             {
                 string cnameHost = cnameHosts[i];
+                DoHResolutionNode child = new DoHResolutionNode(cnameHost, root.Source);
+                root.Children.Add(child);
                 DNSAnswer[] cnameAnswers = await QueryHostAnswersAsync(cnameHost);
-                List<IPAddress> cnameIPs = await ResolveIPAddressesAsync(cnameHost, cnameAnswers, visitedHosts);
+                List<IPAddress> cnameIPs = await ResolveIPAddressesAsync(cnameHost, cnameAnswers, visitedHosts, child);
+                ApplyResolutionResult(child, cnameIPs);
                 if (cnameIPs.Count == 0)
                 {
                     continue;
                 }
 
-                MergeCachedIPs(cnameHost, cnameIPs);
                 for (int j = 0; j < cnameIPs.Count; j++)
                 {
                     IPAddress cnameIP = cnameIPs[j];
@@ -187,6 +204,44 @@ namespace NovaFramework.Runtime
             }
 
             return resolvedIPs;
+        }
+
+        /// <summary>
+        /// 获取或创建原始业务域名的诊断树根节点。
+        /// </summary>
+        private DoHResolutionNode GetOrCreateResolutionRoot(string hostName, DoHResolutionSource source)
+        {
+            string normalizedHostName = NormalizeHostName(hostName);
+            if (!m_ResolutionRoots.TryGetValue(normalizedHostName, out DoHResolutionNode root))
+            {
+                root = new DoHResolutionNode(normalizedHostName, source);
+                m_ResolutionRoots[normalizedHostName] = root;
+            }
+            else if (source == DoHResolutionSource.HostKeyPrewarm)
+            {
+                root.Source = DoHResolutionSource.HostKeyPrewarm;
+            }
+
+            return root;
+        }
+
+        /// <summary>
+        /// 将一次查询的最终结果应用到诊断节点，失败节点也会被保留。
+        /// </summary>
+        private static void ApplyResolutionResult(DoHResolutionNode node, List<IPAddress> resolvedIPs)
+        {
+            node.FailureReason = resolvedIPs == null || resolvedIPs.Count == 0 ? "未获取 IP" : null;
+        }
+
+        /// <summary>
+        /// 判断应答记录是否属于当前解析层级的域名。
+        /// </summary>
+        private static bool IsAnswerForHost(DNSAnswer answer, string hostName)
+        {
+            return answer != null && string.Equals(
+                NormalizeHostName(answer.Name),
+                hostName,
+                StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -248,35 +303,11 @@ namespace NovaFramework.Runtime
 
             for (int i = 0; i < cachedIPs.Count; i++)
             {
-                if (TryBuildUrlWithIPAddress(url, cachedIPs[i], out string resolvedUrl) && !collectedUrls.Contains(resolvedUrl))
+                if (DoHRequestPlanner.TryBuildUrlWithIPAddress(url, cachedIPs[i], out string resolvedUrl) && !collectedUrls.Contains(resolvedUrl))
                 {
                     collectedUrls.Add(resolvedUrl);
                 }
             }
-        }
-
-        /// <summary>
-        /// 用指定 IP 替换 URL 的 host 部分，保留协议、端口、路径和查询字符串不变。
-        /// </summary>
-        /// <param name="url">原始 URL。</param>
-        /// <param name="ipAddress">目标 IP。</param>
-        /// <param name="resolvedUrl">替换后的 URL。</param>
-        /// <returns>是否替换成功。</returns>
-        private static bool TryBuildUrlWithIPAddress(string url, IPAddress ipAddress, out string resolvedUrl)
-        {
-            resolvedUrl = null;
-            if (ipAddress == null || !Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
-            {
-                return false;
-            }
-
-            UriBuilder builder = new UriBuilder(uri)
-            {
-                Host = ipAddress.ToString()
-            };
-
-            resolvedUrl = builder.Uri.AbsoluteUri;
-            return true;
         }
 
         /// <summary>

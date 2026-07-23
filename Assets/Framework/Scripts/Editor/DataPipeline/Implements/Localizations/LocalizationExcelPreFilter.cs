@@ -5,510 +5,611 @@
  * filename:  LocalizationExcelPreFilter.cs
  * author:    taoye
  * created:   2026/4/19
- * descrip:   Localization 模块 Excel 预过滤器
+ * descrip:   加载并校验 Settings 指定的 Localization Excel，投影 Luban 输入 CSV
+ * input:     Localization 源目录、IDataTableUnitSetting 与目标语言
+ * output:    调用方指定的 _temp 目录下 Name/Value CSV
+ * reason:    Excel 的多语言列结构不能直接作为单语言 Luban 输入
+ * boundary:  不调用 Luban，不选择正式输出路径，不发布或删除正式产物
+ * failure:   校验失败立即终止；本文件只写临时投影，不修改正式产物
  ***************************************************************/
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using NovaFramework.Runtime;
+using IOPath = System.IO.Path;
 
 namespace NovaFramework.Editor
 {
     /// <summary>
-    /// Localization 模块 Excel 预过滤器。
-    /// 读取多语言文本 Excel，为每种语言生成只含 Name + Value 两列的临时 Luban 格式 Excel，
-    /// 供后续 Luban Pipeline 标准导出使用。
+    /// 一次加载并验证 Settings 指定的 Excel，再按目标语言投影为 Luban 使用的 Name/Value CSV。
+    /// 只操作调用方提供的临时输出目录，不调用 Luban，也不修改正式导出产物。
     /// </summary>
     internal static class LocalizationExcelPreFilter
     {
-        /// <summary>
-        /// 源文件搜索模式。
-        /// </summary>
-        private const string c_SearchPattern = "*.xlsx";
-
-        /// <summary>
-        /// 需要排除的临时文件前缀。
-        /// </summary>
-        private const string c_ExcludePrefix = "~$";
-
-        /// <summary>
-        /// _configs 子目录名称（需跳过）。
-        /// </summary>
-        private const string c_ConfigsDirName = "_configs";
-
-        /// <summary>
-        /// _temp 临时目录名称（需跳过）。
-        /// </summary>
-        private const string c_TempDirName = "_temp";
-
-        /// <summary>
-        /// Luban 4 行标记格式中变量名行索引（##var）。
-        /// </summary>
-        private const int c_VarRow = 1;
-
-        /// <summary>
-        /// Luban 4 行标记格式中数据行起始索引。
-        /// </summary>
         private const int c_DataStartRow = 4;
 
-        /// <summary>
-        /// Sheet 最少行数（4 行表头 + 至少 1 行数据）。
-        /// </summary>
-        private const int c_MinRowCount = 5;
-
-        /// <summary>
-        /// Key 列名称。
-        /// </summary>
-        private const string c_KeyColumnName = "Name";
-
-        /// <summary>
-        /// 描述列名称。
-        /// </summary>
-        private const string c_DescColumnName = "Desc";
-
-        /// <summary>
-        /// 标记列名称前缀。
-        /// </summary>
-        private const string c_MarkerColumnPrefix = "#";
-
-        /// <summary>
-        /// 为代码生成准备临时 Excel：取第一种语言列的值作为 Value。
-        /// 扫描 sourceDirPath 下所有 Excel（排除 _configs/ 和 _temp/），
-        /// 对每个 Sheet 取第一种语言列，输出 Name + Value 两列 Luban 格式到 codegenTempDir。
-        /// </summary>
-        /// <param name="sourceDirPath">文本数据源目录路径。</param>
-        /// <param name="codegenTempDir">代码生成临时输出目录。</param>
-        public static void FilterForCodeGen(string sourceDirPath, string codegenTempDir)
+        internal static void ProjectCodeGen(SourceModel model, string outputRoot)
         {
-            string[] files = GetFilterableFiles(sourceDirPath);
-            if (files == null || files.Length == 0)
+            if (model == null)
             {
-                return;
+                throw new ArgumentNullException(nameof(model));
             }
 
-            foreach (string filePath in files)
+            if (model.Languages == null || model.Languages.Count == 0)
             {
-                if (IsExcludedPath(filePath, sourceDirPath))
+                throw new InvalidDataException("Localization source model contains no languages.");
+            }
+
+            ProjectLanguage(model, outputRoot, model.Languages[0]);
+        }
+
+        internal static void ProjectLanguage(
+            SourceModel model,
+            string outputRoot,
+            string languageName)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (string.IsNullOrEmpty(outputRoot))
+            {
+                throw new ArgumentException(
+                    "Localization projection output root cannot be empty.",
+                    nameof(outputRoot));
+            }
+
+            bool containsLanguage = false;
+            foreach (string language in model.Languages)
+            {
+                if (string.Equals(language, languageName, StringComparison.Ordinal))
                 {
-                    continue;
+                    containsLanguage = true;
+                    break;
+                }
+            }
+
+            if (!containsLanguage)
+            {
+                throw new InvalidDataException(
+                    $"Localization source model does not contain language '{languageName}'.");
+            }
+
+            foreach (SourceUnit unit in model.Units)
+            {
+                var outputSheets = new Dictionary<string, List<IReadOnlyList<string>>>();
+                foreach (SourceSheet sheet in unit.Sheets)
+                {
+                    outputSheets.Add(sheet.Name, BuildProjectedSheet(sheet, languageName));
                 }
 
-                FilterFileForCodeGen(filePath, codegenTempDir);
+                EditorUtil.Excel.Write(
+                    Util.SysIO.Path.Combine(outputRoot, unit.RelativeStem),
+                    outputSheets);
             }
         }
 
         /// <summary>
-        /// 为指定语言准备临时 Excel：取该语言列的值作为 Value。
-        /// 扫描 sourceDirPath 下所有 Excel（排除 _configs/ 和 _temp/），
-        /// 对每个 Sheet 取指定语言列，输出 Name + Value 两列 Luban 格式到 langTempDir。
+        /// 兼容无 Settings 参数的独立语言列表入口。完整数据/代码导出不调用此递归扫描。
         /// </summary>
-        /// <param name="sourceDirPath">文本数据源目录路径。</param>
-        /// <param name="langTempDir">语言临时输出目录。</param>
-        /// <param name="languageName">目标语言名称（如 "ChineseSimplified"）。</param>
-        public static void FilterForLanguage(string sourceDirPath, string langTempDir, string languageName)
+        internal static HashSet<string> ExtractAllLanguageColumns(string sourceDirPath)
         {
-            if (string.IsNullOrEmpty(languageName))
-            {
-                Log.Warning(LogTag.Editor, "Localization 预过滤：语言名称为空，已跳过。");
-                return;
-            }
-
-            string[] files = GetFilterableFiles(sourceDirPath);
-            if (files == null || files.Length == 0)
-            {
-                return;
-            }
-
-            foreach (string filePath in files)
-            {
-                if (IsExcludedPath(filePath, sourceDirPath))
-                {
-                    continue;
-                }
-
-                FilterFileForLanguage(filePath, langTempDir, languageName);
-            }
-        }
-
-        /// <summary>
-        /// 从目录下所有 Excel 文件中提取所有语言列名称。
-        /// 扫描所有 Excel 的 ##var 行，收集能通过 Language 枚举解析的列名。
-        /// </summary>
-        /// <param name="sourceDirPath">文本数据源目录路径。</param>
-        /// <returns>语言列名称集合，无有效语言时返回空集合。</returns>
-        public static HashSet<string> ExtractAllLanguageColumns(string sourceDirPath)
-        {
-            HashSet<string> result = new HashSet<string>();
-
-            string[] files = GetFilterableFiles(sourceDirPath);
-            if (files == null || files.Length == 0)
+            var result = new HashSet<string>(StringComparer.Ordinal);
+            if (string.IsNullOrEmpty(sourceDirPath) || !Directory.Exists(sourceDirPath))
             {
                 return result;
             }
 
-            foreach (string filePath in files)
+            string root = IOPath.GetFullPath(sourceDirPath);
+            foreach (string filePath in Directory.GetFiles(root, "*.xlsx", SearchOption.AllDirectories))
             {
-                if (IsExcludedPath(filePath, sourceDirPath))
+                string relativePath = IOPath.GetRelativePath(root, filePath).Replace('\\', '/');
+                if (relativePath.StartsWith("_configs/", StringComparison.OrdinalIgnoreCase) ||
+                    relativePath.StartsWith("_temp/", StringComparison.OrdinalIgnoreCase) ||
+                    IOPath.GetFileName(filePath).StartsWith("~$", StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                ExtractLanguageColumnsFromFile(filePath, result);
+                Dictionary<string, List<IReadOnlyList<string>>> sheets =
+                    EditorUtil.Excel.ReadAllSheets(filePath);
+                if (sheets == null)
+                {
+                    continue;
+                }
+
+                foreach (KeyValuePair<string, List<IReadOnlyList<string>>> pair in sheets)
+                {
+                    if (pair.Key.StartsWith("#", StringComparison.Ordinal) ||
+                        pair.Value == null ||
+                        pair.Value.Count < 2 ||
+                        pair.Value[1] == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (string rawHeader in pair.Value[1])
+                    {
+                        string header = rawHeader?.Trim();
+                        if (!string.IsNullOrEmpty(header) && header[0] == '#')
+                        {
+                            header = header.Substring(1);
+                        }
+
+                        if (Enum.TryParse(header, false, out Language language) &&
+                            Enum.IsDefined(typeof(Language), language) &&
+                            string.Equals(
+                                Enum.GetName(typeof(Language), language),
+                                header,
+                                StringComparison.Ordinal))
+                        {
+                            result.Add(header);
+                        }
+                    }
+                }
             }
 
             return result;
         }
 
-        /// <summary>
-        /// 获取目录下可过滤的 Excel 文件列表。
-        /// </summary>
-        /// <param name="sourceDirPath">数据源目录路径。</param>
-        /// <returns>文件路径数组，目录无效时返回 null。</returns>
-        private static string[] GetFilterableFiles(string sourceDirPath)
+        private static List<IReadOnlyList<string>> BuildProjectedSheet(
+            SourceSheet sheet,
+            string languageName)
         {
-            if (string.IsNullOrEmpty(sourceDirPath) || !Util.SysIO.Directory.Exists(sourceDirPath))
+            if (!sheet.LanguageColumnIndexes.TryGetValue(languageName, out int languageColumnIndex))
             {
-                Log.Warning(LogTag.Editor, "Localization 预过滤：数据源目录不存在或为空：{0}", sourceDirPath ?? "null");
-                return null;
-            }
-
-            string[] files = EditorUtil.FileSystem.GetFiles(sourceDirPath, c_SearchPattern, c_ExcludePrefix);
-            if (files == null || files.Length == 0)
-            {
-                Log.Debug(LogTag.Editor, "Localization 预过滤：数据源目录下未找到 .xlsx 文件：{0}", sourceDirPath);
-                return null;
-            }
-
-            return files;
-        }
-
-        /// <summary>
-        /// 判断文件路径是否在 _configs/ 或 _temp/ 子目录中（需跳过）。
-        /// </summary>
-        /// <param name="filePath">文件完整路径。</param>
-        /// <param name="sourceDirPath">数据源目录路径。</param>
-        /// <returns>是否应排除。</returns>
-        private static bool IsExcludedPath(string filePath, string sourceDirPath)
-        {
-            string normalizedPath = filePath.Replace('\\', '/');
-            string configsDirPath = (Util.SysIO.Path.Combine(sourceDirPath, c_ConfigsDirName) + Util.SysIO.Path.DirectorySeparatorChar).Replace('\\', '/');
-            string tempDirPath = (Util.SysIO.Path.Combine(sourceDirPath, c_TempDirName) + Util.SysIO.Path.DirectorySeparatorChar).Replace('\\', '/');
-
-            return normalizedPath.StartsWith(configsDirPath) || normalizedPath.StartsWith(tempDirPath);
-        }
-
-        /// <summary>
-        /// 对单个 Excel 文件执行代码生成预过滤：取第一种语言列的值作为 Value。
-        /// </summary>
-        /// <param name="excelFilePath">Excel 文件完整路径。</param>
-        /// <param name="codegenTempDir">代码生成临时输出目录。</param>
-        private static void FilterFileForCodeGen(string excelFilePath, string codegenTempDir)
-        {
-            Dictionary<string, List<IReadOnlyList<string>>> allSheets = ReadValidSheets(excelFilePath);
-            if (allSheets == null || allSheets.Count == 0)
-            {
-                return;
-            }
-
-            var outputSheets = new Dictionary<string, List<IReadOnlyList<string>>>();
-
-            foreach (var kvp in allSheets)
-            {
-                string sheetName = kvp.Key;
-                List<IReadOnlyList<string>> rows = kvp.Value;
-
-                ColumnLayout layout = ParseColumnLayout(rows[c_VarRow]);
-                if (layout.KeyIndex < 0 || layout.LanguageColumns.Count == 0)
-                {
-                    continue;
-                }
-
-                int firstLangIndex = layout.LanguageColumns[0].Index;
-                List<IReadOnlyList<string>> filtered = BuildFilteredSheet(sheetName, rows, layout.KeyIndex, firstLangIndex);
-                if (filtered != null)
-                {
-                    outputSheets[sheetName] = filtered;
-                }
-            }
-
-            WriteOutputExcel(excelFilePath, codegenTempDir, outputSheets);
-        }
-
-        /// <summary>
-        /// 对单个 Excel 文件执行语言预过滤：取指定语言列的值作为 Value。
-        /// </summary>
-        /// <param name="excelFilePath">Excel 文件完整路径。</param>
-        /// <param name="langTempDir">语言临时输出目录。</param>
-        /// <param name="languageName">目标语言名称。</param>
-        private static void FilterFileForLanguage(string excelFilePath, string langTempDir, string languageName)
-        {
-            Dictionary<string, List<IReadOnlyList<string>>> allSheets = ReadValidSheets(excelFilePath);
-            if (allSheets == null || allSheets.Count == 0)
-            {
-                return;
-            }
-
-            var outputSheets = new Dictionary<string, List<IReadOnlyList<string>>>();
-
-            foreach (var kvp in allSheets)
-            {
-                string sheetName = kvp.Key;
-                List<IReadOnlyList<string>> rows = kvp.Value;
-
-                ColumnLayout layout = ParseColumnLayout(rows[c_VarRow]);
-                if (layout.KeyIndex < 0)
-                {
-                    continue;
-                }
-
-                int langIndex = FindLanguageColumnIndex(layout.LanguageColumns, languageName);
-                if (langIndex < 0)
-                {
-                    continue;
-                }
-
-                List<IReadOnlyList<string>> filtered = BuildFilteredSheet(sheetName, rows, layout.KeyIndex, langIndex);
-                if (filtered != null)
-                {
-                    outputSheets[sheetName] = filtered;
-                }
-            }
-
-            WriteOutputExcel(excelFilePath, langTempDir, outputSheets);
-        }
-
-        /// <summary>
-        /// 读取 Excel 文件中所有有效的 Sheet（跳过 # 开头和行数不足的 Sheet）。
-        /// </summary>
-        /// <param name="excelFilePath">Excel 文件完整路径。</param>
-        /// <returns>有效 Sheet 字典，读取失败时返回 null。</returns>
-        private static Dictionary<string, List<IReadOnlyList<string>>> ReadValidSheets(string excelFilePath)
-        {
-            if (string.IsNullOrEmpty(excelFilePath) || !Util.SysIO.File.Exists(excelFilePath))
-            {
-                return null;
-            }
-
-            Dictionary<string, List<IReadOnlyList<string>>> allSheets;
-            try
-            {
-                allSheets = EditorUtil.Excel.ReadAllSheets(excelFilePath);
-            }
-            catch (Exception e)
-            {
-                Log.Error(LogTag.Editor, "Localization 预过滤：读取 Excel 失败：{0}，异常：{1}", excelFilePath, e.Message);
-                return null;
-            }
-
-            if (allSheets == null || allSheets.Count == 0)
-            {
-                return null;
-            }
-
-            var validSheets = new Dictionary<string, List<IReadOnlyList<string>>>();
-            foreach (var kvp in allSheets)
-            {
-                if (kvp.Key.StartsWith(c_MarkerColumnPrefix))
-                {
-                    continue;
-                }
-
-                if (kvp.Value == null || kvp.Value.Count < c_MinRowCount)
-                {
-                    continue;
-                }
-
-                validSheets[kvp.Key] = kvp.Value;
-            }
-
-            return validSheets.Count > 0 ? validSheets : null;
-        }
-
-        /// <summary>
-        /// Excel 列布局信息。
-        /// </summary>
-        private struct ColumnLayout
-        {
-            /// <summary>
-            /// Name（Key）列索引，未找到时为 -1。
-            /// </summary>
-            public int KeyIndex;
-
-            /// <summary>
-            /// 语言列索引与名称列表。
-            /// </summary>
-            public List<(int Index, string Name)> LanguageColumns;
-        }
-
-        /// <summary>
-        /// 从 ##var 行解析列布局，识别 Key 列和所有语言列。
-        /// </summary>
-        /// <param name="varRow">##var 行数据。</param>
-        /// <returns>列布局信息。</returns>
-        private static ColumnLayout ParseColumnLayout(IReadOnlyList<string> varRow)
-        {
-            var layout = new ColumnLayout { KeyIndex = -1, LanguageColumns = new List<(int, string)>() };
-
-            if (varRow == null || varRow.Count < 2)
-            {
-                return layout;
-            }
-
-            for (int col = 0; col < varRow.Count; col++)
-            {
-                string columnName = varRow[col]?.Trim();
-                if (string.IsNullOrEmpty(columnName))
-                {
-                    continue;
-                }
-
-                // 去掉 Luban 的 # 前缀（如 #ChineseSimplified → ChineseSimplified）
-                string pureName = columnName.TrimStart('#');
-
-                if (pureName == c_KeyColumnName)
-                {
-                    layout.KeyIndex = col;
-                }
-                else if (pureName == c_DescColumnName)
-                {
-                    continue;
-                }
-                else if (Enum.TryParse<Language>(pureName, out _))
-                {
-                    // LanguageColumns 存纯名称，Index 指向原列位置
-                    layout.LanguageColumns.Add((col, pureName));
-                }
-            }
-
-            return layout;
-        }
-
-        /// <summary>
-        /// 在语言列列表中查找指定语言名称对应的列索引。
-        /// </summary>
-        /// <param name="languageColumns">语言列列表。</param>
-        /// <param name="languageName">目标语言名称。</param>
-        /// <returns>列索引，未找到时返回 -1。</returns>
-        private static int FindLanguageColumnIndex(List<(int Index, string Name)> languageColumns, string languageName)
-        {
-            for (int i = 0; i < languageColumns.Count; i++)
-            {
-                if (languageColumns[i].Name == languageName)
-                {
-                    return languageColumns[i].Index;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// 构建过滤后的 Sheet 数据：4 行 Luban 标记表头 + Name/Value 数据行。
-        /// </summary>
-        /// <param name="sheetName">Sheet 名称。</param>
-        /// <param name="rows">原始行数据。</param>
-        /// <param name="keyIndex">Name 列索引。</param>
-        /// <param name="valueIndex">Value 来源列索引（语言列）。</param>
-        /// <returns>过滤后的行数据，无有效数据时返回 null。</returns>
-        private static List<IReadOnlyList<string>> BuildFilteredSheet(string sheetName, List<IReadOnlyList<string>> rows, int keyIndex, int valueIndex)
-        {
-            var dataRows = new List<IReadOnlyList<string>>();
-
-            for (int i = c_DataStartRow; i < rows.Count; i++)
-            {
-                IReadOnlyList<string> row = rows[i];
-                if (row == null || row.Count == 0)
-                {
-                    continue;
-                }
-
-                if (row.Count > 0 && row[0] == c_MarkerColumnPrefix)
-                {
-                    continue;
-                }
-
-                if (keyIndex >= row.Count)
-                {
-                    continue;
-                }
-
-                string name = row[keyIndex]?.Trim();
-                if (string.IsNullOrEmpty(name) || name.StartsWith(c_MarkerColumnPrefix))
-                {
-                    continue;
-                }
-
-                string value = valueIndex < row.Count ? row[valueIndex] ?? string.Empty : string.Empty;
-                dataRows.Add(new List<string> { "", name, value });
-            }
-
-            if (dataRows.Count == 0)
-            {
-                return null;
+                throw new InvalidDataException(
+                    $"Localization sheet '{sheet.Name}' does not contain language '{languageName}'.");
             }
 
             var outputRows = new List<IReadOnlyList<string>>
             {
-                new List<string> { "##comment", sheetName },
+                new List<string> { "##comment", sheet.Name },
                 new List<string> { "##var", "Name", "Value" },
                 new List<string> { "##type", "string", "string" },
-                new List<string> { "##comment", "键名", "值" }
+                new List<string> { "##comment", "键名", "值" },
             };
-            outputRows.AddRange(dataRows);
 
-            return outputRows;
-        }
-
-        /// <summary>
-        /// 将过滤后的 Sheet 数据写入临时 CSV 文件目录。
-        /// </summary>
-        /// <param name="sourceFilePath">原始 Excel 文件路径（用于提取文件名）。</param>
-        /// <param name="tempDir">临时输出目录。</param>
-        /// <param name="outputSheets">过滤后的 Sheet 数据。</param>
-        private static void WriteOutputExcel(string sourceFilePath, string tempDir, Dictionary<string, List<IReadOnlyList<string>>> outputSheets)
-        {
-            if (outputSheets == null || outputSheets.Count == 0)
+            for (int rowIndex = c_DataStartRow; rowIndex < sheet.Rows.Count; rowIndex++)
             {
-                return;
-            }
-
-            if (!Util.SysIO.Directory.Exists(tempDir))
-            {
-                Util.SysIO.Directory.CreateIfNotExist(tempDir);
-            }
-
-            string fileNameWithoutExt = Util.SysIO.Path.GetFileNameWithoutExtension(sourceFilePath);
-            string outputDir = Util.SysIO.Path.Combine(tempDir, fileNameWithoutExt);
-            EditorUtil.Excel.Write(outputDir, outputSheets);
-        }
-
-        /// <summary>
-        /// 从单个 Excel 文件中提取所有语言列名称到结果集合。
-        /// </summary>
-        /// <param name="excelFilePath">Excel 文件完整路径。</param>
-        /// <param name="result">语言名称结果集合（追加写入）。</param>
-        private static void ExtractLanguageColumnsFromFile(string excelFilePath, HashSet<string> result)
-        {
-            Dictionary<string, List<IReadOnlyList<string>>> allSheets = ReadValidSheets(excelFilePath);
-            if (allSheets == null)
-            {
-                return;
-            }
-
-            foreach (var kvp in allSheets)
-            {
-                List<IReadOnlyList<string>> rows = kvp.Value;
-                if (rows.Count < c_MinRowCount)
+                IReadOnlyList<string> row = sheet.Rows[rowIndex];
+                if (row == null || sheet.NameColumnIndex >= row.Count)
                 {
                     continue;
                 }
 
-                ColumnLayout layout = ParseColumnLayout(rows[c_VarRow]);
-                for (int i = 0; i < layout.LanguageColumns.Count; i++)
+                string key = row[sheet.NameColumnIndex]?.Trim();
+                if (string.IsNullOrEmpty(key) || key.StartsWith("#", StringComparison.Ordinal))
                 {
-                    result.Add(layout.LanguageColumns[i].Name);
+                    continue;
+                }
+
+                string value = languageColumnIndex < row.Count
+                    ? row[languageColumnIndex] ?? string.Empty
+                    : string.Empty;
+                outputRows.Add(new List<string> { string.Empty, key, value });
+            }
+
+            return outputRows;
+        }
+
+        internal sealed class SourceModel
+        {
+            private const int c_VarRowIndex = 1;
+            private const int c_MinRowCount = 5;
+            private const string c_NameColumnName = "Name";
+            private const string c_DescColumnName = "Desc";
+
+            private SourceModel(
+                IReadOnlyList<SourceUnit> units,
+                IReadOnlyList<string> languages)
+            {
+                Units = units;
+                Languages = languages;
+            }
+
+            internal IReadOnlyList<SourceUnit> Units { get; }
+            internal IReadOnlyList<string> Languages { get; }
+
+            internal static SourceModel Load(
+                string sourceDirPath,
+                IReadOnlyList<IDataTableUnitSetting> units,
+                Func<string, Dictionary<string, List<IReadOnlyList<string>>>> readAllSheets = null)
+            {
+                if (string.IsNullOrWhiteSpace(sourceDirPath))
+                {
+                    throw new InvalidDataException("Localization source directory cannot be empty.");
+                }
+
+                if (units == null)
+                {
+                    throw new InvalidDataException("Localization source units cannot be null.");
+                }
+
+                string rootPath = IOPath.GetFullPath(sourceDirPath);
+                string fileSystemRoot = IOPath.GetPathRoot(rootPath);
+                if (rootPath.Length > fileSystemRoot.Length)
+                {
+                    rootPath = rootPath.TrimEnd(IOPath.DirectorySeparatorChar, IOPath.AltDirectorySeparatorChar);
+                }
+
+                string rootPrefix = rootPath.EndsWith(IOPath.DirectorySeparatorChar.ToString(), StringComparison.Ordinal)
+                    ? rootPath
+                    : rootPath + IOPath.DirectorySeparatorChar;
+                StringComparison pathComparison = IOPath.DirectorySeparatorChar == '\\'
+                    ? StringComparison.OrdinalIgnoreCase
+                    : StringComparison.Ordinal;
+                var sourcePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var validatedUnits = new List<ValidatedUnit>(units.Count);
+
+                foreach (IDataTableUnitSetting setting in units)
+                {
+                    if (setting == null)
+                    {
+                        throw new InvalidDataException("Localization source unit cannot be null.");
+                    }
+
+                    string sourcePath = NormalizeSourcePath(setting.SourcePath);
+                    string platformPath = sourcePath.Replace('/', IOPath.DirectorySeparatorChar);
+                    string fullPath = IOPath.GetFullPath(IOPath.Combine(rootPath, platformPath));
+                    if (!fullPath.StartsWith(rootPrefix, pathComparison))
+                    {
+                        throw new InvalidDataException(
+                            $"Localization source path must stay inside the source directory: {setting.SourcePath}.");
+                    }
+
+                    string canonicalSourcePath = IOPath.GetRelativePath(rootPath, fullPath).Replace('\\', '/');
+                    if (!string.Equals(IOPath.GetExtension(canonicalSourcePath), ".xlsx", StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidDataException(
+                            $"Localization source path must use the .xlsx extension: {setting.SourcePath}.");
+                    }
+
+                    ValidateNoReparsePoints(rootPath, canonicalSourcePath);
+                    if (!sourcePaths.Add(canonicalSourcePath))
+                    {
+                        throw new InvalidDataException($"Duplicate Localization source path: {canonicalSourcePath}.");
+                    }
+
+                    validatedUnits.Add(new ValidatedUnit(setting, canonicalSourcePath, fullPath));
+                }
+
+                readAllSheets ??= EditorUtil.Excel.ReadAllSheets;
+                var loadedUnits = new List<SourceUnit>(validatedUnits.Count);
+                foreach (ValidatedUnit validated in validatedUnits.OrderBy(unit => unit.SourcePath, StringComparer.Ordinal))
+                {
+                    Dictionary<string, List<IReadOnlyList<string>>> workbook = readAllSheets(validated.FullPath);
+                    var sheets = new List<SourceSheet>();
+                    if (workbook != null)
+                    {
+                        foreach (KeyValuePair<string, List<IReadOnlyList<string>>> entry in workbook)
+                        {
+                            if (entry.Key.StartsWith("#", StringComparison.Ordinal) ||
+                                entry.Value == null || entry.Value.Count < c_MinRowCount)
+                            {
+                                continue;
+                            }
+
+                            SourceSheet sheet = ParseSheet(
+                                validated.SourcePath,
+                                entry.Key,
+                                entry.Value);
+                            sheets.Add(sheet);
+                        }
+                    }
+
+                    if (sheets.Count == 0)
+                    {
+                        throw new InvalidDataException(
+                            $"Localization source '{validated.SourcePath}' contains no valid sheets.");
+                    }
+
+                    loadedUnits.Add(new SourceUnit(
+                        validated.Setting,
+                        validated.SourcePath,
+                        GetRelativeStem(validated.SourcePath),
+                        sheets));
+                }
+
+                IReadOnlyList<string> languages = ValidateGlobalContract(loadedUnits);
+                ValidateExportPaths(loadedUnits, languages);
+                return new SourceModel(loadedUnits, languages);
+            }
+
+            private static string NormalizeSourcePath(string sourcePath)
+            {
+                if (string.IsNullOrWhiteSpace(sourcePath))
+                {
+                    throw new InvalidDataException("Localization source path cannot be empty.");
+                }
+
+                string normalized = sourcePath.Replace('\\', '/');
+                bool hasDrivePrefix = normalized.Length >= 2 && char.IsLetter(normalized[0]) && normalized[1] == ':';
+                if (IOPath.IsPathRooted(normalized) || normalized.StartsWith("//", StringComparison.Ordinal) || hasDrivePrefix)
+                {
+                    throw new InvalidDataException($"Localization source path must be relative: {sourcePath}.");
+                }
+
+                return normalized;
+            }
+
+            private static SourceSheet ParseSheet(
+                string sourcePath,
+                string sheetName,
+                IReadOnlyList<IReadOnlyList<string>> rows)
+            {
+                IReadOnlyList<string> varRow = rows[c_VarRowIndex];
+                if (varRow == null)
+                {
+                    throw new InvalidDataException(
+                        $"Localization source '{sourcePath}', sheet '{sheetName}' has no ##var row.");
+                }
+
+                int nameColumnIndex = -1;
+                int descColumnIndex = -1;
+                var languageColumnIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
+                for (int i = 1; i < varRow.Count; i++)
+                {
+                    string columnName = varRow[i]?.Trim();
+                    if (!string.IsNullOrEmpty(columnName) && columnName[0] == '#')
+                    {
+                        columnName = columnName.Substring(1);
+                        if (columnName.StartsWith("#", StringComparison.Ordinal))
+                        {
+                            throw new InvalidDataException(
+                                $"Localization source '{sourcePath}', sheet '{sheetName}' column {i + 1} " +
+                                $"has multiple # prefixes: '{varRow[i]}'.");
+                        }
+                    }
+
+                    if (string.Equals(columnName, c_NameColumnName, StringComparison.Ordinal))
+                    {
+                        nameColumnIndex = i;
+                    }
+                    else if (string.Equals(columnName, c_DescColumnName, StringComparison.Ordinal))
+                    {
+                        descColumnIndex = i;
+                    }
+                    else if (IsDefinedLanguage(columnName))
+                    {
+                        if (languageColumnIndexes.ContainsKey(columnName))
+                        {
+                            throw new InvalidDataException(
+                                $"Localization source '{sourcePath}', sheet '{sheetName}' " +
+                                $"contains duplicate language column '{columnName}'.");
+                        }
+
+                        languageColumnIndexes.Add(columnName, i);
+                    }
+                }
+
+                if (nameColumnIndex < 0)
+                {
+                    throw new InvalidDataException(
+                        $"Localization source '{sourcePath}', sheet '{sheetName}' is missing the Name column.");
+                }
+
+                if (languageColumnIndexes.Count == 0)
+                {
+                    throw new InvalidDataException(
+                        $"Localization source '{sourcePath}', sheet '{sheetName}' has no defined language columns.");
+                }
+
+                var keys = new HashSet<string>(StringComparer.Ordinal);
+                int validRowCount = 0;
+                for (int rowIndex = c_MinRowCount - 1; rowIndex < rows.Count; rowIndex++)
+                {
+                    IReadOnlyList<string> row = rows[rowIndex];
+                    if (row == null || nameColumnIndex >= row.Count)
+                    {
+                        continue;
+                    }
+
+                    string key = row[nameColumnIndex]?.Trim();
+                    if (string.IsNullOrEmpty(key) || key.StartsWith("#", StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    if (!keys.Add(key))
+                    {
+                        throw new InvalidDataException(
+                            $"Localization source '{sourcePath}', sheet '{sheetName}' row {rowIndex + 1} " +
+                            $"contains duplicate key '{key}'.");
+                    }
+
+                    validRowCount++;
+                }
+
+                if (validRowCount == 0)
+                {
+                    throw new InvalidDataException(
+                        $"Localization source '{sourcePath}', sheet '{sheetName}' has no valid data rows.");
+                }
+
+                return new SourceSheet(
+                    sheetName,
+                    nameColumnIndex,
+                    descColumnIndex,
+                    languageColumnIndexes,
+                    rows);
+            }
+
+            private static bool IsDefinedLanguage(string value)
+            {
+                if (string.IsNullOrEmpty(value) ||
+                    !Enum.TryParse(value, false, out Language parsed) ||
+                    !Enum.IsDefined(typeof(Language), parsed))
+                {
+                    return false;
+                }
+
+                return string.Equals(Enum.GetName(typeof(Language), parsed), value, StringComparison.Ordinal);
+            }
+
+            private static IReadOnlyList<string> ValidateGlobalContract(
+                IReadOnlyList<SourceUnit> units)
+            {
+                HashSet<string> expected = null;
+                foreach (SourceUnit unit in units)
+                {
+                    foreach (SourceSheet sheet in unit.Sheets)
+                    {
+                        var actual = new HashSet<string>(
+                            sheet.LanguageColumnIndexes.Keys,
+                            StringComparer.Ordinal);
+                        if (expected == null)
+                        {
+                            expected = actual;
+                            continue;
+                        }
+
+                        if (expected.SetEquals(actual))
+                        {
+                            continue;
+                        }
+
+                        string missing = string.Join(", ", expected.Except(actual).OrderBy(x => x, StringComparer.Ordinal));
+                        string extra = string.Join(", ", actual.Except(expected).OrderBy(x => x, StringComparer.Ordinal));
+                        throw new InvalidDataException(
+                            $"Localization source '{unit.SourcePath}', sheet '{sheet.Name}' has inconsistent " +
+                            $"language columns. Missing: [{missing}]. Extra: [{extra}].");
+                    }
+                }
+
+                if (expected == null || expected.Count == 0)
+                {
+                    throw new InvalidDataException("Localization sources contain no defined languages.");
+                }
+
+                return expected.OrderBy(language => language, StringComparer.Ordinal).ToList();
+            }
+
+            private static void ValidateExportPaths(
+                IReadOnlyList<SourceUnit> units,
+                IReadOnlyList<string> languages)
+            {
+                var expandedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (SourceUnit unit in units)
+                {
+                    string template = unit.Setting.DatasExportPath;
+                    if (string.IsNullOrEmpty(template) ||
+                        template.IndexOf("{0}", StringComparison.Ordinal) < 0)
+                    {
+                        throw new InvalidDataException(
+                            $"Localization source '{unit.SourcePath}' DatasExportPath must contain '{{0}}'.");
+                    }
+
+                    foreach (string language in languages)
+                    {
+                        string expanded = template.Replace("{0}", language);
+                        string canonical = IOPath.GetFullPath(expanded).Replace('\\', '/');
+                        if (!expandedPaths.Add(canonical))
+                        {
+                            throw new InvalidDataException(
+                                $"Localization data export path collision: '{expanded}'.");
+                        }
+                    }
                 }
             }
+
+            private static string GetRelativeStem(string sourcePath)
+            {
+                string extension = IOPath.GetExtension(sourcePath);
+                return sourcePath.Substring(0, sourcePath.Length - extension.Length);
+            }
+
+            private static void ValidateNoReparsePoints(string rootPath, string canonicalSourcePath)
+            {
+                string currentPath = rootPath;
+                string[] segments = canonicalSourcePath.Split('/');
+                foreach (string segment in segments)
+                {
+                    currentPath = IOPath.Combine(currentPath, segment);
+                    try
+                    {
+                        if ((File.GetAttributes(currentPath) & FileAttributes.ReparsePoint) != 0)
+                        {
+                            throw new InvalidDataException(
+                                $"Localization source path cannot contain a symbolic link or reparse point: {canonicalSourcePath}.");
+                        }
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        break;
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            private sealed class ValidatedUnit
+            {
+                internal ValidatedUnit(IDataTableUnitSetting setting, string sourcePath, string fullPath)
+                {
+                    Setting = setting;
+                    SourcePath = sourcePath;
+                    FullPath = fullPath;
+                }
+
+                internal IDataTableUnitSetting Setting { get; }
+                internal string SourcePath { get; }
+                internal string FullPath { get; }
+            }
+        }
+
+        /// <summary>
+        /// 单个配置源文件快照。
+        /// </summary>
+        internal sealed class SourceUnit
+        {
+            internal SourceUnit(
+                IDataTableUnitSetting setting,
+                string sourcePath,
+                string relativeStem,
+                IReadOnlyList<SourceSheet> sheets)
+            {
+                Setting = setting;
+                SourcePath = sourcePath;
+                RelativeStem = relativeStem;
+                Sheets = sheets;
+            }
+
+            internal IDataTableUnitSetting Setting { get; }
+            internal string SourcePath { get; }
+            internal string RelativeStem { get; }
+            internal IReadOnlyList<SourceSheet> Sheets { get; }
+        }
+
+        /// <summary>
+        /// 单个 Localization Sheet 快照。
+        /// </summary>
+        internal sealed class SourceSheet
+        {
+            internal SourceSheet(
+                string name,
+                int nameColumnIndex,
+                int descColumnIndex,
+                IReadOnlyDictionary<string, int> languageColumnIndexes,
+                IReadOnlyList<IReadOnlyList<string>> rows)
+            {
+                Name = name;
+                NameColumnIndex = nameColumnIndex;
+                DescColumnIndex = descColumnIndex;
+                LanguageColumnIndexes = languageColumnIndexes;
+                Rows = rows;
+            }
+
+            internal string Name { get; }
+            internal int NameColumnIndex { get; }
+            internal int DescColumnIndex { get; }
+            internal IReadOnlyDictionary<string, int> LanguageColumnIndexes { get; }
+            internal IReadOnlyList<IReadOnlyList<string>> Rows { get; }
         }
     }
 }

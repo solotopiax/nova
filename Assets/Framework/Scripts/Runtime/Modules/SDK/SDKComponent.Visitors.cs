@@ -43,7 +43,8 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// InitializeTask 的缓存，首次访问时由 GetOrCreateInitializeTask 创建。
-        /// 惰性 InitializeAsync 任务；首次访问时调用 Manager.InitializeAsync，后续调用返回同一任务。
+        /// 惰性 InitializeAsync 任务；首次访问时调用 Manager.InitializeAsync 并 Preserve 完成结果，
+        /// 后续调用可在初始化完成后再次等待同一任务。
         /// 业务层通过 await Nova.SDK.InitializeTask 完成 SDK 统一初始化。
         /// </summary>
         private UniTask? m_InitializeTaskCache;

@@ -24,17 +24,17 @@ HybridCLR 面板全部字段的维度 Override 单项（仅 Editor 期消费）�
 | `Platform` | `PlatformType` | `PlatformType.None` | 平台轴；仅 `HybridCLRMask.ByPlatform == true` 时参与匹配 |
 | `Channel` | `ChannelType` | `ChannelType.None` | 渠道轴；仅 `HybridCLRMask.ByChannel == true` 时参与匹配 |
 | `DevelopMode` | `DevelopMode` | `DevelopMode.Debug` | 开发模式轴；仅 `HybridCLRMask.ByDevelopMode == true` 时参与匹配 |
-| `AotMetadataDlls` | `List<DllMasterAssetEntry>` | `new()` | AOT 元数据 DLL 列表 Override（编辑期三字段视图）；列表为空时回落顶层 `ConfigMasterSO.AotMetadataDlls` |
-| `GameDlls` | `List<DllMasterAssetEntry>` | `new()` | 业务 DLL 列表 Override（编辑期三字段视图）；列表为空时回落顶层 `ConfigMasterSO.GameDlls` |
-| `LinkXmlTargetPath` | `string` | `null` | link.xml 目标位置 Override（项目根相对路径含文件名）；null 或空时回落顶层字段 |
-| `GameEntranceProcedureName` | `string` | `null` | 业务入口 Procedure 相对类型名 Override；null 或空时回落顶层字段 |
+| `AotMetadataDlls` | `List<DllMasterAssetEntry>` | `new()` | AOT 元数据 DLL 列表 Override（编辑期三字段视图）；空列表是当前坐标明确配置的有效值 |
+| `GameDlls` | `List<DllMasterAssetEntry>` | `new()` | 业务 DLL 列表 Override（编辑期三字段视图）；空列表是当前坐标明确配置的有效值 |
+| `LinkXmlTargetPath` | `string` | `null` | link.xml 目标位置 Override（项目根相对路径含文件名）；空字符串是当前坐标明确配置的有效值 |
+| `GameEntranceProcedureName` | `string` | `null` | 业务入口 Procedure 相对类型名 Override；空字符串是当前坐标明确配置的有效值 |
 
 ---
 
 ## §12 注意事项
 
 - 整个类包裹在 `#if UNITY_EDITOR` 内，运行时程序集中不存在此类型
-- `AotMetadataDlls` / `GameDlls` 为空列表（`Count == 0`）时视为"未 Override"，回落顶层字段；这与 string 字段判断 `IsNullOrEmpty` 行为一致（见 `DimensionalResolver.ResolveHybridCLR` 源码）
+- 命中坐标条目后整份 Override 独立生效，空列表与空字符串均不回落顶层；只有没有匹配条目时才使用顶层字段
 - `DimensionProjector.ApplyHybridCLRResult` 写入时对 `AotMetadataDlls` / `GameDlls` 做深拷贝（`new List<>(source)`），禁止共享引用
 
 ---

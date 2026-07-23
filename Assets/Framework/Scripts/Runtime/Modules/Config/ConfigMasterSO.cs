@@ -78,6 +78,12 @@ namespace NovaFramework.Runtime
         public PanelDimensionMask YooAssetMask = new();
 
         /// <summary>
+        /// CDN 部署面板维度掩码；全不勾时 CdnDeployment 全局一份，
+        /// 勾选后 CdnOverrides 按坐标覆盖。
+        /// </summary>
+        public PanelDimensionMask CdnMask = new();
+
+        /// <summary>
         /// Namespace 维度 Override 列表；列表为空时等同全不勾（全局使用顶层 Namespace 字段）。
         /// DimensionalResolver 按 NamespaceMask 勾选轴从列表中匹配首个符合条目后取 Value，
         /// 无命中回退顶层 Namespace 字段。
@@ -85,6 +91,18 @@ namespace NovaFramework.Runtime
         public List<NamespaceOverride> NamespaceOverrides = new();
 
 #if UNITY_EDITOR
+        /// <summary>
+        /// CDN 内容部署与缓存清理配置；仅 Editor 期消费，不参与 ConfigRuntimeSO 导出。
+        /// </summary>
+        public CdnDeploymentConfig CdnDeployment = new();
+
+        /// <summary>
+        /// CDN 部署维度 Override 列表（仅 Editor 期消费）；列表为空时等同全不勾。
+        /// DimensionalResolver 按 CdnMask 勾选轴从列表中匹配首个符合条目后取 Config，
+        /// 无命中回退顶层 CdnDeployment。
+        /// </summary>
+        public List<CdnDeploymentOverride> CdnOverrides = new();
+
         /// <summary>
         /// HybridCLR 面板维度 Override 列表（仅 Editor 期消费）；列表为空时等同全不勾。
         /// DimensionalResolver 从列表中匹配首个符合条目后取对应字段值，

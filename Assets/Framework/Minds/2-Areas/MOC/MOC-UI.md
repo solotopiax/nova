@@ -1,7 +1,7 @@
 ---
 id: MOC-UI
 title: UI 模块图谱
-summary: UIView、UIGroup、UIManager 与公开入口速查
+summary: UI分组管理与公开入口速查
 category: runtime
 status: active
 date: 2026-06-05

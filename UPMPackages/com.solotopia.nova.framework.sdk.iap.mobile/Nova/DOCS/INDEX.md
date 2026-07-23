@@ -34,7 +34,7 @@
 - `nova_iap_local_pay_success.nova_order_id` 优先使用 Unity IAP receipt 解析出的平台 `OrderId`；缺失时回退当前运行期 `TransactionId`。
 - `nova_iap_validate_success.nova_order_id` 优先使用服务端验单响应 `OrderId`；缺失时回退当前运行期 `TransactionId`。
 - `nova_iap_local_pay_fail` / `nova_iap_validate_fail` / `nova_iap_validate_fail_finish` 的 `nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值；补充描述写入 `nova_reason_detail`。
-- Mobile 打点 `Debug` 字段来自父包注入的 `DevelopMode == Debug`，不再使用 `EnableAlwaysPaySucceed`。
+- Mobile 打点 `Debug` 字段来自父包注入的 `DevelopMode == Debug`，不再使用 `EnableAlwaysPaySucceed`；`EnableAlwaysPaySucceed` 只在 Editor 调试支付时生效。
 
 ## 最新实现快照
 
@@ -43,10 +43,6 @@
 - 本地存档以 `tableId` 合并订单；`TransactionId` 可承载平台订单号，但 Android 不持久化，iOS 随本地存档保留。
 - Google 使用 `GoogleToken` 作为验单凭据和本地支付成功打点去重 key；Apple 使用 `TransactionId`。
 - `TrackChannel` 按平台输出 `google` / `ios` / `mobile`，TGA 侧可用该值区分 `solar_channel`。
-
-## 归档文档
-
-- [MobileStore-Design.md](./MobileStore-Design.md) — 旧版设计说明，已转换为归档入口；当前事实以 `MobileIAP-Architecture.md` 和 `MobileStore.md` 为准。
 
 ## 相关
 

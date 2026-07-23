@@ -1,7 +1,7 @@
 ﻿# IAP 核心包架构文档
 
 > 包名：`com.solotopia.nova.framework.sdk.iap`
-> 最后更新：2026-06-11
+> 最后更新：2026-07-22
 > 代码入口：`Nova/Scripts/Runtime/**`
 
 ## 1. 当前架构
@@ -35,7 +35,7 @@ SDKComponent
 
 | 字段 / 属性 | 说明 |
 |---|---|
-| `EnableAlwaysPaySucceed` | 调试开关；Store 可读取 `Context.EnableAlwaysPaySucceed` 跳过真实平台支付 |
+| `EnableAlwaysPaySucceed` | Editor 调试开关；仅 Editor 编译态允许 Store 读取 `Context.EnableAlwaysPaySucceed` 跳过真实平台支付，非 Editor 编译态强制为 false |
 | `EnableIAPLog` | IAP 详细日志开关 |
 | `RetryValidateMaxNum` | 首次验单失败后的最大重试次数，默认 3 |
 | `SkipLoadingForReplenish` | 启动补单是否跳过 Loading |
@@ -54,6 +54,7 @@ SDKComponent
 | `IFileFragmentManager` | Store 持久化读写 |
 | `ITrackPlugin` | 支付打点 |
 | `INetworkManager` | 网络可用性与 NetCmd 解析 |
+| `EnableAlwaysPaySucceed` | 仅 Editor 编译态有效的始终支付成功调试开关；非 Editor 编译态由 `IAPPlugin` 强制注入 false |
 | `DevelopMode` | 来自 `IConfigManager.DevelopMode`，供 Store 打点 Debug 字段判断 |
 | `IIAPStoreEventBridge` | Store 向 `IAPPlugin.Events` 上报初始化、支付、Restore 结果 |
 

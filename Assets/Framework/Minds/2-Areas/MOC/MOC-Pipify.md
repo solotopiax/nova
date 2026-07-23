@@ -1,7 +1,7 @@
 ---
 id: MOC-Pipify
 title: Pipify 构建流水线图谱
-summary: 导出、HybridCLR、Bundle 构建的 Editor 流程入口速查
+summary: Pipify导出与构建流程速查
 category: editor
 status: active
 date: 2026-06-05

@@ -91,7 +91,6 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.SourceFileTree.DrawSourceFilesListWithFolders(sourceDirPath, unitsSettingsProp, foldoutState, customDrawSourceFileRow: (filePath, capturedRelativePath, seq, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty) => DrawVibrateSourceFileRow(filePath, capturedRelativePath, seq, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, sourceDirPathProp, isEmphasis));
                 EditorUtil.Draw.Button("导出所有数据和类型", true, () =>
                 {
-                    EditorUtil.Luban.DataTypeNameHelper.DoRefreshAllDataTypeNames(sourceDirPath, unitsSettingsProp, serializedObject);
                     DoExportAllDataAndTypes(sourceDirPath, unitsSettingsProp, isEmphasis);
                 });
             }
@@ -115,17 +114,10 @@ namespace NovaFramework.Editor
         private void DrawVibrateSourceFileRow(string filePath, string capturedRelativePath, int seq, float indentSpace, int savedIndent, SerializedProperty detailProp, SerializedProperty sourceUnitsSettingsProperty, SerializedProperty sourceDirPathProp, bool isEmphasis)
         {
             EditorUtil.Draw.SourceFileTree.DrawDefaultFileNameRow(filePath, seq, indentSpace, savedIndent);
-            EditorUtil.Draw.SourceFileTree.DrawDataExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, (fp, dataExportPath, dp) => OnExportDataForFile(fp, dataExportPath, dp, sourceDirPathProp, isEmphasis), DoRefreshDataTypeNames);
-            EditorUtil.Draw.SourceFileTree.DrawClassExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, (fp, classExportPath, dp) => OnExportClassForFile(fp, classExportPath, dp, sourceDirPathProp, isEmphasis), DoRefreshDataTypeNames);
+            EditorUtil.Draw.SourceFileTree.DrawDataExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, (fp, dataExportPath, dp) => OnExportDataForFile(fp, dataExportPath, dp, sourceDirPathProp, isEmphasis));
+            EditorUtil.Draw.SourceFileTree.DrawClassExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, (fp, classExportPath, dp) => OnExportClassForFile(fp, classExportPath, dp, sourceDirPathProp, isEmphasis));
             EditorUtil.Draw.SourceFileTree.DrawAssetLocationRow(detailProp, indentSpace, savedIndent);
         }
 
-        /// <summary>
-        /// 刷新单个文件的 DataTypeNames（委托适配）。
-        /// </summary>
-        private void DoRefreshDataTypeNames(string filePath, SerializedProperty dataTypeNamesProp)
-        {
-            EditorUtil.Luban.DataTypeNameHelper.DoRefreshDataTypeNames(filePath, dataTypeNamesProp, serializedObject);
-        }
     }
 }

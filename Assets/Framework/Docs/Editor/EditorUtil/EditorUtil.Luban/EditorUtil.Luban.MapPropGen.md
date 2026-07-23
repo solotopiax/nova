@@ -59,22 +59,22 @@ private readonly struct MapKeyEntry
 
 ---
 
-## §5 公开 API
+## §5 Internal API
 
 ```csharp
 /// <summary>
 /// 为所有 Map 模式的单元批量生成属性访问器。
 /// </summary>
-/// <param name="unitSettings">全部单元设置列表。</param>
+/// <param name="manifest">本次导出的 schema manifest 快照。</param>
 /// <param name="topModule">顶层命名空间（如 "Game.Runtime"）。</param>
-public static void GenerateAll(IReadOnlyList<IDataTableUnitSetting> unitSettings, string topModule)
+internal static Dictionary<string, int> GenerateAll(LubanSchemaManifest manifest, string topModule)
 
 /// <summary>
 /// 为单个 Map 模式的单元生成属性访问器。
 /// </summary>
-/// <param name="unitSetting">单元设置。</param>
+/// <param name="unit">manifest 中的目标单元。</param>
 /// <param name="topModule">顶层命名空间。</param>
-public static void GenerateForUnit(IDataTableUnitSetting unitSetting, string topModule)
+internal static Dictionary<string, int> GenerateForUnit(LubanSchemaUnit unit, string topModule)
 ```
 
 ### 私有方法
@@ -93,14 +93,13 @@ public static void GenerateForUnit(IDataTableUnitSetting unitSetting, string top
 ### GenerateForUnit 流程
 
 ```
-GenerateForUnit(unitSetting, topModule)
-  ├── Mode != Map → 跳过
-  ├── 读取 JSON 文件（unitSetting.DatasExportPath）
-  ├── 遍历 DataTypeNames（跳过空值和 # 开头）
-  │     ├── 提取 sheetName（取最后一个 . 后部分）
-  │     ├── 从 JSON 中取 rootJson[sheetName] 作为 JArray
+GenerateForUnit(unit, topModule)
+  ├── unit.Mode != "map" → 跳过
+  ├── 读取 JSON 文件（unit.DatasExportPath）
+  ├── 遍历 unit.Tables
+  │     ├── 从 JSON 中取 rootJson[table.ValueType] 作为 JArray
   │     ├── ExtractMapKeys → 提取 indexField 字段值作为键，Desc 字段值作为注释
-  │     └── AppendMapProperties → 写入 TbXxx.cs
+  │     └── AppendMapProperties → 写入 table.Name + ".cs"
   └── 完成
 ```
 
@@ -131,19 +130,20 @@ public partial class TbSystemConfig
 
 - 每次生成前先调用 `RemoveOldGeneratedBlock` 移除旧块，确保幂等
 - 非合法 C# 标识符的键（如数字开头）自动跳过
-- IndexField 默认为 `"ID"`（当 `unitSetting.IndexField` 为空时）
+- 当某张 Map 表为空或已没有有效键时，会移除 `TbXxx.cs` 中旧的自动生成属性块，避免已删除键继续残留
+- IndexField 默认为 `"ID"`（当 `unit.IndexField` 为空时）
 
 ---
 
 ## §11 使用示例
 
 ```csharp
-// 为单个 Map 表生成属性
-IDataTableUnitSetting unit = tableSettings.Units[0];
+// Pipeline 内部为单个 Map 表生成属性
+LubanSchemaUnit unit = ctx.SchemaManifest.ResolveUnit(ctx.TargetUnit.SourcePath);
 EditorUtil.Luban.MapPropGen.GenerateForUnit(unit, "Game.Runtime");
 
 // 批量为所有 Map 表生成属性（自动跳过 List/One 模式）
-EditorUtil.Luban.MapPropGen.GenerateAll(tableSettings.Units, "Game.Runtime");
+EditorUtil.Luban.MapPropGen.GenerateAll(ctx.SchemaManifest, "Game.Runtime");
 ```
 
 > 通常不直接调用 MapPropGen，而是通过 `Pipeline.ExportData` / `Pipeline.ExportCode` / `Pipeline.ExportAll` 间接调用。
@@ -155,4 +155,4 @@ EditorUtil.Luban.MapPropGen.GenerateAll(tableSettings.Units, "Game.Runtime");
 - [EditorUtil.Luban.Pipeline.md](EditorUtil.Luban.Pipeline.md)
 - [EditorUtil.Luban.JsonMerger.md](EditorUtil.Luban.JsonMerger.md)
 - [EditorUtil.md](../EditorUtil.md)
-- [IDataTableUnitSetting.md](../../../Runtime/Core/Table/IDataTableUnitSetting.md)
+- [EditorUtil.Luban.SchemaManifest.md](EditorUtil.Luban.SchemaManifest.md)

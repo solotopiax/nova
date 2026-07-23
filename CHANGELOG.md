@@ -6,6 +6,51 @@
 
 ---
 
+## [0.5.44] - 2026-07-23
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.44]` 节。
+
+### Added
+
+- 发布 `com.solotopia.nova.framework@0.5.44`，新增 Pipify CDN 部署、全量 Excel 导出、飞书通知、DoH 诊断树与 HostKey 预热能力。
+- 发布 IAP `0.0.20`，新增商品工作簿导入、模板导出及编辑器校验能力。
+
+### Changed
+
+- 发布 SDK Ad `1.0.20`、Apple Sign-In `0.0.7`、AppsFlyer `0.0.27`、Google Sign-In `0.0.8` 与 IAP Mobile `0.0.14`，同步包内文档与配置展示说明。
+- 公开发布副本对 Pipify 飞书参数及 CDN 顶层、维度覆盖配置执行字段专属占位符脱敏。
+- NovaSpark 升级为 `NovaSpark2.10.cs`，固定 Framework `0.5.44`；BestHTTP、EDM 与 unity-mcp 版本保持当前最新值。
+
+## [0.5.43] - 2026-07-23
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.43]` 节。
+
+### Added
+
+- 发布 `com.solotopia.nova.framework@0.5.43` 与首个 `com.solotopia.alibabacloud.oss@0.0.1`，新增阿里云 OSS 上传、Cloudflare 缓存清理及多维 CDN 配置面板。
+- 发布 SDK Ad `1.0.19`，补齐聚合收益与单次曝光收益的埋点定义。
+
+### Changed
+
+- 发布 IAP `0.0.19` 与 IAP Mobile `0.0.13`，将模拟支付成功严格限定在 Editor 编译态。
+- NovaSpark 升级为 `NovaSpark2.9.cs`，固定 Framework `0.5.43`；BestHTTP、EDM 与 unity-mcp 版本保持当前最新值。
+
+## [0.5.42] - 2026-07-21
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.42]` 节。
+
+### Added
+
+- 发布 `com.solotopia.nova.framework@0.5.42`，新增埋点表聚合、跨插件 OpenID 数据槽与 DoH URL 候选规划。
+- 发布 GameLogin `0.0.12` 与 GameBind `0.0.5`，补齐登录、删号、绑定和冲突裁决埋点。
+
+### Changed
+
+- 发布 Apple Sign-In `0.0.6`、Facebook `0.0.9`、Google Sign-In `0.0.7` 与 TGA `0.0.22`，打通 OpenID 用户属性自动同步链路。
+- 发布 SDK Ad `1.0.18` 与 MAX `0.0.17`，收敛广告回调线程并新增 Banner ILRD 聚合上报。
+- 发布 IAP `0.0.18` 与 IAP Mobile `0.0.12`，避让 registry 中未记录于 Git tag 的 `0.0.17` / `0.0.11`。
+- 同步发布 BestHTTP `0.0.13` 与 DataMaster ABTest `0.0.8`。
+
 ## [0.5.41] - 2026-07-16
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.41]` 节。

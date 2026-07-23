@@ -47,27 +47,29 @@ EditorUtil (public static partial class)
 | `TargetUnit` | `IDataTableUnitSetting` | 目标单元设置（单文件导出时指定，为 null 时处理全部） |
 | `EffectiveUnits` | `IReadOnlyList<IDataTableUnitSetting>` | （只读属性）优先使用 RegionUnits，回退到 Settings?.Units |
 
+内部字段 `Profile`、`MinHeaderRowCount`、`SchemaValueTypeScanner` 和 `SchemaManifest` 分别保存当前导出 Profile、最小表头行数、可选的实际输入类型扫描器和本次导出的结构快照。默认扫描原始 Excel；像 Network HostKeys 这样先投影为 CSV 的专用模块可提供扫描器，使 manifest 与 Luban 实际输入保持一致。这些字段不对 Runtime 或 Inspector 序列化开放。
+
 ---
 
 ## §5 公开 API
 
 ```csharp
 /// <summary>
-/// 导出数据（单文件或全部）：同步配置 -> 调用 Luban CLI 导出数据 -> 合并 JSON -> 生成 Map 属性。
+/// 导出数据（单文件或全部）：同步 schema -> 调用 Luban CLI 导出数据 -> 合并 JSON。
 /// </summary>
 /// <param name="ctx">导出上下文。</param>
 /// <returns>是否成功。</returns>
 public static bool ExportData(LubanExportContext ctx)
 
 /// <summary>
-/// 导出代码（单文件或全部）：同步配置 -> 调用 Luban CLI 生成代码 -> 生成 Map 属性。
+/// 导出代码（单文件或全部）：同步 schema -> 调用 Luban CLI 生成代码 -> 生成 Map 属性。
 /// </summary>
 /// <param name="ctx">导出上下文。</param>
 /// <returns>是否成功。</returns>
 public static bool ExportCode(LubanExportContext ctx)
 
 /// <summary>
-/// 导出全部（代码 + 数据）：同步配置 -> 调用 Luban CLI -> 合并 JSON -> 生成 Map 属性。
+/// 导出全部（代码 + 数据）：同步 schema -> 调用 Luban CLI -> 合并 JSON -> 生成 Map 属性。
 /// </summary>
 /// <param name="ctx">导出上下文。</param>
 /// <returns>是否成功。</returns>
@@ -83,12 +85,12 @@ public static bool ExportAll(LubanExportContext ctx)
 ```
 ExportData(ctx)
   ├── Environment.LubanChecker.Check() → 未就绪时 ConfigWindow.OpenLubanSection(envResult) + return false
-  ├── ConfigSyncer.SyncFromInspector（同步 _configs/）
+  ├── SyncSchema：默认扫描 Excel，或使用上下文提供的实际输入扫描器；从同一快照原子生成 __tables__.xml，再保存 manifest
   ├── 创建临时目录 _luban_temp_{guid8}
   ├── CliRunner.RunDataExport → 临时目录
   ├── ctx.TargetUnit != null?
-  │     ├── 是 → JsonMerger.MergeForUnit + MapPropGen.GenerateForUnit（单文件）
-  │     └── 否 → JsonMerger.MergeAll + MapPropGen.GenerateAll（全部）
+  │     ├── 是 → manifest.ResolveUnit + JsonMerger.MergeForUnit（单文件）
+  │     └── 否 → JsonMerger.MergeAll(manifest)（全部）
   ├── finally: 删除临时目录
   └── finally: AssetDatabase.Refresh()
 ```
@@ -98,11 +100,12 @@ ExportData(ctx)
 ```
 ExportCode(ctx)
   ├── Environment.LubanChecker.Check() → 未就绪时 ConfigWindow.OpenLubanSection(envResult) + return false
-  ├── ConfigSyncer.SyncFromInspector（同步 _configs/）
+  ├── SyncSchema：扫描 Excel，从同一快照原子生成 __tables__.xml，再保存 manifest
+  ├── 单文件时 BuildRelevantFileNames(manifest, sourcePath, managerName)
   ├── CliRunner.RunCodeGen → ctx.OutputCodeDir（直接输出到目标目录，无临时目录）
   ├── ctx.TargetUnit != null?
-  │     ├── 是 → MapPropGen.GenerateForUnit（单文件）
-  │     └── 否 → MapPropGen.GenerateAll（全部）
+  │     ├── 是 → manifest.ResolveUnit + MapPropGen.GenerateForUnit（单文件）
+  │     └── 否 → MapPropGen.GenerateAll(manifest)（全部）
   └── AssetDatabase.Refresh()
 ```
 
@@ -111,13 +114,13 @@ ExportCode(ctx)
 ```
 ExportAll(ctx)
   ├── Environment.LubanChecker.Check() → 未就绪时 ConfigWindow.OpenLubanSection(envResult) + return false
-  ├── ConfigSyncer.SyncFromInspector（同步 _configs/）
+  ├── SyncSchema：扫描 Excel，从同一快照原子生成 __tables__.xml，再保存 manifest
   ├── 创建临时目录 _luban_temp_{guid8}
   ├── ctx.OutputCodeDir 非空?
   │     ├── 是 → CliRunner.RunAll（代码输出到 OutputCodeDir，数据输出到临时目录）
   │     └── 否 → CliRunner.RunDataExport（仅数据，输出到临时目录）
-  ├── JsonMerger.MergeAll（全部合并）
-  ├── MapPropGen.GenerateAll（全部生成属性）
+  ├── JsonMerger.MergeAll(manifest)（全部合并）
+  ├── MapPropGen.GenerateAll(manifest)（全部生成属性）
   ├── finally: 删除临时目录
   └── finally: AssetDatabase.Refresh()
 ```
@@ -133,28 +136,12 @@ ExportAll(ctx)
 ## §11 使用示例
 
 ```csharp
-// Inspector 中构建导出上下文并调用 Pipeline
-var ctx = new EditorUtil.Luban.LubanExportContext
-{
-    SourceDirPath = tableSettings.SourceDirPath,
-    ConfPath = Path.Combine(
-        EditorUtil.Luban.ConfigSyncer.GetConfigDirPath(tableSettings.SourceDirPath),
-        EditorUtil.Luban.ConfigSyncer.c_LubanConfFileName
-    ),
-    TargetName = "table",
-    ManagerName = "TableTables",
-    TopModule = tableSettings.Namespaces[0],
-    OutputCodeDir = classesExportPath,
-    OutputDataDir = null,
-    CustomTemplateDir = customTemplateDir,
-    TablesXmlPath = Path.Combine(
-        EditorUtil.Luban.ConfigSyncer.GetConfigDirPath(tableSettings.SourceDirPath),
-        EditorUtil.Luban.ConfigSyncer.c_TablesXmlFileName
-    ),
-    Settings = tableSettings,
-    RelevantFileNames = null,
-    TargetUnit = null,
-};
+// Nova Framework 内部通过固定 Profile 构建上下文。
+var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(
+    tableSettings.SourceDirPath,
+    tableSettings,
+    EditorUtil.Luban.LubanExportProfiles.Table);
+ctx.OutputCodeDir = classesExportPath;
 
 // 导出全部（代码 + 数据）
 bool success = EditorUtil.Luban.Pipeline.ExportAll(ctx);
@@ -164,6 +151,8 @@ ctx.TargetUnit = tableSettings.Units[0];
 ctx.RelevantFileNames = new HashSet<string> { "TbHero.cs", "TbHeroSkill.cs" };
 bool dataSuccess = EditorUtil.Luban.Pipeline.ExportData(ctx);
 ```
+
+`LubanExportProfiles` 是 Editor 内部目录，不进入 Inspector 或序列化数据。调用方只选择模块导出入口，不再传递固定的 `targetName / managerName` 字符串。
 
 ---
 
@@ -176,6 +165,8 @@ bool dataSuccess = EditorUtil.Luban.Pipeline.ExportData(ctx);
 | AssetDatabase.Refresh | 每个导出方法结束时自动调用 `AssetDatabase.Refresh()`，无需外部再次调用 |
 | ExportAll 的 OutputCodeDir | 为 null 时退化为纯数据导出（仅调用 `RunDataExport`），不生成代码 |
 | RegionUnits vs Settings.Units | 当需要按地域区分单元配置时传入 `RegionUnits`；不区分地域时留 null，Pipeline 自动从 `Settings.Units` 取 |
+| manifest 一致性 | 每个导出入口只扫描一次；ConfigSyncer、XML、JsonMerger、MapPropGen 和单文件代码筛选共享 `ctx.SchemaManifest` |
+| 扫描/验证失败 | `SyncSchema` 抛出后不会进入 `CliRunner`；旧 manifest 与旧 `__tables__.xml` 不会被本次失败覆盖 |
 
 ---
 
@@ -184,6 +175,7 @@ bool dataSuccess = EditorUtil.Luban.Pipeline.ExportData(ctx);
 - [EditorUtil.Luban.CliRunner.md](EditorUtil.Luban.CliRunner.md)
 - [EditorUtil.Environment.LubanChecker.md](../EditorUtil.Environment/EditorUtil.Environment.LubanChecker.md)
 - [EditorUtil.Luban.ConfigSyncer.md](EditorUtil.Luban.ConfigSyncer.md)
+- [EditorUtil.Luban.SchemaManifest.md](EditorUtil.Luban.SchemaManifest.md)
 - [EditorUtil.Luban.JsonMerger.md](EditorUtil.Luban.JsonMerger.md)
 - [EditorUtil.Luban.MapPropGen.md](EditorUtil.Luban.MapPropGen.md)
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)

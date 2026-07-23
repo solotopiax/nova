@@ -1,7 +1,7 @@
 ---
 id: MOC-Config
 title: 配置系统图谱
-summary: ConfigMasterSO 与 ConfigRuntimeSO 的分工与运行时入口速查
+summary: Config设计态与运行态职责速查
 category: runtime
 status: active
 date: 2026-06-05
@@ -78,8 +78,9 @@ Config 的核心分工是：`ConfigMasterSO` 负责编辑期全量主数据，`C
 编辑期维度化入口集中在 `ConfigMasterSO`：
 
 - `CommonMask / SDKMasks / KitMasks`
-- `NamespaceMask / HybridCLRMask / YooAssetMask`
+- `NamespaceMask / HybridCLRMask / YooAssetMask / CdnMask`
 - 掩码和 Override 只属于编辑期组织方式；运行时看到的是导出后的有效切片
+- CDN 部署配置（`CdnDeployment`）为 Editor-only，整套 9 字段按维度快照，不导出 Runtime
 
 ## 与其他模块的关系
 

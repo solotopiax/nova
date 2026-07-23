@@ -86,4 +86,4 @@ float height = ad.GetAdaptiveBannerHeight(Screen.width);
 
 - [IAdPlugin.md](./IAdPlugin.md) — 继承 IBannerControl 的聚合调度接口
 - [AdChannelPluginBase.md](./AdChannelPluginBase.md) — Banner 方法 virtual 空实现，Banner 渠道按需重写
-- [../../Definitions/Data.md](../../Definitions/Data.md) — BannerPosition 枚举
+- [Data.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/Data.md) — BannerPosition 枚举

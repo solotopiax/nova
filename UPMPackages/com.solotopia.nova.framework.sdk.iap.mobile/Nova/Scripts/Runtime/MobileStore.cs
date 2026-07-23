@@ -87,7 +87,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
         /// <summary>
         /// 异步发起支付流程，路由给 MobilePurchaseService。
-        /// EnableAlwaysPaySucceed 开启时跳过真实平台调用直接返回成功。
+        /// Editor 下 EnableAlwaysPaySucceed 开启时跳过真实平台调用直接返回成功；移动端编译不包含该调试分支。
         /// </summary>
         /// <param name="request">支付请求。</param>
         /// <param name="ct">取消令牌。</param>
@@ -96,6 +96,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             ct.ThrowIfCancellationRequested();
             m_LoadingGuard.HasUserInteracted = true;
+#if UNITY_EDITOR
             if (Context.EnableAlwaysPaySucceed)
             {
                 TrackBuyInternal(request.TableId, null, request.CustomData);
@@ -103,6 +104,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 Context.EventBridge?.RaisePaySuccess(result);
                 return UniTask.FromResult(result);
             }
+#endif
 
             return PayGuardAsync(request, ct, () => m_Hub.PurchaseService.PayAsync(request as IAPMobileRequest, ct));
         }

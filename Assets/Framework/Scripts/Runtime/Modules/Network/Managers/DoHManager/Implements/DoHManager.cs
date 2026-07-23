@@ -28,6 +28,7 @@ namespace NovaFramework.Runtime
             m_DoHClients = new Dictionary<string, DoHClient>(StringComparer.OrdinalIgnoreCase);
             m_AllCollectedIPAddresses = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             m_AllDomainIPAddresses = new Dictionary<string, List<IPAddress>>(StringComparer.OrdinalIgnoreCase);
+            m_ResolutionRoots = new Dictionary<string, DoHResolutionNode>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace NovaFramework.Runtime
         /// 遍历给定的 URL 列表，并行异步收集各域名 IP 地址。
         /// DNS 查询阶段并行执行，结果写入字典阶段串行处理以避免竞态。
         /// </summary>
-        /// <param name="urls">目标 URL 集合（由 NetworkManager.GetAllNetCmdUrls() 提供）。</param>
+        /// <param name="urls">目标 URL 集合（由 NetworkManager.GetAllHostKeyUrls() 提供）。</param>
         /// <returns>异步任务。</returns>
         public override async UniTask CollectAllIPAddresses(IEnumerable<string> urls)
         {
@@ -79,7 +80,7 @@ namespace NovaFramework.Runtime
 
             for (int i = 0; i < validUrls.Count; i++)
             {
-                await CacheDnsAnswersAsync(validUrls[i], allResults[i]);
+                await CacheDnsAnswersAsync(validUrls[i], allResults[i], DoHResolutionSource.HostKeyPrewarm);
             }
         }
 
@@ -106,7 +107,7 @@ namespace NovaFramework.Runtime
             try
             {
                 m_DNSAnswers = await QueryHostAnswersAsync(hostName);
-                await CacheDnsAnswersAsync(url, m_DNSAnswers);
+                await CacheDnsAnswersAsync(url, m_DNSAnswers, DoHResolutionSource.RuntimeDiscovered);
             }
             catch (Exception e)
             {
@@ -118,19 +119,29 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 根据 DoH 缓存与即时查询结果构造请求候选 URL。
+        /// </summary>
+        /// <param name="originalUrl">原始请求 URL。</param>
+        /// <param name="canUseIpCandidate">是否允许生成 IP 直连候选。</param>
+        /// <returns>按 IP 候选、原始 URL 顺序排列的候选列表。</returns>
+        public override async UniTask<IReadOnlyList<string>> BuildRequestUrlCandidatesAsync(string originalUrl, bool canUseIpCandidate)
+        {
+            return await DoHRequestPlanner.BuildCandidatesAsync(
+                originalUrl,
+                m_UseDoH,
+                canUseIpCandidate,
+                GetIPAddresses,
+                DNSQuery);
+        }
+
+        /// <summary>
         /// 从 URL 中提取主机名（域名部分）。
         /// </summary>
         /// <param name="url">完整 URL 字符串。</param>
         /// <returns>主机名字符串，格式非法时返回空字符串。</returns>
         public override string GetHostName(string url)
         {
-            if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri) &&
-                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
-            {
-                return NormalizeHostName(uri.Host);
-            }
-
-            return string.Empty;
+            return DoHRequestPlanner.GetHostName(url);
         }
 
         /// <summary>
@@ -168,6 +179,7 @@ namespace NovaFramework.Runtime
             m_DNSAnswers = null;
             m_AllCollectedIPAddresses.Clear();
             m_AllDomainIPAddresses.Clear();
+            m_ResolutionRoots.Clear();
         }
 
         /// <summary>

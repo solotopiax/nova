@@ -98,6 +98,16 @@ namespace NovaFramework.Editor
         private bool m_IsDirty;
 
         /// <summary>
+        /// OSS 目录部署是否正在执行；用于阻止部署按钮重复触发。
+        /// </summary>
+        private bool m_IsCdnDeploying;
+
+        /// <summary>
+        /// Cloudflare 缓存清理是否正在执行；用于阻止清缓存按钮重复触发。
+        /// </summary>
+        private bool m_IsCdnPurging;
+
+        /// <summary>
         /// 左侧一级组"SDK 配置"折叠状态。
         /// </summary>
         private bool m_GroupExpandedSDK = true;
@@ -341,6 +351,11 @@ namespace NovaFramework.Editor
             /// YooAsset 配置面板（通用配置组下）。
             /// </summary>
             YooAssetConfig,
+
+            /// <summary>
+            /// CDN 内容分发网络部署面板（通用配置组下）。
+            /// </summary>
+            CdnDeployment,
 
             /// <summary>
             /// Kit 配置节点面板。

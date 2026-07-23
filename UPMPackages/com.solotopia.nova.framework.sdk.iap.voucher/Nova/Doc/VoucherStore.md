@@ -44,4 +44,3 @@ IAPResult result = await voucherStore.PayAsync(request, ct);
 ## 5. 关联
 
 - 配置类型：[VoucherStoreConfig.md](./VoucherStoreConfig.md)
-- 当前实现设计：[VoucherStore-Design.md](./VoucherStore-Design.md)

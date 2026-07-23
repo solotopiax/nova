@@ -1,6 +1,6 @@
 ﻿# MobileStore
 
-> 最后更新：2026-06-12
+> 最后更新：2026-07-22
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/**`
 
 **类签名**：`public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable`
@@ -120,7 +120,7 @@ IAPPlugin.PayAsync<IAPResult>(IAPMobileRequest)
   └── MobileStore.PayAsync
         ├── ct.ThrowIfCancellationRequested()
         ├── m_LoadingGuard.HasUserInteracted = true
-        ├── Context.EnableAlwaysPaySucceed → 返回 MOCK_ORDER_MOBILE
+        ├── UNITY_EDITOR && Context.EnableAlwaysPaySucceed → 返回 MOCK_ORDER_MOBILE
         └── PayGuardAsync(request, ct, PurchaseService.PayAsync)
               ├── store 禁用 / 未就绪 / 已有支付 / 商品表缺失 → 失败
               └── MobilePurchaseService.PayAsync
@@ -188,7 +188,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 事件 | 触发时机 |
 |---|---|
 | `nova_iap_init` | 商店连接成功或初始化失败 |
-| `nova_iap_buy` | 用户发起真实平台购买前；`EnableAlwaysPaySucceed` 调试支付也会上报 |
+| `nova_iap_buy` | 用户发起真实平台购买前；Editor 下 `EnableAlwaysPaySucceed` 调试支付也会上报 |
 | `nova_iap_local_pay_success` | Unity IAP 返回 Pending / Confirmed 并登记本地订单后；同一订单号在当前运行期去重 |
 | `nova_iap_local_pay_fail` | 平台购买失败、平台购买发起异常或活跃支付被主动结束为失败 |
 | `nova_iap_validate_fail` | 单轮验单失败但订单仍可能重试或补单 |
@@ -349,3 +349,6 @@ Android 运行期允许 `TransactionId` 承载 Google `OrderId`，但它不会�
 
 **误区 6：重新引入独立的验单失败枚举。**
 当前支付过程失败原因已经统一到 `IAPMobileErrorCode`。新增验单失败类型时，应扩展 2000+ 号段，而不是新建 `MobileStoreTrackFailureReason` 或父包级失败原因枚举。
+
+**误区 7：认为 `EnableAlwaysPaySucceed` 可以在移动端正式包中生效。**
+该开关只用于 Editor 调试。移动端编译产物不包含 `MOCK_ORDER_MOBILE` 支付成功分支，发货必须以服务端验单结果为准。

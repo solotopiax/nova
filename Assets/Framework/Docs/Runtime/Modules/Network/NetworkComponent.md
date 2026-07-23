@@ -198,6 +198,7 @@ NetworkComponent.Start()
 依赖顺序约束：
   DoHManager → HttpManager（HttpManager 注入 IDoHManager）
   NetworkComponent : ICoroutineRunner → WebSocketManager（注入 ICoroutineRunner）
+  DoHManager → WebSocketManager（注入 IDoHManager，连接前 detect-only 预检）
 ```
 
 ---
@@ -207,7 +208,7 @@ NetworkComponent.Start()
 ```csharp
 // 1. Inspector 中选择四个管理器实现类，填写 HostKey / NetCmd / HTTP / DoH / WebSocket 配置
 
-// 2. 等待 NetCmd 数据加载（成功后会自动后台启动一轮 DoH 预热）
+// 2. 等待 HostKey / NetCmd 数据加载（成功后会自动后台预热全部 HostKey）
 bool success = await Nova.Network.LoadAsync();
 
 // 2.1 如需立刻强制重跑预热，可手动再次调用

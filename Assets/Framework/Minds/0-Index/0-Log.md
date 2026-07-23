@@ -210,3 +210,6 @@ date: 2026-06-05
 
 ## [2026-07-13 19:47] direct-ingest | cur-session 直接入库 1 份
 入库 PAT-145（UPM 发布先审真实安装链再判级联），明确 API 契约级联与安装兼容性级联必须分别审计，NovaSpark/Bootstrap → 顶层包 → 远端传递依赖须闭环验证；关联 PAT-13，跳过 Inbox 中转；rebuild-index + keyword 已收口。
+
+## [2026-07-16 16:32] direct-ingest | cur-session 直接入库 1 份
+入库 PAT-146（缓存 UniTask 完成结果保障启动重试），明确原始 UniTask 不可完成后重复消费、Preserve 只承诺完成后重复等待、并发等待需独立共享完成源与测试；关联 ADR-022，跳过 Inbox 中转；rebuild-index + keyword 已完成，既有 ADR-072 summary 超长待处理。

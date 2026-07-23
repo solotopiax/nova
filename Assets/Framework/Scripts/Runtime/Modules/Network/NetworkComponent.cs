@@ -93,7 +93,8 @@ namespace NovaFramework.Runtime
                 AutoReconnectTimeInterval = m_WebSocketSettings.AutoReconnectTimeInterval,
                 EnableAutoReconnect = m_WebSocketSettings.EnableAutoReconnect,
                 AutoReconnectFailedUIAssetLocation = m_WebSocketSettings.AutoReconnectFailedUIAssetLocation,
-                CoroutineRunner = this
+                CoroutineRunner = this,
+                DoHManager = m_DoHManager
             });
         }
 
@@ -201,7 +202,7 @@ namespace NovaFramework.Runtime
         {
             try
             {
-                await m_DoHManager.CollectAllIPAddresses(m_NetworkManager.GetAllNetCmdUrls());
+                await m_DoHManager.CollectAllIPAddresses(m_NetworkManager.GetAllHostKeyUrls());
             }
             catch (Exception e)
             {

@@ -1,5 +1,30 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.0.20] - 2026-07-23
+
+### Added
+
+- 商品列表编辑器新增 Excel 工作簿导入与模板导出，支持校验表头、商品字段、`TableId` 范围及重复项后一次性写入配置。
+
+## [0.0.19] - 2026-07-23
+
+### Changed
+
+- `EnableAlwaysPaySucceed` 限定为 Editor 调试开关，非 Editor 编译态构造 Store 上下文时强制关闭。
+
+## [0.0.18] - 2026-07-21
+
+### Added
+
+- 新增 IAP 埋点表，统一记录支付、补单、恢复与商品查询的事件契约。
+
+### Changed
+
+- 商品列表编辑器的重复高亮语义明确为 `TableId`，允许不同 `TableId` 复用同一 `ProductID`。
+- Registry 中 `0.0.17` 已存在，本次发布直接升至 `0.0.18`。
+
 ## [0.0.16] - 2026-07-14
 
 ### Changed

@@ -15,6 +15,8 @@ SDK 插件间共享数据槽位的 key 常量集合，配合 `SDKPluginBase.Publ
 | `TGAAccountId` | `string` | TGA 账号 ID |
 | `FirebasePushToken` | `string` | Firebase 推送 token |
 | `FirebaseAnalyticsInstanceId` | `string` | Firebase Analytics 实例 ID |
+| `OpenId` | `string` | 第三方渠道登录后的用户 ID，由 Facebook / Google / Apple 等账号插件登录成功后发布 |
+| `ThirdPlatform` | `string` | 第三方渠道登录的渠道名，由 Facebook / Google / Apple 等账号插件登录成功后发布 |
 
 ## 使用约束
 

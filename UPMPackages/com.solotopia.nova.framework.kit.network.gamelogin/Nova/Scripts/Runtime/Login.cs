@@ -8,6 +8,7 @@
  * descrip:   登录业务网络 Service，自持 UID 状态，不继承基类
  ***************************************************************/
 
+using System.Diagnostics;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 
@@ -43,14 +44,27 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         /// <param name="openId">第三方平台返回的用户唯一标识；用于读取 open_id 绑定关系找 uid 登入，未绑返回 10404。</param>
         /// <param name="forceNewAccount">是否强制注册新账号，默认 false。</param>
         /// <returns>包含登录响应数据或错误信息的 NetResponse。</returns>
-        public UniTask<NetResponse<PbNetLoginResp>> Async(string uid, string openId, bool forceNewAccount = false)
+        public async UniTask<NetResponse<PbNetLoginResp>> Async(string uid, string openId, bool forceNewAccount = false)
         {
-            LoginKitConfig config = Nova.Config.GetKitConfig<LoginKitConfig>();
-            if (config == null)
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            try
             {
-                throw new KitConfigMissingException(typeof(LoginKitConfig).FullName);
+                LoginKitConfig config = Nova.Config.GetKitConfig<LoginKitConfig>();
+                if (config == null)
+                {
+                    throw new KitConfigMissingException(typeof(LoginKitConfig).FullName);
+                }
+
+                NetResponse<PbNetLoginResp> response = await SendAsync(
+                    Nova.Network.ResolveNetCmdRow(config.LoginCmdName), uid, openId, forceNewAccount);
+                TrackLogin(response, uid, openId, forceNewAccount, stopwatch.ElapsedMilliseconds);
+                return response;
             }
-            return SendAsync(Nova.Network.ResolveNetCmdRow(config.LoginCmdName), uid, openId, forceNewAccount);
+            catch
+            {
+                TrackLoginException(uid, openId, forceNewAccount, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
         }
 
         /// <summary>
@@ -61,14 +75,31 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         /// cmdName 取自 ConfigWindow 配置的 LoginKitConfig.DeleteCmdName。
         /// </summary>
         /// <returns>包含删除响应数据或错误信息的 NetResponse。</returns>
-        public UniTask<NetResponse<PbNetDeleteResp>> DeleteAsync()
+        public async UniTask<NetResponse<PbNetDeleteResp>> DeleteAsync()
         {
-            LoginKitConfig config = Nova.Config.GetKitConfig<LoginKitConfig>();
-            if (config == null)
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            try
             {
-                throw new KitConfigMissingException(typeof(LoginKitConfig).FullName);
+                LoginKitConfig config = Nova.Config.GetKitConfig<LoginKitConfig>();
+                if (config == null)
+                {
+                    throw new KitConfigMissingException(typeof(LoginKitConfig).FullName);
+                }
+
+                NetResponse<PbNetDeleteResp> response = await SendDeleteAsync(
+                    Nova.Network.ResolveNetCmdRow(config.DeleteCmdName));
+                TrackDeleteAccount(response, stopwatch.ElapsedMilliseconds);
+                if (response.IsSuccess)
+                {
+                    Clear();
+                }
+                return response;
             }
-            return SendDeleteAsync(Nova.Network.ResolveNetCmdRow(config.DeleteCmdName));
+            catch
+            {
+                TrackDeleteAccountException(stopwatch.ElapsedMilliseconds);
+                throw;
+            }
         }
 
         /// <summary>

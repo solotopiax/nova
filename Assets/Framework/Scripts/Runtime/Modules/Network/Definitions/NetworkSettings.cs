@@ -69,53 +69,22 @@ namespace NovaFramework.Runtime
     /// 使用 Map 模式，以 "Name" 为索引字段。
     /// </summary>
     [Serializable]
-    public class HostKeyUnitSetting : IDataTableUnitSetting
+    public class HostKeyUnitSetting : DataTableUnitSettingBase
     {
 #if UNITY_EDITOR
-        /// <summary>
-        /// 相对域名表目录的数据源文件相对路径，用于唯一标识该文件。
-        /// </summary>
-        public string SourcePath;
         /// <inheritdoc />
-        string IDataTableUnitSetting.SourcePath => SourcePath;
-
-        /// <summary>
-        /// 该数据源的导出数据位置。
-        /// </summary>
-        public string DatasExportPath;
-        /// <inheritdoc />
-        string IDataTableUnitSetting.DatasExportPath => DatasExportPath;
-
-        /// <summary>
-        /// 该数据源的导出类型定义位置。
-        /// </summary>
-        public string ClassesExportPath;
-        /// <inheritdoc />
-        string IDataTableUnitSetting.ClassesExportPath => ClassesExportPath;
-
-        /// <inheritdoc />
-        string IDataTableUnitSetting.LubanInputPath => "_temp/" + System.IO.Path.GetFileNameWithoutExtension(SourcePath);
+        protected override string GetLubanInputPath() => "_temp/" + System.IO.Path.GetFileNameWithoutExtension(SourcePath);
 #endif
 
         /// <summary>
-        /// 域名表资源的地址。
+        /// 域名表固定使用 Map 模式。
         /// </summary>
-        public string AssetLocation;
-        /// <inheritdoc />
-        string IDataTableUnitSetting.AssetLocation => AssetLocation;
-
-        /// <inheritdoc />
-        DataTableMode IDataTableUnitSetting.Mode => DataTableMode.Map;
-
-        /// <inheritdoc />
-        string IDataTableUnitSetting.IndexField => "Name";
+        protected override DataTableMode GetMode() => DataTableMode.Map;
 
         /// <summary>
-        /// 域名表数据类型短名称列表（不含命名空间），一个 JSON 可包含多个类型。
+        /// 域名表固定以 Name 为索引字段。
         /// </summary>
-        public List<string> DataTypeNames = new List<string>();
-        /// <inheritdoc />
-        IReadOnlyList<string> IDataTableUnitSetting.DataTypeNames => DataTypeNames;
+        protected override string GetIndexField() => "Name";
     }
 
     /// <summary>
@@ -157,53 +126,22 @@ namespace NovaFramework.Runtime
     /// 使用 Map 模式，以 "Name" 为索引字段。
     /// </summary>
     [Serializable]
-    public class NetCmdUnitSetting : IDataTableUnitSetting
+    public class NetCmdUnitSetting : DataTableUnitSettingBase
     {
 #if UNITY_EDITOR
-        /// <summary>
-        /// 相对指令表目录的数据源文件相对路径，用于唯一标识该文件。
-        /// </summary>
-        public string SourcePath;
         /// <inheritdoc />
-        string IDataTableUnitSetting.SourcePath => SourcePath;
-
-        /// <summary>
-        /// 该数据源的导出数据位置。
-        /// </summary>
-        public string DatasExportPath;
-        /// <inheritdoc />
-        string IDataTableUnitSetting.DatasExportPath => DatasExportPath;
-
-        /// <summary>
-        /// 该数据源的导出类型定义位置。
-        /// </summary>
-        public string ClassesExportPath;
-        /// <inheritdoc />
-        string IDataTableUnitSetting.ClassesExportPath => ClassesExportPath;
-
-        /// <inheritdoc />
-        string IDataTableUnitSetting.LubanInputPath => "_temp/" + System.IO.Path.GetFileNameWithoutExtension(SourcePath);
+        protected override string GetLubanInputPath() => "_temp/" + System.IO.Path.GetFileNameWithoutExtension(SourcePath);
 #endif
 
         /// <summary>
-        /// 指令表资源的地址。
+        /// 指令表固定使用 Map 模式。
         /// </summary>
-        public string AssetLocation;
-        /// <inheritdoc />
-        string IDataTableUnitSetting.AssetLocation => AssetLocation;
-
-        /// <inheritdoc />
-        DataTableMode IDataTableUnitSetting.Mode => DataTableMode.Map;
-
-        /// <inheritdoc />
-        string IDataTableUnitSetting.IndexField => "Name";
+        protected override DataTableMode GetMode() => DataTableMode.Map;
 
         /// <summary>
-        /// 指令表数据类型短名称列表（不含命名空间），一个 JSON 可包含多个类型。
+        /// 指令表固定以 Name 为索引字段。
         /// </summary>
-        public List<string> DataTypeNames = new List<string>();
-        /// <inheritdoc />
-        IReadOnlyList<string> IDataTableUnitSetting.DataTypeNames => DataTypeNames;
+        protected override string GetIndexField() => "Name";
     }
 
 }

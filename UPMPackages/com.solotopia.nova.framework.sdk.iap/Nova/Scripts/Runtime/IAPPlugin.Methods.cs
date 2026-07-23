@@ -161,7 +161,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <summary>
         /// 构造 IAP store 运行时上下文，从各框架 Manager 中获取跨模块依赖。
         /// </summary>
-        /// <param name="config">IAPPlugin 配置，用于提取 EnableAlwaysPaySucceed 调试开关。</param>
+        /// <param name="config">IAPPlugin 配置，用于提取 Editor 下的 EnableAlwaysPaySucceed 调试开关。</param>
         /// <returns>构造完成的 IAPStoreContext 实例。</returns>
         private IAPStoreContext BuildStoreContext(IAPPluginConfig config)
         {
@@ -169,6 +169,11 @@ namespace NovaFramework.SDK.IAP.Runtime
             INetworkManager networkManager = FrameworkManagersGroup.GetManager<INetworkManager>();
             IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
             DevelopMode developMode = configManager?.DevelopMode ?? DevelopMode.Debug;
+#if UNITY_EDITOR
+            bool enableAlwaysPaySucceed = config.EnableAlwaysPaySucceed;
+#else
+            bool enableAlwaysPaySucceed = false;
+#endif
 
             ITrackPlugin trackPlugin = null;
             SDKComponent sdkComponent = FrameworkComponentsGroup.GetComponent<SDKComponent>();
@@ -177,7 +182,7 @@ namespace NovaFramework.SDK.IAP.Runtime
                 sdkComponent.TryGet<ITrackPlugin>(out trackPlugin);
             }
 
-            return new IAPStoreContext(persistManager, trackPlugin, networkManager, config.EnableAlwaysPaySucceed, config.RetryValidateMaxNum, config.SkipLoadingForReplenish, config.LoadingPanelPrefab, this, developMode);
+            return new IAPStoreContext(persistManager, trackPlugin, networkManager, enableAlwaysPaySucceed, config.RetryValidateMaxNum, config.SkipLoadingForReplenish, config.LoadingPanelPrefab, this, developMode);
         }
 
         /// <summary>

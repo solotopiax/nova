@@ -25,6 +25,7 @@ namespace NovaFramework.Editor
                 return;
             }
 
+            serializedObject.ApplyModifiedProperties();
             string sourceDirPath = m_SourceDirPath.stringValue;
             UISettings settings = GetUISettings();
             if (settings == null)
@@ -32,7 +33,6 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            serializedObject.ApplyModifiedProperties();
             EditorUtil.UI.Exporter.ExportDataForFile(settings, sourceDirPath, filePath);
         }
 
@@ -46,6 +46,7 @@ namespace NovaFramework.Editor
                 return;
             }
 
+            serializedObject.ApplyModifiedProperties();
             string sourceDirPath = m_SourceDirPath.stringValue;
             UISettings settings = GetUISettings();
             if (settings == null)
@@ -53,7 +54,6 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            serializedObject.ApplyModifiedProperties();
             EditorUtil.UI.Exporter.ExportCodeForFile(settings, sourceDirPath, filePath, classExportPath);
         }
 

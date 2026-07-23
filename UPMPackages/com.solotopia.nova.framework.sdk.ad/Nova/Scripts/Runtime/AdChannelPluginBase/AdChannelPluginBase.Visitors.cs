@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System.Collections.Generic;
+using System;
 using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.AdPlugin.Runtime
@@ -40,7 +41,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <summary>
         /// Banner ILRD 上报间隔次数；0 或负数表示不上报。AdPlugin 初始化时通过 ApplyGlobalConfig 写入。
         /// </summary>
-        internal int BannerIlrdInterval { get; private set; } = 5;
+        protected internal int BannerIlrdInterval { get; private set; } = 5;
 
         /// <summary>
         /// 是否全局静音所有广告；AdPlugin 初始化时通过 ApplyGlobalConfig 写入。
@@ -56,5 +57,20 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// 广告加载重试 N 次失败后再次发起加载之间的间隔时间（秒）；AdPlugin 初始化时通过 ApplyGlobalConfig 写入。
         /// </summary>
         internal float RetryLoadAdInterv { get; private set; } = 30f;
+
+        /// <summary>
+        /// SDK 回调转 Unity 主线程的 FIFO 队列。
+        /// </summary>
+        private readonly Queue<Action> m_AdCallbackQueue = new();
+
+        /// <summary>
+        /// m_AdCallbackQueue 的跨线程互斥锁。
+        /// </summary>
+        private readonly object m_AdCallbackQueueLock = new();
+
+        /// <summary>
+        /// 是否已有主线程 drain 任务在等待或执行。
+        /// </summary>
+        private bool m_AdCallbackDrainScheduled;
     }
 }

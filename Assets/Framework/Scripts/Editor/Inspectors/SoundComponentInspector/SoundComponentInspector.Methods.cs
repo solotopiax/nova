@@ -106,7 +106,6 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.SourceFileTree.DrawSourceFilesListWithFolders(sourceDirPath, m_SoundUnitsSettings, m_FolderFoldoutState, customDrawSourceFileRow: DrawSoundSourceFileRow);
                 EditorUtil.Draw.Button("导出所有数据和类型", true, () =>
                 {
-                    EditorUtil.Luban.DataTypeNameHelper.DoRefreshAllDataTypeNames(sourceDirPath, m_SoundUnitsSettings, serializedObject);
                     DoExportAllDataAndTypes(sourceDirPath, m_SoundUnitsSettings);
                 });
             }
@@ -121,17 +120,9 @@ namespace NovaFramework.Editor
         private void DrawSoundSourceFileRow(string filePath, string capturedRelativePath, int seq, float indentSpace, int savedIndent, SerializedProperty detailProp, SerializedProperty sourceUnitsSettingsProperty)
         {
             EditorUtil.Draw.SourceFileTree.DrawDefaultFileNameRow(filePath, seq, indentSpace, savedIndent);
-            EditorUtil.Draw.SourceFileTree.DrawDataExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, OnExportDataForFile, DoRefreshDataTypeNames);
-            EditorUtil.Draw.SourceFileTree.DrawClassExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, OnExportClassForFile, DoRefreshDataTypeNames);
+            EditorUtil.Draw.SourceFileTree.DrawDataExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, OnExportDataForFile);
+            EditorUtil.Draw.SourceFileTree.DrawClassExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, OnExportClassForFile);
             EditorUtil.Draw.SourceFileTree.DrawAssetLocationRow(detailProp, indentSpace, savedIndent);
-        }
-
-        /// <summary>
-        /// 刷新单个文件的 DataTypeNames（委托适配）。
-        /// </summary>
-        private void DoRefreshDataTypeNames(string filePath, SerializedProperty dataTypeNamesProp)
-        {
-            EditorUtil.Luban.DataTypeNameHelper.DoRefreshDataTypeNames(filePath, dataTypeNamesProp, serializedObject);
         }
 
         /// <summary>

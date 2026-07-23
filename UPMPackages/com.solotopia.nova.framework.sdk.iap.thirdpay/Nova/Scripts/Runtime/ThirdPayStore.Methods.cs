@@ -139,7 +139,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     PbNetProductInfo productForTrack = GetProductInfoByTableId(tableId);
                     string productIdForTrack = productForTrack?.ProductId ?? string.Empty;
                     float priceForTrack = ParseLocalPrice(productForTrack?.LocalPrice);
-                    bool debugForTrack = Context?.EnableAlwaysPaySucceed ?? false;
+                    bool debugForTrack = Context?.DevelopMode == DevelopMode.Debug;
                     TrackThirdPayCloseOrder(tableId, productIdForTrack, debugForTrack, priceForTrack, clientOrderId, request.PayTypeId, request.CustomData);
                     RemoveOrderFromStore(tableId);
                     return new IAPResult(tableId, (int)IAPThirdPayErrorCode.UserCancelled, "用户取消支付。", request.CustomData);

@@ -50,14 +50,14 @@ namespace NovaFramework.SDK.IAP.Runtime
         public string DisplayName => "IAP 支付";
 
         /// <summary>
-        /// 是否开启「始终支付成功」调试开关。
-        /// 为 true 时各 store 跳过真实平台调用直接返回成功结果，仅用于开发测试。
+        /// 是否开启「始终支付成功」Editor 调试开关。
+        /// 为 true 时仅 Editor 编译态各 store 跳过真实平台调用直接返回成功结果；非 Editor 编译态固定关闭。
         /// </summary>
-        [SerializeField, Tooltip("开发调试开关：开启后各 store 跳过真实平台调用直接返回支付成功，上线前必须关闭。")]
+        [SerializeField, Tooltip("仅 Editor 调试有效：开启后各 store 跳过真实平台调用直接返回支付成功；移动端编译固定关闭，正式发货必须以服务端验单为准。")]
         private bool m_EnableAlwaysPaySucceed;
 
         /// <summary>
-        /// 是否开启「始终支付成功」调试开关的当前值。
+        /// 是否开启「始终支付成功」Editor 调试开关的当前值。
         /// </summary>
         public bool EnableAlwaysPaySucceed => m_EnableAlwaysPaySucceed;
 

@@ -79,7 +79,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
                 TDAnalytics.EnableAutoTrack(TDAutoTrackEventType.All);
 
                 PublishTGAIdentifiers();
-                RegisterFetchDataAsync(ct).Forget();
+                RegisterFetchDataAsync(ct);
 
                 m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
                 m_EventManager.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
@@ -193,10 +193,6 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
             TDAnalytics.Login(accountID);
             Log.Debug(LogTag.TGA, $"TGAPlugin.Login => {accountID}");
 
-            // 设置 UserSet 属性
-            SetFrameworkUserProperty("nova_uid", accountID);
-            // 设置 Dynamic 属性
-            SetFrameworkDynamicProperty("nova_uid", accountID);
         }
 
         /// <summary>

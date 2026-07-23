@@ -40,7 +40,8 @@ string GetNetCmdUrl(string tbName, string dtName)              // HostKey URL + 
 string GetNetCmdUrl<T>(string dtName) where T : class, ITable  // 泛型版本，提供编译期类型约束
 string ResolveNetCmdUrl(INetworkCmdRow cmdRow)              // 由指令行解析完整 URL，HostKey 缺失返回 null
 INetworkCmdRow ResolveNetCmdRow(string cmdName)             // 按 INetworkCmdRow.Name 检索指令行，未找到返回 null
-IEnumerable<string> GetAllNetCmdUrls()        // 所有 HTTP 类型 URL（去重），供 DoH 使用
+IEnumerable<string> GetAllNetCmdUrls()        // 所有 HTTP 类型 NetCmd 完整 URL（去重）
+IEnumerable<string> GetAllHostKeyUrls()       // 全部 HostKey URL（过滤空值并去重），供启动 DoH 预热
 
 // --- Luban 表查询 ---
 T GetNetCmd<T>() where T : class, ITable     // 按类型查找 Luban 表实例，不存在返回 null

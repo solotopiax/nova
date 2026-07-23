@@ -1,7 +1,7 @@
 ---
 id: MOC-Debug
 title: 调试系统图谱
-summary: Debug 入口、RuntimeDebugger 激活与组件边界速查
+summary: Debug入口与组件边界速查
 category: module
 status: active
 date: 2026-06-05

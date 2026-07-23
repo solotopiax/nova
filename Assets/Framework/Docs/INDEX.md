@@ -26,7 +26,7 @@
 | **实例化 Prefab / 销毁 Prefab 实例** | [PrefabComponent.md](Runtime/Modules/Prefab/PrefabComponent.md) → [IPrefabManager.md · Instantiate/Destroy API](Runtime/Modules/Prefab/PrefabManager/IPrefabManager.md) |
 | **大版本检查 / APP 强更** | [AppComponent.md · CheckAsync+DownloadAsync+OpenStoreAsync](Runtime/Modules/App/AppComponent.md) → [AppManagerConfig.md · 超时+下载路由+规则](Runtime/Modules/App/Definitions/AppManagerConfig.md) |
 | **加载运行时配置（AB 加载 ConfigRuntimeSO）** | [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) → [ConfigManager.md · AB加载+解析+PluginConfig索引](Runtime/Modules/Config/ConfigManager.md) |
-| **加载 Excel/CSV 表格数据（Luban 方案）** | [TableManager.md · GetTable/HasTable 统一查询](Runtime/Modules/Table/TableManager.md) → [TableComponentInspector.md · Luban 导出流程](Editor/Inspectors/TableComponentInspector/TableComponentInspector.md) → [EditorUtil.Luban.Pipeline.md · 导出流水线](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md) |
+| **加载 Excel/CSV 表格数据（Luban 方案）** | [TableManager.md · GetTable/HasTable 统一查询](Runtime/Modules/Table/TableManager.md) → [TableComponentInspector.md · Luban 导出流程](Editor/Inspectors/TableComponentInspector/TableComponentInspector.md) → [EditorUtil.Luban.Pipeline.md · 导出流水线](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md) → [EditorUtil.Luban.SchemaManifest.md · 导出前结构快照](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.SchemaManifest.md) |
 | **编辑 Config SO / 导出 ConfigRuntime**（ConfigWindow 流程） | [ConfigWindow.md · 三段式布局+三维导出](Editor/Windows/ConfigWindow.md) → [ConfigMasterSO.md · 设计态数据+DevelopMode](Runtime/Modules/Config/ConfigMasterSO.md) → [ConfigRuntimeSO.md · 运行态导出物](Runtime/Modules/Config/ConfigRuntimeSO.md) → [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) → [EditorUtil.Config.WorkspaceActive.md · 激活 Master 锚点](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) → [EditorUtil.Config.YooAssetInjector.md · YooAsset 注入](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
 | **Config 面板按平台/渠道/模式分别配置**（per-panel 可勾选维度） | [PanelDimensionMask.md · 掩码三轴+IsGlobal](Runtime/Modules/Config/Definitions/PanelDimensionMask.md) → [EditorUtil.Config.DimensionProjector.md · 三操作+双路径](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) → [EditorUtil.Config.DimensionalResolver.md · 只读取数+回落逻辑](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) |
 | **新增 SDK PluginConfig**（ISDKPluginConfig + 自动注入） | [PluginBase.md · PluginBase<TConfig>泛型基类+自动注入](Runtime/Modules/SDK/Definitions/PluginBase.md) → [ISDKPluginConfig.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) → [EditorUtil.Config.SDKPluginScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) → [PlatformChannelEntry.md · 矩阵行结构（按DevelopMode分组）](Runtime/Modules/Config/PlatformChannelEntry.md) |
@@ -49,6 +49,8 @@
 | **多语言本地化**（显示文本/切换语言/字体适配） | [LocalizationComponent.md · 初始化时序+GetText](Runtime/Modules/Localization/LocalizationComponent.md) → [LocalizationManager.md · ResolveLanguage+状态机](Runtime/Modules/Localization/LocalizationManager.md) → [LocalizationSettings.md · 文本Map+字体List双组设置](Runtime/Modules/Localization/LocalizationSettings.md) → [TextLocalizing.md · TMP专用+字体刷新链](Runtime/Modules/Localization/TextLocalizing.md) |
 | **理解 FSM 工具** | [FsmState.md · 状态基类](Runtime/Core/Fsm/FsmState.md) → [Fsm.md · FSM 实现+接口](Runtime/Core/Fsm/Fsm.md) |
 | **HTTP 请求（AES 加密 / UniTask 异步）** | [NetworkComponent.md · GetAsync/PostAsync](Runtime/Modules/Network/NetworkComponent.md) → [HttpManager.md · Transport SPI + DoH 候选链](Runtime/Modules/Network/HttpManager/HttpManager.md) → [IDownloadService.md · 下载接口](Runtime/Modules/Network/HttpManager/IDownloadService.md) → [HttpResponse.md · 响应与进度数据](Runtime/Modules/Network/HttpManager/Definitions/HttpResponse.md) |
+| **Alibaba Cloud OSS Runtime 上传/下载** | [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
+| **编辑器 CDN 部署与缓存清理** | [ConfigWindow.md · CDN 内容分发网络部署](Editor/Windows/ConfigWindow.md) → [EditorUtil.CDN.md · OSS 上传+Cloudflare 清理传输引擎](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) → [ConfigMasterSO.md · Editor-only 配置](Runtime/Modules/Config/ConfigMasterSO.md) → [CdnDeploymentConfig.md · 10 字段定义](Runtime/Modules/Config/Definitions/CdnDeploymentConfig.md) → [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
 | **WebSocket 长连接（认证/心跳/重连）** | [NetworkComponent.md · ConnectServer/SendMessage](Runtime/Modules/Network/NetworkComponent.md) → [WebSocketManager.md · 状态机+协程链](Runtime/Modules/Network/WebSocketManager/WebSocketManager.md) |
 | **NetCmd URL 路由配置（Host+Path）** | [NetworkManager.md · Luban 加载+URL 路由算法](Runtime/Modules/Network/NetworkManager/NetworkManager.md) → [NetworkSettings.md · HostKeySettings/NetCmdSettings](Runtime/Modules/Network/Definitions/NetworkSettings.md) |
 | **DNS-over-HTTPS IP 收集** | [DoHManager.md · CollectAllIPAddresses 算法](Runtime/Modules/Network/DoHManager/DoHManager.md) |
@@ -202,6 +204,8 @@
 | [ConfigManagerBase.md](Runtime/Modules/Config/Implements/ConfigManagerBase.md) | 配置 Manager 抽象基类（Priority=10） |
 | [IConfigManager.md](Runtime/Modules/Config/Interfaces/IConfigManager.md) | 配置 Manager 接口（IsLoadOver / DevelopMode / Common / Namespace / Platform / Channel + LoadAsync + GetSDKPluginConfig×2 + GetKitConfig×2 + GetAllPluginConfigs） |
 | [ConfigMasterSO.md](Runtime/Modules/Config/ConfigMasterSO.md) | Config 主 SO（设计态）：Platform×Channel 矩阵 + CommonByMode + EnabledSDKs + KitConfigsByMode（三维矩阵）+ EnabledKits；GetCommon(mode)；per-panel 维度掩码（CommonMask/SDKMasks/KitMasks/NamespaceMask/HybridCLRMask/YooAssetMask）+ 顶层 Override 旁路（NamespaceOverrides/HybridCLROverrides/YooAssetOverrides） |
+| [Definitions/CdnDeploymentConfig.md](Runtime/Modules/Config/Definitions/CdnDeploymentConfig.md) | CDN 部署+清缓存编辑态配置（10 字段；Editor-only，不导出 ConfigRuntimeSO；Secret/Token 明文序列化仅界面遮罩+输出脱敏） |
+| [Definitions/CdnDeploymentOverride.md](Runtime/Modules/Config/Definitions/CdnDeploymentOverride.md) | CDN 面板维度 Override 单项（坐标三字段 + Config 整套 10 字段快照；Editor-only） |
 | [Definitions/PanelDimensionMask.md](Runtime/Modules/Config/Definitions/PanelDimensionMask.md) | 配置面板维度掩码（ByPlatform/ByChannel/ByDevelopMode + IsGlobal 属性） |
 | [Definitions/TypedDimensionMask.md](Runtime/Modules/Config/Definitions/TypedDimensionMask.md) | 带类型全名的维度掩码条目（TypeName + Mask）；供 SDKMasks / KitMasks 使用 |
 | [Definitions/NamespaceOverride.md](Runtime/Modules/Config/Definitions/NamespaceOverride.md) | Namespace 字段维度 Override 单项（Platform/Channel/DevelopMode 坐标 + Value） |
@@ -422,7 +426,9 @@
 ### SDK（SDK 插件）
 
 > 完整模块文档树见 [Runtime/Modules/SDK/INDEX.md](Runtime/Modules/SDK/INDEX.md)
-> 本索引只覆盖主框架内的 SDK 公共层。各 SDK 子包可以单向依赖这些公共契约，但文档由各自 UPM 包独立维护，不再在此建立导航耦合。
+> 本索引只覆盖主框架内的 SDK 公共层。各 SDK / Kit 子包可以单向依赖这些公共契约，但文档仍由各自 UPM 包独立维护，不在主框架索引中逐包建立反向链接。
+>
+> Agent 处理具体 SDK / Kit 任务时，应从任务关键字识别当前工程中的候选包，再查找包内 `Nova/Doc/INDEX.md`。开发仓优先搜索 `UPMPackages/<package>/Nova/{Doc,Docs,DOCS}/INDEX.md`；消费工程依次搜索 `Packages/<package>/...` 与 `Library/PackageCache/<package>@<version>/...`。查阅已安装包文档是允许进入 `Library/PackageCache` 的定向场景。先读包内 INDEX，再按 INDEX 进入具体文档；不要因主框架索引未列出包名就判定“没有文档”。
 
 | 文档 | 说明 |
 |------|------|
@@ -448,7 +454,7 @@
 | [IVibrateRow.md](Runtime/Modules/Vibrate/IVibrateRow.md) | 振动数据行接口族（IVibrateRow / IVibrateEmphasisRow / IVibrateCustomRow） |
 | [VibrateManagerConfig.md](Runtime/Modules/Vibrate/VibrateManagerConfig.md) | 振动 Manager 配置类 |
 | [VibrateSettings.md](Runtime/Modules/Vibrate/VibrateSettings.md) | 振动序列化设置（EmphasisUnitSetting + CustomUnitSetting，实现 IDataTableSettings） |
-| [VibrateUnitSetting.md](Runtime/Modules/Vibrate/VibrateUnitSetting.md) | 振动单元设置（SourcePath、导出路径、AssetLocation、DataTypeNames） |
+| [VibrateUnitSetting.md](Runtime/Modules/Vibrate/VibrateUnitSetting.md) | 振动单元设置（Editor 导出路径 + Runtime AssetLocation/模式） |
 | [VibrateType.md](Runtime/Modules/Vibrate/VibrateType.md) | 振动类型枚举 |
 
 ### Sound（声音）
@@ -462,7 +468,7 @@
 | [SoundManager.md](Runtime/Modules/Sound/SoundManager.md) | 声音 Manager（含嵌套类：SoundGroup、SoundAgent、SoundGroupHelper、SoundAgentHelper、PlaySoundInfo、PlaySoundErrorCode） |
 | [SoundManagerConfig.md](Runtime/Modules/Sound/SoundManagerConfig.md) | 声音 Manager 配置类 |
 | [SoundSettings.md](Runtime/Modules/Sound/SoundSettings.md) | 声音序列化设置（实现 IDataTableSettings，持有 SoundUnitsSettings 列表） |
-| [SoundUnitSetting.md](Runtime/Modules/Sound/SoundUnitSetting.md) | 单个声音数据源的单元设置（SourcePath、导出路径、AssetLocation、DataTypeNames） |
+| [SoundUnitSetting.md](Runtime/Modules/Sound/SoundUnitSetting.md) | 单个声音数据源的设置（Editor 导出路径 + Runtime AssetLocation/模式） |
 | [SoundGroupShell.md](Runtime/Modules/Sound/SoundGroupShell.md) | 声音组外壳（Inspector 序列化配置） |
 | [PlaySoundParams.md](Runtime/Modules/Sound/PlaySoundParams.md) | 播放声音参数（ReferencePool 池化） |
 | [PlaySoundInfo.md](Runtime/Modules/Sound/PlaySoundInfo.md) | 播放声音信息（SoundManager 嵌套私有类，ReferencePool 池化） |
@@ -483,31 +489,36 @@
 | [EditorUtil.FileSystem.md](Editor/EditorUtil/EditorUtil.FileSystem/EditorUtil.FileSystem.md) | 文件系统封装（路径转换、目录操作、AssetDatabase 刷新、DeletePath） |
 | [EditorUtil.ProcessRunner.md](Editor/EditorUtil/EditorUtil.ProcessRunner/EditorUtil.ProcessRunner.md) | 统一外部进程调用器（RunSync 阻塞等待 / RunAsync 非阻塞流式） |
 | [EditorUtil.FileWatcher.md](Editor/EditorUtil/EditorUtil.FileWatcher/EditorUtil.FileWatcher.md) | 文件变动监控器（FileSystemWatcher 全局单例，主线程回调） |
+| [EditorUtil.Reflect.Tooltip.md](Editor/EditorUtil/EditorUtil.Reflect/EditorUtil.Reflect.Tooltip.md) | 字段 TooltipAttribute 反射读取工具（2 个 GetFieldTooltip 重载 + 缓存） |
 | [EditorUtil.Serializer.md](Editor/EditorUtil/EditorUtil.Serializer/EditorUtil.Serializer.md) | 反射读取私有字段（RuntimeDrawer 用） |
 | [EditorUtil.ScriptingDefineSymbols.md](Editor/EditorUtil/EditorUtil.ScriptingDefineSymbols/EditorUtil.ScriptingDefineSymbols.md) | 脚本宏定义增删查工具 |
+| [EditorUtil.TrackRegistry.md](Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.md) | 追踪注册表 Xlsx 导出（唯一公开方法 Generate(projectRoot)） |
 | [EditorUtil.TypeCache.md](Editor/EditorUtil/EditorUtil.TypeCache/EditorUtil.TypeCache.md) | 编辑器类型缓存（反射收集实现类名称） |
 | [EditorUtil.CsvExporter.md](Editor/EditorUtil/EditorUtil.CsvExporter/EditorUtil.CsvExporter.md) | CSV 导出工具 |
 | [EditorUtil.Asmdef.md](Editor/EditorUtil/EditorUtil.Asmdef/EditorUtil.Asmdef.md) | Assembly Definition 命名空间解析（向上查找 .asmdef） |
 | [EditorUtil.Excel.md](Editor/EditorUtil/EditorUtil.Excel/EditorUtil.Excel.md) | Excel 读写工具（EPPlus 写入 + ExcelDataReader 读取，Config 预过滤使用） |
-| [EditorUtil.Environment.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md) | 编辑器运行时环境数据工具（EnvironmentData / ColumnIndices / GetEnvironmentData，Channel 来自 RuntimeProvider，Config 和 Network 预过滤器共用） |
+| [EditorUtil.Environment.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md) | 编辑器运行时环境数据工具（EnvironmentData / ColumnIndices / GetEnvironmentData，Channel 来自 RuntimeProvider） |
 | [EditorUtil.Environment.Python3.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.Python3.md) | Python3 运行环境多路径探测检查器（5 策略：ExplicitPath/PATH/PyLauncher/Where/PythonFallback；SessionState 缓存；33 候选路径） |
 | [EditorUtil.Environment.LubanChecker.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.md) | Luban 运行环境检查器（dotnet-sdk 路径/版本≥8.0/Luban.dll 检测，SessionState 缓存；由 Pipeline 和 ConfigWindow 调用） |
 | [EditorUtil.Luban.Pipeline.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md) | Luban 导出流水线 + LubanExportContext（Table/Config 统一入口，含环境检查 guard） |
 | [EditorUtil.Luban.CliRunner.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.CliRunner.md) | Luban CLI 外部进程调用器（代码生成/数据导出/protobuf3 schema 生成） |
 | [EditorUtil.Proto.CliRunner.md](Editor/EditorUtil/EditorUtil.Proto/EditorUtil.Proto.CliRunner.md) | protoc CLI 外部进程调用器（Mac + Win 跨平台，Luban→protoc 闭环管线） |
-| [EditorUtil.Luban.ConfigSyncer.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ConfigSyncer.md) | Luban _configs/ 目录同步器（luban.conf + __tables__.xml） |
+| [EditorUtil.Luban.ConfigSyncer.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ConfigSyncer.md) | Luban `_configs/` 同步器（manifest + luban.conf + __tables__.xml） |
+| [EditorUtil.Luban.SchemaManifest.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.SchemaManifest.md) | 导出前扫描 Excel 生成的 Editor-only、可重建结构快照 |
+| [EditorUtil.Luban.GeneratedOutput.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.GeneratedOutput.md) | 非 Table Luban C# 第一行所有权标记、正文 Hash 校验与安全过期删除 |
 | [EditorUtil.Luban.JsonMerger.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.JsonMerger.md) | Luban per-table JSON → per-Excel Nova 格式合并器 |
 | [EditorUtil.Luban.MapPropGen.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.MapPropGen.md) | Map 模式属性生成器（TbXxx partial class 追加） |
-| [EditorUtil.Luban.LocalizationTextExporter.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.LocalizationTextExporter.md) | 本地化文本导出器（PreFilter + Luban Pipeline 三阶段编排：C# 类型生成 / 按语言数据导出 / MapPropGen + 语言列表） |
 | [EditorUtil.Luban.ExportHelper.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md) | Luban 导出辅助工具：构建导出上下文、生成关联文件名、查找单元设置 |
-| [EditorUtil.Luban.DataTypeNameHelper.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.md) | 数据类型名称刷新工具：读取数据源文件提取有效 Sheet 名称并填充 DataTypeNames |
+| [EditorUtil.Luban.DataTypeNameHelper.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.md) | internal Excel Sheet 纯扫描器（不访问 SerializedProperty） |
 | [EditorUtil.Draw.SourceFileTree.md](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.SourceFileTree.md) | 数据源文件树绘制与命名空间列表编辑静态工具集 |
 | [EditorUtil.CheckUpdate.md](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) | UPM 包版本检查工具（启动自动检查 + `MarkSkip`/`ClearSkip` 持久化，复用 PlugPals 网络层） |
 | [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate 系列封装、AOT/业务 DLL 拷贝；由 Pipify Steps 编排流水线） |
 | [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 依赖解析工具（反射调用 EDM4U PlayServicesResolver.ResolveSync，强制重建 Assets/GeneratedLocalRepo/**；配合 HybridCLR Generate All 前置使用） |
 | [EditorUtil.Pipify.md](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) | [PipifyStep] 反射注册 Step + Batch 可视化配置 + UI/CLI 双入口的自动化流水线 |
 | [EditorUtil.Build.md](Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) | BuildPipeline.BuildPlayer 薄封装，统一异常与日志 |
+| [EditorUtil.CDN.md](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) | CDN 内容部署与缓存清理工具（阿里云 OSS 批量上传 + Cloudflare purge 分批清理；编排/传输适配器分层；无 public API，仅 internal，程序集外经 ConfigWindow「CDN 内容分发网络部署」面板触发） |
 | [EditorUtil.Asset.Operator.md](Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.md) | 通用 ScriptableObject 资产查找/创建/按路径加载（泛型 Find&lt;T&gt; / CreateAt&lt;T&gt; / LoadAt&lt;T&gt;） |
+| [EditorUtil.FileSystem.OutputApplier.md](Editor/EditorUtil/EditorUtil.FileSystem/EditorUtil.FileSystem.OutputApplier.md) | Editor 内部批量文件替换、删除、备份与失败回滚基础设施 |
 | [EditorUtil.Config.StructureGuard.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.StructureGuard.md) | Platform×Channel 枚举网格补齐与缺失引用清理 |
 | [EditorUtil.Config.SDKPluginScanner.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) | 全程序集扫描 ISDKPluginConfig 实现类型 + 实例补全/移除（EnsureInstance/RemoveInstance 按 DevelopMode 分组） |
 | [EditorUtil.Config.Validator.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.md) | CommonConfig/PluginConfig 必填字段校验（Severity 枚举 + ValidationIssue 结构体；支持三维 Platform×Channel×DevelopMode） |
@@ -521,11 +532,11 @@
 | [EditorUtil.UI.Exporter.md](Editor/EditorUtil/EditorUtil.UI/EditorUtil.UI.Exporter.md) | UI 模块 Luban 导出入口（ExportAll/ExportCode/ExportData + 单文件 ExportCodeForFile/ExportDataForFile） |
 | [EditorUtil.Localization.TextExporter.md](Editor/EditorUtil/EditorUtil.Localization/EditorUtil.Localization.TextExporter.md) | 本地化文本导出工具（ExportTextAll/ExportTextCode/ExportTextData/ExportSupportedLanguages，三阶段 PreFilter + Pipeline） |
 | [EditorUtil.Localization.FontExporter.md](Editor/EditorUtil/EditorUtil.Localization/EditorUtil.Localization.FontExporter.md) | 本地化字体导出工具（ExportFontAll/ExportFontCode/ExportFontData，标准 Luban Pipeline） |
-| [EditorUtil.Network.HostKeyExporter.md](Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.HostKeyExporter.md) | 域名表导出工具（ExportHostKeyAll/ExportHostKeyCode/ExportHostKeyData，含 NetworkExcelPreFilter 预过滤） |
-| [EditorUtil.Network.NetCmdExporter.md](Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.NetCmdExporter.md) | 指令表导出工具（ExportNetCmdAll/ExportNetCmdCode/ExportNetCmdData，含 NetworkExcelPreFilter 预过滤） |
+| [EditorUtil.Network.HostKeyExporter.md](Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.HostKeyExporter.md) | HostKeys 公共导出门面（ConfigRuntime DevelopMode、配对 Sheet 与暂存发布） |
+| [EditorUtil.Network.NetCmdExporter.md](Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.NetCmdExporter.md) | NetCmds 公共导出门面（保持表结构并暂存发布） |
 | [EditorUtil.Network.ProtoExporter.md](Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.ProtoExporter.md) | Proto 协议批量编译（ExportAllProtos：按每个 Unit.CSharpExportPath 分别调 Proto.CliRunner.CompileSingle） |
-| [EditorUtil.Sound.Exporter.md](Editor/EditorUtil/EditorUtil.Sound/EditorUtil.Sound.Exporter.md) | Sound 模块 Luban 导出薄封装（ExportAll/ExportData/ExportCode，unitSetting 控制单文件还是全量） |
-| [EditorUtil.Vibrate.Exporter.md](Editor/EditorUtil/EditorUtil.Vibrate/EditorUtil.Vibrate.Exporter.md) | Vibrate 双轨导出工具（Emphasis + Custom 各提供 Data/Code/All，方法直接挂在 EditorUtil.Vibrate partial class 上） |
+| [EditorUtil.Sound.Exporter.md](Editor/EditorUtil/EditorUtil.Sound/EditorUtil.Sound.Exporter.md) | Sound 专用导出编排（API 不变，Luban 暂存、验证并通过 OutputApplier 发布） |
+| [EditorUtil.Vibrate.Exporter.md](Editor/EditorUtil/EditorUtil.Vibrate/EditorUtil.Vibrate.Exporter.md) | Vibrate 双轨导出编排（Emphasis/Custom 独立暂存、验证与事务发布） |
 
 ## Editor — Definitions（公共类型定义）
 
@@ -541,6 +552,7 @@
 | [ConfigWindow.md](Editor/Windows/ConfigWindow.md) | Nova 全局配置窗口（三段式布局：顶栏 SO 选择+Platform/Channel/DevelopMode+导出 ObjectField、左树 LubanEnv/Python3Env/AppConfig/NamespaceConfig/HybridCLRConfig/SDK、右面板详情；支持三维导出 ConfigRuntimeSO；HybridCLR DLL 列表通过 HybridCLRConfig 面板编辑；导出目标 SO 通过 EditorPrefs GUID 持久化；partial 拆 10 文件） |
 | [CheckUpdateWindow.md](Editor/Windows/CheckUpdateWindow.md) | Nova 包版本更新提示窗口（表格展示 Package/Current/Latest，支持"跳过当前版本"持久化） |
 | [PipifyWindow.md](Editor/Windows/PipifyWindow.md) | Pipify 流水线配置与执行窗口（Nova/Open Pipify） |
+| [EnvironmentWindow.md](Editor/Windows/EnvironmentWindow.md) | 空壳说明页：`EnvironmentWindow` 类不存在、`Windows/EnvironmentWindow/` 目录为空；「环境检测」UI 实际内嵌在 ConfigWindow 左树「环境检测」组（Luban / Python3 / HybridCLR 三条目），检测引擎在 `EditorUtil.Environment` |
 
 ## Editor — Tools（工具 + AB 处理器）
 
@@ -569,7 +581,7 @@
 | [PersistComponentInspector.md](Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.md) | 持久化 Inspector |
 | [SDKComponentInspector.md](Editor/Inspectors/SDKComponentInspector/SDKComponentInspector.md) | SDK Inspector（Manager 选择器 + Plugin 条目分组列表） |
 | [PluginEntriesDrawer.md](Editor/Inspectors/SDKComponentInspector/PluginEntriesDrawer.md) | Plugin 条目绘制器（反射扫描 + 分组渲染 + Missing 清理） |
-| [LocalizationComponentInspector.md](Editor/Inspectors/LocalizationComponentInspector/LocalizationComponentInspector.md) | 本地化 Inspector（Luban 驱动：文本三阶段 Pipeline 导出 + 字体标准 Pipeline 导出） |
+| [LocalizationComponentInspector.md](Editor/Inspectors/LocalizationComponentInspector/LocalizationComponentInspector.md) | 本地化 Inspector（文本多语言投影 + 字体暂存事务导出） |
 | [VibrateComponentInspector.md](Editor/Inspectors/VibrateComponentInspector/VibrateComponentInspector.md) | 振动 Inspector |
 | [SoundComponentInspector.md](Editor/Inspectors/SoundComponentInspector/SoundComponentInspector.md) | 声音 Inspector |
 | [AppComponentInspector.md](Editor/Inspectors/AppComponentInspector/AppComponentInspector.md) | App Inspector（Manager 选择器 + 3 组 Foldout 配置） |
@@ -583,13 +595,16 @@
 | [TextLocalizingAutoMount.md](Editor/Inspectors/CustomInspectors/TextLocalizingAutoMount.md) | TMP 添加时自动挂载 TextLocalizing 的编辑器钩子 |
 | [TextLocalizingValidator.md](Editor/Inspectors/CustomInspectors/TextLocalizingValidator.md) | 全工程预制体扫描并补挂缺失 TextLocalizing 的 Inspector 按钮工具 |
 
-## Editor — DataPipeline（Excel 预过滤管线）
+## Editor — DataPipeline（模块专用预处理与导出编排）
 
 | 文档 | 说明 |
 |------|------|
-| [DataPipeline.md](Editor/DataPipeline/DataPipeline.md) | DataPipeline 目录概览（Config 预过滤器已移除；当前保留 Localization/Network 两个预过滤实现） |
+| [DataPipeline.md](Editor/DataPipeline/DataPipeline.md) | 非 Table 模块专用导出总览（Localization、UI、Network、Sound、Vibrate） |
 | [LocalizationExcelPreFilter.md](Editor/DataPipeline/Implements/Localizations/LocalizationExcelPreFilter.md) | Localization 模块：Excel 预过滤器（多语言列拆分为按语言 Name+Value 临时 Excel） |
-| [NetworkExcelPreFilter.md](Editor/DataPipeline/Implements/Networks/NetworkExcelPreFilter.md) | Network 模块 Excel 预过滤器（域名表 DevelopValue/PublishValue 合并 + 指令表 Platform/Channel 过滤） |
+| [LocalizationTextExporter.md](Editor/DataPipeline/Implements/Localizations/LocalizationTextExporter.md) | Localization 模块：数据、代码、Map 与语言列表的内部导出编排 |
+| [UIExporter.md](Editor/DataPipeline/Implements/UIs/UIExporter.md) | UI 模块：Excel 契约校验、Luban 暂存导出与发布编排 |
+| [NetworkExcelPreFilter.md](Editor/DataPipeline/Implements/Networks/NetworkExcelPreFilter.md) | Network Excel 输入投影（HostKeys Debug/Release 配对与选择，NetCmds 原样） |
+| [NetworkExporter.md](Editor/DataPipeline/Implements/Networks/NetworkExporter.md) | Network 模块：预处理、Luban 暂存生成、验证与事务发布编排 |
 
 ## Editor — Menus / Tools
 
@@ -598,4 +613,3 @@
 | [Menus.md](Editor/Menus/Menus.md) | Nova 顶级菜单项 |
 | [FolderMenuItems.md](Editor/Menus/FolderMenuItems.md) | Open IDE Project / Open Folder |
 | [EnableLogsMenuItems.md](Editor/Menus/EnableLogsMenuItems.md) | Enable Logs 菜单 |
-| [Tools.md](Editor/Tools/Tools.md) | 编辑器独立工具（Bootstrap、构建脚本、AB 处理器） |

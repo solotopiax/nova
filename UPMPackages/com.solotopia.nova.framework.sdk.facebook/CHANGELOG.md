@@ -2,6 +2,13 @@
 
 This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`.
 
+## [0.0.9] - 2026-07-21
+
+### Changed
+
+- Facebook 登录成功后发布 `OpenId` 与 `ThirdPlatform` 数据，供 TGA 等分析插件自动同步用户属性。
+- 将 Nova Framework 最低依赖版本提升至 `0.5.42`。
+
 ## [0.0.8] - 2026-07-13
 
 ### Changed

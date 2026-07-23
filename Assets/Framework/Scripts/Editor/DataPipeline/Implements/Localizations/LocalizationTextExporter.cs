@@ -5,34 +5,54 @@
  * filename:  LocalizationTextExporter.cs
  * author:    taoye
  * created:   2026/4/19
- * descrip:   本地化文本导出器（PreFilter + Luban Pipeline 编排）
+ * descrip:   编排 Localization 的预过滤、Luban 生成、校验与正式产物应用
+ * input:     源目录、Settings、代码/语言列表路径与 Luban 模板目录
+ * output:    各语言数据、C# 类型、Map 属性和支持语言列表正式文件
+ * reason:    保证多阶段生成全部成功后，才把同一批产物应用到正式位置
+ * boundary:  不解析 Excel 细节，不实现底层文件替换、备份或回滚算法
+ * failure:   应用前失败不修改正式产物；应用中失败由 OutputApplier 回滚
  ***************************************************************/
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json.Linq;
 using NovaFramework.Runtime;
-using Newtonsoft.Json;
 using UnityEditor;
+using IOPath = System.IO.Path;
 
 namespace NovaFramework.Editor
 {
     /// <summary>
-    /// 本地化文本导出器，编排 PreFilter + Luban Pipeline 完成全链路导出。
-    /// <para>Phase A — C# 类型生成：PreFilter 取第一种语言 → Pipeline.ExportCode。</para>
-    /// <para>Phase B — 按语言数据导出：每种语言 PreFilter → Pipeline.ExportData。</para>
-    /// <para>Phase C — MapPropGen + 语言列表导出。</para>
+    /// 本地化文本导出流程编排器：一次加载配置源，暂存并验证全部产物后统一应用。
+    /// <para>全量顺序：全部语言数据 → C# 类型 → Map 属性 → 支持语言列表 → 应用正式产物。</para>
+    /// Excel 解析由 <see cref="LocalizationExcelPreFilter"/> 完成；文件替换与回滚由
+    /// <see cref="EditorUtil.FileSystem.OutputApplier"/> 完成。
     /// </summary>
     internal static class LocalizationTextExporter
     {
         /// <summary>
-        /// Luban target 名称。
+        /// 导出流程调用的外部能力集合，仅作为测试替换点；不承载导出状态或业务规则。
         /// </summary>
-        private const string c_TargetName = "localization-text";
+        internal sealed class ExportOperations
+        {
+            internal Func<string, IReadOnlyList<IDataTableUnitSetting>, LocalizationExcelPreFilter.SourceModel>
+                LoadSourceModel =
+                    (sourceDirPath, units) => LocalizationExcelPreFilter.SourceModel.Load(sourceDirPath, units);
 
-        /// <summary>
-        /// Luban manager 类名。
-        /// </summary>
-        private const string c_ManagerName = "LocalizationTextTables";
+            internal Func<EditorUtil.Luban.LubanExportContext, bool> ExportData =
+                EditorUtil.Luban.Pipeline.ExportData;
+
+            internal Func<EditorUtil.Luban.LubanExportContext, bool> ExportCode =
+                EditorUtil.Luban.Pipeline.ExportCode;
+
+            internal Func<EditorUtil.Luban.LubanSchemaManifest, string, Dictionary<string, int>>
+                GenerateMapProperties = EditorUtil.Luban.MapPropGen.GenerateAll;
+
+            internal Func<string> GetTopModule = EditorUtil.Config.RuntimeProvider.GetNamespace;
+
+            internal Action RefreshAssetDatabase = AssetDatabase.Refresh;
+        }
 
         /// <summary>
         /// 代码生成临时子目录名称。
@@ -58,193 +78,814 @@ namespace NovaFramework.Editor
         /// <param name="customTemplateDirs">自定义模板目录列表（可为 null）。</param>
         /// <param name="supportedLanguagesExportPath">语言列表 JSON 导出路径（工程相对路径，可为 null）。</param>
         /// <returns>是否导出成功。</returns>
-        public static bool ExportAll(string sourceDirPath, IDataTableSettings settings, string classExportPath, string[] customTemplateDirs, string supportedLanguagesExportPath)
+        internal static bool ExportAll(string sourceDirPath, IDataTableSettings settings, string classExportPath, string[] customTemplateDirs, string supportedLanguagesExportPath)
         {
-            if (string.IsNullOrEmpty(sourceDirPath) || settings == null || settings.Units == null || settings.Units.Count == 0)
+            return ExportAll(
+                sourceDirPath,
+                settings,
+                classExportPath,
+                customTemplateDirs,
+                supportedLanguagesExportPath,
+                new ExportOperations());
+        }
+
+        internal static bool ExportAll(
+            string sourceDirPath,
+            IDataTableSettings settings,
+            string classExportPath,
+            string[] customTemplateDirs,
+            string supportedLanguagesExportPath,
+            ExportOperations operations)
+        {
+            if (!HasValidSettings(sourceDirPath, settings) || operations == null)
             {
                 Log.Warning(LogTag.Localization, "文本导出参数无效，导出已跳过。");
                 return false;
             }
 
             string tempDir = Util.SysIO.Path.Combine(sourceDirPath, c_TempDirName);
-            string codegenTempDir = Util.SysIO.Path.Combine(tempDir, c_CodegenTempSubDir);
-
             try
             {
-                HashSet<string> allLanguages = LocalizationExcelPreFilter.ExtractAllLanguageColumns(sourceDirPath);
-                if (allLanguages == null || allLanguages.Count == 0)
+                using (EditorUtil.FileSystem.AcquireWorkspace(tempDir))
                 {
-                    Log.Warning(LogTag.Localization, "未从数据源目录中提取到任何语言列，导出已跳过。");
-                    return false;
+                    LocalizationExcelPreFilter.SourceModel model = operations.LoadSourceModel(sourceDirPath, settings.Units);
+                    CleanupTempDir(tempDir, true);
+                    try
+                    {
+                        ResolveConfigPaths(sourceDirPath, out string confPath, out string tablesXmlPath);
+                        string topModule = operations.GetTopModule();
+                        using var outputApplier = new EditorUtil.FileSystem.OutputApplier(tempDir);
+                        EditorUtil.Luban.LubanSchemaManifest dataManifest = null;
+
+                        foreach (string language in model.Languages)
+                        {
+                            string inputRoot = IOPath.Combine(tempDir, language);
+                            LocalizationExcelPreFilter.ProjectLanguage(model, inputRoot, language);
+                            StagedSettings stagedSettings = CreateStagedDataSettings(
+                                settings,
+                                model,
+                                language,
+                                outputApplier.StagingRoot);
+                            EditorUtil.Luban.LubanExportContext dataContext = CreateDataContext(
+                                sourceDirPath,
+                                stagedSettings,
+                                confPath,
+                                tablesXmlPath,
+                                topModule);
+                            if (!operations.ExportData(dataContext))
+                            {
+                                throw new InvalidOperationException(
+                                    $"Localization data export failed for language '{language}'.");
+                            }
+
+                            ValidateAndRegisterStagedData(stagedSettings, outputApplier);
+                            dataManifest = dataContext.SchemaManifest ??
+                                throw new InvalidDataException(
+                                    $"Localization data export produced no schema manifest for '{language}'.");
+                        }
+
+                        if (!string.IsNullOrEmpty(classExportPath))
+                        {
+                            string codegenInputRoot = IOPath.Combine(tempDir, c_CodegenTempSubDir);
+                            LocalizationExcelPreFilter.ProjectCodeGen(model, codegenInputRoot);
+                            // Unity ignores folders ending in '~', preventing staged .cs files from compiling
+                            // before the outputApplier applies them to the formal code directory.
+                            string stagedCodeRoot = IOPath.Combine(outputApplier.StagingRoot, "code~");
+                            StagedSettings codeSettings = CreateStagedCodeSettings(
+                                settings,
+                                model,
+                                stagedCodeRoot);
+                            EditorUtil.Luban.LubanExportContext codeContext = CreateCodeContext(
+                                sourceDirPath,
+                                codeSettings,
+                                confPath,
+                                tablesXmlPath,
+                                topModule,
+                                stagedCodeRoot,
+                                customTemplateDirs);
+                            if (!operations.ExportCode(codeContext))
+                            {
+                                throw new InvalidOperationException("Localization code export failed.");
+                            }
+
+                            if (codeContext.SchemaManifest == null)
+                            {
+                                throw new InvalidDataException(
+                                    "Localization code export produced no schema manifest.");
+                            }
+
+                            EditorUtil.Luban.LubanSchemaManifest mapManifest = CreateMapManifest(
+                                dataManifest,
+                                stagedCodeRoot);
+                            operations.GenerateMapProperties(mapManifest, topModule);
+                            ValidateMapOutputs(mapManifest);
+                            RegisterStagedCode(codeContext, stagedCodeRoot, classExportPath, outputApplier);
+                        }
+
+                        if (!string.IsNullOrEmpty(supportedLanguagesExportPath))
+                        {
+                            StageSupportedLanguages(
+                                model.Languages,
+                                supportedLanguagesExportPath,
+                                outputApplier);
+                        }
+
+                        RegisterObsoleteLanguageDeletes(model, outputApplier);
+                        outputApplier.Apply();
+                        return true;
+                    }
+                    finally
+                    {
+                        CleanupTempDir(tempDir, true);
+                        operations.RefreshAssetDatabase();
+                    }
                 }
-
-                string configDir = EditorUtil.Luban.ConfigSyncer.GetConfigDirPath(sourceDirPath);
-                string confPath = Util.SysIO.Path.Combine(configDir, EditorUtil.Luban.ConfigSyncer.c_LubanConfFileName);
-                string tablesXmlPath = Util.SysIO.Path.Combine(configDir, EditorUtil.Luban.ConfigSyncer.c_TablesXmlFileName);
-                string topModule = EditorUtil.Config.RuntimeProvider.GetNamespace();
-
-                bool phaseASuccess = ExportPhaseA(sourceDirPath, settings, codegenTempDir, classExportPath, customTemplateDirs, confPath, tablesXmlPath, topModule);
-                if (!phaseASuccess)
-                {
-                    Log.Error(LogTag.Localization, "Phase A（C# 类型生成）失败，导出中止。");
-                    return false;
-                }
-
-                string firstLanguage = null;
-                bool phaseBSuccess = ExportPhaseB(sourceDirPath, settings, tempDir, confPath, tablesXmlPath, topModule, allLanguages, out firstLanguage);
-                if (!phaseBSuccess)
-                {
-                    Log.Error(LogTag.Localization, "Phase B（按语言数据导出）失败，导出中止。");
-                    return false;
-                }
-
-                ExportPhaseC(settings, topModule, allLanguages, firstLanguage, supportedLanguagesExportPath);
-
-                return true;
             }
-            finally
+            catch (Exception exception)
             {
-                CleanupTempDir(tempDir);
-                AssetDatabase.Refresh();
+                Log.Error(LogTag.Localization, "本地化文本全量导出失败：{0}", exception);
+                return false;
             }
         }
 
         /// <summary>
-        /// Phase A — C# 类型生成：PreFilter 取第一种语言生成简化 Excel，通过 Pipeline.ExportCode 生成 C# 类型。
+        /// 仅导出 C# 类型。
         /// </summary>
-        /// <param name="sourceDirPath">文本数据源目录路径。</param>
-        /// <param name="settings">文本数据表设置适配器。</param>
-        /// <param name="codegenTempDir">代码生成临时 Excel 输出目录。</param>
-        /// <param name="classExportPath">C# 类型输出目录。</param>
-        /// <param name="customTemplateDirs">自定义模板目录列表。</param>
-        /// <param name="confPath">luban.conf 路径。</param>
-        /// <param name="tablesXmlPath">__tables__.xml 路径。</param>
-        /// <param name="topModule">顶层命名空间。</param>
-        /// <returns>是否成功。</returns>
-        private static bool ExportPhaseA(string sourceDirPath, IDataTableSettings settings, string codegenTempDir, string classExportPath, string[] customTemplateDirs, string confPath, string tablesXmlPath, string topModule)
+        internal static bool ExportCode(string sourceDirPath, IDataTableSettings settings,
+            string classExportPath, string[] customTemplateDirs)
         {
-            if (string.IsNullOrEmpty(classExportPath))
+            return ExportCode(
+                sourceDirPath,
+                settings,
+                classExportPath,
+                customTemplateDirs,
+                new ExportOperations());
+        }
+
+        internal static bool ExportCode(
+            string sourceDirPath,
+            IDataTableSettings settings,
+            string classExportPath,
+            string[] customTemplateDirs,
+            ExportOperations operations)
+        {
+            if (!HasValidSettings(sourceDirPath, settings) ||
+                string.IsNullOrEmpty(classExportPath) ||
+                operations == null)
             {
-                Log.Debug(LogTag.Localization, "C# 类型导出路径为空，跳过 Phase A。");
-                return true;
+                Log.Warning(LogTag.Localization, "文本代码导出参数无效，导出已跳过。");
+                return false;
             }
 
-            LocalizationExcelPreFilter.FilterForCodeGen(sourceDirPath, codegenTempDir);
+            string tempDir = Util.SysIO.Path.Combine(sourceDirPath, c_TempDirName);
+            try
+            {
+                using (EditorUtil.FileSystem.AcquireWorkspace(tempDir))
+                {
+                    LocalizationExcelPreFilter.SourceModel model = operations.LoadSourceModel(sourceDirPath, settings.Units);
+                    CleanupTempDir(tempDir, true);
+                    try
+                    {
+                        ResolveConfigPaths(sourceDirPath, out string confPath, out string tablesXmlPath);
+                        string topModule = operations.GetTopModule();
+                        using var outputApplier = new EditorUtil.FileSystem.OutputApplier(tempDir);
+                        string codegenInputRoot = IOPath.Combine(tempDir, c_CodegenTempSubDir);
+                        LocalizationExcelPreFilter.ProjectCodeGen(model, codegenInputRoot);
+                        string stagedCodeRoot = IOPath.Combine(outputApplier.StagingRoot, "code~");
+                        StagedSettings codeSettings = CreateStagedCodeSettings(
+                            settings,
+                            model,
+                            stagedCodeRoot);
+                        EditorUtil.Luban.LubanExportContext context = CreateCodeContext(
+                            sourceDirPath,
+                            codeSettings,
+                            confPath,
+                            tablesXmlPath,
+                            topModule,
+                            stagedCodeRoot,
+                            customTemplateDirs);
+                        if (!operations.ExportCode(context))
+                        {
+                            throw new InvalidOperationException("Localization code export failed.");
+                        }
 
-            LanguageResolvedSettings codegenSettings = new LanguageResolvedSettings(settings, null, c_CodegenTempSubDir);
+                        if (context.SchemaManifest == null)
+                        {
+                            throw new InvalidDataException(
+                                "Localization code export produced no schema manifest.");
+                        }
 
-            var ctx = new EditorUtil.Luban.LubanExportContext
+                        ValidateGeneratedCodeFiles(context.SchemaManifest, stagedCodeRoot);
+                        EditorUtil.Luban.LubanSchemaManifest mapManifest =
+                            CreateStandaloneCodeMapManifest(context.SchemaManifest, model, stagedCodeRoot);
+                        if (mapManifest.Units.Count > 0)
+                        {
+                            operations.GenerateMapProperties(mapManifest, topModule);
+                            ValidateMapOutputs(mapManifest);
+                        }
+
+                        RegisterStagedCode(context, stagedCodeRoot, classExportPath, outputApplier);
+                        outputApplier.Apply();
+                        return true;
+                    }
+                    finally
+                    {
+                        CleanupTempDir(tempDir, true);
+                        operations.RefreshAssetDatabase();
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Log.Error(LogTag.Localization, "本地化文本代码导出失败：{0}", exception);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 仅导出所有语言的文本数据。
+        /// </summary>
+        internal static bool ExportData(string sourceDirPath, IDataTableSettings settings)
+        {
+            return ExportData(sourceDirPath, settings, new ExportOperations());
+        }
+
+        internal static bool ExportData(
+            string sourceDirPath,
+            IDataTableSettings settings,
+            ExportOperations operations)
+        {
+            if (!HasValidSettings(sourceDirPath, settings) || operations == null)
+            {
+                Log.Warning(LogTag.Localization, "文本数据导出参数无效，导出已跳过。");
+                return false;
+            }
+
+            string tempDir = Util.SysIO.Path.Combine(sourceDirPath, c_TempDirName);
+            try
+            {
+                using (EditorUtil.FileSystem.AcquireWorkspace(tempDir))
+                {
+                    LocalizationExcelPreFilter.SourceModel model = operations.LoadSourceModel(sourceDirPath, settings.Units);
+                    CleanupTempDir(tempDir, true);
+                    try
+                    {
+                        ResolveConfigPaths(sourceDirPath, out string confPath, out string tablesXmlPath);
+                        string topModule = operations.GetTopModule();
+                        using var outputApplier = new EditorUtil.FileSystem.OutputApplier(tempDir);
+                        foreach (string language in model.Languages)
+                        {
+                            string inputRoot = IOPath.Combine(tempDir, language);
+                            LocalizationExcelPreFilter.ProjectLanguage(model, inputRoot, language);
+                            StagedSettings stagedSettings = CreateStagedDataSettings(
+                                settings,
+                                model,
+                                language,
+                                outputApplier.StagingRoot);
+                            EditorUtil.Luban.LubanExportContext context = CreateDataContext(
+                                sourceDirPath,
+                                stagedSettings,
+                                confPath,
+                                tablesXmlPath,
+                                topModule);
+                            if (!operations.ExportData(context))
+                            {
+                                throw new InvalidOperationException(
+                                    $"Localization data export failed for language '{language}'.");
+                            }
+
+                            ValidateAndRegisterStagedData(stagedSettings, outputApplier);
+                        }
+
+                        RegisterObsoleteLanguageDeletes(model, outputApplier);
+                        outputApplier.Apply();
+                        return true;
+                    }
+                    finally
+                    {
+                        CleanupTempDir(tempDir, true);
+                        operations.RefreshAssetDatabase();
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Log.Error(LogTag.Localization, "本地化文本数据导出失败：{0}", exception);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 独立导出支持语言列表。
+        /// </summary>
+        internal static bool ExportSupportedLanguages(string sourceDirPath, string exportPath)
+        {
+            if (string.IsNullOrEmpty(sourceDirPath) || string.IsNullOrEmpty(exportPath))
+            {
+                Log.Warning(LogTag.Localization, "语言列表导出参数无效，导出已跳过。");
+                return false;
+            }
+
+            HashSet<string> allLanguages = LocalizationExcelPreFilter.ExtractAllLanguageColumns(sourceDirPath);
+            if (allLanguages == null || allLanguages.Count == 0)
+            {
+                Log.Warning(LogTag.Localization, "未从数据源目录中提取到任何语言列，语言列表导出已跳过。");
+                return false;
+            }
+
+            return ExportSupportedLanguages(
+                sourceDirPath,
+                exportPath,
+                OrderLanguages(allLanguages),
+                new ExportOperations());
+        }
+
+        internal static bool ExportSupportedLanguages(
+            string sourceDirPath,
+            string exportPath,
+            IReadOnlyList<string> languages,
+            ExportOperations operations)
+        {
+            if (string.IsNullOrEmpty(sourceDirPath) ||
+                string.IsNullOrEmpty(exportPath) ||
+                languages == null ||
+                languages.Count == 0 ||
+                operations == null)
+            {
+                Log.Warning(LogTag.Localization, "语言列表导出参数无效，导出已跳过。");
+                return false;
+            }
+
+            string tempDir = IOPath.Combine(sourceDirPath, c_TempDirName);
+            try
+            {
+                using (EditorUtil.FileSystem.AcquireWorkspace(tempDir))
+                {
+                    CleanupTempDir(tempDir, true);
+                    try
+                    {
+                        using var outputApplier = new EditorUtil.FileSystem.OutputApplier(tempDir);
+                        var ordered = new List<string>(languages);
+                        ordered.Sort(StringComparer.Ordinal);
+                        StageSupportedLanguages(ordered, exportPath, outputApplier);
+                        outputApplier.Apply();
+                        return true;
+                    }
+                    finally
+                    {
+                        CleanupTempDir(tempDir, true);
+                        operations.RefreshAssetDatabase();
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Log.Error(LogTag.Localization, "本地化支持语言列表导出失败：{0}", exception);
+                return false;
+            }
+        }
+
+        private static StagedSettings CreateStagedDataSettings(
+            IDataTableSettings original,
+            LocalizationExcelPreFilter.SourceModel model,
+            string language,
+            string stagingRoot)
+        {
+            var units = new List<StagedUnitSetting>(model.Units.Count);
+            foreach (LocalizationExcelPreFilter.SourceUnit sourceUnit in model.Units)
+            {
+                string stagedPath = IOPath.Combine(
+                    stagingRoot,
+                    "data",
+                    language,
+                    sourceUnit.RelativeStem + ".json");
+                string finalPath = sourceUnit.Setting.DatasExportPath.Replace("{0}", language);
+                string lubanInputPath = IOPath.Combine(
+                        c_TempDirName,
+                        language,
+                        sourceUnit.RelativeStem)
+                    .Replace('\\', '/');
+                units.Add(new StagedUnitSetting(
+                    sourceUnit.Setting,
+                    sourceUnit.SourcePath,
+                    lubanInputPath,
+                    stagedPath,
+                    sourceUnit.Setting.ClassesExportPath,
+                    finalPath));
+            }
+
+            return new StagedSettings(original.SourceDirPath, units);
+        }
+
+        private static StagedSettings CreateStagedCodeSettings(
+            IDataTableSettings original,
+            LocalizationExcelPreFilter.SourceModel model,
+            string stagedCodeRoot)
+        {
+            var units = new List<StagedUnitSetting>(model.Units.Count);
+            foreach (LocalizationExcelPreFilter.SourceUnit sourceUnit in model.Units)
+            {
+                string lubanInputPath = IOPath.Combine(
+                        c_TempDirName,
+                        c_CodegenTempSubDir,
+                        sourceUnit.RelativeStem)
+                    .Replace('\\', '/');
+                units.Add(new StagedUnitSetting(
+                    sourceUnit.Setting,
+                    sourceUnit.SourcePath,
+                    lubanInputPath,
+                    string.Empty,
+                    stagedCodeRoot,
+                    null));
+            }
+
+            return new StagedSettings(original.SourceDirPath, units);
+        }
+
+        private static EditorUtil.Luban.LubanExportContext CreateDataContext(
+            string sourceDirPath,
+            IDataTableSettings settings,
+            string confPath,
+            string tablesXmlPath,
+            string topModule)
+        {
+            return new EditorUtil.Luban.LubanExportContext
             {
                 SourceDirPath = sourceDirPath,
                 ConfPath = confPath,
-                TargetName = c_TargetName,
-                ManagerName = c_ManagerName,
+                TargetName = EditorUtil.Luban.LubanExportProfiles.LocalizationText.TargetName,
+                ManagerName = EditorUtil.Luban.LubanExportProfiles.LocalizationText.ManagerName,
                 TopModule = topModule,
-                OutputCodeDir = classExportPath,
+                TablesXmlPath = tablesXmlPath,
+                Settings = settings,
+            };
+        }
+
+        private static EditorUtil.Luban.LubanExportContext CreateCodeContext(
+            string sourceDirPath,
+            IDataTableSettings settings,
+            string confPath,
+            string tablesXmlPath,
+            string topModule,
+            string stagedCodeRoot,
+            string[] customTemplateDirs)
+        {
+            return new EditorUtil.Luban.LubanExportContext
+            {
+                SourceDirPath = sourceDirPath,
+                ConfPath = confPath,
+                TargetName = EditorUtil.Luban.LubanExportProfiles.LocalizationText.TargetName,
+                ManagerName = EditorUtil.Luban.LubanExportProfiles.LocalizationText.ManagerName,
+                TopModule = topModule,
+                OutputCodeDir = stagedCodeRoot,
                 CustomTemplateDirs = customTemplateDirs,
                 TablesXmlPath = tablesXmlPath,
-                Settings = codegenSettings,
+                Settings = settings,
             };
-
-            return EditorUtil.Luban.Pipeline.ExportCode(ctx);
         }
 
-        /// <summary>
-        /// Phase B — 按语言数据导出：对每种语言执行 PreFilter → Pipeline.ExportData。
-        /// DatasExportPath 中的 {0} 占位符替换为当前语言名称，确保每种语言输出到不同文件。
-        /// </summary>
-        /// <param name="sourceDirPath">文本数据源目录路径。</param>
-        /// <param name="settings">文本数据表设置适配器。</param>
-        /// <param name="tempDir">临时根目录。</param>
-        /// <param name="confPath">luban.conf 路径。</param>
-        /// <param name="tablesXmlPath">__tables__.xml 路径。</param>
-        /// <param name="topModule">顶层命名空间。</param>
-        /// <param name="allLanguages">所有语言名称集合。</param>
-        /// <param name="firstLanguage">输出第一种语言名称（供 Phase C MapPropGen 使用）。</param>
-        /// <returns>是否全部成功。</returns>
-        private static bool ExportPhaseB(string sourceDirPath, IDataTableSettings settings, string tempDir, string confPath, string tablesXmlPath, string topModule, HashSet<string> allLanguages, out string firstLanguage)
+        private static void ValidateAndRegisterStagedData(
+            StagedSettings stagedSettings,
+            EditorUtil.FileSystem.OutputApplier outputApplier)
         {
-            firstLanguage = null;
-            bool allSuccess = true;
-
-            foreach (string languageName in allLanguages)
+            foreach (StagedUnitSetting unit in stagedSettings.StagedUnits)
             {
-                if (firstLanguage == null)
+                if (!File.Exists(unit.DatasExportPath))
                 {
-                    firstLanguage = languageName;
+                    throw new InvalidDataException(
+                        $"Localization staged data file was not produced: {unit.DatasExportPath}");
                 }
 
-                string langTempDir = Util.SysIO.Path.Combine(tempDir, languageName);
-                LocalizationExcelPreFilter.FilterForLanguage(sourceDirPath, langTempDir, languageName);
-
-                LanguageResolvedSettings langSettings = new LanguageResolvedSettings(settings, languageName, languageName);
-
-                var ctx = new EditorUtil.Luban.LubanExportContext
+                try
                 {
-                    SourceDirPath = sourceDirPath,
-                    ConfPath = confPath,
-                    TargetName = c_TargetName,
-                    ManagerName = c_ManagerName,
-                    TopModule = topModule,
-                    TablesXmlPath = tablesXmlPath,
-                    Settings = langSettings,
+                    JObject.Parse(File.ReadAllText(unit.DatasExportPath, s_Utf8NoBom));
+                }
+                catch (Exception exception) when (
+                    exception is Newtonsoft.Json.JsonException || exception is IOException)
+                {
+                    throw new InvalidDataException(
+                        $"Localization staged data file is invalid: {unit.DatasExportPath}",
+                        exception);
+                }
+
+                outputApplier.AddReplacement(unit.DatasExportPath, unit.FinalDatasExportPath);
+            }
+        }
+
+        private static void RegisterObsoleteLanguageDeletes(
+            LocalizationExcelPreFilter.SourceModel model,
+            EditorUtil.FileSystem.OutputApplier outputApplier)
+        {
+            var currentLanguages = new HashSet<string>(model.Languages, StringComparer.Ordinal);
+            var candidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string language in Enum.GetNames(typeof(Language)))
+            {
+                if (currentLanguages.Contains(language))
+                {
+                    continue;
+                }
+
+                foreach (LocalizationExcelPreFilter.SourceUnit unit in model.Units)
+                {
+                    string candidate = IOPath.GetFullPath(
+                        unit.Setting.DatasExportPath.Replace("{0}", language));
+                    if (candidates.Add(candidate) && File.Exists(candidate))
+                    {
+                        outputApplier.AddDeletion(candidate);
+                    }
+                }
+            }
+        }
+
+        private static EditorUtil.Luban.LubanSchemaManifest CreateMapManifest(
+            EditorUtil.Luban.LubanSchemaManifest dataManifest,
+            string stagedCodeRoot)
+        {
+            if (dataManifest == null)
+            {
+                throw new InvalidDataException("Localization map generation requires a data manifest.");
+            }
+
+            var result = new EditorUtil.Luban.LubanSchemaManifest
+            {
+                SchemaVersion = dataManifest.SchemaVersion,
+                ProfileId = dataManifest.ProfileId,
+            };
+            foreach (EditorUtil.Luban.LubanSchemaUnit sourceUnit in dataManifest.Units)
+            {
+                var targetUnit = new EditorUtil.Luban.LubanSchemaUnit
+                {
+                    SourcePath = sourceUnit.SourcePath,
+                    LubanInputPath = sourceUnit.LubanInputPath,
+                    DatasExportPath = sourceUnit.DatasExportPath,
+                    ClassesExportPath = stagedCodeRoot,
+                    Mode = sourceUnit.Mode,
+                    IndexField = sourceUnit.IndexField,
                 };
-
-                bool success = EditorUtil.Luban.Pipeline.ExportData(ctx);
-                if (!success)
+                foreach (EditorUtil.Luban.LubanSchemaTable sourceTable in sourceUnit.Tables)
                 {
-                    Log.Error(LogTag.Localization, "语言 '{0}' 数据导出失败。", languageName);
-                    allSuccess = false;
+                    targetUnit.Tables.Add(new EditorUtil.Luban.LubanSchemaTable
+                    {
+                        Name = sourceTable.Name,
+                        ValueType = sourceTable.ValueType,
+                    });
+                }
+
+                result.Units.Add(targetUnit);
+            }
+
+            EditorUtil.Luban.LubanSchemaManifestValidator.ValidateAndNormalize(result);
+            return result;
+        }
+
+        private static EditorUtil.Luban.LubanSchemaManifest CreateStandaloneCodeMapManifest(
+            EditorUtil.Luban.LubanSchemaManifest codeManifest,
+            LocalizationExcelPreFilter.SourceModel model,
+            string stagedCodeRoot)
+        {
+            var result = new EditorUtil.Luban.LubanSchemaManifest
+            {
+                SchemaVersion = codeManifest.SchemaVersion,
+                ProfileId = codeManifest.ProfileId,
+            };
+            string language = model.Languages[0];
+            foreach (EditorUtil.Luban.LubanSchemaUnit schemaUnit in codeManifest.Units)
+            {
+                LocalizationExcelPreFilter.SourceUnit sourceUnit = null;
+                foreach (LocalizationExcelPreFilter.SourceUnit candidate in model.Units)
+                {
+                    if (string.Equals(
+                            candidate.SourcePath,
+                            schemaUnit.SourcePath,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        sourceUnit = candidate;
+                        break;
+                    }
+                }
+
+                if (sourceUnit == null)
+                {
+                    throw new InvalidDataException(
+                        $"Localization source model does not contain '{schemaUnit.SourcePath}'.");
+                }
+
+                string dataPath = IOPath.GetFullPath(
+                    sourceUnit.Setting.DatasExportPath.Replace("{0}", language));
+                if (!File.Exists(dataPath))
+                {
+                    continue;
+                }
+
+                var targetUnit = new EditorUtil.Luban.LubanSchemaUnit
+                {
+                    SourcePath = schemaUnit.SourcePath,
+                    LubanInputPath = schemaUnit.LubanInputPath,
+                    DatasExportPath = dataPath,
+                    ClassesExportPath = stagedCodeRoot,
+                    Mode = schemaUnit.Mode,
+                    IndexField = schemaUnit.IndexField,
+                };
+                foreach (EditorUtil.Luban.LubanSchemaTable table in schemaUnit.Tables)
+                {
+                    targetUnit.Tables.Add(new EditorUtil.Luban.LubanSchemaTable
+                    {
+                        Name = table.Name,
+                        ValueType = table.ValueType,
+                    });
+                }
+
+                result.Units.Add(targetUnit);
+            }
+
+            if (result.Units.Count > 0)
+            {
+                EditorUtil.Luban.LubanSchemaManifestValidator.ValidateAndNormalize(result);
+            }
+
+            return result;
+        }
+
+        private static void ValidateGeneratedCodeFiles(
+            EditorUtil.Luban.LubanSchemaManifest manifest,
+            string stagedCodeRoot)
+        {
+            foreach (EditorUtil.Luban.LubanSchemaUnit unit in manifest.Units)
+            {
+                foreach (EditorUtil.Luban.LubanSchemaTable table in unit.Tables)
+                {
+                    string codePath = IOPath.Combine(stagedCodeRoot, table.Name + ".cs");
+                    if (!File.Exists(codePath))
+                    {
+                        throw new InvalidDataException(
+                            $"Localization generated code file does not exist: {codePath}");
+                    }
+                }
+            }
+        }
+
+        private static void ValidateMapOutputs(EditorUtil.Luban.LubanSchemaManifest manifest)
+        {
+            const string regionBegin = "// --- AUTO-GENERATED MAP PROPERTIES BEGIN ---";
+            const string regionEnd = "// --- AUTO-GENERATED MAP PROPERTIES END ---";
+
+            foreach (EditorUtil.Luban.LubanSchemaUnit unit in manifest.Units)
+            {
+                JObject root = null;
+                if (unit.Mode == "map")
+                {
+                    if (!File.Exists(unit.DatasExportPath))
+                    {
+                        throw new InvalidDataException(
+                            $"Localization map data file does not exist: {unit.DatasExportPath}");
+                    }
+
+                    root = JObject.Parse(File.ReadAllText(unit.DatasExportPath, s_Utf8NoBom));
+                }
+
+                foreach (EditorUtil.Luban.LubanSchemaTable table in unit.Tables)
+                {
+                    string codePath = IOPath.Combine(unit.ClassesExportPath, table.Name + ".cs");
+                    if (!File.Exists(codePath))
+                    {
+                        throw new InvalidDataException(
+                            $"Localization generated code file does not exist: {codePath}");
+                    }
+
+                    if (unit.Mode != "map")
+                    {
+                        continue;
+                    }
+
+                    string indexField = string.IsNullOrEmpty(unit.IndexField) ? "ID" : unit.IndexField;
+                    var expectedKeys = new HashSet<string>(StringComparer.Ordinal);
+                    if (root[table.ValueType] is JArray rows)
+                    {
+                        foreach (JToken token in rows)
+                        {
+                            string key = token[indexField]?.ToString();
+                            if (IsValidIdentifier(key))
+                            {
+                                expectedKeys.Add(key);
+                            }
+                        }
+                    }
+
+                    string content = File.ReadAllText(codePath, s_Utf8NoBom);
+                    if (expectedKeys.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    int beginIndex = content.IndexOf(regionBegin, StringComparison.Ordinal);
+                    int endIndex = content.IndexOf(regionEnd, StringComparison.Ordinal);
+                    if (beginIndex < 0 || endIndex <= beginIndex)
+                    {
+                        throw new InvalidDataException(
+                            $"Localization generated map region is missing: {codePath}");
+                    }
+
+                    string region = content.Substring(beginIndex, endIndex - beginIndex);
+                    foreach (string key in expectedKeys)
+                    {
+                        string declaration =
+                            $"public {table.ValueType} {key} => GetOrDefault(\"{key}\");";
+                        if (region.IndexOf(declaration, StringComparison.Ordinal) < 0)
+                        {
+                            throw new InvalidDataException(
+                                $"Localization generated map property '{key}' is missing: {codePath}");
+                        }
+                    }
+
+                    if (CountOccurrences(region, "=> GetOrDefault(") != expectedKeys.Count)
+                    {
+                        throw new InvalidDataException(
+                            $"Localization generated map property count is invalid: {codePath}");
+                    }
+                }
+            }
+        }
+
+        private static void RegisterStagedCode(
+            EditorUtil.Luban.LubanExportContext context,
+            string stagedCodeRoot,
+            string classExportPath,
+            EditorUtil.FileSystem.OutputApplier outputApplier)
+        {
+            EditorUtil.Luban.GeneratedOutput.RegisterCodeOutputs(
+                outputApplier,
+                context,
+                stagedCodeRoot,
+                classExportPath,
+                true);
+        }
+
+        private static void StageSupportedLanguages(
+            IReadOnlyList<string> languages,
+            string exportPath,
+            EditorUtil.FileSystem.OutputApplier outputApplier)
+        {
+            string stagedPath = IOPath.Combine(
+                outputApplier.StagingRoot,
+                "metadata",
+                "supported-languages.json");
+            Directory.CreateDirectory(IOPath.GetDirectoryName(stagedPath));
+            File.WriteAllText(stagedPath, Util.Json.Serialize(languages), s_Utf8NoBom);
+            outputApplier.AddReplacement(stagedPath, EditorUtil.FileSystem.GetProjectFullPath(exportPath));
+        }
+
+        private static bool IsValidIdentifier(string value)
+        {
+            if (string.IsNullOrEmpty(value) || (!char.IsLetter(value[0]) && value[0] != '_'))
+            {
+                return false;
+            }
+
+            for (int i = 1; i < value.Length; i++)
+            {
+                if (!char.IsLetterOrDigit(value[i]) && value[i] != '_')
+                {
+                    return false;
                 }
             }
 
-            return allSuccess;
+            return true;
         }
 
-        /// <summary>
-        /// Phase C — MapPropGen 生成 Map 属性 + 导出语言列表。
-        /// </summary>
-        /// <param name="settings">文本数据表设置适配器。</param>
-        /// <param name="topModule">顶层命名空间。</param>
-        /// <param name="allLanguages">所有语言名称集合。</param>
-        /// <param name="firstLanguage">Phase B 中第一种语言名称。</param>
-        /// <param name="supportedLanguagesExportPath">语言列表 JSON 导出路径（可为 null）。</param>
-        private static void ExportPhaseC(IDataTableSettings settings, string topModule, HashSet<string> allLanguages, string firstLanguage, string supportedLanguagesExportPath)
+        private static int CountOccurrences(string value, string search)
         {
-            LanguageResolvedSettings resolvedSettings = new LanguageResolvedSettings(settings, firstLanguage, null);
-            EditorUtil.Luban.MapPropGen.GenerateAll(resolvedSettings.Units, topModule);
-
-            if (!string.IsNullOrEmpty(supportedLanguagesExportPath))
+            int count = 0;
+            int offset = 0;
+            while ((offset = value.IndexOf(search, offset, StringComparison.Ordinal)) >= 0)
             {
-                ExportSupportedLanguagesJson(allLanguages, supportedLanguagesExportPath);
+                count++;
+                offset += search.Length;
             }
+
+            return count;
         }
 
-        /// <summary>
-        /// 将语言名称集合序列化为 JSON 数组并输出到文件。
-        /// </summary>
-        /// <param name="allLanguages">语言名称集合。</param>
-        /// <param name="exportPath">输出文件路径（工程相对路径）。</param>
-        private static void ExportSupportedLanguagesJson(HashSet<string> allLanguages, string exportPath)
+        internal static IReadOnlyList<string> OrderLanguages(IEnumerable<string> languages)
         {
-            if (allLanguages == null || allLanguages.Count == 0 || string.IsNullOrEmpty(exportPath))
-            {
-                return;
-            }
+            var orderedLanguages = new List<string>(languages);
+            orderedLanguages.Sort(StringComparer.Ordinal);
+            return orderedLanguages;
+        }
 
-            List<string> sortedLanguages = new List<string>(allLanguages);
-            sortedLanguages.Sort(StringComparer.Ordinal);
+        private static bool HasValidSettings(string sourceDirPath, IDataTableSettings settings)
+        {
+            return !string.IsNullOrEmpty(sourceDirPath) &&
+                   settings != null &&
+                   settings.Units != null &&
+                   settings.Units.Count > 0;
+        }
 
-            string fullOutputPath = EditorUtil.FileSystem.GetProjectFullPath(exportPath);
-            string outputDir = Util.SysIO.Path.GetDirectoryName(fullOutputPath);
-            if (!string.IsNullOrEmpty(outputDir) && !Util.SysIO.Directory.Exists(outputDir))
-            {
-                Util.SysIO.Directory.CreateIfNotExist(outputDir);
-            }
-
-            string json = JsonConvert.SerializeObject(sortedLanguages, Formatting.Indented);
-            Util.SysIO.File.WriteAllTextSync(fullOutputPath, json, s_Utf8NoBom);
-            Log.Debug(LogTag.Localization, "语言列表导出完成：{0} 种语言 -> {1}", sortedLanguages.Count, exportPath);
+        private static void ResolveConfigPaths(string sourceDirPath, out string confPath,
+            out string tablesXmlPath)
+        {
+            string configDir = EditorUtil.Luban.ConfigSyncer.GetConfigDirPath(sourceDirPath);
+            confPath = Util.SysIO.Path.Combine(configDir, EditorUtil.Luban.ConfigSyncer.c_LubanConfFileName);
+            tablesXmlPath = Util.SysIO.Path.Combine(configDir, EditorUtil.Luban.ConfigSyncer.c_TablesXmlFileName);
         }
 
         /// <summary>
@@ -253,115 +894,72 @@ namespace NovaFramework.Editor
         /// <param name="tempDir">临时目录路径。</param>
         private static void CleanupTempDir(string tempDir)
         {
+            CleanupTempDir(tempDir, false);
+        }
+
+        private static void CleanupTempDir(string tempDir, bool throwOnFailure)
+        {
             if (!string.IsNullOrEmpty(tempDir) && Util.SysIO.Directory.Exists(tempDir))
             {
                 try
                 {
-                    Util.SysIO.Directory.Delete(tempDir, true);
+                    EditorUtil.FileSystem.DeleteUnityTempRoot(tempDir);
                 }
                 catch (Exception e)
                 {
+                    if (throwOnFailure)
+                    {
+                        throw new IOException($"Failed to clean Localization temp directory: {tempDir}", e);
+                    }
+
                     Log.Warning(LogTag.Localization, "清理临时目录失败：{0}，异常：{1}", tempDir, e.Message);
                 }
             }
         }
 
-        /// <summary>
-        /// 按语言解析后的数据表设置，将原始 Settings 中 DatasExportPath 的 {0} 替换为语言名称，
-        /// 并将 LubanInputPath 覆盖为 _temp/{lubanInputSubDir}/{fileName}。
-        /// </summary>
-        private class LanguageResolvedSettings : IDataTableSettings
+        private sealed class StagedSettings : IDataTableSettings
         {
-#if UNITY_EDITOR
-            /// <inheritdoc />
-            public string SourceDirPath { get; }
-#endif
-
-            /// <inheritdoc />
-            public IReadOnlyList<IDataTableUnitSetting> Units { get; }
-
-            /// <summary>
-            /// 构造按语言解析后的数据表设置。
-            /// </summary>
-            /// <param name="original">原始设置。</param>
-            /// <param name="languageName">当前语言名称（可为 null，不替换 DatasExportPath 占位符）。</param>
-            /// <param name="lubanInputSubDir">Luban 临时输入子目录名称（如 _codegen 或语言名），覆盖 LubanInputPath。</param>
-            public LanguageResolvedSettings(IDataTableSettings original, string languageName, string lubanInputSubDir)
+            internal StagedSettings(string sourceDirPath, IReadOnlyList<StagedUnitSetting> units)
             {
-#if UNITY_EDITOR
-                SourceDirPath = original.SourceDirPath;
-#endif
-                var resolvedUnits = new List<IDataTableUnitSetting>();
-                for (int i = 0; i < original.Units.Count; i++)
-                {
-                    resolvedUnits.Add(new LanguageResolvedUnitSetting(original.Units[i], languageName, lubanInputSubDir));
-                }
-                Units = resolvedUnits;
+                SourceDirPath = sourceDirPath;
+                StagedUnits = units;
+                Units = units;
             }
+
+            public string SourceDirPath { get; }
+            public IReadOnlyList<IDataTableUnitSetting> Units { get; }
+            internal IReadOnlyList<StagedUnitSetting> StagedUnits { get; }
         }
 
-        /// <summary>
-        /// 按语言解析后的单元设置，DatasExportPath 中的 {0} 已替换为语言名称，
-        /// LubanInputPath 已覆盖为 _temp/{lubanInputSubDir}/{fileName}。
-        /// </summary>
-        private class LanguageResolvedUnitSetting : IDataTableUnitSetting
+        private sealed class StagedUnitSetting : IDataTableUnitSetting
         {
-            /// <summary>
-            /// 原始单元设置。
-            /// </summary>
             private readonly IDataTableUnitSetting m_Original;
 
-            /// <summary>
-            /// 当前语言名称。
-            /// </summary>
-            private readonly string m_LanguageName;
-
-            /// <summary>
-            /// Luban 临时输入子目录名称，用于覆盖 LubanInputPath。
-            /// </summary>
-            private readonly string m_LubanInputSubDir;
-
-#if UNITY_EDITOR
-            /// <inheritdoc />
-            string IDataTableUnitSetting.SourcePath => m_Original.SourcePath;
-
-            /// <inheritdoc />
-            string IDataTableUnitSetting.DatasExportPath => m_Original.DatasExportPath?.Replace("{0}", m_LanguageName);
-
-            /// <inheritdoc />
-            string IDataTableUnitSetting.ClassesExportPath => m_Original.ClassesExportPath;
-
-            /// <inheritdoc />
-            string IDataTableUnitSetting.LubanInputPath =>
-                string.IsNullOrEmpty(m_LubanInputSubDir)
-                    ? m_Original.LubanInputPath
-                    : c_TempDirName + "/" + m_LubanInputSubDir + "/" + Util.SysIO.Path.GetFileNameWithoutExtension(m_Original.SourcePath);
-#endif
-
-            /// <inheritdoc />
-            string IDataTableUnitSetting.AssetLocation => m_Original.AssetLocation;
-
-            /// <inheritdoc />
-            DataTableMode IDataTableUnitSetting.Mode => m_Original.Mode;
-
-            /// <inheritdoc />
-            string IDataTableUnitSetting.IndexField => m_Original.IndexField;
-
-            /// <inheritdoc />
-            IReadOnlyList<string> IDataTableUnitSetting.DataTypeNames => m_Original.DataTypeNames;
-
-            /// <summary>
-            /// 构造按语言解析后的单元设置。
-            /// </summary>
-            /// <param name="original">原始单元设置。</param>
-            /// <param name="languageName">当前语言名称（可为 null）。</param>
-            /// <param name="lubanInputSubDir">Luban 临时输入子目录名称，覆盖 LubanInputPath。</param>
-            public LanguageResolvedUnitSetting(IDataTableUnitSetting original, string languageName, string lubanInputSubDir)
+            internal StagedUnitSetting(
+                IDataTableUnitSetting original,
+                string sourcePath,
+                string lubanInputPath,
+                string datasExportPath,
+                string classesExportPath,
+                string finalDatasExportPath)
             {
                 m_Original = original;
-                m_LanguageName = languageName;
-                m_LubanInputSubDir = lubanInputSubDir;
+                SourcePath = sourcePath;
+                LubanInputPath = lubanInputPath;
+                DatasExportPath = datasExportPath;
+                ClassesExportPath = classesExportPath;
+                FinalDatasExportPath = finalDatasExportPath;
             }
+
+            public string SourcePath { get; }
+            public string DatasExportPath { get; }
+            public string ClassesExportPath { get; }
+            public string LubanInputPath { get; }
+            public string AssetLocation => m_Original.AssetLocation;
+            public DataTableMode Mode => m_Original.Mode;
+            public string IndexField => m_Original.IndexField;
+            internal string FinalDatasExportPath { get; }
         }
+
     }
 }

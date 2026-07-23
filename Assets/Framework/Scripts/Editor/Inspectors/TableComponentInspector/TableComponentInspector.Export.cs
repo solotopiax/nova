@@ -16,16 +16,6 @@ namespace NovaFramework.Editor
     internal sealed partial class TableComponentInspector : BaseComponentInspector
     {
         /// <summary>
-        /// Luban target 名称。
-        /// </summary>
-        private const string c_ExportTargetName = "table";
-
-        /// <summary>
-        /// Luban manager 类名。
-        /// </summary>
-        private const string c_ExportManagerName = "TableTables";
-
-        /// <summary>
         /// 对单个数据源文件执行数据导出。
         /// </summary>
         private void OnExportDataForFile(string filePath, string dataExportPath, SerializedProperty detailProp)
@@ -50,7 +40,7 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, settings, c_ExportTargetName, c_ExportManagerName);
+            var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, settings, EditorUtil.Luban.LubanExportProfiles.Table);
             ctx.TargetUnit = unitSetting;
             EditorUtil.Luban.Pipeline.ExportData(ctx);
         }
@@ -75,9 +65,8 @@ namespace NovaFramework.Editor
             string relativePath = Util.SysIO.Path.GetRelativePath(sourceDirPath.TrimEnd('/', '\\'), filePath);
             TableUnitSetting unitSetting = settings.TableUnitsSettings?.Find(u => u.SourcePath == relativePath);
 
-            var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, settings, c_ExportTargetName, c_ExportManagerName);
+            var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, settings, EditorUtil.Luban.LubanExportProfiles.Table);
             ctx.OutputCodeDir = classExportPath;
-            ctx.RelevantFileNames = EditorUtil.Luban.ExportHelper.BuildRelevantFileNames(filePath, sourceDirPath, ((IDataTableSettings)settings).Units, ctx.ManagerName);
             ctx.TargetUnit = unitSetting;
             EditorUtil.Luban.Pipeline.ExportCode(ctx);
         }
@@ -104,14 +93,6 @@ namespace NovaFramework.Editor
             }
 
             EditorUtil.Table.Exporter.ExportAll(settings, sourceDirPath);
-        }
-
-        /// <summary>
-        /// 刷新单个文件的 DataTypeNames（供 DoRefreshAllDataTypeNames 循环内调用，不额外 ApplyModifiedProperties）。
-        /// </summary>
-        private void DoRefreshSingleDataTypeNames(string fullPath, SerializedProperty dataTypeNamesProp)
-        {
-            EditorUtil.Luban.DataTypeNameHelper.DoRefreshSingleDataTypeNames(fullPath, dataTypeNamesProp, minHeaderRowCount: 4);
         }
 
         /// <summary>

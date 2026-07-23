@@ -50,4 +50,3 @@ IAPResult result = await thirdPayStore.PayAsync(request, ct);
 ## 5. 关联
 
 - 配置类型：[ThirdPayStoreConfig.md](./ThirdPayStoreConfig.md)
-- 当前实现设计：[ThirdPayStore-Design.md](./ThirdPayStore-Design.md)

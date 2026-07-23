@@ -94,6 +94,11 @@ namespace NovaFramework.Runtime
         public string HostServerUrlFallback;
 
         /// <summary>
+        /// Config 导出时同步的渠道快照，用于启动期 URL 占位符解析。
+        /// </summary>
+        public ChannelType Channel;
+
+        /// <summary>
         /// AssetBundle 解密器类型（Inspector 下沉字段）。
         /// </summary>
         public AssetDecryptorType DecryptorType;

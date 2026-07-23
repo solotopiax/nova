@@ -3,7 +3,7 @@
 **类签名**：`public sealed class AssetRemoteService : IRemoteService`
 **命名空间**：`NovaFramework.Runtime`
 
-YooAsset 远端寻址服务。直接使用主/备 URL 配置，并替换 `{Platform}` / `{Package}` / `{Version}` 占位符返回候选 URL 列表。
+YooAsset 远端寻址服务。直接使用主/备 URL 配置，并替换 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` 占位符返回候选 URL 列表。
 
 ---
 
@@ -22,6 +22,7 @@ YooAsset 远端寻址服务。直接使用主/备 URL 配置，并替换 `{Platf
 | `m_HostServerUrl` | `string` | 主下载地址配置值 |
 | `m_HostServerUrlFallback` | `string` | 备用下载地址配置值 |
 | `m_Platform` | `PlatformType` | 运行平台枚举，构造器内通过 `ResolvePlatform()` 缓存 |
+| `m_Channel` | `ChannelType` | Config 导出时同步到场景的启动期渠道快照 |
 | `m_Package` | `string` | 包名，构造器缓存 |
 | `m_Version` | `string` | 应用版本号，构造器内读取 `Application.version` |
 | `m_Cache` | `string[]` | 已替换占位符的 URL 前缀缓存（1~2 项） |
@@ -32,6 +33,8 @@ YooAsset 远端寻址服务。直接使用主/备 URL 配置，并替换 `{Platf
 
 ```csharp
 public AssetRemoteService(string hostServerUrl, string hostServerUrlFallback, string package)
+public AssetRemoteService(string hostServerUrl, string hostServerUrlFallback, string package, ChannelType channel)
+public IReadOnlyList<string> BaseUrls { get; }
 public IReadOnlyList<string> GetRemoteUrls(string fileName)
 ```
 
@@ -46,7 +49,9 @@ public IReadOnlyList<string> GetRemoteUrls(string fileName)
 
 `GetRemoteUrls(fileName)`：遍历 `m_Cache`，每项拼接 `/{fileName}`，返回候选 URL 列表。
 
-`ApplyTemplate(template)`：`.Replace("{Platform}", ...).Replace("{Package}", ...).Replace("{Version}", ...)`
+`ApplyTemplate(template)`：依次替换 `{Platform}`、`{Channel}`、`{Package}`、`{Version}`。
+
+`BaseUrls`：返回已完成占位符替换的主/备基地址。`AssetManager` 在 Host/Web 包初始化前用它执行 DoH detect-only 预检；YooAsset 实际请求仍使用原域名，以保持 Host/SNI 语义。
 
 ---
 

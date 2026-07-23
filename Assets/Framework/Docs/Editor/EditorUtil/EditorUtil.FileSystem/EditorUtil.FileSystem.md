@@ -11,7 +11,8 @@ Editor 层文件系统工具，封装 `AssetDatabase`、`System.IO`、操作系�
 
 | 文件 | 说明 |
 |------|------|
-| `EditorUtil.FileSystem.cs` | 所有方法实现 |
+| `EditorUtil.FileSystem.cs` | 路径、文件打开、扫描和刷新等公共方法 |
+| `EditorUtil.FileSystem.OutputApplier.cs` | Editor 内部批量文件应用、备份与失败回滚基础设施 |
 
 ---
 
@@ -59,6 +60,12 @@ void EditorUtil.FileSystem.RefreshDelayed()
 // 查找路径：{ProjectRoot}/Tools/SQLiteStudio/SQLiteStudio.exe
 // 若未找到，弹出引导弹窗提示用户下载并放置到 Tools/SQLiteStudio/ 目录
 void EditorUtil.FileSystem.OpenSQLiteStudio(string databasePath)
+
+// Editor 内部：递归删除临时目录及其 Unity .meta
+void EditorUtil.FileSystem.DeleteUnityTempRoot(string tempRoot)
+
+// Editor 内部：取得标准化目录租约；同一路径在释放前禁止再次进入
+IDisposable EditorUtil.FileSystem.AcquireWorkspace(string rootPath)
 ```
 
 ---
@@ -73,8 +80,15 @@ void EditorUtil.FileSystem.OpenSQLiteStudio(string databasePath)
 | `DeletePath` 删目录 | 仅删除目录内的**文件**，不递归删除子目录本身，目录结构保留 |
 | `OpenSQLiteStudio` 平台限制 | 仅 `UNITY_EDITOR_WIN` 下有效，其他平台输出 Warning 并静默跳过 |
 
+## 内部输出事务
+
+`EditorUtil.FileSystem.OutputApplier` 供模块专用导出器复用文件替换、精确删除、备份和失败回滚能力。它不解释 Excel、Luban 或模块产物范围，不属于公开 API。
+
+`AcquireWorkspace` 与 `DeleteUnityTempRoot` 同样只处理目录生命周期，不保存模块业务状态。模块负责选择工作区路径，并在 `finally` 中清理。
+
 ---
 
 ## 关联文档
 
 - [EditorUtil.md](../EditorUtil.md)
+- [EditorUtil.FileSystem.OutputApplier.md](EditorUtil.FileSystem.OutputApplier.md)

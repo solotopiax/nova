@@ -13,9 +13,9 @@
 |------|----|------|
 | `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `NetworkSettings` | 顶层容器（持有 HostKeySettings + NetCmdSettings） |
 | `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `HostKeySettings` | 域名表设置，实现 `IDataTableSettings` |
-| `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `HostKeyUnitSetting` | 单个域名表单元设置，实现 `IDataTableUnitSetting` |
+| `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `HostKeyUnitSetting` | 单个域名表单元设置，继承 `DataTableUnitSettingBase` |
 | `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `NetCmdSettings` | 指令表设置，实现 `IDataTableSettings` |
-| `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `NetCmdUnitSetting` | 单个指令表单元设置，实现 `IDataTableUnitSetting` |
+| `Runtime/Modules/Network/Definitions/NetworkSettings.cs` | `NetCmdUnitSetting` | 单个指令表单元设置，继承 `DataTableUnitSettingBase` |
 
 ---
 
@@ -24,9 +24,9 @@
 ```
 NetworkSettings（[Serializable] class，无继承）
   ├── HostKeySettings : IDataTableSettings
-  │     └── List<HostKeyUnitSetting : IDataTableUnitSetting>   HostKeyUnits
+  │     └── List<HostKeyUnitSetting : DataTableUnitSettingBase> HostKeyUnits
   └── NetCmdSettings : IDataTableSettings
-        └── List<NetCmdUnitSetting : IDataTableUnitSetting>    NetCmdUnits
+        └── List<NetCmdUnitSetting : DataTableUnitSettingBase> NetCmdUnits
 ```
 
 ---
@@ -58,7 +58,7 @@ NetworkSettings（[Serializable] class，无继承）
 |---|---|---|---|
 | `HostKeyUnits` | `List<HostKeyUnitSetting>` | `new List<>()` | 域名表单元设置列表；`IDataTableSettings.Units` 返回此列表 |
 
-### HostKeyUnitSetting（`IDataTableUnitSetting` 实现）
+### HostKeyUnitSetting（继承 `DataTableUnitSettingBase`）
 
 **仅 Editor 可见（`#if UNITY_EDITOR`）**
 
@@ -73,7 +73,8 @@ NetworkSettings（[Serializable] class，无继承）
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `AssetLocation` | `string` | 域名表资源的 Asset 地址 |
-| `DataTypeNames` | `List<string>` | 数据类型短名称列表（不含命名空间） |
+
+以上字段均由 `DataTableUnitSettingBase` 统一声明。`AssetLocation` 是 Player 运行时字段；前一表格中的字段仅用于编辑器导出。
 
 **接口固定值**
 
@@ -108,8 +109,9 @@ string IDataTableUnitSetting.LubanInputPath      // #if UNITY_EDITOR，"_temp/" 
 string IDataTableUnitSetting.AssetLocation
 DataTableMode IDataTableUnitSetting.Mode         // 固定 Map
 string IDataTableUnitSetting.IndexField          // 固定 "Name"
-IReadOnlyList<string> IDataTableUnitSetting.DataTypeNames
 ```
+
+Excel Sheet 结构由 Network 导出器预过滤后交给 Pipeline 扫描，并保存在本次 Editor-only schema manifest 快照中；不进入该 Runtime 接口或单元序列化字段。
 
 ---
 

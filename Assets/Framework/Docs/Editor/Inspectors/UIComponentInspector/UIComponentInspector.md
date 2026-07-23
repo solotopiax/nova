@@ -165,7 +165,7 @@ DrawConfigs()
        └─ SourceDirPath 非空且目录存在时：
             ├─ !m_IsLubanConfigExists → HelpBox（提示首次导出自动创建）
             ├─ DrawSourceFilesListWithFolders(directoryPath, m_UIUnitsSettings)
-            └─ Button("导出所有数据和类型") → DoRefreshAllDataTypeNames + DoExportAllDataAndTypes
+            └─ Button("导出所有数据和类型") → DoExportAllDataAndTypes
 
 DrawSourceFilesListWithFolders()（委托给 EditorUtil.Draw.SourceFileTree）
   │
@@ -218,20 +218,22 @@ DrawUIGroups（配置模式）
 
 ### 单文件导出入口
 
-当前单文件导出不再经过旧的 `GetOrCreateDetailSettingsForFile` / `BuildRelevantFileNames` / `PopulateDataTypeNames` 这套本地拼装链，而是走：
+当前单文件导出由 Inspector 直接转给模块导出器：
 
 ```text
 DrawUISourceFileRow
   ├─ DrawDataExportRow  -> OnExportDataForFile
   ├─ DrawClassExportRow -> OnExportClassForFile
-  └─ DoRefreshDataTypeNames
+  └─ DrawAssetLocationRow
 
 OnExportDataForFile  -> EditorUtil.UI.Exporter.ExportDataForFile
 OnExportClassForFile -> EditorUtil.UI.Exporter.ExportCodeForFile
 DoExportAllDataAndTypes -> EditorUtil.UI.Exporter.ExportAll
 ```
 
-`DataTypeNames` 的刷新已经委托给 `EditorUtil.Luban.DataTypeNameHelper.DoRefreshDataTypeNames / DoRefreshAllDataTypeNames`，Inspector 只保留 UI 壳层和参数透传。
+Inspector 只保留 UI 壳层和参数透传，不再包含 Sheet 名刷新回调。模块导出器进入 Pipeline 后扫描 Excel，并让后续阶段共享本次 schema manifest。
+
+单文件入口会先执行 `serializedObject.ApplyModifiedProperties()`，再从目标组件读取 `UISettings`，确保本次 Inspector 编辑已经进入导出配置。Exporter 返回 `false` 时会记录明确错误；全量和单文件导出都不会在失败前清空正式产物。
 
 ---
 

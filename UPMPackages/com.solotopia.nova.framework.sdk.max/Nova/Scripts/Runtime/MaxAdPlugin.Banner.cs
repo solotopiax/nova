@@ -122,7 +122,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnBannerLoaded(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            RaiseAdLoaded(new AdLoadResult
+            PostAdCallbackToMainThread(() => RaiseAdLoaded(new AdLoadResult
             {
                 Success = true,
                 Format = AdFormat.Banner,
@@ -131,7 +131,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Revenue = info.Revenue,
                 Currency = "USD",
                 CustomProps = BuildMaxLoadProps(info),
-            });
+            }));
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnBannerRevenuePaid(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            RaiseRevenue(new AdEvent
+            RaiseRevenueImmediately(new AdEvent
             {
                 Format = AdFormat.Banner,
                 PlacementId = adUnitId,
@@ -176,8 +176,11 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Revenue = info.Revenue,
                 Currency = "USD",
                 Precision = info.RevenuePrecision,
+            }, () =>
+            {
+                TrackMaxAdImpression(AdFormat.Banner, adUnitId, info);
+                TrackBannerIlrdAggregated(adUnitId, info);
             });
-            TrackMaxRevenue(AdFormat.Banner, adUnitId, info);
         }
 
         /// <summary>

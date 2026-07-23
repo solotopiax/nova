@@ -75,7 +75,7 @@ public static void Open()
 | 删除按钮 | 通过 `EditorApplication.delayCall` 延迟移除，防止 Layout/Repaint 阶段直接修改集合导致崩溃；同时清空 `m_ExpandedItemIndices` / `m_ParamsCache` 并设 `m_ItemsListBoundBatchIndex = -1` 强制重建 ReorderableList，避免 key 移位错位 |
 | `onAddDropdownCallback` | 按 Category 分组弹 GenericMenu，选中后调用 `AddBatchItemFromStep(info)` |
 | `onReorderCallback` | 拖拽排序后清空 `m_ExpandedItemIndices` 和 `m_ParamsCache` 并 `MarkDirty()` |
-| 参数内联 Drawer | 反射遍历 `ParamsType.GetFields(Public | Instance)` 按类型分发：`string`→TextField；`bool`→Toggle；`int`→IntField；`float`→FloatField；`Enum`→EnumPopup；其他复杂类型→Log.Warning 跳过 |
+| 参数内联 Drawer | 反射遍历 `ParamsType.GetFields(Public | Instance)` 按类型分发：普通 `string`→TextField；标注 `TextAreaAttribute` 的 `string`→按 3–8 行等声明范围自适应高度的 TextArea；`bool`→Toggle；`int`→IntField；`float`→FloatField；`Enum`→EnumPopup；其他复杂类型→Log.Warning 跳过 |
 | 参数持久化 | `EditorGUI.BeginChangeCheck/EndChangeCheck` 包住字段组；有变化则 `Util.Json.Serialize(paramsInstance)` 写回 `item.ParamsJson` + `MarkDirty()` |
 | `DrawExecute()` | 顶部 `EditorUtil.Draw.Line()` 分割线 + 右对齐 `SuccessButton("▶ 运行")`；禁用条件：`batch.Items.Count == 0 \|\| m_IsDirty`；点击后 fire-and-forget 调用 `EditorUtil.Pipify.RunBatchAsync(batch, this)`，Runner 内部通过 WindowReporter 以模态进度条呈现执行进度，结束后通过宿主窗口 `ShowNotification` 弹右下角结果浮窗 |
 
@@ -141,7 +141,7 @@ DrawBody()
 
 | 类型 | 控件 |
 |------|------|
-| `string` | `EditorGUI.TextField` |
+| `string` | 默认 `EditorGUI.TextField`；标注 `TextAreaAttribute` 时使用 `EditorGUI.TextArea`，字段与 Item 高度按当前换行数在声明范围内伸缩 |
 | `bool` | `EditorGUI.Toggle` |
 | `int` | `EditorGUI.IntField` |
 | `float` | `EditorGUI.FloatField` |

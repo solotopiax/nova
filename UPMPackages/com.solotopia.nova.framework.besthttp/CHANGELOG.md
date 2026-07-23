@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.13] - 2026-07-21
+
+### Changed
+
+- BestHTTP 传输层接入 Framework `0.5.42` 的 DoH URL 候选规划与 IP 可用性判定契约。
+- 将 Nova Framework 最低依赖版本提升至 `0.5.42`。
+
 ## [0.0.12] - 2026-07-16
 
 ### Fixed

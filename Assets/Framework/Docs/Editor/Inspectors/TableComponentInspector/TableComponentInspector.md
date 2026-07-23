@@ -89,7 +89,7 @@ DrawTableExport()
   │     ├── 若 _configs/ 不存在 → HelpBox 提示"首次导出将自动创建"
   │     ├── DrawSourceFilesListWithFolders(...)
   │     └── [导出所有数据和类型] 按钮
-  │           → DoRefreshAllDataTypeNames() + DoExportAllDataAndTypes()
+  │           → DoExportAllDataAndTypes()
   └── 分割线
 ```
 
@@ -105,23 +105,21 @@ DrawTableExport()
 
 ```
 DoExportAllDataAndTypes(directoryPath, sourceUnitsSettingsProperty)
-  ├── EditorUtil.Luban.ConfigSyncer.SyncFromInspector(...)
-  │     ├── 若 _configs/ 不存在 → InitializeConfigDir（生成 luban.conf + __tables__.xml）
-  │     ├── UpdateLubanConfTopModule(...)
-  │     └── GenerateTablesXml(...)（从 TableUnitSetting 列表重新生成 __tables__.xml）
-  ├── 收集并清空旧 DatasExportPath / ClassesExportPath
-  ├── 若有 classExportPath → EditorUtil.Luban.CliRunner.RunAll(confPath, targetName, classExportPath, tempDir, customTemplateDir)
-  │   否则              → EditorUtil.Luban.CliRunner.RunDataExport(confPath, targetName, tempDir)
-  ├── EditorUtil.Luban.JsonMerger.MergeAll(tempDir, tablesXmlPath, unitSettings, topModule)
-  │     为每个 Excel 文件将 Luban per-table JSON 合并为 Nova per-Excel JSON
-  └── 删除临时目录 tempDir
+  ├── serializedObject.ApplyModifiedProperties()
+  ├── 读取当前 TableSettings
+  └── EditorUtil.Table.Exporter.ExportAll(settings, sourceDirPath)
+        └── Pipeline.ExportAll
+              ├── 导出前扫描 Excel 并生成 schema manifest
+              ├── 从同一快照生成 __tables__.xml
+              ├── Luban CLI 导出代码和数据
+              └── JsonMerger / MapPropGen 继续复用该快照
 ```
 
 ### DrawRuntimeInfos 运行时面板
 
 非 `isPlaying` 直接返回。`isPlaying` 时展示：
 - 折叠标题：`已加载数据表 ({t.Count}) [已全部加载 | 未全部加载]`
-- 展开后遍历 `TableUnitsSettings` 中每个 `DataTypeNames`，拼接 `"Tb" + sheetName` 构造表容器类名，通过反射解析类型后调用 `HasTable(type)`，显示 `TbXxx  Loaded` 或 `TbXxx  Not Loaded`
+- 展开后读取 `_configs/nova-export-manifest.json` 的 `tables[].name`，通过反射解析表容器类型后调用 `HasTable(type)`，显示 `TbXxx  Loaded` 或 `TbXxx  Not Loaded`。首次成功导出前 manifest 不存在时，该诊断列表为空
 
 ---
 

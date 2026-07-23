@@ -28,6 +28,16 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         public override int Priority => 20;
 
         /// <summary>
+        /// TGA 运行时写入 FileFragment 的持久化分类名。
+        /// </summary>
+        private const string c_TGAPersistClassifyName = "TGAPlugin";
+
+        /// <summary>
+        /// 记录首次安装版本号的 FileFragment 条目名。
+        /// </summary>
+        private const string c_FirstVersionPersistItemName = "nova_first_version";
+
+        /// <summary>
         /// 声明本插件所需的配置类型；SDKManager 据此从 IConfigManager 拉取 TGAPluginConfig 注入 OnInitializeAsync。
         /// </summary>
         protected override Type ConfigType => typeof(TGAPluginConfig);

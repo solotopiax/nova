@@ -17,16 +17,6 @@ namespace NovaFramework.Editor
     internal sealed partial class SoundComponentInspector : BaseComponentInspector
     {
         /// <summary>
-        /// Luban target 名称。
-        /// </summary>
-        private const string c_ExportTargetName = "sound";
-
-        /// <summary>
-        /// Luban manager 类名。
-        /// </summary>
-        private const string c_ExportManagerName = "SoundTables";
-
-        /// <summary>
         /// 对单个数据源文件执行数据导出。
         /// </summary>
         private void OnExportDataForFile(string filePath, string dataExportPath, SerializedProperty detailProp)
@@ -51,7 +41,7 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            EditorUtil.Sound.Exporter.ExportData(sourceDirPath, settings, unitSetting, c_ExportTargetName, c_ExportManagerName);
+            EditorUtil.Sound.Exporter.ExportData(sourceDirPath, settings, unitSetting);
         }
 
         /// <summary>
@@ -73,9 +63,7 @@ namespace NovaFramework.Editor
 
             string relativePath = Util.SysIO.Path.GetRelativePath(sourceDirPath.TrimEnd('/', '\\'), filePath);
             SoundUnitSetting unitSetting = settings.SoundUnitsSettings?.Find(u => u.SourcePath == relativePath);
-            HashSet<string> relevantFileNames = EditorUtil.Luban.ExportHelper.BuildRelevantFileNames(filePath, sourceDirPath, ((IDataTableSettings)settings).Units, c_ExportManagerName);
-
-            EditorUtil.Sound.Exporter.ExportCode(sourceDirPath, settings, unitSetting, classExportPath, relevantFileNames, c_ExportTargetName, c_ExportManagerName);
+            EditorUtil.Sound.Exporter.ExportCode(sourceDirPath, settings, unitSetting, classExportPath, null);
         }
 
         /// <summary>
@@ -99,7 +87,7 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            EditorUtil.Sound.Exporter.ExportAll(sourceDirPath, settings, c_ExportTargetName, c_ExportManagerName);
+            EditorUtil.Sound.Exporter.ExportAll(sourceDirPath, settings);
         }
 
         /// <summary>

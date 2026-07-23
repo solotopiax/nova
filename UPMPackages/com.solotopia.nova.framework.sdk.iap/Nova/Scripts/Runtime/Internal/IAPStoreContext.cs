@@ -35,7 +35,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         public INetworkManager NetworkManager { get; }
 
         /// <summary>
-        /// 是否开启「始终支付成功」调试开关。
+        /// 是否开启「始终支付成功」调试开关；非 Editor 编译态由 IAPPlugin 强制注入 false。
         /// </summary>
         public bool EnableAlwaysPaySucceed { get; }
 
@@ -71,7 +71,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="persistManager">持久化管理器。</param>
         /// <param name="trackPlugin">埋点插件，可为 null。</param>
         /// <param name="networkManager">网络管理器。</param>
-        /// <param name="enableAlwaysPaySucceed">是否开启始终支付成功的调试模式。</param>
+        /// <param name="enableAlwaysPaySucceed">是否开启始终支付成功的 Editor 调试模式。</param>
         /// <param name="retryValidateMaxNum">验单失败时的最大重试次数。</param>
         /// <param name="skipLoadingForReplenish">游戏启动补单时是否跳过 Loading 页面。</param>
         /// <param name="loadingPanelPrefab">支付期 Loading 进度面板 Prefab 路径（相对于 Resources/）。</param>

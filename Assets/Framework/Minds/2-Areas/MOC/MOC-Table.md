@@ -1,7 +1,7 @@
 ---
 id: MOC-Table
 title: 数据表系统 MOC（Table System）
-summary: TableComponent、ITable、Luban 导出与运行时查表速查
+summary: Table与Luban导出查表速查
 category: runtime
 status: active
 date: 2026-06-05

@@ -1,7 +1,7 @@
 ---
 id: MOC-HybridCLR
 title: HybridCLR / 热更链路图谱
-summary: ProcedureSplash 到 ProcedureLoadDll 的热更加载与入口定位速查
+summary: HybridCLR加载链与入口速查
 category: hotfix
 status: active
 date: 2026-06-05

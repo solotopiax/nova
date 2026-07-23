@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Editor`
 **目标组件**：`NovaFramework.Runtime.LocalizationComponent`
 
-本地化组件的 Inspector 面板，绘制管理器类型选择器、文本数据导出区（FileFolderTree 树形文件展示 + 语言聚合导出）、字体数据导出区（标准 Luban Pipeline 导出）。
+本地化组件的 Inspector 面板，绘制管理器类型选择器、文本数据导出区（FileFolderTree 树形文件展示 + 语言聚合导出）和字体数据导出区（Luban 暂存事务导出）。
 
 ---
 
@@ -96,7 +96,7 @@ OnInspectorGUI()
   │     ├── 表格目录位置行（TextField + 选择 + 打开文件夹）
   │     ├── DrawSourceFilesListWithFolders（树形文件列表 + 自定义文件行）
   │     │     文件行：文件名 + 数据导出位置（含 {0} 语言占位符）+ 类型导出位置 + Asset 地址
-  │     └── HelpBox（{0} 占位符说明）
+  │     └── HelpBox（说明数据导出位置在导出时替换 {0}；Asset 地址在运行时按当前语言替换 {0}）
   └── DrawFontExportSection()
         ├── Foldout（字体数据导出）
         ├── DrawTemplatePathHintReadOnly（字体模板文件位置）
@@ -108,10 +108,11 @@ OnInspectorGUI()
 
 | 数据类型 | 导出方式 | 说明 |
 |----------|----------|------|
-| 文本数据 | `EditorUtil.Luban.LocalizationTextExporter.ExportAll` | 三阶段 Pipeline 编排：PreFilter 按语言拆分 Excel → 每种语言走标准 Luban Pipeline → MapPropGen + 语言列表 |
-| 字体数据 | `EditorUtil.Luban.Pipeline.ExportAll` / `ExportData` | 标准 Luban Pipeline：CLI → JsonMerger → MapPropGen |
+| 文本数据 | `EditorUtil.Localization.TextExporter.ExportTextAll` | 三阶段编排：PreFilter 按语言拆分 Excel → 每种语言走标准 Luban Pipeline → MapPropGen + 语言列表 |
+| 字体数据 | `EditorUtil.Localization.FontExporter.ExportFontAll` | 在 `_temp/_publish` 生成并验证 JSON/C#，再统一发布正式产物 |
 
-文本数据和字体数据均通过泛型内部类 `DataTableSettingsAdapter<TUnit>`，将各自的单元设置列表包装为 `IDataTableSettings` 供 Pipeline 消费。
+文本数据和字体数据均通过泛型内部类 `DataTableSettingsAdapter<TUnit>`，将各自的单元设置列表包装为 `IDataTableSettings` 供 Pipeline 消费；字体正式文件应用也经过 `FileSystem.OutputApplier`，不直接写入正式目录。
+Inspector 在调用前只执行 `serializedObject.ApplyModifiedProperties()`，不刷新或写回 Excel Sheet 名。每个 Pipeline 阶段在 Luban 前扫描当前输入并生成 schema manifest。
 
 ---
 
@@ -138,7 +139,8 @@ public override void OnInspectorGUI()
 - [BaseComponentInspector.md](../BaseComponentInspector.md)
 - [LocalizationComponent.md](../../../Runtime/Modules/Localization/LocalizationComponent.md)
 - [LocalizationSettings.md](../../../Runtime/Modules/Localization/LocalizationSettings.md)
-- [EditorUtil.Luban.LocalizationTextExporter.md](../../EditorUtil/EditorUtil.Luban/EditorUtil.Luban.LocalizationTextExporter.md)
+- [EditorUtil.Localization.TextExporter.md](../../EditorUtil/EditorUtil.Localization/EditorUtil.Localization.TextExporter.md)
+- [EditorUtil.Localization.FontExporter.md](../../EditorUtil/EditorUtil.Localization/EditorUtil.Localization.FontExporter.md)
 - [EditorUtil.Luban.Pipeline.md](../../EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md)
 - [EditorUtil.Draw.SourceFileTree.md](../../EditorUtil/EditorUtil.Draw/EditorUtil.Draw.SourceFileTree.md)
 - [FileFolderTree.md](../../Definitions/FileFolderTree.md)

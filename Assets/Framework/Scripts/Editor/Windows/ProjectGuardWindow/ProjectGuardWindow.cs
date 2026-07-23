@@ -1,3 +1,13 @@
+/***************************************************************
+ * (c) copyright 2026 - 2030, Solotopia
+ * All Rights Reserved.
+ * -------------------------------------------------------------
+ * filename:  ProjectGuardWindow.cs
+ * author:    taoye
+ * created:   2026/7/15
+ * descrip:   Nova 项目规范守卫窗口
+ ***************************************************************/
+
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,10 +19,12 @@ namespace NovaFramework.Editor
     /// </summary>
     public sealed class ProjectGuardWindow : EditorWindow
     {
-        private const string c_Title = "Nova Project Guard";
+        private const string c_Title = "Nova · ProjectGuard";
+        private const string c_DisplayName = "项目规范守卫";
+        private const string c_MenuPath = "Nova/Open ProjectGuard";
         private VisualElement m_Results;
 
-        [MenuItem("Nova/Open Project Guard")]
+        [MenuItem(c_MenuPath)]
         private static void Open()
         {
             GetWindow<ProjectGuardWindow>(false, c_Title, true);
@@ -22,6 +34,7 @@ namespace NovaFramework.Editor
         {
             var toolbar = new VisualElement
             {
+                name = "project-guard-toolbar",
                 style =
                 {
                     flexDirection = FlexDirection.Row,
@@ -31,15 +44,32 @@ namespace NovaFramework.Editor
                     paddingBottom = 6,
                 },
             };
-            toolbar.Add(new Button(() => ShowReport(EditorUtil.ProjectGuard.ValidateQuick()))
+            toolbar.Add(new Label(c_DisplayName)
+            {
+                style =
+                {
+                    unityTextAlign = TextAnchor.MiddleLeft,
+                },
+            });
+            var actions = new VisualElement
+            {
+                name = "project-guard-actions",
+                style =
+                {
+                    flexDirection = FlexDirection.Row,
+                    marginLeft = new StyleLength(StyleKeyword.Auto),
+                },
+            };
+            actions.Add(new Button(() => ShowReport(EditorUtil.ProjectGuard.ValidateQuick()))
             {
                 text = "Quick Validate",
             });
-            toolbar.Add(new Button(() => ShowReport(EditorUtil.ProjectGuard.ValidateBuild(
+            actions.Add(new Button(() => ShowReport(EditorUtil.ProjectGuard.ValidateBuild(
                 EditorUserBuildSettings.activeBuildTarget)))
             {
                 text = "Build Validate",
             });
+            toolbar.Add(actions);
             rootVisualElement.Add(toolbar);
 
             m_Results = new ScrollView();

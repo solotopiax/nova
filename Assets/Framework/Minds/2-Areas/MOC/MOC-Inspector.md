@@ -1,7 +1,7 @@
 ---
 id: MOC-Inspector
 title: Inspector / Editor 侧图谱
-summary: Inspectors、RuntimeDrawer、EditorUtil.Draw 与配置持久化速查
+summary: Inspector绘制与配置持久化速查
 category: inspector
 status: active
 date: 2026-06-05

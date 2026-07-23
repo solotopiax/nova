@@ -31,6 +31,21 @@ namespace NovaFramework.Editor
                 /// <param name="developMode">导出时选中的开发模式。</param>
                 public static void WriteActiveScene(DevelopMode developMode)
                 {
+                    WriteActiveSceneInternal(developMode, null);
+                }
+
+                /// <summary>
+                /// 回写当前激活场景中的开发模式，并同步 AssetComponent 渠道快照。
+                /// </summary>
+                public static void WriteActiveScene(DevelopMode developMode, ChannelType channel)
+                {
+                    WriteActiveSceneInternal(developMode, channel);
+                }
+
+                private static void WriteActiveSceneInternal(
+                    DevelopMode developMode,
+                    ChannelType? channel)
+                {
                     Scene activeScene = SceneManager.GetActiveScene();
                     if (!activeScene.IsValid() || !activeScene.isLoaded)
                     {
@@ -52,12 +67,24 @@ namespace NovaFramework.Editor
 
                             SerializedObject serializedComponent = new SerializedObject(component);
                             SerializedProperty developModeProperty = serializedComponent.FindProperty("m_DevelopMode");
-                            if (developModeProperty == null || developModeProperty.enumValueIndex == (int)developMode)
+                            bool componentModified = false;
+                            if (developModeProperty != null && developModeProperty.enumValueIndex != (int)developMode)
                             {
-                                continue;
+                                developModeProperty.enumValueIndex = (int)developMode;
+                                componentModified = true;
                             }
 
-                            developModeProperty.enumValueIndex = (int)developMode;
+                            if (channel.HasValue && component is AssetComponent)
+                            {
+                                SerializedProperty channelProperty = serializedComponent.FindProperty("m_Channel");
+                                if (channelProperty != null && channelProperty.enumValueIndex != (int)channel.Value)
+                                {
+                                    channelProperty.enumValueIndex = (int)channel.Value;
+                                    componentModified = true;
+                                }
+                            }
+
+                            if (!componentModified) continue;
                             serializedComponent.ApplyModifiedPropertiesWithoutUndo();
                             EditorUtility.SetDirty(component);
                             isModified = true;

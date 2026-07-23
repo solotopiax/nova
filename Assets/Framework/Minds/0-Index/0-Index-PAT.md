@@ -99,6 +99,7 @@ auto_generated: true
 - [PAT-141 封装第三方 SDK 时源目录只读，文件完整搬入不增删改](../2-Areas/Patterns/PAT-141-vendor-source-readonly.md) — 第三方源目录只读，封装是复制入包，不写不删不改不省略
 - [PAT-143 厂商 SDK 缺公开 API 时，接入层用现有 public 方法在 Nova 层补口](../2-Areas/Patterns/PAT-143-vendor-sdk-missing-api-nova-layer-fill.md) — 源只读下用现有 public API 组合补厂商缺失能力
 - [PAT-144 反射调厂商私有方法是源只读约束下的最后手段，须标注版本升级复核](../2-Areas/Patterns/PAT-144-reflection-private-vendor-method.md) — 反射调私有厂商方法属权宜，须注释标版本复核点
+- [PAT-146 广告收益打点与展示回调边界](../2-Areas/Patterns/PAT-146-ad-revenue-track-callback-boundary.md) — Banner ILRD聚合，impression即时
 - [PAT-33 新增 SDK Plugin 的 6 步 SOP](../2-Areas/Patterns/PAT-33-sdk-plugin-sop.md) — SDK Plugin SOP UPM包加ISDKPlugin
 - [PAT-69 UGUI 等比铺满父宽的零脚本配置法](../2-Areas/Patterns/PAT-69-ugui-aspect-fit-fill-width.md) — ARF+水平 stretch 实现等比满宽零脚本
 
@@ -133,6 +134,7 @@ auto_generated: true
 
 - [PAT-103 VerticalLayoutGroup 动态行容器必开 ChildControlHeight](../2-Areas/Patterns/PAT-103-vlg-child-control-height-mandatory.md) — 动态行 VLG 必开 ChildControlHeight
 - [PAT-117 ScrollRect 不滑动先核对 Viewport vs Content 尺寸](../2-Areas/Patterns/PAT-117-scrollrect-viewport-content-size-check.md) — 滑不动先量 Viewport vs Content 尺寸
+- [PAT-146 缓存 UniTask 完成结果保障启动重试](../2-Areas/Patterns/PAT-146-unitask-cached-completion-for-retry.md) — 缓存异步结果前先明确重复等待语义
 - [PAT-29 FrameworkComponentsGroup.GetComponent<T> 必须缓存到成员，禁止热路径反复调用](../2-Areas/Patterns/PAT-29-cache-component-lookup-on-init.md) — Component依赖在Init一次缓存禁运行查找
 - [PAT-67 全局禁 UnityEngine.UI.Text，UI 文字一律 TMP](../2-Areas/Patterns/PAT-67-no-ui-text-only-tmp.md) — UI 文字一律 TMP，禁 UGUI Text
 - [PAT-68 Reference 与 ObjectPool 辐射使用原则](../2-Areas/Patterns/PAT-68-pool-reference-spread.md) — 数据走 ReferencePool 组件走 ObjectPool
@@ -148,7 +150,7 @@ auto_generated: true
 - [PAT-04 「改什么读什么」分层上下文策略](../2-Areas/Patterns/PAT-04-read-what-you-change.md) — 改什么读什么，按变更风险控制阅读面
 - [PAT-07 Trade-Off 分析框架 + 分阶段交付](../2-Areas/Patterns/PAT-07-tradeoff-phased-delivery.md) — Trade-Off方案分阶段交付小步验证
 - [PAT-104 接口废弃直接删 shim 禁留 [Obsolete] 过渡](../2-Areas/Patterns/PAT-104-no-obsolete-shim-rule.md) — 废弃接口同批迁移所有调用点，禁留 [Obsolete] 兼容方法
-- [PAT-113 禁手动抬 UPM package.json version](../2-Areas/Patterns/PAT-113-no-manual-version-bump.md) — 版本号只允许由统一发版入口写入
+- [PAT-113 禁手动抬 UPM package.json version](../2-Areas/Patterns/PAT-113-no-manual-version-bump.md) — UPM版本由统一入口写入且以registry为准
 - [PAT-118 原子写 JSON 文件（临时文件 + rename）](../2-Areas/Patterns/PAT-118-atomic-write-json-via-rename.md) — JSON 写入用临时文件+rename
 - [PAT-119 UPM 私有 fork 必须显式标注本地改动](../2-Areas/Patterns/PAT-119-upm-private-fork-local-diff-marking.md) — 私有 fork 改动必须留本地标注与包级变更记录
 - [PAT-120 脚手架与样例生成工具的人类可见文案字段必须由用户决定](../2-Areas/Patterns/PAT-120-create-sample-user-decides-dirname.md) — 视觉文案命名权归用户，禁机械派生，未给值必先询问
@@ -161,6 +163,7 @@ auto_generated: true
 - [PAT-132 单主题 sample 用 ProcedurePlaying 直开入口 View](../2-Areas/Patterns/PAT-132-procedure-playing-direct-open-entry-view.md) — 单主题 demo OnEnter 直开入口 View
 - [PAT-142 社交登录 Sample 接入 GameBind 配置闭环](../2-Areas/Patterns/PAT-142-social-signin-bind-sample-checklist.md) — 社交登录示例接入绑定需同步代码、配置、AOT、link 与表源
 - [PAT-145 UPM 发布先审真实安装链再判级联](../2-Areas/Patterns/PAT-145-upm-install-chain-cascade-audit.md) — 发版前沿真实安装入口审计依赖级联
+- [PAT-147 UPM 发版前禁止默认批量运行 Test Runner](../2-Areas/Patterns/PAT-147-upm-publish-no-bulk-test-runner.md) — UPM发版禁默认批量Test Runner
 - [PAT-53 发版前校验 CHANGELOG 当前版本节存在，不靠人工自觉](../2-Areas/Patterns/PAT-53-changelog-grep-script-enforce.md) — 发版前校验 CHANGELOG 当前版本节
 - [PAT-55 Python 工具脚本优先用 cwd 或环境变量解析项目根](../2-Areas/Patterns/PAT-55-python-script-cwd-or-env-root.md) — 工具脚本不要把项目根硬绑定到 `__file__` 的目录深度
 - [PAT-62 README / CHANGELOG 双层同步铁律](../2-Areas/Patterns/PAT-62-readme-changelog-dual-sync.md) — 发版前工程根与包内两层文档全字段对齐，禁单层更新
@@ -169,4 +172,4 @@ auto_generated: true
 
 
 ---
-_共 103 条，分布于 18 个 category。_
+_共 106 条，分布于 18 个 category。_

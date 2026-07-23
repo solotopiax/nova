@@ -92,7 +92,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             public Dictionary<string, object> RequestCustomProps;
 
             /// <summary>
-            /// 本次 ShowAsync 传入的自定义属性；show/show_result/hidden 打点时合并；续杯前置 null。
+            /// 本次 ShowAsync 传入的自定义属性；show/show_result 失败分支/hidden 打点时合并；续杯前置 null。
             /// </summary>
             public Dictionary<string, object> ShowCustomProps;
 

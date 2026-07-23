@@ -63,6 +63,11 @@ namespace NovaFramework.Runtime
         public ICoroutineRunner CoroutineRunner;
 
         /// <summary>
+        /// DoH 管理器接口，用于每次物理连接前执行域名检测。
+        /// </summary>
+        public IDoHManager DoHManager;
+
+        /// <summary>
         /// 特殊消息创建委托（心跳 / 认证消息），游戏层注入协议相关逻辑。
         /// 参数：(NetChannelType channelType, string messageCategory)，
         /// messageCategory 值为 "heartbeat" 或 "authenticate"。

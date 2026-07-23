@@ -64,7 +64,7 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
     /// 展示指定格式广告，选 Revenue 最高的就绪渠道执行；无就绪渠道时 Log.Warning 并跳过（不抛异常）。
     /// AdFormat.RewardedVideo 时 AdResult.UserCompleted == true 表示用户看完，据此发放奖励。
     /// AdFormat.Banner 不适用此方法，Banner 展示请使用 IBannerControl.ShowBanner()。
-    /// customProps 会透传到渠道层 nova_ad_show / nova_ad_show_result / nova_ad_hidden 打点。
+    /// customProps 会透传到渠道层 nova_ad_show / nova_ad_show_result 失败分支 / nova_ad_hidden 打点。
     UniTask ShowAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default);
 }
 ```
@@ -158,8 +158,8 @@ void OnDestroyed()
 - [IBannerControl.md](./IBannerControl.md) — Banner 专属控制接口
 - [AdPluginEvents.md](./AdPluginEvents.md) — 事件容器（7 个 ObservableEvent 字段）
 - [AdChannelPluginBase.md](./AdChannelPluginBase.md) — 渠道插件抽象基类
-- [../../Events/ObservableEvent.md](../../Events/ObservableEvent.md) — StickyEvent / ReplayEvent 基类与订阅模式
-- [../../Definitions/ISDKPlugin.md](../../Definitions/ISDKPlugin.md) — 根接口
-- [../../Definitions/Data.md](../../Definitions/Data.md) — AdFormat / AdResult / AdEvent / BannerPosition / AdLoadResult
-- [../../Definitions/Exceptions.md](../../Definitions/Exceptions.md) — AdFormatNotSupportedException
-- [../Tracking/IMonetizeTrackPlugin.md](../Tracking/IMonetizeTrackPlugin.md) — RevenuePaid 上报目标
+- [ObservableEvent.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Events/ObservableEvent.md) — StickyEvent / ReplayEvent 基类与订阅模式
+- [ISDKPlugin.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/ISDKPlugin.md) — 根接口
+- [Data.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/Data.md) — AdFormat / AdResult / AdEvent / BannerPosition / AdLoadResult
+- [Exceptions.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/Exceptions.md) — AdFormatNotSupportedException
+- [IMonetizeTrackPlugin.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Plugins/Tracking/IMonetizeTrackPlugin.md) — RevenuePaid 上报目标

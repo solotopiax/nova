@@ -15,12 +15,7 @@
 - `IAPThirdPayRequest`：第三方支付请求，包含 `PayTypeId`、`PayMethod`、`AdaptRectTransform`
 - `ThirdPayOpenResult`：支付页打开结果三态（`Success / Cancel / Failed`）
 
-## 设计文档
-
-- [ThirdPayStore-Design.md](./ThirdPayStore-Design.md) — 当前实现设计快照
-
 ## 相关
 
 - [ThirdPayStore.md](./ThirdPayStore.md) — 第三方支付 store
 - [ThirdPayStoreConfig.md](./ThirdPayStoreConfig.md) — 第三方支付配置
-- [ThirdPayStore-Design.md](./ThirdPayStore-Design.md) — 当前实现设计快照

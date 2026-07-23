@@ -109,7 +109,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         /// 删除账号内部实现：按已解析的 cmdRow 发起删除请求。
         /// 身份由 NetBuilder.BuildHeader() 填充的 Header.Uid（即 NetService.Uid）识别，无需传 uid。
         /// 渠道由 BuildHeader 内 InferChannel 从 Nova.Config.Channel 自动填充，无需传入。
-        /// 删除成功后清空本实例 UID 与 NetService.Uid 静态字段，后续请求 Header 不再携带 Uid。
+        /// 本方法只负责发送请求；删除成功后的埋点与登录态清理由 DeleteAsync 按顺序处理。
         /// </summary>
         /// <param name="cmdRow">NetCmd 指令行数据，由 DeleteAsync 解析得到。</param>
         /// <returns>包含删除响应数据或错误信息的 NetResponse。</returns>
@@ -120,12 +120,6 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
                 Head = NetBuilder.BuildHeader()
             };
             var resp = await NetService.SendAsync(cmdRow, body, PbNetDeleteResp.Parser, m_DebugModeOverride);
-            if (resp.IsSuccess)
-            {
-                // 删除成功 = 账号已不存在，清空登录态，防止继续以失效 Uid 发请求
-                UID = string.Empty;
-                NetService.SetUid(string.Empty);
-            }
             return resp;
         }
     }

@@ -210,14 +210,15 @@ namespace NovaFramework.Editor
             float labelW = 200f;
 
             EditorGUI.BeginChangeCheck();
-            int rowIndex = 0;
+            float fieldY = startY;
             for (int f = 0; f < fields.Length; f++)
             {
                 FieldInfo field = fields[f];
                 if (!IsFieldVisible(field, paramsInstance, info.ParamsType)) continue;
-                Rect fieldRect = new Rect(fieldX, startY + rowIndex * (c_ParamFieldHeight + 2f), fieldW, c_ParamFieldHeight);
+                float fieldHeight = GetParamFieldHeight(field, field.GetValue(paramsInstance));
+                Rect fieldRect = new Rect(fieldX, fieldY, fieldW, fieldHeight);
                 DrawParamField(fieldRect, field, paramsInstance, labelW);
-                rowIndex++;
+                fieldY += fieldHeight + 2f;
             }
 
             if (EditorGUI.EndChangeCheck())
@@ -314,9 +315,9 @@ namespace NovaFramework.Editor
         private void DrawParamField(Rect rect, FieldInfo field, object paramsInstance, float labelW)
         {
             const float c_LabelGap = 6f;
-            Rect labelRect = new Rect(rect.x, rect.y, labelW - c_LabelGap, rect.height);
+            Rect labelRect = new Rect(rect.x, rect.y, labelW - c_LabelGap, c_ParamFieldHeight);
             Rect valueRect = new Rect(rect.x + labelW, rect.y, rect.width - labelW, rect.height);
-            GUI.Label(labelRect, field.Name, EditorStyles.miniLabel);
+            GUI.Label(labelRect, GetParamFieldDisplayName(field), EditorStyles.miniLabel);
 
             Type fieldType = field.FieldType;
             object currentValue = field.GetValue(paramsInstance);
@@ -357,6 +358,39 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 获取 Pipify 参数字段在窗口中的显示名；优先使用 InspectorName，未标注时回退字段名。
+        /// </summary>
+        /// <param name="field">参数字段反射信息。</param>
+        /// <returns>用于参数标签列的显示文本。</returns>
+        internal static string GetParamFieldDisplayName(FieldInfo field)
+        {
+            if (field == null) return string.Empty;
+            InspectorNameAttribute inspectorName = field.GetCustomAttribute<InspectorNameAttribute>();
+            return string.IsNullOrEmpty(inspectorName?.displayName) ? field.Name : inspectorName.displayName;
+        }
+
+        /// <summary>
+        /// 计算单个 Pipify 参数字段的绘制高度；TextArea 按当前换行数在声明的最小、最大行数间伸缩。
+        /// </summary>
+        /// <param name="field">参数字段反射信息。</param>
+        /// <param name="currentValue">字段当前值；未提供时使用 TextArea 最小行数。</param>
+        /// <returns>字段绘制高度（像素）。</returns>
+        internal static float GetParamFieldHeight(FieldInfo field, object currentValue = null)
+        {
+            if (field == null || field.FieldType != typeof(string)) return c_ParamFieldHeight;
+            TextAreaAttribute textArea = field.GetCustomAttribute<TextAreaAttribute>();
+            if (textArea == null) return c_ParamFieldHeight;
+
+            int lineCount = textArea.minLines;
+            if (currentValue is string text && !string.IsNullOrEmpty(text))
+            {
+                int actualLines = text.Split('\n').Length;
+                lineCount = Mathf.Clamp(actualLines, textArea.minLines, textArea.maxLines);
+            }
+            return Mathf.Max(c_ParamFieldHeight, lineCount * c_ParamFieldHeight);
+        }
+
+        /// <summary>
         /// 绘制 string 字段：根据 PipifyDropdown / PipifyDynamicDefault 选择绘制方式。
         /// </summary>
         /// <param name="valueRect">值区 Rect。</param>
@@ -366,10 +400,23 @@ namespace NovaFramework.Editor
         private void DrawStringParamField(Rect valueRect, FieldInfo field, object paramsInstance, object currentValue)
         {
             string v = currentValue as string ?? string.Empty;
+            if (field.GetCustomAttribute<PipifyCdnRemotePathAttribute>() != null)
+            {
+                DrawCdnRemotePathField(valueRect, field, paramsInstance, v);
+                return;
+            }
+
             if (field.GetCustomAttribute<PipifyPasswordAttribute>() != null)
             {
                 string password = EditorGUI.PasswordField(valueRect, v);
                 field.SetValue(paramsInstance, password);
+                return;
+            }
+
+            if (field.GetCustomAttribute<TextAreaAttribute>() != null)
+            {
+                string multiline = EditorGUI.TextArea(valueRect, v);
+                field.SetValue(paramsInstance, multiline);
                 return;
             }
 
@@ -412,6 +459,53 @@ namespace NovaFramework.Editor
 
             string plain = EditorGUI.TextField(valueRect, v);
             field.SetValue(paramsInstance, plain);
+        }
+
+        /// <summary>
+        /// 按 ConfigWindow 相同形态绘制 CDN 云端目录：当前 Config 的 OSS 前缀只读，Step 后缀可编辑。
+        /// </summary>
+        private static void DrawCdnRemotePathField(
+            Rect valueRect,
+            FieldInfo field,
+            object paramsInstance,
+            string currentValue)
+        {
+            const float c_Gap = 4f;
+            float prefixWidth = Mathf.Min(250f, Mathf.Max(0f, valueRect.width * 0.55f));
+            Rect prefixRect = new Rect(valueRect.x, valueRect.y, prefixWidth, valueRect.height);
+            Rect suffixRect = new Rect(
+                prefixRect.xMax + c_Gap,
+                valueRect.y,
+                Mathf.Max(0f, valueRect.width - prefixWidth - c_Gap),
+                valueRect.height);
+
+            EditorGUI.BeginDisabledGroup(true);
+            EditorGUI.TextField(prefixRect, ResolveCdnRemotePrefix());
+            EditorGUI.EndDisabledGroup();
+            field.SetValue(paramsInstance, EditorGUI.TextField(suffixRect, currentValue));
+        }
+
+        /// <summary>
+        /// 解析当前 Config 维度坐标下的 PresetOSSPath，用于 Pipify 参数只读前缀。
+        /// </summary>
+        private static string ResolveCdnRemotePrefix()
+        {
+            ConfigMasterSO master = EditorUtil.Config.WorkspaceActive.Get();
+            if (master == null) return string.Empty;
+            CdnDeploymentConfig config = EditorUtil.Config.DimensionalResolver.ResolveCdn(
+                master,
+                master.CurrentPlatform,
+                master.CurrentChannel,
+                master.CurrentDevelopMode);
+            return FormatCdnRemotePrefix(config.PresetOSSPath);
+        }
+
+        /// <summary>
+        /// 将 OSS 固定路径格式化为与 ConfigWindow 一致的只读前缀。
+        /// </summary>
+        internal static string FormatCdnRemotePrefix(string preset)
+        {
+            return string.IsNullOrWhiteSpace(preset) ? string.Empty : preset.TrimEnd('/', '\\') + "/";
         }
 
         /// <summary>

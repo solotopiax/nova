@@ -21,15 +21,14 @@ MonoBehaviour:
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 791343954436554773
-  - rid: 791343954436554774
-  - rid: 791343954436554775
-  - rid: 791343954436554776
-  - rid: 791343954436554777
-  - rid: 791343954436554778
-  - rid: 791343954436554779
+  - rid: 791344335120236570
+  - rid: 791344335120236571
+  - rid: 791344335120236572
+  - rid: 791344335120236573
+  - rid: 791344335120236574
+  - rid: 791344335120236575
   EnabledKitConfigs:
-  - rid: 791343954436554780
+  - rid: 791344335120236576
   GameEntranceProcedureName: ProcedurePreload
   AotMetadataDlls:
   - m_AssetLocation: mscorlib.dll
@@ -50,7 +49,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 791343954436554773
+    - rid: 791344335120236570
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
         m_DevKey: YOUR_APPSFLYER_DEV_KEY
@@ -60,7 +59,7 @@ MonoBehaviour:
         m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
         m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
         m_ReportCmdName: AppsFlyerReport
-    - rid: 791343954436554774
+    - rid: 791344335120236571
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -69,22 +68,22 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 791343954436554775
+    - rid: 791344335120236572
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 791343954436554781
+          - rid: 791344335120236577
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 791343954436554776
+    - rid: 791344335120236573
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 791343954436554777
+    - rid: 791344335120236574
       type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
       data:
         m_EnableAlwaysPaySucceed: 0
@@ -94,30 +93,22 @@ MonoBehaviour:
         m_LoadingPanelPrefab: IAP/IAPLoadingPanel
         m_StoreConfigList:
           m_Items:
-          - rid: 791343954436554782
+          - rid: 791344335120236578
         m_Products:
           m_Items: []
-    - rid: 791343954436554778
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 791343954436554779
+    - rid: 791344335120236575
       type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
       data:
         m_FacebookAppId: YOUR_FACEBOOK_APP_ID
         m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
         m_AutoDownloadAvatarOnLogin: 1
         m_AvatarSize: 100
-    - rid: 791343954436554780
+    - rid: 791344335120236576
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 791343954436554781
+    - rid: 791344335120236577
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -134,7 +125,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 791343954436554782
+    - rid: 791344335120236578
       type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
       data:
         m_Enabled: 1

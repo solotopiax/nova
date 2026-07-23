@@ -143,25 +143,31 @@ namespace NovaFramework.Runtime
         /// Debug 开发模式下的主机服务器地址 URL。
         /// </summary>
         [SerializeField]
-        private string m_HostServerUrlDebug = "https://xxxx.xxxx.xxxx/{Platform}/{Package}/{Version}";
+        private string m_HostServerUrlDebug = "https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}";
 
         /// <summary>
         /// Debug 开发模式下的备用主机服务器地址 URL。
         /// </summary>
         [SerializeField]
-        private string m_HostServerUrlFallbackDebug = "https://yyyy.yyyy.yyyy/{Platform}/{Package}/{Version}";
+        private string m_HostServerUrlFallbackDebug = "https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}";
 
         /// <summary>
         /// Release 开发模式下的主机服务器地址 URL。
         /// </summary>
         [SerializeField]
-        private string m_HostServerUrlRelease = "https://xxxx.xxxx.xxxx/{Platform}/{Package}/{Version}";
+        private string m_HostServerUrlRelease = "https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}";
 
         /// <summary>
         /// Release 开发模式下的备用主机服务器地址 URL。
         /// </summary>
         [SerializeField]
-        private string m_HostServerUrlFallbackRelease = "https://yyyy.yyyy.yyyy/{Platform}/{Package}/{Version}";
+        private string m_HostServerUrlFallbackRelease = "https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}";
+
+        /// <summary>
+        /// Config 导出时同步的渠道快照，供资源系统启动前解析远端 URL。
+        /// </summary>
+        [SerializeField, HideInInspector]
+        private ChannelType m_Channel;
 
         /// <summary>
         /// AssetBundle 解密器类型；默认 None。

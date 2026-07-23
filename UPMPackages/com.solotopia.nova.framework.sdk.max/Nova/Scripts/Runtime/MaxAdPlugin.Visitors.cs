@@ -82,6 +82,21 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// MAX SDK 返回的国家代码，InitializedCallback 中赋值，用于调试和数据上报。
         /// </summary>
         private string m_CountryCode;
+
+        /// <summary>
+        /// 收益回调即时打点用的变现插件引用，初始化阶段在主线程缓存。
+        /// </summary>
+        private IMonetizeTrackPlugin m_RevenueMonetizeTracker;
+
+        /// <summary>
+        /// 收益回调即时打点用的归因插件引用，初始化阶段在主线程缓存。
+        /// </summary>
+        private IAttributionPlugin m_RevenueAttributionTracker;
+
+        /// <summary>
+        /// 收益回调即时打点用的通用埋点插件引用，初始化阶段在主线程缓存。
+        /// </summary>
+        private ITrackPlugin m_RevenueEventTracker;
 #endif
 
     }

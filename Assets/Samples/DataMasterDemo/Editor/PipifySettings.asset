@@ -31,18 +31,11 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
-        \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
-        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
-        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
-        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
-        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
+      m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
     - m_StepId: build.package
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
-        true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
-        \"UseAndroidKeystore\": false,\n  \"OutputFolderPath\": \"Build\"\n}"
+      m_ParamsJson: '{"Target":13,"BuildMode":0,"DevelopmentBuild":true,"SplitApplicationBinary":false,"BuildAppBundle":false,"UseAndroidKeystore":false,"OutputFolderPath":"Build"}'
     - m_StepId: shell.open_folder
-      m_ParamsJson: "{\n  \"Path\": \"Build\"\n}"
+      m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "\u81EA\u52A8\u90E8\u7F72\u6D4B\u8BD5-\u5168\u91CF\uFF08iOS\uFF09"
     m_Description: "\u81EA\u52A8\u90E8\u7F72\u6D4B\u8BD5\uFF0C\u5176\u4E2DBundles\u4E3A\u5168\u91CF\u6784\u5EFA\u3002"
     m_Items:
@@ -59,18 +52,11 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: "{\n  \"Target\": 9,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
-        \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
-        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
-        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
-        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
-        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
+      m_ParamsJson: '{"Target":9,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
     - m_StepId: build.package
-      m_ParamsJson: "{\n  \"Target\": 9,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
-        true,\n  \"BuildAppBundle\": false,\n  \"SplitApplicationBinary\": false,\n 
-        \"UseAndroidKeystore\": false,\n  \"OutputFolderPath\": \"Build/iOS\"\n}"
+      m_ParamsJson: '{"Target":9,"BuildMode":0,"DevelopmentBuild":true,"BuildAppBundle":false,"SplitApplicationBinary":false,"UseAndroidKeystore":false,"OutputFolderPath":"Build/iOS"}'
     - m_StepId: shell.open_folder
-      m_ParamsJson: "{\n  \"Path\": \"Build/iOS\"\n}"
+      m_ParamsJson: '{"Path":"Build/iOS"}'
   - m_Name: "Hybrid+YooAsset\u8054\u5408\u7F16\u8BD1"
     m_Description: "Hybrid\u4E0EYooAsset\u8054\u5408\u7F16\u8BD1"
     m_Items:
@@ -89,12 +75,12 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
-        \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
-        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
-        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
-        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
-        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
+      m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
+  - m_Name: "Config\u5BFC\u51FA"
+    m_Description: "Config\u5BFC\u51FA\uFF0C\u5BFC\u51FAConfigRuntime"
+    m_Items:
+    - m_StepId: export.config
+      m_ParamsJson: 
   - m_Name: "\u66F4\u65B0bundle"
     m_Description: "\u66F4\u65B0bundle"
     m_Items:
@@ -105,32 +91,20 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
-        \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
-        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
-        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
-        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
-        2,\n  \"BundledCopyOption\": 0,\n  \"BundledCopyParams\": \"\"\n}"
+      m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":false,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":0,"BundledCopyParams":""}'
     - m_StepId: shell.open_folder
-      m_ParamsJson: "{\n  \"Path\": \"Bundles/Android/Default\"\n}"
+      m_ParamsJson: '{"Path":"Bundles/Android/Default"}'
   - m_Name: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Description: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Items:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
-        \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
-        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
-        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
-        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
-        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
+      m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
     - m_StepId: build.package
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
-        true,\n  \"BuildAppBundle\": false,\n  \"SplitApplicationBinary\": false,\n 
-        \"OutputFolderPath\": \"Build\"\n}"
+      m_ParamsJson: '{"Target":13,"BuildMode":0,"DevelopmentBuild":true,"BuildAppBundle":false,"SplitApplicationBinary":false,"OutputFolderPath":"Build"}'
     - m_StepId: shell.open_folder
-      m_ParamsJson: "{\n  \"Path\": \"Build\"\n}"
+      m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
     m_Description: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
     m_Items:
@@ -139,10 +113,9 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: build.package
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"DevelopmentBuild\": false,\n  \"OutputPath\":
-        \"Build/Nova.apk\"\n}"
+      m_ParamsJson: '{"Target":13,"DevelopmentBuild":false,"OutputPath":"Build/Nova.apk"}'
     - m_StepId: shell.open_folder
-      m_ParamsJson: "{\n  \"Path\": \"Build\"\n}"
+      m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "Localization\u5BFC\u51FA\u6D4B\u8BD5"
     m_Description: "Localization\u5BFC\u51FA\u6D4B\u8BD5"
     m_Items:
@@ -168,13 +141,6 @@ MonoBehaviour:
     - m_StepId: export.network.netcmd.code
       m_ParamsJson: 
     - m_StepId: export.network.proto
-      m_ParamsJson: 
-  - m_Name: "UI\u5BFC\u51FA\u6D4B\u8BD5"
-    m_Description: "UI\u5BFC\u51FA\u6D4B\u8BD5"
-    m_Items:
-    - m_StepId: export.ui.data
-      m_ParamsJson: 
-    - m_StepId: export.ui.code
       m_ParamsJson: 
   - m_Name: "Sound\u5BFC\u51FA\u6D4B\u8BD5"
     m_Description: "Sound\u5BFC\u51FA\u6D4B\u8BD5"
@@ -206,8 +172,10 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: export.table.code
       m_ParamsJson: 
-  - m_Name: "\u5BFC\u51FAconfig"
-    m_Description: 
+  - m_Name: "UI\u5BFC\u51FA\u6D4B\u8BD5"
+    m_Description: "UI\u5BFC\u51FA\u6D4B\u8BD5"
     m_Items:
-    - m_StepId: export.config
+    - m_StepId: export.ui.data
+      m_ParamsJson: 
+    - m_StepId: export.ui.code
       m_ParamsJson: 

@@ -125,6 +125,7 @@ namespace NovaFramework.Runtime
             // 故 Initialize 已 Succeeded 时直接跳过本步，继续执行 Version/Manifest，避免上游流程半途失败后重入崩溃。
             if (pkg.InitializeStatus != EOperationStatus.Succeeded)
             {
+                await PreflightRemoteUrlsAsync(name, ct);
                 InitializePackageOptions options = BuildPlayModeOptions(name);
                 var initOp = pkg.InitializePackageAsync(options);
                 await UniTask.WaitUntil(() => initOp.IsDone, cancellationToken: ct);

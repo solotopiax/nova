@@ -16,8 +16,8 @@ auto_generated: true
 
 ## external
 
-- [Unity_Addressables_教程 Unity Addressables 教程](../3-Resources/Unity/Unity_Addressables_教程.md) — Addressables 入门与 Nova 对照整理稿
-- [Unity_YooAsset_教程 Unity YooAsset 教程](../3-Resources/Unity/Unity_YooAsset_教程.md) — YooAsset 3.0 热更与 HostPlayMode 学习整理
+- [RES-002-unity-addressables-tutorial Unity Addressables 教程](../3-Resources/Unity/RES-002-unity-addressables-tutorial.md) — Addressables 入门与 Nova 对照整理稿
+- [RES-003-unity-yooasset-tutorial Unity YooAsset 教程](../3-Resources/Unity/RES-003-unity-yooasset-tutorial.md) — YooAsset 3.0 热更与 HostPlayMode 学习整理
 
 
 ---

@@ -19,6 +19,7 @@ AppLovin MAX 广告渠道插件，负责 MAX SDK 初始化、激励视频/插屏
 | `MaxAdPlugin.Inter.cs` | `MaxAdPlugin` | 插屏加载、展示、回调链 |
 | `MaxAdPlugin.AppOpen.cs` | `MaxAdPlugin` | 开屏加载、展示、回调链 |
 | `MaxAdPlugin.Banner.cs` | `MaxAdPlugin` | Banner 创建、位置控制、刷新控制、回调链 |
+| `MaxAdPlugin.Track.cs` | `MaxAdPlugin` | MAX 特有加载属性与收益即时打点 |
 | `MaxAdPlugin.UserId.cs` | `MaxAdPlugin` | 用户身份同步：override `SetUserId` 调用 `MaxSdk.SetUserId(userId)` |
 | `MaxAdChannelConfig.cs` | `MaxAdChannelConfig` | 渠道配置数据对象，实现 `IAdChannelConfig` |
 | `FacebookAdSetting.cs` | `FacebookAdSetting` | Facebook 广告 SDK 隐私设置内部工具类 |
@@ -65,6 +66,10 @@ IAdChannelConfig  <── MaxAdChannelConfig  (配置值对象，非插件本体
 | `m_RVRewarded` | `bool` | `false` | 激励视频奖励标记；`OnRVReceivedReward` 置 `true`，`OnRVHidden` 读取后清零 |
 | `m_BannerPosition` | `MaxSdkBase.AdViewPosition` | `BottomCenter` | Banner 当前位置；`UpdateBannerPosition` 同步更新 |
 | `m_CountryCode` | `string` | `null` | MAX SDK 初始化完成后由 `SdkConfiguration` 返回的国家代码 |
+| `m_RevenueMonetizeTracker` | `IMonetizeTrackPlugin` | `null` | 收益回调即时打点用的变现插件引用；初始化主线程缓存 |
+| `m_RevenueAttributionTracker` | `IAttributionPlugin` | `null` | 收益回调即时打点用的归因插件引用；初始化主线程缓存 |
+| `m_RevenueEventTracker` | `ITrackPlugin` | `null` | 收益回调即时打点用的通用埋点插件引用；初始化主线程缓存 |
+| `BannerIlrdInterval` | `int` | `5` | 继承自广告全局配置；Banner ILRD 聚合由 `AdChannelPluginBase` 统一处理，MAX 在满间隔时构造并上传自己的 `ad_ilrd` payload |
 
 ### MaxAdChannelConfig 新增字段（Task 1 追加）
 
@@ -204,7 +209,8 @@ InitChannelSDKAsync(config, ct)
           │
           ▼
   转型 MaxAdChannelConfig
-  缓存 4 个 PlacementId（RV / Inter / Banner / AppOpen）
+  缓存 4 类 PlacementId（RV / Inter / Banner / AppOpen）
+  缓存收益即时打点插件引用
           │
           ▼
   FacebookAdSetting.Initialize()
@@ -213,7 +219,6 @@ InitChannelSDKAsync(config, ct)
           │
           ▼
   MaxSdk.SetIsAgeRestrictedUser / MaxSdk 其他全局设置
-  InvokeEventsOnUnityMainThread = true
   SetMuted(MuteAd)               ← MuteAd 由聚合层注入，非 Config 字段
   SetVerboseLogging(cfg.LogEnable)
           │
@@ -244,6 +249,15 @@ InitChannelSDKAsync(config, ct)
 ```
 
 **guard 说明：** `RegisterXxxCallbacks` 方法开头检查对应 `placementId` 是否为空字符串，为空则跳过注册，该格式的回调不会触发，`RequestAsync` 对该格式的调用也不会产生实际请求。
+
+**线程说明：** MAX 不再设置 `MaxSdkBase.InvokeEventsOnUnityMainThread = true`。只有 `OnAdLoadedEvent`、`OnAdHiddenEvent`、`OnAdReceivedRewardEvent` 通过 `PostAdCallbackToMainThread` 排入 Unity 主线程；LoadFailed / Displayed / DisplayFailed / Clicked / Collapsed 等回调直接执行。非 Banner 的 Displayed 回调会同步触发 `RaiseShowCompleted`；Banner 不接入该成功展示事件，避免自动刷新期间反复触发。`OnAdRevenuePaidEvent` 不切主线程，直接调用 `RaiseRevenueImmediately`，MAX 特有收益打点、Nova 收益状态与 `RevenuePaid` 事件都在 SDK 原始回调线程即时执行。
+
+### Banner 收益打点
+
+- `ad_impression` 在每次 MAX Banner 收益回调中即时上传。
+- Banner 的 `ad_ilrd` 按基类 `TrackBannerIlrdAggregated` 统一累计上传；默认值 `5` 表示每 5 次 Banner 收益回调上传 1 次。
+- 未达到间隔的 Banner 累计次数和累计金额由 `AdChannelPluginBase` 写入 `PlayerPrefs`，避免下次游戏启动丢失未完成批次。
+- `ad_impression` 和 `ad_ilrd` 都不新增额外属性，且保持既有属性类型：`ad_ilrd.publisher_revenue` / `ad_ilrd.value` 为数值，`ad_ilrd.af_revenue` 为文本；未满间隔的内部存档金额使用 invariant decimal 字符串保存。
 
 ---
 

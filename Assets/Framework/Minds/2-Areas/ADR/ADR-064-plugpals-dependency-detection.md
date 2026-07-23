@@ -10,8 +10,7 @@ aliases:
 tags: [adr, nova, editor, plugpals]
 supersedes: []
 superseded-by: []
-related:
-  - "[[feedback-no-yooasset-outside-asset-module]]"
+related: []
 ---
 
 # ADR-064：PlugPals 依赖检测与可选库三原则
@@ -83,5 +82,4 @@ PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必�
 
 ## 关联
 
-- 相关 memory：[[feedback-no-yooasset-outside-asset-module]]（资源系统封装口径，同属「外部库在框架内的呈现/封装」约束族）。
 - 待补关联（入库后）：软可选库迁移落地后补一条迁移 Pattern；fetch 失败降级若实现，补充到本 ADR 验证段或新增条目。

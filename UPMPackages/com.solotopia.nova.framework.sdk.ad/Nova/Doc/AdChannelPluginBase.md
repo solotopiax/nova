@@ -15,7 +15,8 @@
 | `AdChannelPluginBase/AdChannelPluginBase.cs` | `AdChannelPluginBase` | 公开 API：abstract/virtual 接口、模板方法（RequestAsync / IsReady / ShowAsync / OnIsReady）、Banner virtual 空实现 |
 | `AdChannelPluginBase/AdChannelPluginBase.Visitors.cs` | `AdChannelPluginBase` | 字段与属性：`m_TrackPlugins`、`m_AdUnits`、`m_PendingBatches`、`EnableBidding`、`BannerIlrdInterval`、`MuteAd`、`RetryLoadAdMaxNum`、`RetryLoadAdInterv` |
 | `AdChannelPluginBase/AdChannelPluginBase.Methods.cs` | `AdChannelPluginBase` | 私有工具方法：状态机推进（`MarkLoaded` / `MarkLoadFailed` / `MarkShown` / `MarkRevenue` / `MarkBannerHidden`）、注册（`RegisterAdUnits`）、重试调度（`ImmediateRetry` / `ImmediateRetryAsync` / `ScheduleRetry` / `DelayedRetryAsync`）、查找（`FindAdUnit` / `PickBestReadyUnit`） |
-| `AdChannelPluginBase/AdChannelPluginBase.Track.cs` | `AdChannelPluginBase` | 事件触发与打点：`Raise*` 系列方法（9 事件全口径）、`TrackAdShow` / `TrackAdClick`、`NotifyBatchLoaded` / `NotifyBatchFailed` |
+| `AdChannelPluginBase/AdChannelPluginBase.Track.cs` | `AdChannelPluginBase` | 事件触发与打点：`Raise*` 系列方法、`TrackAdShow` / `TrackAdClick`、`TrackBannerIlrdAggregated`、`NotifyBatchLoaded` / `NotifyBatchFailed` |
+| `AdChannelPluginBase/AdChannelPluginBase.Threading.cs` | `AdChannelPluginBase` | SDK 回调线程调度：`PostAdCallbackToMainThread`、`RaiseRevenueImmediately`、主线程 FIFO drain |
 | `AdChannelPluginBase/AdChannelPluginBase.Definitions.cs` | `AdChannelPluginBase` | 嵌套类型：`AdUnitState` 枚举、`AdUnit` 类、`RequestBatch` 类、`AdUnitOptions` 结构 |
 
 所有文件均位于 `Nova/Scripts/Runtime/`。
@@ -42,15 +43,18 @@ classDiagram
 
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `m_TrackPlugins` | `IReadOnlyList<IMonetizeTrackPlugin>` | `null` | 缓存的变现打点插件；`InitializeAsync` 内由 `CacheTrackPlugins` 填充 |
+| `m_TrackPlugins` | `IReadOnlyList<ITrackPlugin>` | `null` | 缓存的通用打点插件；`InitializeAsync` 内由 `CacheTrackPlugins` 填充 |
 | `m_AdUnits` | `Dictionary<AdFormat, List<AdUnit>>` | `new()` | 各广告格式的 AdUnit 槽位列表；派生类通过 `RegisterAdUnits` 注入 |
+| `m_AdCallbackQueue` | `Queue<Action>` | `new()` | SDK 回调切回 Unity 主线程的 FIFO 队列 |
+| `m_AdCallbackQueueLock` | `object` | `new()` | 回调队列跨线程互斥锁 |
+| `m_AdCallbackDrainScheduled` | `bool` | `false` | 是否已有主线程 drain 任务在等待或执行 |
 
 ### 属性（internal）
 
 | 属性 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `EnableBidding` | `bool` | `true` | 是否启用多渠道比价；由 `ApplyGlobalConfig` 写入 |
-| `BannerIlrdInterval` | `int` | `5` | Banner ILRD 上报间隔次数；0 或负数表示不上报；由 `ApplyGlobalConfig` 写入 |
+| `BannerIlrdInterval` | `int` | `5` | Banner ILRD 上报间隔次数；0 或负数表示不上报 Banner `ad_ilrd`；不影响 `ad_impression`、`RaiseRevenueImmediately` 或 `OnAdRevenuePaid`；由 `ApplyGlobalConfig` 写入 |
 | `MuteAd` | `bool` | `false` | 是否全局静音所有广告；由 `ApplyGlobalConfig` 写入（`protected internal`） |
 | `RetryLoadAdMaxNum` | `int` | `3` | 全局广告加载最大重试次数；达到上限后 `ScheduleRetry` 等待间隔并清零计数继续重试 |
 | `RetryLoadAdInterv` | `float` | `30f` | 重试达到上限后等待再次发起的间隔时间（秒）；`DelayedRetryAsync` 使用 |
@@ -67,7 +71,7 @@ classDiagram
 | `LastErrorMessage` | `string` | `null` | 最近一次加载失败的错误描述文本 |
 | `RetryCts` | `CancellationTokenSource` | `null` | 延时/立即重试任务的取消令牌源；`DisposeAsync` 时统一 Cancel 以防泄露 |
 | `RequestCustomProps` | `Dictionary<string, object>` | `null` | `RequestAsync` 传入的自定义属性；`fill` / `fill_fail` 打点时合并；续杯时置 null |
-| `ShowCustomProps` | `Dictionary<string, object>` | `null` | `ShowAsync` 传入的自定义属性；`show` / `show_result` / `hidden` 打点时合并；续杯前置 null |
+| `ShowCustomProps` | `Dictionary<string, object>` | `null` | `ShowAsync` 传入的自定义属性；`show` / `show_result` 失败分支 / `hidden` 打点时合并；续杯前置 null |
 | `LastReason` | `AdRequestReason` | `Auto` | 本次 `RequestAsync` 传入的请求原因；仅 `nova_ad_request` 事件使用 |
 
 ---
@@ -189,9 +193,19 @@ protected void MarkBannerHidden(string placementId);
 执行顺序：**先驱动状态机 → 再事件 fan-out → 再打点**。
 
 ```csharp
-/// 触发 OnAdRevenuePaid 事件，并驱动打点扇出（nova_ad_revenue_paid）。
-/// 内部先调 MarkRevenue 更新 AdUnit.Revenue。须在主线程调用。
+/// 触发 OnAdRevenuePaid 事件，并推进收益状态。
+/// 内部先调 MarkRevenue 更新 AdUnit.Revenue。收益路径不切 Unity 主线程。
 protected void RaiseRevenue(AdEvent e);
+
+/// SDK 收益回调线程入口：immediateAction、MarkRevenue 和 OnAdRevenuePaid
+/// 均在原始 SDK 回调线程立刻执行。
+/// 收益即时上报必须使用此方法，不要使用 PostAdCallbackToMainThread 包裹。
+protected void RaiseRevenueImmediately(AdEvent e, Action immediateAction = null);
+
+/// 将 SDK 生命周期回调排入 Unity 主线程 FIFO 执行。
+/// 仅适用于 SDK OnAdLoadedEvent / OnAdHiddenEvent / OnAdReceivedRewardEvent。
+/// 不适用于 SDK OnAdRevenuePaidEvent。
+protected void PostAdCallbackToMainThread(Action action);
 
 /// 触发 OnAdLoaded 事件，并驱动打点扇出（nova_ad_fill）。
 /// 内部先调 MarkLoaded（置 Ready，重置 RetryCount，取消 pending 重试）。须在主线程调用。
@@ -204,7 +218,7 @@ protected void RaiseAdLoadFailed(AdLoadResult e);
 /// 触发 OnInitResult 事件，同时上报 nova_ad_init 打点（nova_success + nova_ad_channel）。
 protected void RaiseInitResult(bool success);
 
-/// 触发 OnShowCompleted 事件，并上报 nova_ad_show_result（nova_ad_result=1）打点。
+/// 触发 OnShowCompleted 事件；不再上报 nova_ad_show_result（nova_ad_result=1）成功打点。
 /// 内部先调 MarkShown（Showing → Idle，非 Banner 触发续杯）。
 protected void RaiseShowCompleted(AdResult result);
 
@@ -248,11 +262,10 @@ private static void MergeCustom(Dictionary<string, object> target, Dictionary<st
 
 | 事件 | 签名 | 触发时机 | 打点事件 |
 |---|---|---|---|
-| `OnAdRevenuePaid` | `event Action<AdEvent>` | `RaiseRevenue` | `nova_ad_revenue_paid` |
 | `OnAdLoaded` | `event Action<AdLoadResult>` | `RaiseAdLoaded` | `nova_ad_fill` |
 | `OnAdLoadFailed` | `event Action<AdLoadResult>` | `RaiseAdLoadFailed` | `nova_ad_fill_fail` |
 | `OnInitResult` | `event Action<bool>` | `RaiseInitResult` | `nova_ad_init` |
-| `OnShowCompleted` | `event Action<AdResult>` | `RaiseShowCompleted` | `nova_ad_show_result`（result=1） |
+| `OnShowCompleted` | `event Action<AdResult>` | `RaiseShowCompleted` | 无成功 `nova_ad_show_result` 打点 |
 | `OnShowFailed` | `event Action<AdResult>` | `RaiseShowFailed` | `nova_ad_show_result`（result=0） |
 | `OnAdClosed` | `event Action<AdResult>` | `RaiseAdClosed` | `nova_ad_hidden` |
 
@@ -274,7 +287,7 @@ protected sealed class AdUnit
     public string LastErrorMessage;
     public CancellationTokenSource RetryCts;
     public Dictionary<string, object> RequestCustomProps;  // fill/fill_fail 打点合并；续杯时置 null
-    public Dictionary<string, object> ShowCustomProps;     // show/show_result/hidden 打点合并；续杯前置 null
+    public Dictionary<string, object> ShowCustomProps;     // show/show_result 失败分支/hidden 打点合并；续杯前置 null
     public AdRequestReason LastReason;                     // nova_ad_request 事件使用
 }
 
@@ -324,8 +337,8 @@ public readonly struct AdUnitOptions
     │      ↓ 置 Showing
     │      ↓ OnShowAsync(format, placementId, ct)
     │      ↓ 渠道 SDK 展示回调
-    │      ├─→ RaiseRevenue(e)              → MarkRevenue → OnAdRevenuePaid event → 打点
-    │      ├─→ RaiseShowCompleted(r)        → MarkShown → OnShowCompleted event → nova_ad_show_result（非Banner续杯）
+    │      ├─→ RaiseRevenueImmediately(e)   → immediateAction / RaiseRevenue 在 SDK 回调线程即时执行
+    │      ├─→ RaiseShowCompleted(r)        → MarkShown → OnShowCompleted event（不打成功 show_result）
     │      ├─→ RaiseShowFailed(r)           → MarkShown → OnShowFailed event → nova_ad_show_result（非Banner续杯）
     │      └─→ RaiseAdClosed(r, rewarded)  → MarkShown → OnAdClosed event → nova_ad_hidden（非Banner续杯）
     │
@@ -509,7 +522,8 @@ DelayedRetryAsync(unit, ct):
 - **误区：在 `OnRequestAsync` 中再次检查是否支持该格式**：基类只对已注册 AdUnit 的 format 调用 `OnRequestAsync`，派生类无需额外过滤。
 - **误区：`OnRequestAsync` 签名与旧版相同**：签名包含 `string placementId` 参数；派生类只需针对该 placementId 调用一次 SDK 加载，不必在 `OnRequestAsync` 内自行管理多 ID 循环。
 - **误区：在 `InitChannelSDKAsync` 中实现 `Supports` 逻辑**：`Supports` 方法已全链路删除；是否支持某 AdFormat 由 `RegisterAdUnits` 注册的槽位推导，派生类只需注册即可。
-- **误区：在 SDK Native 回调中直接调用 `Raise*` 方法**：SDK 回调可能不在主线程，须先 `await UniTask.SwitchToMainThread(ct)` 切回主线程后再调用。
+- **误区：所有 SDK Native 回调都要切主线程**：当前只要求 `OnAdLoadedEvent` / `OnAdHiddenEvent` / `OnAdReceivedRewardEvent` 使用 `PostAdCallbackToMainThread`。LoadFailed / Displayed / DisplayFailed / Clicked / Collapsed 等回调不进该队列。
+- **误区：把收益回调也排入主线程**：SDK `OnAdRevenuePaidEvent` 不得用 `PostAdCallbackToMainThread` 包裹。收益路径使用 `RaiseRevenueImmediately`，即时处理、Nova 收益状态和业务收益事件都在 SDK 原始回调线程完成。
 - **误区：直接触发 event 字段而不用 `Raise*` 方法**：`Raise*` 方法内部先推进状态机再 fan-out 再打点，直接触发 event 会同时跳过状态机推进和打点。
 - **误区：Banner 渠道直接调 `RequestAsync` 续杯**：Banner 不自动续杯（有 SDK 自带刷新），框架层不会在 `MarkShown` 后对 Banner 触发 `RequestAsync`。
 - **误区：Banner 隐藏后不回置状态**：派生类在 `HideBanner` / `DestroyBanner` 对应的 SDK 回调中须调 `MarkBannerHidden(placementId)`，否则 AdUnit 永久停在 Showing，无法参与下次展示。
@@ -615,7 +629,7 @@ public sealed class MaxAdPlugin : AdChannelPluginBase
 - [IAdPlugin.md](./IAdPlugin.md) — 聚合调度层业务接口（AdPlugin 桥接渠道事件到 AdPluginEvents）
 - [IBannerControl.md](./IBannerControl.md) — Banner 控制接口，virtual 空实现在此类
 - [AdPluginEvents.md](./AdPluginEvents.md) — AdPlugin 侧事件容器（接收 Raise* 转发的事件）
-- [../../Events/ObservableEvent.md](../../Events/ObservableEvent.md) — ObservableEvent 基类
-- [../../Definitions/Data.md](../../Definitions/Data.md) — AdFormat / AdResult / AdEvent / AdLoadResult / BannerPosition
-- [../../Definitions/Exceptions.md](../../Definitions/Exceptions.md) — AdFormatNotSupportedException
-- [../Tracking/IMonetizeTrackPlugin.md](../Tracking/IMonetizeTrackPlugin.md) — 打点扇出目标接口
+- [ObservableEvent.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Events/ObservableEvent.md) — ObservableEvent 基类
+- [Data.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/Data.md) — AdFormat / AdResult / AdEvent / AdLoadResult / BannerPosition
+- [Exceptions.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/Exceptions.md) — AdFormatNotSupportedException
+- [IMonetizeTrackPlugin.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Plugins/Tracking/IMonetizeTrackPlugin.md) — 打点扇出目标接口

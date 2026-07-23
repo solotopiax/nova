@@ -21,9 +21,10 @@ namespace NovaFramework.Runtime
         public bool UseDoH;
 
         /// <summary>
-        /// DNS 查询超时时间（秒），0 表示不限制超时。
+        /// 单个域名的一次 DoH 查询超时时间（秒），默认 3 秒；0 表示跳过 DoH 查询。
+        /// 查询期间的所有候选地址共用该超时时间。
         /// </summary>
-        public int DnsTimeoutSeconds;
+        public int DnsTimeoutSeconds = 3;
 
     }
 }

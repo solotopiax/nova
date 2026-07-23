@@ -42,7 +42,7 @@ namespace NovaFramework.SDK.GoogleSignIn
 
         public bool AutoRestoreOnInitialize => m_AutoRestoreOnInitialize;
 
-        public string DisplayName => "Google";
+        public string DisplayName => "Google 登录";
 
         public GoogleSignInPluginConfig() { }
 

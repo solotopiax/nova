@@ -16,8 +16,9 @@ using YooAsset;
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// YooAsset 远端寻址服务，按主/备地址模板替换占位符 {Platform} {Package} {Version}。
+    /// YooAsset 远端寻址服务，按主/备地址模板替换占位符 {Platform} {Channel} {Package} {Version}。
     /// Platform 使用 PlatformType 枚举名（宏判定，不依赖 ConfigRuntimeSO，保证启动期可用）。
+    /// Channel 使用 Config 导出时同步到 AssetComponent 的启动期快照。
     /// Version 使用 Application.version（PlayerSettings Bundle Version）。
     /// </summary>
     public sealed class AssetRemoteService : IRemoteService
@@ -37,6 +38,10 @@ namespace NovaFramework.Runtime
         /// </summary>
         private readonly PlatformType m_Platform;
         /// <summary>
+        /// Config 导出时写入场景的渠道快照。
+        /// </summary>
+        private readonly ChannelType m_Channel;
+        /// <summary>
         /// 当前使用的资源包名。
         /// </summary>
         private readonly string m_Package;
@@ -50,16 +55,38 @@ namespace NovaFramework.Runtime
         private readonly string[] m_Cache;
 
         /// <summary>
+        /// 已完成平台、包名与版本占位符替换的远端基地址。
+        /// </summary>
+        public IReadOnlyList<string> BaseUrls => m_Cache;
+
+        /// <summary>
         /// 构造远端寻址服务。
         /// </summary>
         /// <param name="hostServerUrl">主下载地址配置值，默认应为完整 URL 模板。</param>
         /// <param name="hostServerUrlFallback">备用下载地址配置值，可为空。</param>
         /// <param name="package">当前使用的资源包名。</param>
         public AssetRemoteService(string hostServerUrl, string hostServerUrlFallback, string package)
+            : this(hostServerUrl, hostServerUrlFallback, package, ChannelType.None)
+        {
+        }
+
+        /// <summary>
+        /// 构造带启动期渠道快照的远端寻址服务。
+        /// </summary>
+        /// <param name="hostServerUrl">主下载地址配置值。</param>
+        /// <param name="hostServerUrlFallback">备用下载地址配置值，可为空。</param>
+        /// <param name="package">当前使用的资源包名。</param>
+        /// <param name="channel">Config 导出时同步的渠道快照。</param>
+        public AssetRemoteService(
+            string hostServerUrl,
+            string hostServerUrlFallback,
+            string package,
+            ChannelType channel)
         {
             m_HostServerUrl = hostServerUrl;
             m_HostServerUrlFallback = hostServerUrlFallback;
             m_Platform = ResolvePlatform();
+            m_Channel = channel;
             m_Package = package;
             m_Version = Application.version;
             m_Cache = BuildRemoteUrlCache();
@@ -107,6 +134,7 @@ namespace NovaFramework.Runtime
         {
             return template
                 .Replace("{Platform}", m_Platform.ToString())
+                .Replace("{Channel}", m_Channel.ToString())
                 .Replace("{Package}", m_Package)
                 .Replace("{Version}", m_Version);
         }

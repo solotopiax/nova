@@ -8,10 +8,12 @@
  * descrip:   本地化字体导出工具（字体配置 Pipeline 编排）
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using NovaFramework.Runtime;
 using UnityEditor;
+using IOPath = System.IO.Path;
 
 namespace NovaFramework.Editor
 {
@@ -26,15 +28,20 @@ namespace NovaFramework.Editor
             /// </summary>
             public static class FontExporter
             {
-                /// <summary>
-                /// Luban target 名称（字体轨）。
-                /// </summary>
-                private const string c_TargetName = "localization-font";
+                private enum ExportMode
+                {
+                    All,
+                    Code,
+                    Data,
+                }
 
-                /// <summary>
-                /// Luban manager 类名（字体轨）。
-                /// </summary>
-                private const string c_ManagerName = "LocalizationFontTables";
+                internal sealed class ExportOperations
+                {
+                    internal Func<EditorUtil.Luban.LubanExportContext, bool> ExportAll = EditorUtil.Luban.Pipeline.ExportAll;
+                    internal Func<EditorUtil.Luban.LubanExportContext, bool> ExportCode = EditorUtil.Luban.Pipeline.ExportCode;
+                    internal Func<EditorUtil.Luban.LubanExportContext, bool> ExportData = EditorUtil.Luban.Pipeline.ExportData;
+                    internal Action RefreshAssetDatabase = AssetDatabase.Refresh;
+                }
 
                 /// <summary>
                 /// 全链路导出字体数据和 C# 类型：刷新数据类型名称 → 构建上下文 → Pipeline.ExportAll 或 ExportData。
@@ -46,44 +53,19 @@ namespace NovaFramework.Editor
                 /// <param name="serializedObject">Inspector 序列化对象（可为 null）。</param>
                 /// <param name="classExportPath">C# 类型输出目录（空时仅导数据）。</param>
                 /// <returns>是否导出成功。</returns>
-                public static bool ExportFontAll(LocalizationSettings settings, string sourceDirPath, UnityEditor.SerializedProperty fontUnitsSettingsProp, UnityEditor.SerializedObject serializedObject, string classExportPath)
+                public static bool ExportFontAll(LocalizationSettings settings, string sourceDirPath, string classExportPath)
                 {
-                    if (settings == null || string.IsNullOrEmpty(sourceDirPath))
-                    {
-                        Log.Warning(LogTag.Localization, "字体全量导出参数无效，导出已跳过。");
-                        return false;
-                    }
+                    return ExportFontAll(settings, sourceDirPath, classExportPath, new ExportOperations());
+                }
 
-                    if (fontUnitsSettingsProp != null && serializedObject != null)
-                    {
-                        EditorUtil.Luban.DataTypeNameHelper.DoRefreshAllDataTypeNames(sourceDirPath, fontUnitsSettingsProp, serializedObject);
-                    }
-
-                    if (settings.FontUnitsSettings == null || settings.FontUnitsSettings.Count == 0)
-                    {
-                        Log.Warning(LogTag.Localization, "字体单元设置为空，导出已跳过。");
-                        return false;
-                    }
-
-                    DataTableSettingsAdapter<LocalizationFontUnitSetting> adapter = new DataTableSettingsAdapter<LocalizationFontUnitSetting>(sourceDirPath, settings.FontUnitsSettings);
-                    EditorUtil.Luban.LubanExportContext ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, adapter, c_TargetName, c_ManagerName);
-                    ctx.OutputCodeDir = classExportPath;
-
-                    bool success;
-                    if (!string.IsNullOrEmpty(classExportPath))
-                    {
-                        success = EditorUtil.Luban.Pipeline.ExportAll(ctx);
-                    }
-                    else
-                    {
-                        success = EditorUtil.Luban.Pipeline.ExportData(ctx);
-                    }
-
-                    if (success)
-                    {
-                        AssetDatabase.Refresh();
-                    }
-                    return success;
+                internal static bool ExportFontAll(
+                    LocalizationSettings settings,
+                    string sourceDirPath,
+                    string classExportPath,
+                    ExportOperations operations)
+                {
+                    ExportMode mode = string.IsNullOrWhiteSpace(classExportPath) ? ExportMode.Data : ExportMode.All;
+                    return Execute(settings, sourceDirPath, classExportPath, mode, operations);
                 }
 
                 /// <summary>
@@ -95,28 +77,16 @@ namespace NovaFramework.Editor
                 /// <returns>是否导出成功。</returns>
                 public static bool ExportFontCode(LocalizationSettings settings, string sourceDirPath, string classExportPath)
                 {
-                    if (settings == null || string.IsNullOrEmpty(sourceDirPath) || string.IsNullOrEmpty(classExportPath))
-                    {
-                        Log.Warning(LogTag.Localization, "字体代码导出参数无效，导出已跳过。");
-                        return false;
-                    }
+                    return ExportFontCode(settings, sourceDirPath, classExportPath, new ExportOperations());
+                }
 
-                    if (settings.FontUnitsSettings == null || settings.FontUnitsSettings.Count == 0)
-                    {
-                        Log.Warning(LogTag.Localization, "字体单元设置为空，代码导出已跳过。");
-                        return false;
-                    }
-
-                    DataTableSettingsAdapter<LocalizationFontUnitSetting> adapter = new DataTableSettingsAdapter<LocalizationFontUnitSetting>(sourceDirPath, settings.FontUnitsSettings);
-                    EditorUtil.Luban.LubanExportContext ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, adapter, c_TargetName, c_ManagerName);
-                    ctx.OutputCodeDir = classExportPath;
-
-                    bool success = EditorUtil.Luban.Pipeline.ExportCode(ctx);
-                    if (success)
-                    {
-                        AssetDatabase.Refresh();
-                    }
-                    return success;
+                internal static bool ExportFontCode(
+                    LocalizationSettings settings,
+                    string sourceDirPath,
+                    string classExportPath,
+                    ExportOperations operations)
+                {
+                    return Execute(settings, sourceDirPath, classExportPath, ExportMode.Code, operations);
                 }
 
                 /// <summary>
@@ -127,27 +97,173 @@ namespace NovaFramework.Editor
                 /// <returns>是否导出成功。</returns>
                 public static bool ExportFontData(LocalizationSettings settings, string sourceDirPath)
                 {
-                    if (settings == null || string.IsNullOrEmpty(sourceDirPath))
+                    return ExportFontData(settings, sourceDirPath, new ExportOperations());
+                }
+
+                internal static bool ExportFontData(
+                    LocalizationSettings settings,
+                    string sourceDirPath,
+                    ExportOperations operations)
+                {
+                    return Execute(settings, sourceDirPath, null, ExportMode.Data, operations);
+                }
+
+                private static bool Execute(
+                    LocalizationSettings settings,
+                    string sourceDirPath,
+                    string formalCodeDir,
+                    ExportMode mode,
+                    ExportOperations operations)
+                {
+                    if (!TryValidate(settings, sourceDirPath, formalCodeDir, mode) || operations == null)
                     {
-                        Log.Warning(LogTag.Localization, "字体数据导出参数无效，导出已跳过。");
                         return false;
                     }
 
-                    if (settings.FontUnitsSettings == null || settings.FontUnitsSettings.Count == 0)
+                    string tempRoot = IOPath.GetFullPath(IOPath.Combine(sourceDirPath, "_temp"));
+                    try
                     {
-                        Log.Warning(LogTag.Localization, "字体单元设置为空，数据导出已跳过。");
+                        using IDisposable workspace = EditorUtil.FileSystem.AcquireWorkspace(tempRoot);
+                        EditorUtil.FileSystem.DeleteUnityTempRoot(tempRoot);
+                        using var applier = new EditorUtil.FileSystem.OutputApplier(tempRoot);
+                        string stagedCodeDir = IOPath.Combine(applier.StagingRoot, "code~");
+                        List<LocalizationFontUnitSetting> stagedUnits = CreateStagedUnits(
+                            settings.FontUnitsSettings,
+                            applier.StagingRoot,
+                            stagedCodeDir);
+                        if (mode == ExportMode.Code)
+                        {
+                            SeedStagedData(settings.FontUnitsSettings, stagedUnits);
+                        }
+
+                        var adapter = new DataTableSettingsAdapter<LocalizationFontUnitSetting>(sourceDirPath, stagedUnits);
+                        EditorUtil.Luban.LubanExportContext context = EditorUtil.Luban.ExportHelper.BuildExportContext(
+                            sourceDirPath,
+                            adapter,
+                            EditorUtil.Luban.LubanExportProfiles.LocalizationFont);
+                        if (mode != ExportMode.Data)
+                        {
+                            context.OutputCodeDir = stagedCodeDir;
+                        }
+
+                        bool success = mode switch
+                        {
+                            ExportMode.All => operations.ExportAll(context),
+                            ExportMode.Code => operations.ExportCode(context),
+                            ExportMode.Data => operations.ExportData(context),
+                            _ => false,
+                        };
+                        if (!success)
+                        {
+                            return false;
+                        }
+
+                        if (mode != ExportMode.Code)
+                        {
+                            for (int i = 0; i < settings.FontUnitsSettings.Count; i++)
+                            {
+                                applier.AddReplacement(
+                                    stagedUnits[i].DatasExportPath,
+                                    settings.FontUnitsSettings[i].DatasExportPath);
+                            }
+                        }
+                        if (mode != ExportMode.Data)
+                        {
+                            EditorUtil.Luban.GeneratedOutput.RegisterCodeOutputs(
+                                applier,
+                                context,
+                                stagedCodeDir,
+                                formalCodeDir,
+                                true);
+                        }
+                        applier.Apply();
+                        return true;
+                    }
+                    catch (Exception exception)
+                    {
+                        Log.Error(LogTag.Localization, "本地化字体导出失败，正式产物未更新：{0}", exception);
                         return false;
                     }
-
-                    DataTableSettingsAdapter<LocalizationFontUnitSetting> adapter = new DataTableSettingsAdapter<LocalizationFontUnitSetting>(sourceDirPath, settings.FontUnitsSettings);
-                    EditorUtil.Luban.LubanExportContext ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, adapter, c_TargetName, c_ManagerName);
-
-                    bool success = EditorUtil.Luban.Pipeline.ExportData(ctx);
-                    if (success)
+                    finally
                     {
-                        AssetDatabase.Refresh();
+                        try
+                        {
+                            EditorUtil.FileSystem.DeleteUnityTempRoot(tempRoot);
+                        }
+                        catch (Exception exception)
+                        {
+                            Log.Warning(LogTag.Localization, "清理本地化字体临时目录失败：{0}", exception.Message);
+                        }
+                        operations?.RefreshAssetDatabase?.Invoke();
                     }
-                    return success;
+                }
+
+                private static List<LocalizationFontUnitSetting> CreateStagedUnits(
+                    IReadOnlyList<LocalizationFontUnitSetting> formalUnits,
+                    string stagingRoot,
+                    string stagedCodeDir)
+                {
+                    var result = new List<LocalizationFontUnitSetting>(formalUnits.Count);
+                    for (int i = 0; i < formalUnits.Count; i++)
+                    {
+                        LocalizationFontUnitSetting formal = formalUnits[i];
+                        string fileName = string.IsNullOrWhiteSpace(formal.DatasExportPath)
+                            ? i.ToString("D4") + ".json"
+                            : IOPath.GetFileName(formal.DatasExportPath);
+                        result.Add(new LocalizationFontUnitSetting
+                        {
+                            SourcePath = formal.SourcePath,
+                            DatasExportPath = IOPath.Combine(stagingRoot, "data", i.ToString("D4") + "_" + fileName),
+                            ClassesExportPath = stagedCodeDir,
+                            AssetLocation = formal.AssetLocation,
+                        });
+                    }
+                    return result;
+                }
+
+                private static void SeedStagedData(
+                    IReadOnlyList<LocalizationFontUnitSetting> formalUnits,
+                    IReadOnlyList<LocalizationFontUnitSetting> stagedUnits)
+                {
+                    for (int i = 0; i < formalUnits.Count; i++)
+                    {
+                        if (string.IsNullOrWhiteSpace(formalUnits[i].DatasExportPath) ||
+                            !File.Exists(formalUnits[i].DatasExportPath))
+                        {
+                            continue;
+                        }
+                        Directory.CreateDirectory(IOPath.GetDirectoryName(stagedUnits[i].DatasExportPath));
+                        File.Copy(formalUnits[i].DatasExportPath, stagedUnits[i].DatasExportPath, true);
+                    }
+                }
+
+                private static bool TryValidate(
+                    LocalizationSettings settings,
+                    string sourceDirPath,
+                    string classExportPath,
+                    ExportMode mode)
+                {
+                    if (settings?.FontUnitsSettings == null || settings.FontUnitsSettings.Count == 0 ||
+                        string.IsNullOrWhiteSpace(sourceDirPath) || !Directory.Exists(sourceDirPath))
+                    {
+                        Log.Warning(LogTag.Localization, "字体导出配置为空或数据源目录不存在，导出已跳过。");
+                        return false;
+                    }
+                    if (mode != ExportMode.Data && string.IsNullOrWhiteSpace(classExportPath))
+                    {
+                        Log.Warning(LogTag.Localization, "字体类型导出路径为空，导出已跳过。");
+                        return false;
+                    }
+                    foreach (LocalizationFontUnitSetting unit in settings.FontUnitsSettings)
+                    {
+                        if (unit == null || string.IsNullOrWhiteSpace(unit.SourcePath) ||
+                            (mode != ExportMode.Code && string.IsNullOrWhiteSpace(unit.DatasExportPath)))
+                        {
+                            Log.Warning(LogTag.Localization, "字体单元设置不完整，导出已跳过。");
+                            return false;
+                        }
+                    }
+                    return true;
                 }
             }
         }

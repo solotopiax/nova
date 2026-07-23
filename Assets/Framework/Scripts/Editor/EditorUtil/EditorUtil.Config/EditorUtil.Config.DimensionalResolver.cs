@@ -101,7 +101,8 @@ namespace NovaFramework.Editor
 #if UNITY_EDITOR
                 /// <summary>
                 /// 按当前坐标解析 HybridCLR 面板四字段的最终生效值。
-                /// <para>全不勾（IsGlobal）→ 直接取顶层各默认字段；否则在 HybridCLROverrides 中匹配首个符合条目，无命中回落顶层字段。</para>
+                /// <para>全不勾（IsGlobal）→ 直接取顶层各默认字段；否则在 HybridCLROverrides 中匹配首个符合条目，
+                /// 命中后使用整份 Override（空字符串和空列表均为有效值），无命中回落顶层字段。</para>
                 /// <para>AotMetadataDlls / GameDlls 返回深拷贝列表（禁共享引用）。</para>
                 /// </summary>
                 /// <param name="master">ConfigMasterSO 实例。</param>
@@ -129,11 +130,10 @@ namespace NovaFramework.Editor
                             if (!MatchesMask(mask, o.Platform, o.Channel, o.DevelopMode, curP, curC, curM)) continue;
                             return new HybridCLRResult
                             {
-                                // Override 列表为空时回落顶层字段（与 HybridCLROverride 注释约定一致）
-                                AotMetadataDlls = (o.AotMetadataDlls != null && o.AotMetadataDlls.Count > 0) ? CloneDllList(o.AotMetadataDlls) : CloneDllList(master.AotMetadataDlls),
-                                GameDlls = (o.GameDlls != null && o.GameDlls.Count > 0) ? CloneDllList(o.GameDlls) : CloneDllList(master.GameDlls),
-                                LinkXmlTargetPath = string.IsNullOrEmpty(o.LinkXmlTargetPath) ? (master.LinkXmlTargetPath ?? string.Empty) : o.LinkXmlTargetPath,
-                                GameEntranceProcedureName = string.IsNullOrEmpty(o.GameEntranceProcedureName) ? (master.GameEntranceProcedureName ?? string.Empty) : o.GameEntranceProcedureName,
+                                AotMetadataDlls = CloneDllList(o.AotMetadataDlls),
+                                GameDlls = CloneDllList(o.GameDlls),
+                                LinkXmlTargetPath = o.LinkXmlTargetPath ?? string.Empty,
+                                GameEntranceProcedureName = o.GameEntranceProcedureName ?? string.Empty,
                             };
                         }
                     }
@@ -149,7 +149,8 @@ namespace NovaFramework.Editor
 
                 /// <summary>
                 /// 按当前坐标解析 YooAsset 面板两路径字段的最终生效值。
-                /// <para>全不勾（IsGlobal）→ 直接取顶层各默认字段；否则在 YooAssetOverrides 中匹配首个符合条目，无命中回落顶层字段。</para>
+                /// <para>全不勾（IsGlobal）→ 直接取顶层各默认字段；否则在 YooAssetOverrides 中匹配首个符合条目，
+                /// 命中后使用整份 Override（空字符串为有效值），无命中回落顶层字段。</para>
                 /// </summary>
                 /// <param name="master">ConfigMasterSO 实例。</param>
                 /// <param name="curP">当前平台。</param>
@@ -167,8 +168,8 @@ namespace NovaFramework.Editor
                             if (!MatchesMask(mask, o.Platform, o.Channel, o.DevelopMode, curP, curC, curM)) continue;
                             return new YooAssetResult
                             {
-                                YooAssetSettingsPath = string.IsNullOrEmpty(o.YooAssetSettingsPath) ? (master.YooAssetSettingsPath ?? string.Empty) : o.YooAssetSettingsPath,
-                                BundleCollectorSettingPath = string.IsNullOrEmpty(o.BundleCollectorSettingPath) ? (master.BundleCollectorSettingPath ?? string.Empty) : o.BundleCollectorSettingPath,
+                                YooAssetSettingsPath = o.YooAssetSettingsPath ?? string.Empty,
+                                BundleCollectorSettingPath = o.BundleCollectorSettingPath ?? string.Empty,
                             };
                         }
                     }
@@ -176,6 +177,61 @@ namespace NovaFramework.Editor
                     {
                         YooAssetSettingsPath = master.YooAssetSettingsPath ?? string.Empty,
                         BundleCollectorSettingPath = master.BundleCollectorSettingPath ?? string.Empty,
+                    };
+                }
+
+                /// <summary>
+                /// 按当前坐标解析 CDN 面板部署配置的最终生效值。
+                /// <para>全不勾（IsGlobal）→ 直接返回顶层 master.CdnDeployment 的深拷贝；否则在 CdnOverrides 中匹配首个符合条目，
+                /// 取其 Config 整套快照深拷贝；空字符串是用户明确配置的有效值，不回落顶层。无命中时回落顶层深拷贝。</para>
+                /// <para>返回值恒为新实例（逐字段赋值深拷贝，禁共享引用），调用方可安全修改。</para>
+                /// </summary>
+                /// <param name="master">ConfigMasterSO 实例。</param>
+                /// <param name="curP">当前平台。</param>
+                /// <param name="curC">当前渠道。</param>
+                /// <param name="curM">当前开发模式。</param>
+                /// <returns>CdnDeploymentConfig 深拷贝；master 为 null 时返回各字段为空的新实例。</returns>
+                public static CdnDeploymentConfig ResolveCdn(ConfigMasterSO master, PlatformType curP, ChannelType curC, DevelopMode curM)
+                {
+                    if (master == null) return new CdnDeploymentConfig();
+                    CdnDeploymentConfig top = master.CdnDeployment;
+                    PanelDimensionMask mask = master.CdnMask;
+                    if (!IsGlobal(mask))
+                    {
+                        foreach (CdnDeploymentOverride o in master.CdnOverrides)
+                        {
+                            if (!MatchesMask(mask, o.Platform, o.Channel, o.DevelopMode, curP, curC, curM)) continue;
+                            CdnDeploymentConfig oc = o.Config;
+                            if (oc == null) break;
+                            return new CdnDeploymentConfig
+                            {
+                                Endpoint = oc.Endpoint ?? string.Empty,
+                                AccessKeyID = oc.AccessKeyID ?? string.Empty,
+                                AccessKeySecret = oc.AccessKeySecret ?? string.Empty,
+                                PresetOSSPath = oc.PresetOSSPath ?? string.Empty,
+                                LocalDirectory = oc.LocalDirectory ?? string.Empty,
+                                RemotePathSuffix = oc.RemotePathSuffix ?? string.Empty,
+                                ZoneID = oc.ZoneID ?? string.Empty,
+                                PurgeURL = oc.PurgeURL ?? string.Empty,
+                                Token = oc.Token ?? string.Empty,
+                                CachePaths = oc.CachePaths ?? string.Empty,
+                            };
+                        }
+                    }
+                    // 全不勾或无命中，回落顶层深拷贝
+                    if (top == null) return new CdnDeploymentConfig();
+                    return new CdnDeploymentConfig
+                    {
+                        Endpoint = top.Endpoint ?? string.Empty,
+                        AccessKeyID = top.AccessKeyID ?? string.Empty,
+                        AccessKeySecret = top.AccessKeySecret ?? string.Empty,
+                        PresetOSSPath = top.PresetOSSPath ?? string.Empty,
+                        LocalDirectory = top.LocalDirectory ?? string.Empty,
+                        RemotePathSuffix = top.RemotePathSuffix ?? string.Empty,
+                        ZoneID = top.ZoneID ?? string.Empty,
+                        PurgeURL = top.PurgeURL ?? string.Empty,
+                        Token = top.Token ?? string.Empty,
+                        CachePaths = top.CachePaths ?? string.Empty,
                     };
                 }
 #endif

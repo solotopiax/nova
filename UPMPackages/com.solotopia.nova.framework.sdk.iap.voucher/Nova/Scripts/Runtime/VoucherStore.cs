@@ -94,7 +94,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
 
         /// <summary>
         /// 异步发起代金券/金币支付流程。
-        /// EnableAlwaysPaySucceed 开启时跳过真实扣费直接返回成功；
+        /// Editor 下 EnableAlwaysPaySucceed 开启时跳过真实扣费直接返回成功，移动端编译不包含该调试分支；
         /// 防止并发重复支付同一商品；
         /// 通过 SubmitDeductAsync 完成服务端抵扣与验单。
         /// </summary>
@@ -105,12 +105,14 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
         {
             ct.ThrowIfCancellationRequested();
 
+#if UNITY_EDITOR
             if (Context.EnableAlwaysPaySucceed)
             {
                 var result = new IAPResult(request.TableId, "MOCK_ORDER_VOUCHER", false, true, request.CustomData);
                 Context.EventBridge?.RaisePaySuccess(result);
                 return UniTask.FromResult(result);
             }
+#endif
 
             return PayGuardAsync(request, ct, async () =>
             {

@@ -55,5 +55,5 @@ if (config == null)
 ## §13 关联文档
 
 - 同包：[Login.md](./Login.md) — 调用方，`Async` 内拉取 `LoginCmdName`，`DeleteAsync` 内拉取 `DeleteCmdName`，`BindResolveAsync` 内拉取 `BindResolveCmdName`
-- 同包：[LoginBind.md](./LoginBind.md) — 绑定二选一协议
+- 关联包：[GameBind · Bind.md](../../../com.solotopia.nova.framework.kit.network.gamebind/Nova/Docs/Bind.md) — 账号绑定与冲突裁决协议
 - 同包：[INDEX.md](./INDEX.md) — 本包文档总索引

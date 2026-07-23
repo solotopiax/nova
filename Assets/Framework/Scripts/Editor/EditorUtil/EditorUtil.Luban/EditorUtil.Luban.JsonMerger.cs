@@ -32,21 +32,21 @@ namespace NovaFramework.Editor
                 /// <param name="lubanOutputDir">Luban 临时输出目录。</param>
                 /// <param name="tablesXmlPath">__tables__.xml 文件路径。</param>
                 /// <param name="unitSetting">目标 Excel 文件的单元设置。</param>
-                /// <param name="topModule">Luban topModule（用于定位输出文件名前缀）。</param>
                 /// <param name="deferredResults">若非 null，将结果（输出路径 → 表数量）存入此字典而不立即打印日志。</param>
                 /// <returns>是否成功。</returns>
-                public static bool MergeForUnit(string lubanOutputDir, string tablesXmlPath, IDataTableUnitSetting unitSetting, string topModule, Dictionary<string, int> deferredResults = null)
+                internal static bool MergeForUnit(string lubanOutputDir, string tablesXmlPath,
+                    LubanSchemaUnit unit, Dictionary<string, int> deferredResults = null)
                 {
                     try
                     {
-                        Dictionary<string, string> tableToSheet = ParseTablesXmlForUnit(tablesXmlPath, unitSetting.LubanInputPath);
+                        Dictionary<string, string> tableToSheet = ParseTablesXmlForUnit(tablesXmlPath, unit.LubanInputPath);
                         if (tableToSheet.Count == 0)
                         {
                             return true;
                         }
 
-                        JObject mergedJson = BuildMergedJson(lubanOutputDir, tableToSheet, topModule);
-                        string outputPath = unitSetting.DatasExportPath;
+                        JObject mergedJson = BuildMergedJson(lubanOutputDir, tableToSheet);
+                        string outputPath = unit.DatasExportPath;
                         string outputDir = Util.SysIO.Path.GetDirectoryName(outputPath);
                         if (!string.IsNullOrEmpty(outputDir))
                         {
@@ -71,26 +71,18 @@ namespace NovaFramework.Editor
                     }
                 }
 
-                /// <summary>
-                /// 批量合并所有 Excel 文件的 Luban 导出 JSON。
-                /// </summary>
-                /// <param name="lubanOutputDir">Luban 临时输出目录。</param>
-                /// <param name="tablesXmlPath">__tables__.xml 文件路径。</param>
-                /// <param name="unitSettings">全部单元设置列表。</param>
-                /// <param name="topModule">Luban topModule。</param>
-                /// <param name="deferredResults">若非 null，将结果存入此字典而不立即打印日志。</param>
-                /// <returns>是否全部成功。</returns>
-                public static bool MergeAll(string lubanOutputDir, string tablesXmlPath, IReadOnlyList<IDataTableUnitSetting> unitSettings, string topModule, Dictionary<string, int> deferredResults = null)
+                internal static bool MergeAll(string lubanOutputDir, string tablesXmlPath,
+                    LubanSchemaManifest manifest, Dictionary<string, int> deferredResults = null)
                 {
                     bool allSuccess = true;
-                    foreach (IDataTableUnitSetting unit in unitSettings)
+                    foreach (LubanSchemaUnit unit in manifest.Units)
                     {
-                        if (string.IsNullOrEmpty(unit.DatasExportPath) || string.IsNullOrEmpty(unit.SourcePath) || unit.DataTypeNames == null || unit.DataTypeNames.Count == 0)
+                        if (string.IsNullOrEmpty(unit.DatasExportPath) || unit.Tables.Count == 0)
                         {
                             continue;
                         }
 
-                        if (!MergeForUnit(lubanOutputDir, tablesXmlPath, unit, topModule, deferredResults))
+                        if (!MergeForUnit(lubanOutputDir, tablesXmlPath, unit, deferredResults))
                         {
                             allSuccess = false;
                         }
@@ -178,9 +170,9 @@ namespace NovaFramework.Editor
                 /// </summary>
                 /// <param name="lubanOutputDir">Luban 输出目录。</param>
                 /// <param name="tableToSheet">表名到 Sheet 名映射。</param>
-                /// <param name="topModule">topModule（用于构建文件名前缀）。</param>
                 /// <returns>合并后的 JObject，key 为 Sheet 原名（保持大小写），value 为 JArray。</returns>
-                private static JObject BuildMergedJson(string lubanOutputDir, Dictionary<string, string> tableToSheet, string topModule)
+                private static JObject BuildMergedJson(string lubanOutputDir,
+                    Dictionary<string, string> tableToSheet)
                 {
                     JObject merged = new JObject();
 
@@ -193,8 +185,9 @@ namespace NovaFramework.Editor
 
                         if (!Util.SysIO.File.Exists(filePath))
                         {
-                            Log.Warning(LogTag.Editor, "未找到 Luban 导出文件：{0}", filePath);
-                            continue;
+                            throw new System.IO.FileNotFoundException(
+                                $"未找到 Luban 导出文件：{filePath}",
+                                filePath);
                         }
 
                         string content = Util.SysIO.File.ReadAllTextSync(filePath, System.Text.Encoding.UTF8);

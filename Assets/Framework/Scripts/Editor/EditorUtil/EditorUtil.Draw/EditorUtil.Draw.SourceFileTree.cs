@@ -390,8 +390,7 @@ namespace NovaFramework.Editor
                 /// <param name="detailProp">当前文件的单元设置属性。</param>
                 /// <param name="sourceUnitsSettingsProperty">全部单元设置列表属性。</param>
                 /// <param name="onExportData">数据导出回调（filePath, dataExportPath, detailProp）；为 null 时导出按钮无操作。</param>
-                /// <param name="doRefreshDataTypeNames">刷新类型名回调（filePath, dataTypeNamesProp）；为 null 时跳过刷新。</param>
-                public static void DrawDataExportRow(string filePath, string capturedRelativePath, float indentSpace, int savedIndent, SerializedProperty detailProp, SerializedProperty sourceUnitsSettingsProperty, Action<string, string, SerializedProperty> onExportData = null, Action<string, SerializedProperty> doRefreshDataTypeNames = null)
+                public static void DrawDataExportRow(string filePath, string capturedRelativePath, float indentSpace, int savedIndent, SerializedProperty detailProp, SerializedProperty sourceUnitsSettingsProperty, Action<string, string, SerializedProperty> onExportData = null)
                 {
                     SerializedProperty datasProp = detailProp?.FindPropertyRelative("DatasExportPath");
                     if (datasProp == null)
@@ -412,7 +411,6 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Button("导出", true, () =>
                         {
                             SerializedProperty freshDetail = GetOrCreateDetailSettingsForFile(sourceUnitsSettingsProperty, capturedRelativePath);
-                            doRefreshDataTypeNames?.Invoke(filePath, freshDetail?.FindPropertyRelative("DataTypeNames"));
                             onExportData?.Invoke(filePath, datasProp.stringValue, freshDetail);
                         }, GUILayout.Width(c_ButtonWidthSmall));
                         EditorUtil.Draw.Button("打开文件夹", false, () => EditorUtil.FileSystem.OpenFolder(datasProp.stringValue), GUILayout.Width(c_ButtonWidthMedium));
@@ -429,8 +427,7 @@ namespace NovaFramework.Editor
                 /// <param name="detailProp">当前文件的单元设置属性。</param>
                 /// <param name="sourceUnitsSettingsProperty">全部单元设置列表属性。</param>
                 /// <param name="onExportClass">类型导出回调（filePath, classExportPath, detailProp）；为 null 时导出按钮无操作。</param>
-                /// <param name="doRefreshDataTypeNames">刷新类型名回调（filePath, dataTypeNamesProp）；为 null 时跳过刷新。</param>
-                public static void DrawClassExportRow(string filePath, string capturedRelativePath, float indentSpace, int savedIndent, SerializedProperty detailProp, SerializedProperty sourceUnitsSettingsProperty, Action<string, string, SerializedProperty> onExportClass = null, Action<string, SerializedProperty> doRefreshDataTypeNames = null)
+                public static void DrawClassExportRow(string filePath, string capturedRelativePath, float indentSpace, int savedIndent, SerializedProperty detailProp, SerializedProperty sourceUnitsSettingsProperty, Action<string, string, SerializedProperty> onExportClass = null)
                 {
                     SerializedProperty classesProp = detailProp?.FindPropertyRelative("ClassesExportPath");
                     if (classesProp == null)
@@ -451,7 +448,6 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Button("导出", true, () =>
                         {
                             SerializedProperty freshDetail = GetOrCreateDetailSettingsForFile(sourceUnitsSettingsProperty, capturedRelativePath);
-                            doRefreshDataTypeNames?.Invoke(filePath, freshDetail?.FindPropertyRelative("DataTypeNames"));
                             onExportClass?.Invoke(filePath, classesProp.stringValue, freshDetail);
                         }, GUILayout.Width(c_ButtonWidthSmall));
                         EditorUtil.Draw.Button("打开文件夹", false, () => EditorUtil.FileSystem.OpenFolder(classesProp.stringValue), GUILayout.Width(c_ButtonWidthMedium));

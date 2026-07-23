@@ -8,6 +8,7 @@
  * descrip:   Luban 导出辅助工具：构建导出上下文、生成关联文件名、查找单元设置
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using NovaFramework.Runtime;
 using UnityEditor.PackageManager;
@@ -24,15 +25,19 @@ namespace NovaFramework.Editor
             public static class ExportHelper
             {
                 /// <summary>
-                /// 构建标准 Luban 导出上下文。
+                /// 根据 Nova 内置 Profile 构建标准 Luban 导出上下文。
                 /// </summary>
                 /// <param name="sourceDirPath">数据源根目录路径。</param>
                 /// <param name="settings">数据表设置。</param>
-                /// <param name="targetName">模块名称（如 "sound" / "ui" / "network-cmd" / "network-hostkey"），对应 Templates/Luban/ 下的子目录名。</param>
-                /// <param name="managerName">Luban manager 类名（如 "TableTables" / "ConfigTables" / "SoundTables" / "UITables"）。</param>
+                /// <param name="profile">模块固定导出配置。</param>
                 /// <returns>初始化完毕的导出上下文。</returns>
-                public static LubanExportContext BuildExportContext(string sourceDirPath, IDataTableSettings settings, string targetName, string managerName)
+                internal static LubanExportContext BuildExportContext(string sourceDirPath, IDataTableSettings settings, LubanExportProfile profile)
                 {
+                    if (profile == null)
+                    {
+                        throw new ArgumentNullException(nameof(profile));
+                    }
+
                     string configDir = ConfigSyncer.GetConfigDirPath(sourceDirPath);
                     string confPath = Util.SysIO.Path.Combine(configDir, ConfigSyncer.c_LubanConfFileName);
                     string tablesXmlPath = Util.SysIO.Path.Combine(configDir, ConfigSyncer.c_TablesXmlFileName);
@@ -42,42 +47,28 @@ namespace NovaFramework.Editor
                     {
                         SourceDirPath = sourceDirPath,
                         ConfPath = confPath,
-                        TargetName = targetName,
-                        ManagerName = managerName,
+                        TargetName = profile.TargetName,
+                        ManagerName = profile.ManagerName,
                         TopModule = topModule,
-                        CustomTemplateDirs = GetLubanCustomTemplateDirs(targetName),
+                        CustomTemplateDirs = GetLubanCustomTemplateDirs(profile.TemplateKey),
                         TablesXmlPath = tablesXmlPath,
                         Settings = settings,
+                        Profile = profile,
+                        MinHeaderRowCount = profile.MinHeaderRowCount,
                     };
                 }
 
-                /// <summary>
-                /// 根据数据源文件构建其对应的生成代码文件名集合（用于单文件导出时过滤日志）。
-                /// 遍历 units 列表找到匹配的 UnitSetting，提取 DataTypeNames 生成 SheetName.cs 和 TbSheetName.cs，并加入 managerName.cs。
-                /// </summary>
-                /// <param name="filePath">数据源文件的完整路径。</param>
-                /// <param name="sourceDirPath">数据源根目录路径。</param>
-                /// <param name="units">当前的单元设置列表。</param>
-                /// <param name="managerName">Luban manager 类名。</param>
-                /// <returns>该文件关联的 .cs 文件名集合。</returns>
-                public static HashSet<string> BuildRelevantFileNames(string filePath, string sourceDirPath, IReadOnlyList<IDataTableUnitSetting> units, string managerName)
+                internal static HashSet<string> BuildRelevantFileNames(
+                    LubanSchemaManifest manifest,
+                    string sourcePath,
+                    string managerName)
                 {
-                    HashSet<string> fileNames = new HashSet<string>();
-                    string relativePath = Util.SysIO.Path.GetRelativePath(sourceDirPath.TrimEnd('/', '\\'), filePath);
-                    IDataTableUnitSetting unitSetting = FindUnitSetting(units, relativePath);
-                    if (unitSetting?.DataTypeNames != null)
+                    LubanSchemaUnit unit = manifest.ResolveUnit(sourcePath);
+                    var fileNames = new HashSet<string>();
+                    foreach (LubanSchemaTable table in unit.Tables)
                     {
-                        foreach (string typeName in unitSetting.DataTypeNames)
-                        {
-                            if (string.IsNullOrEmpty(typeName) || typeName.StartsWith("#"))
-                            {
-                                continue;
-                            }
-
-                            string sheetName = typeName.Contains(".") ? typeName.Substring(typeName.LastIndexOf('.') + 1) : typeName;
-                            fileNames.Add(sheetName + ".cs");
-                            fileNames.Add("Tb" + sheetName + ".cs");
-                        }
+                        fileNames.Add(table.ValueType + ".cs");
+                        fileNames.Add(table.Name + ".cs");
                     }
 
                     fileNames.Add(managerName + ".cs");

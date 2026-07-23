@@ -35,6 +35,11 @@ namespace NovaFramework.BestHTTP.Runtime
             Best.TLSSecurity.TLSSecurity.Setup();
         }
 
+        public bool CanUseIpCandidate(Uri uri)
+        {
+            return uri != null && uri.Scheme == Uri.UriSchemeHttp;
+        }
+
         public UniTask<HttpResponse> GetAsync(string url, float requestTimeout, float connectTimeout, string headerInfos, string hostHeader)
         {
 #if NOVA_BEST_HTTP

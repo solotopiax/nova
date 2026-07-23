@@ -47,7 +47,7 @@ UnityEditor.EditorWindow
 | `m_InternalItems` | `List<EditorUtil.CheckUpdate.UpdateInfo>` | `null` | 内部云仓库更新列表 |
 | `m_IsChecking` | `bool` | `false` | 是否正在异步拉取中 |
 | `m_Scroll` | `Vector2` | `default` | 滚动位置 |
-| `m_DontShowAgain` | `bool` | `false` | 是否勾选"启动时不再提示这些版本" |
+| `m_DontShowAgain` | `bool` | `false` | 是否勾选"不再提示这些版本" |
 | `m_HeaderStyle` | `GUIStyle` | `null` | 标题样式（懒初始化，`EnsureStyles` 标志） |
 | `m_LatestStyle` | `GUIStyle` | `null` | Latest 版本列文本样式（绿色） |
 | `m_EmptyStyle` | `GUIStyle` | `null` | 空态提示文本样式（居中灰色） |

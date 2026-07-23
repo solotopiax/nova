@@ -88,7 +88,51 @@ MonoBehaviour:
     ByPlatform: 0
     ByChannel: 0
     ByDevelopMode: 1
+  CdnMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 1
   NamespaceOverrides: []
+  CdnDeployment:
+    Endpoint: YOUR_CDN_ENDPOINT
+    AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
+    AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
+    PresetOSSPath: YOUR_OSS_PATH
+    LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+    RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    ZoneID: YOUR_CLOUDFLARE_ZONE_ID
+    PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
+    Token: YOUR_CLOUDFLARE_API_TOKEN
+    CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
+  CdnOverrides:
+  - Platform: 0
+    Channel: 0
+    DevelopMode: 1
+    Config:
+      Endpoint: YOUR_CDN_ENDPOINT
+      AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
+      AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
+      PresetOSSPath: YOUR_OSS_PATH
+      LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+      RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+      ZoneID: YOUR_CLOUDFLARE_ZONE_ID
+      PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
+      Token: YOUR_CLOUDFLARE_API_TOKEN
+      CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
+  - Platform: 0
+    Channel: 0
+    DevelopMode: 0
+    Config:
+      Endpoint: YOUR_CDN_ENDPOINT
+      AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
+      AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
+      PresetOSSPath: YOUR_OSS_PATH
+      LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+      RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+      ZoneID: YOUR_CLOUDFLARE_ZONE_ID
+      PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
+      Token: YOUR_CLOUDFLARE_API_TOKEN
+      CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
   HybridCLROverrides:
   - Platform: 2
     Channel: 0
@@ -166,7 +210,7 @@ MonoBehaviour:
     GameEntranceProcedureName: ProcedurePreload
   - Platform: 1
     Channel: 0
-    DevelopMode: 0
+    DevelopMode: 1
     AotMetadataDlls:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/mscorlib.dll.bytes

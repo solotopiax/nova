@@ -40,7 +40,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public abstract AdChannelType Channel { get; }
 
         /// <summary>
-        /// 广告收入回调事件，每次广告展示产生收入时在主线程触发。
+        /// 广告收入回调事件，每次广告展示产生收入时在 SDK 原始回调线程即时触发。
         /// </summary>
         public event System.Action<AdEvent> OnAdRevenuePaid;
 
@@ -60,7 +60,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public event System.Action<bool> OnInitResult;
 
         /// <summary>
-        /// 广告播放完成事件，由渠道 SDK 展示回调触发。
+        /// 广告播放完成事件，由渠道 SDK 展示成功回调触发。
         /// </summary>
         public event System.Action<AdResult> OnShowCompleted;
 

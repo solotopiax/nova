@@ -1,6 +1,12 @@
 ﻿{
   "NetworkCmds": [
     {
+      "Name": "TGAServerUrl",
+      "Way": "HTTP_URL",
+      "HostKey": "TGAServer",
+      "Path": ""
+    },
+    {
       "Name": "GameAccountLogin",
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
@@ -23,12 +29,6 @@
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
       "Path": "/v1/account/bind/resolve"
-    },
-    {
-      "Name": "TGAServerUrl",
-      "Way": "HTTP_URL",
-      "HostKey": "TGAServer",
-      "Path": ""
     }
   ]
 }

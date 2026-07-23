@@ -123,6 +123,57 @@
 - 构建产物落地后直接打开目录
 - 导出完成后快速跳到目标位置检查结果
 
+### 7. 批量 Excel 导出
+
+目标：
+
+- 用单个 `export.excel.all` Step 刷新所有 Excel 派生的数据、类型和辅助清单
+
+固定顺序：
+
+1. Table 数据 / 类型
+2. UI 数据 / 类型
+3. Localization 文本数据 / 类型、语言列表、字体数据 / 类型
+4. Network HostKey 数据 / 类型、NetCmd 数据 / 类型
+5. Sound 数据 / 类型
+6. Vibrate Emphasis 数据 / 类型、Custom 数据 / 类型
+
+该 Step 明确不执行 `export.config` 与 `export.network.proto`。它直接复用现有原子 Step，每个原子步骤前响应取消，首个失败即中断。
+
+### 8. 飞书机器人通知
+
+目标：
+
+- 通过 `notification.feishu_webhook` 在 Batch 任意位置发送自定义文本通知
+
+参数：
+
+- `WebhookUrl`：窗口标签为 `Webhook URL`，使用密码框遮罩，但仍以明文保存在 PipifySettingsSO
+- `MessageText`：窗口标签为“文案”，使用 3–8 行自适应 TextArea，可直接输入并保留换行排版
+
+Step 发送飞书标准 `msg_type=text` 请求。参数为空、URL 无效、HTTP 失败、响应缺少业务码或业务码非 0 时均抛错中断；日志不会输出完整 Webhook URL。
+
+### 9. CDN 资源部署
+
+目标：
+
+- 使用当前激活 `ConfigMasterSO` 已配置的 OSS Endpoint、密钥与固定路径前缀
+- 在 Pipify Batch 中单独指定本地目录和云端目录后缀
+
+Step：
+
+- `cdn.deploy`：显示名“批量部署资源到 CDN”，分类“CDN”
+
+参数：
+
+- `LocalDirectory`：窗口标签为“本地目录”
+- `RemoteDirectory`：窗口标签为“云端目录”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示，参数只保存后半段可编辑后缀
+
+两个路径都支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`。执行时按当前
+`Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅在快照中覆盖这两个路径，不回写
+`ConfigMasterSO`。随后直接调用 `EditorUtil.CDN.DeployAsync`；配置、目录或上传失败时抛错并中断 Batch。
+参数区不提供独立部署按钮，部署只由 Pipify Runner 执行该 Step 时触发。
+
 ## 常见组合方式
 
 ### 1. HybridCLR 完整链
@@ -197,6 +248,8 @@
 ## 常见失败点
 
 - 当前场景没有 `Nova`：组件型导出 Step 会直接失败。
+- UI Excel 校验、Luban 或暂存发布失败：`export.ui.data` / `export.ui.code` 会抛出异常并中断流水线，不再以完成任务返回。
+- Sound/Vibrate 数据或类型批次返回 `false`：对应 Step 立即抛出异常并中断流水线，不会继续执行后续 Step；每个 Sound 或 Vibrate 区域只建立一次发布事务。
 - `ConfigMasterSO.ExportTarget` 没配：`export.config` 会中断流水线。
 - HybridCLR 只跑了拷贝，没先生成 DLL：拷贝类 Step 会失去输入产物。
 - Android 没先 `edm4u.android_resolve`：后续构建链可能在依赖目录上失败。
@@ -209,10 +262,13 @@
 
 - [PipifySteps.HybridCLR.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.HybridCLR.cs)
 - [PipifySteps.Export.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Export.cs)
+- [PipifySteps.Export.All.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Export.All.cs)
 - [PipifySteps.Export.Helpers.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Export.Helpers.cs)
 - [PipifySteps.BundleBuilder.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.BundleBuilder.cs)
 - [PipifySteps.Build.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Build.cs)
 - [PipifySteps.Shell.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Shell.cs)
+- [PipifySteps.Notification.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.Notification.cs)
+- [PipifySteps.CDN.cs](../../../../Scripts/Editor/EditorUtil/EditorUtil.Pipify/Steps/PipifySteps.CDN.cs)
 
 关键入口：
 

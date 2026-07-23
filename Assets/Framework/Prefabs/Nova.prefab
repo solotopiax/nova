@@ -50,35 +50,27 @@ MonoBehaviour:
   - TypeName: NovaFramework.SDK.TGAPlugin.Runtime.TGAPlugin, NovaFramework.SDK.TGAPlugin.Runtime,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Enabled: 1
-    Priority: 100
   - TypeName: NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePlugin, NovaFramework.SDK.FirebasePlugin.Runtime,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Enabled: 1
-    Priority: 100
   - TypeName: NovaFramework.SDK.AppsFlyerPlugin.Runtime.AppsFlyerPlugin, NovaFramework.SDK.AppsFlyerPlugin.Runtime,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Enabled: 1
-    Priority: 100
   - TypeName: NovaFramework.SDK.AdPlugin.Runtime.AdPlugin, NovaFramework.SDK.AdPlugin.Runtime,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Enabled: 1
-    Priority: 100
   - TypeName: NovaFramework.SDK.IAP.Runtime.IAPPlugin, NovaFramework.SDK.IAP.Runtime,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Enabled: 1
-    Priority: 100
   - TypeName: NovaFramework.SDK.GoogleSignIn.GoogleSignInPlugin, NovaFramework.SDK.GoogleSignIn.Runtime,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Enabled: 1
-    Priority: 100
   - TypeName: NovaFramework.SDK.Facebook.FacebookPlugin, NovaFramework.SDK.Facebook.Runtime,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Enabled: 0
-    Priority: 100
   - TypeName: NovaFramework.SDK.AppleSignIn.AppleSignInPlugin, NovaFramework.SDK.AppleSignIn.Runtime,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     Enabled: 0
-    Priority: 100
 --- !u!1 &214000469982186650
 GameObject:
   m_ObjectHideFlags: 0
@@ -192,21 +184,15 @@ MonoBehaviour:
     - SourcePath: TableList.xlsx
       DatasExportPath: Assets/Samples/MainDemo/Jsons/TableList.json
       ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
+      AssetLocation: TableList
       TableMode: 0
       IndexField: 
-      AssetLocation: TableList
-      DataTypeNames:
-      - Demo_Item
-      - ListA
-      - ListB
     - SourcePath: TableMap.xlsx
       DatasExportPath: Assets/Samples/MainDemo/Jsons/TableMap.json
       ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
+      AssetLocation: TableMap
       TableMode: 1
       IndexField: Name
-      AssetLocation: TableMap
-      DataTypeNames:
-      - Map1
 --- !u!1 &1990458234707485856
 GameObject:
   m_ObjectHideFlags: 0
@@ -268,10 +254,11 @@ MonoBehaviour:
   m_AutoClearUnusedCacheOnHotfix: 0
   m_CheckTimeout: 5
   m_IdleTimeout: 20
-  m_HostServerUrlDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
-  m_HostServerUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
-  m_HostServerUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
-  m_HostServerUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
+  m_HostServerUrlDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}
+  m_HostServerUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}
+  m_HostServerUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}
+  m_HostServerUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}
+  m_Channel: 0
   m_DecryptorType: 0
 --- !u!1 &3308748334323488271
 GameObject:
@@ -584,8 +571,6 @@ MonoBehaviour:
         DatasExportPath: Assets/Samples/MainDemo/Jsons/NetworkHostKeys.json
         ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Networks/HostKeys
         AssetLocation: NetworkHostKeys
-        DataTypeNames:
-        - NetworkHostKeys
     NetCmdSettings:
       SourceDirPath: Assets/Samples/MainDemo/Excels/Networks/Cmds
       DatasExportPath: 
@@ -595,14 +580,12 @@ MonoBehaviour:
         DatasExportPath: Assets/Samples/MainDemo/Jsons/NetworkCmds.json
         ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Networks/Cmds
         AssetLocation: NetworkCmds
-        DataTypeNames:
-        - NetworkCmds
   m_HttpSettings:
     ConnectTimeout: 20
     RequestTimeout: 60
   m_DoHSettings:
-    UseDoH: 0
-    DnsTimeoutSeconds: 0
+    UseDoH: 1
+    DnsTimeoutSeconds: 3
   m_WebSocketSettings:
     ConnectTimeout: 10
     AuthenticateTimeout: 10
@@ -691,15 +674,11 @@ MonoBehaviour:
       DatasExportPath: Assets/Samples/MainDemo/Jsons/VibrateEmphasis.json
       ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Vibrates/Emphasis
       AssetLocation: VibrateEmphasis
-      DataTypeNames:
-      - Demo_VibrateEmphasis
     CustomUnitsSettings:
     - SourcePath: VibrateCustom.xlsx
       DatasExportPath: Assets/Samples/MainDemo/Jsons/VibrateCustoms.json
       ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Vibrates/Custom
       AssetLocation: VibrateCustoms
-      DataTypeNames:
-      - Demo_VibrateCustom
 --- !u!1 &4048263310547660259
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,8 +837,6 @@ MonoBehaviour:
       DatasExportPath: Assets/Samples/MainDemo/Jsons/Sounds.json
       ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Sounds
       AssetLocation: Sounds
-      DataTypeNames:
-      - Demo_Sound
 --- !u!1 &5431121861835738401
 GameObject:
   m_ObjectHideFlags: 0
@@ -933,8 +910,6 @@ MonoBehaviour:
       DatasExportPath: Assets/Samples/MainDemo/Jsons/UIs.json
       ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/UIs
       AssetLocation: UIs
-      DataTypeNames:
-      - UI1
 --- !u!1 &6077226297666554022
 GameObject:
   m_ObjectHideFlags: 0
@@ -1253,15 +1228,11 @@ MonoBehaviour:
       DatasExportPath: Assets/Samples/MainDemo/Jsons/LocalizationTexts_{0}.json
       ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Localizations/Texts
       AssetLocation: LocalizationTexts_{0}
-      DataTypeNames:
-      - Demo_Localization
     FontUnitsSettings:
     - SourcePath: LocalizationFonts.xlsx
       DatasExportPath: Assets/Samples/MainDemo/Jsons/LocalizationFonts.json
       ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Localizations/Fonts
       AssetLocation: LocalizationFonts
-      DataTypeNames:
-      - LocalizationFonts
   m_SupportedLanguagesAssetLocation: LocalizationSupportedLanguages
   m_TextTemplatePath: Assets/Framework/Templates/LocalizationTextTemplate.xlsx
   m_FontTemplatePath: Assets/Framework/Templates/LocalizationFontTemplate.xlsx

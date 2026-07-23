@@ -2,7 +2,7 @@
 id: ADR-072
 title: Mobile IAP 平台透传参数编码 uid+tableId+receiptParam（8/8/16 布局）
 status: accepted
-summary: 平台账号字段 GUID 内定长打包 uid/tableId/receiptParam，uid 与 receiptParam 为字符串槽位，tableId 为数值槽位
+summary: IAP透传参数采用8/8/16布局
 category: arch
 date: 2026-07-14
 aliases:

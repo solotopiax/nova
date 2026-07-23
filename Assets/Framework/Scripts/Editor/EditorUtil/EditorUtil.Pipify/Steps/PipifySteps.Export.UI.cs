@@ -35,7 +35,9 @@ namespace NovaFramework.Editor
         {
             UISettings settings = ResolveUISettings();
             string sourceDirPath = ResolveUISourceDirPath(settings);
-            EditorUtil.UI.Exporter.ExportData(settings, sourceDirPath);
+            EnsureUIExportSucceeded(
+                EditorUtil.UI.Exporter.ExportData(settings, sourceDirPath),
+                "数据");
             return UniTask.CompletedTask;
         }
 
@@ -52,8 +54,18 @@ namespace NovaFramework.Editor
         {
             UISettings settings = ResolveUISettings();
             string sourceDirPath = ResolveUISourceDirPath(settings);
-            EditorUtil.UI.Exporter.ExportCode(settings, sourceDirPath);
+            EnsureUIExportSucceeded(
+                EditorUtil.UI.Exporter.ExportCode(settings, sourceDirPath),
+                "类型");
             return UniTask.CompletedTask;
+        }
+
+        internal static void EnsureUIExportSucceeded(bool success, string exportKind)
+        {
+            if (!success)
+            {
+                throw new InvalidOperationException($"[Pipify] UI {exportKind}导出失败，请查看此前的导出错误日志。");
+            }
         }
 
         /// <summary>

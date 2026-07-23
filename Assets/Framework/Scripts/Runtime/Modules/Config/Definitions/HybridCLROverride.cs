@@ -46,25 +46,25 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// AOT 元数据 DLL 列表 Override（编辑期三字段视图）；
-        /// 覆盖顶层 ConfigMasterSO.AotMetadataDlls；为空时回退顶层字段。
+        /// 覆盖顶层 ConfigMasterSO.AotMetadataDlls；空列表是当前坐标明确配置的有效值。
         /// </summary>
         public List<DllMasterAssetEntry> AotMetadataDlls = new();
 
         /// <summary>
         /// 业务 DLL 列表 Override（编辑期三字段视图）；
-        /// 覆盖顶层 ConfigMasterSO.GameDlls；为空时回退顶层字段。
+        /// 覆盖顶层 ConfigMasterSO.GameDlls；空列表是当前坐标明确配置的有效值。
         /// </summary>
         public List<DllMasterAssetEntry> GameDlls = new();
 
         /// <summary>
         /// link.xml 目标位置 Override（项目根相对的具体文件路径，含文件名与 .xml 扩展名）；
-        /// 覆盖顶层 ConfigMasterSO.LinkXmlTargetPath；为 null 或空时回退顶层字段。
+        /// 覆盖顶层 ConfigMasterSO.LinkXmlTargetPath；空字符串是当前坐标明确配置的有效值。
         /// </summary>
         public string LinkXmlTargetPath;
 
         /// <summary>
         /// 业务入口 Procedure 相对类型名 Override（不含 namespace，如 ProcedurePreload）；
-        /// 覆盖顶层 ConfigMasterSO.GameEntranceProcedureName；为 null 或空时回退顶层字段。
+        /// 覆盖顶层 ConfigMasterSO.GameEntranceProcedureName；空字符串是当前坐标明确配置的有效值。
         /// </summary>
         public string GameEntranceProcedureName;
     }

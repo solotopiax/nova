@@ -39,9 +39,9 @@ public void Login(string userId);
 m_SDKManager.Initialize(new SDKManagerConfig { PluginEntries = m_PluginEntries });
 ```
 
-3. 首次访问 `InitializeTask` 时会先确保 Manager 已缓存跨模块依赖，再创建并缓存一次 `m_SDKManager.InitializeAsync(GetCancellationTokenOnDestroy())` 任务。
+3. 首次访问 `InitializeTask` 时会先确保 Manager 已缓存跨模块依赖，再创建一次 `m_SDKManager.InitializeAsync(GetCancellationTokenOnDestroy())`，并通过 `Preserve()` 缓存完成结果。
 4. `InitializeAsync` 内部按 `ConfigMaster.EnabledSDKs` 实例化启用插件，并按 `ISDKPlugin.Priority` 初始化；`PluginEntries` 不参与运行时启用或排序。
-5. 之后重复访问 `InitializeTask` 会返回同一个缓存任务。
+5. 初始化完成后重复访问 `InitializeTask` 会返回同一个缓存任务并复用完成结果，初始化仍只执行一次。
 
 ## 生命周期代理
 
@@ -77,6 +77,7 @@ foreach (ITrackPlugin tracker in Nova.SDK.GetAll<ITrackPlugin>())
 - `m_PluginEntries` 仅保留 Inspector 选型元数据，不作为运行时启用、实例化或 Priority 来源。
 - 后续去除组件侧配置状态时，依赖缓存、抢跑兜底和重复初始化保护应收敛到 `SDKManager` 自身保证。
 - `InitializeTask` 在 `m_SDKManager == null` 时返回 `UniTask.CompletedTask`。
+- `InitializeTask` 支持在初始化完成后重复等待；业务启动流程失败重试时可再次 `await Nova.SDK.InitializeTask`，不会重复初始化 SDK。
 - `[DisallowMultipleComponent]` 要求一个 GameObject 上最多只能挂一个 `SDKComponent`。
 
 ## 关联文档

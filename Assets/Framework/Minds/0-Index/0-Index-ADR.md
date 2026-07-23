@@ -23,6 +23,7 @@ auto_generated: true
 - [ADR-057 基础网络编排层从独立 Kit 包下沉进框架 Network 模块](../2-Areas/ADR/ADR-057-network-kit-base-sink-into-framework.md) — 基础网络编排下沉框架，删 Kit 基础包
 - [ADR-062 Proto 引用公共 header 统一用 NovaFramework.Runtime](../2-Areas/ADR/ADR-062-proto-header-namespace-convention.md) — Proto 公共 header 引用统一去 Kit 段
 - [ADR-067 登录/绑定/云存档三端职责分离](../2-Areas/ADR/ADR-067-login-bind-save-separation.md) — login 鉴权 / bind 独立包裁决归属 / 覆盖交 save 编排
+- [ADR-072 Mobile IAP 平台透传参数编码 uid+tableId+receiptParam（8/8/16 布局）](../2-Areas/ADR/ADR-072-iap-mobile-passthrough-param-layout.md) — IAP透传参数采用8/8/16布局
 
 ## asset
 
@@ -45,6 +46,7 @@ auto_generated: true
 - [ADR-056 RuntimeProvider 配置选取统一收口 WorkspaceActive 锚点](../2-Areas/ADR/ADR-056-runtimeprovider-config-select-via-workspaceactive.md) — 配置选取改走 WorkspaceActive 锚点
 - [ADR-059 SerializeReference 跨格深拷贝改用 boxedValue](../2-Areas/ADR/ADR-059-serializeref-deepcopy-boxedvalue.md) — 跨格深拷贝改用 JsonUtility round-trip
 - [ADR-064 PlugPals 依赖检测与可选库三原则](../2-Areas/ADR/ADR-064-plugpals-dependency-detection.md) — 依赖进 dependencies，宏由 asmdef 配置
+- [ADR-073 Excel 导出业务边界：仅 Table 通用，其他模块专用](../2-Areas/ADR/ADR-073-excel-export-business-boundary.md) — 仅 Table 通用，其他模块按业务语义定制
 
 ## hotfix
 
@@ -99,4 +101,4 @@ auto_generated: true
 
 
 ---
-_共 57 条，分布于 10 个 category。_
+_共 59 条，分布于 10 个 category。_

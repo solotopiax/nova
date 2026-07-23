@@ -23,7 +23,7 @@ namespace NovaFramework.Editor
     internal static partial class PipifySteps
     {
         /// <summary>
-        /// Step：导出 Emphasis 震动数据（遍历所有 EmphasisUnitsSettings，逐单元导出数据文件）。
+        /// Step：以一次批次事务导出全部 Emphasis 震动数据。
         /// 通过 Helpers.ResolveComponentOnNova 定位 VibrateComponent；
         /// 反射读取私有 m_Settings 字段取得 VibrateSettings；
         /// 未找到组件或 Settings 为 null 时抛出 InvalidOperationException 中断流水线。
@@ -36,18 +36,16 @@ namespace NovaFramework.Editor
             VibrateComponent component = Helpers.ResolveComponentOnNova<VibrateComponent>();
             VibrateSettings settings = ResolveVibrateSettings(component);
 
-            string sourceDirPath = settings.EmphasisSourceDirPath;
-            foreach (VibrateUnitSetting unit in settings.EmphasisUnitsSettings)
-            {
-                string filePath = sourceDirPath.TrimEnd('/', '\\') + "/" + unit.SourcePath;
-                EditorUtil.Vibrate.ExportEmphasisData(filePath, unit.DatasExportPath, settings);
-            }
+            EnsureVibrateExportSucceeded(
+                EditorUtil.Vibrate.ExportEmphasisDataAll(settings),
+                "Emphasis",
+                "数据");
 
             return UniTask.CompletedTask;
         }
 
         /// <summary>
-        /// Step：导出 Emphasis 震动类型（遍历所有 EmphasisUnitsSettings，逐单元导出类型代码文件）。
+        /// Step：以一次批次事务导出全部 Emphasis 震动类型。
         /// 通过 Helpers.ResolveComponentOnNova 定位 VibrateComponent；
         /// 反射读取私有 m_Settings 字段取得 VibrateSettings；
         /// 未找到组件或 Settings 为 null 时抛出 InvalidOperationException 中断流水线。
@@ -60,18 +58,16 @@ namespace NovaFramework.Editor
             VibrateComponent component = Helpers.ResolveComponentOnNova<VibrateComponent>();
             VibrateSettings settings = ResolveVibrateSettings(component);
 
-            string sourceDirPath = settings.EmphasisSourceDirPath;
-            foreach (VibrateUnitSetting unit in settings.EmphasisUnitsSettings)
-            {
-                string filePath = sourceDirPath.TrimEnd('/', '\\') + "/" + unit.SourcePath;
-                EditorUtil.Vibrate.ExportEmphasisCode(filePath, unit.ClassesExportPath, settings);
-            }
+            EnsureVibrateExportSucceeded(
+                EditorUtil.Vibrate.ExportEmphasisCodeAll(settings),
+                "Emphasis",
+                "类型");
 
             return UniTask.CompletedTask;
         }
 
         /// <summary>
-        /// Step：导出 Custom 震动数据（遍历所有 CustomUnitsSettings，逐单元导出数据文件）。
+        /// Step：以一次批次事务导出全部 Custom 震动数据。
         /// 通过 Helpers.ResolveComponentOnNova 定位 VibrateComponent；
         /// 反射读取私有 m_Settings 字段取得 VibrateSettings；
         /// 未找到组件或 Settings 为 null 时抛出 InvalidOperationException 中断流水线。
@@ -84,18 +80,16 @@ namespace NovaFramework.Editor
             VibrateComponent component = Helpers.ResolveComponentOnNova<VibrateComponent>();
             VibrateSettings settings = ResolveVibrateSettings(component);
 
-            string sourceDirPath = settings.CustomSourceDirPath;
-            foreach (VibrateUnitSetting unit in settings.CustomUnitsSettings)
-            {
-                string filePath = sourceDirPath.TrimEnd('/', '\\') + "/" + unit.SourcePath;
-                EditorUtil.Vibrate.ExportCustomData(filePath, unit.DatasExportPath, settings);
-            }
+            EnsureVibrateExportSucceeded(
+                EditorUtil.Vibrate.ExportCustomDataAll(settings),
+                "Custom",
+                "数据");
 
             return UniTask.CompletedTask;
         }
 
         /// <summary>
-        /// Step：导出 Custom 震动类型（遍历所有 CustomUnitsSettings，逐单元导出类型代码文件）。
+        /// Step：以一次批次事务导出全部 Custom 震动类型。
         /// 通过 Helpers.ResolveComponentOnNova 定位 VibrateComponent；
         /// 反射读取私有 m_Settings 字段取得 VibrateSettings；
         /// 未找到组件或 Settings 为 null 时抛出 InvalidOperationException 中断流水线。
@@ -108,12 +102,10 @@ namespace NovaFramework.Editor
             VibrateComponent component = Helpers.ResolveComponentOnNova<VibrateComponent>();
             VibrateSettings settings = ResolveVibrateSettings(component);
 
-            string sourceDirPath = settings.CustomSourceDirPath;
-            foreach (VibrateUnitSetting unit in settings.CustomUnitsSettings)
-            {
-                string filePath = sourceDirPath.TrimEnd('/', '\\') + "/" + unit.SourcePath;
-                EditorUtil.Vibrate.ExportCustomCode(filePath, unit.ClassesExportPath, settings);
-            }
+            EnsureVibrateExportSucceeded(
+                EditorUtil.Vibrate.ExportCustomCodeAll(settings),
+                "Custom",
+                "类型");
 
             return UniTask.CompletedTask;
         }
@@ -132,6 +124,14 @@ namespace NovaFramework.Editor
                 throw new InvalidOperationException("[Pipify] VibrateComponent.m_Settings 未配置，请在 Nova Prefab 的 VibrateComponent Inspector 中设置振动参数后重试。");
             }
             return settings;
+        }
+
+        internal static void EnsureVibrateExportSucceeded(bool success, string area, string kind)
+        {
+            if (!success)
+            {
+                throw new InvalidOperationException($"[Pipify] Vibrate {area} {kind}导出失败，流水线已终止。");
+            }
         }
     }
 }

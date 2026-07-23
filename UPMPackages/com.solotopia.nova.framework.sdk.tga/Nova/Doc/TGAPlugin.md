@@ -70,6 +70,7 @@
   - 创建 `TGADynamicSuperPropertyListener`
   - 监听 `SDKEventData.UserLogin`
   - 通过 `TGAReportNetService` 上报 TGA 标识
+  - 异步监听 `IAuthPlugin` 发布的 `SDKDataKeys.OpenId` / `SDKDataKeys.ThirdPlatform`，并通过 `UserSet` 写入 `nova_openid` / `nova_third_platform`
 
 ## 4. 使用示例
 

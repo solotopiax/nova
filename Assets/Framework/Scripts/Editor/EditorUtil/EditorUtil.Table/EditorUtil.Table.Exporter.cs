@@ -23,16 +23,6 @@ namespace NovaFramework.Editor
             public static class Exporter
             {
                 /// <summary>
-                /// Luban target 名称，固定为 table。
-                /// </summary>
-                private const string c_ExportTargetName = "table";
-
-                /// <summary>
-                /// Luban manager 类名，固定为 TableTables。
-                /// </summary>
-                private const string c_ExportManagerName = "TableTables";
-
-                /// <summary>
                 /// 导出全部（代码 + 数据）：清理旧导出文件 → 构建导出上下文 → 调用 Pipeline.ExportAll。
                 /// </summary>
                 /// <param name="settings">TableSettings 实例，包含导出路径与单元配置。</param>
@@ -53,7 +43,7 @@ namespace NovaFramework.Editor
                         Log.Warning(LogTag.Editor, "检测到多个不同的类型导出路径，Luban 仅支持统一输出到一个目录，将使用：{0}", classExportPath);
                     }
 
-                    var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, settings, c_ExportTargetName, c_ExportManagerName);
+                    var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, settings, EditorUtil.Luban.LubanExportProfiles.Table);
                     ctx.OutputCodeDir = classExportPath;
                     return EditorUtil.Luban.Pipeline.ExportAll(ctx);
                 }
@@ -72,7 +62,7 @@ namespace NovaFramework.Editor
                     }
 
                     string classExportPath = CollectFirstClassExportPath(settings, out _);
-                    var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, settings, c_ExportTargetName, c_ExportManagerName);
+                    var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, settings, EditorUtil.Luban.LubanExportProfiles.Table);
                     ctx.OutputCodeDir = classExportPath;
                     return EditorUtil.Luban.Pipeline.ExportCode(ctx);
                 }
@@ -90,7 +80,7 @@ namespace NovaFramework.Editor
                         return false;
                     }
 
-                    var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, settings, c_ExportTargetName, c_ExportManagerName);
+                    var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(sourceDirPath, settings, EditorUtil.Luban.LubanExportProfiles.Table);
                     return EditorUtil.Luban.Pipeline.ExportData(ctx);
                 }
 

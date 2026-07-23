@@ -42,6 +42,7 @@ UnityEngine.ScriptableObject
 | `GameEntranceProcedureName` | `string` | `null` | 业务入口 Procedure 相对类名（不含 namespace），如 `ProcedurePreload`；由 ConfigWindow → **HybridCLR 配置** 面板编辑 |
 | `AotMetadataDlls` | `List<DllMasterAssetEntry>` | `new()` | AOT 元数据 DLL 列表（编辑期三字段）；ConfigWindow **HybridCLR 配置** 面板编辑，导出到 ConfigRuntimeSO（单字段 DllAssetEntry）；供 `EditorUtil.HybridCLR.CopyAotDlls` 消费。`HybridCLRMask` 全不勾时为全局顶层默认值；勾选维度后由 `HybridCLROverrides` 按坐标覆盖，面板经 `ResolveHybridCLRDllListProp` 进入坐标即建份（含顶层快照），写入落 Override 份 |
 | `GameDlls` | `List<DllMasterAssetEntry>` | `new()` | 业务 DLL 列表（编辑期三字段）；同上面板编辑，导出到 ConfigRuntimeSO（单字段 DllAssetEntry）；供 `EditorUtil.HybridCLR.CopyGameDlls` 消费。维度化语义同 `AotMetadataDlls` |
+| `CdnDeployment` | `CdnDeploymentConfig`（`#if UNITY_EDITOR`） | `new()` | CDN 内容部署与缓存清理配置；由 ConfigWindow 的“CDN 内容分发网络部署”面板编辑，仅保存在 ConfigMasterSO，不参与 ConfigRuntimeSO 导出 |
 | `YooAssetSettingsPath` | `string`（`#if UNITY_EDITOR`） | `null` | YooAssetSettings.asset 的项目根相对路径；仅 Editor 期消费；由 ConfigWindow 设置，由 `EditorUtil.Config.YooAssetInjector` 注入到 `YooAssetConfiguration` |
 | `BundleCollectorSettingPath` | `string`（`#if UNITY_EDITOR`） | `null` | BundleCollectorSetting.asset 的项目根相对路径；仅 Editor 期消费；替代 `AssetDatabase.FindAssets` 全工程扫描，精确定位收集器配置 |
 | `CommonMask` | `PanelDimensionMask` | `new()` | 应用配置（CommonConfig）面板的维度掩码；全不勾 = 全局唯一 |
@@ -97,6 +98,7 @@ public void OnAfterDeserialize();     // 重建 m_Index
 
 | 字段 | 消费方 |
 |------|--------|
+| `CdnDeployment` | ConfigWindow “CDN 内容分发网络部署”面板；`EditorUtil.CDN` 执行 OSS 上传与 Cloudflare 缓存清理 |
 | `YooAssetSettingsPath` | `EditorUtil.Config.YooAssetInjector.Inject(master)` |
 | `BundleCollectorSettingPath` | `EditorUtil.Config.YooAssetInjector.LoadBundleCollector(master)` |
 | `LinkXmlTargetPath` | `EditorUtil.HybridCLR`（hybridclr.validate_linkxml / hybridclr.generate_linkxml Step） |
@@ -169,6 +171,7 @@ ConfigRuntimeSO runtime = EditorUtil.Config.Exporter.Export(
 
 - `m_Index` 为 `[NonSerialized]`，进入 Play Mode 或重新加载域后自动失效；`OnAfterDeserialize` 会自动重建
 - `EditorEntries` 直接暴露内部 `List<PlatformChannelEntry>`，修改后须手动调用 `EditorUtility.SetDirty(master)` 或通过 `StructureGuard` 工具方法（已内置 SetDirty）
+- `CdnDeployment` 位于 `#if UNITY_EDITOR`，不会出现在 Player 编译或 `ConfigRuntimeSO` 中；`AccessKeySecret` 与 Cloudflare `Token` 在 ConfigMasterSO 资产中仍以明文保存，界面遮罩不等于加密
 - `YooAssetSettingsPath` 与 `BundleCollectorSettingPath` 均为**项目根相对路径**（`PAT-36`）；不得写入绝对路径，否则跨机器失效；由 ConfigWindow 负责将 `EditorUtility.OpenFilePanel` 拿到的绝对路径转换后写入
 
 ---

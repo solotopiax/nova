@@ -23,20 +23,10 @@ namespace NovaFramework.Editor
     internal static partial class PipifySteps
     {
         /// <summary>
-        /// Luban target 名称（Sound 模块）。
-        /// </summary>
-        private const string c_SoundExportTargetName = "sound";
-
-        /// <summary>
-        /// Luban manager 类名（Sound 模块）。
-        /// </summary>
-        private const string c_SoundExportManagerName = "SoundTables";
-
-        /// <summary>
-        /// Step：导出 Sound 数据（遍历 SoundSettings 所有单元，逐一写出 JSON 数据文件）。
+        /// Step：以一次批次事务导出 SoundSettings 全部单元的 JSON 数据文件。
         /// 通过 Helpers.ResolveComponentOnNova 定位 SoundComponent；
         /// 反射读取 m_Settings 字段；若 settings 为 null 或单元列表为空则抛出 InvalidOperationException。
-        /// 每个单元独立调用 EditorUtil.Sound.Exporter.ExportData，跳过 unitSetting 为 null 的情况。
+        /// 调用 EditorUtil.Sound.Exporter.ExportAllData；返回 false 时抛出异常并终止流水线。
         /// </summary>
         /// <param name="ctx">Runner 下发的运行时上下文。</param>
         /// <returns>完成的 UniTask。</returns>
@@ -57,10 +47,9 @@ namespace NovaFramework.Editor
                 throw new InvalidOperationException("[Pipify] SoundSettings.SourceDirPath 未配置，请在 SoundComponent Inspector 中填写数据源目录路径后重试。");
             }
 
-            foreach (SoundUnitSetting unit in settings.SoundUnitsSettings)
-            {
-                EditorUtil.Sound.Exporter.ExportData(sourceDirPath, settings, unit, c_SoundExportTargetName, c_SoundExportManagerName);
-            }
+            EnsureSoundExportSucceeded(
+                EditorUtil.Sound.Exporter.ExportAllData(sourceDirPath, settings),
+                "数据");
 
             return UniTask.CompletedTask;
         }
@@ -104,7 +93,9 @@ namespace NovaFramework.Editor
                 throw new InvalidOperationException("[Pipify] SoundSettings 所有单元均未配置类型导出路径（ClassesExportPath），请在 SoundComponent Inspector 中填写后重试。");
             }
 
-            EditorUtil.Sound.Exporter.ExportCode(sourceDirPath, settings, null, classExportPath, null, c_SoundExportTargetName, c_SoundExportManagerName);
+            EnsureSoundExportSucceeded(
+                EditorUtil.Sound.Exporter.ExportAllCode(sourceDirPath, settings),
+                "类型");
 
             return UniTask.CompletedTask;
         }
@@ -123,6 +114,14 @@ namespace NovaFramework.Editor
                 throw new InvalidOperationException("[Pipify] SoundComponent.m_Settings 未配置，请在 SoundComponent Inspector 中指定 SoundSettings 后重试。");
             }
             return settings;
+        }
+
+        internal static void EnsureSoundExportSucceeded(bool success, string kind)
+        {
+            if (!success)
+            {
+                throw new InvalidOperationException($"[Pipify] Sound {kind}导出失败，流水线已终止。");
+            }
         }
     }
 }

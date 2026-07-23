@@ -29,21 +29,28 @@ namespace NovaFramework.Runtime
         private bool m_UseDoH;
 
         /// <summary>
-        /// DNS 查询超时时间（毫秒），0 表示不限制。
+        /// 单个域名的一次 DoH 查询超时时间（毫秒），0 表示跳过 DoH 查询。
+        /// 查询期间的所有候选地址共用该超时时间。
         /// </summary>
         private int m_DNSTimeout;
 
         /// <summary>
-        /// 所有已收集的 IP 地址，<原始 URL, 替换 IP 后的 URL 列表>，由 CollectAllIPAddresses 填充。
+        /// 所有已收集的 IP 地址，<原始 URL, 替换 IP 后的 URL 列表>。
         /// </summary>
         private Dictionary<string, List<string>> m_AllCollectedIPAddresses;
         public override IReadOnlyDictionary<string, List<string>> AllCollectedIPAddresses => m_AllCollectedIPAddresses;
 
         /// <summary>
-        /// 所有域名对应的 IPAddress 列表，<主机名, IPAddress 列表>，由 CollectAllIPAddresses 填充。
+        /// 原始业务域名对应的最终 IPAddress 列表；CNAME 中间域名不会单独写入。
         /// </summary>
         private Dictionary<string, List<IPAddress>> m_AllDomainIPAddresses;
         public override IReadOnlyDictionary<string, List<IPAddress>> AllDomainIPAddresses => m_AllDomainIPAddresses;
+
+        /// <summary>
+        /// 按原始业务域名保存的 DoH 解析诊断树；CNAME 域名只存在于根节点的 Children 中。
+        /// </summary>
+        private Dictionary<string, DoHResolutionNode> m_ResolutionRoots;
+        public override IReadOnlyDictionary<string, DoHResolutionNode> ResolutionRoots => m_ResolutionRoots;
 
         /// <summary>
         /// 最近一次 DNSQuery 返回的 DNS 应答集合。

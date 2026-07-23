@@ -149,4 +149,4 @@ bool valid = EditorUtil.Excel.IsExcelFile("Configs.xlsx");   // true
 
 - [EditorUtil.md](../EditorUtil.md)（EditorUtil 静态工具类概览）
 - [DataPipeline.md](../../DataPipeline/DataPipeline.md)（预过滤总览）
-- [ConfigComponentInspector.md](../../Inspectors/ConfigComponentInspector/ConfigComponentInspector.md)（调用方：读取 Sheet 名填充 DataTypeNames）
+- [EditorUtil.Luban.DataTypeNameHelper.md](../EditorUtil.Luban/EditorUtil.Luban.DataTypeNameHelper.md)（调用方：导出前读取并筛选 Sheet 名）

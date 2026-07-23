@@ -2,7 +2,7 @@
 
 **类签名**：`public static class EditorUtil.Luban.ConfigSyncer`
 **命名空间**：`NovaFramework.Editor`
-**一行描述**：Luban 配置同步器 — 管理 _configs/ 目录，实现 Inspector 与文件双向同步。
+**一行描述**：Luban 配置同步器 — 管理 `_configs/`，在导出前生成 schema manifest、`luban.conf` 和 `__tables__.xml`。
 
 ---
 
@@ -10,7 +10,8 @@
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.Luban.ConfigSyncer.cs` | `EditorUtil.Luban.ConfigSyncer` | _configs/ 目录管理 + luban.conf 读写 + __tables__.xml 生成 |
+| `EditorUtil.Luban.ConfigSyncer.cs` | `EditorUtil.Luban.ConfigSyncer` | `_configs/` 目录管理 + `luban.conf` 读写 + 从 manifest 生成 `__tables__.xml` |
+| `EditorUtil.Luban.SchemaManifest.cs` | manifest 模型、校验、存储和构建器 | 扫描 Excel，生成并原子保存本次导出的结构快照 |
 
 ---
 
@@ -48,37 +49,11 @@ EditorUtil (public static partial class)
 public static string GetConfigDirPath(string sourceDirPath)
 
 /// <summary>
-/// 获取 Luban 主配置文件（luban.conf）的完整路径。
-/// </summary>
-/// <param name="sourceDirPath">数据源目录路径。</param>
-/// <returns>luban.conf 的完整路径。</returns>
-public static string GetConfPath(string sourceDirPath)
-
-/// <summary>
 /// 检查 _configs/ 目录是否存在。
 /// </summary>
 /// <param name="sourceDirPath">数据源目录路径。</param>
 /// <returns>是否存在。</returns>
 public static bool IsConfigDirExists(string sourceDirPath)
-
-/// <summary>
-/// 初始化 _configs/ 目录及默认配置文件。
-/// </summary>
-/// <param name="sourceDirPath">数据源目录路径。</param>
-/// <param name="targetName">Luban target 名称（如 "table" / "config"）。</param>
-/// <param name="managerName">Luban manager 类名（如 "TableTables" / "ConfigTables"）。</param>
-/// <param name="topModule">顶层命名空间（如 "Game.Runtime"）。</param>
-public static void InitializeConfigDir(string sourceDirPath, string targetName, string managerName, string topModule)
-
-/// <summary>
-/// 从 Inspector 数据同步到 _configs/ 文件。命名空间通过 RuntimeProvider.GetNamespace() 从 AssetDatabase 读取。
-/// </summary>
-/// <param name="sourceDirPath">数据源目录路径。</param>
-/// <param name="settings">数据表设置（通过 IDataTableSettings 统一消费）。</param>
-/// <param name="targetName">Luban target 名称。</param>
-/// <param name="managerName">Luban manager 类名。</param>
-/// <param name="regionUnits">（可选）按地域区分的单元设置列表，为 null 时回退到 settings.Units。</param>
-public static void SyncFromInspector(string sourceDirPath, IDataTableSettings settings, string targetName, string managerName, IReadOnlyList<IDataTableUnitSetting> regionUnits = null)
 
 /// <summary>
 /// 清理指定临时目录。
@@ -94,7 +69,7 @@ public static void CleanTempDir(string tempDirPath)
 | `WriteDefaultLubanConf` | `void WriteDefaultLubanConf(string path, string targetName, string managerName, string topModule)` | 写入默认 luban.conf（dataDir=".."，schemaFiles 指向 __tables__.xml） |
 | `UpdateLubanConfTopModule` | `void UpdateLubanConfTopModule(string confPath, string targetName, string managerName, string topModule)` | 更新 luban.conf 中 targets[0] 的 name/manager/topModule |
 | `WriteEmptyTablesXml` | `void WriteEmptyTablesXml(string path)` | 写入空的 `<module/>` XML 文件 |
-| `GenerateTablesXml` | `void GenerateTablesXml(string xmlPath, string sourceDirPath, IReadOnlyList<IDataTableUnitSetting> unitSettings)` | 核心方法：从 IDataTableUnitSetting 列表生成完整 __tables__.xml |
+| `GenerateTablesXml` | `void GenerateTablesXml(string xmlPath, LubanSchemaManifest manifest)` | 从已验证的 manifest 快照生成完整 `__tables__.xml` |
 
 ---
 
@@ -102,20 +77,20 @@ public static void CleanTempDir(string tempDirPath)
 
 ### GenerateTablesXml
 
-遍历 `unitSettings` 列表，为每个 Excel 文件生成对应的 `<table>` 元素：
+遍历 manifest 的 `units[].tables`，为每个扫描出的表生成 `<table>` 元素：
 
-1. 跳过 SourcePath 为空、DataTypeNames 为空、或数据源文件不存在的条目
-2. 从 `IDataTableUnitSetting` 获取 `LubanInputPath`（Table 模块 = SourcePath，Config 模块 = `"_temp/" + 文件名`）和 `Mode`（转小写字符串）
-3. 遍历 `DataTypeNames`，跳过空值和 `#` 开头的忽略列
-4. 提取 `sheetName`（取最后一个 `.` 后的部分）
-5. 生成 `<table>` 元素：
-   - `name="Tb{sheetName}"`
-   - `value="Dt{sheetName}"`
-   - `input="{sheetName}@{inputPath}"`
+1. 校验并标准化完整 manifest。
+2. 不读取旧 XML；输出完全由当前 manifest 重建，避免生成缓存混入不可追踪的手写定义。
+3. 使用 unit 的 `lubanInputPath`、`mode` 和 `indexField`，不再读取 Runtime 单元中的 Sheet 名列表。
+4. 生成 `<table>` 元素：
+   - `name="{table.name}"`
+   - `value="{table.valueType}"`
+   - Excel 输入为 `input="{table.valueType}@{unit.lubanInputPath}"`
+   - 非 Excel 输入为 `input="{unit.lubanInputPath}/{table.valueType}.csv"`
    - `mode="{mode}"`
    - Map 模式且 IndexField 非空时追加 `index="{indexField}"`
    - `readSchemaFromFile="true"`
-   - `comment="{sheetName}"`
+   - `comment="{table.valueType}"`
 
 ### SyncFromInspector 流程
 
@@ -124,7 +99,12 @@ SyncFromInspector
   ├── RuntimeProvider.GetNamespace() 取 topModule（从 AssetDatabase 读取 ConfigRuntimeSO.Common.Namespace）
   ├── _configs/ 不存在 → InitializeConfigDir
   ├── UpdateLubanConfTopModule（更新 luban.conf）
-  └── GenerateTablesXml（重新生成 __tables__.xml）
+  ├── LubanSchemaManifestBuilder.Build
+  │     ├── 默认扫描当前 Profile 的所有 Excel；提供 scanValueTypes 时扫描模块已投影的实际输入
+  │     ├── 在内存中构建并验证完整快照
+  │     └── 原子保存 _configs/nova-export-manifest.json
+  ├── GenerateTablesXml（只读取该快照）
+  └── 返回 LubanSchemaManifest 给 Pipeline 后续阶段复用
 ```
 
 ---
@@ -135,24 +115,20 @@ SyncFromInspector
 |------|------|
 | luban.conf 的 dataDir | 配置为 `".."`（即 _configs 的父目录 = sourceDirPath），使 __tables__.xml 中的路径相对于 sourceDirPath 解析 |
 | 编码问题 | 所有文件写入使用 `s_Utf8NoBom`（UTF-8 无 BOM），避免 Luban CLI 解析失败 |
-| 残留配置 | 数据源文件不存在的条目会被 GenerateTablesXml 自动跳过，不会残留到 __tables__.xml |
+| 扫描失败 | 缺失或不可读的源文件会中止同步；旧 manifest 和旧 `__tables__.xml` 保持不变，Luban 不会被调用 |
+| 预处理后的类型名 | 模块若改变了 Sheet/CSV 名，必须通过 Pipeline 上下文提供 `SchemaValueTypeScanner`；否则默认扫描原始 Excel，manifest 会与实际输入不一致 |
+| manifest 归属 | `_configs/nova-export-manifest.json` 是 Editor-only、可由 Excel 重建的派生文件；整个 `_configs/` 被忽略且不承载手写定义 |
+| 是否删除 `_configs/` | 可以手工删除并在下次导出时重建，但日常应保留：`luban.conf` / `__tables__.xml` 是 CLI 输入，manifest 还供 Table Inspector 诊断读取 |
+| 陈旧缓存 | 每次 Pipeline 调用 Luban 前都会重新扫描 Excel 并原子替换 XML 与 manifest，旧缓存不会直接参与新一轮导出 |
 
 ---
 
 ## §11 使用示例
 
 ```csharp
-// 检查配置目录是否已初始化
-if (!EditorUtil.Luban.ConfigSyncer.IsConfigDirExists(sourceDirPath))
-{
-    EditorUtil.Luban.ConfigSyncer.InitializeConfigDir(sourceDirPath, "table", "TableTables", "Game.Runtime");
-}
-
-// Inspector 变更后同步到文件
-EditorUtil.Luban.ConfigSyncer.SyncFromInspector(sourceDirPath, tableSettings, "table", "TableTables");
-
-// 获取 luban.conf 路径（供 CliRunner 使用）
-string confPath = EditorUtil.Luban.ConfigSyncer.GetConfPath(sourceDirPath);
+// Inspector 只需要判断并监听本地工作目录；创建和同步由 Pipeline 内部完成。
+bool initialized = EditorUtil.Luban.ConfigSyncer.IsConfigDirExists(sourceDirPath);
+string configDir = EditorUtil.Luban.ConfigSyncer.GetConfigDirPath(sourceDirPath);
 ```
 
 > 通常不直接调用 ConfigSyncer，而是通过 `Pipeline.ExportData` / `Pipeline.ExportCode` / `Pipeline.ExportAll` 间接调用。
@@ -162,6 +138,7 @@ string confPath = EditorUtil.Luban.ConfigSyncer.GetConfPath(sourceDirPath);
 ## §13 关联文档
 
 - [EditorUtil.Luban.Pipeline.md](EditorUtil.Luban.Pipeline.md)
+- [EditorUtil.Luban.SchemaManifest.md](EditorUtil.Luban.SchemaManifest.md)
 - [EditorUtil.Luban.CliRunner.md](EditorUtil.Luban.CliRunner.md)
 - [EditorUtil.Luban.JsonMerger.md](EditorUtil.Luban.JsonMerger.md)
 - [EditorUtil.Config.RuntimeProvider.md](../EditorUtil.Config/EditorUtil.Config.RuntimeProvider.md)

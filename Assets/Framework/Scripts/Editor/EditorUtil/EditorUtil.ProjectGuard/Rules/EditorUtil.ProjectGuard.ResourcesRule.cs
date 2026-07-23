@@ -1,3 +1,13 @@
+/***************************************************************
+ * (c) copyright 2026 - 2030, Solotopia
+ * All Rights Reserved.
+ * -------------------------------------------------------------
+ * filename:  EditorUtil.ProjectGuard.ResourcesRule.cs
+ * author:    taoye
+ * created:   2026/7/15
+ * descrip:   Nova 项目规范守卫资源规则
+ ***************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.IO;

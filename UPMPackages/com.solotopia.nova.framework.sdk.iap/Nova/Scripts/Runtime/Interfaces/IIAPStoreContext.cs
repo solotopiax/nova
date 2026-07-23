@@ -37,7 +37,7 @@ namespace NovaFramework.SDK.IAP.Runtime
 
         /// <summary>
         /// 是否开启「始终支付成功」调试开关。
-        /// 为 true 时各 store 应跳过真实平台调用直接返回成功结果，仅用于开发测试。
+        /// 仅 Editor 编译态允许各 store 跳过真实平台调用直接返回成功结果，非 Editor 编译态固定为 false。
         /// </summary>
         bool EnableAlwaysPaySucceed { get; }
 

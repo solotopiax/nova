@@ -1,105 +1,56 @@
 # EditorUtil.Sound.Exporter
 
 **类签名**：`public static class Exporter`（嵌套于 `EditorUtil.Sound`）
+
 **命名空间**：`NovaFramework.Editor`
 
-Sound 模块 Luban 导出流水线薄封装，提供全量、单文件数据、单文件类型三种导出操作；Inspector 通过此类下沉业务导出逻辑，自身仅负责参数组装与序列化对象读取。
+`Sound.Exporter` 是 Sound 模块的公共入口和专用导出编排器。公开 API 保持不变；数据和代码先生成到 Excel 源目录下的 `_temp/_publish`，验证完整后再通过 `FileSystem.OutputApplier` 发布。
 
----
-
-## §2 文件表
-
-| 文件 | 类 | 说明 |
-|------|----|------|
-| `Editor/EditorUtil/EditorUtil.Sound/EditorUtil.Sound.Exporter.cs` | `EditorUtil.Sound.Exporter` | Sound 导出工具类 |
-
----
-
-## §3 继承关系
-
-```
-EditorUtil (public static partial class)
-  └── EditorUtil.Sound (public static partial class)
-        └── Exporter (public static class)
-```
-
----
-
-## §4 关键字段表
-
-无字段（静态工具类，常量由 Pipify Step 外部传入 `targetName` / `managerName`）。
-
----
-
-## §5 完整公开 API
+## 公开 API
 
 ```csharp
-// 全量导出（数据 + 类型）：清理旧导出路径后一次性生成代码与数据
-// settings 为 null 或 SoundUnitsSettings 为 null 时静默返回
-// 多单元类型路径不同时 Log.Warning，使用首个非空路径
-public static void ExportAll(string sourceDirPath, SoundSettings settings, string targetName, string managerName);
+public static void ExportAll(string sourceDirPath, SoundSettings settings);
 
-// 单文件数据导出：导出指定 unit 的 JSON 数据
-// unitSetting 为 null 时静默返回
-public static void ExportData(string sourceDirPath, SoundSettings settings, SoundUnitSetting unitSetting, string targetName, string managerName);
+public static void ExportData(
+    string sourceDirPath,
+    SoundSettings settings,
+    SoundUnitSetting unitSetting);
 
-// 单文件类型代码导出：为指定文件生成 C# 类型
-// unitSetting 为 null 时仅按文件名过滤生成（全量代码，不限定单元）
-// relevantFileNames 可为 null
-public static void ExportCode(string sourceDirPath, SoundSettings settings, SoundUnitSetting unitSetting, string classExportPath, HashSet<string> relevantFileNames, string targetName, string managerName);
+public static void ExportCode(
+    string sourceDirPath,
+    SoundSettings settings,
+    SoundUnitSetting unitSetting,
+    string classExportPath,
+    HashSet<string> relevantFileNames);
 ```
 
----
+Inspector 的调用方式没有变化。`ExportData` 处理指定单元；`ExportCode` 的 `unitSetting == null` 表示全量代码；`ExportAll` 在一次事务中发布全部 JSON 与 C#。Pipify 的数据/类型 Step 分别调用内部全量批次入口，不再逐 Unit 启动独立事务。
 
-## §9 关键算法
+## 导出流程
 
-### ExportAll 流程
-
-```
-ExportAll(sourceDirPath, settings, targetName, managerName):
-  1. 参数校验：settings == null || sourceDirPath 空 || SoundUnitsSettings == null → return
-  2. 收集所有 DatasExportPath / ClassesExportPath → 去重后逐目录 FileSystem.DeletePath
-  3. 收集 classExportPath（首个非空 ClassesExportPath，多路径时 Log.Warning）
-  4. BuildExportContext(sourceDirPath, settings, targetName, managerName) → ctx
-  5. ctx.OutputCodeDir = classExportPath
-  6. Pipeline.ExportAll(ctx)
-```
-
-### ExportData 与 ExportCode
-
-- `ExportData`：设置 `ctx.TargetUnit = unitSetting`，调用 `Pipeline.ExportData(ctx)`
-- `ExportCode`：设置 `ctx.OutputCodeDir`、`ctx.RelevantFileNames`、`ctx.TargetUnit`，调用 `Pipeline.ExportCode(ctx)`
-
----
-
-## §11 使用示例
-
-```csharp
-// SoundComponentInspector 中全量导出（targetName/managerName 由 Inspector 持有常量）
-EditorUtil.Sound.Exporter.ExportAll(sourceDirPath, settings, "sound", "SoundTables");
-
-// Pipify Step 中按单元逐个导出数据
-foreach (SoundUnitSetting unit in settings.SoundUnitsSettings)
-{
-    EditorUtil.Sound.Exporter.ExportData(sourceDirPath, settings, unit, "sound", "SoundTables");
-}
-
-// Pipify Step 中全量导出类型（unitSetting 传 null = 全量代码生成）
-EditorUtil.Sound.Exporter.ExportCode(sourceDirPath, settings, null, classExportPath, null, "sound", "SoundTables");
+```text
+校验 SoundSettings、源目录、Unit 和输出路径
+  -> 克隆 Settings，把 JSON/C# 输出改写到 _temp/_publish
+  -> 仅代码导出时，把正式 JSON 复制到暂存区供 Map 属性生成
+  -> Luban Pipeline 生成数据、类型和 SchemaManifest
+  -> 验证目标 JSON 与 SchemaManifest 对应的全部 C# 文件
+  -> Luban.GeneratedOutput 写入第一行单行所有权标记并登记安全过期删除
+  -> FileSystem.OutputApplier 一次性替换正式产物
+  -> finally 清理 _temp 并刷新 AssetDatabase
 ```
 
----
+全量导出不再预先删除正式目录。Pipeline 返回失败、暂存产物缺失或发布异常时，正式文件保持原状或回滚到导出前状态。
 
-## §12 注意事项
+多个 Unit 配置不同 `ClassesExportPath` 时，仍沿用旧契约：记录警告并使用首个非空路径。Pipify 收到批次返回 `false` 时立即抛出并终止后续步骤。
 
-- `ExportData` 的 `unitSetting` 为 `null` 时**静默返回**，不执行导出；与 `ExportCode` 的 null 语义不同——后者 null 表示全量代码生成
-- `targetName` 和 `managerName` 由调用方（Inspector 或 Pipify Step）传入，约定为 `"sound"` / `"SoundTables"`
+## 内部测试替换点
 
----
+`ExportOperations` 只允许 Editor 定向测试替换 Luban Pipeline 和 AssetDatabase 刷新，不是新增公共 API，也不保存业务状态。
 
-## §13 关联文档
+## 关联文档
 
-- [SoundSettings.md](../../../Runtime/Modules/Sound/SoundSettings.md)
-- [SoundUnitSetting.md](../../../Runtime/Modules/Sound/SoundUnitSetting.md)
+- [EditorUtil.Luban.ExportProfile.md](../EditorUtil.Luban/EditorUtil.Luban.ExportProfile.md)
 - [EditorUtil.Luban.Pipeline.md](../EditorUtil.Luban/EditorUtil.Luban.Pipeline.md)
-- [PipifySteps.md](../EditorUtil.Pipify/PipifySteps.md)
+- [EditorUtil.FileSystem.OutputApplier.md](../EditorUtil.FileSystem/EditorUtil.FileSystem.OutputApplier.md)
+- [EditorUtil.Luban.GeneratedOutput.md](../EditorUtil.Luban/EditorUtil.Luban.GeneratedOutput.md)
+- [DataPipeline.md](../../DataPipeline/DataPipeline.md)

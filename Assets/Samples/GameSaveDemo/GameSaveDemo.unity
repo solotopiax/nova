@@ -236,10 +236,6 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_PluginEntries.Array.data[4].Priority
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.data[4].TypeName
       value: NovaFramework.IAP.Runtime.IAPPlugin, NovaFramework.IAP.Runtime, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
@@ -271,14 +267,6 @@ PrefabInstance:
     - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].ClassesExportPath
       value: Assets/Samples/GameSaveDemo/Scripts/Runtime/DataTypes/Localizations/Texts
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].DataTypeNames.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: 'm_LocalizationSettings.TextUnitsSettings.Array.data[0].DataTypeNames.Array.data[0]'
-      value: Demo_Localization
       objectReference: {fileID: 0}
     - target: {fileID: 3308748334323488271, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Name
@@ -343,18 +331,6 @@ PrefabInstance:
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Setting.TableUnitsSettings.Array.data[1].ClassesExportPath
       value: Assets/Samples/GameSaveDemo/Scripts/Runtime/DataTypes/Tables
-      objectReference: {fileID: 0}
-    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: 'm_Setting.TableUnitsSettings.Array.data[0].DataTypeNames.Array.data[0]'
-      value: Demo_Item
-      objectReference: {fileID: 0}
-    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: 'm_Setting.TableUnitsSettings.Array.data[0].DataTypeNames.Array.data[1]'
-      value: ListA
-      objectReference: {fileID: 0}
-    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: 'm_Setting.TableUnitsSettings.Array.data[0].DataTypeNames.Array.data[2]'
-      value: ListB
       objectReference: {fileID: 0}
     - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.CustomSourceDirPath
@@ -435,10 +411,6 @@ PrefabInstance:
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].ClassesExportPath
       value: Assets/Samples/GameSaveDemo/Scripts/Runtime/DataTypes/Networks/HostKeys
-      objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].DataTypeNames.Array.size
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

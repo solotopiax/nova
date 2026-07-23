@@ -219,6 +219,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2901006627018902308, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Channel
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 3308748334323488271, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Name
       value: Nova
@@ -261,6 +265,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3760798730955577934, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_DoHSettings.UseDoH
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

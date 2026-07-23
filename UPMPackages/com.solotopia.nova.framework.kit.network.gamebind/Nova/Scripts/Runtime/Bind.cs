@@ -8,6 +8,7 @@
  * descrip:   账号绑定业务网络 Service，封装绑定/冲突查询/裁决协议
  ***************************************************************/
 
+using System.Diagnostics;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 
@@ -41,10 +42,22 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         /// <param name="provider">三方平台（与 <see cref="NovaFramework.Runtime.PbNetChannel"/> 枚举值对齐，直接透传）。选值：Facebook=1 / Google=2 / Apple=3 / Wechat=4（0=Unspecified 禁用）。</param>
         /// <param name="openId">要绑定的第三方平台返回的用户唯一标识。</param>
         /// <returns>包含绑定响应数据或错误信息的 NetResponse。</returns>
-        public UniTask<NetResponse<PbNetBindResp>> BindAsync(int provider, string openId)
+        public async UniTask<NetResponse<PbNetBindResp>> BindAsync(int provider, string openId)
         {
-            BindKitConfig config = ResolveConfig();
-            return SendBindAsync(Nova.Network.ResolveNetCmdRow(config.BindCmdName), provider, openId);
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            try
+            {
+                BindKitConfig config = ResolveConfig();
+                NetResponse<PbNetBindResp> response = await SendBindAsync(
+                    Nova.Network.ResolveNetCmdRow(config.BindCmdName), provider, openId);
+                TrackBind(response, provider, openId, stopwatch.ElapsedMilliseconds);
+                return response;
+            }
+            catch
+            {
+                TrackBindException(provider, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
         }
 
         /// <summary>
@@ -55,10 +68,22 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         /// </summary>
         /// <param name="openId">冲突的三方标识（与触发冲突的绑定 openId 一致）。</param>
         /// <returns>包含对方账号进度摘要或错误信息的 NetResponse。</returns>
-        public UniTask<NetResponse<PbNetBindConflictResp>> QueryConflictAsync(string openId)
+        public async UniTask<NetResponse<PbNetBindConflictResp>> QueryConflictAsync(string openId)
         {
-            BindKitConfig config = ResolveConfig();
-            return SendQueryConflictAsync(Nova.Network.ResolveNetCmdRow(config.BindConflictCmdName), openId);
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            try
+            {
+                BindKitConfig config = ResolveConfig();
+                NetResponse<PbNetBindConflictResp> response = await SendQueryConflictAsync(
+                    Nova.Network.ResolveNetCmdRow(config.BindConflictCmdName), openId);
+                TrackQueryConflict(response, stopwatch.ElapsedMilliseconds);
+                return response;
+            }
+            catch
+            {
+                TrackQueryConflictException(stopwatch.ElapsedMilliseconds);
+                throw;
+            }
         }
 
         /// <summary>
@@ -72,10 +97,22 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         /// <param name="choice">二选一选项（直接透传字符串）。选值："guest"=保留当前账号 / "existing"=保留对方账号。</param>
         /// <param name="verifyCode">二次验证码（高危操作防盗号，按业务开启；无则传 null 或空）。</param>
         /// <returns>包含裁决响应数据或错误信息的 NetResponse。</returns>
-        public UniTask<NetResponse<PbNetBindResolveResp>> ResolveAsync(string openId, string choice, string verifyCode = null)
+        public async UniTask<NetResponse<PbNetBindResolveResp>> ResolveAsync(string openId, string choice, string verifyCode = null)
         {
-            BindKitConfig config = ResolveConfig();
-            return SendResolveAsync(Nova.Network.ResolveNetCmdRow(config.BindResolveCmdName), openId, choice, verifyCode);
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            try
+            {
+                BindKitConfig config = ResolveConfig();
+                NetResponse<PbNetBindResolveResp> response = await SendResolveAsync(
+                    Nova.Network.ResolveNetCmdRow(config.BindResolveCmdName), openId, choice, verifyCode);
+                TrackResolve(response, openId, choice, verifyCode, stopwatch.ElapsedMilliseconds);
+                return response;
+            }
+            catch
+            {
+                TrackResolveException(choice, verifyCode, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
         }
     }
 }

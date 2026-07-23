@@ -1,7 +1,7 @@
 ---
 id: MOC-Localization
 title: 本地化系统图谱
-summary: Localization 入口、语言切换与 TextLocalizing 边界速查
+summary: 本地化入口与语言切换边界速查
 category: module
 status: active
 date: 2026-06-05

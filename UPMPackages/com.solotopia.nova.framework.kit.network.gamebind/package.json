@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.kit.network.gamebind",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - Kit - Network - GameBind",

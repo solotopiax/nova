@@ -106,8 +106,7 @@ public static void DrawDataExportRow(
     int savedIndent,
     SerializedProperty detailProp,
     SerializedProperty sourceUnitsSettingsProperty,
-    Action<string, string, SerializedProperty> onExportData = null,
-    Action<string, SerializedProperty> doRefreshDataTypeNames = null)
+    Action<string, string, SerializedProperty> onExportData = null)
 
 // 绘制类型导出位置行：标签 + TextField + 选择/导出/打开文件夹按钮
 public static void DrawClassExportRow(
@@ -117,8 +116,7 @@ public static void DrawClassExportRow(
     int savedIndent,
     SerializedProperty detailProp,
     SerializedProperty sourceUnitsSettingsProperty,
-    Action<string, string, SerializedProperty> onExportClass = null,
-    Action<string, SerializedProperty> doRefreshDataTypeNames = null)
+    Action<string, string, SerializedProperty> onExportClass = null)
 
 // 绘制 Asset 地址行（FindPropertyRelative("AssetLocation")）
 public static void DrawAssetLocationRow(SerializedProperty detailProp, float indentSpace, int savedIndent)
@@ -227,8 +225,7 @@ private void DrawExportSourceFiles()
             EditorUtil.Draw.SourceFileTree.DrawDefaultFileNameRow(filePath, seq, indent, savedIndent);
             EditorUtil.Draw.SourceFileTree.DrawDataExportRow(
                 filePath, relPath, indent, savedIndent, detailProp, unitsProp,
-                onExportData: (fp, exportPath, dp) => DoExportDataForFile(fp, exportPath, dp),
-                doRefreshDataTypeNames: (fp, namesProp) => DoRefreshDataTypeNames(fp, namesProp));
+                onExportData: (fp, exportPath, dp) => DoExportDataForFile(fp, exportPath, dp));
             EditorUtil.Draw.SourceFileTree.DrawClassExportRow(
                 filePath, relPath, indent, savedIndent, detailProp, unitsProp,
                 onExportClass: (fp, exportPath, dp) => DoExportClassForFile(fp, exportPath, dp));
@@ -236,6 +233,8 @@ private void DrawExportSourceFiles()
         });
 }
 ```
+
+导出按钮只取得最新的单元 `SerializedProperty` 并调用导出回调。SourceFileTree 不扫描 Excel，也不执行导出前的序列化刷新；schema 扫描由回调进入 Pipeline 后统一完成。
 
 ---
 

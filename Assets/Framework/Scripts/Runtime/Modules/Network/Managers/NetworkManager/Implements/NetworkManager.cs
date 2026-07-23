@@ -231,7 +231,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 获取所有 HTTP 类型 NetCmd 的完整 URL 集合（去重），供 DoH 收集 IP 使用。
+        /// 获取所有 HTTP 类型 NetCmd 的完整 URL 集合（去重）。
         /// </summary>
         /// <returns>完整 URL 枚举。</returns>
         public override IEnumerable<string> GetAllNetCmdUrls()
@@ -251,6 +251,24 @@ namespace NovaFramework.Runtime
                 }
 
                 urls.Add(hostUrl + data.Path);
+            }
+
+            return urls;
+        }
+
+        /// <summary>
+        /// 获取全部 HostKey URL 集合（过滤空值并去重），供启动 DoH 预热使用。
+        /// </summary>
+        /// <returns>HostKey URL 枚举。</returns>
+        public override IEnumerable<string> GetAllHostKeyUrls()
+        {
+            HashSet<string> urls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string hostUrl in m_HostKeyCache.Values)
+            {
+                if (!string.IsNullOrWhiteSpace(hostUrl))
+                {
+                    urls.Add(hostUrl);
+                }
             }
 
             return urls;

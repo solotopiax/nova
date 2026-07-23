@@ -179,4 +179,3 @@ uid 槽只有 8 个字符；完整 uid 仍由服务端另行同步（见 [[ADR-0
 
 - MobileStore 类规格：`./MobileStore.md`
 - 内部服务架构总览：`./MobileIAP-Architecture.md`
-- 本文仅记录当前工具类事实；历史设计说明见 `MobileStore-Design.md`。

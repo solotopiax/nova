@@ -35,7 +35,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         /// <summary>
         /// 商店或平台应用 ID 序列化字段，对应 TbCommonConfigs.MGAppID。
         /// </summary>
-        [SerializeField, Tooltip("应用商店 ID。填写当前平台商店中的应用 ID；iOS 使用 App Store App ID。")]
+        [SerializeField, Tooltip("App Store 应用商店 ID：填写 App Store Connect 中应用的 Apple ID。")]
         private string m_AppId;
 
         /// <summary>

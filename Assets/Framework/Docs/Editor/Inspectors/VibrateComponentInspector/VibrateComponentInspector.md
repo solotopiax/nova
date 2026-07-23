@@ -73,15 +73,11 @@ UnityEditor.Editor
 | `private void DrawCustomVibrateExport()` | 绘制 Custom 振动表格导出区域（调用 `DrawVibrateUnitExport`） |
 | `private void DrawVibrateSourceDataOperations(string sectionTitle, string foldoutKey, string templateFileName, SerializedProperty sourceDirPathProp, SerializedProperty unitsSettingsProp, Dictionary<string, bool> foldoutState)` | 绘制单个振动区域的完整导出区域：Foldout、模板路径提示、表格目录位置、数据源文件树、全局导出按钮 |
 | `private static void EnsureStylesInitialized()` | 延迟初始化两个静态 GUIStyle |
-| `private void DoExportDataForUnit(string templateFileName, VibrateUnitSetting unitSetting)` | 对指定振动单元执行数据导出 |
-| `private void DoExportClassForUnit(string templateFileName, VibrateUnitSetting unitSetting)` | 对指定振动单元执行类型导出 |
-| `private void DoExportAllForUnit(string templateFileName, VibrateUnitSetting unitSetting)` | 对指定振动单元执行全量导出（数据 + 类型） |
-| `private void DoRefreshDataTypeNames(string templateFileName, VibrateUnitSetting unitSetting, VibrateSettings settings)` | 读取模板文件，提取有效 Sheet 名称并填充指定单元的 DataTypeNames |
-| `private static HashSet<string> BuildRelevantFileNames(VibrateUnitSetting unitSetting)` | 构建单元关联的 `.cs` 文件名集合（`SheetName.cs` + `TbSheetName.cs` + `VibrateTables.cs`） |
+| `private void DrawVibrateSourceFileRow(...)` | 组合文件名、数据导出、类型导出和 Asset 地址四行 |
+| `private void OnExportDataForFile(...)` | 按 Emphasis / Custom 调用对应 `EditorUtil.Vibrate` 数据导出入口 |
+| `private void OnExportClassForFile(...)` | 按 Emphasis / Custom 调用对应 `EditorUtil.Vibrate` 代码导出入口 |
+| `private void DoExportAllDataAndTypes(...)` | 应用 Inspector 改动后调用对应 `EditorUtil.Vibrate.Export*All` |
 | `private VibrateSettings GetVibrateSettings()` | 反射获取 `VibrateComponent.m_Settings` 字段值 |
-| `private EditorUtil.Luban.LubanExportContext BuildExportContext(string sourceDirPath, VibrateSettings settings, string templateFileName)` | 构建 Luban 导出上下文（TargetName 按模板文件名区分 `vibrate_emphasis`/`vibrate_custom`） |
-| `private static string GetLubanCustomTemplateDir()` | 按优先级查找自定义模板目录（Package 路径优先，次选 Assets 路径） |
-| `private static string ResolveTemplatePath(string templateFileName)` | 解析振动模板文件绝对路径（消费者模式 Packages/ 优先，回退 Assets/） |
 | `private void DrawRuntimeInfos()` | 仅运行态：绘制 Enable/IsSupported 标签、预设振动按钮、Custom/Emphasis 调试区、StopAll 按钮 |
 | `private void DrawPresetVibrateButtons(VibrateComponent component)` | 遍历 `VibrateType` 枚举绘制预设振动测试按钮 |
 | `private void DrawCustomVibrateSection(VibrateComponent component)` | Custom 振动调试区（Intensity/Sharpness/PreDuration/Duration 输入框 + Play 按钮） |
@@ -112,8 +108,9 @@ UnityEditor.Editor
 ## §12 注意事项
 
 - `GUIStyle` 在 `OnEnable` 时 `EditorStyles` 尚未就绪，必须在 `EnsureStylesInitialized()` 中延迟初始化
-- `DoRefreshDataTypeNames` 在每次导出前自动调用，确保 DataTypeNames 与模板 Sheet 同步
-- `BuildExportContext` 通过 `templateFileName == c_EmphasisTemplateFileName` 区分 TargetName，`vibrate_emphasis` 或 `vibrate_custom`
+- Inspector 不执行 Sheet 名刷新；`EditorUtil.Vibrate` 导出器进入 Pipeline 后扫描 Excel 并构建本次 schema manifest
+- 单文件和全量入口都先生成到各区域的 `_temp/_publish`，验证后通过 `FileSystem.OutputApplier` 发布，Inspector 不直接修改正式产物
+- Emphasis 与 Custom 使用各自固定的 Luban Profile、暂存目录和发布事务，后续 ConfigSyncer、文件筛选和 Map 属性生成共享各自快照
 
 ---
 

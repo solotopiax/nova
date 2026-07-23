@@ -58,5 +58,20 @@ namespace NovaFramework.Runtime
         /// 业务层 Fetch 后可作为登录后上报协议参数。
         /// </summary>
         public const string FirebaseAnalyticsInstanceId = "FirebaseAnalyticsInstanceId";
+
+
+        /// <summary>
+        /// 第三方渠道登录后的用户 ID（string 类型）。
+        /// 由 Facebook、Google、Apple 等 IAuthPlugin 登录成功后发布；
+        /// 业务层 Fetch 后可写入 TGA UserSet 属性 nova_openid。
+        /// </summary>
+        public const string OpenId = "OpenId";
+
+        /// <summary>
+        /// 第三方渠道登录的渠道名（string 类型）。
+        /// 由 Facebook、Google、Apple 等 IAuthPlugin 登录成功后发布；
+        /// 业务层 Fetch 后可写入 TGA UserSet 属性 nova_third_platform。
+        /// </summary>
+        public const string ThirdPlatform = "ThirdPlatform";
     }
 }

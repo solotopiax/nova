@@ -95,7 +95,7 @@ DrawSourceDataOperations()
   │   ├── HelpBox（_configs/ 未初始化时提示）
   │   ├── DrawSourceFilesListWithFolders()   ── 目录树 + per-file 导出设置
   │   └── [导出所有数据和类型] 按钮
-  │         → DoRefreshAllDataTypeNames + DoExportAllDataAndTypes
+  │         → DoExportAllDataAndTypes
   └── 分割线
 ```
 
@@ -117,7 +117,9 @@ DrawSourceDataOperations()
 | 类型导出位置行 | TextField + 选择 + 导出 + 打开文件夹 |
 | Asset 地址行 | TextField（`FindPropertyRelative("AssetLocation")`） |
 
-"导出"按钮触发：`DoRefreshDataTypeNames`（委托给 `EditorUtil.Luban.DataTypeNameHelper`）→ `OnExportDataForFile` / `OnExportClassForFile`。
+"导出"按钮直接触发 `OnExportDataForFile` / `OnExportClassForFile`。Inspector 不预扫描或写回 Sheet 名；导出器进入 Pipeline 后统一扫描 Excel 并构建 manifest。
+
+单文件和全量入口都由 `Sound.Exporter` 先写入源目录下的 `_temp/_publish`，验证 JSON/C# 完整后再通过 `FileSystem.OutputApplier` 发布。Inspector 不直接删除或写入正式产物。
 
 当前单文件和全量导出的真实入口为：
 

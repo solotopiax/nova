@@ -91,7 +91,7 @@ void OnDestroyed()
 
 ## §13 关联文档
 
-- [../../Events/ObservableEvent.md](../../Events/ObservableEvent.md) — StickyEvent / ReplayEvent 基类与 API
+- [ObservableEvent.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Events/ObservableEvent.md) — StickyEvent / ReplayEvent 基类与 API
 - [IAdPlugin.md](./IAdPlugin.md) — 通过具体类型 `AdPlugin` 的 `Events` 属性暴露此容器
 - [AdChannelPluginBase.md](./AdChannelPluginBase.md) — 渠道侧触发各 event，AdPlugin 桥接到此容器
-- [../../Definitions/Data.md](../../Definitions/Data.md) — AdResult / AdEvent / AdLoadResult 载荷类型
+- [Data.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/Data.md) — AdResult / AdEvent / AdLoadResult 载荷类型

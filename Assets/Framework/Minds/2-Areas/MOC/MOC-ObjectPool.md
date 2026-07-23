@@ -1,7 +1,7 @@
 ---
 id: MOC-ObjectPool
 title: 对象池系统图谱
-summary: ObjectPool 与 ReferencePool 的分工和入口速查
+summary: 对象池与引用池职责速查
 category: runtime
 status: active
 date: 2026-06-05

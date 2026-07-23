@@ -71,7 +71,7 @@
 
 1. `ResolvePackageName` 解析包名，空值走默认包
 2. 已在 `m_ManifestLoadedPackages` 中则直接返回
-3. 如果包尚未成功初始化，则先 `InitializePackageAsync(options)`
+3. 如果包尚未成功初始化，Host/Web 模式先对替换完占位符的主备基地址执行 DoH detect-only 预检，再调用 `InitializePackageAsync(options)`
 4. 再 `RequestPackageVersionAsync()`
 5. 再 `LoadPackageManifestAsync(version, 60)`
 6. 成功后先 `SaveLocalCachedVersion(name, pkg.GetPackageVersion())` 记录当前激活版本号到本地，再把包名记入 `m_ManifestLoadedPackages`

@@ -61,7 +61,7 @@ ExportAll(settings, sourceDirPath):
   1. settings == null || sourceDirPath 空 → return false
   2. ClearExportPaths(settings)：收集所有 DatasExportPath / ClassesExportPath → 去重后逐目录 DeletePath
   3. CollectFirstClassExportPath(settings) → classExportPath（多路径时 Log.Warning）
-  4. BuildExportContext(sourceDirPath, settings, "table", "TableTables") → ctx
+  4. BuildExportContext(sourceDirPath, settings, LubanExportProfiles.Table) → ctx
   5. ctx.OutputCodeDir = classExportPath
   6. Pipeline.ExportAll(ctx) → return result
 ```

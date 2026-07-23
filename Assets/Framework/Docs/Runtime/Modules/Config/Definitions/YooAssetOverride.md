@@ -24,8 +24,8 @@ YooAsset 两路径字段的维度 Override 单项（仅 Editor 期消费）；�
 | `Platform` | `PlatformType` | `PlatformType.None` | 平台轴；仅 `YooAssetMask.ByPlatform == true` 时参与匹配 |
 | `Channel` | `ChannelType` | `ChannelType.None` | 渠道轴；仅 `YooAssetMask.ByChannel == true` 时参与匹配 |
 | `DevelopMode` | `DevelopMode` | `DevelopMode.Debug` | 开发模式轴；仅 `YooAssetMask.ByDevelopMode == true` 时参与匹配 |
-| `YooAssetSettingsPath` | `string` | `null` | `YooAssetSettings.asset` 项目根相对路径 Override；null 或空时回落顶层 `ConfigMasterSO.YooAssetSettingsPath` |
-| `BundleCollectorSettingPath` | `string` | `null` | `BundleCollectorSetting.asset` 项目根相对路径 Override；null 或空时回落顶层 `ConfigMasterSO.BundleCollectorSettingPath` |
+| `YooAssetSettingsPath` | `string` | `null` | `YooAssetSettings.asset` 项目根相对路径 Override；空字符串是当前坐标明确配置的有效值 |
+| `BundleCollectorSettingPath` | `string` | `null` | `BundleCollectorSetting.asset` 项目根相对路径 Override；空字符串是当前坐标明确配置的有效值 |
 
 ---
 
@@ -33,6 +33,7 @@ YooAsset 两路径字段的维度 Override 单项（仅 Editor 期消费）；�
 
 - 整个类包裹在 `#if UNITY_EDITOR` 内，运行时程序集中不存在此类型
 - 两字段均为**项目根相对路径**（`PAT-36`），禁止写入绝对路径
+- 命中坐标条目后整份 Override 独立生效，空路径不回落顶层；只有没有匹配条目时才使用顶层路径
 - YooAsset mask 维度切换后 `ConfigWindow.RightPanel.YooAsset.cs` 的 `ReInjectYooAsset()` 会立即触发 `YooAssetInjector.Inject`，确保编辑期 YooAsset 工具链始终使用正确的 Settings 实例
 
 ---

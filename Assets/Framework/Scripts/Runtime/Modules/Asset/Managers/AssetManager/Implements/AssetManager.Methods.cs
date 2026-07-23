@@ -11,6 +11,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using YooAsset;
 
@@ -26,6 +28,48 @@ namespace NovaFramework.Runtime
         private string ResolvePackageName(string package)
         {
             return string.IsNullOrEmpty(package) ? m_DefaultPackageName : package;
+        }
+
+        /// <summary>
+        /// Host/Web 模式初始化前触发 DoH 检测。YooAsset 仍使用原域名，避免破坏 Host/SNI。
+        /// </summary>
+        private async UniTask PreflightRemoteUrlsAsync(string package, CancellationToken ct)
+        {
+            AssetPlayMode effectiveMode = Application.isEditor
+                ? m_Config.EditorPlayMode
+                : m_Config.RuntimePlayMode;
+            if (effectiveMode != AssetPlayMode.HostPlayMode && effectiveMode != AssetPlayMode.WebPlayMode)
+            {
+                return;
+            }
+
+            IDoHManager doHManager = FrameworkManagersGroup.GetManager<IDoHManager>();
+            if (doHManager == null)
+            {
+                return;
+            }
+
+            var remote = new AssetRemoteService(
+                m_Config.HostServerUrl,
+                m_Config.HostServerUrlFallback,
+                package,
+                m_Config.Channel);
+            for (int i = 0; i < remote.BaseUrls.Count; i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                try
+                {
+                    await doHManager.BuildRequestUrlCandidatesAsync(remote.BaseUrls[i], false);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    Log.Warning(LogTag.Asset, "远端资源地址 DoH 预检失败，将继续使用原始域名。URL={0}, Error={1}", remote.BaseUrls[i], exception.Message);
+                }
+            }
         }
 
         /// <summary>
@@ -179,7 +223,11 @@ namespace NovaFramework.Runtime
         /// <returns>HostPlayModeOptions 实例。</returns>
         private InitializePackageOptions BuildHostOptions(string package)
         {
-            var remote = new AssetRemoteService(m_Config.HostServerUrl, m_Config.HostServerUrlFallback, package);
+            var remote = new AssetRemoteService(
+                m_Config.HostServerUrl,
+                m_Config.HostServerUrlFallback,
+                package,
+                m_Config.Channel);
             var cacheParams = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remote);
             ApplyDecryptor(cacheParams);
             return new HostPlayModeOptions
@@ -196,7 +244,11 @@ namespace NovaFramework.Runtime
         /// <returns>WebPlayModeOptions 实例。</returns>
         private InitializePackageOptions BuildWebOptions(string package)
         {
-            var remote = new AssetRemoteService(m_Config.HostServerUrl, m_Config.HostServerUrlFallback, package);
+            var remote = new AssetRemoteService(
+                m_Config.HostServerUrl,
+                m_Config.HostServerUrlFallback,
+                package,
+                m_Config.Channel);
             return new WebPlayModeOptions
             {
                 WebServerFileSystemParameters = FileSystemParameters.CreateDefaultWebServerFileSystemParameters(),

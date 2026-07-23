@@ -5,14 +5,20 @@
  * filename:  AdChannelPluginBase.Track.cs
  * author:    yingzheng
  * created:   2026/5/13
- * descrip:   AdChannelPluginBase 事件触发与广告行为打点（9 事件全口径）
+ * descrip:   AdChannelPluginBase 事件触发与广告行为打点
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using NovaFramework.Runtime;
+using UnityEngine;
 
 namespace NovaFramework.SDK.AdPlugin.Runtime
 {
+    /// <summary>
+    /// 广告渠道基类的打点与事件触发分部实现。
+    /// </summary>
     public abstract partial class AdChannelPluginBase
     {
         /// <summary>
@@ -23,7 +29,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             var sdkComponent = FrameworkComponentsGroup.GetComponent<SDKComponent>();
             if (sdkComponent == null)
             {
-                Log.Warning(LogTag.AD, "CacheTrackPlugins：sdkComponent 尚未就绪。");
+                Log.Warning(LogTag.AD, "广告打点插件缓存失败：SDKComponent 尚未就绪。");
                 return;
             }
             m_TrackPlugins = sdkComponent.GetAll<ITrackPlugin>();
@@ -59,8 +65,8 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 将自定义属性合并到目标字典；已存在的 key 跳过，不覆盖基础属性。
-        /// custom 为 null 时静默跳过。
+        /// 将自定义属性合并到目标字典；已存在的键会跳过，不覆盖基础属性。
+        /// 自定义属性参数为 null 时静默跳过。
         /// </summary>
         /// <param name="target">目标属性字典。</param>
         /// <param name="custom">自定义属性字典，可为 null。</param>
@@ -70,7 +76,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 将附加属性合并到目标字典；已存在的 key 跳过，不覆盖基础属性。
+        /// 将附加属性合并到目标字典；已存在的键会跳过，不覆盖基础属性。
         /// </summary>
         /// <param name="target">目标属性字典。</param>
         /// <param name="extra">附加属性字典，可为 null。</param>
@@ -81,6 +87,105 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
                 if (!target.ContainsKey(kvp.Key))
                     target[kvp.Key] = kvp.Value;
         }
+
+        /// <summary>
+        /// 全渠道共享的 Banner ILRD 累计入口；具体渠道只负责在回调中上传自己的 ad_ilrd 载荷。
+        /// </summary>
+        /// <param name="placementId">Banner 广告位唯一标识。</param>
+        /// <param name="revenue">本次 Banner 收益回调的收入值。</param>
+        /// <param name="trackAction">达到累计间隔后执行的渠道侧 ad_ilrd 上传回调；返回 true 表示上传已派发。</param>
+        protected void TrackBannerIlrdAggregated(string placementId, double revenue, Func<decimal, bool> trackAction)
+        {
+            string countKey = BuildBannerIlrdCountKey(placementId);
+            string revenueKey = BuildBannerIlrdRevenueKey(placementId);
+
+            if (BannerIlrdInterval <= 0)
+            {
+                PlayerPrefs.DeleteKey(countKey);
+                PlayerPrefs.DeleteKey(revenueKey);
+                PlayerPrefs.Save();
+                return;
+            }
+
+            int count = PlayerPrefs.GetInt(countKey, 0) + 1;
+            decimal totalRevenue = ReadBannerIlrdRevenue(revenueKey) + ToBannerIlrdRevenueDecimal(revenue);
+
+            if (count < BannerIlrdInterval)
+            {
+                SaveBannerIlrdState(countKey, revenueKey, count, totalRevenue);
+                return;
+            }
+
+            if (trackAction != null && trackAction(totalRevenue))
+            {
+                PlayerPrefs.DeleteKey(countKey);
+                PlayerPrefs.DeleteKey(revenueKey);
+                PlayerPrefs.Save();
+            }
+            else
+            {
+                SaveBannerIlrdState(countKey, revenueKey, count, totalRevenue);
+            }
+        }
+
+        /// <summary>
+        /// 将渠道 SDK 回调中的 double 类型收益转换为 decimal 类型，避免累计存档时丢失小数精度。
+        /// </summary>
+        /// <param name="revenue">渠道 SDK 回调中的收益值。</param>
+        /// <returns>用于累计和存档的 decimal 类型收益值。</returns>
+        private static decimal ToBannerIlrdRevenueDecimal(double revenue)
+            => (decimal)revenue;
+
+        /// <summary>
+        /// 将 Banner ILRD 累计收益格式化为稳定文本，写入 PlayerPrefs 存档。
+        /// </summary>
+        /// <param name="revenue">需要存档的累计收益。</param>
+        /// <returns>使用固定区域性的收益文本。</returns>
+        private static string FormatBannerIlrdRevenue(decimal revenue)
+            => revenue.ToString("G29", CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// 从 PlayerPrefs 读取 Banner ILRD 累计收益；读取失败时按 0 处理。
+        /// </summary>
+        /// <param name="key">累计收益存档键。</param>
+        /// <returns>已累计但尚未上传的 Banner ILRD 收益。</returns>
+        private static decimal ReadBannerIlrdRevenue(string key)
+        {
+            string text = PlayerPrefs.GetString(key, "0");
+            return decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal revenue)
+                ? revenue
+                : 0m;
+        }
+
+        /// <summary>
+        /// 保存 Banner ILRD 当前累计次数和累计收益，防止游戏重启后丢失未满间隔的批次。
+        /// </summary>
+        /// <param name="countKey">累计次数存档键。</param>
+        /// <param name="revenueKey">累计收益存档键。</param>
+        /// <param name="count">当前已累计的 Banner 收益回调次数。</param>
+        /// <param name="revenue">当前已累计的 Banner 收益。</param>
+        private static void SaveBannerIlrdState(string countKey, string revenueKey, int count, decimal revenue)
+        {
+            PlayerPrefs.SetInt(countKey, count);
+            PlayerPrefs.SetString(revenueKey, FormatBannerIlrdRevenue(revenue));
+            PlayerPrefs.Save();
+        }
+
+        /// <summary>
+        /// 构建 Banner ILRD 累计次数存档键；按渠道名和广告位隔离不同渠道、不同广告位的批次。
+        /// </summary>
+        /// <param name="placementId">Banner 广告位唯一标识。</param>
+        /// <returns>用于保存累计次数的 PlayerPrefs 键。</returns>
+        private string BuildBannerIlrdCountKey(string placementId)
+            => $"Nova.Ad.BannerIlrd.{Name}.{placementId ?? string.Empty}.Count";
+
+        /// <summary>
+        /// 构建 Banner ILRD 累计收益存档键；按渠道名和广告位隔离不同渠道、不同广告位的批次。
+        /// </summary>
+        /// <param name="placementId">Banner 广告位唯一标识。</param>
+        /// <returns>用于保存累计收益的 PlayerPrefs 键。</returns>
+        private string BuildBannerIlrdRevenueKey(string placementId)
+            => $"Nova.Ad.BannerIlrd.{Name}.{placementId ?? string.Empty}.Revenue";
 
         /// <summary>
         /// 上报 nova_ad_request 打点事件。
@@ -99,9 +204,9 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 在主线程触发 OnAdRevenuePaid 事件，并驱动打点扇出。
-        /// 执行顺序：先状态机推进（MarkRevenue）→ 再事件 fan-out → 再打点。
-        /// 派生类在广告展示产生收入的 SDK 回调中调用；须确保已切回主线程。
+        /// 触发 OnAdRevenuePaid 事件，并推进收益状态。
+        /// 执行顺序：先状态机推进（MarkRevenue）→ 再事件扇出 → 再打点。
+        /// 派生类在广告展示产生收入的 SDK 回调中调用；收益路径不切 Unity 主线程。
         /// </summary>
         /// <param name="e">广告变现埋点事件载荷。</param>
         protected void RaiseRevenue(AdEvent e)
@@ -114,7 +219,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 在主线程触发 OnAdLoaded 事件，并驱动打点扇出和批次完成通知。
-        /// 执行顺序：先状态机推进（MarkLoaded）→ 再事件 fan-out → 再批次通知 → 再打点（合并 RequestCustomProps）。
+        /// 执行顺序：先状态机推进（MarkLoaded）→ 再事件扇出 → 再批次通知 → 再打点（合并 RequestCustomProps）。
         /// 派生类在广告加载成功的 SDK 回调中调用；须确保已切回主线程。
         /// </summary>
         /// <param name="e">加载成功事件载荷。</param>
@@ -159,7 +264,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 在主线程触发 OnAdLoadFailed 事件，并驱动打点扇出和批次失败通知。
-        /// 执行顺序：先状态机推进（MarkLoadFailed，含自动重试调度）→ 再事件 fan-out → 再批次通知 → 再打点（合并 RequestCustomProps）。
+        /// 执行顺序：先状态机推进（MarkLoadFailed，含自动重试调度）→ 再事件扇出 → 再批次通知 → 再打点（合并 RequestCustomProps）。
         /// 派生类在广告加载失败的 SDK 回调中调用；须确保已切回主线程。
         /// </summary>
         /// <param name="e">加载失败事件载荷。</param>
@@ -185,7 +290,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 遍历 m_PendingBatches，从含有该广告位的批次中移除对应 ID。
-        /// solar 重试语义下不存在 Failed 终止态，每次 RaiseAdLoadFailed 都通知调用方"本批已失败"，
+        /// solar 重试语义下不存在失败终止态，每次 RaiseAdLoadFailed 都通知调用方"本批已失败"，
         /// 底层 ImmediateRetry / DelayedRetry 仍会持续重试，下一轮成功时通过 RaiseAdLoaded 触发新的 RequestAsync 链路。
         /// 某批次 PendingPlacementIds 清空后，以最近一次失败结果结束该批次。
         /// </summary>
@@ -219,25 +324,19 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 触发 OnShowCompleted 事件，并上报 nova_ad_show_result（Success）打点。
-        /// 执行顺序：先状态机推进（MarkShown，含非 Banner 续杯）→ 再事件 fan-out → 再打点。
+        /// 触发 OnShowCompleted 事件，不上报 nova_ad_show_result 成功打点。
+        /// 执行顺序：先状态机推进（MarkShown，含非 Banner 续杯）→ 再事件扇出。
         /// </summary>
-        /// <param name="result">广告展示结果。</param>
+        /// <param name="result">广告展示成功结果。</param>
         protected void RaiseShowCompleted(AdResult result)
         {
-            var unit = FindAdUnit(result.PlacementId);
-            var showCustomProps = unit?.ShowCustomProps;
             MarkShown(result.PlacementId);
             OnShowCompleted?.Invoke(result);
-            var props = BuildBaseProps(result.Format, result.PlacementId);
-            props["nova_ad_result"] = 1;
-            MergeCustom(props, showCustomProps);
-            TrackEvent("nova_ad_show_result", props);
         }
 
         /// <summary>
-        /// 触发 OnShowFailed 事件，并上报 nova_ad_show_result（Fail）打点。
-        /// 执行顺序：先状态机推进（MarkShown，含非 Banner 续杯）→ 再事件 fan-out → 再打点。
+        /// 触发 OnShowFailed 事件，并上报 nova_ad_show_result（失败）打点。
+        /// 执行顺序：先状态机推进（MarkShown，含非 Banner 续杯）→ 再事件扇出 → 再打点。
         /// </summary>
         /// <param name="result">广告播放失败结果。</param>
         protected void RaiseShowFailed(AdResult result)
@@ -254,7 +353,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 触发 OnAdClosed 事件，并在基类内部上报 nova_ad_hidden 打点。
-        /// 执行顺序：先状态机推进（MarkShown，含非 Banner 续杯）→ 再事件 fan-out → 再打点。
+        /// 执行顺序：先状态机推进（MarkShown，含非 Banner 续杯）→ 再事件扇出 → 再打点。
         /// </summary>
         /// <param name="result">广告关闭结果。</param>
         /// <param name="rewarded">是否满足奖励条件；激励视频使用，其他格式传 false。</param>
@@ -274,7 +373,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 派生类在广告展示回调中调用，上报 nova_ad_show 事件。
-        /// 基类自动从对应 AdUnit 取 ShowCustomProps 合并；派生侧调用面无需传 customProps。
+        /// 基类自动从对应 AdUnit 取 ShowCustomProps 合并；派生侧调用面无需传自定义属性。
         /// </summary>
         /// <param name="format">广告格式。</param>
         /// <param name="placementId">广告位唯一标识。</param>

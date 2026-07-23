@@ -44,6 +44,7 @@ ADR-054 建好了三维矩阵底座，但不是所有面板都需要按三维分
 - 维度切换由 `DimensionProjector` 统一处理，包含分裂、合并和广播。
 - 取数由 `DimensionalResolver` 统一处理，运行时 `ConfigRuntimeSO` 仍保持单格快照，不感知掩码。
 - YooAsset 在切换维度后要重新注入，避免编辑期工具继续消费旧值。
+- CDN 部署面板（2026-07-22 接入）：`CdnMask + CdnOverrides`，`CdnDeploymentConfig` 整套 9 字段为一份快照，切坐标即整套切换；走 WorkingCopy 延迟落盘（对齐矩阵类），非 YooAsset 的 C1 即时落盘；仅 Editor 期消费，不导出 Runtime。
 
 ## 影响
 

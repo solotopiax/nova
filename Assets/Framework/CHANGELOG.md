@@ -2,6 +2,45 @@
 
 ## [Unreleased]
 
+## [0.5.44] - 2026-07-23
+
+### Added
+
+- Pipify 新增 CDN 部署、全量 Excel 导出与飞书通知步骤，并支持使用配置维度解析后的本地和远端路径。
+- DoH 新增 HostKey 全量预热和 CNAME 解析诊断树，可在 Network Inspector 中查看每层解析来源、地址与失败原因。
+- 资源远端地址模板新增 `{Channel}` 占位符，Config 导出时会把当前渠道同步为启动期快照。
+
+### Changed
+
+- CDN 配置改用 Cloudflare Zone ID 生成清理请求，并完善顶层配置与维度覆盖的投影和迁移行为。
+- HybridCLR 与 YooAsset 的维度覆盖允许用空值明确覆盖顶层配置，不再把空值自动解释为回退。
+- 公开发布副本会将 Pipify 飞书参数及 CDN 顶层、维度覆盖中的敏感字段统一替换为字段专属占位符。
+
+## [0.5.43] - 2026-07-23
+
+### Added
+
+- 新增 CDN 内容部署面板，支持按配置维度将资源批量上传到阿里云 OSS，并分批触发 Cloudflare 缓存清理。
+- 新增 `com.solotopia.alibabacloud.oss@0.0.1` 依赖及 Unity Runtime 封装，为 Editor 部署流程提供签名上传能力。
+- 新增埋点工作簿聚合与定义文档生成能力，可从 Framework 和各 UPM 包统一收集 `Tracks.xlsx`。
+
+### Changed
+
+- ConfigWindow 接入 CDN 整套配置快照与维度投影，敏感字段使用密码输入框展示且不进入 Runtime 配置导出。
+- 补齐环境检测、Inspector、EditorUtil 与菜单的当前实现文档，并清理失效入口。
+
+## [0.5.42] - 2026-07-21
+
+### Added
+
+- 新增基于各 UPM 包 `Tracks.xlsx` 的埋点表聚合工具，支持在 Editor 中生成统一的全局埋点注册表。
+- `SDKDataKeys` 新增 `OpenId` 与 `ThirdPlatform` 跨插件数据槽，供登录 SDK 与分析 SDK 解耦交换身份信息。
+
+### Changed
+
+- 收敛 Excel/Luban 导出边界与输出交付流程，并统一数据表单元设置的路径、模式和索引契约。
+- HTTP 传输接入 DoH URL 候选规划，为 BestHTTP 传输层提供统一的 IP 候选判定能力。
+
 ## [0.5.41] - 2026-07-16
 
 ### Added

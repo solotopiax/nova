@@ -89,7 +89,7 @@ namespace NovaFramework.Editor
                 throw new InvalidOperationException("[Pipify] 未找到有效的文本类型导出路径（ClassesExportPath），请在 Inspector 中为文本单元填写类型导出路径。");
             }
 
-            string[] customTemplateDirs = EditorUtil.Luban.ExportHelper.GetLubanCustomTemplateDirs("localization-text");
+            string[] customTemplateDirs = EditorUtil.Luban.ExportHelper.GetLubanCustomTemplateDirs(EditorUtil.Luban.LubanExportProfiles.LocalizationText.TemplateKey);
             bool success = EditorUtil.Localization.TextExporter.ExportTextCode(settings, sourceDirPath, classExportPath, customTemplateDirs);
             if (!success)
             {

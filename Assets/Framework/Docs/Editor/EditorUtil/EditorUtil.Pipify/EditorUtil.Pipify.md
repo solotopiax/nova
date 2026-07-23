@@ -35,8 +35,10 @@
 | `EditorUtil.Pipify/Definitions/PipifyPasswordAttribute.cs` | `PipifyPasswordAttribute` | string 字段渲染特性：PipifyWindow 使用 PasswordField，存储仍为普通字符串 |
 | `EditorUtil.Pipify/Definitions/PipifyVisibleWhenAttribute.cs` | `PipifyVisibleWhenAttribute` | 字段显隐特性：依赖另一字段当前整型化值匹配 AnyOf 时才显示 |
 | `EditorUtil.Pipify/Steps/PipifySteps.Build.cs` | `PipifySteps` | 内置 Step：打包分组 1 个 Step |
-| `EditorUtil.Pipify/Steps/PipifySteps.Export.cs` | `PipifySteps` | 内置 Step：导出分组 2 个 Step（Config + 表格） |
-| `EditorUtil.Pipify/Steps/PipifySteps.Definitions.cs` | `PipifySteps` | 内置 Step 嵌套参数类集中定义（AssetBundleParams / PackageParams / TableExportParams） |
+| `EditorUtil.Pipify/Steps/PipifySteps.Export.cs` | `PipifySteps` | 内置 Step：Config 导出 |
+| `EditorUtil.Pipify/Steps/PipifySteps.Export.All.cs` | `PipifySteps` | 内置 Step：`export.excel.all`，顺序聚合所有 Excel 派生导出，排除 Config 与 Proto |
+| `EditorUtil.Pipify/Steps/PipifySteps.Notification.cs` | `PipifySteps` | 内置 Step：`notification.feishu_webhook`，发送飞书机器人文本消息 |
+| `EditorUtil.Pipify/Steps/PipifySteps.Definitions.cs` | `PipifySteps` | 内置 Step 嵌套参数类集中定义（打包、外壳、飞书 Webhook） |
 
 ## §5 完整公开 API
 

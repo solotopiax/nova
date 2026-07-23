@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.27] - 2026-07-23
+
+### Changed
+
+- App ID 配置说明明确为 App Store Connect 中的 Apple ID，避免与其他平台应用标识混淆。
+
 ## [0.0.26] - 2026-07-16
 
 ### Fixed

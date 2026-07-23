@@ -107,10 +107,15 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 异步查询 DNS，优先返回有效缓存；若有并发查询则等待其结果；否则轮询端点直到成功。
         /// </summary>
-        /// <param name="timeout">每次端点请求超时时间（毫秒），0 表示不限制。</param>
+        /// <param name="timeout">当前域名一次 DoH 查询的超时时间（毫秒）；所有候选地址共用该值，小于等于 0 时跳过查询。</param>
         /// <returns>DNS 应答数组，所有端点均失败时返回 null。</returns>
         public async UniTask<DNSAnswer[]> QueryAsync(int timeout)
         {
+            if (timeout <= 0)
+            {
+                return null;
+            }
+
             if (m_AnswersCache != null)
             {
                 if (m_AnswersCache.ExpireTime <= DateTime.Now)
@@ -130,29 +135,39 @@ namespace NovaFramework.Runtime
 
             UniTaskCompletionSource<DNSAnswer[]> tcs = new UniTaskCompletionSource<DNSAnswer[]>();
             m_WaitingTask = tcs.Task;
+            DNSAnswer[] finalAnswers = null;
+            DateTime deadlineUtc = DateTime.UtcNow.AddMilliseconds(timeout);
 
-            foreach (string endpoint in s_EndpointsList)
+            try
             {
-                try
+                foreach (string endpoint in s_EndpointsList)
                 {
-                    DNSAnswer[] answers = await DoQuery(endpoint, timeout);
+                    if (GetRemainingTimeoutMilliseconds(deadlineUtc) <= 0)
+                    {
+                        PrintWarning(endpoint, $"本次 DoH 查询超时时间已耗尽（{timeout} 毫秒）。");
+                        break;
+                    }
+
+                    DNSAnswer[] answers = await DoQuery(endpoint, deadlineUtc);
                     if (answers != null && answers.Any())
                     {
                         m_AnswersCache = new DNSCacheEntry(answers);
-                        tcs.TrySetResult(m_AnswersCache.Answers);
-                        m_WaitingTask = default;
-                        return answers;
+                        finalAnswers = m_AnswersCache.Answers;
+                        break;
                     }
                 }
-                catch (Exception e)
-                {
-                    PrintError(endpoint, e.Message);
-                }
+            }
+            catch (Exception e)
+            {
+                PrintWarning("DoH", $"查询过程异常：{e.Message}");
+            }
+            finally
+            {
+                m_WaitingTask = default;
+                tcs.TrySetResult(finalAnswers);
             }
 
-            m_WaitingTask = default;
-            tcs.TrySetResult(null);
-            return null;
+            return finalAnswers;
         }
 
         /// <summary>
@@ -166,31 +181,54 @@ namespace NovaFramework.Runtime
         /// 向指定端点发送实际的 DoH 查询请求并解析 JSON 响应。
         /// </summary>
         /// <param name="endpoint">DoH 端点 URL。</param>
-        /// <param name="timeout">超时时间（毫秒）。</param>
+        /// <param name="deadlineUtc">当前域名本次 DoH 查询的 UTC 截止时间，所有候选地址共用。</param>
         /// <returns>解析出的 DNS 应答数组，失败时返回 null。</returns>
-        private async UniTask<DNSAnswer[]> DoQuery(string endpoint, int timeout)
+        private async UniTask<DNSAnswer[]> DoQuery(string endpoint, DateTime deadlineUtc)
         {
+            HttpWebRequest request = null;
             try
             {
-                HttpWebRequest request = CreateRequest(endpoint, timeout);
-                using HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
+                int remainingTimeout = GetRemainingTimeoutMilliseconds(deadlineUtc);
+                if (remainingTimeout <= 0)
+                {
+                    return null;
+                }
+
+                request = CreateRequest(endpoint, remainingTimeout);
+                using HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync()
+                    .AsUniTask()
+                    .Timeout(TimeSpan.FromMilliseconds(remainingTimeout), DelayType.Realtime);
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    PrintError(endpoint, $"状态码错误：{(int)response.StatusCode} {response.StatusDescription}。");
+                    PrintWarning(endpoint, $"状态码错误：{(int)response.StatusCode} {response.StatusDescription}。");
                     return null;
                 }
 
                 using Stream rs = response.GetResponseStream();
                 if (rs != null)
                 {
+                    remainingTimeout = GetRemainingTimeoutMilliseconds(deadlineUtc);
+                    if (remainingTimeout <= 0)
+                    {
+                        request.Abort();
+                        return null;
+                    }
+
                     using StreamReader reader = new StreamReader(rs, Encoding.UTF8);
-                    string content = await reader.ReadToEndAsync();
+                    string content = await reader.ReadToEndAsync()
+                        .AsUniTask()
+                        .Timeout(TimeSpan.FromMilliseconds(remainingTimeout), DelayType.Realtime);
                     return HandleJSONResponse(endpoint, content);
                 }
             }
+            catch (TimeoutException)
+            {
+                request?.Abort();
+                PrintWarning(endpoint, "查询超时，已中止当前请求。");
+            }
             catch (Exception e)
             {
-                PrintError(endpoint, e.Message);
+                PrintWarning(endpoint, e.Message);
             }
 
             return null;
@@ -200,7 +238,7 @@ namespace NovaFramework.Runtime
         /// 构建 DoH 查询的 HttpWebRequest 对象。
         /// </summary>
         /// <param name="url">端点基础 URL。</param>
-        /// <param name="timeout">超时时间（毫秒），0 表示不设置。</param>
+        /// <param name="timeout">当前候选地址可用的剩余超时时间（毫秒）。</param>
         /// <returns>配置好的 HttpWebRequest 实例。</returns>
         private HttpWebRequest CreateRequest(string url, int timeout)
         {
@@ -233,7 +271,7 @@ namespace NovaFramework.Runtime
                 if (status != 0)
                 {
                     string comment = json.ContainsKey("Comment") ? json["Comment"].ToString() : string.Empty;
-                    PrintError(url, $"DNS RCode 错误，code：{status}，comment：{comment}。");
+                    PrintWarning(url, $"DNS RCode 错误，code：{status}，comment：{comment}。");
                     return null;
                 }
 
@@ -252,7 +290,7 @@ namespace NovaFramework.Runtime
             }
             catch (Exception e)
             {
-                PrintError(url, $"JSON 解析失败：{e.Message}，内容：{content}。");
+                PrintWarning(url, $"JSON 解析失败：{e.Message}，内容：{content}。");
                 return null;
             }
         }
@@ -305,13 +343,29 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 记录 DoH 错误日志。
+        /// 记录可恢复的 DoH 查询告警。
         /// </summary>
-        /// <param name="dnsUrl">产生错误的 DoH 端点 URL。</param>
-        /// <param name="message">错误描述信息。</param>
-        private void PrintError(string dnsUrl, string message)
+        /// <param name="dnsUrl">产生告警的 DoH 端点 URL。</param>
+        /// <param name="message">告警描述信息。</param>
+        private void PrintWarning(string dnsUrl, string message)
         {
-            Log.Error(LogTag.DoH, "DoH 错误，dns：{0}，host：{1}，message：{2}。", dnsUrl, m_HostName, message);
+            Log.Warning(LogTag.DoH, "DoH 查询失败，dns：{0}，host：{1}，message：{2}。", dnsUrl, m_HostName, message);
+        }
+
+        /// <summary>
+        /// 计算共享截止时间的剩余毫秒数。
+        /// </summary>
+        /// <param name="deadlineUtc">UTC 截止时间。</param>
+        /// <returns>剩余毫秒数；截止时间已到时返回 0。</returns>
+        private static int GetRemainingTimeoutMilliseconds(DateTime deadlineUtc)
+        {
+            double remainingMilliseconds = (deadlineUtc - DateTime.UtcNow).TotalMilliseconds;
+            if (remainingMilliseconds <= 0)
+            {
+                return 0;
+            }
+
+            return (int)Math.Min(int.MaxValue, Math.Ceiling(remainingMilliseconds));
         }
 
         /// <summary>

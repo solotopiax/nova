@@ -48,6 +48,7 @@ FrameworkManager
 | `m_AutoHeartBeatCoroutines` | `Dictionary<NetChannelBase, Coroutine>` | `{}` | key = 通道实例；心跳协程句柄 |
 | `m_AutoReconnectCoroutines` | `Dictionary<NetChannelBase, Coroutine>` | `{}` | key = 通道实例；断线重连协程句柄 |
 | `m_CoroutineRunner` | `ICoroutineRunner` | `null` | 由 WebSocketManagerConfig 注入（NetworkComponent 实现） |
+| `m_DoHManager` | `IDoHManager` | `null` | 由 WebSocketManagerConfig 注入；每次物理连接前执行 DoH detect-only 预检 |
 | `m_SpecialMessageCreator` | `Func<NetChannelType, string, NetMessageBase>` | `null` | 创建心跳/认证消息的游戏层委托 |
 | `m_ConnectTimeout` | `float` | `10f` | 连接超时时间（秒） |
 | `m_AuthenticateTimeout` | `float` | `10f` | 身份认证超时时间（秒） |
@@ -193,6 +194,7 @@ NetworkComponent.Awake()
   │
   └─ WebSocketManager.Initialize(WebSocketManagerConfig)
         ├─ m_CoroutineRunner      ← config.CoroutineRunner   (必须非 null，否则 Fatal)
+        ├─ m_DoHManager           ← config.DoHManager
         ├─ m_SpecialMessageCreator ← config.SpecialMessageCreator (可为 null)
         ├─ m_ConnectTimeout       ← config.ConnectTimeout
         ├─ m_AuthenticateTimeout  ← config.AuthenticateTimeout
@@ -231,6 +233,7 @@ ConnectServer(channelType, serverAddress, autoReconnect)
         │
         ├─ InnerConnectServerCoroutine / InnerConnectServerCoroutineAsync
         │   ├─ OnBeginConnect.Invoke(idx, addr)
+        │   ├─ PreflightDoHAsync(addr)（仅检测，保持原 WS/WSS 地址）
         │   ├─ channel.CloseSocket(false) + channel.CreateSocket()
         │   └─ IsConnected → OnConnectSuccess / OnConnectFail
         │

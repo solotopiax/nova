@@ -1,143 +1,71 @@
 # EditorUtil.Localization.TextExporter
 
 **类签名**：`public static class TextExporter`（嵌套于 `EditorUtil.Localization`）
+
 **命名空间**：`NovaFramework.Editor`
 
-本地化文本导出工具，提供全链路导出、仅代码导出、仅数据导出和语言列表独立导出四条路径；文本数据使用 Map 模式，通过 `LocalizationTextExporter` 完成三阶段 PreFilter → Pipeline 编排。
+公共门面签名保持不变；内部由 `LocalizationExcelPreFilter` 负责源加载、校验和 CSV 投影，`LocalizationTextExporter` 负责编排，通用 `FileSystem.OutputApplier` 负责正式文件应用与失败回滚。
 
----
+上述三段式结构是 Localization 对多语言 Excel 的专用导出实现，不定义其他模块的通用表格导出方式。Nova 的通用表格导出只属于 Table 模块；这里仅复用 Excel 读写、Luban 等基础设施。
 
-## §2 文件表
-
-| 文件 | 类 | 说明 |
-|------|----|------|
-| `Editor/EditorUtil/EditorUtil.Localization/EditorUtil.Localization.TextExporter.cs` | `EditorUtil.Localization.TextExporter` | 文本导出工具类（含内嵌私有适配类 `CodegenResolvedSettings` / `LangResolvedSettings` / `LubanPathOverrideUnitSetting`） |
-
----
-
-## §3 继承关系
-
-```
-EditorUtil (public static partial class)
-  └── EditorUtil.Localization (public static partial class)
-        └── TextExporter (public static class)
-```
-
----
-
-## §4 关键字段表
-
-| 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `c_TargetName` | `const string` | `"localization-text"` | Luban target 名称 |
-| `c_ManagerName` | `const string` | `"LocalizationTextTables"` | Luban manager 类名 |
-| `c_CodegenTempSubDir` | `const string` | `"_codegen"` | 代码生成临时子目录名称 |
-| `c_TempDirName` | `const string` | `"_temp"` | 临时目录根名称 |
-| `s_Utf8NoBom` | `static readonly Encoding` | `UTF8Encoding(false)` | UTF-8 无 BOM 编码实例 |
-
----
-
-## §5 完整公开 API
+## 公开 API
 
 ```csharp
-// 全链路导出：DataTypeNameHelper.DoRefreshAllDataTypeNames → LocalizationTextExporter.ExportAll（三阶段）
-// textUnitsSettingsProp / serializedObject 可为 null（跳过刷新 DataTypeNames）
-// 返回是否成功
 public static bool ExportTextAll(
     LocalizationSettings settings,
     string sourceDirPath,
-    UnityEditor.SerializedProperty textUnitsSettingsProp,
-    UnityEditor.SerializedObject serializedObject,
     string classExportPath,
     string[] customTemplateDirs,
     string supportedLanguagesExportPath);
 
-// 仅导出 C# 类型（Phase A）：PreFilter 取第一种语言列生成简化 Excel → Pipeline.ExportCode
-// customTemplateDirs 可为 null
 public static bool ExportTextCode(
     LocalizationSettings settings,
     string sourceDirPath,
     string classExportPath,
     string[] customTemplateDirs);
 
-// 仅导出文本数据（Phase B）：按每种语言执行 PreFilter → Pipeline.ExportData
-// DatasExportPath 中的 {0} 占位符替换为对应语言名称
 public static bool ExportTextData(LocalizationSettings settings, string sourceDirPath);
 
-// 独立导出语言列表 JSON：提取所有语言列 → 排序 → 写入 exportPath
 public static bool ExportSupportedLanguages(string sourceDirPath, string exportPath);
 ```
 
----
+## 全量导出顺序
 
-## §9 关键算法
-
-### ExportTextCode 流程（Phase A）
-
-```
-ExportTextCode(settings, sourceDirPath, classExportPath, customTemplateDirs):
-  1. 参数校验 → 无效时 Log.Warning + return false
-  2. codegenTempDir = sourceDirPath/_temp/_codegen
-  3. try:
-     a. LocalizationExcelPreFilter.FilterForCodeGen(sourceDirPath, codegenTempDir)
-        → 取第一种语言列生成 _codegen/{fileName}
-     b. 构建 CodegenResolvedSettings（LubanInputPath 覆盖为 _temp/_codegen/{fileName}）
-     c. 构建 LubanExportContext（TargetName="localization-text", TopModule=RuntimeProvider.GetNamespace()）
-     d. Pipeline.ExportCode(ctx) → success
-     e. success → AssetDatabase.Refresh()
-  4. finally: CleanupTempDir(sourceDirPath/_temp)
-  5. return success
+```text
+获取 SourceDir 重入门
+  -> 从 Settings.Units 构建并完整验证 LocalizationExcelPreFilter.SourceModel
+  -> 清理旧 _temp
+  -> 逐语言生成 CSV 并把 JSON 暂存到 _temp/_publish/data
+  -> 生成代码到 Unity 忽略的 _temp/_publish/code~
+  -> 使用暂存 JSON 与暂存代码生成、验证 Map 属性
+  -> 暂存支持语言 JSON
+  -> 注册精确的旧语言 JSON 删除项
+  -> Luban.GeneratedOutput 为 C# 写入第一行单行所有权标记
+  -> FileSystem.OutputApplier 一次应用全部替换与删除
+  -> finally 清理 _temp 并刷新 AssetDatabase
 ```
 
-### ExportTextData 流程（Phase B，多语言并发）
+任一语言、Luban、代码、Map 或产物验证失败都会立即终止；调用 `Apply` 前不会修改正式 JSON、C# 或支持语言列表。应用中途失败时，已替换和已删除文件按逆序从备份恢复；回滚也失败会抛出聚合异常并由门面记录一次失败。
 
-```
-ExportTextData(settings, sourceDirPath):
-  1. 参数校验
-  2. LocalizationExcelPreFilter.ExtractAllLanguageColumns(sourceDirPath) → allLanguages
-  3. allLanguages 空 → Log.Warning + return false
-  4. for each languageName in allLanguages:
-     a. langTempDir = sourceDirPath/_temp/{languageName}
-     b. LocalizationExcelPreFilter.FilterForLanguage(sourceDirPath, langTempDir, languageName)
-     c. 构建 LangResolvedSettings（DatasExportPath 的 {0} 替换为 languageName）
-     d. Pipeline.ExportData(ctx)
-  5. finally: CleanupTempDir(sourceDirPath/_temp)
-```
+## 路径和清理契约
 
----
+- `_temp` 在 Excel 源目录下；导出开始前和结束后都清理。
+- CSV 保留配置源的相对 stem，避免不同子目录同名 xlsx 互相覆盖。
+- 暂存 `.cs` 放在 `code~`，避免正式应用前被 Unity 导入编译。
+- 旧语言清理只展开每个 Unit 的 `DatasExportPath.Replace("{0}", language)` 精确路径，不使用通配删除。
+- 独立 `ExportSupportedLanguages` 只发布语言列表，不删除任何语言数据；因其 public API 没有 Settings 参数，语言发现仍走兼容递归扫描。
+- `_configs` 是 Luban 可再生工作缓存，不属于正式产物应用批次；`_temp`、`.tmp` 和备份均不得残留。
+- `_configs/output-manifests/localization-text.json` 只记录最近一次全量代码产物清单；它可以重建，不参与过期文件删除判断。
 
-## §11 使用示例
+## 契约影响
 
-```csharp
-// LocalizationComponentInspector 中全链路导出
-string classExportPath = settings.TextUnitsSettings[0].ClassesExportPath;
-string[] templateDirs = EditorUtil.Luban.ExportHelper.GetLubanCustomTemplateDirs("localization-text");
-bool ok = EditorUtil.Localization.TextExporter.ExportTextAll(
-    settings, sourceDirPath,
-    textUnitsSettingsProp, serializedObject,
-    classExportPath, templateDirs, supportedLanguagesExportPath);
+public API、Runtime API、Inspector 序列化字段均未变化。行为变化只发生在 Editor 导出内部：配置外 xlsx 不再参与完整导出，失败改为 fail-fast，正式产物改为成批发布。
 
-// Pipify Step 中仅导出文本数据
-bool ok = EditorUtil.Localization.TextExporter.ExportTextData(settings, sourceDirPath);
+## 关联文档
 
-// 独立导出语言列表
-bool ok = EditorUtil.Localization.TextExporter.ExportSupportedLanguages(
-    sourceDirPath, "Assets/Game/Localization/supported_languages.json");
-```
-
----
-
-## §12 注意事项
-
-- `ExportTextCode` 与 `ExportTextData` 都在 `finally` 块清理 `_temp` 目录，失败后不遗留临时文件
-- `ExportTextAll` 委托给 `LocalizationTextExporter.ExportAll` 完成三阶段 Pipeline，本类不重复实现
-- `DatasExportPath` 中的 `{0}` 占位符是语言名的插值位，由 `LangResolvedSettings` 内部替换
-
----
-
-## §13 关联文档
-
-- [LocalizationSettings.md](../../../Runtime/Modules/Localization/LocalizationSettings.md)
-- [EditorUtil.Luban.LocalizationTextExporter.md](../EditorUtil.Luban/EditorUtil.Luban.LocalizationTextExporter.md)
 - [LocalizationExcelPreFilter.md](../../DataPipeline/Implements/Localizations/LocalizationExcelPreFilter.md)
-- [PipifySteps.md](../EditorUtil.Pipify/PipifySteps.md)
+- [LocalizationTextExporter.md](../../DataPipeline/Implements/Localizations/LocalizationTextExporter.md)
+- [EditorUtil.FileSystem.OutputApplier.md](../EditorUtil.FileSystem/EditorUtil.FileSystem.OutputApplier.md)
+- [EditorUtil.Luban.GeneratedOutput.md](../EditorUtil.Luban/EditorUtil.Luban.GeneratedOutput.md)
+- [EditorUtil.Luban.Pipeline.md](../EditorUtil.Luban/EditorUtil.Luban.Pipeline.md)
+- [EditorUtil.Luban.SchemaManifest.md](../EditorUtil.Luban/EditorUtil.Luban.SchemaManifest.md)

@@ -208,6 +208,7 @@ namespace NovaFramework.Runtime
             OnBeginConnect?.Invoke(channelIndex, channel.ServerAddress);
 
 #if !UNITY_EDITOR && UNITY_WEBGL
+            yield return PreflightDoHAsync(channel.ServerAddress).ToCoroutine();
             yield return channel.CloseSocket(false);
             yield return channel.CreateSocket();
 #endif
@@ -233,6 +234,7 @@ namespace NovaFramework.Runtime
             int channelIndex = FindNetChannelIndex(channel);
             OnBeginConnect?.Invoke(channelIndex, channel.ServerAddress);
 
+            await PreflightDoHAsync(channel.ServerAddress);
             await channel.CloseSocket(false);
             await channel.CreateSocket();
 
@@ -243,6 +245,26 @@ namespace NovaFramework.Runtime
             else
             {
                 OnConnectFail?.Invoke(channelIndex, channel.ServerAddress);
+            }
+        }
+
+        /// <summary>
+        /// 建立物理连接前触发 DoH 检测。WebSocket 仍使用原域名，等待传输层具备可验证的 Host/SNI 能力。
+        /// </summary>
+        private async UniTask PreflightDoHAsync(string serverAddress)
+        {
+            if (m_DoHManager == null)
+            {
+                return;
+            }
+
+            try
+            {
+                await m_DoHManager.BuildRequestUrlCandidatesAsync(serverAddress, false);
+            }
+            catch (Exception exception)
+            {
+                Log.Warning(LogTag.WebSocket, "WebSocket 地址 DoH 预检失败，将继续使用原始域名。URL={0}, Error={1}", serverAddress, exception.Message);
             }
         }
 

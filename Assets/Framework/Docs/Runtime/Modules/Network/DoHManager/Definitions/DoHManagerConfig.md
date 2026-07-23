@@ -3,7 +3,7 @@
 **类签名**：`public class DoHManagerConfig`
 **命名空间**：`NovaFramework.Runtime`
 
-DoH 管理器初始化配置；控制 DNS-over-HTTPS 是否启用及 DNS 查询超时时间。
+DoH 管理器初始化配置；控制 DNS-over-HTTPS 是否启用及每个域名的单次查询超时时间。
 
 ---
 
@@ -20,10 +20,12 @@ DoH 管理器初始化配置；控制 DNS-over-HTTPS 是否启用及 DNS 查询�
 ```csharp
 public class DoHManagerConfig
 {
-    public bool UseDoH;           // 是否启用 DoH（DNS-over-HTTPS）解析
-    public int  DnsTimeoutSeconds; // DNS 查询超时时间（秒），0 表示不限制超时
+    public bool UseDoH;               // 是否启用 DoH（DNS-over-HTTPS）解析
+    public int  DnsTimeoutSeconds = 3; // 每个域名的一次 DoH 查询超时时间（秒），0 跳过 DoH 查询
 }
 ```
+
+每个域名独立应用该超时时间；同一次查询期间尝试的所有候选地址共用该值。
 
 ---
 

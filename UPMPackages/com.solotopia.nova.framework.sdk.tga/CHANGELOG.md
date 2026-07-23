@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.0.22] - 2026-07-21
+
+### Added
+
+- 自动消费账号插件发布的 `OpenId` / `ThirdPlatform` 数据，通过 TGA `UserSet` 更新 `nova_openid`。
+- 自动同步 AppsFlyer ID 与 Facebook ID 到 TGA `UserSetOnce` 用户属性。
+
+### Fixed
+
+- `nova_first_version` 改为持久化的首次安装版本，避免升级后被当前版本覆盖。
+- 移除冗余的 `nova_uid` 自定义用户属性，继续使用 TGA 预置账号 ID。
+
+### Changed
+
+- 将 Nova Framework 最低依赖版本提升至 `0.5.42`。
+
 ## [0.0.21] - 2026-07-13
 
 ### Changed

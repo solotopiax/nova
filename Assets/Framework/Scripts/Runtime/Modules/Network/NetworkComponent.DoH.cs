@@ -19,13 +19,13 @@ namespace NovaFramework.Runtime
     public sealed partial class NetworkComponent : FrameworkComponent
     {
         /// <summary>
-        /// 遍历当前已加载的 NetCmd 中所有 HTTP 类型 URL，异步收集各域名 IP。
+        /// 遍历当前已加载的全部 HostKey URL，异步收集各域名 IP。
         /// 通常在 LoadNetCmds 完成后调用一次。
         /// </summary>
         /// <returns>异步任务。</returns>
         public async UniTask CollectAllIPAddresses()
         {
-            await m_DoHManager.CollectAllIPAddresses(m_NetworkManager.GetAllNetCmdUrls());
+            await m_DoHManager.CollectAllIPAddresses(m_NetworkManager.GetAllHostKeyUrls());
         }
 
         /// <summary>

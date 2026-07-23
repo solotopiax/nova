@@ -4,6 +4,7 @@
     "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.0",
     "com.google.external-dependency-manager": "1.2.187",
     "com.onevcat.uniwebview": "5.11.1",
+    "com.solotopia.alibabacloud.oss": "file:../UPMPackages/com.solotopia.alibabacloud.oss",
     "com.solotopia.excelio": "file:../UPMPackages/com.solotopia.excelio",
     "com.solotopia.hybridclr": "file:../UPMPackages/com.solotopia.hybridclr",
     "com.solotopia.luban": "file:../UPMPackages/com.solotopia.luban",

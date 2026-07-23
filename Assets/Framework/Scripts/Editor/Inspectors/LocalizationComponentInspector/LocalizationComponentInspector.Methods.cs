@@ -98,9 +98,11 @@ namespace NovaFramework.Editor
 
             EditorUtil.Draw.HelpBox(MessageType.Info, new[]
             {
-                "(1)文本数据导出路径须以 {0} 作为语言占位符",
-                "(2)运行时占位符自动替换为对应语言名称",
-                "(3)示例 LocalizationTexts_{0}.json（位于工程内任意 Resources/Jsons/ 子目录下）"
+                "填写说明：",
+                "(1)“数据导出位置”必须包含 {0}，用于为每种语言生成独立的 JSON 文件。",
+                "(2)导出时 {0} 会替换为语言名称，例如 ChineseSimplified、English。",
+                "(3)例如 LocalizationTexts_{0}.json 会生成 LocalizationTexts_ChineseSimplified.json、LocalizationTexts_English.json。",
+                "(4)“Asset 地址”也应保留 {0}，运行时会按当前语言加载对应文件。"
             });
 
             DrawSupportedLanguagesFields();
@@ -310,9 +312,9 @@ namespace NovaFramework.Editor
             }
 
             string supportedLanguagesExportPath = m_SupportedLanguagesJsonExportPath?.stringValue;
-            string[] customTemplateDirs = EditorUtil.Luban.ExportHelper.GetLubanCustomTemplateDirs("localization-text");
+            string[] customTemplateDirs = EditorUtil.Luban.ExportHelper.GetLubanCustomTemplateDirs(EditorUtil.Luban.LubanExportProfiles.LocalizationText.TemplateKey);
 
-            EditorUtil.Localization.TextExporter.ExportTextAll(settings, textDirPath, m_TextUnitsSettings, serializedObject, classExportPath, customTemplateDirs, supportedLanguagesExportPath);
+            EditorUtil.Localization.TextExporter.ExportTextAll(settings, textDirPath, classExportPath, customTemplateDirs, supportedLanguagesExportPath);
         }
 
         /// <summary>
@@ -345,7 +347,7 @@ namespace NovaFramework.Editor
                 }
             }
 
-            EditorUtil.Localization.FontExporter.ExportFontAll(settings, fontDirPath, m_FontUnitsSettings, serializedObject, classExportPath);
+            EditorUtil.Localization.FontExporter.ExportFontAll(settings, fontDirPath, classExportPath);
         }
 
         /// <summary>

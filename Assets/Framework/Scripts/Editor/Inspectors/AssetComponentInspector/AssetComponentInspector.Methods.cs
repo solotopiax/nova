@@ -153,8 +153,8 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
                             "(1)运行时按当前节点上的 DevelopMode 选择 Debug 或 Release 这一组地址",
-                            "(2)支持 {Platform}/{Package}/{Version} 占位符，框架会在运行时替换",
-                            "(3){Platform}=PlatformType 枚举名，如 Android/iOS/WebGL；{Package}=YooAsset 当前资源包名，如：\"Default\"；{Version}=Application.version，如 1.0.0"
+                            "(2)支持 {Platform}/{Channel}/{Package}/{Version} 占位符，框架会在运行时替换",
+                            "(3){Platform}=PlatformType 枚举名；{Channel}=Config 导出时选中的渠道；{Package}=YooAsset 当前资源包名；{Version}=Application.version"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 

@@ -34,22 +34,40 @@ namespace NovaFramework.Editor
 |------|----|------|
 | `c_MenuOpenIdeProject` | `"Nova/Open IDE Project"` | 菜单路径 |
 | `c_MenuOpenFolderDataPath` | `"Nova/Open Folder/Data Path"` | 菜单路径 |
-| `c_MenuOpenFolder*` | 见代码 | 其余 4 个 Open Folder 子菜单路径 |
+| `c_MenuOpenFolderPersistentDataPath` | `"Nova/Open Folder/Persistent Data Path (Unity)"` | 菜单路径 |
+| `c_MenuOpenFolderPersistentDataPathYooAsset` | `"Nova/Open Folder/Persistent Data Path (YooAsset)"` | 菜单路径 |
+| `c_MenuOpenFolderBundleGeneratedPath` | `"Nova/Open Folder/Bundle Generated Path"` | 菜单路径 |
+| `c_MenuOpenFolderStreamingAssetsPath` | `"Nova/Open Folder/Streaming Assets Path"` | 菜单路径 |
+| `c_MenuOpenFolderCachingWritingPath` | `"Nova/Open Folder/Caching Writing Path"` | 菜单路径 |
+| `c_MenuOpenFolderTemporaryCachePath` | `"Nova/Open Folder/Temporary Cache Path"` | 菜单路径 |
 | `c_PriorityOpenIdeProject` | `1010` | 排序优先级 |
-| `c_PriorityOpenFolder*` | `1020–1024` | 排序优先级 |
+| `c_PriorityOpenFolder*` | `1020–1026` | 排序优先级（Data Path 1020 起逐项 +1） |
 
 ---
 
 ## §5 完整公开 API
 
 ```csharp
-[MenuItem("Nova/Open IDE Project")]       public static void OpenIdeProject()
-[MenuItem("Nova/Open Folder/Data Path")]  public static void OpenFolderDataPath()
-[MenuItem("...Persistent Data Path")]     public static void OpenFolderPersistentDataPath()
-[MenuItem("...Streaming Assets Path")]    public static void OpenFolderStreamingAssetsPath()
-[MenuItem("...Caching Writing Path")]     public static void OpenFolderCachingWritingPath()
-[MenuItem("...Temporary Cache Path")]     public static void OpenFolderTemporaryCachePath()
+[MenuItem("Nova/Open IDE Project")]                          public static void OpenIdeProject()
+[MenuItem("Nova/Open Folder/Data Path")]                     public static void OpenFolderDataPath()
+[MenuItem(".../Persistent Data Path (Unity)")]               public static void OpenFolderPersistentDataPath()
+[MenuItem(".../Persistent Data Path (YooAsset)")]            public static void OpenFolderPersistentDataPathYooAsset()
+[MenuItem(".../Bundle Generated Path")]                      public static void OpenFolderBundleGeneratedPath()
+[MenuItem(".../Streaming Assets Path")]                      public static void OpenFolderStreamingAssetsPath()
+[MenuItem(".../Caching Writing Path")]                       public static void OpenFolderCachingWritingPath()
+[MenuItem(".../Temporary Cache Path")]                       public static void OpenFolderTemporaryCachePath()
 ```
+
+---
+
+## §9 关键行为（带回退的路径解析）
+
+| 方法 | 目标路径 | 回退规则 |
+|------|----------|----------|
+| `OpenFolderPersistentDataPathYooAsset` | `{项目根}/{YooFolderName}/{PackageName}` | `YooFolderName` 为空 → 项目根；包目录不存在 → `YooFolderName` 目录；再不存在 → 项目根 |
+| `OpenFolderBundleGeneratedPath` | `{项目根}/Bundles/{Platform}/{PackageName}` | 包目录不存在 → `{Platform}`；平台目录不存在 → `Bundles`；再不存在 → 项目根 |
+
+默认包名 `GetDefaultPackageName()`：从 `Assets/Framework/Prefabs/Nova.prefab` 的 `AssetComponent.m_DefaultPackageName` 读取，为空时回退 `m_Packages[0]`，仍读不到返回空字符串（此时只打开到上一级已存在目录）。
 
 ---
 

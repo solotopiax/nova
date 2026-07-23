@@ -185,7 +185,7 @@ Mobile 官方内购没有第三方订单创建和第三方收银台关闭流程�
 
 ## 11. IAP 4.x 过时概念
 
-旧 `MobileStore-Design.md` 中的 `IStoreController`、`IExtensionProvider`、`UnityPurchasing.Initialize(listener, builder)`、`IDetailedStoreListener`、`ProcessPurchase` 等 IAP 4.x 概念均不是当前实现事实。当前以 Unity IAP 5.x `StoreController` 事件模型为准。
+`IStoreController`、`IExtensionProvider`、`UnityPurchasing.Initialize(listener, builder)`、`IDetailedStoreListener`、`ProcessPurchase` 等 IAP 4.x 概念均不是当前实现事实。当前以 Unity IAP 5.x `StoreController` 事件模型为准。
 
 ## 12. 相关文档
 

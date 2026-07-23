@@ -127,6 +127,47 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 绘制密码文本框（纯字符串，返回编辑后的真实值；界面仅显示遮罩字符）。
+            /// </summary>
+            /// <param name="value">当前真实文本值。</param>
+            /// <param name="disableOnPlaying">是否在运行时禁用。</param>
+            /// <param name="options">布局选项。</param>
+            /// <returns>编辑后的真实文本值。</returns>
+            public static string PasswordField(string value, bool disableOnPlaying = true, params GUILayoutOption[] options)
+            {
+                EditorGUI.BeginDisabledGroup(disableOnPlaying && EditorApplication.isPlaying);
+                string newValue = EditorGUILayout.PasswordField(value ?? string.Empty, options);
+                EditorGUI.EndDisabledGroup();
+                return newValue;
+            }
+
+            /// <summary>
+            /// 绘制绑定字符串 SerializedProperty 的密码文本框，并在值变化时写回序列化对象。
+            /// </summary>
+            /// <param name="property">绑定的字符串属性。</param>
+            /// <param name="disableOnPlaying">是否在运行时禁用。</param>
+            /// <param name="onComplete">值写回后的回调。</param>
+            /// <param name="options">布局选项。</param>
+            public static void PasswordField(
+                SerializedProperty property,
+                bool disableOnPlaying = true,
+                Action onComplete = null,
+                params GUILayoutOption[] options)
+            {
+                if (property == null) return;
+
+                EditorGUI.BeginDisabledGroup(disableOnPlaying && EditorApplication.isPlaying);
+                string newValue = EditorGUILayout.PasswordField(property.stringValue ?? string.Empty, options);
+                if (newValue != property.stringValue)
+                {
+                    property.stringValue = newValue;
+                    property.serializedObject.ApplyModifiedProperties();
+                    onComplete?.Invoke();
+                }
+                EditorGUI.EndDisabledGroup();
+            }
+
+            /// <summary>
             /// 绘制延迟提交文本框（仅在用户按 Enter 或控件失焦时返回新值，编辑过程中持续返回旧值）。
             /// 适用于"切换上下文坐标后须按坐标重读显示值"的场景，规避 IMGUI TextField 聚焦态内部缓冲与外部值冲突。
             /// </summary>

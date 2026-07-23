@@ -56,6 +56,7 @@ namespace NovaFramework.Runtime
                 IdleTimeout = m_IdleTimeout,
                 HostServerUrl = ResolveHostServerUrl(),
                 HostServerUrlFallback = ResolveHostServerUrlFallback(),
+                Channel = m_Channel,
                 DecryptorType = m_DecryptorType,
                 LaunchHotfixTags = m_LaunchHotfixTags,
                 AutoClearUnusedCacheOnHotfix = m_AutoClearUnusedCacheOnHotfix,

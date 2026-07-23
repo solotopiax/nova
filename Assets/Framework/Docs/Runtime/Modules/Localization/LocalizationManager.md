@@ -64,7 +64,7 @@
 - 语言列表通过 JSON 数组解析成 `m_SupportedLanguages`
 - 字体数据通过 Luban 表加载进 `m_FontDatas`
 
-也就是说，支持语言已经不再从 `TextUnitSettings.DataTypeNames` 推断。
+也就是说，支持语言来自独立导出的 `SupportedLanguages` 列表，不从文本单元的 Excel Sheet 缓存字段推断。
 
 ### 3. ResolveLanguage：按环境走两条主链
 

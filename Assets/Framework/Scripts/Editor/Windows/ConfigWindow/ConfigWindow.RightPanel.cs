@@ -78,6 +78,9 @@ namespace NovaFramework.Editor
                             case LeftTreeItem.HybridCLRConfig when m_MasterSO != null:
                                 DrawHybridCLRPanel();
                                 break;
+                            case LeftTreeItem.CdnDeployment when m_MasterSO != null:
+                                DrawCdnDeploymentPanel();
+                                break;
                             case LeftTreeItem.KitNode when m_SelectedPluginType != null:
                                 DrawKitPanel();
                                 break;
@@ -311,6 +314,7 @@ namespace NovaFramework.Editor
                 case EditorUtil.Config.DimensionProjector.PanelKind.Common: mask = workingSrc.CommonMask; break;
                 case EditorUtil.Config.DimensionProjector.PanelKind.Namespace: mask = workingSrc.NamespaceMask; break;
                 case EditorUtil.Config.DimensionProjector.PanelKind.HybridCLR: mask = workingSrc.HybridCLRMask; break;
+                case EditorUtil.Config.DimensionProjector.PanelKind.Cdn: mask = workingSrc.CdnMask; break;
                 case EditorUtil.Config.DimensionProjector.PanelKind.SDK: mask = workingSrc.GetSDKMask(typeName); break;
                 default: mask = workingSrc.GetKitMask(typeName); break;
             }

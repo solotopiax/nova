@@ -17,11 +17,6 @@
 | `AdPluginEvents` | 广告事件容器，汇聚各类型广告的加载、展示、点击、关闭回调 | [AdPluginEvents.md](./AdPluginEvents.md) |
 | `AdRequestReason` | 广告请求原因枚举，用于区分首次加载、重试、强制刷新等场景 | [AdRequestReason.md](./AdRequestReason.md) |
 
-## 设计文档
-
-- [AdChannelPluginBase-StateMachine-Design.md](./AdChannelPluginBase-StateMachine-Design.md) — AdChannelPluginBase 状态机设计说明
-- [AdChannelPluginBase-Track-Wave2-Design.md](./AdChannelPluginBase-Track-Wave2-Design.md) — AdChannelPluginBase 打点 Wave2 方案设计
-
 ## 相关
 
 - [AdPlugin.md](./AdPlugin.md) — 广告聚合调度插件

@@ -8,8 +8,6 @@
  * descrip:   数据表单元设置接口
  ***************************************************************/
 
-using System.Collections.Generic;
-
 namespace NovaFramework.Runtime
 {
     /// <summary>
@@ -39,6 +37,7 @@ namespace NovaFramework.Runtime
         /// Table 模块直接返回 SourcePath，Config 模块返回 "_temp/" + 文件名。
         /// </summary>
         string LubanInputPath { get; }
+
 #endif
 
         /// <summary>
@@ -56,9 +55,5 @@ namespace NovaFramework.Runtime
         /// </summary>
         string IndexField { get; }
 
-        /// <summary>
-        /// 数据类型短名称列表（不含命名空间，如 "Hero"），一个 JSON 可包含多个类型。
-        /// </summary>
-        IReadOnlyList<string> DataTypeNames { get; }
     }
 }

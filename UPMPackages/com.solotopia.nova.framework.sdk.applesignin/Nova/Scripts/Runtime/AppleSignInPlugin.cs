@@ -50,7 +50,7 @@ namespace NovaFramework.SDK.AppleSignIn
             AuthResult result = userData.ToAuthResult(string.IsNullOrEmpty(provider) ? c_ProviderName : provider);
             if (result.Success)
             {
-                SetLoginState(userData);
+                SetLoginState(userData, result.Provider);
             }
 
             return result;

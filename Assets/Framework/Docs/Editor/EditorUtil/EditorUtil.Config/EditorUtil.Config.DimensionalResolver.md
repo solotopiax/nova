@@ -67,7 +67,7 @@ public static string ResolveNamespace(
 
 // 解析 HybridCLR 面板四字段最终生效值（仅 #if UNITY_EDITOR）
 // IsGlobal → 取顶层各默认字段；否则遍历 HybridCLROverrides 找首个匹配条目
-// Override 条目的 AotMetadataDlls/GameDlls 为空时回落顶层字段
+// 命中后使用整份 Override，空字符串和空列表均为有效值；无命中才回落顶层字段
 // AotMetadataDlls / GameDlls 返回深拷贝列表；master 为 null → 各字段返回空值
 public static HybridCLRResult ResolveHybridCLR(
     ConfigMasterSO master,
@@ -77,7 +77,8 @@ public static HybridCLRResult ResolveHybridCLR(
 
 // 解析 YooAsset 面板两路径最终生效值（仅 #if UNITY_EDITOR）
 // IsGlobal → 取顶层默认字段；否则遍历 YooAssetOverrides 找首个匹配条目
-// Override 条目路径为 null 或空时回落顶层字段；master 为 null → 两字段返回空字符串
+// 命中后使用整份 Override，空路径是有效值；无命中才回落顶层字段
+// master 为 null → 两字段返回空字符串
 public static YooAssetResult ResolveYooAsset(
     ConfigMasterSO master,
     PlatformType curP,
@@ -116,7 +117,7 @@ if mask.ByDevelopMode && entryM != targetM → false
 IsGlobal(mask)?
   Yes → 直接返回顶层字段值（跳过 Override 列表）
   No  → 遍历 XxxOverrides
-          首个 MatchesMask 命中 → 取 Override 值（子字段空时回落顶层）
+          首个 MatchesMask 命中 → 取整份 Override 值（子字段空值有效）
           无命中 → 返回顶层字段值
 ```
 
@@ -127,7 +128,8 @@ IsGlobal(mask)?
 | 误区 | 正确理解 |
 |------|---------|
 | 认为 `ResolveNamespace` 仅 Editor 可用 | `ResolveNamespace` 无 `#if UNITY_EDITOR` 保护，运行时程序集也可用（`NamespaceOverride` 类无 `#if` 包裹），但实际在 Exporter（Editor-only）和 ConfigWindow 中调用 |
-| 认为 Override 为空 List 等于"全局唯一" | 不是。IsGlobal 由 `mask.ByPlatform == false && mask.ByChannel == false && mask.ByDevelopMode == false` 决定；Override 列表为空只代表"尚无具体值"，取数仍回落顶层字段 |
+| 认为 Overrides 容器为空等于"全局唯一" | 不是。IsGlobal 由 `mask.ByPlatform == false && mask.ByChannel == false && mask.ByDevelopMode == false` 决定；Overrides 无匹配条目时才回落顶层字段 |
+| 认为命中 Override 后空字符串或空 DLL 列表仍会继承顶层 | 不会。命中条目代表当前坐标整份独立，空值也是明确配置 |
 | 修改 `HybridCLRResult.AotMetadataDlls` 影响 master | 结果类中的 List 是深拷贝（`CloneDllList`），修改结果不影响 `master` |
 
 ---

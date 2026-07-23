@@ -10,6 +10,7 @@
 
 using System;
 using UnityEditor;
+using UnityEngine;
 
 namespace NovaFramework.Editor
 {
@@ -110,6 +111,49 @@ namespace NovaFramework.Editor
             /// 绝对路径直接打开；文件路径会自动取其所在目录。
             /// </summary>
             public string Path;
+        }
+
+        /// <summary>
+        /// Step 参数：飞书自定义机器人 Webhook 与待发送文本。
+        /// 字段值随 PipifySettingsSO 保存，公开发布副本由统一脱敏器替换为占位符。
+        /// </summary>
+        [Serializable]
+        public sealed class FeishuWebhookParams
+        {
+            /// <summary>
+            /// 飞书自定义机器人 Webhook URL；窗口中遮罩显示，存档中仍为明文。
+            /// </summary>
+            [InspectorName("Webhook URL")]
+            [PipifyPassword]
+            public string WebhookUrl;
+
+            /// <summary>
+            /// 发送给飞书机器人的自定义文本内容。
+            /// </summary>
+            [InspectorName("文案")]
+            [TextArea(3, 8)]
+            public string MessageText;
+        }
+
+        /// <summary>
+        /// Step 参数：使用当前 Config 的 OSS 配置部署指定目录。
+        /// 两个路径仅覆盖本次执行快照，不回写 ConfigMasterSO。
+        /// </summary>
+        [Serializable]
+        public sealed class CdnDeployParams
+        {
+            /// <summary>
+            /// 待上传的项目根相对目录，支持 Platform、Channel、Package、Version 占位符。
+            /// </summary>
+            [InspectorName("本地目录")]
+            public string LocalDirectory;
+
+            /// <summary>
+            /// 当前 Config 的 PresetOSSPath 后缀，支持 Platform、Channel、Package、Version 占位符。
+            /// </summary>
+            [InspectorName("云端目录")]
+            [PipifyCdnRemotePath]
+            public string RemoteDirectory;
         }
 
     }

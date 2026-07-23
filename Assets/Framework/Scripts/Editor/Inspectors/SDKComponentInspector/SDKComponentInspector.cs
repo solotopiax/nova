@@ -62,13 +62,14 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制 Inspector：Manager 选择器 → Plugin 条目列表 → 最终刷新。
+        /// 绘制 Inspector：Manager 选择器 → Plugin 条目列表 → 打点工具 → 最终刷新。
         /// </summary>
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
             DrawConfigs();
             DrawPluginEntries();
+            DrawTrackTools();
             FinalRefreshInspectorGUI();
         }
     }

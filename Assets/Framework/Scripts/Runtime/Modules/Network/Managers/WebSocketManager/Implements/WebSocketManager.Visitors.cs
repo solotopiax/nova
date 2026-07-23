@@ -56,6 +56,11 @@ namespace NovaFramework.Runtime
         private ICoroutineRunner m_CoroutineRunner;
 
         /// <summary>
+        /// DoH 管理器接口，由初始化配置注入。
+        /// </summary>
+        private IDoHManager m_DoHManager;
+
+        /// <summary>
         /// 特殊消息（心跳/认证）创建委托，由初始化配置注入。
         /// </summary>
         private Func<WebSocketScope.NetChannelType, string, WebSocketScope.NetMessageBase> m_SpecialMessageCreator;

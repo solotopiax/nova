@@ -90,6 +90,11 @@ namespace NovaFramework.Editor
                 /// </summary>
                 public IDataTableUnitSetting TargetUnit;
 
+                internal LubanExportProfile Profile;
+                internal int MinHeaderRowCount = 5;
+                internal LubanSchemaManifest SchemaManifest;
+                internal Func<string, int, IReadOnlyList<string>> SchemaValueTypeScanner;
+
                 /// <summary>
                 /// 获取有效的单元设置列表（优先使用 RegionUnits，回退到 Settings.Units）。
                 /// </summary>
@@ -116,7 +121,7 @@ namespace NovaFramework.Editor
                         return false;
                     }
 
-                    ConfigSyncer.SyncFromInspector(ctx.SourceDirPath, ctx.Settings, ctx.TargetName, ctx.ManagerName, ctx.EffectiveUnits);
+                    SyncSchema(ctx);
 
                     string tempDir = Util.SysIO.Path.GetFullPath(Util.SysIO.Path.Combine(ctx.SourceDirPath, "_luban_temp_" + Guid.NewGuid().ToString("N").Substring(0, 8)));
                     try
@@ -129,11 +134,14 @@ namespace NovaFramework.Editor
                         bool mergeSuccess;
                         if (ctx.TargetUnit != null)
                         {
-                            mergeSuccess = JsonMerger.MergeForUnit(tempDir, ctx.TablesXmlPath, ctx.TargetUnit, ctx.TopModule);
+                            mergeSuccess = JsonMerger.MergeForUnit(
+                                tempDir,
+                                ctx.TablesXmlPath,
+                                ctx.SchemaManifest.ResolveUnit(ctx.TargetUnit.SourcePath));
                         }
                         else
                         {
-                            mergeSuccess = JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.EffectiveUnits, ctx.TopModule);
+                            mergeSuccess = JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.SchemaManifest);
                         }
 
                         if (!mergeSuccess)
@@ -167,7 +175,7 @@ namespace NovaFramework.Editor
                         return false;
                     }
 
-                    ConfigSyncer.SyncFromInspector(ctx.SourceDirPath, ctx.Settings, ctx.TargetName, ctx.ManagerName, ctx.EffectiveUnits);
+                    SyncSchema(ctx);
 
                     if (!CliRunner.RunCodeGen(ctx.ConfPath, ctx.TargetName, ctx.OutputCodeDir, ctx.CustomTemplateDirs))
                     {
@@ -178,11 +186,13 @@ namespace NovaFramework.Editor
                     Dictionary<string, int> mapPropResults;
                     if (ctx.TargetUnit != null)
                     {
-                        mapPropResults = MapPropGen.GenerateForUnit(ctx.TargetUnit, ctx.TopModule);
+                        mapPropResults = MapPropGen.GenerateForUnit(
+                            ctx.SchemaManifest.ResolveUnit(ctx.TargetUnit.SourcePath),
+                            ctx.TopModule);
                     }
                     else
                     {
-                        mapPropResults = MapPropGen.GenerateAll(ctx.EffectiveUnits, ctx.TopModule);
+                        mapPropResults = MapPropGen.GenerateAll(ctx.SchemaManifest, ctx.TopModule);
                     }
 
                     FlushLogsAfterRefresh(() => LogCodeExportResults(codeFiles, mapPropResults));
@@ -203,7 +213,7 @@ namespace NovaFramework.Editor
                         return false;
                     }
 
-                    ConfigSyncer.SyncFromInspector(ctx.SourceDirPath, ctx.Settings, ctx.TargetName, ctx.ManagerName, ctx.EffectiveUnits);
+                    SyncSchema(ctx);
 
                     string tempDir = Util.SysIO.Path.GetFullPath(Util.SysIO.Path.Combine(ctx.SourceDirPath, "_luban_temp_" + Guid.NewGuid().ToString("N").Substring(0, 8)));
                     try
@@ -225,11 +235,11 @@ namespace NovaFramework.Editor
                         }
 
                         Dictionary<string, int> dataResults = new Dictionary<string, int>();
-                        if (!JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.EffectiveUnits, ctx.TopModule, dataResults))
+                        if (!JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.SchemaManifest, dataResults))
                         {
                             return false;
                         }
-                        Dictionary<string, int> mapPropResults = MapPropGen.GenerateAll(ctx.EffectiveUnits, ctx.TopModule);
+                        Dictionary<string, int> mapPropResults = MapPropGen.GenerateAll(ctx.SchemaManifest, ctx.TopModule);
 
                         Dictionary<string, string> codeFiles = hasCodeDir ? CliRunner.GetGeneratedCodeFiles(ctx.OutputCodeDir, ctx.RelevantFileNames) : null;
 
@@ -275,6 +285,26 @@ namespace NovaFramework.Editor
                     else
                     {
                         logAction?.Invoke();
+                    }
+                }
+
+                private static void SyncSchema(LubanExportContext ctx)
+                {
+                    LubanExportProfile profile = ctx.Profile ??
+                        new LubanExportProfile(ctx.TargetName, ctx.TargetName, ctx.ManagerName, ctx.TargetName, ctx.MinHeaderRowCount);
+                    ctx.SchemaManifest = ConfigSyncer.SyncFromInspector(
+                        ctx.SourceDirPath,
+                        ctx.Settings,
+                        profile,
+                        ctx.EffectiveUnits,
+                        ctx.MinHeaderRowCount,
+                        ctx.SchemaValueTypeScanner);
+                    if (ctx.TargetUnit != null)
+                    {
+                        ctx.RelevantFileNames = ExportHelper.BuildRelevantFileNames(
+                            ctx.SchemaManifest,
+                            ctx.TargetUnit.SourcePath,
+                            ctx.ManagerName);
                     }
                 }
 

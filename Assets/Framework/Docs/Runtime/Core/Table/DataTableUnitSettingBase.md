@@ -3,7 +3,7 @@
 **类签名**：`[Serializable] public abstract class DataTableUnitSettingBase : IDataTableUnitSetting`
 **命名空间**：`NovaFramework.Runtime`
 
-数据表单元设置抽象基类，提取各模块（Table/Config/Sound/Vibrate/Localization 等）共用的序列化字段与接口显式实现，子类只需提供 `GetMode()`、`GetIndexField()` 两个抽象方法即可完成接入。
+数据表单元设置抽象基类，提取各模块（Table/Config/Sound/Vibrate/Localization/Network 等）共用的序列化字段与接口显式实现，子类只需提供 `GetMode()`、`GetIndexField()` 两个抽象方法即可完成接入。
 
 ---
 
@@ -24,7 +24,9 @@ IDataTableUnitSetting  (interface)
         ├── ConfigUnitSetting     (Config 模块)
         ├── SoundUnitSetting      (Sound 模块)
         ├── VibrateUnitSetting    (Vibrate 模块)
-        └── LocalizationUnitSetting (Localization 模块)
+        ├── LocalizationUnitSetting (Localization 模块)
+        ├── HostKeyUnitSetting    (Network 模块)
+        └── NetCmdUnitSetting     (Network 模块)
 ```
 
 ---
@@ -37,7 +39,6 @@ IDataTableUnitSetting  (interface)
 | `DatasExportPath` | `string` | `null` | 数据文件导出目标路径，仅 `#if UNITY_EDITOR` 可见 |
 | `ClassesExportPath` | `string` | `null` | 类型定义文件导出目标路径，仅 `#if UNITY_EDITOR` 可见 |
 | `AssetLocation` | `string` | `null` | 资源的 Asset 地址（运行时字段） |
-| `DataTypeNames` | `List<string>` | `new List<string>()` | 数据类型短名称列表（不含命名空间），一个 JSON 可含多个类型 |
 
 ---
 
@@ -51,7 +52,6 @@ public string ClassesExportPath;
 
 // 运行时字段
 public string AssetLocation;
-public List<string> DataTypeNames;
 
 // IDataTableUnitSetting 显式实现（子类透传）
 string IDataTableUnitSetting.SourcePath => SourcePath;
@@ -61,7 +61,6 @@ string IDataTableUnitSetting.LubanInputPath => GetLubanInputPath();
 string IDataTableUnitSetting.AssetLocation => AssetLocation;
 DataTableMode IDataTableUnitSetting.Mode => GetMode();
 string IDataTableUnitSetting.IndexField => GetIndexField();
-IReadOnlyList<string> IDataTableUnitSetting.DataTypeNames => DataTypeNames;
 
 // 子类必须实现
 protected abstract DataTableMode GetMode();
@@ -77,7 +76,11 @@ protected virtual string GetLubanInputPath() => SourcePath;
 
 ### LubanInputPath 扩展点
 
-`IDataTableUnitSetting.LubanInputPath` 委托给 `GetLubanInputPath()`，默认返回 `SourcePath`。Config 模块的 `ConfigUnitSetting` override 该方法，返回 `_temp/<SourcePath>` 格式，满足预过滤后临时文件的路径规则。其余模块无需 override。
+`IDataTableUnitSetting.LubanInputPath` 委托给 `GetLubanInputPath()`，默认返回 `SourcePath`。Config 与 Network 的单元设置 override 该方法，返回 `_temp/<不含扩展名的文件名>`，满足预过滤后临时文件的路径规则。其余模块无需 override。
+
+### Editor 与 Runtime 分层
+
+源文件、导出目录和 Luban 输入只参与编辑器导出，因此全部位于 `#if UNITY_EDITOR`。Player 中的共享基类只保留 `AssetLocation`，并通过 `Mode`、`IndexField` 告诉运行时如何装载 JSON。Excel Sheet 结构不再序列化到该基类，而由 Editor 导出前扫描。
 
 ---
 

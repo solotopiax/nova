@@ -73,6 +73,8 @@ Assets/HybridCLRGenerate.meta
 # 构建产物（首包资源每次 Build 重生成，不入库）
 Assets/StreamingAssets/
 Assets/StreamingAssets.meta
+Assets/Samples/StreamingAssets/
+Assets/Samples/StreamingAssets.meta
 
 # YooAsset 编辑器沙盒缓存（等同真机 persistentDataPath/yooasset）
 /yooasset/
@@ -108,8 +110,13 @@ __pycache__/
 Assets/Samples/*/Excels/**/_configs/
 Assets/Samples/*/Excels/**/_configs.meta
 Assets/Samples/*/Excels/**/_luban_temp_*/
+Assets/Samples/*/Excels/**/_temp/
+Assets/Samples/*/Excels/**/_temp.meta
 # Android 签名私钥与证书（最高危，永不入仓）；其余 /Docs/ 内容进 GitLab 版本管理、不进公开仓（由 sync 排除）
 /Docs/
+
+# 打点汇总产物由 Tools/TrackRegistry 按各包 Nova/Tracks/*.track.json 本地生成，不进 git
+/Generated/Tracks/
 
 # TMP 导入资源（由 TMP Essentials 一键再生，跟人不跟版本）
 Assets/TextMesh Pro/
@@ -173,7 +180,8 @@ ProjectSettings/AppLovinInternalSettings.json
 Assets/Resources/
 Assets/Resources.meta
 
-.codegraph
+/graphify-out/
+.codex-tmp
 
 
 # PlugPals registry 地址：per-project 本地配置，跟人不跟版本

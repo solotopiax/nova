@@ -283,7 +283,9 @@ namespace NovaFramework.Editor
 
             EditorUtility.SetDirty(m_Master);
             AssetDatabase.SaveAssetIfDirty(m_Master);
-            EditorUtil.Config.SceneDevelopModeWriter.WriteActiveScene(m_Master.CurrentDevelopMode);
+            EditorUtil.Config.SceneDevelopModeWriter.WriteActiveScene(
+                m_Master.CurrentDevelopMode,
+                m_Master.CurrentChannel);
             EditorUtility.DisplayDialog("导出成功", $"已成功导出到：\n{assetPath}", "知道了");
         }
     }

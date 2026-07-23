@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.kit.network.gamelogin",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - Kit - Network - GameLogin",

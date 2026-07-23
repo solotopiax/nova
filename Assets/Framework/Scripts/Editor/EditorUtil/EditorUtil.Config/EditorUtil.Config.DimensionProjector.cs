@@ -64,6 +64,10 @@ namespace NovaFramework.Editor
                     /// 底座为 ConfigMasterSO.YooAssetOverrides 列表 + 各顶层默认字段（仅 Editor 期消费）。
                     /// </summary>
                     YooAsset,
+                    /// <summary>
+                    /// 顶层 CDN 部署面板，底座为 ConfigMasterSO.CdnOverrides + 顶层 CdnDeployment（仅 Editor 期消费）。
+                    /// </summary>
+                    Cdn,
                 }
 
                 // -------------------------------------------------------
@@ -148,6 +152,7 @@ namespace NovaFramework.Editor
 #if UNITY_EDITOR
                     if (panelKind == PanelKind.HybridCLR) { OnHybridCLREnabled(master, curCoord, axis); return; }
                     if (panelKind == PanelKind.YooAsset) { OnYooAssetEnabled(master, curCoord, axis); return; }
+                    if (panelKind == PanelKind.Cdn) { OnCdnEnabled(master, curCoord, axis); return; }
 #endif
 
                     PanelDimensionMask mask = GetMask(master, panelKind, typeName);
@@ -200,6 +205,7 @@ namespace NovaFramework.Editor
 #if UNITY_EDITOR
                     if (panelKind == PanelKind.HybridCLR) { OnHybridCLRDisabled(master, curCoord, axis); return; }
                     if (panelKind == PanelKind.YooAsset) { OnYooAssetDisabled(master, curCoord, axis); return; }
+                    if (panelKind == PanelKind.Cdn) { OnCdnDisabled(master, curCoord, axis); return; }
 #endif
 
                     PanelDimensionMask mask = GetMask(master, panelKind, typeName);
@@ -267,6 +273,7 @@ namespace NovaFramework.Editor
 #if UNITY_EDITOR
                     if (panelKind == PanelKind.HybridCLR) { BroadcastHybridCLR(master, curCoord); return; }
                     if (panelKind == PanelKind.YooAsset) { BroadcastYooAsset(master, curCoord); return; }
+                    if (panelKind == PanelKind.Cdn) { BroadcastCdn(master, curCoord); return; }
 #endif
 
                     PanelDimensionMask mask = GetMask(master, panelKind, typeName);
@@ -452,6 +459,7 @@ namespace NovaFramework.Editor
 #if UNITY_EDITOR
                         case PanelKind.HybridCLR: return master.HybridCLRMask;
                         case PanelKind.YooAsset: return master.YooAssetMask;
+                        case PanelKind.Cdn: return master.CdnMask;
 #endif
                         default: return master.CommonMask;
                     }
@@ -824,6 +832,11 @@ namespace NovaFramework.Editor
                 private static Coord OverrideCoord(YooAssetOverride o) => new Coord(o.Platform, o.Channel, o.DevelopMode);
 
                 /// <summary>
+                /// 从 CdnDeploymentOverride 条目取坐标。
+                /// </summary>
+                private static Coord OverrideCoord(CdnDeploymentOverride o) => new Coord(o.Platform, o.Channel, o.DevelopMode);
+
+                /// <summary>
                 /// HybridCLR 面板加维分裂：将当前坐标值广播到轴向所有 Override 条目。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
@@ -1117,6 +1130,166 @@ namespace NovaFramework.Editor
                 {
                     if (source == null) return new List<DllMasterAssetEntry>();
                     return new List<DllMasterAssetEntry>(source);
+                }
+
+                // ——— CDN 顶层类操作 ———
+
+                /// <summary>
+                /// CDN 面板加维分裂：将当前坐标的 CDN 部署整套配置广播到轴向所有 Override 条目。
+                /// </summary>
+                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
+                /// <param name="curCoord">当前坐标格。</param>
+                /// <param name="axis">要启用的维度轴。</param>
+                private static void OnCdnEnabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
+                {
+                    PanelDimensionMask mask = master.CdnMask;
+                    CdnDeploymentConfig snapshot = DimensionalResolver.ResolveCdn(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
+                    SetAxis(mask, axis, true);
+                    foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
+                    {
+                        if (IsSameCoord(targetCoord, curCoord)) continue;
+                        Coord clipped = ClipCoordToMask(mask, targetCoord);
+                        UpsertCdnOverride(master, mask, clipped, snapshot);
+                    }
+                    UpsertCdnOverride(master, mask, ClipCoordToMask(mask, curCoord), snapshot);
+                }
+
+                /// <summary>
+                /// CDN 面板减维合并：以当前坐标的 CDN 部署整套配置覆盖全组，裁剪 Override 列表至新 mask 下的代表格。
+                /// </summary>
+                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
+                /// <param name="curCoord">当前坐标格。</param>
+                /// <param name="axis">要禁用的维度轴。</param>
+                private static void OnCdnDisabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
+                {
+                    PanelDimensionMask mask = master.CdnMask;
+                    CdnDeploymentConfig snapshot = DimensionalResolver.ResolveCdn(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
+                    SetAxis(mask, axis, false);
+                    Coord clipped = ClipCoordToMask(mask, curCoord);
+                    master.CdnOverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
+                    if (mask.ByPlatform || mask.ByChannel || mask.ByDevelopMode)
+                    {
+                        UpsertCdnOverride(master, mask, clipped, snapshot);
+                    }
+                    else
+                    {
+                        // 全不勾（IsGlobal）：Override 列表已清空，将减维前当前坐标那份回写顶层默认字段
+                        master.CdnDeployment.Endpoint = snapshot.Endpoint;
+                        master.CdnDeployment.AccessKeyID = snapshot.AccessKeyID;
+                        master.CdnDeployment.AccessKeySecret = snapshot.AccessKeySecret;
+                        master.CdnDeployment.PresetOSSPath = snapshot.PresetOSSPath;
+                        master.CdnDeployment.LocalDirectory = snapshot.LocalDirectory;
+                        master.CdnDeployment.RemotePathSuffix = snapshot.RemotePathSuffix;
+                        master.CdnDeployment.ZoneID = snapshot.ZoneID;
+                        master.CdnDeployment.PurgeURL = snapshot.PurgeURL;
+                        master.CdnDeployment.Token = snapshot.Token;
+                        master.CdnDeployment.CachePaths = snapshot.CachePaths;
+                    }
+                }
+
+                /// <summary>
+                /// CDN 面板广播：将当前坐标的 CDN 部署整套配置同步到同组所有 Override 条目。
+                /// </summary>
+                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
+                /// <param name="curCoord">当前坐标格（值来源）。</param>
+                private static void BroadcastCdn(ConfigMasterSO master, Coord curCoord)
+                {
+                    PanelDimensionMask mask = master.CdnMask;
+                    if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return;
+                    CdnDeploymentConfig snapshot = DimensionalResolver.ResolveCdn(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
+                    Coord clipped = ClipCoordToMask(mask, curCoord);
+                    foreach (CdnDeploymentOverride o in master.CdnOverrides)
+                    {
+                        if (!IsOverrideInGroup(mask, OverrideCoord(o), clipped)) continue;
+                        ApplyCdnResult(o, snapshot);
+                    }
+                }
+
+                /// <summary>
+                /// 在 CdnOverrides 列表中按裁剪坐标找到同组首个条目并覆写整套配置，无则追加新条目。
+                /// </summary>
+                private static void UpsertCdnOverride(ConfigMasterSO master, PanelDimensionMask mask, Coord clipped, CdnDeploymentConfig snapshot)
+                {
+                    for (int i = 0; i < master.CdnOverrides.Count; i++)
+                    {
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.CdnOverrides[i]), clipped)) continue;
+                        ApplyCdnResult(master.CdnOverrides[i], snapshot);
+                        return;
+                    }
+                    CdnDeploymentOverride entry = new CdnDeploymentOverride
+                    {
+                        Platform = clipped.Platform,
+                        Channel = clipped.Channel,
+                        DevelopMode = clipped.Mode,
+                    };
+                    ApplyCdnResult(entry, snapshot);
+                    master.CdnOverrides.Add(entry);
+                }
+
+                /// <summary>
+                /// 确保当前坐标在 CdnOverrides 中存在对应条目并返回其引用，供面板字段控件直接写入单字段。
+                /// 进入坐标即建份语义：mask 非全局且无命中条目时，新建条目并以当前坐标 ResolveCdn 结果
+                /// （含顶层回落的整套 10 字段快照）填充，使进入坐标后显示与顶层一致，
+                /// 所有后续写入天然落该坐标份而不污染全局顶层。
+                /// 当 CdnMask 为全不勾（IsGlobal）时返回 null，调用方应改写顶层 CdnDeployment 字段。
+                /// </summary>
+                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
+                /// <param name="curCoord">当前坐标格。</param>
+                /// <returns>命中或新建的 CdnDeploymentOverride 条目引用；IsGlobal 时返回 null。</returns>
+                public static CdnDeploymentOverride EnsureCdnOverrideAtCoord(ConfigMasterSO master, Coord curCoord)
+                {
+                    if (master == null) return null;
+                    PanelDimensionMask mask = master.CdnMask;
+                    if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return null;
+                    Coord clipped = ClipCoordToMask(mask, curCoord);
+                    for (int i = 0; i < master.CdnOverrides.Count; i++)
+                    {
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.CdnOverrides[i]), clipped)) continue;
+                        return master.CdnOverrides[i];
+                    }
+                    CdnDeploymentConfig snapshot = DimensionalResolver.ResolveCdn(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
+                    CdnDeploymentOverride entry = new CdnDeploymentOverride
+                    {
+                        Platform = clipped.Platform,
+                        Channel = clipped.Channel,
+                        DevelopMode = clipped.Mode,
+                    };
+                    ApplyCdnResult(entry, snapshot);
+                    master.CdnOverrides.Add(entry);
+                    return entry;
+                }
+
+                /// <summary>
+                /// 将 CdnDeploymentConfig 整套快照写入 Override 条目（深拷贝新实例，禁共享引用）。
+                /// </summary>
+                /// <param name="target">目标 Override 条目。</param>
+                /// <param name="result">值来源快照。</param>
+                private static void ApplyCdnResult(CdnDeploymentOverride target, CdnDeploymentConfig result)
+                {
+                    target.Config = DeepCloneCdn(result);
+                }
+
+                /// <summary>
+                /// 深拷贝 CdnDeploymentConfig；src 为 null 时返回新实例，否则逐字段拷贝 10 个 string，禁共享引用。
+                /// </summary>
+                /// <param name="src">待拷贝的源实例。</param>
+                /// <returns>字段值与 src 相同的新 CdnDeploymentConfig 实例；src 为 null 时返回新实例。</returns>
+                private static CdnDeploymentConfig DeepCloneCdn(CdnDeploymentConfig src)
+                {
+                    if (src == null) return new CdnDeploymentConfig();
+                    return new CdnDeploymentConfig
+                    {
+                        Endpoint = src.Endpoint,
+                        AccessKeyID = src.AccessKeyID,
+                        AccessKeySecret = src.AccessKeySecret,
+                        PresetOSSPath = src.PresetOSSPath,
+                        LocalDirectory = src.LocalDirectory,
+                        RemotePathSuffix = src.RemotePathSuffix,
+                        ZoneID = src.ZoneID,
+                        PurgeURL = src.PurgeURL,
+                        Token = src.Token,
+                        CachePaths = src.CachePaths,
+                    };
                 }
 #endif
             }

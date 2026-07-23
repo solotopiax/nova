@@ -29,9 +29,10 @@ public interface IDataTableUnitSetting
     string AssetLocation { get; }     // 资源的 Asset 地址
     DataTableMode Mode { get; }       // 数据表模式（List / Map / One）
     string IndexField { get; }        // 映射模式索引字段名（仅 Map 模式使用）
-    IReadOnlyList<string> DataTypeNames { get; }  // 数据类型短名称列表（不含命名空间）
 }
 ```
+
+`SourcePath`、`DatasExportPath`、`ClassesExportPath` 和 `LubanInputPath` 是 Luban 编辑器流水线元数据，不进入 Player。运行时接口只剩 `AssetLocation`、`Mode` 和 `IndexField`；Excel Sheet 结构由 Editor 导出前扫描并写入可重建的 schema manifest。
 
 ---
 

@@ -1,0 +1,21 @@
+{
+  "name": "com.solotopia.alibabacloud.oss",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "coreVersion": "892c0209b9808b352f9e0814e7da32c49496ea16",
+  "displayName": "Alibaba Cloud OSS C# SDK v2",
+  "description": "Alibaba Cloud OSS C# SDK v2 的 Unity Runtime UPM 封装",
+  "category": "Runtime",
+  "unity": "6000.4",
+  "keywords": [
+    "alibabacloud",
+    "aliyun",
+    "oss",
+    "storage",
+    "runtime"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
+  "dependencies": {}
+}

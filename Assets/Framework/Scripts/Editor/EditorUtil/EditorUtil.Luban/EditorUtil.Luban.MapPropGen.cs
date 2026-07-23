@@ -43,71 +43,44 @@ namespace NovaFramework.Editor
                 /// </summary>
                 private static readonly Encoding s_Utf8NoBom = new UTF8Encoding(false);
 
-                /// <summary>
-                /// 为所有 Map 模式的单元批量生成属性访问器。
-                /// </summary>
-                /// <param name="unitSettings">全部单元设置列表。</param>
-                /// <param name="topModule">顶层命名空间（如 "Game.Runtime"）。</param>
-                /// <returns>生成结果（文件名 → 属性数量），供调用方合并日志使用。</returns>
-                public static Dictionary<string, int> GenerateAll(IReadOnlyList<IDataTableUnitSetting> unitSettings, string topModule)
+                internal static Dictionary<string, int> GenerateAll(LubanSchemaManifest manifest, string topModule)
                 {
-                    Dictionary<string, int> result = new Dictionary<string, int>();
-                    if (unitSettings == null)
+                    var result = new Dictionary<string, int>();
+                    foreach (LubanSchemaUnit unit in manifest.Units)
                     {
-                        return result;
-                    }
-
-                    foreach (IDataTableUnitSetting unit in unitSettings)
-                    {
-                        if (unit.Mode != DataTableMode.Map)
+                        if (unit.Mode != "map" || string.IsNullOrEmpty(unit.DatasExportPath) ||
+                            string.IsNullOrEmpty(unit.ClassesExportPath))
                         {
                             continue;
                         }
 
-                        if (string.IsNullOrEmpty(unit.DatasExportPath) || string.IsNullOrEmpty(unit.ClassesExportPath) || unit.DataTypeNames == null)
+                        foreach (KeyValuePair<string, int> pair in GenerateForUnit(unit, topModule))
                         {
-                            continue;
-                        }
-
-                        Dictionary<string, int> unitResult = GenerateForUnit(unit, topModule);
-                        foreach (var kvp in unitResult)
-                        {
-                            result[kvp.Key] = kvp.Value;
+                            result[pair.Key] = pair.Value;
                         }
                     }
-
                     return result;
                 }
 
-                /// <summary>
-                /// 为单个 Map 模式的单元生成属性访问器。
-                /// </summary>
-                /// <param name="unitSetting">单元设置。</param>
-                /// <param name="topModule">顶层命名空间。</param>
-                /// <returns>生成结果（文件名 → 属性数量），供调用方合并日志使用。</returns>
-                public static Dictionary<string, int> GenerateForUnit(IDataTableUnitSetting unitSetting, string topModule)
+                internal static Dictionary<string, int> GenerateForUnit(LubanSchemaUnit unit, string topModule)
                 {
-                    Dictionary<string, int> result = new Dictionary<string, int>();
-
-                    if (unitSetting.Mode != DataTableMode.Map)
+                    var result = new Dictionary<string, int>();
+                    if (unit.Mode != "map")
                     {
                         return result;
                     }
 
-                    string jsonPath = unitSetting.DatasExportPath;
+                    string jsonPath = unit.DatasExportPath;
                     if (!Util.SysIO.File.Exists(jsonPath))
                     {
                         Log.Warning(LogTag.Editor, "Map 属性生成跳过：JSON 文件不存在 {0}", jsonPath);
                         return result;
                     }
 
-                    string indexField = string.IsNullOrEmpty(unitSetting.IndexField) ? "ID" : unitSetting.IndexField;
-
                     JObject rootJson;
                     try
                     {
-                        string content = Util.SysIO.File.ReadAllTextSync(jsonPath, Encoding.UTF8);
-                        rootJson = JObject.Parse(content);
+                        rootJson = JObject.Parse(Util.SysIO.File.ReadAllTextSync(jsonPath, Encoding.UTF8));
                     }
                     catch (Exception e)
                     {
@@ -115,43 +88,49 @@ namespace NovaFramework.Editor
                         return result;
                     }
 
-                    foreach (string typeName in unitSetting.DataTypeNames)
+                    string indexField = string.IsNullOrEmpty(unit.IndexField) ? "ID" : unit.IndexField;
+                    foreach (LubanSchemaTable table in unit.Tables)
                     {
-                        if (string.IsNullOrEmpty(typeName) || typeName.StartsWith("#"))
+                        string tbFilePath = Util.SysIO.Path.Combine(unit.ClassesExportPath, table.Name + ".cs");
+                        if (rootJson[table.ValueType] is not JArray dataArray || dataArray.Count == 0)
                         {
-                            continue;
-                        }
-
-                        string sheetName = typeName.Contains(".") ? typeName.Substring(typeName.LastIndexOf('.') + 1) : typeName;
-                        string tableName = "Tb" + sheetName;
-                        string dataTypeName = sheetName;
-
-                        JToken sheetToken = rootJson[sheetName];
-                        if (sheetToken is not JArray dataArray || dataArray.Count == 0)
-                        {
+                            RemoveGeneratedProperties(tbFilePath);
                             continue;
                         }
 
                         List<MapKeyEntry> keys = ExtractMapKeys(dataArray, indexField);
                         if (keys.Count == 0)
                         {
+                            RemoveGeneratedProperties(tbFilePath);
                             continue;
                         }
 
-                        string classExportDir = unitSetting.ClassesExportPath;
-                        string tbFilePath = Util.SysIO.Path.Combine(classExportDir, tableName + ".cs");
                         if (!Util.SysIO.File.Exists(tbFilePath))
                         {
                             Log.Warning(LogTag.Editor, "Map 属性生成跳过：TbXxx 文件不存在 {0}", tbFilePath);
                             continue;
                         }
 
-                        AppendMapProperties(tbFilePath, tableName, dataTypeName, topModule, keys);
-                        string fileName = tableName + ".cs";
-                        result[fileName] = keys.Count;
+                        AppendMapProperties(tbFilePath, table.Name, table.ValueType, topModule, keys);
+                        result[table.Name + ".cs"] = keys.Count;
                     }
 
                     return result;
+                }
+
+                private static void RemoveGeneratedProperties(string filePath)
+                {
+                    if (!Util.SysIO.File.Exists(filePath))
+                    {
+                        return;
+                    }
+
+                    string content = Util.SysIO.File.ReadAllTextSync(filePath, s_Utf8NoBom);
+                    string cleaned = RemoveOldGeneratedBlock(content);
+                    if (!string.Equals(content, cleaned, StringComparison.Ordinal))
+                    {
+                        Util.SysIO.File.WriteAllTextSync(filePath, cleaned.TrimEnd() + "\n", s_Utf8NoBom);
+                    }
                 }
 
                 /// <summary>

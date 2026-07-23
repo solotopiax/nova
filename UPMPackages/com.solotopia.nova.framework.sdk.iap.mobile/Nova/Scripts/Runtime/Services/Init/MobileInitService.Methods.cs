@@ -27,7 +27,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             ProductFetchState = MobileProductFetchState.Fetching;
             m_ProductFetchTcs = new UniTaskCompletionSource<MobileProductFetchState>();
-            m_Hub.ExtendedService?.FetchProducts(m_PendingProductDefs ?? new List<ProductDefinition>());
+            List<ProductDefinition> productDefs = m_PendingProductDefs ?? new List<ProductDefinition>();
+            Log.Debug(LogTag.IAPMobile, $"Unity IAP 注册商品定义数量={productDefs.Count}。");
+            m_Hub.ExtendedService?.FetchProducts(productDefs);
         }
 
         /// <summary>

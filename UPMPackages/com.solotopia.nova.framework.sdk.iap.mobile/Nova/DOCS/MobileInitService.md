@@ -148,7 +148,7 @@ MobileStore.InitializeAsync
         ├─ 3. ExtendedService.SetController(controller)
         │     ExtendedService.RegisterStoreCallbacks()
         │
-        ├─ 4. 构建 m_PendingProductDefs（遍历 table.Products → ToUnityProductType 转换）
+        ├─ 4. 构建 m_PendingProductDefs（遍历 table.Products → 去重 ProductID → ToUnityProductType 转换）
         │
         ├─ 5. await ExtendedService.Connect()
         │     → 成功 → OnStoreConnected（由 MobileStoreService 路由）
@@ -157,7 +157,7 @@ MobileStore.InitializeAsync
         │               MarkReady()
         │               IsReady=true
         │               m_InitTcs.TrySetResult(true)
-        │               FetchProducts()（后台商品拉取，ProductFetchState=Fetching）
+        │               FetchProducts()（打印注册商品定义数量，后台商品拉取，ProductFetchState=Fetching）
         │               → OnProductsFetched 标记 ProductFetchState=Succeeded 后调用 RestoreTransactions() + FetchPurchases()
         │               → OnPurchasesFetched 路由到 RestoreService 恢复 PendingOrder 票据
         │     → Connect 抛出异常 → FailInitialization(StoreConnectException)
@@ -186,6 +186,10 @@ MobileInitService 在旧版中直接持有 `IStoreController / IExtensionProvide
 
 商品拉取已经从初始化阻塞链路中拆出。`OnProductsFetchFailed` 只记录失败商品到 `m_UnavailableSkus`，不会把已经连接成功的商店回退为初始化失败；具体商品支付时仍由商品可用性检查拦截。
 
+**误区 4：同一个平台 ProductID 需要重复注册给 Unity IAP**
+
+Nova 商品表允许不同 `TableId` 复用同一个 Google Play / App Store 平台 `ProductID`。Unity IAP 只要求传入的 `ProductDefinition.id` 唯一，因此初始化构建商品定义时会跳过空 `ProductID`，并对复用的 `ProductID` 只注册一次平台商品定义。
+
 ---
 
 ## §11 使用示例
@@ -213,4 +217,3 @@ if (!ok)
 
 - MobileStore 主类文档：`./MobileStore.md`
 - 内部服务架构总览：`./MobileIAP-Architecture.md`
-- 旧版设计文档（归档入口）：`./MobileStore-Design.md`

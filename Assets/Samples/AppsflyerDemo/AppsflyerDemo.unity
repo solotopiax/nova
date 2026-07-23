@@ -219,13 +219,45 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].DataTypeNames.Array.size
-      value: 1
+    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.SourceDirPath
+      value: Assets/Samples/AppsflyerDemo/Excels/Sounds
+      objectReference: {fileID: 0}
+    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.SoundUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/AppsflyerDemo/Jsons/Sounds.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.SoundUnitsSettings.Array.data[0].ClassesExportPath
+      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Sounds
       objectReference: {fileID: 0}
     - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: 'm_LocalizationSettings.TextUnitsSettings.Array.data[0].DataTypeNames.Array.data[0]'
-      value: Demo_Localization
+      propertyPath: m_SupportedLanguagesJsonExportPath
+      value: Assets/Samples/AppsflyerDemo/Jsons/LocalizationSupportedLanguages.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.FontSourceDirPath
+      value: Assets/Samples/AppsflyerDemo/Excels/Localizations/Fonts
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.TextSourceDirPath
+      value: Assets/Samples/AppsflyerDemo/Excels/Localizations/Texts
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.FontUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/AppsflyerDemo/Jsons/LocalizationFonts.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/AppsflyerDemo/Jsons/LocalizationTexts_{0}.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.FontUnitsSettings.Array.data[0].ClassesExportPath
+      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Localizations/Fonts
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].ClassesExportPath
+      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Localizations/Texts
       objectReference: {fileID: 0}
     - target: {fileID: 3308748334323488271, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Name
@@ -272,18 +304,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: 'm_Setting.TableUnitsSettings.Array.data[0].DataTypeNames.Array.data[0]'
-      value: Demo_Item
-      objectReference: {fileID: 0}
-    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: 'm_Setting.TableUnitsSettings.Array.data[0].DataTypeNames.Array.data[1]'
-      value: ListA
-      objectReference: {fileID: 0}
-    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: 'm_Setting.TableUnitsSettings.Array.data[0].DataTypeNames.Array.data[2]'
-      value: ListB
-      objectReference: {fileID: 0}
-    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Setting.SourceDirPath
       value: Assets/Samples/AppsflyerDemo/Excels/Tables
       objectReference: {fileID: 0}
@@ -292,60 +312,24 @@ PrefabInstance:
       value: Assets/Samples/AppsflyerDemo/Jsons/TableList.json
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.TableUnitsSettings.Array.data[0].ClassesExportPath
-      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Tables
-      objectReference: {fileID: 0}
-    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Setting.TableUnitsSettings.Array.data[1].DatasExportPath
       value: Assets/Samples/AppsflyerDemo/Jsons/TableMap.json
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.TableUnitsSettings.Array.data[1].ClassesExportPath
+      propertyPath: m_Setting.TableUnitsSettings.Array.data[0].ClassesExportPath
       value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.HostKeySettings.SourceDirPath
-      value: Assets/Samples/AppsflyerDemo/Excels/Networks/HostKeys
-      objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].DatasExportPath
-      value: Assets/Samples/AppsflyerDemo/Jsons/NetworkHostKeys.json
-      objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].ClassesExportPath
-      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Networks/HostKeys
-      objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.NetCmdSettings.SourceDirPath
-      value: Assets/Samples/AppsflyerDemo/Excels/Networks/Cmds
-      objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].DatasExportPath
-      value: Assets/Samples/AppsflyerDemo/Jsons/NetworkCmds.json
-      objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].ClassesExportPath
-      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Networks/Cmds
-      objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_ProtoSettings.ProtoSourceDirPath
-      value: Assets/Samples/AppsflyerDemo/Protos
-      objectReference: {fileID: 0}
-    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.EmphasisSourceDirPath
-      value: Assets/Samples/AppsflyerDemo/Excels/Vibrates/Emphasis
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.TableUnitsSettings.Array.data[1].ClassesExportPath
+      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.CustomSourceDirPath
       value: Assets/Samples/AppsflyerDemo/Excels/Vibrates/Customs
       objectReference: {fileID: 0}
     - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.EmphasisUnitsSettings.Array.data[0].DatasExportPath
-      value: Assets/Samples/AppsflyerDemo/Jsons/VibrateEmphasis.json
-      objectReference: {fileID: 0}
-    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.EmphasisUnitsSettings.Array.data[0].ClassesExportPath
-      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Vibrates/Emphasis
+      propertyPath: m_Settings.EmphasisSourceDirPath
+      value: Assets/Samples/AppsflyerDemo/Excels/Vibrates/Emphasis
       objectReference: {fileID: 0}
     - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.CustomUnitsSettings.Array.data[0].DatasExportPath
@@ -355,21 +339,25 @@ PrefabInstance:
       propertyPath: m_Settings.CustomUnitsSettings.Array.data[0].ClassesExportPath
       value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Vibrates/Custom
       objectReference: {fileID: 0}
-    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.SourceDirPath
-      value: Assets/Samples/AppsflyerDemo/Excels/Sounds
+    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.EmphasisUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/AppsflyerDemo/Jsons/VibrateEmphasis.json
       objectReference: {fileID: 0}
-    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.SoundUnitsSettings.Array.data[0].DatasExportPath
-      value: Assets/Samples/AppsflyerDemo/Jsons/Sounds.json
+    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.EmphasisUnitsSettings.Array.data[0].ClassesExportPath
+      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Vibrates/Emphasis
       objectReference: {fileID: 0}
-    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.SoundUnitsSettings.Array.data[0].ClassesExportPath
-      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Sounds
+    - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_UIGroups.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_UISettings.SourceDirPath
       value: Assets/Samples/AppsflyerDemo/Excels/UIs
+      objectReference: {fileID: 0}
+    - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_UIGroups.Array.data[0].m_Name
+      value: Demo
       objectReference: {fileID: 0}
     - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_UISettings.UIUnitsSettings.Array.data[0].DatasExportPath
@@ -379,41 +367,33 @@ PrefabInstance:
       propertyPath: m_UISettings.UIUnitsSettings.Array.data[0].ClassesExportPath
       value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/UIs
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.TextSourceDirPath
-      value: Assets/Samples/AppsflyerDemo/Excels/Localizations/Texts
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoSourceDirPath
+      value: Assets/Samples/AppsflyerDemo/Protos
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.FontSourceDirPath
-      value: Assets/Samples/AppsflyerDemo/Excels/Localizations/Fonts
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.NetCmdSettings.SourceDirPath
+      value: Assets/Samples/AppsflyerDemo/Excels/Networks/Cmds
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].DatasExportPath
-      value: 'Assets/Samples/AppsflyerDemo/Jsons/LocalizationTexts_{0}.json'
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.HostKeySettings.SourceDirPath
+      value: Assets/Samples/AppsflyerDemo/Excels/Networks/HostKeys
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].ClassesExportPath
-      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Localizations/Texts
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].DatasExportPath
+      value: Assets/Samples/AppsflyerDemo/Jsons/NetworkCmds.json
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.FontUnitsSettings.Array.data[0].DatasExportPath
-      value: Assets/Samples/AppsflyerDemo/Jsons/LocalizationFonts.json
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].DatasExportPath
+      value: Assets/Samples/AppsflyerDemo/Jsons/NetworkHostKeys.json
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.FontUnitsSettings.Array.data[0].ClassesExportPath
-      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Localizations/Fonts
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].ClassesExportPath
+      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Networks/Cmds
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_SupportedLanguagesJsonExportPath
-      value: Assets/Samples/AppsflyerDemo/Jsons/LocalizationSupportedLanguages.json
-      objectReference: {fileID: 0}
-    - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_UIGroups.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_UIGroups.Array.data[0].m_Name
-      value: Demo
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].ClassesExportPath
+      value: Assets/Samples/AppsflyerDemo/Scripts/Runtime/DataTypes/Networks/HostKeys
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

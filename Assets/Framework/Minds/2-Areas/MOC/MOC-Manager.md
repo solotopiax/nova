@@ -1,7 +1,7 @@
 ---
 id: MOC-Manager
 title: Component + Manager 核心图谱
-summary: Nova 框架的 Component、Manager、Priority、全局入口速查
+summary: Component与Manager分层速查
 category: arch
 status: active
 date: 2026-06-05

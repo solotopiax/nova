@@ -27,7 +27,7 @@ AdPlugin 配置，由 SDKManager 注入 AdPlugin 初始化；持有所有渠道�
 |---|---|---|---|
 | `m_Items` | `List<IAdChannelConfig>` | `[]` | 渠道配置实例，SerializeReference 多态存储 |
 | `m_EnableBidding` | `bool` | `true` | 是否启用多渠道比价 |
-| `m_BannerIlrdInterval` | `int` | `5` | Banner ILRD 上报间隔次数 |
+| `m_BannerIlrdInterval` | `int` | `5` | Banner ILRD 上报间隔次数；所有广告渠道通过 `AdChannelPluginBase` 持久化累计次数和金额，达到间隔后上传 `ad_ilrd`；`ad_impression` 每次收益回调仍即时上传 |
 | `m_MuteAd` | `bool` | `false` | 是否全局静音广告 |
 | `m_RetryLoadAdMaxNum` | `int` | `3` | 广告加载最大重试次数 |
 | `m_RetryLoadAdInterv` | `float` | `30f` | 重试达到上限后再次加载的间隔时间（秒） |
@@ -81,4 +81,4 @@ if (adConfig != null)
 
 - [IAdPlugin.md](./IAdPlugin.md) — 配置注入的目标插件
 - [AdChannelPluginBase.md](./AdChannelPluginBase.md) — 渠道实例基类
-- [../../Definitions/ISDKPluginConfig.md](../../Definitions/ISDKPluginConfig.md) — 配置 marker 接口
+- [ISDKPluginConfig.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) — 配置 marker 接口

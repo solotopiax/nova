@@ -63,7 +63,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
         /// <summary>
         /// 异步发起第三方支付流程。
-        /// EnableAlwaysPaySucceed 开启时跳过真实平台调用直接返回成功；
+        /// Editor 下 EnableAlwaysPaySucceed 开启时跳过真实平台调用直接返回成功，移动端编译不包含该调试分支；
         /// 通过 PayGuardAsync 守卫（已内置 Enabled / IsInPay 检查）；
         /// ExecutePayFlowAsync 完成主链路。
         /// </summary>
@@ -74,12 +74,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         {
             ct.ThrowIfCancellationRequested();
 
+#if UNITY_EDITOR
             if (Context.EnableAlwaysPaySucceed)
             {
                 var result = new IAPResult(request.TableId, "MOCK_ORDER_THIRDPAY", false, true, request.CustomData);
                 Context.EventBridge?.RaisePaySuccess(result);
                 return UniTask.FromResult(result);
             }
+#endif
 
             return PayGuardAsync(request, ct, async () =>
             {

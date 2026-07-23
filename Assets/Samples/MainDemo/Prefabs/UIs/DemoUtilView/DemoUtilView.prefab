@@ -237,6 +237,7 @@ GameObject:
   - component: {fileID: 3793118734006751197}
   - component: {fileID: 907107777143258995}
   - component: {fileID: 4034267974490868892}
+  - component: {fileID: 7838180960484869181}
   m_Layer: 0
   m_Name: ApiHintText
   m_TagString: Untagged
@@ -363,6 +364,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7838180960484869181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1237034409499760192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &1392989240332834973
 GameObject:
   m_ObjectHideFlags: 0
@@ -374,6 +389,7 @@ GameObject:
   - component: {fileID: 1641097170399607634}
   - component: {fileID: 5751956791157459310}
   - component: {fileID: 5799846746733726485}
+  - component: {fileID: 4789398473216363603}
   m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
@@ -500,6 +516,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4789398473216363603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1392989240332834973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &1404432608226124944
 GameObject:
   m_ObjectHideFlags: 0
@@ -596,6 +626,7 @@ GameObject:
   - component: {fileID: 3066375166119144854}
   - component: {fileID: 233986677561123994}
   - component: {fileID: 8927026028013684951}
+  - component: {fileID: 3859562743188026531}
   m_Layer: 0
   m_Name: ApiHintText
   m_TagString: Untagged
@@ -722,6 +753,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3859562743188026531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1576642134451719106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &1834005226794189431
 GameObject:
   m_ObjectHideFlags: 0
@@ -1017,6 +1062,7 @@ GameObject:
   - component: {fileID: 5900096932326929541}
   - component: {fileID: 1058699427750720245}
   - component: {fileID: 7606835022840146509}
+  - component: {fileID: 1069330163975956332}
   m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
@@ -1143,6 +1189,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1069330163975956332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3017149101031662116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &3249402940529129624
 GameObject:
   m_ObjectHideFlags: 0
@@ -1155,6 +1215,7 @@ GameObject:
   - component: {fileID: 2106290878494370467}
   - component: {fileID: 8217529090163008259}
   - component: {fileID: 794778235304076585}
+  - component: {fileID: 6907201677477181982}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -1301,6 +1362,20 @@ MonoBehaviour:
   m_FlexibleWidth: 0
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &6907201677477181982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3249402940529129624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &3350094618588153910
 GameObject:
   m_ObjectHideFlags: 0
@@ -1312,6 +1387,7 @@ GameObject:
   - component: {fileID: 6679289726788177639}
   - component: {fileID: 9004529161823486080}
   - component: {fileID: 6635947333366178979}
+  - component: {fileID: 2885269253478643783}
   m_Layer: 0
   m_Name: Placeholder
   m_TagString: Untagged
@@ -1438,6 +1514,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2885269253478643783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3350094618588153910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &3945347406516987972
 GameObject:
   m_ObjectHideFlags: 0
@@ -1450,6 +1540,7 @@ GameObject:
   - component: {fileID: 2028158290225715952}
   - component: {fileID: 1522450595871371664}
   - component: {fileID: 2149799498364955472}
+  - component: {fileID: 6932457472889400735}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -1596,6 +1687,20 @@ MonoBehaviour:
   m_FlexibleWidth: 0
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &6932457472889400735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3945347406516987972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &4307464351707285683
 GameObject:
   m_ObjectHideFlags: 0
@@ -1814,6 +1919,7 @@ GameObject:
   - component: {fileID: 2983103833687122692}
   - component: {fileID: 4558390082609056244}
   - component: {fileID: 7783642316211998005}
+  - component: {fileID: 4121291022278561005}
   m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
@@ -1940,6 +2046,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4121291022278561005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4952426603269276302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &5057555029326066968
 GameObject:
   m_ObjectHideFlags: 0
@@ -1951,6 +2071,7 @@ GameObject:
   - component: {fileID: 7710519875611148237}
   - component: {fileID: 5570470237131224366}
   - component: {fileID: 2724686405562322681}
+  - component: {fileID: 2197765058940190394}
   m_Layer: 0
   m_Name: ApiHintText
   m_TagString: Untagged
@@ -2077,6 +2198,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2197765058940190394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5057555029326066968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &6163616311185589520
 GameObject:
   m_ObjectHideFlags: 0
@@ -2409,6 +2544,7 @@ GameObject:
   - component: {fileID: 9071800722353460733}
   - component: {fileID: 5817321431112988903}
   - component: {fileID: 8385780451927693544}
+  - component: {fileID: 4868184242859493359}
   m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
@@ -2535,6 +2671,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4868184242859493359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6213246901087343263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &6654701230209123614
 GameObject:
   m_ObjectHideFlags: 0
@@ -2547,6 +2697,7 @@ GameObject:
   - component: {fileID: 3156703368707882031}
   - component: {fileID: 1265291752381276857}
   - component: {fileID: 4656437024506498357}
+  - component: {fileID: 2880604713594142703}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -2693,6 +2844,20 @@ MonoBehaviour:
   m_FlexibleWidth: 0
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &2880604713594142703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6654701230209123614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &6926191006557384339
 GameObject:
   m_ObjectHideFlags: 0
@@ -2903,6 +3068,7 @@ GameObject:
   - component: {fileID: 6871993193056782620}
   - component: {fileID: 8940537658396976509}
   - component: {fileID: 3745493687409721440}
+  - component: {fileID: 6777877529126020067}
   m_Layer: 0
   m_Name: Placeholder
   m_TagString: Untagged
@@ -3029,6 +3195,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &6777877529126020067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6933838106225558268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &7273478778034115704
 GameObject:
   m_ObjectHideFlags: 0
@@ -3040,6 +3220,7 @@ GameObject:
   - component: {fileID: 4918553065919383071}
   - component: {fileID: 5740715449832743120}
   - component: {fileID: 7122687235287909495}
+  - component: {fileID: 118502165298535155}
   m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
@@ -3166,6 +3347,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &118502165298535155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7273478778034115704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &8047137256421656311
 GameObject:
   m_ObjectHideFlags: 0
@@ -3177,6 +3372,7 @@ GameObject:
   - component: {fileID: 2133101886208182862}
   - component: {fileID: 2587875319141541072}
   - component: {fileID: 1107310071134644987}
+  - component: {fileID: 9124147507184389705}
   m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
@@ -3303,6 +3499,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &9124147507184389705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8047137256421656311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &8055334555431446743
 GameObject:
   m_ObjectHideFlags: 0
@@ -3436,6 +3646,7 @@ GameObject:
   - component: {fileID: 4262838717128845293}
   - component: {fileID: 6055358266704568028}
   - component: {fileID: 3808342995949693694}
+  - component: {fileID: 5415904906208025288}
   m_Layer: 0
   m_Name: Placeholder
   m_TagString: Untagged
@@ -3562,6 +3773,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &5415904906208025288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8434560940375423199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &8632145726881282412
 GameObject:
   m_ObjectHideFlags: 0
@@ -3573,6 +3798,7 @@ GameObject:
   - component: {fileID: 1880384760027038142}
   - component: {fileID: 6146887231975625666}
   - component: {fileID: 7616886102296446132}
+  - component: {fileID: 2836053186519227060}
   m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
@@ -3699,6 +3925,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2836053186519227060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8632145726881282412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1 &8819064035495309243
 GameObject:
   m_ObjectHideFlags: 0
@@ -3762,6 +4002,7 @@ GameObject:
   - component: {fileID: 161050771976265970}
   - component: {fileID: 2579555436362679036}
   - component: {fileID: 8492241122118916919}
+  - component: {fileID: 2422942485624870177}
   m_Layer: 0
   m_Name: ApiHintText
   m_TagString: Untagged
@@ -3888,6 +4129,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2422942485624870177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9072241517395617797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad4f967591a7654bbbf5cf0577ea70c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.TextLocalizing
+  m_LocalizingKeyName: 
+  m_LocalizingFontMark: Main
 --- !u!1001 &7030336248481492517
 PrefabInstance:
   m_ObjectHideFlags: 0

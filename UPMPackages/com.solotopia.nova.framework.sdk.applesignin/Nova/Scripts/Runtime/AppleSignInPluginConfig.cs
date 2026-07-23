@@ -34,7 +34,7 @@ namespace NovaFramework.SDK.AppleSignIn
         /// <summary>
         /// 获取配置显示名称。
         /// </summary>
-        public string DisplayName => "Apple";
+        public string DisplayName => "Apple 登录";
 
         /// <summary>
         /// 创建默认配置。

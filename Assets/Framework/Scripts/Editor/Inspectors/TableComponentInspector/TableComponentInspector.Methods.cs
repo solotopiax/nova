@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using NovaFramework.Runtime;
 using UnityEditor;
@@ -70,7 +71,6 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.SourceFileTree.DrawSourceFilesListWithFolders(directoryPath, m_TableUnitsSettings, m_FolderFoldoutState, minHeaderRowCount: 4, customDrawSourceFileRow: DrawTableSourceFileRow);
                 EditorUtil.Draw.Button("导出所有数据和类型", true, () =>
                 {
-                    EditorUtil.Luban.DataTypeNameHelper.DoRefreshAllDataTypeNames(directoryPath, m_TableUnitsSettings, serializedObject, minHeaderRowCount: 4, doRefreshSingle: DoRefreshSingleDataTypeNames);
                     DoExportAllDataAndTypes(directoryPath, m_TableUnitsSettings);
                 });
             }
@@ -102,37 +102,19 @@ namespace NovaFramework.Editor
 
             TableComponent t = (TableComponent)target;
             int loadedWithDataCount = 0;
+            List<EditorUtil.Luban.LubanSchemaTable> schemaTables = LoadRuntimeSchemaTables();
 
-            if (m_TableUnitsSettings != null)
+            foreach (EditorUtil.Luban.LubanSchemaTable table in schemaTables)
             {
-                for (int i = 0; i < m_TableUnitsSettings.arraySize; i++)
+                Type type = ResolveTableType(table.Name);
+                if (type == null || !t.HasTable(type))
                 {
-                    SerializedProperty elem = m_TableUnitsSettings.GetArrayElementAtIndex(i);
-                    SerializedProperty dataTypeNamesProp = elem.FindPropertyRelative("DataTypeNames");
-                    if (dataTypeNamesProp == null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    for (int j = 0; j < dataTypeNamesProp.arraySize; j++)
-                    {
-                        string sheetName = dataTypeNamesProp.GetArrayElementAtIndex(j).stringValue;
-                        if (string.IsNullOrEmpty(sheetName))
-                        {
-                            continue;
-                        }
-
-                        Type type = ResolveTableType("Tb" + sheetName);
-                        if (type == null || !t.HasTable(type))
-                        {
-                            continue;
-                        }
-
-                        if (GetTableDataCount(t.GetTable(type)) > 0)
-                        {
-                            loadedWithDataCount++;
-                        }
-                    }
+                if (GetTableDataCount(t.GetTable(type)) > 0)
+                {
+                    loadedWithDataCount++;
                 }
             }
 
@@ -140,53 +122,57 @@ namespace NovaFramework.Editor
             string foldoutLabel = $"已加载数据表 ({loadedWithDataCount}) [{loadStatus}]";
             m_RuntimeTablesFoldout = EditorUtil.Draw.Foldout(ref m_RuntimeTablesFoldout, foldoutLabel, false);
 
-            if (m_RuntimeTablesFoldout && m_TableUnitsSettings != null)
+            if (m_RuntimeTablesFoldout)
             {
                 EditorUtil.Draw.IncreaseIndentLevel();
 
-                for (int i = 0; i < m_TableUnitsSettings.arraySize; i++)
+                foreach (EditorUtil.Luban.LubanSchemaTable table in schemaTables)
                 {
-                    SerializedProperty elem = m_TableUnitsSettings.GetArrayElementAtIndex(i);
-                    SerializedProperty dataTypeNamesProp = elem.FindPropertyRelative("DataTypeNames");
-                    if (dataTypeNamesProp == null)
+                    Type type = ResolveTableType(table.Name);
+                    if (type == null || !t.HasTable(type))
                     {
                         continue;
                     }
 
-                    for (int j = 0; j < dataTypeNamesProp.arraySize; j++)
+                    int dataCount = GetTableDataCount(t.GetTable(type));
+                    if (dataCount == 0)
                     {
-                        string sheetName = dataTypeNamesProp.GetArrayElementAtIndex(j).stringValue;
-                        if (string.IsNullOrEmpty(sheetName))
-                        {
-                            continue;
-                        }
-
-                        string tableName = "Tb" + sheetName;
-                        Type type = ResolveTableType(tableName);
-                        if (type == null)
-                        {
-                            continue;
-                        }
-
-                        if (!t.HasTable(type))
-                        {
-                            continue;
-                        }
-
-                        int dataCount = GetTableDataCount(t.GetTable(type));
-                        if (dataCount == 0)
-                        {
-                            continue;
-                        }
-
-                        EditorUtil.Draw.Label(tableName, "Loaded", false);
+                        continue;
                     }
+
+                    EditorUtil.Draw.Label(table.Name, "Loaded", false);
                 }
 
                 EditorUtil.Draw.DecreaseIndentLevel();
             }
 
             EditorUtil.Draw.Line();
+        }
+
+        private List<EditorUtil.Luban.LubanSchemaTable> LoadRuntimeSchemaTables()
+        {
+            var result = new List<EditorUtil.Luban.LubanSchemaTable>();
+            string sourceDirPath = m_SourceDirPath?.stringValue;
+            if (string.IsNullOrEmpty(sourceDirPath))
+            {
+                return result;
+            }
+
+            try
+            {
+                EditorUtil.Luban.LubanSchemaManifest manifest =
+                    EditorUtil.Luban.LubanSchemaManifestStore.Load(sourceDirPath);
+                foreach (EditorUtil.Luban.LubanSchemaUnit unit in manifest.Units)
+                {
+                    result.AddRange(unit.Tables);
+                }
+            }
+            catch (System.IO.IOException)
+            {
+                // Runtime diagnostics are optional until the first successful export creates a manifest.
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -250,8 +236,8 @@ namespace NovaFramework.Editor
         private void DrawTableSourceFileRow(string filePath, string capturedRelativePath, int seq, float indentSpace, int savedIndent, SerializedProperty detailProp, SerializedProperty sourceUnitsSettingsProperty)
         {
             DrawTableFileNameRow(filePath, seq, indentSpace, savedIndent, detailProp);
-            EditorUtil.Draw.SourceFileTree.DrawDataExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, OnExportDataForFile, DoRefreshDataTypeNames);
-            EditorUtil.Draw.SourceFileTree.DrawClassExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, OnExportClassForFile, DoRefreshDataTypeNames);
+            EditorUtil.Draw.SourceFileTree.DrawDataExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, OnExportDataForFile);
+            EditorUtil.Draw.SourceFileTree.DrawClassExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, OnExportClassForFile);
             EditorUtil.Draw.SourceFileTree.DrawAssetLocationRow(detailProp, indentSpace, savedIndent);
         }
 
@@ -282,14 +268,6 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Button("打开文件夹", false, () => EditorUtil.FileSystem.OpenFolder(filePath), GUILayout.Width(EditorUtil.Draw.SourceFileTree.c_ButtonWidthMedium));
             });
             EditorUtil.Draw.RestoreIndentLevel(savedIndent);
-        }
-
-        /// <summary>
-        /// 刷新单个文件的 DataTypeNames（委托适配，使用 minHeaderRowCount: 4）。
-        /// </summary>
-        private void DoRefreshDataTypeNames(string filePath, SerializedProperty dataTypeNamesProp)
-        {
-            EditorUtil.Luban.DataTypeNameHelper.DoRefreshDataTypeNames(filePath, dataTypeNamesProp, serializedObject, minHeaderRowCount: 4);
         }
 
     }

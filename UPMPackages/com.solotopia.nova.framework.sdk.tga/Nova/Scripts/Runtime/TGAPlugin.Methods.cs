@@ -52,6 +52,30 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         }
 
         /// <summary>
+        /// 获取首次安装版本号；本地尚无记录时使用当前 Application.version 写入 FileFragment 并立即落盘。
+        /// </summary>
+        /// <returns>首次安装版本号；持久化管理器不可用时返回当前 Application.version。</returns>
+        private string GetOrCreateFirstVersion()
+        {
+            string currentVersion = Application.version;
+            IFileFragmentManager persistManager = FrameworkManagersGroup.GetManager<IFileFragmentManager>();
+            if (persistManager == null)
+            {
+                return currentVersion;
+            }
+
+            if (persistManager.HasItem(c_TGAPersistClassifyName, c_FirstVersionPersistItemName))
+            {
+                string savedVersion = persistManager.GetString(c_TGAPersistClassifyName, c_FirstVersionPersistItemName, currentVersion);
+                return string.IsNullOrEmpty(savedVersion) ? currentVersion : savedVersion;
+            }
+
+            persistManager.SetString(c_TGAPersistClassifyName, c_FirstVersionPersistItemName, currentVersion);
+            persistManager.Save(c_TGAPersistClassifyName);
+            return currentVersion;
+        }
+
+        /// <summary>
         /// 异步等待 AppsFlyerId 发布并写入 TGA UserSetOnce 属性。
         /// 必须以 Fire-and-Forget 方式调用（.Forget()），不可在 OnInitializeAsync 中 await：
         /// TGA 桶按 Priority 先于 AppsFlyer 桶执行，直接 await 会导致 TGA 桶永远等不到 AppsFlyer 桶发布数据而死锁。
@@ -59,11 +83,40 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         /// </summary>
         /// <param name="ct">取消令牌，串联到 FetchDataAsync 调用，Plugin 释放时随之取消。</param>
         /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
-        private async UniTaskVoid RegisterFetchDataAsync(CancellationToken ct)
+        private void RegisterFetchDataAsync(CancellationToken ct)
+        {
+            RegisterAppsFlyerIdAsync(ct).Forget();
+            RegisterThirdPartyLoginAsync(ct).Forget();
+        }
+
+        /// <summary>
+        /// 等待 SDK 统一初始化完成后再查询其他插件，避免 TGA 因 Priority 更早而拿不到后续插件。
+        /// </summary>
+        /// <param name="ct">取消令牌，串联到 InitializeTask 等待。</param>
+        /// <returns>SDKComponent；组件不存在或等待取消时由调用方处理。</returns>
+        private async UniTask<SDKComponent> WaitForSDKInitializedAsync(CancellationToken ct)
+        {
+            var sdkComponent = FrameworkComponentsGroup.GetComponent<SDKComponent>();
+            if (sdkComponent == null)
+            {
+                return null;
+            }
+
+            await UniTask.Yield(cancellationToken: ct);
+            await sdkComponent.InitializeTask.AttachExternalCancellation(ct);
+            return sdkComponent;
+        }
+
+        /// <summary>
+        /// 异步等待 AppsFlyerId 发布并写入 TGA UserSetOnce 属性。
+        /// </summary>
+        /// <param name="ct">取消令牌，串联到 FetchDataAsync 调用。</param>
+        /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
+        private async UniTaskVoid RegisterAppsFlyerIdAsync(CancellationToken ct)
         {
             try
             {
-                var sdkComponent = FrameworkComponentsGroup.GetComponent<SDKComponent>();
+                SDKComponent sdkComponent = await WaitForSDKInitializedAsync(ct);
                 if (sdkComponent == null || !sdkComponent.TryGet<IAttributionPlugin>(out var attribution))
                 {
                     return;
@@ -73,6 +126,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
                 if (!string.IsNullOrEmpty(afId))
                 {
                     SetFrameworkUserSetOnceProperty("nova_appsflyer_id", afId);
+                    UserSetOnce(new Dictionary<string, object>());
                     Log.Debug(LogTag.TGA, $"TGA nova_appsflyer_id 已设置：{afId}");
                 }
             }
@@ -82,7 +136,77 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
             }
             catch (Exception e)
             {
-                Log.Error(LogTag.TGA, $"RegisterFetchDataAsync 异常：{e}");
+                Log.Error(LogTag.TGA, $"RegisterAppsFlyerIdAsync 异常：{e}");
+            }
+        }
+
+        /// <summary>
+        /// 异步等待第三方登录数据发布并写入 TGA UserSet 属性。
+        /// 第三方登录依赖用户操作，可能永远不发布，因此必须独立 Fire-and-Forget。
+        /// </summary>
+        /// <param name="ct">取消令牌，串联到 FetchDataAsync 调用。</param>
+        /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
+        private async UniTaskVoid RegisterThirdPartyLoginAsync(CancellationToken ct)
+        {
+            try
+            {
+                SDKComponent sdkComponent = await WaitForSDKInitializedAsync(ct);
+                if (sdkComponent == null)
+                {
+                    return;
+                }
+
+                IReadOnlyList<IAuthPlugin> authPlugins = sdkComponent.GetAll<IAuthPlugin>();
+                for (int i = 0; i < authPlugins.Count; i++)
+                {
+                    RegisterThirdPartyLoginFromAuthPluginAsync(authPlugins[i], ct).Forget();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // 取消属正常退出路径，不记日志。
+            }
+            catch (Exception e)
+            {
+                Log.Error(LogTag.TGA, $"RegisterThirdPartyLoginAsync 异常：{e}");
+            }
+        }
+
+        /// <summary>
+        /// 从账号插件的数据槽消费第三方登录 ID 与渠道名，并写入 TGA UserSet 属性。
+        /// 不按具体 Facebook / Google / Apple 包类型或插件名查询，保持 SDK 子包之间零依赖。
+        /// </summary>
+        /// <param name="authPlugin">账号插件实例。</param>
+        /// <param name="ct">取消令牌，串联到 FetchDataAsync 调用。</param>
+        /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
+        private async UniTaskVoid RegisterThirdPartyLoginFromAuthPluginAsync(IAuthPlugin authPlugin, CancellationToken ct)
+        {
+            if (authPlugin == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var openId = (string)await authPlugin.FetchDataAsync(SDKDataKeys.OpenId, ct);
+                var thirdPlatform = (string)await authPlugin.FetchDataAsync(SDKDataKeys.ThirdPlatform, ct);
+                if (string.IsNullOrEmpty(openId) || string.IsNullOrEmpty(thirdPlatform))
+                {
+                    return;
+                }
+
+                SetFrameworkUserProperty("nova_openid", openId);
+                SetFrameworkUserProperty("nova_third_platform", thirdPlatform);
+                UserSet(new Dictionary<string, object>());
+                Log.Debug(LogTag.TGA, $"TGA 第三方登录属性已设置：platform={thirdPlatform}, openId={openId}");
+            }
+            catch (OperationCanceledException)
+            {
+                // 取消属正常退出路径，不记日志。
+            }
+            catch (Exception e)
+            {
+                Log.Error(LogTag.TGA, $"RegisterThirdPartyLoginAsync 异常：{e}");
             }
         }
 
@@ -93,18 +217,21 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         private void InitFrameworkProperties(bool isTestUser)
         {
             // 设置静态公共事件属性
-            m_FrameworkSuperProperties["nova_app_id"] = Application.identifier;
-            m_FrameworkSuperProperties["nova_first_version"] = Application.version;
+            SetFrameworkSuperProperty("nova_first_version",GetOrCreateFirstVersion());
 
             // 设置用户 UserSet 属性
-            m_FrameworkUserSetProperties["nova_app_version"] = Application.version;
-            m_FrameworkUserSetProperties["nova_test"] = isTestUser;
+            SetFrameworkUserProperty("nova_test",isTestUser);
+
+            // 更新设置 UserSet 属性到云端
+            UserSet(new Dictionary<string, object>());
+            
 
             // 设置用户 UserSetOnce 属性
-            m_FrameworkUserSetOnceProperties["nova_app_id"] = Application.identifier;
-            m_FrameworkUserSetOnceProperties["nova_device_os"] = Application.platform.ToString();
-            m_FrameworkUserSetOnceProperties["nova_device_id"] = GetDeviceId();
-            m_FrameworkUserSetOnceProperties["nova_app_version"] = Application.version;
+        
+      
+            // 更新设置 UserSetOnce 属性到云端
+            //UserSetOnce(new Dictionary<string, object>());
+
 
             if (m_FrameworkSuperProperties.Count > 0)
             {

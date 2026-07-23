@@ -16,12 +16,7 @@
 - `DeductPlan`：推荐抵扣方案
 - `IAPVoucherRequest`：代金券支付请求
 
-## 设计文档
-
-- [VoucherStore-Design.md](./VoucherStore-Design.md) — 当前实现设计快照
-
 ## 相关
 
 - [VoucherStore.md](./VoucherStore.md) — 代金券支付 store
 - [VoucherStoreConfig.md](./VoucherStoreConfig.md) — 代金券支付配置
-- [VoucherStore-Design.md](./VoucherStore-Design.md) — 当前实现设计快照

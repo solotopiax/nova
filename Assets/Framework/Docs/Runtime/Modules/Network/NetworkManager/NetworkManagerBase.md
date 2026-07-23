@@ -54,6 +54,7 @@ public abstract string GetNetCmdUrl<T>(string dtName) where T : class, ITable
 public abstract string ResolveNetCmdUrl(INetworkCmdRow cmdRow)
 public abstract INetworkCmdRow ResolveNetCmdRow(string cmdName)
 public abstract IEnumerable<string> GetAllNetCmdUrls()
+public abstract IEnumerable<string> GetAllHostKeyUrls()
 
 // --- NetCmd 查询（abstract） ---
 public abstract T GetNetCmd<T>() where T : class, ITable

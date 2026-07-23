@@ -43,14 +43,14 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// YooAsset 全局配置文件（YooAssetSettings.asset）的项目根相对路径 Override；
-        /// 覆盖顶层 ConfigMasterSO.YooAssetSettingsPath；为 null 或空时回退顶层字段。
+        /// 覆盖顶层 ConfigMasterSO.YooAssetSettingsPath；空字符串是当前坐标明确配置的有效值。
         /// 仅 Editor 期消费，由 EditorUtil.Config.YooAssetInjector 注入到 YooAssetConfiguration。
         /// </summary>
         public string YooAssetSettingsPath;
 
         /// <summary>
         /// YooAsset Bundle 收集器配置（BundleCollectorSetting.asset）的项目根相对路径 Override；
-        /// 覆盖顶层 ConfigMasterSO.BundleCollectorSettingPath；为 null 或空时回退顶层字段。
+        /// 覆盖顶层 ConfigMasterSO.BundleCollectorSettingPath；空字符串是当前坐标明确配置的有效值。
         /// 仅 Editor 期消费，替代 AssetDatabase.FindAssets 全工程扫描。
         /// </summary>
         public string BundleCollectorSettingPath;

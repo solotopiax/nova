@@ -100,7 +100,7 @@
       "Name": "IAPGoogleQueryPendingOrder",
       "Way": "HTTP_POST",
       "HostKey": "IAPServer",
-      "Path": "/v1/mobile_pay/google/query_pending_order "
+      "Path": "/v1/mobile_pay/google/query_pending_order"
     },
     {
       "Name": "IAPGoogleVerify",
@@ -118,7 +118,7 @@
       "Name": "IAPAppleQueryPendingOrder",
       "Way": "HTTP_POST",
       "HostKey": "IAPServer",
-      "Path": "/v1/mobile_pay/apple/query_pending_order "
+      "Path": "/v1/mobile_pay/apple/query_pending_order"
     },
     {
       "Name": "IAPAppleVerify",

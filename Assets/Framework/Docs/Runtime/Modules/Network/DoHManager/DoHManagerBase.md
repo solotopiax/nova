@@ -34,6 +34,7 @@ FrameworkManager
 void Initialize(DoHManagerConfig config)
 UniTask CollectAllIPAddresses(IEnumerable<string> urls)
 UniTask DNSQuery(string url)
+UniTask<IReadOnlyList<string>> BuildRequestUrlCandidatesAsync(string originalUrl, bool canUseIpCandidate)
 string GetHostName(string url)
 IPAddress[] GetIPAddresses(string hostName)
 void Clear()
@@ -47,6 +48,8 @@ DNSAnswer[] DNSAnswers { get; }
 void Update()
 void Shutdown()
 ```
+
+`BuildRequestUrlCandidatesAsync` 统一声明请求候选规划契约：缓存命中时直接使用 IP，未命中时等待 DNS 查询后重读缓存；仅在调用方允许时生成 IP 候选，并始终以原始 URL 兜底。
 
 ## 关联文档
 

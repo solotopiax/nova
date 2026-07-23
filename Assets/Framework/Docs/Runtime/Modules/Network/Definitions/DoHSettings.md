@@ -3,7 +3,7 @@
 **类签名**：`[Serializable] public class DoHSettings`
 **命名空间**：`NovaFramework.Runtime`
 
-DoH（DNS-over-HTTPS）管理器配置，在 Inspector 中集中管理 DoH 开关与超时参数。
+DoH（DNS-over-HTTPS）管理器配置，在 Inspector 中集中管理 DoH 开关与单次查询超时参数。
 
 ---
 
@@ -21,10 +21,12 @@ DoH（DNS-over-HTTPS）管理器配置，在 Inspector 中集中管理 DoH 开�
 [Serializable]
 public class DoHSettings
 {
-    public bool UseDoH;           // 是否启用 DoH DNS 解析；false 时跳过 CollectAllIPAddresses
-    public int  DnsTimeoutSeconds; // DNS 查询超时时间（秒），0 表示不限制
+    public bool UseDoH;               // 是否启用 DoH DNS 解析；false 时不发起 DoH 查询
+    public int  DnsTimeoutSeconds = 3; // 每个域名的一次 DoH 查询超时时间（秒），0 表示跳过查询
 }
 ```
+
+每个域名的一次 DoH 查询独立计时。查询期间会按顺序尝试当前配置的候选地址，所有候选地址共用 `DnsTimeoutSeconds`；启动批量预热时，各域名并发执行并分别计时。
 
 ---
 

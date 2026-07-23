@@ -36,12 +36,10 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             m_InterPlacementIds = cfg.InterPlacementIds;
             m_BannerPlacementIds = cfg.BannerPlacementIds;
             m_AppOpenPlacementIds = cfg.AppOpenPlacementIds;
+            CacheMaxRevenueTrackers();
 
             // Facebook GDPR 初始化
             FacebookAdSetting.Initialize();
-
-            // 设置主线程回调在 Unity 主线程执行
-            MaxSdkBase.InvokeEventsOnUnityMainThread = true;
 
             // 应用静音设置（MuteAd 由 AdPlugin 聚合层通过 ApplyGlobalConfig 注入）
             MaxSdk.SetMuted(MuteAd);

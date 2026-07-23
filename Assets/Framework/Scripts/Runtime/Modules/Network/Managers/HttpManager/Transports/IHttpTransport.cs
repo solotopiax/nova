@@ -17,6 +17,11 @@ namespace NovaFramework.Runtime
         void Initialize(float requestTimeout, float connectTimeout);
 
         /// <summary>
+        /// 当前传输是否能在保持原始 Host / SNI 语义的前提下使用 IP 候选地址。
+        /// </summary>
+        bool CanUseIpCandidate(Uri uri);
+
+        /// <summary>
         /// 异步发送 GET 请求。
         /// </summary>
         UniTask<HttpResponse> GetAsync(string url, float requestTimeout, float connectTimeout, string headerInfos, string hostHeader);

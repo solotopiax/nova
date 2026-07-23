@@ -70,10 +70,9 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "Luban 配置目录 (_configs/) 尚未初始化，首次导出时将自动创建。" });
                 }
 
-                DrawNetworkSourceFilesListWithFolders(dirPath, m_HostKeyUnitsSettings, m_HostKeyFolderFoldoutState, "HostKeySettings", "network-hostkey", "HostKeyTables");
+                DrawNetworkSourceFilesListWithFolders(dirPath, m_HostKeyUnitsSettings, m_HostKeyFolderFoldoutState, "HostKeySettings");
                 EditorUtil.Draw.Button("导出所有域名表数据和类型", true, () =>
                 {
-                    EditorUtil.Luban.DataTypeNameHelper.DoRefreshAllDataTypeNames(dirPath, m_HostKeyUnitsSettings, serializedObject);
                     DoExportAllDataAndTypes(m_HostKeyUnitsSettings, "HostKeySettings");
                 });
             }
@@ -115,10 +114,9 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "Luban 配置目录 (_configs/) 尚未初始化，首次导出时将自动创建。" });
                 }
 
-                DrawNetworkSourceFilesListWithFolders(dirPath, m_NetCmdUnitsSettings, m_NetCmdFolderFoldoutState, "NetCmdSettings", "network-cmd", "NetworkTables");
+                DrawNetworkSourceFilesListWithFolders(dirPath, m_NetCmdUnitsSettings, m_NetCmdFolderFoldoutState, "NetCmdSettings");
                 EditorUtil.Draw.Button("导出所有指令表数据和类型", true, () =>
                 {
-                    EditorUtil.Luban.DataTypeNameHelper.DoRefreshAllDataTypeNames(dirPath, m_NetCmdUnitsSettings, serializedObject);
                     DoExportAllDataAndTypes(m_NetCmdUnitsSettings, "NetCmdSettings");
                 });
             }
@@ -150,15 +148,13 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// Network 专用的文件树绘制：过滤 _configs/ 和 _temp/ 子目录，通过闭包捕获 settingsPropertyName / targetName / managerName 上下文。
+        /// Network 专用的文件树绘制：过滤 _configs/ 和 _temp/ 子目录，通过闭包捕获 settingsPropertyName 上下文。
         /// </summary>
         /// <param name="directoryPath">数据源目录完整路径。</param>
         /// <param name="unitsSettingsProp">单元设置列表属性。</param>
         /// <param name="foldoutState">目录树折叠状态字典。</param>
         /// <param name="settingsPropertyName">Settings 内属性名称。</param>
-        /// <param name="targetName">Luban target 名称。</param>
-        /// <param name="managerName">Luban manager 类名。</param>
-        private void DrawNetworkSourceFilesListWithFolders(string directoryPath, SerializedProperty unitsSettingsProp, Dictionary<string, bool> foldoutState, string settingsPropertyName, string targetName, string managerName)
+        private void DrawNetworkSourceFilesListWithFolders(string directoryPath, SerializedProperty unitsSettingsProp, Dictionary<string, bool> foldoutState, string settingsPropertyName)
         {
             string rootPathNorm = directoryPath.TrimEnd('/', '\\');
             string configsDirPrefix = (rootPathNorm + "/_configs/").Replace('\\', '/');
@@ -173,13 +169,13 @@ namespace NovaFramework.Editor
                 }).ToArray();
             }, (filePath, capturedRelativePath, seq, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty) =>
             {
-                DrawNetworkSourceFileRow(filePath, capturedRelativePath, seq, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, rootPathNorm, settingsPropertyName, targetName, managerName);
+                DrawNetworkSourceFileRow(filePath, capturedRelativePath, seq, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, rootPathNorm, settingsPropertyName);
             });
         }
 
         /// <summary>
         /// 绘制单个数据源文件的所有行：文件名行、数据导出行、类型导出行、Asset 地址行。
-        /// 通过闭包捕获 Network 多套导出上下文（rootPathNorm / settingsPropertyName / targetName / managerName）。
+        /// 通过闭包捕获 Network 多套导出上下文（rootPathNorm / settingsPropertyName）。
         /// </summary>
         /// <param name="filePath">文件完整路径。</param>
         /// <param name="capturedRelativePath">文件相对路径。</param>
@@ -190,26 +186,22 @@ namespace NovaFramework.Editor
         /// <param name="sourceUnitsSettingsProperty">全部单元设置列表属性。</param>
         /// <param name="rootPathNorm">数据源根目录规范化路径。</param>
         /// <param name="settingsPropertyName">Settings 内属性名称。</param>
-        /// <param name="targetName">Luban target 名称。</param>
-        /// <param name="managerName">Luban manager 类名。</param>
-        private void DrawNetworkSourceFileRow(string filePath, string capturedRelativePath, int seq, float indentSpace, int savedIndent, SerializedProperty detailProp, SerializedProperty sourceUnitsSettingsProperty, string rootPathNorm, string settingsPropertyName, string targetName, string managerName)
+        private void DrawNetworkSourceFileRow(string filePath, string capturedRelativePath, int seq, float indentSpace, int savedIndent, SerializedProperty detailProp, SerializedProperty sourceUnitsSettingsProperty, string rootPathNorm, string settingsPropertyName)
         {
             EditorUtil.Draw.SourceFileTree.DrawDefaultFileNameRow(filePath, seq, indentSpace, savedIndent);
-            EditorUtil.Draw.SourceFileTree.DrawDataExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, (fp, dep, dp) => DoExportDataForFile(fp, dep, rootPathNorm, settingsPropertyName, targetName, managerName), (fp, dtp) => EditorUtil.Luban.DataTypeNameHelper.DoRefreshDataTypeNames(fp, dtp, serializedObject));
-            EditorUtil.Draw.SourceFileTree.DrawClassExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, (fp, cep, dp) => DoExportClassForFile(fp, cep, rootPathNorm, settingsPropertyName, targetName, managerName), (fp, dtp) => EditorUtil.Luban.DataTypeNameHelper.DoRefreshDataTypeNames(fp, dtp, serializedObject));
+            EditorUtil.Draw.SourceFileTree.DrawDataExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, (fp, dep, dp) => DoExportDataForFile(fp, dep, rootPathNorm, settingsPropertyName));
+            EditorUtil.Draw.SourceFileTree.DrawClassExportRow(filePath, capturedRelativePath, indentSpace, savedIndent, detailProp, sourceUnitsSettingsProperty, (fp, cep, dp) => DoExportClassForFile(fp, cep, rootPathNorm, settingsPropertyName));
             EditorUtil.Draw.SourceFileTree.DrawAssetLocationRow(detailProp, indentSpace, savedIndent);
         }
 
         /// <summary>
-        /// 对单个数据源文件执行数据导出：预过滤、通过 Pipeline 同步配置、调用 Luban CLI 导出数据、合并 JSON。
+        /// 对单个数据源文件执行数据导出：定位 Network 单元后交给统一暂存发布编排。
         /// </summary>
         /// <param name="filePath">数据源文件的完整路径。</param>
         /// <param name="dataExportPath">导出数据的目标路径。</param>
         /// <param name="regionDirPath">数据源目录路径。</param>
         /// <param name="settingsPropertyName">Settings 内属性名称。</param>
-        /// <param name="targetName">Luban target 名称。</param>
-        /// <param name="managerName">Luban manager 类名。</param>
-        private void DoExportDataForFile(string filePath, string dataExportPath, string regionDirPath, string settingsPropertyName, string targetName, string managerName)
+        private void DoExportDataForFile(string filePath, string dataExportPath, string regionDirPath, string settingsPropertyName)
         {
             if (string.IsNullOrEmpty(dataExportPath))
             {
@@ -222,43 +214,39 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            string tempDir = EditorUtil.Luban.ExportHelper.GetPreFilterTempDirPath(regionDirPath);
-            EditorUtil.Luban.ConfigSyncer.CleanTempDir(tempDir);
-
-            try
+            string relativePath = Util.SysIO.Path.GetRelativePath(regionDirPath.TrimEnd('/', '\\'), filePath);
+            if (settings is HostKeySettings hostKeySettings)
             {
-                NetworkExcelPreFilter.FilterFile(filePath, tempDir);
-
-                string relativePath = Util.SysIO.Path.GetRelativePath(regionDirPath.TrimEnd('/', '\\'), filePath);
-                IReadOnlyList<IDataTableUnitSetting> regionUnits = GetCurrentRegionUnitSettings(settingsPropertyName);
-                IDataTableUnitSetting unitSetting = EditorUtil.Luban.ExportHelper.FindUnitSetting(regionUnits, relativePath);
+                HostKeyUnitSetting unitSetting = hostKeySettings.HostKeyUnits.Find(unit => unit.SourcePath == relativePath);
                 if (unitSetting == null)
                 {
                     Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
                     return;
                 }
-
-                var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(regionDirPath, settings, targetName, managerName);
-                ctx.RegionUnits = regionUnits;
-                ctx.TargetUnit = unitSetting;
-                EditorUtil.Luban.Pipeline.ExportData(ctx);
+                NetworkExporter.ExportHostKeys(hostKeySettings, NetworkExporter.ExportMode.Data, unitSetting);
+                return;
             }
-            finally
+
+            if (settings is NetCmdSettings netCmdSettings)
             {
-                EditorUtil.Luban.ConfigSyncer.CleanTempDir(tempDir);
+                NetCmdUnitSetting unitSetting = netCmdSettings.NetCmdUnits.Find(unit => unit.SourcePath == relativePath);
+                if (unitSetting == null)
+                {
+                    Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
+                    return;
+                }
+                NetworkExporter.ExportNetCmds(netCmdSettings, NetworkExporter.ExportMode.Data, unitSetting);
             }
         }
 
         /// <summary>
-        /// 对单个数据源文件执行类型导出：预过滤、通过 Pipeline 同步配置、调用 Luban CLI 生成代码。
+        /// 对单个数据源文件执行类型导出：定位 Network 单元后交给统一暂存发布编排。
         /// </summary>
         /// <param name="filePath">数据源文件的完整路径。</param>
         /// <param name="classExportPath">类型导出目标目录。</param>
         /// <param name="regionDirPath">数据源目录路径。</param>
         /// <param name="settingsPropertyName">Settings 内属性名称。</param>
-        /// <param name="targetName">Luban target 名称。</param>
-        /// <param name="managerName">Luban manager 类名。</param>
-        private void DoExportClassForFile(string filePath, string classExportPath, string regionDirPath, string settingsPropertyName, string targetName, string managerName)
+        private void DoExportClassForFile(string filePath, string classExportPath, string regionDirPath, string settingsPropertyName)
         {
             if (string.IsNullOrEmpty(classExportPath))
             {
@@ -271,27 +259,28 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            string tempDir = EditorUtil.Luban.ExportHelper.GetPreFilterTempDirPath(regionDirPath);
-            EditorUtil.Luban.ConfigSyncer.CleanTempDir(tempDir);
-
-            try
+            string relativePath = Util.SysIO.Path.GetRelativePath(regionDirPath.TrimEnd('/', '\\'), filePath);
+            if (settings is HostKeySettings hostKeySettings)
             {
-                NetworkExcelPreFilter.FilterAll(regionDirPath, tempDir);
-
-                string relativePath = Util.SysIO.Path.GetRelativePath(regionDirPath.TrimEnd('/', '\\'), filePath);
-                IReadOnlyList<IDataTableUnitSetting> regionUnits = GetCurrentRegionUnitSettings(settingsPropertyName);
-                IDataTableUnitSetting unitSetting = EditorUtil.Luban.ExportHelper.FindUnitSetting(regionUnits, relativePath);
-
-                var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(regionDirPath, settings, targetName, managerName);
-                ctx.RegionUnits = regionUnits;
-                ctx.OutputCodeDir = classExportPath;
-                ctx.RelevantFileNames = EditorUtil.Luban.ExportHelper.BuildRelevantFileNames(filePath, regionDirPath, regionUnits, managerName);
-                ctx.TargetUnit = unitSetting;
-                EditorUtil.Luban.Pipeline.ExportCode(ctx);
+                HostKeyUnitSetting unitSetting = hostKeySettings.HostKeyUnits.Find(unit => unit.SourcePath == relativePath);
+                if (unitSetting == null)
+                {
+                    Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
+                    return;
+                }
+                NetworkExporter.ExportHostKeys(hostKeySettings, NetworkExporter.ExportMode.Code, unitSetting);
+                return;
             }
-            finally
+
+            if (settings is NetCmdSettings netCmdSettings)
             {
-                EditorUtil.Luban.ConfigSyncer.CleanTempDir(tempDir);
+                NetCmdUnitSetting unitSetting = netCmdSettings.NetCmdUnits.Find(unit => unit.SourcePath == relativePath);
+                if (unitSetting == null)
+                {
+                    Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
+                    return;
+                }
+                NetworkExporter.ExportNetCmds(netCmdSettings, NetworkExporter.ExportMode.Code, unitSetting);
             }
         }
 
@@ -407,7 +396,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制 DoH 管理折叠区（UseDoH 开关 / DNS 超时 / 运行时域名 IP 列表），并加分隔线。
+        /// 绘制 DoH 管理折叠区（UseDoH 开关 / 单次查询超时 / 候选地址说明 / 运行时域名 IP 列表），并加分隔线。
         /// </summary>
         private void DrawDoHSettings()
         {
@@ -419,11 +408,19 @@ namespace NovaFramework.Editor
 
             EditorUtil.Draw.IncreaseIndentLevel();
             EditorUtil.Draw.Toggle("启用 DoH (DNS-over-HTTPS)", m_DoHSettings.FindPropertyRelative("UseDoH"), true, null, null, GUILayout.Width(185));
-            EditorUtil.Draw.Property("DNS 查询超时时间 (秒)", m_DoHSettings.FindPropertyRelative("DnsTimeoutSeconds"), true, GUILayout.Width(175));
+            EditorUtil.Draw.Property("单次 DoH 查询超时时间 (秒)", m_DoHSettings.FindPropertyRelative("DnsTimeoutSeconds"), true, GUILayout.Width(215));
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "时间 0 表示不限制超时。" }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "每个域名的一次 DoH 查询独立计时，默认 3 秒，0 表示跳过 DoH 查询。",
+                    "查询期间的所有候选地址：",
+                    "1. https://1.1.1.1/dns-query",
+                    "2. https://1.0.0.1/dns-query",
+                    "3. https://cloudflare-dns.com/dns-query",
+                    "将共用该超时时间。"
+                }, false, GUILayout.ExpandWidth(true));
             });
             DrawRuntimeDoHAddresses((NetworkComponent)target);
             EditorUtil.Draw.DecreaseIndentLevel();
@@ -557,7 +554,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制 DoH 域名 → IP 列表运行时状态（仅 UseDoH 开启时显示）。
+        /// 绘制 DoH 解析诊断树运行时状态（仅 UseDoH 开启时显示）。
         /// </summary>
         /// <param name="t">目标 NetworkComponent。</param>
         private void DrawRuntimeDoHAddresses(NetworkComponent t)
@@ -577,37 +574,84 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            var domainIPs = t.DoHManager.AllDomainIPAddresses;
-            if (!EditorUtil.Draw.Foldout($"DoH 域名 IP 列表 ({domainIPs?.Count ?? 0})", "NetworkDoHList"))
+            IReadOnlyDictionary<string, DoHResolutionNode> roots = t.DoHManager.ResolutionRoots;
+            if (!EditorUtil.Draw.Foldout($"DoH 解析列表 ({roots?.Count ?? 0})", "NetworkDoHList"))
             {
                 return;
             }
 
             EditorUtil.Draw.Layout.Vertical("box", () =>
             {
-                if (domainIPs == null || domainIPs.Count == 0)
+                if (roots == null || roots.Count == 0)
                 {
                     return;
                 }
 
-                int idx = 0;
-                foreach (var kvp in domainIPs)
-                {
-                    bool expanded = EditorUtil.Draw.Foldout($"https://{kvp.Key}", $"NetworkDoHHost_{idx}");
-                    if (expanded)
-                    {
-                        EditorUtil.Draw.Layout.Vertical("box", () =>
-                        {
-                            foreach (var ip in kvp.Value)
-                            {
-                                EditorUtil.Draw.Label($"https://{ip}", false);
-                            }
-                        });
-                    }
-
-                    idx++;
-                }
+                DrawDoHResolutionGroup(roots, DoHResolutionSource.HostKeyPrewarm, "HostKey 预热", "HostKey");
+                DrawDoHResolutionGroup(roots, DoHResolutionSource.RuntimeDiscovered, "运行时按需发现", "Runtime");
             });
+        }
+
+        /// <summary>
+        /// 按查询来源绘制一组 DoH 根节点。
+        /// </summary>
+        private void DrawDoHResolutionGroup(
+            IReadOnlyDictionary<string, DoHResolutionNode> roots,
+            DoHResolutionSource source,
+            string title,
+            string key)
+        {
+            List<DoHResolutionNode> groupRoots = roots.Values
+                .Where(node => node.Source == source)
+                .OrderBy(node => node.HostName)
+                .ToList();
+
+            if (!EditorUtil.Draw.Foldout($"{title} ({groupRoots.Count})", $"NetworkDoHGroup_{key}", true))
+            {
+                return;
+            }
+
+            EditorUtil.Draw.IncreaseIndentLevel();
+            for (int i = 0; i < groupRoots.Count; i++)
+            {
+                DoHResolutionNode root = groupRoots[i];
+                DrawDoHResolutionNode(root, $"NetworkDoHNode_{key}_{root.HostName}");
+            }
+            EditorUtil.Draw.DecreaseIndentLevel();
+        }
+
+        /// <summary>
+        /// 递归绘制域名、其直接 IP 以及 CNAME 子节点；未获得 IP 的节点使用红色标注。
+        /// </summary>
+        private void DrawDoHResolutionNode(DoHResolutionNode node, string key)
+        {
+            bool failed = !node.IsResolved;
+            string title = failed ? $"{node.HostName}  [未获取 IP]" : node.HostName;
+            Color previousColor = GUI.color;
+            if (failed)
+            {
+                GUI.color = Color.red;
+            }
+
+            bool expanded = EditorUtil.Draw.Foldout(title, key);
+            GUI.color = previousColor;
+            if (!expanded)
+            {
+                return;
+            }
+
+            EditorUtil.Draw.IncreaseIndentLevel();
+            for (int i = 0; i < node.Addresses.Count; i++)
+            {
+                EditorUtil.Draw.Label(node.Addresses[i].ToString(), false);
+            }
+
+            for (int i = 0; i < node.Children.Count; i++)
+            {
+                DoHResolutionNode child = node.Children[i];
+                DrawDoHResolutionNode(child, $"{key}_{child.HostName}");
+            }
+            EditorUtil.Draw.DecreaseIndentLevel();
         }
 
         /// <summary>

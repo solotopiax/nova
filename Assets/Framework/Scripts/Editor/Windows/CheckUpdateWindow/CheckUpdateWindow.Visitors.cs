@@ -74,7 +74,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// Footer 勾选项文案。
         /// </summary>
-        private const string c_FooterToggleLabel = "启动时不再提示这些版本";
+        private const string c_FooterToggleLabel = "不再提示这些版本";
 
         /// <summary>
         /// Footer 勾选项文字宽度之外的额外像素（勾选框 + 内边距）。
@@ -127,7 +127,7 @@ namespace NovaFramework.Editor
         private Vector2 m_Scroll;
 
         /// <summary>
-        /// 是否勾选"启动时不再提示这些版本"。
+        /// 是否勾选"不再提示这些版本"。
         /// </summary>
         private bool m_DontShowAgain;
 

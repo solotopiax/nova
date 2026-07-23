@@ -57,17 +57,6 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 获取 Luban 主配置文件（luban.conf）的完整路径。
-                /// 等价于 GetConfigDirPath(sourceDirPath) + c_LubanConfFileName，封装为 public 供外部调用方使用。
-                /// </summary>
-                /// <param name="sourceDirPath">数据源目录路径。</param>
-                /// <returns>luban.conf 的完整路径。</returns>
-                public static string GetConfPath(string sourceDirPath)
-                {
-                    return Util.SysIO.Path.Combine(GetConfigDirPath(sourceDirPath), c_LubanConfFileName);
-                }
-
-                /// <summary>
                 /// 检查 _configs/ 目录是否存在。
                 /// </summary>
                 /// <param name="sourceDirPath">数据源目录路径。</param>
@@ -84,7 +73,7 @@ namespace NovaFramework.Editor
                 /// <param name="targetName">Luban target 名称（如 "table" / "config"）。</param>
                 /// <param name="managerName">Luban manager 类名（如 "TableTables" / "ConfigTables"）。</param>
                 /// <param name="topModule">顶层命名空间（如 "Game.Runtime"）。</param>
-                public static void InitializeConfigDir(string sourceDirPath, string targetName, string managerName, string topModule)
+                internal static void InitializeConfigDir(string sourceDirPath, string targetName, string managerName, string topModule)
                 {
                     string configDir = GetConfigDirPath(sourceDirPath);
                     if (!Util.SysIO.Directory.Exists(configDir))
@@ -105,28 +94,90 @@ namespace NovaFramework.Editor
                     }
                 }
 
-                /// <summary>
-                /// 从 Inspector 数据同步到 _configs/ 文件。
-                /// </summary>
-                /// <param name="sourceDirPath">数据源目录路径。</param>
-                /// <param name="settings">数据表设置（通过 IDataTableSettings 统一消费）。</param>
-                /// <param name="targetName">Luban target 名称。</param>
-                /// <param name="managerName">Luban manager 类名。</param>
-                public static void SyncFromInspector(string sourceDirPath, IDataTableSettings settings, string targetName, string managerName, IReadOnlyList<IDataTableUnitSetting> regionUnits = null)
+                internal static LubanSchemaManifest SyncFromInspector(
+                    string sourceDirPath,
+                    IDataTableSettings settings,
+                    LubanExportProfile profile,
+                    IReadOnlyList<IDataTableUnitSetting> regionUnits = null,
+                    int? minHeaderRowCount = null,
+                    Func<string, int, IReadOnlyList<string>> scanValueTypes = null)
                 {
                     string topModule = EditorUtil.Config.RuntimeProvider.GetNamespace();
 
                     string configDir = GetConfigDirPath(sourceDirPath);
                     if (!Util.SysIO.Directory.Exists(configDir))
                     {
-                        InitializeConfigDir(sourceDirPath, targetName, managerName, topModule);
+                        InitializeConfigDir(sourceDirPath, profile.TargetName, profile.ManagerName, topModule);
                     }
 
                     string confPath = Util.SysIO.Path.Combine(configDir, c_LubanConfFileName);
-                    UpdateLubanConfTopModule(confPath, targetName, managerName, topModule);
+                    UpdateLubanConfTopModule(confPath, profile.TargetName, profile.ManagerName, topModule);
 
+                    LubanSchemaManifest manifest = LubanSchemaManifestBuilder.Build(
+                        sourceDirPath,
+                        profile.Id,
+                        regionUnits ?? settings.Units,
+                        minHeaderRowCount ?? profile.MinHeaderRowCount,
+                        scanValueTypes);
                     string xmlPath = Util.SysIO.Path.Combine(configDir, c_TablesXmlFileName);
-                    GenerateTablesXml(xmlPath, sourceDirPath, regionUnits ?? settings.Units);
+                    byte[] previousXml = System.IO.File.Exists(xmlPath)
+                        ? System.IO.File.ReadAllBytes(xmlPath)
+                        : null;
+                    GenerateTablesXml(xmlPath, manifest);
+                    try
+                    {
+                        LubanSchemaManifestStore.Save(sourceDirPath, manifest);
+                    }
+                    catch (Exception saveException)
+                    {
+                        try
+                        {
+                            RestoreTablesXml(xmlPath, previousXml);
+                        }
+                        catch (Exception rollbackException)
+                        {
+                            throw new AggregateException(
+                                "保存 Luban manifest 失败，且 __tables__.xml 回滚失败。",
+                                saveException,
+                                rollbackException);
+                        }
+
+                        throw;
+                    }
+                    return manifest;
+                }
+
+                private static void RestoreTablesXml(string xmlPath, byte[] previousContent)
+                {
+                    if (previousContent == null)
+                    {
+                        if (System.IO.File.Exists(xmlPath))
+                        {
+                            System.IO.File.Delete(xmlPath);
+                        }
+                        return;
+                    }
+
+                    string rollbackPath = xmlPath + ".rollback";
+                    try
+                    {
+                        System.IO.File.WriteAllBytes(rollbackPath, previousContent);
+                        if (System.IO.File.Exists(xmlPath))
+                        {
+                            System.IO.File.Replace(rollbackPath, xmlPath, null);
+                        }
+                        else
+                        {
+                            System.IO.File.Move(rollbackPath, xmlPath);
+                        }
+                    }
+                    finally
+                    {
+                        if (System.IO.File.Exists(rollbackPath))
+                        {
+                            System.IO.File.Delete(rollbackPath);
+                        }
+                    }
                 }
 
                 /// <summary>
@@ -227,123 +278,79 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 从 IDataTableUnitSetting 列表生成 __tables__.xml。
-                /// <para>对每个 Excel 文件扫描 DataTypeNames（过滤 # 开头），为每个条目生成一个 table 元素。</para>
-                /// <para>通过 IDataTableUnitSetting.Mode/IndexField/LubanInputPath 实现 Table/Config 差异化。</para>
-                /// <para>跳过数据源文件不存在的条目，避免残留配置污染 Luban 输入。</para>
-                /// <para>重写时保留已有的 enum 等非 table 元素。</para>
+                /// 从已验证的 schema manifest 生成 __tables__.xml。
+                /// <para>每个 manifest table 对应一个 Luban table 元素。</para>
+                /// <para>输出完全由 manifest 重建，不继承缓存文件中的额外节点。</para>
                 /// </summary>
                 /// <param name="xmlPath">__tables__.xml 文件路径。</param>
                 /// <param name="sourceDirPath">数据源目录路径。</param>
                 /// <param name="unitSettings">数据表单元设置列表。</param>
-                private static void GenerateTablesXml(string xmlPath, string sourceDirPath, IReadOnlyList<IDataTableUnitSetting> unitSettings)
+                internal static void GenerateTablesXml(string xmlPath, LubanSchemaManifest manifest)
                 {
-                    string rootDir = sourceDirPath.TrimEnd('/', '\\');
-
-                    List<XmlElement> preservedElements = CollectNonTableElements(xmlPath);
-
-                    XmlWriterSettings xmlSettings = new XmlWriterSettings { Indent = true, Encoding = s_Utf8NoBom };
-                    using XmlWriter writer = XmlWriter.Create(xmlPath, xmlSettings);
-                    writer.WriteStartDocument();
-                    writer.WriteStartElement("module");
-
-                    foreach (XmlElement element in preservedElements)
-                    {
-                        element.WriteTo(writer);
-                    }
-
-                    if (unitSettings != null)
-                    {
-                        foreach (IDataTableUnitSetting unit in unitSettings)
-                        {
-                            if (string.IsNullOrEmpty(unit.SourcePath) || unit.DataTypeNames == null || unit.DataTypeNames.Count == 0)
-                            {
-                                continue;
-                            }
-
-                            string fullPath = Util.SysIO.Path.Combine(rootDir, unit.SourcePath);
-                            if (!Util.SysIO.File.Exists(fullPath))
-                            {
-                                continue;
-                            }
-
-                            string inputPath = unit.LubanInputPath;
-                            string mode = unit.Mode.ToString().ToLower();
-
-                            foreach (string typeName in unit.DataTypeNames)
-                            {
-                                if (string.IsNullOrEmpty(typeName) || typeName.StartsWith("#"))
-                                {
-                                    continue;
-                                }
-
-                                string sheetName = typeName.Contains(".") ? typeName.Substring(typeName.LastIndexOf('.') + 1) : typeName;
-
-                                // Excel 源文件：input = {sheetName}@{filePath}
-                                // CSV 临时目录：input = {dir}/{sheetName}.csv
-                                string ext = Util.SysIO.Path.GetExtension(inputPath);
-                                string input = (ext == ".xlsx" || ext == ".xls")
-                                    ? sheetName + "@" + inputPath
-                                    : inputPath + "/" + sheetName + ".csv";
-
-                                writer.WriteStartElement("table");
-                                writer.WriteAttributeString("name", "Tb" + sheetName);
-                                writer.WriteAttributeString("value", sheetName);
-                                writer.WriteAttributeString("input", input);
-                                writer.WriteAttributeString("mode", mode);
-                                if (unit.Mode == DataTableMode.Map && !string.IsNullOrEmpty(unit.IndexField))
-                                {
-                                    writer.WriteAttributeString("index", unit.IndexField);
-                                }
-                                writer.WriteAttributeString("readSchemaFromFile", "true");
-                                writer.WriteAttributeString("comment", sheetName);
-                                writer.WriteEndElement();
-                            }
-                        }
-                    }
-
-                    writer.WriteEndElement();
-                    writer.WriteEndDocument();
-                }
-
-                /// <summary>
-                /// 从现有 __tables__.xml 中收集非 table 元素（如 enum、bean 等手写定义）。
-                /// </summary>
-                /// <param name="xmlPath">__tables__.xml 文件路径。</param>
-                /// <returns>需要保留的非 table 元素列表，文件不存在或无非 table 元素时返回空列表。</returns>
-                private static List<XmlElement> CollectNonTableElements(string xmlPath)
-                {
-                    List<XmlElement> result = new List<XmlElement>();
-                    if (!Util.SysIO.File.Exists(xmlPath))
-                    {
-                        return result;
-                    }
-
+                    LubanSchemaManifestValidator.ValidateAndNormalize(manifest);
+                    string temporaryPath = xmlPath + ".tmp";
                     try
                     {
-                        XmlDocument doc = new XmlDocument();
-                        doc.Load(xmlPath);
-                        XmlElement root = doc.DocumentElement;
-                        if (root == null)
+                        XmlWriterSettings xmlSettings = new XmlWriterSettings { Indent = true, Encoding = s_Utf8NoBom };
+                        using (XmlWriter writer = XmlWriter.Create(temporaryPath, xmlSettings))
                         {
-                            return result;
+                            writer.WriteStartDocument();
+                            writer.WriteStartElement("module");
+
+                            foreach (LubanSchemaUnit unit in manifest.Units)
+                            {
+                                string extension = Util.SysIO.Path.GetExtension(unit.LubanInputPath);
+                                foreach (LubanSchemaTable table in unit.Tables)
+                                {
+                                    string input = extension == ".xlsx" || extension == ".xls"
+                                        ? table.ValueType + "@" + unit.LubanInputPath
+                                        : unit.LubanInputPath + "/" + table.ValueType + ".csv";
+
+                                    writer.WriteStartElement("table");
+                                    writer.WriteAttributeString("name", table.Name);
+                                    writer.WriteAttributeString("value", table.ValueType);
+                                    writer.WriteAttributeString("input", input);
+                                    writer.WriteAttributeString("mode", unit.Mode);
+                                    if (unit.Mode == "map")
+                                    {
+                                        writer.WriteAttributeString("index", unit.IndexField);
+                                    }
+                                    writer.WriteAttributeString("readSchemaFromFile", "true");
+                                    writer.WriteAttributeString("comment", table.ValueType);
+                                    writer.WriteEndElement();
+                                }
+                            }
+
+                            writer.WriteEndElement();
+                            writer.WriteEndDocument();
                         }
 
-                        foreach (XmlNode node in root.ChildNodes)
+                        if (Util.SysIO.File.Exists(xmlPath))
                         {
-                            if (node is XmlElement element && element.Name != "table")
+                            System.IO.File.Replace(temporaryPath, xmlPath, null);
+                        }
+                        else
+                        {
+                            System.IO.File.Move(temporaryPath, xmlPath);
+                        }
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            if (Util.SysIO.File.Exists(temporaryPath))
                             {
-                                result.Add(element);
+                                System.IO.File.Delete(temporaryPath);
                             }
                         }
+                        catch (Exception cleanupException)
+                        {
+                            Log.Warning(LogTag.Editor, "清理 Luban XML 临时文件失败：{0}", cleanupException.Message);
+                        }
+                        throw;
                     }
-                    catch (Exception e)
-                    {
-                        Log.Warning(LogTag.Editor, "读取 __tables__.xml 保留元素失败：{0}", e.Message);
-                    }
-
-                    return result;
                 }
+
             }
         }
     }

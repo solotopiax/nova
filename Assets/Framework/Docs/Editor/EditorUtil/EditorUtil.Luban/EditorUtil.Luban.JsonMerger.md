@@ -22,7 +22,7 @@ EditorUtil (public static partial class)
         └── JsonMerger (public static class)
 ```
 
-> 统一了原 `LubanJsonMerger`（Table 模块）和 `LubanConfigJsonMerger`（Config 模块）的合并逻辑，通过 `IDataTableUnitSetting.LubanInputPath` 匹配 __tables__.xml 中的 input 路径。
+> 统一了原 `LubanJsonMerger`（Table 模块）和 `LubanConfigJsonMerger`（Config 模块）的合并逻辑，并使用本次 manifest unit 的 `LubanInputPath` 匹配 `__tables__.xml`。
 
 ---
 
@@ -32,7 +32,7 @@ EditorUtil (public static partial class)
 
 ---
 
-## §5 公开 API
+## §5 Internal API
 
 ```csharp
 /// <summary>
@@ -40,20 +40,18 @@ EditorUtil (public static partial class)
 /// </summary>
 /// <param name="lubanOutputDir">Luban 临时输出目录。</param>
 /// <param name="tablesXmlPath">__tables__.xml 文件路径。</param>
-/// <param name="unitSetting">目标 Excel 文件的单元设置。</param>
-/// <param name="topModule">Luban topModule（用于定位输出文件名前缀）。</param>
+/// <param name="unit">本次 manifest 中的目标单元。</param>
 /// <returns>是否成功。</returns>
-public static bool MergeForUnit(string lubanOutputDir, string tablesXmlPath, IDataTableUnitSetting unitSetting, string topModule)
+internal static bool MergeForUnit(string lubanOutputDir, string tablesXmlPath, LubanSchemaUnit unit, Dictionary<string, int> deferredResults = null)
 
 /// <summary>
 /// 批量合并所有 Excel 文件的 Luban 导出 JSON。
 /// </summary>
 /// <param name="lubanOutputDir">Luban 临时输出目录。</param>
 /// <param name="tablesXmlPath">__tables__.xml 文件路径。</param>
-/// <param name="unitSettings">全部单元设置列表。</param>
-/// <param name="topModule">Luban topModule。</param>
+/// <param name="manifest">本次导出的完整 manifest 快照。</param>
 /// <returns>是否全部成功。</returns>
-public static bool MergeAll(string lubanOutputDir, string tablesXmlPath, IReadOnlyList<IDataTableUnitSetting> unitSettings, string topModule)
+internal static bool MergeAll(string lubanOutputDir, string tablesXmlPath, LubanSchemaManifest manifest, Dictionary<string, int> deferredResults = null)
 ```
 
 ### 私有方法
@@ -61,12 +59,14 @@ public static bool MergeAll(string lubanOutputDir, string tablesXmlPath, IReadOn
 | 方法 | 签名 | 说明 |
 |------|------|------|
 | `ParseTablesXmlForUnit` | `Dictionary<string, string> ParseTablesXmlForUnit(string tablesXmlPath, string unitLubanInputPath)` | 解析 __tables__.xml，提取指定单元关联的表名到 Sheet 名映射 |
-| `BuildMergedJson` | `JObject BuildMergedJson(string lubanOutputDir, Dictionary<string, string> tableToSheet, string topModule)` | 读取各表 JSON 并合并为单个 JObject |
+| `BuildMergedJson` | `JObject BuildMergedJson(string lubanOutputDir, Dictionary<string, string> tableToSheet)` | 读取各表 JSON 并合并为单个 JObject |
 | `NormalizePath` | `string NormalizePath(string path)` | 规范化路径（Trim + 反斜杠转正斜杠） |
 
 ---
 
 ## §9 关键算法
+
+若 manifest/XML 声明的任一 Luban 中间 JSON 缺失，合并立即失败，不会写出部分或空的最终 JSON。
 
 ### ParseTablesXmlForUnit — 表名匹配
 
@@ -86,12 +86,12 @@ public static bool MergeAll(string lubanOutputDir, string tablesXmlPath, IReadOn
 ### MergeForUnit 完整流程
 
 ```
-MergeForUnit(lubanOutputDir, tablesXmlPath, unitSetting, topModule)
+MergeForUnit(lubanOutputDir, tablesXmlPath, unit)
   ├── ParseTablesXmlForUnit → tableToSheet 映射
   ├── 映射为空 → 返回 true（无需合并）
   ├── BuildMergedJson → 合并 JObject
   ├── 确保输出目录存在
-  └── 写入 unitSetting.DatasExportPath（UTF-8，Indented 格式）
+  └── 写入 unit.DatasExportPath（UTF-8，Indented 格式）
 ```
 
 ---
@@ -102,12 +102,12 @@ MergeForUnit(lubanOutputDir, tablesXmlPath, unitSetting, topModule)
 // 合并单个 Excel 文件的导出数据
 string lubanTempDir = "/path/to/_luban_temp_abc12345";
 string tablesXmlPath = "/path/to/_configs/__tables__.xml";
-IDataTableUnitSetting unit = tableSettings.Units[0];
+LubanSchemaUnit unit = ctx.SchemaManifest.ResolveUnit(ctx.TargetUnit.SourcePath);
 
-bool success = EditorUtil.Luban.JsonMerger.MergeForUnit(lubanTempDir, tablesXmlPath, unit, "Game.Runtime");
+bool success = EditorUtil.Luban.JsonMerger.MergeForUnit(lubanTempDir, tablesXmlPath, unit);
 
 // 批量合并所有 Excel 文件
-bool allSuccess = EditorUtil.Luban.JsonMerger.MergeAll(lubanTempDir, tablesXmlPath, tableSettings.Units, "Game.Runtime");
+bool allSuccess = EditorUtil.Luban.JsonMerger.MergeAll(lubanTempDir, tablesXmlPath, ctx.SchemaManifest);
 ```
 
 > 通常不直接调用 JsonMerger，而是通过 `Pipeline.ExportData` / `Pipeline.ExportAll` 间接调用。
@@ -119,4 +119,4 @@ bool allSuccess = EditorUtil.Luban.JsonMerger.MergeAll(lubanTempDir, tablesXmlPa
 - [EditorUtil.Luban.Pipeline.md](EditorUtil.Luban.Pipeline.md)
 - [EditorUtil.Luban.ConfigSyncer.md](EditorUtil.Luban.ConfigSyncer.md)
 - [EditorUtil.md](../EditorUtil.md)
-- [IDataTableUnitSetting.md](../../../Runtime/Core/Table/IDataTableUnitSetting.md)
+- [EditorUtil.Luban.SchemaManifest.md](EditorUtil.Luban.SchemaManifest.md)

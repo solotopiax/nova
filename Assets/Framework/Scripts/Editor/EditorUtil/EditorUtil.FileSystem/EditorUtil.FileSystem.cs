@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using NovaFramework.Runtime;
 using UnityEditor;
@@ -21,8 +22,92 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 文件系统工具。
         /// </summary>
-        public static class FileSystem
+        public static partial class FileSystem
         {
+            private static readonly HashSet<string> s_ActiveWorkspaces =
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            /// <summary>
+            /// 删除短生命周期 Unity 临时目录及其 meta。Assets 内目录优先通过 AssetDatabase 删除。
+            /// </summary>
+            internal static void DeleteUnityTempRoot(string tempRoot)
+            {
+                if (string.IsNullOrWhiteSpace(tempRoot))
+                {
+                    return;
+                }
+
+                string fullPath = Util.SysIO.Path.GetFullPath(tempRoot);
+                string projectRelativePath = FileUtil.GetProjectRelativePath(fullPath);
+                if (!string.IsNullOrEmpty(projectRelativePath) &&
+                    projectRelativePath.StartsWith("Assets/", StringComparison.Ordinal))
+                {
+                    AssetDatabase.DeleteAsset(projectRelativePath);
+                }
+
+                if (Util.SysIO.Directory.Exists(fullPath))
+                {
+                    Util.SysIO.Directory.Delete(fullPath, true);
+                }
+                if (Util.SysIO.File.Exists(fullPath + ".meta"))
+                {
+                    Util.SysIO.File.Delete(fullPath + ".meta");
+                }
+            }
+
+            /// <summary>
+            /// 阻止同一临时工作区在当前 Editor 进程内重入。
+            /// </summary>
+            internal static IDisposable AcquireWorkspace(string workspaceRoot)
+            {
+                if (string.IsNullOrWhiteSpace(workspaceRoot))
+                {
+                    throw new ArgumentException("Workspace root cannot be empty.", nameof(workspaceRoot));
+                }
+
+                string root = NormalizeWorkspaceRoot(workspaceRoot);
+                lock (s_ActiveWorkspaces)
+                {
+                    if (!s_ActiveWorkspaces.Add(root))
+                    {
+                        throw new InvalidOperationException($"Export workspace is already in use: {root}");
+                    }
+                }
+                return new WorkspaceLease(root);
+            }
+
+            private static string NormalizeWorkspaceRoot(string path)
+            {
+                string fullPath = Util.SysIO.Path.GetFullPath(path);
+                string root = System.IO.Path.GetPathRoot(fullPath);
+                return fullPath.Length > root.Length
+                    ? fullPath.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar)
+                    : fullPath;
+            }
+
+            private sealed class WorkspaceLease : IDisposable
+            {
+                private string m_Root;
+
+                internal WorkspaceLease(string root)
+                {
+                    m_Root = root;
+                }
+
+                public void Dispose()
+                {
+                    if (m_Root == null)
+                    {
+                        return;
+                    }
+                    lock (s_ActiveWorkspaces)
+                    {
+                        s_ActiveWorkspaces.Remove(m_Root);
+                    }
+                    m_Root = null;
+                }
+            }
+
             /// <summary>
             /// 打开文件夹。
             /// </summary>

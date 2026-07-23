@@ -14,7 +14,7 @@ Network 组件的 Inspector 面板，提供四个管理器实现类选择器、H
 |---|---|---|
 | `NetworkComponentInspector.cs` | `sealed partial NetworkComponentInspector` | 主体：`OnEnable` 绑定 SerializedProperty、`OnDisable` 清理 FileWatcher、`OnInspectorGUI` 调度绘制入口 |
 | `NetworkComponentInspector.Visitors.cs` | `partial NetworkComponentInspector` | 字段：全部 `SerializedProperty` 引用、类型名列表、Proto/Luban 相关字段与缓存、FileWatcher 回调 |
-| `NetworkComponentInspector.Methods.cs` | `partial NetworkComponentInspector` | 私有方法：`DrawManagerSelectors`、`DrawHostKeyExport`、`DrawNetCmdExport`、`DrawProtoManagement`、`DrawHttpSettings`、`DrawDoHSettings`、`DrawWebSocketSettings`、FileWatcher 初始化与 DataTypeNames 刷新 |
+| `NetworkComponentInspector.Methods.cs` | `partial NetworkComponentInspector` | 私有方法：`DrawManagerSelectors`、`DrawHostKeyExport`、`DrawNetCmdExport`、`DrawProtoManagement`、`DrawHttpSettings`、`DrawDoHSettings`、`DrawWebSocketSettings` 与 FileWatcher 初始化 |
 
 ---
 
@@ -107,8 +107,31 @@ private void DrawHttpSettings()
 private void DrawWebSocketSettings()
 private void DrawProtoManagement()
 
+// 辅助绘制（私有）
+private void DrawSourceDirRow(SerializedProperty sourceDirPath, string label, string dialogTitle)
+private void DrawNetworkSourceFilesListWithFolders(string directoryPath, SerializedProperty unitsSettingsProp, Dictionary<string, bool> foldoutState, string settingsPropertyName)
+private void DrawNetworkSourceFileRow(...)
+private void DrawRuntimeWebSocketChannels(NetworkComponent t)
+private void DrawRuntimeDoHAddresses(NetworkComponent t)
+private void DrawProtoFilesTree(string protoDir)
+private void DrawProtoFolderNode(FileFolderTree.TreeNode node, string rootPathNorm, SerializedProperty currentProtoUnits)
+private void DrawProtoFileRow(string filePath, string rootPathNorm, int seq, float indentSpace, int savedIndent, SerializedProperty currentProtoUnits)
+private void DrawProtoExportButton()
+
+// 导出执行（私有）
+private void DoExportDataForFile(string filePath, string dataExportPath, string regionDirPath, string settingsPropertyName)
+private void DoExportClassForFile(string filePath, string classExportPath, string regionDirPath, string settingsPropertyName)
+private void DoExportAllDataAndTypes(SerializedProperty unitsSettingsProp, string settingsPropertyName)
+
+// FileWatcher 回调（私有）
+private void OnHostKeyLubanConfigChanged()
+private void OnNetCmdLubanConfigChanged()
+
 // 工具方法（私有）
 private IDataTableSettings GetDataTableSettings(string settingsPropertyName)
+private IReadOnlyList<IDataTableUnitSetting> GetCurrentRegionUnitSettings(string settingsPropertyName)
+private SerializedProperty GetOrCreateProtoUnitSetting(string sourceRelativePath, SerializedProperty currentProtoUnits)
+private static void EnsureProtoFileStylesInitialized()
 ```
 
 ---
@@ -193,19 +216,19 @@ OnDisable()
 点击"导出所有域名表/指令表数据和类型"按钮时执行：
 
 ```
-1. DoRefreshAllDataTypeNames(regionDirPath, unitsSettingsProp)
-   — 遍历所有 UnitSetting，读取 Excel，提取有效 Sheet 名称填充 DataTypeNames
+1. serializedObject.ApplyModifiedProperties()
 
-2. serializedObject.ApplyModifiedProperties()
+2. EditorUtil.Network.HostKeyExporter / NetCmdExporter
+   — 公共门面把全量请求交给 NetworkExporter
 
-3. NetworkExcelPreFilter.FilterAll(regionDirPath, tempDir)
-   — 预过滤所有 Excel 文件到 _temp/ 临时目录
+3. NetworkExporter
+   — HostKeys 校验 Debug/Release 配对并按 ConfigRuntime.DevelopMode 选择 Sheet；NetCmds 保持原结构
+   — Luban 只写入 _temp/_publish，完整验证 JSON/C# 后再通过 FileSystem.OutputApplier 批量发布
 
-5. Pipeline.ExportAll(ctx)
-   — ConfigSyncer 写 _configs/ → Luban CLI 一次性导出所有数据和代码
-
-6. CleanTempDir(tempDir)（finally 块，确保临时文件清理）
+4. finally 清理 _temp 并刷新 AssetDatabase
 ```
+
+文件树中的单文件数据/类型按钮也调用同一 `NetworkExporter`，不再绕过暂存发布直接写正式产物。
 
 ---
 
@@ -240,17 +263,33 @@ HelpBox 说明
   [文件树]              可折叠目录树，每行：文件名 + 打开/打开文件夹 + 数据/类型导出行 + AB/Asset
   导出所有指令表数据和类型  Button
 ─────────────────────────────────────────────────
-  [Proto 协议管理 ▼]    Foldout
+  [Proto 协议导出 ▼]    Foldout
   Proto 根目录            TextField + 选择 + 打开文件夹
   [.proto 文件树]         可折叠目录树，Layout 阶段自动预建 ProtoUnitSetting
-  每单元 CSharpExportPath 通过 Inspector 独立配置
-  导出所有协议和类型      Button（委托 ProtoExporter 批量编译）
+  每个 .proto 行含：打开 / 打开文件夹 / 类型导出位置（CSharpExportPath）/ 单文件 [导出] 按钮
+  导出所有协议类型      Button（委托 ProtoExporter 批量编译，Proto 目录未配置时 DisabledGroup 灰显）
 ─────────────────────────────────────────────────
 HTTP 设置             Foldout（连接/请求超时）
 ─────────────────────────────────────────────────
-DoH 设置              UseDoH Toggle / DNS 超时 / 运行时 IP 列表
+DoH 设置              UseDoH Toggle / 单次 DoH 查询超时 / 候选地址说明 / 运行时解析诊断树
+  单次 DoH 查询超时时间（秒）
+  HelpBox：
+    每个域名的一次 DoH 查询独立计时，默认 3 秒，0 表示跳过 DoH 查询。
+    查询期间的所有候选地址：
+    1. https://1.1.1.1/dns-query
+    2. https://1.0.0.1/dns-query
+    3. https://cloudflare-dns.com/dns-query
+    将共用该超时时间。
+  [Play 模式附加] DoH 解析列表
+    HostKey 预热             原始 HostKey 域名根节点
+      CNAME 中间域名         作为父域名子节点；IP 在对应域名下一级
+    运行时按需发现           HostKey 范围外由请求链路触发的域名
+    未获取 IP 的节点         红色“[未获取 IP]”标注，失败根节点不会被隐藏
 ─────────────────────────────────────────────────
 WebSocket 设置        超时/心跳/重连参数 / 运行时通道列表
+  启用自动重连 Toggle（关闭时下方重连最大次数/间隔/失败 UI 整段 DisabledGroup 灰显）
+  WS 自动重连失败 UI  Foldout（嵌套于启用自动重连子区，配置 Asset 地址）
+  [Play 模式附加] 运行时 WebSocket 通道列表（绿/红/黄 标识 IsConnected / IsDisconnectedSubjectively / 其他）
 ```
 
 ---

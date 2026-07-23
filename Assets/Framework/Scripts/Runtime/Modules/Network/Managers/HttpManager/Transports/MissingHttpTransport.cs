@@ -18,6 +18,11 @@ namespace NovaFramework.Runtime
         {
         }
 
+        public bool CanUseIpCandidate(Uri uri)
+        {
+            return false;
+        }
+
         public UniTask<HttpResponse> GetAsync(string url, float requestTimeout, float connectTimeout, string headerInfos, string hostHeader)
         {
             return CreateUnavailableResponseAsync();
