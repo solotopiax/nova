@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.5.46] - 2026-07-24
+
+### Fixed
+
+- 修复 ConfigMaster 重构后 `CDNEditorConfigs` 与维度覆盖未被 npm 发布链路脱敏的问题；公开 Sample 中的 OSS、Cloudflare 和部署路径配置全部替换为字段专属占位符。
+- signed tgz 在执行 `npm publish` 前新增公开默认配置复检，发现任何待脱敏字段时立即阻止上传。
+
 ## [0.5.45] - 2026-07-24
 
 ### Added

@@ -6,6 +6,16 @@
 
 ---
 
+## [0.5.46] - 2026-07-24
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.46]` 节。
+
+### Fixed
+
+- 发布 `com.solotopia.nova.framework@0.5.46`，修复 ConfigMaster 新 CDN 配置结构在 npm Sample 中未完整脱敏的问题。
+- 发布脚本新增 signed tgz 上传前复检，公开默认配置未全部替换为占位符时禁止 `npm publish`。
+- NovaSpark 升级为 `NovaSpark2.12.cs`，固定 Framework `0.5.46`。
+
 ## [0.5.45] - 2026-07-24
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.45]` 节。
