@@ -50,7 +50,7 @@ public abstract UniTask LoadAsync();
 // --- 状态属性（abstract）---
 public abstract bool IsLoadOver { get; }
 public abstract DevelopMode DevelopMode { get; }
-public abstract CommonConfig Common { get; }
+public abstract AppConfigs Common { get; }
 public abstract string Namespace { get; }
 public abstract PlatformType Platform { get; }
 public abstract ChannelType Channel { get; }

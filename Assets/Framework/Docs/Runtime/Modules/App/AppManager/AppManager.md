@@ -18,7 +18,13 @@
 - 从 `FrameworkManagersGroup` 获取 `IHttpManager`
 - 缓存 `m_Config`
 
-### 2. CheckAsync：无 URL 时直接跳过
+### 2. CheckAsync：总开关关闭或无 URL 时直接跳过
+
+如果 `EnableAppUpdate == false`：
+
+- 不发起 HTTP 请求
+- 清空上一次规则命中状态
+- 直接返回 `AppVersionResult.NoDownload`
 
 如果 `AppDownloadCheckUrl` 为空：
 

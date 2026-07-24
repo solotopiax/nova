@@ -54,6 +54,9 @@ namespace NovaFramework.Editor
 
                     bool isModified = false;
                     GameObject[] roots = activeScene.GetRootGameObjects();
+                    string defaultPackageName = channel.HasValue
+                        ? ResolveDefaultPackageName(roots)
+                        : string.Empty;
                     for (int i = 0; i < roots.Length; i++)
                     {
                         FrameworkComponent[] components = roots[i].GetComponentsInChildren<FrameworkComponent>(true);
@@ -84,6 +87,23 @@ namespace NovaFramework.Editor
                                 }
                             }
 
+                            if (channel.HasValue && component is AppComponent)
+                            {
+                                SerializedProperty channelProperty = serializedComponent.FindProperty("m_Channel");
+                                if (channelProperty != null && channelProperty.enumValueIndex != (int)channel.Value)
+                                {
+                                    channelProperty.enumValueIndex = (int)channel.Value;
+                                    componentModified = true;
+                                }
+
+                                SerializedProperty packageProperty = serializedComponent.FindProperty("m_DefaultPackageName");
+                                if (packageProperty != null && packageProperty.stringValue != defaultPackageName)
+                                {
+                                    packageProperty.stringValue = defaultPackageName;
+                                    componentModified = true;
+                                }
+                            }
+
                             if (!componentModified) continue;
                             serializedComponent.ApplyModifiedPropertiesWithoutUndo();
                             EditorUtility.SetDirty(component);
@@ -95,6 +115,38 @@ namespace NovaFramework.Editor
                     {
                         EditorSceneManager.MarkSceneDirty(activeScene);
                     }
+                }
+
+                /// <summary>
+                /// 从场景内首个 AssetComponent 解析默认资源包名；显式默认包为空时回退包列表首项。
+                /// </summary>
+                private static string ResolveDefaultPackageName(GameObject[] roots)
+                {
+                    for (int i = 0; i < roots.Length; i++)
+                    {
+                        AssetComponent assetComponent = roots[i].GetComponentInChildren<AssetComponent>(true);
+                        if (assetComponent == null)
+                        {
+                            continue;
+                        }
+
+                        SerializedObject serializedAsset = new SerializedObject(assetComponent);
+                        SerializedProperty defaultPackageProperty = serializedAsset.FindProperty("m_DefaultPackageName");
+                        if (defaultPackageProperty != null && !string.IsNullOrEmpty(defaultPackageProperty.stringValue))
+                        {
+                            return defaultPackageProperty.stringValue;
+                        }
+
+                        SerializedProperty packagesProperty = serializedAsset.FindProperty("m_Packages");
+                        if (packagesProperty != null && packagesProperty.isArray && packagesProperty.arraySize > 0)
+                        {
+                            return packagesProperty.GetArrayElementAtIndex(0).stringValue ?? string.Empty;
+                        }
+
+                        return string.Empty;
+                    }
+
+                    return string.Empty;
                 }
             }
         }

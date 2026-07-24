@@ -20,6 +20,7 @@
 
 `Start()` 会把这些配置打包进 `AppManagerConfig`：
 
+- App 更新总开关
 - 当前节点 `DevelopMode` 对应的主/备检查地址与超时
 - 商店 / APK 路由与地址配置
 - 推荐更新规则开关
@@ -30,7 +31,18 @@
 - `DevelopMode = Debug` → 读取 Debug 主/备地址
 - `DevelopMode = Release` → 读取 Release 主/备地址
 
+选出当前模式对应的 URL 后，会按启动期快照替换以下可选占位符：
+
+- `{Platform}`：编译宏对应的 `PlatformType` 枚举名
+- `{Channel}`：Config 导出时同步到 `AppComponent` 的渠道快照
+- `{Package}`：同场景 `AssetComponent` 的默认资源包名；为空时取包列表首项
+- `{Version}`：`Application.version`
+
+不含占位符的完整 URL 保持原样。占位符解析不依赖尚未加载的 `ConfigRuntimeSO`。
+
 它不会在 `Start()` 阶段主动做一次版本检查。
+
+`EnableAppUpdate` 默认开启。关闭后 App 大版本检查稳定返回 `NoDownload`，启动链仍会继续执行 Asset 模块自己的热更新判断。
 
 ### 运行期 API 都是薄透传
 
@@ -45,6 +57,7 @@
 - `MatchedRule`
 - `TargetStoreUrl`
 - `TargetDownloadUrl`
+- `EnableAppUpdate`
 
 这些都不是组件自己算出来的，而是 `AppManager` 在检查后暴露出来的状态。
 
@@ -54,6 +67,7 @@
 - `DownloadAsync()` 虽然有门面，但当前底层实现仍是占位骨架，不是可用下载链。
 - 大版本检查现在固定走主备双地址：主地址为空、失败、超时或返回空内容时自动切到备用；备用也不可用时返回 `NoDownload`。
 - 地址选路依据是当前节点上的 `DevelopMode` 场景快照，而不是尚未加载的 `ConfigRuntimeSO`。
+- URL 占位符大小写敏感；未知或拼写错误的占位符会保持原样，通常最终表现为请求失败并降级。
 
 ## 继续阅读
 

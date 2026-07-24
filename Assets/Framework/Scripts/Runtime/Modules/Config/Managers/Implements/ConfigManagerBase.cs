@@ -55,9 +55,9 @@ namespace NovaFramework.Runtime
         public abstract DevelopMode DevelopMode { get; }
 
         /// <summary>
-        /// 全局公共配置整块；LoadAsync 完成后可读，未加载时返回 null。
+        /// 应用运行时配置；LoadAsync 完成后可读，未加载时返回 null。
         /// </summary>
-        public abstract CommonConfig Common { get; }
+        public abstract AppConfigs AppConfigs { get; }
 
         /// <summary>
         /// 当前解析后的 Namespace。
@@ -65,19 +65,14 @@ namespace NovaFramework.Runtime
         public abstract string Namespace { get; }
 
         /// <summary>
-        /// 业务入口 Procedure 相对类型名；LoadAsync 完成后可读。
+        /// HybridCLR 运行时配置；LoadAsync 完成后可读，未加载时返回 null。
         /// </summary>
-        public abstract string GameEntranceProcedureName { get; }
+        public abstract HybridConfigs HybridConfigs { get; }
 
         /// <summary>
-        /// AOT 元数据 DLL 列表；LoadAsync 完成后可读，未加载时返回空集合。
+        /// 业务自定义运行时配置；LoadAsync 完成后可读，未加载时返回 null。
         /// </summary>
-        public abstract IReadOnlyList<DllAssetEntry> AotMetadataDlls { get; }
-
-        /// <summary>
-        /// 业务 DLL 列表；LoadAsync 完成后可读，未加载时返回空集合。
-        /// </summary>
-        public abstract IReadOnlyList<DllAssetEntry> GameDlls { get; }
+        public abstract CustomConfigs CustomConfigs { get; }
 
         /// <summary>
         /// 本次加载记录的目标平台。

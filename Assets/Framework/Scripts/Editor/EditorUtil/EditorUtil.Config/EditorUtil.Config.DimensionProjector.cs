@@ -37,9 +37,9 @@ namespace NovaFramework.Editor
                 public enum PanelKind
                 {
                     /// <summary>
-                    /// 公共配置（CommonConfig），对应 m_Entries[i].CommonByMode[m].Config。
+                    /// 公共配置（AppConfigs），对应 m_Entries[i].AppConfigsByMode[m].Config。
                     /// </summary>
-                    Common,
+                    AppConfigs,
                     /// <summary>
                     /// SDK Plugin 配置（ISDKPluginConfig 实现），对应 m_Entries[i].SDKConfigsByMode[m].SDKConfigs[idx]。
                     /// typeName 字段生效。
@@ -56,18 +56,18 @@ namespace NovaFramework.Editor
                     Namespace,
                     /// <summary>
                     /// 顶层 HybridCLR 面板字段组（AotMetadataDlls / GameDlls / LinkXmlTargetPath / GameEntranceProcedureName），
-                    /// 底座为 ConfigMasterSO.HybridCLROverrides 列表 + 各顶层默认字段（仅 Editor 期消费）。
+                    /// 底座为 ConfigMasterSO.HybridEditorConfigsOverrides 列表 + 各顶层默认字段（仅 Editor 期消费）。
                     /// </summary>
-                    HybridCLR,
+                    HybridEditorConfigs,
                     /// <summary>
                     /// 顶层 YooAsset 两路径字段（YooAssetSettingsPath / BundleCollectorSettingPath），
-                    /// 底座为 ConfigMasterSO.YooAssetOverrides 列表 + 各顶层默认字段（仅 Editor 期消费）。
+                    /// 底座为 ConfigMasterSO.YooAssetEditorConfigsOverrides 列表 + 各顶层默认字段（仅 Editor 期消费）。
                     /// </summary>
-                    YooAsset,
+                    YooAssetEditorConfigs,
                     /// <summary>
-                    /// 顶层 CDN 部署面板，底座为 ConfigMasterSO.CdnOverrides + 顶层 CdnDeployment（仅 Editor 期消费）。
+                    /// 顶层 CDN 部署面板，底座为 ConfigMasterSO.CDNEditorConfigsOverrides + 顶层 CDNEditorConfigs（仅 Editor 期消费）。
                     /// </summary>
-                    Cdn,
+                    CDNEditorConfigs,
                 }
 
                 // -------------------------------------------------------
@@ -150,22 +150,22 @@ namespace NovaFramework.Editor
                     // 顶层类走独立分支（不经过矩阵 m_Entries 路径）
                     if (panelKind == PanelKind.Namespace) { OnNamespaceEnabled(master, curCoord, axis); return; }
 #if UNITY_EDITOR
-                    if (panelKind == PanelKind.HybridCLR) { OnHybridCLREnabled(master, curCoord, axis); return; }
-                    if (panelKind == PanelKind.YooAsset) { OnYooAssetEnabled(master, curCoord, axis); return; }
-                    if (panelKind == PanelKind.Cdn) { OnCdnEnabled(master, curCoord, axis); return; }
+                    if (panelKind == PanelKind.HybridEditorConfigs) { OnHybridCLREnabled(master, curCoord, axis); return; }
+                    if (panelKind == PanelKind.YooAssetEditorConfigs) { OnYooAssetEnabled(master, curCoord, axis); return; }
+                    if (panelKind == PanelKind.CDNEditorConfigs) { OnCdnEnabled(master, curCoord, axis); return; }
 #endif
 
                     PanelDimensionMask mask = GetMask(master, panelKind, typeName);
 
-                    if (panelKind == PanelKind.Common)
+                    if (panelKind == PanelKind.AppConfigs)
                     {
-                        CommonConfig snapshot = DeepCloneCommon(GetCommonFromMaster(master, curCoord));
+                        AppConfigs snapshot = DeepCloneAppConfigs(GetAppConfigsFromMaster(master, curCoord));
                         SetAxis(mask, axis, true);
                         foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
                         {
                             // 跳过当前格自身，与 BroadcastWithinGroup 的守卫写法对齐，语义一致且避免 SerializedProperty 别名自覆写
                             if (IsSameCoord(targetCoord, curCoord)) continue;
-                            FillGroupCommon(master, targetCoord, DeepCloneCommon(snapshot));
+                            FillGroupAppConfigs(master, targetCoord, DeepCloneAppConfigs(snapshot));
                         }
                     }
                     else
@@ -203,22 +203,22 @@ namespace NovaFramework.Editor
                     // 顶层类走独立分支
                     if (panelKind == PanelKind.Namespace) { OnNamespaceDisabled(master, curCoord, axis); return; }
 #if UNITY_EDITOR
-                    if (panelKind == PanelKind.HybridCLR) { OnHybridCLRDisabled(master, curCoord, axis); return; }
-                    if (panelKind == PanelKind.YooAsset) { OnYooAssetDisabled(master, curCoord, axis); return; }
-                    if (panelKind == PanelKind.Cdn) { OnCdnDisabled(master, curCoord, axis); return; }
+                    if (panelKind == PanelKind.HybridEditorConfigs) { OnHybridCLRDisabled(master, curCoord, axis); return; }
+                    if (panelKind == PanelKind.YooAssetEditorConfigs) { OnYooAssetDisabled(master, curCoord, axis); return; }
+                    if (panelKind == PanelKind.CDNEditorConfigs) { OnCdnDisabled(master, curCoord, axis); return; }
 #endif
 
                     PanelDimensionMask mask = GetMask(master, panelKind, typeName);
 
-                    if (panelKind == PanelKind.Common)
+                    if (panelKind == PanelKind.AppConfigs)
                     {
-                        CommonConfig snapshot = DeepCloneCommon(GetCommonFromMaster(master, curCoord));
+                        AppConfigs snapshot = DeepCloneAppConfigs(GetAppConfigsFromMaster(master, curCoord));
                         SetAxis(mask, axis, false);
                         foreach (Coord memberCoord in GroupMembers(master, mask, curCoord))
                         {
                             // 跳过当前格自身，与 BroadcastWithinGroup 的守卫写法对齐，语义一致且避免 SerializedProperty 别名自覆写
                             if (IsSameCoord(memberCoord, curCoord)) continue;
-                            FillGroupCommon(master, memberCoord, DeepCloneCommon(snapshot));
+                            FillGroupAppConfigs(master, memberCoord, DeepCloneAppConfigs(snapshot));
                         }
                     }
                     else
@@ -271,20 +271,20 @@ namespace NovaFramework.Editor
                     // 顶层类走独立分支
                     if (panelKind == PanelKind.Namespace) { BroadcastNamespace(master, curCoord); return; }
 #if UNITY_EDITOR
-                    if (panelKind == PanelKind.HybridCLR) { BroadcastHybridCLR(master, curCoord); return; }
-                    if (panelKind == PanelKind.YooAsset) { BroadcastYooAsset(master, curCoord); return; }
-                    if (panelKind == PanelKind.Cdn) { BroadcastCdn(master, curCoord); return; }
+                    if (panelKind == PanelKind.HybridEditorConfigs) { BroadcastHybridCLR(master, curCoord); return; }
+                    if (panelKind == PanelKind.YooAssetEditorConfigs) { BroadcastYooAsset(master, curCoord); return; }
+                    if (panelKind == PanelKind.CDNEditorConfigs) { BroadcastCdn(master, curCoord); return; }
 #endif
 
                     PanelDimensionMask mask = GetMask(master, panelKind, typeName);
 
-                    if (panelKind == PanelKind.Common)
+                    if (panelKind == PanelKind.AppConfigs)
                     {
-                        CommonConfig srcValue = DeepCloneCommon(GetCommonFromMaster(master, curCoord));
+                        AppConfigs srcValue = DeepCloneAppConfigs(GetAppConfigsFromMaster(master, curCoord));
                         foreach (Coord memberCoord in GroupMembers(master, mask, curCoord))
                         {
                             if (IsSameCoord(memberCoord, curCoord)) continue;
-                            FillGroupCommon(master, memberCoord, DeepCloneCommon(srcValue));
+                            FillGroupAppConfigs(master, memberCoord, DeepCloneAppConfigs(srcValue));
                         }
                     }
                     else
@@ -371,15 +371,15 @@ namespace NovaFramework.Editor
                 // -------------------------------------------------------
 
                 /// <summary>
-                /// 向 targetCoord 格写入 CommonConfig 深拷贝值；对应行不存在时静默跳过。
+                /// 向 targetCoord 格写入 AppConfigs 深拷贝值；对应行不存在时静默跳过。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例。</param>
                 /// <param name="targetCoord">目标格坐标。</param>
-                /// <param name="value">要写入的 CommonConfig 深拷贝值。</param>
-                private static void FillGroupCommon(ConfigMasterSO master, Coord targetCoord, CommonConfig value)
+                /// <param name="value">要写入的 AppConfigs 深拷贝值。</param>
+                private static void FillGroupAppConfigs(ConfigMasterSO master, Coord targetCoord, AppConfigs value)
                 {
                     if (!master.TryGetEntry(targetCoord.Platform, targetCoord.Channel, out PlatformChannelEntry entry)) return;
-                    CommonConfig dst = entry.GetCommon(targetCoord.Mode);
+                    AppConfigs dst = entry.GetAppConfigs(targetCoord.Mode);
                     if (dst == null || value == null) return;
                     dst.AppID = value.AppID;
                     dst.AppAesKey = value.AppAesKey;
@@ -443,7 +443,7 @@ namespace NovaFramework.Editor
                 // -------------------------------------------------------
 
                 /// <summary>
-                /// 按面板种类取对应的 PanelDimensionMask；Common 返回 master.CommonMask，SDK/Kit 分别调用 GetSDKMask/GetKitMask。
+                /// 按面板种类取对应的 PanelDimensionMask；Common 返回 master.AppConfigsMask，SDK/Kit 分别调用 GetSDKMask/GetKitMask。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例。</param>
                 /// <param name="panelKind">面板种类。</param>
@@ -457,11 +457,11 @@ namespace NovaFramework.Editor
                         case PanelKind.Kit: return master.GetKitMask(typeName);
                         case PanelKind.Namespace: return master.NamespaceMask;
 #if UNITY_EDITOR
-                        case PanelKind.HybridCLR: return master.HybridCLRMask;
-                        case PanelKind.YooAsset: return master.YooAssetMask;
-                        case PanelKind.Cdn: return master.CdnMask;
+                        case PanelKind.HybridEditorConfigs: return master.HybridEditorConfigsMask;
+                        case PanelKind.YooAssetEditorConfigs: return master.YooAssetEditorConfigsMask;
+                        case PanelKind.CDNEditorConfigs: return master.CDNEditorConfigsMask;
 #endif
-                        default: return master.CommonMask;
+                        default: return master.AppConfigsMask;
                     }
                 }
 
@@ -505,18 +505,18 @@ namespace NovaFramework.Editor
                 }
 
                 // -------------------------------------------------------
-                // 私有辅助：Common 深拷贝（对齐 Exporter.CloneCommon 逐字段模式）
+                // 私有辅助：Common 深拷贝（对齐 Exporter.CloneAppConfigs 逐字段模式）
                 // -------------------------------------------------------
 
                 /// <summary>
-                /// 深拷贝 CommonConfig；src 为 null 时返回 null，与 Exporter.CloneCommon 逐字段模式一致。
+                /// 深拷贝 AppConfigs；src 为 null 时返回 null，与 Exporter.CloneAppConfigs 逐字段模式一致。
                 /// </summary>
                 /// <param name="src">待拷贝的源实例。</param>
-                /// <returns>字段值与 src 相同的新 CommonConfig 实例；src 为 null 时返回 null。</returns>
-                private static CommonConfig DeepCloneCommon(CommonConfig src)
+                /// <returns>字段值与 src 相同的新 AppConfigs 实例；src 为 null 时返回 null。</returns>
+                private static AppConfigs DeepCloneAppConfigs(AppConfigs src)
                 {
                     if (src == null) return null;
-                    return new CommonConfig
+                    return new AppConfigs
                     {
                         AppID = src.AppID,
                         AppAesKey = src.AppAesKey,
@@ -525,15 +525,15 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 从 master C# 层取指定坐标格的 CommonConfig；行不存在时返回 null。
+                /// 从 master C# 层取指定坐标格的 AppConfigs；行不存在时返回 null。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例。</param>
                 /// <param name="coord">目标坐标格。</param>
-                /// <returns>对应 CommonConfig，行不存在时返回 null。</returns>
-                private static CommonConfig GetCommonFromMaster(ConfigMasterSO master, Coord coord)
+                /// <returns>对应 AppConfigs，行不存在时返回 null。</returns>
+                private static AppConfigs GetAppConfigsFromMaster(ConfigMasterSO master, Coord coord)
                 {
                     if (!master.TryGetEntry(coord.Platform, coord.Channel, out PlatformChannelEntry entry)) return null;
-                    return entry.GetCommon(coord.Mode);
+                    return entry.GetAppConfigs(coord.Mode);
                 }
 
                 // -------------------------------------------------------
@@ -822,19 +822,19 @@ namespace NovaFramework.Editor
                 // ——— HybridCLR 顶层类操作 ———
 
                 /// <summary>
-                /// 从 HybridCLROverride 条目取坐标。
+                /// 从 HybridEditorConfigsOverride 条目取坐标。
                 /// </summary>
-                private static Coord OverrideCoord(HybridCLROverride o) => new Coord(o.Platform, o.Channel, o.DevelopMode);
+                private static Coord OverrideCoord(HybridEditorConfigsOverride o) => new Coord(o.Platform, o.Channel, o.DevelopMode);
 
                 /// <summary>
-                /// 从 YooAssetOverride 条目取坐标。
+                /// 从 YooAssetEditorConfigsOverride 条目取坐标。
                 /// </summary>
-                private static Coord OverrideCoord(YooAssetOverride o) => new Coord(o.Platform, o.Channel, o.DevelopMode);
+                private static Coord OverrideCoord(YooAssetEditorConfigsOverride o) => new Coord(o.Platform, o.Channel, o.DevelopMode);
 
                 /// <summary>
-                /// 从 CdnDeploymentOverride 条目取坐标。
+                /// 从 CDNEditorConfigsOverride 条目取坐标。
                 /// </summary>
-                private static Coord OverrideCoord(CdnDeploymentOverride o) => new Coord(o.Platform, o.Channel, o.DevelopMode);
+                private static Coord OverrideCoord(CDNEditorConfigsOverride o) => new Coord(o.Platform, o.Channel, o.DevelopMode);
 
                 /// <summary>
                 /// HybridCLR 面板加维分裂：将当前坐标值广播到轴向所有 Override 条目。
@@ -844,16 +844,16 @@ namespace NovaFramework.Editor
                 /// <param name="axis">要启用的维度轴。</param>
                 private static void OnHybridCLREnabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
                 {
-                    PanelDimensionMask mask = master.HybridCLRMask;
+                    PanelDimensionMask mask = master.HybridEditorConfigsMask;
                     DimensionalResolver.HybridCLRResult snapshot = DimensionalResolver.ResolveHybridCLR(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
                     SetAxis(mask, axis, true);
                     foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
                     {
                         if (IsSameCoord(targetCoord, curCoord)) continue;
                         Coord clipped = ClipCoordToMask(mask, targetCoord);
-                        UpsertHybridCLROverride(master, mask, clipped, snapshot);
+                        UpsertHybridEditorConfigsOverride(master, mask, clipped, snapshot);
                     }
-                    UpsertHybridCLROverride(master, mask, ClipCoordToMask(mask, curCoord), snapshot);
+                    UpsertHybridEditorConfigsOverride(master, mask, ClipCoordToMask(mask, curCoord), snapshot);
                 }
 
                 /// <summary>
@@ -864,22 +864,22 @@ namespace NovaFramework.Editor
                 /// <param name="axis">要禁用的维度轴。</param>
                 private static void OnHybridCLRDisabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
                 {
-                    PanelDimensionMask mask = master.HybridCLRMask;
+                    PanelDimensionMask mask = master.HybridEditorConfigsMask;
                     DimensionalResolver.HybridCLRResult snapshot = DimensionalResolver.ResolveHybridCLR(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
                     SetAxis(mask, axis, false);
                     Coord clipped = ClipCoordToMask(mask, curCoord);
-                    master.HybridCLROverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
+                    master.HybridEditorConfigsOverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
                     if (mask.ByPlatform || mask.ByChannel || mask.ByDevelopMode)
                     {
-                        UpsertHybridCLROverride(master, mask, clipped, snapshot);
+                        UpsertHybridEditorConfigsOverride(master, mask, clipped, snapshot);
                     }
                     else
                     {
                         // 全不勾（IsGlobal）：Override 列表已清空，将减维前当前坐标那份回写顶层默认字段
-                        master.AotMetadataDlls = DeepCloneDllList(snapshot.AotMetadataDlls);
-                        master.GameDlls = DeepCloneDllList(snapshot.GameDlls);
-                        master.LinkXmlTargetPath = snapshot.LinkXmlTargetPath;
-                        master.GameEntranceProcedureName = snapshot.GameEntranceProcedureName;
+                        master.HybridEditorConfigs.AotMetadataDlls = DeepCloneDllList(snapshot.AotMetadataDlls);
+                        master.HybridEditorConfigs.GameDlls = DeepCloneDllList(snapshot.GameDlls);
+                        master.HybridEditorConfigs.LinkXmlTargetPath = snapshot.LinkXmlTargetPath;
+                        master.HybridEditorConfigs.GameEntranceProcedureName = snapshot.GameEntranceProcedureName;
                     }
                 }
 
@@ -890,11 +890,11 @@ namespace NovaFramework.Editor
                 /// <param name="curCoord">当前坐标格（值来源）。</param>
                 private static void BroadcastHybridCLR(ConfigMasterSO master, Coord curCoord)
                 {
-                    PanelDimensionMask mask = master.HybridCLRMask;
+                    PanelDimensionMask mask = master.HybridEditorConfigsMask;
                     if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return;
                     DimensionalResolver.HybridCLRResult snapshot = DimensionalResolver.ResolveHybridCLR(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
                     Coord clipped = ClipCoordToMask(mask, curCoord);
-                    foreach (HybridCLROverride o in master.HybridCLROverrides)
+                    foreach (HybridEditorConfigsOverride o in master.HybridEditorConfigsOverrides)
                     {
                         if (!IsOverrideInGroup(mask, OverrideCoord(o), clipped)) continue;
                         ApplyHybridCLRResult(o, snapshot);
@@ -902,50 +902,50 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 在 HybridCLROverrides 列表中按裁剪坐标找到同组首个条目并覆写多字段，无则追加新条目。
+                /// 在 HybridEditorConfigsOverrides 列表中按裁剪坐标找到同组首个条目并覆写多字段，无则追加新条目。
                 /// </summary>
-                private static void UpsertHybridCLROverride(ConfigMasterSO master, PanelDimensionMask mask, Coord clipped, DimensionalResolver.HybridCLRResult snapshot)
+                private static void UpsertHybridEditorConfigsOverride(ConfigMasterSO master, PanelDimensionMask mask, Coord clipped, DimensionalResolver.HybridCLRResult snapshot)
                 {
-                    for (int i = 0; i < master.HybridCLROverrides.Count; i++)
+                    for (int i = 0; i < master.HybridEditorConfigsOverrides.Count; i++)
                     {
-                        if (!IsOverrideInGroup(mask, OverrideCoord(master.HybridCLROverrides[i]), clipped)) continue;
-                        ApplyHybridCLRResult(master.HybridCLROverrides[i], snapshot);
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.HybridEditorConfigsOverrides[i]), clipped)) continue;
+                        ApplyHybridCLRResult(master.HybridEditorConfigsOverrides[i], snapshot);
                         return;
                     }
-                    HybridCLROverride entry = new HybridCLROverride
+                    HybridEditorConfigsOverride entry = new HybridEditorConfigsOverride
                     {
                         Platform = clipped.Platform,
                         Channel = clipped.Channel,
                         DevelopMode = clipped.Mode,
                     };
                     ApplyHybridCLRResult(entry, snapshot);
-                    master.HybridCLROverrides.Add(entry);
+                    master.HybridEditorConfigsOverrides.Add(entry);
                 }
 
                 /// <summary>
-                /// 只读查找当前坐标在 HybridCLROverrides 中匹配的首个条目索引。
+                /// 只读查找当前坐标在 HybridEditorConfigsOverrides 中匹配的首个条目索引。
                 /// 不创建条目；IsGlobal 或无命中时返回 -1。供面板 Dll 列表在不触发懒创建的前提下
                 /// 解析显示用的 SerializedProperty 路径（无命中时调用方回落顶层字段）。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
                 /// <param name="curCoord">当前坐标格。</param>
                 /// <returns>命中条目索引；IsGlobal 或无命中时返回 -1。</returns>
-                public static int FindHybridCLROverrideIndexAtCoord(ConfigMasterSO master, Coord curCoord)
+                public static int FindHybridEditorConfigsOverrideIndexAtCoord(ConfigMasterSO master, Coord curCoord)
                 {
                     if (master == null) return -1;
-                    PanelDimensionMask mask = master.HybridCLRMask;
+                    PanelDimensionMask mask = master.HybridEditorConfigsMask;
                     if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return -1;
                     Coord clipped = ClipCoordToMask(mask, curCoord);
-                    for (int i = 0; i < master.HybridCLROverrides.Count; i++)
+                    for (int i = 0; i < master.HybridEditorConfigsOverrides.Count; i++)
                     {
-                        if (!IsOverrideInGroup(mask, OverrideCoord(master.HybridCLROverrides[i]), clipped)) continue;
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.HybridEditorConfigsOverrides[i]), clipped)) continue;
                         return i;
                     }
                     return -1;
                 }
 
                 /// <summary>
-                /// 确保当前坐标在 HybridCLROverrides 中存在对应条目并返回其索引，供面板 Dll 列表绑定 SerializedProperty。
+                /// 确保当前坐标在 HybridEditorConfigsOverrides 中存在对应条目并返回其索引，供面板 Dll 列表绑定 SerializedProperty。
                 /// 进入坐标即建份语义：mask 非全局且无命中条目时，新建条目并以当前坐标 ResolveHybridCLR 结果
                 /// （含顶层回落的 Dll 列表快照与字符串字段）填充，使 ReorderableList 绑定 Override 内嵌列表时
                 /// 显示与顶层一致，所有后续写入（增删改/拖拽排序/选择按钮）天然落该坐标份而不污染全局顶层。
@@ -954,41 +954,41 @@ namespace NovaFramework.Editor
                 /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
                 /// <param name="curCoord">当前坐标格。</param>
                 /// <returns>命中或新建条目的索引；IsGlobal 时返回 -1。</returns>
-                public static int EnsureHybridCLROverrideIndexAtCoord(ConfigMasterSO master, Coord curCoord)
+                public static int EnsureHybridEditorConfigsOverrideIndexAtCoord(ConfigMasterSO master, Coord curCoord)
                 {
                     if (master == null) return -1;
-                    PanelDimensionMask mask = master.HybridCLRMask;
+                    PanelDimensionMask mask = master.HybridEditorConfigsMask;
                     if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return -1;
                     Coord clipped = ClipCoordToMask(mask, curCoord);
-                    for (int i = 0; i < master.HybridCLROverrides.Count; i++)
+                    for (int i = 0; i < master.HybridEditorConfigsOverrides.Count; i++)
                     {
-                        if (!IsOverrideInGroup(mask, OverrideCoord(master.HybridCLROverrides[i]), clipped)) continue;
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.HybridEditorConfigsOverrides[i]), clipped)) continue;
                         return i;
                     }
                     // 新建条目并以当前坐标 Resolve 结果填充（Dll 列表深拷贝顶层快照 + 字符串字段）
                     DimensionalResolver.HybridCLRResult snapshot = DimensionalResolver.ResolveHybridCLR(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
-                    HybridCLROverride entry = new HybridCLROverride
+                    HybridEditorConfigsOverride entry = new HybridEditorConfigsOverride
                     {
                         Platform = clipped.Platform,
                         Channel = clipped.Channel,
                         DevelopMode = clipped.Mode,
                     };
                     ApplyHybridCLRResult(entry, snapshot);
-                    master.HybridCLROverrides.Add(entry);
-                    return master.HybridCLROverrides.Count - 1;
+                    master.HybridEditorConfigsOverrides.Add(entry);
+                    return master.HybridEditorConfigsOverrides.Count - 1;
                 }
 
                 /// <summary>
-                /// 确保当前坐标在 HybridCLROverrides 中存在对应条目并返回其引用，供面板字段控件直接写入单字段。
-                /// 当 HybridCLRMask 为全不勾（IsGlobal）时返回 null，调用方应改写顶层字段。
+                /// 确保当前坐标在 HybridEditorConfigsOverrides 中存在对应条目并返回其引用，供面板字段控件直接写入单字段。
+                /// 当 HybridEditorConfigsMask 为全不勾（IsGlobal）时返回 null，调用方应改写顶层字段。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
                 /// <param name="curCoord">当前坐标格。</param>
-                /// <returns>命中或新建的 HybridCLROverride 条目引用；IsGlobal 时返回 null。</returns>
-                public static HybridCLROverride EnsureHybridCLROverrideAtCoord(ConfigMasterSO master, Coord curCoord)
+                /// <returns>命中或新建的 HybridEditorConfigsOverride 条目引用；IsGlobal 时返回 null。</returns>
+                public static HybridEditorConfigsOverride EnsureHybridEditorConfigsOverrideAtCoord(ConfigMasterSO master, Coord curCoord)
                 {
-                    int idx = EnsureHybridCLROverrideIndexAtCoord(master, curCoord);
-                    return idx < 0 ? null : master.HybridCLROverrides[idx];
+                    int idx = EnsureHybridEditorConfigsOverrideIndexAtCoord(master, curCoord);
+                    return idx < 0 ? null : master.HybridEditorConfigsOverrides[idx];
                 }
 
                 /// <summary>
@@ -996,7 +996,7 @@ namespace NovaFramework.Editor
                 /// </summary>
                 /// <param name="target">目标 Override 条目。</param>
                 /// <param name="result">值来源快照。</param>
-                private static void ApplyHybridCLRResult(HybridCLROverride target, DimensionalResolver.HybridCLRResult result)
+                private static void ApplyHybridCLRResult(HybridEditorConfigsOverride target, DimensionalResolver.HybridCLRResult result)
                 {
                     target.AotMetadataDlls = DeepCloneDllList(result.AotMetadataDlls);
                     target.GameDlls = DeepCloneDllList(result.GameDlls);
@@ -1014,16 +1014,16 @@ namespace NovaFramework.Editor
                 /// <param name="axis">要启用的维度轴。</param>
                 private static void OnYooAssetEnabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
                 {
-                    PanelDimensionMask mask = master.YooAssetMask;
+                    PanelDimensionMask mask = master.YooAssetEditorConfigsMask;
                     DimensionalResolver.YooAssetResult snapshot = DimensionalResolver.ResolveYooAsset(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
                     SetAxis(mask, axis, true);
                     foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
                     {
                         if (IsSameCoord(targetCoord, curCoord)) continue;
                         Coord clipped = ClipCoordToMask(mask, targetCoord);
-                        UpsertYooAssetOverride(master, mask, clipped, snapshot);
+                        UpsertYooAssetEditorConfigsOverride(master, mask, clipped, snapshot);
                     }
-                    UpsertYooAssetOverride(master, mask, ClipCoordToMask(mask, curCoord), snapshot);
+                    UpsertYooAssetEditorConfigsOverride(master, mask, ClipCoordToMask(mask, curCoord), snapshot);
                 }
 
                 /// <summary>
@@ -1034,20 +1034,20 @@ namespace NovaFramework.Editor
                 /// <param name="axis">要禁用的维度轴。</param>
                 private static void OnYooAssetDisabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
                 {
-                    PanelDimensionMask mask = master.YooAssetMask;
+                    PanelDimensionMask mask = master.YooAssetEditorConfigsMask;
                     DimensionalResolver.YooAssetResult snapshot = DimensionalResolver.ResolveYooAsset(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
                     SetAxis(mask, axis, false);
                     Coord clipped = ClipCoordToMask(mask, curCoord);
-                    master.YooAssetOverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
+                    master.YooAssetEditorConfigsOverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
                     if (mask.ByPlatform || mask.ByChannel || mask.ByDevelopMode)
                     {
-                        UpsertYooAssetOverride(master, mask, clipped, snapshot);
+                        UpsertYooAssetEditorConfigsOverride(master, mask, clipped, snapshot);
                     }
                     else
                     {
                         // 全不勾（IsGlobal）：Override 列表已清空，将减维前当前坐标那份回写顶层默认字段
-                        master.YooAssetSettingsPath = snapshot.YooAssetSettingsPath;
-                        master.BundleCollectorSettingPath = snapshot.BundleCollectorSettingPath;
+                        master.YooAssetEditorConfigs.YooAssetSettingsPath = snapshot.YooAssetSettingsPath;
+                        master.YooAssetEditorConfigs.BundleCollectorSettingPath = snapshot.BundleCollectorSettingPath;
                     }
                 }
 
@@ -1058,11 +1058,11 @@ namespace NovaFramework.Editor
                 /// <param name="curCoord">当前坐标格（值来源）。</param>
                 private static void BroadcastYooAsset(ConfigMasterSO master, Coord curCoord)
                 {
-                    PanelDimensionMask mask = master.YooAssetMask;
+                    PanelDimensionMask mask = master.YooAssetEditorConfigsMask;
                     if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return;
                     DimensionalResolver.YooAssetResult snapshot = DimensionalResolver.ResolveYooAsset(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
                     Coord clipped = ClipCoordToMask(mask, curCoord);
-                    foreach (YooAssetOverride o in master.YooAssetOverrides)
+                    foreach (YooAssetEditorConfigsOverride o in master.YooAssetEditorConfigsOverrides)
                     {
                         if (!IsOverrideInGroup(mask, OverrideCoord(o), clipped)) continue;
                         o.YooAssetSettingsPath = snapshot.YooAssetSettingsPath;
@@ -1071,18 +1071,18 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 在 YooAssetOverrides 列表中按裁剪坐标找到同组首个条目并覆写两路径，无则追加新条目。
+                /// 在 YooAssetEditorConfigsOverrides 列表中按裁剪坐标找到同组首个条目并覆写两路径，无则追加新条目。
                 /// </summary>
-                private static void UpsertYooAssetOverride(ConfigMasterSO master, PanelDimensionMask mask, Coord clipped, DimensionalResolver.YooAssetResult snapshot)
+                private static void UpsertYooAssetEditorConfigsOverride(ConfigMasterSO master, PanelDimensionMask mask, Coord clipped, DimensionalResolver.YooAssetResult snapshot)
                 {
-                    for (int i = 0; i < master.YooAssetOverrides.Count; i++)
+                    for (int i = 0; i < master.YooAssetEditorConfigsOverrides.Count; i++)
                     {
-                        if (!IsOverrideInGroup(mask, OverrideCoord(master.YooAssetOverrides[i]), clipped)) continue;
-                        master.YooAssetOverrides[i].YooAssetSettingsPath = snapshot.YooAssetSettingsPath;
-                        master.YooAssetOverrides[i].BundleCollectorSettingPath = snapshot.BundleCollectorSettingPath;
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.YooAssetEditorConfigsOverrides[i]), clipped)) continue;
+                        master.YooAssetEditorConfigsOverrides[i].YooAssetSettingsPath = snapshot.YooAssetSettingsPath;
+                        master.YooAssetEditorConfigsOverrides[i].BundleCollectorSettingPath = snapshot.BundleCollectorSettingPath;
                         return;
                     }
-                    master.YooAssetOverrides.Add(new YooAssetOverride
+                    master.YooAssetEditorConfigsOverrides.Add(new YooAssetEditorConfigsOverride
                     {
                         Platform = clipped.Platform,
                         Channel = clipped.Channel,
@@ -1093,30 +1093,30 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 确保当前坐标在 YooAssetOverrides 中存在对应条目并返回其引用，供面板路径控件直接写入单字段。
-                /// 当 YooAssetMask 为全不勾（IsGlobal）时返回 null，调用方应改写顶层字段。
+                /// 确保当前坐标在 YooAssetEditorConfigsOverrides 中存在对应条目并返回其引用，供面板路径控件直接写入单字段。
+                /// 当 YooAssetEditorConfigsMask 为全不勾（IsGlobal）时返回 null，调用方应改写顶层字段。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
                 /// <param name="curCoord">当前坐标格。</param>
-                /// <returns>命中或新建的 YooAssetOverride 条目引用；IsGlobal 时返回 null。</returns>
-                public static YooAssetOverride EnsureYooAssetOverrideAtCoord(ConfigMasterSO master, Coord curCoord)
+                /// <returns>命中或新建的 YooAssetEditorConfigsOverride 条目引用；IsGlobal 时返回 null。</returns>
+                public static YooAssetEditorConfigsOverride EnsureYooAssetEditorConfigsOverrideAtCoord(ConfigMasterSO master, Coord curCoord)
                 {
                     if (master == null) return null;
-                    PanelDimensionMask mask = master.YooAssetMask;
+                    PanelDimensionMask mask = master.YooAssetEditorConfigsMask;
                     if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return null;
                     Coord clipped = ClipCoordToMask(mask, curCoord);
-                    for (int i = 0; i < master.YooAssetOverrides.Count; i++)
+                    for (int i = 0; i < master.YooAssetEditorConfigsOverrides.Count; i++)
                     {
-                        if (!IsOverrideInGroup(mask, OverrideCoord(master.YooAssetOverrides[i]), clipped)) continue;
-                        return master.YooAssetOverrides[i];
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.YooAssetEditorConfigsOverrides[i]), clipped)) continue;
+                        return master.YooAssetEditorConfigsOverrides[i];
                     }
-                    YooAssetOverride entry = new YooAssetOverride
+                    YooAssetEditorConfigsOverride entry = new YooAssetEditorConfigsOverride
                     {
                         Platform = clipped.Platform,
                         Channel = clipped.Channel,
                         DevelopMode = clipped.Mode,
                     };
-                    master.YooAssetOverrides.Add(entry);
+                    master.YooAssetEditorConfigsOverrides.Add(entry);
                     return entry;
                 }
 
@@ -1142,8 +1142,8 @@ namespace NovaFramework.Editor
                 /// <param name="axis">要启用的维度轴。</param>
                 private static void OnCdnEnabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
                 {
-                    PanelDimensionMask mask = master.CdnMask;
-                    CdnDeploymentConfig snapshot = DimensionalResolver.ResolveCdn(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
+                    PanelDimensionMask mask = master.CDNEditorConfigsMask;
+                    CDNEditorConfigs snapshot = DimensionalResolver.ResolveCDNEditorConfigs(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
                     SetAxis(mask, axis, true);
                     foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
                     {
@@ -1162,11 +1162,11 @@ namespace NovaFramework.Editor
                 /// <param name="axis">要禁用的维度轴。</param>
                 private static void OnCdnDisabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
                 {
-                    PanelDimensionMask mask = master.CdnMask;
-                    CdnDeploymentConfig snapshot = DimensionalResolver.ResolveCdn(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
+                    PanelDimensionMask mask = master.CDNEditorConfigsMask;
+                    CDNEditorConfigs snapshot = DimensionalResolver.ResolveCDNEditorConfigs(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
                     SetAxis(mask, axis, false);
                     Coord clipped = ClipCoordToMask(mask, curCoord);
-                    master.CdnOverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
+                    master.CDNEditorConfigsOverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
                     if (mask.ByPlatform || mask.ByChannel || mask.ByDevelopMode)
                     {
                         UpsertCdnOverride(master, mask, clipped, snapshot);
@@ -1174,16 +1174,18 @@ namespace NovaFramework.Editor
                     else
                     {
                         // 全不勾（IsGlobal）：Override 列表已清空，将减维前当前坐标那份回写顶层默认字段
-                        master.CdnDeployment.Endpoint = snapshot.Endpoint;
-                        master.CdnDeployment.AccessKeyID = snapshot.AccessKeyID;
-                        master.CdnDeployment.AccessKeySecret = snapshot.AccessKeySecret;
-                        master.CdnDeployment.PresetOSSPath = snapshot.PresetOSSPath;
-                        master.CdnDeployment.LocalDirectory = snapshot.LocalDirectory;
-                        master.CdnDeployment.RemotePathSuffix = snapshot.RemotePathSuffix;
-                        master.CdnDeployment.ZoneID = snapshot.ZoneID;
-                        master.CdnDeployment.PurgeURL = snapshot.PurgeURL;
-                        master.CdnDeployment.Token = snapshot.Token;
-                        master.CdnDeployment.CachePaths = snapshot.CachePaths;
+                        master.CDNEditorConfigs.Endpoint = snapshot.Endpoint;
+                        master.CDNEditorConfigs.AccessKeyID = snapshot.AccessKeyID;
+                        master.CDNEditorConfigs.AccessKeySecret = snapshot.AccessKeySecret;
+                        master.CDNEditorConfigs.PresetOSSPath = snapshot.PresetOSSPath;
+                        master.CDNEditorConfigs.VersionCheckLocalFilePath = snapshot.VersionCheckLocalFilePath;
+                        master.CDNEditorConfigs.VersionCheckRemoteFilePath = snapshot.VersionCheckRemoteFilePath;
+                        master.CDNEditorConfigs.LocalDirectory = snapshot.LocalDirectory;
+                        master.CDNEditorConfigs.RemotePathSuffix = snapshot.RemotePathSuffix;
+                        master.CDNEditorConfigs.ZoneID = snapshot.ZoneID;
+                        master.CDNEditorConfigs.PurgeURL = snapshot.PurgeURL;
+                        master.CDNEditorConfigs.Token = snapshot.Token;
+                        master.CDNEditorConfigs.CachePaths = snapshot.CachePaths;
                     }
                 }
 
@@ -1194,11 +1196,11 @@ namespace NovaFramework.Editor
                 /// <param name="curCoord">当前坐标格（值来源）。</param>
                 private static void BroadcastCdn(ConfigMasterSO master, Coord curCoord)
                 {
-                    PanelDimensionMask mask = master.CdnMask;
+                    PanelDimensionMask mask = master.CDNEditorConfigsMask;
                     if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return;
-                    CdnDeploymentConfig snapshot = DimensionalResolver.ResolveCdn(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
+                    CDNEditorConfigs snapshot = DimensionalResolver.ResolveCDNEditorConfigs(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
                     Coord clipped = ClipCoordToMask(mask, curCoord);
-                    foreach (CdnDeploymentOverride o in master.CdnOverrides)
+                    foreach (CDNEditorConfigsOverride o in master.CDNEditorConfigsOverrides)
                     {
                         if (!IsOverrideInGroup(mask, OverrideCoord(o), clipped)) continue;
                         ApplyCdnResult(o, snapshot);
@@ -1206,83 +1208,85 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 在 CdnOverrides 列表中按裁剪坐标找到同组首个条目并覆写整套配置，无则追加新条目。
+                /// 在 CDNEditorConfigsOverrides 列表中按裁剪坐标找到同组首个条目并覆写整套配置，无则追加新条目。
                 /// </summary>
-                private static void UpsertCdnOverride(ConfigMasterSO master, PanelDimensionMask mask, Coord clipped, CdnDeploymentConfig snapshot)
+                private static void UpsertCdnOverride(ConfigMasterSO master, PanelDimensionMask mask, Coord clipped, CDNEditorConfigs snapshot)
                 {
-                    for (int i = 0; i < master.CdnOverrides.Count; i++)
+                    for (int i = 0; i < master.CDNEditorConfigsOverrides.Count; i++)
                     {
-                        if (!IsOverrideInGroup(mask, OverrideCoord(master.CdnOverrides[i]), clipped)) continue;
-                        ApplyCdnResult(master.CdnOverrides[i], snapshot);
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.CDNEditorConfigsOverrides[i]), clipped)) continue;
+                        ApplyCdnResult(master.CDNEditorConfigsOverrides[i], snapshot);
                         return;
                     }
-                    CdnDeploymentOverride entry = new CdnDeploymentOverride
+                    CDNEditorConfigsOverride entry = new CDNEditorConfigsOverride
                     {
                         Platform = clipped.Platform,
                         Channel = clipped.Channel,
                         DevelopMode = clipped.Mode,
                     };
                     ApplyCdnResult(entry, snapshot);
-                    master.CdnOverrides.Add(entry);
+                    master.CDNEditorConfigsOverrides.Add(entry);
                 }
 
                 /// <summary>
-                /// 确保当前坐标在 CdnOverrides 中存在对应条目并返回其引用，供面板字段控件直接写入单字段。
-                /// 进入坐标即建份语义：mask 非全局且无命中条目时，新建条目并以当前坐标 ResolveCdn 结果
-                /// （含顶层回落的整套 10 字段快照）填充，使进入坐标后显示与顶层一致，
+                /// 确保当前坐标在 CDNEditorConfigsOverrides 中存在对应条目并返回其引用，供面板字段控件直接写入单字段。
+                /// 进入坐标即建份语义：mask 非全局且无命中条目时，新建条目并以当前坐标 ResolveCDNEditorConfigs 结果
+                /// （含顶层回落的整套 12 字段快照）填充，使进入坐标后显示与顶层一致，
                 /// 所有后续写入天然落该坐标份而不污染全局顶层。
-                /// 当 CdnMask 为全不勾（IsGlobal）时返回 null，调用方应改写顶层 CdnDeployment 字段。
+                /// 当 CDNEditorConfigsMask 为全不勾（IsGlobal）时返回 null，调用方应改写顶层 CDNEditorConfigs 字段。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
                 /// <param name="curCoord">当前坐标格。</param>
-                /// <returns>命中或新建的 CdnDeploymentOverride 条目引用；IsGlobal 时返回 null。</returns>
-                public static CdnDeploymentOverride EnsureCdnOverrideAtCoord(ConfigMasterSO master, Coord curCoord)
+                /// <returns>命中或新建的 CDNEditorConfigsOverride 条目引用；IsGlobal 时返回 null。</returns>
+                public static CDNEditorConfigsOverride EnsureCDNEditorConfigsOverrideAtCoord(ConfigMasterSO master, Coord curCoord)
                 {
                     if (master == null) return null;
-                    PanelDimensionMask mask = master.CdnMask;
+                    PanelDimensionMask mask = master.CDNEditorConfigsMask;
                     if (!mask.ByPlatform && !mask.ByChannel && !mask.ByDevelopMode) return null;
                     Coord clipped = ClipCoordToMask(mask, curCoord);
-                    for (int i = 0; i < master.CdnOverrides.Count; i++)
+                    for (int i = 0; i < master.CDNEditorConfigsOverrides.Count; i++)
                     {
-                        if (!IsOverrideInGroup(mask, OverrideCoord(master.CdnOverrides[i]), clipped)) continue;
-                        return master.CdnOverrides[i];
+                        if (!IsOverrideInGroup(mask, OverrideCoord(master.CDNEditorConfigsOverrides[i]), clipped)) continue;
+                        return master.CDNEditorConfigsOverrides[i];
                     }
-                    CdnDeploymentConfig snapshot = DimensionalResolver.ResolveCdn(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
-                    CdnDeploymentOverride entry = new CdnDeploymentOverride
+                    CDNEditorConfigs snapshot = DimensionalResolver.ResolveCDNEditorConfigs(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
+                    CDNEditorConfigsOverride entry = new CDNEditorConfigsOverride
                     {
                         Platform = clipped.Platform,
                         Channel = clipped.Channel,
                         DevelopMode = clipped.Mode,
                     };
                     ApplyCdnResult(entry, snapshot);
-                    master.CdnOverrides.Add(entry);
+                    master.CDNEditorConfigsOverrides.Add(entry);
                     return entry;
                 }
 
                 /// <summary>
-                /// 将 CdnDeploymentConfig 整套快照写入 Override 条目（深拷贝新实例，禁共享引用）。
+                /// 将 CDNEditorConfigs 整套快照写入 Override 条目（深拷贝新实例，禁共享引用）。
                 /// </summary>
                 /// <param name="target">目标 Override 条目。</param>
                 /// <param name="result">值来源快照。</param>
-                private static void ApplyCdnResult(CdnDeploymentOverride target, CdnDeploymentConfig result)
+                private static void ApplyCdnResult(CDNEditorConfigsOverride target, CDNEditorConfigs result)
                 {
                     target.Config = DeepCloneCdn(result);
                 }
 
                 /// <summary>
-                /// 深拷贝 CdnDeploymentConfig；src 为 null 时返回新实例，否则逐字段拷贝 10 个 string，禁共享引用。
+                /// 深拷贝 CDNEditorConfigs；src 为 null 时返回新实例，否则逐字段拷贝全部 string，禁共享引用。
                 /// </summary>
                 /// <param name="src">待拷贝的源实例。</param>
-                /// <returns>字段值与 src 相同的新 CdnDeploymentConfig 实例；src 为 null 时返回新实例。</returns>
-                private static CdnDeploymentConfig DeepCloneCdn(CdnDeploymentConfig src)
+                /// <returns>字段值与 src 相同的新 CDNEditorConfigs 实例；src 为 null 时返回新实例。</returns>
+                private static CDNEditorConfigs DeepCloneCdn(CDNEditorConfigs src)
                 {
-                    if (src == null) return new CdnDeploymentConfig();
-                    return new CdnDeploymentConfig
+                    if (src == null) return new CDNEditorConfigs();
+                    return new CDNEditorConfigs
                     {
                         Endpoint = src.Endpoint,
                         AccessKeyID = src.AccessKeyID,
                         AccessKeySecret = src.AccessKeySecret,
                         PresetOSSPath = src.PresetOSSPath,
+                        VersionCheckLocalFilePath = src.VersionCheckLocalFilePath,
+                        VersionCheckRemoteFilePath = src.VersionCheckRemoteFilePath,
                         LocalDirectory = src.LocalDirectory,
                         RemotePathSuffix = src.RemotePathSuffix,
                         ZoneID = src.ZoneID,

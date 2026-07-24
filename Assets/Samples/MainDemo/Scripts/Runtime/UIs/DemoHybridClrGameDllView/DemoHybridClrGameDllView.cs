@@ -45,7 +45,8 @@ namespace NovaFramework.Samples.Runtime
             string ns = Nova.Config.Namespace;
             AppendFeedback(string.Format("Namespace -> \"{0}\"", string.IsNullOrEmpty(ns) ? "(empty)" : ns), FeedbackLevel.Info);
 
-            IReadOnlyList<DllAssetEntry> dlls = Nova.Config.GameDlls;
+            IReadOnlyList<DllAssetEntry> dlls = Nova.Config.HybridConfigs?.GameDlls
+                ?? (IReadOnlyList<DllAssetEntry>)System.Array.Empty<DllAssetEntry>();
             AppendFeedback(string.Format("GameDlls -> {0} entries", dlls.Count), FeedbackLevel.Info);
 
             for (int i = 0; i < dlls.Count; i++)

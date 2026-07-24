@@ -28,6 +28,7 @@ namespace NovaFramework.Editor
             base.OnEnable();
 
             m_CurManagerTypeName = serializedObject.FindProperty("m_CurManagerTypeName");
+            m_EnableAppUpdate = serializedObject.FindProperty("m_EnableAppUpdate");
             m_AppDownloadCheckUrlDebug = serializedObject.FindProperty("m_AppDownloadCheckUrlDebug");
             m_AppDownloadCheckUrlFallbackDebug = serializedObject.FindProperty("m_AppDownloadCheckUrlFallbackDebug");
             m_AppDownloadCheckUrlRelease = serializedObject.FindProperty("m_AppDownloadCheckUrlRelease");

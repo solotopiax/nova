@@ -5,7 +5,7 @@
  * filename:  EditorUtil.Config.Validator.cs
  * author:    taoye
  * created:   2026/4/29
- * descrip:   CommonConfig / PluginConfig 必填字段校验；返回问题列表供 ConfigWindow 弹窗展示
+ * descrip:   AppConfigs / PluginConfig 必填字段校验；返回问题列表供 ConfigWindow 弹窗展示
  ***************************************************************/
 
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace NovaFramework.Editor
         public static partial class Config
         {
             /// <summary>
-            /// CommonConfig / PluginConfig 必填字段校验；返回问题列表供 ConfigWindow 弹窗展示。
+            /// AppConfigs / PluginConfig 必填字段校验；返回问题列表供 ConfigWindow 弹窗展示。
             /// </summary>
             public static class Validator
             {
@@ -46,7 +46,7 @@ namespace NovaFramework.Editor
                 public readonly struct ValidationIssue
                 {
                     /// <summary>
-                    /// 问题所在字段的路径，格式如 "Common.AppID" 或 "SDKConfigs[0]"。
+                    /// 问题所在字段的路径，格式如 "AppConfigs.AppID" 或 "SDKConfigs[0]"。
                     /// </summary>
                     public readonly string Path;
 
@@ -76,7 +76,7 @@ namespace NovaFramework.Editor
 
                 /// <summary>
                 /// 对指定 Platform×Channel×DevelopMode 组合执行全量校验，返回所有发现的问题列表。
-                /// <para>校验范围：ConfigMasterSO 空值检查、CommonConfig 必填字段、目标矩阵行存在性及 SDKConfigs / KitConfigs 空引用。</para>
+                /// <para>校验范围：ConfigMasterSO 空值检查、AppConfigs 必填字段、目标矩阵行存在性及 SDKConfigs / KitConfigs 空引用。</para>
                 /// </summary>
                 /// <param name="master">待校验的 ConfigMasterSO 实例；传入 null 时直接返回含根 Error 的列表。</param>
                 /// <param name="platform">目标平台。</param>
@@ -95,7 +95,7 @@ namespace NovaFramework.Editor
 
                     // 顶层维度化校验路径：经 DimensionalResolver 取当前坐标生效值，避免全不勾/勾选两态校验错位
                     RequireNotEmpty(issues, "Namespace", DimensionalResolver.ResolveNamespace(master, platform, channel, mode));
-                    ValidateCommon(master.GetCommon(platform, channel, mode), issues);
+                    ValidateAppConfigs(master.GetAppConfigs(platform, channel, mode), issues);
 
                     if (master.TryGetEntry(platform, channel, out var entry))
                     {
@@ -129,21 +129,21 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 校验 CommonConfig 全部必填字段；问题追加至 issues 列表。
+                /// 校验 AppConfigs 全部必填字段；问题追加至 issues 列表。
                 /// </summary>
-                /// <param name="common">待校验的 CommonConfig 实例；为 null 时追加 Error 后直接返回。</param>
+                /// <param name="common">待校验的 AppConfigs 实例；为 null 时追加 Error 后直接返回。</param>
                 /// <param name="issues">问题收集列表；校验发现的所有条目追加至此。</param>
-                private static void ValidateCommon(CommonConfig common, List<ValidationIssue> issues)
+                private static void ValidateAppConfigs(AppConfigs common, List<ValidationIssue> issues)
                 {
                     if (common == null)
                     {
-                        issues.Add(new ValidationIssue("Common", "CommonConfig 为 null。", Severity.Error));
+                        issues.Add(new ValidationIssue("AppConfigs", "AppConfigs 为 null。", Severity.Error));
                         return;
                     }
 
-                    RequireNotEmpty(issues, "Common.AppID", common.AppID);
-                    RequireNotEmpty(issues, "Common.AppAesKey", common.AppAesKey);
-                    RequireNotEmpty(issues, "Common.AppAesIV", common.AppAesIV);
+                    RequireNotEmpty(issues, "AppConfigs.AppID", common.AppID);
+                    RequireNotEmpty(issues, "AppConfigs.AppAesKey", common.AppAesKey);
+                    RequireNotEmpty(issues, "AppConfigs.AppAesIV", common.AppAesIV);
                 }
 
                 /// <summary>

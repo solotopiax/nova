@@ -60,5 +60,5 @@ settings = EditorUtil.Asset.Operator.LoadAt<PipifySettingsSO>("Assets/Nova/Pipif
 
 ## §13 关联文档
 
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md) — 本类的主要消费资产之一
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md) — 本类的主要消费资产之一
 - [PipifySettingsSO.md](../EditorUtil.Pipify/PipifySettingsSO.md) — 本类的主要消费资产之一

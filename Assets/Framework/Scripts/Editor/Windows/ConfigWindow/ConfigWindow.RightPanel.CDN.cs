@@ -22,7 +22,10 @@ namespace NovaFramework.Editor
     {
         private const float c_CdnLabelWidth = 150f;
         private const float c_CdnSelectButtonWidth = 60f;
+        private const float c_CdnCreateButtonWidth = 60f;
         private const float c_CdnOpenButtonWidth = 90f;
+        private const string c_AppDownloadRulesTemplateFileName = "AppDownloadRulesTemplate.json";
+        private const string c_AppDownloadRulesFileName = "AppDownloadRules.json";
         private const string c_CdnEndpointDocsUrl = "https://help.aliyun.com/zh/oss/user-guide/regions-and-endpoints?spm=a2c4g.11186623.0.i30#concept-zt4-cvy-5db";
         private const string c_CloudflareZoneIdDocsUrl = "https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/";
         private const string c_CloudflareTokenDocsUrl = "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/";
@@ -31,52 +34,38 @@ namespace NovaFramework.Editor
         /// 绘制 CDN 内容部署面板，字段写入 ConfigMasterSO WorkingCopy，网络操作由 EditorUtil.CDN 执行。
         /// <para>CDN 面板走 WorkingCopy 延迟落盘，对齐矩阵类维度语义：标题与维度 toggle 复用
         /// DrawPanelTitleWithMask（加维分裂 / 减维合并由 DimensionProjector 处理），字段显示值经
-        /// DimensionalResolver.ResolveCdn 按当前坐标解析，编辑提交经 CommitCdnField 双分支写入
-        /// （IsGlobal 写顶层 CdnDeployment，否则写当前坐标 CdnOverrides 条目）。</para>
+        /// DimensionalResolver.ResolveCDNEditorConfigs 按当前坐标解析，编辑提交经 CommitCdnField 双分支写入
+        /// （IsGlobal 写顶层 CDNEditorConfigs，否则写当前坐标 CDNEditorConfigsOverrides 条目）。</para>
         /// </summary>
         private void DrawCdnDeploymentPanel()
         {
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
             if (workingSrc == null) return;
 
-            if (workingSrc.CdnDeployment == null)
+            if (workingSrc.CDNEditorConfigs == null)
             {
-                workingSrc.CdnDeployment = new CdnDeploymentConfig();
+                workingSrc.CDNEditorConfigs = new CDNEditorConfigs();
             }
 
             EditorUtil.Config.DimensionProjector.Coord curCoord = new(
                 workingSrc.CurrentPlatform,
                 workingSrc.CurrentChannel,
                 workingSrc.CurrentDevelopMode);
-            CdnDeploymentConfig resolved = EditorUtil.Config.DimensionalResolver.ResolveCdn(
+            CDNEditorConfigs resolved = EditorUtil.Config.DimensionalResolver.ResolveCDNEditorConfigs(
                 workingSrc,
                 curCoord.Platform,
                 curCoord.Channel,
                 curCoord.Mode);
 
             // 标题 + 内联维度三 toggle + 维度 HelpBox 全套，与 Common / Namespace 等面板一致
-            DrawPanelTitleWithMask("CDN 内容分发网络部署", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.Cdn, null);
+            DrawPanelTitleWithMask("CDN 内容分发网络部署", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.CDNEditorConfigs, null);
 
             // 每帧刷新 SerializedObject（对齐 Namespace / Common 面板）：
-            // 维度 toggle 经 OnCdnEnabled/Disabled 直改 C# 层 CdnMask 与 CdnOverrides（绕过 SerializedProperty），
+            // 维度 toggle 经 OnCdnEnabled/Disabled 直改 C# 层 CDNEditorConfigsMask 与 CDNEditorConfigsOverrides（绕过 SerializedProperty），
             // 若不每帧 Update() 把 native 最新值同步进 SO 缓存，SO 中 mask 停留旧值 false；
             // 后续任一 ApplyModifiedProperties 触发整树回写 native 时，会用旧 false 覆盖刚勾的 true（clobber），toggle 表现为勾选后复原。
             // CDN 字段控件均为普通 TextField（BeginChangeCheck 实时提交），控件 ID 基于固定 path 不漂移，不受每帧 Update 影响（同 Namespace 面板结论）。
             m_MasterSO.Update();
-
-            // 用途说明：三段式功能概览，置于维度 HelpBox 之后、首个分区标题之前
-            EditorUtil.Draw.Layout.Horizontal(() =>
-            {
-                EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
-                {
-                    "(1) 阿里云 OSS 配置：部署目标的 Endpoint / 密钥 / 固定 OSS 路径前缀",
-                    "(2) 部署：选择本地目录，上传到「PresetOSSPath + 云端目录后缀」指向的 OSS 位置",
-                    "(3) Cloudflare 缓存清理：按缓存路径逐条调用 Purge 接口刷新 CDN 缓存",
-                }, false, GUILayout.ExpandWidth(true));
-                EditorUtil.Draw.Space(16f);
-            });
-            EditorUtil.Draw.Space(8f);
 
             DrawCdnSectionTitle(
                 "阿里云 OSS 配置",
@@ -93,9 +82,13 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Space(12f);
 
             DrawCdnSectionTitle("部署");
-            DrawCdnPathPlaceholderHelp();
+            DrawCdnVersionCheckTemplateRow();
+            DrawCdnVersionCheckLocalFileRow(resolved, workingSrc, curCoord);
+            DrawCdnVersionCheckRemoteFileRow(resolved, workingSrc, curCoord);
+            DrawCdnVersionCheckPathHelp();
             DrawCdnLocalDirectoryRow(resolved, workingSrc, curCoord);
             DrawCdnRemoteDirectoryRow(resolved, workingSrc, curCoord);
+            DrawCdnHotfixResourcePathHelp();
             DrawCdnWideButton("批量部署到 CDN", m_IsCdnDeploying, OnDeployCdn);
 
             EditorUtil.Draw.Space(12f);
@@ -124,36 +117,58 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 绘制 App 大版本更新规则模板的只读位置与打开文件夹入口。
+        /// </summary>
+        private static void DrawCdnVersionCheckTemplateRow()
+        {
+            string templatePath = EditorUtil.FileSystem.ResolveTemplatePath(c_AppDownloadRulesTemplateFileName);
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Label("版本检查-模板文件位置", false, GUILayout.Width(c_CdnLabelWidth));
+                EditorUtil.Draw.DisabledGroup(true, () =>
+                    EditorUtil.Draw.TextField(templatePath, false, GUILayout.ExpandWidth(true)));
+                EditorUtil.Draw.Button(
+                    "打开文件夹",
+                    false,
+                    () => OpenCdnVersionCheckTemplateDirectory(templatePath),
+                    GUILayout.Width(c_CdnOpenButtonWidth));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(4f);
+        }
+
+        /// <summary>
         /// 将单字段编辑按当前维度坐标双分支写入 WorkingCopy：
-        /// CdnMask 为 IsGlobal 时写顶层 CdnDeployment 对应字段；否则写当前坐标 CdnOverrides 条目的
-        /// Config 对应字段（无条目时经 EnsureCdnOverrideAtCoord 以当前 Resolve 快照新建）。
+        /// CDNEditorConfigsMask 为 IsGlobal 时写顶层 CDNEditorConfigs 对应字段；否则写当前坐标 CDNEditorConfigsOverrides 条目的
+        /// Config 对应字段（无条目时经 EnsureCDNEditorConfigsOverrideAtCoord 以当前 Resolve 快照新建）。
         /// 写完点亮保存按钮并 SetDirty；CDN 面板走 WorkingCopy 延迟落盘，不即时 SaveAsset。
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前维度坐标。</param>
         /// <param name="value">编辑后的字段值。</param>
-        /// <param name="assign">字段赋值动作，作用于目标 CdnDeploymentConfig 实例。</param>
+        /// <param name="assign">字段赋值动作，作用于目标 CDNEditorConfigs 实例。</param>
         private void CommitCdnField(
             ConfigMasterSO workingSrc,
             EditorUtil.Config.DimensionProjector.Coord curCoord,
             string value,
-            Action<CdnDeploymentConfig, string> assign)
+            Action<CDNEditorConfigs, string> assign)
         {
             if (workingSrc == null || assign == null) return;
 
-            if (workingSrc.CdnMask.IsGlobal)
+            if (workingSrc.CDNEditorConfigsMask.IsGlobal)
             {
-                if (workingSrc.CdnDeployment == null)
-                    workingSrc.CdnDeployment = new CdnDeploymentConfig();
-                assign(workingSrc.CdnDeployment, value);
+                if (workingSrc.CDNEditorConfigs == null)
+                    workingSrc.CDNEditorConfigs = new CDNEditorConfigs();
+                assign(workingSrc.CDNEditorConfigs, value);
             }
             else
             {
-                CdnDeploymentOverride entry = EditorUtil.Config.DimensionProjector.EnsureCdnOverrideAtCoord(workingSrc, curCoord);
+                CDNEditorConfigsOverride entry = EditorUtil.Config.DimensionProjector.EnsureCDNEditorConfigsOverrideAtCoord(workingSrc, curCoord);
                 if (entry != null)
                 {
                     if (entry.Config == null)
-                        entry.Config = new CdnDeploymentConfig();
+                        entry.Config = new CDNEditorConfigs();
                     assign(entry.Config, value);
                 }
             }
@@ -183,21 +198,43 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制与 Asset 主机服务器 URL 同口径的部署路径占位符说明。
+        /// 绘制版本检查规则文件说明；位置固定在对应两个配置项之后。
         /// </summary>
-        private static void DrawCdnPathPlaceholderHelp()
+        private static void DrawCdnVersionCheckPathHelp()
         {
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
                 EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                 {
-                    "本地目录和云端目录支持 {Platform}/{Channel}/{Package}/{Version} 占位符",
-                    "{Platform}=当前平台；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名；{Version}=Application.version",
+                    "(1) 用于配置提示用户大版本更新的规则文件，应用每次启动都会从云端拉取",
+                    "(2) 本地文件会上传到「PresetOSSPath + 云端文件位置」",
+                    "(3) 该配置文件与热更新版本检测无关，请勿混淆",
+                    "(4) 本地文件位置和云端文件位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符",
+                    "(5) {Platform}=当前平台；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名；{Version}=Application.version",
                 }, false, GUILayout.ExpandWidth(true));
                 EditorUtil.Draw.Space(16f);
             });
-            EditorUtil.Draw.Space(4f);
+            EditorUtil.Draw.Space(8f);
+        }
+
+        /// <summary>
+        /// 绘制热更资源目录说明；位置固定在对应两个配置项之后。
+        /// </summary>
+        private static void DrawCdnHotfixResourcePathHelp()
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1) 用于批量部署热更新资源：本地目录下的文件会上传到「PresetOSSPath + 云端目录位置」",
+                    "(2) 本地目录位置和云端目录位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符",
+                    "(3) {Platform}=当前平台；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名；{Version}=Application.version",
+                }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(8f);
         }
 
         /// <summary>
@@ -213,7 +250,7 @@ namespace NovaFramework.Editor
             string committedValue,
             ConfigMasterSO workingSrc,
             EditorUtil.Config.DimensionProjector.Coord curCoord,
-            Action<CdnDeploymentConfig, string> assign,
+            Action<CDNEditorConfigs, string> assign,
             Action trailingContent = null)
         {
             EditorUtil.Draw.Layout.Horizontal(() =>
@@ -247,7 +284,7 @@ namespace NovaFramework.Editor
             string committedValue,
             ConfigMasterSO workingSrc,
             EditorUtil.Config.DimensionProjector.Coord curCoord,
-            Action<CdnDeploymentConfig, string> assign,
+            Action<CDNEditorConfigs, string> assign,
             Action trailingContent = null)
         {
             EditorUtil.Draw.Layout.Horizontal(() =>
@@ -269,20 +306,91 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制本地目录输入、选择和打开文件夹按钮；输入与选择均经 CommitCdnField 按当前坐标写回。
+        /// 绘制版本检查本地文件位置，并提供文件选择与打开所在文件夹入口。
         /// </summary>
-        /// <param name="resolved">当前坐标 Resolve 出的整套生效配置。</param>
-        /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
-        /// <param name="curCoord">当前维度坐标。</param>
-        private void DrawCdnLocalDirectoryRow(
-            CdnDeploymentConfig resolved,
+        private void DrawCdnVersionCheckLocalFileRow(
+            CDNEditorConfigs resolved,
             ConfigMasterSO workingSrc,
             EditorUtil.Config.DimensionProjector.Coord curCoord)
         {
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.Label("本地目录", false, GUILayout.Width(c_CdnLabelWidth));
+                EditorUtil.Draw.Label("版本检查-本地文件位置", false, GUILayout.Width(c_CdnLabelWidth));
+                EditorGUI.BeginChangeCheck();
+                string edited = EditorUtil.Draw.TextField(
+                    resolved.VersionCheckLocalFilePath,
+                    false,
+                    GUILayout.ExpandWidth(true));
+                if (EditorGUI.EndChangeCheck() && edited != resolved.VersionCheckLocalFilePath)
+                    CommitCdnField(workingSrc, curCoord, edited, (cfg, v) => cfg.VersionCheckLocalFilePath = v);
+                EditorUtil.Draw.Button(
+                    "选择",
+                    false,
+                    () => SelectCdnVersionCheckLocalFile(resolved.VersionCheckLocalFilePath, workingSrc, curCoord),
+                    GUILayout.Width(c_CdnSelectButtonWidth));
+                EditorUtil.Draw.Button(
+                    "新建",
+                    false,
+                    () => CreateCdnVersionCheckLocalFile(resolved.VersionCheckLocalFilePath, workingSrc, curCoord),
+                    GUILayout.Width(c_CdnCreateButtonWidth));
+                EditorUtil.Draw.Button(
+                    "打开文件夹",
+                    false,
+                    () => OpenCdnVersionCheckLocalFileDirectory(
+                        resolved.VersionCheckLocalFilePath,
+                        curCoord.Platform,
+                        curCoord.Channel),
+                    GUILayout.Width(c_CdnOpenButtonWidth));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(4f);
+        }
+
+        /// <summary>
+        /// 绘制版本检查云端文件位置；固定 OSS 前缀只读，文件后缀可编辑。
+        /// </summary>
+        private void DrawCdnVersionCheckRemoteFileRow(
+            CDNEditorConfigs resolved,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord)
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Label("版本检查-云端文件位置", false, GUILayout.Width(c_CdnLabelWidth));
+                EditorUtil.Draw.DisabledGroup(true, () =>
+                    EditorUtil.Draw.TextField(
+                        GetCdnPresetDisplay(resolved.PresetOSSPath),
+                        false,
+                        GUILayout.MinWidth(250f)));
+                EditorGUI.BeginChangeCheck();
+                string edited = EditorUtil.Draw.TextField(
+                    resolved.VersionCheckRemoteFilePath,
+                    false,
+                    GUILayout.ExpandWidth(true));
+                if (EditorGUI.EndChangeCheck() && edited != resolved.VersionCheckRemoteFilePath)
+                    CommitCdnField(workingSrc, curCoord, edited, (cfg, v) => cfg.VersionCheckRemoteFilePath = v);
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(8f);
+        }
+
+        /// <summary>
+        /// 绘制本地目录输入、选择和打开文件夹按钮；输入与选择均经 CommitCdnField 按当前坐标写回。
+        /// </summary>
+        /// <param name="resolved">当前坐标 Resolve 出的整套生效配置。</param>
+        /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
+        /// <param name="curCoord">当前维度坐标。</param>
+        private void DrawCdnLocalDirectoryRow(
+            CDNEditorConfigs resolved,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord)
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Label("热更资源-本地目录位置", false, GUILayout.Width(c_CdnLabelWidth));
                 EditorGUI.BeginChangeCheck();
                 string edited = EditorUtil.Draw.TextField(resolved.LocalDirectory, false, GUILayout.ExpandWidth(true));
                 if (EditorGUI.EndChangeCheck() && edited != resolved.LocalDirectory)
@@ -313,14 +421,14 @@ namespace NovaFramework.Editor
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前维度坐标。</param>
         private void DrawCdnRemoteDirectoryRow(
-            CdnDeploymentConfig resolved,
+            CDNEditorConfigs resolved,
             ConfigMasterSO workingSrc,
             EditorUtil.Config.DimensionProjector.Coord curCoord)
         {
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.Label("云端目录", false, GUILayout.Width(c_CdnLabelWidth));
+                EditorUtil.Draw.Label("热更资源-云端目录位置", false, GUILayout.Width(c_CdnLabelWidth));
                 EditorUtil.Draw.DisabledGroup(true, () =>
                     EditorUtil.Draw.TextField(
                         GetCdnPresetDisplay(resolved.PresetOSSPath),
@@ -342,7 +450,7 @@ namespace NovaFramework.Editor
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前维度坐标。</param>
         private void DrawCdnCachePathsRow(
-            CdnDeploymentConfig resolved,
+            CDNEditorConfigs resolved,
             ConfigMasterSO workingSrc,
             EditorUtil.Config.DimensionProjector.Coord curCoord)
         {
@@ -382,6 +490,164 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.Button(label, false, onClick, GUILayout.ExpandWidth(true)));
                 EditorUtil.Draw.Space(16f);
             });
+        }
+
+        /// <summary>
+        /// 在用户选择的项目内目录中复制模板并固定命名为 AppDownloadRules.json，随后写回本地文件位置。
+        /// </summary>
+        private void CreateCdnVersionCheckLocalFile(
+            string currentValue,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord)
+        {
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName;
+            if (string.IsNullOrEmpty(projectRoot)) return;
+
+            string initialDirectory = ResolveCdnLocalFileInitialDirectory(
+                projectRoot,
+                currentValue,
+                curCoord.Platform,
+                curCoord.Channel);
+            string targetDirectory = EditorUtility.OpenFolderPanel(
+                "选择 AppDownloadRules.json 创建目录",
+                initialDirectory,
+                string.Empty);
+            if (string.IsNullOrEmpty(targetDirectory)) return;
+
+            string normalizedRoot = IOPath.GetFullPath(projectRoot).TrimEnd(IOPath.DirectorySeparatorChar, IOPath.AltDirectorySeparatorChar);
+            string normalizedTarget = IOPath.GetFullPath(targetDirectory).TrimEnd(IOPath.DirectorySeparatorChar, IOPath.AltDirectorySeparatorChar);
+            if (!string.Equals(normalizedTarget, normalizedRoot, StringComparison.Ordinal) &&
+                !normalizedTarget.StartsWith(normalizedRoot + IOPath.DirectorySeparatorChar, StringComparison.Ordinal))
+            {
+                EditorUtility.DisplayDialog("创建失败", "目标目录必须位于 Unity 项目根目录内。", "知道了");
+                return;
+            }
+
+            string destinationPath = IOPath.Combine(normalizedTarget, c_AppDownloadRulesFileName);
+            if (File.Exists(destinationPath) &&
+                !EditorUtility.DisplayDialog(
+                    "文件已存在",
+                    $"{c_AppDownloadRulesFileName} 已存在，是否使用模板覆盖？",
+                    "覆盖",
+                    "取消"))
+            {
+                return;
+            }
+
+            try
+            {
+                string templatePath = EditorUtil.FileSystem.ResolveTemplatePath(c_AppDownloadRulesTemplateFileName);
+                string templateFullPath = IOPath.GetFullPath(IOPath.Combine(projectRoot, templatePath));
+                string createdPath = CreateAppDownloadRulesFile(templateFullPath, normalizedTarget);
+                string relativePath = EditorUtil.FileSystem.GetProjectRelativePath(createdPath);
+                GUI.FocusControl(null);
+                CommitCdnField(workingSrc, curCoord, relativePath, (cfg, v) => cfg.VersionCheckLocalFilePath = v);
+                AssetDatabase.Refresh();
+                Repaint();
+            }
+            catch (Exception exception)
+            {
+                Log.Error(LogTag.Editor, "创建 AppDownloadRules.json 失败：{0}", exception.Message);
+                EditorUtility.DisplayDialog("创建失败", exception.Message, "知道了");
+            }
+        }
+
+        /// <summary>
+        /// 将版本检查模板复制到目标目录，并固定输出文件名为 AppDownloadRules.json。
+        /// </summary>
+        /// <returns>创建文件的绝对路径。</returns>
+        private static string CreateAppDownloadRulesFile(string templateFullPath, string targetDirectory)
+        {
+            if (string.IsNullOrEmpty(templateFullPath) || !File.Exists(templateFullPath))
+                throw new FileNotFoundException("版本检查模板文件不存在。", templateFullPath);
+            if (string.IsNullOrEmpty(targetDirectory) || !Directory.Exists(targetDirectory))
+                throw new DirectoryNotFoundException("版本检查规则文件的目标目录不存在。");
+
+            string destinationPath = IOPath.Combine(targetDirectory, c_AppDownloadRulesFileName);
+            File.Copy(templateFullPath, destinationPath, true);
+            return destinationPath;
+        }
+
+        /// <summary>
+        /// 打开版本检查模板所在目录。
+        /// </summary>
+        private static void OpenCdnVersionCheckTemplateDirectory(string templatePath)
+        {
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName;
+            if (string.IsNullOrEmpty(projectRoot)) return;
+            string templateFullPath = IOPath.GetFullPath(IOPath.Combine(projectRoot, templatePath));
+            EditorUtil.FileSystem.OpenFolder(IOPath.GetDirectoryName(templateFullPath));
+        }
+
+        /// <summary>
+        /// 解析版本检查文件选择器的初始目录；当前配置不可用时回退项目根。
+        /// </summary>
+        private static string ResolveCdnLocalFileInitialDirectory(
+            string projectRoot,
+            string currentValue,
+            PlatformType platform,
+            ChannelType channel)
+        {
+            string resolvedPath = EditorUtil.CDN.ResolveEditorPathPlaceholders(currentValue, platform, channel);
+            if (string.IsNullOrEmpty(resolvedPath)) return projectRoot;
+            string fullPath = IOPath.GetFullPath(IOPath.Combine(projectRoot, resolvedPath));
+            string directory = IOPath.GetDirectoryName(fullPath);
+            return !string.IsNullOrEmpty(directory) && Directory.Exists(directory) ? directory : projectRoot;
+        }
+
+        /// <summary>
+        /// 选择项目内的版本检查本地文件，并按当前坐标写回工程根相对路径。
+        /// </summary>
+        private void SelectCdnVersionCheckLocalFile(
+            string currentValue,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord)
+        {
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName;
+            if (string.IsNullOrEmpty(projectRoot)) return;
+
+            string initialDirectory = ResolveCdnLocalFileInitialDirectory(
+                projectRoot,
+                currentValue,
+                curCoord.Platform,
+                curCoord.Channel);
+
+            string selected = EditorUtility.OpenFilePanel("选择版本检查本地文件", initialDirectory, string.Empty);
+            if (string.IsNullOrEmpty(selected)) return;
+
+            string normalizedRoot = IOPath.GetFullPath(projectRoot).TrimEnd(IOPath.DirectorySeparatorChar, IOPath.AltDirectorySeparatorChar)
+                + IOPath.DirectorySeparatorChar;
+            string normalizedSelected = IOPath.GetFullPath(selected);
+            if (!normalizedSelected.StartsWith(normalizedRoot, StringComparison.Ordinal))
+            {
+                Log.Warning(LogTag.Editor, "版本检查本地文件必须位于 Unity 项目根目录内：{0}", selected);
+                return;
+            }
+            string relativePath = EditorUtil.FileSystem.GetProjectRelativePath(normalizedSelected);
+
+            GUI.FocusControl(null);
+            CommitCdnField(workingSrc, curCoord, relativePath, (cfg, v) => cfg.VersionCheckLocalFilePath = v);
+        }
+
+        /// <summary>
+        /// 解析版本检查本地文件位置，并在系统文件管理器中打开其所在目录。
+        /// </summary>
+        private static void OpenCdnVersionCheckLocalFileDirectory(
+            string relativePath,
+            PlatformType platform,
+            ChannelType channel)
+        {
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName;
+            if (string.IsNullOrEmpty(projectRoot)) return;
+            string resolvedPath = EditorUtil.CDN.ResolveEditorPathPlaceholders(relativePath, platform, channel);
+            if (string.IsNullOrEmpty(resolvedPath))
+            {
+                EditorUtil.FileSystem.OpenFolder(projectRoot);
+                return;
+            }
+            string fullPath = IOPath.GetFullPath(IOPath.Combine(projectRoot, resolvedPath ?? string.Empty));
+            string directory = IOPath.GetDirectoryName(fullPath);
+            EditorUtil.FileSystem.OpenFolder(directory);
         }
 
         /// <summary>
@@ -454,7 +720,7 @@ namespace NovaFramework.Editor
                 ConfigMasterSO source = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
                 if (source == null)
                     throw new InvalidOperationException("未找到 CDN 部署配置。");
-                CdnDeploymentConfig config = CreateCdnConfigSnapshot();
+                CDNEditorConfigs config = CreateCdnConfigSnapshot();
                 string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
                     ?? throw new InvalidOperationException("无法解析 Unity 项目根目录。");
                 int count = await EditorUtil.CDN.DeployAsync(
@@ -498,7 +764,7 @@ namespace NovaFramework.Editor
             m_IsCdnPurging = true;
             try
             {
-                CdnDeploymentConfig config = CreateCdnConfigSnapshot();
+                CDNEditorConfigs config = CreateCdnConfigSnapshot();
                 int count = await EditorUtil.CDN.PurgeAsync(
                     config,
                     (completed, total) => EditorUtility.DisplayProgressBar(
@@ -522,15 +788,15 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 按当前维度坐标从 WorkingCopy Resolve 出 CDN 配置快照，避免执行期间继续编辑影响本次请求；
-        /// 部署与清缓存操作作用于当前坐标生效的那份配置（IsGlobal 顶层 / 命中 CdnOverrides 条目 / 逐字段回落）。
+        /// 部署与清缓存操作作用于当前坐标生效的那份配置（IsGlobal 顶层 / 命中 CDNEditorConfigsOverrides 条目 / 逐字段回落）。
         /// </summary>
         /// <returns>与当前坐标生效值一致的独立配置快照。</returns>
-        private CdnDeploymentConfig CreateCdnConfigSnapshot()
+        private CDNEditorConfigs CreateCdnConfigSnapshot()
         {
             ConfigMasterSO source = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
             if (source == null)
                 throw new InvalidOperationException("未找到 CDN 部署配置。");
-            return EditorUtil.Config.DimensionalResolver.ResolveCdn(
+            return EditorUtil.Config.DimensionalResolver.ResolveCDNEditorConfigs(
                 source,
                 source.CurrentPlatform,
                 source.CurrentChannel,

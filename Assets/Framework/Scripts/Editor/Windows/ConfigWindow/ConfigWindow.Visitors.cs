@@ -355,7 +355,7 @@ namespace NovaFramework.Editor
             /// <summary>
             /// CDN 内容分发网络部署面板（通用配置组下）。
             /// </summary>
-            CdnDeployment,
+            CDNEditorConfigs,
 
             /// <summary>
             /// Kit 配置节点面板。

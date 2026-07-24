@@ -115,6 +115,6 @@ EditorUtil.Config.KitConfigScanner.RemoveInstance(masterSO.KitConfigs, kitEntry.
 ## §13 关联文档
 
 - [IKitConfig.md](../../../Runtime/Modules/Config/Definitions/IKitConfig.md)
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md)
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)
 - [EditorUtil.Config.SDKPluginScanner.md](./EditorUtil.Config.SDKPluginScanner.md)
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)

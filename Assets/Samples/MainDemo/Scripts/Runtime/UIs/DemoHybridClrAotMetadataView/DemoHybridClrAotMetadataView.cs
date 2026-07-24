@@ -41,7 +41,8 @@ namespace NovaFramework.Samples.Runtime
 
             ClearFeedback();
 
-            IReadOnlyList<DllAssetEntry> dlls = Nova.Config.AotMetadataDlls;
+            IReadOnlyList<DllAssetEntry> dlls = Nova.Config.HybridConfigs?.AotMetadataDlls
+                ?? (IReadOnlyList<DllAssetEntry>)System.Array.Empty<DllAssetEntry>();
 
             AppendFeedback(string.Format("AotMetadataDlls -> {0} entries", dlls.Count), FeedbackLevel.Info);
 

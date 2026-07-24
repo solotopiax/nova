@@ -28,7 +28,7 @@ namespace NovaFramework.Editor
             /// <param name="onProgress">进度回调，参数依次为完成数、总数和当前本地文件。</param>
             /// <returns>成功上传文件数。</returns>
             internal static async UniTask<int> DeployAsync(
-                CdnDeploymentConfig config,
+                CDNEditorConfigs config,
                 string projectRoot,
                 Action<int, int, string> onProgress)
             {
@@ -39,7 +39,7 @@ namespace NovaFramework.Editor
             /// 使用当前 ConfigWindow 平台解析目录占位符后，将本地目录顺序部署到 OSS。
             /// </summary>
             internal static async UniTask<int> DeployAsync(
-                CdnDeploymentConfig config,
+                CDNEditorConfigs config,
                 string projectRoot,
                 PlatformType platform,
                 Action<int, int, string> onProgress)
@@ -51,7 +51,7 @@ namespace NovaFramework.Editor
             /// 使用当前 ConfigWindow 平台与渠道解析目录占位符后，将本地目录顺序部署到 OSS。
             /// </summary>
             internal static async UniTask<int> DeployAsync(
-                CdnDeploymentConfig config,
+                CDNEditorConfigs config,
                 string projectRoot,
                 PlatformType platform,
                 ChannelType channel,

@@ -26,6 +26,11 @@ namespace NovaFramework.Editor
         private SerializedProperty m_CurManagerTypeName;
 
         /// <summary>
+        /// App 更新功能总开关。
+        /// </summary>
+        private SerializedProperty m_EnableAppUpdate;
+
+        /// <summary>
         /// Debug 主版本检查地址。
         /// </summary>
         private SerializedProperty m_AppDownloadCheckUrlDebug;

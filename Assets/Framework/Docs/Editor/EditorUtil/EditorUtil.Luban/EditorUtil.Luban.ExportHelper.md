@@ -75,7 +75,7 @@ BuildExportContext(sourceDirPath, settings, profile)
   ├── ConfigSyncer.GetConfigDirPath(sourceDirPath) → configDir
   ├── Path.Combine(configDir, c_LubanConfFileName)   → confPath
   ├── Path.Combine(configDir, c_TablesXmlFileName)   → tablesXmlPath
-  ├── RuntimeProvider.GetNamespace()                   → topModule（从 AssetDatabase 读取 ConfigRuntimeSO.Common.Namespace）
+  ├── RuntimeProvider.GetNamespace()                   → topModule（从 AssetDatabase 读取 ConfigRuntimeSO.Namespace）
   ├── profile.TargetName / ManagerName               → 固定 Luban 身份
   ├── GetLubanCustomTemplateDirs(profile.TemplateKey) → customTemplateDirs
   └── new LubanExportContext { … }

@@ -48,7 +48,7 @@ Nova 当前是“`Nova` 根组件 + 多个 `FrameworkComponent` 子模块 + 多�
 
 - 热更 DLL 加载发生在 `ProcedureLoadDll`。
 - `ProcedureHotfix` 现在是流程名，不是独立 `Hotfix` 模块。
-- 业务入口 Procedure 由 `ConfigRuntimeSO.GameEntranceProcedureName` 与 `ProcedureManager` 配合决定。
+- 业务入口 Procedure 由 `ConfigRuntimeSO.HybridConfigs.GameEntranceProcedureName` 与 `ProcedureManager` 配合决定。
 
 ### SDK 走插件列表装配
 

@@ -16,7 +16,7 @@ namespace NovaFramework.Runtime
 {
     /// <summary>
     /// 网络请求静态编排器，封装 Protobuf + AES-128-CBC 请求全流程。
-    /// 无需业务层调用 Initialize，配置在运行时从 Nova.Config.Common 与 Nova.SDK 自动读取。
+    /// 无需业务层调用 Initialize，配置在运行时从 Nova.Config.AppConfigs 与 Nova.SDK 自动读取。
     /// 全局调试开关由 SetDebugMode 控制；单次请求可通过 debugModeOverride 覆盖。
     /// </summary>
     public static class NetService
@@ -56,7 +56,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 发送 Protobuf 请求并返回泛型响应。
         /// 流程：URL 解析 → NetBuilder.SerializeBody → NetBuilder.Encrypt → HTTP POST → NetParser.Decrypt → BaseResponse 解析 → 业务 Proto 解析。
-        /// AesKey / AesIV 在运行时从 Nova.Config.Common.AppAesKey / AppAesIV 读取。
+        /// AesKey / AesIV 在运行时从 Nova.Config.AppConfigs.AppAesKey / AppAesIV 读取。
         /// 直接传入业务 Proto Body（调用方在 Body 内自行填充 Head 字段），无需再包装为 NetRequest 容器。
         /// 仅供 Network 子包使用，业务侧请通过 Login 等业务 Service 接入。
         /// </summary>
@@ -86,18 +86,18 @@ namespace NovaFramework.Runtime
                 return NetResponse<TResp>.Fail(NetErrorCode.URL_NOT_FOUND, Txt.Format("NetCmd not found: {0}", netCmdName));
             }
 
-            string aesKey = Nova.Config.Common.AppAesKey ?? string.Empty;
-            string aesIv = Nova.Config.Common.AppAesIV ?? string.Empty;
+            string aesKey = Nova.Config.AppConfigs.AppAesKey ?? string.Empty;
+            string aesIv = Nova.Config.AppConfigs.AppAesIV ?? string.Empty;
 
             int appId = 0;
-            if (!int.TryParse(Nova.Config.Common.AppID, out appId))
+            if (!int.TryParse(Nova.Config.AppConfigs.AppID, out appId))
             {
-                Log.Warning(LogTag.Network, "NetService.SendAsync：Nova.Config.Common.AppID 无法解析为 int32，已回退为 0。");
+                Log.Warning(LogTag.Network, "NetService.SendAsync：Nova.Config.AppConfigs.AppID 无法解析为 int32，已回退为 0。");
             }
 
             if (!effectiveDebug && (string.IsNullOrEmpty(aesKey) || string.IsNullOrEmpty(aesIv)))
             {
-                Log.Error(LogTag.Network, "NetService.SendAsync：AES Key/IV not configured, please check Nova.Config.Common. name={0}.", netCmdName);
+                Log.Error(LogTag.Network, "NetService.SendAsync：AES Key/IV not configured, please check Nova.Config.AppConfigs. name={0}.", netCmdName);
                 return NetResponse<TResp>.Fail(NetErrorCode.AES_ENCRYPT_FAILED, "AES Key/IV not configured");
             }
 

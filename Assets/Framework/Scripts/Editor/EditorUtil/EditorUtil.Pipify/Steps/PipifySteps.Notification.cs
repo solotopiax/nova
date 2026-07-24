@@ -38,7 +38,11 @@ namespace NovaFramework.Editor
         [PipifyStep("notification.feishu_webhook", "飞书机器人 Webhook", "通知", ParamsType = typeof(FeishuWebhookParams))]
         internal static UniTask RunFeishuWebhook(PipifyContext ctx, FeishuWebhookParams parameters)
         {
-            return SendFeishuWebhookAsync(ctx, parameters, s_FeishuHttpClient.SendAsync);
+            return SendFeishuWebhookAsync(
+                ctx,
+                parameters,
+                s_FeishuHttpClient.SendAsync,
+                EditorUtil.Placeholder.ResolveFromActiveConfig);
         }
 
         /// <summary>
@@ -53,9 +57,22 @@ namespace NovaFramework.Editor
             FeishuWebhookParams parameters,
             Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> sendAsync)
         {
+            await SendFeishuWebhookAsync(ctx, parameters, sendAsync, message => message);
+        }
+
+        /// <summary>
+        /// 校验参数、解析消息占位符并发送飞书文本请求。
+        /// </summary>
+        internal static async UniTask SendFeishuWebhookAsync(
+            PipifyContext ctx,
+            FeishuWebhookParams parameters,
+            Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> sendAsync,
+            Func<string, string> resolveMessage)
+        {
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             if (parameters == null) throw new ArgumentNullException(nameof(parameters));
             if (sendAsync == null) throw new ArgumentNullException(nameof(sendAsync));
+            if (resolveMessage == null) throw new ArgumentNullException(nameof(resolveMessage));
             if (!Uri.TryCreate(parameters.WebhookUrl, UriKind.Absolute, out Uri webhookUri) ||
                 (webhookUri.Scheme != Uri.UriSchemeHttps && webhookUri.Scheme != Uri.UriSchemeHttp))
             {
@@ -66,7 +83,8 @@ namespace NovaFramework.Editor
                 throw new ArgumentException("[Pipify] 飞书机器人文案不能为空。", nameof(parameters));
             }
 
-            string payload = BuildFeishuTextPayload(parameters.MessageText);
+            string resolvedMessage = resolveMessage(parameters.MessageText);
+            string payload = BuildFeishuTextPayload(resolvedMessage);
             using (var request = new HttpRequestMessage(HttpMethod.Post, webhookUri))
             {
                 request.Content = new StringContent(payload, Encoding.UTF8, "application/json");

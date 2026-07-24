@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.5.45] - 2026-07-24
+
+### Added
+
+- 新增全局占位符解析能力，统一支持 `{Platform}`、`{Channel}`、`{Package}`、`{Version}` 与 24 小时制 `{Time}`（`yyyy-MM-dd-HH-mm-ss`），并分别从 Editor ConfigMaster 与 Runtime ConfigRuntime 构造上下文。
+- App 更新检查与资源远端地址支持动态 URL 模板；App 更新新增独立总开关。
+- CDN 流水线新增缓存清理参数与步骤，并补齐 Pipify 飞书通知、CDN 路径的占位符帮助说明。
+
+### Changed
+
+- Config 编辑态与运行态契约重构：`ConfigMasterSO` 收敛到 Editor，运行态按 `AppConfigs`、`HybridConfigs`、`CustomConfigs` 分层导出，并新增旧配置结构迁移。
+- CDN、HybridCLR、YooAsset 编辑配置统一为顶层配置加维度覆盖结构，ConfigWindow、Inspector、导出与校验链路同步更新。
+
+### Breaking
+
+- `CommonConfig` / `IConfigManager.Common` 更名为 `AppConfigs`，HybridCLR 运行参数改由 `HybridConfigs` 提供；依赖旧配置接口的业务代码需要迁移。
+
 ## [0.5.44] - 2026-07-23
 
 ### Added

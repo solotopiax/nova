@@ -62,6 +62,6 @@ if (collector == null)
 
 ## §13 关联文档
 
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md)（字段来源：`YooAssetSettingsPath` / `BundleCollectorSettingPath`）
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)（字段来源：`YooAssetSettingsPath` / `BundleCollectorSettingPath`）
 - [EditorUtil.Config.WorkspaceActive.md](EditorUtil.Config.WorkspaceActive.md)（调用前获取 master 的入口）
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)（主要调用方：OnSceneOpenedRefresh 阶段调用 `Inject`）

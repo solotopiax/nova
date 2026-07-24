@@ -82,6 +82,12 @@ namespace NovaFramework.Runtime
                 return AppVersionResult.NoDownload;
             }
 
+            if (!m_Config.EnableAppUpdate)
+            {
+                Log.Debug(LogTag.App, "EnableAppUpdate=false，跳过 App 大版本检查。");
+                return AppVersionResult.NoDownload;
+            }
+
             if (!IsValidUrl(m_Config.AppDownloadCheckUrl) && !IsValidUrl(m_Config.AppDownloadCheckUrlFallback))
             {
                 Log.Warning(LogTag.App, "AppDownloadCheckUrl 与 AppDownloadCheckUrlFallback 均未配置，跳过大版本检查。");

@@ -118,6 +118,11 @@ namespace NovaFramework.Editor
         /// 字段值随 PipifySettingsSO 保存，公开发布副本由统一脱敏器替换为占位符。
         /// </summary>
         [Serializable]
+        [PipifyHelpBox(
+            "文案支持标准占位符，发送前按当前 ConfigMaster 配置替换：",
+            "{Platform}=当前平台；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名",
+            "{Version}=Application.version；{Time}=发送时间（yyyy-MM-dd-HH-mm-ss）",
+            "示例：构建完成 {Platform}-{Channel}-{Version} {Time}")]
         public sealed class FeishuWebhookParams
         {
             /// <summary>
@@ -136,24 +141,65 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// Step 参数：使用当前 Config 的 OSS 配置部署指定目录。
-        /// 两个路径仅覆盖本次执行快照，不回写 ConfigMasterSO。
+        /// Step 参数：使用当前 Config 的 OSS 配置承载版本检查文件位置，并部署指定热更资源目录。
+        /// 四个路径仅覆盖本次执行快照，不回写 ConfigMasterSO。
         /// </summary>
         [Serializable]
         public sealed class CdnDeployParams
         {
             /// <summary>
+            /// 大版本更新规则配置文件的项目根相对位置。
+            /// </summary>
+            [InspectorName("版本检查-本地文件位置")]
+            public string VersionCheckLocalFilePath;
+
+            /// <summary>
+            /// 大版本更新规则配置文件在当前 Config PresetOSSPath 后的远端位置。
+            /// </summary>
+            [InspectorName("版本检查-云端文件位置")]
+            [PipifyCdnRemotePath]
+            public string VersionCheckRemoteFilePath;
+
+            /// <summary>
             /// 待上传的项目根相对目录，支持 Platform、Channel、Package、Version 占位符。
             /// </summary>
-            [InspectorName("本地目录")]
+            [InspectorName("热更资源-本地目录位置")]
             public string LocalDirectory;
 
             /// <summary>
             /// 当前 Config 的 PresetOSSPath 后缀，支持 Platform、Channel、Package、Version 占位符。
             /// </summary>
-            [InspectorName("云端目录")]
+            [InspectorName("热更资源-云端目录位置")]
             [PipifyCdnRemotePath]
             public string RemoteDirectory;
+        }
+
+        /// <summary>
+        /// Step 参数：Cloudflare Zone、访问令牌与待清理缓存 URL。
+        /// 三个字段仅覆盖本次执行快照，不回写 ConfigMasterSO。
+        /// </summary>
+        [Serializable]
+        public sealed class CdnPurgeParams
+        {
+            /// <summary>
+            /// Cloudflare Zone ID。
+            /// </summary>
+            [InspectorName("Zone ID")]
+            public string ZoneID;
+
+            /// <summary>
+            /// Cloudflare API Token；窗口中遮罩显示，存档中仍为明文。
+            /// </summary>
+            [InspectorName("API Token")]
+            [PipifyPassword]
+            public string Token;
+
+            /// <summary>
+            /// 英文逗号、分号或换行分隔的待清理缓存 URL。
+            /// </summary>
+            [InspectorName("缓存路径")]
+            [TextArea(3, 8)]
+            public string CachePaths;
         }
 
     }

@@ -7,6 +7,7 @@
 | [Util.TypeCreator.md](Util.TypeCreator.md) | `Util.TypeCreator` | **DI 核心**：按类型名反射创建实例 |
 | [Util.Assembly.md](Util.Assembly.md) | `Util.Assembly` | 跨程序集按名查找 `Type` |
 | [Util.Json.md](Util.Json.md) | `Util.Json` | JSON 序列化/反序列化 |
+| [Util.Placeholder.md](Util.Placeholder.md) | `Util.Placeholder` | 显式上下文的标准文本占位符解析 |
 | [Util.Convert.md](Util.Convert.md) | `Util.Convert` | 基础类型安全转换 |
 | [Util.Encrypt.md](Util.Encrypt.md) | `Util.Encrypt` | AES / XOR 加解密 |
 | [Util.SysIO.md](Util.SysIO.md) | `Util.SysIO` | 文件/目录/路径（含 WebGL） |

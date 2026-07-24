@@ -80,7 +80,7 @@ namespace NovaFramework.Samples.Runtime
             if (m_RefreshButton != null)
             {
                 m_RefreshButton.onClick.AddListener(OnRefreshButtonClick);
-                SetButtonApiHint(m_RefreshButton, "Nova.Config.Common / .Namespace / GetSDKPluginConfig<T>()");
+                SetButtonApiHint(m_RefreshButton, "Nova.Config.AppConfigs / .Namespace / GetSDKPluginConfig<T>()");
             }
         }
 
@@ -135,16 +135,16 @@ namespace NovaFramework.Samples.Runtime
                 m_NamespaceText.text = "Namespace: " + ns;
             }
 
-            CommonConfig common = Nova.Config.Common;
+            AppConfigs appConfigs = Nova.Config.AppConfigs;
             if (m_CommonText != null)
             {
-                if (common != null)
+                if (appConfigs != null)
                 {
-                    m_CommonText.text = "AppID: " + common.AppID + "\nAppAesKey: " + (string.IsNullOrEmpty(common.AppAesKey) ? "(空)" : "******");
+                    m_CommonText.text = "AppID: " + appConfigs.AppID + "\nAppAesKey: " + (string.IsNullOrEmpty(appConfigs.AppAesKey) ? "(空)" : "******");
                 }
                 else
                 {
-                    m_CommonText.text = "Common: (null)";
+                    m_CommonText.text = "AppConfigs: (null)";
                 }
             }
 

@@ -85,28 +85,11 @@ namespace NovaFramework.Runtime
         {
             m_HostServerUrl = hostServerUrl;
             m_HostServerUrlFallback = hostServerUrlFallback;
-            m_Platform = ResolvePlatform();
+            m_Platform = Util.UrlTemplate.ResolveRuntimePlatform();
             m_Channel = channel;
             m_Package = package;
             m_Version = Application.version;
             m_Cache = BuildRemoteUrlCache();
-        }
-
-        /// <summary>
-        /// 通过编译宏判定当前平台，避免在启动热更前依赖 ConfigRuntimeSO。
-        /// </summary>
-        /// <returns>当前平台枚举值。</returns>
-        private static PlatformType ResolvePlatform()
-        {
-#if UNITY_ANDROID
-            return PlatformType.Android;
-#elif UNITY_IOS
-            return PlatformType.iOS;
-#elif UNITY_WEBGL
-            return PlatformType.WebGL;
-#else
-            return PlatformType.None;
-#endif
         }
 
         /// <summary>
@@ -132,11 +115,12 @@ namespace NovaFramework.Runtime
         /// <returns>替换后的 URL 前缀。</returns>
         private string ApplyTemplate(string template)
         {
-            return template
-                .Replace("{Platform}", m_Platform.ToString())
-                .Replace("{Channel}", m_Channel.ToString())
-                .Replace("{Package}", m_Package)
-                .Replace("{Version}", m_Version);
+            return Util.UrlTemplate.Resolve(
+                template,
+                m_Platform,
+                m_Channel,
+                m_Package,
+                m_Version);
         }
 
         /// <summary>

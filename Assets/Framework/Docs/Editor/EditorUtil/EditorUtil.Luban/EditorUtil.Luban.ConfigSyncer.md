@@ -96,7 +96,7 @@ public static void CleanTempDir(string tempDirPath)
 
 ```
 SyncFromInspector
-  ├── RuntimeProvider.GetNamespace() 取 topModule（从 AssetDatabase 读取 ConfigRuntimeSO.Common.Namespace）
+  ├── RuntimeProvider.GetNamespace() 取 topModule（从 AssetDatabase 读取 ConfigRuntimeSO.Namespace）
   ├── _configs/ 不存在 → InitializeConfigDir
   ├── UpdateLubanConfTopModule（更新 luban.conf）
   ├── LubanSchemaManifestBuilder.Build

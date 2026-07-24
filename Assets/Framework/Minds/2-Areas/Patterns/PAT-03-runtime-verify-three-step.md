@@ -4,13 +4,15 @@ title: 运行时验证三步法
 type: pattern
 status: active
 date: 2026-05-14
-summary: 运行时验证三步编译Inspector PlayMode
+summary: 高风险运行时变更三步验证，强度与风险相称
 category: review
 aliases:
   - PAT-03
 keywords:
   - PAT-03
   - 运行时验证三步法
+  - 验证强度
+  - 立即收口
 tags:
   - pattern
   - methodology
@@ -20,6 +22,7 @@ tags:
 related:
   - "[[PAT-01-defect-severity|PAT-01]]"
   - "[[PAT-02-static-review-four-dim|PAT-02]]"
+  - "[[PAT-04-read-what-you-change|PAT-04]]"
 ---
 
 # PAT-03：运行时验证三步法
@@ -30,6 +33,13 @@ related:
 - 项目有 IDE 编辑器（Unity/UE/Godot/Web Inspector）承载序列化字段，需要验证 Inspector 行为
 - 团队希望把运行时验证从"开发者凭记忆点几下"升级到"标准三步可复审"
 - 需要让 QA 角色聚焦运行时，不再重复静态审查的工作
+
+### 适用边界
+
+- 三步法是高风险运行时变更的顺序闸门，不是所有 Editor 微调的强制流程。
+- 已明确定位的 L0 纯视觉调整、坐标或间距修复，只需与风险相称的最小静态检查或视觉确认；不要自动升级为完整 TDD、全量测试或 Play Mode 验证。
+- 用户已经确认问题解决，或明确发出“已经改好”“停止测试”等收口信号时，应立即停止后续工具调用并交付当前结果。
+- Skill、测试规范和标准流程用于降低风险，不能覆盖用户当下的明确目标或停止信号。
 
 ## 核心做法（What & How）
 
@@ -94,6 +104,8 @@ related:
 - **Inspector 步骤被默认跳过**：覆盖序列化变更也没核对，下个 patch 字段映射错乱
 - **PASS 报告无证据**：只写"通过"不附 UnityMCP / 日志截图，下次复审无法对账
 - **REJECT 不复现**：只说"不行"不给复现路径，coder 摸不着头脑
+- **低风险微调过度验证**：根因和修复都已明确，仍机械执行编译、全量测试、Play Mode 或截图链路
+- **忽略用户收口信号**：用户已确认解决或要求停止，仍以流程完整为由继续调用工具
 
 ## 跨项目复用提示
 
@@ -109,5 +121,5 @@ related:
 
 ## 关联
 
-- 配套：[[PAT-01-defect-severity|PAT-01]] 严重度（编译错=P0） / [[PAT-02-static-review-four-dim|PAT-02]] 静态审查
+- 配套：[[PAT-01-defect-severity|PAT-01]] 严重度（编译错=P0） / [[PAT-02-static-review-four-dim|PAT-02]] 静态审查 / [[PAT-04-read-what-you-change|PAT-04]] 分层上下文与验证策略
 - 落地要求：验证动作应能被复现与复核，不依赖特定协作工具角色

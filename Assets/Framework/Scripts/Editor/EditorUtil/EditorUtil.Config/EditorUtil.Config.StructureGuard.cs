@@ -70,18 +70,18 @@ namespace NovaFramework.Editor
                         master.EditorAddEntry(new PlatformChannelEntry { Platform = key.Item1, Channel = key.Item2 });
                     }
 
-                    // 若 CommonMask 全局唯一（IsGlobal=true），将第一个有效格的 CommonConfig 广播到所有新增格，
+                    // 若 AppConfigsMask 全局唯一（IsGlobal=true），将第一个有效格的 AppConfigs 广播到所有新增格，
                     // 确保新格不以零值破坏 IsGlobal 一致性语义。
-                    if (master.CommonMask.IsGlobal)
+                    if (master.AppConfigsMask.IsGlobal)
                     {
-                        CommonConfig seedDebug = null;
-                        CommonConfig seedRelease = null;
+                        AppConfigs seedDebug = null;
+                        AppConfigs seedRelease = null;
                         var allEntries = master.EditorEntries;
                         for (int i = 0; i < allEntries.Count; i++)
                         {
                             if (allEntries[i].Platform == PlatformType.None || allEntries[i].Channel == ChannelType.None) continue;
-                            CommonConfig cd = allEntries[i].GetCommon(DevelopMode.Debug);
-                            CommonConfig cr = allEntries[i].GetCommon(DevelopMode.Release);
+                            AppConfigs cd = allEntries[i].GetAppConfigs(DevelopMode.Debug);
+                            AppConfigs cr = allEntries[i].GetAppConfigs(DevelopMode.Release);
                             // 取第一个非空字段格作为种子（AppID 非空说明该格已编辑过）
                             if (!string.IsNullOrEmpty(cd?.AppID) || !string.IsNullOrEmpty(cd?.AppAesKey))
                             {
@@ -96,14 +96,14 @@ namespace NovaFramework.Editor
                             {
                                 if (allEntries[i].Platform == PlatformType.None || allEntries[i].Channel == ChannelType.None) continue;
                                 if (present.Contains((allEntries[i].Platform, allEntries[i].Channel))) continue; // 跳过原有格，只处理新增格
-                                CommonConfig dst = allEntries[i].GetCommon(DevelopMode.Debug);
+                                AppConfigs dst = allEntries[i].GetAppConfigs(DevelopMode.Debug);
                                 if (dst != null && string.IsNullOrEmpty(dst.AppID))
                                 {
                                     dst.AppID = seedDebug.AppID;
                                     dst.AppAesKey = seedDebug.AppAesKey;
                                     dst.AppAesIV = seedDebug.AppAesIV;
                                 }
-                                CommonConfig dstR = allEntries[i].GetCommon(DevelopMode.Release);
+                                AppConfigs dstR = allEntries[i].GetAppConfigs(DevelopMode.Release);
                                 if (dstR != null && seedRelease != null && string.IsNullOrEmpty(dstR.AppID))
                                 {
                                     dstR.AppID = seedRelease.AppID;

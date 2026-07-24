@@ -24,6 +24,7 @@ auto_generated: true
 - [ADR-062 Proto 引用公共 header 统一用 NovaFramework.Runtime](../2-Areas/ADR/ADR-062-proto-header-namespace-convention.md) — Proto 公共 header 引用统一去 Kit 段
 - [ADR-067 登录/绑定/云存档三端职责分离](../2-Areas/ADR/ADR-067-login-bind-save-separation.md) — login 鉴权 / bind 独立包裁决归属 / 覆盖交 save 编排
 - [ADR-072 Mobile IAP 平台透传参数编码 uid+tableId+receiptParam（8/8/16 布局）](../2-Areas/ADR/ADR-072-iap-mobile-passthrough-param-layout.md) — IAP透传参数采用8/8/16布局
+- [ADR-074 跨 Editor Runtime 导出链的占位符解析统一采用显式上下文](../2-Areas/ADR/ADR-074-placeholder-resolution-explicit-context.md) — 占位符统一算法与多环境显式上下文
 
 ## asset
 
@@ -101,4 +102,4 @@ auto_generated: true
 
 
 ---
-_共 59 条，分布于 10 个 category。_
+_共 60 条，分布于 10 个 category。_

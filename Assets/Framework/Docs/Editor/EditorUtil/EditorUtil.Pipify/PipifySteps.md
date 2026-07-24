@@ -151,6 +151,11 @@
 - `WebhookUrl`：窗口标签为 `Webhook URL`，使用密码框遮罩，但仍以明文保存在 PipifySettingsSO
 - `MessageText`：窗口标签为“文案”，使用 3–8 行自适应 TextArea，可直接输入并保留换行排版
 
+文案支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` / `{Time}`。发送前从当前激活的
+`ConfigMasterSO` 读取 Platform 与 Channel，从 canonical `Nova.prefab` 读取 YooAsset 默认资源包名，
+Version 使用 `Application.version`，Time 使用实际发送时刻并格式化为 `yyyy-MM-dd-HH-mm-ss`。
+参数区 HelpBox 会直接展示这些规则；未知占位符保持原样。
+
 Step 发送飞书标准 `msg_type=text` 请求。参数为空、URL 无效、HTTP 失败、响应缺少业务码或业务码非 0 时均抛错中断；日志不会输出完整 Webhook URL。
 
 ### 9. CDN 资源部署
@@ -158,7 +163,7 @@ Step 发送飞书标准 `msg_type=text` 请求。参数为空、URL 无效、HTT
 目标：
 
 - 使用当前激活 `ConfigMasterSO` 已配置的 OSS Endpoint、密钥与固定路径前缀
-- 在 Pipify Batch 中单独指定本地目录和云端目录后缀
+- 在 Pipify Batch 中单独指定版本检查文件位置与热更资源目录位置
 
 Step：
 
@@ -166,13 +171,37 @@ Step：
 
 参数：
 
-- `LocalDirectory`：窗口标签为“本地目录”
-- `RemoteDirectory`：窗口标签为“云端目录”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示，参数只保存后半段可编辑后缀
+- `VersionCheckLocalFilePath`：窗口标签为“版本检查-本地文件位置”
+- `VersionCheckRemoteFilePath`：窗口标签为“版本检查-云端文件位置”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示
+- `LocalDirectory`：窗口标签为“热更资源-本地目录位置”
+- `RemoteDirectory`：窗口标签为“热更资源-云端目录位置”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示
 
-两个路径都支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`。执行时按当前
-`Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅在快照中覆盖这两个路径，不回写
+四个路径都支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`。执行时按当前
+`Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅在快照中覆盖这四个路径，不回写
 `ConfigMasterSO`。随后直接调用 `EditorUtil.CDN.DeployAsync`；配置、目录或上传失败时抛错并中断 Batch。
+版本检查本地与云端文件位置都非空时，该单文件会与热更资源目录合并进入同一上传计划。
 参数区不提供独立部署按钮，部署只由 Pipify Runner 执行该 Step 时触发。
+
+### 10. CDN 缓存清理
+
+目标：
+
+- 在 Pipify Batch 中按 Cloudflare Zone 批量清除指定 CDN 缓存 URL
+- 参数只覆盖本次执行快照，不回写当前 `ConfigMasterSO`
+
+Step：
+
+- `cdn.purge`：显示名“批量清除 CDN 缓存”，分类“CDN”
+
+参数：
+
+- `ZoneID`：窗口标签为“Zone ID”
+- `Token`：窗口标签为“API Token”，使用密码框遮罩，但仍以明文保存在 `PipifySettingsSO`
+- `CachePaths`：窗口标签为“缓存路径”，使用 3–8 行自适应 TextArea；支持英文逗号、英文分号或换行分隔
+
+执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅覆盖上述三个 Cloudflare 字段，
+随后调用 `EditorUtil.CDN.PurgeAsync`。URL 会去重并按每批最多 100 条顺序提交；参数非法、请求失败或
+Cloudflare 返回业务失败时抛错并中断 Batch。
 
 ## 常见组合方式
 

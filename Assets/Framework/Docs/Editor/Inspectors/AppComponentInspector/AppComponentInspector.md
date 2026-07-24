@@ -3,7 +3,7 @@
 **类签名**：`internal sealed partial class AppComponentInspector : BaseComponentInspector`
 **命名空间**：`NovaFramework.Editor`
 
-App 组件编辑器面板定制，绘制 Manager 选择器与三组 Foldout 配置（版本检查 / 更新规则 / 更新下载）。
+App 组件编辑器面板定制，绘制 Manager 选择器、App 更新总开关与三组 Foldout 配置（版本检查 / 更新规则 / 更新下载）。
 所有字段上方会先显示一条只读 `DevelopMode` 场景快照标签，由 `BaseComponentInspector` 统一绘制。
 
 ---
@@ -33,6 +33,7 @@ UnityEditor.Editor
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `m_CurManagerTypeName` | `SerializedProperty` | IAppManager 实现类全名 |
+| `m_EnableAppUpdate` | `SerializedProperty` | App 更新功能总开关，默认开启 |
 | `m_AppDownloadCheckUrlDebug` | `SerializedProperty` | Debug 主版本检查地址 |
 | `m_AppDownloadCheckUrlFallbackDebug` | `SerializedProperty` | Debug 备用版本检查地址 |
 | `m_AppDownloadCheckUrlRelease` | `SerializedProperty` | Release 主版本检查地址 |
@@ -69,25 +70,28 @@ public override void OnInspectorGUI()
 ```
 [顶层] App 管理器（TypesSelector，GUILayout.Width(180f)）
        HelpBox：自定义 IAppManager 说明
+       启用 App 更新（总开关）
+       HelpBox：关闭后跳过 App 大版本检查；Asset 热更新不受影响
 ───────────────────────────────────────────────────────────
-Foldout "版本检查"（SessionState key: AppVersionCheckGroup）
-  ├── 模板文件位置（DrawTemplatePathHintReadOnlyOpenFolderOnly，缩进 16f）
+[DisabledScope: 总开关关闭时以下三组整体灰显]
+  Foldout "版本检查"（SessionState key: AppVersionCheckGroup）
+  ├── 版本检查-模板文件位置（DrawTemplatePathHintReadOnlyOpenFolderOnly，缩进 16f）
   ├── 版本检查URL-Debug（Property，缩进 16f）
   ├── 版本检查URL-Debug（备用）
   ├── 版本检查URL-Release
   ├── 版本检查URL-Release（备用）
-  └── HelpBox：按模板生成 JSON 并上传 CDN；DevelopMode 决定用哪一组；主备都不可用时返回 NoDownload
+  └── HelpBox：按模板生成 JSON 并上传 CDN；DevelopMode 决定用哪一组；支持四项 URL 占位符；主备都不可用时返回 NoDownload
 
   ├── 版本检查超时（秒）（Property，缩进 16f）
   └── HelpBox：弱网说明 + 推荐值 5
 
 ───────────────────────────────────────────────────────────
-Foldout "更新规则"（SessionState key: AppUpdateRuleGroup）
+  Foldout "更新规则"（SessionState key: AppUpdateRuleGroup）
   ├── 启用推荐更新规则（Toggle，缩进 16f，各带 HelpBox）
   └── 启用强制更新规则（Toggle，缩进 16f，各带 HelpBox）
 
 ───────────────────────────────────────────────────────────
-Foldout "更新下载"（SessionState key: AppDownloadGroup）
+  Foldout "更新下载"（SessionState key: AppDownloadGroup）
   ├── 更新下载方式（Property EnumPopup）
   ├── [DisabledScope: Apk 时灰] Android/iOS 商店地址
   │   └── 仅当前平台对应的商店地址需要配置
@@ -107,10 +111,12 @@ App 模块的大版本检查依赖 CDN 上的一份 JSON 配置，整个链路�
     模板文件名 = AppDownloadRulesTemplate.json
     业务侧按模板生成版本检查 JSON（含推荐版本号 / 强制版本号 / 下载地址等字段）
 
-[2] 上传：将生成的 JSON 上传到 CDN，分别得到 Debug / Release 两组可访问 URL
+[2] 上传：将生成的 JSON 上传到 CDN，分别得到 Debug / Release 两组可访问 URL；可通过「Config全局配置中心 - CDN 内容分发网络部署」或「Pipify 自动化管线编排中心 - 添加步骤」自动上传
     填入 m_AppDownloadCheckUrl{Debug,Release}（主）与 m_AppDownloadCheckUrlFallback{Debug,Release}（备）
 
 [3] 启动：运行时按当前 DevelopMode 选择对应组的主地址发起检查
+    主备 URL 均支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`
+    四项语义与 Asset 主机服务器 URL 一致：运行平台 / Config 导出渠道 / 默认资源包名 / Application.version
     主地址失败或返回空内容时自动切到备用地址
     主备均不可用时本次大版本检查直接返回 NoDownload
 

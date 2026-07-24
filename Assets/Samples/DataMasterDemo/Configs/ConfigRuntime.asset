@@ -14,37 +14,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
   DevelopMode: 0
   Namespace: NovaFramework.Sdk.Datamaster.Samples.Runtime
-  Common:
+  AppConfigs:
     AppID: YOUR_APP_ID
     AppAesKey: YOUR_APP_AES_KEY
     AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 8085688857292702168
-  - rid: 8085688857292702169
+  - rid: 8085689214958567730
+  - rid: 8085689214958567731
   EnabledKitConfigs:
-  - rid: 8085688857292702170
-  GameEntranceProcedureName: ProcedurePreload
-  AotMetadataDlls:
-  - m_AssetLocation: mscorlib.dll
-  - m_AssetLocation: System.dll
-  - m_AssetLocation: System.Core.dll
-  - m_AssetLocation: UniTask.dll
-  - m_AssetLocation: Newtonsoft.Json.dll
-  - m_AssetLocation: UnityEngine.CoreModule.dll
-  - m_AssetLocation: Unity.TextMeshPro.dll
-  - m_AssetLocation: NovaFramework.Runtime.dll
-  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-  - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.dll
-  GameDlls:
-  - m_AssetLocation: NovaFramework.Sdk.Datamaster.Samples.Runtime.dll
+  - rid: 8085689214958567732
+  HybridConfigs:
+    GameEntranceProcedureName: ProcedurePreload
+    AotMetadataDlls:
+    - m_AssetLocation: mscorlib.dll
+    - m_AssetLocation: System.dll
+    - m_AssetLocation: System.Core.dll
+    - m_AssetLocation: UniTask.dll
+    - m_AssetLocation: Newtonsoft.Json.dll
+    - m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_AssetLocation: Unity.TextMeshPro.dll
+    - m_AssetLocation: NovaFramework.Runtime.dll
+    - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+    - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.dll
+    GameDlls:
+    - m_AssetLocation: NovaFramework.Sdk.Datamaster.Samples.Runtime.dll
   references:
     version: 2
     RefIds:
-    - rid: 8085688857292702168
+    - rid: 8085689214958567730
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -53,13 +54,13 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 8085688857292702169
+    - rid: 8085689214958567731
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
         m_AppId: app_lg38on
         m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
-    - rid: 8085688857292702170
+    - rid: 8085689214958567732
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin

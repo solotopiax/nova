@@ -25,6 +25,13 @@ namespace NovaFramework.Runtime
         public string CurManagerTypeName => m_CurManagerTypeName;
 
         /// <summary>
+        /// App 更新功能总开关；关闭时跳过大版本检查，继续后续资源热更或启动流程。
+        /// </summary>
+        [SerializeField]
+        private bool m_EnableAppUpdate = true;
+        public bool EnableAppUpdate => m_EnableAppUpdate;
+
+        /// <summary>
         /// Debug 开发模式下的主版本检查地址。
         /// </summary>
         [SerializeField]
@@ -49,6 +56,18 @@ namespace NovaFramework.Runtime
         /// </summary>
         [SerializeField]
         private string m_AppDownloadCheckUrlFallbackRelease;
+
+        /// <summary>
+        /// Config 导出时同步的渠道快照，供启动期解析版本检查 URL。
+        /// </summary>
+        [SerializeField, HideInInspector]
+        private ChannelType m_Channel;
+
+        /// <summary>
+        /// Config 导出时从 AssetComponent 同步的默认资源包名快照，供启动期解析版本检查 URL。
+        /// </summary>
+        [SerializeField, HideInInspector]
+        private string m_DefaultPackageName = "Default";
 
         /// <summary>
         /// 版本检查超时秒数，默认 5。

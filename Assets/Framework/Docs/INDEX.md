@@ -27,9 +27,9 @@
 | **大版本检查 / APP 强更** | [AppComponent.md · CheckAsync+DownloadAsync+OpenStoreAsync](Runtime/Modules/App/AppComponent.md) → [AppManagerConfig.md · 超时+下载路由+规则](Runtime/Modules/App/Definitions/AppManagerConfig.md) |
 | **加载运行时配置（AB 加载 ConfigRuntimeSO）** | [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) → [ConfigManager.md · AB加载+解析+PluginConfig索引](Runtime/Modules/Config/ConfigManager.md) |
 | **加载 Excel/CSV 表格数据（Luban 方案）** | [TableManager.md · GetTable/HasTable 统一查询](Runtime/Modules/Table/TableManager.md) → [TableComponentInspector.md · Luban 导出流程](Editor/Inspectors/TableComponentInspector/TableComponentInspector.md) → [EditorUtil.Luban.Pipeline.md · 导出流水线](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md) → [EditorUtil.Luban.SchemaManifest.md · 导出前结构快照](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.SchemaManifest.md) |
-| **编辑 Config SO / 导出 ConfigRuntime**（ConfigWindow 流程） | [ConfigWindow.md · 三段式布局+三维导出](Editor/Windows/ConfigWindow.md) → [ConfigMasterSO.md · 设计态数据+DevelopMode](Runtime/Modules/Config/ConfigMasterSO.md) → [ConfigRuntimeSO.md · 运行态导出物](Runtime/Modules/Config/ConfigRuntimeSO.md) → [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) → [EditorUtil.Config.WorkspaceActive.md · 激活 Master 锚点](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) → [EditorUtil.Config.YooAssetInjector.md · YooAsset 注入](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
-| **Config 面板按平台/渠道/模式分别配置**（per-panel 可勾选维度） | [PanelDimensionMask.md · 掩码三轴+IsGlobal](Runtime/Modules/Config/Definitions/PanelDimensionMask.md) → [EditorUtil.Config.DimensionProjector.md · 三操作+双路径](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) → [EditorUtil.Config.DimensionalResolver.md · 只读取数+回落逻辑](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) |
-| **新增 SDK PluginConfig**（ISDKPluginConfig + 自动注入） | [PluginBase.md · PluginBase<TConfig>泛型基类+自动注入](Runtime/Modules/SDK/Definitions/PluginBase.md) → [ISDKPluginConfig.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) → [EditorUtil.Config.SDKPluginScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) → [PlatformChannelEntry.md · 矩阵行结构（按DevelopMode分组）](Runtime/Modules/Config/PlatformChannelEntry.md) |
+| **编辑 Config SO / 导出 ConfigRuntime**（ConfigWindow 流程） | [ConfigWindow.md · 三段式布局+三维导出](Editor/Windows/ConfigWindow.md) → [ConfigMasterSO.md · Editor 设计态数据](Editor/Config/ConfigMasterSO.md) → [SchemaMigration.md · 旧资产迁移](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md) → [ConfigRuntimeSO.md · Runtime 快照](Runtime/Modules/Config/ConfigRuntimeSO.md) → [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) → [EditorUtil.Config.WorkspaceActive.md · 激活 Master 锚点](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) → [EditorUtil.Config.YooAssetInjector.md · YooAsset 注入](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
+| **Config 面板按平台/渠道/模式分别配置**（per-panel 可勾选维度） | [PanelDimensionMask.md · Editor 掩码三轴+IsGlobal](Editor/Config/Definitions/PanelDimensionMask.md) → [EditorUtil.Config.DimensionProjector.md · 三操作+双路径](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) → [EditorUtil.Config.DimensionalResolver.md · 只读取数+回落逻辑](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) |
+| **新增 SDK PluginConfig**（ISDKPluginConfig + 自动注入） | [PluginBase.md · PluginBase<TConfig>泛型基类+自动注入](Runtime/Modules/SDK/Definitions/PluginBase.md) → [ISDKPluginConfig.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) → [EditorUtil.Config.SDKPluginScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) → [PlatformChannelEntry.md · Editor 矩阵行结构](Editor/Config/Definitions/PlatformChannelEntry.md) |
 | **新增 Kit 配置（IKitConfig + ConfigWindow 配置）** | [IKitConfig.md · marker 接口](Runtime/Modules/Config/Definitions/IKitConfig.md) → [KitConfigMissingException.md · 缺失异常](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) → [EditorUtil.Config.KitConfigScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.md) → [ConfigWindow.md · Kit 配置一级组](Editor/Windows/ConfigWindow.md) |
 | **构建 AssetBundle (CI/编辑器菜单)** | [EditorUtil.BundleBuilder.md · YooAsset SBP 构建封装](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) → [PipifySteps.md · `assetbundle.build` Step](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) |
 | **管理私有 UPM 包（安装/升级/卸载/搜索/UPM 联动）** | [PlugPalsWindow.md · Verdaccio 包管理窗口](Editor/Windows/PlugPalsWindow.md) → [EditorUtil.PlugPals.md · 工具层能力](Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md) |
@@ -38,7 +38,7 @@
 | **持久化存储（读写数据）** | [PersistComponent.md · 直接访问属性](Runtime/Modules/Persist/PersistComponent.md) → [PlayerPrefsManager.md](Runtime/Modules/Persist/PlayerPrefsManager.md) / [FileFragmentManager.md](Runtime/Modules/Persist/FileFragmentManager.md) / [SQLiteManager.md](Runtime/Modules/Persist/SQLiteManager.md) |
 | 理解 UIGroup 深度 / 遮挡排序 | [UIGroupHelper.md](Runtime/Modules/UI/UIGroupHelper/UIGroupHelper.md) → [UIManager.md · UIGroup.Refresh 算法](Runtime/Modules/UI/UIManager/UIManager.md) |
 | **新增游戏流程**（Procedure） | [ProcedureBase.md · 继承模板+GetNextProcedureType](Runtime/Modules/Procedure/ProcedureBase.md) → [ProcedureComponent.md · 自动发现+初始化时序](Runtime/Modules/Procedure/ProcedureComponent.md) → [ProcedureManager.md · FSM 驱动](Runtime/Modules/Procedure/ProcedureManager.md)（具体 Procedure 实现由 Game 层提供，Bootstrap 分发） |
-| **HybridCLR 业务 DLL 加载**（DLL 加载流程） | [ProcedureLoadDll.md · AOT metadata + DLL 加载 + 延迟注册](Runtime/Modules/Procedure/Procedures/ProcedureLoadDll.md) → [ConfigRuntimeSO.md · 运行期配置来源](Runtime/Modules/Config/ConfigRuntimeSO.md) → [DllAssetEntry.md · 运行期单字段条目](Runtime/Modules/Config/Definitions/DllAssetEntry.md) → [DllMasterAssetEntry.md · 编辑期三字段条目](Runtime/Modules/Config/Definitions/DllMasterAssetEntry.md) → [Util.Assembly.md · GetAssembly/RefreshAssemblies](Runtime/Utils/Util.Assembly.md) → [Util.HybridCLR.md · LoadAotMetadataAsync/LoadGameAssemblyAsync](Runtime/Utils/Util.HybridCLR.md) |
+| **HybridCLR 业务 DLL 加载**（DLL 加载流程） | [ProcedureLoadDll.md · AOT metadata + DLL 加载 + 延迟注册](Runtime/Modules/Procedure/Procedures/ProcedureLoadDll.md) → [HybridConfigs.md · Runtime 加载配置](Runtime/Modules/Config/Definitions/HybridConfigs.md) → [DllAssetEntry.md · Runtime 单字段条目](Runtime/Modules/Config/Definitions/DllAssetEntry.md) → [HybridEditorConfigs.md · Editor 构建配置](Editor/Config/Definitions/HybridEditorConfigs.md) → [DllMasterAssetEntry.md · Editor 三字段条目](Editor/Config/Definitions/DllMasterAssetEntry.md) → [Util.HybridCLR.md · LoadAotMetadataAsync/LoadGameAssemblyAsync](Runtime/Utils/Util.HybridCLR.md) |
 | **HybridCLR 编辑期原子操作**（由 Pipify 编排流水线） | [EditorUtil.HybridCLR.md · link.xml/Generate/DLL 拷贝 API](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) |
 | **一键流水线 Step / 批处理配置**（Pipify 自动化） | [EditorUtil.Pipify.md · Registry+Runner+Reporters](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) → [PipifySteps.md · 全 Step 清单](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) → [PipifySteps.Export.Helpers.md · 定位辅助](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.Export.Helpers.md) |
 | **Pipify 导出新模块 Step（Table/UI/Localization/Network/Sound/Vibrate）** | [PipifySteps.md · 导出分组表](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) → 对应 EditorUtil.\*.Exporter.md |
@@ -50,7 +50,7 @@
 | **理解 FSM 工具** | [FsmState.md · 状态基类](Runtime/Core/Fsm/FsmState.md) → [Fsm.md · FSM 实现+接口](Runtime/Core/Fsm/Fsm.md) |
 | **HTTP 请求（AES 加密 / UniTask 异步）** | [NetworkComponent.md · GetAsync/PostAsync](Runtime/Modules/Network/NetworkComponent.md) → [HttpManager.md · Transport SPI + DoH 候选链](Runtime/Modules/Network/HttpManager/HttpManager.md) → [IDownloadService.md · 下载接口](Runtime/Modules/Network/HttpManager/IDownloadService.md) → [HttpResponse.md · 响应与进度数据](Runtime/Modules/Network/HttpManager/Definitions/HttpResponse.md) |
 | **Alibaba Cloud OSS Runtime 上传/下载** | [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
-| **编辑器 CDN 部署与缓存清理** | [ConfigWindow.md · CDN 内容分发网络部署](Editor/Windows/ConfigWindow.md) → [EditorUtil.CDN.md · OSS 上传+Cloudflare 清理传输引擎](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) → [ConfigMasterSO.md · Editor-only 配置](Runtime/Modules/Config/ConfigMasterSO.md) → [CdnDeploymentConfig.md · 10 字段定义](Runtime/Modules/Config/Definitions/CdnDeploymentConfig.md) → [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
+| **编辑器 CDN 部署与缓存清理** | [ConfigWindow.md · CDN 内容分发网络部署](Editor/Windows/ConfigWindow.md) → [EditorUtil.CDN.md · OSS 上传+Cloudflare 清理传输引擎](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) → [ConfigMasterSO.md · Editor-only 配置](Editor/Config/ConfigMasterSO.md) → [CDNEditorConfigs.md · 12 字段定义](Editor/Config/Definitions/CDNEditorConfigs.md) → [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
 | **WebSocket 长连接（认证/心跳/重连）** | [NetworkComponent.md · ConnectServer/SendMessage](Runtime/Modules/Network/NetworkComponent.md) → [WebSocketManager.md · 状态机+协程链](Runtime/Modules/Network/WebSocketManager/WebSocketManager.md) |
 | **NetCmd URL 路由配置（Host+Path）** | [NetworkManager.md · Luban 加载+URL 路由算法](Runtime/Modules/Network/NetworkManager/NetworkManager.md) → [NetworkSettings.md · HostKeySettings/NetCmdSettings](Runtime/Modules/Network/Definitions/NetworkSettings.md) |
 | **DNS-over-HTTPS IP 收集** | [DoHManager.md · CollectAllIPAddresses 算法](Runtime/Modules/Network/DoHManager/DoHManager.md) |
@@ -128,6 +128,7 @@
 | [Util.TypeCreator.md](Runtime/Utils/Util.TypeCreator.md) | **DI 核心**：按类型名反射创建实例 |
 | [Util.Assembly.md](Runtime/Utils/Util.Assembly.md) | 纯反射工具：跨程序集查找 Type / GetAssembly（按名查单个程序集）/ GetAssemblies（全量）/ 子类名称收集；无 IO 操作 |
 | [Util.Json.md](Runtime/Utils/Util.Json.md) | JSON 序列化 |
+| [Util.Placeholder.md](Runtime/Utils/Util.Placeholder.md) | Editor/Runtime/导出链共用的显式上下文占位符解析器 |
 | [Util.Convert.md](Runtime/Utils/Util.Convert.md) | 基础类型转换 |
 | [Util.Encrypt.md](Runtime/Utils/Util.Encrypt.md) | AES / XOR 加解密 |
 | [Util.SysIO.md](Runtime/Utils/Util.SysIO.md) | 文件/路径操作 |
@@ -198,26 +199,29 @@
 
 | 文档 | 说明 |
 |------|------|
-| [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) | 配置 Component（AB 异步加载入口，暴露 IsLoadOver / Common / Namespace / PluginConfig 查询） |
-| [ConfigManager.md](Runtime/Modules/Config/ConfigManager.md) | 配置 Manager（AB 加载 ConfigRuntimeSO + 解析单值 CommonConfig + PluginConfig 索引；Namespace 是全框架命名空间唯一权威） |
+| [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) | Runtime 配置门面（Platform / Channel / DevelopMode / AppConfigs / Namespace / HybridConfigs / CustomConfigs） |
+| [ConfigManager.md](Runtime/Modules/Config/ConfigManager.md) | 加载 ConfigRuntimeSO 并直接转发 Runtime 分组配置 |
 | [ConfigManagerConfig.md](Runtime/Modules/Config/Definitions/ConfigManagerConfig.md) | 配置 Manager 初始化入参（AssetLocation） |
 | [ConfigManagerBase.md](Runtime/Modules/Config/Implements/ConfigManagerBase.md) | 配置 Manager 抽象基类（Priority=10） |
-| [IConfigManager.md](Runtime/Modules/Config/Interfaces/IConfigManager.md) | 配置 Manager 接口（IsLoadOver / DevelopMode / Common / Namespace / Platform / Channel + LoadAsync + GetSDKPluginConfig×2 + GetKitConfig×2 + GetAllPluginConfigs） |
-| [ConfigMasterSO.md](Runtime/Modules/Config/ConfigMasterSO.md) | Config 主 SO（设计态）：Platform×Channel 矩阵 + CommonByMode + EnabledSDKs + KitConfigsByMode（三维矩阵）+ EnabledKits；GetCommon(mode)；per-panel 维度掩码（CommonMask/SDKMasks/KitMasks/NamespaceMask/HybridCLRMask/YooAssetMask）+ 顶层 Override 旁路（NamespaceOverrides/HybridCLROverrides/YooAssetOverrides） |
-| [Definitions/CdnDeploymentConfig.md](Runtime/Modules/Config/Definitions/CdnDeploymentConfig.md) | CDN 部署+清缓存编辑态配置（10 字段；Editor-only，不导出 ConfigRuntimeSO；Secret/Token 明文序列化仅界面遮罩+输出脱敏） |
-| [Definitions/CdnDeploymentOverride.md](Runtime/Modules/Config/Definitions/CdnDeploymentOverride.md) | CDN 面板维度 Override 单项（坐标三字段 + Config 整套 10 字段快照；Editor-only） |
-| [Definitions/PanelDimensionMask.md](Runtime/Modules/Config/Definitions/PanelDimensionMask.md) | 配置面板维度掩码（ByPlatform/ByChannel/ByDevelopMode + IsGlobal 属性） |
-| [Definitions/TypedDimensionMask.md](Runtime/Modules/Config/Definitions/TypedDimensionMask.md) | 带类型全名的维度掩码条目（TypeName + Mask）；供 SDKMasks / KitMasks 使用 |
-| [Definitions/NamespaceOverride.md](Runtime/Modules/Config/Definitions/NamespaceOverride.md) | Namespace 字段维度 Override 单项（Platform/Channel/DevelopMode 坐标 + Value） |
-| [Definitions/HybridCLROverride.md](Runtime/Modules/Config/Definitions/HybridCLROverride.md) | HybridCLR 面板四字段维度 Override 单项（Editor-only） |
-| [Definitions/YooAssetOverride.md](Runtime/Modules/Config/Definitions/YooAssetOverride.md) | YooAsset 两路径维度 Override 单项（Editor-only） |
-| [ConfigRuntimeSO.md](Runtime/Modules/Config/ConfigRuntimeSO.md) | Config 运行态导出物 SO：DevelopMode + Common（单值）+ Platform + Channel + EnabledSDKConfigs + EnabledKitConfigs；GetKitConfig<T>() |
+| [IConfigManager.md](Runtime/Modules/Config/Interfaces/IConfigManager.md) | Runtime 配置接口（AppConfigs / Namespace / HybridConfigs / CustomConfigs） |
+| [ConfigMasterSO.md](Editor/Config/ConfigMasterSO.md) | Editor 设计态主配置；持有三维矩阵、Editor 工具配置与导出目标 |
+| [CDNEditorConfigs.md](Editor/Config/Definitions/CDNEditorConfigs.md) | CDN 部署与清缓存 Editor 配置，不导出 Runtime |
+| [HybridEditorConfigs.md](Editor/Config/Definitions/HybridEditorConfigs.md) | HybridCLR 构建、link.xml 与 DLL 路径 Editor 配置 |
+| [YooAssetEditorConfigs.md](Editor/Config/Definitions/YooAssetEditorConfigs.md) | YooAsset 工程资产路径 Editor 配置 |
+| [PanelDimensionMask.md](Editor/Config/Definitions/PanelDimensionMask.md) | Editor 配置面板维度掩码 |
+| [TypedDimensionMask.md](Editor/Config/Definitions/TypedDimensionMask.md) | Editor SDK / Kit 类型维度掩码 |
+| [NamespaceOverride.md](Editor/Config/Definitions/NamespaceOverride.md) | Namespace Editor 维度 Override |
+| [HybridEditorConfigsOverride.md](Editor/Config/Definitions/HybridEditorConfigsOverride.md) | HybridCLR Editor 维度 Override |
+| [YooAssetEditorConfigsOverride.md](Editor/Config/Definitions/YooAssetEditorConfigsOverride.md) | YooAsset Editor 维度 Override |
+| [ConfigRuntimeSO.md](Runtime/Modules/Config/ConfigRuntimeSO.md) | Runtime 快照：Platform / Channel / DevelopMode / AppConfigs / Namespace / HybridConfigs / CustomConfigs |
 | [Definitions/IKitConfig.md](Runtime/Modules/Config/Definitions/IKitConfig.md) | Kit 固有配置 marker 接口（DisplayName），全局单份，由 ConfigWindow「Kit 配置」管理 |
 | [Definitions/KitConfigMissingException.md](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) | Kit 配置缺失异常；fail-fast 暴露配置漏填 |
-| [CommonConfig.md](Runtime/Modules/Config/CommonConfig.md) | 全局公共配置（AppID / AppAesKey / AppAesIV 三个单值字段；Namespace 已移至 ConfigMasterSO 顶层） |
-| [PlatformChannelEntry.md](Runtime/Modules/Config/PlatformChannelEntry.md) | Platform×Channel 矩阵行（SDKConfigsByMode 按 DevelopMode 分组；GetSDKConfigs(mode)） |
-| [Definitions/DllAssetEntry.md](Runtime/Modules/Config/Definitions/DllAssetEntry.md) | DLL 运行期寻址条目（AssetLocation 单字段），供 ConfigRuntimeSO.AotMetadataDlls / GameDlls 持有 |
-| [Definitions/DllMasterAssetEntry.md](Runtime/Modules/Config/Definitions/DllMasterAssetEntry.md) | DLL 主配置条目（编辑期三字段：SourceLocation / TargetLocation / AssetLocation），供 ConfigMasterSO.AotMetadataDlls / GameDlls 持有 |
+| [AppConfigs.md](Runtime/Modules/Config/AppConfigs.md) | Runtime 应用配置（AppID / AppAesKey / AppAesIV） |
+| [HybridConfigs.md](Runtime/Modules/Config/Definitions/HybridConfigs.md) | Runtime HybridCLR 配置（入口名与 DLL Asset 地址） |
+| [CustomConfigs.md](Runtime/Modules/Config/Definitions/CustomConfigs.md) | Runtime 自定义配置空扩展点 |
+| [PlatformChannelEntry.md](Editor/Config/Definitions/PlatformChannelEntry.md) | Editor 三维配置矩阵行 |
+| [Definitions/DllAssetEntry.md](Runtime/Modules/Config/Definitions/DllAssetEntry.md) | DLL 运行期寻址条目（AssetLocation 单字段），供 ConfigRuntimeSO.HybridConfigs.AotMetadataDlls / GameDlls 持有 |
+| [DllMasterAssetEntry.md](Editor/Config/Definitions/DllMasterAssetEntry.md) | Editor DLL 构建三字段条目 |
 
 ### Table（表格数据）
 
@@ -521,8 +525,9 @@
 | [EditorUtil.FileSystem.OutputApplier.md](Editor/EditorUtil/EditorUtil.FileSystem/EditorUtil.FileSystem.OutputApplier.md) | Editor 内部批量文件替换、删除、备份与失败回滚基础设施 |
 | [EditorUtil.Config.StructureGuard.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.StructureGuard.md) | Platform×Channel 枚举网格补齐与缺失引用清理 |
 | [EditorUtil.Config.SDKPluginScanner.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) | 全程序集扫描 ISDKPluginConfig 实现类型 + 实例补全/移除（EnsureInstance/RemoveInstance 按 DevelopMode 分组） |
-| [EditorUtil.Config.Validator.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.md) | CommonConfig/PluginConfig 必填字段校验（Severity 枚举 + ValidationIssue 结构体；支持三维 Platform×Channel×DevelopMode） |
+| [EditorUtil.Config.Validator.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.md) | AppConfigs/PluginConfig 必填字段校验（Severity 枚举 + ValidationIssue 结构体；支持三维 Platform×Channel×DevelopMode） |
 | [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) | 将 ConfigMasterSO 三维组合导出为 ConfigRuntimeSO.asset |
+| [EditorUtil.Config.SchemaMigration.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md) | 版本化迁移旧 ConfigMasterSO，并重导出关联 Runtime 快照 |
 | [EditorUtil.Config.RuntimeProvider.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.md) | 从 AssetDatabase 按三维（Platform×Channel×DevelopMode）读取 ConfigRuntimeSO（不缓存，替代已删除的 ConfigLookup）；GetChannel() 新增 |
 | [EditorUtil.Config.WorkspaceActive.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) | 工程级激活 ConfigMaster 锚点；通过 Globals.json 持久化 GUID，四段回退策略，根除多 Sample 共存命中歧义 |
 | [EditorUtil.Config.YooAssetInjector.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) | Asset 模块编辑期注入层；按 ConfigMaster 路径字段注入 YooAssetSettings / 加载 BundleCollectorSetting，替代全工程扫描 |

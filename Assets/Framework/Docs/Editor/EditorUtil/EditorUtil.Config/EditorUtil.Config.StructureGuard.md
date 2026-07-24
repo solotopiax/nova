@@ -97,6 +97,6 @@ if (missing.Count > 0)
 
 ## §13 关联文档
 
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md)
-- [PlatformChannelEntry.md](../../../Runtime/Modules/Config/PlatformChannelEntry.md)
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)
+- [PlatformChannelEntry.md](../../../Editor/Config/Definitions/PlatformChannelEntry.md)
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)

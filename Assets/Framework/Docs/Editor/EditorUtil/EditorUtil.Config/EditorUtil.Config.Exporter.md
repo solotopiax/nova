@@ -57,13 +57,13 @@ Export(master, platform, channel, mode, savePath):
   5. target.DevelopMode     = mode
   6. target.Namespace       = DimensionalResolver.ResolveNamespace(master, platform, channel, mode)
                                // D6.2：经 NamespaceMask + NamespaceOverrides 解析最终值（全不勾时 = master.Namespace）
-  7. target.Common          = CloneCommon(master.GetCommon(platform, channel, mode))   深拷贝
+  7. target.AppConfigs          = CloneAppConfigs(master.GetAppConfigs(platform, channel, mode))   深拷贝
   8. target.Platform        = platform
   9. target.Channel         = channel
   10. target.EnabledSDKConfigs = FilterEnabled(entry, mode, master.EnabledSDKs)
   11. target.EnabledKitConfigs = FilterEnabledKits(entry, mode, master.EnabledKits)
   12. DimensionalResolver.HybridCLRResult hybridCLR = DimensionalResolver.ResolveHybridCLR(master, platform, channel, mode)
-       // D6.2：经 HybridCLRMask + HybridCLROverrides 解析最终四字段值（全不勾时 = 顶层各默认字段）
+       // D6.2：经 HybridEditorConfigsMask + HybridEditorConfigsOverrides 解析最终四字段值（全不勾时 = 顶层各默认字段）
   13. target.GameEntranceProcedureName = hybridCLR.GameEntranceProcedureName
   14. target.AotMetadataDlls = hybridCLR.AotMetadataDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList()
   15. target.GameDlls        = hybridCLR.GameDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList()
@@ -71,9 +71,9 @@ Export(master, platform, channel, mode, savePath):
   16. SaveAssets + Refresh → return target
 ```
 
-### CloneCommon — 深拷贝 CommonConfig
+### CloneAppConfigs — 深拷贝 AppConfigs
 
-逐字段拷贝 3 个 string 字段（AppID / AppAesKey / AppAesIV），返回新 `CommonConfig` 实例。`src` 为 null 时直接返回 null。（Namespace 不在 CommonConfig 中，在 Export 流程第 6 步单独从 `master.Namespace` 赋值到 `target.Namespace`。）
+逐字段拷贝 3 个 string 字段（AppID / AppAesKey / AppAesIV），返回新 `AppConfigs` 实例。`src` 为 null 时直接返回 null。（Namespace 不在 AppConfigs 中，在 Export 流程第 6 步单独从 `master.Namespace` 赋值到 `target.Namespace`。）
 
 ### FilterEnabled — 按 DevelopMode 过滤启用的 SDK 配置
 
@@ -119,7 +119,7 @@ ConfigRuntimeSO runtime = EditorUtil.Config.Exporter.Export(
 
 ## §13 关联文档
 
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md)
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)
 - [ConfigRuntimeSO.md](../../../Runtime/Modules/Config/ConfigRuntimeSO.md)
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)
 - [EditorUtil.Config.DimensionalResolver.md](EditorUtil.Config.DimensionalResolver.md)（步骤 6/12-15 经此取数；顶层类 Namespace / HybridCLR 维度化后导出侧零改动结构，通过解析器透明获取维度最终值）

@@ -43,7 +43,7 @@ namespace NovaFramework.Editor
             /// <param name="config">CDN 编辑态配置。</param>
             /// <param name="onProgress">进度回调，参数依次为完成批数和总批数。</param>
             /// <returns>成功清理 URL 数量。</returns>
-            internal static UniTask<int> PurgeAsync(CdnDeploymentConfig config, Action<int, int> onProgress)
+            internal static UniTask<int> PurgeAsync(CDNEditorConfigs config, Action<int, int> onProgress)
             {
                 return PurgeAsync(config, SendCloudflareBatchAsync, onProgress);
             }

@@ -8,8 +8,6 @@
  * descrip:   配置管理器 —— 字段与属性
  ***************************************************************/
 
-using System.Collections.Generic;
-
 namespace NovaFramework.Runtime
 {
     internal sealed partial class ConfigManager : ConfigManagerBase
@@ -34,9 +32,9 @@ namespace NovaFramework.Runtime
         private ConfigRuntimeSO m_Runtime;
 
         /// <summary>
-        /// 全局公共配置整块；直接读 ConfigRuntimeSO.Common，LoadAsync 完成后可读。
+        /// 应用运行时配置；直接读 ConfigRuntimeSO.AppConfigs，LoadAsync 完成后可读。
         /// </summary>
-        public override CommonConfig Common => m_Runtime?.Common;
+        public override AppConfigs AppConfigs => m_Runtime?.AppConfigs;
 
         /// <summary>
         /// Namespace；直接读 ConfigRuntimeSO 顶层字段，LoadAsync 完成后可读。
@@ -44,21 +42,14 @@ namespace NovaFramework.Runtime
         public override string Namespace => m_Runtime?.Namespace ?? string.Empty;
 
         /// <summary>
-        /// 业务入口 Procedure 相对类型名；直读 ConfigRuntimeSO.GameEntranceProcedureName，LoadAsync 完成后可读。
+        /// HybridCLR 运行时配置；直接读 ConfigRuntimeSO.HybridConfigs。
         /// </summary>
-        public override string GameEntranceProcedureName => m_Runtime?.GameEntranceProcedureName ?? string.Empty;
+        public override HybridConfigs HybridConfigs => m_Runtime?.HybridConfigs;
 
         /// <summary>
-        /// AOT 元数据 DLL 列表；直读 ConfigRuntimeSO.AotMetadataDlls，未加载时返回空集合。
+        /// 业务自定义运行时配置；直接读 ConfigRuntimeSO.CustomConfigs。
         /// </summary>
-        public override IReadOnlyList<DllAssetEntry> AotMetadataDlls
-            => m_Runtime?.AotMetadataDlls ?? (IReadOnlyList<DllAssetEntry>)System.Array.Empty<DllAssetEntry>();
-
-        /// <summary>
-        /// 业务 DLL 列表；直读 ConfigRuntimeSO.GameDlls，未加载时返回空集合。
-        /// </summary>
-        public override IReadOnlyList<DllAssetEntry> GameDlls
-            => m_Runtime?.GameDlls ?? (IReadOnlyList<DllAssetEntry>)System.Array.Empty<DllAssetEntry>();
+        public override CustomConfigs CustomConfigs => m_Runtime?.CustomConfigs;
 
         /// <summary>
         /// 是否已完成加载。

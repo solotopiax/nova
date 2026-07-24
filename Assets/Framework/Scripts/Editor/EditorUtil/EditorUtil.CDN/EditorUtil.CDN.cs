@@ -28,9 +28,6 @@ namespace NovaFramework.Editor
             private const int c_CloudflareBatchSize = 100;
             private const string c_CloudflarePurgeUrlPrefix = "https://api.cloudflare.com/client/v4/zones/";
             private const string c_CloudflarePurgeUrlSuffix = "/purge_cache";
-            private const string c_NovaPrefabAssetPath = "Assets/Framework/Prefabs/Nova.prefab";
-            private const string c_AssetDefaultPackageNameField = "m_DefaultPackageName";
-            private const string c_AssetPackagesField = "m_Packages";
 
             private static readonly Regex s_OssEndpointRegex = new(
                 @"^oss-(?<region>[a-z0-9-]+)\.aliyuncs\.com$",
@@ -188,20 +185,7 @@ namespace NovaFramework.Editor
             /// </summary>
             internal static string ResolveDefaultPackageName()
             {
-                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(c_NovaPrefabAssetPath);
-                AssetComponent component = prefab != null
-                    ? prefab.GetComponentInChildren<AssetComponent>(true)
-                    : null;
-                if (component == null) return string.Empty;
-
-                using var serializedObject = new SerializedObject(component);
-                string defaultName = serializedObject.FindProperty(c_AssetDefaultPackageNameField)?.stringValue;
-                if (!string.IsNullOrEmpty(defaultName)) return defaultName;
-
-                SerializedProperty packages = serializedObject.FindProperty(c_AssetPackagesField);
-                return packages != null && packages.isArray && packages.arraySize > 0
-                    ? packages.GetArrayElementAtIndex(0).stringValue ?? string.Empty
-                    : string.Empty;
+                return EditorUtil.Placeholder.ResolveDefaultPackageName();
             }
 
             /// <summary>
@@ -211,7 +195,7 @@ namespace NovaFramework.Editor
             /// <param name="projectRoot">Unity 项目根绝对路径。</param>
             /// <returns>按相对路径升序排列的上传计划。</returns>
             /// <exception cref="ArgumentException">配置、项目根、本地目录或文件集合无效时抛出。</exception>
-            internal static IReadOnlyList<OssUploadItem> BuildUploadPlan(CdnDeploymentConfig config, string projectRoot)
+            internal static IReadOnlyList<OssUploadItem> BuildUploadPlan(CDNEditorConfigs config, string projectRoot)
             {
                 return BuildUploadPlan(
                     config,
@@ -226,7 +210,7 @@ namespace NovaFramework.Editor
             /// 使用指定的平台、资源包与版本上下文构建上传计划。
             /// </summary>
             internal static IReadOnlyList<OssUploadItem> BuildUploadPlan(
-                CdnDeploymentConfig config,
+                CDNEditorConfigs config,
                 string projectRoot,
                 PlatformType platform,
                 string package,
@@ -245,7 +229,7 @@ namespace NovaFramework.Editor
             /// 使用指定的平台、渠道、资源包与版本上下文构建上传计划。
             /// </summary>
             internal static IReadOnlyList<OssUploadItem> BuildUploadPlan(
-                CdnDeploymentConfig config,
+                CDNEditorConfigs config,
                 string projectRoot,
                 PlatformType platform,
                 ChannelType channel,
@@ -282,7 +266,7 @@ namespace NovaFramework.Editor
                 if (files.Length == 0)
                     throw new ArgumentException("本地目录中没有可部署文件。", nameof(config));
 
-                return files
+                var plan = files
                     .Select(file => new
                     {
                         LocalPath = IOPath.GetFullPath(file),
@@ -292,7 +276,36 @@ namespace NovaFramework.Editor
                     .Select(item => new OssUploadItem(
                         item.LocalPath,
                         CombineObjectKey(location.Prefix, remotePathSuffix, item.RelativePath)))
-                    .ToArray();
+                    .ToList();
+
+                if (!string.IsNullOrWhiteSpace(config.VersionCheckLocalFilePath) &&
+                    !string.IsNullOrWhiteSpace(config.VersionCheckRemoteFilePath))
+                {
+                    string versionCheckLocalPath = ResolvePathPlaceholders(
+                        config.VersionCheckLocalFilePath,
+                        platform,
+                        channel,
+                        package,
+                        version);
+                    string versionCheckRemotePath = ResolvePathPlaceholders(
+                        config.VersionCheckRemoteFilePath,
+                        platform,
+                        channel,
+                        package,
+                        version);
+                    string versionCheckFullPath = IOPath.GetFullPath(
+                        IOPath.Combine(normalizedRoot, versionCheckLocalPath));
+                    if (!IsPathInsideRoot(versionCheckFullPath, normalizedRoot))
+                        throw new ArgumentException("版本检查本地文件必须位于 Unity 项目根目录内。", nameof(config));
+                    if (!File.Exists(versionCheckFullPath))
+                        throw new ArgumentException("版本检查本地文件不存在。", nameof(config));
+
+                    plan.Insert(0, new OssUploadItem(
+                        versionCheckFullPath,
+                        CombineObjectKey(location.Prefix, string.Empty, versionCheckRemotePath)));
+                }
+
+                return plan;
             }
 
             /// <summary>
@@ -399,7 +412,7 @@ namespace NovaFramework.Editor
             /// <param name="onProgress">进度回调，参数依次为完成数、总数和当前本地文件。</param>
             /// <returns>成功上传文件数。</returns>
             internal static async UniTask<int> DeployAsync(
-                CdnDeploymentConfig config,
+                CDNEditorConfigs config,
                 string projectRoot,
                 Func<OssUploadItem, UniTask> uploadAsync,
                 Action<int, int, string> onProgress)
@@ -419,7 +432,7 @@ namespace NovaFramework.Editor
             /// 使用指定路径占位符上下文顺序部署本地目录。
             /// </summary>
             internal static async UniTask<int> DeployAsync(
-                CdnDeploymentConfig config,
+                CDNEditorConfigs config,
                 string projectRoot,
                 PlatformType platform,
                 string package,
@@ -442,7 +455,7 @@ namespace NovaFramework.Editor
             /// 使用指定路径占位符上下文顺序部署本地目录。
             /// </summary>
             internal static async UniTask<int> DeployAsync(
-                CdnDeploymentConfig config,
+                CDNEditorConfigs config,
                 string projectRoot,
                 PlatformType platform,
                 ChannelType channel,
@@ -491,7 +504,7 @@ namespace NovaFramework.Editor
             /// <param name="onProgress">进度回调，参数依次为完成批数和总批数。</param>
             /// <returns>成功清理 URL 数量。</returns>
             internal static async UniTask<int> PurgeAsync(
-                CdnDeploymentConfig config,
+                CDNEditorConfigs config,
                 Func<string, string, IReadOnlyList<string>, UniTask<CloudflareHttpResult>> sendAsync,
                 Action<int, int> onProgress)
             {
@@ -533,7 +546,7 @@ namespace NovaFramework.Editor
             /// 校验 OSS 连接与凭据字段，确保所有静态错误在首个请求前暴露。
             /// </summary>
             /// <param name="config">CDN 编辑态配置。</param>
-            private static void ValidateOssConfig(CdnDeploymentConfig config)
+            private static void ValidateOssConfig(CDNEditorConfigs config)
             {
                 if (config == null) throw new ArgumentNullException(nameof(config));
                 ParseRegion(config.Endpoint);
@@ -548,7 +561,7 @@ namespace NovaFramework.Editor
             /// 校验 Cloudflare Zone ID（兼容旧 PurgeURL）与 Token，确保所有静态错误在首个请求前暴露。
             /// </summary>
             /// <param name="config">CDN 编辑态配置。</param>
-            private static void ValidateCloudflareConfig(CdnDeploymentConfig config)
+            private static void ValidateCloudflareConfig(CDNEditorConfigs config)
             {
                 if (config == null) throw new ArgumentNullException(nameof(config));
                 ResolveCloudflarePurgeUrl(config);
@@ -556,7 +569,7 @@ namespace NovaFramework.Editor
                     throw new ArgumentException("Cloudflare API Token 不能为空。", nameof(config));
             }
 
-            private static string ResolveCloudflarePurgeUrl(CdnDeploymentConfig config)
+            private static string ResolveCloudflarePurgeUrl(CDNEditorConfigs config)
             {
                 if (config == null) throw new ArgumentNullException(nameof(config));
                 string zoneId = string.IsNullOrWhiteSpace(config.ZoneID)

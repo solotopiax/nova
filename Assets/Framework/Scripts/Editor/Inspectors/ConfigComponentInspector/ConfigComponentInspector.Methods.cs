@@ -71,16 +71,16 @@ namespace NovaFramework.Editor
             }
 
             DrawReadonlyKeyValue("DevelopMode", component.DevelopMode.ToString());
-            DrawReadonlyKeyValue("AppID", component.Common?.AppID ?? string.Empty);
-            DrawReadonlyKeyValue("AppAesKey", component.Common?.AppAesKey ?? string.Empty);
-            DrawReadonlyKeyValue("AppAesIV", component.Common?.AppAesIV ?? string.Empty);
+            DrawReadonlyKeyValue("AppID", component.AppConfigs?.AppID ?? string.Empty);
+            DrawReadonlyKeyValue("AppAesKey", component.AppConfigs?.AppAesKey ?? string.Empty);
+            DrawReadonlyKeyValue("AppAesIV", component.AppConfigs?.AppAesIV ?? string.Empty);
             DrawReadonlyKeyValue("Namespace", component.Namespace ?? string.Empty);
             DrawReadonlyKeyValue("Platform", component.Platform.ToString());
             DrawReadonlyKeyValue("Channel", component.Channel.ToString());
-            DrawReadonlyKeyValue("GameEntranceProcedureName", component.GameEntranceProcedureName);
+            DrawReadonlyKeyValue("GameEntranceProcedureName", component.HybridConfigs?.GameEntranceProcedureName ?? string.Empty);
 
-            DrawDllAssetEntryList("AOT 元数据 DLL", component.AotMetadataDlls);
-            DrawDllAssetEntryList("业务 DLL", component.GameDlls);
+            DrawDllAssetEntryList("AOT 元数据 DLL", component.HybridConfigs?.AotMetadataDlls);
+            DrawDllAssetEntryList("业务 DLL", component.HybridConfigs?.GameDlls);
 
             EditorUtil.Draw.Label("已启用 SDK 配置", false);
 

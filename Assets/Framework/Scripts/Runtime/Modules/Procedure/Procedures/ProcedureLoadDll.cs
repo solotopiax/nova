@@ -28,7 +28,7 @@ namespace NovaFramework.Runtime
     /// 5. 刷新 Util.Assembly 的程序集缓存。
     /// 6. 扫描业务程序集中的 ProcedureBase 子类，Activator.CreateInstance 后
     ///    调用 RegisterAdditionalProcedures 批量注册。
-    /// 7. 按 IConfigManager.Namespace + IConfigManager.GameEntranceProcedureName
+    /// 7. 按 IConfigManager.Namespace + IConfigManager.HybridConfigs.GameEntranceProcedureName
     ///    拼出业务入口全名，ChangeState 跳转。
     /// 通过 FrameworkManagersGroup.GetManager<IConfigManager>() 获取配置，不依赖 Nova.Config 公开 API。
     /// </summary>
@@ -151,7 +151,8 @@ namespace NovaFramework.Runtime
                 // LoadMetadataForAOTAssembly 多次调用无顺序依赖，UniTask 调度仍在主线程，
                 // HashSet 写入由 LoadAotMetadataAsync 内部原子化守卫保护。
                 // 注意：AOT metadata 必须在业务 DLL 之前全部加载完成。
-                IReadOnlyList<DllAssetEntry> aotList = configManager.AotMetadataDlls;
+                IReadOnlyList<DllAssetEntry> aotList = configManager.HybridConfigs?.AotMetadataDlls
+                    ?? (IReadOnlyList<DllAssetEntry>)Array.Empty<DllAssetEntry>();
                 int aotCount = aotList != null ? aotList.Count : 0;
                 if (aotCount > 0)
                 {
@@ -166,7 +167,8 @@ namespace NovaFramework.Runtime
                 }
 
                 // 4. 加载业务 DLL（IL2CPP 下生效，Editor no-op）。
-                IReadOnlyList<DllAssetEntry> dllList = configManager.GameDlls;
+                IReadOnlyList<DllAssetEntry> dllList = configManager.HybridConfigs?.GameDlls
+                    ?? (IReadOnlyList<DllAssetEntry>)Array.Empty<DllAssetEntry>();
                 int dllCount = dllList != null ? dllList.Count : 0;
                 for (int i = 0; i < dllCount; i++)
                 {
@@ -189,7 +191,7 @@ namespace NovaFramework.Runtime
                 if (businessAsm == null)
                 {
                     throw new InvalidOperationException(
-                        Txt.Format("[ProcedureLoadDll] 业务程序集 '{0}' 未加载，请检查 ConfigRuntimeSO.GameDlls 配置。", businessAssemblyName));
+                        Txt.Format("[ProcedureLoadDll] 业务程序集 '{0}' 未加载，请检查 ConfigRuntimeSO.HybridConfigs.GameDlls 配置。", businessAssemblyName));
                 }
 
                 Type[] procTypes = businessAsm.GetTypes()
@@ -203,10 +205,10 @@ namespace NovaFramework.Runtime
                 Log.Debug(LogTag.Procedure, Txt.Format("[ProcedureLoadDll] 注册业务 Procedure 数量：{0}", procs.Length));
 
                 // 7. 定位业务入口 Procedure 类型。
-                string gameEntranceProcedureName = configManager.GameEntranceProcedureName;
+                string gameEntranceProcedureName = configManager.HybridConfigs?.GameEntranceProcedureName;
                 if (string.IsNullOrWhiteSpace(gameEntranceProcedureName))
                 {
-                    throw new InvalidOperationException("[ProcedureLoadDll] ConfigRuntimeSO.GameEntranceProcedureName 未配置，请通过 ConfigWindow → HybridCLR 配置 面板填写并重新导出。");
+                    throw new InvalidOperationException("[ProcedureLoadDll] ConfigRuntimeSO.HybridConfigs.GameEntranceProcedureName 未配置，请通过 ConfigWindow → HybridCLR 配置面板填写并重新导出。");
                 }
                 string entranceFullName = Txt.Format("{0}.{1}", businessAssemblyName, gameEntranceProcedureName);
                 Type entrance = businessAsm.GetType(entranceFullName);

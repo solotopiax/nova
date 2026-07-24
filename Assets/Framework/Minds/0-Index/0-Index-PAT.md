@@ -99,7 +99,7 @@ auto_generated: true
 - [PAT-141 封装第三方 SDK 时源目录只读，文件完整搬入不增删改](../2-Areas/Patterns/PAT-141-vendor-source-readonly.md) — 第三方源目录只读，封装是复制入包，不写不删不改不省略
 - [PAT-143 厂商 SDK 缺公开 API 时，接入层用现有 public 方法在 Nova 层补口](../2-Areas/Patterns/PAT-143-vendor-sdk-missing-api-nova-layer-fill.md) — 源只读下用现有 public API 组合补厂商缺失能力
 - [PAT-144 反射调厂商私有方法是源只读约束下的最后手段，须标注版本升级复核](../2-Areas/Patterns/PAT-144-reflection-private-vendor-method.md) — 反射调私有厂商方法属权宜，须注释标版本复核点
-- [PAT-146 广告收益打点与展示回调边界](../2-Areas/Patterns/PAT-146-ad-revenue-track-callback-boundary.md) — Banner ILRD聚合，impression即时
+- [PAT-148 广告收益打点与展示回调边界](../2-Areas/Patterns/PAT-148-ad-revenue-track-callback-boundary.md) — Banner ILRD聚合，impression即时
 - [PAT-33 新增 SDK Plugin 的 6 步 SOP](../2-Areas/Patterns/PAT-33-sdk-plugin-sop.md) — SDK Plugin SOP UPM包加ISDKPlugin
 - [PAT-69 UGUI 等比铺满父宽的零脚本配置法](../2-Areas/Patterns/PAT-69-ugui-aspect-fit-fill-width.md) — ARF+水平 stretch 实现等比满宽零脚本
 
@@ -121,7 +121,7 @@ auto_generated: true
 ## review
 
 - [PAT-02 静态审查四维度框架](../2-Areas/Patterns/PAT-02-static-review-four-dim.md) — 静态审查四维度逻辑风格架构安全性能
-- [PAT-03 运行时验证三步法](../2-Areas/Patterns/PAT-03-runtime-verify-three-step.md) — 运行时验证三步编译Inspector PlayMode
+- [PAT-03 运行时验证三步法](../2-Areas/Patterns/PAT-03-runtime-verify-three-step.md) — 高风险运行时变更三步验证，强度与风险相称
 - [PAT-11 qa 测试结束清场铁律与测试脚本命名规范](../2-Areas/Patterns/PAT-11-qa-battlefield-cleanup.md) — qa测试结束必须清场场景与Inspector复原
 - [PAT-129 死代码判定：链路追溯而非单点 grep](../2-Areas/Patterns/PAT-129-dead-code-chain-tracing.md) — 删码前追完整链路，引擎回调与预留接口不可凭单点 grep 判废
 - [PAT-134 间歇性网络故障：吞异常≠治本，'突然好了'是反向证据](../2-Areas/Patterns/PAT-134-intermittent-network-fail-diagnosis.md) — 间歇网络故障吞异常非治本，突然好了是反向证据
@@ -147,7 +147,7 @@ auto_generated: true
 
 ## workflow
 
-- [PAT-04 「改什么读什么」分层上下文策略](../2-Areas/Patterns/PAT-04-read-what-you-change.md) — 改什么读什么，按变更风险控制阅读面
+- [PAT-04 「改什么读什么」分层上下文策略](../2-Areas/Patterns/PAT-04-read-what-you-change.md) — 改什么读什么验什么，按变更风险控制阅读面与验证强度
 - [PAT-07 Trade-Off 分析框架 + 分阶段交付](../2-Areas/Patterns/PAT-07-tradeoff-phased-delivery.md) — Trade-Off方案分阶段交付小步验证
 - [PAT-104 接口废弃直接删 shim 禁留 [Obsolete] 过渡](../2-Areas/Patterns/PAT-104-no-obsolete-shim-rule.md) — 废弃接口同批迁移所有调用点，禁留 [Obsolete] 兼容方法
 - [PAT-113 禁手动抬 UPM package.json version](../2-Areas/Patterns/PAT-113-no-manual-version-bump.md) — UPM版本由统一入口写入且以registry为准

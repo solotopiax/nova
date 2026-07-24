@@ -14,42 +14,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
   DevelopMode: 0
   Namespace: NovaFramework.Sdk.IAP.Samples.Runtime
-  Common:
+  AppConfigs:
     AppID: YOUR_APP_ID
     AppAesKey: YOUR_APP_AES_KEY
     AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 791344335120236570
-  - rid: 791344335120236571
-  - rid: 791344335120236572
-  - rid: 791344335120236573
-  - rid: 791344335120236574
-  - rid: 791344335120236575
+  - rid: 8085689214958567713
+  - rid: 8085689214958567714
+  - rid: 8085689214958567715
+  - rid: 8085689214958567716
+  - rid: 8085689214958567717
+  - rid: 8085689214958567718
   EnabledKitConfigs:
-  - rid: 791344335120236576
-  GameEntranceProcedureName: ProcedurePreload
-  AotMetadataDlls:
-  - m_AssetLocation: mscorlib.dll
-  - m_AssetLocation: System.dll
-  - m_AssetLocation: System.Core.dll
-  - m_AssetLocation: UniTask.dll
-  - m_AssetLocation: Newtonsoft.Json.dll
-  - m_AssetLocation: UnityEngine.CoreModule.dll
-  - m_AssetLocation: Unity.TextMeshPro.dll
-  - m_AssetLocation: NovaFramework.Runtime.dll
-  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
-  - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.IAP.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.IAP.Mobile.Runtime.dll
-  GameDlls:
-  - m_AssetLocation: NovaFramework.Sdk.IAP.Samples.Runtime.dll
+  - rid: 8085689214958567719
+  HybridConfigs:
+    GameEntranceProcedureName: ProcedurePreload
+    AotMetadataDlls:
+    - m_AssetLocation: mscorlib.dll
+    - m_AssetLocation: System.dll
+    - m_AssetLocation: System.Core.dll
+    - m_AssetLocation: UniTask.dll
+    - m_AssetLocation: Newtonsoft.Json.dll
+    - m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_AssetLocation: Unity.TextMeshPro.dll
+    - m_AssetLocation: NovaFramework.Runtime.dll
+    - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+    - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.IAP.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.IAP.Mobile.Runtime.dll
+    GameDlls:
+    - m_AssetLocation: NovaFramework.Sdk.IAP.Samples.Runtime.dll
   references:
     version: 2
     RefIds:
-    - rid: 791344335120236570
+    - rid: 8085689214958567713
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
         m_DevKey: YOUR_APPSFLYER_DEV_KEY
@@ -59,7 +60,7 @@ MonoBehaviour:
         m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
         m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
         m_ReportCmdName: AppsFlyerReport
-    - rid: 791344335120236571
+    - rid: 8085689214958567714
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -68,22 +69,22 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 791344335120236572
+    - rid: 8085689214958567715
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 791344335120236577
+          - rid: 8085689214958567720
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 791344335120236573
+    - rid: 8085689214958567716
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 791344335120236574
+    - rid: 8085689214958567717
       type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
       data:
         m_EnableAlwaysPaySucceed: 0
@@ -93,22 +94,22 @@ MonoBehaviour:
         m_LoadingPanelPrefab: IAP/IAPLoadingPanel
         m_StoreConfigList:
           m_Items:
-          - rid: 791344335120236578
+          - rid: 8085689214958567721
         m_Products:
           m_Items: []
-    - rid: 791344335120236575
+    - rid: 8085689214958567718
       type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
       data:
         m_FacebookAppId: YOUR_FACEBOOK_APP_ID
         m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
         m_AutoDownloadAvatarOnLogin: 1
         m_AvatarSize: 100
-    - rid: 791344335120236576
+    - rid: 8085689214958567719
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 791344335120236577
+    - rid: 8085689214958567720
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -125,7 +126,7 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 791344335120236578
+    - rid: 8085689214958567721
       type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
       data:
         m_Enabled: 1

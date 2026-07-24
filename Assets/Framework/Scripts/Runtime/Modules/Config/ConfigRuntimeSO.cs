@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace NovaFramework.Runtime
 {
@@ -30,9 +31,10 @@ namespace NovaFramework.Runtime
         public string Namespace;
 
         /// <summary>
-        /// 全局公共配置；字段已单值化，由导出侧按 DevelopMode 选取后写入。
+        /// 应用运行时配置；字段已单值化，由导出侧按当前维度写入。
         /// </summary>
-        public CommonConfig Common;
+        [FormerlySerializedAs("Common")]
+        public AppConfigs AppConfigs;
 
         /// <summary>
         /// 本次导出目标平台。
@@ -59,22 +61,14 @@ namespace NovaFramework.Runtime
         public List<IKitConfig> EnabledKitConfigs = new();
 
         /// <summary>
-        /// 业务入口 Procedure 相对类型名（不含 namespace），如 ProcedurePreload；
-        /// 由 ProcedureLoadDll 在 DLL 加载后用于注册业务 Procedure 入口。
+        /// HybridCLR 运行时配置；不包含 link.xml、源路径或目标路径等 Editor 数据。
         /// </summary>
-        public string GameEntranceProcedureName;
+        public HybridConfigs HybridConfigs = new();
 
         /// <summary>
-        /// AOT 元数据 DLL 列表；描述每个 AOT DLL 在 AB 包中的寻址信息，
-        /// 由 ProcedureLoadDll 按序加载以支持泛型共享。
+        /// 业务自定义运行时配置占位；始终导出非空实例。
         /// </summary>
-        public List<DllAssetEntry> AotMetadataDlls = new();
-
-        /// <summary>
-        /// 业务 DLL 列表；描述每个业务 DLL 在 AB 包中的寻址信息，
-        /// 由 ProcedureLoadDll 按序加载后注册业务程序集。
-        /// </summary>
-        public List<DllAssetEntry> GameDlls = new();
+        public CustomConfigs CustomConfigs = new();
 
         /// <summary>
         /// 按泛型类型从 EnabledSDKConfigs 中取对应 SDK Plugin 配置实例。

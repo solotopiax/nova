@@ -1,5 +1,5 @@
 {
-  "version": "2026-07-21-2045",
+  "version": "2026-07-24-1923",
   "generated_by": "nova-obs keyword-rebuild",
   "prelookup_keywords": [
     "ADR-001",
@@ -61,6 +61,7 @@
     "ADR-071",
     "ADR-072",
     "ADR-073",
+    "ADR-074",
     "AOT",
     "ARCHITECTURE.md",
     "Addressable",
@@ -282,6 +283,7 @@
     "PAT-145",
     "PAT-146",
     "PAT-147",
+    "PAT-148",
     "PAT-18",
     "PAT-19",
     "PAT-20",
@@ -403,6 +405,7 @@
     "Unity",
     "Unsubscribe",
     "Util.Json",
+    "Util.Placeholder",
     "Util.SysIO",
     "Util.TypeCreator",
     "Vannevar Bush",
@@ -436,6 +439,7 @@
     "事件",
     "事件系统图谱",
     "内部云仓库",
+    "占位符显式上下文",
     "原厂包名",
     "发布前验证预算",
     "启动期图谱",
@@ -454,11 +458,13 @@
     "批量 Test Runner",
     "持久化系统图谱",
     "振动系统图谱",
+    "改什么验什么",
     "数值导出",
     "数据表",
     "数据表系统图谱",
     "文档同步",
     "新增字段按所属定位插入既有顺序",
+    "最小验证",
     "本地化系统图谱",
     "构建流水线图谱",
     "架构反模式红旗清单",
@@ -473,6 +479,7 @@
     "界面",
     "登录/绑定/云存档三端职责分离",
     "禁止手改 Prefab YAML",
+    "立即收口",
     "第三方接入图谱",
     "编辑器",
     "缺陷严重度 P0-P4 分级",
@@ -495,7 +502,8 @@
     "震动系统图谱",
     "静态审查四维度框架",
     "面板",
-    "音效系统图谱"
+    "音效系统图谱",
+    "验证强度"
   ],
   "bizlang_map": {},
   "moc_index": {
@@ -520,6 +528,6 @@
     "Config": "MOC-Config",
     "Prefab": "MOC-Prefab"
   },
-  "note_count": 195,
+  "note_count": 196,
   "suggestions_count": 15
 }

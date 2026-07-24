@@ -50,9 +50,9 @@ namespace NovaFramework.Runtime
         public DevelopMode DevelopMode => m_ConfigManager != null ? m_ConfigManager.DevelopMode : default;
 
         /// <summary>
-        /// 全局公共配置整块；LoadAsync 完成后可读，未加载时返回 null。
+        /// 应用运行时配置；LoadAsync 完成后可读，未加载时返回 null。
         /// </summary>
-        public CommonConfig Common => m_ConfigManager?.Common;
+        public AppConfigs AppConfigs => m_ConfigManager?.AppConfigs;
 
         /// <summary>
         /// 当前解析后的 Namespace；LoadAsync 完成后可读。
@@ -70,21 +70,14 @@ namespace NovaFramework.Runtime
         public ChannelType Channel => m_ConfigManager != null ? m_ConfigManager.Channel : default;
 
         /// <summary>
-        /// 业务入口 Procedure 相对类型名；LoadAsync 完成后可读。
+        /// HybridCLR 运行时配置；LoadAsync 完成后可读。
         /// </summary>
-        public string GameEntranceProcedureName => m_ConfigManager?.GameEntranceProcedureName ?? string.Empty;
+        public HybridConfigs HybridConfigs => m_ConfigManager?.HybridConfigs;
 
         /// <summary>
-        /// AOT 元数据 DLL 列表；LoadAsync 完成后可读，未加载时返回空集合。
+        /// 业务自定义运行时配置；LoadAsync 完成后可读。
         /// </summary>
-        public IReadOnlyList<DllAssetEntry> AotMetadataDlls =>
-            m_ConfigManager != null ? m_ConfigManager.AotMetadataDlls : System.Array.Empty<DllAssetEntry>();
-
-        /// <summary>
-        /// 业务 DLL 列表；LoadAsync 完成后可读，未加载时返回空集合。
-        /// </summary>
-        public IReadOnlyList<DllAssetEntry> GameDlls =>
-            m_ConfigManager != null ? m_ConfigManager.GameDlls : System.Array.Empty<DllAssetEntry>();
+        public CustomConfigs CustomConfigs => m_ConfigManager?.CustomConfigs;
 
         /// <summary>
         /// 当前已加载的所有启用 SDK Plugin 配置只读集合；供 Inspector 面板运行时展示。

@@ -56,15 +56,18 @@ namespace NovaFramework.Editor
 
                     target.DevelopMode = mode;
                     target.Namespace = DimensionalResolver.ResolveNamespace(master, platform, channel, mode);
-                    target.Common = CloneCommon(master.GetCommon(platform, channel, mode));
+                    target.AppConfigs = CloneAppConfigs(master.GetAppConfigs(platform, channel, mode));
                     target.Platform = platform;
                     target.Channel = channel;
                     target.EnabledSDKConfigs = FilterEnabled(entry, mode, master.EnabledSDKs);
                     target.EnabledKitConfigs = FilterEnabledKits(entry, mode, master.EnabledKits);
-                    target.GameEntranceProcedureName = hybridCLR.GameEntranceProcedureName;
-                    // Master → Runtime 导出：仅搬运 AssetLocation，去掉源/目标路径语义（运行期不暴露）。
-                    target.AotMetadataDlls = hybridCLR.AotMetadataDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList();
-                    target.GameDlls = hybridCLR.GameDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList();
+                    target.HybridConfigs = new HybridConfigs
+                    {
+                        GameEntranceProcedureName = hybridCLR.GameEntranceProcedureName,
+                        AotMetadataDlls = hybridCLR.AotMetadataDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList(),
+                        GameDlls = hybridCLR.GameDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList(),
+                    };
+                    target.CustomConfigs = new CustomConfigs();
 
                     if (existing == null)
                     {
@@ -81,17 +84,17 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 深拷贝 CommonConfig，返回与源互不影响的新实例。
+                /// 深拷贝 AppConfigs，返回与源互不影响的新实例。
                 /// <para>src 为 null 时直接返回 null，不抛出异常。</para>
                 /// </summary>
-                /// <param name="src">待拷贝的源 CommonConfig 实例。</param>
+                /// <param name="src">待拷贝的源 AppConfigs 实例。</param>
                 /// <returns>
-                /// 字段值与 src 相同的新 CommonConfig 实例；src 为 null 时返回 null。
+                /// 字段值与 src 相同的新 AppConfigs 实例；src 为 null 时返回 null。
                 /// </returns>
-                private static CommonConfig CloneCommon(CommonConfig src)
+                private static AppConfigs CloneAppConfigs(AppConfigs src)
                 {
                     if (src == null) return null;
-                    return new CommonConfig
+                    return new AppConfigs
                     {
                         AppID = src.AppID,
                         AppAesKey = src.AppAesKey,

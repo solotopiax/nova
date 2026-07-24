@@ -139,7 +139,7 @@ namespace NovaFramework.Editor
                            m_SelectedItem == LeftTreeItem.NamespaceConfig ||
                            m_SelectedItem == LeftTreeItem.HybridCLRConfig ||
                            m_SelectedItem == LeftTreeItem.YooAssetConfig ||
-                           m_SelectedItem == LeftTreeItem.CdnDeployment;
+                           m_SelectedItem == LeftTreeItem.CDNEditorConfigs;
                 case LeftTreeGroup.SDK:
                     return m_SelectedItem == LeftTreeItem.SDKNode;
                 case LeftTreeGroup.Kit:
@@ -191,7 +191,7 @@ namespace NovaFramework.Editor
             DrawLeftTreeItem("名字空间配置", LeftTreeItem.NamespaceConfig, null);
             DrawLeftTreeItem("HybridCLR 配置", LeftTreeItem.HybridCLRConfig, null);
             DrawLeftTreeItem("YooAsset 配置", LeftTreeItem.YooAssetConfig, null);
-            DrawLeftTreeItem("CDN 内容分发网络部署", LeftTreeItem.CdnDeployment, null);
+            DrawLeftTreeItem("CDN 内容分发网络部署", LeftTreeItem.CDNEditorConfigs, null);
         }
 
         /// <summary>

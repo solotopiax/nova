@@ -6,7 +6,13 @@
 
 ## 配置语义
 
-### 1. 版本检查输入
+### 1. App 更新总开关
+
+- `EnableAppUpdate`
+
+默认值为 `true`。关闭时 `CheckAsync()` 不发起版本检查请求，直接返回 `NoDownload`；资源热更新仍由 Asset 模块的 `EnableHotfix` 独立控制。
+
+### 2. 版本检查输入
 
 - `AppDownloadCheckUrl`
 - `AppDownloadCheckUrlFallback`
@@ -20,7 +26,7 @@
 - 版本检查固定先尝试主地址；主地址为空、请求失败、超时或返回空内容时切到备用地址
 - 主备都不可用时，本轮 App 大版本检查直接降级为 `NoDownload`，继续后续启动流程
 
-### 2. 更新下载输入
+### 3. 更新下载输入
 
 - `DownloadRoute`
 - `PrimaryDownloadUrl`
@@ -39,7 +45,7 @@
   - `FallbackDownloadUrl` 仍为 APK 下载链路的备用地址
   - 不检查商店地址
 
-### 3. 规则开关
+### 4. 规则开关
 
 - `UseRecommendedDownloadRule`
 - `UseForcedDownloadRule`

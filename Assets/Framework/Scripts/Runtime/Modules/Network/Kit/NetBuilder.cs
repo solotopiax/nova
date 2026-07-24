@@ -19,7 +19,7 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// 网络请求构建静态工具类。
     /// 承接所有「构建/加密」职责：Header 构建、Proto Body 序列化、AES 加密、Header JSON 构建。
-    /// 所有字段在运行时自动从 Nova.Config.Common / Nova.SDK 读取，业务层无需手动注入配置。
+    /// 所有字段在运行时自动从 Nova.Config.AppConfigs / Nova.SDK 读取，业务层无需手动注入配置。
     /// 渠道（Channel）由 Nova.Config.Channel 取得，在 BuildHeader() 内通过 InferChannel() 自动填充，业务 Service 无需感知。
     /// 仅供 Network 子包使用，业务侧请通过 Login 等业务 Service 接入。
     /// </summary>
@@ -28,7 +28,7 @@ namespace NovaFramework.Runtime
     {
         /// <summary>
         /// 构建标准请求 Header。
-        /// AppId 来自 Nova.Config.Common.AppID（int.TryParse 失败时 Log.Warning + 回退 0）。
+        /// AppId 来自 Nova.Config.AppConfigs.AppID（int.TryParse 失败时 Log.Warning + 回退 0）。
         /// DeviceId 来自 Nova.SDK.TryGet&lt;IDeviceIdProvider&gt;()（未注册时回退空串）。
         /// Uid 来自 NetService.Uid（登录后由 Login 写回）。
         /// Version / Language / Platform / Channel 在运行时自动内联取值。
@@ -38,9 +38,9 @@ namespace NovaFramework.Runtime
         public static PbNetReqHeader BuildHeader()
         {
             int appId = 0;
-            if (!int.TryParse(Nova.Config.Common.AppID, out appId))
+            if (!int.TryParse(Nova.Config.AppConfigs.AppID, out appId))
             {
-                Log.Warning(LogTag.Network, "NetBuilder.BuildHeader：Nova.Config.Common.AppID 无法解析为 int32，已回退为 0。请检查 ConfigMasterSO 中的 AppID 配置。");
+                Log.Warning(LogTag.Network, "NetBuilder.BuildHeader：Nova.Config.AppConfigs.AppID 无法解析为 int32，已回退为 0。请检查 ConfigMasterSO 中的 AppID 配置。");
             }
 
             string deviceId = string.Empty;

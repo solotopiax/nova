@@ -14,41 +14,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
   DevelopMode: 0
   Namespace: NovaFramework.Sdk.Facebook.Samples.Runtime
-  Common:
+  AppConfigs:
     AppID: YOUR_APP_ID
     AppAesKey: YOUR_APP_AES_KEY
     AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 791343954299977728
-  - rid: 791343954299977729
-  - rid: 791343954299977730
+  - rid: 8085689214958567700
+  - rid: 8085689214958567701
+  - rid: 8085689214958567702
   EnabledKitConfigs:
-  - rid: 791343954299977731
-  - rid: 791343954299977732
-  GameEntranceProcedureName: ProcedurePreload
-  AotMetadataDlls:
-  - m_AssetLocation: mscorlib.dll
-  - m_AssetLocation: System.dll
-  - m_AssetLocation: System.Core.dll
-  - m_AssetLocation: UniTask.dll
-  - m_AssetLocation: Newtonsoft.Json.dll
-  - m_AssetLocation: UnityEngine.CoreModule.dll
-  - m_AssetLocation: Unity.TextMeshPro.dll
-  - m_AssetLocation: NovaFramework.Runtime.dll
-  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-  - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.Facebook.Runtime.dll
-  - m_AssetLocation: Facebook.Unity.Android.dll
-  - m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
-  GameDlls:
-  - m_AssetLocation: NovaFramework.Sdk.Facebook.Samples.Runtime.dll
+  - rid: 8085689214958567703
+  - rid: 8085689214958567704
+  HybridConfigs:
+    GameEntranceProcedureName: ProcedurePreload
+    AotMetadataDlls:
+    - m_AssetLocation: mscorlib.dll
+    - m_AssetLocation: System.dll
+    - m_AssetLocation: System.Core.dll
+    - m_AssetLocation: UniTask.dll
+    - m_AssetLocation: Newtonsoft.Json.dll
+    - m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_AssetLocation: Unity.TextMeshPro.dll
+    - m_AssetLocation: NovaFramework.Runtime.dll
+    - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+    - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.Facebook.Runtime.dll
+    - m_AssetLocation: Facebook.Unity.Android.dll
+    - m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
+    GameDlls:
+    - m_AssetLocation: NovaFramework.Sdk.Facebook.Samples.Runtime.dll
   references:
     version: 2
     RefIds:
-    - rid: 791343954299977728
+    - rid: 8085689214958567700
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -57,36 +58,36 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 791343954299977729
+    - rid: 8085689214958567701
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 791343954299977733
+          - rid: 8085689214958567705
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 791343954299977730
+    - rid: 8085689214958567702
       type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
       data:
         m_FacebookAppId: YOUR_FACEBOOK_APP_ID
         m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
         m_AutoDownloadAvatarOnLogin: 1
         m_AvatarSize: 100
-    - rid: 791343954299977731
+    - rid: 8085689214958567703
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 791343954299977732
+    - rid: 8085689214958567704
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
-    - rid: 791343954299977733
+    - rid: 8085689214958567705
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1

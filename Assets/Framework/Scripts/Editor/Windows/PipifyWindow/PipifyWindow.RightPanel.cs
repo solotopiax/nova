@@ -211,6 +211,16 @@ namespace NovaFramework.Editor
 
             EditorGUI.BeginChangeCheck();
             float fieldY = startY;
+            float helpBoxHeight = GetParamHelpBoxHeight(info.ParamsType);
+            if (helpBoxHeight > 0f)
+            {
+                Rect helpBoxRect = new Rect(fieldX, fieldY, fieldW, helpBoxHeight);
+                EditorGUI.HelpBox(
+                    helpBoxRect,
+                    string.Join("\n", GetParamHelpBoxMessages(info.ParamsType)),
+                    MessageType.Info);
+                fieldY += helpBoxHeight + 4f;
+            }
             for (int f = 0; f < fields.Length; f++)
             {
                 FieldInfo field = fields[f];
@@ -391,6 +401,23 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 获取参数类型声明的通用 HelpBox 文案。
+        /// </summary>
+        internal static string[] GetParamHelpBoxMessages(Type paramsType)
+        {
+            return paramsType?.GetCustomAttribute<PipifyHelpBoxAttribute>()?.Messages ?? Array.Empty<string>();
+        }
+
+        /// <summary>
+        /// 计算参数类型 HelpBox 的绘制高度；未声明时返回 0。
+        /// </summary>
+        internal static float GetParamHelpBoxHeight(Type paramsType)
+        {
+            string[] messages = GetParamHelpBoxMessages(paramsType);
+            return messages.Length == 0 ? 0f : messages.Length * c_ParamFieldHeight + 8f;
+        }
+
+        /// <summary>
         /// 绘制 string 字段：根据 PipifyDropdown / PipifyDynamicDefault 选择绘制方式。
         /// </summary>
         /// <param name="valueRect">值区 Rect。</param>
@@ -462,7 +489,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 按 ConfigWindow 相同形态绘制 CDN 云端目录：当前 Config 的 OSS 前缀只读，Step 后缀可编辑。
+        /// 按 ConfigWindow 相同形态绘制 CDN 云端位置：当前 Config 的 OSS 前缀只读，Step 后缀可编辑。
         /// </summary>
         private static void DrawCdnRemotePathField(
             Rect valueRect,
@@ -492,7 +519,7 @@ namespace NovaFramework.Editor
         {
             ConfigMasterSO master = EditorUtil.Config.WorkspaceActive.Get();
             if (master == null) return string.Empty;
-            CdnDeploymentConfig config = EditorUtil.Config.DimensionalResolver.ResolveCdn(
+            CDNEditorConfigs config = EditorUtil.Config.DimensionalResolver.ResolveCDNEditorConfigs(
                 master,
                 master.CurrentPlatform,
                 master.CurrentChannel,

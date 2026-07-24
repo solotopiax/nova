@@ -42,12 +42,12 @@ EditorUtil (public static partial class)
 // 面板种类：区分六种面板
 public enum PanelKind
 {
-    Common,     // 公共配置（CommonConfig），矩阵类
+    Common,     // 公共配置（AppConfigs），矩阵类
     SDK,        // SDK Plugin 配置，矩阵类；typeName 有效
     Kit,        // Kit 配置，矩阵类；typeName 有效
     Namespace,  // 顶层 Namespace 字段（NamespaceOverrides 旁路）
-    HybridCLR,  // 顶层 HybridCLR 面板字段组（Editor-only，HybridCLROverrides 旁路）
-    YooAsset,   // 顶层 YooAsset 两路径（Editor-only，YooAssetOverrides 旁路）
+    HybridCLR,  // 顶层 HybridCLR 面板字段组（Editor-only，HybridEditorConfigsOverrides 旁路）
+    YooAsset,   // 顶层 YooAsset 两路径（Editor-only，YooAssetEditorConfigsOverrides 旁路）
 }
 
 // 维度轴：对应 PanelDimensionMask 三个 bool 字段
@@ -117,7 +117,7 @@ else (Common / SDK / Kit) → 矩阵类路径（m_Entries 遍历）
 ```
 
 **矩阵类路径**（Common / SDK / Kit）：
-- Common 使用 C# 层逐字段深拷贝（`DeepCloneCommon`，对齐 `Exporter.CloneCommon`）
+- Common 使用 C# 层逐字段深拷贝（`DeepCloneAppConfigs`，对齐 `Exporter.CloneAppConfigs`）
 - SDK / Kit 使用 `DeepCloneManagedRef`（`JsonUtility` round-trip）产生内存态独立深拷贝，保留 `[SerializeReference]` 多态类型
 
 **顶层类路径**（Namespace / HybridCLR / YooAsset）：
@@ -163,7 +163,7 @@ srcElemProp.boxedValue
 | 误区 | 正确做法 |
 |------|---------|
 | 直接修改 `m_Entries` 某格数据并期望其他同组格同步 | 修改后调用 `BroadcastWithinGroup`，由 ConfigWindow 负责触发 |
-| 在 `PanelKind.Common` 情况下传非 null `masterSO` 并依赖其生效 | Common 路径走 C# 层拷贝，不经 `SerializedObject`；`masterSO` 参数在 Common 分支中实际未使用 |
+| 在 `PanelKind.AppConfigs` 情况下传非 null `masterSO` 并依赖其生效 | Common 路径走 C# 层拷贝，不经 `SerializedObject`；`masterSO` 参数在 Common 分支中实际未使用 |
 | 切换维度后跳过 `ApplyModifiedPropertiesWithoutUndo` 直接保存 | SDK/Kit 路径的 `FillGroupSerializedRef` 通过 `SerializedProperty` 写入，必须经 `ApplyModifiedPropertiesWithoutUndo` 才能同步回 C# 层 |
 | 顶层类维度切换后不刷 `YooAssetInjector.Inject` | YooAsset mask 变更后路径已更新但注入还是旧值；`ConfigWindow.RightPanel.YooAsset.cs` 的 `ReInjectYooAsset` 需在 toggle 回调中调用 |
 | SDK/Kit 分支先 `masterSO.Update()` 再 `SetAxis(mask, axis, value)`（旧顺序） | `mask` 是绕过 `SerializedProperty` 直改的 C# 字段；先 Update 则 SO 缓存中 mask 仍为旧值（stale）；后续 `ApplyModifiedPropertiesWithoutUndo` 把整棵 SO 缓存回写 native 时会用 stale 旧值覆盖（clobber）新 mask。**正确顺序：`SetAxis` → `masterSO.Update()` → `FindSerializedRefProp` → Apply**，确保 Update 把含新 mask 值的 working 读入 SO 缓存，Apply 时不再 clobber。此问题在 ConfigWindow 开启 `editingTextField` skip-Update 优化后尤为明显（编辑期 SO 缓存持续 stale，编辑提交 Apply 时必然 clobber）。 |
@@ -184,7 +184,7 @@ var curCoord = new DimensionProjector.Coord(
 DimensionProjector.OnDimensionEnabled(
     workingCopy,          // m_WorkingCopy（ConfigMasterSO，内存暂存）
     workingCopySO,        // SerializedObject(workingCopy)
-    DimensionProjector.PanelKind.Common,
+    DimensionProjector.PanelKind.AppConfigs,
     null,
     curCoord,
     DimensionProjector.DimensionAxis.Platform);
@@ -202,7 +202,7 @@ DimensionProjector.BroadcastWithinGroup(
 
 ## §13 关联文档
 
-- [PanelDimensionMask.md](../../../Runtime/Modules/Config/Definitions/PanelDimensionMask.md)（掩码类型）
+- [PanelDimensionMask.md](../../../Editor/Config/Definitions/PanelDimensionMask.md)（掩码类型）
 - [EditorUtil.Config.DimensionalResolver.md](EditorUtil.Config.DimensionalResolver.md)（只读取数对称类）
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md)（`CommonMask` / `SDKMasks` / `KitMasks` / `NamespaceMask` / `HybridCLRMask` / `YooAssetMask` + `XxxOverrides` 字段）
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)（`AppConfigsMask` / `SDKMasks` / `KitMasks` / `NamespaceMask` / `HybridEditorConfigsMask` / `YooAssetEditorConfigsMask` + `XxxOverrides` 字段）
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)（调用方，在 `DrawDimensionMaskRow` / `DrawYooAssetTitleWithMask` 中触发三操作）

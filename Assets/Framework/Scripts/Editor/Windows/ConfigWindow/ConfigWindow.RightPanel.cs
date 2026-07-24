@@ -67,7 +67,7 @@ namespace NovaFramework.Editor
                                 DrawHybridCLREnvSection();
                                 break;
                             case LeftTreeItem.AppConfig when m_MasterSO != null:
-                                DrawCommonPanel();
+                                DrawAppConfigsPanel();
                                 break;
                             case LeftTreeItem.NamespaceConfig when m_MasterSO != null:
                                 DrawNamespacePanel();
@@ -78,7 +78,7 @@ namespace NovaFramework.Editor
                             case LeftTreeItem.HybridCLRConfig when m_MasterSO != null:
                                 DrawHybridCLRPanel();
                                 break;
-                            case LeftTreeItem.CdnDeployment when m_MasterSO != null:
+                            case LeftTreeItem.CDNEditorConfigs when m_MasterSO != null:
                                 DrawCdnDeploymentPanel();
                                 break;
                             case LeftTreeItem.KitNode when m_SelectedPluginType != null:
@@ -311,10 +311,10 @@ namespace NovaFramework.Editor
             PanelDimensionMask mask;
             switch (panelKind)
             {
-                case EditorUtil.Config.DimensionProjector.PanelKind.Common: mask = workingSrc.CommonMask; break;
+                case EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs: mask = workingSrc.AppConfigsMask; break;
                 case EditorUtil.Config.DimensionProjector.PanelKind.Namespace: mask = workingSrc.NamespaceMask; break;
-                case EditorUtil.Config.DimensionProjector.PanelKind.HybridCLR: mask = workingSrc.HybridCLRMask; break;
-                case EditorUtil.Config.DimensionProjector.PanelKind.Cdn: mask = workingSrc.CdnMask; break;
+                case EditorUtil.Config.DimensionProjector.PanelKind.HybridEditorConfigs: mask = workingSrc.HybridEditorConfigsMask; break;
+                case EditorUtil.Config.DimensionProjector.PanelKind.CDNEditorConfigs: mask = workingSrc.CDNEditorConfigsMask; break;
                 case EditorUtil.Config.DimensionProjector.PanelKind.SDK: mask = workingSrc.GetSDKMask(typeName); break;
                 default: mask = workingSrc.GetKitMask(typeName); break;
             }
@@ -371,14 +371,14 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制应用配置（CommonConfig）面板；按当前 Platform × Channel × DevelopMode 三维定位
-        /// 到对应 Entry.CommonByMode 条目后直接展开子字段。
+        /// 绘制应用配置（AppConfigs）面板；按当前 Platform × Channel × DevelopMode 三维定位
+        /// 到对应 Entry.AppConfigsByMode 条目后直接展开子字段。
         /// </summary>
-        private void DrawCommonPanel()
+        private void DrawAppConfigsPanel()
         {
             // 面板标题行（内联维度掩码三 toggle）+ HelpBox
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
-            DrawPanelTitleWithMask("应用配置", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.Common, null);
+            DrawPanelTitleWithMask("应用配置", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs, null);
             if (!workingSrc.TryGetEntry(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, out PlatformChannelEntry entry))
             {
                 EditorUtil.Draw.Layout.Horizontal(() =>
@@ -416,22 +416,22 @@ namespace NovaFramework.Editor
                 return;
             }
             SerializedProperty entryProp = entries.GetArrayElementAtIndex(entryIndex);
-            SerializedProperty commonByMode = entryProp.FindPropertyRelative("CommonByMode");
-            if (commonByMode == null)
+            SerializedProperty appConfigsByMode = entryProp.FindPropertyRelative("AppConfigsByMode");
+            if (appConfigsByMode == null)
             {
                 EditorUtil.Draw.Layout.Horizontal(() =>
                 {
                     EditorUtil.Draw.Space(16f);
-                    EditorUtil.Draw.HelpBox(MessageType.Warning, new[] { "序列化字段 CommonByMode 未找到，请检查 PlatformChannelEntry 结构。" }, false, GUILayout.ExpandWidth(true));
+                    EditorUtil.Draw.HelpBox(MessageType.Warning, new[] { "序列化字段 AppConfigsByMode 未找到，请检查 PlatformChannelEntry 结构。" }, false, GUILayout.ExpandWidth(true));
                     EditorUtil.Draw.Space(16f);
                 });
                 return;
             }
 
             DevelopMode mode = workingSrc.CurrentDevelopMode;
-            for (int i = 0; i < commonByMode.arraySize; i++)
+            for (int i = 0; i < appConfigsByMode.arraySize; i++)
             {
-                SerializedProperty modeEntry = commonByMode.GetArrayElementAtIndex(i);
+                SerializedProperty modeEntry = appConfigsByMode.GetArrayElementAtIndex(i);
                 SerializedProperty modeProp = modeEntry.FindPropertyRelative("Mode");
                 if (modeProp == null || (DevelopMode)modeProp.enumValueIndex != mode) continue;
                 SerializedProperty configProp = modeEntry.FindPropertyRelative("Config");
@@ -466,7 +466,7 @@ namespace NovaFramework.Editor
             }
             m_MasterSO.ApplyModifiedProperties();
             // 字段编辑完成后广播同组格，确保组内数据一致（ChangeCheck 覆盖后追加）
-            EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.Common, null, new EditorUtil.Config.DimensionProjector.Coord(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
+            EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs, null, new EditorUtil.Config.DimensionProjector.Coord(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
             EditorUtil.Draw.Space(16f);
         }
 

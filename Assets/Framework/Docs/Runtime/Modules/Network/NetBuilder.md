@@ -2,7 +2,7 @@
 
 ## 1. 简介
 
-`NetBuilder` 是网络请求构建静态工具类，承接全部「构建 / 加密」职责：Header 构建（从 `Nova.Config.Common` / `Nova.SDK` 自动读取字段，渠道由 `InferChannel()` 自动填充）、Proto Body 序列化、AES-128-CBC 加密、HTTP Header JSON 拼装。
+`NetBuilder` 是网络请求构建静态工具类，承接全部「构建 / 加密」职责：Header 构建（从 `Nova.Config.AppConfigs` / `Nova.SDK` 自动读取字段，渠道由 `InferChannel()` 自动填充）、Proto Body 序列化、AES-128-CBC 加密、HTTP Header JSON 拼装。
 
 **所在文件：** `Assets/Framework/Scripts/Runtime/Modules/Network/Kit/NetBuilder.cs`
 **命名空间：** `NovaFramework.Runtime`
@@ -27,7 +27,7 @@
 
 | 字段 | 来源 | 失败处理 |
 |---|---|---|
-| `AppId` | `Nova.Config.Common.AppID`（int.TryParse） | 解析失败 Log.Warning + 回退 0 |
+| `AppId` | `Nova.Config.AppConfigs.AppID`（int.TryParse） | 解析失败 Log.Warning + 回退 0 |
 | `Version` | `Application.version` | — |
 | `Language` | `LanguageMetadata.GetFlag(Nova.Localization.Language)` | — |
 | `DeviceId` | `Nova.SDK.TryGet<IDeviceIdProvider>().GetDeviceID()` | 未注册时回退空串 |

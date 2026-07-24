@@ -5,7 +5,7 @@
  * filename:  EditorUtil.Config.DimensionalResolver.cs
  * author:    taoye
  * created:   2026/6/2
- * descrip:   顶层类维度取数器；按当前坐标 + NamespaceMask/HybridCLRMask/YooAssetMask 从 Override 列表匹配并回落顶层默认字段，纯只读，不改数据
+ * descrip:   顶层类维度取数器；按当前坐标 + NamespaceMask/HybridEditorConfigsMask/YooAssetEditorConfigsMask 从 Override 列表匹配并回落顶层默认字段，纯只读，不改数据
  ***************************************************************/
 
 using System.Collections.Generic;
@@ -101,7 +101,7 @@ namespace NovaFramework.Editor
 #if UNITY_EDITOR
                 /// <summary>
                 /// 按当前坐标解析 HybridCLR 面板四字段的最终生效值。
-                /// <para>全不勾（IsGlobal）→ 直接取顶层各默认字段；否则在 HybridCLROverrides 中匹配首个符合条目，
+                /// <para>全不勾（IsGlobal）→ 直接取顶层各默认字段；否则在 HybridEditorConfigsOverrides 中匹配首个符合条目，
                 /// 命中后使用整份 Override（空字符串和空列表均为有效值），无命中回落顶层字段。</para>
                 /// <para>AotMetadataDlls / GameDlls 返回深拷贝列表（禁共享引用）。</para>
                 /// </summary>
@@ -122,10 +122,10 @@ namespace NovaFramework.Editor
                             GameEntranceProcedureName = string.Empty,
                         };
                     }
-                    PanelDimensionMask mask = master.HybridCLRMask;
+                    PanelDimensionMask mask = master.HybridEditorConfigsMask;
                     if (!IsGlobal(mask))
                     {
-                        foreach (HybridCLROverride o in master.HybridCLROverrides)
+                        foreach (HybridEditorConfigsOverride o in master.HybridEditorConfigsOverrides)
                         {
                             if (!MatchesMask(mask, o.Platform, o.Channel, o.DevelopMode, curP, curC, curM)) continue;
                             return new HybridCLRResult
@@ -140,16 +140,16 @@ namespace NovaFramework.Editor
                     // 全不勾或无命中，回落顶层默认字段
                     return new HybridCLRResult
                     {
-                        AotMetadataDlls = CloneDllList(master.AotMetadataDlls),
-                        GameDlls = CloneDllList(master.GameDlls),
-                        LinkXmlTargetPath = master.LinkXmlTargetPath ?? string.Empty,
-                        GameEntranceProcedureName = master.GameEntranceProcedureName ?? string.Empty,
+                        AotMetadataDlls = CloneDllList(master.HybridEditorConfigs.AotMetadataDlls),
+                        GameDlls = CloneDllList(master.HybridEditorConfigs.GameDlls),
+                        LinkXmlTargetPath = master.HybridEditorConfigs.LinkXmlTargetPath ?? string.Empty,
+                        GameEntranceProcedureName = master.HybridEditorConfigs.GameEntranceProcedureName ?? string.Empty,
                     };
                 }
 
                 /// <summary>
                 /// 按当前坐标解析 YooAsset 面板两路径字段的最终生效值。
-                /// <para>全不勾（IsGlobal）→ 直接取顶层各默认字段；否则在 YooAssetOverrides 中匹配首个符合条目，
+                /// <para>全不勾（IsGlobal）→ 直接取顶层各默认字段；否则在 YooAssetEditorConfigsOverrides 中匹配首个符合条目，
                 /// 命中后使用整份 Override（空字符串为有效值），无命中回落顶层字段。</para>
                 /// </summary>
                 /// <param name="master">ConfigMasterSO 实例。</param>
@@ -160,10 +160,10 @@ namespace NovaFramework.Editor
                 public static YooAssetResult ResolveYooAsset(ConfigMasterSO master, PlatformType curP, ChannelType curC, DevelopMode curM)
                 {
                     if (master == null) return new YooAssetResult { YooAssetSettingsPath = string.Empty, BundleCollectorSettingPath = string.Empty };
-                    PanelDimensionMask mask = master.YooAssetMask;
+                    PanelDimensionMask mask = master.YooAssetEditorConfigsMask;
                     if (!IsGlobal(mask))
                     {
-                        foreach (YooAssetOverride o in master.YooAssetOverrides)
+                        foreach (YooAssetEditorConfigsOverride o in master.YooAssetEditorConfigsOverrides)
                         {
                             if (!MatchesMask(mask, o.Platform, o.Channel, o.DevelopMode, curP, curC, curM)) continue;
                             return new YooAssetResult
@@ -175,14 +175,14 @@ namespace NovaFramework.Editor
                     }
                     return new YooAssetResult
                     {
-                        YooAssetSettingsPath = master.YooAssetSettingsPath ?? string.Empty,
-                        BundleCollectorSettingPath = master.BundleCollectorSettingPath ?? string.Empty,
+                        YooAssetSettingsPath = master.YooAssetEditorConfigs.YooAssetSettingsPath ?? string.Empty,
+                        BundleCollectorSettingPath = master.YooAssetEditorConfigs.BundleCollectorSettingPath ?? string.Empty,
                     };
                 }
 
                 /// <summary>
                 /// 按当前坐标解析 CDN 面板部署配置的最终生效值。
-                /// <para>全不勾（IsGlobal）→ 直接返回顶层 master.CdnDeployment 的深拷贝；否则在 CdnOverrides 中匹配首个符合条目，
+                /// <para>全不勾（IsGlobal）→ 直接返回顶层 master.CDNEditorConfigs 的深拷贝；否则在 CDNEditorConfigsOverrides 中匹配首个符合条目，
                 /// 取其 Config 整套快照深拷贝；空字符串是用户明确配置的有效值，不回落顶层。无命中时回落顶层深拷贝。</para>
                 /// <para>返回值恒为新实例（逐字段赋值深拷贝，禁共享引用），调用方可安全修改。</para>
                 /// </summary>
@@ -190,25 +190,27 @@ namespace NovaFramework.Editor
                 /// <param name="curP">当前平台。</param>
                 /// <param name="curC">当前渠道。</param>
                 /// <param name="curM">当前开发模式。</param>
-                /// <returns>CdnDeploymentConfig 深拷贝；master 为 null 时返回各字段为空的新实例。</returns>
-                public static CdnDeploymentConfig ResolveCdn(ConfigMasterSO master, PlatformType curP, ChannelType curC, DevelopMode curM)
+                /// <returns>CDNEditorConfigs 深拷贝；master 为 null 时返回各字段为空的新实例。</returns>
+                public static CDNEditorConfigs ResolveCDNEditorConfigs(ConfigMasterSO master, PlatformType curP, ChannelType curC, DevelopMode curM)
                 {
-                    if (master == null) return new CdnDeploymentConfig();
-                    CdnDeploymentConfig top = master.CdnDeployment;
-                    PanelDimensionMask mask = master.CdnMask;
+                    if (master == null) return new CDNEditorConfigs();
+                    CDNEditorConfigs top = master.CDNEditorConfigs;
+                    PanelDimensionMask mask = master.CDNEditorConfigsMask;
                     if (!IsGlobal(mask))
                     {
-                        foreach (CdnDeploymentOverride o in master.CdnOverrides)
+                        foreach (CDNEditorConfigsOverride o in master.CDNEditorConfigsOverrides)
                         {
                             if (!MatchesMask(mask, o.Platform, o.Channel, o.DevelopMode, curP, curC, curM)) continue;
-                            CdnDeploymentConfig oc = o.Config;
+                            CDNEditorConfigs oc = o.Config;
                             if (oc == null) break;
-                            return new CdnDeploymentConfig
+                            return new CDNEditorConfigs
                             {
                                 Endpoint = oc.Endpoint ?? string.Empty,
                                 AccessKeyID = oc.AccessKeyID ?? string.Empty,
                                 AccessKeySecret = oc.AccessKeySecret ?? string.Empty,
                                 PresetOSSPath = oc.PresetOSSPath ?? string.Empty,
+                                VersionCheckLocalFilePath = oc.VersionCheckLocalFilePath ?? string.Empty,
+                                VersionCheckRemoteFilePath = oc.VersionCheckRemoteFilePath ?? string.Empty,
                                 LocalDirectory = oc.LocalDirectory ?? string.Empty,
                                 RemotePathSuffix = oc.RemotePathSuffix ?? string.Empty,
                                 ZoneID = oc.ZoneID ?? string.Empty,
@@ -219,13 +221,15 @@ namespace NovaFramework.Editor
                         }
                     }
                     // 全不勾或无命中，回落顶层深拷贝
-                    if (top == null) return new CdnDeploymentConfig();
-                    return new CdnDeploymentConfig
+                    if (top == null) return new CDNEditorConfigs();
+                    return new CDNEditorConfigs
                     {
                         Endpoint = top.Endpoint ?? string.Empty,
                         AccessKeyID = top.AccessKeyID ?? string.Empty,
                         AccessKeySecret = top.AccessKeySecret ?? string.Empty,
                         PresetOSSPath = top.PresetOSSPath ?? string.Empty,
+                        VersionCheckLocalFilePath = top.VersionCheckLocalFilePath ?? string.Empty,
+                        VersionCheckRemoteFilePath = top.VersionCheckRemoteFilePath ?? string.Empty,
                         LocalDirectory = top.LocalDirectory ?? string.Empty,
                         RemotePathSuffix = top.RemotePathSuffix ?? string.Empty,
                         ZoneID = top.ZoneID ?? string.Empty,

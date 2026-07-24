@@ -43,7 +43,7 @@ namespace NovaFramework.Editor
                     // 避免多 sample 共存时仍命中旧 sample 的 BundleCollectorSetting 引用。
                     BundleCollectorSettingData.ResetCache();
 
-                    string path = master.YooAssetSettingsPath;
+                    string path = master.YooAssetEditorConfigs.YooAssetSettingsPath;
                     if (string.IsNullOrEmpty(path)) return;
                     YooAssetSettings settings = AssetDatabase.LoadAssetAtPath<YooAssetSettings>(path);
                     if (settings == null)
@@ -84,7 +84,7 @@ namespace NovaFramework.Editor
                 public static BundleCollectorSetting LoadBundleCollector(ConfigMasterSO master)
                 {
                     if (master == null) return null;
-                    string path = master.BundleCollectorSettingPath;
+                    string path = master.YooAssetEditorConfigs.BundleCollectorSettingPath;
                     if (string.IsNullOrEmpty(path)) return null;
                     return SettingLoader.LoadSettingDataAtPath<BundleCollectorSetting>(path);
                 }
@@ -102,7 +102,7 @@ namespace NovaFramework.Editor
                     {
                         ConfigMasterSO master = WorkspaceActive.Get();
                         if (master == null) return null;
-                        if (type == typeof(BundleCollectorSetting)) return master.BundleCollectorSettingPath;
+                        if (type == typeof(BundleCollectorSetting)) return master.YooAssetEditorConfigs.BundleCollectorSettingPath;
                         return null;
                     });
                 }

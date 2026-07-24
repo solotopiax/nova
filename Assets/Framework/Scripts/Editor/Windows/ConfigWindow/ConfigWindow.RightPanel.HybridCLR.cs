@@ -21,15 +21,15 @@ namespace NovaFramework.Editor
     {
         /// <summary>
         /// 绘制 HybridCLR 配置面板（业务入口 Procedure / AOT 元数据 DLL / 业务 DLL 三个 section）。
-        /// 整个 HybridCLR 面板（AotMetadataDlls/GameDlls/LinkXmlTargetPath/GameEntranceProcedureName）共用一套 HybridCLRMask（同进同退）。
+        /// 整个 HybridCLR 面板（AotMetadataDlls/GameDlls/LinkXmlTargetPath/GameEntranceProcedureName）共用一套 HybridEditorConfigsMask（同进同退）。
         /// </summary>
         private void DrawHybridCLRPanel()
         {
             m_MasterSO.Update();
 
-            // 面板标题行（内联维度掩码三 toggle）+ HelpBox；整个 HybridCLR 字段组共用 HybridCLRMask
+            // 面板标题行（内联维度掩码三 toggle）+ HelpBox；整个 HybridCLR 字段组共用 HybridEditorConfigsMask
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
-            DrawPanelTitleWithMask("HybridCLR 配置", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.HybridCLR, null);
+            DrawPanelTitleWithMask("HybridCLR 配置", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.HybridEditorConfigs, null);
 
             DrawHybridCLREntranceSection();
             EditorUtil.Draw.Space(8f);
@@ -42,14 +42,14 @@ namespace NovaFramework.Editor
             m_MasterSO.ApplyModifiedProperties();
             // 修复 4：移除每帧无条件 BroadcastWithinGroup。
             // 全部四个字段（GameEntranceProcedureName / LinkXmlTargetPath / AotMetadataDlls / GameDlls）写入时
-            // 均经 EnsureHybridCLROverride(AtCoord/IndexAtCoord) 裁剪坐标，一条 clipped 条目覆盖整组（靠 MatchesMask），
+            // 均经 EnsureHybridEditorConfigsOverride(AtCoord/IndexAtCoord) 裁剪坐标，一条 clipped 条目覆盖整组（靠 MatchesMask），
             // 无需每帧广播同步。每帧调用会触发 ResolveHybridCLR 深拷贝两个 List<DllMasterAssetEntry>，造成不必要的 GC 分配。
             EditorUtil.Draw.Space(16f);
         }
 
         /// <summary>
         /// 绘制"业务入口 Procedure"section。
-        /// 使用普通 TextField 实时提交（Bug 1 修复：DelayedTextField 在切页时会丢弃 pending 缓冲；Bug 2 修复后 masterSO.Update 已不再每帧触发，PAT-22 冲突根源消除，改为实时提交安全）。提交时依 HybridCLRMask 双分支写入。
+        /// 使用普通 TextField 实时提交（Bug 1 修复：DelayedTextField 在切页时会丢弃 pending 缓冲；Bug 2 修复后 masterSO.Update 已不再每帧触发，PAT-22 冲突根源消除，改为实时提交安全）。提交时依 HybridEditorConfigsMask 双分支写入。
         /// </summary>
         private void DrawHybridCLREntranceSection()
         {
@@ -61,7 +61,8 @@ namespace NovaFramework.Editor
             });
             EditorUtil.Draw.Space(4f);
 
-            SerializedProperty entranceProp = m_MasterSO.FindProperty("GameEntranceProcedureName");
+            SerializedProperty entranceProp = m_MasterSO.FindProperty("HybridEditorConfigs")
+                ?.FindPropertyRelative("GameEntranceProcedureName");
             if (entranceProp == null)
             {
                 EditorUtil.Draw.Layout.Horizontal(() =>
@@ -89,7 +90,7 @@ namespace NovaFramework.Editor
                 string editedEntrance = EditorUtil.Draw.TextField(committedEntrance, false, GUILayout.ExpandWidth(true));
                 if (EditorGUI.EndChangeCheck() && editedEntrance != committedEntrance)
                 {
-                    PanelDimensionMask mask = workingSrc.HybridCLRMask;
+                    PanelDimensionMask mask = workingSrc.HybridEditorConfigsMask;
                     if (mask.IsGlobal)
                     {
                         // 全不勾：写顶层 SerializedProperty 字段
@@ -99,7 +100,7 @@ namespace NovaFramework.Editor
                     else
                     {
                         // 已勾维度：写 Override 条目
-                        HybridCLROverride ov = EditorUtil.Config.DimensionProjector.EnsureHybridCLROverrideAtCoord(workingSrc, curCoord);
+                        HybridEditorConfigsOverride ov = EditorUtil.Config.DimensionProjector.EnsureHybridEditorConfigsOverrideAtCoord(workingSrc, curCoord);
                         if (ov != null) ov.GameEntranceProcedureName = editedEntrance;
                         m_MasterSO.Update();
                     }
@@ -138,7 +139,7 @@ namespace NovaFramework.Editor
 
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
             EditorUtil.Config.DimensionProjector.Coord curCoord = new(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
-            // 按当前坐标 + HybridCLRMask 解析目标 SerializedProperty：IsGlobal 回落顶层；mask 非全局时进入坐标即建份（含顶层快照），list 绑 Override 内嵌列表。
+            // 按当前坐标 + HybridEditorConfigsMask 解析目标 SerializedProperty：IsGlobal 回落顶层；mask 非全局时进入坐标即建份（含顶层快照），list 绑 Override 内嵌列表。
             SerializedProperty aotProp = ResolveHybridCLRDllListProp(workingSrc, curCoord, "AotMetadataDlls");
             if (aotProp == null)
             {
@@ -198,7 +199,7 @@ namespace NovaFramework.Editor
 
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
             EditorUtil.Config.DimensionProjector.Coord curCoord = new(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
-            // 按当前坐标 + HybridCLRMask 解析目标 SerializedProperty：IsGlobal 回落顶层；mask 非全局时进入坐标即建份（含顶层快照），list 绑 Override 内嵌列表。
+            // 按当前坐标 + HybridEditorConfigsMask 解析目标 SerializedProperty：IsGlobal 回落顶层；mask 非全局时进入坐标即建份（含顶层快照），list 绑 Override 内嵌列表。
             SerializedProperty gameProp = ResolveHybridCLRDllListProp(workingSrc, curCoord, "GameDlls");
             if (gameProp == null)
             {
@@ -245,7 +246,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 绘制"link.xml 配置"section。
-        /// 使用普通 TextField 实时提交（Bug 1 修复：同 DrawHybridCLREntranceSection）。提交时依 HybridCLRMask 双分支写入。
+        /// 使用普通 TextField 实时提交（Bug 1 修复：同 DrawHybridCLREntranceSection）。提交时依 HybridEditorConfigsMask 双分支写入。
         /// </summary>
         private void DrawHybridCLRLinkXmlSection()
         {
@@ -257,7 +258,8 @@ namespace NovaFramework.Editor
             });
             EditorUtil.Draw.Space(4f);
 
-            SerializedProperty linkXmlProp = m_MasterSO.FindProperty("LinkXmlTargetPath");
+            SerializedProperty linkXmlProp = m_MasterSO.FindProperty("HybridEditorConfigs")
+                ?.FindPropertyRelative("LinkXmlTargetPath");
             if (linkXmlProp == null)
             {
                 EditorUtil.Draw.Layout.Horizontal(() =>
@@ -285,7 +287,7 @@ namespace NovaFramework.Editor
                 string editedLinkXml = EditorUtil.Draw.TextField(committedLinkXml, false, GUILayout.ExpandWidth(true));
                 if (EditorGUI.EndChangeCheck() && editedLinkXml != committedLinkXml)
                 {
-                    PanelDimensionMask mask = workingSrc.HybridCLRMask;
+                    PanelDimensionMask mask = workingSrc.HybridEditorConfigsMask;
                     if (mask.IsGlobal)
                     {
                         // 全不勾：写顶层 SerializedProperty 字段
@@ -295,7 +297,7 @@ namespace NovaFramework.Editor
                     else
                     {
                         // 已勾维度：写 Override 条目
-                        HybridCLROverride ov = EditorUtil.Config.DimensionProjector.EnsureHybridCLROverrideAtCoord(workingSrc, curCoord);
+                        HybridEditorConfigsOverride ov = EditorUtil.Config.DimensionProjector.EnsureHybridEditorConfigsOverrideAtCoord(workingSrc, curCoord);
                         if (ov != null) ov.LinkXmlTargetPath = editedLinkXml;
                         m_MasterSO.Update();
                     }
@@ -319,7 +321,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 按需构建 AOT 元数据 DLL 条目的 ReorderableList；SerializedProperty 路径变化时重建。
-        /// 路径随 HybridCLRMask 与当前坐标动态切换（顶层 AotMetadataDlls ↔ HybridCLROverrides[i].AotMetadataDlls），
+        /// 路径随 HybridEditorConfigsMask 与当前坐标动态切换（顶层 AotMetadataDlls ↔ HybridEditorConfigsOverrides[i].AotMetadataDlls），
         /// propertyPath 不同即触发重建，确保 list 始终绑定当前坐标对应的那份列表。
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
@@ -349,7 +351,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 按需构建业务 DLL 条目的 ReorderableList；SerializedProperty 路径变化时重建。
-        /// 路径随 HybridCLRMask 与当前坐标动态切换（顶层 GameDlls ↔ HybridCLROverrides[i].GameDlls）。
+        /// 路径随 HybridEditorConfigsMask 与当前坐标动态切换（顶层 GameDlls ↔ HybridEditorConfigsOverrides[i].GameDlls）。
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前坐标格。</param>
@@ -378,7 +380,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 解析当前坐标下 Dll 列表对应的 SerializedProperty，供 ReorderableList 显示与写入绑定。
-        /// IsGlobal 时回落顶层字段；mask 非全局时进入坐标即建份（EnsureHybridCLROverrideIndexAtCoord
+        /// IsGlobal 时回落顶层字段；mask 非全局时进入坐标即建份（EnsureHybridEditorConfigsOverrideIndexAtCoord
         /// 新建条目时已以顶层快照预填 Dll 列表），故 list 始终绑 Override 内嵌列表，所有写入天然落该坐标份。
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
@@ -391,11 +393,11 @@ namespace NovaFramework.Editor
             // 进入坐标即建份：mask 非全局时，若当前坐标尚无 Override 条目则新建（含顶层快照）。
             // 先 Find 只读探查：命中则无需 Update（DrawHybridCLRPanel 顶部已 Update），避免每帧 Update 破坏 ReorderableList 文本编辑态；
             // 无命中才 Ensure 建份 + Update 刷新 SO 缓存让 SerializedProperty 看到新条目。
-            int idx = EditorUtil.Config.DimensionProjector.FindHybridCLROverrideIndexAtCoord(workingSrc, curCoord);
+            int idx = EditorUtil.Config.DimensionProjector.FindHybridEditorConfigsOverrideIndexAtCoord(workingSrc, curCoord);
             if (idx < 0)
             {
                 // IsGlobal 或无命中：IsGlobal 时 Ensure 也返回 -1，回落顶层字段
-                idx = EditorUtil.Config.DimensionProjector.EnsureHybridCLROverrideIndexAtCoord(workingSrc, curCoord);
+                idx = EditorUtil.Config.DimensionProjector.EnsureHybridEditorConfigsOverrideIndexAtCoord(workingSrc, curCoord);
                 if (idx >= 0)
                 {
                     m_MasterSO.Update();
@@ -403,10 +405,11 @@ namespace NovaFramework.Editor
             }
             if (idx < 0)
             {
-                return m_MasterSO.FindProperty(field);
+                return m_MasterSO.FindProperty("HybridEditorConfigs")?.FindPropertyRelative(field);
             }
-            SerializedProperty overridesProp = m_MasterSO.FindProperty("HybridCLROverrides");
-            if (overridesProp == null || idx >= overridesProp.arraySize) return m_MasterSO.FindProperty(field);
+            SerializedProperty overridesProp = m_MasterSO.FindProperty("HybridEditorConfigsOverrides");
+            if (overridesProp == null || idx >= overridesProp.arraySize)
+                return m_MasterSO.FindProperty("HybridEditorConfigs")?.FindPropertyRelative(field);
             return overridesProp.GetArrayElementAtIndex(idx).FindPropertyRelative(field);
         }
 
@@ -515,9 +518,9 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 按当前坐标将 Dll 列表单字段写入落盘。
-        /// ResolveHybridCLRDllListProp 内部已 EnsureHybridCLROverrideIndexAtCoord + Update，
+        /// ResolveHybridCLRDllListProp 内部已 EnsureHybridEditorConfigsOverrideIndexAtCoord + Update，
         /// mask 非全局时 listProp 绑定当前坐标 Override 内嵌列表，写入落该坐标份；
-        /// IsGlobal 时绑顶层字段。与字符串字段 EnsureHybridCLROverrideAtCoord + ov.Xxx = value 的双分支语义对称。
+        /// IsGlobal 时绑顶层字段。与字符串字段 EnsureHybridEditorConfigsOverrideAtCoord + ov.Xxx = value 的双分支语义对称。
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前坐标格。</param>
@@ -664,7 +667,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// Dll 列表新增条目核心逻辑：三字段（源位置 / 目标位置 / Asset 地址）均置空字符串。
-        /// ResolveHybridCLRDllListProp 内部已 EnsureHybridCLROverrideIndexAtCoord + Update，
+        /// ResolveHybridCLRDllListProp 内部已 EnsureHybridEditorConfigsOverrideIndexAtCoord + Update，
         /// mask 非全局时 listProp 绑定当前坐标 Override 内嵌列表，arraySize++ 落该坐标份；
         /// IsGlobal 时绑顶层字段，行为同原实现。
         /// </summary>

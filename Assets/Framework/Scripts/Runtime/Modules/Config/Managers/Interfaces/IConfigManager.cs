@@ -32,9 +32,9 @@ namespace NovaFramework.Runtime
         DevelopMode DevelopMode { get; }
 
         /// <summary>
-        /// 全局公共配置整块；LoadAsync 完成后可读，未加载时返回 null。
+        /// 应用运行时配置；LoadAsync 完成后可读，未加载时返回 null。
         /// </summary>
-        CommonConfig Common { get; }
+        AppConfigs AppConfigs { get; }
 
         /// <summary>
         /// 当前解析后的 Namespace；LoadAsync 完成后可读。
@@ -42,19 +42,14 @@ namespace NovaFramework.Runtime
         string Namespace { get; }
 
         /// <summary>
-        /// 业务入口 Procedure 相对类型名（直读 ConfigRuntimeSO.GameEntranceProcedureName）；LoadAsync 完成后可读。
+        /// HybridCLR 运行时配置；LoadAsync 完成后可读，未加载时返回 null。
         /// </summary>
-        string GameEntranceProcedureName { get; }
+        HybridConfigs HybridConfigs { get; }
 
         /// <summary>
-        /// AOT 元数据 DLL 列表；LoadAsync 完成后可读，未加载时返回空集合。
+        /// 业务自定义运行时配置；LoadAsync 完成后可读，未加载时返回 null。
         /// </summary>
-        IReadOnlyList<DllAssetEntry> AotMetadataDlls { get; }
-
-        /// <summary>
-        /// 业务 DLL 列表；LoadAsync 完成后可读，未加载时返回空集合。
-        /// </summary>
-        IReadOnlyList<DllAssetEntry> GameDlls { get; }
+        CustomConfigs CustomConfigs { get; }
 
         /// <summary>
         /// 本次加载 ConfigRuntimeSO 时记录的目标平台；由导出侧在 Export 时写入。

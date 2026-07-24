@@ -14,35 +14,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
   DevelopMode: 0
   Namespace: NovaFramework.Kit.Network.GameBind.Samples.Runtime
-  Common:
+  AppConfigs:
     AppID: YOUR_APP_ID
     AppAesKey: YOUR_APP_AES_KEY
     AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 791343950823161857
+  - rid: 8085689214958567709
   EnabledKitConfigs:
-  - rid: 791343950823161858
-  - rid: 791343950823161859
-  - rid: 791343950823161860
-  GameEntranceProcedureName: ProcedurePreload
-  AotMetadataDlls:
-  - m_AssetLocation: mscorlib.dll
-  - m_AssetLocation: System.dll
-  - m_AssetLocation: System.Core.dll
-  - m_AssetLocation: UniTask.dll
-  - m_AssetLocation: Newtonsoft.Json.dll
-  - m_AssetLocation: UnityEngine.CoreModule.dll
-  - m_AssetLocation: Unity.TextMeshPro.dll
-  - m_AssetLocation: NovaFramework.Runtime.dll
-  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-  GameDlls:
-  - m_AssetLocation: NovaFramework.Kit.Network.GameBind.Samples.Runtime.dll
+  - rid: 8085689214958567710
+  - rid: 8085689214958567711
+  - rid: 8085689214958567712
+  HybridConfigs:
+    GameEntranceProcedureName: ProcedurePreload
+    AotMetadataDlls:
+    - m_AssetLocation: mscorlib.dll
+    - m_AssetLocation: System.dll
+    - m_AssetLocation: System.Core.dll
+    - m_AssetLocation: UniTask.dll
+    - m_AssetLocation: Newtonsoft.Json.dll
+    - m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_AssetLocation: Unity.TextMeshPro.dll
+    - m_AssetLocation: NovaFramework.Runtime.dll
+    - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+    GameDlls:
+    - m_AssetLocation: NovaFramework.Kit.Network.GameBind.Samples.Runtime.dll
   references:
     version: 2
     RefIds:
-    - rid: 791343950823161857
+    - rid: 8085689214958567709
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -51,17 +52,17 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 791343950823161858
+    - rid: 8085689214958567710
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:
         m_GetCmdName: GameSaveGet
         m_SetCmdName: GameSaveSet
-    - rid: 791343950823161859
+    - rid: 8085689214958567711
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: GameAccountDelete
-    - rid: 791343950823161860
+    - rid: 8085689214958567712
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind

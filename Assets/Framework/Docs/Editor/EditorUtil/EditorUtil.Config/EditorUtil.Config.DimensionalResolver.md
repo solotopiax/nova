@@ -66,7 +66,7 @@ public static string ResolveNamespace(
     DevelopMode curM);
 
 // 解析 HybridCLR 面板四字段最终生效值（仅 #if UNITY_EDITOR）
-// IsGlobal → 取顶层各默认字段；否则遍历 HybridCLROverrides 找首个匹配条目
+// IsGlobal → 取顶层各默认字段；否则遍历 HybridEditorConfigsOverrides 找首个匹配条目
 // 命中后使用整份 Override，空字符串和空列表均为有效值；无命中才回落顶层字段
 // AotMetadataDlls / GameDlls 返回深拷贝列表；master 为 null → 各字段返回空值
 public static HybridCLRResult ResolveHybridCLR(
@@ -76,7 +76,7 @@ public static HybridCLRResult ResolveHybridCLR(
     DevelopMode curM);
 
 // 解析 YooAsset 面板两路径最终生效值（仅 #if UNITY_EDITOR）
-// IsGlobal → 取顶层默认字段；否则遍历 YooAssetOverrides 找首个匹配条目
+// IsGlobal → 取顶层默认字段；否则遍历 YooAssetEditorConfigsOverrides 找首个匹配条目
 // 命中后使用整份 Override，空路径是有效值；无命中才回落顶层字段
 // master 为 null → 两字段返回空字符串
 public static YooAssetResult ResolveYooAsset(
@@ -158,11 +158,11 @@ YooAssetInjector.InjectDirectly(result.YooAssetSettingsPath);
 
 ## §13 关联文档
 
-- [PanelDimensionMask.md](../../../Runtime/Modules/Config/Definitions/PanelDimensionMask.md)（掩码类型）
-- [NamespaceOverride.md](../../../Runtime/Modules/Config/Definitions/NamespaceOverride.md)（`NamespaceOverrides` 元素类型）
-- [HybridCLROverride.md](../../../Runtime/Modules/Config/Definitions/HybridCLROverride.md)（`HybridCLROverrides` 元素类型）
-- [YooAssetOverride.md](../../../Runtime/Modules/Config/Definitions/YooAssetOverride.md)（`YooAssetOverrides` 元素类型）
+- [PanelDimensionMask.md](../../../Editor/Config/Definitions/PanelDimensionMask.md)（掩码类型）
+- [NamespaceOverride.md](../../../Editor/Config/Definitions/NamespaceOverride.md)（`NamespaceOverrides` 元素类型）
+- [HybridEditorConfigsOverride.md](../../../Editor/Config/Definitions/HybridEditorConfigsOverride.md)（`HybridEditorConfigsOverrides` 元素类型）
+- [YooAssetEditorConfigsOverride.md](../../../Editor/Config/Definitions/YooAssetEditorConfigsOverride.md)（`YooAssetEditorConfigsOverrides` 元素类型）
 - [EditorUtil.Config.DimensionProjector.md](EditorUtil.Config.DimensionProjector.md)（写端对称类；存值规则须与本类 MatchesMask 对称）
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md)（数据来源）
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)（数据来源）
 - [EditorUtil.Config.Exporter.md](EditorUtil.Config.Exporter.md)（调用方，D6.2 导出取数）
 - [EditorUtil.Config.YooAssetInjector.md](EditorUtil.Config.YooAssetInjector.md)（消费 `ResolveYooAsset`）

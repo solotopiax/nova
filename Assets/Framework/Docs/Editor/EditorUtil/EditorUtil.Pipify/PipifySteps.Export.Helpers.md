@@ -112,5 +112,5 @@ SoundComponent soundComponent = PipifySteps.Helpers.ResolveComponentOnNova<Sound
 ## §13 关联文档
 
 - [PipifySteps.md](./PipifySteps.md)
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md)
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)
 - [EditorUtil.Asset.Operator.md](../EditorUtil.Asset/EditorUtil.Asset.Operator.md)

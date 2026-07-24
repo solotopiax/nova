@@ -42,6 +42,7 @@ namespace NovaFramework.Runtime
         {
             m_AppManager.Initialize(new AppManagerConfig
             {
+                EnableAppUpdate = m_EnableAppUpdate,
                 AppDownloadCheckUrl = ResolvePrimaryCheckUrl(),
                 AppDownloadCheckUrlFallback = ResolveFallbackCheckUrl(),
                 TimeoutSeconds = m_TimeoutSeconds,
@@ -60,9 +61,10 @@ namespace NovaFramework.Runtime
         /// </summary>
         private string ResolvePrimaryCheckUrl()
         {
-            return DevelopMode == DevelopMode.Debug
+            string template = DevelopMode == DevelopMode.Debug
                 ? m_AppDownloadCheckUrlDebug
                 : m_AppDownloadCheckUrlRelease;
+            return ResolveCheckUrlTemplate(template);
         }
 
         /// <summary>
@@ -70,9 +72,23 @@ namespace NovaFramework.Runtime
         /// </summary>
         private string ResolveFallbackCheckUrl()
         {
-            return DevelopMode == DevelopMode.Debug
+            string template = DevelopMode == DevelopMode.Debug
                 ? m_AppDownloadCheckUrlFallbackDebug
                 : m_AppDownloadCheckUrlFallbackRelease;
+            return ResolveCheckUrlTemplate(template);
+        }
+
+        /// <summary>
+        /// 按启动期快照替换版本检查 URL 中的平台、渠道、包名与应用版本占位符。
+        /// </summary>
+        private string ResolveCheckUrlTemplate(string template)
+        {
+            return Util.UrlTemplate.Resolve(
+                template,
+                Util.UrlTemplate.ResolveRuntimePlatform(),
+                m_Channel,
+                m_DefaultPackageName,
+                Application.version);
         }
 
         /// <summary>

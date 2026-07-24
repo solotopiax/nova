@@ -6,6 +6,19 @@
 
 ---
 
+## [0.5.45] - 2026-07-24
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.45]` 节。
+
+### Added
+
+- 发布 `com.solotopia.nova.framework@0.5.45`，新增全局占位符、动态 URL 模板、App 更新总开关与 CDN 缓存清理能力。
+
+### Changed
+
+- Config 编辑态与运行态完成分层重构和旧结构迁移，统一 CDN、HybridCLR、YooAsset 的顶层配置与维度覆盖模型。
+- NovaSpark 升级为 `NovaSpark2.11.cs`，固定 Framework `0.5.45`；BestHTTP、EDM 与 unity-mcp 版本保持当前最新值。
+
 ## [0.5.44] - 2026-07-23
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.44]` 节。

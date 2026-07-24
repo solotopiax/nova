@@ -5,7 +5,7 @@
  * filename:  PipifySteps.CDN.cs
  * author:    Codex
  * created:   2026/7/23
- * descrip:   Pipify 内置 Step 合集 —— CDN 资源部署
+ * descrip:   Pipify 内置 Step 合集 —— CDN 资源部署与缓存清理
  ***************************************************************/
 
 using System;
@@ -17,11 +17,12 @@ using UnityEngine;
 namespace NovaFramework.Editor
 {
     /// <summary>
-    /// Pipify 内置 Step 合集（partial）：基于当前 Config 的 CDN 资源部署入口。
+    /// Pipify 内置 Step 合集（partial）：基于当前 Config 的 CDN 资源部署与缓存清理入口。
     /// </summary>
     internal static partial class PipifySteps
     {
         private const string c_CdnDeployDisplayName = "批量部署资源到 CDN";
+        private const string c_CdnPurgeDisplayName = "批量清除 CDN 缓存";
 
         /// <summary>
         /// 使用当前激活 Config 的 OSS 凭据与固定前缀部署 Step 指定目录。
@@ -37,7 +38,7 @@ namespace NovaFramework.Editor
 
             string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
                 ?? throw new InvalidOperationException("[Pipify] 无法解析 Unity 项目根目录。");
-            CdnDeploymentConfig config = CreateCdnDeploymentSnapshot(master, parameters);
+            CDNEditorConfigs config = CreateCdnDeploymentSnapshot(master, parameters);
 
             return EditorUtil.CDN.DeployAsync(
                 config,
@@ -55,22 +56,70 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// Resolve 当前维度 CDN 配置，并仅在独立快照中覆盖 Step 路径。
+        /// Resolve 当前维度 CDN 配置，并仅在独立快照中覆盖 Step 的四个路径配置。
         /// </summary>
-        internal static CdnDeploymentConfig CreateCdnDeploymentSnapshot(
+        internal static CDNEditorConfigs CreateCdnDeploymentSnapshot(
             ConfigMasterSO master,
             CdnDeployParams parameters)
         {
             if (master == null) throw new ArgumentNullException(nameof(master));
             if (parameters == null) throw new ArgumentNullException(nameof(parameters));
 
-            CdnDeploymentConfig snapshot = EditorUtil.Config.DimensionalResolver.ResolveCdn(
+            CDNEditorConfigs snapshot = EditorUtil.Config.DimensionalResolver.ResolveCDNEditorConfigs(
                 master,
                 master.CurrentPlatform,
                 master.CurrentChannel,
                 master.CurrentDevelopMode);
+            snapshot.VersionCheckLocalFilePath = parameters.VersionCheckLocalFilePath ?? string.Empty;
+            snapshot.VersionCheckRemoteFilePath = parameters.VersionCheckRemoteFilePath ?? string.Empty;
             snapshot.LocalDirectory = parameters.LocalDirectory ?? string.Empty;
             snapshot.RemotePathSuffix = parameters.RemoteDirectory ?? string.Empty;
+            return snapshot;
+        }
+
+        /// <summary>
+        /// 使用 Step 指定的 Cloudflare 配置批量清除 CDN 缓存。
+        /// </summary>
+        [PipifyStep("cdn.purge", c_CdnPurgeDisplayName, "CDN", ParamsType = typeof(CdnPurgeParams))]
+        internal static async UniTask RunCdnPurge(PipifyContext ctx, CdnPurgeParams parameters)
+        {
+            ConfigMasterSO master = EditorUtil.Config.WorkspaceActive.Get();
+            if (master == null)
+            {
+                throw new InvalidOperationException("[Pipify] 未找到当前激活的 ConfigMasterSO，无法清除 CDN 缓存。");
+            }
+
+            CDNEditorConfigs config = CreateCdnPurgeSnapshot(master, parameters);
+            await EditorUtil.CDN.PurgeAsync(
+                config,
+                (completed, total) =>
+                {
+                    float progress = total > 0 ? completed / (float)total : 0f;
+                    if (ctx.Reporter.ReportStep(ctx.CurrentStepIndex, c_CdnPurgeDisplayName, progress))
+                    {
+                        throw new OperationCanceledException(ctx.CancellationToken);
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Resolve 当前维度 CDN 配置，并仅在独立快照中覆盖 Cloudflare 三个字段。
+        /// </summary>
+        internal static CDNEditorConfigs CreateCdnPurgeSnapshot(
+            ConfigMasterSO master,
+            CdnPurgeParams parameters)
+        {
+            if (master == null) throw new ArgumentNullException(nameof(master));
+            if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+
+            CDNEditorConfigs snapshot = EditorUtil.Config.DimensionalResolver.ResolveCDNEditorConfigs(
+                master,
+                master.CurrentPlatform,
+                master.CurrentChannel,
+                master.CurrentDevelopMode);
+            snapshot.ZoneID = parameters.ZoneID ?? string.Empty;
+            snapshot.Token = parameters.Token ?? string.Empty;
+            snapshot.CachePaths = parameters.CachePaths ?? string.Empty;
             return snapshot;
         }
     }

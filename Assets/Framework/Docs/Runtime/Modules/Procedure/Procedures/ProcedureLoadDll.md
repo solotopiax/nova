@@ -22,9 +22,9 @@
 - `IAssetManager`
 - `IConfigManager`
 - `ConfigRuntimeSO.Namespace`
-- `ConfigRuntimeSO.GameEntranceProcedureName`
-- `ConfigRuntimeSO.AotMetadataDlls`
-- `ConfigRuntimeSO.GameDlls`
+- `ConfigRuntimeSO.HybridConfigs.GameEntranceProcedureName`
+- `ConfigRuntimeSO.HybridConfigs.AotMetadataDlls`
+- `ConfigRuntimeSO.HybridConfigs.GameDlls`
 
 ### 输出
 
@@ -108,8 +108,8 @@
 - `IAssetManager` 必须已注册
 - `IConfigManager` 必须已注册
 - `ConfigRuntimeSO.Namespace` 必须有值
-- `ConfigRuntimeSO.GameEntranceProcedureName` 必须有值
-- `ConfigRuntimeSO.GameDlls` 必须能覆盖业务程序集
+- `ConfigRuntimeSO.HybridConfigs.GameEntranceProcedureName` 必须有值
+- `ConfigRuntimeSO.HybridConfigs.GameDlls` 必须能覆盖业务程序集
 
 其中任何一项缺失，最后都会变成“程序集找不到”或“入口 Procedure 找不到”。
 

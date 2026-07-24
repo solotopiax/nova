@@ -187,5 +187,7 @@ MonoBehaviour:
     m_Description: "\u8D44\u6E90\u6279\u91CF\u90E8\u7F72CDN"
     m_Items:
     - m_StepId: cdn.deploy
-      m_ParamsJson: "{\n  \"LocalDirectory\": \"Bundles/{Platform}/{Package}/2026-07-22-908\",\n 
-        \"RemoteDirectory\": \"{Platform}/{Channel}/{Package}/{Version}\"\n}"
+      m_ParamsJson: "{\n  \"VersionCheckLocalFilePath\": \"Bundles/{Platform}/{Package}/AppDownloadRules.json\",\n 
+        \"VersionCheckRemoteFilePath\": \"Nova/{Platform}/{Package}/AppDownloadRules.json\",\n 
+        \"LocalDirectory\": \"Bundles/{Platform}/{Package}/2026-07-22-908\",\n  \"RemoteDirectory\":
+        \"Nova/{Platform}/{Package}/{Version}\"\n}"

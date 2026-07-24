@@ -67,9 +67,9 @@ NetService.SetDebugMode(true);
 
 ## 4. 内部约束
 
-- **无需初始化**：`Uid` 和 `IsDebugMode` 有默认值，配置在运行时从 `Nova.Config.Common.AppAesKey / AppAesIV` 自动读取，不需要业务侧手动注入。
+- **无需初始化**：`Uid` 和 `IsDebugMode` 有默认值，配置在运行时从 `Nova.Config.AppConfigs.AppAesKey / AppAesIV` 自动读取，不需要业务侧手动注入。
 - **AES Key/IV 校验**：非调试模式下若 Key 或 IV 为空，`SendAsync` 立即返回 `NetErrorCode.AES_ENCRYPT_FAILED` 而不发出 HTTP 请求。
-- **`AppID` 解析**：`Nova.Config.Common.AppID` 必须可解析为 `int32`，解析失败时 `Log.Warning` + 回退 0。
+- **`AppID` 解析**：`Nova.Config.AppConfigs.AppID` 必须可解析为 `int32`，解析失败时 `Log.Warning` + 回退 0。
 - **`debugModeOverride`**：每次 `SendAsync` 可通过此参数覆盖全局 `IsDebugMode`，仅影响单次请求。
 - **`HttpResponse` 池化**：`SendAsync` 内部使用 `ReferencePool.Put(httpResponse)` 在 `finally` 块归还，调用方无需手动释放。
 

@@ -80,6 +80,6 @@ EditorUtil.Config.WorkspaceActive.Set(selectedMaster);
 ## §13 关联文档
 
 - [EditorUtil.Config.RuntimeProvider.md](EditorUtil.Config.RuntimeProvider.md)（GetCurrent() 的唯一调用方，委托至 GetActiveRuntime()）
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md)
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)
 - [EditorUtil.Config.YooAssetInjector.md](EditorUtil.Config.YooAssetInjector.md)（在 WorkspaceActive.Get 成功后由 ConfigWindow 调用）
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)（主要消费方：启动期 Get / 切换 Namespace 时 Set）

@@ -11,11 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7e9d17fb1ec904d88aed1cb3be70705a, type: 3}
   m_Name: ConfigMaster
-  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigMasterSO
+  m_EditorClassIdentifier: NovaFramework.Editor::NovaFramework.Editor.ConfigMasterSO
+  ConfigSchemaVersion: 1
   Namespace: NovaFramework.Samples.Runtime
   EnabledSDKs: []
   EnabledKits: []
-  CommonMask:
+  AppConfigsMask:
     ByPlatform: 0
     ByChannel: 0
     ByDevelopMode: 1
@@ -80,31 +81,33 @@ MonoBehaviour:
     ByPlatform: 0
     ByChannel: 0
     ByDevelopMode: 0
-  HybridCLRMask:
+  HybridEditorConfigsMask:
     ByPlatform: 1
     ByChannel: 0
     ByDevelopMode: 0
-  YooAssetMask:
+  YooAssetEditorConfigsMask:
     ByPlatform: 0
     ByChannel: 0
     ByDevelopMode: 1
-  CdnMask:
+  CDNEditorConfigsMask:
     ByPlatform: 0
     ByChannel: 0
     ByDevelopMode: 1
   NamespaceOverrides: []
-  CdnDeployment:
+  CDNEditorConfigs:
     Endpoint: YOUR_CDN_ENDPOINT
     AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
     AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
     PresetOSSPath: YOUR_OSS_PATH
+    VersionCheckLocalFilePath: Bundles/{Platform}/{Package}/AppDownloadRules.json
+    VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
     CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
-  CdnOverrides:
+  CDNEditorConfigsOverrides:
   - Platform: 0
     Channel: 0
     DevelopMode: 1
@@ -113,6 +116,8 @@ MonoBehaviour:
       AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
       AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
       PresetOSSPath: YOUR_OSS_PATH
+      VersionCheckLocalFilePath: Bundles/{Platform}/{Package}/AppDownloadRules.json
+      VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
       LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
       RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
       ZoneID: YOUR_CLOUDFLARE_ZONE_ID
@@ -127,16 +132,15 @@ MonoBehaviour:
       AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
       AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
       PresetOSSPath: YOUR_OSS_PATH
+      VersionCheckLocalFilePath: Bundles/{Platform}/{Package}/AppDownloadRules.json
+      VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
       LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
       RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
       ZoneID: YOUR_CLOUDFLARE_ZONE_ID
       PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
       Token: YOUR_CLOUDFLARE_API_TOKEN
       CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
-  HybridCLROverrides:
-  - Platform: 2
-    Channel: 0
-    DevelopMode: 0
+  HybridEditorConfigs:
     AotMetadataDlls:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/mscorlib.dll.bytes
@@ -171,10 +175,8 @@ MonoBehaviour:
       m_AssetLocation: NovaFramework.Samples.Runtime.dll
     LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
-  - Platform: 3
-    Channel: 0
-    DevelopMode: 0
-    AotMetadataDlls:
+  HybridEditorConfigsOverrides:
+  - AotMetadataDlls:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/mscorlib.dll.bytes
       m_AssetLocation: mscorlib.dll
@@ -208,98 +210,143 @@ MonoBehaviour:
       m_AssetLocation: NovaFramework.Samples.Runtime.dll
     LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
-  - Platform: 1
+    Platform: 2
+    Channel: 0
+    DevelopMode: 0
+  - AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+    GameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Samples.Runtime.dll
+    LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+    Platform: 3
+    Channel: 0
+    DevelopMode: 0
+  - AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+    GameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Samples.Runtime.dll
+    LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+    Platform: 1
     Channel: 0
     DevelopMode: 1
-    AotMetadataDlls:
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/mscorlib.dll.bytes
-      m_AssetLocation: mscorlib.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/System.dll.bytes
-      m_AssetLocation: System.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/System.Core.dll.bytes
-      m_AssetLocation: System.Core.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/UniTask.dll.bytes
-      m_AssetLocation: UniTask.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
-      m_AssetLocation: Newtonsoft.Json.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
-      m_AssetLocation: UnityEngine.CoreModule.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
-      m_AssetLocation: Unity.TextMeshPro.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-    GameDlls:
-    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.Samples.Runtime.dll
-    LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
-    GameEntranceProcedureName: ProcedurePreload
-  YooAssetOverrides:
-  - Platform: 0
+  YooAssetEditorConfigs:
+    YooAssetSettingsPath: Assets/Samples/MainDemo/Editor/YooAssetSettings.asset
+    BundleCollectorSettingPath: Assets/Samples/MainDemo/Editor/BundleCollectorSetting.asset
+  YooAssetEditorConfigsOverrides:
+  - YooAssetSettingsPath: Assets/Samples/MainDemo/Editor/YooAssetSettings.asset
+    BundleCollectorSettingPath: Assets/Samples/MainDemo/Editor/BundleCollectorSetting.asset
+    Platform: 0
     Channel: 0
     DevelopMode: 1
-    YooAssetSettingsPath: Assets/Samples/MainDemo/Editor/YooAssetSettings.asset
+  - YooAssetSettingsPath: Assets/Samples/MainDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/MainDemo/Editor/BundleCollectorSetting.asset
-  - Platform: 0
+    Platform: 0
     Channel: 0
     DevelopMode: 0
-    YooAssetSettingsPath: Assets/Samples/MainDemo/Editor/YooAssetSettings.asset
-    BundleCollectorSettingPath: Assets/Samples/MainDemo/Editor/BundleCollectorSetting.asset
+  CommonMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  HybridCLRMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  YooAssetMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  CdnMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  CdnDeployment:
+    Endpoint: YOUR_CDN_ENDPOINT
+    AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
+    AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
+    PresetOSSPath: YOUR_OSS_PATH
+    VersionCheckLocalFilePath: 
+    VersionCheckRemoteFilePath: 
+    LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+    RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    ZoneID: YOUR_CLOUDFLARE_ZONE_ID
+    PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
+    Token: YOUR_CLOUDFLARE_API_TOKEN
+    CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
+  CdnOverrides: []
+  HybridCLROverrides: []
+  YooAssetOverrides: []
+  GameEntranceProcedureName: 
+  YooAssetSettingsPath: 
+  BundleCollectorSettingPath: 
+  LinkXmlTargetPath: 
+  AotMetadataDlls: []
+  GameDlls: []
   CurrentDevelopMode: 0
   CurrentPlatform: 1
   CurrentChannel: 2
   ExportTarget: {fileID: 11400000, guid: 56ddd42abe7684994bf284d5404fde74, type: 2}
-  GameEntranceProcedureName: ProcedurePreload
-  YooAssetSettingsPath: Assets/Samples/MainDemo/Editor/YooAssetSettings.asset
-  BundleCollectorSettingPath: Assets/Samples/MainDemo/Editor/BundleCollectorSetting.asset
-  LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
-  AotMetadataDlls:
-  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
-    m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/mscorlib.dll.bytes
-    m_AssetLocation: mscorlib.dll
-  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
-    m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/System.dll.bytes
-    m_AssetLocation: System.dll
-  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
-    m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/System.Core.dll.bytes
-    m_AssetLocation: System.Core.dll
-  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
-    m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/UniTask.dll.bytes
-    m_AssetLocation: UniTask.dll
-  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
-    m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
-    m_AssetLocation: Newtonsoft.Json.dll
-  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
-    m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
-    m_AssetLocation: UnityEngine.CoreModule.dll
-  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
-    m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
-    m_AssetLocation: Unity.TextMeshPro.dll
-  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
-    m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
-    m_AssetLocation: NovaFramework.Runtime.dll
-  - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-    m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-    m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-  GameDlls:
-  - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
-    m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
-    m_AssetLocation: NovaFramework.Samples.Runtime.dll
   m_Entries:
   - Platform: 1
     Channel: 1
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -310,6 +357,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -342,7 +390,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 1
     Channel: 2
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -353,6 +401,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -385,7 +434,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 1
     Channel: 3
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -396,6 +445,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -428,7 +478,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 1
     Channel: 4
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -439,6 +489,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -471,7 +522,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 1
     Channel: 5
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -482,6 +533,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -514,7 +566,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 1
     Channel: 6
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -525,6 +577,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -557,7 +610,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 2
     Channel: 1
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -568,6 +621,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -600,7 +654,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 2
     Channel: 2
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -611,6 +665,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -643,7 +698,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 2
     Channel: 3
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -654,6 +709,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -686,7 +742,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 2
     Channel: 4
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -697,6 +753,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -729,7 +786,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 2
     Channel: 5
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -740,6 +797,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -772,7 +830,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 2
     Channel: 6
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -783,6 +841,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -815,7 +874,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 3
     Channel: 1
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -826,6 +885,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -858,7 +918,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 3
     Channel: 2
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -869,6 +929,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -901,7 +962,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 3
     Channel: 3
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -912,6 +973,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -944,7 +1006,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 3
     Channel: 4
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -955,6 +1017,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -987,7 +1050,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 3
     Channel: 5
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -998,6 +1061,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1030,7 +1094,7 @@ MonoBehaviour:
       - rid: 3589943518543478964
   - Platform: 3
     Channel: 6
-    CommonByMode:
+    AppConfigsByMode:
     - Mode: 0
       Config:
         AppID: YOUR_APP_ID
@@ -1041,6 +1105,7 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:

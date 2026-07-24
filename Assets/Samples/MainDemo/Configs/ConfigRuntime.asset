@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
   DevelopMode: 0
   Namespace: NovaFramework.Samples.Runtime
-  Common:
+  AppConfigs:
     AppID: YOUR_APP_ID
     AppAesKey: YOUR_APP_AES_KEY
     AppAesIV: YOUR_APP_AES_IV
@@ -22,19 +22,20 @@ MonoBehaviour:
   Channel: 2
   EnabledSDKConfigs: []
   EnabledKitConfigs: []
-  GameEntranceProcedureName: ProcedurePreload
-  AotMetadataDlls:
-  - m_AssetLocation: mscorlib.dll
-  - m_AssetLocation: System.dll
-  - m_AssetLocation: System.Core.dll
-  - m_AssetLocation: UniTask.dll
-  - m_AssetLocation: Newtonsoft.Json.dll
-  - m_AssetLocation: UnityEngine.CoreModule.dll
-  - m_AssetLocation: Unity.TextMeshPro.dll
-  - m_AssetLocation: NovaFramework.Runtime.dll
-  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-  GameDlls:
-  - m_AssetLocation: NovaFramework.Samples.Runtime.dll
+  HybridConfigs:
+    GameEntranceProcedureName: ProcedurePreload
+    AotMetadataDlls:
+    - m_AssetLocation: mscorlib.dll
+    - m_AssetLocation: System.dll
+    - m_AssetLocation: System.Core.dll
+    - m_AssetLocation: UniTask.dll
+    - m_AssetLocation: Newtonsoft.Json.dll
+    - m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_AssetLocation: Unity.TextMeshPro.dll
+    - m_AssetLocation: NovaFramework.Runtime.dll
+    - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+    GameDlls:
+    - m_AssetLocation: NovaFramework.Samples.Runtime.dll
   references:
     version: 2
     RefIds: []

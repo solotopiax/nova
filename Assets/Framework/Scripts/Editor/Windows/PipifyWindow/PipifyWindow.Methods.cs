@@ -555,7 +555,8 @@ namespace NovaFramework.Editor
             if (info == null || info.ParamsType == null) return 0f;
             FieldInfo[] fields = info.ParamsType.GetFields(BindingFlags.Public | BindingFlags.Instance);
             object paramsInstance = EnsureParamsInstance(itemIndex, item, info);
-            float height = 4f;
+            float helpBoxHeight = GetParamHelpBoxHeight(info.ParamsType);
+            float height = 4f + (helpBoxHeight > 0f ? helpBoxHeight + 4f : 0f);
             for (int i = 0; i < fields.Length; i++)
             {
                 FieldInfo field = fields[i];

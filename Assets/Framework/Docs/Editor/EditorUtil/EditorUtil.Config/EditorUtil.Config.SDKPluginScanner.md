@@ -101,6 +101,6 @@ EditorUtil.Config.SDKPluginScanner.RemoveInstance(entry, mode, pluginType);
 
 ## §13 关联文档
 
-- [PlatformChannelEntry.md](../../../Runtime/Modules/Config/PlatformChannelEntry.md)
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md)
+- [PlatformChannelEntry.md](../../../Editor/Config/Definitions/PlatformChannelEntry.md)
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)

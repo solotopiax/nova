@@ -3,7 +3,7 @@
 **类签名**：`public static class Validator`（嵌套于 `EditorUtil.Config`）
 **命名空间**：`NovaFramework.Editor`
 
-`CommonConfig` 与 `SDKConfigs` 必填字段校验工具，支持三维（Platform×Channel×DevelopMode）定位，返回问题列表供 `ConfigWindow` 弹窗展示；含 `Severity` 枚举与 `ValidationIssue` 只读结构体。
+`AppConfigs` 与 `SDKConfigs` 必填字段校验工具，支持三维（Platform×Channel×DevelopMode）定位，返回问题列表供 `ConfigWindow` 弹窗展示；含 `Severity` 枚举与 `ValidationIssue` 只读结构体。
 
 ---
 
@@ -57,7 +57,7 @@ public static IReadOnlyList<ValidationIssue> Validate(
 
 校验范围：
 1. `master` 空值检查（Error）
-2. `master.GetCommon(mode)` 返回的 `CommonConfig` 全部 4 个必填字段（AppID / AppAesKey / AppAesIV / Namespace，任意为空 → Error）
+2. `master.GetAppConfigs(mode)` 返回的 `AppConfigs` 全部 4 个必填字段（AppID / AppAesKey / AppAesIV / Namespace，任意为空 → Error）
 3. 目标 Platform×Channel 矩阵行存在性（不存在 → Error）
 4. 该行 `GetSDKConfigs(mode)` 中 null 占位检查（每个 null → Error）
 
@@ -90,6 +90,6 @@ private static bool HasAnyError(IReadOnlyList<EditorUtil.Config.Validator.Valida
 
 ## §13 关联文档
 
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md)
-- [CommonConfig.md](../../../Runtime/Modules/Config/CommonConfig.md)
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)
+- [AppConfigs.md](../../../Runtime/Modules/Config/AppConfigs.md)
 - [ConfigWindow.md](../../Windows/ConfigWindow.md)

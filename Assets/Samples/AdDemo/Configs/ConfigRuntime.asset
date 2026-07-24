@@ -14,38 +14,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
   DevelopMode: 0
   Namespace: NovaFramework.Sdk.Ad.Samples.Runtime
-  Common:
+  AppConfigs:
     AppID: YOUR_APP_ID
     AppAesKey: YOUR_APP_AES_KEY
     AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 791344287996182528
-  - rid: 791344287996182529
+  - rid: 8085689214958567685
+  - rid: 8085689214958567686
   EnabledKitConfigs:
-  - rid: 791344287996182530
-  GameEntranceProcedureName: ProcedurePreload
-  AotMetadataDlls:
-  - m_AssetLocation: mscorlib.dll
-  - m_AssetLocation: System.dll
-  - m_AssetLocation: System.Core.dll
-  - m_AssetLocation: UniTask.dll
-  - m_AssetLocation: Newtonsoft.Json.dll
-  - m_AssetLocation: UnityEngine.CoreModule.dll
-  - m_AssetLocation: Unity.TextMeshPro.dll
-  - m_AssetLocation: NovaFramework.Runtime.dll
-  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
-  - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.AdPlugin.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.MaxAdPlugin.Runtime.dll
-  GameDlls:
-  - m_AssetLocation: NovaFramework.Sdk.Ad.Samples.Runtime.dll
+  - rid: 8085689214958567687
+  HybridConfigs:
+    GameEntranceProcedureName: ProcedurePreload
+    AotMetadataDlls:
+    - m_AssetLocation: mscorlib.dll
+    - m_AssetLocation: System.dll
+    - m_AssetLocation: System.Core.dll
+    - m_AssetLocation: UniTask.dll
+    - m_AssetLocation: Newtonsoft.Json.dll
+    - m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_AssetLocation: Unity.TextMeshPro.dll
+    - m_AssetLocation: NovaFramework.Runtime.dll
+    - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+    - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.AdPlugin.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.MaxAdPlugin.Runtime.dll
+    GameDlls:
+    - m_AssetLocation: NovaFramework.Sdk.Ad.Samples.Runtime.dll
   references:
     version: 2
     RefIds:
-    - rid: 791344287996182528
+    - rid: 8085689214958567685
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -54,23 +55,23 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 791344287996182529
+    - rid: 8085689214958567686
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 791344287996182531
+          - rid: 8085689214958567688
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 791344287996182530
+    - rid: 8085689214958567687
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 791344287996182531
+    - rid: 8085689214958567688
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1

@@ -14,39 +14,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
   DevelopMode: 0
   Namespace: NovaFramework.Sdk.Googlesignin.Samples.Runtime
-  Common:
+  AppConfigs:
     AppID: YOUR_APP_ID
     AppAesKey: YOUR_APP_AES_KEY
     AppAesIV: YOUR_APP_AES_IV
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 791343954326978560
-  - rid: 791343954326978561
-  - rid: 791343954326978562
+  - rid: 8085689214958567694
+  - rid: 8085689214958567695
+  - rid: 8085689214958567696
   EnabledKitConfigs:
-  - rid: 791343954326978563
-  - rid: 791343954326978564
-  GameEntranceProcedureName: ProcedurePreload
-  AotMetadataDlls:
-  - m_AssetLocation: mscorlib.dll
-  - m_AssetLocation: System.dll
-  - m_AssetLocation: System.Core.dll
-  - m_AssetLocation: UniTask.dll
-  - m_AssetLocation: Newtonsoft.Json.dll
-  - m_AssetLocation: UnityEngine.CoreModule.dll
-  - m_AssetLocation: Unity.TextMeshPro.dll
-  - m_AssetLocation: NovaFramework.Runtime.dll
-  - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-  - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
-  - m_AssetLocation: NovaFramework.SDK.GoogleSignIn.Runtime.dll
-  - m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
-  GameDlls:
-  - m_AssetLocation: NovaFramework.Sdk.Googlesignin.Samples.Runtime.dll
+  - rid: 8085689214958567697
+  - rid: 8085689214958567698
+  HybridConfigs:
+    GameEntranceProcedureName: ProcedurePreload
+    AotMetadataDlls:
+    - m_AssetLocation: mscorlib.dll
+    - m_AssetLocation: System.dll
+    - m_AssetLocation: System.Core.dll
+    - m_AssetLocation: UniTask.dll
+    - m_AssetLocation: Newtonsoft.Json.dll
+    - m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_AssetLocation: Unity.TextMeshPro.dll
+    - m_AssetLocation: NovaFramework.Runtime.dll
+    - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
+    - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.GoogleSignIn.Runtime.dll
+    - m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
+    GameDlls:
+    - m_AssetLocation: NovaFramework.Sdk.Googlesignin.Samples.Runtime.dll
   references:
     version: 2
     RefIds:
-    - rid: 791343954326978560
+    - rid: 8085689214958567694
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -55,18 +56,18 @@ MonoBehaviour:
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 791343954326978561
+    - rid: 8085689214958567695
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 791343954326978565
+          - rid: 8085689214958567699
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 791343954326978562
+    - rid: 8085689214958567696
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
         m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
@@ -74,18 +75,18 @@ MonoBehaviour:
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
         m_AutoRestoreOnInitialize: 0
-    - rid: 791343954326978563
+    - rid: 8085689214958567697
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 791343954326978564
+    - rid: 8085689214958567698
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
-    - rid: 791343954326978565
+    - rid: 8085689214958567699
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1

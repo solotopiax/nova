@@ -187,6 +187,6 @@ EditorUtil.HybridCLR.CopyGameDlls();
 
 - [EditorUtil.md](../EditorUtil.md) — EditorUtil 工具集概览
 - [DllAssetEntry.md](../../../Runtime/Modules/Config/Definitions/DllAssetEntry.md) — DLL 资产寻址条目（AssetLocation 单字段）
-- [ConfigMasterSO.md](../../../Runtime/Modules/Config/ConfigMasterSO.md) — AotMetadataDlls / GameDlls 配置来源
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md) — AotMetadataDlls / GameDlls 配置来源
 - [EditorUtil.Asset.Operator.md](../EditorUtil.Asset/EditorUtil.Asset.Operator.md) — ConfigMasterSO 查找入口（`Find<ConfigMasterSO>()`）
 - [Editor.md](../../Editor.md) — Editor 层级总览

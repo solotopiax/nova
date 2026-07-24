@@ -27,6 +27,7 @@
 异步主链是：
 
 1. `m_AppResult = await appManager.CheckAsync(ct)`
+   - 如果 App 面板的 `EnableAppUpdate` 关闭，`CheckAsync()` 不请求网络并直接返回 `NoDownload`
    - 如果 `AppDownloadCheckUrl` 为空，`CheckAsync()` 会直接降级返回 `NoDownload`
    - 不报错、不阻断启动
 2. 如果是 `ForcedDownload`
@@ -73,6 +74,7 @@
 - `ForcedDownload` 会跳过资源检查；它不是“强更后再看资源补丁”的组合路径。
 - `RecommendedDownload` 现在是框架内建弹窗分支，不再与 `NoDownload` 共享同一路由。
 - `EnableHotfix` 现在只影响资源热更检查，不影响 App 大版本检测是否执行。
+- `EnableAppUpdate` 只影响 App 大版本阶段；关闭后仍会继续按 `EnableHotfix` 判断资源热更阶段。
 
 ## 继续阅读
 
