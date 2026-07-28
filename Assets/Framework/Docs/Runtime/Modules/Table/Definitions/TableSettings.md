@@ -1,106 +1,45 @@
-# TableSettings / DataTableMode / TableUnitSetting
+# TableSettings
 
-**命名空间**：`NovaFramework.Runtime`
+`TableSettings` 分为 Player 使用的 Runtime Bindings 和 Editor 使用的 Luban 导出预设，两者互不绑定。
 
-本文件定义了表格系统的三个配置类型：`DataTableMode` 枚举、`TableSettings` 主设置类和 `TableUnitSetting` 单表格单元设置类。它们共同描述表格的 Excel 来源路径、导出目标、AB 资源路径及数据表加载模式。命名空间由 `IConfigManager.Namespace` 统一提供，不再在 `TableSettings` 中存储。
+## Player 配置
 
----
+`TableRuntimeSettings.Bindings` 是 `TableRuntimeBindingSetting` 列表，每一项包含：
 
-## 文件列表
+| 字段 | 说明 |
+|---|---|
+| `BindingTypeName` | 实现 `ILubanTableBinding` 的生成类型或业务类型全名 |
+| `DataAssetLocationPrefix` | 该组 `output_data_file` 对应的资源地址前缀，可为空 |
 
-| 文件 | 说明 |
-|------|------|
-| `Managers/Definitions/TableSettings.cs` | 枚举、设置类、单元设置类定义 |
+一个构建可以配置多条 Binding，因此可同时加载多个 Luban Project、多个 Tables 容器或多种 Codec 的生成结果。直接调用 `RegisterTables` 时也可以不配置 Binding。
 
----
+## Editor Project
 
-## DataTableMode
+`TableProjectSettings` 仅在 `UNITY_EDITOR` 下存在：
 
-**类签名**：`public enum DataTableMode`
+| 字段 | 说明 |
+|---|---|
+| `ConfigPath` | 正式 `luban.conf` |
+| `Target` | `luban.conf` 中的 target |
+| `Profiles` | 可组合使用的导出预设 |
 
-数据表模式枚举，决定 JSON 数据的根结构。
+每个 `TableExportProfileSetting` 支持：
 
-| 枚举值 | InspectorName | 说明 |
-|--------|--------------|------|
-| `List` | `List` | JSON 根值为数组 |
-| `Map` | `Map` | JSON 根值为对象（以 IndexField 字段值为 key） |
-| `One` | `One` | JSON 根值为单个对象 |
+- `Enabled`：是否参与无参数批量导出，可同时选择任意多个；
+- Luban `-c` / `-d` 目标列表；
+- 独立的代码和数据发布目录；
+- `-i`、`-e`、`--variant`；
+- 多个 `--customTemplateDir`；
+- 任意 `-x name=value`。
 
----
+Profile 不是 Player 格式选择器。Nova 不校验 target 名称或 Codec 枚举，JSON、Binary、Protobuf、MsgPack 和自定义 Luban 输出目标使用同一套透传机制。
 
-## TableSettings
+## 多语言
 
-**类签名**：`[Serializable] public class TableSettings`
-
-表格整体设置，包含编辑器 Excel 目录路径和所有单表格单元设置列表。由 `TableComponent` 在 Inspector 中序列化持有。
-
-### 关键字段/属性
-
-| 字段 | 类型 | 条件 | 说明 |
-|------|------|------|------|
-| `SourceDirPath` | `string` | `UNITY_EDITOR` | 数据源目录路径（`[FormerlySerializedAs("ExcelDirPath")]`） |
-| `TableUnitsSettings` | `List<TableUnitSetting>` | — | 所有单表格单元设置列表 |
-
-> 模板路径不再序列化存储，由 Inspector 通过 `EditorUtil.FileSystem.ResolveTemplatePath` 动态计算（自动适配消费者 UPM 模式与开发者模式）。
-
----
-
-## TableUnitSetting
-
-**类签名**：`[Serializable] public class TableUnitSetting : DataTableUnitSettingBase`
-
-单个 Excel 表格的单元设置，描述该表格的导出路径、AB 资源路径、Luban 加载模式和映射索引字段。
-
-### 关键字段/属性
-
-| 字段 | 类型 | 默认值 | 条件 | 说明 |
-|------|------|--------|------|------|
-| `SourcePath` | `string` | `""` | `UNITY_EDITOR` | 相对表格目录的数据源文件相对路径（`[FormerlySerializedAs("ExcelPath")]`） |
-| `DatasExportPath` | `string` | `""` | `UNITY_EDITOR` | 该数据源的导出数据路径 |
-| `ClassesExportPath` | `string` | `""` | `UNITY_EDITOR` | 该数据源的导出类型定义路径 |
-| `TableMode` | `DataTableMode` | `DataTableMode.List` | — | 表格模式（列表 / 映射 / 单例），`[FormerlySerializedAs("ExportMode")]` |
-| `IndexField` | `string` | `"ID"` | — | 映射模式的索引字段名（仅 Map 模式使用） |
-| `AssetLocation` | `string` | `""` | — | 表格资源的 Asset 地址 |
-
-`SourcePath`、两个导出路径和 `AssetLocation` 由 `DataTableUnitSettingBase` 统一声明；本类只声明 Table 特有的模式与索引字段。Excel Sheet 名在导出前由 Editor 扫描，不属于 Runtime 或序列化字段。
-
-## 公开 API
-
-```csharp
-public enum DataTableMode
-{
-    [InspectorName("List")]  List,
-    [InspectorName("Map")]   Map,
-    [InspectorName("One")]   One,
-}
-
-[Serializable]
-public class TableSettings : IDataTableSettings
-{
-    // UNITY_EDITOR only
-    [FormerlySerializedAs("ExcelDirPath")]
-    public string SourceDirPath;
-    string IDataTableSettings.SourceDirPath => SourceDirPath;
-
-    public List<TableUnitSetting> TableUnitsSettings = new List<TableUnitSetting>();
-    IReadOnlyList<IDataTableUnitSetting> IDataTableSettings.Units => TableUnitsSettings;
-}
-
-[Serializable]
-public class TableUnitSetting : DataTableUnitSettingBase
-{
-    [FormerlySerializedAs("ExportMode")]
-    public DataTableMode TableMode = DataTableMode.List;
-    public string IndexField = "ID";
-
-    protected override DataTableMode GetMode() => TableMode;
-    protected override string GetIndexField() => IndexField;
-}
-```
+Table 的语言列、语言表和区域差异继续使用 Luban 原生 target、tag、variant、模板与扩展参数表达；Table 模块不接管 Localization 的专用导出链。
 
 ## 关联文档
 
-- [TableManagerConfig.md](TableManagerConfig.md)（持有 `UnitSettings`）
-- [TableComponent.md](../TableComponent.md)（Inspector 中序列化 `TableSettings`）
-- [TableManager.md](../TableManager.md)（运行时根据设置加载数据）
-- [ILubanTables.md](../../../Core/Table/ILubanTables.md)（`TableTables` 容器接口）
+- [TableManager.md](../TableManager.md)
+- [TableComponent.md](../TableComponent.md)
+- [TableComponentInspector.md](../../../../Editor/Inspectors/TableComponentInspector/TableComponentInspector.md)

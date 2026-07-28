@@ -41,7 +41,7 @@ EditorUtil (public static partial class)
 | `OutputDataDir` | `string` | 数据输出目录（Luban 临时输出，非最终导出路径） |
 | `CustomTemplateDirs` | `string[]` | 自定义模板目录列表（可为 null，使用内置模板）。按优先级排序，Luban 依次查找 |
 | `TablesXmlPath` | `string` | __tables__.xml 文件路径 |
-| `Settings` | `IDataTableSettings` | 数据表设置（通过接口统一消费 Table/Config 模块） |
+| `Settings` | `IDataTableSettings` | 仍采用 Unit 投影链的模块设置；Table 不使用此入口 |
 | `RelevantFileNames` | `HashSet<string>` | 仅打印这些文件名的日志（单文件导出时使用，为 null 时打印全部） |
 | `RegionUnits` | `IReadOnlyList<IDataTableUnitSetting>` | 当前地域的单元设置列表（按地域区分时由调用方填入，为 null 时回退到 Settings.Units） |
 | `TargetUnit` | `IDataTableUnitSetting` | 目标单元设置（单文件导出时指定，为 null 时处理全部） |
@@ -140,7 +140,7 @@ ExportAll(ctx)
 var ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(
     tableSettings.SourceDirPath,
     tableSettings,
-    EditorUtil.Luban.LubanExportProfiles.Table);
+    EditorUtil.Luban.LubanExportProfiles.Sound);
 ctx.OutputCodeDir = classesExportPath;
 
 // 导出全部（代码 + 数据）

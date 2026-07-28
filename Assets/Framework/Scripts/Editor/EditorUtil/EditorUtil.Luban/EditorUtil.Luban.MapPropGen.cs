@@ -24,7 +24,7 @@ namespace NovaFramework.Editor
             /// Luban Map 模式属性生成器。
             /// <para>读取导出的 JSON 数据，提取 Map 模式表格的所有键值，
             /// 在对应 TbXxx.cs 文件末尾追加 partial class，为每个键生成只读属性。</para>
-            /// <para>统一支持 Table/Config 模块：通过 IDataTableUnitSetting.Mode/IndexField 实现参数化。</para>
+            /// <para>供仍采用 Unit 投影的专用模块使用；Table 不再调用此生成器。</para>
             /// </summary>
             public static class MapPropGen
             {

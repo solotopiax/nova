@@ -458,7 +458,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework.sdk.ad": "1.0.18",
+        "com.solotopia.nova.framework.sdk.ad": "1.0.21",
         "com.applovin.mediation.ads": "8.5.0",
         "com.applovin.mediation.adapters.bidmachine.android": "3010101.0.0",
         "com.applovin.mediation.adapters.bidmachine.ios": "301020000.0.0",

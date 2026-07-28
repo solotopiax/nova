@@ -22,7 +22,7 @@ namespace NovaFramework.Editor
         {
             /// <summary>
             /// Luban 配置同步器，管理 _configs/ 目录，实现 Inspector 与文件双向同步。
-            /// <para>统一支持 Table/Config 模块：通过 IDataTableSettings/IDataTableUnitSetting 接口实现参数化。</para>
+            /// <para>供仍采用 Unit 投影的专用模块使用；Table 不再调用此同步器。</para>
             /// </summary>
             public static class ConfigSyncer
             {
@@ -70,8 +70,8 @@ namespace NovaFramework.Editor
                 /// 初始化 _configs/ 目录及默认配置文件。
                 /// </summary>
                 /// <param name="sourceDirPath">数据源目录路径。</param>
-                /// <param name="targetName">Luban target 名称（如 "table" / "config"）。</param>
-                /// <param name="managerName">Luban manager 类名（如 "TableTables" / "ConfigTables"）。</param>
+                /// <param name="targetName">Luban target 名称。</param>
+                /// <param name="managerName">Luban manager 类名。</param>
                 /// <param name="topModule">顶层命名空间（如 "Game.Runtime"）。</param>
                 internal static void InitializeConfigDir(string sourceDirPath, string targetName, string managerName, string topModule)
                 {

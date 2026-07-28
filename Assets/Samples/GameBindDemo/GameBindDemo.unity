@@ -219,6 +219,46 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.SourceDirPath
+      value: Assets/Samples/GameBindDemo/Excels/Sounds
+      objectReference: {fileID: 0}
+    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.SoundUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/GameBindDemo/Jsons/Sounds.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.SoundUnitsSettings.Array.data[0].ClassesExportPath
+      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Sounds
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_SupportedLanguagesJsonExportPath
+      value: Assets/Samples/GameBindDemo/Jsons/LocalizationSupportedLanguages.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.FontSourceDirPath
+      value: Assets/Samples/GameBindDemo/Excels/Localizations/Fonts
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.TextSourceDirPath
+      value: Assets/Samples/GameBindDemo/Excels/Localizations/Texts
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.FontUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/GameBindDemo/Jsons/LocalizationFonts.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/GameBindDemo/Jsons/LocalizationTexts_{0}.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.FontUnitsSettings.Array.data[0].ClassesExportPath
+      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Localizations/Fonts
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].ClassesExportPath
+      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Localizations/Texts
+      objectReference: {fileID: 0}
     - target: {fileID: 3308748334323488271, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Name
       value: Nova
@@ -264,68 +304,56 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.SourceDirPath
-      value: Assets/Samples/GameBindDemo/Excels/Tables
+      propertyPath: m_Setting.Project.ConfigPath
+      value: Assets/Samples/GameBindDemo/Excels/Tables/luban.conf
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.TableUnitsSettings.Array.data[0].DatasExportPath
-      value: Assets/Samples/GameBindDemo/Jsons/TableList.json
-      objectReference: {fileID: 0}
-    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.TableUnitsSettings.Array.data[0].ClassesExportPath
+      propertyPath: m_Setting.Project.Profiles.Array.data[0].CodeOutputPath
       value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.TableUnitsSettings.Array.data[1].DatasExportPath
-      value: Assets/Samples/GameBindDemo/Jsons/TableMap.json
+      propertyPath: m_Setting.Project.Profiles.Array.data[0].DataOutputPath
+      value: Assets/Samples/GameBindDemo/Jsons/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.TableUnitsSettings.Array.data[1].ClassesExportPath
+      propertyPath: m_Setting.Project.Profiles.Array.data[1].CodeOutputPath
       value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.HostKeySettings.SourceDirPath
-      value: Assets/Samples/GameBindDemo/Excels/Networks/HostKeys
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[1].DataOutputPath
+      value: Assets/Samples/GameBindDemo/Jsons/Tables
       objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].DatasExportPath
-      value: Assets/Samples/GameBindDemo/Jsons/NetworkHostKeys.json
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[2].CodeOutputPath
+      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].ClassesExportPath
-      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Networks/HostKeys
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[2].DataOutputPath
+      value: Assets/Samples/GameBindDemo/Jsons/Tables
       objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.NetCmdSettings.SourceDirPath
-      value: Assets/Samples/GameBindDemo/Excels/Networks/Cmds
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[3].CodeOutputPath
+      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].DatasExportPath
-      value: Assets/Samples/GameBindDemo/Jsons/NetworkCmds.json
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[3].DataOutputPath
+      value: Assets/Samples/GameBindDemo/Jsons/Tables
       objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].ClassesExportPath
-      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Networks/Cmds
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[4].CodeOutputPath
+      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
-    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_ProtoSettings.ProtoSourceDirPath
-      value: Assets/Samples/GameBindDemo/Protos
-      objectReference: {fileID: 0}
-    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.EmphasisSourceDirPath
-      value: Assets/Samples/GameBindDemo/Excels/Vibrates/Emphasis
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[4].DataOutputPath
+      value: Assets/Samples/GameBindDemo/Jsons/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.CustomSourceDirPath
       value: Assets/Samples/GameBindDemo/Excels/Vibrates/Customs
       objectReference: {fileID: 0}
     - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.EmphasisUnitsSettings.Array.data[0].DatasExportPath
-      value: Assets/Samples/GameBindDemo/Jsons/VibrateEmphasis.json
-      objectReference: {fileID: 0}
-    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.EmphasisUnitsSettings.Array.data[0].ClassesExportPath
-      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Vibrates/Emphasis
+      propertyPath: m_Settings.EmphasisSourceDirPath
+      value: Assets/Samples/GameBindDemo/Excels/Vibrates/Emphasis
       objectReference: {fileID: 0}
     - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.CustomUnitsSettings.Array.data[0].DatasExportPath
@@ -335,21 +363,25 @@ PrefabInstance:
       propertyPath: m_Settings.CustomUnitsSettings.Array.data[0].ClassesExportPath
       value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Vibrates/Custom
       objectReference: {fileID: 0}
-    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.SourceDirPath
-      value: Assets/Samples/GameBindDemo/Excels/Sounds
+    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.EmphasisUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/GameBindDemo/Jsons/VibrateEmphasis.json
       objectReference: {fileID: 0}
-    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.SoundUnitsSettings.Array.data[0].DatasExportPath
-      value: Assets/Samples/GameBindDemo/Jsons/Sounds.json
+    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.EmphasisUnitsSettings.Array.data[0].ClassesExportPath
+      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Vibrates/Emphasis
       objectReference: {fileID: 0}
-    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Settings.SoundUnitsSettings.Array.data[0].ClassesExportPath
-      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Sounds
+    - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_UIGroups.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_UISettings.SourceDirPath
       value: Assets/Samples/GameBindDemo/Excels/UIs
+      objectReference: {fileID: 0}
+    - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_UIGroups.Array.data[0].m_Name
+      value: Demo
       objectReference: {fileID: 0}
     - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_UISettings.UIUnitsSettings.Array.data[0].DatasExportPath
@@ -359,41 +391,33 @@ PrefabInstance:
       propertyPath: m_UISettings.UIUnitsSettings.Array.data[0].ClassesExportPath
       value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/UIs
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.TextSourceDirPath
-      value: Assets/Samples/GameBindDemo/Excels/Localizations/Texts
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoSourceDirPath
+      value: Assets/Samples/GameBindDemo/Protos
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.FontSourceDirPath
-      value: Assets/Samples/GameBindDemo/Excels/Localizations/Fonts
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.NetCmdSettings.SourceDirPath
+      value: Assets/Samples/GameBindDemo/Excels/Networks/Cmds
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].DatasExportPath
-      value: 'Assets/Samples/GameBindDemo/Jsons/LocalizationTexts_{0}.json'
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.HostKeySettings.SourceDirPath
+      value: Assets/Samples/GameBindDemo/Excels/Networks/HostKeys
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].ClassesExportPath
-      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Localizations/Texts
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].DatasExportPath
+      value: Assets/Samples/GameBindDemo/Jsons/NetworkCmds.json
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.FontUnitsSettings.Array.data[0].DatasExportPath
-      value: Assets/Samples/GameBindDemo/Jsons/LocalizationFonts.json
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].DatasExportPath
+      value: Assets/Samples/GameBindDemo/Jsons/NetworkHostKeys.json
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_LocalizationSettings.FontUnitsSettings.Array.data[0].ClassesExportPath
-      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Localizations/Fonts
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].ClassesExportPath
+      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Networks/Cmds
       objectReference: {fileID: 0}
-    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_SupportedLanguagesJsonExportPath
-      value: Assets/Samples/GameBindDemo/Jsons/LocalizationSupportedLanguages.json
-      objectReference: {fileID: 0}
-    - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_UIGroups.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_UIGroups.Array.data[0].m_Name
-      value: Demo
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].ClassesExportPath
+      value: Assets/Samples/GameBindDemo/Scripts/Runtime/DataTypes/Networks/HostKeys
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

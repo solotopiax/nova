@@ -1,0 +1,128 @@
+{{namespace_with_grace_begin __namespace}}
+public partial class {{__name}} : NovaFramework.Runtime.ILubanTables
+{
+    {{~for table in __tables~}}
+    public {{table.full_name}} {{format_property_name __code_style table.name}} { get; }
+    {{~end~}}
+
+    /// <summary>
+    /// 使用原始单表 Protobuf Binary 加载器构造完整 Tables 容器。
+    /// </summary>
+    /// <param name="loader">按 output_data_file 返回 Protobuf Binary 的加载器。</param>
+    public {{__name}}(global::System.Func<string, byte[]> loader)
+    {
+        {{~for table in __tables~}}
+        {{format_property_name __code_style table.name}} = {{table.full_name}}.Parser.ParseFrom(loader("{{table.output_data_file}}"));
+        {{~end~}}
+    }
+
+    /// <summary>
+    /// 使用原始单表 Protobuf JSON 加载器构造完整 Tables 容器。
+    /// </summary>
+    /// <param name="loader">按 output_data_file 返回 Protobuf JSON 的加载器。</param>
+    public {{__name}}(global::System.Func<string, string> loader)
+    {
+        {{~for table in __tables~}}
+        {{format_property_name __code_style table.name}} = global::Google.Protobuf.JsonParser.Default.Parse<{{table.full_name}}>(loader("{{table.output_data_file}}"));
+        {{~end~}}
+    }
+
+    /// <summary>
+    /// 解析全部 Protobuf 表之间的 Luban 引用。
+    /// </summary>
+    public void ResolveRef()
+    {
+        {{~for table in __tables~}}
+        {{format_property_name __code_style table.name}}.ResolveRef(this);
+        {{~end~}}
+    }
+
+    /// <summary>
+    /// 获取当前容器中的全部 Protobuf Table 实例。
+    /// </summary>
+    /// <returns>只读 Table 列表。</returns>
+    public global::System.Collections.Generic.IReadOnlyList<NovaFramework.Runtime.ITable> GetAllTables()
+    {
+        return new NovaFramework.Runtime.ITable[]
+        {
+            {{~for table in __tables~}}
+            {{format_property_name __code_style table.name}},
+            {{~end~}}
+        };
+    }
+
+    /// <summary>
+    /// 获取指定类型的 Protobuf Table 实例。
+    /// </summary>
+    /// <typeparam name="T">Table 类型。</typeparam>
+    /// <returns>Table 实例，不存在时返回 null。</returns>
+    public T GetTable<T>() where T : class, NovaFramework.Runtime.ITable => GetTable(typeof(T)) as T;
+
+    /// <summary>
+    /// 根据运行时类型获取 Protobuf Table 实例。
+    /// </summary>
+    /// <param name="type">Table 运行时类型。</param>
+    /// <returns>Table 实例，不存在时返回 null。</returns>
+    public NovaFramework.Runtime.ITable GetTable(global::System.Type type)
+    {
+        foreach (NovaFramework.Runtime.ITable table in GetAllTables())
+        {
+            if (table.GetType() == type)
+            {
+                return table;
+            }
+        }
+        return null;
+    }
+}
+
+/// <summary>
+/// 向 Nova 提供 {{__name}} 的原始文件清单与 Protobuf 解码方式。
+/// </summary>
+[global::UnityEngine.Scripting.Preserve]
+public sealed class {{__name}}Binding : NovaFramework.Runtime.ILubanTableBinding
+{
+    /// <summary>
+    /// 获取当前 Tables 构造需要的全部 output_data_file。
+    /// </summary>
+    public global::System.Collections.Generic.IReadOnlyList<string> DataFiles { get; } = new string[]
+    {
+        {{~for table in __tables~}}
+        "{{table.output_data_file}}",
+        {{~end~}}
+    };
+
+    /// <summary>
+    /// 使用 Protobuf Binary 或 Protobuf JSON 原始字节构造 {{__name}}。
+    /// </summary>
+    /// <param name="loader">按 output_data_file 返回原始字节的加载器。</param>
+    /// <returns>构造完成的 Tables 容器。</returns>
+    public NovaFramework.Runtime.ILubanTables Create(global::System.Func<string, byte[]> loader)
+    {
+        byte[] first = loader(DataFiles[0]);
+        bool json = IsJson(first);
+        return json
+            ? new {{__name}}(name => global::System.Text.Encoding.UTF8.GetString(loader(name)))
+            : new {{__name}}(loader);
+    }
+
+    /// <summary>
+    /// 判断原始数据首个非空白字节是否为 JSON 容器起始符。
+    /// </summary>
+    /// <param name="bytes">待判断的原始数据。</param>
+    /// <returns>是否为 JSON 文本。</returns>
+    private static bool IsJson(byte[] bytes)
+    {
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            byte value = bytes[i];
+            if (value == 0x20 || value == 0x09 || value == 0x0A || value == 0x0D)
+            {
+                continue;
+            }
+            return value == 0x7B || value == 0x5B;
+        }
+        return false;
+    }
+}
+{{namespace_with_grace_end __namespace}}

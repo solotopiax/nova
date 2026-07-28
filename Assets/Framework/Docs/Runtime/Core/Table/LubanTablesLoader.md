@@ -4,7 +4,7 @@
 
 **文件位置**：`Runtime/Core/Table/LubanTablesLoader.cs`
 
-Luban Tables 反射加载器。通过反射构造 `*Tables` 实例（如 `TableTables`、`ConfigTables`），并提取其中的所有 `ITable` 实现到字典中。Table / Config 等模块共用此实现，避免重复编写相同的反射加载逻辑。
+Luban Tables 反射加载器。通过反射构造 `*Tables` 实例（如 `ConfigTables`），并提取其中的所有 `ITable` 实现到字典中。Config、Network、Sound 等专用模块继续共用此实现；通用 Table 模块使用 `ILubanTableBinding`。
 
 ---
 
@@ -79,7 +79,7 @@ private static Type ResolveType(string typeName, string namespace_)
 3. 通过 `Activator.CreateInstance(tablesType, loader)` 反射构造实例
 4. 若构造异常，记录错误日志，返回 `null`
 5. 检查实例是否实现 `ILubanTables`：
-   - **是**：调用 `GetAllTables()` 获取 `IReadOnlyList<ITable>`，遍历放入字典
+   - **是**：先调用 `ResolveRef()`，再调用 `GetAllTables()` 获取 `IReadOnlyList<ITable>`，遍历放入字典
    - **否**：使用反射遍历属性，找出所有 `ITable` 实现放入字典（Log.Warning 降级提示）
 6. 返回结果字典
 
@@ -94,18 +94,11 @@ private static Type ResolveType(string typeName, string namespace_)
 
 ## 使用示例
 
-### Table 模块中加载
+### 通用 Table 模块
 
 ```csharp
-// 在 TableManager.Methods.cs 中（示意）
-// namespace_ 由 IConfigManager 在 Load 阶段现取
-string namespace_ = FrameworkManagersGroup.GetManager<IConfigManager>()?.Namespace;
-
-Dictionary<Type, ITable> tables = LubanTablesLoader.Load(
-    tablesClassName: "TableTables",
-    namespace_: namespace_,
-    loader: loader
-);
+// TableManager 读取 ILubanTableBinding.DataFiles，加载原始字节后调用：
+ILubanTables tables = binding.Create(loader);
 ```
 
 ### Config 模块中加载
@@ -138,9 +131,9 @@ Dictionary<Type, ITable> networkTables = LubanTablesLoader.Load(
 
 ## 常见误区
 
-**问题**：调用 `Load()` 时忘记先填充 `m_DataCache`
+**问题**：调用 `Load()` 时 Loader 中缺少生成 Tables 构造函数请求的 `output_data_file`
 
-**解决**：必须先加载 AB 包获得 JSON 文件，然后通过 `LubanDataReceiver.OnParseDataAsset()` 填充缓存，再调用 `Load()`
+**解决**：先准备完整原始单表数据，再调用 `Load()`；通用 Table 模块可由 `ILubanTableBinding.DataFiles` 完成预加载
 
 **问题**：`*Tables` 类所在命名空间与 `namespace_` 参数不一致
 

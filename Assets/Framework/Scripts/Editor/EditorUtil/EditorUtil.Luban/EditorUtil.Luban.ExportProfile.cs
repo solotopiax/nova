@@ -55,7 +55,6 @@ namespace NovaFramework.Editor
             /// </summary>
             internal static class LubanExportProfiles
             {
-                internal static readonly LubanExportProfile Table = Create("table", "TableTables", 4);
                 internal static readonly LubanExportProfile Sound = Create("sound", "SoundTables");
                 internal static readonly LubanExportProfile UI = Create("ui", "UITables");
                 internal static readonly LubanExportProfile NetworkCmd = Create("network-cmd", "NetworkTables");
@@ -67,7 +66,6 @@ namespace NovaFramework.Editor
 
                 internal static IReadOnlyList<LubanExportProfile> All { get; } = new[]
                 {
-                    Table,
                     Sound,
                     UI,
                     NetworkCmd,

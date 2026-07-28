@@ -103,7 +103,7 @@ namespace NovaFramework.Editor
 
             /// <summary>
             /// Luban 导出流水线，统一编排 Sync → CLI → Merge → MapPropGen 流程。
-            /// <para>Table/Config 模块共用，通过 LubanExportContext 参数化差异。</para>
+            /// <para>供仍采用 Unit/SchemaManifest 的专用模块共用；Table 已使用独立的正式 Luban Project 导出链。</para>
             /// </summary>
             public static class Pipeline
             {

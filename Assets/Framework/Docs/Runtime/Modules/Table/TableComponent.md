@@ -3,7 +3,7 @@
 `TableComponent` 是 Nova 表格系统的场景入口。它的职责很薄：
 
 - 创建并持有 `ITableManager`
-- 在 `Start()` 把 `TableSettings` 下发给管理器
+- 在 `Start()` 把 Runtime Bindings 下发给管理器
 - 对业务层暴露统一的加载与查询门面
 
 它本身不做表构造细节、资源加载细节、Luban 反射细节，这些都在 `TableManager` 和 `Core/Table` 层。
@@ -33,8 +33,8 @@
 
 ### 它不负责什么
 
-- 不负责具体 JSON / 资源加载
-- 不负责 `TableTables` 反射构造
+- 不负责具体格式解码或资源加载
+- 不负责生成 `Tables` 的 Codec 解码
 - 不负责 `ITable` 具体实现行为
 - 不负责单表配置的详细解释
 
@@ -56,7 +56,7 @@
 
 `Start()` 只做：
 
-- `m_TableManager.Initialize(new TableManagerConfig { UnitSettings = m_Setting.TableUnitsSettings })`
+- `m_TableManager.Initialize(new TableManagerConfig { Bindings = m_Setting.Runtime.Bindings })`
 
 这里有一个很重要的边界：
 
@@ -112,9 +112,18 @@
 - 获取已经加载好的 `ITable`
 - 看当前管理器里缓存了多少种表
 
+### 4. 直接注册
+
+- `RegisterTables(ILubanTables tables)`
+
+用途：
+
+- 注册业务使用 Luban 原生构造器自行创建的 Tables 容器
+- 在不使用 Nova 资源加载适配时继续复用统一查询门面
+
 ## 关键状态
 
-- `m_Setting`：表格系统的数据源配置入口，尤其是 `TableUnitsSettings`。
+- `m_Setting`：Editor Luban Project 与 Player Runtime Bindings 的配置入口。
 - `m_TableManager`：真正执行表加载与表查询的核心实现。
 - `m_LoadTcs`：只服务于异步加载去重。
 - `IsLoadOver`：表示“整套表系统是否加载成功”，不是单表状态。
@@ -125,7 +134,7 @@
 - `Start()` 不会自动加载表；如果启动流程没显式调 `LoadAsync / LoadSync`，`GetTable<T>()` 的前提就不成立。
 - `IsLoadOver` 只在最近一次成功加载后为 `true`；失败时仍可重试。
 - `LoadAsync()` 的异常已经在组件层吞并并转成 `false`，如果要追真正原因，要继续看 `TableManager` 日志和实现。
-- `TableComponent` 只负责门面。如果问题在单表资源、Luban 反射、类型名拼接、两阶段缓存构造，直接看 `TableManager`。
+- `TableComponent` 只负责门面。如果问题在 Binding、原始单表资源、生成 Tables 构造或解码，直接看 `TableManager` 和生成 Binding。
 
 ## 继续阅读
 

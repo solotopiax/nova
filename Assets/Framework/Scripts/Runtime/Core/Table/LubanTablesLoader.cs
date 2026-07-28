@@ -51,6 +51,7 @@ namespace NovaFramework.Runtime
 
             if (tablesObj is ILubanTables lubanTables)
             {
+                lubanTables.ResolveRef();
                 IReadOnlyList<ITable> allTables = lubanTables.GetAllTables();
                 for (int i = 0; i < allTables.Count; i++)
                 {

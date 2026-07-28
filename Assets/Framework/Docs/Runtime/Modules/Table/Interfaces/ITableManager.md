@@ -5,6 +5,7 @@
 
 - 能否初始化
 - 能否批量加载整套表
+- 能否注册业务自行构造的 Luban Tables
 - 加载成功后如何统一查询
 
 ## 契约定位
@@ -44,7 +45,12 @@
 - 查询维度是“表类型”
 - 查询目标是实现了 `ITable` 的运行时表实例
 
-### 4. 计数语义
+### 4. 注册语义
+
+- `RegisterTables(ILubanTables)`：解析引用并注册容器内全部表
+- 可与 Runtime Binding 加载并存
+
+### 5. 计数语义
 
 - `Count` 表示当前已缓存的表类型数
 - 它不是某一张表的数据行数
@@ -53,6 +59,7 @@
 
 - 初始化：`Initialize(TableManagerConfig config)`
 - 加载：`LoadTablesAsync()` / `LoadTablesSync()`
+- 注册：`RegisterTables(ILubanTables)`
 - 查询：`HasTable<T>()` / `GetTable<T>()`
 - 统计：`Count`
 

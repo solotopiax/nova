@@ -22,7 +22,7 @@ namespace NovaFramework.Editor
         {
             /// <summary>
             /// Luban JSON 合并器，将 Luban 按表导出的 JSON 文件合并为按 Excel 文件的 JSON（Nova 格式）。
-            /// <para>统一支持 Table/Config 模块：通过 IDataTableUnitSetting.LubanInputPath 匹配 __tables__.xml 中的 input 路径。</para>
+            /// <para>供仍采用聚合 JSON 的专用模块使用；Table 保留 Luban 原始单表输出，不再调用此合并器。</para>
             /// </summary>
             public static class JsonMerger
             {
@@ -93,9 +93,7 @@ namespace NovaFramework.Editor
                 /// <summary>
                 /// 解析 __tables__.xml，提取指定单元关联的表名到原始 Sheet 名映射。
                 /// <para>匹配逻辑：将 input 属性的 @ 后部分与 unitLubanInputPath 按文件名比较。</para>
-                /// <para>Table 模块的 LubanInputPath 等于 SourcePath（完整相对路径），</para>
-                /// <para>Config 模块的 LubanInputPath 带 _temp/ 前缀（如 "_temp/Configs_Global.xlsx"），</para>
-                /// <para>统一用文件名匹配可同时兼容两种格式。</para>
+                /// <para>统一按文件名匹配，兼容 Unit 使用完整相对路径或 _temp 前缀的情况。</para>
                 /// </summary>
                 /// <param name="tablesXmlPath">__tables__.xml 路径。</param>
                 /// <param name="unitLubanInputPath">单元的 Luban 输入路径（IDataTableUnitSetting.LubanInputPath）。</param>

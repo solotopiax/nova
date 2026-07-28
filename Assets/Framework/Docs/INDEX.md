@@ -26,7 +26,7 @@
 | **实例化 Prefab / 销毁 Prefab 实例** | [PrefabComponent.md](Runtime/Modules/Prefab/PrefabComponent.md) → [IPrefabManager.md · Instantiate/Destroy API](Runtime/Modules/Prefab/PrefabManager/IPrefabManager.md) |
 | **大版本检查 / APP 强更** | [AppComponent.md · CheckAsync+DownloadAsync+OpenStoreAsync](Runtime/Modules/App/AppComponent.md) → [AppManagerConfig.md · 超时+下载路由+规则](Runtime/Modules/App/Definitions/AppManagerConfig.md) |
 | **加载运行时配置（AB 加载 ConfigRuntimeSO）** | [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) → [ConfigManager.md · AB加载+解析+PluginConfig索引](Runtime/Modules/Config/ConfigManager.md) |
-| **加载 Excel/CSV 表格数据（Luban 方案）** | [TableManager.md · GetTable/HasTable 统一查询](Runtime/Modules/Table/TableManager.md) → [TableComponentInspector.md · Luban 导出流程](Editor/Inspectors/TableComponentInspector/TableComponentInspector.md) → [EditorUtil.Luban.Pipeline.md · 导出流水线](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md) → [EditorUtil.Luban.SchemaManifest.md · 导出前结构快照](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.SchemaManifest.md) |
+| **加载 Excel/CSV 表格数据（Luban Project）** | [TableManager.md · 多 Binding 加载](Runtime/Modules/Table/TableManager.md) → [TableComponentInspector.md · Project/Profile](Editor/Inspectors/TableComponentInspector/TableComponentInspector.md) → [EditorUtil.Table.Exporter.md · 多 Profile 透传导出](Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) |
 | **编辑 Config SO / 导出 ConfigRuntime**（ConfigWindow 流程） | [ConfigWindow.md · 三段式布局+三维导出](Editor/Windows/ConfigWindow.md) → [ConfigMasterSO.md · Editor 设计态数据](Editor/Config/ConfigMasterSO.md) → [SchemaMigration.md · 旧资产迁移](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md) → [ConfigRuntimeSO.md · Runtime 快照](Runtime/Modules/Config/ConfigRuntimeSO.md) → [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) → [EditorUtil.Config.WorkspaceActive.md · 激活 Master 锚点](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) → [EditorUtil.Config.YooAssetInjector.md · YooAsset 注入](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
 | **Config 面板按平台/渠道/模式分别配置**（per-panel 可勾选维度） | [PanelDimensionMask.md · Editor 掩码三轴+IsGlobal](Editor/Config/Definitions/PanelDimensionMask.md) → [EditorUtil.Config.DimensionProjector.md · 三操作+双路径](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) → [EditorUtil.Config.DimensionalResolver.md · 只读取数+回落逻辑](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) |
 | **新增 SDK PluginConfig**（ISDKPluginConfig + 自动注入） | [PluginBase.md · PluginBase<TConfig>泛型基类+自动注入](Runtime/Modules/SDK/Definitions/PluginBase.md) → [ISDKPluginConfig.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) → [EditorUtil.Config.SDKPluginScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) → [PlatformChannelEntry.md · Editor 矩阵行结构](Editor/Config/Definitions/PlatformChannelEntry.md) |
@@ -94,6 +94,7 @@
 | [DataTableUnitSettingBase.md](Runtime/Core/Table/DataTableUnitSettingBase.md) | 数据表单元设置抽象基类（提取各模块公共序列化字段与接口实现） |
 | [ITable.md](Runtime/Core/Table/ITable.md) | 表格容器接口（Luban TbXxx 实现） |
 | [ILubanTables.md](Runtime/Core/Table/ILubanTables.md) | Luban *Tables 容器契约接口（GetAllTables） |
+| [ILubanTableBinding.md](Runtime/Core/Table/ILubanTableBinding.md) | Luban 生成表清单、Codec 解码与 Nova 原始字节加载适配接口 |
 | [LubanTablesLoader.md](Runtime/Core/Table/LubanTablesLoader.md) | Luban Tables 反射加载器（Table/Config 共用） |
 | [Log.md](Runtime/Core/Log/Log.md) | 静态日志门面 |
 | [LogTag.md](Runtime/Core/Log/LogTag.md) | 日志标签静态常量 |
@@ -228,9 +229,9 @@
 | 文档 | 说明 |
 |------|------|
 | [TableComponent.md](Runtime/Modules/Table/TableComponent.md) | 表格 Component（GetTable/HasTable 统一查询入口） |
-| [TableManager.md](Runtime/Modules/Table/TableManager.md) | 表格 Manager（两阶段加载：AB JSON 并行 → 反射 TableTables） |
+| [TableManager.md](Runtime/Modules/Table/TableManager.md) | 表格 Manager（多 Binding → 原始单表加载 → 生成 Tables → ResolveRef） |
 | [TableManagerConfig.md](Runtime/Modules/Table/Definitions/TableManagerConfig.md) | 表格 Manager 配置类 |
-| [TableSettings.md](Runtime/Modules/Table/Definitions/TableSettings.md) | TableUnitSetting（IndexField、TableMode）+ IDataTableSettings/IDataTableUnitSetting 接口实现 |
+| [TableSettings.md](Runtime/Modules/Table/Definitions/TableSettings.md) | 正式 Luban Project、多 Profile 导出预设与 Runtime Bindings |
 | [TableManagerBase.md](Runtime/Modules/Table/Implements/TableManagerBase.md) | 表格 Manager 抽象基类（Priority=14） |
 | [ITableManager.md](Runtime/Modules/Table/Interfaces/ITableManager.md) | 表格 Manager 接口（GetTable / HasTable / LoadSync / LoadAsync） |
 
@@ -504,7 +505,7 @@
 | [EditorUtil.Environment.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.md) | 编辑器运行时环境数据工具（EnvironmentData / ColumnIndices / GetEnvironmentData，Channel 来自 RuntimeProvider） |
 | [EditorUtil.Environment.Python3.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.Python3.md) | Python3 运行环境多路径探测检查器（5 策略：ExplicitPath/PATH/PyLauncher/Where/PythonFallback；SessionState 缓存；33 候选路径） |
 | [EditorUtil.Environment.LubanChecker.md](Editor/EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.md) | Luban 运行环境检查器（dotnet-sdk 路径/版本≥8.0/Luban.dll 检测，SessionState 缓存；由 Pipeline 和 ConfigWindow 调用） |
-| [EditorUtil.Luban.Pipeline.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md) | Luban 导出流水线 + LubanExportContext（Table/Config 统一入口，含环境检查 guard） |
+| [EditorUtil.Luban.Pipeline.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.Pipeline.md) | 非 Table 专用模块的 Unit/SchemaManifest Luban 导出流水线 |
 | [EditorUtil.Luban.CliRunner.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.CliRunner.md) | Luban CLI 外部进程调用器（代码生成/数据导出/protobuf3 schema 生成） |
 | [EditorUtil.Proto.CliRunner.md](Editor/EditorUtil/EditorUtil.Proto/EditorUtil.Proto.CliRunner.md) | protoc CLI 外部进程调用器（Mac + Win 跨平台，Luban→protoc 闭环管线） |
 | [EditorUtil.Luban.ConfigSyncer.md](Editor/EditorUtil/EditorUtil.Luban/EditorUtil.Luban.ConfigSyncer.md) | Luban `_configs/` 同步器（manifest + luban.conf + __tables__.xml） |
@@ -533,7 +534,7 @@
 | [EditorUtil.Config.YooAssetInjector.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) | Asset 模块编辑期注入层；按 ConfigMaster 路径字段注入 YooAssetSettings / 加载 BundleCollectorSetting，替代全工程扫描 |
 | [EditorUtil.Config.DimensionProjector.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) | 维度投影器；按 PanelDimensionMask 在 WorkingCopy 上执行加维分裂/减维合并/广播，支持矩阵三类和顶层三类面板 |
 | [EditorUtil.Config.DimensionalResolver.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) | 顶层类维度取数器（只读）；按坐标 + 掩码从 Override 列表解析 Namespace / HybridCLR / YooAsset 最终值 |
-| [EditorUtil.Table.Exporter.md](Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) | Table 模块 Luban 导出入口（ExportAll/ExportCode/ExportData） |
+| [EditorUtil.Table.Exporter.md](Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) | Table 正式 Luban Project 导出（五种格式、原始单表、Catalog、事务发布） |
 | [EditorUtil.UI.Exporter.md](Editor/EditorUtil/EditorUtil.UI/EditorUtil.UI.Exporter.md) | UI 模块 Luban 导出入口（ExportAll/ExportCode/ExportData + 单文件 ExportCodeForFile/ExportDataForFile） |
 | [EditorUtil.Localization.TextExporter.md](Editor/EditorUtil/EditorUtil.Localization/EditorUtil.Localization.TextExporter.md) | 本地化文本导出工具（ExportTextAll/ExportTextCode/ExportTextData/ExportSupportedLanguages，三阶段 PreFilter + Pipeline） |
 | [EditorUtil.Localization.FontExporter.md](Editor/EditorUtil/EditorUtil.Localization/EditorUtil.Localization.FontExporter.md) | 本地化字体导出工具（ExportFontAll/ExportFontCode/ExportFontData，标准 Luban Pipeline） |

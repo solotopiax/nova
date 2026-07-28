@@ -37,7 +37,7 @@ SDKPluginBase
 | `m_EventManager` | `IEventManager` | `null` | 事件管理器引用；OnInitializeAsync 末尾取得，OnDisposeAsync 开头清空 |
 | `Events` | `AdPluginEvents` | `new AdPluginEvents()` | 事件容器，readonly，持有 7 个 ObservableEvent 字段 |
 | `Name` | `string` | `"AdPlugin"` | 插件友好名 |
-| `Priority` | `int` | `50` | 初始化优先级；高于框架默认值 100 |
+| `Priority` | `int` | `120` | 在现有收益打点插件之后初始化，确保广告渠道能缓存可用的打点实例 |
 
 ---
 

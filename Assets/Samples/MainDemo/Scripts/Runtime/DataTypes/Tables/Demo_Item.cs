@@ -58,4 +58,3 @@ public sealed partial class Demo_Item : Luban.BeanBase
     }
 }
 }
-

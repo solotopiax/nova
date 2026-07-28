@@ -61,7 +61,7 @@ public static string[] GetLubanCustomTemplateDirs(string targetName)
 Nova Framework 内部通过 Profile 重载构建上下文：
 
 ```csharp
-BuildExportContext(sourceDirPath, settings, LubanExportProfiles.Table)
+BuildExportContext(sourceDirPath, settings, LubanExportProfiles.Sound)
 ```
 
 ---
@@ -101,7 +101,7 @@ BuildRelevantFileNames(manifest, sourcePath, managerName)
 LubanExportContext ctx = EditorUtil.Luban.ExportHelper.BuildExportContext(
     m_SourceDirPath.stringValue,
     GetTableSettings(),
-    EditorUtil.Luban.LubanExportProfiles.Table);
+    EditorUtil.Luban.LubanExportProfiles.Sound);
 
 EditorUtil.Luban.Pipeline.ExportAll(ctx);
 
@@ -109,7 +109,7 @@ EditorUtil.Luban.Pipeline.ExportAll(ctx);
 HashSet<string> fileNames = EditorUtil.Luban.ExportHelper.BuildRelevantFileNames(
     ctx.SchemaManifest,
     unitSetting.SourcePath,
-    EditorUtil.Luban.LubanExportProfiles.Table.ManagerName);
+    EditorUtil.Luban.LubanExportProfiles.Sound.ManagerName);
 ```
 
 ---

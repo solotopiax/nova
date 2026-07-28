@@ -56,7 +56,7 @@ namespace NovaFramework.Runtime
         {
             m_TableManager.Initialize(new TableManagerConfig
             {
-                UnitSettings = m_Setting.TableUnitsSettings,
+                Bindings = m_Setting.Runtime?.Bindings,
             });
         }
 
@@ -121,6 +121,18 @@ namespace NovaFramework.Runtime
             }
 
             IsLoadOver = success;
+            return success;
+        }
+
+        /// <summary>
+        /// 注册一个已经由 Luban 原生构造器创建的 Tables 容器。
+        /// </summary>
+        /// <param name="tables">待解析引用并注册的 Tables 容器。</param>
+        /// <returns>是否注册了至少一张表。</returns>
+        public bool RegisterTables(ILubanTables tables)
+        {
+            bool success = m_TableManager.RegisterTables(tables);
+            IsLoadOver |= success;
             return success;
         }
 

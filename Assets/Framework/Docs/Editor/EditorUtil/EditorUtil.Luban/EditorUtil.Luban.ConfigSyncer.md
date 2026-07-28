@@ -23,7 +23,7 @@ EditorUtil (public static partial class)
         └── ConfigSyncer (public static class)
 ```
 
-> 统一了原 `LubanConfigManager`（Table 模块）和 `LubanConfigConfigManager`（Config 模块）的配置同步逻辑，通过 `IDataTableSettings` / `IDataTableUnitSetting` 接口实现参数化。
+> 该同步器仅服务仍采用 Unit 投影的专用模块；Table 已切换到正式、受版本控制的 Luban Project。
 
 ---
 
@@ -118,7 +118,7 @@ SyncFromInspector
 | 扫描失败 | 缺失或不可读的源文件会中止同步；旧 manifest 和旧 `__tables__.xml` 保持不变，Luban 不会被调用 |
 | 预处理后的类型名 | 模块若改变了 Sheet/CSV 名，必须通过 Pipeline 上下文提供 `SchemaValueTypeScanner`；否则默认扫描原始 Excel，manifest 会与实际输入不一致 |
 | manifest 归属 | `_configs/nova-export-manifest.json` 是 Editor-only、可由 Excel 重建的派生文件；整个 `_configs/` 被忽略且不承载手写定义 |
-| 是否删除 `_configs/` | 可以手工删除并在下次导出时重建，但日常应保留：`luban.conf` / `__tables__.xml` 是 CLI 输入，manifest 还供 Table Inspector 诊断读取 |
+| 是否删除 `_configs/` | 对仍使用该链的专用模块，它是可重建缓存；Table Inspector 不读取该目录 |
 | 陈旧缓存 | 每次 Pipeline 调用 Luban 前都会重新扫描 Excel 并原子替换 XML 与 manifest，旧缓存不会直接参与新一轮导出 |
 
 ---

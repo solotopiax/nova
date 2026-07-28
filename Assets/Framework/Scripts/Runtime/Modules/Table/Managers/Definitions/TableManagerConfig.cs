@@ -5,21 +5,16 @@
  * filename:  TableManagerConfig.cs
  * author:    taoye
  * created:   2026/2/5
- * descrip:   表格管理器配置
+ * descrip:   Table 管理器运行时 Binding 配置
  ***************************************************************/
-
-using System.Collections.Generic;
 
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// 表格管理器配置。
+    /// Table 管理器配置，传递任意数量的生成 Binding。
     /// </summary>
-    public class TableManagerConfig
+    public sealed class TableManagerConfig
     {
-        /// <summary>
-        /// 表格单元设置列表。
-        /// </summary>
-        public List<TableUnitSetting> UnitSettings;
+        public System.Collections.Generic.IReadOnlyList<TableRuntimeBindingSetting> Bindings;
     }
 }

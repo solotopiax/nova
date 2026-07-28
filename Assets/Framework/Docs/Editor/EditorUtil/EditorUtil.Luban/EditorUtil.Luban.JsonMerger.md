@@ -22,7 +22,7 @@ EditorUtil (public static partial class)
         └── JsonMerger (public static class)
 ```
 
-> 统一了原 `LubanJsonMerger`（Table 模块）和 `LubanConfigJsonMerger`（Config 模块）的合并逻辑，并使用本次 manifest unit 的 `LubanInputPath` 匹配 `__tables__.xml`。
+> 该工具保留给仍采用聚合 JSON 的专用导出链；Table 已改为直接发布 Luban 原始单表文件。
 
 ---
 

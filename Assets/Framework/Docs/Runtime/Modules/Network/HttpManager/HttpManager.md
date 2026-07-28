@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Runtime`
 **全局访问**：`Nova.Network`（通过 `NetworkComponent` 公开方法访问）
 
-HTTP 管理器，通过 `IHttpTransport` 扩展点执行 HTTP 短连接请求（GET / POST / RawData / File）与异步下载。`NovaFramework.Runtime` 不直接依赖 BestHTTP，也不通过 `InternalsVisibleTo` 感知可选后端；BestHTTP 后端由独立 UPM 包 `com.solotopia.nova.framework.besthttp` 注册。
+HTTP 管理器，通过 `IHttpTransport` 扩展点执行 HTTP 短连接请求（GET / POST / RawData / File）与异步下载。主框架内置 `UnityWebRequestTransport` 作为默认后端，因此未安装 BestHTTP 时全部 HTTP API 仍然可用；独立 UPM 包 `com.solotopia.nova.framework.besthttp` 注册优先级更高的可选后端，安装后会自动覆盖默认实现。`NovaFramework.Runtime` 不直接依赖 BestHTTP，也不通过 `InternalsVisibleTo` 感知可选后端。
 其中 `GetAsync(...)` 会由当前后端关闭本地缓存，确保启动配置、远端规则等读取到最新 GET 响应。所有请求发送前都会调用 `DoHManager` 的统一候选规划；是否真正使用 IP 候选由传输后端按 URI 声明能力。
 
 ---
@@ -15,6 +15,8 @@ HTTP 管理器，通过 `IHttpTransport` 扩展点执行 HTTP 短连接请求（
 |---|---|---|
 | `HttpManager.cs` | `sealed partial HttpManager` | 主体：全部 HTTP 请求实现、内部工具方法 |
 | `HttpManager.Visitors.cs` | `partial HttpManager` | 字段：m_DoHManager / m_ConnectTimeout / m_RequestTimeout |
+| `Transports/UnityWebRequestTransport.cs` | `UnityWebRequestTransport` | 内置默认后端：完整实现请求、上传、下载、取消、进度与空闲超时 |
+| `Transports/HttpTransportRegistry.cs` | `HttpTransportRegistry` | 选择最高优先级可选工厂；无可选后端或工厂创建失败时回退 UnityWebRequest |
 
 ---
 
@@ -104,7 +106,7 @@ DownloadBinaryAsync(url, idleTimeout, progressCallback, cancellationToken)
 | DoH 只影响手动预热，不影响正常请求 | 现在 `Get / Post / PostRawData / PostFile / DownloadBinary / DownloadText` 都会先走 DoH 候选链 |
 | `requestTimeout` 传入 0 | 传 -1 使用默认值；传 0 表示 0 秒超时，后端会立即超时，应传正数 |
 | `DownloadBinaryAsync` 使用请求超时控制下载 | 应使用 `idleTimeout` 控制空闲等待；长文件下载时只要持续有字节到达就不会超时 |
-| 后端替换后 API 不变 | HTTP 对外接口签名不绑定具体后端；切换 BestHTTP 后端不影响 `Nova.Network` 调用方式 |
+| 后端替换后 API 不变 | HTTP 对外接口签名不绑定具体后端；UnityWebRequest 与 BestHTTP 自动切换不影响 `Nova.Network` 调用方式 |
 | 远端 GET 结果会自动刷新 | `GetAsync(...)` 当前会要求后端禁用本地缓存；需要缓存时应在业务层显式持有结果，而不是依赖 HTTP 层缓存 |
 | 返回的 HttpResponse 不需要管 | HttpResponse 实现 IReference 池化，框架内部消费的 response 必须通过 `ReferencePool.Put` 归还；进度回调的中间态 HttpResponse 同理 |
 
@@ -172,15 +174,16 @@ finally
 
 | 场景 | 正确做法 |
 |---|---|
-| 底层依赖 | `NovaFramework.Runtime` 不直接依赖 BestHTTP；HTTP 通过 public SPI `IHttpTransport` / `IHttpTransportFactory` / `HttpTransportRegistry.Register(...)` 找到已启用后端 |
-| 缺少后端 | 未安装或未启用后端时，请求会返回失败的 `HttpResponse`，错误信息会提示安装 `com.solotopia.nova.framework.besthttp` 与 BestHTTP/TLS |
-| BestHTTP 后端 | 安装独立包 `com.solotopia.nova.framework.besthttp` 后提供 `NovaFramework.BestHTTP.Runtime`；该 asmdef 通过程序集名引用 `com.Tivadar.Best.HTTP` / `com.Tivadar.Best.TLSSecurity` |
+| 底层依赖 | `NovaFramework.Runtime` 只依赖 Unity 自带 UnityWebRequest；HTTP 通过 public SPI `IHttpTransport` / `IHttpTransportFactory` / `HttpTransportRegistry.Register(...)` 接受可选后端 |
+| 默认后端 | 未安装 `com.solotopia.nova.framework.besthttp` 时自动使用 `UnityWebRequestTransport`，完整覆盖 GET、两类 POST、文件上传及两类下载 |
+| BestHTTP 后端 | 安装独立包 `com.solotopia.nova.framework.besthttp` 后提供 `NovaFramework.BestHTTP.Runtime`；其工厂优先级为 100，会自动覆盖默认 UnityWebRequest。该 asmdef 通过程序集名引用 `com.Tivadar.Best.HTTP` / `com.Tivadar.Best.TLSSecurity` |
 | SPI 使用边界 | `IHttpTransport` 是框架级后端扩展点，供可选传输程序集注册实现；后端实现用 `HttpResponse.Create(...)` 创建池化响应；普通业务代码仍应通过 `Nova.Network` 调用 HTTP API |
-| DoH IP 直连 | 当前 BestHTTP 仅对明文 HTTP 返回支持，并补写原始 `Host`；HTTPS 在取得 SNI/证书验证证据前只检测 DoH、仍使用原域名 |
+| DoH IP 直连 | UnityWebRequest 默认后端不声明 IP 候选能力；BestHTTP 当前仅对明文 HTTP 返回支持并补写原始 `Host`。HTTPS 在取得 SNI/证书验证证据前只检测 DoH、仍使用原域名 |
 | DoH 缓存未命中 | 当前请求会先触发一次 `DNSQuery(url)`，成功后立刻重建候选 URL 再发请求 |
-| WebGL 平台 | BestHTTP 在 WebGL 的实机行为待验证，参见 [project_network_webgl_besthttp.md] |
+| UnityWebRequest 超时 | UnityWebRequest 没有独立连接超时 API，因此默认后端用 `RequestTimeout` 约束连接与完整请求；`ConnectTimeout` 只在支持独立连接超时的可选后端生效 |
+| WebGL 平台 | 默认后端使用 Unity 官方 UnityWebRequest；BestHTTP 在 WebGL 的实机行为待验证，参见 [project_network_webgl_besthttp.md] |
 | HTTPS + 证书校验 | 当前不启用 HTTPS IP 候选；需验证传输可同时保留原始 Host、TLS SNI 与证书校验名后，才能在后端能力方法中开启 |
-| 大文件上传进度监听 | `PostFileAsync` 不提供上传进度回调；需要进度时使用 BestHTTP 原生 API |
+| 大文件上传进度监听 | `PostFileAsync` 不提供上传进度回调；需要进度时安装可选后端并使用其原生 API |
 | TLS 验证控制 | BestHTTP 的 TLS 验证由 BestHTTP TLS Security 包统一管理，与 DevelopMode 无关 |
 
 ---

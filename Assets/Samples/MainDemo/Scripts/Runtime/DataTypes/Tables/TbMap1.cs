@@ -59,21 +59,3 @@ public partial class TbMap1 :
 
 }
 }
-
-// --- AUTO-GENERATED MAP PROPERTIES BEGIN ---
-#pragma warning disable
-
-namespace NovaFramework.Samples.Runtime
-{
-public partial class TbMap1
-{
-    /// <summary>
-    /// XXXXX
-    /// </summary>
-    public Map1 XXXXX => GetOrDefault("XXXXX");
-
-}
-}
-#pragma warning restore
-
-// --- AUTO-GENERATED MAP PROPERTIES END ---

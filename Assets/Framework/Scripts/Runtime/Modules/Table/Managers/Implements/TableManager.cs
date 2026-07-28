@@ -5,141 +5,142 @@
  * filename:  TableManager.cs
  * author:    taoye
  * created:   2026/2/5
- * descrip:   表格管理器
+ * descrip:   基于 Luban 生成 Binding 的 Table 管理器
  ***************************************************************/
 
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// 表格管理器。
+    /// 加载任意数量的 Luban 生成 Binding，并按表类型提供统一查询。
     /// </summary>
     internal sealed partial class TableManager : TableManagerBase
     {
         /// <summary>
-        /// 构造方法。
+        /// 初始化 Table 管理器并复制运行时 Binding 配置。
         /// </summary>
-        public TableManager()
-        {
-        }
-
-        /// <summary>
-        /// 初始化表格管理器。
-        /// </summary>
-        /// <param name="config">表格管理器配置。</param>
+        /// <param name="config">运行时 Binding 配置。</param>
         public override void Initialize(TableManagerConfig config)
         {
-            m_UnitSettings = config.UnitSettings ?? new List<TableUnitSetting>();
             m_AssetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
+            m_Bindings.Clear();
+            if (config?.Bindings != null)
+            {
+                for (int i = 0; i < config.Bindings.Count; i++)
+                {
+                    TableRuntimeBindingSetting setting = config.Bindings[i];
+                    if (setting != null)
+                    {
+                        m_Bindings.Add(setting);
+                    }
+                }
+            }
             m_Tables.Clear();
-            m_DataCache = new LubanDataCache();
         }
 
         /// <summary>
-        /// 管理器轮询。
+        /// Table 当前没有逐帧状态。
         /// </summary>
         public override void Update()
         {
         }
 
         /// <summary>
-        /// 关闭并清理管理器。
+        /// 清理全部已注册表、Binding 配置和运行时依赖。
         /// </summary>
         public override void Shutdown()
         {
             m_Tables.Clear();
-            m_DataCache?.Clear();
-            m_DataCache = null;
-            m_UnitSettings = null;
+            m_Bindings.Clear();
+            m_AssetManager = null;
         }
 
         /// <summary>
-        /// 异步加载所有表格数据。
-        /// Phase 1：并行加载所有 AB 资源并将数据拆分缓存到 m_DataCache。
-        /// Phase 2：反射构造 TableTables，提取所有 ITable 到 m_Tables。
+        /// 异步预加载全部 Binding 声明的数据，再交给生成代码完成解码和 Tables 构造。
         /// </summary>
-        /// <returns>是否全部加载并构建成功。</returns>
+        /// <returns>是否加载或保留了至少一张表。</returns>
         public override async UniTask<bool> LoadTablesAsync()
         {
-            IAssetManager am = m_AssetManager;
-            DataReceiver.LoadAssetAsyncFunc loadFunc = async (assetLocation) =>
+            if (m_Bindings.Count == 0)
             {
-                IAssetHandle<UnityEngine.TextAsset> handle = await am.LoadAsync<UnityEngine.TextAsset>(assetLocation);
-                UnityEngine.TextAsset asset = handle.Asset;
-                handle.Release();
-                return asset;
-            };
-
-            List<UniTask<bool>> tasks = new List<UniTask<bool>>(m_UnitSettings.Count);
-            for (int i = 0; i < m_UnitSettings.Count; i++)
+                return m_Tables.Count > 0;
+            }
+            if (!ValidateAssetManager())
             {
-                TableUnitSetting unit = m_UnitSettings[i];
-                if (string.IsNullOrEmpty(unit.AssetLocation))
-                {
-                    continue;
-                }
-                string location = unit.AssetLocation;
-                DataReceiver.ReleaseAssetAction releaseFunc = _ => { };
-                tasks.Add(InternalLoadUnitAsync(unit, loadFunc, releaseFunc));
+                return false;
             }
 
-            if (tasks.Count > 0)
+            var loadedBindings = new List<LoadedBinding>(m_Bindings.Count);
+            for (int i = 0; i < m_Bindings.Count; i++)
             {
-                bool[] results = await UniTask.WhenAll(tasks);
-                for (int i = 0; i < results.Length; i++)
-                {
-                    if (!results[i])
-                    {
-                        return false;
-                    }
-                }
+                loadedBindings.Add(await LoadBindingAsync(m_Bindings[i]));
             }
-
-            return BuildTablesFromCache();
+            return ReplaceTables(loadedBindings);
         }
 
         /// <summary>
-        /// 同步加载所有表格数据。
-        /// Phase 1：遍历 m_UnitSettings，对每个有效 unit 同步加载 JSON 数据到 m_DataCache。
-        /// Phase 2：反射构造 TableTables，提取所有 ITable 到 m_Tables。
+        /// 同步加载全部 Binding 声明的数据，再交给生成代码完成解码和 Tables 构造。
         /// </summary>
-        /// <returns>是否全部加载并构建成功。</returns>
+        /// <returns>是否加载或保留了至少一张表。</returns>
         public override bool LoadTablesSync()
         {
-            DataReceiver.LoadAssetSyncFunc syncLoadFunc = (assetLocation) =>
+            if (m_Bindings.Count == 0)
             {
-                IAssetHandle<TextAsset> handle = m_AssetManager.LoadSync<TextAsset>(assetLocation);
-                TextAsset asset = handle.Asset;
-                handle.Release();
-                return asset;
-            };
-
-            for (int i = 0; i < m_UnitSettings.Count; i++)
+                return m_Tables.Count > 0;
+            }
+            if (!ValidateAssetManager())
             {
-                TableUnitSetting unit = m_UnitSettings[i];
-                if (string.IsNullOrEmpty(unit.AssetLocation))
-                {
-                    continue;
-                }
-                string location = unit.AssetLocation;
-                DataReceiver.ReleaseAssetAction releaseFunc = _ => { };
-                if (!InternalLoadUnitSync(unit, syncLoadFunc, releaseFunc))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            return BuildTablesFromCache();
+            var loadedBindings = new List<LoadedBinding>(m_Bindings.Count);
+            for (int i = 0; i < m_Bindings.Count; i++)
+            {
+                loadedBindings.Add(LoadBindingSync(m_Bindings[i]));
+            }
+            return ReplaceTables(loadedBindings);
         }
 
         /// <summary>
-        /// 是否包含指定类型的表格。
+        /// 注册一个已经由 Luban 原生构造器创建的 Tables 容器。
         /// </summary>
-        /// <typeparam name="T">表格类型。</typeparam>
+        /// <param name="tables">待解析引用并注册的 Tables 容器。</param>
+        /// <returns>是否注册了至少一张表。</returns>
+        public override bool RegisterTables(ILubanTables tables)
+        {
+            if (tables == null)
+            {
+                Log.Error(LogTag.Table, "待注册的 ILubanTables 不能为空。");
+                return false;
+            }
+
+            tables.ResolveRef();
+            IReadOnlyList<ITable> generatedTables = tables.GetAllTables();
+            if (generatedTables == null || generatedTables.Count == 0)
+            {
+                Log.Error(LogTag.Table, "ILubanTables 未提供任何生成表。");
+                return false;
+            }
+
+            for (int i = 0; i < generatedTables.Count; i++)
+            {
+                ITable table = generatedTables[i];
+                if (table == null)
+                {
+                    throw new InvalidOperationException("ILubanTables.GetAllTables() 包含空表实例。");
+                }
+                m_Tables[table.GetType()] = table;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 判断是否已注册指定表类型。
+        /// </summary>
+        /// <typeparam name="T">生成表类型。</typeparam>
         /// <returns>是否存在。</returns>
         public override bool HasTable<T>()
         {
@@ -147,9 +148,9 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 是否包含指定类型的表格。
+        /// 判断是否已注册指定表类型。
         /// </summary>
-        /// <param name="type">表格类型。</param>
+        /// <param name="type">生成表类型。</param>
         /// <returns>是否存在。</returns>
         public override bool HasTable(Type type)
         {
@@ -157,27 +158,38 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 获取指定类型的表格。
+        /// 获取指定生成表实例。
         /// </summary>
-        /// <typeparam name="T">表格类型。</typeparam>
-        /// <returns>表格实例，不存在时返回 null。</returns>
+        /// <typeparam name="T">生成表类型。</typeparam>
+        /// <returns>表实例，不存在时返回 null。</returns>
         public override T GetTable<T>()
         {
             return m_Tables.TryGetValue(typeof(T), out ITable table) ? table as T : null;
         }
 
         /// <summary>
-        /// 获取指定类型的表格。
+        /// 按运行时类型获取生成表实例。
         /// </summary>
-        /// <param name="type">表格类型。</param>
-        /// <returns>表格实例，不存在时返回 null。</returns>
+        /// <param name="type">生成表类型。</param>
+        /// <returns>表实例，不存在时返回 null。</returns>
         public override object GetTable(Type type)
         {
-            if (type == null)
+            return type != null && m_Tables.TryGetValue(type, out ITable table) ? table : null;
+        }
+
+        /// <summary>
+        /// 校验资源管理器可用于 Binding 数据加载。
+        /// </summary>
+        /// <returns>资源管理器是否存在。</returns>
+        private bool ValidateAssetManager()
+        {
+            if (m_AssetManager != null)
             {
-                return null;
+                return true;
             }
-            return m_Tables.TryGetValue(type, out ITable table) ? table : null;
+
+            Log.Error(LogTag.Table, "IAssetManager 未注册，无法加载 Table Binding 数据。");
+            return false;
         }
     }
 }

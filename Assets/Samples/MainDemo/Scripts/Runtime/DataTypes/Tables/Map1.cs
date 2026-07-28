@@ -55,4 +55,3 @@ public sealed partial class Map1 : Luban.BeanBase
     }
 }
 }
-

@@ -17,16 +17,16 @@ namespace NovaFramework.Editor
 {
     /// <summary>
     /// Pipify 内置 Step 合集（partial）。
-    /// 本文件收录导出分组 Table 子类的原子操作：仅导出表格数据、仅导出表格类型。
+    /// 本文件收录 Table 官方 Luban Project 的数据与类型导出原子操作。
     /// 每个方法仅做薄封装，调用 EditorUtil.Table.Exporter 对应 public API。
     /// TableSettings 通过反射从 TableComponent.m_Setting 获取，与 TableComponentInspector 保持一致。
     /// </summary>
     internal static partial class PipifySteps
     {
         /// <summary>
-        /// Step：仅导出表格数据（JSON）。
+        /// Step：仅导出全部 Enabled Profile 的原始单表数据。
         /// 通过 Helpers.ResolveComponentOnNova 定位 TableComponent，
-        /// 反射取 m_Setting 与 SourceDirPath，调用 EditorUtil.Table.Exporter.ExportData。
+        /// 反射取 m_Setting 并调用 EditorUtil.Table.Exporter.ExportData。
         /// </summary>
         /// <param name="ctx">Runner 下发的运行时上下文。</param>
         /// <returns>完成的 UniTask。</returns>
@@ -35,18 +35,18 @@ namespace NovaFramework.Editor
         {
             TableComponent component = Helpers.ResolveComponentOnNova<TableComponent>();
             TableSettings settings = ResolveTableSettings(component);
-            bool result = EditorUtil.Table.Exporter.ExportData(settings, settings.SourceDirPath);
+            bool result = EditorUtil.Table.Exporter.ExportData(settings);
             if (!result)
             {
-                throw new InvalidOperationException("[Pipify] 表格数据导出失败，请检查 TableComponent 配置与表格数据源目录。");
+                throw new InvalidOperationException("[Pipify] Table 数据导出失败，请检查 luban.conf 与 Enabled Profiles。");
             }
             return UniTask.CompletedTask;
         }
 
         /// <summary>
-        /// Step：仅导出表格类型（C# 代码）。
+        /// Step：仅导出全部 Enabled Profile 的表格类型（C# 代码）。
         /// 通过 Helpers.ResolveComponentOnNova 定位 TableComponent，
-        /// 反射取 m_Setting 与 SourceDirPath，调用 EditorUtil.Table.Exporter.ExportCode。
+        /// 反射取 m_Setting 并调用 EditorUtil.Table.Exporter.ExportCode。
         /// </summary>
         /// <param name="ctx">Runner 下发的运行时上下文。</param>
         /// <returns>完成的 UniTask。</returns>
@@ -55,10 +55,10 @@ namespace NovaFramework.Editor
         {
             TableComponent component = Helpers.ResolveComponentOnNova<TableComponent>();
             TableSettings settings = ResolveTableSettings(component);
-            bool result = EditorUtil.Table.Exporter.ExportCode(settings, settings.SourceDirPath);
+            bool result = EditorUtil.Table.Exporter.ExportCode(settings);
             if (!result)
             {
-                throw new InvalidOperationException("[Pipify] 表格类型导出失败，请检查 TableComponent 配置与表格数据源目录。");
+                throw new InvalidOperationException("[Pipify] Table 类型导出失败，请检查 luban.conf 与 Enabled Profiles。");
             }
             return UniTask.CompletedTask;
         }
@@ -81,9 +81,9 @@ namespace NovaFramework.Editor
             {
                 throw new InvalidOperationException("[Pipify] TableComponent.m_Setting 未配置，请在 Nova Prefab 的 TableComponent 上完成 Settings 配置。");
             }
-            if (string.IsNullOrEmpty(settings.SourceDirPath))
+            if (settings.Project == null || string.IsNullOrEmpty(settings.Project.ConfigPath))
             {
-                throw new InvalidOperationException("[Pipify] TableSettings.SourceDirPath 未配置，请在 TableComponent Inspector 中填写表格数据源目录。");
+                throw new InvalidOperationException("[Pipify] Table Luban Project 的 luban.conf 未配置。");
             }
             return settings;
         }

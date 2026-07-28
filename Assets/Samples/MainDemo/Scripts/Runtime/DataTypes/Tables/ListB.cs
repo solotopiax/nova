@@ -64,4 +64,3 @@ public sealed partial class ListB : Luban.BeanBase
     }
 }
 }
-

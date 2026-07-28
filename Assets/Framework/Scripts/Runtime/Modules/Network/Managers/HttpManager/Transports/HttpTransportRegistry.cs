@@ -35,11 +35,15 @@ namespace NovaFramework.Runtime
             s_Factories.Add(factory);
         }
 
+        /// <summary>
+        /// 创建最高优先级的已注册后端；没有可选后端或工厂创建失败时使用内置 UnityWebRequest。
+        /// </summary>
+        /// <returns>可用的 HTTP 传输实例。</returns>
         internal static IHttpTransport Create()
         {
             if (s_Factories.Count == 0)
             {
-                return MissingHttpTransport.Instance;
+                return new UnityWebRequestTransport();
             }
 
             IHttpTransportFactory selectedFactory = s_Factories[0];
@@ -52,7 +56,7 @@ namespace NovaFramework.Runtime
                 }
             }
 
-            return selectedFactory.Create() ?? MissingHttpTransport.Instance;
+            return selectedFactory.Create() ?? new UnityWebRequestTransport();
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

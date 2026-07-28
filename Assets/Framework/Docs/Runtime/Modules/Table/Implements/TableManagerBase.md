@@ -48,9 +48,12 @@ internal abstract class TableManagerBase : FrameworkManager, ITableManager
     // 关闭并清理
     public abstract override void Shutdown();
 
-    // 两阶段异步加载（Phase 1 并发 AB→JSON 缓存，Phase 2 反射构造 TableTables）
+    // Binding 驱动的同步/异步加载
     public abstract UniTask<bool> LoadTablesAsync();
     public abstract bool LoadTablesSync();
+
+    // 注册业务自行构造的 Luban Tables
+    public abstract bool RegisterTables(ILubanTables tables);
 
     // 统一查询
     public abstract bool HasTable<T>() where T : class, ITable;

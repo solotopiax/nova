@@ -42,6 +42,13 @@ namespace NovaFramework.Runtime
         bool LoadTablesSync();
 
         /// <summary>
+        /// 注册一个已经由 Luban 原生构造器创建的 Tables 容器。
+        /// </summary>
+        /// <param name="tables">待解析引用并注册的 Tables 容器。</param>
+        /// <returns>是否注册了至少一张表。</returns>
+        bool RegisterTables(ILubanTables tables);
+
+        /// <summary>
         /// 是否包含指定类型的表格。
         /// </summary>
         /// <typeparam name="T">表格类型。</typeparam>

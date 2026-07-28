@@ -179,20 +179,91 @@ MonoBehaviour:
   m_DevelopMode: 0
   m_CurManagerTypeName: NovaFramework.Runtime.TableManager
   m_Setting:
-    SourceDirPath: Assets/Samples/MainDemo/Excels/Tables
-    TableUnitsSettings:
-    - SourcePath: TableList.xlsx
-      DatasExportPath: Assets/Samples/MainDemo/Jsons/TableList.json
-      ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
-      AssetLocation: TableList
-      TableMode: 0
-      IndexField: 
-    - SourcePath: TableMap.xlsx
-      DatasExportPath: Assets/Samples/MainDemo/Jsons/TableMap.json
-      ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
-      AssetLocation: TableMap
-      TableMode: 1
-      IndexField: Name
+    Project:
+      ConfigPath: Assets/Samples/MainDemo/Excels/Tables/luban.conf
+      Target: table
+      Profiles:
+      - Id: json
+        Enabled: 1
+        CodeTargets:
+        - cs-newtonsoft-json
+        DataTargets:
+        - json
+        CodeOutputPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
+        DataOutputPath: Assets/Samples/MainDemo/Jsons/Tables
+        IncludeTags: []
+        ExcludeTags: []
+        Variants: []
+        ExtraArguments: []
+        CustomTemplateDirs:
+        - Assets/Framework/Templates/Luban/default
+        - Assets/Framework/Templates/Luban/table
+      - Id: binary
+        Enabled: 0
+        CodeTargets:
+        - cs-bin
+        DataTargets:
+        - bin
+        CodeOutputPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
+        DataOutputPath: Assets/Samples/MainDemo/Jsons/Tables
+        IncludeTags: []
+        ExcludeTags: []
+        Variants: []
+        ExtraArguments: []
+        CustomTemplateDirs:
+        - Assets/Framework/Templates/Luban/default
+        - Assets/Framework/Templates/Luban/table
+      - Id: protobuf-binary
+        Enabled: 0
+        CodeTargets:
+        - protobuf3
+        - cs-newtonsoft-json
+        DataTargets:
+        - protobuf3-bin
+        CodeOutputPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
+        DataOutputPath: Assets/Samples/MainDemo/Jsons/Tables
+        IncludeTags: []
+        ExcludeTags: []
+        Variants: []
+        ExtraArguments: []
+        CustomTemplateDirs:
+        - Assets/Framework/Templates/Luban/default
+        - Assets/Framework/Templates/Luban/table
+      - Id: protobuf-json
+        Enabled: 0
+        CodeTargets:
+        - protobuf3
+        - cs-newtonsoft-json
+        DataTargets:
+        - protobuf3-json
+        CodeOutputPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
+        DataOutputPath: Assets/Samples/MainDemo/Jsons/Tables
+        IncludeTags: []
+        ExcludeTags: []
+        Variants: []
+        ExtraArguments: []
+        CustomTemplateDirs:
+        - Assets/Framework/Templates/Luban/default
+        - Assets/Framework/Templates/Luban/table
+      - Id: msgpack
+        Enabled: 0
+        CodeTargets:
+        - cs-newtonsoft-json
+        DataTargets:
+        - msgpack
+        CodeOutputPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
+        DataOutputPath: Assets/Samples/MainDemo/Jsons/Tables
+        IncludeTags: []
+        ExcludeTags: []
+        Variants: []
+        ExtraArguments: []
+        CustomTemplateDirs:
+        - Assets/Framework/Templates/Luban/default
+        - Assets/Framework/Templates/Luban/table
+    Runtime:
+      Bindings:
+      - BindingTypeName: NovaFramework.Samples.Runtime.TableTablesBinding
+        DataAssetLocationPrefix: /
 --- !u!1 &1990458234707485856
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,7 +3,7 @@
 **类签名**：`[Serializable] public abstract class DataTableUnitSettingBase : IDataTableUnitSetting`
 **命名空间**：`NovaFramework.Runtime`
 
-数据表单元设置抽象基类，提取各模块（Table/Config/Sound/Vibrate/Localization/Network 等）共用的序列化字段与接口显式实现，子类只需提供 `GetMode()`、`GetIndexField()` 两个抽象方法即可完成接入。
+数据表单元设置抽象基类，提取仍采用 Unit 导出链的模块（Config/Sound/Vibrate/Localization/Network 等）共用字段。Table 已不再继承此体系。
 
 ---
 
@@ -20,7 +20,6 @@
 ```text
 IDataTableUnitSetting  (interface)
   └── DataTableUnitSettingBase  (abstract, [Serializable])
-        ├── TableUnitSetting      (Table 模块)
         ├── ConfigUnitSetting     (Config 模块)
         ├── SoundUnitSetting      (Sound 模块)
         ├── VibrateUnitSetting    (Vibrate 模块)
@@ -87,9 +86,9 @@ protected virtual string GetLubanInputPath() => SourcePath;
 ## § 11 使用示例
 
 ```csharp
-// 以 TableUnitSetting 为例（子类实现）
+// 以 SoundUnitSetting 为例（子类实现）
 [Serializable]
-public class TableUnitSetting : DataTableUnitSettingBase
+public class SoundUnitSetting : DataTableUnitSettingBase
 {
     public string IndexField;
     public DataTableMode Mode;

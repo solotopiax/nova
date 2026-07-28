@@ -321,24 +321,48 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.SourceDirPath
-      value: Assets/Samples/FacebookDemo/Excels/Tables
+      propertyPath: m_Setting.Project.ConfigPath
+      value: Assets/Samples/FacebookDemo/Excels/Tables/luban.conf
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.TableUnitsSettings.Array.data[0].DatasExportPath
-      value: Assets/Samples/FacebookDemo/Jsons/TableList.json
-      objectReference: {fileID: 0}
-    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.TableUnitsSettings.Array.data[1].DatasExportPath
-      value: Assets/Samples/FacebookDemo/Jsons/TableMap.json
-      objectReference: {fileID: 0}
-    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.TableUnitsSettings.Array.data[0].ClassesExportPath
+      propertyPath: m_Setting.Project.Profiles.Array.data[0].CodeOutputPath
       value: Assets/Samples/FacebookDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.TableUnitsSettings.Array.data[1].ClassesExportPath
+      propertyPath: m_Setting.Project.Profiles.Array.data[0].DataOutputPath
+      value: Assets/Samples/FacebookDemo/Jsons/Tables
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[1].CodeOutputPath
       value: Assets/Samples/FacebookDemo/Scripts/Runtime/DataTypes/Tables
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[1].DataOutputPath
+      value: Assets/Samples/FacebookDemo/Jsons/Tables
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[2].CodeOutputPath
+      value: Assets/Samples/FacebookDemo/Scripts/Runtime/DataTypes/Tables
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[2].DataOutputPath
+      value: Assets/Samples/FacebookDemo/Jsons/Tables
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[3].CodeOutputPath
+      value: Assets/Samples/FacebookDemo/Scripts/Runtime/DataTypes/Tables
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[3].DataOutputPath
+      value: Assets/Samples/FacebookDemo/Jsons/Tables
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[4].CodeOutputPath
+      value: Assets/Samples/FacebookDemo/Scripts/Runtime/DataTypes/Tables
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Project.Profiles.Array.data[4].DataOutputPath
+      value: Assets/Samples/FacebookDemo/Jsons/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.CustomSourceDirPath

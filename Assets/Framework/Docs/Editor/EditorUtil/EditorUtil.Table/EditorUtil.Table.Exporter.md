@@ -1,96 +1,47 @@
 # EditorUtil.Table.Exporter
 
-**类签名**：`public static class Exporter`（嵌套于 `EditorUtil.Table`）
-**命名空间**：`NovaFramework.Editor`
+`EditorUtil.Table.Exporter` 直接消费正式 `luban.conf + schema + data`，在隔离工作区生成一个或多个 Profile，并通过 `OutputApplier` 发布。
 
-表格模块 Luban 导出入口，封装清理旧文件、构建上下文、调用 Pipeline 三步流程。
-
----
-
-## §2 文件表
-
-| 文件 | 类 | 说明 |
-|------|----|------|
-| `Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.cs` | `EditorUtil.Table.Exporter` | Table 导出工具类 |
-
----
-
-## §3 继承关系
-
-```
-EditorUtil (public static partial class)
-  └── EditorUtil.Table (public static partial class)
-        └── Exporter (public static class)
-```
-
----
-
-## §4 关键字段表
-
-| 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `c_ExportTargetName` | `const string` | `"table"` | Luban target 名称 |
-| `c_ExportManagerName` | `const string` | `"TableTables"` | Luban manager 类名 |
-
----
-
-## §5 完整公开 API
+## API
 
 ```csharp
-// 导出全部（代码 + 数据）：清理旧导出文件 → 构建上下文 → Pipeline.ExportAll
-// settings 为 null 或 sourceDirPath 为空时返回 false
-public static bool ExportAll(TableSettings settings, string sourceDirPath);
+public static bool ExportAll(TableSettings settings);
+public static bool ExportCode(TableSettings settings);
+public static bool ExportData(TableSettings settings);
 
-// 仅导出代码（类型定义）：构建上下文 → Pipeline.ExportCode
-// settings 为 null 或 sourceDirPath 为空时返回 false
-public static bool ExportCode(TableSettings settings, string sourceDirPath);
-
-// 仅导出数据（JSON）：构建上下文 → Pipeline.ExportData
-// settings 为 null 或 sourceDirPath 为空时返回 false
-public static bool ExportData(TableSettings settings, string sourceDirPath);
+public static bool ExportAll(TableSettings settings, params string[] profileIds);
+public static bool ExportCode(TableSettings settings, params string[] profileIds);
+public static bool ExportData(TableSettings settings, params string[] profileIds);
 ```
 
----
+无 Profile ID 的入口处理全部 `Enabled` Profile；显式重载可一次指定任意一个或多个 Profile。
+`ExportAll` 会按每个 Profile 实际配置的目标生成代码、数据或两者，因此代码专用和数据专用 Profile 可以同时参与批量导出。
 
-## §9 关键算法
+## Luban 参数
 
-### ExportAll 流程
+Exporter 原样构建以下参数：
 
-```
-ExportAll(settings, sourceDirPath):
-  1. settings == null || sourceDirPath 空 → return false
-  2. ClearExportPaths(settings)：收集所有 DatasExportPath / ClassesExportPath → 去重后逐目录 DeletePath
-  3. CollectFirstClassExportPath(settings) → classExportPath（多路径时 Log.Warning）
-  4. BuildExportContext(sourceDirPath, settings, LubanExportProfiles.Table) → ctx
-  5. ctx.OutputCodeDir = classExportPath
-  6. Pipeline.ExportAll(ctx) → return result
-```
+- 重复的 `-c` 与 `-d`；
+- `--conf` 与 `-t`；
+- 重复的 `-i`、`-e`、`--variant`、`--customTemplateDir`；
+- 任意数量的 `-x name=value`。
 
-### ExportCode / ExportData 流程
+Nova 不维护 Codec 安装表或格式枚举。内置预设覆盖 JSON、Binary、Protobuf Binary、Protobuf JSON 与 MsgPack，自定义 target 使用相同入口。
 
-- `ExportCode`：跳过 ClearExportPaths，直接 BuildExportContext → `ctx.OutputCodeDir = classExportPath` → `Pipeline.ExportCode(ctx)`
-- `ExportData`：跳过 ClearExportPaths 与 classExportPath 解析，直接 BuildExportContext → `Pipeline.ExportData(ctx)`
+## 导出流程
 
----
+1. 校验 Project、Profile ID、目标列表和对应输出目录。
+2. 每个 Profile 使用独立 `Library/Nova/TableExport/<guid>` 工作区。
+3. Luban 只接收 Profile 声明的目标和原生参数。
+4. 包含 `protobuf3` 代码目标时，追加 `protoc` 与 Nova Protobuf Tables 适配模板。
+5. 代码和数据分别发布到 Profile 指定目录。
+6. 多个 Profile 共用目录时只替换本次同名产物，不清理其他 Profile 文件。
+7. 全部指定 Profile 成功后刷新 AssetDatabase。
 
-## §11 使用示例
+表清单与解码方式由 Luban 生成 Binding 提供，导出链不生成额外运行时目录文件。
 
-```csharp
-// TableComponentInspector 中导出全部
-bool ok = EditorUtil.Table.Exporter.ExportAll(settings, settings.SourceDirPath);
-
-// Pipify Step 中仅导出数据（不重新生成代码）
-bool ok = EditorUtil.Table.Exporter.ExportData(settings, settings.SourceDirPath);
-
-// Pipify Step 中仅导出类型（不重新导数据）
-bool ok = EditorUtil.Table.Exporter.ExportCode(settings, settings.SourceDirPath);
-```
-
----
-
-## §13 关联文档
+## 关联文档
 
 - [TableSettings.md](../../../Runtime/Modules/Table/Definitions/TableSettings.md)
-- [EditorUtil.Luban.Pipeline.md](../EditorUtil.Luban/EditorUtil.Luban.Pipeline.md)
-- [EditorUtil.Luban.ExportHelper.md](../EditorUtil.Luban/EditorUtil.Luban.ExportHelper.md)
+- [TableComponentInspector.md](../../Inspectors/TableComponentInspector/TableComponentInspector.md)
 - [PipifySteps.md](../EditorUtil.Pipify/PipifySteps.md)
