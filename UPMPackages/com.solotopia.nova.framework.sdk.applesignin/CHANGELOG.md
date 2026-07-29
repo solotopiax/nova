@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.8] - 2026-07-29
+
+### Changed
+
+- 将 Framework、GameLogin 与 GameBind 最低依赖分别提升至 `0.6.0`、`0.1.0` 与 `0.0.6`。
+- AppleSigninDemo 同步启动应用配置网络命令、运行时配置与场景覆盖。
+
 ## [0.0.7] - 2026-07-23
 
 ### Changed

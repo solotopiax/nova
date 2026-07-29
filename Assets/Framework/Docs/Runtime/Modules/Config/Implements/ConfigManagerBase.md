@@ -1,9 +1,9 @@
 # ConfigManagerBase
 
-**类签名**：`internal abstract class ConfigManagerBase : FrameworkManager, IConfigManager`
+**类签名**：`internal abstract class ConfigManagerBase : FrameworkManager, IConfigManager, IAppConfigManager`
 **命名空间**：`NovaFramework.Runtime`
 
-配置管理器抽象基类；继承 `FrameworkManager` 并声明 `IConfigManager` 全部抽象成员。派生类 `ConfigManager` 提供 AB 异步加载 + 预加载短路 + SDK PluginConfig 透传的具体实现。`Priority = 10`。
+配置管理器抽象基类；继承 `FrameworkManager`，声明公开 `IConfigManager` 与框架内部 `IAppConfigManager` 的全部抽象成员。派生类 `ConfigManager` 提供 AB 异步加载、应用配置快照刷新以及 SDK / Kit 配置透传。`Priority = 10`。
 
 ---
 
@@ -19,7 +19,7 @@
 
 ```
 FrameworkManager
-  └── ConfigManagerBase (internal abstract) : IConfigManager   Priority = 10
+  └── ConfigManagerBase (internal abstract) : IConfigManager, IAppConfigManager   Priority = 10
         └── ConfigManager (internal sealed partial)
 ```
 
@@ -50,14 +50,26 @@ public abstract UniTask LoadAsync();
 // --- 状态属性（abstract）---
 public abstract bool IsLoadOver { get; }
 public abstract DevelopMode DevelopMode { get; }
-public abstract AppConfigs Common { get; }
+public abstract AppConfigs AppConfigs { get; }
 public abstract string Namespace { get; }
+public abstract HybridConfigs HybridConfigs { get; }
+public abstract CustomConfig Custom { get; }
 public abstract PlatformType Platform { get; }
 public abstract ChannelType Channel { get; }
+
+// --- 应用配置能力（框架内部 IAppConfigManager）---
+public abstract string GetString(string key, string defaultValue = null);
+public abstract int GetInt(string key, int defaultValue = default);
+public abstract float GetFloat(string key, float defaultValue = default);
+public abstract bool GetBool(string key, bool defaultValue = default);
+public abstract bool TryGetString(string key, out string value);
+public abstract UniTask<bool> RefreshAppConfigAsync();
 
 // --- SDK PluginConfig 查询（abstract）---
 public abstract T GetSDKPluginConfig<T>() where T : class, ISDKPluginConfig;
 public abstract ISDKPluginConfig GetSDKPluginConfig(Type type);
+public abstract T GetKitConfig<T>() where T : class, IKitConfig;
+public abstract IKitConfig GetKitConfig(Type type);
 public abstract IReadOnlyCollection<ISDKPluginConfig> GetAllPluginConfigs();
 ```
 

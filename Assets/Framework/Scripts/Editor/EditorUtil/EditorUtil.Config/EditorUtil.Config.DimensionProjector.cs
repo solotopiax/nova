@@ -384,6 +384,8 @@ namespace NovaFramework.Editor
                     dst.AppID = value.AppID;
                     dst.AppAesKey = value.AppAesKey;
                     dst.AppAesIV = value.AppAesIV;
+                    dst.CustomConfigCmdName = value.CustomConfigCmdName;
+                    dst.CustomName = value.CustomName;
                 }
 
                 /// <summary>
@@ -521,6 +523,8 @@ namespace NovaFramework.Editor
                         AppID = src.AppID,
                         AppAesKey = src.AppAesKey,
                         AppAesIV = src.AppAesIV,
+                        CustomConfigCmdName = src.CustomConfigCmdName,
+                        CustomName = src.CustomName,
                     };
                 }
 

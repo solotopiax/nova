@@ -49,7 +49,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 业务自定义运行时配置；LoadAsync 完成后可读，未加载时返回 null。
         /// </summary>
-        CustomConfigs CustomConfigs { get; }
+        CustomConfig Custom { get; }
 
         /// <summary>
         /// 本次加载 ConfigRuntimeSO 时记录的目标平台；由导出侧在 Export 时写入。

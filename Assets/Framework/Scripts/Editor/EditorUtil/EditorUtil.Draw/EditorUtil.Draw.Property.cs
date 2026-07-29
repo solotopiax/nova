@@ -43,6 +43,16 @@ namespace NovaFramework.Editor
             private static int s_TypesSelectorCachedCount;
 
             /// <summary>
+            /// 文本映射行的箭头样式，与输入框保持相同高度并垂直居中。
+            /// </summary>
+            private static GUIStyle s_IndexedMappingArrowStyle;
+
+            /// <summary>
+            /// 文本映射行的右侧只读文本样式，与输入框保持相同高度并垂直居中。
+            /// </summary>
+            private static GUIStyle s_IndexedMappingValueStyle;
+
+            /// <summary>
             /// 绘制文本内容。
             /// </summary>
             /// <param name="text">文本内容。</param>
@@ -80,6 +90,29 @@ namespace NovaFramework.Editor
                 EditorGUI.BeginDisabledGroup(disableOnPlaying && EditorApplication.isPlaying);
                 EditorGUILayout.LabelField(text, style, options);
                 EditorGUI.EndDisabledGroup();
+            }
+
+            /// <summary>
+            /// 绘制带可选状态色的普通标签。
+            /// </summary>
+            /// <param name="text">文本内容。</param>
+            /// <param name="color">可选状态色；为空时使用普通标签颜色。</param>
+            /// <param name="options">布局选项。</param>
+            public static void StatusLabel(string text, Color? color = null, params GUILayoutOption[] options)
+            {
+                Color previousContentColor = GUI.contentColor;
+                try
+                {
+                    if (color.HasValue)
+                    {
+                        GUI.contentColor = color.Value;
+                    }
+                    EditorGUILayout.LabelField(text, options);
+                }
+                finally
+                {
+                    GUI.contentColor = previousContentColor;
+                }
             }
 
             /// <summary>
@@ -353,6 +386,87 @@ namespace NovaFramework.Editor
                 string newValue = EditorGUILayout.TextField(label, value ?? string.Empty, options);
                 EditorGUI.EndDisabledGroup();
                 return newValue;
+            }
+
+            /// <summary>
+            /// 绘制不含标题的只读文本框。
+            /// </summary>
+            /// <param name="value">只读文本。</param>
+            /// <param name="color">可选状态色；为空时使用默认输入框颜色。</param>
+            /// <param name="options">布局选项。</param>
+            public static void ReadOnlyTextField(
+                string value,
+                Color? color = null,
+                params GUILayoutOption[] options)
+            {
+                Color previousColor = GUI.color;
+                try
+                {
+                    if (color.HasValue)
+                    {
+                        GUI.color = color.Value;
+                    }
+                    EditorGUI.BeginDisabledGroup(true);
+                    try
+                    {
+                        EditorGUILayout.TextField(value ?? string.Empty, options);
+                    }
+                    finally
+                    {
+                        EditorGUI.EndDisabledGroup();
+                    }
+                }
+                finally
+                {
+                    GUI.color = previousColor;
+                }
+            }
+
+            /// <summary>
+            /// 绘制带可选状态色的字符串属性输入框；状态色同时作用于标签和输入框。
+            /// </summary>
+            /// <param name="property">绑定的字符串属性。</param>
+            /// <param name="label">标签名。</param>
+            /// <param name="color">可选状态色；为空时使用当前 GUI 默认颜色。</param>
+            /// <param name="disableOnPlaying">是否在运行时禁用。</param>
+            /// <param name="onComplete">值写回后的回调。</param>
+            /// <param name="options">布局选项。</param>
+            public static void StatusTextField(
+                SerializedProperty property,
+                string label,
+                Color? color = null,
+                bool disableOnPlaying = true,
+                Action onComplete = null,
+                params GUILayoutOption[] options)
+            {
+                if (property == null)
+                {
+                    return;
+                }
+
+                Rect rowRect = EditorGUILayout.GetControlRect(options);
+                Color previousContentColor = GUI.contentColor;
+                Color previousColor = GUI.color;
+                try
+                {
+                    if (color.HasValue)
+                    {
+                        GUI.contentColor = color.Value;
+                    }
+                    Rect fieldRect = EditorGUI.PrefixLabel(rowRect, new GUIContent(label));
+                    GUI.contentColor = previousContentColor;
+
+                    if (color.HasValue)
+                    {
+                        GUI.color = color.Value;
+                    }
+                    TextField(fieldRect, property, disableOnPlaying, onComplete);
+                }
+                finally
+                {
+                    GUI.contentColor = previousContentColor;
+                    GUI.color = previousColor;
+                }
             }
 
             /// <summary>
@@ -774,6 +888,39 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 绘制不含标题、带状态色的单行 SerializedProperty 输入框。
+            /// </summary>
+            /// <param name="property">SerializedProperty。</param>
+            /// <param name="color">输入框状态色。</param>
+            /// <param name="disableOnPlaying">是否在运行时禁用。</param>
+            /// <param name="options">布局选项。</param>
+            public static void ColoredPropertyField(
+                SerializedProperty property,
+                Color color,
+                bool disableOnPlaying = true,
+                params GUILayoutOption[] options)
+            {
+                if (property == null)
+                {
+                    return;
+                }
+
+                EditorGUI.BeginDisabledGroup(disableOnPlaying && EditorApplication.isPlaying);
+                Rect row = EditorGUILayout.GetControlRect(options);
+                Color previousColor = GUI.color;
+                GUI.color = color;
+                try
+                {
+                    EditorGUI.PropertyField(row, property, GUIContent.none, false);
+                }
+                finally
+                {
+                    GUI.color = previousColor;
+                    EditorGUI.EndDisabledGroup();
+                }
+            }
+
+            /// <summary>
             /// 绘制管理器选择器。
             /// </summary>
             /// <param name="label">标签名。</param>
@@ -1009,6 +1156,86 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 绘制带序号的文本映射行：左侧使用固定宽度输入框，箭头与右侧只读文本紧接输入框右边缘。
+            /// </summary>
+            /// <param name="index">从 1 开始显示的条目序号。</param>
+            /// <param name="leftProperty">左侧绑定的字符串属性。</param>
+            /// <param name="rightText">右侧只读映射文本。</param>
+            /// <param name="disableOnPlaying">是否在运行时禁用左侧输入框。</param>
+            /// <param name="onComplete">左侧输入完成后的回调。</param>
+            /// <param name="color">可选状态色；有值时作用于整条映射行。</param>
+            public static void IndexedTextMappingRow(
+                int index,
+                SerializedProperty leftProperty,
+                string rightText,
+                bool disableOnPlaying = true,
+                Action onComplete = null,
+                Color? color = null)
+            {
+                const float indexWidth = 28f;
+                const float leftFieldWidth = 160f;
+                const float elementSpacing = 4f;
+                const float arrowWidth = 18f;
+
+                Rect rowRect = EditorGUILayout.GetControlRect(
+                    false, EditorGUIUtility.singleLineHeight, GUILayout.ExpandWidth(true));
+                Rect indexRect = new Rect(rowRect.x, rowRect.y, indexWidth, rowRect.height);
+                Rect leftRect = new Rect(
+                    indexRect.xMax + elementSpacing,
+                    rowRect.y,
+                    leftFieldWidth,
+                    rowRect.height);
+                Rect arrowRect = new Rect(
+                    leftRect.xMax + elementSpacing,
+                    rowRect.y,
+                    arrowWidth,
+                    rowRect.height);
+                Rect rightRect = new Rect(
+                    arrowRect.xMax + elementSpacing,
+                    rowRect.y,
+                    Math.Max(0f, rowRect.xMax - arrowRect.xMax - elementSpacing),
+                    rowRect.height);
+
+                if (s_IndexedMappingArrowStyle == null)
+                {
+                    s_IndexedMappingArrowStyle = new GUIStyle(EditorStyles.label)
+                    {
+                        alignment = TextAnchor.MiddleCenter,
+                    };
+                }
+                if (s_IndexedMappingValueStyle == null)
+                {
+                    s_IndexedMappingValueStyle = new GUIStyle(EditorStyles.label)
+                    {
+                        alignment = TextAnchor.MiddleLeft,
+                    };
+                }
+
+                Color previousContentColor = GUI.contentColor;
+                Color previousColor = GUI.color;
+                try
+                {
+                    if (color.HasValue)
+                    {
+                        GUI.contentColor = color.Value;
+                        GUI.color = color.Value;
+                    }
+                    Label(indexRect, $"[{Math.Max(1, index)}]", false);
+                    TextField(leftRect, leftProperty, disableOnPlaying, onComplete);
+                    EditorGUI.LabelField(arrowRect, "→", s_IndexedMappingArrowStyle);
+                    EditorGUI.LabelField(
+                        rightRect,
+                        new GUIContent(rightText ?? string.Empty, rightText ?? string.Empty),
+                        s_IndexedMappingValueStyle);
+                }
+                finally
+                {
+                    GUI.contentColor = previousContentColor;
+                    GUI.color = previousColor;
+                }
+            }
+
+            /// <summary>
             /// 在指定 Rect 内绘制可编辑文本框（Rect 值版本，带变更检测，返回新值）。
             /// 适用于"显示值与写入目标分离"的场景：显示取只读解析值，写入由调用方在 onChange 回调中
             /// 按需懒创建 Override 后再落盘（如 ConfigWindow Dll 列表元素字段按维度批量配置）。
@@ -1063,6 +1290,28 @@ namespace NovaFramework.Editor
                 EditorGUI.BeginDisabledGroup(disableOnPlaying && EditorApplication.isPlaying);
                 EditorGUILayout.LabelField(text, s_HintLabelStyle);
                 EditorGUI.EndDisabledGroup();
+            }
+
+            /// <summary>
+            /// 绘制指定颜色的小字说明标签。
+            /// </summary>
+            /// <param name="text">说明文本。</param>
+            /// <param name="color">文本颜色。</param>
+            /// <param name="disableOnPlaying">是否在运行时禁用。</param>
+            public static void ColoredMiniLabel(string text, Color color, bool disableOnPlaying = true)
+            {
+                EditorGUI.BeginDisabledGroup(disableOnPlaying && EditorApplication.isPlaying);
+                Color previousColor = GUI.contentColor;
+                GUI.contentColor = color;
+                try
+                {
+                    EditorGUILayout.LabelField(text, EditorStyles.miniLabel);
+                }
+                finally
+                {
+                    GUI.contentColor = previousColor;
+                    EditorGUI.EndDisabledGroup();
+                }
             }
 
             /// <summary>

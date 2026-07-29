@@ -54,6 +54,17 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 显式从 GM 后台拉取并应用一轮应用配置；可供调试界面或业务主动刷新。
+        /// </summary>
+        /// <returns>成功应用远端快照返回 true。</returns>
+        public UniTask<bool> RefreshAppConfigAsync()
+        {
+            return m_ConfigManager is IAppConfigManager appConfigManager
+                ? appConfigManager.RefreshAppConfigAsync()
+                : UniTask.FromResult(false);
+        }
+
+        /// <summary>
         /// 按泛型类型取 SDK Plugin 配置实例；未加载或未启用时返回 null。
         /// </summary>
         /// <typeparam name="T">

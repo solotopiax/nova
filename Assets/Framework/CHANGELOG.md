@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-29
+
+### Added
+
+- 新增启动应用 Custom 配置：本地默认值与磁盘快照先完成启动，随后非阻塞等待 Network 路由就绪并单次拉取完整远端 JSON。
+- 新增 `Nova.Config.Custom` 路径读取与 `RefreshAppConfigAsync()` 手动刷新入口，并加入 `AppCustomConfig` 网络协议和 Demo 配置。
+- Table 编辑与运行链新增正式 Luban Project、导出描述、加载描述及数据文件到 YooAsset 地址的显式映射。
+
+### Changed
+
+- Table 从单 Project、Profile 与 Runtime Binding 模型迁移为多 Project、Export Description 与 Load Description 模型。
+- Runtime 日志统一使用 Editor 条件编译隔离，Editor 绘制工具补齐折叠、布局、状态与属性行能力。
+- 所有配套 Sample 同步应用配置网络命令、运行时配置和场景覆盖。
+
+### Breaking
+
+- `CustomConfigs` 契约替换为 `CustomConfigData` 与 `CustomConfig`，公开入口由 `CustomConfigs` 更名为 `Custom`。
+- Table 的 `TableProjectSettings`、`TableExportProfileSetting`、`TableRuntimeBindingSetting` 及相关 Profile API 替换为新的 Project、Description 与 Asset Address 契约。
+
 ## [0.5.46] - 2026-07-24
 
 ### Fixed

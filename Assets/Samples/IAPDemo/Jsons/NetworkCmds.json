@@ -131,6 +131,12 @@
       "Way": "HTTP_POST",
       "HostKey": "IAPServer",
       "Path": "/v1/mobile_pay/apple/verify_subscribe"
+    },
+    {
+      "Name": "AppCustomConfig",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/common/app-config"
     }
   ]
 }

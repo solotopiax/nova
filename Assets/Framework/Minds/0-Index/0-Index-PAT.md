@@ -81,6 +81,7 @@ auto_generated: true
 - [PAT-09 Inspector 配置分组与中文说明模式](../2-Areas/Patterns/PAT-09-inspector-config-i18n.md) — Inspector 配置按业务分组并配中文说明
 - [PAT-10 IMGUI 自定义 Popup 必须 Layout.Horizontal 包裹 Label + 控件](../2-Areas/Patterns/PAT-10-imgui-popup-horizontal-wrap.md) — IMGUI Popup需横向包裹避免错位抖动
 - [PAT-128 Inspector 持久化 UI 状态勿每帧强写](../2-Areas/Patterns/PAT-128-inspector-oninspectorgui-state-antipattern.md) — 持久化 UI 状态只在 OnEnable 设一次，绘制回调禁每帧强写
+- [PAT-149 IMGUI Foldout 展开位移先查布局 margin 传播](../2-Areas/Patterns/PAT-149-imgui-foldout-margin-propagation-layout-shift.md) — Foldout 位移先量 Rect 并阻断 margin 传播
 - [PAT-20 Editor 配置详情页标题与缩进规则](../2-Areas/Patterns/PAT-20-editor-panel-title-indent.md) — 复杂 Editor 配置面板应有明确标题，并给标题下条目统一缩进
 - [PAT-21 Inspector HelpBox 多语义分行规则](../2-Areas/Patterns/PAT-21-inspector-helpbox-multiline.md) — HelpBox 多条信息必须分行
 - [PAT-22 IMGUI TextField 切数据源前必须先释放焦点](../2-Areas/Patterns/PAT-22-imgui-textfield-focus-release.md) — IMGUI TextField编辑后需主动释放焦点
@@ -172,4 +173,4 @@ auto_generated: true
 
 
 ---
-_共 106 条，分布于 18 个 category。_
+_共 107 条，分布于 18 个 category。_

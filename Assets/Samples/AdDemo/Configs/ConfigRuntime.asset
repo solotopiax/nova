@@ -18,6 +18,8 @@ MonoBehaviour:
     AppID: YOUR_APP_ID
     AppAesKey: YOUR_APP_AES_KEY
     AppAesIV: YOUR_APP_AES_IV
+    CustomConfigCmdName: AppCustomConfig
+    CustomName: CustomConfigs
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
@@ -43,6 +45,18 @@ MonoBehaviour:
     - m_AssetLocation: NovaFramework.SDK.MaxAdPlugin.Runtime.dll
     GameDlls:
     - m_AssetLocation: NovaFramework.Sdk.Ad.Samples.Runtime.dll
+  Custom:
+    Entries:
+    - Key: ThirdIAPOpen
+      Value: false
+    - Key: ThirdIAPIOSOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPAndroidOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPSkipGoogleMsgAlertShow
+      Value: false
+    - Key: GlobalSwitchThirdIAPOpen
+      Value: false
   references:
     version: 2
     RefIds:

@@ -5,6 +5,8 @@
 
 静态日志门面，底层委托可替换的 `ILogHelper`（默认转发至 `UnityEngine.Debug`）。支持按 `LogTag` 分类过滤，便于运行时开关特定模块的日志输出。
 
+Unity Editor 中的全部日志等级始终保留调用，不受运行时日志宏控制；Player 构建继续按照 `ENABLE_LOG`、精确等级宏及 `ENABLE_*_AND_ABOVE_LOG` 宏裁剪调用。
+
 ---
 
 ## 文件

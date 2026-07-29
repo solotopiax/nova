@@ -3,6 +3,13 @@
 本文件记录 `com.solotopia.nova.framework.sdk.aihelp` 的版本变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [0.0.3] - 2026-07-29
+
+### Changed
+
+- 将 Nova Framework 最低依赖版本提升至 `0.6.0`。
+- AIHelpDemo 同步启动应用配置网络命令、运行时配置与场景覆盖。
+
 ## [0.0.2] - 2026-07-13
 
 ### Changed

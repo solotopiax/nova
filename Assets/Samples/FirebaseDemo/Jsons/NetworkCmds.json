@@ -17,6 +17,12 @@
       "Way": "HTTP_URL",
       "HostKey": "TGAServer",
       "Path": ""
+    },
+    {
+      "Name": "AppCustomConfig",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/common/app-config"
     }
   ]
 }

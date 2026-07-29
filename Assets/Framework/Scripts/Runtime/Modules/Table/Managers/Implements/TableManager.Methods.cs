@@ -20,17 +20,18 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 异步加载一个 Binding 声明的全部原始数据文件。
         /// </summary>
-        /// <param name="setting">Binding 类型与资源前缀。</param>
+        /// <param name="setting">Binding 类型与 Asset 地址映射。</param>
         /// <returns>Binding 与已加载字节存储。</returns>
-        private async UniTask<LoadedBinding> LoadBindingAsync(TableRuntimeBindingSetting setting)
+        private async UniTask<LoadedBinding> LoadBindingAsync(TableLoadDescriptionSetting setting)
         {
             ILubanTableBinding binding = CreateBinding(setting);
-            IReadOnlyList<string> dataFiles = ValidateDataFiles(binding, setting.BindingTypeName);
+            IReadOnlyList<string> dataFiles = ValidateDataFiles(binding, setting.ResolvedBindingTypeName);
+            Dictionary<string, string> addresses = BuildAssetAddressMap(setting, dataFiles);
             var tasks = new List<UniTask<LoadedTableData>>(dataFiles.Count);
             for (int i = 0; i < dataFiles.Count; i++)
             {
                 string dataFile = dataFiles[i];
-                tasks.Add(LoadDataAsync(dataFile, BuildAssetLocation(setting.DataAssetLocationPrefix, dataFile)));
+                tasks.Add(LoadDataAsync(dataFile, addresses[dataFile]));
             }
 
             LoadedTableData[] loaded = await UniTask.WhenAll(tasks);
@@ -40,17 +41,18 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 同步加载一个 Binding 声明的全部原始数据文件。
         /// </summary>
-        /// <param name="setting">Binding 类型与资源前缀。</param>
+        /// <param name="setting">Binding 类型与 Asset 地址映射。</param>
         /// <returns>Binding 与已加载字节存储。</returns>
-        private LoadedBinding LoadBindingSync(TableRuntimeBindingSetting setting)
+        private LoadedBinding LoadBindingSync(TableLoadDescriptionSetting setting)
         {
             ILubanTableBinding binding = CreateBinding(setting);
-            IReadOnlyList<string> dataFiles = ValidateDataFiles(binding, setting.BindingTypeName);
+            IReadOnlyList<string> dataFiles = ValidateDataFiles(binding, setting.ResolvedBindingTypeName);
+            Dictionary<string, string> addresses = BuildAssetAddressMap(setting, dataFiles);
             var loaded = new LoadedTableData[dataFiles.Count];
             for (int i = 0; i < dataFiles.Count; i++)
             {
                 string dataFile = dataFiles[i];
-                loaded[i] = LoadDataSync(dataFile, BuildAssetLocation(setting.DataAssetLocationPrefix, dataFile));
+                loaded[i] = LoadDataSync(dataFile, addresses[dataFile]);
             }
             return new LoadedBinding(binding, CreateStore(loaded));
         }
@@ -60,13 +62,13 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="setting">Binding 运行时设置。</param>
         /// <returns>新建的 Binding。</returns>
-        private static ILubanTableBinding CreateBinding(TableRuntimeBindingSetting setting)
+        private static ILubanTableBinding CreateBinding(TableLoadDescriptionSetting setting)
         {
-            if (setting == null || string.IsNullOrWhiteSpace(setting.BindingTypeName))
+            if (setting == null || string.IsNullOrWhiteSpace(setting.ResolvedBindingTypeName))
             {
-                throw new InvalidOperationException("Table Runtime Binding 类型不能为空。");
+                throw new InvalidOperationException("Table 加载描述未解析出 Binding 类型。");
             }
-            return Util.TypeCreator.Create<ILubanTableBinding>(setting.BindingTypeName);
+            return Util.TypeCreator.Create<ILubanTableBinding>(setting.ResolvedBindingTypeName);
         }
 
         /// <summary>
@@ -98,14 +100,14 @@ namespace NovaFramework.Runtime
         /// 异步加载 TextAsset，并在释放句柄前复制原始字节。
         /// </summary>
         /// <param name="dataFile">Luban output_data_file。</param>
-        /// <param name="assetLocation">资源地址。</param>
+        /// <param name="assetAddress">Asset 地址。</param>
         /// <returns>逻辑文件名与独立字节副本。</returns>
-        private async UniTask<LoadedTableData> LoadDataAsync(string dataFile, string assetLocation)
+        private async UniTask<LoadedTableData> LoadDataAsync(string dataFile, string assetAddress)
         {
-            IAssetHandle<TextAsset> handle = await m_AssetManager.LoadAsync<TextAsset>(assetLocation);
+            IAssetHandle<TextAsset> handle = await m_AssetManager.LoadAsync<TextAsset>(assetAddress);
             try
             {
-                return CopyAssetBytes(dataFile, assetLocation, handle.Asset);
+                return CopyAssetBytes(dataFile, assetAddress, handle.Asset);
             }
             finally
             {
@@ -117,14 +119,14 @@ namespace NovaFramework.Runtime
         /// 同步加载 TextAsset，并在释放句柄前复制原始字节。
         /// </summary>
         /// <param name="dataFile">Luban output_data_file。</param>
-        /// <param name="assetLocation">资源地址。</param>
+        /// <param name="assetAddress">Asset 地址。</param>
         /// <returns>逻辑文件名与独立字节副本。</returns>
-        private LoadedTableData LoadDataSync(string dataFile, string assetLocation)
+        private LoadedTableData LoadDataSync(string dataFile, string assetAddress)
         {
-            IAssetHandle<TextAsset> handle = m_AssetManager.LoadSync<TextAsset>(assetLocation);
+            IAssetHandle<TextAsset> handle = m_AssetManager.LoadSync<TextAsset>(assetAddress);
             try
             {
-                return CopyAssetBytes(dataFile, assetLocation, handle.Asset);
+                return CopyAssetBytes(dataFile, assetAddress, handle.Asset);
             }
             finally
             {
@@ -136,14 +138,14 @@ namespace NovaFramework.Runtime
         /// 从 TextAsset 复制独立字节，避免资源句柄释放后继续持有资产内存。
         /// </summary>
         /// <param name="dataFile">Luban output_data_file。</param>
-        /// <param name="assetLocation">资源地址。</param>
+        /// <param name="assetAddress">Asset 地址。</param>
         /// <param name="asset">已加载 TextAsset。</param>
         /// <returns>逻辑文件名与独立字节副本。</returns>
-        private static LoadedTableData CopyAssetBytes(string dataFile, string assetLocation, TextAsset asset)
+        private static LoadedTableData CopyAssetBytes(string dataFile, string assetAddress, TextAsset asset)
         {
             if (asset == null)
             {
-                throw new InvalidOperationException($"Table 数据资源为空：{assetLocation}。");
+                throw new InvalidOperationException($"Table 数据资源为空：{assetAddress}。");
             }
 
             byte[] source = asset.bytes;
@@ -153,15 +155,39 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 把资源前缀与 Luban output_data_file 合成为 AssetLocation。
+        /// 为 Binding 声明的全部逻辑文件建立 YooAsset 地址索引。
         /// </summary>
-        /// <param name="prefix">Binding 配置的数据资源前缀。</param>
-        /// <param name="dataFile">Luban output_data_file。</param>
-        /// <returns>统一使用正斜杠的资源地址。</returns>
-        private static string BuildAssetLocation(string prefix, string dataFile)
+        /// <param name="setting">当前加载描述。</param>
+        /// <param name="dataFiles">Binding 声明的逻辑文件清单。</param>
+        /// <returns>按 output_data_file 查询的 Asset 地址。</returns>
+        private static Dictionary<string, string> BuildAssetAddressMap(
+            TableLoadDescriptionSetting setting, IReadOnlyList<string> dataFiles)
         {
-            string normalizedPrefix = (prefix ?? string.Empty).Replace('\\', '/').Trim('/');
-            return string.IsNullOrEmpty(normalizedPrefix) ? dataFile : normalizedPrefix + "/" + dataFile;
+            var addresses = new Dictionary<string, string>(StringComparer.Ordinal);
+            IReadOnlyList<TableAssetAddressSetting> assets = setting.Assets;
+            if (assets != null)
+            {
+                for (int i = 0; i < assets.Count; i++)
+                {
+                    TableAssetAddressSetting asset = assets[i];
+                    if (asset == null || string.IsNullOrWhiteSpace(asset.DataFile) ||
+                        string.IsNullOrWhiteSpace(asset.AssetAddress) ||
+                        !addresses.TryAdd(asset.DataFile, asset.AssetAddress))
+                    {
+                        throw new InvalidOperationException($"Table 加载描述包含空值或重复 Asset 地址映射：{setting.Name}。");
+                    }
+                }
+            }
+
+            for (int i = 0; i < dataFiles.Count; i++)
+            {
+                if (!addresses.ContainsKey(dataFiles[i]))
+                {
+                    throw new InvalidOperationException(
+                        $"Table 加载描述缺少数据文件 '{dataFiles[i]}' 的 Asset 地址：{setting.Name}。");
+                }
+            }
+            return addresses;
         }
 
         /// <summary>

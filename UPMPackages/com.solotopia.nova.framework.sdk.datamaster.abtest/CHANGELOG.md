@@ -3,6 +3,13 @@
 本文件记录 `com.solotopia.nova.framework.sdk.datamaster` 的版本变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [0.0.9] - 2026-07-29
+
+### Changed
+
+- 将 Framework 与 GameLogin 最低依赖分别提升至 `0.6.0` 与 `0.1.0`。
+- DataMasterDemo 同步启动应用配置网络命令、运行时配置与场景覆盖。
+
 ## [0.0.8] - 2026-07-21
 
 ### Changed

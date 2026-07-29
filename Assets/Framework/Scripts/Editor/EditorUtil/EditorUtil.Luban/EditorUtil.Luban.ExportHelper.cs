@@ -24,6 +24,9 @@ namespace NovaFramework.Editor
             /// </summary>
             public static class ExportHelper
             {
+                private const string c_DevelopmentTemplateRoot = "Assets/Framework/Templates/Luban";
+                private const string c_PackageTemplateRoot = "Packages/com.solotopia.nova.framework/Templates/Luban";
+
                 /// <summary>
                 /// 根据 Nova 内置 Profile 构建标准 Luban 导出上下文。
                 /// </summary>
@@ -139,6 +142,58 @@ namespace NovaFramework.Editor
                     }
 
                     return dirs.Count > 0 ? dirs.ToArray() : null;
+                }
+
+                /// <summary>
+                /// 把 Nova Framework 模板逻辑路径解析为当前安装形态下的物理路径。
+                /// 开发态使用 Assets/Framework，消费态使用 PackageInfo.resolvedPath；
+                /// 项目自定义目录保持原值。
+                /// </summary>
+                /// <param name="configuredDirectory">Inspector 中保存的模板目录。</param>
+                /// <returns>可交给 Luban CLI 的模板目录。</returns>
+                internal static string ResolveCustomTemplateDirectory(string configuredDirectory)
+                {
+                    if (string.IsNullOrWhiteSpace(configuredDirectory))
+                    {
+                        return configuredDirectory;
+                    }
+
+                    string normalized = configuredDirectory.Replace('\\', '/').TrimEnd('/');
+                    string relative = TryGetFrameworkTemplateRelativePath(normalized);
+                    if (relative == null)
+                    {
+                        return configuredDirectory;
+                    }
+
+                    string templateRoot = ResolveNovaFrameworkTemplatePath();
+                    if (string.IsNullOrEmpty(templateRoot))
+                    {
+                        return configuredDirectory;
+                    }
+
+                    return relative.Length == 0
+                        ? templateRoot
+                        : Util.SysIO.Path.Combine(templateRoot, relative);
+                }
+
+                private static string TryGetFrameworkTemplateRelativePath(string configuredDirectory)
+                {
+                    if (string.Equals(configuredDirectory, c_DevelopmentTemplateRoot, StringComparison.Ordinal) ||
+                        string.Equals(configuredDirectory, c_PackageTemplateRoot, StringComparison.Ordinal))
+                    {
+                        return string.Empty;
+                    }
+
+                    string developmentPrefix = c_DevelopmentTemplateRoot + "/";
+                    if (configuredDirectory.StartsWith(developmentPrefix, StringComparison.Ordinal))
+                    {
+                        return configuredDirectory.Substring(developmentPrefix.Length);
+                    }
+
+                    string packagePrefix = c_PackageTemplateRoot + "/";
+                    return configuredDirectory.StartsWith(packagePrefix, StringComparison.Ordinal)
+                        ? configuredDirectory.Substring(packagePrefix.Length)
+                        : null;
                 }
 
                 /// <summary>

@@ -308,47 +308,67 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.ConfigPath
+      propertyPath: m_Setting.Projects.Array.data[0].ConfigPath
       value: Assets/Samples/GameLoginDemo/Excels/Tables/luban.conf
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.Profiles.Array.data[0].CodeOutputPath
+      propertyPath: m_Setting.Runtime.LoadDescriptions.Array.data[0].ResolvedBindingTypeName
+      value: NovaFramework.Kit.Network.GameLogin.Samples.Runtime.TableTablesBinding
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Runtime.LoadDescriptions.Array.data[0].Assets.Array.data[0].AssetPath
+      value: Assets/Samples/GameLoginDemo/Jsons/Tables/tbdemo_item.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Runtime.LoadDescriptions.Array.data[0].Assets.Array.data[1].AssetPath
+      value: Assets/Samples/GameLoginDemo/Jsons/Tables/tblista.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Runtime.LoadDescriptions.Array.data[0].Assets.Array.data[2].AssetPath
+      value: Assets/Samples/GameLoginDemo/Jsons/Tables/tblistb.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Runtime.LoadDescriptions.Array.data[0].Assets.Array.data[3].AssetPath
+      value: Assets/Samples/GameLoginDemo/Jsons/Tables/tbmap1.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Setting.Projects.Array.data[0].ExportDescriptions.Array.data[0].CodeOutputPath
       value: Assets/Samples/GameLoginDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.Profiles.Array.data[0].DataOutputPath
+      propertyPath: m_Setting.Projects.Array.data[0].ExportDescriptions.Array.data[0].DataOutputPath
       value: Assets/Samples/GameLoginDemo/Jsons/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.Profiles.Array.data[1].CodeOutputPath
+      propertyPath: m_Setting.Projects.Array.data[0].ExportDescriptions.Array.data[1].CodeOutputPath
       value: Assets/Samples/GameLoginDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.Profiles.Array.data[1].DataOutputPath
+      propertyPath: m_Setting.Projects.Array.data[0].ExportDescriptions.Array.data[1].DataOutputPath
       value: Assets/Samples/GameLoginDemo/Jsons/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.Profiles.Array.data[2].CodeOutputPath
+      propertyPath: m_Setting.Projects.Array.data[0].ExportDescriptions.Array.data[2].CodeOutputPath
       value: Assets/Samples/GameLoginDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.Profiles.Array.data[2].DataOutputPath
+      propertyPath: m_Setting.Projects.Array.data[0].ExportDescriptions.Array.data[2].DataOutputPath
       value: Assets/Samples/GameLoginDemo/Jsons/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.Profiles.Array.data[3].CodeOutputPath
+      propertyPath: m_Setting.Projects.Array.data[0].ExportDescriptions.Array.data[3].CodeOutputPath
       value: Assets/Samples/GameLoginDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.Profiles.Array.data[3].DataOutputPath
+      propertyPath: m_Setting.Projects.Array.data[0].ExportDescriptions.Array.data[3].DataOutputPath
       value: Assets/Samples/GameLoginDemo/Jsons/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.Profiles.Array.data[4].CodeOutputPath
+      propertyPath: m_Setting.Projects.Array.data[0].ExportDescriptions.Array.data[4].CodeOutputPath
       value: Assets/Samples/GameLoginDemo/Scripts/Runtime/DataTypes/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 5434970512992072839, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_Setting.Project.Profiles.Array.data[4].DataOutputPath
+      propertyPath: m_Setting.Projects.Array.data[0].ExportDescriptions.Array.data[4].DataOutputPath
       value: Assets/Samples/GameLoginDemo/Jsons/Tables
       objectReference: {fileID: 0}
     - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}

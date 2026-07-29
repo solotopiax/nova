@@ -29,6 +29,12 @@
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
       "Path": "/v1/account/bind/resolve"
+    },
+    {
+      "Name": "AppCustomConfig",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/common/app-config"
     }
   ]
 }

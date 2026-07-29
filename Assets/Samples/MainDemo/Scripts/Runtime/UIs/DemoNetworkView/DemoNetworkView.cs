@@ -6,7 +6,7 @@
  * author:    taoye
  * created:   2026/05/23
  * descrip:   Modules 2.9 — Network 模块演示视图（交互触发型）。
- *            演示 HTTP GET/POST 异步请求及 WebSocket 连接占位。
+ *            演示 HTTP GET/POST 与 WebSocket 连接。
  *            API：Nova.Network.GetAsync / PostAsync / ConnectServer
  ***************************************************************/
 
@@ -19,13 +19,13 @@ using UnityEngine.UI;
 namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
-    /// Network 模块演示视图，演示 HTTP GET/POST 异步请求与 WebSocket 连接占位。
-    /// 继承 BaseDemoView 三段式骨架，交互区包含 URL 输入框与 Get/Post/Connect 三按钮。
+    /// Network 模块演示视图，演示 HTTP GET/POST 与 WebSocket 连接。
+    /// 继承 BaseDemoView 三段式骨架，交互区包含 URL 输入框与 Get/Post/Connect 按钮。
     /// </summary>
     public sealed class DemoNetworkView : BaseDemoView
     {
         /// <summary>
-        /// URL 输入框，默认值 https://httpbin.org/get。
+        /// GET URL 输入框，默认值为 Postman Echo 的最小回显示例。
         /// </summary>
 
         [SerializeField] private TMP_InputField m_UrlInput;
@@ -60,14 +60,19 @@ namespace NovaFramework.Samples.Runtime
         private bool m_IsClosed;
 
         /// <summary>
-        /// 默认演示 URL。
+        /// 默认 GET 演示地址。
         /// </summary>
-        private const string c_DefaultUrl = "https://httpbin.org/get";
+        private const string c_DefaultGetUrl = "https://postman-echo.com/get?message=hello";
 
         /// <summary>
-        /// WebSocket 演示地址占位。
+        /// 固定 POST 演示地址。
         /// </summary>
-        private const string c_WsPlaceholder = "wss://echo.websocket.org";
+        private const string c_DefaultPostUrl = "https://postman-echo.com/post";
+
+        /// <summary>
+        /// 固定 WebSocket 连接演示地址。
+        /// </summary>
+        private const string c_DefaultWebSocketUrl = "wss://ws.postman-echo.com/raw";
 
         /// <summary>
         /// 视图初始化：注册按钮事件，设置标题与 API 副标题，填充默认 URL。
@@ -81,7 +86,7 @@ namespace NovaFramework.Samples.Runtime
 
             if (m_UrlInput != null)
             {
-                m_UrlInput.text = c_DefaultUrl;
+                m_UrlInput.text = c_DefaultGetUrl;
             }
 
             if (m_GetButton != null)
@@ -101,6 +106,7 @@ namespace NovaFramework.Samples.Runtime
                 m_ConnectButton.onClick.AddListener(OnConnectButtonClick);
                 SetButtonApiHint(m_ConnectButton, "Nova.Network.ConnectServer(Tcp, addr)");
             }
+
         }
 
         /// <summary>
@@ -147,7 +153,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// Connect 按钮点击：调用 ConnectServer 占位演示（连接 WebSocket 服务器）。
+        /// Connect 按钮点击：连接 Postman Echo WebSocket 服务。
         /// </summary>
         private void OnConnectButtonClick()
         {
@@ -157,8 +163,8 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            Nova.Network.ConnectServer(WebSocketScope.NetChannelType.Tcp, c_WsPlaceholder, false);
-            AppendFeedback($"Nova.Network.ConnectServer(Tcp, \"{c_WsPlaceholder}\", false) -> 连接已发起（占位演示）", FeedbackLevel.Success);
+            Nova.Network.ConnectServer(WebSocketScope.NetChannelType.Tcp, c_DefaultWebSocketUrl, false);
+            AppendFeedback($"Nova.Network.ConnectServer(Tcp, \"{c_DefaultWebSocketUrl}\", false) -> 已发起连接", FeedbackLevel.Info);
         }
 
         /// <summary>
@@ -172,10 +178,10 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            string url = m_UrlInput != null ? m_UrlInput.text : c_DefaultUrl;
+            string url = m_UrlInput != null ? m_UrlInput.text : c_DefaultGetUrl;
             if (string.IsNullOrWhiteSpace(url))
             {
-                url = c_DefaultUrl;
+                url = c_DefaultGetUrl;
             }
 
             AppendFeedback($"Nova.Network.GetAsync(\"{url}\") -> 请求中...", FeedbackLevel.Info);
@@ -225,18 +231,11 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            string url = m_UrlInput != null ? m_UrlInput.text : c_DefaultUrl;
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                url = c_DefaultUrl;
-            }
+            const string body = "{\"message\":\"hello\"}";
 
-            string postUrl = url.Replace("/get", "/post");
-            const string body = "{\"demo\":\"nova_network\",\"value\":42}";
+            AppendFeedback($"Nova.Network.PostAsync(\"{c_DefaultPostUrl}\", \"{body}\") -> 请求中...", FeedbackLevel.Info);
 
-            AppendFeedback($"Nova.Network.PostAsync(\"{postUrl}\") -> 请求中...", FeedbackLevel.Info);
-
-            HttpResponse response = await Nova.Network.PostAsync(postUrl, body);
+            HttpResponse response = await Nova.Network.PostAsync(c_DefaultPostUrl, body);
 
             if (this == null || m_IsClosed)
             {
@@ -262,11 +261,11 @@ namespace NovaFramework.Samples.Runtime
 
             if (isSuccess)
             {
-                AppendFeedback($"Nova.Network.PostAsync(\"{postUrl}\") -> {statusCode} OK len={len}", FeedbackLevel.Success);
+                AppendFeedback($"Nova.Network.PostAsync(\"{c_DefaultPostUrl}\", \"{body}\") -> {statusCode} OK len={len}", FeedbackLevel.Success);
             }
             else
             {
-                AppendFeedback($"Nova.Network.PostAsync(\"{postUrl}\") -> {statusCode} 失败", FeedbackLevel.Error);
+                AppendFeedback($"Nova.Network.PostAsync(\"{c_DefaultPostUrl}\", \"{body}\") -> {statusCode} 失败", FeedbackLevel.Error);
             }
         }
     }

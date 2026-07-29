@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Editor`
 **菜单路径**：`Nova/Open Config`（`[MenuItem("Nova/Open Config")]`）
 
-Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集中管理 ConfigMasterSO 的 Platform×Channel 矩阵编辑、SDK Plugin 配置、AppConfigs 参数填写、HybridCLR DLL 配置、CDN 内容部署及 Luban/Python3 环境检查。支持一键导出 ConfigRuntimeSO。
+Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集中管理 ConfigMasterSO 的 Platform×Channel 矩阵编辑、SDK Plugin 配置、AppConfigs 与 Custom 参数填写、HybridCLR DLL 配置、CDN 内容部署及 Luban/Python3 环境检查。支持一键导出 ConfigRuntimeSO。
 
 ---
 
@@ -17,7 +17,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | `Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs` | `ConfigWindow` | 总调度：`OnEnable`、`OnDisable`、`OnGUI`、`DrawBody`、`DrawMainTitle`、`ApplyPendingCoordSwitch`、`PollChannelChangeForRepaint`、`RefreshPluginCache`、`RunLubanCheck`、`RunPython3Check`、`CommitWorkingCopyToAsset`（保存后广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`）；`EnsureStyles`（GUIStyle 懒初始化） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs` | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyPlatformChannel`（延迟写坐标，见 PAT-22 升级）、`TryApplyDevelopMode`（延迟写坐标，见 PAT-22 升级）、`OnClickExport`（导出成功后追加场景 `DevelopMode` 快照回写） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.LeftTree.cs` | `ConfigWindow` | 左树：`DrawLeftTree`、`DrawLeftTreeItem`、`DrawSDKTreeItem`、`DrawKitGroupItems`、`DrawKitTreeItem`；SDK/Kit 勾选写 WorkingCopy（`workingSrc.EnabledSDKs/EnabledKits`）+ `m_IsDirty=true`，不直写 `m_Master`，延迟保存机制对齐；`TryChangeSelection` 清除键盘焦点（`GUI.FocusControl(null)` + `EditorGUIUtility.editingTextField=false`）后更新选中状态 |
-| `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs` | `ConfigWindow` | 右面板：`DrawRightPanel`、`DrawVerticalSeparator`、`DrawNamespacePanel`、`DrawAppConfigsPanel`、`DrawSDKPanel`、`DrawKitPanel`；标题+掩码内联行：`DrawPanelTitleWithMask`（从 mask 字段读掩码后委托 `DrawTitleWithMaskCore` 绘制标题+三 toggle 行，HelpBox 留本方法；供 Common/Namespace/SDK/Kit/HybridCLR 五面板统一调用）、`DrawTitleWithMaskCore`（矩阵五面板与 YooAsset 面板共用的「标题+三 toggle」核心渲染，toggle 间统一无分隔符，渲染微差由 `titleTrailingSpace` 参数吸收（矩阵 30f / YooAsset 0f），HelpBox 由调用方各自绘制）；Namespace 提交：`CommitNamespaceValue`（按 IsGlobal 双分支写 Namespace，IsGlobal 写 SerializedProperty，否则调 `SetNamespaceAtCoord` 写 Override 并刷新 SerializedObject）；`DrawNamespacePanel` 使用普通 `TextField` 实时提交，按键有变化即触发 `CommitNamespaceValue`（Bug 1 修复后已无 DelayedTextField） |
+| `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs` | `ConfigWindow` | 右面板：`DrawRightPanel`、`DrawVerticalSeparator`、`DrawNamespacePanel`、`DrawAppConfigsPanel`、`DrawCustomConfigRows`、`DrawSDKPanel`、`DrawKitPanel`；应用配置面板同时编辑 `CustomConfigCmdName / CustomName` 与直接展开的本地 JSONPath key-value 行；标题+掩码内联行由 `DrawPanelTitleWithMask` 统一绘制 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.Luban.cs` | `ConfigWindow` | Luban 面板：`DrawLubanSection`、`DrawLubanStatusAndButtons`、`DrawLubanWindowsExportWarning`、`DrawLubanInstallGuide`、`ResolveDotnetStatusText`、`ResolveLubanDllStatusText`、`IsDotnetReady`、`GetLubanWindowsExportWarningText` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.Python3.cs` | `ConfigWindow` | Python3 面板：`DrawPython3Section`、`DrawPython3StatusAndButtons`、`ResolvePython3StatusText` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.HybridCLR.cs` | `ConfigWindow` | HybridCLR 面板：`DrawHybridCLRPanel`、`DrawHybridCLREntranceSection`、`DrawHybridCLRAotMetadataSection`、`DrawHybridCLRGameDllSection`；ReorderableList 辅助：`EnsureHybridCLRAotMetadataDllsList`、`EnsureHybridCLRGameDllsList`、`DrawHybridCLRDllEntryElementCore`（三字段：源位置 / 目标位置 / Asset 地址）、`OnAddHybridCLRAotMetadataDllEntry`、`OnAddHybridCLRGameDllEntry`、`OnAddHybridCLRDllEntry`；维度化接线：`ResolveHybridCLRDllListProp`（按当前坐标+HybridEditorConfigsMask 解析 Dll 列表 SerializedProperty，IsGlobal 回落顶层，mask 非全局时进入坐标即建份经 `EnsureHybridEditorConfigsOverrideIndexAtCoord` 含顶层快照，list 绑 Override 内嵌列表）、`CommitHybridCLRDllEntryField`（单字段写入经 Ensure 懒创建落 Override 份）、`OnPickFolderForRelativePathForDllEntry`（Dll 元素"选择"按钮，写回走 Commit）、`PickRelativeFolder`（弹面板+算相对路径共享逻辑）、`SyncFoldoutCapacity`（折叠状态容量同步）；两个 Dll 列表与字符串字段同等遵循平台/渠道/开发模式批量部署 |
@@ -235,7 +235,8 @@ DrawRightPanel()
       LubanEnv        → DrawLubanSection()
       Python3Env      → DrawPython3Section()
       HybridCLREnv    → DrawHybridCLREnvSection()
-      AppConfig       → DrawAppConfigsPanel()       ← m_MasterSO != null 时有效
+      AppConfig        → DrawAppConfigsPanel()        ← m_MasterSO != null 时有效
+      StartupAppConfig → DrawStartupAppConfigPanel() ← m_MasterSO != null 时有效
       NamespaceConfig → DrawNamespacePanel()    ← m_MasterSO != null 时有效
       HybridCLRConfig → DrawHybridCLRPanel()    ← m_MasterSO != null 时有效
       CDNEditorConfigs   → DrawCdnDeploymentPanel() ← m_MasterSO != null 时有效

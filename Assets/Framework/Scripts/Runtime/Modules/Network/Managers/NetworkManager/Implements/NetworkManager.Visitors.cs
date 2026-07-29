@@ -75,6 +75,16 @@ namespace NovaFramework.Runtime
         private Dictionary<string, INetworkCmdRow> m_CmdRowIndex;
 
         /// <summary>
+        /// 路由首次成功构建的共享完成源；失败加载不完成，以允许后续重试。
+        /// </summary>
+        private readonly UniTaskCompletionSource m_ReadyTcs = new();
+
+        /// <summary>
+        /// HostKey 与 NetCmd 路由是否已成功构建。
+        /// </summary>
+        private bool m_IsReady;
+
+        /// <summary>
         /// 服务器时间戳（UTC0，毫秒），由 FetchServerTimeAsync 写入。
         /// </summary>
         private long m_ServerTime;

@@ -19,6 +19,18 @@ MonoBehaviour:
   - NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
   EnabledKits:
   - NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+  Custom:
+    Entries:
+    - Key: ThirdIAPOpen
+      Value: false
+    - Key: ThirdIAPIOSOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPAndroidOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPSkipGoogleMsgAlertShow
+      Value: false
+    - Key: GlobalSwitchThirdIAPOpen
+      Value: false
   AppConfigsMask:
     ByPlatform: 0
     ByChannel: 0
@@ -194,11 +206,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -228,11 +244,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -265,11 +285,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -299,11 +323,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -333,11 +361,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -367,11 +399,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -401,11 +437,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -435,11 +475,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -469,11 +513,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -503,11 +551,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -537,11 +589,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -571,11 +627,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -605,11 +665,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -639,11 +703,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -673,11 +741,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -707,11 +779,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -741,11 +817,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -775,11 +855,15 @@ MonoBehaviour:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     - Mode: 1
       Config:
         AppID: YOUR_APP_ID
         AppAesKey: YOUR_APP_AES_KEY
         AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0

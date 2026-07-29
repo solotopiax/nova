@@ -205,12 +205,13 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 反馈样例：`> Nova.Prefab.InstantiateAsync("DemoPrefabBlock") -> 1 instance`
 - 依赖资源：prefab `DemoPrefabBlock`（UI 绿色方块 Image + DemoPrefabBlockSpinner 自旋脚本，120×120，DemoPrefabView 私有依赖）
 
-#### 2.4 DemoConfigView ｜ R
-- API 副标题：`Nova.Config.ConfigManager.Common / .Namespace / GetSDKPluginConfig<T>()`
-- 主题：Config 运行态快照展示
-- InteractionArea：4 卡片（DevelopMode / Platform / Channel / Namespace）+ Common 字段表（AppID/AppAesKey）+ EnabledSDKs 列表
-- 反馈样例：`> Nova.Config.ConfigManager.Namespace → "Game.Runtime"`
-- 资源：无
+#### 2.4 DemoConfigView ｜ I
+- API 副标题：`Nova.Config.AppConfigs / .Namespace / GetSDKPluginConfig<T>()`；`Nova.Config.RefreshAppConfigAsync()`
+- 主题：Config 运行态快照展示与应用配置手动拉取
+- InteractionArea：4 卡片（DevelopMode / Platform / Channel / Namespace）+ AppConfigs 字段表（AppID/AppAesKey）+ EnabledSDKs 列表 + “刷新快照”与“拉取应用配置”按钮
+- “拉取应用配置”通过 `AppCustomConfig` NetCmd 拉取 GM 的完整 Custom JSON，并展示 Config 中实际配置的 `ThirdIAPOpen` 与 `ThirdIAPIOSOpenCountry`；失败时显示磁盘缓存或 ConfigRuntime 本地默认值。
+- 反馈样例：`> Nova.Config.RefreshAppConfigAsync() → 成功`、`> Nova.Config.Custom.GetBool("ThirdIAPOpen") → true`
+- 资源：无（应用配置拉取为在线请求）
 
 #### 2.5 DemoEventView ｜ I
 - API 副标题：`Nova.Event.Subscribe<T>(h) / Fire(sender, e) / Unsubscribe<T>(h)`
@@ -220,11 +221,11 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 资源：无（DemoPingEventData 见数据清单）
 
 #### 2.6 DemoTableView ｜ R
-- API 副标题：`Nova.Table.GetTable<TbDemoItem>() / HasTable<T>()`
-- 主题：Luban 表格读取
-- InteractionArea：2 按钮（HasTable / GetTable）+ 表格预览 GridLayout（10 行 × 4 列）
-- 反馈样例：`> Nova.Table.GetTable<TbDemoItem>() → 10 rows`
-- 数据：xlsx `Demo_Item`（10 行：Id/Name/Icon/Price）
+- API 副标题：`Nova.Table.GetTable<T>() / HasTable<T>()`
+- 主题：Luban 全表加载与演示数据校验
+- InteractionArea：2 按钮（检查加载状态 / 校验全部数据）+ 四张表逐项结果
+- 反馈样例：`> Table 全量数据校验 → 4/4 张表通过`
+- 数据：xlsx `Demo_Item`（10 行）/ `ListA`（1 行）/ `ListB`（1 行）/ `Map1`（1 行）
 
 #### 2.7 DemoLocalizationView ｜ I
 - API 副标题：`Nova.Localization.SetLanguageAsync(lang) / GetText(name)`
@@ -241,9 +242,9 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 依赖：本设计稿额外 2 个辅助 view `DemoToastView` `DemoDialogView`（轻量 prefab，仅含一行文字 + 自闭定时器）
 
 #### 2.9 DemoNetworkView ｜ I
-- API 副标题：`Nova.Network.GetAsync(url) / PostAsync(url, body) / ConnectServer(...)`
+- API 副标题：`Nova.Network.GetAsync / PostAsync / ConnectServer`
 - 主题：HTTP GET/POST + WebSocket 连接占位
-- InteractionArea：1 url 输入（默认 `https://httpbin.org/get`）+ Get/Post/Connect 3 按钮 + 响应预览卡片
+- InteractionArea：1 GET URL 输入（默认 `https://postman-echo.com/get?message=hello`）+ Get/Post/Connect 3 按钮；POST 固定请求 `https://postman-echo.com/post` 并发送 `{"message":"hello"}`，Connect 使用 `wss://ws.postman-echo.com/raw`，响应展示在预览卡片
 - 反馈样例：`> Nova.Network.GetAsync("...") → 200 OK len=312`
 - 资源：无（在线请求）
 

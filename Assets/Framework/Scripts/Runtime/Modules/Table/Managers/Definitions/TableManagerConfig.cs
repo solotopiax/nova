@@ -5,16 +5,16 @@
  * filename:  TableManagerConfig.cs
  * author:    taoye
  * created:   2026/2/5
- * descrip:   Table 管理器运行时 Binding 配置
+ * descrip:   Table 管理器运行时加载描述
  ***************************************************************/
 
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// Table 管理器配置，传递任意数量的生成 Binding。
+    /// Table 管理器配置，传递任意数量的加载描述。
     /// </summary>
     public sealed class TableManagerConfig
     {
-        public System.Collections.Generic.IReadOnlyList<TableRuntimeBindingSetting> Bindings;
+        public System.Collections.Generic.IReadOnlyList<TableLoadDescriptionSetting> LoadDescriptions;
     }
 }

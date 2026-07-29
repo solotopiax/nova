@@ -442,32 +442,120 @@ namespace NovaFramework.Editor
                     bool enterChildren = true;
                     while (child.NextVisible(enterChildren) && !SerializedProperty.EqualContents(child, end))
                     {
-                        // TODO: EditorUtil.Draw 未覆盖 SerializedProperty 逐字段遍历绘制场景，待 EditorUtil 扩展后替换
-                        // 用 Horizontal + Space(16f) 包裹实现整体左缩进；右侧 Space(16f) 与面板边距对称
-                        EditorUtil.Draw.Layout.Horizontal(() =>
-                        {
-                            EditorUtil.Draw.Space(16f);
-                            EditorGUILayout.PropertyField(child, new GUIContent(child.displayName), true);
-                            EditorUtil.Draw.Space(16f);
-                        });
-                        if (!string.IsNullOrEmpty(child.tooltip))
-                        {
-                            EditorUtil.Draw.Layout.Horizontal(() =>
-                            {
-                                EditorUtil.Draw.Space(16f);
-                                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { child.tooltip }, false, GUILayout.ExpandWidth(true));
-                                EditorUtil.Draw.Space(16f);
-                            });
-                        }
+                        DrawIndentedPropertyFieldWithTooltip(child);
                         enterChildren = false;
                     }
                 }
                 break;
             }
+
+            DrawCustomConfigRows(m_MasterSO.FindProperty("Custom")?.FindPropertyRelative("Entries"));
             m_MasterSO.ApplyModifiedProperties();
             // 字段编辑完成后广播同组格，确保组内数据一致（ChangeCheck 覆盖后追加）
             EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs, null, new EditorUtil.Config.DimensionProjector.Coord(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
             EditorUtil.Draw.Space(16f);
+        }
+
+        /// <summary>
+        /// 绘制带左右缩进的序列化字段及其说明；标签宽度按显示文本扩展，避免长字段名被截断。
+        /// </summary>
+        private static void DrawIndentedPropertyFieldWithTooltip(SerializedProperty property)
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                GUIContent label = new GUIContent(property.displayName);
+                float previousLabelWidth = EditorGUIUtility.labelWidth;
+                try
+                {
+                    EditorGUIUtility.labelWidth = Mathf.Max(
+                        previousLabelWidth,
+                        EditorStyles.label.CalcSize(label).x + 8f);
+                    EditorGUILayout.PropertyField(property, label, true);
+                }
+                finally
+                {
+                    EditorGUIUtility.labelWidth = previousLabelWidth;
+                }
+                EditorUtil.Draw.Space(16f);
+            });
+
+            if (string.IsNullOrEmpty(property.tooltip))
+            {
+                return;
+            }
+
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { property.tooltip }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+        }
+
+        /// <summary>
+        /// 在应用配置面板中直接绘制 Custom 本地 JSONPath 键值行，不显示内部 Entries 容器层级。
+        /// </summary>
+        /// <param name="entries">Custom.Entries 序列化列表。</param>
+        private void DrawCustomConfigRows(SerializedProperty entries)
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Label("本地自定义配置项键值对", m_SectionTitleStyle, false);
+                EditorUtil.Draw.FlexibleSpace();
+                if (entries != null)
+                {
+                    EditorUtil.Draw.Button("新增", 60f, true, () =>
+                    {
+                        int newIndex = entries.arraySize;
+                        entries.InsertArrayElementAtIndex(newIndex);
+                        SerializedProperty newEntry = entries.GetArrayElementAtIndex(newIndex);
+                        newEntry.FindPropertyRelative("Key").stringValue = string.Empty;
+                        newEntry.FindPropertyRelative("Value").stringValue = string.Empty;
+                        entries.serializedObject.ApplyModifiedProperties();
+                    });
+                }
+                EditorUtil.Draw.Space(16f);
+            });
+
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "本地键值对使用 JSONPath，例如 User.Level、Rewards[0].Id；Value 是本地默认字符串。",
+                    "游戏启动时 Config 会在后台等待 Network 就绪，再拉取一次完整云端 JSON 对象并缓存，不阻塞启动。",
+                    "读取顺序为云端缓存 → 本地路径值 → 调用方默认值；云端可包含本地未配置的任意路径。",
+                }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+
+            if (entries == null)
+            {
+                EditorUtil.Draw.HelpBox(MessageType.Warning, new[] { "序列化字段 [Custom] 未找到。" }, false);
+                return;
+            }
+
+            for (int i = 0; i < entries.arraySize; i++)
+            {
+                int index = i;
+                SerializedProperty entry = entries.GetArrayElementAtIndex(i);
+                SerializedProperty key = entry.FindPropertyRelative("Key");
+                SerializedProperty value = entry.FindPropertyRelative("Value");
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    EditorUtil.Draw.Space(16f);
+                    EditorUtil.Draw.TextField(key, true, null, GUILayout.MinWidth(180f), GUILayout.ExpandWidth(true));
+                    EditorUtil.Draw.TextField(value, true, null, GUILayout.MinWidth(180f), GUILayout.ExpandWidth(true));
+                    EditorUtil.Draw.Button("删除", 60f, true, () =>
+                    {
+                        entries.DeleteArrayElementAtIndex(index);
+                        entries.serializedObject.ApplyModifiedProperties();
+                    });
+                    EditorUtil.Draw.Space(16f);
+                });
+            }
         }
 
         /// <summary>
@@ -623,23 +711,7 @@ namespace NovaFramework.Editor
             EditorGUI.BeginChangeCheck();
             while (child.NextVisible(enterChildren) && !SerializedProperty.EqualContents(child, end))
             {
-                // TODO: EditorUtil.Draw 未覆盖 SerializedProperty 逐字段遍历绘制场景，待 EditorUtil 扩展后替换
-                // 用 Horizontal + Space(16f) 包裹实现整体左缩进；右侧 Space(16f) 与面板边距对称
-                EditorUtil.Draw.Layout.Horizontal(() =>
-                {
-                    EditorUtil.Draw.Space(16f);
-                    EditorGUILayout.PropertyField(child, new GUIContent(child.displayName), true);
-                    EditorUtil.Draw.Space(16f);
-                });
-                if (!string.IsNullOrEmpty(child.tooltip))
-                {
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[] { child.tooltip }, false, GUILayout.ExpandWidth(true));
-                        EditorUtil.Draw.Space(16f);
-                    });
-                }
+                DrawIndentedPropertyFieldWithTooltip(child);
                 enterChildren = false;
             }
             bool sdkFieldChanged = EditorGUI.EndChangeCheck();
@@ -808,23 +880,7 @@ namespace NovaFramework.Editor
             EditorGUI.BeginChangeCheck();
             while (child.NextVisible(enterChildren) && !SerializedProperty.EqualContents(child, end))
             {
-                // TODO: EditorUtil.Draw 未覆盖 SerializedProperty 逐字段遍历绘制场景，待 EditorUtil 扩展后替换
-                // 用 Horizontal + Space(16f) 包裹实现整体左缩进；右侧 Space(16f) 与面板边距对称
-                EditorUtil.Draw.Layout.Horizontal(() =>
-                {
-                    EditorUtil.Draw.Space(16f);
-                    EditorGUILayout.PropertyField(child, new GUIContent(child.displayName), true);
-                    EditorUtil.Draw.Space(16f);
-                });
-                if (!string.IsNullOrEmpty(child.tooltip))
-                {
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[] { child.tooltip }, false, GUILayout.ExpandWidth(true));
-                        EditorUtil.Draw.Space(16f);
-                    });
-                }
+                DrawIndentedPropertyFieldWithTooltip(child);
                 enterChildren = false;
             }
             bool kitFieldChanged = EditorGUI.EndChangeCheck();

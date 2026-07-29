@@ -67,13 +67,18 @@ Export(master, platform, channel, mode, savePath):
   13. target.GameEntranceProcedureName = hybridCLR.GameEntranceProcedureName
   14. target.AotMetadataDlls = hybridCLR.AotMetadataDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList()
   15. target.GameDlls        = hybridCLR.GameDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList()
-  15. existing == null → CreateAsset；否则 SetDirty
-  16. SaveAssets + Refresh → return target
+  15. target.Custom = CloneCustomConfig(master.Custom)
+  16. existing == null → CreateAsset；否则 SetDirty
+  17. SaveAssets + Refresh → return target
 ```
 
 ### CloneAppConfigs — 深拷贝 AppConfigs
 
-逐字段拷贝 3 个 string 字段（AppID / AppAesKey / AppAesIV），返回新 `AppConfigs` 实例。`src` 为 null 时直接返回 null。（Namespace 不在 AppConfigs 中，在 Export 流程第 6 步单独从 `master.Namespace` 赋值到 `target.Namespace`。）
+逐字段拷贝 `AppID / AppAesKey / AppAesIV / CustomConfigCmdName / CustomName`，返回新 `AppConfigs` 实例。`src` 为 null 时直接返回 null。（Namespace 不在 AppConfigs 中，在 Export 流程中单独解析后写入 `target.Namespace`。）
+
+### CloneCustomConfig — 深拷贝本地路径默认值
+
+深拷贝 `ConfigMasterSO.Custom.Entries` 到 Runtime 快照，确保设计态和导出物不共享列表或行对象。
 
 ### FilterEnabled — 按 DevelopMode 过滤启用的 SDK 配置
 

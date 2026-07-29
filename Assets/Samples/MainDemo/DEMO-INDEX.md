@@ -39,12 +39,12 @@
 | 2.1 | `DemoAppView` | I | `Nova.App.CheckAsync() / DownloadAsync() / OpenStoreAsync()` | 无 |
 | 2.2 | `DemoAssetView` | I | `Nova.Asset.LoadAsync<Sprite>(location, ct)` / `Nova.Asset.RefreshManifestAsync()` / `CreateDownloaderByTags(tags)` / `IAssetDownloader.RunAsync(ct)` / `CreateDownloaderByLocations(locations)` | sprite `icon_coin`（DemoAtlas） |
 | 2.3 | `DemoPrefabView` | I | `Nova.Prefab.InstantiateAsync(location) / Destroy(go)` | prefab `DemoPrefabBlock` |
-| 2.4 | `DemoConfigView` | R | `Nova.Config.ConfigManager.Common / .Namespace / GetSDKPluginConfig<T>()` | 无 |
+| 2.4 | `DemoConfigView` | I | `Nova.Config.AppConfigs / .Namespace / GetSDKPluginConfig<T>()`；`Nova.Config.RefreshAppConfigAsync()`；`Nova.Config.Custom.GetXxx(path)` | NetCmd `AppCustomConfig`（在线请求）+ ConfigRuntime 本地路径默认值 |
 | 2.5 | `DemoEventView` | I | `Nova.Event.Subscribe<T>(h) / Fire(sender, e) / Unsubscribe<T>(h)` | 无 |
-| 2.6 | `DemoTableView` | R | `Nova.Table.GetTable<TbDemoItem>() / HasTable<T>()` | xlsx `Demo_Item`（10 行） |
+| 2.6 | `DemoTableView` | R | `Nova.Table.GetTable<T>() / HasTable<T>()`，逐项校验 4 张表 | xlsx `Demo_Item` / `ListA` / `ListB` / `Map1` |
 | 2.7 | `DemoLocalizationView` | I | `Nova.Localization.SetLanguageAsync(lang) / GetText(name)` | xlsx `Demo_Localization`（5 key × 3 语言） |
 | 2.8 | `DemoUIView` | I | `Nova.UI.OpenUIViewAsync<T>(userData) / CloseUIView(serialID)` | prefab `DemoToastView` / `DemoDialogView` |
-| 2.9 | `DemoNetworkView` | I | `Nova.Network.GetAsync(url) / PostAsync(url, body) / ConnectServer(...)` | 无（在线请求） |
+| 2.9 | `DemoNetworkView` | I | `Nova.Network.GetAsync / PostAsync / ConnectServer` | 无（在线请求） |
 | 2.10 | `DemoProcedureView` | R | `Nova.Procedure.GetProcedure<T>() / HasProcedure<T>()` | 无 |
 | 2.11 | `DemoObjectPoolView` | I | `Nova.ObjectPool.CreateSingleGettingObjectPool<T>() / GetObjectPool<T>()` | 无 |
 | 2.12 | `DemoPersistView` | I | `Nova.Persist.PlayerPrefs.SetInt(k, v) / GetInt(k)` | 无 |

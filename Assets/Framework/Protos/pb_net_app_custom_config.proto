@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package NovaFramework.Runtime;
+
+import "pb_net_header.proto";
+
+// 获取应用自定义配置请求
+message PbNetAppCustomConfigReq {
+  NovaFramework.Runtime.PbNetReqHeader head = 1;   // 请求头（app_id、version、platform 等）
+  string key  = 2;   	       // 配置键
+}
+
+// 获取应用自定义配置响应
+message PbNetAppCustomConfigResp {
+  NovaFramework.Runtime.PbNetRespHeader head  = 1;    // 响应头
+  string value = 2;   		// 配置值
+}

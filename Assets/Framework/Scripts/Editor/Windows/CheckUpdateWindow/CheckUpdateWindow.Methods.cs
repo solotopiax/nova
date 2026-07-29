@@ -313,9 +313,14 @@ namespace NovaFramework.Editor
                 // 左侧弹性空白，将勾选框推到右侧
                 EditorUtil.Draw.FlexibleSpace();
 
-                // 精确计算 label 宽度 + 勾选框像素，避免 ExpandWidth 留白
-                float toggleWidth = EditorStyles.label.CalcSize(new GUIContent(c_FooterToggleLabel)).x + c_FooterToggleExtra;
-                m_DontShowAgain = EditorUtil.Draw.ToggleLeft(c_FooterToggleLabel, m_DontShowAgain, false, GUILayout.Width(toggleWidth));
+                // 使用显式 Rect 绘制，避免全局 labelWidth 和 GUILayout Toggle 样式挤压文案。
+                GUIContent toggleContent = new GUIContent(c_FooterToggleLabel);
+                float toggleWidth = EditorStyles.toggle.CalcSize(toggleContent).x + c_FooterToggleExtra;
+                Rect toggleRect = GUILayoutUtility.GetRect(
+                    toggleWidth,
+                    EditorGUIUtility.singleLineHeight,
+                    GUILayout.Width(toggleWidth));
+                m_DontShowAgain = EditorGUI.ToggleLeft(toggleRect, toggleContent, m_DontShowAgain);
                 EditorUtil.Draw.Space(4f);
             });
         }

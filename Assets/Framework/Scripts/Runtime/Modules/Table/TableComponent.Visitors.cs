@@ -51,6 +51,6 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 获取表格数量。
         /// </summary>
-        public int Count => m_TableManager.Count;
+        public int Count => m_TableManager?.Count ?? 0;
     }
 }

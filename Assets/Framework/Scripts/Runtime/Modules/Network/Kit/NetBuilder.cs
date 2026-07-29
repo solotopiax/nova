@@ -110,17 +110,18 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 根据 Application.platform 推断对应的 PbNetPlatform 枚举值。
+        /// 根据当前编译目标推断对应的 PbNetPlatform 枚举值。
+        /// Editor 下跟随当前 Build Target，不使用 Editor 宿主运行平台。
         /// 未能匹配的平台一律返回 Unspecified。
         /// </summary>
         /// <returns>推断得到的 PbNetPlatform 值。</returns>
         private static PbNetPlatform InferPlatform()
         {
-            return Application.platform switch
+            return Util.UrlTemplate.ResolveRuntimePlatform() switch
             {
-                RuntimePlatform.IPhonePlayer => PbNetPlatform.Ios,
-                RuntimePlatform.Android => PbNetPlatform.Android,
-                RuntimePlatform.WebGLPlayer => PbNetPlatform.Webgl,
+                PlatformType.iOS => PbNetPlatform.Ios,
+                PlatformType.Android => PbNetPlatform.Android,
+                PlatformType.WebGL => PbNetPlatform.Webgl,
                 _ => PbNetPlatform.Unspecified,
             };
         }

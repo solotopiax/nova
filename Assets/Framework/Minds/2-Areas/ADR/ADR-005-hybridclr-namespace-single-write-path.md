@@ -110,6 +110,15 @@ ConfigWindow（用户改 Namespace）
 - 唯一调用点验证：除 `Util.HybridCLR.cs` 外搜索上述两 API 应零命中
 - 配置面板：`Assets/Framework/Scripts/Editor/ConfigWindow/HybridCLR/*`
 
+### 2026-07-29 Demo 导出命名空间一致性审计
+
+- 审计范围：`Assets/Samples` 下 14 个 Demo，共 462 个生成 C# 文件；覆盖 Table、Network HostKey、Network NetCmd、Localization Text、Localization Font、Sound、Vibrate Custom、Vibrate Emphasis、UI 九类导出。
+- 配置源核对：每个 Demo 的 Runtime asmdef 名称、`ConfigMasterSO.Namespace`、`ConfigRuntimeSO.Namespace` 与 Table `luban.conf.targets[].topModule` 完全一致。
+- 生成物核对：全部 namespace 声明均与所属 Demo 的 Runtime asmdef 名称一致；476 组 Demo namespace 全限定引用未发现跨 Demo 串用。
+- 运行时连接核对：14 个 `TableTablesBinding` 均指向所属 Demo namespace；Network、Localization、Sound、Vibrate、UI 运行时加载均从 `IConfigManager.Namespace` 解析对应 Tables 类型。
+- Proto 核对：框架三个公共 Proto 的 `package` 与生成 C# namespace 均为 `NovaFramework.Runtime`；当前 Demo 不包含独立 Proto 生成物。
+- 审计结果：零命名空间不一致项。本次结论验证了本 ADR 的强一致约束，并与 [[ADR-056-runtimeprovider-config-select-via-workspaceactive|ADR-056]]、[[ADR-073-excel-export-business-boundary|ADR-073]] 的导出边界相符。
+
 ## 关联
 
 - 规范落点：HybridCLR / 程序集命名一致性约束

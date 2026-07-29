@@ -50,6 +50,12 @@ namespace NovaFramework.Editor
         /// </summary>
         public List<string> EnabledKits = new();
 
+        /// <summary>
+        /// Custom 本地默认路径键值；导出到 ConfigRuntimeSO。
+        /// </summary>
+        [Tooltip("Custom 本地默认路径键值。")]
+        public CustomConfigData Custom = new();
+
         // -----------------------------------------------
         // 面板维度掩码
         // -----------------------------------------------

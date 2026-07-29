@@ -16,7 +16,7 @@ namespace NovaFramework.Runtime
     internal sealed partial class TableManager : TableManagerBase
     {
         private IAssetManager m_AssetManager;
-        private readonly List<TableRuntimeBindingSetting> m_Bindings = new List<TableRuntimeBindingSetting>();
+        private readonly List<TableLoadDescriptionSetting> m_LoadDescriptions = new List<TableLoadDescriptionSetting>();
         private readonly Dictionary<Type, ITable> m_Tables = new Dictionary<Type, ITable>();
 
         /// <summary>

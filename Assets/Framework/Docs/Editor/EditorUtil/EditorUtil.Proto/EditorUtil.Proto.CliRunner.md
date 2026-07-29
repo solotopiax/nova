@@ -29,9 +29,9 @@ EditorUtil (public static partial class)
 | 字段 | 类型 | 修饰符 | 说明 |
 |---|---|---|---|
 | `c_PackageName` | `string` | `private const` | UPM 包名：`"com.solotopia.luban"` |
-| `c_ProtocRelPathMac` | `string` | `private const` | protoc 在 UPM 包内的相对路径（Mac）：`"Tools~/protoc/bin/protoc"` |
-| `c_ProtocRelPathWin` | `string` | `private const` | protoc 在 UPM 包内的相对路径（Windows）：`"Tools~/protoc/bin/protoc.exe"` |
-| `c_ProtocIncludeRelPath` | `string` | `private const` | protoc include 目录在 UPM 包内的相对路径：`"Tools~/protoc/include"` |
+| `c_ProtocRelPathMac` | `string` | `private const` | protoc 在 UPM 包内的相对路径（Mac）：`"Core/Tools~/protoc/bin/protoc"` |
+| `c_ProtocRelPathWin` | `string` | `private const` | protoc 在 UPM 包内的相对路径（Windows）：`"Core/Tools~/protoc/bin/protoc.exe"` |
+| `c_ProtocIncludeRelPath` | `string` | `private const` | protoc include 目录在 UPM 包内的相对路径：`"Core/Tools~/protoc/include"` |
 | `c_SearchPattern` | `string` | `public const` | .proto 文件搜索模式：`"*.proto"` |
 
 ---

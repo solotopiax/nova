@@ -1,18 +1,17 @@
 # TableManagerConfig
 
-`TableManagerConfig` 是 `TableComponent.Start()` 传给 `ITableManager.Initialize` 的运行时配置。
+`TableManagerConfig` 是 `TableComponent.Start()` 下发给 `ITableManager.Initialize` 的运行时配置：
 
 ```csharp
 public sealed class TableManagerConfig
 {
-    public IReadOnlyList<TableRuntimeBindingSetting> Bindings;
+    public IReadOnlyList<TableLoadDescriptionSetting> LoadDescriptions;
 }
 ```
 
-每条 Binding 独立声明生成 Binding 类型和资源地址前缀。表清单、构造函数 Loader 与 Codec 解码由对应 `ILubanTableBinding` 决定。
+每条加载描述内部保存生成 Binding 类型，以及 `output_data_file -> Asset 地址` 的完整映射。表清单与 Codec 解码方式仍由对应 `ILubanTableBinding` 提供，Manager 不根据文件扩展名猜测格式。
 
 ## 关联文档
 
 - [TableSettings.md](TableSettings.md)
 - [TableManager.md](../TableManager.md)
-- [TableComponent.md](../TableComponent.md)

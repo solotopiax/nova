@@ -56,7 +56,7 @@ namespace NovaFramework.Runtime
         {
             m_TableManager.Initialize(new TableManagerConfig
             {
-                Bindings = m_Setting.Runtime?.Bindings,
+                LoadDescriptions = m_Setting.Runtime?.LoadDescriptions,
             });
         }
 

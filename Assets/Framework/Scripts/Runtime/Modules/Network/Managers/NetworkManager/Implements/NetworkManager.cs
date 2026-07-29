@@ -20,7 +20,7 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// Network 管理器，负责 Luban 域名表/指令表加载、NetCmd URL 路由、网络状态检测与服务器时间获取。
     /// </summary>
-    internal sealed partial class NetworkManager : NetworkManagerBase
+    internal sealed partial class NetworkManager : NetworkManagerBase, INetworkReadySignal
     {
         /// <summary>
         /// 初始化 NetworkManager 的新实例。
@@ -98,7 +98,12 @@ namespace NovaFramework.Runtime
                 }
             }
 
-            return BuildTablesFromCache(dataCache);
+            bool success = BuildTablesFromCache(dataCache);
+            if (success)
+            {
+                MarkReady();
+            }
+            return success;
         }
 
         /// <summary>
@@ -150,7 +155,12 @@ namespace NovaFramework.Runtime
                 }
             }
 
-            return BuildTablesFromCache(dataCache);
+            bool result = BuildTablesFromCache(dataCache);
+            if (result)
+            {
+                MarkReady();
+            }
+            return result;
         }
 
         /// <summary>
@@ -431,10 +441,39 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 等待 HostKey 与 NetCmd 路由首次成功构建；单个等待者取消不会取消共享就绪信号。
+        /// </summary>
+        /// <param name="ct">等待生命周期取消令牌。</param>
+        /// <returns>路由已就绪时立即完成，否则等待共享信号。</returns>
+        public UniTask WaitUntilReadyAsync(System.Threading.CancellationToken ct = default)
+        {
+            if (m_IsReady)
+            {
+                return UniTask.CompletedTask;
+            }
+            return m_ReadyTcs.Task.AttachExternalCancellation(ct);
+        }
+
+        /// <summary>
+        /// 标记标准 NetworkManager 路由就绪并唤醒全部等待者；重复调用幂等。
+        /// </summary>
+        private void MarkReady()
+        {
+            if (m_IsReady)
+            {
+                return;
+            }
+            m_IsReady = true;
+            m_ReadyTcs.TrySetResult();
+        }
+
+        /// <summary>
         /// 关闭并清理管理器。
         /// </summary>
         public override void Shutdown()
         {
+            m_IsReady = false;
+            m_ReadyTcs.TrySetCanceled();
             m_NetworkDatas.Clear();
             m_HostKeyCache?.Clear();
             m_CmdCache?.Clear();

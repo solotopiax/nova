@@ -81,7 +81,7 @@ namespace NovaFramework.Editor
                 /// <summary>
                 /// Unity 每层缩进的像素宽度。
                 /// </summary>
-                public const float c_IndentPixelsPerLevel = 15f;
+                public const float c_IndentPixelsPerLevel = Layout.c_IndentPixelsPerLevel;
 
                 /// <summary>
                 /// 导出区域：内容行（数据 / 类型导出位置等）的标签样式（静态延迟初始化）。

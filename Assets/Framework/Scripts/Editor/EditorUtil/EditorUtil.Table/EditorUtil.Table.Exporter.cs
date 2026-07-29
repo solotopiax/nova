@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NovaFramework.Runtime;
 using UnityEditor;
 using IOPath = System.IO.Path;
@@ -22,12 +23,12 @@ namespace NovaFramework.Editor
         public static partial class Table
         {
             /// <summary>
-            /// 直接消费项目维护的 luban.conf，在隔离目录生成并事务发布一个或多个 Profile。
+            /// 直接消费项目维护的 luban.conf，在隔离目录生成并事务发布一个或多个导出描述。
             /// </summary>
             public static class Exporter
             {
                 /// <summary>
-                /// 生成并发布全部已选择 Profile 的代码与数据。
+                /// 生成并发布全部已启用导出描述的代码与数据。
                 /// </summary>
                 /// <param name="settings">Table Project 与 Runtime 设置。</param>
                 /// <returns>完整导出与发布是否成功。</returns>
@@ -37,18 +38,18 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 生成并发布指定 Profile 的代码与数据。
+                /// 生成并发布指定导出描述的代码与数据。
                 /// </summary>
                 /// <param name="settings">Table Project 设置。</param>
-                /// <param name="profileIds">需要导出的 Profile ID；允许同时指定多个。</param>
-                /// <returns>全部指定 Profile 是否导出成功。</returns>
-                public static bool ExportAll(TableSettings settings, params string[] profileIds)
+                /// <param name="descriptionIds">需要导出的导出描述 ID；允许同时指定多个。</param>
+                /// <returns>全部指定导出描述是否导出成功。</returns>
+                public static bool ExportAll(TableSettings settings, params string[] descriptionIds)
                 {
-                    return Export(settings, ExportScope.All, profileIds);
+                    return Export(settings, ExportScope.All, descriptionIds);
                 }
 
                 /// <summary>
-                /// 仅生成并发布全部已选择 Profile 的代码。
+                /// 仅生成并发布全部已启用导出描述的代码。
                 /// </summary>
                 /// <param name="settings">Table Project 与 Runtime 设置。</param>
                 /// <returns>代码导出与发布是否成功。</returns>
@@ -58,18 +59,18 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 仅生成并发布指定 Profile 的代码。
+                /// 仅生成并发布指定导出描述的代码。
                 /// </summary>
                 /// <param name="settings">Table Project 设置。</param>
-                /// <param name="profileIds">需要导出的 Profile ID；允许同时指定多个。</param>
-                /// <returns>全部指定 Profile 是否导出成功。</returns>
-                public static bool ExportCode(TableSettings settings, params string[] profileIds)
+                /// <param name="descriptionIds">需要导出的导出描述 ID；允许同时指定多个。</param>
+                /// <returns>全部指定导出描述是否导出成功。</returns>
+                public static bool ExportCode(TableSettings settings, params string[] descriptionIds)
                 {
-                    return Export(settings, ExportScope.Code, profileIds);
+                    return Export(settings, ExportScope.Code, descriptionIds);
                 }
 
                 /// <summary>
-                /// 仅生成并发布全部已选择 Profile 的数据。
+                /// 仅生成并发布全部已启用导出描述的数据。
                 /// </summary>
                 /// <param name="settings">Table Project 与 Runtime 设置。</param>
                 /// <returns>数据导出与发布是否成功。</returns>
@@ -79,64 +80,72 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 仅生成并发布指定 Profile 的数据。
+                /// 仅生成并发布指定导出描述的数据。
                 /// </summary>
                 /// <param name="settings">Table Project 设置。</param>
-                /// <param name="profileIds">需要导出的 Profile ID；允许同时指定多个。</param>
-                /// <returns>全部指定 Profile 是否导出成功。</returns>
-                public static bool ExportData(TableSettings settings, params string[] profileIds)
+                /// <param name="descriptionIds">需要导出的导出描述 ID；允许同时指定多个。</param>
+                /// <returns>全部指定导出描述是否导出成功。</returns>
+                public static bool ExportData(TableSettings settings, params string[] descriptionIds)
                 {
-                    return Export(settings, ExportScope.Data, profileIds);
+                    return Export(settings, ExportScope.Data, descriptionIds);
                 }
 
                 /// <summary>
-                /// 把可序列化 Project/Profile 设置转换为结构化 Luban 参数，并强制使用暂存输出目录。
+                /// 把可序列化 Project/导出描述转换为结构化 Luban 参数，并强制使用暂存输出目录。
                 /// </summary>
                 /// <param name="project">官方 Luban Project 设置。</param>
-                /// <param name="profile">当前导出 Profile。</param>
+                /// <param name="description">当前导出描述。</param>
                 /// <param name="stagedCodeDirectory">隔离代码目录。</param>
                 /// <param name="stagedDataDirectory">隔离数据目录。</param>
                 /// <returns>不经 shell 拼接的 Luban 调用。</returns>
                 public static LubanInvocation BuildInvocation(
-                    TableProjectSettings project,
-                    TableExportProfileSetting profile,
+                    TableLubanProjectSetting project,
+                    TableExportDescriptionSetting description,
                     string stagedCodeDirectory,
                     string stagedDataDirectory)
                 {
                     var builder = new LubanInvocationBuilder()
                         .WithConfigFile(project.ConfigPath)
-                        .WithTarget(project.Target);
+                        .WithTarget(description.Target);
 
-                    foreach (string codeTarget in profile.CodeTargets ?? new List<string>())
+                    foreach (string codeTarget in description.CodeTargets ?? new List<string>())
                     {
                         builder.WithCodeTarget(codeTarget);
                     }
-                    foreach (string dataTarget in profile.DataTargets ?? new List<string>())
+                    foreach (string dataTarget in description.DataTargets ?? new List<string>())
                     {
                         builder.WithDataTarget(dataTarget);
                     }
-                    foreach (string tag in profile.IncludeTags ?? new List<string>())
+                    foreach (string tag in description.IncludeTags ?? new List<string>())
                     {
                         builder.WithTag(tag);
                     }
-                    foreach (string tag in profile.ExcludeTags ?? new List<string>())
+                    foreach (string tag in description.ExcludeTags ?? new List<string>())
                     {
                         builder.WithExcludeTag(tag);
                     }
-                    foreach (string variant in profile.Variants ?? new List<string>())
+                    foreach (string variant in description.FieldVariants ?? new List<string>())
                     {
                         builder.WithVariant(variant);
                     }
-                    foreach (TableLubanExtraArgument argument in profile.ExtraArguments ?? new List<TableLubanExtraArgument>())
+                    if (description.OutputScope == TableOutputScope.SelectedTables)
+                    {
+                        foreach (string tableName in description.OutputTables ?? new List<string>())
+                        {
+                            builder.WithOutputTable(tableName);
+                        }
+                    }
+                    foreach (TableLubanExtraArgument argument in description.AdvancedArguments ?? new List<TableLubanExtraArgument>())
                     {
                         if (argument != null)
                         {
                             builder.WithExtraArgument(argument.Name, argument.Value);
                         }
                     }
-                    foreach (string templateDirectory in profile.CustomTemplateDirs ?? new List<string>())
+                    foreach (string templateDirectory in description.CustomTemplateDirs ?? new List<string>())
                     {
-                        builder.WithCustomTemplateDirectory(templateDirectory);
+                        builder.WithCustomTemplateDirectory(
+                            EditorUtil.Luban.ExportHelper.ResolveCustomTemplateDirectory(templateDirectory));
                     }
 
                     if (!string.IsNullOrWhiteSpace(stagedCodeDirectory))
@@ -152,24 +161,23 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 校验设置，并依次运行全部目标 Profile。
+                /// 校验设置，并依次运行全部目标导出描述。
                 /// </summary>
                 /// <param name="settings">Table 设置。</param>
                 /// <param name="scope">本次需要发布的产物范围。</param>
                 /// <returns>全流程是否成功。</returns>
-                /// <param name="profileIds">显式 Profile ID；为空时使用全部 Enabled Profile。</param>
-                private static bool Export(TableSettings settings, ExportScope scope, IReadOnlyCollection<string> profileIds)
+                /// <param name="descriptionIds">显式 导出描述 ID；为空时使用全部 已启用导出描述。</param>
+                private static bool Export(TableSettings settings, ExportScope scope, IReadOnlyCollection<string> descriptionIds)
                 {
-                    if (!TryResolveProfiles(settings, scope, profileIds, out TableProjectSettings project,
-                            out List<TableExportProfileSetting> profiles, out string error))
+                    if (!TryResolveJobs(settings, scope, descriptionIds, out List<ExportJob> jobs, out string error))
                     {
                         Log.Error(LogTag.Editor, "Table 导出配置无效：{0}", error);
                         return false;
                     }
 
-                    for (int i = 0; i < profiles.Count; i++)
+                    for (int i = 0; i < jobs.Count; i++)
                     {
-                        if (!ExportProfile(project, profiles[i], scope))
+                        if (!ExportDescription(jobs[i].Project, jobs[i].Description, scope))
                         {
                             return false;
                         }
@@ -179,15 +187,15 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 在独立工作区运行并发布单个 Profile。
+                /// 在独立工作区运行并发布单个导出描述。
                 /// </summary>
                 /// <param name="project">Luban Project 设置。</param>
-                /// <param name="profile">当前导出 Profile。</param>
+                /// <param name="description">当前导出描述。</param>
                 /// <param name="scope">本次产物范围。</param>
-                /// <returns>该 Profile 是否导出成功。</returns>
-                private static bool ExportProfile(
-                    TableProjectSettings project,
-                    TableExportProfileSetting profile,
+                /// <returns>该导出描述 是否导出成功。</returns>
+                private static bool ExportDescription(
+                    TableLubanProjectSetting project,
+                    TableExportDescriptionSetting description,
                     ExportScope scope)
                 {
 
@@ -206,10 +214,10 @@ namespace NovaFramework.Editor
                     try
                     {
                         bool wantsCode = scope != ExportScope.Data &&
-                                         profile.CodeTargets != null && profile.CodeTargets.Count > 0;
+                                         description.CodeTargets != null && description.CodeTargets.Count > 0;
                         bool wantsData = scope != ExportScope.Code &&
-                                         profile.DataTargets != null && profile.DataTargets.Count > 0;
-                        if (!RunProfileGeneration(project, profile, wantsCode, wantsData,
+                                         description.DataTargets != null && description.DataTargets.Count > 0;
+                        if (!RunDescriptionGeneration(project, description, wantsCode, wantsData,
                                 stagedCode, stagedSchema, stagedAdapter, stagedData))
                         {
                             return false;
@@ -222,11 +230,11 @@ namespace NovaFramework.Editor
                         using var output = new EditorUtil.FileSystem.OutputApplier(workspace);
                         if (wantsCode)
                         {
-                            QueueDirectoryPublish(output, stagedCode, profile.CodeOutputPath);
+                            QueueDirectoryPublish(output, stagedCode, description.CodeOutputPath);
                         }
                         if (wantsData)
                         {
-                            QueueDirectoryPublish(output, stagedData, profile.DataOutputPath);
+                            QueueDirectoryPublish(output, stagedData, description.DataOutputPath);
                         }
                         output.Apply();
 
@@ -250,7 +258,7 @@ namespace NovaFramework.Editor
                 /// 透传 Luban 调用；包含 protobuf3 代码目标时追加 protoc 与 Nova Tables 适配器步骤。
                 /// </summary>
                 /// <param name="project">Luban Project 设置。</param>
-                /// <param name="profile">当前导出 Profile。</param>
+                /// <param name="description">当前导出描述。</param>
                 /// <param name="wantsCode">是否生成代码。</param>
                 /// <param name="wantsData">是否生成数据。</param>
                 /// <param name="stagedCode">最终 C# 暂存目录。</param>
@@ -258,9 +266,9 @@ namespace NovaFramework.Editor
                 /// <param name="stagedAdapter">Protobuf Table API 适配器暂存目录。</param>
                 /// <param name="stagedData">原始单表数据暂存目录。</param>
                 /// <returns>全部生成步骤是否成功。</returns>
-                private static bool RunProfileGeneration(
-                    TableProjectSettings project,
-                    TableExportProfileSetting profile,
+                private static bool RunDescriptionGeneration(
+                    TableLubanProjectSetting project,
+                    TableExportDescriptionSetting description,
                     bool wantsCode,
                     bool wantsData,
                     string stagedCode,
@@ -268,103 +276,130 @@ namespace NovaFramework.Editor
                     string stagedAdapter,
                     string stagedData)
                 {
-                    bool protobuf = profile.CodeTargets != null && profile.CodeTargets.Count == 2 &&
-                                    profile.CodeTargets.Contains("protobuf3") &&
-                                    profile.CodeTargets.Contains("cs-newtonsoft-json");
+                    if (!wantsCode)
+                    {
+                        return RunLuban(BuildInvocationForScope(
+                            project, description, null, wantsData ? stagedData : null, false, wantsData));
+                    }
+
+                    bool protobuf = description.CodeTargets != null &&
+                                    description.CodeTargets.Contains("protobuf3") &&
+                                    description.CodeTargets.Contains("cs-newtonsoft-json");
                     if (protobuf)
                     {
-                        TableExportProfileSetting schemaProfile = CloneProfile(profile);
-                        schemaProfile.CodeTargets = wantsCode
+                        TableExportDescriptionSetting schemaDescription = CloneDescription(description);
+                        schemaDescription.CodeTargets = wantsCode
                             ? new List<string> { "protobuf3" }
                             : new List<string>();
                         LubanInvocation schemaInvocation = BuildInvocationForScope(
-                            project, schemaProfile, wantsCode ? stagedSchema : null,
+                            project, schemaDescription, wantsCode ? stagedSchema : null,
                             wantsData ? stagedData : null, wantsCode, wantsData);
                         if (!RunLuban(schemaInvocation))
                         {
                             return false;
                         }
 
-                        if (!wantsCode)
-                        {
-                            return true;
-                        }
-
-                        TableExportProfileSetting adapterProfile = CloneProfile(profile);
-                        adapterProfile.CodeTargets = new List<string> { "cs-newtonsoft-json" };
-                        adapterProfile.DataTargets = new List<string>();
-                        adapterProfile.CustomTemplateDirs = new List<string>
-                        {
-                            "Assets/Framework/Templates/Luban/table-protobuf",
-                        };
+                        TableExportDescriptionSetting adapterDescription = CloneDescription(description);
+                        adapterDescription.CodeTargets = new List<string> { "cs-newtonsoft-json" };
+                        adapterDescription.DataTargets = new List<string>();
+                        adapterDescription.CustomTemplateDirs = new List<string>(
+                            description.CustomTemplateDirs ?? new List<string>());
+                        adapterDescription.CustomTemplateDirs.Add("Assets/Framework/Templates/Luban/table-protobuf");
                         if (!RunLuban(BuildInvocationForScope(
-                                project, adapterProfile, stagedAdapter, null, true, false)))
+                                project, adapterDescription, stagedAdapter, null, true, false)))
                         {
                             return false;
                         }
 
-                        return CompileProtobuf(stagedSchema, stagedAdapter, stagedCode);
+                        if (!CompileProtobuf(stagedSchema, stagedAdapter, stagedCode))
+                        {
+                            return false;
+                        }
+
+                        List<string> remainingCodeTargets = description.CodeTargets
+                            .Where(target => target != "protobuf3" && target != "cs-newtonsoft-json")
+                            .ToList();
+                        if (remainingCodeTargets.Count == 0)
+                        {
+                            return true;
+                        }
+
+                        TableExportDescriptionSetting remainingDescription = CloneDescription(description);
+                        remainingDescription.CodeTargets = remainingCodeTargets;
+                        remainingDescription.DataTargets = new List<string>();
+                        return RunLuban(BuildInvocationForScope(
+                            project, remainingDescription, stagedCode, null, true, false));
                     }
 
                     return RunLuban(BuildInvocationForScope(
-                        project, profile, wantsCode ? stagedCode : null,
+                        project, description, wantsCode ? stagedCode : null,
                         wantsData ? stagedData : null, wantsCode, wantsData));
                 }
 
                 /// <summary>
-                /// 浅复制 Profile 集合字段，供单次调用安全裁剪 target 和模板目录。
+                /// 浅复制导出描述集合字段，供单次调用安全裁剪 target 和模板目录。
                 /// </summary>
-                /// <param name="source">源 Profile。</param>
-                /// <returns>与源集合互不共享的临时 Profile。</returns>
-                private static TableExportProfileSetting CloneProfile(TableExportProfileSetting source)
+                /// <param name="source">源导出描述。</param>
+                /// <returns>与源集合互不共享的临时导出描述。</returns>
+                private static TableExportDescriptionSetting CloneDescription(TableExportDescriptionSetting source)
                 {
-                    return new TableExportProfileSetting
+                    return new TableExportDescriptionSetting
                     {
                         Id = source.Id,
+                        Name = source.Name,
                         Enabled = source.Enabled,
+                        Target = source.Target,
+                        Format = source.Format,
                         CodeTargets = new List<string>(source.CodeTargets ?? new List<string>()),
                         DataTargets = new List<string>(source.DataTargets ?? new List<string>()),
+                        OutputScope = source.OutputScope,
+                        OutputTables = new List<string>(source.OutputTables ?? new List<string>()),
+                        CodeOutputPath = source.CodeOutputPath,
+                        DataOutputPath = source.DataOutputPath,
                         IncludeTags = new List<string>(source.IncludeTags ?? new List<string>()),
                         ExcludeTags = new List<string>(source.ExcludeTags ?? new List<string>()),
-                        Variants = new List<string>(source.Variants ?? new List<string>()),
-                        ExtraArguments = new List<TableLubanExtraArgument>(source.ExtraArguments ?? new List<TableLubanExtraArgument>()),
+                        FieldVariants = new List<string>(source.FieldVariants ?? new List<string>()),
+                        AdvancedArguments = new List<TableLubanExtraArgument>(source.AdvancedArguments ?? new List<TableLubanExtraArgument>()),
                         CustomTemplateDirs = new List<string>(source.CustomTemplateDirs ?? new List<string>()),
                     };
                 }
 
                 /// <summary>
-                /// 根据导出范围裁剪 Profile 的 -c/-d 参数，同时保留全部 Luban 原生筛选与扩展参数。
+                /// 根据导出范围裁剪导出描述的 -c/-d 参数，同时保留全部 Luban 原生筛选与扩展参数。
                 /// </summary>
                 /// <param name="project">Luban Project 设置。</param>
-                /// <param name="profile">当前 Profile。</param>
+                /// <param name="description">当前导出描述。</param>
                 /// <param name="codeDirectory">代码暂存目录。</param>
                 /// <param name="dataDirectory">数据暂存目录。</param>
                 /// <param name="includeCode">是否包含代码目标。</param>
                 /// <param name="includeData">是否包含数据目标。</param>
                 /// <returns>按范围裁剪后的调用。</returns>
                 private static LubanInvocation BuildInvocationForScope(
-                    TableProjectSettings project,
-                    TableExportProfileSetting profile,
+                    TableLubanProjectSetting project,
+                    TableExportDescriptionSetting description,
                     string codeDirectory,
                     string dataDirectory,
                     bool includeCode,
                     bool includeData)
                 {
-                    var scoped = new TableExportProfileSetting
+                    var scoped = new TableExportDescriptionSetting
                     {
-                        CodeTargets = includeCode ? profile.CodeTargets : new List<string>(),
-                        DataTargets = includeData ? profile.DataTargets : new List<string>(),
-                        IncludeTags = profile.IncludeTags,
-                        ExcludeTags = profile.ExcludeTags,
-                        Variants = profile.Variants,
-                        ExtraArguments = profile.ExtraArguments,
-                        CustomTemplateDirs = profile.CustomTemplateDirs,
+                        Target = description.Target,
+                        CodeTargets = includeCode ? description.CodeTargets : new List<string>(),
+                        DataTargets = includeData ? description.DataTargets : new List<string>(),
+                        OutputScope = description.OutputScope,
+                        OutputTables = description.OutputTables,
+                        IncludeTags = description.IncludeTags,
+                        ExcludeTags = description.ExcludeTags,
+                        FieldVariants = description.FieldVariants,
+                        AdvancedArguments = description.AdvancedArguments,
+                        CustomTemplateDirs = description.CustomTemplateDirs,
                     };
                     return BuildInvocation(project, scoped, codeDirectory, dataDirectory);
                 }
 
                 /// <summary>
-                /// 使用 Table Profile 结构化参数执行 UPM 内置 Luban CLI。
+                /// 使用 Table 导出描述的结构化参数执行 UPM 内置 Luban CLI。
                 /// </summary>
                 /// <param name="invocation">结构化 Luban 调用。</param>
                 /// <returns>进程是否以零退出码完成。</returns>
@@ -426,7 +461,7 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 把一个完整暂存目录加入输出事务；共享目录中的其他 Profile 产物保持不变。
+                /// 把一个完整暂存目录加入输出事务；共享目录中的其他导出描述产物保持不变。
                 /// </summary>
                 /// <param name="output">输出事务。</param>
                 /// <param name="stagedDirectory">已验证的暂存目录。</param>
@@ -447,105 +482,138 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 从 TableSettings 解析并校验本次需要导出的全部 Profile。
+                /// 从 TableSettings 解析并校验本次需要导出的全部导出描述。
                 /// </summary>
                 /// <param name="settings">Table 设置。</param>
                 /// <param name="scope">本次产物范围。</param>
-                /// <param name="profileIds">显式 Profile ID；为空时使用 Enabled Profile。</param>
-                /// <param name="project">解析出的 Project。</param>
-                /// <param name="profiles">解析出的 Profile 列表。</param>
+                /// <param name="descriptionIds">显式导出描述 ID；为空时使用已启用导出描述。</param>
+                /// <param name="jobs">解析出的 Project 与导出描述任务。</param>
                 /// <param name="error">失败原因。</param>
                 /// <returns>是否解析成功。</returns>
-                private static bool TryResolveProfiles(
+                private static bool TryResolveJobs(
                     TableSettings settings,
                     ExportScope scope,
-                    IReadOnlyCollection<string> profileIds,
-                    out TableProjectSettings project,
-                    out List<TableExportProfileSetting> profiles,
+                    IReadOnlyCollection<string> descriptionIds,
+                    out List<ExportJob> jobs,
                     out string error)
                 {
-                    project = settings?.Project;
-                    profiles = new List<TableExportProfileSetting>();
+                    jobs = new List<ExportJob>();
                     error = null;
-                    if (project == null || string.IsNullOrWhiteSpace(project.ConfigPath) ||
-                        !File.Exists(project.ConfigPath))
+                    if (settings?.Projects == null || settings.Projects.Count == 0)
                     {
-                        error = "luban.conf 不存在。";
-                        return false;
-                    }
-                    if (string.IsNullOrWhiteSpace(project.Target))
-                    {
-                        error = "Luban target 不能为空。";
+                        error = "没有配置任何 Luban Project。";
                         return false;
                     }
 
-                    ProfileValidationResult validation = ProfileValidator.Validate(project.Profiles);
-                    if (!validation.IsValid)
-                    {
-                        error = string.Join(" ", validation.Errors);
-                        return false;
-                    }
-
-                    var requestedIds = profileIds == null || profileIds.Count == 0
+                    var requestedIds = descriptionIds == null || descriptionIds.Count == 0
                         ? null
-                        : new HashSet<string>(profileIds, StringComparer.Ordinal);
-                    foreach (TableExportProfileSetting profile in project.Profiles)
+                        : new HashSet<string>(descriptionIds, StringComparer.Ordinal);
+                    var matchedRequestedIds = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (TableLubanProjectSetting project in settings.Projects)
                     {
-                        if (profile != null && (requestedIds?.Contains(profile.Id) ?? profile.Enabled))
+                        if (project == null || string.IsNullOrWhiteSpace(project.ConfigPath) ||
+                            !File.Exists(project.ConfigPath))
                         {
-                            profiles.Add(profile);
+                            error = $"Luban Project '{project?.Name}' 的 luban.conf 不存在。";
+                            return false;
+                        }
+
+                        DescriptionValidationResult validation = DescriptionValidator.Validate(project.ExportDescriptions);
+                        if (!validation.IsValid)
+                        {
+                            error = $"Luban Project '{project.Name}'：{string.Join(" ", validation.Errors)}";
+                            return false;
+                        }
+
+                        foreach (TableExportDescriptionSetting description in project.ExportDescriptions)
+                        {
+                            if (description == null)
+                            {
+                                continue;
+                            }
+
+                            string qualifiedId = project.Id + "/" + description.Id;
+                            bool selected = requestedIds == null
+                                ? description.Enabled
+                                : requestedIds.Contains(qualifiedId) || requestedIds.Contains(description.Id);
+                            if (!selected)
+                            {
+                                continue;
+                            }
+
+                            if (requestedIds != null)
+                            {
+                                if (requestedIds.Contains(qualifiedId)) matchedRequestedIds.Add(qualifiedId);
+                                if (requestedIds.Contains(description.Id)) matchedRequestedIds.Add(description.Id);
+                            }
+
+                            if (!ValidateJob(description, scope, out error))
+                            {
+                                return false;
+                            }
+                            jobs.Add(new ExportJob(project, description));
                         }
                     }
-                    if (profiles.Count == 0)
+                    if (jobs.Count == 0)
                     {
-                        error = "没有选择任何导出 Profile。";
+                        error = "没有选择任何导出描述。";
                         return false;
                     }
 
                     if (requestedIds != null)
                     {
-                        foreach (TableExportProfileSetting profile in profiles)
+                        requestedIds.ExceptWith(matchedRequestedIds);
+                        if (requestedIds.Count != 0)
                         {
-                            requestedIds.Remove(profile.Id);
-                        }
-                        if (requestedIds.Count > 0)
-                        {
-                            error = $"导出 Profile 不存在：{string.Join(", ", requestedIds)}。";
-                            return false;
-                        }
-                    }
-
-                    foreach (TableExportProfileSetting profile in profiles)
-                    {
-                        bool hasCode = profile.CodeTargets != null && profile.CodeTargets.Count > 0;
-                        bool hasData = profile.DataTargets != null && profile.DataTargets.Count > 0;
-                        if (scope == ExportScope.Code && !hasCode)
-                        {
-                            error = $"Profile {profile.Id} 未配置代码目标。";
-                            return false;
-                        }
-                        if (scope == ExportScope.Data && !hasData)
-                        {
-                            error = $"Profile {profile.Id} 未配置数据目标。";
-                            return false;
-                        }
-                        if (!hasCode && !hasData)
-                        {
-                            error = $"Profile {profile.Id} 未配置代码目标或数据目标。";
-                            return false;
-                        }
-                        if (hasCode && scope != ExportScope.Data && string.IsNullOrWhiteSpace(profile.CodeOutputPath))
-                        {
-                            error = $"Profile {profile.Id} 未配置代码输出目录。";
-                            return false;
-                        }
-                        if (hasData && scope != ExportScope.Code && string.IsNullOrWhiteSpace(profile.DataOutputPath))
-                        {
-                            error = $"Profile {profile.Id} 未配置数据输出目录。";
+                            error = $"导出描述不存在：{string.Join(", ", requestedIds)}。";
                             return false;
                         }
                     }
                     return true;
+                }
+
+                /// <summary>
+                /// 校验单个导出任务在指定范围下具备必要 Target 和输出目录。
+                /// </summary>
+                private static bool ValidateJob(TableExportDescriptionSetting description, ExportScope scope,
+                    out string error)
+                {
+                    error = null;
+                    if (string.IsNullOrWhiteSpace(description.Target))
+                    {
+                        error = $"导出描述 {description.Id} 未配置 Target目标。";
+                        return false;
+                    }
+
+                    bool hasCode = description.CodeTargets != null && description.CodeTargets.Count > 0;
+                    bool hasData = description.DataTargets != null && description.DataTargets.Count > 0;
+                    if (scope == ExportScope.Code && !hasCode)
+                        error = $"导出描述 {description.Id} 未配置代码目标。";
+                    else if (scope == ExportScope.Data && !hasData)
+                        error = $"导出描述 {description.Id} 未配置数据目标。";
+                    else if (!hasCode && !hasData)
+                        error = $"导出描述 {description.Id} 未配置代码目标或数据目标。";
+                    else if (hasCode && scope != ExportScope.Data && string.IsNullOrWhiteSpace(description.CodeOutputPath))
+                        error = $"导出描述 {description.Id} 未配置代码输出目录。";
+                    else if (hasData && scope != ExportScope.Code && string.IsNullOrWhiteSpace(description.DataOutputPath))
+                        error = $"导出描述 {description.Id} 未配置数据输出目录。";
+                    if (!string.IsNullOrEmpty(error)) return false;
+                    return true;
+                }
+
+                /// <summary>
+                /// 保存已解析的 Project 与导出描述组合。
+                /// </summary>
+                private readonly struct ExportJob
+                {
+                    internal ExportJob(TableLubanProjectSetting project, TableExportDescriptionSetting description)
+                    {
+                        Project = project;
+                        Description = description;
+                    }
+
+                    internal TableLubanProjectSetting Project { get; }
+                    internal TableExportDescriptionSetting Description { get; }
                 }
 
                 private enum ExportScope

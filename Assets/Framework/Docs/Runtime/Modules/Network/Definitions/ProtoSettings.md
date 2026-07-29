@@ -5,6 +5,10 @@
 
 Protobuf 编辑器设置，存储 .proto 文件根目录与各文件的 C# 导出路径。仅用于 Editor 工具链，运行时打包后相关字段不存在。
 
+框架公共协议源位于 `Assets/Framework/Protos`，生成的框架 C# 协议统一放在 `Assets/Framework/Scripts/Runtime/Modules/Network/Protos`。
+
+当前应用自定义配置协议为 `pb_net_app_custom_config.proto`，生成文件为 `PbNetAppCustomConfig.cs`，包含 `PbNetAppCustomConfigReq / PbNetAppCustomConfigResp`。
+
 ---
 
 ## §2 文件表

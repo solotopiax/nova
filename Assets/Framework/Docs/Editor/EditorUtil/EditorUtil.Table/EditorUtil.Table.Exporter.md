@@ -1,6 +1,6 @@
 # EditorUtil.Table.Exporter
 
-`EditorUtil.Table.Exporter` 直接消费正式 `luban.conf + schema + data`，在隔离工作区生成一个或多个 Profile，并通过 `OutputApplier` 发布。
+`EditorUtil.Table.Exporter` 直接消费一个或多个正式 `luban.conf + schema + data`，为全部已启用导出描述建立独立工作区，并通过 `OutputApplier` 发布。
 
 ## API
 
@@ -9,36 +9,37 @@ public static bool ExportAll(TableSettings settings);
 public static bool ExportCode(TableSettings settings);
 public static bool ExportData(TableSettings settings);
 
-public static bool ExportAll(TableSettings settings, params string[] profileIds);
-public static bool ExportCode(TableSettings settings, params string[] profileIds);
-public static bool ExportData(TableSettings settings, params string[] profileIds);
+public static bool ExportAll(TableSettings settings, params string[] descriptionIds);
+public static bool ExportCode(TableSettings settings, params string[] descriptionIds);
+public static bool ExportData(TableSettings settings, params string[] descriptionIds);
 ```
 
-无 Profile ID 的入口处理全部 `Enabled` Profile；显式重载可一次指定任意一个或多个 Profile。
-`ExportAll` 会按每个 Profile 实际配置的目标生成代码、数据或两者，因此代码专用和数据专用 Profile 可以同时参与批量导出。
+无 ID 入口处理全部 Project 中已启用的导出描述。精确调用推荐传 `ProjectId/DescriptionId`；仅传描述 ID 时会匹配所有同名描述。
 
 ## Luban 参数
 
-Exporter 原样构建以下参数：
+Exporter 结构化传递：
 
-- 重复的 `-c` 与 `-d`；
-- `--conf` 与 `-t`；
+- 重复的 `-c`、`-d` 和指定表格模式下重复的 `-o`；
+- `--conf`、`-t`；
 - 重复的 `-i`、`-e`、`--variant`、`--customTemplateDir`；
 - 任意数量的 `-x name=value`。
 
-Nova 不维护 Codec 安装表或格式枚举。内置预设覆盖 JSON、Binary、Protobuf Binary、Protobuf JSON 与 MsgPack，自定义 target 使用相同入口。
+五种预设只是创建描述时的默认值。用户可以继续修改 Targets、模板和高级参数，Nova 不维护 Codec 安装白名单，也不限制 Luban 自定义 Target。
+
+自定义模板目录传给 Luban 前会经过 `EditorUtil.Luban.ExportHelper`：Nova 框架模板的逻辑路径会自动解析到当前安装形态的真实物理目录，项目自定义模板路径保持原值。这样同一份 Table 配置可同时用于开发仓和通过 UPM 安装的消费工程。
 
 ## 导出流程
 
-1. 校验 Project、Profile ID、目标列表和对应输出目录。
-2. 每个 Profile 使用独立 `Library/Nova/TableExport/<guid>` 工作区。
-3. Luban 只接收 Profile 声明的目标和原生参数。
-4. 包含 `protobuf3` 代码目标时，追加 `protoc` 与 Nova Protobuf Tables 适配模板。
-5. 代码和数据分别发布到 Profile 指定目录。
-6. 多个 Profile 共用目录时只替换本次同名产物，不清理其他 Profile 文件。
-7. 全部指定 Profile 成功后刷新 AssetDatabase。
+1. 解析全部 Project 与目标导出描述，校验 ID、Target、范围和输出目录。
+2. 每个描述使用独立 `Library/Nova/TableExport/<guid>` 工作区。
+3. Luban 只接收该描述声明的原生参数。
+4. 包含 `protobuf3 + cs-newtonsoft-json` 时生成 proto、调用 `protoc`，并追加 Nova Protobuf Tables Binding；其他代码 Targets 仍继续透传。
+5. 代码和数据分别发布到描述指定目录。
+6. 多个描述共用目录时，只替换本次生成的同名产物，不清理其他文件。
+7. 全部任务成功后刷新 AssetDatabase；Inspector 随后可根据实际数据文件刷新加载描述。
 
-表清单与解码方式由 Luban 生成 Binding 提供，导出链不生成额外运行时目录文件。
+导出链不生成 Catalog。单表清单和 Codec 构造方式由生成 Binding 提供。
 
 ## 关联文档
 

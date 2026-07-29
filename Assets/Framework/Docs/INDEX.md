@@ -26,7 +26,7 @@
 | **实例化 Prefab / 销毁 Prefab 实例** | [PrefabComponent.md](Runtime/Modules/Prefab/PrefabComponent.md) → [IPrefabManager.md · Instantiate/Destroy API](Runtime/Modules/Prefab/PrefabManager/IPrefabManager.md) |
 | **大版本检查 / APP 强更** | [AppComponent.md · CheckAsync+DownloadAsync+OpenStoreAsync](Runtime/Modules/App/AppComponent.md) → [AppManagerConfig.md · 超时+下载路由+规则](Runtime/Modules/App/Definitions/AppManagerConfig.md) |
 | **加载运行时配置（AB 加载 ConfigRuntimeSO）** | [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) → [ConfigManager.md · AB加载+解析+PluginConfig索引](Runtime/Modules/Config/ConfigManager.md) |
-| **加载 Excel/CSV 表格数据（Luban Project）** | [TableManager.md · 多 Binding 加载](Runtime/Modules/Table/TableManager.md) → [TableComponentInspector.md · Project/Profile](Editor/Inspectors/TableComponentInspector/TableComponentInspector.md) → [EditorUtil.Table.Exporter.md · 多 Profile 透传导出](Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) |
+| **加载 Excel/CSV 表格数据（Luban Project）** | [TableManager.md · 多 Binding 加载](Runtime/Modules/Table/TableManager.md) → [TableComponentInspector.md · 多 Project 与导出描述](Editor/Inspectors/TableComponentInspector/TableComponentInspector.md) → [EditorUtil.Table.Exporter.md · 多导出描述透传](Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) |
 | **编辑 Config SO / 导出 ConfigRuntime**（ConfigWindow 流程） | [ConfigWindow.md · 三段式布局+三维导出](Editor/Windows/ConfigWindow.md) → [ConfigMasterSO.md · Editor 设计态数据](Editor/Config/ConfigMasterSO.md) → [SchemaMigration.md · 旧资产迁移](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md) → [ConfigRuntimeSO.md · Runtime 快照](Runtime/Modules/Config/ConfigRuntimeSO.md) → [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) → [EditorUtil.Config.WorkspaceActive.md · 激活 Master 锚点](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) → [EditorUtil.Config.YooAssetInjector.md · YooAsset 注入](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
 | **Config 面板按平台/渠道/模式分别配置**（per-panel 可勾选维度） | [PanelDimensionMask.md · Editor 掩码三轴+IsGlobal](Editor/Config/Definitions/PanelDimensionMask.md) → [EditorUtil.Config.DimensionProjector.md · 三操作+双路径](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) → [EditorUtil.Config.DimensionalResolver.md · 只读取数+回落逻辑](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) |
 | **新增 SDK PluginConfig**（ISDKPluginConfig + 自动注入） | [PluginBase.md · PluginBase<TConfig>泛型基类+自动注入](Runtime/Modules/SDK/Definitions/PluginBase.md) → [ISDKPluginConfig.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) → [EditorUtil.Config.SDKPluginScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) → [PlatformChannelEntry.md · Editor 矩阵行结构](Editor/Config/Definitions/PlatformChannelEntry.md) |
@@ -200,11 +200,11 @@
 
 | 文档 | 说明 |
 |------|------|
-| [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) | Runtime 配置门面（Platform / Channel / DevelopMode / AppConfigs / Namespace / HybridConfigs / CustomConfigs） |
+| [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) | Runtime 配置门面（本地/缓存/远端应用配置字符串与基础类型读取、手动刷新） |
 | [ConfigManager.md](Runtime/Modules/Config/ConfigManager.md) | 加载 ConfigRuntimeSO 并直接转发 Runtime 分组配置 |
 | [ConfigManagerConfig.md](Runtime/Modules/Config/Definitions/ConfigManagerConfig.md) | 配置 Manager 初始化入参（AssetLocation） |
 | [ConfigManagerBase.md](Runtime/Modules/Config/Implements/ConfigManagerBase.md) | 配置 Manager 抽象基类（Priority=10） |
-| [IConfigManager.md](Runtime/Modules/Config/Interfaces/IConfigManager.md) | Runtime 配置接口（AppConfigs / Namespace / HybridConfigs / CustomConfigs） |
+| [IConfigManager.md](Runtime/Modules/Config/Interfaces/IConfigManager.md) | Runtime 分组配置接口；应用配置刷新能力由 Nova.Config 门面与内部 IAppConfigManager 承接 |
 | [ConfigMasterSO.md](Editor/Config/ConfigMasterSO.md) | Editor 设计态主配置；持有三维矩阵、Editor 工具配置与导出目标 |
 | [CDNEditorConfigs.md](Editor/Config/Definitions/CDNEditorConfigs.md) | CDN 部署与清缓存 Editor 配置，不导出 Runtime |
 | [HybridEditorConfigs.md](Editor/Config/Definitions/HybridEditorConfigs.md) | HybridCLR 构建、link.xml 与 DLL 路径 Editor 配置 |
@@ -214,12 +214,12 @@
 | [NamespaceOverride.md](Editor/Config/Definitions/NamespaceOverride.md) | Namespace Editor 维度 Override |
 | [HybridEditorConfigsOverride.md](Editor/Config/Definitions/HybridEditorConfigsOverride.md) | HybridCLR Editor 维度 Override |
 | [YooAssetEditorConfigsOverride.md](Editor/Config/Definitions/YooAssetEditorConfigsOverride.md) | YooAsset Editor 维度 Override |
-| [ConfigRuntimeSO.md](Runtime/Modules/Config/ConfigRuntimeSO.md) | Runtime 快照：Platform / Channel / DevelopMode / AppConfigs / Namespace / HybridConfigs / CustomConfigs |
+| [ConfigRuntimeSO.md](Runtime/Modules/Config/ConfigRuntimeSO.md) | Runtime 快照：Platform / Channel / DevelopMode / AppConfigs / Namespace / HybridConfigs / Custom |
 | [Definitions/IKitConfig.md](Runtime/Modules/Config/Definitions/IKitConfig.md) | Kit 固有配置 marker 接口（DisplayName），全局单份，由 ConfigWindow「Kit 配置」管理 |
 | [Definitions/KitConfigMissingException.md](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) | Kit 配置缺失异常；fail-fast 暴露配置漏填 |
-| [AppConfigs.md](Runtime/Modules/Config/AppConfigs.md) | Runtime 应用配置（AppID / AppAesKey / AppAesIV） |
+| [AppConfigs.md](Runtime/Modules/Config/AppConfigs.md) | Runtime 应用配置（应用标识、AES、启动拉取 NetCmd 与配置项名称） |
 | [HybridConfigs.md](Runtime/Modules/Config/Definitions/HybridConfigs.md) | Runtime HybridCLR 配置（入口名与 DLL Asset 地址） |
-| [CustomConfigs.md](Runtime/Modules/Config/Definitions/CustomConfigs.md) | Runtime 自定义配置空扩展点 |
+| [CustomConfigs.md](Runtime/Modules/Config/Definitions/CustomConfigs.md) | Custom 本地 JSONPath 默认值与云端完整 JSON 查询入口 |
 | [PlatformChannelEntry.md](Editor/Config/Definitions/PlatformChannelEntry.md) | Editor 三维配置矩阵行 |
 | [Definitions/DllAssetEntry.md](Runtime/Modules/Config/Definitions/DllAssetEntry.md) | DLL 运行期寻址条目（AssetLocation 单字段），供 ConfigRuntimeSO.HybridConfigs.AotMetadataDlls / GameDlls 持有 |
 | [DllMasterAssetEntry.md](Editor/Config/Definitions/DllMasterAssetEntry.md) | Editor DLL 构建三字段条目 |
@@ -231,7 +231,7 @@
 | [TableComponent.md](Runtime/Modules/Table/TableComponent.md) | 表格 Component（GetTable/HasTable 统一查询入口） |
 | [TableManager.md](Runtime/Modules/Table/TableManager.md) | 表格 Manager（多 Binding → 原始单表加载 → 生成 Tables → ResolveRef） |
 | [TableManagerConfig.md](Runtime/Modules/Table/Definitions/TableManagerConfig.md) | 表格 Manager 配置类 |
-| [TableSettings.md](Runtime/Modules/Table/Definitions/TableSettings.md) | 正式 Luban Project、多 Profile 导出预设与 Runtime Bindings |
+| [TableSettings.md](Runtime/Modules/Table/Definitions/TableSettings.md) | 多个 Luban Project、导出描述与运行时加载描述 |
 | [TableManagerBase.md](Runtime/Modules/Table/Implements/TableManagerBase.md) | 表格 Manager 抽象基类（Priority=14） |
 | [ITableManager.md](Runtime/Modules/Table/Interfaces/ITableManager.md) | 表格 Manager 接口（GetTable / HasTable / LoadSync / LoadAsync） |
 

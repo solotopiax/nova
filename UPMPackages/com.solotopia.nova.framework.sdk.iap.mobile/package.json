@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.iap.mobile",
-  "version": "0.0.14",
+  "version": "0.1.0",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - SDK - IAP - Mobile",
@@ -18,8 +18,8 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.5.38",
-    "com.solotopia.nova.framework.sdk.iap": "0.0.16",
+    "com.solotopia.nova.framework": "0.6.0",
+    "com.solotopia.nova.framework.sdk.iap": "0.1.0",
     "com.solotopia.unitask": "10.0.6",
     "com.unity.purchasing": "5.3.1"
   }

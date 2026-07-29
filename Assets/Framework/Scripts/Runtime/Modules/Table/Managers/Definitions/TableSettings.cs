@@ -5,7 +5,7 @@
  * filename:  TableSettings.cs
  * author:    taoye
  * created:   2026/2/5
- * descrip:   Table Luban Project 与运行时 Binding 设置
+ * descrip:   Table Luban Project、导出描述与运行时加载描述
  ***************************************************************/
 
 using System;
@@ -14,132 +14,170 @@ using System.Collections.Generic;
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// Table 设置；Editor 保存 Luban 导出预设，Player 保存生成代码提供的运行时 Binding。
+    /// Table 设置；Editor 保存多个 Luban Project，Player 只消费加载描述。
     /// </summary>
     [Serializable]
     public sealed class TableSettings
     {
 #if UNITY_EDITOR
-        public TableProjectSettings Project = TableProjectSettings.CreateDefault();
+        public List<TableLubanProjectSetting> Projects = new List<TableLubanProjectSetting>();
 #endif
         public TableRuntimeSettings Runtime = new TableRuntimeSettings();
     }
 
     /// <summary>
-    /// Player 运行时 Table 配置，可同时加载任意数量的 Luban 生成 Binding。
+    /// Player 运行时设置，可同时加载多个 Luban Tables 数据集。
     /// </summary>
     [Serializable]
     public sealed class TableRuntimeSettings
     {
-        public List<TableRuntimeBindingSetting> Bindings = new List<TableRuntimeBindingSetting>();
+        public List<TableLoadDescriptionSetting> LoadDescriptions = new List<TableLoadDescriptionSetting>();
     }
 
     /// <summary>
-    /// 一组 Luban 生成 Tables 的运行时 Binding 与数据资源前缀。
+    /// 一套 Luban 生成结果的运行时加载描述。
     /// </summary>
     [Serializable]
-    public sealed class TableRuntimeBindingSetting
+    public sealed class TableLoadDescriptionSetting
     {
-        public string BindingTypeName = string.Empty;
-        public string DataAssetLocationPrefix = string.Empty;
+        public string Id = string.Empty;
+        public string Name = string.Empty;
+        public string ProjectId = string.Empty;
+        public string ExportDescriptionId = string.Empty;
+        public string RuntimeDataTarget = string.Empty;
+        public string ResolvedBindingTypeName = string.Empty;
+        public List<TableAssetAddressSetting> Assets = new List<TableAssetAddressSetting>();
+    }
+
+    /// <summary>
+    /// 把 Luban 逻辑数据文件映射到 YooAsset 可寻址地址。
+    /// </summary>
+    [Serializable]
+    public sealed class TableAssetAddressSetting
+    {
+        public string DataFile = string.Empty;
+        public string AssetPath = string.Empty;
+        public string AssetAddress = string.Empty;
     }
 
 #if UNITY_EDITOR
     /// <summary>
-    /// 官方 Luban Project 入口及可组合使用的客户端导出 Profile。
+    /// Nova 管理的一套正式 Luban 工程入口及其导出描述。
     /// </summary>
     [Serializable]
-    public sealed class TableProjectSettings
+    public sealed class TableLubanProjectSetting
     {
-        public string ConfigPath = "Assets/Samples/MainDemo/Excels/Tables/luban.conf";
-        public string Target = "table";
-        public List<TableExportProfileSetting> Profiles = new List<TableExportProfileSetting>();
+        public string Id = string.Empty;
+        public string Name = string.Empty;
+        public string ConfigPath = string.Empty;
+        public List<TableExportDescriptionSetting> ExportDescriptions = new List<TableExportDescriptionSetting>();
 
         /// <summary>
-        /// 创建包含全部客户端格式且默认选择 JSON 导出的项目设置。
+        /// 创建 MainDemo 使用的默认 Project。
         /// </summary>
-        /// <returns>可直接在 Inspector 中编辑的默认设置。</returns>
-        public static TableProjectSettings CreateDefault()
+        /// <returns>包含五种客户端格式预设的 Project。</returns>
+        public static TableLubanProjectSetting CreateDefault()
         {
-            return new TableProjectSettings
+            return new TableLubanProjectSetting
             {
-                Profiles = TableExportProfileSetting.CreateBuiltIn(),
+                Id = "main",
+                Name = "Main",
+                ConfigPath = "Assets/Samples/MainDemo/Excels/Tables/luban.conf",
+                ExportDescriptions = TableExportDescriptionSetting.CreateBuiltIn(),
             };
         }
     }
 
     /// <summary>
-    /// 可序列化的 Table 导出 Profile，所有 target 与筛选参数均按 Luban 原生语义透传。
+    /// 导出描述创建时使用的五种客户端友好预设。
+    /// </summary>
+    public enum TableExportFormat
+    {
+        Json,
+        Binary,
+        ProtobufBinary,
+        ProtobufJson,
+        MsgPack,
+    }
+
+    /// <summary>
+    /// 一次 Luban 调用的表格输出范围。
+    /// </summary>
+    public enum TableOutputScope
+    {
+        AllTables,
+        SelectedTables,
+    }
+
+    /// <summary>
+    /// Nova 对一次 Luban CLI 调用的持久化描述。
     /// </summary>
     [Serializable]
-    public sealed class TableExportProfileSetting
+    public sealed class TableExportDescriptionSetting
     {
         public string Id = string.Empty;
+        public string Name = string.Empty;
         public bool Enabled;
+        public string Target = "table";
+        public TableExportFormat Format;
         public List<string> CodeTargets = new List<string>();
         public List<string> DataTargets = new List<string>();
+        public TableOutputScope OutputScope;
+        public List<string> OutputTables = new List<string>();
         public string CodeOutputPath = string.Empty;
         public string DataOutputPath = string.Empty;
         public List<string> IncludeTags = new List<string>();
         public List<string> ExcludeTags = new List<string>();
-        public List<string> Variants = new List<string>();
-        public List<TableLubanExtraArgument> ExtraArguments = new List<TableLubanExtraArgument>();
+        public List<string> FieldVariants = new List<string>();
         public List<string> CustomTemplateDirs = new List<string>();
+        public List<TableLubanExtraArgument> AdvancedArguments = new List<TableLubanExtraArgument>();
 
         /// <summary>
-        /// 创建 JSON、Binary、Protobuf Binary/JSON 与 MsgPack 五个内置客户端 Profile。
+        /// 创建 JSON、Binary、Protobuf Binary/JSON 与 MsgPack 五种客户端预设。
         /// </summary>
-        /// <returns>完整且无需额外安装 Codec 的 Profile 列表。</returns>
-        public static List<TableExportProfileSetting> CreateBuiltIn()
+        /// <returns>默认启用 JSON 的完整描述列表。</returns>
+        public static List<TableExportDescriptionSetting> CreateBuiltIn()
         {
             return CreateBuiltIn("Assets/Samples/MainDemo");
         }
 
         /// <summary>
-        /// 为指定 Demo 根目录创建五种完整客户端 Profile；默认只选择 JSON，其他预设可任意组合启用。
+        /// 为指定 Demo 根目录创建五种客户端预设。
         /// </summary>
         /// <param name="demoRoot">Demo 的 Assets 相对根目录。</param>
-        /// <returns>绑定到该 Demo 代码与数据目录的内置 Profile。</returns>
-        public static List<TableExportProfileSetting> CreateBuiltIn(string demoRoot)
+        /// <returns>绑定到该目录的描述列表。</returns>
+        public static List<TableExportDescriptionSetting> CreateBuiltIn(string demoRoot)
         {
-            string normalizedRoot = (demoRoot ?? string.Empty).TrimEnd('/', '\\');
-            string codePath = normalizedRoot + "/Scripts/Runtime/DataTypes/Tables";
-            string dataPath = normalizedRoot + "/Jsons/Tables";
-            return new List<TableExportProfileSetting>
+            string root = (demoRoot ?? string.Empty).TrimEnd('/', '\\');
+            string codePath = root + "/Scripts/Runtime/DataTypes/Tables";
+            string dataPath = root + "/Jsons/Tables";
+            return new List<TableExportDescriptionSetting>
             {
-                Create("json", true, codePath, dataPath, "cs-newtonsoft-json", "json"),
-                Create("binary", false, codePath, dataPath, "cs-bin", "bin"),
-                Create("protobuf-binary", false, codePath, dataPath,
-                    "protobuf3,cs-newtonsoft-json", "protobuf3-bin"),
-                Create("protobuf-json", false, codePath, dataPath,
-                    "protobuf3,cs-newtonsoft-json", "protobuf3-json"),
-                Create("msgpack", false, codePath, dataPath,
+                Create("json", "JSON", true, TableExportFormat.Json, codePath, dataPath,
+                    "cs-newtonsoft-json", "json"),
+                Create("binary", "Binary", false, TableExportFormat.Binary, codePath, dataPath,
+                    "cs-bin", "bin"),
+                Create("protobuf-binary", "Protobuf Binary", false, TableExportFormat.ProtobufBinary,
+                    codePath, dataPath, "protobuf3,cs-newtonsoft-json", "protobuf3-bin"),
+                Create("protobuf-json", "Protobuf JSON", false, TableExportFormat.ProtobufJson,
+                    codePath, dataPath, "protobuf3,cs-newtonsoft-json", "protobuf3-json"),
+                Create("msgpack", "MsgPack", false, TableExportFormat.MsgPack, codePath, dataPath,
                     "cs-newtonsoft-json", "msgpack"),
             };
         }
 
         /// <summary>
-        /// 创建单个内置 Profile，并把逗号分隔代码目标展开为可重复的 -c 参数。
+        /// 创建单个导出描述并展开逗号分隔的代码 Target。
         /// </summary>
-        /// <param name="id">Profile 唯一标识。</param>
-        /// <param name="enabled">是否纳入无参数批量导出。</param>
-        /// <param name="codePath">代码发布目录。</param>
-        /// <param name="dataPath">数据发布目录。</param>
-        /// <param name="codeTargets">逗号分隔的代码生成目标。</param>
-        /// <param name="dataTarget">数据生成目标。</param>
-        /// <returns>初始化完成的 Profile。</returns>
-        private static TableExportProfileSetting Create(
-            string id,
-            bool enabled,
-            string codePath,
-            string dataPath,
-            string codeTargets,
-            string dataTarget)
+        private static TableExportDescriptionSetting Create(string id, string name, bool enabled,
+            TableExportFormat format, string codePath, string dataPath, string codeTargets, string dataTarget)
         {
-            return new TableExportProfileSetting
+            return new TableExportDescriptionSetting
             {
                 Id = id,
+                Name = name,
                 Enabled = enabled,
+                Format = format,
                 CodeTargets = new List<string>(codeTargets.Split(',')),
                 DataTargets = new List<string> { dataTarget },
                 CodeOutputPath = codePath,

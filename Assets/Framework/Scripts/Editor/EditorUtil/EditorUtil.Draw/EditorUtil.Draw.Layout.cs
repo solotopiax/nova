@@ -27,6 +27,81 @@ namespace NovaFramework.Editor
             public static class Layout
             {
                 /// <summary>
+                /// Unity Inspector 中一级树形缩进的标准宽度，视觉上约等于一个汉字。
+                /// </summary>
+                internal const float c_IndentPixelsPerLevel = 11f;
+
+                /// <summary>
+                /// 固定零边距的缩进布局样式，阻止展开内容的 Box margin 反向传播到父级布局。
+                /// </summary>
+                private static GUIStyle s_IndentedGroupStyle;
+
+                /// <summary>
+                /// 保留 Box 背景但移除左侧外边距与内边距的样式，用于树形条目箭头对齐。
+                /// </summary>
+                private static GUIStyle s_TreeItemBoxStyle;
+
+                /// <summary>
+                /// 获取固定零边距的缩进布局样式。
+                /// </summary>
+                private static GUIStyle IndentedGroupStyle
+                {
+                    get
+                    {
+                        if (s_IndentedGroupStyle == null)
+                        {
+                            s_IndentedGroupStyle = new GUIStyle(GUIStyle.none)
+                            {
+                                margin = new RectOffset(),
+                            };
+                        }
+                        return s_IndentedGroupStyle;
+                    }
+                }
+
+                /// <summary>
+                /// 获取不会额外推移树形标题箭头的 Box 样式。
+                /// </summary>
+                private static GUIStyle TreeItemBoxStyle
+                {
+                    get
+                    {
+                        if (s_TreeItemBoxStyle == null)
+                        {
+                            GUIStyle source = GUI.skin.box;
+                            s_TreeItemBoxStyle = new GUIStyle(source)
+                            {
+                                margin = new RectOffset(
+                                    0, source.margin.right, source.margin.top, source.margin.bottom),
+                                padding = new RectOffset(
+                                    0, source.padding.right, source.padding.top, source.padding.bottom),
+                            };
+                        }
+                        return s_TreeItemBoxStyle;
+                    }
+                }
+
+                /// <summary>
+                /// 以当前 Editor 字体的一个汉字宽度为一级，整体缩进内部所有字段、按钮和子布局。
+                /// </summary>
+                /// <param name="drawAction">绘制回调。</param>
+                /// <param name="levels">缩进级数。</param>
+                public static void Indented(Action drawAction, int levels = 1)
+                {
+                    if (drawAction == null)
+                    {
+                        return;
+                    }
+
+                    float indentWidth = c_IndentPixelsPerLevel * Math.Max(0, levels);
+                    Horizontal(() =>
+                    {
+                        GUILayout.Space(indentWidth);
+                        Vertical(IndentedGroupStyle, drawAction, GUILayout.ExpandWidth(true));
+                    }, GUILayout.ExpandWidth(true));
+                }
+
+                /// <summary>
                 /// 绘制水平布局。
                 /// </summary>
                 /// <param name="drawAction">绘制回调。</param>
@@ -166,6 +241,16 @@ namespace NovaFramework.Editor
                     {
                         EditorGUILayout.EndVertical();
                     }
+                }
+
+                /// <summary>
+                /// 绘制树形条目 Box；保留背景样式，但不额外推移左侧箭头。
+                /// </summary>
+                /// <param name="drawAction">绘制回调。</param>
+                /// <param name="options">布局选项。</param>
+                public static void TreeItemBox(Action drawAction, params GUILayoutOption[] options)
+                {
+                    Vertical(TreeItemBoxStyle, drawAction, options);
                 }
 
                 /// <summary>

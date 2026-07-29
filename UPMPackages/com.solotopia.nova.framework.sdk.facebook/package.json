@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.facebook",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "18.0.0",
   "displayName": "Nova Framework - SDK - Facebook",
@@ -23,9 +23,9 @@
     "NovaFramework.SDK.Facebook.Runtime"
   ],
   "dependencies": {
-    "com.solotopia.nova.framework": "0.5.42",
+    "com.solotopia.nova.framework": "0.6.0",
     "com.google.external-dependency-manager": "1.2.186",
-    "com.solotopia.nova.framework.kit.network.gamelogin": "0.0.11",
-    "com.solotopia.nova.framework.kit.network.gamebind": "0.0.4"
+    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0",
+    "com.solotopia.nova.framework.kit.network.gamebind": "0.0.6"
   }
 }

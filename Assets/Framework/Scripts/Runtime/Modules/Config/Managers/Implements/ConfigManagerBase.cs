@@ -18,7 +18,7 @@ namespace NovaFramework.Runtime
     /// 配置管理器基类；继承 FrameworkManager 并声明 IConfigManager 的所有 abstract 成员。
     /// 派生类 ConfigManager 提供 AB 异步加载并以 ConfigRuntimeSO 为数据源直读的具体实现。
     /// </summary>
-    internal abstract class ConfigManagerBase : FrameworkManager, IConfigManager
+    internal abstract class ConfigManagerBase : FrameworkManager, IConfigManager, IAppConfigManager
     {
         /// <summary>
         /// 管理器优先级；Config 需早于使用方，取 10（低于默认 0 以外的其他业务模块）。
@@ -72,7 +72,53 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 业务自定义运行时配置；LoadAsync 完成后可读，未加载时返回 null。
         /// </summary>
-        public abstract CustomConfigs CustomConfigs { get; }
+        public abstract CustomConfig Custom { get; }
+
+        /// <summary>
+        /// 按 JSONPath 读取当前 Custom 配置字符串。
+        /// </summary>
+        /// <param name="key">配置路径。</param>
+        /// <param name="defaultValue">云端与本地均未命中时的调用方默认值。</param>
+        /// <returns>当前生效字符串或 defaultValue。</returns>
+        public abstract string GetString(string key, string defaultValue = null);
+
+        /// <summary>
+        /// 按 JSONPath 读取 int；远端值非法时回退本地默认字符串。
+        /// </summary>
+        /// <param name="key">配置路径。</param>
+        /// <param name="defaultValue">本地默认字符串也无法转换时的调用方默认值。</param>
+        /// <returns>转换后的 int 或 defaultValue。</returns>
+        public abstract int GetInt(string key, int defaultValue = default);
+
+        /// <summary>
+        /// 按 JSONPath 读取 float；远端值非法时回退本地默认字符串。
+        /// </summary>
+        /// <param name="key">配置路径。</param>
+        /// <param name="defaultValue">本地默认字符串也无法转换时的调用方默认值。</param>
+        /// <returns>转换后的 float 或 defaultValue。</returns>
+        public abstract float GetFloat(string key, float defaultValue = default);
+
+        /// <summary>
+        /// 按 JSONPath 读取 bool；支持 true/false 与 1/0，远端值非法时回退本地默认字符串。
+        /// </summary>
+        /// <param name="key">配置路径。</param>
+        /// <param name="defaultValue">本地默认字符串也无法转换时的调用方默认值。</param>
+        /// <returns>转换后的 bool 或 defaultValue。</returns>
+        public abstract bool GetBool(string key, bool defaultValue = default);
+
+        /// <summary>
+        /// 尝试按 JSONPath 读取当前 Custom 配置字符串。
+        /// </summary>
+        /// <param name="key">配置路径。</param>
+        /// <param name="value">命中时的当前生效字符串。</param>
+        /// <returns>云端或本地路径存在且不是显式 null 时返回 true。</returns>
+        public abstract bool TryGetString(string key, out string value);
+
+        /// <summary>
+        /// 显式从 GM 后台拉取并应用一轮应用配置。
+        /// </summary>
+        /// <returns>成功应用远端快照返回 true。</returns>
+        public abstract UniTask<bool> RefreshAppConfigAsync();
 
         /// <summary>
         /// 本次加载记录的目标平台。

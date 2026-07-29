@@ -77,7 +77,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 业务自定义运行时配置；LoadAsync 完成后可读。
         /// </summary>
-        public CustomConfigs CustomConfigs => m_ConfigManager?.CustomConfigs;
+        public CustomConfig Custom => m_ConfigManager?.Custom;
 
         /// <summary>
         /// 当前已加载的所有启用 SDK Plugin 配置只读集合；供 Inspector 面板运行时展示。

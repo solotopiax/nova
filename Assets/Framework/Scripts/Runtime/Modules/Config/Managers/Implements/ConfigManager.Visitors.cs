@@ -47,9 +47,34 @@ namespace NovaFramework.Runtime
         public override HybridConfigs HybridConfigs => m_Runtime?.HybridConfigs;
 
         /// <summary>
-        /// 业务自定义运行时配置；直接读 ConfigRuntimeSO.CustomConfigs。
+        /// 业务自定义运行时配置；返回绑定当前远端与本地分层快照的只读查询入口。
         /// </summary>
-        public override CustomConfigs CustomConfigs => m_Runtime?.CustomConfigs;
+        public override CustomConfig Custom => m_Custom;
+
+        /// <summary>
+        /// 应用配置快照；LoadAsync 后建立，负责完整远端 JSON 与本地路径默认值的分层查询。
+        /// </summary>
+        private AppConfigSnapshot m_AppConfigSnapshot;
+
+        /// <summary>
+        /// 对外暴露的 Custom 路径查询入口；内部快照切换后继续读取最新值。
+        /// </summary>
+        private CustomConfig m_Custom;
+
+        /// <summary>
+        /// ConfigManager 生命周期取消源；用于结束后台 Network-ready 等待。
+        /// </summary>
+        private System.Threading.CancellationTokenSource m_LifecycleCts;
+
+        /// <summary>
+        /// 当前显式/自动刷新共享完成源；非空时并发调用合并为同一轮请求。
+        /// </summary>
+        private Cysharp.Threading.Tasks.UniTaskCompletionSource<bool> m_AppConfigRefreshTcs;
+
+        /// <summary>
+        /// 启动自动刷新是否已经发起；单进程生命周期内只允许一次。
+        /// </summary>
+        private bool m_HasStartedAppConfigRefresh;
 
         /// <summary>
         /// 是否已完成加载。

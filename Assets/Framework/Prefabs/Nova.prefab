@@ -179,91 +179,134 @@ MonoBehaviour:
   m_DevelopMode: 0
   m_CurManagerTypeName: NovaFramework.Runtime.TableManager
   m_Setting:
-    Project:
+    Projects:
+    - Id: main
+      Name: "\u6F14\u793AExcel"
       ConfigPath: Assets/Samples/MainDemo/Excels/Tables/luban.conf
-      Target: table
-      Profiles:
+      ExportDescriptions:
       - Id: json
+        Name: JSON
         Enabled: 1
+        Target: table
+        Format: 0
         CodeTargets:
         - cs-newtonsoft-json
         DataTargets:
         - json
+        OutputScope: 0
+        OutputTables: []
         CodeOutputPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
         DataOutputPath: Assets/Samples/MainDemo/Jsons/Tables
         IncludeTags: []
         ExcludeTags: []
-        Variants: []
-        ExtraArguments: []
+        FieldVariants: []
         CustomTemplateDirs:
         - Assets/Framework/Templates/Luban/default
         - Assets/Framework/Templates/Luban/table
+        AdvancedArguments: []
       - Id: binary
+        Name: Binary
         Enabled: 0
+        Target: table
+        Format: 1
         CodeTargets:
         - cs-bin
         DataTargets:
         - bin
+        OutputScope: 0
+        OutputTables: []
         CodeOutputPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
         DataOutputPath: Assets/Samples/MainDemo/Jsons/Tables
         IncludeTags: []
         ExcludeTags: []
-        Variants: []
-        ExtraArguments: []
+        FieldVariants: []
         CustomTemplateDirs:
         - Assets/Framework/Templates/Luban/default
         - Assets/Framework/Templates/Luban/table
+        AdvancedArguments: []
       - Id: protobuf-binary
+        Name: Protobuf Binary
         Enabled: 0
+        Target: table
+        Format: 2
         CodeTargets:
         - protobuf3
         - cs-newtonsoft-json
         DataTargets:
         - protobuf3-bin
+        OutputScope: 0
+        OutputTables: []
         CodeOutputPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
         DataOutputPath: Assets/Samples/MainDemo/Jsons/Tables
         IncludeTags: []
         ExcludeTags: []
-        Variants: []
-        ExtraArguments: []
+        FieldVariants: []
         CustomTemplateDirs:
         - Assets/Framework/Templates/Luban/default
         - Assets/Framework/Templates/Luban/table
+        AdvancedArguments: []
       - Id: protobuf-json
+        Name: Protobuf JSON
         Enabled: 0
+        Target: table
+        Format: 3
         CodeTargets:
         - protobuf3
         - cs-newtonsoft-json
         DataTargets:
         - protobuf3-json
+        OutputScope: 0
+        OutputTables: []
         CodeOutputPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
         DataOutputPath: Assets/Samples/MainDemo/Jsons/Tables
         IncludeTags: []
         ExcludeTags: []
-        Variants: []
-        ExtraArguments: []
+        FieldVariants: []
         CustomTemplateDirs:
         - Assets/Framework/Templates/Luban/default
         - Assets/Framework/Templates/Luban/table
+        AdvancedArguments: []
       - Id: msgpack
+        Name: MsgPack
         Enabled: 0
+        Target: table
+        Format: 4
         CodeTargets:
         - cs-newtonsoft-json
         DataTargets:
         - msgpack
+        OutputScope: 0
+        OutputTables: []
         CodeOutputPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Tables
         DataOutputPath: Assets/Samples/MainDemo/Jsons/Tables
         IncludeTags: []
         ExcludeTags: []
-        Variants: []
-        ExtraArguments: []
+        FieldVariants: []
         CustomTemplateDirs:
         - Assets/Framework/Templates/Luban/default
         - Assets/Framework/Templates/Luban/table
+        AdvancedArguments: []
     Runtime:
-      Bindings:
-      - BindingTypeName: NovaFramework.Samples.Runtime.TableTablesBinding
-        DataAssetLocationPrefix: /
+      LoadDescriptions:
+      - Id: main-json
+        Name: "\u6F14\u793A\u52A0\u8F7D"
+        ProjectId: main
+        ExportDescriptionId: json
+        RuntimeDataTarget: json
+        ResolvedBindingTypeName: NovaFramework.Samples.Runtime.TableTablesBinding
+        Assets:
+        - DataFile: tbdemo_item
+          AssetPath: Assets/Samples/MainDemo/Jsons/Tables/tbdemo_item.json
+          AssetAddress: tbdemo_item
+        - DataFile: tblista
+          AssetPath: Assets/Samples/MainDemo/Jsons/Tables/tblista.json
+          AssetAddress: tblista
+        - DataFile: tblistb
+          AssetPath: Assets/Samples/MainDemo/Jsons/Tables/tblistb.json
+          AssetAddress: tblistb
+        - DataFile: tbmap1
+          AssetPath: Assets/Samples/MainDemo/Jsons/Tables/tbmap1.json
+          AssetAddress: tbmap1
 --- !u!1 &1990458234707485856
 GameObject:
   m_ObjectHideFlags: 0
@@ -691,6 +734,8 @@ MonoBehaviour:
       CSharpExportPath: Assets
     - SourcePath: ../../../Framework/Protos/pb_net_save.proto
       CSharpExportPath: Assets
+    - SourcePath: ../../../Framework/Protos/pb_net_app_custom_config.proto
+      CSharpExportPath: Assets/Framework/Scripts/Runtime/Modules/Network/Protos
 --- !u!1 &4040515769347014561
 GameObject:
   m_ObjectHideFlags: 0
@@ -1132,7 +1177,7 @@ MonoBehaviour:
   m_AppDownloadCheckUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/AppDownloadRules.json
   m_AppDownloadCheckUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/AppDownloadRules.json
   m_AppDownloadCheckUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/AppDownloadRules.json
-  m_Channel: 0
+  m_Channel: 2
   m_DefaultPackageName: Default
   m_TimeoutSeconds: 5
   m_DownloadRoute: 0

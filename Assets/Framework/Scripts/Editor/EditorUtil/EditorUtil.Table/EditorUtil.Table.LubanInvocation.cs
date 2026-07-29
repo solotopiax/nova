@@ -108,6 +108,7 @@ namespace NovaFramework.Editor
                 private readonly List<string> m_Tags = new List<string>();
                 private readonly List<string> m_ExcludeTags = new List<string>();
                 private readonly List<string> m_Variants = new List<string>();
+                private readonly List<string> m_OutputTables = new List<string>();
                 private readonly List<string> m_CustomTemplateDirectories = new List<string>();
                 private readonly List<KeyValuePair<string, string>> m_ExtraArguments = new List<KeyValuePair<string, string>>();
                 private string m_ConfigFile = string.Empty;
@@ -136,11 +137,11 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 追加 Profile 中声明的所有代码和数据目标。
+                /// 追加导出描述中的代码、数据目标及指定表格。
                 /// </summary>
-                /// <param name="profile">待展开的导出 Profile。</param>
+                /// <param name="profile">待展开的导出描述。</param>
                 /// <returns>当前构建器。</returns>
-                public LubanInvocationBuilder WithProfile(TableExportProfileSetting profile)
+                public LubanInvocationBuilder WithDescription(TableExportDescriptionSetting profile)
                 {
                     if (profile == null)
                     {
@@ -149,6 +150,21 @@ namespace NovaFramework.Editor
 
                     m_CodeTargets.AddRange(profile.CodeTargets ?? new List<string>());
                     m_DataTargets.AddRange(profile.DataTargets ?? new List<string>());
+                    if (profile.OutputScope == TableOutputScope.SelectedTables)
+                    {
+                        m_OutputTables.AddRange(profile.OutputTables ?? new List<string>());
+                    }
+                    return this;
+                }
+
+                /// <summary>
+                /// 追加一张需要输出的 Luban 表完整名。
+                /// </summary>
+                /// <param name="tableName">Luban 表完整名。</param>
+                /// <returns>当前构建器。</returns>
+                public LubanInvocationBuilder WithOutputTable(string tableName)
+                {
+                    m_OutputTables.Add(tableName);
                     return this;
                 }
 
@@ -252,6 +268,7 @@ namespace NovaFramework.Editor
                     AppendRepeated(arguments, "-i", m_Tags);
                     AppendRepeated(arguments, "-e", m_ExcludeTags);
                     AppendRepeated(arguments, "--variant", m_Variants);
+                    AppendRepeated(arguments, "-o", m_OutputTables);
                     AppendRepeated(arguments, "--customTemplateDir", m_CustomTemplateDirectories);
                     foreach (KeyValuePair<string, string> pair in m_ExtraArguments)
                     {

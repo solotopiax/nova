@@ -24,7 +24,7 @@ namespace NovaFramework.Editor
     internal static partial class PipifySteps
     {
         /// <summary>
-        /// Step：仅导出全部 Enabled Profile 的原始单表数据。
+        /// Step：仅导出全部已启用导出描述的原始单表数据。
         /// 通过 Helpers.ResolveComponentOnNova 定位 TableComponent，
         /// 反射取 m_Setting 并调用 EditorUtil.Table.Exporter.ExportData。
         /// </summary>
@@ -38,13 +38,13 @@ namespace NovaFramework.Editor
             bool result = EditorUtil.Table.Exporter.ExportData(settings);
             if (!result)
             {
-                throw new InvalidOperationException("[Pipify] Table 数据导出失败，请检查 luban.conf 与 Enabled Profiles。");
+                throw new InvalidOperationException("[Pipify] Table 数据导出失败，请检查 Luban 配置文件与已启用的导出描述。");
             }
             return UniTask.CompletedTask;
         }
 
         /// <summary>
-        /// Step：仅导出全部 Enabled Profile 的表格类型（C# 代码）。
+        /// Step：仅导出全部已启用导出描述的表格类型（C# 代码）。
         /// 通过 Helpers.ResolveComponentOnNova 定位 TableComponent，
         /// 反射取 m_Setting 并调用 EditorUtil.Table.Exporter.ExportCode。
         /// </summary>
@@ -58,7 +58,7 @@ namespace NovaFramework.Editor
             bool result = EditorUtil.Table.Exporter.ExportCode(settings);
             if (!result)
             {
-                throw new InvalidOperationException("[Pipify] Table 类型导出失败，请检查 luban.conf 与 Enabled Profiles。");
+                throw new InvalidOperationException("[Pipify] Table 类型导出失败，请检查 Luban 配置文件与已启用的导出描述。");
             }
             return UniTask.CompletedTask;
         }
@@ -81,9 +81,10 @@ namespace NovaFramework.Editor
             {
                 throw new InvalidOperationException("[Pipify] TableComponent.m_Setting 未配置，请在 Nova Prefab 的 TableComponent 上完成 Settings 配置。");
             }
-            if (settings.Project == null || string.IsNullOrEmpty(settings.Project.ConfigPath))
+            if (settings.Projects == null ||
+                settings.Projects.Find(project => project != null && !string.IsNullOrWhiteSpace(project.ConfigPath)) == null)
             {
-                throw new InvalidOperationException("[Pipify] Table Luban Project 的 luban.conf 未配置。");
+                throw new InvalidOperationException("[Pipify] 至少需要配置一个有效的 Luban Project。");
             }
             return settings;
         }

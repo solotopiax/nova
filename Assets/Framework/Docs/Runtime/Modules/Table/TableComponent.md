@@ -3,7 +3,7 @@
 `TableComponent` 是 Nova 表格系统的场景入口。它的职责很薄：
 
 - 创建并持有 `ITableManager`
-- 在 `Start()` 把 Runtime Bindings 下发给管理器
+- 在 `Start()` 把 加载描述 下发给管理器
 - 对业务层暴露统一的加载与查询门面
 
 它本身不做表构造细节、资源加载细节、Luban 反射细节，这些都在 `TableManager` 和 `Core/Table` 层。
@@ -56,7 +56,7 @@
 
 `Start()` 只做：
 
-- `m_TableManager.Initialize(new TableManagerConfig { Bindings = m_Setting.Runtime.Bindings })`
+- `m_TableManager.Initialize(new TableManagerConfig { LoadDescriptions = m_Setting.Runtime.LoadDescriptions })`
 
 这里有一个很重要的边界：
 
@@ -123,7 +123,7 @@
 
 ## 关键状态
 
-- `m_Setting`：Editor Luban Project 与 Player Runtime Bindings 的配置入口。
+- `m_Setting`：Editor Luban Project 与 Player 加载描述 的配置入口。
 - `m_TableManager`：真正执行表加载与表查询的核心实现。
 - `m_LoadTcs`：只服务于异步加载去重。
 - `IsLoadOver`：表示“整套表系统是否加载成功”，不是单表状态。

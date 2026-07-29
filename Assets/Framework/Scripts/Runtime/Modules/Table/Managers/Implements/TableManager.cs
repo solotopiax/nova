@@ -20,21 +20,21 @@ namespace NovaFramework.Runtime
     internal sealed partial class TableManager : TableManagerBase
     {
         /// <summary>
-        /// 初始化 Table 管理器并复制运行时 Binding 配置。
+        /// 初始化 Table 管理器并复制运行时加载描述。
         /// </summary>
         /// <param name="config">运行时 Binding 配置。</param>
         public override void Initialize(TableManagerConfig config)
         {
             m_AssetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
-            m_Bindings.Clear();
-            if (config?.Bindings != null)
+            m_LoadDescriptions.Clear();
+            if (config?.LoadDescriptions != null)
             {
-                for (int i = 0; i < config.Bindings.Count; i++)
+                for (int i = 0; i < config.LoadDescriptions.Count; i++)
                 {
-                    TableRuntimeBindingSetting setting = config.Bindings[i];
+                    TableLoadDescriptionSetting setting = config.LoadDescriptions[i];
                     if (setting != null)
                     {
-                        m_Bindings.Add(setting);
+                        m_LoadDescriptions.Add(setting);
                     }
                 }
             }
@@ -54,7 +54,7 @@ namespace NovaFramework.Runtime
         public override void Shutdown()
         {
             m_Tables.Clear();
-            m_Bindings.Clear();
+            m_LoadDescriptions.Clear();
             m_AssetManager = null;
         }
 
@@ -64,7 +64,7 @@ namespace NovaFramework.Runtime
         /// <returns>是否加载或保留了至少一张表。</returns>
         public override async UniTask<bool> LoadTablesAsync()
         {
-            if (m_Bindings.Count == 0)
+            if (m_LoadDescriptions.Count == 0)
             {
                 return m_Tables.Count > 0;
             }
@@ -73,10 +73,10 @@ namespace NovaFramework.Runtime
                 return false;
             }
 
-            var loadedBindings = new List<LoadedBinding>(m_Bindings.Count);
-            for (int i = 0; i < m_Bindings.Count; i++)
+            var loadedBindings = new List<LoadedBinding>(m_LoadDescriptions.Count);
+            for (int i = 0; i < m_LoadDescriptions.Count; i++)
             {
-                loadedBindings.Add(await LoadBindingAsync(m_Bindings[i]));
+                loadedBindings.Add(await LoadBindingAsync(m_LoadDescriptions[i]));
             }
             return ReplaceTables(loadedBindings);
         }
@@ -87,7 +87,7 @@ namespace NovaFramework.Runtime
         /// <returns>是否加载或保留了至少一张表。</returns>
         public override bool LoadTablesSync()
         {
-            if (m_Bindings.Count == 0)
+            if (m_LoadDescriptions.Count == 0)
             {
                 return m_Tables.Count > 0;
             }
@@ -96,10 +96,10 @@ namespace NovaFramework.Runtime
                 return false;
             }
 
-            var loadedBindings = new List<LoadedBinding>(m_Bindings.Count);
-            for (int i = 0; i < m_Bindings.Count; i++)
+            var loadedBindings = new List<LoadedBinding>(m_LoadDescriptions.Count);
+            for (int i = 0; i < m_LoadDescriptions.Count; i++)
             {
-                loadedBindings.Add(LoadBindingSync(m_Bindings[i]));
+                loadedBindings.Add(LoadBindingSync(m_LoadDescriptions[i]));
             }
             return ReplaceTables(loadedBindings);
         }

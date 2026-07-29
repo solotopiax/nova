@@ -6,6 +6,25 @@
 
 ---
 
+## [0.6.0] - 2026-07-29
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.0]` 节。
+
+### Added
+
+- 发布 Framework `0.6.0`，新增启动应用 Custom 配置、完整远端 JSON 快照刷新、路径读取 API 与 AppCustomConfig 网络协议。
+- Table 工具链新增多 Luban Project、导出描述、加载描述与显式数据资产地址模型。
+
+### Changed
+
+- 发布 BestHTTP `0.1.0`、GameBind `0.0.6`、GameLogin/GameSave `0.1.0`，以及 11 个 SDK 新版本；所有仓内包依赖对齐到本轮最新版本。
+- 发布 SDK MAX `0.1.0` 并将 SDK Ad 依赖提升至 `1.1.0`。
+- NovaSpark 升级为 `NovaSpark2.13.cs`，固定 Framework `0.6.0`；BestHTTP、EDM 与 unity-mcp 版本保持当前最新值。
+
+### Breaking
+
+- Config 的旧 `CustomConfigs` 与 Table 的旧 Project/Profile/Binding 契约由新 Custom、Project、Export Description、Load Description 模型替换。
+
 ## [0.5.46] - 2026-07-24
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.5.46]` 节。

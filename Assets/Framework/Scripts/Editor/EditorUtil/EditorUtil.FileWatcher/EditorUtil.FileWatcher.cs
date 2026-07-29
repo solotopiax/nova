@@ -110,6 +110,7 @@ namespace NovaFramework.Editor
                     watcher.Changed += (sender, e) => OnFileChanged(normalizedPath);
                     watcher.Created += (sender, e) => OnFileChanged(normalizedPath);
                     watcher.Deleted += (sender, e) => OnFileChanged(normalizedPath);
+                    watcher.Renamed += (sender, e) => OnFileChanged(normalizedPath);
 
                     s_Watchers[normalizedPath] = watcher;
                 }

@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.appsflyer",
-  "version": "0.0.27",
+  "version": "0.1.0",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "6.17.81",
   "displayName": "Nova Framework - SDK - AppsFlyer",
@@ -21,8 +21,8 @@
     "NovaFramework.SDK.AppsFlyerPlugin.Runtime"
   ],
   "dependencies": {
-    "com.solotopia.nova.framework": "0.5.38",
+    "com.solotopia.nova.framework": "0.6.0",
     "com.google.external-dependency-manager": "1.2.186",
-    "com.solotopia.nova.framework.kit.network.gamelogin": "0.0.11"
+    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0"
   }
 }

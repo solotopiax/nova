@@ -67,7 +67,7 @@ namespace NovaFramework.Editor
                         AotMetadataDlls = hybridCLR.AotMetadataDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList(),
                         GameDlls = hybridCLR.GameDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList(),
                     };
-                    target.CustomConfigs = new CustomConfigs();
+                    target.Custom = CloneCustomConfigData(master.Custom);
 
                     if (existing == null)
                     {
@@ -99,7 +99,39 @@ namespace NovaFramework.Editor
                         AppID = src.AppID,
                         AppAesKey = src.AppAesKey,
                         AppAesIV = src.AppAesIV,
+                        CustomConfigCmdName = src.CustomConfigCmdName,
+                        CustomName = src.CustomName,
                     };
+                }
+
+                /// <summary>
+                /// 深拷贝本地自定义键值配置，避免 Runtime 导出物与 ConfigMasterSO 共用列表引用。
+                /// </summary>
+                /// <param name="src">待拷贝的本地配置；为 null 时返回空实例。</param>
+                /// <returns>与源键值相同且列表独立的新实例。</returns>
+                private static CustomConfigData CloneCustomConfigData(CustomConfigData src)
+                {
+                    CustomConfigData result = new CustomConfigData();
+                    if (src?.Entries == null)
+                    {
+                        return result;
+                    }
+
+                    for (int i = 0; i < src.Entries.Count; i++)
+                    {
+                        CustomConfigEntry entry = src.Entries[i];
+                        if (entry == null)
+                        {
+                            continue;
+                        }
+
+                        result.Entries.Add(new CustomConfigEntry
+                        {
+                            Key = entry.Key,
+                            Value = entry.Value,
+                        });
+                    }
+                    return result;
                 }
 
                 /// <summary>

@@ -36,5 +36,17 @@ namespace NovaFramework.Runtime
         /// </summary>
         [Tooltip("AES 初始化向量（IV）。公司 GM 后台登记的 AES 初始化向量，与 AppAesKey 配合使用。")]
         public string AppAesIV;
+
+        /// <summary>
+        /// 启动时拉取应用配置所使用的 NetCmd 名称；为空时关闭自动拉取。
+        /// </summary>
+        [Tooltip("启动时拉取 GM 后台应用配置所使用的 NetCmd 名称；为空时关闭自动拉取。")]
+        public string CustomConfigCmdName;
+
+        /// <summary>
+        /// GM 后台应用配置项名称；作为 PbNetAppCustomConfigReq.key 发送。
+        /// </summary>
+        [Tooltip("GM 后台 Custom 配置项名称；为空时关闭自动拉取。")]
+        public string CustomName;
     }
 }

@@ -102,6 +102,8 @@ namespace NovaFramework.Editor
                                     dst.AppID = seedDebug.AppID;
                                     dst.AppAesKey = seedDebug.AppAesKey;
                                     dst.AppAesIV = seedDebug.AppAesIV;
+                                    dst.CustomConfigCmdName = seedDebug.CustomConfigCmdName;
+                                    dst.CustomName = seedDebug.CustomName;
                                 }
                                 AppConfigs dstR = allEntries[i].GetAppConfigs(DevelopMode.Release);
                                 if (dstR != null && seedRelease != null && string.IsNullOrEmpty(dstR.AppID))
@@ -109,6 +111,8 @@ namespace NovaFramework.Editor
                                     dstR.AppID = seedRelease.AppID;
                                     dstR.AppAesKey = seedRelease.AppAesKey;
                                     dstR.AppAesIV = seedRelease.AppAesIV;
+                                    dstR.CustomConfigCmdName = seedRelease.CustomConfigCmdName;
+                                    dstR.CustomName = seedRelease.CustomName;
                                 }
                             }
                         }

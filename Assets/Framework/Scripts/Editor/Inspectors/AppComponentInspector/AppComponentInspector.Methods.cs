@@ -111,7 +111,8 @@ namespace NovaFramework.Editor
                         {
                         "(1)两个规则可任意组合启用",
                         "(2)命中时优先级：强制更新规则 > 推荐更新规则",
-                        "(3)命中任一规则都会弹出大版本更新提示"
+                        "(3)命中任一规则都会弹出大版本更新提示",
+                        "(4)弹窗使用 Resources/BuiltIn/Prefabs/LauncherDialogPanel 资源，强制更新与推荐更新共用该 Prefab"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 

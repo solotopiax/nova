@@ -1,5 +1,5 @@
 /***************************************************************
- * filename:  NovaSpark2.12.cs
+ * filename:  NovaSpark2.13.cs
  * descrip:   Nova 框架一次性引导器（火种）。
  *            把 Nova 框架所需的"火种"——UPM registry、必备依赖与
  *            PlugPals 配置——带入一个全新的 Unity 工程，点燃新征程。
@@ -85,7 +85,7 @@ namespace NovaBootstrap
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.5.46";
+        private const string c_FrameworkValue = "0.6.0";
 
         /// <summary>PlugPals 配置文件相对工程根的路径。</summary>
         private const string c_PlugPalsRelativePath = "ProjectSettings/Nova/PlugPalsRegistries.json";

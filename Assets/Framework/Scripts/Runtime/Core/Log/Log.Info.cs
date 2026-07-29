@@ -23,7 +23,8 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="tag">日志标签。</param>
         /// <param name="message">日志内容。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -38,7 +39,8 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="tag">日志标签。</param>
         /// <param name="message">日志内容。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -55,7 +57,8 @@ namespace NovaFramework.Runtime
         /// <param name="tag">日志标签。</param>
         /// <param name="format">日志格式。</param>
         /// <param name="arg">日志参数。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -74,7 +77,8 @@ namespace NovaFramework.Runtime
         /// <param name="format">日志格式。</param>
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -95,7 +99,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg1">日志参数 1。</param>
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -118,7 +123,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg2">日志参数 2。</param>
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -143,7 +149,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg3">日志参数 3。</param>
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -170,7 +177,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg4">日志参数 4。</param>
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -199,7 +207,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg5">日志参数 5。</param>
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -230,7 +239,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg6">日志参数 6。</param>
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -263,7 +273,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg7">日志参数 7。</param>
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -298,7 +309,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg8">日志参数 8。</param>
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -335,7 +347,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg9">日志参数 9。</param>
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -374,7 +387,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg10">日志参数 10。</param>
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -415,7 +429,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg11">日志参数 11。</param>
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -458,7 +473,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg12">日志参数 12。</param>
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -503,7 +519,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg13">日志参数 13。</param>
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]
@@ -550,7 +567,8 @@ namespace NovaFramework.Runtime
         /// <param name="arg14">日志参数 14。</param>
         /// <param name="arg15">日志参数 15。</param>
         /// <param name="arg16">日志参数 16。</param>
-        /// <remarks>仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        /// <remarks>在 Unity Editor 中始终生效；Player 仅在带有 ENABLE_LOG、ENABLE_INFO_LOG、ENABLE_DEBUG_AND_ABOVE_LOG 或 ENABLE_INFO_AND_ABOVE_LOG 预编译选项时生效。</remarks>
+        [Conditional("UNITY_EDITOR")]
         [Conditional("ENABLE_LOG")]
         [Conditional("ENABLE_INFO_LOG")]
         [Conditional("ENABLE_DEBUG_AND_ABOVE_LOG")]

@@ -66,9 +66,9 @@ namespace NovaFramework.Runtime
         public HybridConfigs HybridConfigs = new();
 
         /// <summary>
-        /// 业务自定义运行时配置占位；始终导出非空实例。
+        /// Custom 本地路径键值；始终导出非空实例。
         /// </summary>
-        public CustomConfigs CustomConfigs = new();
+        public CustomConfigData Custom = new();
 
         /// <summary>
         /// 按泛型类型从 EnabledSDKConfigs 中取对应 SDK Plugin 配置实例。

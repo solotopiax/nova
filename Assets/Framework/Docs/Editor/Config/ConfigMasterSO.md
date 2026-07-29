@@ -8,7 +8,7 @@
 - `Namespace` 与 `NamespaceOverrides` → `Namespace`
 - `HybridEditorConfigs.GameEntranceProcedureName / AotMetadataDlls / GameDlls` → 去除构建路径后生成 `HybridConfigs`
 - Runtime SDK 与 Kit 配置矩阵
-- `CustomConfigs` 当前导出空实例
+- 顶层 `Custom` → 本地 JSONPath/string 默认值；云端完整 JSON 不受这些路径限制
 
 ## Editor-only 数据
 

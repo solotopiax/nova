@@ -56,6 +56,10 @@ public static string GetPreFilterTempDirPath(string regionDirPath)
 // 优先检查 Packages/com.solotopia.nova.framework/Templates/Luban，回退到 Assets/Framework/Templates/Luban
 // 不存在时返回 null
 public static string[] GetLubanCustomTemplateDirs(string targetName)
+
+// Internal：把 Assets/Framework 或 Packages 下的框架模板逻辑路径
+// 解析为当前安装形态的真实物理目录；项目自定义路径保持原值
+internal static string ResolveCustomTemplateDirectory(string configuredDirectory)
 ```
 
 Nova Framework 内部通过 Profile 重载构建上下文：
