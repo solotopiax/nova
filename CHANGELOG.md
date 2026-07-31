@@ -6,6 +6,20 @@
 
 ---
 
+## [0.6.2] - 2026-07-31
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.2]` 节。
+
+### Fixed
+
+- 发布 Framework `0.6.2`，修复 ProjectGuard 将 Scene 目录误作配置搜索范围、导致外部项目无法定位 `ConfigRuntimeSO` 的问题。
+- 发布 Mobile IAP `0.1.2`，商品信息已成功拉取后不再因商店连接回调重复请求。
+- 发布 TGA `0.1.2`，统一等待 SDK 初始化完成后启动数据桥接，避免并发等待同一初始化任务。
+
+### Changed
+
+- `NovaSpark.cs` 固定 Framework `0.6.2`；BestHTTP `0.1.0`、EDM `1.2.188` 与 unity-mcp `v10.1.0` 保持当前最新版本。
+
 ## [0.6.1] - 2026-07-31
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.1]` 节。

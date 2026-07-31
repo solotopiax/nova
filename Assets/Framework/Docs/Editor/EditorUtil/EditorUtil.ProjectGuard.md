@@ -21,7 +21,7 @@ EditorUtil.ProjectGuard.ValidateRelease(buildTarget);
 
 Scene 检查使用已加载 Scene 或只读 Preview Scene，不保存、不修复、不自动加载 Content。首个启用 Build Scene 作为本次构建入口检查；其它 Build Scene 可以是不含 Nova 和 FrameworkComponent 的 Content 或自定义 Scene。
 
-若 Scene 含启用的 `ConfigComponent`，Guard 会按 `m_AssetLocation` 在当前 Demo 目录定位唯一的 `ConfigRuntimeSO`，再通过 `ConfigMasterSO.ExportTarget` 反查设计态来源。检查结果同时给出字段路径、`Nova/Open Config` 面板入口、ConfigMaster 路径、ConfigRuntime 路径与导出坐标；不会输出密钥内容。
+若 Scene 含启用的 `ConfigComponent`，Guard 会通过 `EditorUtil.Config.WorkspaceActive.Get()` 获取当前激活的 `ConfigMasterSO`，再以其 `ExportTarget` 精确定位 `ConfigRuntimeSO`，并校验 `m_AssetLocation` 与导出物名称一致。配置资产可位于 Scene 目录之外。检查结果同时给出字段路径、`Nova/Open Config` 面板入口、ConfigMaster 路径、ConfigRuntime 路径与导出坐标；不会输出密钥内容。
 
 ## 当前规则
 

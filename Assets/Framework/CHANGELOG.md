@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-07-31
+
+### Fixed
+
+- ProjectGuard 启动配置校验改用 `WorkspaceActive.Get()` 锚定当前 `ConfigMasterSO`，并通过 `ExportTarget` 精确定位 `ConfigRuntimeSO`；配置资产可位于 Scene 目录之外。
+
 ## [0.6.1] - 2026-07-31
 
 ### Added

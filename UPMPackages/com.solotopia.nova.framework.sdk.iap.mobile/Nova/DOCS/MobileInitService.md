@@ -72,7 +72,8 @@ internal async UniTask<bool> InitializeAsync(IIAPProductTable table, Cancellatio
 ### MobileInitService — 平台事件接收（MobileStoreService 路由过来）
 
 ```csharp
-// 商店连接成功：标记已连接并完成初始化，随后触发商品拉取
+// 商店连接成功：标记已连接并完成初始化，随后幂等触发商品拉取
+// Fetching / Succeeded 跳过重复请求，None / Failed 允许发起拉取
 internal void OnStoreConnected()
 
 // 商店连接断开：初始化期间断开则触发失败流程
@@ -132,6 +133,12 @@ MobileStoreInitFailureReason 枚举：
   StoreConnectException      = 3 （Unity IAP Connect 调用抛出异常）
   StoreDisconnected          = 4 （初始化期间商店连接断开）
   InitializationCanceled     = 5 （初始化被取消）
+
+MobileProductFetchState 重入规则：
+  None       → 发起商品拉取
+  Fetching   → 跳过重复请求，保留当前完成信号
+  Succeeded  → 跳过重复请求，继续使用已拉取商品
+  Failed     → 允许后续连接回调重新拉取
 ```
 
 ### 初始化时序（三步序列）
@@ -157,7 +164,7 @@ MobileStore.InitializeAsync
         │               MarkReady()
         │               IsReady=true
         │               m_InitTcs.TrySetResult(true)
-        │               FetchProducts()（打印注册商品定义数量，后台商品拉取，ProductFetchState=Fetching）
+        │               FetchProducts()（Fetching / Succeeded 时跳过；None / Failed 时后台拉取）
         │               → OnProductsFetched 标记 ProductFetchState=Succeeded 后调用 RestoreTransactions() + FetchPurchases()
         │               → OnPurchasesFetched 路由到 RestoreService 恢复 PendingOrder 票据
         │     → Connect 抛出异常 → FailInitialization(StoreConnectException)
@@ -189,6 +196,10 @@ MobileInitService 在旧版中直接持有 `IStoreController / IExtensionProvide
 **误区 4：同一个平台 ProductID 需要重复注册给 Unity IAP**
 
 Nova 商品表允许不同 `TableId` 复用同一个 Google Play / App Store 平台 `ProductID`。Unity IAP 只要求传入的 `ProductDefinition.id` 唯一，因此初始化构建商品定义时会跳过空 `ProductID`，并对复用的 `ProductID` 只注册一次平台商品定义。
+
+**误区 5：重复收到 OnStoreConnected 时需要再次并发拉取商品**
+
+Unity IAP 同一时刻只允许一个商品拉取请求。`FetchProducts` 会在 `ProductFetchState` 为 `Fetching` 或 `Succeeded` 时直接返回，避免替换当前完成信号或重复调用平台；只有 `None` 和 `Failed` 才允许发起请求，因此真实失败后的重连仍可重试。
 
 ---
 

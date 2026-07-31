@@ -37,7 +37,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 从当前 Scene 的 ConfigComponent 定位实际 ConfigRuntimeSO 与对应 ConfigMasterSO，并执行启动就绪检查。
+            /// 从当前 Scene 的 ConfigComponent 读取运行时地址，并沿 WorkspaceActive 锚点定位配置来源。
             /// </summary>
             private static void ValidateConfigComponent(ConfigComponent configComponent, string scenePath,
                 NovaGuardReport report)
@@ -52,39 +52,47 @@ namespace NovaFramework.Editor
                     return;
                 }
 
-                string demoRoot = NormalizePath(System.IO.Path.GetDirectoryName(scenePath));
-                ConfigRuntimeSO[] runtimes = AssetDatabase.FindAssets("t:ConfigRuntimeSO", new[] { demoRoot })
-                    .Select(AssetDatabase.GUIDToAssetPath)
-                    .Select(AssetDatabase.LoadAssetAtPath<ConfigRuntimeSO>)
-                    .Where(asset => asset != null && string.Equals(asset.name, assetLocation,
-                        StringComparison.Ordinal))
-                    .ToArray();
-                if (runtimes.Length != 1)
+                ValidateConfigSource(assetLocation, Config.WorkspaceActive.Get(), scenePath, report);
+            }
+
+            /// <summary>
+            /// 以工程级激活 ConfigMaster 为唯一设计态锚点，并通过 ExportTarget 精确定位运行时导出物。
+            /// </summary>
+            private static void ValidateConfigSource(string assetLocation, ConfigMasterSO master,
+                string scenePath, NovaGuardReport report)
+            {
+                if (master == null)
                 {
                     report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
-                        $"启动配置未就绪：当前 Demo 范围内应唯一存在名称为 [{assetLocation}] 的 ConfigRuntimeSO，实际找到 {runtimes.Length} 个。\n" +
-                        $"配置出处：{scenePath} → ConfigComponent.m_AssetLocation\n查找范围：{demoRoot}",
+                        "启动配置来源未就绪：当前工程未激活 ConfigMasterSO。请打开 Nova/Open Config 选择当前项目配置。\n" +
+                        $"配置出处：{scenePath} → ConfigComponent.m_AssetLocation",
                         scenePath));
                     return;
                 }
 
-                ConfigRuntimeSO runtime = runtimes[0];
-                string runtimePath = AssetDatabase.GetAssetPath(runtime);
-                ConfigMasterSO[] masters = AssetDatabase.FindAssets("t:ConfigMasterSO", new[] { demoRoot })
-                    .Select(AssetDatabase.GUIDToAssetPath)
-                    .Select(AssetDatabase.LoadAssetAtPath<ConfigMasterSO>)
-                    .Where(asset => asset != null && asset.ExportTarget == runtime)
-                    .ToArray();
-                if (masters.Length != 1)
+                string masterPath = AssetDatabase.GetAssetPath(master);
+                ConfigRuntimeSO runtime = master.ExportTarget;
+                if (runtime == null)
                 {
                     report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
-                        $"启动配置来源未就绪：应唯一存在 ExportTarget 指向当前 ConfigRuntimeSO 的 ConfigMasterSO，实际找到 {masters.Length} 个。\n" +
-                        $"运行时导出：{runtimePath}\n查找范围：{demoRoot}", runtimePath));
+                        "启动配置来源未就绪：当前激活 ConfigMasterSO.ExportTarget 为空。请打开 Nova/Open Config 配置并导出运行时配置。\n" +
+                        $"设计态来源：{DisplayPath(masterPath)}\n" +
+                        $"配置出处：{scenePath} → ConfigComponent.m_AssetLocation",
+                        masterPath));
                     return;
                 }
 
-                ConfigMasterSO master = masters[0];
-                string masterPath = AssetDatabase.GetAssetPath(master);
+                string runtimePath = AssetDatabase.GetAssetPath(runtime);
+                if (!string.Equals(runtime.name, assetLocation, StringComparison.Ordinal))
+                {
+                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
+                        $"启动配置未就绪：ConfigComponent.m_AssetLocation 为 [{assetLocation}]，但当前激活 ConfigMasterSO.ExportTarget 指向 [{runtime.name}]。\n" +
+                        $"配置出处：{scenePath} → ConfigComponent.m_AssetLocation\n" +
+                        $"设计态来源：{DisplayPath(masterPath)}\n运行时导出：{DisplayPath(runtimePath)}",
+                        runtimePath));
+                    return;
+                }
+
                 s_LastConfigMaster = master;
                 s_LastConfigRuntime = runtime;
                 ValidateConfigExport(runtime, master, runtimePath, masterPath, report);
@@ -513,6 +521,17 @@ namespace NovaFramework.Editor
             {
                 var report = new NovaGuardReport();
                 ValidateConfigExport(runtime, master, runtimePath, masterPath, report);
+                return report;
+            }
+
+            /// <summary>
+            /// 测试入口：校验 Scene 地址与激活 ConfigMaster 导出目标的来源关系。
+            /// </summary>
+            private static NovaGuardReport ValidateConfigSourceForDiagnostics(string assetLocation,
+                ConfigMasterSO master, string scenePath)
+            {
+                var report = new NovaGuardReport();
+                ValidateConfigSource(assetLocation, master, scenePath, report);
                 return report;
             }
         }

@@ -22,9 +22,16 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     {
         /// <summary>
         /// 通过 ExtendedService 向平台发起商品拉取请求，使用 InitializeAsync 阶段构建的商品定义列表。
+        /// 拉取进行中或已经成功时忽略重复请求；失败状态允许后续连接回调重新拉取。
         /// </summary>
         private void FetchProducts()
         {
+            if (ProductFetchState is MobileProductFetchState.Fetching or MobileProductFetchState.Succeeded)
+            {
+                Log.Debug(LogTag.IAPMobile, $"商品拉取请求已跳过，当前状态={ProductFetchState}。");
+                return;
+            }
+
             ProductFetchState = MobileProductFetchState.Fetching;
             m_ProductFetchTcs = new UniTaskCompletionSource<MobileProductFetchState>();
             List<ProductDefinition> productDefs = m_PendingProductDefs ?? new List<ProductDefinition>();

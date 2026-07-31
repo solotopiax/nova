@@ -98,47 +98,65 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
 
         /// <summary>
         /// 异步等待 AppsFlyerId 发布并写入 TGA UserSetOnce 属性。
-        /// 必须以 Fire-and-Forget 方式调用（.Forget()），不可在 OnInitializeAsync 中 await：
+        /// 必须以 Fire-and-Forget 方式调用，不可在 OnInitializeAsync 中 await：
         /// TGA 桶按 Priority 先于 AppsFlyer 桶执行，直接 await 会导致 TGA 桶永远等不到 AppsFlyer 桶发布数据而死锁。
         /// IAttributionPlugin 不可用或 ct 取消时静默跳过；异常仅记日志，不向上抛。
         /// </summary>
         /// <param name="ct">取消令牌，串联到 FetchDataAsync 调用，Plugin 释放时随之取消。</param>
         /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
-        private void RegisterFetchDataAsync(CancellationToken ct)
+        private async UniTaskVoid RegisterFetchDataAsync(CancellationToken ct)
         {
-            RegisterAppsFlyerIdAsync(ct).Forget();
-            RegisterThirdPartyLoginAsync(ct).Forget();
+            try
+            {
+                // 两条数据桥接共享同一次初始化等待，避免并发等待同一个未完成的 InitializeTask。
+                SDKComponent sdkComponent = await WaitForSDKInitializedAsync(ct);
+                if (sdkComponent == null)
+                {
+                    return;
+                }
+
+                RegisterAppsFlyerIdAsync(sdkComponent, ct).Forget();
+                RegisterThirdPartyLoginAsync(sdkComponent, ct).Forget();
+            }
+            catch (OperationCanceledException)
+            {
+                // 取消属正常退出路径，不记日志。
+            }
+            catch (Exception e)
+            {
+                Log.Error(LogTag.TGA, $"RegisterFetchDataAsync 异常：{e}");
+            }
         }
 
         /// <summary>
         /// 等待 SDK 统一初始化完成后再查询其他插件，避免 TGA 因 Priority 更早而拿不到后续插件。
         /// </summary>
-        /// <param name="ct">取消令牌，串联到 InitializeTask 等待。</param>
+        /// <param name="ct">取消令牌，串联到 SDKManager 初始化完成信号。</param>
         /// <returns>SDKComponent；组件不存在或等待取消时由调用方处理。</returns>
         private async UniTask<SDKComponent> WaitForSDKInitializedAsync(CancellationToken ct)
         {
             var sdkComponent = FrameworkComponentsGroup.GetComponent<SDKComponent>();
-            if (sdkComponent == null)
+            if (sdkComponent == null || sdkComponent.SDKManager == null)
             {
                 return null;
             }
 
             await UniTask.Yield(cancellationToken: ct);
-            await sdkComponent.InitializeTask.AttachExternalCancellation(ct);
+            await sdkComponent.SDKManager.WaitForInitializedAsync(ct);
             return sdkComponent;
         }
 
         /// <summary>
         /// 异步等待 AppsFlyerId 发布并写入 TGA UserSetOnce 属性。
         /// </summary>
+        /// <param name="sdkComponent">已完成统一初始化的 SDKComponent。</param>
         /// <param name="ct">取消令牌，串联到 FetchDataAsync 调用。</param>
         /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
-        private async UniTaskVoid RegisterAppsFlyerIdAsync(CancellationToken ct)
+        private async UniTaskVoid RegisterAppsFlyerIdAsync(SDKComponent sdkComponent, CancellationToken ct)
         {
             try
             {
-                SDKComponent sdkComponent = await WaitForSDKInitializedAsync(ct);
-                if (sdkComponent == null || !sdkComponent.TryGet<IAttributionPlugin>(out var attribution))
+                if (!sdkComponent.TryGet<IAttributionPlugin>(out var attribution))
                 {
                     return;
                 }
@@ -165,18 +183,13 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         /// 异步等待第三方登录数据发布并写入 TGA UserSet 属性。
         /// 第三方登录依赖用户操作，可能永远不发布，因此必须独立 Fire-and-Forget。
         /// </summary>
+        /// <param name="sdkComponent">已完成统一初始化的 SDKComponent。</param>
         /// <param name="ct">取消令牌，串联到 FetchDataAsync 调用。</param>
         /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
-        private async UniTaskVoid RegisterThirdPartyLoginAsync(CancellationToken ct)
+        private async UniTaskVoid RegisterThirdPartyLoginAsync(SDKComponent sdkComponent, CancellationToken ct)
         {
             try
             {
-                SDKComponent sdkComponent = await WaitForSDKInitializedAsync(ct);
-                if (sdkComponent == null)
-                {
-                    return;
-                }
-
                 IReadOnlyList<IAuthPlugin> authPlugins = sdkComponent.GetAll<IAuthPlugin>();
                 for (int i = 0; i < authPlugins.Count; i++)
                 {

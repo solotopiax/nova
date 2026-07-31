@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-07-31
+
+### Fixed
+
+- AppsFlyer 与第三方登录数据桥接共享一次 SDK 初始化等待，避免并发等待同一初始化任务触发 `Already continuation registered`。
+
 ## [0.1.1] - 2026-07-31
 
 ### Changed

@@ -93,7 +93,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
 
                 // 发布 TGA 标识供其他 SDK 消费，同时启动异步桥接，不阻塞 TGA 自身初始化完成。
                 PublishTGAIdentifiers();
-                RegisterFetchDataAsync(ct);
+                RegisterFetchDataAsync(ct).Forget();
 
                 // 登录事件到来后再绑定 AccountId，并触发 TGA 标识上报到业务服务器。
                 m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
