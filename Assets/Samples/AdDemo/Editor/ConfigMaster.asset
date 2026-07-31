@@ -17,6 +17,8 @@ MonoBehaviour:
   EnabledSDKs:
   - NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
   - NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+  - NovaFramework.SDK.AppsFlyerPlugin.Runtime.AppsFlyerPluginConfig
+  - NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePluginConfig
   EnabledKits:
   - NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
   Custom:
@@ -38,7 +40,7 @@ MonoBehaviour:
   SDKMasks:
   - TypeName: NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
     Mask:
-      ByPlatform: 0
+      ByPlatform: 1
       ByChannel: 0
       ByDevelopMode: 0
   - TypeName: NovaFramework.SDK.AppsFlyerPlugin.Runtime.AppsFlyerPluginConfig
@@ -47,6 +49,16 @@ MonoBehaviour:
       ByChannel: 0
       ByDevelopMode: 0
   - TypeName: NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.Facebook.FacebookPluginConfig
     Mask:
       ByPlatform: 0
       ByChannel: 0
@@ -221,12 +233,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729136
-      - rid: 2238161839428206728
+      - rid: 791344494233518372
+      - rid: 791344466879840444
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729137
-      - rid: 2238161839428206730
+      - rid: 791344494233518374
+      - rid: 791344466879840445
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -259,15 +273,17 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 3589942986135568568
-      - rid: 209362707701039362
+      - rid: 791344494233518376
       - rid: 791343950791704576
       - rid: 791343950791704577
       - rid: 791343950791704578
+      - rid: 791344466879840258
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729138
-      - rid: 2238161839428206732
+      - rid: 791344494233518378
+      - rid: 791344466879840446
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -300,12 +316,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729139
-      - rid: 2238161839428206734
+      - rid: 791344494233518442
+      - rid: 791344466879840447
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729140
-      - rid: 2238161839428206736
+      - rid: 791344494233518382
+      - rid: 791344466879840448
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -338,12 +356,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729141
-      - rid: 2238161839428206738
+      - rid: 791344494233518384
+      - rid: 791344466879840449
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729142
-      - rid: 2238161839428206740
+      - rid: 791344494233518386
+      - rid: 791344466879840450
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -376,12 +396,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729143
-      - rid: 2238161839428206742
+      - rid: 791344494233518388
+      - rid: 791344466879840451
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729144
-      - rid: 2238161839428206744
+      - rid: 791344494233518390
+      - rid: 791344466879840452
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -414,12 +436,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729145
-      - rid: 2238161839428206746
+      - rid: 791344494233518392
+      - rid: 791344466879840453
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729146
-      - rid: 2238161839428206748
+      - rid: 791344494233518394
+      - rid: 791344466879840454
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -452,12 +476,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729147
-      - rid: 2238161839428206750
+      - rid: 791344494233518556
+      - rid: 791344466879840455
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729148
-      - rid: 2238161839428206752
+      - rid: 791344494233518558
+      - rid: 791344466879840456
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -490,12 +516,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729149
-      - rid: 2238161839428206754
+      - rid: 791344494233518560
+      - rid: 791344466879840457
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729150
-      - rid: 2238161839428206756
+      - rid: 791344494233518562
+      - rid: 791344466879840458
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -528,12 +556,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729151
-      - rid: 2238161839428206758
+      - rid: 791344494233518332
+      - rid: 791344466879840459
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729152
-      - rid: 2238161839428206760
+      - rid: 791344494233518564
+      - rid: 791344466879840460
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -566,12 +596,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729153
-      - rid: 2238161839428206762
+      - rid: 791344494233518566
+      - rid: 791344466879840461
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729154
-      - rid: 2238161839428206764
+      - rid: 791344494233518568
+      - rid: 791344466879840462
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -604,12 +636,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729155
-      - rid: 2238161839428206766
+      - rid: 791344494233518570
+      - rid: 791344466879840463
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729156
-      - rid: 2238161839428206768
+      - rid: 791344494233518572
+      - rid: 791344466879840464
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -642,12 +676,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729157
-      - rid: 2238161839428206770
+      - rid: 791344494233518574
+      - rid: 791344466879840465
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729158
-      - rid: 2238161839428206772
+      - rid: 791344494233518576
+      - rid: 791344466879840466
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -680,12 +716,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729159
-      - rid: 2238161839428206774
+      - rid: 791344494233518418
+      - rid: 791344466879840467
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729160
-      - rid: 2238161839428206776
+      - rid: 791344494233518420
+      - rid: 791344466879840468
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -718,12 +756,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729161
-      - rid: 2238161839428206778
+      - rid: 791344494233518422
+      - rid: 791344466879840469
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729162
-      - rid: 2238161839428206780
+      - rid: 791344494233518424
+      - rid: 791344466879840470
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -756,12 +796,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729163
-      - rid: 2238161839428206782
+      - rid: 791344494233518444
+      - rid: 791344466879840471
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729164
-      - rid: 2238161839428206784
+      - rid: 791344494233518428
+      - rid: 791344466879840472
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -794,12 +836,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729165
-      - rid: 2238161839428206786
+      - rid: 791344494233518430
+      - rid: 791344466879840473
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729166
-      - rid: 2238161839428206788
+      - rid: 791344494233518432
+      - rid: 791344466879840474
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -832,12 +876,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729167
-      - rid: 2238161839428206790
+      - rid: 791344494233518434
+      - rid: 791344466879840475
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729168
-      - rid: 2238161839428206792
+      - rid: 791344494233518436
+      - rid: 791344466879840476
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -870,12 +916,14 @@ MonoBehaviour:
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729169
-      - rid: 2238161839428206794
+      - rid: 791344494233518438
+      - rid: 791344466879840477
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
       - rid: 2533177004360729170
-      - rid: 2238161839428206796
+      - rid: 791344494233518440
+      - rid: 791344466879840478
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -888,34 +936,6 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 209362707701039362
-      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
-      data:
-        m_ChannelConfigs:
-          m_Items:
-          - rid: 209362707701039396
-          m_EnableBidding: 1
-          m_BannerIlrdInterval: 5
-          m_MuteAd: 0
-          m_RetryLoadAdMaxNum: 3
-          m_RetryLoadAdInterv: 30
-    - rid: 209362707701039396
-      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
-      data:
-        m_Enabled: 1
-        m_AppKey: YOUR_APPLOVIN_SDK_KEY
-        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
-        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
-        m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
-        m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
-        m_AppOpenPlacementIds: []
-        m_LogEnable: 1
-        m_CreativeDebuggerEnabled: 1
-        m_MediationDebuggerEnabled: 1
     - rid: 791343950791704576
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
@@ -954,18 +974,190 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 2238161839428206728
+    - rid: 791344466879840258
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840444
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840445
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840446
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840447
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840448
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840449
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840450
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840451
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840452
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840453
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840454
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840455
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840456
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840457
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840458
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840459
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840460
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840461
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840462
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840463
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840464
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840465
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840466
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840467
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840468
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840469
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840470
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840471
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840472
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840473
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840474
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840475
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840476
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840477
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344466879840478
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+    - rid: 791344494233518332
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206729
+          - rid: 791344494233518333
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206729
+    - rid: 791344494233518333
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_RVPlacementIds:
+        - f9da37dc3a396a90
+        m_InterPlacementIds:
+        - dcb28eb05c71d57b
+        m_BannerPlacementIds:
+        - 897d8c851486b4e1
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 791344494233518372
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 791344494233518373
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+    - rid: 791344494233518373
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -982,18 +1174,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206730
+    - rid: 791344494233518374
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206731
+          - rid: 791344494233518375
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206731
+    - rid: 791344494233518375
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1010,18 +1202,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206732
+    - rid: 791344494233518376
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206733
+          - rid: 791344494233518377
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206733
+    - rid: 791344494233518377
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1038,18 +1230,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206734
+    - rid: 791344494233518378
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206735
+          - rid: 791344494233518379
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206735
+    - rid: 791344494233518379
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1066,18 +1258,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206736
+    - rid: 791344494233518382
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206737
+          - rid: 791344494233518383
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206737
+    - rid: 791344494233518383
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1094,18 +1286,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206738
+    - rid: 791344494233518384
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206739
+          - rid: 791344494233518385
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206739
+    - rid: 791344494233518385
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1122,18 +1314,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206740
+    - rid: 791344494233518386
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206741
+          - rid: 791344494233518387
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206741
+    - rid: 791344494233518387
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1150,18 +1342,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206742
+    - rid: 791344494233518388
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206743
+          - rid: 791344494233518389
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206743
+    - rid: 791344494233518389
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1178,18 +1370,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206744
+    - rid: 791344494233518390
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206745
+          - rid: 791344494233518391
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206745
+    - rid: 791344494233518391
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1206,18 +1398,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206746
+    - rid: 791344494233518392
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206747
+          - rid: 791344494233518393
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206747
+    - rid: 791344494233518393
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1234,18 +1426,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206748
+    - rid: 791344494233518394
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206749
+          - rid: 791344494233518395
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206749
+    - rid: 791344494233518395
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1262,18 +1454,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206750
+    - rid: 791344494233518418
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206751
+          - rid: 791344494233518419
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206751
+    - rid: 791344494233518419
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1290,18 +1482,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206752
+    - rid: 791344494233518420
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206753
+          - rid: 791344494233518421
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206753
+    - rid: 791344494233518421
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1318,18 +1510,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206754
+    - rid: 791344494233518422
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206755
+          - rid: 791344494233518423
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206755
+    - rid: 791344494233518423
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1346,18 +1538,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206756
+    - rid: 791344494233518424
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206757
+          - rid: 791344494233518425
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206757
+    - rid: 791344494233518425
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1374,18 +1566,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206758
+    - rid: 791344494233518428
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206759
+          - rid: 791344494233518429
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206759
+    - rid: 791344494233518429
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1402,18 +1594,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206760
+    - rid: 791344494233518430
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206761
+          - rid: 791344494233518431
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206761
+    - rid: 791344494233518431
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1430,18 +1622,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206762
+    - rid: 791344494233518432
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206763
+          - rid: 791344494233518433
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206763
+    - rid: 791344494233518433
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1458,18 +1650,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206764
+    - rid: 791344494233518434
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206765
+          - rid: 791344494233518435
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206765
+    - rid: 791344494233518435
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1486,18 +1678,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206766
+    - rid: 791344494233518436
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206767
+          - rid: 791344494233518437
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206767
+    - rid: 791344494233518437
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1514,18 +1706,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206768
+    - rid: 791344494233518438
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206769
+          - rid: 791344494233518439
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206769
+    - rid: 791344494233518439
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1542,18 +1734,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206770
+    - rid: 791344494233518440
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206771
+          - rid: 791344494233518441
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206771
+    - rid: 791344494233518441
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1570,18 +1762,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206772
+    - rid: 791344494233518442
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206773
+          - rid: 791344494233518443
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206773
+    - rid: 791344494233518443
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1598,18 +1790,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206774
+    - rid: 791344494233518444
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206775
+          - rid: 791344494233518445
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206775
+    - rid: 791344494233518445
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1626,18 +1818,18 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206776
+    - rid: 791344494233518556
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206777
+          - rid: 791344494233518557
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206777
+    - rid: 791344494233518557
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1645,27 +1837,27 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206778
+    - rid: 791344494233518558
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206779
+          - rid: 791344494233518559
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206779
+    - rid: 791344494233518559
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1673,27 +1865,27 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206780
+    - rid: 791344494233518560
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206781
+          - rid: 791344494233518561
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206781
+    - rid: 791344494233518561
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1701,27 +1893,27 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206782
+    - rid: 791344494233518562
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206783
+          - rid: 791344494233518563
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206783
+    - rid: 791344494233518563
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1729,27 +1921,27 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206784
+    - rid: 791344494233518564
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206785
+          - rid: 791344494233518565
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206785
+    - rid: 791344494233518565
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1757,27 +1949,27 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206786
+    - rid: 791344494233518566
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206787
+          - rid: 791344494233518567
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206787
+    - rid: 791344494233518567
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1785,27 +1977,27 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206788
+    - rid: 791344494233518568
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206789
+          - rid: 791344494233518569
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206789
+    - rid: 791344494233518569
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1813,27 +2005,27 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206790
+    - rid: 791344494233518570
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206791
+          - rid: 791344494233518571
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206791
+    - rid: 791344494233518571
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1841,27 +2033,27 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206792
+    - rid: 791344494233518572
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206793
+          - rid: 791344494233518573
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206793
+    - rid: 791344494233518573
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1869,27 +2061,27 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206794
+    - rid: 791344494233518574
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206795
+          - rid: 791344494233518575
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206795
+    - rid: 791344494233518575
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1897,27 +2089,27 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 2238161839428206796
+    - rid: 791344494233518576
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 2238161839428206797
+          - rid: 791344494233518577
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
-    - rid: 2238161839428206797
+    - rid: 791344494233518577
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1
@@ -1925,11 +2117,11 @@ MonoBehaviour:
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
         m_RVPlacementIds:
-        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        - f9da37dc3a396a90
         m_InterPlacementIds:
-        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        - dcb28eb05c71d57b
         m_BannerPlacementIds:
-        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        - 897d8c851486b4e1
         m_AppOpenPlacementIds: []
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
@@ -1939,316 +2131,386 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729137
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729138
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729139
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729140
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729141
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729142
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729143
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729144
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729145
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729146
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729147
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729148
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729149
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729150
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729151
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729152
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729153
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729154
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729155
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729156
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729157
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729158
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729159
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729160
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729161
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729162
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729163
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729164
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729165
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729166
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729167
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729168
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729169
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729170
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 3589942986135568532
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
@@ -2264,10 +2526,12 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 3589943518543478928
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:

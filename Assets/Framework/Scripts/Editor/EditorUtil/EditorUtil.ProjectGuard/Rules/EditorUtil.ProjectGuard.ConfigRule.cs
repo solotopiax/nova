@@ -1,0 +1,520 @@
+/***************************************************************
+ * (c) copyright 2026 - 2030, Solotopia
+ * All Rights Reserved.
+ * -------------------------------------------------------------
+ * filename:  EditorUtil.ProjectGuard.ConfigRule.cs
+ * author:    taoye
+ * created:   2026/7/30
+ * descrip:   Nova 项目规范守卫启动配置就绪规则
+ ***************************************************************/
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using NovaFramework.Runtime;
+using UnityEditor;
+
+namespace NovaFramework.Editor
+{
+    public static partial class EditorUtil
+    {
+        public static partial class ProjectGuard
+        {
+            private const int c_AesSecretByteLength = 16;
+            private static ConfigMasterSO s_LastConfigMaster;
+            private static ConfigRuntimeSO s_LastConfigRuntime;
+            private static ConfigNavigationSection s_LastConfigSection;
+            private static Type s_LastConfigType;
+            private static bool s_HasLastConfigNavigation;
+
+            private enum ConfigNavigationSection
+            {
+                App,
+                Namespace,
+                SDK,
+                Kit,
+            }
+
+            /// <summary>
+            /// 从当前 Scene 的 ConfigComponent 定位实际 ConfigRuntimeSO 与对应 ConfigMasterSO，并执行启动就绪检查。
+            /// </summary>
+            private static void ValidateConfigComponent(ConfigComponent configComponent, string scenePath,
+                NovaGuardReport report)
+            {
+                var componentObject = new SerializedObject(configComponent);
+                string assetLocation = componentObject.FindProperty("m_AssetLocation")?.stringValue;
+                if (string.IsNullOrWhiteSpace(assetLocation))
+                {
+                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
+                        "启动配置未就绪：ConfigComponent.m_AssetLocation 为空。请在 Nova.prefab 的 ConfigComponent 中配置 ConfigRuntimeSO Asset 地址。",
+                        scenePath));
+                    return;
+                }
+
+                string demoRoot = NormalizePath(System.IO.Path.GetDirectoryName(scenePath));
+                ConfigRuntimeSO[] runtimes = AssetDatabase.FindAssets("t:ConfigRuntimeSO", new[] { demoRoot })
+                    .Select(AssetDatabase.GUIDToAssetPath)
+                    .Select(AssetDatabase.LoadAssetAtPath<ConfigRuntimeSO>)
+                    .Where(asset => asset != null && string.Equals(asset.name, assetLocation,
+                        StringComparison.Ordinal))
+                    .ToArray();
+                if (runtimes.Length != 1)
+                {
+                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
+                        $"启动配置未就绪：当前 Demo 范围内应唯一存在名称为 [{assetLocation}] 的 ConfigRuntimeSO，实际找到 {runtimes.Length} 个。\n" +
+                        $"配置出处：{scenePath} → ConfigComponent.m_AssetLocation\n查找范围：{demoRoot}",
+                        scenePath));
+                    return;
+                }
+
+                ConfigRuntimeSO runtime = runtimes[0];
+                string runtimePath = AssetDatabase.GetAssetPath(runtime);
+                ConfigMasterSO[] masters = AssetDatabase.FindAssets("t:ConfigMasterSO", new[] { demoRoot })
+                    .Select(AssetDatabase.GUIDToAssetPath)
+                    .Select(AssetDatabase.LoadAssetAtPath<ConfigMasterSO>)
+                    .Where(asset => asset != null && asset.ExportTarget == runtime)
+                    .ToArray();
+                if (masters.Length != 1)
+                {
+                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
+                        $"启动配置来源未就绪：应唯一存在 ExportTarget 指向当前 ConfigRuntimeSO 的 ConfigMasterSO，实际找到 {masters.Length} 个。\n" +
+                        $"运行时导出：{runtimePath}\n查找范围：{demoRoot}", runtimePath));
+                    return;
+                }
+
+                ConfigMasterSO master = masters[0];
+                string masterPath = AssetDatabase.GetAssetPath(master);
+                s_LastConfigMaster = master;
+                s_LastConfigRuntime = runtime;
+                ValidateConfigExport(runtime, master, runtimePath, masterPath, report);
+                ValidateConfigRuntime(runtime, runtimePath, masterPath, report);
+            }
+
+            /// <summary>
+            /// 清理上一次 Guard 留下的 ConfigWindow 导航上下文，避免场景切换后跳转旧资产。
+            /// </summary>
+            private static void ResetLastConfigSource()
+            {
+                s_LastConfigMaster = null;
+                s_LastConfigRuntime = null;
+                s_LastConfigSection = ConfigNavigationSection.App;
+                s_LastConfigType = null;
+                s_HasLastConfigNavigation = false;
+            }
+
+            /// <summary>
+            /// 打开最近一次启动配置检查对应的 ConfigWindow 应用配置面板。
+            /// </summary>
+            private static void OpenLastConfigSource()
+            {
+                if (s_LastConfigMaster == null || s_LastConfigRuntime == null)
+                {
+                    ConfigWindow.Open();
+                    return;
+                }
+
+                PlatformType platform = s_LastConfigRuntime.Platform;
+                ChannelType channel = s_LastConfigRuntime.Channel;
+                DevelopMode developMode = s_LastConfigRuntime.DevelopMode;
+                switch (s_LastConfigSection)
+                {
+                    case ConfigNavigationSection.Namespace:
+                        ConfigWindow.OpenNamespaceConfigSection(s_LastConfigMaster, platform, channel, developMode);
+                        break;
+                    case ConfigNavigationSection.SDK when s_LastConfigType != null:
+                        ConfigWindow.OpenSDKConfigSection(s_LastConfigMaster, platform, channel, developMode,
+                            s_LastConfigType);
+                        break;
+                    case ConfigNavigationSection.Kit when s_LastConfigType != null:
+                        ConfigWindow.OpenKitConfigSection(s_LastConfigMaster, platform, channel, developMode,
+                            s_LastConfigType);
+                        break;
+                    default:
+                        ConfigWindow.OpenAppConfigSection(s_LastConfigMaster, platform, channel, developMode);
+                        break;
+                }
+            }
+
+            /// <summary>
+            /// 校验已导出的运行时配置是否满足启动要求，并为每个异常字段给出设计态入口与导出来源。
+            /// </summary>
+            /// <param name="runtime">当前 Demo 实际使用的 ConfigRuntimeSO。</param>
+            /// <param name="runtimePath">运行时导出资产路径。</param>
+            /// <param name="masterPath">对应 ConfigMasterSO 设计态来源路径。</param>
+            /// <param name="report">问题收集报告。</param>
+            private static void ValidateConfigRuntime(ConfigRuntimeSO runtime, string runtimePath,
+                string masterPath, NovaGuardReport report)
+            {
+                if (runtime == null)
+                {
+                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
+                        "启动配置未就绪：未找到当前 Demo 实际使用的 ConfigRuntimeSO。请检查 ConfigComponent.m_AssetLocation 与配置导出结果。",
+                        runtimePath));
+                    return;
+                }
+
+                AppConfigs appConfigs = runtime.AppConfigs;
+                if (appConfigs == null)
+                {
+                    AddConfigIssue(report, "NOVA-CONFIG-003", runtime, runtimePath, masterPath,
+                        "AppConfigs", "导出值为 null。", "Nova/Open Config → 通用配置 → 应用配置");
+                    return;
+                }
+
+                ValidateAppId(appConfigs.AppID, runtime, runtimePath, masterPath, report);
+                ValidateAesField("AppAesKey", appConfigs.AppAesKey, runtime, runtimePath, masterPath, report);
+                ValidateAesField("AppAesIV", appConfigs.AppAesIV, runtime, runtimePath, masterPath, report);
+                if (string.IsNullOrWhiteSpace(runtime.Namespace))
+                {
+                    AddConfigIssue(report, "NOVA-CONFIG-003", runtime, runtimePath, masterPath,
+                        "Namespace", "必填字段为空。",
+                        "Nova/Open Config → 通用配置 → 名字空间配置");
+                }
+                ValidateExportedPlaceholders(runtime, runtimePath, masterPath, report);
+            }
+
+            /// <summary>
+            /// 校验设计态 AppConfigs 与运行时导出物是否一致，避免项目组修改 ConfigMasterSO 后漏点导出。
+            /// </summary>
+            private static void ValidateConfigExport(ConfigRuntimeSO runtime, ConfigMasterSO master,
+                string runtimePath, string masterPath, NovaGuardReport report)
+            {
+                if (master == null)
+                {
+                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
+                        $"启动配置来源未就绪：找不到导出到 {DisplayPath(runtimePath)} 的 ConfigMasterSO。请检查 ConfigMasterSO.ExportTarget。",
+                        runtimePath));
+                    return;
+                }
+
+                if (master.ExportTarget != runtime)
+                {
+                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
+                        $"启动配置导出目标不一致：ConfigMasterSO.ExportTarget 未指向当前 Demo 使用的 ConfigRuntimeSO。\n" +
+                        $"设计态来源：{DisplayPath(masterPath)}\n运行时导出：{DisplayPath(runtimePath)}",
+                        runtimePath));
+                    return;
+                }
+
+                if (!master.TryGetEntry(runtime.Platform, runtime.Channel, out PlatformChannelEntry entry))
+                {
+                    AddConfigIssue(report, "NOVA-CONFIG-004", runtime, runtimePath, masterPath,
+                        "AppConfigs", "ConfigMasterSO 中不存在当前导出坐标。请补齐配置并重新导出。",
+                        "Nova/Open Config → 通用配置 → 应用配置");
+                    return;
+                }
+
+                AppConfigs source = null;
+                for (int i = 0; i < entry.AppConfigsByMode.Count; i++)
+                {
+                    DevelopModeAppConfigsEntry modeEntry = entry.AppConfigsByMode[i];
+                    if (modeEntry != null && modeEntry.Mode == runtime.DevelopMode)
+                    {
+                        source = modeEntry.Config;
+                        break;
+                    }
+                }
+
+                var changedFields = new List<string>();
+                CompareField(changedFields, "AppID", source?.AppID, runtime.AppConfigs?.AppID);
+                CompareField(changedFields, "AppAesKey", source?.AppAesKey, runtime.AppConfigs?.AppAesKey);
+                CompareField(changedFields, "AppAesIV", source?.AppAesIV, runtime.AppConfigs?.AppAesIV);
+                CompareField(changedFields, "CustomConfigCmdName", source?.CustomConfigCmdName,
+                    runtime.AppConfigs?.CustomConfigCmdName);
+                CompareField(changedFields, "CustomName", source?.CustomName, runtime.AppConfigs?.CustomName);
+                if (changedFields.Count > 0)
+                {
+                    AddConfigIssue(report, "NOVA-CONFIG-004", runtime, runtimePath, masterPath,
+                        string.Join("、", changedFields),
+                        "ConfigMasterSO 已修改但 ConfigRuntimeSO 尚未重新导出。请保存并重新导出当前坐标。",
+                        "Nova/Open Config → 通用配置 → 应用配置");
+                }
+
+                ValidateEnabledTypeExport("SDK", "EnabledSDKConfigs", master.EnabledSDKs,
+                    runtime.EnabledSDKConfigs.Where(config => config != null)
+                        .Select(config => config.GetType().FullName),
+                    runtime, runtimePath, masterPath, report);
+                ValidateEnabledTypeExport("Kit", "EnabledKitConfigs", master.EnabledKits,
+                    runtime.EnabledKitConfigs.Where(config => config != null)
+                        .Select(config => config.GetType().FullName),
+                    runtime, runtimePath, masterPath, report);
+            }
+
+            /// <summary>
+            /// 校验设计态启用白名单与运行时导出的 SDK/Kit 配置类型集合是否完全一致。
+            /// </summary>
+            private static void ValidateEnabledTypeExport(string groupName, string fieldPath,
+                IEnumerable<string> sourceTypes, IEnumerable<string> runtimeTypes,
+                ConfigRuntimeSO runtime, string runtimePath, string masterPath, NovaGuardReport report)
+            {
+                string[] expected = (sourceTypes ?? Array.Empty<string>())
+                    .Where(typeName => !string.IsNullOrWhiteSpace(typeName))
+                    .Distinct(StringComparer.Ordinal).OrderBy(typeName => typeName, StringComparer.Ordinal).ToArray();
+                string[] actual = (runtimeTypes ?? Array.Empty<string>())
+                    .Where(typeName => !string.IsNullOrWhiteSpace(typeName))
+                    .Distinct(StringComparer.Ordinal).OrderBy(typeName => typeName, StringComparer.Ordinal).ToArray();
+                string[] missing = expected.Except(actual, StringComparer.Ordinal).ToArray();
+                string[] unexpected = actual.Except(expected, StringComparer.Ordinal).ToArray();
+                if (missing.Length == 0 && unexpected.Length == 0)
+                {
+                    return;
+                }
+
+                string reason =
+                    $"设计态启用列表与运行时导出不一致。缺失=[{string.Join(", ", missing)}]，多余=[{string.Join(", ", unexpected)}]。请检查启用项及对应配置并重新导出。";
+                Type configType = ResolveLoadedType(missing.FirstOrDefault() ?? unexpected.FirstOrDefault());
+                ConfigNavigationSection? section = configType == null
+                    ? null
+                    : groupName == "SDK" ? ConfigNavigationSection.SDK : ConfigNavigationSection.Kit;
+                AddConfigIssue(report, "NOVA-CONFIG-004", runtime, runtimePath, masterPath,
+                    fieldPath, reason, $"Nova/Open Config → {groupName} 配置", section, configType);
+            }
+
+            /// <summary>
+            /// 比较单个应用配置字段，仅记录字段路径，不记录字段值，避免密钥进入日志。
+            /// </summary>
+            private static void CompareField(List<string> changedFields, string fieldName,
+                string sourceValue, string runtimeValue)
+            {
+                if (!string.Equals(sourceValue, runtimeValue, StringComparison.Ordinal))
+                {
+                    changedFields.Add($"AppConfigs.{fieldName}");
+                }
+            }
+
+            /// <summary>
+            /// 校验 AppID 是否已经由公开包占位符替换为有效的正整数配置。
+            /// </summary>
+            private static void ValidateAppId(string value, ConfigRuntimeSO runtime, string runtimePath,
+                string masterPath, NovaGuardReport report)
+            {
+                const string fieldName = "AppID";
+                if (ContainsPublicPlaceholder(value))
+                {
+                    AddPlaceholderIssue(report, runtime, runtimePath, masterPath,
+                        $"AppConfigs.{fieldName}", AppConfigEntry(fieldName));
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(value) || !int.TryParse(value, out int appId) || appId <= 0)
+                {
+                    AddConfigIssue(report, "NOVA-CONFIG-003", runtime, runtimePath, masterPath,
+                        $"AppConfigs.{fieldName}", "必须配置为有效的正整数 App ID。", AppConfigEntry(fieldName));
+                }
+            }
+
+            /// <summary>
+            /// 校验 AES 字段是否为项目真实参数且 UTF-8 长度严格等于 16 字节。
+            /// </summary>
+            private static void ValidateAesField(string fieldName, string value, ConfigRuntimeSO runtime,
+                string runtimePath, string masterPath, NovaGuardReport report)
+            {
+                string fieldPath = $"AppConfigs.{fieldName}";
+                string configEntry = AppConfigEntry(fieldName);
+                if (ContainsPublicPlaceholder(value))
+                {
+                    AddPlaceholderIssue(report, runtime, runtimePath, masterPath, fieldPath, configEntry);
+                    return;
+                }
+
+                int byteCount = string.IsNullOrEmpty(value) ? 0 : Encoding.UTF8.GetByteCount(value);
+                if (byteCount != c_AesSecretByteLength)
+                {
+                    AddConfigIssue(report, "NOVA-CONFIG-003", runtime, runtimePath, masterPath,
+                        fieldPath, $"当前 {byteCount} 字节，必须为 {c_AesSecretByteLength} 字节 UTF-8 字符串。",
+                        configEntry);
+                }
+            }
+
+            /// <summary>
+            /// 扫描已启用 SDK/Kit 的运行时序列化字符串，拦截发布脱敏后仍未替换的 YOUR_ 占位符。
+            /// </summary>
+            private static void ValidateExportedPlaceholders(ConfigRuntimeSO runtime, string runtimePath,
+                string masterPath, NovaGuardReport report)
+            {
+                var serializedObject = new SerializedObject(runtime);
+                SerializedProperty property = serializedObject.GetIterator();
+                while (property.NextVisible(true))
+                {
+                    if (property.propertyType != SerializedPropertyType.String ||
+                        property.propertyPath.StartsWith("AppConfigs.", StringComparison.Ordinal) ||
+                        !ContainsPublicPlaceholder(property.stringValue))
+                    {
+                        continue;
+                    }
+
+                    string configEntry = ResolveConfigEntry(runtime, property.propertyPath);
+                    AddConfigIssue(report, "NOVA-CONFIG-002", runtime, runtimePath, masterPath,
+                        property.propertyPath,
+                        "仍包含 YOUR_ 占位符，当前 Demo 所需参数尚未配置。请配置项目真实参数并重新导出。",
+                        configEntry);
+                }
+            }
+
+            /// <summary>
+            /// 根据 ConfigRuntimeSO 序列化路径还原 ConfigWindow 中对应的配置面板入口。
+            /// </summary>
+            private static string ResolveConfigEntry(ConfigRuntimeSO runtime, string propertyPath)
+            {
+                if (TryParseArrayIndex(propertyPath, "EnabledSDKConfigs.Array.data[", out int sdkIndex) &&
+                    sdkIndex >= 0 && sdkIndex < runtime.EnabledSDKConfigs.Count)
+                {
+                    return $"Nova/Open Config → SDK 配置 → {runtime.EnabledSDKConfigs[sdkIndex]?.DisplayName ?? "未知 SDK"}";
+                }
+
+                if (TryParseArrayIndex(propertyPath, "EnabledKitConfigs.Array.data[", out int kitIndex) &&
+                    kitIndex >= 0 && kitIndex < runtime.EnabledKitConfigs.Count)
+                {
+                    return $"Nova/Open Config → Kit 配置 → {runtime.EnabledKitConfigs[kitIndex]?.DisplayName ?? "未知 Kit"}";
+                }
+
+                return "Nova/Open Config";
+            }
+
+            /// <summary>
+            /// 从 Unity 数组序列化路径中解析目标元素索引。
+            /// </summary>
+            private static bool TryParseArrayIndex(string propertyPath, string prefix, out int index)
+            {
+                index = -1;
+                if (string.IsNullOrEmpty(propertyPath) || !propertyPath.StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                int end = propertyPath.IndexOf(']', prefix.Length);
+                return end > prefix.Length && int.TryParse(
+                    propertyPath.Substring(prefix.Length, end - prefix.Length), out index);
+            }
+
+            /// <summary>
+            /// 添加公开包占位符问题，不输出字段当前值，避免敏感信息进入日志。
+            /// </summary>
+            private static void AddPlaceholderIssue(NovaGuardReport report, ConfigRuntimeSO runtime,
+                string runtimePath, string masterPath, string fieldPath, string configEntry)
+            {
+                AddConfigIssue(report, "NOVA-CONFIG-002", runtime, runtimePath, masterPath, fieldPath,
+                    "仍为公开包占位符。请配置项目真实参数并重新导出。", configEntry);
+            }
+
+            /// <summary>
+            /// 添加带字段、配置入口、设计态来源、运行时导出物和导出坐标的启动配置问题。
+            /// </summary>
+            private static void AddConfigIssue(NovaGuardReport report, string ruleId, ConfigRuntimeSO runtime,
+                string runtimePath, string masterPath, string fieldPath, string reason, string configEntry,
+                ConfigNavigationSection? section = null, Type configType = null)
+            {
+                RememberConfigNavigation(runtime, fieldPath, section, configType);
+                string message =
+                    $"配置异常：{fieldPath}，{reason}\n" +
+                    $"配置入口：{configEntry}\n" +
+                    $"设计态来源：{DisplayPath(masterPath)}\n" +
+                    $"运行时导出：{DisplayPath(runtimePath)}\n" +
+                    $"当前导出坐标：Platform={runtime.Platform}, Channel={runtime.Channel}, DevelopMode={runtime.DevelopMode}";
+                report.Add(new NovaGuardIssue(ruleId, NovaGuardSeverity.Error, message, runtimePath));
+            }
+
+            /// <summary>
+            /// 记录首个配置错误对应的具体面板；弹窗按钮始终跳到用户最先需要修复的位置。
+            /// </summary>
+            private static void RememberConfigNavigation(ConfigRuntimeSO runtime, string fieldPath,
+                ConfigNavigationSection? section, Type configType)
+            {
+                if (s_HasLastConfigNavigation)
+                {
+                    return;
+                }
+
+                if (section.HasValue)
+                {
+                    s_LastConfigSection = section.Value;
+                    s_LastConfigType = configType;
+                }
+                else if (string.Equals(fieldPath, "Namespace", StringComparison.Ordinal))
+                {
+                    s_LastConfigSection = ConfigNavigationSection.Namespace;
+                }
+                else if (TryParseArrayIndex(fieldPath, "EnabledSDKConfigs.Array.data[", out int sdkIndex) &&
+                         sdkIndex >= 0 && sdkIndex < runtime.EnabledSDKConfigs.Count)
+                {
+                    s_LastConfigSection = ConfigNavigationSection.SDK;
+                    s_LastConfigType = runtime.EnabledSDKConfigs[sdkIndex]?.GetType();
+                }
+                else if (TryParseArrayIndex(fieldPath, "EnabledKitConfigs.Array.data[", out int kitIndex) &&
+                         kitIndex >= 0 && kitIndex < runtime.EnabledKitConfigs.Count)
+                {
+                    s_LastConfigSection = ConfigNavigationSection.Kit;
+                    s_LastConfigType = runtime.EnabledKitConfigs[kitIndex]?.GetType();
+                }
+                else
+                {
+                    s_LastConfigSection = ConfigNavigationSection.App;
+                }
+
+                s_HasLastConfigNavigation = true;
+            }
+
+            /// <summary>
+            /// 从当前已加载程序集解析 ConfigMaster 启用列表中的配置类型全名。
+            /// </summary>
+            private static Type ResolveLoadedType(string typeName)
+            {
+                if (string.IsNullOrWhiteSpace(typeName))
+                {
+                    return null;
+                }
+
+                foreach (System.Reflection.Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    Type type = assembly.GetType(typeName, false);
+                    if (type != null)
+                    {
+                        return type;
+                    }
+                }
+                return null;
+            }
+
+            /// <summary>
+            /// 判断字符串是否仍包含公开包脱敏流程写入的 YOUR_ 占位符。
+            /// </summary>
+            private static bool ContainsPublicPlaceholder(string value)
+                => !string.IsNullOrEmpty(value) && value.IndexOf("YOUR_", StringComparison.Ordinal) >= 0;
+
+            /// <summary>
+            /// 返回应用配置字段在 ConfigWindow 中的精确导航路径。
+            /// </summary>
+            private static string AppConfigEntry(string fieldName)
+                => $"Nova/Open Config → 通用配置 → 应用配置 → {fieldName}";
+
+            /// <summary>
+            /// 将空资产路径转成可读占位说明。
+            /// </summary>
+            private static string DisplayPath(string path)
+                => string.IsNullOrEmpty(path) ? "未找到" : path;
+
+            /// <summary>
+            /// 测试入口：对指定运行时配置执行字段级启动就绪诊断。
+            /// </summary>
+            private static NovaGuardReport ValidateConfigRuntimeForDiagnostics(ConfigRuntimeSO runtime,
+                string runtimePath, string masterPath)
+            {
+                var report = new NovaGuardReport();
+                ValidateConfigRuntime(runtime, runtimePath, masterPath, report);
+                return report;
+            }
+
+            /// <summary>
+            /// 测试入口：校验设计态配置与运行时导出物的一致性。
+            /// </summary>
+            private static NovaGuardReport ValidateConfigExportForDiagnostics(ConfigRuntimeSO runtime,
+                ConfigMasterSO master, string runtimePath, string masterPath)
+            {
+                var report = new NovaGuardReport();
+                ValidateConfigExport(runtime, master, runtimePath, masterPath, report);
+                return report;
+            }
+        }
+    }
+}

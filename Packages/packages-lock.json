@@ -1,28 +1,14 @@
 {
   "dependencies": {
     "com.applovin.mediation.adapters.bidmachine.android": {
-      "version": "3010101.0.0",
+      "version": "3070000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.bidmachine.ios": {
-      "version": "301020000.0.0",
-      "depth": 1,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://unity.packages.applovin.com"
-    },
-    "com.applovin.mediation.adapters.bigoads.android": {
-      "version": "5010001.0.0",
-      "depth": 1,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://unity.packages.applovin.com"
-    },
-    "com.applovin.mediation.adapters.bigoads.ios": {
-      "version": "4060000.0.0",
+      "version": "307000000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
@@ -43,14 +29,14 @@
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.chartboost.android": {
-      "version": "9070004.0.0",
+      "version": "9110100.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.chartboost.ios": {
-      "version": "9070002.0.0",
+      "version": "9110000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
@@ -64,21 +50,21 @@
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.facebook.ios": {
-      "version": "6200100.0.0",
+      "version": "6210100.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.fyber.android": {
-      "version": "8040200.0.0",
+      "version": "8040300.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.fyber.ios": {
-      "version": "8040200.0.0",
+      "version": "8040600.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
@@ -92,7 +78,7 @@
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.google.ios": {
-      "version": "12110000.0.0",
+      "version": "13040000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
@@ -106,112 +92,105 @@
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.googleadmanager.ios": {
-      "version": "12110000.0.0",
+      "version": "13040000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.inmobi.android": {
-      "version": "11010100.0.0",
+      "version": "11030000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.inmobi.ios": {
-      "version": "11010000.0.0",
+      "version": "11030000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.ironsource.android": {
-      "version": "902000000.0.0",
+      "version": "904030000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.ironsource.ios": {
-      "version": "902000000.0.0",
+      "version": "904010000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.mintegral.android": {
-      "version": "16099100.0.0",
+      "version": "17016100.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.mintegral.ios": {
-      "version": "707090000.0.0",
+      "version": "801040000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.moloco.android": {
-      "version": "4040000.0.0",
+      "version": "4080100.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.moloco.ios": {
-      "version": "4020000.0.0",
-      "depth": 1,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://unity.packages.applovin.com"
-    },
-    "com.applovin.mediation.adapters.pubmatic.android": {
-      "version": "4030000.0.0",
-      "depth": 1,
-      "source": "registry",
-      "dependencies": {},
-      "url": "https://unity.packages.applovin.com"
-    },
-    "com.applovin.mediation.adapters.pubmatic.ios": {
-      "version": "4030000.0.0",
+      "version": "4050100.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.unityads.android": {
-      "version": "4160400.0.0",
+      "version": "4180000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.unityads.ios": {
-      "version": "4160400.0.0",
+      "version": "4180100.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.vungle.android": {
-      "version": "7060000.0.0",
+      "version": "7070200.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.vungle.ios": {
-      "version": "7060100.0.0",
+      "version": "7070200.0.0",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://unity.packages.applovin.com"
+    },
+    "com.applovin.mediation.adapters.yandex.android": {
+      "version": "8010000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.ads": {
-      "version": "8.5.0",
+      "version": "8.6.4",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -325,7 +304,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.1",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.0.6",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0",
@@ -337,7 +316,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.1",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.0.6"
       }
@@ -458,38 +437,35 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework.sdk.ad": "1.1.0",
-        "com.applovin.mediation.ads": "8.5.0",
-        "com.applovin.mediation.adapters.bidmachine.android": "3010101.0.0",
-        "com.applovin.mediation.adapters.bidmachine.ios": "301020000.0.0",
-        "com.applovin.mediation.adapters.bigoads.android": "5010001.0.0",
-        "com.applovin.mediation.adapters.bigoads.ios": "4060000.0.0",
+        "com.solotopia.nova.framework.sdk.ad": "1.1.1",
+        "com.applovin.mediation.ads": "8.6.4",
+        "com.applovin.mediation.adapters.bidmachine.android": "3070000.0.0",
+        "com.applovin.mediation.adapters.bidmachine.ios": "307000000.0.0",
         "com.applovin.mediation.adapters.bytedance.android": "801000300.0.0",
         "com.applovin.mediation.adapters.bytedance.ios": "801000600.0.0",
-        "com.applovin.mediation.adapters.chartboost.android": "9070004.0.0",
-        "com.applovin.mediation.adapters.chartboost.ios": "9070002.0.0",
+        "com.applovin.mediation.adapters.chartboost.android": "9110100.0.0",
+        "com.applovin.mediation.adapters.chartboost.ios": "9110000.0.0",
         "com.applovin.mediation.adapters.facebook.android": "6200000.0.0",
-        "com.applovin.mediation.adapters.facebook.ios": "6200100.0.0",
-        "com.applovin.mediation.adapters.fyber.android": "8040200.0.0",
-        "com.applovin.mediation.adapters.fyber.ios": "8040200.0.0",
+        "com.applovin.mediation.adapters.facebook.ios": "6210100.0.0",
+        "com.applovin.mediation.adapters.fyber.android": "8040300.0.0",
+        "com.applovin.mediation.adapters.fyber.ios": "8040600.0.0",
         "com.applovin.mediation.adapters.google.android": "25030000.0.0",
-        "com.applovin.mediation.adapters.google.ios": "12110000.0.0",
+        "com.applovin.mediation.adapters.google.ios": "13040000.0.0",
         "com.applovin.mediation.adapters.googleadmanager.android": "25030000.0.0",
-        "com.applovin.mediation.adapters.googleadmanager.ios": "12110000.0.0",
-        "com.applovin.mediation.adapters.inmobi.android": "11010100.0.0",
-        "com.applovin.mediation.adapters.inmobi.ios": "11010000.0.0",
-        "com.applovin.mediation.adapters.ironsource.android": "902000000.0.0",
-        "com.applovin.mediation.adapters.ironsource.ios": "902000000.0.0",
-        "com.applovin.mediation.adapters.mintegral.android": "16099100.0.0",
-        "com.applovin.mediation.adapters.mintegral.ios": "707090000.0.0",
-        "com.applovin.mediation.adapters.moloco.android": "4040000.0.0",
-        "com.applovin.mediation.adapters.moloco.ios": "4020000.0.0",
-        "com.applovin.mediation.adapters.pubmatic.android": "4030000.0.0",
-        "com.applovin.mediation.adapters.pubmatic.ios": "4030000.0.0",
-        "com.applovin.mediation.adapters.unityads.android": "4160400.0.0",
-        "com.applovin.mediation.adapters.unityads.ios": "4160400.0.0",
-        "com.applovin.mediation.adapters.vungle.android": "7060000.0.0",
-        "com.applovin.mediation.adapters.vungle.ios": "7060100.0.0"
+        "com.applovin.mediation.adapters.googleadmanager.ios": "13040000.0.0",
+        "com.applovin.mediation.adapters.inmobi.android": "11030000.0.0",
+        "com.applovin.mediation.adapters.inmobi.ios": "11030000.0.0",
+        "com.applovin.mediation.adapters.ironsource.android": "904030000.0.0",
+        "com.applovin.mediation.adapters.ironsource.ios": "904010000.0.0",
+        "com.applovin.mediation.adapters.mintegral.android": "17016100.0.0",
+        "com.applovin.mediation.adapters.mintegral.ios": "801040000.0.0",
+        "com.applovin.mediation.adapters.moloco.android": "4080100.0.0",
+        "com.applovin.mediation.adapters.moloco.ios": "4050100.0.0",
+        "com.applovin.mediation.adapters.unityads.android": "4180000.0.0",
+        "com.applovin.mediation.adapters.unityads.ios": "4180100.0.0",
+        "com.applovin.mediation.adapters.vungle.android": "7070200.0.0",
+        "com.applovin.mediation.adapters.vungle.ios": "7070200.0.0",
+        "com.applovin.mediation.adapters.yandex.android": "8010000.0.0"
       }
     },
     "com.solotopia.nova.framework.sdk.tga": {

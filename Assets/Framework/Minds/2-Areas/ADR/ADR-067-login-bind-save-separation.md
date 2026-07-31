@@ -11,7 +11,8 @@ aliases:
 tags: [adr, nova, arch, module, network]
 supersedes: []
 superseded-by: []
-related: []
+related:
+  - "[[RES-004-login-third-party-bind-server-contract|RES-004]]"
 ---
 
 # ADR-067：登录/绑定/云存档三端职责分离
@@ -28,11 +29,18 @@ related: []
 
 三个 Kit 职责正交，编排权上移业务层：
 
-- **gamelogin**：只鉴权 + 取 uid。`PbNetLoginResp` 删 `guest_summary` / `existing_summary`；`Login.Async` 的 `openId` 只"读"绑定关系找 uid 登入，未绑返回 `ErrAccountNotFound(10404)`，不做绑定副作用。删除 `Login.BindResolveAsync` / `LoginKitConfig.BindResolveCmdName`；`LoginErrorCode` 移除绑定码 10401/10402/10403（保留 10400 顶号、10404）。
-- **gamebind（新建包 `com.solotopia.nova.framework.kit.network.gamebind`）**：只做账号归属裁决。三段独立协议 `BindAsync`（绑定，冲突返 10402+existing_uid）→ `QueryConflictAsync`（拉 existing 进度摘要）→ `ResolveAsync`（纯裁决，只返 final_uid + abandoned_uid，不碰数据、不碰登录态）。`BindSummary` 迁本包，uid 改 string 对齐主 uid，新增 extra/timestamp 字段。`BindErrorCode` 收录 10400/10401/10402/10403/10406（10406=ErrBindBusy 行锁竞争可重试；10402 在 resolve 并发复核到归属变化时也可能返回并提示重试）。
+- **gamelogin**：只鉴权 + 取 UID。`PbNetLoginResp` 删 `guest_summary` / `existing_summary`；`Login.Async` 的 `openid` 参数只"读"绑定关系找 UID 登入，未绑返回 `ErrAccountNotFound(10404)`，不做绑定副作用。删除 `Login.BindResolveAsync` / `LoginKitConfig.BindResolveCmdName`；`LoginErrorCode` 移除绑定码 10401/10402/10403（保留 10400 顶号、10404）。
+- **gamebind（新建包 `com.solotopia.nova.framework.kit.network.gamebind`）**：只做账号归属裁决。三段独立协议 `BindAsync`（绑定，冲突返 10402+existing_uid）→ `QueryConflictAsync`（拉 existing 进度摘要）→ `ResolveAsync`（纯裁决，返回 final_uid + abandoned_uid，不碰存档）。Resolve 成功后客户端必须以 `final_uid` 更新进程内登录身份，再由业务层编排存档覆盖。`BindSummary` 迁本包，UID 改为 string 对齐主 UID，新增 extra/timestamp 字段。`BindErrorCode` 收录 10400/10401/10402/10403/10406（10406=ErrBindBusy 行锁竞争可重试；10402 在 Resolve 并发复核到归属变化时也可能返回并提示重试）。
 - **gamesave**：proto 与 API 完全不动。数据覆盖由业务层编排：`choice=guest` → `SetFullAsync`（本地覆盖云端）；`choice=existing` → 切登录态后 `GetFullAsync`（云端覆盖本地）。
 
 三包平级、均只依赖主框架，互不依赖。
+
+### Header 身份与业务目标
+
+- 请求 Header 的 UID/OpenID 是当前会话已拥有的身份声明。
+- Bind、冲突查询与裁决的目标 OpenID 只进业务 Body，不得覆盖 Header OpenID，否则服务端可在业务前置校验返回 `10407`。
+- 响应 Header 是请求身份回显，不是绑定归属真相源；Login 使用登录业务 UID，Bind/Resolve 使用各自成功结果同步进程内 UID/OpenID。
+- 每次登录成功都会更新 UID 的最新 `device_id`；旧设备在后续受保护请求收到 `10400`。Resolve 成功后服务端也会把当前设备设为 `final_uid` 的最新设备。
 
 > **包依赖 vs sample 依赖的边界**：`gamebind` 运行时包**不依赖** `gamelogin`（`Bind` 零引用 `Login` 类型，登录态由宿主提供）——这是职责分离的硬约束，不可为图方便加包依赖。但 `GameBindDemo` **示例工程**为演示「先登录→再绑定」完整流程，其 sample asmdef 引用 `gamelogin`，故示例层依赖 `gamelogin` 包（在 gamebind 的 README / nova-samples.json 显式声明，提示项目组导入示例前需同装 gamelogin）。包级职责分离与示例级完整演示两不矛盾。
 
@@ -72,3 +80,4 @@ related: []
 ## 关联
 - 设计规格：`Docs/superpowers/specs/2026-07-02-login-bind-save-separation-design.md`
 - 相关 ADR：[[ADR-043-gamesave-full-explicit-flag|ADR-043]]
+- 服务端契约：[[RES-004-login-third-party-bind-server-contract|RES-004]]

@@ -60,12 +60,12 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         /// 初始化阶段 2：完整执行 AppsFlyer SDK 启动流程（SDK 初始化 → 注入 TGA 标识 → 启动并发布 AppsFlyer ID）。
         /// 步骤顺序：
         ///   ① setIsDebug + 创建 ConversionListener + initSDK + EnableTCFDataCollection；
-        ///   ② 通过 ITrackPlugin.FetchDataAsync 并行 await TGA 设备 ID / 访客 ID，写入 setAdditionalData；
+        ///   ② 通过 ITrackPlugin.FetchDataAsync 并行等待 TGA 设备 ID / 访客 ID，写入 setAdditionalData；
         ///   ③ iOS 上等待 ATT 授权（≤60 秒）后 startSDK；
         ///   ④ Editor 模式注入 mock 归因数据并发布 mock AFID，真机模式从 GetAppsFlyerID() 取真实 ID 后 PublishData。
         /// 调用前所有依赖（DevKey / AppId / SDKComponent）已在阶段 1 校验通过。
         /// </summary>
-        /// <param name="sdkComponent">阶段 1 拉到的 SDKComponent 句柄，用作 ConversionListener 父节点 + ITrackPlugin 来源。</param>
+        /// <param name="sdkComponent">阶段 1 拉到的 SDKComponent 句柄，用作 ConversionListener 父节点和 ITrackPlugin 来源。</param>
         /// <param name="ct">取消令牌，串联到 FetchDataAsync 调用。</param>
         /// <returns>SDK 启动完成的异步任务。</returns>
         private async UniTask InitializeAFSDKAsync(SDKComponent sdkComponent, CancellationToken ct)

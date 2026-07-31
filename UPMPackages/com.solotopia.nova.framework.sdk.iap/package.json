@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.iap",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - SDK - IAP",

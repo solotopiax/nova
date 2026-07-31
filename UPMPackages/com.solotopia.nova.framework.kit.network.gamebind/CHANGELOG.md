@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.0.7] - 2026-07-31
+
+### Added
+
+- `Bind` 新增只读 `OpenID` 属性，直接反映 `NetService` 的进程内 OpenID 缓存。
+- 补充 `ErrAccountNotFound`(10404) 与 `ErrOpenidUIDMismatch`(10407) 绑定错误码及可读日志。
+
+### Changed
+
+- 绑定、冲突查询和裁决的目标 `openid` 只写入业务 Body，请求 Header 仅声明当前身份；Bind/Resolve 成功后按业务结果同步 UID/OpenID。
+- 新增账号登录、三方绑定、顶号与存档编排的完整业务流程手册。
+- 三个公开方法的 OpenID 参数名统一为 `openid`。
+
 ## [0.0.6] - 2026-07-29
 
 ### Changed

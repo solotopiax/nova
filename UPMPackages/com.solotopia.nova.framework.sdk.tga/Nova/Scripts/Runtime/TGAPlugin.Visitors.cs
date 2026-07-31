@@ -23,9 +23,9 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         public override string Name => "TGA";
 
         /// <summary>
-        /// 获取插件初始化优先级。
+        /// 获取插件初始化优先级；TGA 优先级为 10，先于依赖其标识数据的插件初始化。
         /// </summary>
-        public override int Priority => 20;
+        public override int Priority => 10;
 
         /// <summary>
         /// TGA 运行时写入 FileFragment 的持久化分类名。

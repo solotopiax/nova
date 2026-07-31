@@ -155,7 +155,7 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Button("复制", 50f, true, () => QueueCopyProject(project));
                         EditorUtil.Draw.DangerButton("删除", 50f, true, () => QueueRemoveProject(project));
                     },
-                    index == 0);
+                    false);
                 if (!isOpen)
                 {
                     return;
@@ -626,7 +626,7 @@ namespace NovaFramework.Editor
                     () => EditorUtil.Draw.DangerButton(
                         "删除", 50f, true,
                         () => QueueRemoveLoadDescription(id.stringValue, title)),
-                    index == 0);
+                    false);
                 if (!isOpen)
                 {
                     return;

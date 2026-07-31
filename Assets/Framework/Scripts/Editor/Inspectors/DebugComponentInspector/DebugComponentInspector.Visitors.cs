@@ -41,6 +41,11 @@ namespace NovaFramework.Editor
         private List<string> m_ManagerTypeNames;
 
         /// <summary>
+        /// RuntimeDebugger 编译期禁用宏。
+        /// </summary>
+        private const string c_DisableRuntimeDebuggerDefine = "NOVA_DISABLE_RUNTIME_DEBUGGER";
+
+        /// <summary>
         /// 调试器配置文件相对工程根目录的路径。
         /// </summary>
         private const string c_ConfigFileRelPath = "../Library/Nova/DebugConfig.json";

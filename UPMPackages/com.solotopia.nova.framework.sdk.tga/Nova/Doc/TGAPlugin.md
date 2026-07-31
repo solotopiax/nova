@@ -35,6 +35,8 @@
 | `GetDeviceId()` | 读取 TGA 设备 ID |
 | `IDeviceIdProvider.GetDeviceID()` | 对外提供统一设备 ID 契约 |
 
+`TGAPluginConfig.AssignDeviceIdToDistinctId` 开启时，插件初始化后会先将 TGA `DeviceId` 写入 `DistinctId`，再发布 `TGADistinctId` 数据槽位。
+
 ### 2.3 用户属性
 
 | 成员 | 说明 |
@@ -63,14 +65,29 @@
 
 ## 3. 初始化与配置
 
+- `Priority => 10`，作为当前 SDK 初始化链的首个分桶，先于依赖 TGA 标识数据的插件初始化
+
 - `OnInitializeAsync(...)` 会读取 `TGAPluginConfig`
+- `Mode` 与 `TimeZone` 会直接使用 `TDMode` / `TDTimeZone` 配置值写入 `TDConfig`
 - `AppID` 为空或 `ServerCmdName` 无法解析为上报地址时，插件会跳过初始化
 - 初始化成功后会：
+  - 按配置将 `DeviceId` 同步到 `DistinctId`
   - 注册框架公共属性
   - 创建 `TGADynamicSuperPropertyListener`
   - 监听 `SDKEventData.UserLogin`
   - 通过 `TGAReportNetService` 上报 TGA 标识
   - 异步监听 `IAuthPlugin` 发布的 `SDKDataKeys.OpenId` / `SDKDataKeys.ThirdPlatform`，并通过 `UserSet` 写入 `nova_openid` / `nova_third_platform`
+
+### 3.1 初始化顺序
+
+1. 缓存 `TGAPluginConfig` 与 `TGAReportNetService`。
+2. 校验 `AppID` 与 `ServerCmdName`。
+3. 通过 Nova Network 模块将 `ServerCmdName` 解析为真实上报 URL。
+4. 构造 `TDConfig`，写入 `Mode`、`TimeZone`，并调用 `TDAnalytics.Init(...)`。
+5. 按配置同步 `DeviceId` 到 `DistinctId`，再写入框架默认属性。
+6. 创建动态公共属性监听器并启用自动采集。
+7. 发布 `TGADevicesId` / `TGADistinctId` 数据槽位，并启动 AppsFlyer ID 与第三方登录标识的异步桥接。
+8. 订阅登录事件，登录后发布 `TGAAccountId` 并向业务服务器上报 TGA 标识。
 
 ## 4. 使用示例
 

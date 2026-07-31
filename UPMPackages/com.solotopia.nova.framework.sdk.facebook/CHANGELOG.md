@@ -2,6 +2,14 @@
 
 This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`.
 
+## [Unreleased]
+
+## [0.1.1] - 2026-07-31
+
+### Changed
+
+- 将 `FacebookPlugin` 初始化优先级调整为 `40`。
+
 ## [0.1.0] - 2026-07-29
 
 ### Changed

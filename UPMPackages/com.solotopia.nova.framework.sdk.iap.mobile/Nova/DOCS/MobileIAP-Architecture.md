@@ -177,7 +177,7 @@ Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purc
 
 ## 10. 埋点边界
 
-Mobile Store 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装，覆盖初始化、用户发起购买、平台本地支付成功/失败、服务端验单失败/最终失败/成功，以及当前主动支付订单的首次验单失败。`nova_iap_local_pay_success` 的运行期打点去重按平台订单 key 执行：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`；`nova_order_id` 优先使用 Unity IAP receipt 解析出的平台 `OrderId`，缺失时回退当前运行期 `TransactionId`。支付过程失败打点的 `nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值：本地支付失败使用 0-8 与 1000-1010 号段，验单失败使用 2000+ 细分号段，`nova_reason_detail` 记录网络错误、协议错误、订单状态或凭据缺失等可读描述。`nova_iap_validate_success` 覆盖 `Verified`、`Delivered`、`Reissued` 三类服务端终态，其 `nova_order_id` 优先使用服务端验单响应 `OrderId`，缺失时回退当前运行期 `TransactionId`。
+Mobile Store 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装，覆盖初始化、用户发起购买、平台本地支付成功/失败、服务端验单失败/最终失败/成功，以及当前主动支付订单的首次验单失败。`nova_iap_local_pay_success` 的运行期打点去重按平台订单 key 执行：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`；`nova_order_id` 优先使用 Unity IAP receipt 解析出的平台 `OrderId`，缺失时回退当前运行期 `TransactionId`。支付过程失败打点的 `nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值：本地支付失败使用 0-9 与 1000-1010 号段，验单失败使用 2000+ 细分号段，`nova_reason_detail` 记录网络错误、协议错误、订单状态或凭据缺失等可读描述。`nova_iap_validate_success` 覆盖 `Verified`、`Delivered`、`Reissued` 三类服务端终态，其 `nova_order_id` 优先使用服务端验单响应 `OrderId`，缺失时回退当前运行期 `TransactionId`。
 
 所有 Mobile IAP 打点的渠道字段 `nova_channel`（TGA 侧对应 `solar_channel`）按编译平台区分：Android 上报 `google`，iOS 上报 `ios`，其他平台或非移动环境兜底 `mobile`。
 

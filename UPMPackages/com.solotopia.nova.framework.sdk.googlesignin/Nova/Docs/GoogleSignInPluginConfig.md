@@ -25,7 +25,7 @@ public sealed class GoogleSignInPluginConfig : ISDKPluginConfig
 | `FilterByAuthorizedAccounts` | 优先使用已授权账号。 |
 | `AutoSelectEnabled` | 允许系统自动选择账号。 |
 | `AutoRestoreOnInitialize` | 初始化时恢复上次登录。 |
-| `DisplayName => "Google"` | 配置界面显示名。 |
+| `DisplayName => "Google 登录"` | 配置界面显示名。 |
 
 ## Usage
 
@@ -38,7 +38,7 @@ var config = new GoogleSignInPluginConfig(
     autoRestoreOnInitialize: false);
 ```
 
-在 Nova SDK 初始化前注入配置。初始化后修改配置，不会自动重建原生登录状态。
+`GoogleSignInPlugin` 通过 `ConfigType` 声明该配置。配置在 ConfigMaster 中启用后，由 SDKManager 在初始化阶段自动解析并注入；业务代码不需要调用独立的手工注入 API。初始化后修改配置，不会自动重建原生登录状态。
 
 ## Android Credential Manager Flow
 

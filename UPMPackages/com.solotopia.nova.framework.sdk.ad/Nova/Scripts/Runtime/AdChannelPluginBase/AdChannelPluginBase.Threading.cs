@@ -19,7 +19,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
     {
         /// <summary>
         /// 将广告 SDK 生命周期回调排入 Unity 主线程，保持回调到达顺序。
-        /// 收益即时上报不要走此方法，使用 RaiseRevenueImmediately。
+        /// 业务事件和 UI 相关回调必须走此入口；状态机、批次通知和纯打点逻辑可以在 SDK 原始回调线程立即执行。
         /// </summary>
         /// <param name="action">需要在 Unity 主线程执行的回调逻辑。</param>
         protected void PostAdCallbackToMainThread(Action action)
@@ -37,7 +37,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 收益回调即时入口：immediateAction 和 Nova 收益事件均在 SDK 原始回调线程立刻执行。
+        /// 收益回调即时入口：immediateAction 在 SDK 原始回调线程立刻执行，Nova 收益事件排入 Unity 主线程。
         /// </summary>
         /// <param name="e">广告收益事件载荷。</param>
         /// <param name="immediateAction">不依赖 Unity 主线程的即时收益处理。</param>

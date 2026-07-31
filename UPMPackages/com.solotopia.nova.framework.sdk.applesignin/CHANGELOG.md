@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.0.9] - 2026-07-31
+
+### Changed
+
+- 将 `AppleSignInPlugin` 初始化优先级调整为 `50`。
+
 ## [0.0.8] - 2026-07-29
 
 ### Changed

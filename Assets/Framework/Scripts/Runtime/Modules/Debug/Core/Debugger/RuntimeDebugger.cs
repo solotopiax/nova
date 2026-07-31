@@ -105,7 +105,7 @@ public static class RuntimeDebugger
         // Load the debug service
         DebugServiceRegistry.GetService<IDebugService>();
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !NOVA_DISABLE_RUNTIME_DEBUGGER
         RuntimeScriptRecompileHelper.SetHasInitialized();
 #endif
     }

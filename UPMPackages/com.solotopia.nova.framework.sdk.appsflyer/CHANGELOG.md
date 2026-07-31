@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.1.1] - 2026-07-31
+
+### Changed
+
+- 将 `AppsFlyerPlugin` 初始化优先级调整为 `20`，确保在 TGA 标识数据就绪后初始化。
+
 ## [0.1.0] - 2026-07-29
 
 ### Changed

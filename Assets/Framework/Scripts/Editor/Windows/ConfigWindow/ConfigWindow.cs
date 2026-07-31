@@ -8,6 +8,8 @@
  * descrip:   Nova 全局环境配置窗口
  ***************************************************************/
 
+using System;
+using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEngine;
 using static NovaFramework.Editor.EditorUtil.Environment.LubanChecker;
@@ -27,6 +29,77 @@ namespace NovaFramework.Editor
         {
             ConfigWindow window = GetWindow<ConfigWindow>(false, c_WindowTitle, true);
             window.minSize = new Vector2(c_WindowMinWidth, c_WindowMinHeight);
+        }
+
+        /// <summary>
+        /// 打开应用配置面板并切换到启动 Guard 报告的实际导出坐标。
+        /// </summary>
+        /// <param name="master">当前 Demo 的设计态 ConfigMasterSO 来源。</param>
+        /// <param name="platform">运行时导出的目标平台。</param>
+        /// <param name="channel">运行时导出的目标渠道。</param>
+        /// <param name="developMode">运行时导出的开发模式。</param>
+        public static void OpenAppConfigSection(ConfigMasterSO master, PlatformType platform,
+            ChannelType channel, DevelopMode developMode)
+        {
+            OpenConfigSection(master, platform, channel, developMode, LeftTreeItem.AppConfig, null);
+        }
+
+        /// <summary>
+        /// 打开名字空间配置面板并切换到启动 Guard 报告的实际导出坐标。
+        /// </summary>
+        public static void OpenNamespaceConfigSection(ConfigMasterSO master, PlatformType platform,
+            ChannelType channel, DevelopMode developMode)
+        {
+            OpenConfigSection(master, platform, channel, developMode, LeftTreeItem.NamespaceConfig, null);
+        }
+
+        /// <summary>
+        /// 打开指定 SDK 配置面板并切换到启动 Guard 报告的实际导出坐标。
+        /// </summary>
+        public static void OpenSDKConfigSection(ConfigMasterSO master, PlatformType platform,
+            ChannelType channel, DevelopMode developMode, Type configType)
+        {
+            OpenConfigSection(master, platform, channel, developMode, LeftTreeItem.SDKNode, configType);
+        }
+
+        /// <summary>
+        /// 打开指定 Kit 配置面板并切换到启动 Guard 报告的实际导出坐标。
+        /// </summary>
+        public static void OpenKitConfigSection(ConfigMasterSO master, PlatformType platform,
+            ChannelType channel, DevelopMode developMode, Type configType)
+        {
+            OpenConfigSection(master, platform, channel, developMode, LeftTreeItem.KitNode, configType);
+        }
+
+        /// <summary>
+        /// 统一绑定 Guard 报告的设计态来源、导出坐标与左树目标。
+        /// </summary>
+        private static void OpenConfigSection(ConfigMasterSO master, PlatformType platform,
+            ChannelType channel, DevelopMode developMode, LeftTreeItem target, Type configType)
+        {
+            ConfigWindow window = GetWindow<ConfigWindow>(false, c_WindowTitle, true);
+            window.minSize = new Vector2(c_WindowMinWidth, c_WindowMinHeight);
+            if (master != null && !ReferenceEquals(window.m_Master, master))
+            {
+                window.RebindMaster(master);
+            }
+
+            if (window.m_WorkingCopy != null)
+            {
+                window.m_WorkingCopy.CurrentPlatform = platform;
+                window.m_WorkingCopy.CurrentChannel = channel;
+                window.m_WorkingCopy.CurrentDevelopMode = developMode;
+                window.m_LastKnownChannel = channel;
+            }
+            window.m_GroupExpandedCommon = target == LeftTreeItem.AppConfig ||
+                                           target == LeftTreeItem.NamespaceConfig ||
+                                           window.m_GroupExpandedCommon;
+            window.m_GroupExpandedSDK = target == LeftTreeItem.SDKNode || window.m_GroupExpandedSDK;
+            window.m_GroupExpandedKit = target == LeftTreeItem.KitNode || window.m_GroupExpandedKit;
+            window.m_SelectedItem = target;
+            window.m_SelectedPluginType = configType;
+            window.Focus();
+            window.Repaint();
         }
 
         /// <summary>

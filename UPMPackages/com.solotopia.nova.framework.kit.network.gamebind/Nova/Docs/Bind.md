@@ -10,7 +10,9 @@
 
 > 通过 `Nova.Network.Kit<Bind>()` 获取实例，不继承任何基类，无参构造即可使用。
 >
-> **职责边界：** 本类只负责账号归属裁决（open_id 绑哪个 uid、冲突时谁为主），**不处理存档数据覆盖**（本地覆盖云端 / 云端覆盖本地），也**不改动本地登录态**。数据流向与登录态切换由业务层配合 `GameSave` / `GameLogin` 模块编排。
+> **职责边界：** 本类只负责账号归属裁决（OpenID 绑定哪个 UID、冲突时谁为主），**不处理存档数据覆盖**。Bind/Resolve 成功后以权威业务结果同步 `NetService` 身份。
+>
+> 完整业务编排见 [账号登录与三方绑定业务流程](./AccountLoginAndThirdPartyBindFlow.md)。
 
 ---
 
@@ -33,9 +35,10 @@
 | 签名 | 说明 |
 |---|---|
 | `public void SetDebugMode(bool debugMode)` | 设置本实例调试模式覆盖；仅影响本实例发出的请求；`false` 时不等于关闭全局，仅取消覆盖 |
-| `public UniTask<NetResponse<PbNetBindResp>> BindAsync(int provider, string openId)` | 为当前账号绑定三方 openId；身份靠 `Header.Uid`（即 `NetService.Uid`，当前登录态）识别；命中 `ErrBindConflict`(10402) 时响应带 `ExistingUid`，需继续调 `QueryConflictAsync` + `ResolveAsync`；cmdName 取自 `BindKitConfig.BindCmdName` |
-| `public UniTask<NetResponse<PbNetBindConflictResp>> QueryConflictAsync(string openId)` | 查询绑定冲突详情，拉取对方账号（existing）进度摘要供玩家二选一决策；服务端自查 existing_uid，guest 侧摘要客户端本地取；cmdName 取自 `BindKitConfig.BindConflictCmdName` |
-| `public UniTask<NetResponse<PbNetBindResolveResp>> ResolveAsync(string openId, string choice, string verifyCode = null)` | 绑定冲突裁决；玩家二选一后调用，服务端做纯账号归属裁决，返回 `FinalUid` + `AbandonedUid`；不处理存档数据、不改动本地登录态；cmdName 取自 `BindKitConfig.BindResolveCmdName` |
+| `public string OpenID` | 当前进程内已确认归属于当前 UID 的 OpenID；直接读取 `NetService.OpenID`，不持久化 |
+| `public UniTask<NetResponse<PbNetBindResp>> BindAsync(int provider, string openid)` | 为当前账号绑定目标 OpenID；Header 只携带当前身份，目标只进 Body；成功后更新 `NetService.OpenID`；命中 10402 时继续冲突流程 |
+| `public UniTask<NetResponse<PbNetBindConflictResp>> QueryConflictAsync(string openid)` | 查询绑定冲突详情，拉取对方账号（existing）进度摘要供玩家二选一决策；服务端自查 existing_uid，guest 侧摘要客户端本地取；cmdName 取自 `BindKitConfig.BindConflictCmdName` |
+| `public UniTask<NetResponse<PbNetBindResolveResp>> ResolveAsync(string openid, string choice, string verifyCode = null)` | 绑定冲突裁决；返回 `FinalUid` + `AbandonedUid`，不处理存档数据；成功后以 `FinalUid` 和目标 OpenID 同步身份 |
 
 ### 参数选值
 
@@ -66,7 +69,7 @@
 var bind = Nova.Network.Kit<Bind>();
 
 // 1. 绑定
-var bindResp = await bind.BindAsync((int)PbNetChannel.Google, openId);
+var bindResp = await bind.BindAsync((int)PbNetChannel.Google, openid);
 if (bindResp.IsSuccess)
 {
     // 绑定成功，继续游戏
@@ -74,7 +77,7 @@ if (bindResp.IsSuccess)
 else if (bindResp.ErrorCode == BindErrorCode.ErrBindConflict)
 {
     // 2. 冲突：拉取对方账号进度摘要
-    var conflict = await bind.QueryConflictAsync(openId);
+    var conflict = await bind.QueryConflictAsync(openid);
     if (!conflict.IsSuccess) return;
     BindSummary existing = conflict.Data.ExistingSummary;
 
@@ -82,7 +85,7 @@ else if (bindResp.ErrorCode == BindErrorCode.ErrBindConflict)
     string choice = /* "guest" 或 "existing" */;
 
     // 4. 纯裁决
-    var resolve = await bind.ResolveAsync(openId, choice);
+    var resolve = await bind.ResolveAsync(openid, choice);
     if (!resolve.IsSuccess) return;
     string finalUid = resolve.Data.FinalUid;
 
@@ -100,7 +103,7 @@ else if (bindResp.ErrorCode == BindErrorCode.ErrBindConflict)
 | choice | 语义 | 业务层动作 |
 |---|---|---|
 | `"guest"` | 保留本地进度 → 本地覆盖云端 | `finalUid` 即当前账号；`Save.SetFullAsync(localPayload)` 上传本地整包到云端 |
-| `"existing"` | 保留云端进度 → 云端覆盖本地 | 切登录态到 `finalUid`（`Login.Async(finalUid, "")`）→ `Save.GetFullAsync()` 拉云端 → 覆盖本地持久化 |
+| `"existing"` | 保留云端进度 → 云端覆盖本地 | Resolve 已按业务 `FinalUid` 同步 UID/OpenID → `Save.GetFullAsync()` 拉云端 → 覆盖本地持久化 |
 
 ```csharp
 if (choice == "guest")
@@ -110,11 +113,7 @@ if (choice == "guest")
 }
 else // "existing"
 {
-    // 云端覆盖本地：先切登录态到 finalUid，再拉云端整包
-    if (finalUid != Nova.Network.Kit<Login>().UID)
-    {
-        await Nova.Network.Kit<Login>().Async(finalUid, string.Empty);
-    }
+    // 云端覆盖本地：Resolve 已按业务 FinalUid 同步最终身份
     var cloud = await Nova.Network.Kit<Save>().GetFullAsync();
     if (cloud.IsSuccess)
     {
@@ -129,9 +128,11 @@ else // "existing"
 
 ## 5. 内部约束
 
-- **身份靠 `Header.Uid`**：三个接口的 `Header` 均由 `NetBuilder.BuildHeader()` 自动填充，`Header.Uid` 取自 `NetService.Uid`（当前登录态），业务侧无需传 uid；绑定前提是已登录。
+- **Header 只声明当前身份**：三个接口均使用 `NetBuilder.BuildHeader()` 携带 `NetService.UID/OpenID`；方法参数 `openid` 是目标身份，只写入业务 Body。
+- **裁决后的身份同步**：`ResolveAsync` 以业务响应 `FinalUid` 与目标 OpenID 覆盖进程内身份；响应 Header 只是请求身份回显。
+- **仅进程内缓存**：Bind 不写 PlayerPrefs、FileFragment 或 SQLite；进程重启后 OpenID 为空。
 - **`BindAsync` 冲突信号**：`ErrBindConflict`(10402) 响应仅带 `ExistingUid`（轻量），不带摘要；摘要需另调 `QueryConflictAsync` 获取。
-- **`ResolveAsync` 不碰数据、不碰登录态**：裁决只返回账号归属（`FinalUid` / `AbandonedUid`）；数据覆盖与登录态切换由业务层显式编排，本类不做任何隐式写回。
+- **`ResolveAsync` 不碰存档**：裁决返回账号归属（`FinalUid` / `AbandonedUid`）并更新进程内身份；存档覆盖仍由业务层显式编排。
 - **不支持解绑/改绑**：系统不提供独立的解绑/改绑接口；open_id 已绑他人时仅"双方均有进度"触发 10402 二选一，其余情况返回 `ErrOpenidAlreadyBound`(10401)。
 - **`Head` 自动填充**：所有入口内部调用 `NetBuilder.BuildHeader()`，业务侧无需手动构建 Header。
 - **失败分支码值归类**：三个接口失败时按 `BindErrorCode` 归类码值打可读日志（`LogBindError`），不改变返回值，业务侧仍按 `resp.ErrorCode` 自行分支。

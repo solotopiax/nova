@@ -21,9 +21,9 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public override string Name => "AdPlugin";
 
         /// <summary>
-        /// 初始化优先级；在现有收益打点插件之后初始化，确保广告渠道能缓存可用的打点实例。
+        /// 初始化优先级为 80；在现有收益打点插件之后初始化，确保广告渠道能缓存可用的打点实例。
         /// </summary>
-        public override int Priority => 120;
+        public override int Priority => 80;
 
         /// <summary>
         /// 所有已注册渠道插件；OnInitializeAsync 从全量 ISDKPlugin 中过滤 IAdInternalPlugin 填充。

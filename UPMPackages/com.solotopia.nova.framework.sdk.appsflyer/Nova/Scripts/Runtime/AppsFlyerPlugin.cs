@@ -28,7 +28,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
       
         /// <summary>
         /// 异步初始化AppsFlyer SDK。
-        /// config 为 SDKManager 按 RequiredConfigType 自动从 IConfigManager 注入的 AppsFlyerPluginConfig；
+        /// config 为 SDKManager 按 ConfigType 自动从 IConfigManager 注入的 AppsFlyerPluginConfig；
         /// 内部按其 DevKey / AppId / LogEnable 字段初始化 AppsFlyer SDK。
         /// Editor环境下注入虚拟归因数据以供本地调试。
         /// </summary>
@@ -43,7 +43,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         /// <summary>
         /// AppsFlyer SDK 实际初始化逻辑（async 实现）。
         /// 抽取为独立私有方法以保持 OnInitializeAsync 与基类 abstract 签名一致（无 async 修饰）。
-        /// 主流程按"配置解析 → SDK 启动（含初始化/注入 TGA/发布 AFID）→ 订阅事件"三个阶段串接，
+        /// 主流程按"配置解析 → 订阅事件 → SDK 启动（含初始化/注入 TGA/发布 AFID）"三个阶段串接，
         /// 每阶段封装为独立私有方法（详见 AppsFlyerPlugin.Methods.cs Init 步骤段）。
         /// </summary>
         /// <param name="config">由 SDKManager 注入的 AppsFlyerPluginConfig 配置。</param>

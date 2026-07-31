@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-07-31
+
+### Added
+
+- 公共请求与响应 Header 新增 `openid` 字段；`NetBuilder.BuildHeader` 自动填充当前请求身份，UID/OpenID 由业务 Kit 按权威结果同步。
+
+### Breaking
+
+- `NetService.Uid` / `SetUid` 更名为 `NetService.UID` / `SetUID`。
+
 ## [0.6.0] - 2026-07-29
 
 ### Added

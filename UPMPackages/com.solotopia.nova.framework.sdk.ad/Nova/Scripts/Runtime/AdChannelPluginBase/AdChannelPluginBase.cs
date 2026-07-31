@@ -25,7 +25,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
     /// MaxAdPlugin 等渠道继承此类，只需重写 InitChannelSDKAsync，
     /// 以及 OnRequestAsync / OnShowAsync（内部用 switch(format) 处理支持的格式）。
     /// 是否支持某 AdFormat 由 RegisterAdUnits 注册的槽位推导：注册即支持，未注册即不支持。
-    /// 线程契约：所有 virtual/abstract 方法主线程调用；On* 实现内部可切后台线程，完成前须切回主线程。
+    /// 线程契约：公开 API 由 Unity 主线程调用；渠道 SDK 回调中可直接调用 Raise*，基类仅把业务事件 fan-out 排入 Unity 主线程。
     /// </summary>
     public abstract partial class AdChannelPluginBase : IAdInternalPlugin
     {
@@ -40,17 +40,17 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public abstract AdChannelType Channel { get; }
 
         /// <summary>
-        /// 广告收入回调事件，每次广告展示产生收入时在 SDK 原始回调线程即时触发。
+        /// 广告收入业务事件，每次广告展示产生收入后由基类排入 Unity 主线程触发；收益打点可在 SDK 原始回调线程即时执行。
         /// </summary>
         public event System.Action<AdEvent> OnAdRevenuePaid;
 
         /// <summary>
-        /// 广告加载成功事件，主线程触发。
+        /// 广告加载成功业务事件，由基类排入 Unity 主线程触发。
         /// </summary>
         public event System.Action<AdLoadResult> OnAdLoaded;
 
         /// <summary>
-        /// 广告加载失败事件，主线程触发。
+        /// 广告加载失败业务事件，由基类排入 Unity 主线程触发。
         /// </summary>
         public event System.Action<AdLoadResult> OnAdLoadFailed;
 
@@ -60,7 +60,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public event System.Action<bool> OnInitResult;
 
         /// <summary>
-        /// 广告播放完成事件，由渠道 SDK 展示成功回调触发。
+        /// 广告展示成功事件，由渠道 SDK displayed 回调触发；不表示广告已关闭或激励已完成。
         /// </summary>
         public event System.Action<AdResult> OnShowCompleted;
 
@@ -245,7 +245,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 异步展示指定格式广告；从 Ready 槽位中按 Revenue 降序取最高 eCPM 的槽位展示。
-        /// 非 Banner 展示结束后自动触发 RequestAsync 续杯（Banner 不续杯）。
+        /// 非 Banner 关闭或展示失败后自动触发 RequestAsync 续杯（Banner 不续杯）。
         /// 该渠道未注册该 format 或无 Ready 槽位时返回失败结果。
         /// OnShowAsync 抛出异常时槽位回置 Idle，防止永久卡在 Showing 状态。
         /// </summary>

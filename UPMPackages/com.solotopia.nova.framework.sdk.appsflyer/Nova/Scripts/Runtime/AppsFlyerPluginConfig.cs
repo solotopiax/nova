@@ -6,7 +6,7 @@
  * author:    yingzheng
  * created:   2026/4/20
  * descrip:   AppsFlyer 插件运行期初始化配置；作为 ISDKPluginConfig 由 ConfigMasterSO
- *            静态配置，SDKManager 按 RequiredConfigType 自动注入给
+ *            静态配置，SDKManager 按 ConfigType 自动注入给
  *            AppsFlyerPlugin.OnInitializeAsync。
  ***************************************************************/
 

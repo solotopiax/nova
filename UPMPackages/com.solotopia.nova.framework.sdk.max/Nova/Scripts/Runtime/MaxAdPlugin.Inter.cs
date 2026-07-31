@@ -44,7 +44,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnInterLoaded(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            PostAdCallbackToMainThread(() => RaiseAdLoaded(new AdLoadResult
+            RaiseAdLoaded(new AdLoadResult
             {
                 Success = true,
                 Format = AdFormat.Interstitial,
@@ -53,7 +53,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Revenue = info.Revenue,
                 Currency = "USD",
                 CustomProps = BuildMaxLoadProps(info),
-            }));
+            });
         }
 
         /// <summary>
@@ -129,21 +129,18 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnInterHidden(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            PostAdCallbackToMainThread(() =>
+            var result = new AdResult
             {
-                var result = new AdResult
-                {
-                    Success = true,
-                    Format = AdFormat.Interstitial,
-                    PlacementId = adUnitId,
-                    Network = info.NetworkName,
-                    Revenue = info.Revenue,
-                    Currency = "USD",
-                    RewardGranted = true,
-                };
-                RaiseAdClosed(result, true);
-                m_InterTcs?.TrySetResult(result);
-            });
+                Success = true,
+                Format = AdFormat.Interstitial,
+                PlacementId = adUnitId,
+                Network = info.NetworkName,
+                Revenue = info.Revenue,
+                Currency = "USD",
+                RewardGranted = true,
+            };
+            RaiseAdClosed(result, true);
+            m_InterTcs?.TrySetResult(result);
         }
 
         /// <summary>

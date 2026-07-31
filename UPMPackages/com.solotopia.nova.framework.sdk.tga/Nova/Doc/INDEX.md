@@ -8,7 +8,7 @@
 | 类型 | 说明 | 文档 |
 |---|---|---|
 | `TGAPlugin` | TGA 插件，实现 `ITrackPlugin` 与 `IDeviceIdProvider` | [TGAPlugin.md](./TGAPlugin.md) |
-| `TGAPluginConfig` | TGA 插件配置，承载 AppID / 上报模式 / 日志开关 / 上报指令名 | [TGAPluginConfig.md](./TGAPluginConfig.md) |
+| `TGAPluginConfig` | TGA 插件配置，承载 AppID / TDMode / TDTimeZone / 日志开关 / 上报指令名 / DeviceId 同步 DistinctId 开关 | [TGAPluginConfig.md](./TGAPluginConfig.md) |
 
 ## 当前能力
 
@@ -16,7 +16,14 @@
 - 高级事件：`TrackFirst(...)`、`TrackUpdatable(...)`、`TrackOverwritable(...)`
 - 用户属性：`UserSet(...)`、`UserSetOnce(...)`、`UserAdd(...)`、`UserAppend(...)`
 - 公共属性：静态属性、动态属性、框架级属性四套链路
-- 设备标识：`GetDeviceId()` / `IDeviceIdProvider.GetDeviceID()`
+- 设备标识：`GetDeviceId()` / `IDeviceIdProvider.GetDeviceID()`，可配置初始化后将 `DeviceId` 同步为 `DistinctId`
+
+## 配置摘要
+
+- `Mode` 使用 `TDMode`，默认 `TDMode.Normal`，初始化时写入 `TDConfig.mode`。
+- `TimeZone` 使用 `TDTimeZone`，默认 `TDTimeZone.Local`，初始化时写入 `TDConfig.timeZone`。
+- `ServerCmdName` 通过 Nova Network 模块解析真实上报 URL；为空或无法解析时跳过 TGA 初始化。
+- `AssignDeviceIdToDistinctId` 默认关闭；开启后会在发布 `TGADistinctId` 数据槽位前同步 `DeviceId` 到 `DistinctId`。
 
 ## 平台边界
 

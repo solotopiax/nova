@@ -1,11 +1,11 @@
 # Nova Framework - SDK - MAX
 
 > 包名：`com.solotopia.nova.framework.sdk.max`
-> 当前版本：`0.0.15`
+> 当前版本：`0.1.0`
 
 MAX 广告聚合插件，提供广告展示服务。
 
-本包只包含 Nova MAX 适配层，第三方 MAX SDK 由官方 UPM 包 `com.applovin.mediation.ads` 提供，不再内置 `Core/MaxSdk`。MAX mediation adapters 也由本包 `package.json` 统一声明为 AppLovin 官方 UPM 依赖。
+本包只包含 Nova MAX 适配层，第三方 MAX SDK 由官方 UPM 包 `com.applovin.mediation.ads@8.6.4` 提供，不再内置 `Core/MaxSdk`。MAX mediation adapters 也由本包 `package.json` 统一声明为 AppLovin 官方 UPM 依赖。
 
 ## 安装
 
@@ -13,9 +13,24 @@ MAX 广告聚合插件，提供广告展示服务。
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.max": "0.0.15"
+  "com.solotopia.nova.framework.sdk.max": "0.1.0"
 }
 ```
+
+## 当前行为
+
+- RV、Inter、Banner、AppOpen 均支持配置多个广告位 ID；同一格式下的空闲广告位并行加载，展示时优先选择已就绪且收益最高的广告位。
+- Banner 控制 API 使用配置列表中的首个 ID。`ShowBanner()` 同时启动 MAX 自动刷新，`HideBanner()` 同时停止自动刷新。
+- `MaxAdChannelConfig.BannerAutoRefreshIntervalSeconds` 配置 Banner 自动刷新间隔，默认 `10` 秒，可配置范围为 `5–120` 秒。
+- Banner native view 按广告位幂等创建；加载失败后若业务仍要求显示，后续加载成功会恢复展示。
+- 当前适配层不设置 `adaptive_banner`；开启自动刷新前会通过 `ad_refresh_seconds` extra parameter 写入面板配置的刷新间隔。
+- 当前源码也未设置禁用 MAX SDK 自动重试或禁用非 Banner B2B 广告位参数，这两项不属于现版本已接入能力。
+
+## 文档
+
+- [Nova/Doc/INDEX.md](./Nova/Doc/INDEX.md)
+- [Nova/Doc/MaxAdPlugin.md](./Nova/Doc/MaxAdPlugin.md)
+- [Nova/Doc/MaxAdPluginBuildProcessor.md](./Nova/Doc/MaxAdPluginBuildProcessor.md)
 
 ## 维护
 

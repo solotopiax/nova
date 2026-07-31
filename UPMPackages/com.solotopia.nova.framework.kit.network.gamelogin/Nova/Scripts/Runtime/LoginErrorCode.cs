@@ -13,7 +13,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
     /// <summary>
     /// 登录业务错误码常量。
     /// 服务端登录业务段（10000~10499）：服务端原样返回，经 NetService 透传到 <see cref="NovaFramework.Runtime.NetResponse{T}.ErrorCode"/>，业务侧用本类常量与 ErrorCode 比对。
-    /// 客户端段（7000~7999）：与 <see cref="NovaFramework.Runtime.NetErrorCode"/> 客户端段（负数）/ 服务端通用段（1000/5000/6000/6001）错开，预留供后续纯客户端业务错误扩展，当前无定义。
+    /// 客户端段（7000~7999）：与 <see cref="NovaFramework.Runtime.NetErrorCode"/> 的客户端负数段及服务端通用段错开，预留供后续纯客户端业务错误扩展，当前无定义。
     /// </summary>
     public static class LoginErrorCode
     {
@@ -61,5 +61,10 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         /// 三方号未绑定任何账号。open_id 登录时该三方号未绑账号，由客户端决定注册新号或走绑定流程。
         /// </summary>
         public const int ErrAccountNotFound = 10404;
+
+        /// <summary>
+        /// 请求头声明的 OpenID 已绑定其他 UID，与当前请求 UID 不一致。
+        /// </summary>
+        public const int ErrOpenidUIDMismatch = 10407;
     }
 }

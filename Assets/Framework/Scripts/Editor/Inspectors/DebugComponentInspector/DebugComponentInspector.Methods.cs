@@ -260,6 +260,38 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 判断指定 Debugger 激活策略是否需要启用 RuntimeDebugger 禁用宏。
+        /// </summary>
+        /// <param name="activeType">Debugger 激活策略。</param>
+        /// <returns>是否需要启用 RuntimeDebugger 禁用宏。</returns>
+        private static bool ShouldEnableRuntimeDebuggerDisableDefine(DebuggerActiveType activeType)
+        {
+            return activeType == DebuggerActiveType.AlwaysDisable;
+        }
+
+        /// <summary>
+        /// 根据 Inspector 当前 Debugger 激活策略同步 RuntimeDebugger 编译期禁用宏。
+        /// </summary>
+        private void SyncRuntimeDebuggerDisableDefine()
+        {
+            if (m_DebuggerActiveType == null || m_DebuggerActiveType.hasMultipleDifferentValues)
+            {
+                return;
+            }
+
+            DebuggerActiveType activeType = (DebuggerActiveType)m_DebuggerActiveType.enumValueIndex;
+            bool shouldEnable = ShouldEnableRuntimeDebuggerDisableDefine(activeType);
+            if (shouldEnable)
+            {
+                EditorUtil.ScriptingDefineSymbols.AddScriptingDefineSymbol(c_DisableRuntimeDebuggerDefine);
+            }
+            else
+            {
+                EditorUtil.ScriptingDefineSymbols.RemoveScriptingDefineSymbol(c_DisableRuntimeDebuggerDefine);
+            }
+        }
+
+        /// <summary>
         /// 绘制 Debug 管理器选择器、Debugger 激活类型与 Console 最大日志条数配置。
         /// </summary>
         private void DrawConfigs()

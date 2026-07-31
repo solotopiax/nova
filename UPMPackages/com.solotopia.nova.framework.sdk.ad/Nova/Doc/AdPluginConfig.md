@@ -66,7 +66,7 @@ var adConfig = sdkManagerConfig.PluginEntries
 
 if (adConfig != null)
 {
-    foreach (var channelCfg in adConfig.ChannelConfigs)
+    foreach (var channelCfg in adConfig.ChannelConfigs.Items)
     {
         // 按 PluginType 反射创建渠道实例
         var channel = (AdChannelPluginBase)Activator.CreateInstance(channelCfg.PluginType);

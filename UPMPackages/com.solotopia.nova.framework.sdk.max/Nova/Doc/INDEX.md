@@ -11,6 +11,7 @@
 | 类型 | 说明 | 文档 |
 |---|---|---|
 | `MaxAdPlugin` | MAX 广告聚合插件，实现 `AdChannelPluginBase`，封装 MAX SDK 初始化与广告加载/展示逻辑 | [MaxAdPlugin.md](./MaxAdPlugin.md) |
+| `MaxAdChannelConfig` | MAX 渠道配置，包含 SDK Key、构建注入项、各格式广告位 ID 列表与调试开关 | [MaxAdPlugin.md](./MaxAdPlugin.md) |
 | `MaxAdPluginBuildProcessor` | 构建处理器（Editor 侧），在打包时自动注入 MAX 所需 manifest / gradle 配置 | [MaxAdPluginBuildProcessor.md](./MaxAdPluginBuildProcessor.md) |
 
 ## 相关

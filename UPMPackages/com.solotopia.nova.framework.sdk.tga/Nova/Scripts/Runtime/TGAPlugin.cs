@@ -28,8 +28,9 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
     
         /// <summary>
         /// 异步初始化 TGA SDK。
-        /// config 为 SDKManager 按 RequiredConfigType 自动从 IConfigManager 注入的 TGAPluginConfig；
-        /// 内部按其 AppID / Mode / LogEnable / ServerCmdName / IsTestUser 字段初始化 TDA SDK。
+        /// config 为 SDKManager 按 ConfigType 自动从 IConfigManager 注入的 TGAPluginConfig；
+        /// 内部按其 AppID / Mode / TimeZone / LogEnable / ServerCmdName / ReportCmdName /
+        /// IsTestUser / AssignDeviceIdToDistinctId 字段初始化 TDA SDK 与登录上报链路。
         /// </summary>
         /// <param name="config">由 SDKManager 注入的 TGAPluginConfig 配置。</param>
         /// <param name="ct">取消令牌，TGA 同步初始化路径不使用。</param>
@@ -38,13 +39,18 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         {
             try
             {
+                // 缓存运行时配置与上报服务。配置缺失时使用 SDK 默认值，后续只对必要字段做硬校验。
                 m_ReportNetService = new TGAReportNetService();
                 m_RuntimeConfig = config as TGAPluginConfig;
                 string appId = m_RuntimeConfig?.AppID ?? string.Empty;
-                int mode = m_RuntimeConfig?.Mode ?? 0;
+                TDMode mode = m_RuntimeConfig?.Mode ?? TDMode.Normal;
+                TDTimeZone timeZone = m_RuntimeConfig?.TimeZone ?? TDTimeZone.Local;
                 bool logEnable = m_RuntimeConfig?.LogEnable ?? false;
                 string serverCmdName = m_RuntimeConfig?.ServerCmdName ?? string.Empty;
                 bool isTestUser = m_RuntimeConfig?.IsTestUser ?? true;
+                bool assignDeviceIdToDistinctId = m_RuntimeConfig?.AssignDeviceIdToDistinctId ?? false;
+
+                // AppId 与上报地址是 TGA SDK 初始化的最低要求，缺少任意一项都不能继续初始化。
                 if (string.IsNullOrEmpty(appId))
                 {
                     Log.Warning(LogTag.TGA, "TGA AppId 为空，SDK 初始化跳过。");
@@ -57,6 +63,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
                     return UniTask.CompletedTask;
                 }
 
+                // ServerCmdName 只保存表名入口，实际 URL 走 Network 模块解析，保持配置与环境地址解耦。
                 INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(serverCmdName);
                 string serverUrl = cmdRow != null ? Nova.Network?.ResolveNetCmdUrl(cmdRow) : null;
                 if (string.IsNullOrEmpty(serverUrl))
@@ -65,22 +72,30 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
                     return UniTask.CompletedTask;
                 }
 
+                // 将 Nova 配置直写到 ThinkingAnalytics 配置对象，避免在初始化路径中再做枚举转换。
                 TDConfig tdConfig = new TDConfig(appId, serverUrl);
-                tdConfig.mode = (TDMode)mode;
-                tdConfig.timeZone = TDTimeZone.Local;
+                tdConfig.mode = mode;
+                tdConfig.timeZone = timeZone;
                 TDAnalytics.EnableLog(logEnable);
                 TDAnalytics.SetNetworkType(TDNetworkType.All);
                 TDAnalytics.Init(tdConfig);
                 
+                // 初始化后将 DeviceId 设置为 DistinctId。
+                ApplyDeviceIdAsDistinctId(assignDeviceIdToDistinctId);
+                // 初始化框架默认属性
                 InitFrameworkProperties(isTestUser);
+
+                // 动态公共属性依赖 Unity 回调对象，需要挂到 SDKComponent 下随框架生命周期管理。
                 var sdkComponent = FrameworkComponentsGroup.GetComponent<SDKComponent>();
                 m_DynamicSuperPropertyListener = CreateDynamicSuperPropertyListener(sdkComponent != null ? sdkComponent.transform : null);
                 TDAnalytics.SetDynamicSuperProperties(m_DynamicSuperPropertyListener);
                 TDAnalytics.EnableAutoTrack(TDAutoTrackEventType.All);
 
+                // 发布 TGA 标识供其他 SDK 消费，同时启动异步桥接，不阻塞 TGA 自身初始化完成。
                 PublishTGAIdentifiers();
                 RegisterFetchDataAsync(ct);
 
+                // 登录事件到来后再绑定 AccountId，并触发 TGA 标识上报到业务服务器。
                 m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
                 m_EventManager.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
 

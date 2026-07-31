@@ -30,6 +30,8 @@
 
 ## 3. 初始化语义
 
+- `Priority => 30`，在 TGA 与 AppsFlyer 分桶之后初始化
+
 - `OnInitializeAsync(...)` 会立即返回，但真正的可用时机取决于 `FirebaseApp.CheckAndFixDependenciesAsync()` 的异步回调。
 - 只有在依赖检查通过后，`m_InitOver` 才会置为 `true`。
 - 大多数公开方法都会在 `m_InitOver == false` 时直接静默返回。

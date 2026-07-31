@@ -12,7 +12,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Windows/ConfigWindow/ConfigWindow.cs` | `ConfigWindow` | public 开口：`Open`、`OpenLubanSection` |
+| `Editor/Windows/ConfigWindow/ConfigWindow.cs` | `ConfigWindow` | public 开口：`Open`、`OpenLubanSection` 与四个 Guard 配置导航入口；Guard 可定位实际 ConfigMaster、导出坐标及应用、名字空间、SDK、Kit 面板 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Visitors.cs` | `ConfigWindow` | 字段：常量 + 运行时状态字段 + `LeftTreeGroup` + `LeftTreeItem` 枚举；新增延迟切坐标守卫字段：`m_HasPendingCoordSwitch`、`m_PendingPlatform`、`m_PendingChannel`、`m_PendingDevelopMode` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs` | `ConfigWindow` | 总调度：`OnEnable`、`OnDisable`、`OnGUI`、`DrawBody`、`DrawMainTitle`、`ApplyPendingCoordSwitch`、`PollChannelChangeForRepaint`、`RefreshPluginCache`、`RunLubanCheck`、`RunPython3Check`、`CommitWorkingCopyToAsset`（保存后广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`）；`EnsureStyles`（GUIStyle 懒初始化） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs` | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyPlatformChannel`（延迟写坐标，见 PAT-22 升级）、`TryApplyDevelopMode`（延迟写坐标，见 PAT-22 升级）、`OnClickExport`（导出成功后追加场景 `DevelopMode` 快照回写） |
@@ -126,6 +126,16 @@ public static void Open();
 
 // Pipeline 调用入口：打开窗口并展开 Luban 面板
 public static void OpenLubanSection(EnvironmentCheckResult result);
+
+// Play Guard 配置异常导航入口：切换来源资产、导出坐标并打开对应面板
+public static void OpenAppConfigSection(ConfigMasterSO master, PlatformType platform,
+    ChannelType channel, DevelopMode developMode);
+public static void OpenNamespaceConfigSection(ConfigMasterSO master, PlatformType platform,
+    ChannelType channel, DevelopMode developMode);
+public static void OpenSDKConfigSection(ConfigMasterSO master, PlatformType platform,
+    ChannelType channel, DevelopMode developMode, Type configType);
+public static void OpenKitConfigSection(ConfigMasterSO master, PlatformType platform,
+    ChannelType channel, DevelopMode developMode, Type configType);
 ```
 
 ---

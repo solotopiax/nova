@@ -21,7 +21,7 @@ public sealed partial class GoogleSignInPlugin : SDKPluginBase, IAuthPlugin
 | Member | Notes |
 |---|---|
 | `Name => "Google"` | SDK plugin identifier. |
-| `Priority => 30` | Initialization priority. |
+| `Priority => 60` | Initialization priority. |
 | `IsLoggedIn` | `true` only when both `UserId` and `IdToken` are present. |
 | `CurrentUserData` | Latest login payload as `GoogleSignInUserData`. |
 | `LoginAsync` | Starts the Android login flow and returns `AuthResult`. |
@@ -29,8 +29,9 @@ public sealed partial class GoogleSignInPlugin : SDKPluginBase, IAuthPlugin
 
 ## Usage
 
-Register `GoogleSignInPluginConfig` before Nova SDK initialization, wait for SDK
-initialization to finish, and then get the strongly typed plugin.
+Enable `GoogleSignInPluginConfig` in ConfigMaster. `GoogleSignInPlugin` declares
+the config through `ConfigType`, so SDKManager injects it automatically during
+initialization. Wait for initialization to finish, then get the strongly typed plugin.
 
 ```csharp
 GoogleSignInPlugin plugin = Nova.SDK.Get<GoogleSignInPlugin>();
@@ -46,6 +47,10 @@ After a successful login, `LoginAsync` updates `CurrentUserData`.
 `AuthResult.Token` is the Google ID Token for this login result. Callers should
 not cache stale ID Tokens for long periods. When server verification is needed,
 send the current login result token to the server-side authentication flow.
+
+Successful login also publishes `SDKDataKeys.OpenId` with `UserId` and
+`SDKDataKeys.ThirdPlatform` with the provider name. Analytics plugins can consume
+these slots without taking a direct dependency on the Google Sign-In package.
 
 ## Config
 

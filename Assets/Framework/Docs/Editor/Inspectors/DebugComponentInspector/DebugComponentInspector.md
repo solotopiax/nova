@@ -28,6 +28,7 @@ Debug Inspector 仍只配置 `DebugComponent` 的激活策略、日志条数、M
 
 - `Debug 管理器`：从 `IDebugManager` 实现类型列表中选择
 - `Debugger 激活类型`：绑定 `m_DebuggerActiveType`
+- `DebuggerActiveType.AlwaysDisable`：Inspector 会同步添加脚本宏 `NOVA_DISABLE_RUNTIME_DEBUGGER`，切换到其它策略时移除该宏。
 - `Console 最大日志条数`：绑定 `m_MaximumConsoleEntries`
 
 ### 磁盘监控

@@ -75,6 +75,16 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         public string AdMobAppIdIOS => m_AdMobAppIdIOS;
 
         /// <summary>
+        /// Banner 自动刷新间隔，单位为秒；MAX 支持范围为 10 至 120 秒。
+        /// </summary>
+        [SerializeField, Range(10, 120), Tooltip("Banner 自动刷新间隔（秒），可配置范围为 10 至 120 秒。")]
+        private int m_BannerAutoRefreshIntervalSeconds = 10;
+        /// <summary>
+        /// Banner 自动刷新间隔；运行时再次限制到 MAX 支持的 10 至 120 秒范围。
+        /// </summary>
+        public int BannerAutoRefreshIntervalSeconds => Mathf.Clamp(m_BannerAutoRefreshIntervalSeconds, 5, 120);
+
+        /// <summary>
         /// 激励视频广告位 ID 列表；空列表表示不启用激励视频。
         /// </summary>
         [SerializeField, Tooltip("激励视频广告位 ID 列表，支持多个并发请求。")]

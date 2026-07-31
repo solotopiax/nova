@@ -6,6 +6,28 @@
 
 ---
 
+## [0.6.1] - 2026-07-31
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.1]` 节。
+
+### Added
+
+- 公共网络 Header 增加 OpenID，登录与绑定 Kit 按服务端权威结果统一同步 UID/OpenID。
+- SDK MAX 增加 Banner 自动刷新间隔配置，默认 10 秒并限制为 5–120 秒。
+- SDK TGA 增加时区与 DeviceId 作为 DistinctId 的可选配置。
+
+### Changed
+
+- 发布 Framework `0.6.1`、GameBind `0.0.7`、GameLogin `0.1.1`，以及 10 个 SDK 新版本。
+- SDK 插件 Priority 调整为明确的初始化分桶；Ad 展示回调统一切回 Unity 主线程，收益回调保持即时分发。
+- SDK MAX 对齐 AppLovin MAX `8.6.4` 与 adapter 版本矩阵，并依赖 SDK Ad `1.1.1`。
+- 安装入口固定命名为 `NovaSpark.cs`，不再在文件名中追加版本号；Framework 固定为 `0.6.1`，BestHTTP 固定为 `0.1.0`。
+
+### Breaking
+
+- `NetService.Uid` / `SetUid` 更名为 `NetService.UID` / `SetUID`；`NetBuilder.BuildHeader` 增加可选 OpenID 参数。
+- `TGAPluginConfig.Mode` 与构造参数由 `int` 改为 `TDMode`，并增加 `TDTimeZone`。
+
 ## [0.6.0] - 2026-07-29
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.0]` 节。

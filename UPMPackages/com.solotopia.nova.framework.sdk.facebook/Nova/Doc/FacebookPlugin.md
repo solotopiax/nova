@@ -7,7 +7,7 @@
 | Member | Notes |
 |---|---|
 | `Name => "Facebook"` | Plugin id used by `Nova.SDK.Get<FacebookPlugin>()` and logging. |
-| `Priority => 30` | Initialization priority. |
+| `Priority => 40` | Initialization priority. |
 | `IsLoggedIn` | `true` when the plugin has both `UserId` and `AccessToken`. |
 | `CurrentUserData` | Current login data as `FacebookUserData`. |
 | `Profile` | Profile and avatar service, type `FacebookProfileService`. |
@@ -19,7 +19,7 @@
 
 ## Config
 
-`FacebookPluginConfig` stores Facebook runtime configuration. Game code should inject configuration before `Nova.SDK.InitializeTask`; do not store private App ID or Client Token values in sample scenes or temporary scripts intended for public release.
+`FacebookPluginConfig` stores Facebook runtime configuration. `FacebookPlugin` declares it through `ConfigType`; after the config is enabled in ConfigMaster, SDKManager resolves and injects it automatically during initialization. Game code should not call a separate manual config API. Do not store private App ID or Client Token values in sample scenes or temporary scripts intended for public release.
 
 | Field | Notes |
 |---|---|
@@ -31,6 +31,8 @@
 
 The default login request asks only for `public_profile`. `email` is not requested by default. Friend lists require an additional `user_friends` request through `EnsureFriendsPermissionAsync`.
 
+Before Android or iOS builds, `FacebookPluginBuildProcessor` copies `FacebookAppId` and `FacebookClientToken` into the Facebook SDK's `FacebookSettings`. Android builds then derive the manifest rules from those settings.
+
 ## Login Result And Current User
 
 `LoginAsync` returns a failed `AuthResult` when the SDK is not initialized or Facebook login fails. Failure details are written to `ErrorMessage`.
@@ -40,6 +42,8 @@ After successful login, the plugin updates `CurrentUserData` with the current Fa
 - `UserId`
 - `AccessToken`
 - `AvatarPath`
+
+It also publishes `SDKDataKeys.OpenId` with `UserId` and `SDKDataKeys.ThirdPlatform` with the provider name, allowing analytics plugins such as TGA to consume the login identity without a direct package dependency.
 
 `AuthResult.Token` maps to the Facebook Access Token. Callers should use `CurrentUserData` for current login state and should not cache old tokens or avatar paths beyond the active session contract.
 

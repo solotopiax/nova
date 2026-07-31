@@ -13,6 +13,7 @@ namespace NovaFramework.Runtime
 
     public static class AutoInitialize
     {
+#if !NOVA_DISABLE_RUNTIME_DEBUGGER
 #if UNITY_2018
         private const RuntimeInitializeLoadType InitializeLoadType = RuntimeInitializeLoadType.BeforeSceneLoad;
 #else
@@ -46,5 +47,6 @@ namespace NovaFramework.Runtime
                 RuntimeDebugger.Init();
             }
         }
+#endif
     }
 }

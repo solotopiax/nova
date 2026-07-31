@@ -23,9 +23,9 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         public override string Name => "Firebase";
 
         /// <summary>
-        /// 获取插件初始化优先级。
+        /// 获取插件初始化优先级；Firebase 优先级为 30。
         /// </summary>
-        public override int Priority => 110;
+        public override int Priority => 30;
 
         /// <summary>
         /// 声明本插件所需的配置类型；SDKManager 据此从 IConfigManager 拉取 FirebasePluginConfig 注入 OnInitializeAsync。

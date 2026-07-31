@@ -1,7 +1,7 @@
 # Nova Framework - SDK - AppsFlyer 文档索引
 
 > 本包为 Nova 框架 AppsFlyer 归因埋点插件，提供事件追踪服务。
-> 实现 `ITrackPlugin` + `IAttributionPlugin` 双接口，业务侧通过统一埋点接口发送事件，无需直接依赖 AppsFlyer SDK。
+> 实现 `IAttributionPlugin`，业务侧通过统一归因接口发送事件、获取归因数据，无需直接依赖 AppsFlyer SDK。
 
 ---
 
@@ -9,7 +9,7 @@
 
 | 类型 | 说明 | 文档 |
 |---|---|---|
-| `AppsFlyerPlugin` | AppsFlyer SDK 插件，实现 `ITrackPlugin`（事件追踪）与 `IAttributionPlugin`（归因数据获取） | [AppsFlyerPlugin.md](./AppsFlyerPlugin.md) |
+| `AppsFlyerPlugin` | AppsFlyer SDK 插件，实现 `IAttributionPlugin`；配置由 SDKManager 按 `ConfigType` 自动注入 | [AppsFlyerPlugin.md](./AppsFlyerPlugin.md) |
 
 ## 相关
 

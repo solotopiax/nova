@@ -52,6 +52,27 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         }
 
         /// <summary>
+        /// 按配置将 TGA DeviceId 设置为 DistinctId。
+        /// </summary>
+        /// <param name="enabled">是否启用 DeviceId 同步 DistinctId。</param>
+        private void ApplyDeviceIdAsDistinctId(bool enabled)
+        {
+            if (!enabled)
+            {
+                return;
+            }
+
+            string deviceId = TDAnalytics.GetDeviceId();
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                Log.Warning(LogTag.TGA, "TGA DeviceId 为空，跳过 DistinctId 设置。");
+                return;
+            }
+
+            TDAnalytics.SetDistinctId(deviceId);
+        }
+
+        /// <summary>
         /// 获取首次安装版本号；本地尚无记录时使用当前 Application.version 写入 FileFragment 并立即落盘。
         /// </summary>
         /// <returns>首次安装版本号；持久化管理器不可用时返回当前 Application.version。</returns>

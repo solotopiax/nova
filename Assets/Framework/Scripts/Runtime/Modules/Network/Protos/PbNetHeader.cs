@@ -25,24 +25,25 @@ namespace NovaFramework.Runtime {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChNwYl9uZXRfaGVhZGVyLnByb3RvEhVOb3ZhRnJhbWV3b3JrLlJ1bnRpbWUi",
-            "0QEKDlBiTmV0UmVxSGVhZGVyEg4KBmFwcF9pZBgBIAEoBRILCgN1aWQYAiAB",
+            "4QEKDlBiTmV0UmVxSGVhZGVyEg4KBmFwcF9pZBgBIAEoBRILCgN1aWQYAiAB",
             "KAkSDwoHdmVyc2lvbhgDIAEoCRIQCghsYW5ndWFnZRgEIAEoCRIRCglkZXZp",
             "Y2VfaWQYBSABKAkSNgoIcGxhdGZvcm0YBiABKA4yJC5Ob3ZhRnJhbWV3b3Jr",
             "LlJ1bnRpbWUuUGJOZXRQbGF0Zm9ybRI0CgdjaGFubmVsGAcgASgOMiMuTm92",
-            "YUZyYW1ld29yay5SdW50aW1lLlBiTmV0Q2hhbm5lbCJBCg9QYk5ldFJlc3BI",
-            "ZWFkZXISEQoJdGltZXN0YW1wGAEgASgDEg4KBmFwcF9pZBgCIAEoBRILCgN1",
-            "aWQYAyABKAkqeQoNUGJOZXRQbGF0Zm9ybRIdChlQYk5ldFBsYXRmb3JtX1VO",
-            "U1BFQ0lGSUVEEAASFQoRUGJOZXRQbGF0Zm9ybV9JT1MQARIZChVQYk5ldFBs",
-            "YXRmb3JtX0FORFJPSUQQAhIXChNQYk5ldFBsYXRmb3JtX1dFQkdMEAMqkQEK",
-            "DFBiTmV0Q2hhbm5lbBIcChhQYk5ldENoYW5uZWxfVU5TUEVDSUZJRUQQABIZ",
-            "ChVQYk5ldENoYW5uZWxfRkFDRUJPT0sQARIXChNQYk5ldENoYW5uZWxfR09P",
-            "R0xFEAISFgoSUGJOZXRDaGFubmVsX0FQUExFEAMSFwoTUGJOZXRDaGFubmVs",
-            "X1dFQ0hBVBAEYgZwcm90bzM="));
+            "YUZyYW1ld29yay5SdW50aW1lLlBiTmV0Q2hhbm5lbBIOCgZvcGVuaWQYCCAB",
+            "KAkiUQoPUGJOZXRSZXNwSGVhZGVyEhEKCXRpbWVzdGFtcBgBIAEoAxIOCgZh",
+            "cHBfaWQYAiABKAUSCwoDdWlkGAMgASgJEg4KBm9wZW5pZBgEIAEoCSp5Cg1Q",
+            "Yk5ldFBsYXRmb3JtEh0KGVBiTmV0UGxhdGZvcm1fVU5TUEVDSUZJRUQQABIV",
+            "ChFQYk5ldFBsYXRmb3JtX0lPUxABEhkKFVBiTmV0UGxhdGZvcm1fQU5EUk9J",
+            "RBACEhcKE1BiTmV0UGxhdGZvcm1fV0VCR0wQAyqRAQoMUGJOZXRDaGFubmVs",
+            "EhwKGFBiTmV0Q2hhbm5lbF9VTlNQRUNJRklFRBAAEhkKFVBiTmV0Q2hhbm5l",
+            "bF9GQUNFQk9PSxABEhcKE1BiTmV0Q2hhbm5lbF9HT09HTEUQAhIWChJQYk5l",
+            "dENoYW5uZWxfQVBQTEUQAxIXChNQYk5ldENoYW5uZWxfV0VDSEFUEARiBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::NovaFramework.Runtime.PbNetPlatform), typeof(global::NovaFramework.Runtime.PbNetChannel), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Runtime.PbNetReqHeader), global::NovaFramework.Runtime.PbNetReqHeader.Parser, new[]{ "AppId", "Uid", "Version", "Language", "DeviceId", "Platform", "Channel" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Runtime.PbNetRespHeader), global::NovaFramework.Runtime.PbNetRespHeader.Parser, new[]{ "Timestamp", "AppId", "Uid" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Runtime.PbNetReqHeader), global::NovaFramework.Runtime.PbNetReqHeader.Parser, new[]{ "AppId", "Uid", "Version", "Language", "DeviceId", "Platform", "Channel", "Openid" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Runtime.PbNetRespHeader), global::NovaFramework.Runtime.PbNetRespHeader.Parser, new[]{ "Timestamp", "AppId", "Uid", "Openid" }, null, null, null, null)
           }));
     }
     #endregion
@@ -145,6 +146,7 @@ namespace NovaFramework.Runtime {
       deviceId_ = other.deviceId_;
       platform_ = other.platform_;
       channel_ = other.channel_;
+      openid_ = other.openid_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -259,6 +261,21 @@ namespace NovaFramework.Runtime {
       }
     }
 
+    /// <summary>Field number for the "openid" field.</summary>
+    public const int OpenidFieldNumber = 8;
+    private string openid_ = "";
+    /// <summary>
+    /// 第三方用户 ID
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Openid {
+      get { return openid_; }
+      set {
+        openid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -281,6 +298,7 @@ namespace NovaFramework.Runtime {
       if (DeviceId != other.DeviceId) return false;
       if (Platform != other.Platform) return false;
       if (Channel != other.Channel) return false;
+      if (Openid != other.Openid) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -295,6 +313,7 @@ namespace NovaFramework.Runtime {
       if (DeviceId.Length != 0) hash ^= DeviceId.GetHashCode();
       if (Platform != global::NovaFramework.Runtime.PbNetPlatform.Unspecified) hash ^= Platform.GetHashCode();
       if (Channel != global::NovaFramework.Runtime.PbNetChannel.Unspecified) hash ^= Channel.GetHashCode();
+      if (Openid.Length != 0) hash ^= Openid.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -341,6 +360,10 @@ namespace NovaFramework.Runtime {
         output.WriteRawTag(56);
         output.WriteEnum((int) Channel);
       }
+      if (Openid.Length != 0) {
+        output.WriteRawTag(66);
+        output.WriteString(Openid);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -379,6 +402,10 @@ namespace NovaFramework.Runtime {
         output.WriteRawTag(56);
         output.WriteEnum((int) Channel);
       }
+      if (Openid.Length != 0) {
+        output.WriteRawTag(66);
+        output.WriteString(Openid);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -409,6 +436,9 @@ namespace NovaFramework.Runtime {
       }
       if (Channel != global::NovaFramework.Runtime.PbNetChannel.Unspecified) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Channel);
+      }
+      if (Openid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Openid);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -442,6 +472,9 @@ namespace NovaFramework.Runtime {
       }
       if (other.Channel != global::NovaFramework.Runtime.PbNetChannel.Unspecified) {
         Channel = other.Channel;
+      }
+      if (other.Openid.Length != 0) {
+        Openid = other.Openid;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -490,6 +523,10 @@ namespace NovaFramework.Runtime {
             Channel = (global::NovaFramework.Runtime.PbNetChannel) input.ReadEnum();
             break;
           }
+          case 66: {
+            Openid = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -535,6 +572,10 @@ namespace NovaFramework.Runtime {
           }
           case 56: {
             Channel = (global::NovaFramework.Runtime.PbNetChannel) input.ReadEnum();
+            break;
+          }
+          case 66: {
+            Openid = input.ReadString();
             break;
           }
         }
@@ -585,6 +626,7 @@ namespace NovaFramework.Runtime {
       timestamp_ = other.timestamp_;
       appId_ = other.appId_;
       uid_ = other.uid_;
+      openid_ = other.openid_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -639,6 +681,21 @@ namespace NovaFramework.Runtime {
       }
     }
 
+    /// <summary>Field number for the "openid" field.</summary>
+    public const int OpenidFieldNumber = 4;
+    private string openid_ = "";
+    /// <summary>
+    /// 第三方用户 ID
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Openid {
+      get { return openid_; }
+      set {
+        openid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -657,6 +714,7 @@ namespace NovaFramework.Runtime {
       if (Timestamp != other.Timestamp) return false;
       if (AppId != other.AppId) return false;
       if (Uid != other.Uid) return false;
+      if (Openid != other.Openid) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -667,6 +725,7 @@ namespace NovaFramework.Runtime {
       if (Timestamp != 0L) hash ^= Timestamp.GetHashCode();
       if (AppId != 0) hash ^= AppId.GetHashCode();
       if (Uid.Length != 0) hash ^= Uid.GetHashCode();
+      if (Openid.Length != 0) hash ^= Openid.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -697,6 +756,10 @@ namespace NovaFramework.Runtime {
         output.WriteRawTag(26);
         output.WriteString(Uid);
       }
+      if (Openid.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Openid);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -719,6 +782,10 @@ namespace NovaFramework.Runtime {
         output.WriteRawTag(26);
         output.WriteString(Uid);
       }
+      if (Openid.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Openid);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -737,6 +804,9 @@ namespace NovaFramework.Runtime {
       }
       if (Uid.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Uid);
+      }
+      if (Openid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Openid);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -758,6 +828,9 @@ namespace NovaFramework.Runtime {
       }
       if (other.Uid.Length != 0) {
         Uid = other.Uid;
+      }
+      if (other.Openid.Length != 0) {
+        Openid = other.Openid;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -790,6 +863,10 @@ namespace NovaFramework.Runtime {
             Uid = input.ReadString();
             break;
           }
+          case 34: {
+            Openid = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -819,6 +896,10 @@ namespace NovaFramework.Runtime {
           }
           case 26: {
             Uid = input.ReadString();
+            break;
+          }
+          case 34: {
+            Openid = input.ReadString();
             break;
           }
         }

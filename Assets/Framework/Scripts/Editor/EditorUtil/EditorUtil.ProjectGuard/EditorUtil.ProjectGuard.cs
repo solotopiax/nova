@@ -40,7 +40,8 @@ namespace NovaFramework.Editor
             {
                 var report = new NovaGuardReport();
                 GuardScope scope = CreateScope(profile, target);
-                ValidateScenes(scope.ScenePaths, scope.RequireEntryScene, scope.UseSavedScenes, report);
+                ResetLastConfigSource();
+                ValidateScenes(scope.ScenePaths, scope.RequireEntryScene, scope.UseSavedScenes, true, report);
                 ValidateResources(scope.ManagedRoots, report);
                 return report;
             }

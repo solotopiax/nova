@@ -48,6 +48,7 @@ namespace NovaFramework.Editor
             base.OnInspectorGUI();
 
             DrawConfigs();
+            SyncRuntimeDebuggerDisableDefine();
             DrawDiskMonitoring();
             EditorUtil.Draw.Space(5);
             DrawAndroidBuild();

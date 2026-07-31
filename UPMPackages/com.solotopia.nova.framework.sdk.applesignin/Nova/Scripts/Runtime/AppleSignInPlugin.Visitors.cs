@@ -33,9 +33,9 @@ namespace NovaFramework.SDK.AppleSignIn
         public override string Name => c_ProviderName;
 
         /// <summary>
-        /// 初始化优先级。
+        /// 初始化优先级；Apple Sign-In 优先级为 50。
         /// </summary>
-        public override int Priority => 30;
+        public override int Priority => 50;
 
         /// <summary>
         /// 登录状态。

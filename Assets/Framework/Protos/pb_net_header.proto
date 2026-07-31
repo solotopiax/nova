@@ -28,6 +28,7 @@ message PbNetReqHeader {
     string device_id = 5;        // 设备唯一标识，用于设备维度统计与风控
     PbNetPlatform platform = 6;  // 客户端运行平台
     PbNetChannel channel = 7;    // 客户端第三方渠道
+    string openid = 8;           // 第三方用户 ID
 }
 
 // 响应公共头：每个业务响应都会携带
@@ -35,4 +36,5 @@ message PbNetRespHeader {
     int64 timestamp = 1;  // 服务端时间戳（毫秒），用于客户端校时与日志追踪
     int32 app_id = 2;     // 应用 ID，用于区分不同产品/包体
     string uid = 3;       // 用户唯一 ID，未登录时可为空
+    string openid = 4;    // 第三方用户 ID
 }

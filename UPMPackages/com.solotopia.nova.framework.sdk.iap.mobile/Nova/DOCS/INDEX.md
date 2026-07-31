@@ -39,7 +39,7 @@
 ## 最新实现快照
 
 - 初始化失败原因只有一套：`MobileStoreInitFailureReason`，用于 `IAPInitResult.FailReason` 和 `nova_iap_init.nova_init_failure_reason`。
-- 支付过程失败原因只有一套：`IAPMobileErrorCode`，其中 0-8 是业务返回粗粒度错误，1000-1010 是 Unity IAP 本地购买失败映射，2000+ 是验单打点细分原因。
+- 支付过程失败原因只有一套：`IAPMobileErrorCode`，其中 0-9 是业务返回粗粒度错误，1000-1010 是 Unity IAP 本地购买失败映射，2000+ 是验单打点细分原因。
 - 本地存档以 `tableId` 合并订单；`TransactionId` 可承载平台订单号，但 Android 不持久化，iOS 随本地存档保留。
 - Google 使用 `GoogleToken` 作为验单凭据和本地支付成功打点去重 key；Apple 使用 `TransactionId`。
 - `TrackChannel` 按平台输出 `google` / `ios` / `mobile`，TGA 侧可用该值区分 `solar_channel`。

@@ -19,7 +19,8 @@
 | `10000~10099` | 登录流程通用错误（账号状态 / UID / device_id 等） |
 | `10400` | 顶号（device_id 非最新，登录 / 删除路径共用） |
 | `10404` | 三方号未绑定任何账号 |
-| `7000~7999` | 客户端段（预留，与 `NetErrorCode` 客户端段负数 / 服务端通用段 1000/5000/6000/6001 错开，当前无定义） |
+| `10407` | 请求头 OpenID 与 UID 归属不一致 |
+| `7000~7999` | 客户端段（预留，与 `NetErrorCode` 的客户端负数段及服务端通用段错开，当前无定义） |
 
 > 服务端通用协议级错误（PARAM_ERROR/SERVER_ERROR/AES_ERROR 等）统一用 `NetErrorCode`，不在本类扩展。
 > 账号绑定业务错误码（10401 三方占用 / 10402 绑定冲突 / 10403 三方鉴权）由 `GameBind` 模块的 `BindErrorCode` 维护。
@@ -39,6 +40,7 @@
 | `ErrAccountDeleted` | 10011 | 账号已删除 |
 | `ErrKicked` | 10400 | device_id 非最新，被顶号 |
 | `ErrAccountNotFound` | 10404 | 三方号未绑定任何账号（open_id 登录时未绑，由客户端决定注册新号或走绑定流程） |
+| `ErrOpenidUIDMismatch` | 10407 | 三方账号与当前账号不匹配（open_id 已绑定其他 uid，与当前请求 uid 不一致） |
 
 ---
 
@@ -60,7 +62,7 @@ PbNetBaseResponse.Code  →  NetParser.ParseResponse  →  NetResult.Code
 
 ```csharp
 var login = Nova.Network.Kit<Login>();
-var resp = await login.Async(string.Empty, openId);
+var resp = await login.Async(string.Empty, openid);
 
 if (!resp.IsSuccess)
 {
@@ -81,7 +83,7 @@ if (!resp.IsSuccess)
 ## 6. 内部约束
 
 - **不偏移码值**：本类常量值与服务端返回码一一对应，不做 7000 段偏移，确保 `resp.ErrorCode == LoginErrorCode.XXX` 直接命中。
-- **与 `NetErrorCode` 段位不重叠**：`NetErrorCode` 用负数（客户端）+ 1000/5000/6000/6001（服务端通用），本类从 10000 起，避免混用。
+- **与 `NetErrorCode` 段位不重叠**：`NetErrorCode` 使用客户端负数段与服务端通用段，本类从 10000 起，避免混用。
 - **不收录通用协议级错误**：PARAM_ERROR/SERVER_ERROR/AES_ERROR/APPID_MISSING 等统一在 `NetErrorCode` 维护。
 - **不收录绑定业务错误**：绑定相关码（10401/10402/10403）由 `GameBind` 模块的 `BindErrorCode` 维护。
 

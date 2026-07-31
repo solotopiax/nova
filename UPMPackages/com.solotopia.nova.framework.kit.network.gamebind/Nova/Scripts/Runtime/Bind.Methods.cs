@@ -36,20 +36,20 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
 
         /// <summary>
         /// 绑定内部实现：按已解析的 cmdRow 发起绑定请求。
-        /// Header 由 NetBuilder.BuildHeader() 自动填充（Header.Uid 即当前登录态 uid，为被绑定的账号；渠道由 InferChannel 自动填充）。
+        /// Header 由 NetBuilder.BuildHeader() 自动填充（Header.Uid 即当前登录态 UID，为被绑定的账号；渠道由 InferChannel 自动填充）。
         /// </summary>
         /// <param name="cmdRow">NetCmd 指令行数据，由 BindAsync 解析 BindKitConfig.BindCmdName 得到。</param>
         /// <param name="provider">三方平台（与 PbNetChannel 枚举值对齐，直接透传）。</param>
-        /// <param name="openId">要绑定的三方标识。</param>
+        /// <param name="openid">要绑定的三方标识。</param>
         /// <returns>包含绑定响应数据或错误信息的 NetResponse。</returns>
         private async UniTask<NetResponse<PbNetBindResp>> SendBindAsync(
-            INetworkCmdRow cmdRow, int provider, string openId)
+            INetworkCmdRow cmdRow, int provider, string openid)
         {
             var body = new PbNetBindReq
             {
                 Head = NetBuilder.BuildHeader(),
                 Provider = provider,
-                OpenId = openId ?? string.Empty
+                OpenId = openid ?? string.Empty
             };
             var resp = await NetService.SendAsync(cmdRow, body, PbNetBindResp.Parser, m_DebugModeOverride);
             if (!resp.IsSuccess)
@@ -64,15 +64,15 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         /// Header 由 NetBuilder.BuildHeader() 自动填充（Header.Uid 即 guest_uid，当前登录态）。
         /// </summary>
         /// <param name="cmdRow">NetCmd 指令行数据，由 QueryConflictAsync 解析 BindKitConfig.BindConflictCmdName 得到。</param>
-        /// <param name="openId">冲突的三方标识。</param>
+        /// <param name="openid">冲突的三方标识。</param>
         /// <returns>包含对方账号进度摘要或错误信息的 NetResponse。</returns>
         private async UniTask<NetResponse<PbNetBindConflictResp>> SendQueryConflictAsync(
-            INetworkCmdRow cmdRow, string openId)
+            INetworkCmdRow cmdRow, string openid)
         {
             var body = new PbNetBindConflictReq
             {
                 Head = NetBuilder.BuildHeader(),
-                OpenId = openId ?? string.Empty
+                OpenId = openid ?? string.Empty
             };
             var resp = await NetService.SendAsync(cmdRow, body, PbNetBindConflictResp.Parser, m_DebugModeOverride);
             if (!resp.IsSuccess)
@@ -85,20 +85,20 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         /// <summary>
         /// 裁决内部实现：按已解析的 cmdRow 发起二选一裁决请求。
         /// Header 由 NetBuilder.BuildHeader() 自动填充（Header.Uid 即 guest_uid，经 device_id 顶号校验）；服务端自查 existing_uid，不接受客户端传。
-        /// 纯账号归属裁决，不改动本地登录态、不处理存档数据。
+        /// 纯账号归属裁决，不处理存档数据；成功后由外层根据 FinalUid 与目标 OpenID 同步身份。
         /// </summary>
         /// <param name="cmdRow">NetCmd 指令行数据，由 ResolveAsync 解析 BindKitConfig.BindResolveCmdName 得到。</param>
-        /// <param name="openId">冲突的三方标识。</param>
+        /// <param name="openid">冲突的三方标识。</param>
         /// <param name="choice">guest=保留当前账号 / existing=保留对方账号。</param>
         /// <param name="verifyCode">二次验证码（无则传空）。</param>
         /// <returns>包含裁决响应数据或错误信息的 NetResponse。</returns>
         private async UniTask<NetResponse<PbNetBindResolveResp>> SendResolveAsync(
-            INetworkCmdRow cmdRow, string openId, string choice, string verifyCode)
+            INetworkCmdRow cmdRow, string openid, string choice, string verifyCode)
         {
             var body = new PbNetBindResolveReq
             {
                 Head = NetBuilder.BuildHeader(),
-                OpenId = openId ?? string.Empty,
+                OpenId = openid ?? string.Empty,
                 Choice = choice ?? string.Empty,
                 VerifyCode = verifyCode ?? string.Empty
             };
@@ -131,6 +131,12 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
                     break;
                 case BindErrorCode.ErrKicked:
                     Log.Warning(LogTag.Network, "账号绑定错误：device_id 非最新被顶号（ErrKicked={0}）。msg={1}", errorCode, errorMessage);
+                    break;
+                case BindErrorCode.ErrAccountNotFound:
+                    Log.Warning(LogTag.Network, "账号绑定错误：对应绑定不存在（ErrAccountNotFound={0}），请刷新绑定或冲突状态。msg={1}", errorCode, errorMessage);
+                    break;
+                case BindErrorCode.ErrOpenidUIDMismatch:
+                    Log.Warning(LogTag.Network, "账号绑定错误：三方账号与当前账号不匹配（ErrOpenidUIDMismatch={0}）。msg={1}", errorCode, errorMessage);
                     break;
                 default:
                     // 非 BindErrorCode 段（NetErrorCode 通用段或未知），不打绑定专属日志，交由 NetService 已有日志覆盖

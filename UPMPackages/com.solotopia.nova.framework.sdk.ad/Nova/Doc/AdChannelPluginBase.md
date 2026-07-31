@@ -66,7 +66,7 @@ classDiagram
 | `PlacementId` | `string` | — | 广告位唯一标识，来自配置注入 |
 | `Format` | `AdFormat` | — | 该槽位对应的广告格式 |
 | `State` | `AdUnitState` | `Idle` | 当前状态机状态 |
-| `Revenue` | `double` | `0` | Ready 时 SDK 报告的 eCPM 收益（USD）；用于 ShowAsync eCPM 优先排序；展示结束后重置为 0 |
+| `Revenue` | `double` | `0` | Ready 时 SDK 报告的 eCPM 收益（USD）；用于 ShowAsync eCPM 优先排序；关闭或展示失败后重置为 0 |
 | `RetryCount` | `int` | `0` | 当前已重试次数；加载成功后重置为 0；达到 `RetryLoadAdMaxNum` 后由 `DelayedRetryAsync` 清零重置 |
 | `LastErrorMessage` | `string` | `null` | 最近一次加载失败的错误描述文本 |
 | `RetryCts` | `CancellationTokenSource` | `null` | 延时/立即重试任务的取消令牌源；`DisposeAsync` 时统一 Cancel 以防泄露 |
@@ -121,7 +121,7 @@ public UniTask<AdLoadResult> RequestAsync(AdFormat format, AdRequestReason reaso
 public bool IsReady(AdFormat format);
 
 /// 异步展示指定格式广告；从 Ready 槽位中按 Revenue 降序取 eCPM 最高的槽位展示。
-/// 非 Banner 展示结束后自动触发 RequestAsync 续杯（Banner 不续杯）。
+/// 非 Banner 关闭或展示失败后自动触发 RequestAsync 续杯（Banner 不续杯）。
 /// 未注册该 format 或无 Ready 槽位时返回失败结果（fail-soft，不抛异常）。
 /// OnShowAsync 抛出异常时槽位回置 Idle，防止永久卡在 Showing 状态。
 public async UniTask<AdResult> ShowAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default);
@@ -194,32 +194,30 @@ protected void MarkBannerHidden(string placementId);
 
 ```csharp
 /// 触发 OnAdRevenuePaid 事件，并推进收益状态。
-/// 内部先调 MarkRevenue 更新 AdUnit.Revenue。收益路径不切 Unity 主线程。
+/// 内部先调 MarkRevenue 更新 AdUnit.Revenue，随后只把 OnAdRevenuePaid 事件排入主线程。
 protected void RaiseRevenue(AdEvent e);
 
-/// SDK 收益回调线程入口：immediateAction、MarkRevenue 和 OnAdRevenuePaid
-/// 均在原始 SDK 回调线程立刻执行。
-/// 收益即时上报必须使用此方法，不要使用 PostAdCallbackToMainThread 包裹。
+/// SDK 收益回调线程入口：immediateAction 在原始 SDK 回调线程立刻执行。
+/// RaiseRevenue 会同步推进收益状态，并只把 OnAdRevenuePaid 事件排入 Unity 主线程。
 protected void RaiseRevenueImmediately(AdEvent e, Action immediateAction = null);
 
 /// 将 SDK 生命周期回调排入 Unity 主线程 FIFO 执行。
-/// 仅适用于 SDK OnAdLoadedEvent / OnAdHiddenEvent / OnAdReceivedRewardEvent。
-/// 不适用于 SDK OnAdRevenuePaidEvent。
+/// 适用于业务事件和 UI 回调；状态机、批次通知和纯打点无需单独切主线程。
 protected void PostAdCallbackToMainThread(Action action);
 
 /// 触发 OnAdLoaded 事件，并驱动打点扇出（nova_ad_fill）。
-/// 内部先调 MarkLoaded（置 Ready，重置 RetryCount，取消 pending 重试）。须在主线程调用。
+/// 内部先调 MarkLoaded（置 Ready，重置 RetryCount，取消 pending 重试），状态机、批次通知和打点可跟随 SDK 回调线程即时执行；只有 OnAdLoaded 事件 fan-out 会排入主线程。
 protected void RaiseAdLoaded(AdLoadResult e);
 
 /// 触发 OnAdLoadFailed 事件，并驱动打点扇出（nova_ad_fill_fail）。
-/// 内部先调 MarkLoadFailed（solar 重试语义：未达 RetryLoadAdMaxNum 时立即重试；达上限后等待 RetryLoadAdInterv 秒清零计数继续无限重试）。须在主线程调用。
+/// 内部先调 MarkLoadFailed（solar 重试语义：未达 RetryLoadAdMaxNum 时立即重试；达上限后等待 RetryLoadAdInterv 秒清零计数继续无限重试），状态机、批次通知和打点可跟随 SDK 回调线程即时执行；只有 OnAdLoadFailed 事件 fan-out 会排入主线程。
 protected void RaiseAdLoadFailed(AdLoadResult e);
 
 /// 触发 OnInitResult 事件，同时上报 nova_ad_init 打点（nova_success + nova_ad_channel）。
 protected void RaiseInitResult(bool success);
 
 /// 触发 OnShowCompleted 事件；不再上报 nova_ad_show_result（nova_ad_result=1）成功打点。
-/// 内部先调 MarkShown（Showing → Idle，非 Banner 触发续杯）。
+/// 仅分发展示成功通知，不调用 MarkShown；自动续杯由关闭或展示失败链路触发。
 protected void RaiseShowCompleted(AdResult result);
 
 /// 触发 OnShowFailed 事件，并上报 nova_ad_show_result（nova_ad_result=0）打点。
@@ -326,8 +324,8 @@ public readonly struct AdUnitOptions
     │      ↓ 写入 AdUnit.LastReason / RequestCustomProps；上报 nova_ad_request
     │      ↓ 遍历 Idle/Failed-未到上限 + 已 Loading/Showing 的 AdUnit → 构造 RequestBatch
     │      ↓ 并行 OnRequestAsync(fire-and-forget)；返回 tcs.Task（任一就绪即结算）
-    │      ├─→ RaiseAdLoaded(e)      → MarkLoaded → NotifyBatchLoaded → OnAdLoaded event → 打点
-    │      └─→ RaiseAdLoadFailed(e)  → MarkLoadFailed → NotifyBatchFailed → 重试调度 → OnAdLoadFailed event → 打点
+    │      ├─→ RaiseAdLoaded(e)      → MarkLoaded → NotifyBatchLoaded → nova_ad_fill → OnAdLoaded event
+    │      └─→ RaiseAdLoadFailed(e)  → MarkLoadFailed → NotifyBatchFailed → 重试调度 → nova_ad_fill_fail → OnAdLoadFailed event
     │
     ├─→ IsReady(format)  → 任一 AdUnit.State == Ready 且 OnIsReady(format, placementId)==true 即 true
     │
@@ -337,8 +335,8 @@ public readonly struct AdUnitOptions
     │      ↓ 置 Showing
     │      ↓ OnShowAsync(format, placementId, ct)
     │      ↓ 渠道 SDK 展示回调
-    │      ├─→ RaiseRevenueImmediately(e)   → immediateAction / RaiseRevenue 在 SDK 回调线程即时执行
-    │      ├─→ RaiseShowCompleted(r)        → MarkShown → OnShowCompleted event（不打成功 show_result）
+    │      ├─→ RaiseRevenueImmediately(e)   → immediateAction 即时执行，RaiseRevenue 同步推进状态，RevenuePaid event 排入主线程
+    │      ├─→ RaiseShowCompleted(r)        → OnShowCompleted event（不打成功 show_result，不续杯）
     │      ├─→ RaiseShowFailed(r)           → MarkShown → OnShowFailed event → nova_ad_show_result（非Banner续杯）
     │      └─→ RaiseAdClosed(r, rewarded)  → MarkShown → OnAdClosed event → nova_ad_hidden（非Banner续杯）
     │
@@ -375,7 +373,10 @@ RaiseAdLoaded      RaiseAdLoadFailed                                         │
     ↓
  [Showing]
     │
-    ├─→ RaiseShowCompleted / RaiseShowFailed / RaiseAdClosed
+    ├─→ RaiseShowCompleted
+    │      → OnShowCompleted event（仍处于展示生命周期，不续杯）
+    │
+    ├─→ RaiseShowFailed / RaiseAdClosed
     │      → MarkShown → 回 [Idle]
     │         非 Banner：自动触发 RequestAsync 续杯
     │
@@ -522,14 +523,14 @@ DelayedRetryAsync(unit, ct):
 - **误区：在 `OnRequestAsync` 中再次检查是否支持该格式**：基类只对已注册 AdUnit 的 format 调用 `OnRequestAsync`，派生类无需额外过滤。
 - **误区：`OnRequestAsync` 签名与旧版相同**：签名包含 `string placementId` 参数；派生类只需针对该 placementId 调用一次 SDK 加载，不必在 `OnRequestAsync` 内自行管理多 ID 循环。
 - **误区：在 `InitChannelSDKAsync` 中实现 `Supports` 逻辑**：`Supports` 方法已全链路删除；是否支持某 AdFormat 由 `RegisterAdUnits` 注册的槽位推导，派生类只需注册即可。
-- **误区：所有 SDK Native 回调都要切主线程**：当前只要求 `OnAdLoadedEvent` / `OnAdHiddenEvent` / `OnAdReceivedRewardEvent` 使用 `PostAdCallbackToMainThread`。LoadFailed / Displayed / DisplayFailed / Clicked / Collapsed 等回调不进该队列。
-- **误区：把收益回调也排入主线程**：SDK `OnAdRevenuePaidEvent` 不得用 `PostAdCallbackToMainThread` 包裹。收益路径使用 `RaiseRevenueImmediately`，即时处理、Nova 收益状态和业务收益事件都在 SDK 原始回调线程完成。
+- **误区：把收益打点和收益事件绑在同一线程**：收益打点和收益状态推进应在 SDK 原始回调线程即时执行，只有收益事件 fan-out 必须排入 Unity 主线程，避免业务/UI 回调在后台线程触发。
+- **误区：Banner 收益必须整体切主线程**：Banner 收益也应拆分；`ad_impression` / `ad_ilrd` 打点即时执行，`OnAdRevenuePaid` 事件由 `RaiseRevenueImmediately` 统一排入主线程。
 - **误区：直接触发 event 字段而不用 `Raise*` 方法**：`Raise*` 方法内部先推进状态机再 fan-out 再打点，直接触发 event 会同时跳过状态机推进和打点。
 - **误区：Banner 渠道直接调 `RequestAsync` 续杯**：Banner 不自动续杯（有 SDK 自带刷新），框架层不会在 `MarkShown` 后对 Banner 触发 `RequestAsync`。
 - **误区：Banner 隐藏后不回置状态**：派生类在 `HideBanner` / `DestroyBanner` 对应的 SDK 回调中须调 `MarkBannerHidden(placementId)`，否则 AdUnit 永久停在 Showing，无法参与下次展示。
 - **误区：`OnShowAsync` 基类实现直接可用**：基类默认抛 `AdFormatNotSupportedException`，必须 override 才能实际展示广告。
 - **误区：在 `InitChannelSDKAsync` 中忘记调 `RegisterAdUnits`**：若未注入任何 AdUnit，`RequestAsync` 会静默返回（列表为空），`IsReady` 永远 false。
-- **误区：事件订阅 handler 内发起新 RequestAsync**：`RequestCustomProps` 在 `RaiseAdLoaded` fan-out 之后才被合并打点，订阅者若在 `OnAdLoaded` handler 内同步调用 `RequestAsync` 会覆写该 AdUnit 的 `RequestCustomProps`；保持事件订阅 handler 不主动发起新 Request 即可。
+- **误区：把 `Raise*` 整体切回主线程**：`RaiseAdLoaded` / `RaiseAdLoadFailed` / `RaiseRevenue` 内部的状态机、批次通知和打点可以跟随 SDK 原始回调线程即时执行；只需要由基类把 `OnAdLoaded` / `OnAdLoadFailed` / `OnAdRevenuePaid` 等业务事件 fan-out 排入 Unity 主线程。
 
 ---
 
@@ -548,20 +549,18 @@ public sealed class MaxAdPlugin : AdChannelPluginBase
         var maxCfg = (MaxAdChannelConfig)config;
 
         // 1. 注入多 ID 槽位；注册了哪些 AdFormat 即视为支持
-        RegisterAdUnits(AdFormat.RewardedVideo, maxCfg.RvUnits);
+        RegisterAdUnits(AdFormat.Rewarded, maxCfg.RvUnits);
         RegisterAdUnits(AdFormat.Interstitial, maxCfg.InterUnits);
         RegisterAdUnits(AdFormat.Banner, maxCfg.BannerUnits);
 
-        // 2. 注册 SDK 回调（须切回主线程后再调 Raise*）
-        MaxSdkCallbacks.Rewarded.OnAdLoadedEvent += async (placementId, info) =>
+        // 2. 注册 SDK 回调；SDK 回调中直接调用 Raise*，基类只把业务事件 fan-out 排入主线程
+        MaxSdkCallbacks.Rewarded.OnAdLoadedEvent += (placementId, info) =>
         {
-            await UniTask.SwitchToMainThread();
-            RaiseAdLoaded(new AdLoadResult { Success = true, Format = AdFormat.RewardedVideo, PlacementId = placementId });
+            RaiseAdLoaded(new AdLoadResult { Success = true, Format = AdFormat.Rewarded, PlacementId = placementId });
         };
-        MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent += async (placementId, info) =>
+        MaxSdkCallbacks.Rewarded.OnAdLoadFailedEvent += (placementId, info) =>
         {
-            await UniTask.SwitchToMainThread();
-            RaiseAdLoadFailed(new AdLoadResult { Success = false, Format = AdFormat.RewardedVideo, PlacementId = placementId, ErrorMessage = info.Message });
+            RaiseAdLoadFailed(new AdLoadResult { Success = false, Format = AdFormat.Rewarded, PlacementId = placementId, ErrorMessage = info.Message });
         };
         MaxSdkCallbacks.OnSdkInitializedEvent += _ => RaiseInitResult(true);
 
@@ -576,7 +575,7 @@ public sealed class MaxAdPlugin : AdChannelPluginBase
         // 基类已按 eCPM 优先选出 placementId，只需调一次 SDK
         switch (format)
         {
-            case AdFormat.RewardedVideo:  MaxSdk.LoadRewardedAd(placementId); break;
+            case AdFormat.Rewarded:       MaxSdk.LoadRewardedAd(placementId); break;
             case AdFormat.Interstitial:   MaxSdk.LoadInterstitial(placementId); break;
             case AdFormat.Banner:         MaxSdk.CreateBanner(placementId, MaxSdkBase.BannerPosition.BottomCenter); break;
         }

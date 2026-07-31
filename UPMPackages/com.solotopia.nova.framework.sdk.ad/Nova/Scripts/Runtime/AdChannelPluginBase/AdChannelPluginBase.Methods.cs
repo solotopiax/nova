@@ -122,10 +122,10 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 广告展示结束后推进状态机：Showing 回置 Idle；非 Banner 自动触发续杯请求（fire-and-forget）。
+        /// 广告关闭或展示失败后推进状态机：Showing 回置 Idle；非 Banner 自动触发续杯请求（fire-and-forget）。
         /// 续杯前清除 ShowCustomProps，以 AutoRefill 原因和空 customProps 调 RequestAsync；结果不被观察。
         /// </summary>
-        /// <param name="placementId">展示结束的广告位标识。</param>
+        /// <param name="placementId">关闭或展示失败的广告位标识。</param>
         private void MarkShown(string placementId)
         {
             var unit = FindAdUnit(placementId);

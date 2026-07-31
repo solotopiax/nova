@@ -71,7 +71,7 @@ IAP Products 支持在 Inspector 中通过 Excel 批量维护：
 
 ```csharp
 public override string Name => "IAPPlugin"
-public override int Priority => 20
+public override int Priority => 70
 public IIAPProductTable ProductTable { get; }
 public IAPPluginEvents Events { get; }
 

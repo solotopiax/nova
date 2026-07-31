@@ -4,13 +4,14 @@
  * -------------------------------------------------------------
  * filename:  TGAPluginConfig.cs
  * descrip:   TGA 插件运行期初始化配置；作为 ISDKPluginConfig 由 ConfigMasterSO
- *            静态配置，SDKManager 按 RequiredConfigType 自动注入给
+ *            静态配置，SDKManager 按 ConfigType 自动注入给
  *            TGAPlugin.OnInitializeAsync。
  ***************************************************************/
 
 #if !UNITY_WEBGL
 using System;
 using NovaFramework.Runtime;
+using ThinkingData.Analytics;
 using UnityEngine;
 
 namespace NovaFramework.SDK.TGAPlugin.Runtime
@@ -31,10 +32,16 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         private string m_AppID;
 
         /// <summary>
-        /// 上报模式整型值序列化字段，将转换为 TDMode。
+        /// TGA SDK 上报模式。
         /// </summary>
         [SerializeField, Tooltip("TGA 数据上报模式。调试阶段可用 Debug 或 DebugOnly，正式环境建议使用 Normal。")]
-        private int m_Mode;
+        private TDMode m_Mode = TDMode.Normal;
+
+        /// <summary>
+        /// TGA SDK 时区。
+        /// </summary>
+        [SerializeField, Tooltip("TGA SDK 时区。默认使用本地时区 Local。")]
+        private TDTimeZone m_TimeZone = TDTimeZone.Local;
 
         /// <summary>
         /// 是否开启 SDK 日志序列化字段。
@@ -61,14 +68,25 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         private bool m_IsTestUser = true;
 
         /// <summary>
+        /// 是否在 TGA 初始化后将 DeviceId 设置为 DistinctId。
+        /// </summary>
+        [SerializeField, Tooltip("是否在 TGA 初始化后将 DeviceId 设置为 DistinctId。开启后会调用 TDAnalytics.SetDistinctId(TDAnalytics.GetDeviceId())。")]
+        private bool m_AssignDeviceIdToDistinctId;
+
+        /// <summary>
         /// 应用 ID。
         /// </summary>
         public string AppID => m_AppID;
 
         /// <summary>
-        /// 上报模式整型值，将转换为 TDMode。
+        /// TGA SDK 上报模式。
         /// </summary>
-        public int Mode => m_Mode;
+        public TDMode Mode => m_Mode;
+
+        /// <summary>
+        /// TGA SDK 时区。
+        /// </summary>
+        public TDTimeZone TimeZone => m_TimeZone;
 
         /// <summary>
         /// 是否开启 SDK 日志。
@@ -91,6 +109,11 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         public bool IsTestUser => m_IsTestUser;
 
         /// <summary>
+        /// 是否在 TGA 初始化后将 DeviceId 设置为 DistinctId。
+        /// </summary>
+        public bool AssignDeviceIdToDistinctId => m_AssignDeviceIdToDistinctId;
+
+        /// <summary>
         /// ConfigWindow 左树展示的中文名称。
         /// </summary>
         public string DisplayName => "TGA 数据分析";
@@ -104,17 +127,21 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         /// 构造 TGAPluginConfig 实例。
         /// </summary>
         /// <param name="appID">应用 ID。</param>
-        /// <param name="mode">上报模式整型值。</param>
+        /// <param name="mode">TGA SDK 上报模式。</param>
         /// <param name="logEnable">是否开启 SDK 日志。</param>
         /// <param name="serverCmdName">上报服务器对应的网络指令名（NetworkCmds 表 Name），留空则跳过 TGA 初始化。</param>
         /// <param name="isTestUser">测试用户标识，对应 TGA 字段 nova_test。</param>
-        public TGAPluginConfig(string appID, int mode = 0, bool logEnable = false, string serverCmdName = "", bool isTestUser = true)
+        /// <param name="assignDeviceIdToDistinctId">是否在 TGA 初始化后将 DeviceId 设置为 DistinctId。</param>
+        /// <param name="timeZone">TGA SDK 时区。</param>
+        public TGAPluginConfig(string appID, TDMode mode = TDMode.Normal, bool logEnable = false, string serverCmdName = "", bool isTestUser = true, bool assignDeviceIdToDistinctId = false, TDTimeZone timeZone = TDTimeZone.Local)
         {
             m_AppID = appID;
             m_Mode = mode;
+            m_TimeZone = timeZone;
             m_LogEnable = logEnable;
             m_ServerCmdName = serverCmdName;
             m_IsTestUser = isTestUser;
+            m_AssignDeviceIdToDistinctId = assignDeviceIdToDistinctId;
         }
     }
 }

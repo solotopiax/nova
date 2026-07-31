@@ -34,7 +34,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         Retry = 2,
 
         /// <summary>
-        /// 广告展示后自动续杯补量。
+        /// 非 Banner 广告关闭或展示失败后自动续杯补量。
         /// </summary>
         AutoRefill = 3,
     }

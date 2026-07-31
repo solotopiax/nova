@@ -33,6 +33,7 @@ namespace NovaFramework.Runtime
                 return;
             }
 
+#if !NOVA_DISABLE_RUNTIME_DEBUGGER
             if (IsDebuggerActive())
             {
                 RuntimeDebugger.Init(new RuntimeDebugger.InitOptions
@@ -42,6 +43,7 @@ namespace NovaFramework.Runtime
                     MaximumConsoleEntries = m_MaximumConsoleEntries,
                 });
             }
+#endif
         }
 
         /// <summary>

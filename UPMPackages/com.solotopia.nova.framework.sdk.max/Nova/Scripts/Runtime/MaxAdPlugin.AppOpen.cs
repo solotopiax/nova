@@ -44,7 +44,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnAppOpenLoaded(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            PostAdCallbackToMainThread(() => RaiseAdLoaded(new AdLoadResult
+            RaiseAdLoaded(new AdLoadResult
             {
                 Success = true,
                 Format = AdFormat.AppOpen,
@@ -53,7 +53,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Revenue = info.Revenue,
                 Currency = "USD",
                 CustomProps = BuildMaxLoadProps(info),
-            }));
+            });
         }
 
         /// <summary>
@@ -129,20 +129,17 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnAppOpenHidden(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            PostAdCallbackToMainThread(() =>
+            var result = new AdResult
             {
-                var result = new AdResult
-                {
-                    Success = true,
-                    Format = AdFormat.AppOpen,
-                    PlacementId = adUnitId,
-                    Network = info.NetworkName,
-                    Revenue = info.Revenue,
-                    Currency = "USD",
-                };
-                RaiseAdClosed(result);
-                m_AppOpenTcs?.TrySetResult(result);
-            });
+                Success = true,
+                Format = AdFormat.AppOpen,
+                PlacementId = adUnitId,
+                Network = info.NetworkName,
+                Revenue = info.Revenue,
+                Currency = "USD",
+            };
+            RaiseAdClosed(result);
+            m_AppOpenTcs?.TrySetResult(result);
         }
 
         /// <summary>

@@ -62,7 +62,7 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
     // === 展示 ===
 
     /// 展示指定格式广告，选 Revenue 最高的就绪渠道执行；无就绪渠道时 Log.Warning 并跳过（不抛异常）。
-    /// AdFormat.RewardedVideo 时 AdResult.UserCompleted == true 表示用户看完，据此发放奖励。
+    /// AdFormat.Rewarded 时 AdResult.UserCompleted == true 表示用户看完，据此发放奖励。
     /// AdFormat.Banner 不适用此方法，Banner 展示请使用 IBannerControl.ShowBanner()。
     /// customProps 会透传到渠道层 nova_ad_show / nova_ad_show_result 失败分支 / nova_ad_hidden 打点。
     UniTask ShowAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default);
@@ -83,9 +83,9 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
 
 - **误区：通过 `IAdPlugin` 访问 `Events`**：`Events` 属性不在接口上，需要 `Nova.SDK.Get<AdPlugin>().Events` 或显式转型后访问。
 - **误区：调用 `Supports(format)` 检查格式兼容性**：`Supports` 方法已全链路删除；直接调 `RequestAsync`，未注册该格式的渠道会 fail-soft 返回 `Success=false` 的 `AdLoadResult`，不抛异常。
-- **误区：激励视频只判断 Success**：`ShowAsync` 的 `Success=true` 仅表示展示成功，发奖励须同时判断 `AdResult.UserCompleted == true`。
+- **误区：从 `ShowAsync` 读取 `AdResult`**：`ShowAsync` 返回 `UniTask`，只用于等待展示流程结束；展示成功、失败和关闭结果分别从 `Events.ShowCompleted`、`Events.ShowFailed`、`Events.AdClosed` 获取。激励奖励以 `AdClosed` 的 `UserCompleted == true` 为准。
 - **误区：Banner 用 ShowAsync**：Banner 走 `RequestAsync(AdFormat.Banner)` 预加载后用 `ShowBanner()` 展示，`ShowAsync` 不适用 Banner 格式。
-- **误区：沿用旧 C# event 订阅方式**：旧版 `OnAdRevenuePaid / OnAdLoaded / OnAdLoadFailed` 三个 C# event 已删除；改为通过 `AdPlugin.Events.RevenuePaid.Subscribe()` 等方式订阅。
+- **误区：业务层沿用旧 C# event 订阅方式**：`IAdPlugin` 不再暴露 `OnAdRevenuePaid / OnAdLoaded / OnAdLoadFailed` 等 C# event；业务层改为通过 `AdPlugin.Events.RevenuePaid.Subscribe()` 等方式订阅。
 
 ---
 
@@ -109,6 +109,16 @@ void SetupEvents()
 
     adPlugin.Events.ShowCompleted.Subscribe(result =>
     {
+        Log.Debug($"广告展示成功：{result.Format} / {result.PlacementId}");
+    }, m_Bag);
+
+    adPlugin.Events.ShowFailed.Subscribe(result =>
+    {
+        Log.Warning($"广告展示失败：{result.Format} / {result.ErrorMessage}");
+    }, m_Bag);
+
+    adPlugin.Events.AdClosed.Subscribe(result =>
+    {
         if (result.Success && result.UserCompleted)
             GiveReward();
     }, m_Bag);
@@ -125,13 +135,12 @@ async UniTask ShowRewardedAd(CancellationToken ct)
 {
     // 无需提前 Supports 检查；未注册该格式的渠道 fail-soft 返回 Success=false
     var requestProps = new Dictionary<string, object> { { "scene", "main_menu" } };
-    var loadResult = await ad.RequestAsync(AdFormat.RewardedVideo, requestProps, ct);
+    var loadResult = await ad.RequestAsync(AdFormat.Rewarded, requestProps, ct);
     if (!loadResult.Success) return;  // 全部失败，可读取 ErrorCode / ErrorMessage
 
     var showProps = new Dictionary<string, object> { { "scene", "main_menu" } };
-    var result = await ad.ShowAsync(AdFormat.RewardedVideo, showProps, ct);
-    if (result.Success && result.UserCompleted)
-        GiveReward();
+    // ShowAsync 只等待流程结束；结果由上面的 ShowCompleted / ShowFailed / AdClosed 订阅处理。
+    await ad.ShowAsync(AdFormat.Rewarded, showProps, ct);
 }
 
 // Banner 广告

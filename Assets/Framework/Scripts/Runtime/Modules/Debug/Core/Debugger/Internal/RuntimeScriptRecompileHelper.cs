@@ -7,7 +7,7 @@
  * created:   2026/6/12
  * descrip:   Nova Runtime Debugger 运行时代码。
  ***************************************************************/
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !NOVA_DISABLE_RUNTIME_DEBUGGER
 using UnityEngine;
 
 namespace NovaFramework.Runtime

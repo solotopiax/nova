@@ -25,7 +25,7 @@ AdPlugin 事件容器，持有 7 个 ObservableEvent 字段，封装广告生命
 | `InitResult` | `StickyEvent<bool>` | Sticky | — | SDK 初始化结果；订阅时若已完成初始化则立即补发最新值 |
 | `AdLoaded` | `StickyEvent<AdLoadResult>` | Sticky | — | 广告加载成功；事件载荷 `Success=true`，订阅时补发最近一次加载成功结果 |
 | `AdLoadFailed` | `StickyEvent<AdLoadResult>` | Sticky | — | 广告加载失败；事件载荷 `Success=false`，订阅时补发最近一次加载失败结果 |
-| `ShowCompleted` | `ReplayEvent<AdResult>` | Replay | 32 | 广告播放完成；每条记录独立有意义，不可被后续事件覆盖 |
+| `ShowCompleted` | `ReplayEvent<AdResult>` | Replay | 32 | 广告展示成功（SDK displayed）；每条记录独立有意义，不可被后续事件覆盖，不表示广告已关闭或激励已完成 |
 | `ShowFailed` | `ReplayEvent<AdResult>` | Replay | 32 | 广告播放失败；每条失败记录独立有意义，业务层需逐条处理 |
 | `RevenuePaid` | `ReplayEvent<AdEvent>` | Replay | 32 | 广告收益；每次收益须上报，不可丢失，Replay 保障无漏发 |
 | `AdClosed` | `ReplayEvent<AdResult>` | Replay | 32 | 广告关闭；每条关闭记录独立有意义，业务层需逐条响应 |
@@ -65,8 +65,14 @@ void OnStart()
         if (!success) Log.Warning("广告 SDK 初始化失败");
     }, m_AdBag);
 
-    // ShowCompleted：Replay，补发历史播放完成记录
+    // ShowCompleted：Replay，补发历史展示成功记录
     ev.ShowCompleted.Subscribe(result =>
+    {
+        Log.Debug($"广告展示成功：{result.Format} / {result.PlacementId}");
+    }, m_AdBag);
+
+    // AdClosed：Replay，关闭后再根据 UserCompleted 发奖
+    ev.AdClosed.Subscribe(result =>
     {
         if (result.Success && result.UserCompleted)
             GiveReward();

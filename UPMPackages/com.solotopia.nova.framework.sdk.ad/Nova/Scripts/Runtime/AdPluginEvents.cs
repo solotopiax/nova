@@ -37,8 +37,8 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public readonly StickyEvent<AdLoadResult> AdLoadFailed = new StickyEvent<AdLoadResult>();
 
         /// <summary>
-        /// 广告播放完成事件。
-        /// Replay 模式（cap=32）：每条播放完成记录独立有意义，不可被后续事件覆盖。
+        /// 广告展示成功事件，由渠道 SDK displayed 回调触发；不表示广告已关闭或激励已完成。
+        /// Replay 模式（cap=32）：每条展示成功记录独立有意义，不可被后续事件覆盖。
         /// </summary>
         public readonly ReplayEvent<AdResult> ShowCompleted = new ReplayEvent<AdResult>(32);
 

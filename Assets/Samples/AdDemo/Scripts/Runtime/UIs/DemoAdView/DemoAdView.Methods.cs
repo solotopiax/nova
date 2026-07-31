@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.AdPlugin.Runtime;
@@ -104,7 +105,7 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
                     return;
                 }
 
-                AppendFeedback(GetFormatDisplayName(format) + "请求成功：placement=" + result.PlacementId + "，revenue=" + result.Revenue, FeedbackLevel.Success);
+                AppendFeedback(GetFormatDisplayName(format) + "请求成功：placement=" + result.PlacementId + "，revenue=" + FormatRevenue(result.Revenue), FeedbackLevel.Success);
             }
             catch (OperationCanceledException)
             {
@@ -303,7 +304,7 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         /// <param name="e">广告收益事件。</param>
         private void OnAdRevenuePaid(AdEvent e)
         {
-            AppendFeedback("【全局事件】AdPlugin.Events.RevenuePaid：format=" + e.Format + "，placement=" + e.PlacementId + "，revenue=" + e.Revenue, FeedbackLevel.Success);
+            AppendFeedback("【全局事件】AdPlugin.Events.RevenuePaid：format=" + e.Format + "，placement=" + e.PlacementId + "，revenue=" + FormatRevenue(e.Revenue), FeedbackLevel.Success);
         }
 
         /// <summary>
@@ -318,7 +319,7 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
                 return "null";
             }
 
-            return "Success=" + result.Success + "，format=" + result.Format + "，placement=" + result.PlacementId + "，code=" + result.ErrorCode + "，message=" + result.ErrorMessage + "，revenue=" + result.Revenue;
+            return "Success=" + result.Success + "，format=" + result.Format + "，placement=" + result.PlacementId + "，code=" + result.ErrorCode + "，message=" + result.ErrorMessage + "，revenue=" + FormatRevenue(result.Revenue);
         }
 
         /// <summary>
@@ -333,7 +334,17 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
                 return "null";
             }
 
-            return "Success=" + result.Success + "，Completed=" + result.UserCompleted + "，format=" + result.Format + "，placement=" + result.PlacementId + "，message=" + result.ErrorMessage + "，revenue=" + result.Revenue + "，rewardGranted=" + result.RewardGranted;
+            return "Success=" + result.Success + "，Completed=" + result.UserCompleted + "，format=" + result.Format + "，placement=" + result.PlacementId + "，message=" + result.ErrorMessage + "，revenue=" + FormatRevenue(result.Revenue) + "，rewardGranted=" + result.RewardGranted;
+        }
+
+        /// <summary>
+        /// 将收益格式化为不使用科学计数法的展示文本。
+        /// </summary>
+        /// <param name="revenue">收益数值。</param>
+        /// <returns>面向 Demo 反馈区的收益文本。</returns>
+        private static string FormatRevenue(double revenue)
+        {
+            return ((decimal)revenue).ToString("0.#############################", CultureInfo.InvariantCulture);
         }
 
         /// <summary>

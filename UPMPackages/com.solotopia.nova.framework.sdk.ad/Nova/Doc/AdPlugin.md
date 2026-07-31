@@ -37,7 +37,7 @@ SDKPluginBase
 | `m_EventManager` | `IEventManager` | `null` | 事件管理器引用；OnInitializeAsync 末尾取得，OnDisposeAsync 开头清空 |
 | `Events` | `AdPluginEvents` | `new AdPluginEvents()` | 事件容器，readonly，持有 7 个 ObservableEvent 字段 |
 | `Name` | `string` | `"AdPlugin"` | 插件友好名 |
-| `Priority` | `int` | `120` | 在现有收益打点插件之后初始化，确保广告渠道能缓存可用的打点实例 |
+| `Priority` | `int` | `80` | 在现有收益打点插件之后初始化，确保广告渠道能缓存可用的打点实例 |
 
 ---
 
@@ -154,7 +154,7 @@ OnUserLogin(sender, e):
 
 - **误区：通过 `IAdPlugin` 访问 `Events`**：`Events` 属性不在接口上；须 `Nova.SDK.Get<AdPlugin>().Events` 或显式转型后访问。
 - **误区：Banner 用 `ShowAsync`**：Banner 走 `RequestAsync(AdFormat.Banner)` 预加载后用 `ShowBanner()` 展示。
-- **误区：激励视频只判断 Success**：须同时判断 `AdResult.UserCompleted == true` 才发奖励。
+- **误区：从 `ShowAsync` 读取 `AdResult`**：`ShowAsync` 返回 `UniTask`，展示成功、失败和关闭结果分别通过 `Events.ShowCompleted`、`Events.ShowFailed`、`Events.AdClosed` 发布；激励奖励以 `AdClosed.UserCompleted` 为准。
 - **误区：直接调 Banner 控制方法而不先 RequestAsync**：`m_ActiveBannerChannel` 在 `RequestAsync(Banner)` 成功后才会被赋值；未预加载时所有 Banner 控制方法为无操作。
 - **误区：调 `Supports(format)` 检查格式**：`Supports` 方法已全链路删除；直接 `RequestAsync`，未注册该格式的渠道 fail-soft 返回 `Success=false`，不抛异常。
 
@@ -179,6 +179,16 @@ void SetupEvents()
 
     adPlugin.Events.ShowCompleted.Subscribe(result =>
     {
+        Log.Debug($"广告展示成功：{result.Format} / {result.PlacementId}");
+    }, m_Bag);
+
+    adPlugin.Events.ShowFailed.Subscribe(result =>
+    {
+        Log.Warning($"广告展示失败：{result.Format} / {result.ErrorMessage}");
+    }, m_Bag);
+
+    adPlugin.Events.AdClosed.Subscribe(result =>
+    {
         if (result.Success && result.UserCompleted)
             GiveReward();
     }, m_Bag);
@@ -188,12 +198,11 @@ void SetupEvents()
 async UniTask ShowRewardedAd(CancellationToken ct)
 {
     // 无需提前 Supports 检查，直接 RequestAsync；未注册格式的渠道 fail-soft 返回 Success=false
-    var loadResult = await ad.RequestAsync(AdFormat.RewardedVideo, null, ct);
+    var loadResult = await ad.RequestAsync(AdFormat.Rewarded, null, ct);
     if (!loadResult.Success) return;
 
-    var result = await ad.ShowAsync(AdFormat.RewardedVideo, null, ct);
-    if (result.Success && result.UserCompleted)
-        GiveReward();
+    // ShowAsync 只等待流程结束；最终结果由事件订阅处理。
+    await ad.ShowAsync(AdFormat.Rewarded, null, ct);
 }
 
 void OnDestroyed()

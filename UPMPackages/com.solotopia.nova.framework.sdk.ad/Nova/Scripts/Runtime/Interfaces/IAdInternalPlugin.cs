@@ -46,18 +46,18 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         float GetMaxRevenue(AdFormat format);
 
         /// <summary>
-        /// 广告收入回调事件，每次广告展示产生收入时在主线程触发。
+        /// 广告收入业务事件，每次广告展示产生收入后由基类排入 Unity 主线程触发；收益打点可在 SDK 原始回调线程即时执行。
         /// AdPlugin 订阅此事件后聚合转发给业务层。
         /// </summary>
         event Action<AdEvent> OnAdRevenuePaid;
 
         /// <summary>
-        /// 广告加载成功事件，主线程触发。
+        /// 广告加载成功业务事件，由基类排入 Unity 主线程触发。
         /// </summary>
         event Action<AdLoadResult> OnAdLoaded;
 
         /// <summary>
-        /// 广告加载失败事件，主线程触发。
+        /// 广告加载失败业务事件，由基类排入 Unity 主线程触发。
         /// </summary>
         event Action<AdLoadResult> OnAdLoadFailed;
 
@@ -67,7 +67,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         event Action<bool> OnInitResult;
 
         /// <summary>
-        /// 广告播放完成事件，携带展示成功结果。
+        /// 广告展示成功事件，携带 SDK displayed 结果；不表示广告已关闭或激励已完成。
         /// </summary>
         event Action<AdResult> OnShowCompleted;
 

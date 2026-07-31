@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.1.1] - 2026-07-31
+
+### Changed
+
+- 将 AppLovin MAX Unity SDK 依赖恢复为 `8.6.4`，并对齐提交 `8f90b274f65cb56a3dc806805d88f6e0833e12c5` 中的 adapter 版本矩阵。
+- 移除 BigoAds / PubMatic adapter，恢复 Yandex Android / iOS adapter；SDK Ad 依赖继续使用当前包要求的 `1.1.0`。
+- 新增 Banner 自动刷新间隔配置，默认 `10` 秒并限制为 `5–120` 秒；启动自动刷新前写入 MAX `ad_refresh_seconds` 参数。
+
 ## [0.1.0] - 2026-07-29
 
 ### Changed

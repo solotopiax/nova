@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.1.1] - 2026-07-31
+
+### Changed
+
+- 将 `FirebasePlugin` 初始化优先级调整为 `30`。
+
 ## [0.1.0] - 2026-07-29
 
 ### Changed

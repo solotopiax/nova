@@ -13,7 +13,7 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// 网络层错误码常量。
     /// 客户端段（负数）：本地流程错误，不经过服务端。
-    /// 服务端通用段（1000 / 5000 / 6000 / 6001）：服务端统一返回的协议级错误。
+    /// 服务端通用段（1000 / 1001 / 5000 / 5001 / 5011 / 6000 / 6001）：服务端统一返回的协议级错误。
     /// 业务专属错误码（如登录段 7000~7999）由各业务子包自行定义，不在本类扩展。
     /// </summary>
     public static class NetErrorCode
@@ -29,9 +29,24 @@ namespace NovaFramework.Runtime
         public const int PARAM_ERROR = 1000;
 
         /// <summary>
+        /// 请求无法解析或缺少必要参数（服务端通用段）。
+        /// </summary>
+        public const int REQUEST_INVALID = 1001;
+
+        /// <summary>
         /// 服务器内部错误（服务端通用段）。
         /// </summary>
         public const int SERVER_ERROR = 5000;
+
+        /// <summary>
+        /// 数据库错误（服务端通用段）。
+        /// </summary>
+        public const int DATABASE_ERROR = 5001;
+
+        /// <summary>
+        /// 应用 ID 未在服务端配置（服务端通用段）。
+        /// </summary>
+        public const int APPID_NOT_CONFIGURED = 5011;
 
         /// <summary>
         /// AES 加解密错误（服务端通用段）。

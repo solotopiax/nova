@@ -23,7 +23,10 @@
 | 常量 | 值 | 说明 |
 |---|---|---|
 | `PARAM_ERROR` | `1000` | 参数错误 |
+| `REQUEST_INVALID` | `1001` | 请求无法解析或缺少必要参数 |
 | `SERVER_ERROR` | `5000` | 服务器内部错误 |
+| `DATABASE_ERROR` | `5001` | 数据库错误 |
+| `APPID_NOT_CONFIGURED` | `5011` | 应用 ID 未在服务端配置 |
 | `AES_ERROR` | `6000` | 服务端 AES 加解密错误 |
 | `APPID_MISSING` | `6001` | 服务端未收到 `app_id` |
 

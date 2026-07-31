@@ -234,7 +234,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 
 ## 9. 错误码
 
-`IAPMobileErrorCode` 是 Mobile 支付过程统一失败原因。0-8 可通过 `IAPResult.ErrorCode` 以 int 返回给业务层；失败打点通过父包 `IAPStoreBase.Track` 写入枚举的 int 值：
+`IAPMobileErrorCode` 是 Mobile 支付过程统一失败原因。0-9 可通过 `IAPResult.ErrorCode` 以 int 返回给业务层；失败打点通过父包 `IAPStoreBase.Track` 写入枚举的 int 值：
 
 | 值 | 名称 | 含义 |
 |---|---|---|
@@ -247,6 +247,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 6 | `NetworkError` | 网络不可用或请求失败 |
 | 7 | `ServerValidationFailed` | 服务端验单失败或拒绝订单 |
 | 8 | `StoreInitFailed` | MobileStore 初始化失败 |
+| 9 | `InvalidPassthroughParam` | tableId、ReceiptParam 或 uid 超出平台透传参数编码范围 |
 | 1000 | `PurchaseFailurePurchasingUnavailable` | Unity IAP 当前不可购买 |
 | 1001 | `PurchaseFailureExistingPurchasePending` | Unity IAP 已有待处理购买 |
 | 1002 | `PurchaseFailureProductUnavailable` | Unity IAP 平台商品不可用 |
@@ -259,7 +260,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 1009 | `PurchaseFailurePurchaseMissing` | Unity IAP 平台未返回购买数据 |
 | 1010 | `PurchaseFailureUnknown` | Unity IAP 未知购买失败 |
 
-0-8 是 Mobile Store 自身流程错误；1000-1010 是 Unity IAP `PurchaseFailureReason` 的专用映射号段；2000+ 是验单失败打点细分号段。`TrackLocalPayFailInternal`、`TrackValidateFailInternal` 和 `TrackValidateFailFinishInternal` 都只接收 `IAPMobileErrorCode`，确保支付过程 `nova_reason` 的枚举域统一。
+0-9 是 Mobile Store 自身流程错误；1000-1010 是 Unity IAP `PurchaseFailureReason` 的专用映射号段；2000+ 是验单失败打点细分号段。`TrackLocalPayFailInternal`、`TrackValidateFailInternal` 和 `TrackValidateFailFinishInternal` 都只接收 `IAPMobileErrorCode`，确保支付过程 `nova_reason` 的枚举域统一。
 
 | 值 | 名称 | Mobile 使用场景 |
 |---|---|---|

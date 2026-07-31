@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.0.10] - 2026-07-31
+
+### Changed
+
+- 将 `GoogleSignInPlugin` 初始化优先级调整为 `60`。
+
 ## [0.0.9] - 2026-07-29
 
 ### Changed

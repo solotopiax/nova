@@ -24,7 +24,7 @@
 | `Auto` | `0` | 默认值；外部首次主动调起（如启动阶段预加载），调用方不指定 reason 时自动使用此值 |
 | `Manual` | `1` | 业务层显式调起；区别于启动自动加载，由玩家交互或业务逻辑主动触发 |
 | `Retry` | `2` | 状态机失败后自动重试；由基类 `ScheduleRetry` / `DelayedRetryAsync` 内部注入，业务层无需手动传递 |
-| `AutoRefill` | `3` | 广告展示结束后自动续杯补量；由基类 `MarkShown` 内部注入，续杯时 customProps 同步置 null |
+| `AutoRefill` | `3` | 非 Banner 广告关闭或展示失败后自动续杯补量；由基类 `MarkShown` 内部注入，续杯时 customProps 同步置 null |
 
 > `nova_ad_reason` 仅出现在 `nova_ad_request` 事件中，其他 8 个事件不携带此字段。
 
@@ -37,17 +37,17 @@
 // （reason 与 customProps 参数属于 IAdInternalPlugin / AdChannelPluginBase 层，
 //  业务层公开接口 IAdPlugin.RequestAsync 只接受 format + ct）
 await channelPlugin.RequestAsync(
-    AdFormat.RewardedVideo,
+    AdFormat.Rewarded,
     AdRequestReason.Manual,
     new Dictionary<string, object> { { "scene", "level_end" } },
     ct);
 
-// 展示结束续杯：由 MarkShown 自动注入 AutoRefill，业务层无需关心
+// 关闭或展示失败后的续杯：由 MarkShown 自动注入 AutoRefill，业务层无需关心
 // 示意代码（实际在 AdChannelPluginBase.Methods.cs 的 MarkShown 中执行）：
 // RequestAsync(unit.Format, AdRequestReason.AutoRefill, null, CancellationToken.None)
 
 // 业务层调用入口（不感知 reason / customProps）：
-await Nova.SDK.Get<IAdPlugin>().RequestAsync(AdFormat.RewardedVideo, ct);
+await Nova.SDK.Get<IAdPlugin>().RequestAsync(AdFormat.Rewarded, ct);
 ```
 
 ---

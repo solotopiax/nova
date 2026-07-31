@@ -117,7 +117,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Editor
         {
             "DTBiOSSDK.xcframework",
             "IASDKCore.xcframework",
-            "OMSDK_Appodeal.xcframework",
             "OMSDK_Pubmatic.xcframework",
             "OMSDK_Pubnativenet.xcframework",
             "OMSDK_Smaato.xcframework",

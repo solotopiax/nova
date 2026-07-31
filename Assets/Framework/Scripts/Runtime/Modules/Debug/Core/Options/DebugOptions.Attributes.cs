@@ -27,14 +27,14 @@ public partial class DebugOptions
 
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class IncrementAttribute :
-#if DISABLE_RUNTIME_DEBUGGER
+#if NOVA_DISABLE_RUNTIME_DEBUGGER
         Attribute
 #else
         NovaFramework.Runtime.IncrementAttribute
 #endif
     {
         public IncrementAttribute(double increment)
-#if !DISABLE_RUNTIME_DEBUGGER
+#if !NOVA_DISABLE_RUNTIME_DEBUGGER
             : base(increment)
 #endif
         {
@@ -43,14 +43,14 @@ public partial class DebugOptions
 
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class NumberRangeAttribute :
-#if DISABLE_RUNTIME_DEBUGGER
+#if NOVA_DISABLE_RUNTIME_DEBUGGER
         Attribute
 #else
         NovaFramework.Runtime.NumberRangeAttribute
 #endif
     {
         public NumberRangeAttribute(double min, double max)
-#if !DISABLE_RUNTIME_DEBUGGER
+#if !NOVA_DISABLE_RUNTIME_DEBUGGER
             : base(min, max)
 #endif
         {
@@ -59,14 +59,14 @@ public partial class DebugOptions
 
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
     public sealed class SortAttribute :
-#if DISABLE_RUNTIME_DEBUGGER
+#if NOVA_DISABLE_RUNTIME_DEBUGGER
         Attribute
 #else
         NovaFramework.Runtime.SortAttribute
 #endif
     {
         public SortAttribute(int priority)
-#if !DISABLE_RUNTIME_DEBUGGER
+#if !NOVA_DISABLE_RUNTIME_DEBUGGER
             : base(priority)
 #endif
         {

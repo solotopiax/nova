@@ -58,6 +58,8 @@ RuntimeDebugger 初始化时会注入：
 - `LogTagDescriptionResolver`
 - `MaximumConsoleEntries = m_MaximumConsoleEntries`
 
+`RuntimeDebugger.Init(...)` 还受 `NOVA_DISABLE_RUNTIME_DEBUGGER` 编译宏保护；当该宏存在时，`Awake()`、RuntimeDebugger 自动初始化和编辑器脚本重编译恢复路径不会编译进 Nova 的自动初始化入口。
+
 ### Start
 
 如果 `m_DebugManager != null`，则执行：
@@ -79,6 +81,8 @@ m_DebugManager.Initialize(new DebugManagerConfig
 | `OnlyEnableWhenDevelopment` | 仅 `UnityEngine.Debug.isDebugBuild == true` 时启用 |
 | `OnlyEnableInEditor` | 仅 `Application.isEditor == true` 时启用 |
 | `AlwaysDisable` | 始终禁用 |
+
+`AlwaysDisable` 由 `DebugComponentInspector` 同步到脚本宏 `NOVA_DISABLE_RUNTIME_DEBUGGER`，用于编译期禁用 RuntimeDebugger 相关初始化。
 
 ## 对外可见属性
 

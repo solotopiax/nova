@@ -40,7 +40,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             Ready,
 
             /// <summary>
-            /// 广告正在展示中；非 Banner 展示结束后自动回到 Idle 并触发续杯。
+            /// 广告正在展示中；非 Banner 关闭或展示失败后自动回到 Idle 并触发续杯。
             /// </summary>
             Showing,
         }

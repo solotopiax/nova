@@ -45,7 +45,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnRVLoaded(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            PostAdCallbackToMainThread(() => RaiseAdLoaded(new AdLoadResult
+            RaiseAdLoaded(new AdLoadResult
             {
                 Success = true,
                 Format = AdFormat.Rewarded,
@@ -54,7 +54,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Revenue = info.Revenue,
                 Currency = "USD",
                 CustomProps = BuildMaxLoadProps(info),
-            }));
+            });
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnRVReceivedReward(string adUnitId, MaxSdk.Reward reward, MaxSdkBase.AdInfo info)
         {
-            PostAdCallbackToMainThread(() => m_RVRewarded = true);
+            m_RVRewarded = true;
         }
 
         /// <summary>
@@ -141,22 +141,19 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnRVHidden(string adUnitId, MaxSdkBase.AdInfo info)
         {
-            PostAdCallbackToMainThread(() =>
+            var result = new AdResult
             {
-                var result = new AdResult
-                {
-                    Success = true,
-                    UserCompleted = m_RVRewarded,
-                    Format = AdFormat.Rewarded,
-                    PlacementId = adUnitId,
-                    Network = info.NetworkName,
-                    Revenue = info.Revenue,
-                    Currency = "USD",
-                };
-                m_RVRewarded = false;
-                RaiseAdClosed(result, result.UserCompleted);
-                m_RVTcs?.TrySetResult(result);
-            });
+                Success = true,
+                UserCompleted = m_RVRewarded,
+                Format = AdFormat.Rewarded,
+                PlacementId = adUnitId,
+                Network = info.NetworkName,
+                Revenue = info.Revenue,
+                Currency = "USD",
+            };
+            m_RVRewarded = false;
+            RaiseAdClosed(result, result.UserCompleted);
+            m_RVTcs?.TrySetResult(result);
         }
 
         /// <summary>

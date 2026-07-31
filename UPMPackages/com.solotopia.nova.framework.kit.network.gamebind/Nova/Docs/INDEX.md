@@ -3,7 +3,11 @@
 > 本包为 Nova 框架账号绑定业务 Kit，在主框架包 `com.solotopia.nova.framework` 的 Network Kit 公共编排层基础上，封装绑定、冲突查询、裁决三段协议。
 > 业务侧通过 `Nova.Network.Kit<Bind>()` 获取实例，无需关心协议细节。
 >
-> **职责边界：** 本包只负责账号归属裁决（open_id 绑哪个 uid、冲突时谁为主）；存档数据覆盖（本地覆盖云端 / 云端覆盖本地）由业务层配合 `GameSave` 模块编排，登录态切换由 `GameLogin` 模块负责。三者职责正交。
+> **职责边界：** 本包只负责账号归属裁决（OpenID 绑哪个 UID、冲突时谁为主）；存档数据覆盖（本地覆盖云端 / 云端覆盖本地）由业务层配合 `GameSave` 模块编排。Resolve 会按业务 `FinalUid` 更新进程内登录身份。
+
+## 业务流程手册
+
+- [账号登录与三方绑定业务流程](./AccountLoginAndThirdPartyBindFlow.md) — Header 当前身份、绑定冲突、二选一、顶号与存档编排的完整用户/AI 手册。
 
 ---
 
@@ -29,3 +33,4 @@
 - [Bind.md](./Bind.md) — 账号绑定业务 Service
 - [BindKitConfig.md](./BindKitConfig.md) — 账号绑定 Kit 配置
 - [BindErrorCode.md](./BindErrorCode.md) — 账号绑定业务错误码
+- [AccountLoginAndThirdPartyBindFlow.md](./AccountLoginAndThirdPartyBindFlow.md) — 跨 Login/Bind/Save 业务编排

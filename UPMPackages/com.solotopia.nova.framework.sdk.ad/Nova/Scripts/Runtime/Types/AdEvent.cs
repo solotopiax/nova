@@ -14,14 +14,14 @@ using NovaFramework.Runtime;
 namespace NovaFramework.SDK.AdPlugin.Runtime
 {
     /// <summary>
-    /// 广告变现埋点事件载荷，由 IAdPlugin.OnAdRevenuePaid 事件携带。
-    /// 业务层在 IAdPlugin.OnAdRevenuePaid 事件回调中接收此载荷；具体上报路径由业务层自行决定（扇出到变现埋点插件或直接记录）。
+    /// 广告变现埋点事件载荷，由 AdPlugin.Events.RevenuePaid 事件携带。
+    /// 业务层在 AdPlugin.Events.RevenuePaid 订阅回调中接收此载荷；具体上报路径由业务层自行决定（扇出到变现埋点插件或直接记录）。
     /// 不变量：Revenue 单位为 USD，值 >= 0；Timestamp 为 UTC 时间。
     /// </summary>
     public sealed class AdEvent
     {
         /// <summary>
-        /// 事件类型，用于 IAdPlugin.OnAdEvent 订阅方路由。
+        /// 事件类型，用于 AdPlugin.Events.RevenuePaid 订阅方路由。
         /// </summary>
         public AdEventType EventType;
 

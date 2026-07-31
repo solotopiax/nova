@@ -33,9 +33,9 @@ namespace NovaFramework.SDK.Facebook
         public override string Name => ProviderName;
 
         /// <summary>
-        /// 初始化优先级。
+        /// 初始化优先级；Facebook 优先级为 40。
         /// </summary>
-        public override int Priority => 30;
+        public override int Priority => 40;
 
         /// <summary>
         /// 登录状态。

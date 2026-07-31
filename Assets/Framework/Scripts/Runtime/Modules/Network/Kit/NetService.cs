@@ -22,10 +22,16 @@ namespace NovaFramework.Runtime
     public static class NetService
     {
         /// <summary>
-        /// 当前登录用户 Uid，登录成功后由 Login 通过 SetUid 写回。
+        /// 当前业务流程确认的用户 UID。
         /// 不做持久化，进程重启归空。
         /// </summary>
-        public static string Uid { get; private set; } = string.Empty;
+        public static string UID { get; private set; } = string.Empty;
+
+        /// <summary>
+        /// 当前业务流程确认的第三方 OpenID。
+        /// 不做持久化，进程重启归空；空字符串表示当前没有可用 OpenID。
+        /// </summary>
+        public static string OpenID { get; private set; } = string.Empty;
 
         /// <summary>
         /// 全局调试开关。调试模式下跳过 AES 加解密，发送 X-Debug-Plain 头。
@@ -34,14 +40,25 @@ namespace NovaFramework.Runtime
         public static bool IsDebugMode { get; private set; }
 
         /// <summary>
-        /// 写回当前登录用户 Uid。仅供 Login 子包（Login）在登录成功后调用。
+        /// 写回当前 UID。仅供 Login、Bind 等 Network Kit 根据权威业务结果或清理登录态时调用。
         /// 带 EditorBrowsable(Never) 以在 IDE 补全中隐藏，防止业务侧误调。
         /// </summary>
-        /// <param name="uid">服务端返回的 Uid；为 null 时视为空串。</param>
+        /// <param name="uid">服务端返回的 UID；为 null 时视为空串。</param>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void SetUid(string uid)
+        public static void SetUID(string uid)
         {
-            Uid = uid ?? string.Empty;
+            UID = uid ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 写回当前 OpenID。仅供 Login、Bind 等 Network Kit 根据权威业务结果或清理登录态时调用。
+        /// 带 EditorBrowsable(Never) 以在 IDE 补全中隐藏，防止业务侧绕过登录与绑定流程直接改写。
+        /// </summary>
+        /// <param name="openid">当前第三方账号唯一标识；为 null 时视为空串。</param>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static void SetOpenID(string openid)
+        {
+            OpenID = openid ?? string.Empty;
         }
 
         /// <summary>
@@ -163,6 +180,10 @@ namespace NovaFramework.Runtime
                     Log.Error(LogTag.Network, "NetService.SendAsync：BaseResponse 解析失败，name={0}，error={1}。", netCmdName, e.Message);
                     return NetResponse<TResp>.Fail(NetErrorCode.PROTO_PARSE_FAILED, $"BaseResponse parse failed: {e.Message}");
                 }
+
+                Log.Debug(LogTag.Network,
+                    "NetService.SendAsync：响应状态码，name={0}，httpStatusCode={1}，baseResponseCode={2}。",
+                    netCmdName, httpResponse.StatusCode, parseResult.Code);
 
                 if (parseResult.Code != NetErrorCode.SUCCESS)
                 {

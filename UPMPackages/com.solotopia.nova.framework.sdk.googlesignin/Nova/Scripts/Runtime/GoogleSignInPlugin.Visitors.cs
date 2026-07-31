@@ -33,9 +33,9 @@ namespace NovaFramework.SDK.GoogleSignIn
         public override string Name => c_ProviderName;
 
         /// <summary>
-        /// 初始化优先级。
+        /// 初始化优先级；Google Sign-In 优先级为 60。
         /// </summary>
-        public override int Priority => 30;
+        public override int Priority => 60;
 
         /// <summary>
         /// 登录状态。

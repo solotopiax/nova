@@ -27,9 +27,9 @@ namespace NovaFramework.SDK.IAP.Runtime
         public override string Name => "IAPPlugin";
 
         /// <summary>
-        /// 初始化优先级，值越小越先初始化；IAP 优先级设为 20。
+        /// 初始化优先级，值越小越先初始化；IAP 优先级设为 70。
         /// </summary>
-        public override int Priority => 20;
+        public override int Priority => 70;
 
         /// <summary>
         /// 声明所需配置类型，SDKManager 按此类型从 IConfigManager 拉取并注入。

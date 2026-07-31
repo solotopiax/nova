@@ -132,7 +132,7 @@ SDKEventData.UserLogin → IAPPlugin.SetUserId(uid) → 广播给所有 Store
 | 失败原因 enum | 枚举整数值写入 `nova_reason` |
 | 补充描述字符串 | 写入 `nova_reason_detail` |
 
-因此 Store 侧必须先把失败域收敛到明确枚举，且失败原因枚举由具体 Store 定义，父包不维护跨 Store 的失败原因全集。Mobile 官方内购的支付过程失败统一使用 `IAPMobileErrorCode`：0-8 是业务返回粗粒度错误，1000-1010 是 Unity `PurchaseFailureReason` 映射号段，2000+ 是验单打点细分原因，并可读取 `nova_reason_detail` 做排查。
+因此 Store 侧必须先把失败域收敛到明确枚举，且失败原因枚举由具体 Store 定义，父包不维护跨 Store 的失败原因全集。Mobile 官方内购的支付过程失败统一使用 `IAPMobileErrorCode`：0-9 是业务返回粗粒度错误，1000-1010 是 Unity `PurchaseFailureReason` 映射号段，2000+ 是验单打点细分原因，并可读取 `nova_reason_detail` 做排查。
 
 当前父包应保持以下边界：
 

@@ -134,9 +134,10 @@ Assets/Framework/Minds/.obsidian/
 
 ProjectSettings/AndroidResolverDependencies.xml
 
-# Demo 编译产物（HybridCLR AOT/HotUpdate），各 Demo 由 Editor 工具按需重生成，全部不入库
-/[Aa]ssets/[Ss]amples/*/[Dd]lls/
-/[Aa]ssets/[Ss]amples/*/[Dd]lls.meta
+# Demo 编译产物（HybridCLR AOT/HotUpdate）不入库；保留目录骨架与 Dlls.meta，
+# 确保 YooAsset Bundle Collector 在干净检出后仍能解析稳定的目录引用。
+/[Aa]ssets/[Ss]amples/*/[Dd]lls/*
+!/[Aa]ssets/[Ss]amples/*/[Dd]lls/.gitkeep
 
 # Assets/Plugins（根）仅存放自动生成内容：Unity 模板选项勾选 / EDM resolve 刷新的 gradle 模板与
 # proguard、unity-mcp 生成的 Roslyn 库、Firebase 构建产物等，均无需人为维护，整目录不入库。

@@ -19,6 +19,10 @@ auto_generated: true
 - [RES-002-unity-addressables-tutorial Unity Addressables 教程](../3-Resources/Unity/RES-002-unity-addressables-tutorial.md) — Addressables 入门与 Nova 对照整理稿
 - [RES-003-unity-yooasset-tutorial Unity YooAsset 教程](../3-Resources/Unity/RES-003-unity-yooasset-tutorial.md) — YooAsset 3.0 热更与 HostPlayMode 学习整理
 
+## network
+
+- [RES-004-login-third-party-bind-server-contract 登录与三方绑定服务端业务契约](../3-Resources/RES-004-login-third-party-bind-server-contract.md) — Header 身份、绑定目标、裁决切号与顶号契约
+
 
 ---
-_共 3 条，分布于 2 个 category。_
+_共 4 条，分布于 3 个 category。_

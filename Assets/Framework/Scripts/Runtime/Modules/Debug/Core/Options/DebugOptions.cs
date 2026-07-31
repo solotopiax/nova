@@ -15,7 +15,7 @@ namespace NovaFramework.Runtime
 {
 public delegate void DebugOptionsPropertyChanged(object sender, string propertyName);
 
-#if !DISABLE_RUNTIME_DEBUGGER
+#if !NOVA_DISABLE_RUNTIME_DEBUGGER
 [Preserve]
 #endif
 public partial class DebugOptions : INotifyPropertyChanged
@@ -27,7 +27,7 @@ public partial class DebugOptions : INotifyPropertyChanged
         get { return _current; }
     }
 
-#if !DISABLE_RUNTIME_DEBUGGER
+#if !NOVA_DISABLE_RUNTIME_DEBUGGER
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     public static void OnStartup()
     {

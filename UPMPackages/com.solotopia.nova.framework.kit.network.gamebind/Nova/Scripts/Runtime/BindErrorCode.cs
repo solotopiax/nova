@@ -13,7 +13,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
     /// <summary>
     /// 账号绑定业务错误码常量。
     /// 服务端绑定业务段（10400~10499）：服务端原样返回，经 NetService 透传到 <see cref="NovaFramework.Runtime.NetResponse{T}.ErrorCode"/>，业务侧用本类常量与 ErrorCode 比对。
-    /// 客户端段（7000~7999）：与 <see cref="NovaFramework.Runtime.NetErrorCode"/> 客户端段（负数）/ 服务端通用段（1000/5000/6000/6001）错开，预留供后续纯客户端业务错误扩展，当前无定义。
+    /// 客户端段（7000~7999）：与 <see cref="NovaFramework.Runtime.NetErrorCode"/> 的客户端负数段及服务端通用段错开，预留供后续纯客户端业务错误扩展，当前无定义。
     /// </summary>
     public static class BindErrorCode
     {
@@ -44,8 +44,18 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         public const int ErrThirdPartyAuthFailed = 10403;
 
         /// <summary>
+        /// 查询、裁决或解绑时不存在对应绑定。
+        /// </summary>
+        public const int ErrAccountNotFound = 10404;
+
+        /// <summary>
         /// 操作繁忙，请稍后重试。ResolveAsync 行锁竞争 / 事务超时时返回，客户端稍后原样重试即可。
         /// </summary>
         public const int ErrBindBusy = 10406;
+
+        /// <summary>
+        /// 请求头声明的 OpenID 不属于当前 UID，需修正或清空请求头 OpenID 后重试。
+        /// </summary>
+        public const int ErrOpenidUIDMismatch = 10407;
     }
 }

@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+## [1.1.1] - 2026-07-31
+
+### Changed
+
+- 将 `AdPlugin` 初始化优先级调整为 `80`，保持在收益打点与支付插件之后初始化。
+- 明确 `ShowCompleted` 在渠道 SDK 的 displayed 回调时发布，不代表广告已关闭或激励已完成；最终结果通过 `ShowFailed` / `AdClosed` 获取。
+- 明确加载、展示、关闭事件回到 Unity 主线程，收益事件保持即时分发。
+- 补记非 Banner 广告在关闭或展示失败后自动续杯的现有行为。
+
 ## [1.1.0] - 2026-07-29
 
 ### Changed

@@ -35,6 +35,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             m_RVPlacementIds = cfg.RVPlacementIds;
             m_InterPlacementIds = cfg.InterPlacementIds;
             m_BannerPlacementIds = cfg.BannerPlacementIds;
+            m_BannerAutoRefreshIntervalSeconds = cfg.BannerAutoRefreshIntervalSeconds;
             m_AppOpenPlacementIds = cfg.AppOpenPlacementIds;
             CacheMaxRevenueTrackers();
 

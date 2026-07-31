@@ -26,17 +26,18 @@ namespace NovaFramework.Editor
             private const string c_CanonicalNovaPrefabGuid = "045d894d6a90aa04f9d2e0820d04deb4";
 
             private static void ValidateScenes(string[] scenePaths, bool requireEntryScene,
-                bool useSavedScenes, NovaGuardReport report)
+                bool useSavedScenes, bool validateConfig, NovaGuardReport report)
             {
                 if (scenePaths == null)
                     return;
 
                 for (int i = 0; i < scenePaths.Length; i++)
-                    ValidateScene(scenePaths[i], requireEntryScene && i == 0, useSavedScenes, report);
+                    ValidateScene(scenePaths[i], requireEntryScene && i == 0, useSavedScenes,
+                        validateConfig, report);
             }
 
             private static void ValidateScene(string rawPath, bool requireEntryScene,
-                bool useSavedScene, NovaGuardReport report)
+                bool useSavedScene, bool validateConfig, NovaGuardReport report)
             {
                 string path = NormalizePath(rawPath);
                 if (string.IsNullOrEmpty(path))
@@ -94,6 +95,14 @@ namespace NovaFramework.Editor
                         report.Add(new NovaGuardIssue("NOVA-SCENE-004", NovaGuardSeverity.Error,
                             "Nova 必须是框架 canonical Nova.prefab 的 connected prefab instance。", path));
                     }
+
+                    if (validateConfig)
+                    {
+                        foreach (ConfigComponent configComponent in components.OfType<ConfigComponent>())
+                        {
+                            ValidateConfigComponent(configComponent, path, report);
+                        }
+                    }
                 }
                 finally
                 {
@@ -122,7 +131,7 @@ namespace NovaFramework.Editor
                 string[] scenePaths, bool requireFirstEntry)
             {
                 var report = new NovaGuardReport();
-                ValidateScenes(scenePaths, requireFirstEntry, false, report);
+                ValidateScenes(scenePaths, requireFirstEntry, false, false, report);
                 return report;
             }
         }

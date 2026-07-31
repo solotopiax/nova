@@ -11,6 +11,18 @@
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
       "Path": "/v1/common/app-config"
+    },
+    {
+      "Name": "AppsFlyerReport",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/report-appsflyer"
+    },
+    {
+      "Name": "FirebaseReport",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/report-firebase"
     }
   ]
 }

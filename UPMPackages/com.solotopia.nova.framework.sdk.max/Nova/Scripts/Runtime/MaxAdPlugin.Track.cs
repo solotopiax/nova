@@ -61,7 +61,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="adInfo">MAX 收益回调携带的广告信息。</param>
         private void TrackMaxRevenue(AdFormat format, string adUnitId, MaxSdkBase.AdInfo adInfo)
         {
-            decimal revenue = ToRevenueDecimal(adInfo.Revenue);
+            decimal revenue = (decimal)adInfo.Revenue;
             TrackMaxAdIlrd(format, adUnitId, adInfo, revenue);
             TrackMaxAdImpression(format, adUnitId, adInfo);
         }
@@ -71,7 +71,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// </summary>
         /// <param name="adUnitId">MAX Banner 广告位标识。</param>
         /// <param name="adInfo">MAX Banner 收益回调携带的广告信息。</param>
-        private void TrackBannerIlrdAggregated(string adUnitId, MaxSdkBase.AdInfo adInfo)
+        private void TrackMaxBannerIlrdAggregated(string adUnitId, MaxSdkBase.AdInfo adInfo)
         {
             TrackBannerIlrdAggregated(adUnitId, adInfo.Revenue, revenue
                 => TrackMaxAdIlrd(AdFormat.Banner, adUnitId, adInfo, revenue));
@@ -94,7 +94,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             }
 
             string revenueText = FormatRevenue(revenue);
-            double revenueValue = ToRevenueDouble(revenue);
+            double revenueValue = (double)revenue;
             var ilrdProps = new Dictionary<string, object>
             {
                 { "nova_ad_format", (int)format },
@@ -153,28 +153,12 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             => m_RevenueMonetizeTracker != null || m_RevenueAttributionTracker != null || m_RevenueEventTracker != null;
 
         /// <summary>
-        /// 将 MAX 提供的 double 收益转换为 decimal，用于内部累计和文本格式化。
-        /// </summary>
-        /// <param name="revenue">MAX 收益值。</param>
-        /// <returns>decimal 表示的收益值。</returns>
-        private static decimal ToRevenueDecimal(double revenue)
-            => (decimal)revenue;
-
-        /// <summary>
-        /// 将内部累计用 decimal 收益转换回数值类型，保持 ad_ilrd 数值字段的既有类型。
-        /// </summary>
-        /// <param name="revenue">内部累计收益值。</param>
-        /// <returns>double 表示的收益值。</returns>
-        private static double ToRevenueDouble(decimal revenue)
-            => (double)revenue;
-
-        /// <summary>
         /// 将收益格式化为不使用科学计数法的文本，供 af_revenue 和内部存档使用。
         /// </summary>
         /// <param name="revenue">需要格式化的收益值。</param>
         /// <returns>使用 invariant culture 的收益文本。</returns>
         private static string FormatRevenue(decimal revenue)
-            => revenue.ToString("G29", CultureInfo.InvariantCulture);
+            => revenue.ToString("0.#############################", CultureInfo.InvariantCulture);
 
         /// <summary>
         /// 将收益事件同时派发给变现、归因和通用埋点插件。
@@ -183,45 +167,23 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="props">事件属性字典。</param>
         private void DispatchToAllTrackers(string eventName, Dictionary<string, object> props)
         {
-            DispatchToMonetizeTracker(eventName, props);
-            DispatchToAttributionTracker(eventName, props);
-            DispatchToEventTracker(eventName, props);
+            DispatchToRevenueTracker(m_RevenueMonetizeTracker == null ? null : (Action<string, Dictionary<string, object>>)m_RevenueMonetizeTracker.TrackEvent, "变现", eventName, props);
+            DispatchToRevenueTracker(m_RevenueAttributionTracker == null ? null : (Action<string, Dictionary<string, object>>)m_RevenueAttributionTracker.TrackEvent, "归因", eventName, props);
+            DispatchToRevenueTracker(m_RevenueEventTracker == null ? null : (Action<string, Dictionary<string, object>>)m_RevenueEventTracker.TrackEvent, "通用", eventName, props);
         }
 
         /// <summary>
-        /// 向变现打点插件派发收益事件；单插件异常只记录日志，不中断其他插件派发。
+        /// 向指定收益打点插件派发事件；单插件异常只记录日志，不中断其他插件派发。
         /// </summary>
+        /// <param name="trackEvent">目标打点插件的 TrackEvent 方法。</param>
+        /// <param name="trackerName">用于日志区分的插件类型名称。</param>
         /// <param name="eventName">收益相关事件名。</param>
         /// <param name="props">事件属性字典。</param>
-        private void DispatchToMonetizeTracker(string eventName, Dictionary<string, object> props)
+        private void DispatchToRevenueTracker(Action<string, Dictionary<string, object>> trackEvent, string trackerName, string eventName, Dictionary<string, object> props)
         {
-            if (m_RevenueMonetizeTracker == null) return;
-            try { m_RevenueMonetizeTracker.TrackEvent(eventName, props); }
-            catch (Exception ex) { Log.Warning(LogTag.Max, $"MAX 变现收益打点失败：{eventName}，{ex.Message}"); }
-        }
-
-        /// <summary>
-        /// 向归因打点插件派发收益事件；单插件异常只记录日志，不中断其他插件派发。
-        /// </summary>
-        /// <param name="eventName">收益相关事件名。</param>
-        /// <param name="props">事件属性字典。</param>
-        private void DispatchToAttributionTracker(string eventName, Dictionary<string, object> props)
-        {
-            if (m_RevenueAttributionTracker == null) return;
-            try { m_RevenueAttributionTracker.TrackEvent(eventName, props); }
-            catch (Exception ex) { Log.Warning(LogTag.Max, $"MAX 归因收益打点失败：{eventName}，{ex.Message}"); }
-        }
-
-        /// <summary>
-        /// 向通用埋点插件派发收益事件；单插件异常只记录日志，不中断其他插件派发。
-        /// </summary>
-        /// <param name="eventName">收益相关事件名。</param>
-        /// <param name="props">事件属性字典。</param>
-        private void DispatchToEventTracker(string eventName, Dictionary<string, object> props)
-        {
-            if (m_RevenueEventTracker == null) return;
-            try { m_RevenueEventTracker.TrackEvent(eventName, props); }
-            catch (Exception ex) { Log.Warning(LogTag.Max, $"MAX 通用收益打点失败：{eventName}，{ex.Message}"); }
+            if (trackEvent == null) return;
+            try { trackEvent(eventName, props); }
+            catch (Exception ex) { Log.Warning(LogTag.Max, $"MAX {trackerName}收益打点失败：{eventName}，{ex.Message}"); }
         }
 #endif
     }

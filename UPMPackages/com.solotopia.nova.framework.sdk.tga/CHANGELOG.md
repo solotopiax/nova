@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.1.1] - 2026-07-31
+
+### Changed
+
+- 将 `TGAPlugin` 初始化优先级调整为 `10`，作为当前 SDK 依赖链的首个初始化分桶。
+- `TGAPluginConfig.Mode` 与构造参数改用 `TDMode`，新增时区配置与可选的 DeviceId-to-DistinctId 初始化行为。
+
 ## [0.1.0] - 2026-07-29
 
 ### Changed

@@ -14,6 +14,7 @@
 | `LoginErrorCode` | 登录业务错误码（服务端段 10000~10499 + 客户端段 7000~7999 预留） | [LoginErrorCode.md](./LoginErrorCode.md) |
 
 > 账号绑定（含冲突二选一）由独立的 `com.solotopia.nova.framework.kit.network.gamebind` 模块负责，登录与绑定职责分离。
+> 安装 GameBind 后，完整跨包流程见其 `Nova/Docs/AccountLoginAndThirdPartyBindFlow.md`。
 
 ## 错误码
 
@@ -26,7 +27,7 @@ GameLoginDemo（`Assets/Samples/GameLoginDemo/`）是本包附带的示例工程
 
 | 类 | 演示 API | 交互元素 |
 |---|---|---|
-| `DemoLoginView` | `Nova.Network.Kit<Login>().Async(uid, openId, forceNewAccount)` / `Nova.Network.Kit<Login>().Clear()` | openId 输入框（`TMP_InputField`）、forceNewAccount 开关（`Toggle`）、登录按钮、登出按钮 |
+| `DemoLoginView` | `Nova.Network.Kit<Login>().Async(uid, openid, forceNewAccount)` / `Nova.Network.Kit<Login>().Clear()` | OpenID 输入框（`TMP_InputField`）、forceNewAccount 开关（`Toggle`）、登录按钮、登出按钮 |
 
 **打开方式：** 启动 GameLoginDemo 场景，流程进入 `ProcedurePlaying` 后自动打开；UI 在 `UIs.xlsx` UI1 表注册，UIGroupName=Demo，Asset 地址=DemoLoginView。
 

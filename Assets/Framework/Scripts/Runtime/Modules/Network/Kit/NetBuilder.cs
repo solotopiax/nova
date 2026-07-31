@@ -30,12 +30,14 @@ namespace NovaFramework.Runtime
         /// 构建标准请求 Header。
         /// AppId 来自 Nova.Config.AppConfigs.AppID（int.TryParse 失败时 Log.Warning + 回退 0）。
         /// DeviceId 来自 Nova.SDK.TryGet&lt;IDeviceIdProvider&gt;()（未注册时回退空串）。
-        /// Uid 来自 NetService.Uid（登录后由 Login 写回）。
+        /// UID 来自 NetService.UID（登录后由 Login 写回）。
+        /// OpenID 优先使用本次请求显式值；未显式传入时取 NetService.OpenID。
         /// Version / Language / Platform / Channel 在运行时自动内联取值。
         /// Channel 由 InferChannel() 从 Nova.Config.Channel 映射，业务 Service 无需传入。
         /// </summary>
+        /// <param name="openid">本次请求显式使用的 OpenID；传 null 时回退进程内缓存，传空字符串时明确不携带。</param>
         /// <returns>填充了全部公共字段的 PbNetReqHeader 实例。</returns>
-        public static PbNetReqHeader BuildHeader()
+        public static PbNetReqHeader BuildHeader(string openid = null)
         {
             int appId = 0;
             if (!int.TryParse(Nova.Config.AppConfigs.AppID, out appId))
@@ -57,7 +59,8 @@ namespace NovaFramework.Runtime
                 DeviceId = deviceId,
                 Platform = InferPlatform(),
                 Channel = InferChannel(),
-                Uid = NetService.Uid
+                Uid = NetService.UID,
+                Openid = openid ?? NetService.OpenID
             };
         }
 

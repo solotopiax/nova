@@ -17,6 +17,7 @@ public UniTask LogoutAsync(CancellationToken ct = default);
 
 ## 说明
 
+- `Priority => 50`，在 Facebook 登录插件之后、Google Sign-In 插件之前初始化。
 - 当前登录数据只从 `CurrentUserData` 读取。
 - `CurrentUserData` 只暴露 Apple 用户 ID 和可选姓名。
 - iOS 构建会自动注入 `com.apple.developer.applesignin` entitlement。

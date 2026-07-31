@@ -23,9 +23,9 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         public override string Name => "AppsFlyer";
 
         /// <summary>
-        /// 获取插件初始化优先级。
+        /// 获取插件初始化优先级；AppsFlyer 优先级为 20，在 TGA 之后初始化。
         /// </summary>
-        public override int Priority => 90;
+        public override int Priority => 20;
 
          /// <summary>
         /// 声明本插件所需的配置类型；SDKManager 据此从 IConfigManager 拉取 AppsFlyerPluginConfig 注入 OnInitializeAsync。

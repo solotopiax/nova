@@ -13,7 +13,7 @@ using NovaFramework.Runtime;
 namespace NovaFramework.SDK.AdPlugin.Runtime
 {
     /// <summary>
-    /// 广告展示操作结果数据类，由 IAdPlugin.ShowAsync 返回。
+    /// 广告展示操作结果数据类，由 AdPlugin.Events 的展示、失败与关闭事件发布。
     /// 不变量：Success=false 时 ErrorMessage 非空；Revenue 单位为 USD，保证非负。
     /// </summary>
     public sealed class AdResult

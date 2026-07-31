@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.1.1] - 2026-07-31
+
+### Changed
+
+- 补充可分支处理的 `ErrOpenidUIDMismatch`(10407) 登录错误码及可读日志。
+- 登录成功后以业务响应 UID 与本次登录 OpenID 同步 `NetService`；`Login.UID` 直接读取全局进程内缓存，登出与删号成功时一并清空。
+- 补充最新设备顶号、Header 当前身份与 GameBind 完整流程入口说明。
+- `Async` 的 OpenID 参数名统一为 `openid`。
+
 ## [0.1.0] - 2026-07-29
 
 ### Changed

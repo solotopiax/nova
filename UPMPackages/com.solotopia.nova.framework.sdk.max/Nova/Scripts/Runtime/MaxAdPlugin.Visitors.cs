@@ -49,6 +49,11 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private string BannerPlacementId => m_BannerPlacementIds?.Count > 0 ? m_BannerPlacementIds[0] : null;
 
         /// <summary>
+        /// Banner 自动刷新间隔，初始化时从 MaxAdChannelConfig 缓存，单位为秒。
+        /// </summary>
+        private int m_BannerAutoRefreshIntervalSeconds = 10;
+
+        /// <summary>
         /// AppOpen 广告位 ID 列表，InitChannelSDKAsync 从 MaxAdChannelConfig 缓存。
         /// </summary>
         private IReadOnlyList<string> m_AppOpenPlacementIds;
@@ -77,6 +82,16 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// Banner 当前停靠位置，默认 BottomCenter。
         /// </summary>
         private MaxSdkBase.AdViewPosition m_BannerPosition = MaxSdkBase.AdViewPosition.BottomCenter;
+
+        /// <summary>
+        /// 已创建 native Banner view 的广告位集合；Destroy 后移除，允许后续重新创建。
+        /// </summary>
+        private readonly HashSet<string> m_CreatedBannerPlacementIds = new HashSet<string>();
+
+        /// <summary>
+        /// 业务层当前是否期望 Banner 保持可见；用于加载失败后再次成功时恢复显示。
+        /// </summary>
+        private bool m_BannerDesiredVisible;
 
         /// <summary>
         /// MAX SDK 返回的国家代码，InitializedCallback 中赋值，用于调试和数据上报。

@@ -17,7 +17,7 @@
 
 | 签名 | 说明 |
 |---|---|
-| `public static PbNetReqHeader BuildHeader()` | 构建完整请求 Header；包含 Channel（取 `Nova.Config.Channel` 映射的 `PbNetChannel`）；字段来源见下方「Header 字段来源表」 |
+| `public static PbNetReqHeader BuildHeader(string openid = null)` | 构建完整请求 Header；包含 Channel、UID、OpenID；显式 `openid` 优先，传 `null` 时回退 `NetService.OpenID`，传空字符串时明确不携带 OpenID |
 | `public static byte[] SerializeBody<T>(T body) where T : IMessage<T>` | 将 Proto 消息序列化为字节数组（`body.ToByteArray()`） |
 | `public static byte[] Encrypt(byte[] plainBytes, string key, string iv)` | AES-128-CBC + PKCS7 加密；委托 `Util.Encrypt.AES.EncryptBytes` |
 | `public static string BuildHeaderInfos(int appId, string aesIV)` | 构建正式环境 HTTP Header JSON：`{"app_id":N,"Encoding-Aes":"Base64(iv)"}` |
@@ -31,9 +31,10 @@
 | `Version` | `Application.version` | — |
 | `Language` | `LanguageMetadata.GetFlag(Nova.Localization.Language)` | — |
 | `DeviceId` | `Nova.SDK.TryGet<IDeviceIdProvider>().GetDeviceID()` | 未注册时回退空串 |
-| `Platform` | `Application.platform`（switch 推断 `PbNetPlatform`） | 未匹配平台返回 `Unspecified` |
+| `Platform` | `Util.UrlTemplate.ResolveRuntimePlatform()`（按当前编译目标推断 `PbNetPlatform`） | 未匹配平台返回 `Unspecified` |
 | `Channel` | `Nova.Config.Channel`（`InferChannel()` 私有方法映射为 `PbNetChannel`） | 无匹配渠道返回 `Unspecified` |
-| `Uid` | `NetService.Uid` | 登录前为空串 |
+| `Uid` | `NetService.UID` | 登录前为空串 |
+| `Openid` | 显式 `openid` → `NetService.OpenID` | C# 名由 Proto 字段 `openid` 生成；最终为空串时 Proto3 不写入 wire |
 
 ---
 
@@ -45,8 +46,8 @@
 // Login.cs (kit.network.login) 内部调用模式
 var body = new PbNetLoginReq
 {
-    Head = NetBuilder.BuildHeader(),   // 自动填充所有公共 Header 字段，含渠道（Channel）
-    OpenId = openId,
+    Head = NetBuilder.BuildHeader(openid), // Login 以本次登录 OpenID 作为当前身份声明
+    OpenId = openid,
     ForceNewAccount = forceNewAccount
 };
 byte[] protoBytes = NetBuilder.SerializeBody(body);
@@ -62,7 +63,9 @@ string headerJson = NetBuilder.BuildHeaderInfos(appId, aesIv);
 - **`Encrypt` 委托框架层**：加密逻辑委托 `Util.Encrypt.AES.EncryptBytes`，`NetBuilder` 只做职责归属封装，不实现加密算法。
 - **`Platform` 映射范围**：仅 iOS / Android / WebGL 有明确映射，其余平台（含 Editor / Standalone）返回 `PbNetPlatform.Unspecified`；这是有意设计，非遗漏。
 - **`Channel` 由 `BuildHeader` 自动填充**：渠道在 `BuildHeader()` 内通过私有 `InferChannel()` 从 `Nova.Config.Channel` 自动映射为 `PbNetChannel`，业务 Service 不要在 body 里手动赋值 `Channel`（违反 PAT-107）。`ChannelType.Google → PbNetChannel.Google`、`ChannelType.Apple → PbNetChannel.Apple`、`ChannelType.WeChat → PbNetChannel.Wechat`，其余渠道返回 `PbNetChannel.Unspecified`。
-- **无状态**：所有方法均无副作用，线程安全。
+- **OpenID 空值语义**：不传参数（`null`）时复用 `NetService.OpenID`；显式传空字符串时不回退缓存，生成的 Proto3 Header 不写入该字段。
+- **当前身份与目标身份分离**：Header OpenID 只能声明当前 UID 已拥有的身份。Bind 的目标 OpenID 只放业务 Body，不得传给 `BuildHeader(openid)`。
+- **无状态**：所有方法均无副作用，线程安全；UID/OpenID 状态由 `NetService` 持有。
 
 ---
 
