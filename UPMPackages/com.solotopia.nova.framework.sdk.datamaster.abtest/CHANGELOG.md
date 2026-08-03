@@ -3,6 +3,14 @@
 本文件记录 `com.solotopia.nova.framework.sdk.datamaster` 的版本变更。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [Unreleased]
+
+## [0.0.10] - 2026-08-03
+
+### Changed
+
+- DataMasterDemo 同步 Localization 支持语言表与 JSON / Binary 数据格式能力，并将 Framework 最低依赖提升至 `0.6.3`。
+
 ## [0.0.9] - 2026-07-29
 
 ### Changed

@@ -254,6 +254,7 @@ namespace NovaFramework.Editor
                         area.SourceDirPath,
                         stagedSettings,
                         area.Profile);
+                    context.DataFormat = area.DataFormat;
                     context.RegionUnits = stagedSettings.Units;
                     context.TargetUnit = formalTargetUnit == null ? null : stagedUnits[formalTargetUnit];
                     if (mode != ExportMode.Data)
@@ -320,7 +321,7 @@ namespace NovaFramework.Editor
                     var staged = new VibrateUnitSetting
                     {
                         SourcePath = source.SourcePath,
-                        DatasExportPath = GetStagedDataPath(stagingRoot, source.DatasExportPath, i),
+                        DatasExportPath = GetStagedDataPath(stagingRoot, i, area.DataFormat),
                         ClassesExportPath = stagedCodeDir,
                         AssetLocation = source.AssetLocation,
                     };
@@ -330,11 +331,20 @@ namespace NovaFramework.Editor
                 return new StagedSettings(area.SourceDirPath, units);
             }
 
-            private static string GetStagedDataPath(string stagingRoot, string formalPath, int index)
+            /// <summary>
+            /// 为当前格式构造振动数据暂存路径。
+            /// </summary>
+            /// <param name="stagingRoot">输出事务暂存根目录。</param>
+            /// <param name="index">单元序号。</param>
+            /// <param name="dataFormat">Luban 数据格式。</param>
+            /// <returns>带格式对应后缀的暂存路径。</returns>
+            private static string GetStagedDataPath(
+                string stagingRoot,
+                int index,
+                LubanDataFormat dataFormat)
             {
-                string fileName = string.IsNullOrWhiteSpace(formalPath)
-                    ? index.ToString("D4") + ".json"
-                    : IOPath.GetFileName(formalPath);
+                string fileName = index.ToString("D4") +
+                                  (dataFormat == LubanDataFormat.Binary ? ".bytes" : ".json");
                 return IOPath.Combine(stagingRoot, "data", index.ToString("D4") + "_" + fileName);
             }
 
@@ -375,6 +385,8 @@ namespace NovaFramework.Editor
                         if (!string.IsNullOrWhiteSpace(formal.DatasExportPath))
                         {
                             applier.AddReplacement(stagedUnits[formal].DatasExportPath, formal.DatasExportPath);
+                            EditorUtil.Luban.DataArtifact.RegisterCounterpartDeletion(
+                                applier, formal.DatasExportPath, context.DataFormat);
                         }
                     }
                 }
@@ -436,6 +448,7 @@ namespace NovaFramework.Editor
                 area = new Area(
                     sourceDirPath,
                     units,
+                    settings.DataFormat,
                     isEmphasis
                         ? EditorUtil.Luban.LubanExportProfiles.VibrateEmphasis
                         : EditorUtil.Luban.LubanExportProfiles.VibrateCustom,
@@ -502,17 +515,20 @@ namespace NovaFramework.Editor
                 internal Area(
                     string sourceDirPath,
                     List<VibrateUnitSetting> units,
+                    LubanDataFormat dataFormat,
                     EditorUtil.Luban.LubanExportProfile profile,
                     string label)
                 {
                     SourceDirPath = sourceDirPath;
                     Units = units;
+                    DataFormat = dataFormat;
                     Profile = profile;
                     Label = label;
                 }
 
                 internal string SourceDirPath { get; }
                 internal List<VibrateUnitSetting> Units { get; }
+                internal LubanDataFormat DataFormat { get; }
                 internal EditorUtil.Luban.LubanExportProfile Profile { get; }
                 internal string Label { get; }
             }

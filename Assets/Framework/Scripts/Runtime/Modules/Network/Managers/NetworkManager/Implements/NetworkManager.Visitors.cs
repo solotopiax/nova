@@ -55,6 +55,11 @@ namespace NovaFramework.Runtime
         private List<NetCmdUnitSetting> m_NetCmdUnitSettings;
 
         /// <summary>
+        /// HostKey 与 NetCmd 共用的表格数据格式。
+        /// </summary>
+        private LubanDataFormat m_DataFormat = LubanDataFormat.Json;
+
+        /// <summary>
         /// Luban 表实例存储，<类型名, ITable 实例>。
         /// </summary>
         private Dictionary<string, ITable> m_NetworkDatas;

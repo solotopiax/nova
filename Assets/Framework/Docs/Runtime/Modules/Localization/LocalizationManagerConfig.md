@@ -31,7 +31,7 @@
 它们决定：
 
 - 当前项目从哪些文本单元和字体单元构建数据
-- 支持语言列表从哪个 JSON 资源读取
+- 支持语言列表从哪个 Luban 数据资源读取，以及使用 JSON 还是 Binary
 
 ### 3. 运行时附加行为
 
@@ -51,6 +51,7 @@
 
 ## 风险点 / 易错点
 
+- `DataFormat` 默认 `Json`，统一控制文本、字体和支持语言表的运行时解码。
 - `SupportedLanguagesAssetLocation` 为空时，支持语言列表加载会被跳过。
 - `RuntimeLanguagePrefer == false` 时，运行时不会优先系统语言，这是策略事实，不是 fallback。
 - `PersistClassifyName / PersistItemKey` 改动会直接影响旧语言偏好的兼容读取。

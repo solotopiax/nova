@@ -100,8 +100,8 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// Step：导出本地化语言列表 JSON（从数据源目录提取所有语言列，排序后写入指定路径）。
-        /// 从 LocalizationComponent 通过 SerializedObject 读取 m_SupportedLanguagesJsonExportPath；
+        /// Step：通过 Luban 导出本地化语言列表。
+        /// 从 LocalizationComponent 通过 SerializedObject 读取 m_SupportedLanguagesDataExportPath；
         /// 调用 EditorUtil.Localization.TextExporter.ExportSupportedLanguages。
         /// </summary>
         /// <param name="ctx">Runner 下发的运行时上下文。</param>
@@ -119,15 +119,18 @@ namespace NovaFramework.Editor
             }
 
             SerializedObject so = new SerializedObject(component);
-            SerializedProperty exportPathProp = so.FindProperty("m_SupportedLanguagesJsonExportPath");
+            SerializedProperty exportPathProp = so.FindProperty("m_SupportedLanguagesDataExportPath");
             string exportPath = exportPathProp?.stringValue ?? string.Empty;
 
             if (string.IsNullOrEmpty(exportPath))
             {
-                throw new InvalidOperationException("[Pipify] LocalizationComponent.m_SupportedLanguagesJsonExportPath 未配置，请在 Inspector 中填写语言列表 JSON 导出路径。");
+                throw new InvalidOperationException("[Pipify] LocalizationComponent.m_SupportedLanguagesDataExportPath 未配置，请在 Inspector 中填写语言列表数据导出路径。");
             }
 
-            bool success = EditorUtil.Localization.TextExporter.ExportSupportedLanguages(sourceDirPath, exportPath);
+            bool success = EditorUtil.Localization.TextExporter.ExportSupportedLanguages(
+                sourceDirPath,
+                exportPath,
+                settings.DataFormat);
             if (!success)
             {
                 throw new InvalidOperationException("[Pipify] 本地化语言列表导出失败，请查看 Console 日志排查原因。");

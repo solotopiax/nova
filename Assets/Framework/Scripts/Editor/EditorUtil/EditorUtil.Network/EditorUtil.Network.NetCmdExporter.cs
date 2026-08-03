@@ -7,7 +7,7 @@
  * created:   2026/5/11
  * descrip:   NetCmds 公共导出入口，把数据/类型请求交给 NetworkExporter 专用编排
  * input:     NetCmdSettings（源目录、单元路径与正式输出位置）
- * output:    保持原表结构生成的 NetCmds JSON/C# 产物
+ * output:    保持原表结构生成的 NetCmds 表格数据/C# 产物
  * boundary:  仅保持稳定公共 API；Excel 搬运、Luban 暂存和发布均由内部编排负责
  * failure:   内部任一阶段失败时返回 false，正式产物不被部分更新
  ***************************************************************/
@@ -30,14 +30,38 @@ namespace NovaFramework.Editor
                     return NetworkExporter.ExportNetCmds(settings, NetworkExporter.ExportMode.All);
                 }
 
+                /// <summary>
+                /// 按指定 Luban 格式导出全部 NetCmd 数据与代码。
+                /// </summary>
+                public static bool ExportNetCmdAll(NetCmdSettings settings, LubanDataFormat dataFormat)
+                {
+                    return NetworkExporter.ExportNetCmds(settings, NetworkExporter.ExportMode.All, dataFormat);
+                }
+
                 public static bool ExportNetCmdCode(NetCmdSettings settings)
                 {
                     return NetworkExporter.ExportNetCmds(settings, NetworkExporter.ExportMode.Code);
                 }
 
+                /// <summary>
+                /// 按指定 Luban 格式导出 NetCmd 代码。
+                /// </summary>
+                public static bool ExportNetCmdCode(NetCmdSettings settings, LubanDataFormat dataFormat)
+                {
+                    return NetworkExporter.ExportNetCmds(settings, NetworkExporter.ExportMode.Code, dataFormat);
+                }
+
                 public static bool ExportNetCmdData(NetCmdSettings settings)
                 {
                     return NetworkExporter.ExportNetCmds(settings, NetworkExporter.ExportMode.Data);
+                }
+
+                /// <summary>
+                /// 按指定 Luban 格式导出 NetCmd 数据。
+                /// </summary>
+                public static bool ExportNetCmdData(NetCmdSettings settings, LubanDataFormat dataFormat)
+                {
+                    return NetworkExporter.ExportNetCmds(settings, NetworkExporter.ExportMode.Data, dataFormat);
                 }
             }
         }

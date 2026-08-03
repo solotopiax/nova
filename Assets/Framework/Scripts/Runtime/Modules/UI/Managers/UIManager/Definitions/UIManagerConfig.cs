@@ -18,6 +18,11 @@ namespace NovaFramework.Runtime
     public class UIManagerConfig
     {
         /// <summary>
+        /// UI 表格数据格式。
+        /// </summary>
+        public LubanDataFormat DataFormat = LubanDataFormat.Json;
+
+        /// <summary>
         /// 视图实例对象池自动释放可释放对象的间隔秒数。
         /// </summary>
         public float InstanceAutoReleaseInterval;
@@ -55,7 +60,7 @@ namespace NovaFramework.Runtime
         public int ViewDepthFactor;
 
         /// <summary>
-        /// UI 注册表单元设置列表，每个 unit 对应一个注册表 JSON 文件。
+        /// UI 注册表单元设置列表，每个 unit 对应一个注册表数据文件。
         /// </summary>
         public List<UIUnitSetting> UnitSettings;
 

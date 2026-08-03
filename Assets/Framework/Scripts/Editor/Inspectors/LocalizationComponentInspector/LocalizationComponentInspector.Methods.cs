@@ -99,9 +99,9 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.HelpBox(MessageType.Info, new[]
             {
                 "填写说明：",
-                "(1)“数据导出位置”必须包含 {0}，用于为每种语言生成独立的 JSON 文件。",
+                "(1)“数据导出位置”必须包含 {0}，用于为每种语言生成独立的数据文件。",
                 "(2)导出时 {0} 会替换为语言名称，例如 ChineseSimplified、English。",
-                "(3)例如 LocalizationTexts_{0}.json 会生成 LocalizationTexts_ChineseSimplified.json、LocalizationTexts_English.json。",
+                "(3)JSON 使用 .json，Binary 使用 .bytes，例如 LocalizationTexts_{0}.bytes。",
                 "(4)“Asset 地址”也应保留 {0}，运行时会按当前语言加载对应文件。"
             });
 
@@ -172,7 +172,7 @@ namespace NovaFramework.Editor
         /// </summary>
         private void DrawSupportedLanguagesFields()
         {
-            if (m_SupportedLanguagesJsonExportPath == null || m_SupportedLanguagesAssetLocation == null)
+            if (m_SupportedLanguagesDataExportPath == null || m_SupportedLanguagesAssetLocation == null)
             {
                 return;
             }
@@ -181,15 +181,16 @@ namespace NovaFramework.Editor
 
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
-                bool isValid = EditorUtil.Draw.SourceFileTree.IsValidFilePath(m_SupportedLanguagesJsonExportPath.stringValue);
+                bool isValid = EditorUtil.Draw.SourceFileTree.IsValidFilePath(m_SupportedLanguagesDataExportPath.stringValue) &&
+                    HasCurrentDataSuffix(m_SupportedLanguagesDataExportPath.stringValue);
                 EditorUtil.Draw.Label("语言列表导出位置：", false, GUILayout.Width(c_LangListLabelWidth));
-                EditorUtil.Draw.TextField(m_SupportedLanguagesJsonExportPath, EditorUtil.Draw.SourceFileTree.ContentFieldStyle, true, null, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.TextField(m_SupportedLanguagesDataExportPath, EditorUtil.Draw.SourceFileTree.ContentFieldStyle, true, null, GUILayout.ExpandWidth(true));
                 if (!isValid)
                 {
                     EditorUtil.Draw.SourceFileTree.DrawInvalidBorderForLastRect();
                 }
-                EditorUtil.Draw.Button("选择", true, () => EditorUtil.Draw.Panel.SelectFolderForFileDelay("选择语言列表导出所在目录", "", m_SupportedLanguagesJsonExportPath), GUILayout.Width(EditorUtil.Draw.SourceFileTree.c_ButtonWidthSmall));
-                EditorUtil.Draw.Button("打开文件夹", false, () => OpenFolderFromFilePath(m_SupportedLanguagesJsonExportPath.stringValue), GUILayout.Width(EditorUtil.Draw.SourceFileTree.c_ButtonWidthMedium));
+                EditorUtil.Draw.Button("选择", true, () => EditorUtil.Draw.Panel.SelectFolderForFileDelay("选择语言列表导出所在目录", "", m_SupportedLanguagesDataExportPath), GUILayout.Width(EditorUtil.Draw.SourceFileTree.c_ButtonWidthSmall));
+                EditorUtil.Draw.Button("打开文件夹", false, () => OpenFolderFromFilePath(m_SupportedLanguagesDataExportPath.stringValue), GUILayout.Width(EditorUtil.Draw.SourceFileTree.c_ButtonWidthMedium));
             });
 
             EditorUtil.Draw.Layout.Horizontal(() =>
@@ -240,7 +241,8 @@ namespace NovaFramework.Editor
 
             EditorUtil.Draw.SourceFileTree.DrawIndentedRow(indentSpace, savedIndent, () =>
             {
-                bool isValid = EditorUtil.Draw.SourceFileTree.IsValidFilePath(datasProp.stringValue);
+                bool isValid = EditorUtil.Draw.SourceFileTree.IsValidFilePath(datasProp.stringValue) &&
+                    HasCurrentDataSuffix(datasProp.stringValue);
                 EditorUtil.Draw.Label("数据导出位置：", EditorUtil.Draw.SourceFileTree.ContentStyle, false, GUILayout.Width(EditorUtil.Draw.SourceFileTree.c_ExportLabelWidth));
                 EditorUtil.Draw.TextField(datasProp, EditorUtil.Draw.SourceFileTree.ContentFieldStyle, true, null, GUILayout.ExpandWidth(true));
                 if (!isValid)
@@ -311,7 +313,7 @@ namespace NovaFramework.Editor
                 }
             }
 
-            string supportedLanguagesExportPath = m_SupportedLanguagesJsonExportPath?.stringValue;
+            string supportedLanguagesExportPath = m_SupportedLanguagesDataExportPath?.stringValue;
             string[] customTemplateDirs = EditorUtil.Luban.ExportHelper.GetLubanCustomTemplateDirs(EditorUtil.Luban.LubanExportProfiles.LocalizationText.TemplateKey);
 
             EditorUtil.Localization.TextExporter.ExportTextAll(settings, textDirPath, classExportPath, customTemplateDirs, supportedLanguagesExportPath);
@@ -368,6 +370,64 @@ namespace NovaFramework.Editor
         {
             string dir = string.IsNullOrEmpty(filePath) ? string.Empty : (Util.SysIO.Path.GetDirectoryName(filePath) ?? string.Empty);
             EditorUtil.FileSystem.OpenFolder(dir);
+        }
+
+        private void DrawDataFormat()
+        {
+            if (m_DataFormat == null)
+            {
+                return;
+            }
+
+            LubanDataFormat previous = (LubanDataFormat)m_DataFormat.enumValueIndex;
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(m_DataFormat, new GUIContent("表格数据导出格式："));
+            if (EditorGUI.EndChangeCheck())
+            {
+                LubanDataFormat current = (LubanDataFormat)m_DataFormat.enumValueIndex;
+                UpdateStandardDataSuffixes(previous, current);
+            }
+            EditorUtil.Luban.DrawDataFormatHelpBox("文本、字体和支持语言列表");
+        }
+
+        private void UpdateStandardDataSuffixes(LubanDataFormat previous, LubanDataFormat current)
+        {
+            string previousSuffix = previous == LubanDataFormat.Binary ? ".bytes" : ".json";
+            string currentSuffix = current == LubanDataFormat.Binary ? ".bytes" : ".json";
+            UpdateUnitDataSuffixes(m_TextUnitsSettings, previousSuffix, currentSuffix);
+            UpdateUnitDataSuffixes(m_FontUnitsSettings, previousSuffix, currentSuffix);
+            UpdateStandardSuffix(m_SupportedLanguagesDataExportPath, previousSuffix, currentSuffix);
+        }
+
+        private static void UpdateUnitDataSuffixes(SerializedProperty units, string previousSuffix, string currentSuffix)
+        {
+            if (units == null)
+            {
+                return;
+            }
+            for (int i = 0; i < units.arraySize; i++)
+            {
+                UpdateStandardSuffix(units.GetArrayElementAtIndex(i)?.FindPropertyRelative("DatasExportPath"), previousSuffix, currentSuffix);
+            }
+        }
+
+        private static void UpdateStandardSuffix(SerializedProperty pathProperty, string previousSuffix, string currentSuffix)
+        {
+            if (pathProperty == null || string.IsNullOrEmpty(pathProperty.stringValue) ||
+                !pathProperty.stringValue.EndsWith(previousSuffix, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+            pathProperty.stringValue = pathProperty.stringValue.Substring(0, pathProperty.stringValue.Length - previousSuffix.Length) + currentSuffix;
+        }
+
+        private bool HasCurrentDataSuffix(string path)
+        {
+            LubanDataFormat format = m_DataFormat == null
+                ? LubanDataFormat.Json
+                : (LubanDataFormat)m_DataFormat.enumValueIndex;
+            string suffix = format == LubanDataFormat.Binary ? ".bytes" : ".json";
+            return !string.IsNullOrWhiteSpace(path) && path.EndsWith(suffix, System.StringComparison.OrdinalIgnoreCase);
         }
 
     }

@@ -35,6 +35,11 @@ namespace NovaFramework.Runtime
         private List<UIUnitSetting> m_UnitSettings;
 
         /// <summary>
+        /// UI 表格数据格式。
+        /// </summary>
+        private LubanDataFormat m_DataFormat = LubanDataFormat.Json;
+
+        /// <summary>
         /// UI 视图注册表，Key = UIView 类名，Value = 数据行，由 LoadAsync 填充。
         /// </summary>
         private readonly Dictionary<string, IUIViewRow> m_UIViewRegistry;

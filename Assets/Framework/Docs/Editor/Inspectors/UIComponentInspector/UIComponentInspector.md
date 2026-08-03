@@ -49,6 +49,7 @@ UnityEditor.Editor
 |---|---|---|
 | `m_CurUIManagerTypeName` | `SerializedProperty` | 当前 UI 管理器类型名属性引用 |
 | `m_CurUIGroupHelperTypeName` | `SerializedProperty` | 当前视图分组辅助器类型名属性引用 |
+| `m_DataFormat` | `SerializedProperty` | `UISettings.DataFormat`，表格数据导出格式，默认 JSON |
 | `m_SourceDirPath` | `SerializedProperty` | `UISettings.SourceDirPath` 的缓存引用，避免每帧调用 FindPropertyRelative |
 | `m_UIUnitsSettings` | `SerializedProperty` | `UISettings.UIUnitsSettings` 的缓存引用，避免每帧调用 FindPropertyRelative |
 | `m_ScreenDesignedResolution` | `SerializedProperty` | 屏幕设计分辨率属性引用 |
@@ -150,14 +151,16 @@ OnDisable()
 
 ## § 9 关键算法
 
-### DrawConfigs → DrawUIExport → DrawSourceFilesListWithFolders
+### DrawConfigs → DrawDataFormat → DrawUIExport → DrawSourceFilesListWithFolders
 
 ```
 DrawConfigs()
   │
   ├─ TypesSelector("UI 管理器"、"UIGroup 辅助器")
   ├─ HelpBox（接口说明）
-  └─ DrawUIExport()
+  └─ DrawDataFormat()（JSON / Binary 二选一，标准 `.json` / `.bytes` 后缀随选择切换）
+       └─ HelpBox（以 `(1)`～`(5)` 说明格式差异、UI 表格影响范围、后缀切换和反格式清理）
+       └─ DrawUIExport()
        │
        ├─ Foldout("UI 表格导出") 未展开 → Line() return
        ├─ DrawTemplatePathHintReadOnly(...)

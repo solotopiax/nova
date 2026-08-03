@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.applesignin",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "1.0.0",
   "displayName": "Nova Framework - SDK - Apple Sign-In",
@@ -22,7 +22,7 @@
     "NovaFramework.SDK.AppleSignIn.Runtime"
   ],
   "dependencies": {
-    "com.solotopia.nova.framework": "0.6.0",
+    "com.solotopia.nova.framework": "0.6.3",
     "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0",
     "com.solotopia.nova.framework.kit.network.gamebind": "0.0.6"
   }

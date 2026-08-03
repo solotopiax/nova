@@ -40,12 +40,13 @@ UnityEditor.Editor
 | `m_FallbackLanguage` | `SerializedProperty` | 回退语言枚举 |
 | `m_AutoFontAdapt` | `SerializedProperty` | 字体自动适配开关 |
 | `m_LocalizationSettings` | `SerializedProperty` | LocalizationSettings 根属性 |
+| `m_DataFormat` | `SerializedProperty` | 模块统一 Luban 数据格式，JSON / Binary 二选一，默认 JSON |
 | `m_TextSourceDirPath` | `SerializedProperty` | 文本数据源目录路径 |
 | `m_FontSourceDirPath` | `SerializedProperty` | 字体数据源目录路径 |
 | `m_TextUnitsSettings` | `SerializedProperty` | 文本数据单元设置列表 |
 | `m_FontUnitsSettings` | `SerializedProperty` | 字体数据单元设置列表 |
 | `m_FontTemplatePath` | `SerializedProperty` | 字体数据模板文件路径 |
-| `m_SupportedLanguagesJsonExportPath` | `SerializedProperty` | 语言列表 JSON 导出路径 |
+| `m_SupportedLanguagesDataExportPath` | `SerializedProperty` | 语言列表数据导出路径；由旧字段通过 `FormerlySerializedAs` 迁移 |
 | `m_SupportedLanguagesAssetLocation` | `SerializedProperty` | 语言列表 Asset 地址 |
 
 ### 样式与状态
@@ -86,6 +87,8 @@ OnInspectorGUI()
   │     ├── Toggle（终端语言类型优先策略 m_RuntimeLanguagePrefer）
   │     ├── EnumSelector（回退语言类型 m_FallbackLanguage）
   │     ├── Toggle（字体自动适配）
+  │     ├── Enum（Luban 数据格式：JSON / Binary）
+  │     ├── HelpBox（以 `(1)`～`(5)` 说明两种格式、影响范围、后缀切换和反格式清理）
   │     ├── 分割线
   │     ├── Button（修复预制体缺失 TextLocalizing → TextLocalizingValidator.FixMissingInPrefabs）
   │     ├── HelpBox（扫描说明，MessageType.Info）
@@ -108,10 +111,11 @@ OnInspectorGUI()
 
 | 数据类型 | 导出方式 | 说明 |
 |----------|----------|------|
-| 文本数据 | `EditorUtil.Localization.TextExporter.ExportTextAll` | 三阶段编排：PreFilter 按语言拆分 Excel → 每种语言走标准 Luban Pipeline → MapPropGen + 语言列表 |
-| 字体数据 | `EditorUtil.Localization.FontExporter.ExportFontAll` | 在 `_temp/_publish` 生成并验证 JSON/C#，再统一发布正式产物 |
+| 文本数据 | `EditorUtil.Localization.TextExporter.ExportTextAll` | 保留 PreFilter、多语言投影和事务发布；最终 Luban 阶段按所选格式生成 JSON 或 Binary |
+| 字体数据 | `EditorUtil.Localization.FontExporter.ExportFontAll` | 在暂存区按所选格式生成数据/C#，验证后统一发布正式产物 |
+| 支持语言 | 独立 Luban target | 从文本源语言列生成临时 CSV，导出 `LocalizationSupportedLanguagesTables`，与文本/字体共用格式选项 |
 
-文本数据和字体数据均通过泛型内部类 `DataTableSettingsAdapter<TUnit>`，将各自的单元设置列表包装为 `IDataTableSettings` 供 Pipeline 消费；字体正式文件应用也经过 `FileSystem.OutputApplier`，不直接写入正式目录。
+切换格式时仅自动替换标准 `.json` / `.bytes` 后缀；自定义后缀会保持原值并被标记为无效。文本、字体和支持语言均经过 `FileSystem.OutputApplier`，不直接写入正式目录。
 Inspector 在调用前只执行 `serializedObject.ApplyModifiedProperties()`，不刷新或写回 Excel Sheet 名。每个 Pipeline 阶段在 Luban 前扫描当前输入并生成 schema manifest。
 
 ---

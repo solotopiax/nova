@@ -36,6 +36,11 @@ namespace NovaFramework.Editor
         private SerializedProperty m_Settings;
 
         /// <summary>
+        /// 振动表格数据导出格式属性。
+        /// </summary>
+        private SerializedProperty m_DataFormat;
+
+        /// <summary>
         /// Emphasis 数据源目录路径。
         /// </summary>
         private SerializedProperty m_EmphasisSourceDirPath;

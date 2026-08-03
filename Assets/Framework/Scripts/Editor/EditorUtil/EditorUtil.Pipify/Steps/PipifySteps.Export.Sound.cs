@@ -23,7 +23,7 @@ namespace NovaFramework.Editor
     internal static partial class PipifySteps
     {
         /// <summary>
-        /// Step：以一次批次事务导出 SoundSettings 全部单元的 JSON 数据文件。
+        /// Step：以一次批次事务导出 SoundSettings 全部单元的表格数据文件。
         /// 通过 Helpers.ResolveComponentOnNova 定位 SoundComponent；
         /// 反射读取 m_Settings 字段；若 settings 为 null 或单元列表为空则抛出 InvalidOperationException。
         /// 调用 EditorUtil.Sound.Exporter.ExportAllData；返回 false 时抛出异常并终止流水线。

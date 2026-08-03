@@ -29,6 +29,7 @@ namespace NovaFramework.Editor
 
             m_CurManagerTypeName = serializedObject.FindProperty("m_CurManagerTypeName");
             m_Settings = serializedObject.FindProperty("m_Settings");
+            m_DataFormat = m_Settings?.FindPropertyRelative("DataFormat");
 
             m_ManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(IVibrateManager)));
 
@@ -45,6 +46,7 @@ namespace NovaFramework.Editor
         {
             base.OnInspectorGUI();
             DrawConfigs();
+            DrawDataFormat();
             DrawEmphasisVibrateExport();
             DrawCustomVibrateExport();
             FinalRefreshInspectorGUI();

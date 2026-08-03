@@ -34,6 +34,7 @@ UnityEditor.Editor
 |------|------|--------|------|
 | `m_CurManagerTypeName` | `SerializedProperty` | — | 绑定 `SoundComponent.m_CurManagerTypeName` |
 | `m_Settings` | `SerializedProperty` | — | 绑定 `SoundComponent.m_Settings`（`SoundSettings`） |
+| `m_DataFormat` | `SerializedProperty` | — | 表格数据导出格式，JSON/Binary 二选一，默认 JSON |
 | `m_SourceDirPath` | `SerializedProperty` | — | `m_Settings.SourceDirPath`，数据源目录路径 |
 | `m_SoundUnitsSettings` | `SerializedProperty` | — | `m_Settings.SoundUnitsSettings`，per-file 单元设置列表 |
 | `m_AudioMixer` | `SerializedProperty` | — | 绑定 `SoundComponent.m_AudioMixer`（AudioMixer 资产引用） |
@@ -79,6 +80,8 @@ DrawSoundSettings()
   ├── TypesSelector（Sound 管理器）
   ├── HelpBox（支持自定义类型说明）
   ├── 分割线
+  ├── DrawDataFormat()              ── 格式选择并同步标准 `.json` / `.bytes` 后缀
+  │   └── HelpBox                   ── 以 `(1)`～`(5)` 说明格式差异、声音表格影响范围、后缀切换和反格式清理
   ├── DrawSourceDataOperations()     ── Luban Pipeline 导出区域
   ├── AudioMixer Property 绑定
   └── 声音分组壳列表（+ 按钮添加，每个 shell 含 box：名称/避免同优先级替换/静音/音量/代理数量）
@@ -119,7 +122,7 @@ DrawSourceDataOperations()
 
 "导出"按钮直接触发 `OnExportDataForFile` / `OnExportClassForFile`。Inspector 不预扫描或写回 Sheet 名；导出器进入 Pipeline 后统一扫描 Excel 并构建 manifest。
 
-单文件和全量入口都由 `Sound.Exporter` 先写入源目录下的 `_temp/_publish`，验证 JSON/C# 完整后再通过 `FileSystem.OutputApplier` 发布。Inspector 不直接删除或写入正式产物。
+单文件和全量入口都由 `Sound.Exporter` 先写入源目录下的 `_temp/_publish`，验证所选格式数据/C# 完整后再通过 `FileSystem.OutputApplier` 发布。Inspector 不直接删除或写入正式产物；发布时会事务删除同名反格式数据及其 `.meta`。
 
 当前单文件和全量导出的真实入口为：
 

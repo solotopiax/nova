@@ -12,6 +12,9 @@ using System;
 using System.ComponentModel;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace NovaFramework.Runtime
 {
     /// <summary>
@@ -99,6 +102,7 @@ namespace NovaFramework.Runtime
             string url = Nova.Network.ResolveNetCmdUrl(cmdRow);
             if (string.IsNullOrEmpty(url))
             {
+                LogRequest(netCmdName, url, request, false, "url_not_found");
                 Log.Warning(LogTag.Network, "NetService.SendAsync：未找到 NetCmd URL，name={0}。", netCmdName);
                 return NetResponse<TResp>.Fail(NetErrorCode.URL_NOT_FOUND, Txt.Format("NetCmd not found: {0}", netCmdName));
             }
@@ -114,6 +118,7 @@ namespace NovaFramework.Runtime
 
             if (!effectiveDebug && (string.IsNullOrEmpty(aesKey) || string.IsNullOrEmpty(aesIv)))
             {
+                LogRequest(netCmdName, url, request, false, "aes_config_missing");
                 Log.Error(LogTag.Network, "NetService.SendAsync：AES Key/IV not configured, please check Nova.Config.AppConfigs. name={0}.", netCmdName);
                 return NetResponse<TResp>.Fail(NetErrorCode.AES_ENCRYPT_FAILED, "AES Key/IV not configured");
             }
@@ -136,6 +141,7 @@ namespace NovaFramework.Runtime
                 }
                 catch (Exception e)
                 {
+                    LogRequest(netCmdName, url, request, false, "aes_encrypt_failed");
                     Log.Error(LogTag.Network, "NetService.SendAsync：AES 加密失败，name={0}，error={1}。", netCmdName, e.Message);
                     return NetResponse<TResp>.Fail(NetErrorCode.AES_ENCRYPT_FAILED, $"AES encrypt failed: {e.Message}");
                 }
@@ -144,6 +150,7 @@ namespace NovaFramework.Runtime
             HttpResponse httpResponse = null;
             try
             {
+                LogRequest(netCmdName, url, request, true);
                 httpResponse = await Nova.Network.PostRawDataAsync(url, bodyBytes, -1f, -1f, headerInfos);
                 if (!httpResponse.IsSuccess || httpResponse.RawData == null)
                 {
@@ -181,10 +188,6 @@ namespace NovaFramework.Runtime
                     return NetResponse<TResp>.Fail(NetErrorCode.PROTO_PARSE_FAILED, $"BaseResponse parse failed: {e.Message}");
                 }
 
-                Log.Debug(LogTag.Network,
-                    "NetService.SendAsync：响应状态码，name={0}，httpStatusCode={1}，baseResponseCode={2}。",
-                    netCmdName, httpResponse.StatusCode, parseResult.Code);
-
                 if (parseResult.Code != NetErrorCode.SUCCESS)
                 {
                     Log.Warning(LogTag.Network, "NetService.SendAsync：服务端返回业务错误，name={0}，code={1}，msg={2}。", netCmdName, parseResult.Code, parseResult.Message);
@@ -195,13 +198,17 @@ namespace NovaFramework.Runtime
                         try
                         {
                             TResp errorData = parser.ParseFrom(parseResult.BusinessData);
+                            LogResponse(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message, errorData);
                             return NetResponse<TResp>.Fail(parseResult.Code, parseResult.Message, errorData);
                         }
                         catch (Exception e)
                         {
                             Log.Warning(LogTag.Network, "NetService.SendAsync：业务错误响应体解析失败，降级为不带 data，name={0}，error={1}。", netCmdName, e.Message);
+                            LogResponse<TResp>(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message, default, e.Message);
+                            return NetResponse<TResp>.Fail(parseResult.Code, parseResult.Message);
                         }
                     }
+                    LogResponse<TResp>(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message, default);
                     return NetResponse<TResp>.Fail(parseResult.Code, parseResult.Message);
                 }
 
@@ -213,9 +220,11 @@ namespace NovaFramework.Runtime
                 catch (Exception e)
                 {
                     Log.Error(LogTag.Network, "NetService.SendAsync：业务 Proto 解析失败，name={0}，error={1}。", netCmdName, e.Message);
+                    LogResponse<TResp>(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message, default, e.Message);
                     return NetResponse<TResp>.Fail(NetErrorCode.PROTO_PARSE_FAILED, $"Response parse failed: {e.Message}");
                 }
 
+                LogResponse(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message, responseData);
                 return NetResponse<TResp>.Success(responseData);
             }
             finally
@@ -225,6 +234,108 @@ namespace NovaFramework.Runtime
                     ReferencePool.Put(httpResponse);
                 }
             }
+        }
+
+        /// <summary>
+        /// 以统一单行 JSON 输出客户端请求信息；已发送请求使用 Debug，未发送请求使用 Warning。
+        /// 调用在非 Editor、非 Development Build 中会被编译器移除。
+        /// </summary>
+        /// <typeparam name="TReq">请求 Proto 消息类型。</typeparam>
+        /// <param name="netCmdName">网络指令名称。</param>
+        /// <param name="url">最终请求地址。</param>
+        /// <param name="request">待发送的请求 Proto。</param>
+        /// <param name="sent">是否已进入实际 HTTP 发送阶段。</param>
+        /// <param name="reason">未发送原因；sent 为 true 时为空。</param>
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private static void LogRequest<TReq>(
+            string netCmdName,
+            string url,
+            TReq request,
+            bool sent,
+            string reason = null)
+            where TReq : IMessage<TReq>
+        {
+            try
+            {
+                var logData = new JObject
+                {
+                    ["source"] = "Nova.NetService",
+                    ["stage"] = "request",
+                    ["name"] = netCmdName,
+                    ["url"] = url ?? string.Empty,
+                    ["sent"] = sent,
+                    ["data"] = FormatProtoJson(request)
+                };
+                if (!sent)
+                {
+                    logData["reason"] = reason ?? string.Empty;
+                    Log.Warning(LogTag.Network, logData.ToString(Formatting.None));
+                    return;
+                }
+                Log.Debug(LogTag.Network, logData.ToString(Formatting.None));
+            }
+            catch (Exception e)
+            {
+                Log.Warning(LogTag.Network, "NetService 请求日志格式化失败：name={0}，error={1}。", netCmdName, e.Message);
+            }
+        }
+
+        /// <summary>
+        /// 以统一单行 JSON 输出服务端响应及解析结果；调用在非 Editor、非 Development Build 中会被编译器移除。
+        /// </summary>
+        /// <typeparam name="TResp">响应 Proto 消息类型。</typeparam>
+        /// <param name="netCmdName">网络指令名称。</param>
+        /// <param name="httpStatusCode">HTTP 状态码。</param>
+        /// <param name="code">服务端 BaseResponse 错误码。</param>
+        /// <param name="message">服务端 BaseResponse 错误信息。</param>
+        /// <param name="response">解析后的业务响应 Proto；无业务体或解析失败时为 null。</param>
+        /// <param name="parseError">业务响应 Proto 解析错误；解析成功时为空。</param>
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private static void LogResponse<TResp>(
+            string netCmdName,
+            int httpStatusCode,
+            int code,
+            string message,
+            TResp response,
+            string parseError = null)
+            where TResp : IMessage<TResp>
+        {
+            try
+            {
+                var logData = new JObject
+                {
+                    ["source"] = "Nova.NetService",
+                    ["stage"] = "response",
+                    ["name"] = netCmdName,
+                    ["httpStatusCode"] = httpStatusCode,
+                    ["code"] = code,
+                    ["msg"] = message ?? string.Empty,
+                    ["data"] = FormatProtoJson(response)
+                };
+                if (!string.IsNullOrEmpty(parseError))
+                {
+                    logData["parseError"] = parseError;
+                }
+                Log.Debug(LogTag.Network, logData.ToString(Formatting.None));
+            }
+            catch (Exception e)
+            {
+                Log.Warning(LogTag.Network, "NetService 响应日志格式化失败：name={0}，error={1}。", netCmdName, e.Message);
+            }
+        }
+
+        /// <summary>
+        /// 使用 Protobuf 官方 JSON 规则格式化消息，保留字段映射、枚举和 ByteString 的标准语义。
+        /// </summary>
+        /// <param name="message">待格式化的 Proto 消息，可为空。</param>
+        /// <returns>可直接嵌入统一日志对象的 JSON 节点。</returns>
+        private static JToken FormatProtoJson(IMessage message)
+        {
+            return message == null
+                ? JValue.CreateNull()
+                : JToken.Parse(JsonFormatter.Default.Format(message));
         }
     }
 }

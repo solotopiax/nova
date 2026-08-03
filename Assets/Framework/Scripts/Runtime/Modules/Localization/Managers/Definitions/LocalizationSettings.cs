@@ -20,6 +20,11 @@ namespace NovaFramework.Runtime
     [Serializable]
     public class LocalizationSettings : IDataTableSettings
     {
+        /// <summary>
+        /// Luban 代码与数据导出格式。旧序列化数据缺省值为 JSON。
+        /// </summary>
+        public LubanDataFormat DataFormat = LubanDataFormat.Json;
+
 #if UNITY_EDITOR
         /// <summary>
         /// 文本数据源目录路径（仅编辑器使用）。

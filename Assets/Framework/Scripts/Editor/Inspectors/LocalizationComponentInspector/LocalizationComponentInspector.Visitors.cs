@@ -63,6 +63,11 @@ namespace NovaFramework.Editor
         private SerializedProperty m_LocalizationSettings;
 
         /// <summary>
+        /// Localization 模块统一 Luban 数据格式。
+        /// </summary>
+        private SerializedProperty m_DataFormat;
+
+        /// <summary>
         /// 文本数据源目录路径属性。
         /// </summary>
         private SerializedProperty m_TextSourceDirPath;
@@ -88,9 +93,9 @@ namespace NovaFramework.Editor
         private SerializedProperty m_FontTemplatePath;
 
         /// <summary>
-        /// 语言列表 JSON 导出路径属性。
+        /// 语言列表数据导出路径属性。
         /// </summary>
-        private SerializedProperty m_SupportedLanguagesJsonExportPath;
+        private SerializedProperty m_SupportedLanguagesDataExportPath;
 
         /// <summary>
         /// 语言列表资源地址属性。

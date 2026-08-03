@@ -36,8 +36,10 @@ public static bool ExportDataForFile(
 ```
 
 - `ExportAll`：导出代码和数据。
-- `ExportCode`：仅更新代码；正式 JSON 只作为 Map 生成输入，不会被修改。
-- `ExportData`：仅更新 JSON 数据。
+- `ExportCode`：仅更新代码；正式表格数据只作为 Map 生成输入，不会被修改。
+- `ExportData`：仅更新所选 JSON/Binary 数据。
+
+格式来自 `UISettings.DataFormat`，默认 JSON。Binary 使用 `.bytes`；数据发布时会在同一事务中删除同名反格式文件及其 `.meta`。
 - `ExportCodeForFile` / `ExportDataForFile`：只发布精确匹配 Unit 的产物，不退化为全量发布。
 - 所有方法返回是否成功；Pipify 收到 `false` 时中止当前流水线。
 

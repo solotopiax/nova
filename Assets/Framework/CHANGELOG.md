@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-08-03
+
+### Added
+
+- Luban 专用数据导出链新增 JSON / Binary 格式选择，运行时可按统一配置加载对应数据。
+- Localization 新增支持语言表导出与运行时行契约，补齐多语言数据闭环。
+
+### Changed
+
+- Network、Localization、Sound、UI 与 Vibrate 的 Inspector、Pipify、模板和运行时加载统一传递数据格式。
+- 各模块切换格式时会登记并清理同名反格式产物，避免旧 JSON / Binary 文件混入构建。
+
 ## [0.6.2] - 2026-07-31
 
 ### Fixed

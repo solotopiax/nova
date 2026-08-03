@@ -24,16 +24,16 @@ public static void ExportCode(
     HashSet<string> relevantFileNames);
 ```
 
-Inspector 的调用方式没有变化。`ExportData` 处理指定单元；`ExportCode` 的 `unitSetting == null` 表示全量代码；`ExportAll` 在一次事务中发布全部 JSON 与 C#。Pipify 的数据/类型 Step 分别调用内部全量批次入口，不再逐 Unit 启动独立事务。
+Inspector 的调用方式没有变化。`ExportData` 处理指定单元；`ExportCode` 的 `unitSetting == null` 表示全量代码；`ExportAll` 在一次事务中发布所选 JSON/Binary 数据与 C#。Pipify 的数据/类型 Step 分别调用内部全量批次入口，不再逐 Unit 启动独立事务。格式来自 `SoundSettings.DataFormat`，默认 JSON；发布数据时删除同名反格式文件及其 `.meta`。
 
 ## 导出流程
 
 ```text
 校验 SoundSettings、源目录、Unit 和输出路径
-  -> 克隆 Settings，把 JSON/C# 输出改写到 _temp/_publish
-  -> 仅代码导出时，把正式 JSON 复制到暂存区供 Map 属性生成
+  -> 克隆 Settings，把所选格式数据/C# 输出改写到 _temp/_publish
+  -> 仅代码导出时，把正式表格数据复制到暂存区供 Map 属性生成
   -> Luban Pipeline 生成数据、类型和 SchemaManifest
-  -> 验证目标 JSON 与 SchemaManifest 对应的全部 C# 文件
+  -> 验证目标数据与 SchemaManifest 对应的全部 C# 文件
   -> Luban.GeneratedOutput 写入第一行单行所有权标记并登记安全过期删除
   -> FileSystem.OutputApplier 一次性替换正式产物
   -> finally 清理 _temp 并刷新 AssetDatabase

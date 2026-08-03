@@ -28,7 +28,10 @@ namespace NovaFramework.Editor
                 public static bool ExportTextAll(LocalizationSettings settings, string sourceDirPath,
                     string classExportPath, string[] customTemplateDirs, string supportedLanguagesExportPath)
                 {
-                    if (!TryCreateSettings(settings, sourceDirPath, out IDataTableSettings adapter))
+                    if (!TryCreateSettings(settings, sourceDirPath, out IDataTableSettings adapter) ||
+                        !HasExpectedDataPaths(settings) ||
+                        (!string.IsNullOrEmpty(supportedLanguagesExportPath) &&
+                         !HasExpectedSuffix(supportedLanguagesExportPath, settings.DataFormat)))
                     {
                         return false;
                     }
@@ -38,7 +41,8 @@ namespace NovaFramework.Editor
                         adapter,
                         classExportPath,
                         customTemplateDirs,
-                        supportedLanguagesExportPath);
+                        supportedLanguagesExportPath,
+                        settings.DataFormat);
                 }
 
                 /// <summary>
@@ -57,7 +61,8 @@ namespace NovaFramework.Editor
                         sourceDirPath,
                         adapter,
                         classExportPath,
-                        customTemplateDirs);
+                        customTemplateDirs,
+                        settings.DataFormat);
                 }
 
                 /// <summary>
@@ -65,20 +70,48 @@ namespace NovaFramework.Editor
                 /// </summary>
                 public static bool ExportTextData(LocalizationSettings settings, string sourceDirPath)
                 {
-                    if (!TryCreateSettings(settings, sourceDirPath, out IDataTableSettings adapter))
+                    if (!TryCreateSettings(settings, sourceDirPath, out IDataTableSettings adapter) ||
+                        !HasExpectedDataPaths(settings))
                     {
                         return false;
                     }
 
-                    return LocalizationTextExporter.ExportData(sourceDirPath, adapter);
+                    return LocalizationTextExporter.ExportData(sourceDirPath, adapter, settings.DataFormat);
                 }
 
                 /// <summary>
                 /// 独立导出支持语言列表。
                 /// </summary>
-                public static bool ExportSupportedLanguages(string sourceDirPath, string exportPath)
+                public static bool ExportSupportedLanguages(string sourceDirPath, string exportPath,
+                    LubanDataFormat dataFormat = LubanDataFormat.Json)
                 {
-                    return LocalizationTextExporter.ExportSupportedLanguages(sourceDirPath, exportPath);
+                    if (!HasExpectedSuffix(exportPath, dataFormat))
+                    {
+                        Log.Warning(LogTag.Localization, "语言列表数据导出路径与 Luban 格式不匹配：{0}", exportPath);
+                        return false;
+                    }
+                    return LocalizationTextExporter.ExportSupportedLanguages(sourceDirPath, exportPath, dataFormat);
+                }
+
+                private static bool HasExpectedDataPaths(LocalizationSettings settings)
+                {
+                    for (int i = 0; i < settings.TextUnitsSettings.Count; i++)
+                    {
+                        string path = settings.TextUnitsSettings[i]?.DatasExportPath;
+                        if (!HasExpectedSuffix(path, settings.DataFormat))
+                        {
+                            Log.Warning(LogTag.Localization, "文本数据导出路径与 Luban 格式不匹配：{0}", path);
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+
+                private static bool HasExpectedSuffix(string path, LubanDataFormat dataFormat)
+                {
+                    string suffix = dataFormat == LubanDataFormat.Binary ? ".bytes" : ".json";
+                    return !string.IsNullOrWhiteSpace(path) &&
+                           path.EndsWith(suffix, System.StringComparison.OrdinalIgnoreCase);
                 }
 
                 private static bool TryCreateSettings(LocalizationSettings settings, string sourceDirPath,

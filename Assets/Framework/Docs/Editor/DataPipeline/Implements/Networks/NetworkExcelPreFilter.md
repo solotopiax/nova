@@ -41,7 +41,7 @@ internal static void FilterNetCmds(string sourceDirPath, string tempDirPath);
 
 - 负责 Network Sheet 命名、配对、模式选择和 `_temp` 输入生成。
 - 不读取 ConfigRuntime；DevelopMode 由 `NetworkExporter` 提供。
-- 不调用 Luban，也不替换正式 JSON/C# 产物。
+- 不调用 Luban，也不替换正式数据/C# 产物。
 - `_temp` 位于对应 Network Excel 源目录下，只在单次导出期间存在。
 
 ## 关联文档

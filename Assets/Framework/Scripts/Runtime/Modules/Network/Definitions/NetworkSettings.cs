@@ -20,6 +20,11 @@ namespace NovaFramework.Runtime
     public class NetworkSettings
     {
         /// <summary>
+        /// HostKey 与 NetCmd 共用的 Luban 代码与数据导出格式。
+        /// </summary>
+        public LubanDataFormat DataFormat = LubanDataFormat.Json;
+
+        /// <summary>
         /// 域名表设置。
         /// </summary>
         public HostKeySettings HostKeySettings;

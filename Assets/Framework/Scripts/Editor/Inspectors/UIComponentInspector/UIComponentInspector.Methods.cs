@@ -27,6 +27,7 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "支持自定义类型，实现框架层 IUIManager、IUIGroupHelper 接口后，该类型将自动出现在此列表中。" });
             EditorUtil.Draw.Line();
 
+            DrawDataFormat();
             DrawUIExport();
 
             EditorUtil.Draw.Property("实例根节点", m_InstanceRoot, true, GUILayout.Width(175));
@@ -54,6 +55,16 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Line();
 
             DrawUIGroups();
+        }
+
+        /// <summary>
+        /// 绘制 UI 表格数据格式，并同步所有标准数据文件后缀。
+        /// </summary>
+        private void DrawDataFormat()
+        {
+            EditorUtil.Luban.DrawDataFormat(
+                m_DataFormat, "表格数据导出格式：", "UI 表格", m_UIUnitsSettings);
+            EditorUtil.Draw.Line();
         }
 
         /// <summary>

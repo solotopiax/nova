@@ -79,6 +79,7 @@ namespace NovaFramework.Runtime
 
             m_NetworkManager.Initialize(new NetworkManagerConfig
             {
+                DataFormat = m_Settings.DataFormat,
                 HostKeyUnitSettings = m_Settings.HostKeySettings.HostKeyUnits,
                 NetCmdUnitSettings = m_Settings.NetCmdSettings.NetCmdUnits
             });

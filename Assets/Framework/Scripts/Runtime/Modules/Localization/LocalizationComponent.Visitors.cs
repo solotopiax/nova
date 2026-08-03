@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace NovaFramework.Runtime
 {
@@ -72,7 +73,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 语言列表资源地址。
         /// </summary>
-        [Tooltip("语言列表 JSON 资源地址")]
+        [Tooltip("语言列表数据资源地址")]
         [SerializeField]
         private string m_SupportedLanguagesAssetLocation;
 
@@ -92,11 +93,12 @@ namespace NovaFramework.Runtime
         private string m_FontTemplatePath;
 
         /// <summary>
-        /// 语言列表 JSON 导出路径（仅编辑器使用）。
+        /// 语言列表数据导出路径（仅编辑器使用）。
         /// </summary>
-        [Tooltip("语言列表 JSON 导出路径（仅编辑器）")]
+        [Tooltip("语言列表数据导出路径（仅编辑器）")]
         [SerializeField]
-        private string m_SupportedLanguagesJsonExportPath;
+        [FormerlySerializedAs("m_SupportedLanguagesJsonExportPath")]
+        private string m_SupportedLanguagesDataExportPath;
 #endif
 
         /// <summary>

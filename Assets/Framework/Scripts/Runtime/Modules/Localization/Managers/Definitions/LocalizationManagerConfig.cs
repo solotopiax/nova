@@ -18,6 +18,11 @@ namespace NovaFramework.Runtime
     public class LocalizationManagerConfig
     {
         /// <summary>
+        /// 当前 Localization Luban 数据格式。
+        /// </summary>
+        public LubanDataFormat DataFormat { get; set; } = LubanDataFormat.Json;
+
+        /// <summary>
         /// 编辑器语言类型；非 Unspecified 且在支持列表时强制使用（仅编辑器生效）。
         /// </summary>
         public Language EditorLanguage { get; set; } = Language.Unspecified;

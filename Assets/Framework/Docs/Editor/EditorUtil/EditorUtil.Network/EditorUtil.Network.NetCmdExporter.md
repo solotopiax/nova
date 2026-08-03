@@ -14,7 +14,7 @@ public static bool ExportNetCmdCode(NetCmdSettings settings);
 public static bool ExportNetCmdData(NetCmdSettings settings);
 ```
 
-NetCmds 不按 DevelopMode 选择 Sheet，也不要求 Debug/Release 配对。预处理仅跳过注释或无效 Sheet；Luban 生成的 JSON/C# 先写入 `_temp/_publish`，验证后再由 `FileSystem.OutputApplier` 替换正式产物。
+NetCmds 不按 DevelopMode 选择 Sheet，也不要求 Debug/Release 配对。预处理仅跳过注释或无效 Sheet；Luban 按 `NetworkSettings.DataFormat` 生成 JSON 或 Binary 数据及对应 C#，先写入 `_temp/_publish`，验证后再由 `FileSystem.OutputApplier` 替换正式产物并删除反格式文件及其 `.meta`。HostKey 与 NetCmd 共用同一个格式选项。
 
 ## 使用示例
 

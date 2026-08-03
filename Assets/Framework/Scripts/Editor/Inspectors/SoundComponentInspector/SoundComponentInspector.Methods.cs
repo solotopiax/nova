@@ -25,6 +25,7 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "支持自定义类型，实现框架层 ISoundManager 接口后，该类型将自动出现在此列表中。" });
             EditorUtil.Draw.Line();
 
+            DrawDataFormat();
             DrawSourceDataOperations();
 
             EditorUtil.Draw.Property("声音混音器：", m_AudioMixer, true, GUILayout.Width(175));
@@ -61,6 +62,16 @@ namespace NovaFramework.Editor
                 });
             }
 
+            EditorUtil.Draw.Line();
+        }
+
+        /// <summary>
+        /// 绘制声音表格数据格式，并同步所有标准数据文件后缀。
+        /// </summary>
+        private void DrawDataFormat()
+        {
+            EditorUtil.Luban.DrawDataFormat(
+                m_DataFormat, "表格数据导出格式：", "声音表格", m_SoundUnitsSettings);
             EditorUtil.Draw.Line();
         }
 

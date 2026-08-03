@@ -32,6 +32,11 @@ namespace NovaFramework.Editor
         private SerializedProperty m_Settings;
 
         /// <summary>
+        /// 声音表格数据导出格式属性。
+        /// </summary>
+        private SerializedProperty m_DataFormat;
+
+        /// <summary>
         /// 数据源目录路径属性缓存。
         /// </summary>
         private SerializedProperty m_SourceDirPath;

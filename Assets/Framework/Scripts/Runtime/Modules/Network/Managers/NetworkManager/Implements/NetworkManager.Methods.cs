@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 
 namespace NovaFramework.Runtime
 {
@@ -33,16 +32,6 @@ namespace NovaFramework.Runtime
                 return false;
             }
 
-            Func<string, JArray> loader = key =>
-            {
-                if (dataCache.DataMap.TryGetValue(key, out object value) && value is JArray jArray)
-                {
-                    return jArray;
-                }
-                Log.Warning(LogTag.Network, "数据缓存中未找到数据：{0}", key);
-                return new JArray();
-            };
-
             IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
             if (configManager == null)
             {
@@ -52,7 +41,8 @@ namespace NovaFramework.Runtime
             string namespace_ = configManager.Namespace;
             if (!string.IsNullOrEmpty(namespace_))
             {
-                Dictionary<Type, ITable> hostKeyTables = LubanTablesLoader.Load(c_HostKeyTablesClassName, namespace_, loader);
+                Dictionary<Type, ITable> hostKeyTables = LubanRuntimeData.LoadTables(
+                    m_DataFormat, c_HostKeyTablesClassName, namespace_, dataCache, LogTag.Network, "HostKey");
                 if (hostKeyTables == null)
                 {
                     return false;
@@ -64,7 +54,8 @@ namespace NovaFramework.Runtime
                     BuildHostKeyCacheFromTable(kv.Value);
                 }
 
-                Dictionary<Type, ITable> networkTables = LubanTablesLoader.Load(c_NetworkTablesClassName, namespace_, loader);
+                Dictionary<Type, ITable> networkTables = LubanRuntimeData.LoadTables(
+                    m_DataFormat, c_NetworkTablesClassName, namespace_, dataCache, LogTag.Network, "NetCmd");
                 if (networkTables == null)
                 {
                     return false;

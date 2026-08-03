@@ -29,7 +29,7 @@ namespace NovaFramework.Editor
     /// Excel 解析由 <see cref="LocalizationExcelPreFilter"/> 完成；文件替换与回滚由
     /// <see cref="EditorUtil.FileSystem.OutputApplier"/> 完成。
     /// </summary>
-    internal static class LocalizationTextExporter
+    internal static partial class LocalizationTextExporter
     {
         /// <summary>
         /// 导出流程调用的外部能力集合，仅作为测试替换点；不承载导出状态或业务规则。
@@ -50,6 +50,10 @@ namespace NovaFramework.Editor
                 GenerateMapProperties = EditorUtil.Luban.MapPropGen.GenerateAll;
 
             internal Func<string> GetTopModule = EditorUtil.Config.RuntimeProvider.GetNamespace;
+
+            internal Action<string, string, IReadOnlyList<string>, string, string, string,
+                LubanDataFormat, EditorUtil.FileSystem.OutputApplier> ExportSupportedLanguages =
+                    ExportSupportedLanguagesThroughLuban;
 
             internal Action RefreshAssetDatabase = AssetDatabase.Refresh;
         }
@@ -76,7 +80,7 @@ namespace NovaFramework.Editor
         /// <param name="settings">文本数据表设置适配器（IDataTableSettings）。</param>
         /// <param name="classExportPath">C# 类型输出目录。</param>
         /// <param name="customTemplateDirs">自定义模板目录列表（可为 null）。</param>
-        /// <param name="supportedLanguagesExportPath">语言列表 JSON 导出路径（工程相对路径，可为 null）。</param>
+        /// <param name="supportedLanguagesExportPath">语言列表数据导出路径（工程相对路径，可为 null）。</param>
         /// <returns>是否导出成功。</returns>
         internal static bool ExportAll(string sourceDirPath, IDataTableSettings settings, string classExportPath, string[] customTemplateDirs, string supportedLanguagesExportPath)
         {
@@ -86,7 +90,15 @@ namespace NovaFramework.Editor
                 classExportPath,
                 customTemplateDirs,
                 supportedLanguagesExportPath,
+                LubanDataFormat.Json,
                 new ExportOperations());
+        }
+
+        internal static bool ExportAll(string sourceDirPath, IDataTableSettings settings, string classExportPath,
+            string[] customTemplateDirs, string supportedLanguagesExportPath, LubanDataFormat dataFormat)
+        {
+            return ExportAll(sourceDirPath, settings, classExportPath, customTemplateDirs,
+                supportedLanguagesExportPath, dataFormat, new ExportOperations());
         }
 
         internal static bool ExportAll(
@@ -95,6 +107,19 @@ namespace NovaFramework.Editor
             string classExportPath,
             string[] customTemplateDirs,
             string supportedLanguagesExportPath,
+            ExportOperations operations)
+        {
+            return ExportAll(sourceDirPath, settings, classExportPath, customTemplateDirs,
+                supportedLanguagesExportPath, LubanDataFormat.Json, operations);
+        }
+
+        internal static bool ExportAll(
+            string sourceDirPath,
+            IDataTableSettings settings,
+            string classExportPath,
+            string[] customTemplateDirs,
+            string supportedLanguagesExportPath,
+            LubanDataFormat dataFormat,
             ExportOperations operations)
         {
             if (!HasValidSettings(sourceDirPath, settings) || operations == null)
@@ -125,20 +150,22 @@ namespace NovaFramework.Editor
                                 settings,
                                 model,
                                 language,
-                                outputApplier.StagingRoot);
+                                outputApplier.StagingRoot,
+                                dataFormat);
                             EditorUtil.Luban.LubanExportContext dataContext = CreateDataContext(
                                 sourceDirPath,
                                 stagedSettings,
                                 confPath,
                                 tablesXmlPath,
-                                topModule);
+                                topModule,
+                                dataFormat);
                             if (!operations.ExportData(dataContext))
                             {
                                 throw new InvalidOperationException(
                                     $"Localization data export failed for language '{language}'.");
                             }
 
-                            ValidateAndRegisterStagedData(stagedSettings, outputApplier);
+                            ValidateAndRegisterStagedData(stagedSettings, outputApplier, dataFormat);
                             dataManifest = dataContext.SchemaManifest ??
                                 throw new InvalidDataException(
                                     $"Localization data export produced no schema manifest for '{language}'.");
@@ -162,7 +189,8 @@ namespace NovaFramework.Editor
                                 tablesXmlPath,
                                 topModule,
                                 stagedCodeRoot,
-                                customTemplateDirs);
+                                customTemplateDirs,
+                                dataFormat);
                             if (!operations.ExportCode(codeContext))
                             {
                                 throw new InvalidOperationException("Localization code export failed.");
@@ -174,20 +202,44 @@ namespace NovaFramework.Editor
                                     "Localization code export produced no schema manifest.");
                             }
 
-                            EditorUtil.Luban.LubanSchemaManifest mapManifest = CreateMapManifest(
-                                dataManifest,
-                                stagedCodeRoot);
-                            operations.GenerateMapProperties(mapManifest, topModule);
-                            ValidateMapOutputs(mapManifest);
+                            if (dataFormat == LubanDataFormat.Json)
+                            {
+                                EditorUtil.Luban.LubanSchemaManifest mapManifest = CreateMapManifest(
+                                    dataManifest,
+                                    stagedCodeRoot);
+                                operations.GenerateMapProperties(mapManifest, topModule);
+                                ValidateMapOutputs(mapManifest);
+                            }
+                            else
+                            {
+                                GenerateMapPropertiesFromSource(
+                                    model,
+                                    codeContext.SchemaManifest,
+                                    stagedCodeRoot,
+                                    topModule);
+                            }
                             RegisterStagedCode(codeContext, stagedCodeRoot, classExportPath, outputApplier);
                         }
 
-                        if (!string.IsNullOrEmpty(supportedLanguagesExportPath))
+                        if (!string.IsNullOrEmpty(supportedLanguagesExportPath) ||
+                            !string.IsNullOrEmpty(classExportPath))
                         {
-                            StageSupportedLanguages(
+                            operations.ExportSupportedLanguages(
+                                sourceDirPath,
+                                tempDir,
                                 model.Languages,
                                 supportedLanguagesExportPath,
+                                classExportPath,
+                                topModule,
+                                dataFormat,
                                 outputApplier);
+                            if (!string.IsNullOrEmpty(supportedLanguagesExportPath))
+                            {
+                                EditorUtil.Luban.DataArtifact.RegisterCounterpartDeletion(
+                                    outputApplier,
+                                    supportedLanguagesExportPath,
+                                    dataFormat);
+                            }
                         }
 
                         RegisterObsoleteLanguageDeletes(model, outputApplier);
@@ -219,7 +271,15 @@ namespace NovaFramework.Editor
                 settings,
                 classExportPath,
                 customTemplateDirs,
+                LubanDataFormat.Json,
                 new ExportOperations());
+        }
+
+        internal static bool ExportCode(string sourceDirPath, IDataTableSettings settings,
+            string classExportPath, string[] customTemplateDirs, LubanDataFormat dataFormat)
+        {
+            return ExportCode(sourceDirPath, settings, classExportPath, customTemplateDirs,
+                dataFormat, new ExportOperations());
         }
 
         internal static bool ExportCode(
@@ -227,6 +287,18 @@ namespace NovaFramework.Editor
             IDataTableSettings settings,
             string classExportPath,
             string[] customTemplateDirs,
+            ExportOperations operations)
+        {
+            return ExportCode(sourceDirPath, settings, classExportPath, customTemplateDirs,
+                LubanDataFormat.Json, operations);
+        }
+
+        internal static bool ExportCode(
+            string sourceDirPath,
+            IDataTableSettings settings,
+            string classExportPath,
+            string[] customTemplateDirs,
+            LubanDataFormat dataFormat,
             ExportOperations operations)
         {
             if (!HasValidSettings(sourceDirPath, settings) ||
@@ -263,7 +335,8 @@ namespace NovaFramework.Editor
                             tablesXmlPath,
                             topModule,
                             stagedCodeRoot,
-                            customTemplateDirs);
+                            customTemplateDirs,
+                            dataFormat);
                         if (!operations.ExportCode(context))
                         {
                             throw new InvalidOperationException("Localization code export failed.");
@@ -276,13 +349,34 @@ namespace NovaFramework.Editor
                         }
 
                         ValidateGeneratedCodeFiles(context.SchemaManifest, stagedCodeRoot);
-                        EditorUtil.Luban.LubanSchemaManifest mapManifest =
-                            CreateStandaloneCodeMapManifest(context.SchemaManifest, model, stagedCodeRoot);
-                        if (mapManifest.Units.Count > 0)
+                        if (dataFormat == LubanDataFormat.Json)
                         {
-                            operations.GenerateMapProperties(mapManifest, topModule);
-                            ValidateMapOutputs(mapManifest);
+                            EditorUtil.Luban.LubanSchemaManifest mapManifest =
+                                CreateStandaloneCodeMapManifest(context.SchemaManifest, model, stagedCodeRoot);
+                            if (mapManifest.Units.Count > 0)
+                            {
+                                operations.GenerateMapProperties(mapManifest, topModule);
+                                ValidateMapOutputs(mapManifest);
+                            }
                         }
+                        else
+                        {
+                            GenerateMapPropertiesFromSource(
+                                model,
+                                context.SchemaManifest,
+                                stagedCodeRoot,
+                                topModule);
+                        }
+
+                        operations.ExportSupportedLanguages(
+                            sourceDirPath,
+                            tempDir,
+                            model.Languages,
+                            null,
+                            classExportPath,
+                            topModule,
+                            dataFormat,
+                            outputApplier);
 
                         RegisterStagedCode(context, stagedCodeRoot, classExportPath, outputApplier);
                         outputApplier.Apply();
@@ -310,9 +404,24 @@ namespace NovaFramework.Editor
             return ExportData(sourceDirPath, settings, new ExportOperations());
         }
 
+        internal static bool ExportData(string sourceDirPath, IDataTableSettings settings,
+            LubanDataFormat dataFormat)
+        {
+            return ExportData(sourceDirPath, settings, dataFormat, new ExportOperations());
+        }
+
         internal static bool ExportData(
             string sourceDirPath,
             IDataTableSettings settings,
+            ExportOperations operations)
+        {
+            return ExportData(sourceDirPath, settings, LubanDataFormat.Json, operations);
+        }
+
+        internal static bool ExportData(
+            string sourceDirPath,
+            IDataTableSettings settings,
+            LubanDataFormat dataFormat,
             ExportOperations operations)
         {
             if (!HasValidSettings(sourceDirPath, settings) || operations == null)
@@ -341,20 +450,22 @@ namespace NovaFramework.Editor
                                 settings,
                                 model,
                                 language,
-                                outputApplier.StagingRoot);
+                                outputApplier.StagingRoot,
+                                dataFormat);
                             EditorUtil.Luban.LubanExportContext context = CreateDataContext(
                                 sourceDirPath,
                                 stagedSettings,
                                 confPath,
                                 tablesXmlPath,
-                                topModule);
+                                topModule,
+                                dataFormat);
                             if (!operations.ExportData(context))
                             {
                                 throw new InvalidOperationException(
                                     $"Localization data export failed for language '{language}'.");
                             }
 
-                            ValidateAndRegisterStagedData(stagedSettings, outputApplier);
+                            ValidateAndRegisterStagedData(stagedSettings, outputApplier, dataFormat);
                         }
 
                         RegisterObsoleteLanguageDeletes(model, outputApplier);
@@ -378,7 +489,8 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 独立导出支持语言列表。
         /// </summary>
-        internal static bool ExportSupportedLanguages(string sourceDirPath, string exportPath)
+        internal static bool ExportSupportedLanguages(string sourceDirPath, string exportPath,
+            LubanDataFormat dataFormat = LubanDataFormat.Json)
         {
             if (string.IsNullOrEmpty(sourceDirPath) || string.IsNullOrEmpty(exportPath))
             {
@@ -397,6 +509,7 @@ namespace NovaFramework.Editor
                 sourceDirPath,
                 exportPath,
                 OrderLanguages(allLanguages),
+                dataFormat,
                 new ExportOperations());
         }
 
@@ -404,6 +517,17 @@ namespace NovaFramework.Editor
             string sourceDirPath,
             string exportPath,
             IReadOnlyList<string> languages,
+            ExportOperations operations)
+        {
+            return ExportSupportedLanguages(sourceDirPath, exportPath, languages,
+                LubanDataFormat.Json, operations);
+        }
+
+        internal static bool ExportSupportedLanguages(
+            string sourceDirPath,
+            string exportPath,
+            IReadOnlyList<string> languages,
+            LubanDataFormat dataFormat,
             ExportOperations operations)
         {
             if (string.IsNullOrEmpty(sourceDirPath) ||
@@ -427,7 +551,19 @@ namespace NovaFramework.Editor
                         using var outputApplier = new EditorUtil.FileSystem.OutputApplier(tempDir);
                         var ordered = new List<string>(languages);
                         ordered.Sort(StringComparer.Ordinal);
-                        StageSupportedLanguages(ordered, exportPath, outputApplier);
+                        operations.ExportSupportedLanguages(
+                            sourceDirPath,
+                            tempDir,
+                            ordered,
+                            exportPath,
+                            null,
+                            operations.GetTopModule(),
+                            dataFormat,
+                            outputApplier);
+                        EditorUtil.Luban.DataArtifact.RegisterCounterpartDeletion(
+                            outputApplier,
+                            exportPath,
+                            dataFormat);
                         outputApplier.Apply();
                         return true;
                     }
@@ -449,7 +585,8 @@ namespace NovaFramework.Editor
             IDataTableSettings original,
             LocalizationExcelPreFilter.SourceModel model,
             string language,
-            string stagingRoot)
+            string stagingRoot,
+            LubanDataFormat dataFormat = LubanDataFormat.Json)
         {
             var units = new List<StagedUnitSetting>(model.Units.Count);
             foreach (LocalizationExcelPreFilter.SourceUnit sourceUnit in model.Units)
@@ -458,7 +595,7 @@ namespace NovaFramework.Editor
                     stagingRoot,
                     "data",
                     language,
-                    sourceUnit.RelativeStem + ".json");
+                    sourceUnit.RelativeStem + (dataFormat == LubanDataFormat.Binary ? ".bytes" : ".json"));
                 string finalPath = sourceUnit.Setting.DatasExportPath.Replace("{0}", language);
                 string lubanInputPath = IOPath.Combine(
                         c_TempDirName,
@@ -507,7 +644,8 @@ namespace NovaFramework.Editor
             IDataTableSettings settings,
             string confPath,
             string tablesXmlPath,
-            string topModule)
+            string topModule,
+            LubanDataFormat dataFormat)
         {
             return new EditorUtil.Luban.LubanExportContext
             {
@@ -518,6 +656,7 @@ namespace NovaFramework.Editor
                 TopModule = topModule,
                 TablesXmlPath = tablesXmlPath,
                 Settings = settings,
+                DataFormat = dataFormat,
             };
         }
 
@@ -528,7 +667,8 @@ namespace NovaFramework.Editor
             string tablesXmlPath,
             string topModule,
             string stagedCodeRoot,
-            string[] customTemplateDirs)
+            string[] customTemplateDirs,
+            LubanDataFormat dataFormat)
         {
             return new EditorUtil.Luban.LubanExportContext
             {
@@ -541,12 +681,14 @@ namespace NovaFramework.Editor
                 CustomTemplateDirs = customTemplateDirs,
                 TablesXmlPath = tablesXmlPath,
                 Settings = settings,
+                DataFormat = dataFormat,
             };
         }
 
         private static void ValidateAndRegisterStagedData(
             StagedSettings stagedSettings,
-            EditorUtil.FileSystem.OutputApplier outputApplier)
+            EditorUtil.FileSystem.OutputApplier outputApplier,
+            LubanDataFormat dataFormat)
         {
             foreach (StagedUnitSetting unit in stagedSettings.StagedUnits)
             {
@@ -556,19 +698,26 @@ namespace NovaFramework.Editor
                         $"Localization staged data file was not produced: {unit.DatasExportPath}");
                 }
 
-                try
+                if (dataFormat == LubanDataFormat.Json)
                 {
-                    JObject.Parse(File.ReadAllText(unit.DatasExportPath, s_Utf8NoBom));
-                }
-                catch (Exception exception) when (
-                    exception is Newtonsoft.Json.JsonException || exception is IOException)
-                {
-                    throw new InvalidDataException(
-                        $"Localization staged data file is invalid: {unit.DatasExportPath}",
-                        exception);
+                    try
+                    {
+                        JObject.Parse(File.ReadAllText(unit.DatasExportPath, s_Utf8NoBom));
+                    }
+                    catch (Exception exception) when (
+                        exception is Newtonsoft.Json.JsonException || exception is IOException)
+                    {
+                        throw new InvalidDataException(
+                            $"Localization staged data file is invalid: {unit.DatasExportPath}",
+                            exception);
+                    }
                 }
 
                 outputApplier.AddReplacement(unit.DatasExportPath, unit.FinalDatasExportPath);
+                EditorUtil.Luban.DataArtifact.RegisterCounterpartDeletion(
+                    outputApplier,
+                    unit.FinalDatasExportPath,
+                    dataFormat);
             }
         }
 
@@ -806,6 +955,57 @@ namespace NovaFramework.Editor
             }
         }
 
+        private static void GenerateMapPropertiesFromSource(
+            LocalizationExcelPreFilter.SourceModel model,
+            EditorUtil.Luban.LubanSchemaManifest manifest,
+            string stagedCodeRoot,
+            string topModule)
+        {
+            var keysBySheet = new Dictionary<string, IReadOnlyList<KeyValuePair<string, string>>>(StringComparer.Ordinal);
+            foreach (LocalizationExcelPreFilter.SourceUnit unit in model.Units)
+            {
+                foreach (LocalizationExcelPreFilter.SourceSheet sheet in unit.Sheets)
+                {
+                    var keys = new List<KeyValuePair<string, string>>();
+                    for (int rowIndex = 4; rowIndex < sheet.Rows.Count; rowIndex++)
+                    {
+                        IReadOnlyList<string> row = sheet.Rows[rowIndex];
+                        if (row == null || sheet.NameColumnIndex >= row.Count)
+                        {
+                            continue;
+                        }
+                        string key = row[sheet.NameColumnIndex]?.Trim();
+                        if (!IsValidIdentifier(key) || key.StartsWith("#", StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+                        string desc = sheet.DescColumnIndex >= 0 && sheet.DescColumnIndex < row.Count
+                            ? row[sheet.DescColumnIndex]
+                            : string.Empty;
+                        keys.Add(new KeyValuePair<string, string>(key, desc));
+                    }
+                    keysBySheet[sheet.Name] = keys;
+                }
+            }
+
+            foreach (EditorUtil.Luban.LubanSchemaUnit unit in manifest.Units)
+            {
+                foreach (EditorUtil.Luban.LubanSchemaTable table in unit.Tables)
+                {
+                    if (!keysBySheet.TryGetValue(table.ValueType, out IReadOnlyList<KeyValuePair<string, string>> keys))
+                    {
+                        continue;
+                    }
+                    EditorUtil.Luban.MapPropGen.GenerateFromSourceKeys(
+                        IOPath.Combine(stagedCodeRoot, table.Name + ".cs"),
+                        table.Name,
+                        table.ValueType,
+                        topModule,
+                        keys);
+                }
+            }
+        }
+
         private static void RegisterStagedCode(
             EditorUtil.Luban.LubanExportContext context,
             string stagedCodeRoot,
@@ -818,20 +1018,6 @@ namespace NovaFramework.Editor
                 stagedCodeRoot,
                 classExportPath,
                 true);
-        }
-
-        private static void StageSupportedLanguages(
-            IReadOnlyList<string> languages,
-            string exportPath,
-            EditorUtil.FileSystem.OutputApplier outputApplier)
-        {
-            string stagedPath = IOPath.Combine(
-                outputApplier.StagingRoot,
-                "metadata",
-                "supported-languages.json");
-            Directory.CreateDirectory(IOPath.GetDirectoryName(stagedPath));
-            File.WriteAllText(stagedPath, Util.Json.Serialize(languages), s_Utf8NoBom);
-            outputApplier.AddReplacement(stagedPath, EditorUtil.FileSystem.GetProjectFullPath(exportPath));
         }
 
         private static bool IsValidIdentifier(string value)

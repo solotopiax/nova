@@ -25,6 +25,7 @@ namespace NovaFramework.Runtime
         /// Luban Tables 类名称（与 Luban 导出配置中的 manager 参数一致）。
         /// </summary>
         private const string c_TextTablesClassName = "LocalizationTextTables";
+        private const string c_SupportedLanguagesTablesClassName = "LocalizationSupportedLanguagesTables";
 
         /// <summary>
         /// 通用语言解析链：持久化 > 系统 > 回退。
@@ -122,16 +123,6 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            Func<string, JArray> loader = key =>
-            {
-                if (m_TextDataPersistCache.DataMap.TryGetValue(key, out object value) && value is JArray jArray)
-                {
-                    return jArray;
-                }
-                Log.Warning(LogTag.Localization, "文本数据缓存中未找到数据：{0}", key);
-                return new JArray();
-            };
-
             IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
             if (configManager == null)
             {
@@ -139,7 +130,11 @@ namespace NovaFramework.Runtime
                 return;
             }
             string namespace_ = configManager.Namespace;
-            Dictionary<Type, ITable> tables = LubanTablesLoader.Load(c_TextTablesClassName, namespace_, loader);
+            Dictionary<Type, ITable> tables = BuildTablesFromCache(
+                c_TextTablesClassName,
+                namespace_,
+                m_TextDataPersistCache,
+                "文本");
             if (tables == null || tables.Count == 0)
             {
                 Log.Warning(LogTag.Localization, "LubanTablesLoader 未能构建任何文本表对象。");
@@ -244,7 +239,8 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                tasks.Add(new LubanDataReceiver(fontDataCache, unit, loadFunc, releaseFunc).ReadDataAssetAsync(unit.AssetLocation));
+                tasks.Add(CreateDataReceiver(fontDataCache, unit, loadFunc, releaseFunc)
+                    .ReadDataAssetAsync(unit.AssetLocation));
             }
 
             if (tasks.Count > 0)
@@ -297,14 +293,15 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                new LubanDataReceiver(fontDataCache, unit, syncLoadFunc, releaseFunc).ReadDataAssetSync(unit.AssetLocation);
+                CreateDataReceiver(fontDataCache, unit, syncLoadFunc, releaseFunc)
+                    .ReadDataAssetSync(unit.AssetLocation);
             }
 
             BuildFontTablesFromCache(fontDataCache);
         }
 
         /// <summary>
-        /// 异步加载语言列表 JSON（从 AB 资源），解析为 Language 枚举填充 m_SupportedLanguages。
+        /// 异步加载 Luban 支持语言表。
         /// </summary>
         /// <returns>是否加载成功。</returns>
         private async UniTask<bool> LoadSupportedLanguagesAsync()
@@ -314,18 +311,23 @@ namespace NovaFramework.Runtime
                 return true;
             }
 
-            string json = await LoadTextAssetAsync(m_Config.SupportedLanguagesAssetLocation);
+            var cache = new LubanDataCache();
+            LocalizationFontUnitSetting unit = CreateSupportedLanguagesUnit();
+            bool loaded = await CreateDataReceiver(cache, unit, LoadAssetAsync, ReleaseAsset)
+                .ReadDataAssetAsync(unit.AssetLocation);
             if (m_Config == null || m_AssetManager == null)
             {
                 return false;
             }
-
-            ParseSupportedLanguagesJson(json);
-            return true;
+            if (loaded && BuildSupportedLanguagesFromCache(cache))
+            {
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
-        /// 同步加载语言列表 JSON（从 AB 资源），解析为 Language 枚举填充 m_SupportedLanguages。
+        /// 同步加载 Luban 支持语言表。
         /// </summary>
         private void LoadSupportedLanguagesSync()
         {
@@ -334,8 +336,14 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            string json = LoadTextAssetSync(m_Config.SupportedLanguagesAssetLocation);
-            ParseSupportedLanguagesJson(json);
+            var cache = new LubanDataCache();
+            LocalizationFontUnitSetting unit = CreateSupportedLanguagesUnit();
+            bool loaded = CreateDataReceiver(cache, unit, CreateSyncTextAssetLoader(), _ => { })
+                .ReadDataAssetSync(unit.AssetLocation);
+            if (loaded && BuildSupportedLanguagesFromCache(cache))
+            {
+                return;
+            }
         }
 
         /// <summary>
@@ -357,32 +365,71 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 解析语言列表 JSON 字符串，将有效语言名称转换为 Language 枚举并填充到 m_SupportedLanguages。
+        /// 将支持语言资源地址包装为通用 Luban 单元设置，供 JSON/Binary Receiver 共用。
         /// </summary>
-        /// <param name="json">JSON 数组字符串（如 ["ChineseSimplified","English"]）。</param>
-        private void ParseSupportedLanguagesJson(string json)
+        /// <returns>支持语言表单元设置。</returns>
+        private LocalizationFontUnitSetting CreateSupportedLanguagesUnit()
         {
-            if (string.IsNullOrEmpty(json))
+            return new LocalizationFontUnitSetting
             {
-                Log.Warning(LogTag.Localization, "语言列表 JSON 为空，已支持语言列表将保持为空。");
-                return;
-            }
+                AssetLocation = m_Config.SupportedLanguagesAssetLocation,
+            };
+        }
 
-            List<string> languageNames = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(json);
-            if (languageNames == null || languageNames.Count == 0)
+        /// <summary>
+        /// 创建同步 TextAsset 加载委托，并在取得资产后释放对应 Handle。
+        /// </summary>
+        /// <returns>同步资源加载委托。</returns>
+        private DataReceiver.LoadAssetSyncFunc CreateSyncTextAssetLoader()
+        {
+            return assetLocation =>
             {
-                return;
-            }
+                IAssetHandle<TextAsset> handle = m_AssetManager.LoadSync<TextAsset>(assetLocation);
+                TextAsset asset = handle.Asset;
+                handle.Release();
+                return asset;
+            };
+        }
 
-            for (int i = 0; i < languageNames.Count; i++)
+        /// <summary>
+        /// 从格式无关缓存构建支持语言 Tables，并填充运行时支持语言列表。
+        /// </summary>
+        /// <param name="cache">JSON 或 Binary Receiver 产生的 Luban 数据缓存。</param>
+        /// <returns>是否加载到至少一种有效语言。</returns>
+        private bool BuildSupportedLanguagesFromCache(LubanDataCache cache)
+        {
+            IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
+            if (configManager == null || cache.DataMap.Count == 0)
             {
-                if (Enum.TryParse<Language>(languageNames[i], true, out Language lang) && lang != Language.Unspecified)
+                return false;
+            }
+            Dictionary<Type, ITable> tables = BuildTablesFromCache(
+                c_SupportedLanguagesTablesClassName,
+                configManager.Namespace,
+                cache,
+                "支持语言");
+            if (tables == null)
+            {
+                return false;
+            }
+            foreach (ITable table in tables.Values)
+            {
+                if (!(table is ITable<ILocalizationSupportedLanguageRow> typedTable))
                 {
-                    m_SupportedLanguages.Add(lang);
+                    continue;
+                }
+                IReadOnlyList<ILocalizationSupportedLanguageRow> rows = typedTable.DataList;
+                for (int i = 0; i < rows.Count; i++)
+                {
+                    string name = rows[i]?.Name;
+                    if (Enum.TryParse(name, true, out Language language) && language != Language.Unspecified)
+                    {
+                        m_SupportedLanguages.Add(language);
+                    }
                 }
             }
-
-            Log.Debug(LogTag.Localization, "已加载 {0} 种支持语言。", m_SupportedLanguages.Count);
+            Log.Debug(LogTag.Localization, "已从 Luban 表加载 {0} 种支持语言。", m_SupportedLanguages.Count);
+            return m_SupportedLanguages.Count > 0;
         }
 
         /// <summary>
@@ -401,16 +448,6 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            Func<string, JArray> loader = key =>
-            {
-                if (fontDataCache.DataMap.TryGetValue(key, out object value) && value is JArray jArray)
-                {
-                    return jArray;
-                }
-                Log.Warning(LogTag.Localization, "字体数据缓存中未找到数据：{0}", key);
-                return new JArray();
-            };
-
             IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
             if (configManager == null)
             {
@@ -418,7 +455,11 @@ namespace NovaFramework.Runtime
                 return;
             }
             string namespace_ = configManager.Namespace;
-            Dictionary<Type, ITable> tables = LubanTablesLoader.Load(c_FontTablesClassName, namespace_, loader);
+            Dictionary<Type, ITable> tables = BuildTablesFromCache(
+                c_FontTablesClassName,
+                namespace_,
+                fontDataCache,
+                "字体");
             if (tables == null || tables.Count == 0)
             {
                 Log.Warning(LogTag.Localization, "LubanTablesLoader 未能构建任何字体表对象。");
@@ -557,17 +598,87 @@ namespace NovaFramework.Runtime
                 }
 
                 string assetLocation = Txt.Format(unit.AssetLocation, languageName);
-                string content = LoadTextAssetSync(assetLocation);
-                if (string.IsNullOrEmpty(content))
-                {
-                    continue;
-                }
-
-                LubanDataReceiver receiver = new LubanDataReceiver(tempCache, unit, syncLoadFunc, ReleaseAsset);
-                receiver.OnParseDataAsset(content);
+                DataReceiver receiver = CreateDataReceiver(tempCache, unit, syncLoadFunc, _ => { });
+                receiver.ReadDataAssetSync(assetLocation);
             }
 
             return CommitLanguageTextCache(tempCache);
+        }
+
+        /// <summary>
+        /// 按当前表格数据格式创建异步 JSON 或 Binary Receiver。
+        /// </summary>
+        /// <param name="cache">目标数据缓存。</param>
+        /// <param name="unit">数据表单元设置。</param>
+        /// <param name="loadFunc">异步资源加载委托。</param>
+        /// <param name="releaseFunc">资源释放委托。</param>
+        /// <returns>与当前格式匹配的数据接收器。</returns>
+        private DataReceiver CreateDataReceiver(
+            LubanDataCache cache,
+            IDataTableUnitSetting unit,
+            DataReceiver.LoadAssetAsyncFunc loadFunc,
+            DataReceiver.ReleaseAssetAction releaseFunc)
+        {
+            return m_Config.DataFormat == LubanDataFormat.Binary
+                ? new LubanBinaryDataReceiver(cache, unit, loadFunc, releaseFunc)
+                : new LubanDataReceiver(cache, unit, loadFunc, releaseFunc);
+        }
+
+        /// <summary>
+        /// 按当前表格数据格式创建同步 JSON 或 Binary Receiver。
+        /// </summary>
+        /// <param name="cache">目标数据缓存。</param>
+        /// <param name="unit">数据表单元设置。</param>
+        /// <param name="loadFunc">同步资源加载委托。</param>
+        /// <param name="releaseFunc">资源释放委托。</param>
+        /// <returns>与当前格式匹配的数据接收器。</returns>
+        private DataReceiver CreateDataReceiver(
+            LubanDataCache cache,
+            IDataTableUnitSetting unit,
+            DataReceiver.LoadAssetSyncFunc loadFunc,
+            DataReceiver.ReleaseAssetAction releaseFunc)
+        {
+            return m_Config.DataFormat == LubanDataFormat.Binary
+                ? new LubanBinaryDataReceiver(cache, unit, loadFunc, releaseFunc)
+                : new LubanDataReceiver(cache, unit, loadFunc, releaseFunc);
+        }
+
+        /// <summary>
+        /// 按当前表格数据格式从缓存构建 Luban Tables，避免 JSON 委托进入 Binary 分支。
+        /// </summary>
+        /// <param name="tablesClassName">Luban Tables 类型短名称。</param>
+        /// <param name="namespace_">生成代码所在命名空间。</param>
+        /// <param name="cache">Receiver 产生的格式相关缓存。</param>
+        /// <param name="dataKind">用于诊断日志的数据类别。</param>
+        /// <returns>表类型到表实例的映射；构建失败时返回 null。</returns>
+        private Dictionary<Type, ITable> BuildTablesFromCache(
+            string tablesClassName,
+            string namespace_,
+            LubanDataCache cache,
+            string dataKind)
+        {
+            if (m_Config.DataFormat == LubanDataFormat.Binary)
+            {
+                return LubanTablesLoader.LoadBinary(tablesClassName, namespace_, key =>
+                {
+                    if (cache.DataMap.TryGetValue(key, out object value) && value is byte[] bytes)
+                    {
+                        return bytes;
+                    }
+                    throw new InvalidOperationException($"{dataKind} Binary 数据缓存中未找到表：{key}");
+                });
+            }
+
+            Func<string, JArray> loader = key =>
+            {
+                if (cache.DataMap.TryGetValue(key, out object value) && value is JArray array)
+                {
+                    return array;
+                }
+                Log.Warning(LogTag.Localization, "{0} JSON 数据缓存中未找到表：{1}", dataKind, key);
+                return new JArray();
+            };
+            return LubanTablesLoader.Load(tablesClassName, namespace_, loader);
         }
 
         /// <summary>
@@ -591,7 +702,7 @@ namespace NovaFramework.Runtime
                 }
 
                 string assetLocation = Txt.Format(unit.AssetLocation, languageName);
-                LubanDataReceiver receiver = new LubanDataReceiver(tempCache, unit, LoadAssetAsync, ReleaseAsset);
+                DataReceiver receiver = CreateDataReceiver(tempCache, unit, LoadAssetAsync, ReleaseAsset);
                 tasks.Add(receiver.ReadDataAssetAsync(assetLocation));
             }
 

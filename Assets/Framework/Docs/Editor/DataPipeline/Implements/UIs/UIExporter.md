@@ -4,7 +4,7 @@
 
 **命名空间**：`NovaFramework.Editor`
 
-`UIExporter` 是 UI 模块的内部导出编排器。它校验 UISettings 和 UI Excel，构造 Luban 暂存输出，验证完整性后直接通过通用 `FileSystem.OutputApplier` 发布正式 JSON/C# 文件。
+`UIExporter` 是 UI 模块的内部导出编排器。它校验 UISettings 和 UI Excel，构造 Luban 暂存输出，验证完整性后直接通过通用 `FileSystem.OutputApplier` 发布当前格式数据/C# 文件。
 
 UI Excel 已经采用 Luban 原生表结构，因此不需要 Localization 的 `ExcelPreFilter`。UI 专用校验由 `UIExporter.UIExcelValidator` 完成，不额外增加没有结构投影职责的脚本。
 
@@ -36,7 +36,7 @@ internal static bool ExportDataForFile(...);
 校验 Unit、输出路径和 Asset 地址
   -> 校验全部非 # Sheet 的必需列、类型、值和 Name 唯一性
   -> 将数据与代码输出改写到源目录 _temp/_publish
-  -> Luban 生成 JSON、C# 和 Map 属性
+  -> Luban 生成当前格式数据、C# 和 Map 属性
   -> 验证暂存产物并登记替换、精确删除项
   -> FileSystem.OutputApplier.Apply()
   -> finally 清理 _temp 并刷新 AssetDatabase
@@ -50,7 +50,7 @@ internal static bool ExportDataForFile(...);
 
 - UI Settings、Excel 契约和输出路径校验。
 - Luban 导出上下文及暂存路径构造。
-- JSON、C#、Map 和预期文件完整性验证。
+- 当前格式数据、C#、Map 和预期文件完整性验证。
 - 决定本批次需要替换或删除的正式文件。
 
 不负责：
@@ -61,7 +61,7 @@ internal static bool ExportDataForFile(...);
 
 ## 失败语义
 
-- 应用前失败：正式 JSON/C# 保持不变。
+- 应用前失败：正式数据/C# 保持不变。
 - 应用中失败：`FileSystem.OutputApplier` 按逆序恢复已执行项。
 - 全量代码清理只删除 Profile、Source 和正文 Hash 均匹配的过期 `.cs` 及其 `.meta`；其余文件保留并报警。
 - `_temp`、`_publish`、备份和目标旁 `.tmp` 都是短生命周期临时内容。

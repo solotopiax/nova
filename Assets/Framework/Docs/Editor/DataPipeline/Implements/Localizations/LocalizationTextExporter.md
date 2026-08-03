@@ -40,13 +40,16 @@ internal static bool ExportSupportedLanguages(...);
   -> Luban 生成各语言数据到 _temp/_publish
   -> Luban 生成代码到 _temp/_publish/code~
   -> 生成并验证 Map 属性
-  -> 暂存支持语言列表
+  -> 将支持语言临时 CSV 交给独立 Luban target 导出
+  -> 登记同名反格式数据及其 .meta 删除项
   -> 登记过期语言文件的精确删除项
   -> FileSystem.OutputApplier.Apply()
   -> finally 清理 _temp 并刷新 AssetDatabase
 ```
 
 完整导出必须先验证所有暂存产物，再调用 `Apply()`。因此预过滤、Luban、代码或 Map 阶段失败时，不会修改正式产物。
+
+文本数据和支持语言列表采用 JSON/Binary 二选一发布。成功生成 `.json` 时，同一事务删除同名 `.bytes` 及其 `.meta`；成功生成 `.bytes` 时反向删除同名 `.json` 及其 `.meta`。仅代码导出不改变正式数据文件。
 
 ## 职责边界
 
@@ -66,7 +69,7 @@ internal static bool ExportSupportedLanguages(...);
 
 ## 失败语义
 
-- `Apply()` 前失败：正式 JSON、C#、Map 和支持语言列表保持不变。
+- `Apply()` 前失败：正式数据、C#、Map 和支持语言列表保持不变。
 - `Apply()` 中失败：由 `FileSystem.OutputApplier` 逆序恢复已经执行的替换和删除。
 - 回滚也失败：异常继续向公共门面传播并记录，正式目录可能处于部分恢复状态。
 - `finally` 始终尝试清理 `_temp`；清理失败不会被静默忽略。

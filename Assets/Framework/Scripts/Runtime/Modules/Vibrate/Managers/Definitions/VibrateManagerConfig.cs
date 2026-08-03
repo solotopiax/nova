@@ -18,6 +18,11 @@ namespace NovaFramework.Runtime
     public class VibrateManagerConfig
     {
         /// <summary>
+        /// Emphasis 与 Custom 共用的表格数据格式。
+        /// </summary>
+        public LubanDataFormat DataFormat = LubanDataFormat.Json;
+
+        /// <summary>
         /// Emphasis 振动单元设置列表。
         /// </summary>
         public List<VibrateUnitSetting> EmphasisUnitsSettings;

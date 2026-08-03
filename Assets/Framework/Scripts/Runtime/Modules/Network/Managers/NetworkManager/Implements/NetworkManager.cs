@@ -39,6 +39,7 @@ namespace NovaFramework.Runtime
         /// <param name="config">配置信息。</param>
         public override void Initialize(NetworkManagerConfig config)
         {
+            m_DataFormat = config.DataFormat;
             m_HostKeyUnitSettings = config.HostKeyUnitSettings ?? new List<HostKeyUnitSetting>();
             m_NetCmdUnitSettings = config.NetCmdUnitSettings ?? new List<NetCmdUnitSetting>();
             m_AssetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
@@ -73,7 +74,8 @@ namespace NovaFramework.Runtime
                 {
                     continue;
                 }
-                tasks.Add(new LubanDataReceiver(dataCache, unit, loadFunc, releaseFunc).ReadDataAssetAsync(unit.AssetLocation));
+                tasks.Add(LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, loadFunc, releaseFunc)
+                    .ReadDataAssetAsync(unit.AssetLocation));
             }
 
             for (int i = 0; i < m_NetCmdUnitSettings.Count; i++)
@@ -83,7 +85,8 @@ namespace NovaFramework.Runtime
                 {
                     continue;
                 }
-                tasks.Add(new LubanDataReceiver(dataCache, unit, loadFunc, releaseFunc).ReadDataAssetAsync(unit.AssetLocation));
+                tasks.Add(LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, loadFunc, releaseFunc)
+                    .ReadDataAssetAsync(unit.AssetLocation));
             }
 
             if (tasks.Count > 0)
@@ -133,7 +136,8 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                bool success = new LubanDataReceiver(dataCache, unit, syncLoadFunc, releaseFunc).ReadDataAssetSync(unit.AssetLocation);
+                bool success = LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, syncLoadFunc, releaseFunc)
+                    .ReadDataAssetSync(unit.AssetLocation);
                 if (!success)
                 {
                     return false;
@@ -148,7 +152,8 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                bool success = new LubanDataReceiver(dataCache, unit, syncLoadFunc, releaseFunc).ReadDataAssetSync(unit.AssetLocation);
+                bool success = LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, syncLoadFunc, releaseFunc)
+                    .ReadDataAssetSync(unit.AssetLocation);
                 if (!success)
                 {
                     return false;

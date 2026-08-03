@@ -241,7 +241,7 @@ PrefabInstance:
         Culture=neutral, PublicKeyToken=null
       objectReference: {fileID: 0}
     - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
-      propertyPath: m_SupportedLanguagesJsonExportPath
+      propertyPath: m_SupportedLanguagesDataExportPath
       value: Assets/Samples/GameSaveDemo/Jsons/LocalizationSupportedLanguages.json
       objectReference: {fileID: 0}
     - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}

@@ -7,7 +7,7 @@
  * created:   2026/7/21
  * descrip:   Network 专用导出编排：预处理 Excel，暂存 Luban 产物，验证后批量发布
  * input:     HostKeySettings/NetCmdSettings、可选单元目标及 ConfigRuntime DevelopMode
- * output:    HostKeys/NetCmds JSON 与 Luban C# 类型文件
+ * output:    HostKeys/NetCmds 表格数据与 Luban C# 类型文件
  * boundary:  解释 Network 导出契约；文件替换与失败回滚复用 FileSystem.OutputApplier
  * failure:   配置、预处理、生成或发布失败时返回 false，正式产物保持或回滚到导出前状态
  ***************************************************************/
@@ -45,9 +45,25 @@ namespace NovaFramework.Editor
             internal Action RefreshAssetDatabase = AssetDatabase.Refresh;
         }
 
+        /// <summary>
+        /// 以默认 JSON 格式导出 HostKey 数据与代码，保留原有内部调用契约。
+        /// </summary>
         internal static bool ExportHostKeys(
             HostKeySettings settings,
             ExportMode mode,
+            HostKeyUnitSetting targetUnit = null,
+            ExportOperations operations = null)
+        {
+            return ExportHostKeys(settings, mode, LubanDataFormat.Json, targetUnit, operations);
+        }
+
+        /// <summary>
+        /// 按指定格式导出 HostKey 数据与代码。
+        /// </summary>
+        internal static bool ExportHostKeys(
+            HostKeySettings settings,
+            ExportMode mode,
+            LubanDataFormat dataFormat,
             HostKeyUnitSetting targetUnit = null,
             ExportOperations operations = null)
         {
@@ -64,12 +80,28 @@ namespace NovaFramework.Editor
                 return false;
             }
 
-            return ExecuteHostKeys(settings, mode, targetUnit, classExportPath, developMode.Value, operations);
+            return ExecuteHostKeys(settings, mode, dataFormat, targetUnit, classExportPath, developMode.Value, operations);
         }
 
+        /// <summary>
+        /// 以默认 JSON 格式导出 NetCmd 数据与代码，保留原有内部调用契约。
+        /// </summary>
         internal static bool ExportNetCmds(
             NetCmdSettings settings,
             ExportMode mode,
+            NetCmdUnitSetting targetUnit = null,
+            ExportOperations operations = null)
+        {
+            return ExportNetCmds(settings, mode, LubanDataFormat.Json, targetUnit, operations);
+        }
+
+        /// <summary>
+        /// 按指定格式导出 NetCmd 数据与代码。
+        /// </summary>
+        internal static bool ExportNetCmds(
+            NetCmdSettings settings,
+            ExportMode mode,
+            LubanDataFormat dataFormat,
             NetCmdUnitSetting targetUnit = null,
             ExportOperations operations = null)
         {
@@ -79,12 +111,13 @@ namespace NovaFramework.Editor
                 return false;
             }
 
-            return ExecuteNetCmds(settings, mode, targetUnit, classExportPath, operations);
+            return ExecuteNetCmds(settings, mode, dataFormat, targetUnit, classExportPath, operations);
         }
 
         private static bool ExecuteHostKeys(
             HostKeySettings settings,
             ExportMode mode,
+            LubanDataFormat dataFormat,
             HostKeyUnitSetting targetUnit,
             string formalClassExportPath,
             DevelopMode developMode,
@@ -101,6 +134,7 @@ namespace NovaFramework.Editor
                     settings,
                     applier.StagingRoot,
                     stagedCodeDir,
+                    dataFormat,
                     out Dictionary<HostKeyUnitSetting, HostKeyUnitSetting> stagedUnits);
                 if (mode == ExportMode.Code)
                 {
@@ -113,6 +147,7 @@ namespace NovaFramework.Editor
                     settings.SourceDirPath,
                     stagedSettings,
                     EditorUtil.Luban.LubanExportProfiles.NetworkHostKey);
+                context.DataFormat = dataFormat;
                 context.RegionUnits = stagedSettings.HostKeyUnits;
                 context.TargetUnit = stagedTarget;
                 context.SchemaValueTypeScanner = CreateProjectedValueTypeScanner(tempRoot);
@@ -152,6 +187,7 @@ namespace NovaFramework.Editor
         private static bool ExecuteNetCmds(
             NetCmdSettings settings,
             ExportMode mode,
+            LubanDataFormat dataFormat,
             NetCmdUnitSetting targetUnit,
             string formalClassExportPath,
             ExportOperations operations)
@@ -167,6 +203,7 @@ namespace NovaFramework.Editor
                     settings,
                     applier.StagingRoot,
                     stagedCodeDir,
+                    dataFormat,
                     out Dictionary<NetCmdUnitSetting, NetCmdUnitSetting> stagedUnits);
                 if (mode == ExportMode.Code)
                 {
@@ -179,6 +216,7 @@ namespace NovaFramework.Editor
                     settings.SourceDirPath,
                     stagedSettings,
                     EditorUtil.Luban.LubanExportProfiles.NetworkCmd);
+                context.DataFormat = dataFormat;
                 context.RegionUnits = stagedSettings.NetCmdUnits;
                 context.TargetUnit = stagedTarget;
                 context.SchemaValueTypeScanner = CreateProjectedValueTypeScanner(tempRoot);
@@ -233,6 +271,7 @@ namespace NovaFramework.Editor
             HostKeySettings settings,
             string stagingRoot,
             string stagedCodeDir,
+            LubanDataFormat dataFormat,
             out Dictionary<HostKeyUnitSetting, HostKeyUnitSetting> stagedUnits)
         {
             var result = new HostKeySettings
@@ -248,7 +287,7 @@ namespace NovaFramework.Editor
                 var staged = new HostKeyUnitSetting
                 {
                     SourcePath = source.SourcePath,
-                    DatasExportPath = GetStagedDataPath(stagingRoot, source.DatasExportPath, i),
+                    DatasExportPath = GetStagedDataPath(stagingRoot, i, dataFormat),
                     ClassesExportPath = stagedCodeDir,
                     AssetLocation = source.AssetLocation,
                 };
@@ -262,6 +301,7 @@ namespace NovaFramework.Editor
             NetCmdSettings settings,
             string stagingRoot,
             string stagedCodeDir,
+            LubanDataFormat dataFormat,
             out Dictionary<NetCmdUnitSetting, NetCmdUnitSetting> stagedUnits)
         {
             var result = new NetCmdSettings
@@ -277,7 +317,7 @@ namespace NovaFramework.Editor
                 var staged = new NetCmdUnitSetting
                 {
                     SourcePath = source.SourcePath,
-                    DatasExportPath = GetStagedDataPath(stagingRoot, source.DatasExportPath, i),
+                    DatasExportPath = GetStagedDataPath(stagingRoot, i, dataFormat),
                     ClassesExportPath = stagedCodeDir,
                     AssetLocation = source.AssetLocation,
                 };
@@ -287,11 +327,17 @@ namespace NovaFramework.Editor
             return result;
         }
 
-        private static string GetStagedDataPath(string stagingRoot, string formalPath, int index)
+        /// <summary>
+        /// 为当前格式构造 Network 数据暂存路径。
+        /// </summary>
+        /// <param name="stagingRoot">输出事务暂存根目录。</param>
+        /// <param name="index">单元序号。</param>
+        /// <param name="dataFormat">Luban 数据格式。</param>
+        /// <returns>带格式对应后缀的暂存路径。</returns>
+        private static string GetStagedDataPath(string stagingRoot, int index, LubanDataFormat dataFormat)
         {
-            string fileName = string.IsNullOrWhiteSpace(formalPath)
-                ? index.ToString("D4") + ".json"
-                : IOPath.GetFileName(formalPath);
+            string fileName = index.ToString("D4") +
+                              (dataFormat == LubanDataFormat.Binary ? ".bytes" : ".json");
             return IOPath.Combine(stagingRoot, "data", index.ToString("D4") + "_" + fileName);
         }
 
@@ -337,6 +383,8 @@ namespace NovaFramework.Editor
                         continue;
                     }
                     applier.AddReplacement(stagedUnits[formal].DatasExportPath, formal.DatasExportPath);
+                    EditorUtil.Luban.DataArtifact.RegisterCounterpartDeletion(
+                        applier, formal.DatasExportPath, context.DataFormat);
                 }
             }
 

@@ -61,6 +61,8 @@ namespace NovaFramework.Editor
                 internal static readonly LubanExportProfile NetworkHostKey = Create("network-hostkey", "HostKeyTables");
                 internal static readonly LubanExportProfile LocalizationText = Create("localization-text", "LocalizationTextTables");
                 internal static readonly LubanExportProfile LocalizationFont = Create("localization-font", "LocalizationFontTables");
+                internal static readonly LubanExportProfile LocalizationSupportedLanguages =
+                    Create("localization-supported-languages", "LocalizationSupportedLanguagesTables");
                 internal static readonly LubanExportProfile VibrateEmphasis = Create("vibrate-emphasis", "VibrateEmphasisTables");
                 internal static readonly LubanExportProfile VibrateCustom = Create("vibrate-custom", "VibrateCustomTables");
 
@@ -72,6 +74,7 @@ namespace NovaFramework.Editor
                     NetworkHostKey,
                     LocalizationText,
                     LocalizationFont,
+                    LocalizationSupportedLanguages,
                     VibrateEmphasis,
                     VibrateCustom,
                 };

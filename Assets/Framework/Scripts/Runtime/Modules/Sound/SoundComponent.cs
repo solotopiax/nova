@@ -46,6 +46,7 @@ namespace NovaFramework.Runtime
 
             m_SoundManager.Initialize(new SoundManagerConfig
             {
+                DataFormat = m_Settings.DataFormat,
                 SoundUnitsSettings = m_Settings.SoundUnitsSettings,
                 ParentTransform = transform,
                 AudioMixer = m_AudioMixer,

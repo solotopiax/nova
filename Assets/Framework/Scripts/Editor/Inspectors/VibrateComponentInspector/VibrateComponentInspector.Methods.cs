@@ -27,6 +27,20 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 绘制振动表格数据格式，并同步 Emphasis 与 Custom 的标准数据文件后缀。
+        /// </summary>
+        private void DrawDataFormat()
+        {
+            EditorUtil.Luban.DrawDataFormat(
+                m_DataFormat,
+                "表格数据导出格式：",
+                "Emphasis 和 Custom",
+                m_EmphasisUnitsSettings,
+                m_CustomUnitsSettings);
+            EditorUtil.Draw.Line();
+        }
+
+        /// <summary>
         /// 绘制 Emphasis 振动表格导出区域。
         /// </summary>
         private void DrawEmphasisVibrateExport()

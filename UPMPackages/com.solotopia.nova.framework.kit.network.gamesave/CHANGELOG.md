@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.1.1] - 2026-08-03
+
+### Changed
+
+- GameSaveDemo 同步 Localization 支持语言表与 JSON / Binary 数据格式能力，并将 Framework 最低依赖提升至 `0.6.3`。
+
 ## [0.1.0] - 2026-07-29
 
 ### Changed

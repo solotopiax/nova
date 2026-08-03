@@ -6,6 +6,20 @@
 
 ---
 
+## [0.6.3] - 2026-08-03
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.3]` 节。
+
+### Added
+
+- Framework 的 Localization、Network、Sound、UI 与 Vibrate 专用 Luban 链支持 JSON / Binary 格式选择及对应运行时加载。
+- Localization 新增支持语言表导出与运行时行契约。
+
+### Changed
+
+- 发布 Framework `0.6.3` 与 13 个包含同步 Sample 的 Kit / SDK 包；对应包的 Framework 最低依赖统一提升至 `0.6.3`。
+- `NovaSpark.cs` 固定 Framework `0.6.3`、unity-mcp `v10.1.2`；BestHTTP `0.1.0` 与 EDM `1.2.188` 保持当前最新版本。
+
 ## [0.6.2] - 2026-07-31
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.2]` 节。

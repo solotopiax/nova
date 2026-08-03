@@ -153,6 +153,12 @@ namespace NovaFramework.Editor
                     }
 
                     string normalizedInput = NormalizePath(input);
+                    if (string.Equals(normalizedInput, normalizedInputPath, StringComparison.Ordinal))
+                    {
+                        sheetName = Util.SysIO.Path.GetFileNameWithoutExtension(normalizedInput);
+                        return !string.IsNullOrEmpty(sheetName);
+                    }
+
                     string normalizedDir = normalizedInputPath.TrimEnd('/');
                     if (!normalizedInput.StartsWith(normalizedDir + "/", StringComparison.Ordinal))
                     {

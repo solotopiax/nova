@@ -466,6 +466,7 @@ namespace NovaFramework.Editor
                     sourceDirPath,
                     stagedSettings,
                     EditorUtil.Luban.LubanExportProfiles.UI);
+                context.DataFormat = settings.DataFormat;
                 if (mode != ExportMode.Data)
                 {
                     context.OutputCodeDir = stagedCodeDir;
@@ -535,14 +536,13 @@ namespace NovaFramework.Editor
             string stagedCodeDir,
             out Dictionary<UIUnitSetting, UIUnitSetting> stagedUnits)
         {
-            var stagedSettings = new UISettings();
+            var stagedSettings = new UISettings { DataFormat = settings.DataFormat };
             stagedUnits = new Dictionary<UIUnitSetting, UIUnitSetting>();
             for (int i = 0; i < settings.UIUnitsSettings.Count; i++)
             {
                 UIUnitSetting source = settings.UIUnitsSettings[i];
-                string dataFileName = string.IsNullOrEmpty(source.DatasExportPath)
-                    ? i.ToString("D4") + ".json"
-                    : IOPath.GetFileName(source.DatasExportPath);
+                string dataExtension = settings.DataFormat == LubanDataFormat.Binary ? ".bytes" : ".json";
+                string dataFileName = i.ToString("D4") + dataExtension;
                 var staged = new UIUnitSetting
                 {
                     SourcePath = source.SourcePath,
@@ -598,6 +598,8 @@ namespace NovaFramework.Editor
 
                 UIUnitSetting stagedUnit = stagedUnits[formalUnit];
                 applier.AddReplacement(stagedUnit.DatasExportPath, formalUnit.DatasExportPath);
+                EditorUtil.Luban.DataArtifact.RegisterCounterpartDeletion(
+                    applier, formalUnit.DatasExportPath, formalSettings.DataFormat);
             }
         }
 

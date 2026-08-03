@@ -53,6 +53,7 @@ namespace NovaFramework.Runtime
             m_DestroyMaxNumPerFrame = config.DestroyMaxNumPerFrame;
             m_GroupDepthFactor = config.GroupDepthFactor;
             m_ViewDepthFactor = config.ViewDepthFactor;
+            m_DataFormat = config.DataFormat;
             m_UnitSettings = config.UnitSettings ?? new List<UIUnitSetting>();
             m_SafeAreaProvider = config.SafeAreaProvider ?? new DefaultSafeAreaProvider();
             m_AssetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
@@ -159,7 +160,8 @@ namespace NovaFramework.Runtime
                 {
                     continue;
                 }
-                tasks.Add(new LubanDataReceiver(dataCache, unit, loadFunc, releaseFunc).ReadDataAssetAsync(unit.AssetLocation));
+                tasks.Add(LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, loadFunc, releaseFunc)
+                    .ReadDataAssetAsync(unit.AssetLocation));
             }
 
             if (tasks.Count > 0)
@@ -201,7 +203,8 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                bool success = new LubanDataReceiver(dataCache, unit, syncLoadFunc, releaseFunc).ReadDataAssetSync(unit.AssetLocation);
+                bool success = LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, syncLoadFunc, releaseFunc)
+                    .ReadDataAssetSync(unit.AssetLocation);
                 if (!success)
                 {
                     Log.Error(LogTag.UI, "同步加载 UI 数据失败，资源地址 '{0}'。", unit.AssetLocation);

@@ -40,6 +40,7 @@ namespace NovaFramework.Editor
             m_ManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(ISoundManager)));
 
             m_Settings = serializedObject.FindProperty("m_Settings");
+            m_DataFormat = m_Settings?.FindPropertyRelative("DataFormat");
             m_SourceDirPath = m_Settings?.FindPropertyRelative("SourceDirPath");
             m_SoundUnitsSettings = m_Settings?.FindPropertyRelative("SoundUnitsSettings");
 

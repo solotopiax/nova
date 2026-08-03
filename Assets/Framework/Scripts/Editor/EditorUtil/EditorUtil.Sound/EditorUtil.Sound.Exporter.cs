@@ -216,6 +216,7 @@ namespace NovaFramework.Editor
                             sourceDirPath,
                             stagedSettings,
                             EditorUtil.Luban.LubanExportProfiles.Sound);
+                        context.DataFormat = settings.DataFormat;
                         context.RegionUnits = stagedSettings.SoundUnitsSettings;
                         context.TargetUnit = formalTargetUnit == null ? null : stagedUnits[formalTargetUnit];
                         context.RelevantFileNames = relevantFileNames;
@@ -269,6 +270,7 @@ namespace NovaFramework.Editor
                 {
                     var result = new SoundSettings
                     {
+                        DataFormat = settings.DataFormat,
                         SourceDirPath = sourceDirPath,
                         TemplatePath = settings.TemplatePath,
                     };
@@ -279,7 +281,7 @@ namespace NovaFramework.Editor
                         var staged = new SoundUnitSetting
                         {
                             SourcePath = source.SourcePath,
-                            DatasExportPath = GetStagedDataPath(stagingRoot, source.DatasExportPath, i),
+                            DatasExportPath = GetStagedDataPath(stagingRoot, i, settings.DataFormat),
                             ClassesExportPath = stagedCodeDir,
                             AssetLocation = source.AssetLocation,
                         };
@@ -289,11 +291,20 @@ namespace NovaFramework.Editor
                     return result;
                 }
 
-                private static string GetStagedDataPath(string stagingRoot, string formalPath, int index)
+                /// <summary>
+                /// 为当前格式构造声音数据暂存路径。
+                /// </summary>
+                /// <param name="stagingRoot">输出事务暂存根目录。</param>
+                /// <param name="index">单元序号。</param>
+                /// <param name="dataFormat">Luban 数据格式。</param>
+                /// <returns>带格式对应后缀的暂存路径。</returns>
+                private static string GetStagedDataPath(
+                    string stagingRoot,
+                    int index,
+                    LubanDataFormat dataFormat)
                 {
-                    string fileName = string.IsNullOrWhiteSpace(formalPath)
-                        ? index.ToString("D4") + ".json"
-                        : IOPath.GetFileName(formalPath);
+                    string fileName = index.ToString("D4") +
+                                      (dataFormat == LubanDataFormat.Binary ? ".bytes" : ".json");
                     return IOPath.Combine(stagingRoot, "data", index.ToString("D4") + "_" + fileName);
                 }
 
@@ -335,6 +346,8 @@ namespace NovaFramework.Editor
                             if (!string.IsNullOrWhiteSpace(formal.DatasExportPath))
                             {
                                 applier.AddReplacement(stagedUnits[formal].DatasExportPath, formal.DatasExportPath);
+                                EditorUtil.Luban.DataArtifact.RegisterCounterpartDeletion(
+                                    applier, formal.DatasExportPath, context.DataFormat);
                             }
                         }
                     }

@@ -11,7 +11,6 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace NovaFramework.Runtime
@@ -102,16 +101,6 @@ namespace NovaFramework.Runtime
                 return true;
             }
 
-            Func<string, JArray> loader = key =>
-            {
-                if (dataCache.DataMap.TryGetValue(key, out object value) && value is JArray jArray)
-                {
-                    return jArray;
-                }
-                Log.Warning(LogTag.Sound, "数据缓存中未找到声音数据：{0}", key);
-                return new JArray();
-            };
-
             IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
             if (configManager == null)
             {
@@ -119,7 +108,8 @@ namespace NovaFramework.Runtime
                 return false;
             }
             string namespace_ = configManager.Namespace;
-            Dictionary<Type, ITable> tables = LubanTablesLoader.Load(c_SoundTablesClassName, namespace_, loader);
+            Dictionary<Type, ITable> tables = LubanRuntimeData.LoadTables(
+                m_DataFormat, c_SoundTablesClassName, namespace_, dataCache, LogTag.Sound, "Sound");
             if (tables == null)
             {
                 return false;

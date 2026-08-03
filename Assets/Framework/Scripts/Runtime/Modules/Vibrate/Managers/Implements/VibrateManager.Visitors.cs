@@ -40,6 +40,11 @@ namespace NovaFramework.Runtime
         private List<VibrateUnitSetting> m_CustomUnitsSettings;
 
         /// <summary>
+        /// Emphasis 与 Custom 共用的表格数据格式。
+        /// </summary>
+        private LubanDataFormat m_DataFormat = LubanDataFormat.Json;
+
+        /// <summary>
         /// 组合播放取消令牌源（全局单实例，任何新的组合播放先取消旧的）。
         /// </summary>
         private CancellationTokenSource m_PlayCts;

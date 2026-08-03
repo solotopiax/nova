@@ -63,12 +63,13 @@ namespace NovaFramework.Editor
                 /// <param name="outputCodeDir">生成代码输出目录。</param>
                 /// <param name="customTemplateDirs">自定义模板目录列表（可为 null，使用内置模板）。按优先级排序，Luban 依次查找。</param>
                 /// <returns>是否成功。</returns>
-                public static bool RunCodeGen(string confPath, string targetName, string outputCodeDir, string[] customTemplateDirs)
+                public static bool RunCodeGen(string confPath, string targetName, string outputCodeDir, string[] customTemplateDirs,
+                    LubanDataFormat dataFormat = LubanDataFormat.Json)
                 {
                     StringBuilder args = new StringBuilder();
                     args.Append($"--conf \"{confPath}\"");
                     args.Append($" -t {targetName}");
-                    args.Append(" -c cs-newtonsoft-json");
+                    args.Append($" -c {GetCodeTarget(dataFormat)}");
                     args.Append($" -x outputCodeDir=\"{outputCodeDir}\"");
                     if (customTemplateDirs != null)
                     {
@@ -91,12 +92,13 @@ namespace NovaFramework.Editor
                 /// <param name="targetName">target 名称。</param>
                 /// <param name="outputDataDir">导出数据输出目录。</param>
                 /// <returns>是否成功。</returns>
-                public static bool RunDataExport(string confPath, string targetName, string outputDataDir)
+                public static bool RunDataExport(string confPath, string targetName, string outputDataDir,
+                    LubanDataFormat dataFormat = LubanDataFormat.Json)
                 {
                     StringBuilder args = new StringBuilder();
                     args.Append($"--conf \"{confPath}\"");
                     args.Append($" -t {targetName}");
-                    args.Append(" -d json");
+                    args.Append($" -d {GetDataTarget(dataFormat)}");
                     args.Append($" -x outputDataDir=\"{outputDataDir}\"");
 
                     return RunLuban(args.ToString());
@@ -111,13 +113,14 @@ namespace NovaFramework.Editor
                 /// <param name="outputDataDir">导出数据输出目录。</param>
                 /// <param name="customTemplateDirs">自定义模板目录列表（可为 null，使用内置模板）。按优先级排序，Luban 依次查找。</param>
                 /// <returns>是否成功。</returns>
-                public static bool RunAll(string confPath, string targetName, string outputCodeDir, string outputDataDir, string[] customTemplateDirs)
+                public static bool RunAll(string confPath, string targetName, string outputCodeDir, string outputDataDir,
+                    string[] customTemplateDirs, LubanDataFormat dataFormat = LubanDataFormat.Json)
                 {
                     StringBuilder args = new StringBuilder();
                     args.Append($"--conf \"{confPath}\"");
                     args.Append($" -t {targetName}");
-                    args.Append(" -c cs-newtonsoft-json");
-                    args.Append(" -d json");
+                    args.Append($" -c {GetCodeTarget(dataFormat)}");
+                    args.Append($" -d {GetDataTarget(dataFormat)}");
                     args.Append($" -x outputCodeDir=\"{outputCodeDir}\"");
                     args.Append($" -x outputDataDir=\"{outputDataDir}\"");
                     if (customTemplateDirs != null)
@@ -132,6 +135,16 @@ namespace NovaFramework.Editor
                     }
 
                     return RunLuban(args.ToString());
+                }
+
+                internal static string GetCodeTarget(LubanDataFormat dataFormat)
+                {
+                    return dataFormat == LubanDataFormat.Binary ? "cs-bin" : "cs-newtonsoft-json";
+                }
+
+                internal static string GetDataTarget(LubanDataFormat dataFormat)
+                {
+                    return dataFormat == LubanDataFormat.Binary ? "bin" : "json";
                 }
 
                 /// <summary>

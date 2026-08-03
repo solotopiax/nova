@@ -90,6 +90,11 @@ namespace NovaFramework.Editor
                 /// </summary>
                 public IDataTableUnitSetting TargetUnit;
 
+                /// <summary>
+                /// 本次 Luban 代码与数据格式。默认保持 Newtonsoft JSON 兼容行为。
+                /// </summary>
+                public LubanDataFormat DataFormat = LubanDataFormat.Json;
+
                 internal LubanExportProfile Profile;
                 internal int MinHeaderRowCount = 5;
                 internal LubanSchemaManifest SchemaManifest;
@@ -102,13 +107,13 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// Luban 导出流水线，统一编排 Sync → CLI → Merge → MapPropGen 流程。
+            /// Luban 导出流水线，统一编排 Sync → CLI → 格式专用打包 → 可选 MapPropGen 流程。
             /// <para>供仍采用 Unit/SchemaManifest 的专用模块共用；Table 已使用独立的正式 Luban Project 导出链。</para>
             /// </summary>
             public static class Pipeline
             {
                 /// <summary>
-                /// 导出数据（单文件或全部）：同步配置 → 调用 Luban CLI 导出数据 → 合并 JSON。
+                /// 导出数据（单文件或全部）：同步配置 → 调用 Luban CLI → 按所选格式发布数据。
                 /// </summary>
                 /// <param name="ctx">导出上下文。</param>
                 /// <returns>是否成功。</returns>
@@ -126,25 +131,31 @@ namespace NovaFramework.Editor
                     string tempDir = Util.SysIO.Path.GetFullPath(Util.SysIO.Path.Combine(ctx.SourceDirPath, "_luban_temp_" + Guid.NewGuid().ToString("N").Substring(0, 8)));
                     try
                     {
-                        if (!CliRunner.RunDataExport(ctx.ConfPath, ctx.TargetName, tempDir))
+                        if (!CliRunner.RunDataExport(ctx.ConfPath, ctx.TargetName, tempDir, ctx.DataFormat))
                         {
                             return false;
                         }
 
-                        bool mergeSuccess;
-                        if (ctx.TargetUnit != null)
+                        bool packageSuccess;
+                        if (ctx.DataFormat == LubanDataFormat.Binary)
                         {
-                            mergeSuccess = JsonMerger.MergeForUnit(
+                            packageSuccess = ctx.TargetUnit != null
+                                ? BinaryPackager.PackageForUnit(tempDir, ctx.SchemaManifest.ResolveUnit(ctx.TargetUnit.SourcePath))
+                                : BinaryPackager.PackageAll(tempDir, ctx.SchemaManifest);
+                        }
+                        else if (ctx.TargetUnit != null)
+                        {
+                            packageSuccess = JsonMerger.MergeForUnit(
                                 tempDir,
                                 ctx.TablesXmlPath,
                                 ctx.SchemaManifest.ResolveUnit(ctx.TargetUnit.SourcePath));
                         }
                         else
                         {
-                            mergeSuccess = JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.SchemaManifest);
+                            packageSuccess = JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.SchemaManifest);
                         }
 
-                        if (!mergeSuccess)
+                        if (!packageSuccess)
                         {
                             return false;
                         }
@@ -177,20 +188,20 @@ namespace NovaFramework.Editor
 
                     SyncSchema(ctx);
 
-                    if (!CliRunner.RunCodeGen(ctx.ConfPath, ctx.TargetName, ctx.OutputCodeDir, ctx.CustomTemplateDirs))
+                    if (!CliRunner.RunCodeGen(ctx.ConfPath, ctx.TargetName, ctx.OutputCodeDir, ctx.CustomTemplateDirs, ctx.DataFormat))
                     {
                         return false;
                     }
 
                     Dictionary<string, string> codeFiles = CliRunner.GetGeneratedCodeFiles(ctx.OutputCodeDir, ctx.RelevantFileNames);
-                    Dictionary<string, int> mapPropResults;
-                    if (ctx.TargetUnit != null)
+                    Dictionary<string, int> mapPropResults = new Dictionary<string, int>();
+                    if (ctx.DataFormat == LubanDataFormat.Json && ctx.TargetUnit != null)
                     {
                         mapPropResults = MapPropGen.GenerateForUnit(
                             ctx.SchemaManifest.ResolveUnit(ctx.TargetUnit.SourcePath),
                             ctx.TopModule);
                     }
-                    else
+                    else if (ctx.DataFormat == LubanDataFormat.Json)
                     {
                         mapPropResults = MapPropGen.GenerateAll(ctx.SchemaManifest, ctx.TopModule);
                     }
@@ -200,7 +211,7 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 导出全部（代码 + 数据）：同步配置 → 调用 Luban CLI → 合并 JSON → 生成 Map 属性。
+                /// 导出全部（代码 + 数据）：同步配置 → 调用 Luban CLI → 按所选格式发布 → 生成可用的 Map 属性。
                 /// </summary>
                 /// <param name="ctx">导出上下文。</param>
                 /// <returns>是否成功。</returns>
@@ -222,11 +233,11 @@ namespace NovaFramework.Editor
                         bool success;
                         if (hasCodeDir)
                         {
-                            success = CliRunner.RunAll(ctx.ConfPath, ctx.TargetName, ctx.OutputCodeDir, tempDir, ctx.CustomTemplateDirs);
+                            success = CliRunner.RunAll(ctx.ConfPath, ctx.TargetName, ctx.OutputCodeDir, tempDir, ctx.CustomTemplateDirs, ctx.DataFormat);
                         }
                         else
                         {
-                            success = CliRunner.RunDataExport(ctx.ConfPath, ctx.TargetName, tempDir);
+                            success = CliRunner.RunDataExport(ctx.ConfPath, ctx.TargetName, tempDir, ctx.DataFormat);
                         }
 
                         if (!success)
@@ -235,11 +246,16 @@ namespace NovaFramework.Editor
                         }
 
                         Dictionary<string, int> dataResults = new Dictionary<string, int>();
-                        if (!JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.SchemaManifest, dataResults))
+                        bool packageSuccess = ctx.DataFormat == LubanDataFormat.Binary
+                            ? BinaryPackager.PackageAll(tempDir, ctx.SchemaManifest, dataResults)
+                            : JsonMerger.MergeAll(tempDir, ctx.TablesXmlPath, ctx.SchemaManifest, dataResults);
+                        if (!packageSuccess)
                         {
                             return false;
                         }
-                        Dictionary<string, int> mapPropResults = MapPropGen.GenerateAll(ctx.SchemaManifest, ctx.TopModule);
+                        Dictionary<string, int> mapPropResults = ctx.DataFormat == LubanDataFormat.Json
+                            ? MapPropGen.GenerateAll(ctx.SchemaManifest, ctx.TopModule)
+                            : new Dictionary<string, int>();
 
                         Dictionary<string, string> codeFiles = hasCodeDir ? CliRunner.GetGeneratedCodeFiles(ctx.OutputCodeDir, ctx.RelevantFileNames) : null;
 

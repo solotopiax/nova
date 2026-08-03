@@ -21,7 +21,7 @@ namespace NovaFramework.Editor
     internal static partial class PipifySteps
     {
         /// <summary>
-        /// Step：导出域名表数据（JSON 数据文件），调用 HostKeyExporter.ExportHostKeyData。
+        /// Step：导出域名表数据文件，调用 HostKeyExporter.ExportHostKeyData。
         /// 通过 Helpers.ResolveComponentOnNova 定位 NetworkComponent，
         /// 取 NetworkSettings.HostKeySettings 后调用导出入口；失败时抛出 InvalidOperationException 中断流水线。
         /// </summary>
@@ -31,13 +31,14 @@ namespace NovaFramework.Editor
         internal static UniTask RunExportNetworkHostKeyData(PipifyContext ctx)
         {
             Runtime.NetworkComponent networkComponent = Helpers.ResolveComponentOnNova<Runtime.NetworkComponent>();
-            Runtime.HostKeySettings hostKeySettings = networkComponent.NetworkSettings?.HostKeySettings;
+            Runtime.NetworkSettings networkSettings = networkComponent.NetworkSettings;
+            Runtime.HostKeySettings hostKeySettings = networkSettings?.HostKeySettings;
             if (hostKeySettings == null)
             {
                 throw new InvalidOperationException("[Pipify] NetworkComponent.NetworkSettings.HostKeySettings 未配置，请在 Inspector 中完善 Network 设置。");
             }
 
-            bool success = EditorUtil.Network.HostKeyExporter.ExportHostKeyData(hostKeySettings);
+            bool success = EditorUtil.Network.HostKeyExporter.ExportHostKeyData(hostKeySettings, networkSettings.DataFormat);
             if (!success)
             {
                 throw new InvalidOperationException("[Pipify] 域名数据导出失败，请查看控制台错误日志。");
@@ -57,13 +58,14 @@ namespace NovaFramework.Editor
         internal static UniTask RunExportNetworkHostKeyCode(PipifyContext ctx)
         {
             Runtime.NetworkComponent networkComponent = Helpers.ResolveComponentOnNova<Runtime.NetworkComponent>();
-            Runtime.HostKeySettings hostKeySettings = networkComponent.NetworkSettings?.HostKeySettings;
+            Runtime.NetworkSettings networkSettings = networkComponent.NetworkSettings;
+            Runtime.HostKeySettings hostKeySettings = networkSettings?.HostKeySettings;
             if (hostKeySettings == null)
             {
                 throw new InvalidOperationException("[Pipify] NetworkComponent.NetworkSettings.HostKeySettings 未配置，请在 Inspector 中完善 Network 设置。");
             }
 
-            bool success = EditorUtil.Network.HostKeyExporter.ExportHostKeyCode(hostKeySettings);
+            bool success = EditorUtil.Network.HostKeyExporter.ExportHostKeyCode(hostKeySettings, networkSettings.DataFormat);
             if (!success)
             {
                 throw new InvalidOperationException("[Pipify] 域名类型代码导出失败，请查看控制台错误日志。");
@@ -73,7 +75,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// Step：导出网络指令数据（JSON 数据文件），调用 NetCmdExporter.ExportNetCmdData。
+        /// Step：导出网络指令数据文件，调用 NetCmdExporter.ExportNetCmdData。
         /// 通过 Helpers.ResolveComponentOnNova 定位 NetworkComponent，
         /// 取 NetworkSettings.NetCmdSettings 后调用导出入口；失败时抛出 InvalidOperationException 中断流水线。
         /// </summary>
@@ -83,13 +85,14 @@ namespace NovaFramework.Editor
         internal static UniTask RunExportNetworkNetCmdData(PipifyContext ctx)
         {
             Runtime.NetworkComponent networkComponent = Helpers.ResolveComponentOnNova<Runtime.NetworkComponent>();
-            Runtime.NetCmdSettings netCmdSettings = networkComponent.NetworkSettings?.NetCmdSettings;
+            Runtime.NetworkSettings networkSettings = networkComponent.NetworkSettings;
+            Runtime.NetCmdSettings netCmdSettings = networkSettings?.NetCmdSettings;
             if (netCmdSettings == null)
             {
                 throw new InvalidOperationException("[Pipify] NetworkComponent.NetworkSettings.NetCmdSettings 未配置，请在 Inspector 中完善 Network 设置。");
             }
 
-            bool success = EditorUtil.Network.NetCmdExporter.ExportNetCmdData(netCmdSettings);
+            bool success = EditorUtil.Network.NetCmdExporter.ExportNetCmdData(netCmdSettings, networkSettings.DataFormat);
             if (!success)
             {
                 throw new InvalidOperationException("[Pipify] 网络指令数据导出失败，请查看控制台错误日志。");
@@ -109,13 +112,14 @@ namespace NovaFramework.Editor
         internal static UniTask RunExportNetworkNetCmdCode(PipifyContext ctx)
         {
             Runtime.NetworkComponent networkComponent = Helpers.ResolveComponentOnNova<Runtime.NetworkComponent>();
-            Runtime.NetCmdSettings netCmdSettings = networkComponent.NetworkSettings?.NetCmdSettings;
+            Runtime.NetworkSettings networkSettings = networkComponent.NetworkSettings;
+            Runtime.NetCmdSettings netCmdSettings = networkSettings?.NetCmdSettings;
             if (netCmdSettings == null)
             {
                 throw new InvalidOperationException("[Pipify] NetworkComponent.NetworkSettings.NetCmdSettings 未配置，请在 Inspector 中完善 Network 设置。");
             }
 
-            bool success = EditorUtil.Network.NetCmdExporter.ExportNetCmdCode(netCmdSettings);
+            bool success = EditorUtil.Network.NetCmdExporter.ExportNetCmdCode(netCmdSettings, networkSettings.DataFormat);
             if (!success)
             {
                 throw new InvalidOperationException("[Pipify] 网络指令类型代码导出失败，请查看控制台错误日志。");

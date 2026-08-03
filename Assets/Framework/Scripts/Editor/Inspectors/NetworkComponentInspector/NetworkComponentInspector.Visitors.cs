@@ -37,6 +37,11 @@ namespace NovaFramework.Editor
         private SerializedProperty m_Settings;
 
         /// <summary>
+        /// HostKey 与 NetCmd 共用的表格数据导出格式属性。
+        /// </summary>
+        private SerializedProperty m_DataFormat;
+
+        /// <summary>
         /// Network 管理器实现类名属性。
         /// </summary>
         private SerializedProperty m_CurNetworkManagerTypeName;

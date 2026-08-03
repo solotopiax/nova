@@ -20,6 +20,11 @@ namespace NovaFramework.Runtime
     public class SoundManagerConfig
     {
         /// <summary>
+        /// 声音表格数据格式。
+        /// </summary>
+        public LubanDataFormat DataFormat = LubanDataFormat.Json;
+
+        /// <summary>
         /// 声音单元设置列表，每个单元指定独立的 Asset 地址。
         /// </summary>
         public List<SoundUnitSetting> SoundUnitsSettings;

@@ -40,7 +40,7 @@ Settings.Units 中配置的 xlsx
   -> _temp/{language}/{relative-stem}/*.csv
   -> Luban Pipeline 输出到 _temp/_publish
   -> Map 与产物完整性验证
-  -> FileSystem.OutputApplier 一次性应用正式 JSON / C# / 语言列表
+  -> FileSystem.OutputApplier 一次性应用当前格式数据 / C# / 语言列表
   -> 清理 _temp
 ```
 
@@ -52,7 +52,7 @@ Settings.Units 中配置的 xlsx
 EditorUtil.UI.Exporter
   -> UIExporter 校验 Settings、路径和非 # Sheet
   -> Luban Pipeline 输出到源目录 _temp/_publish
-  -> JSON / C# / Map 完整性验证
+  -> 当前格式数据 / C# / Map 完整性验证
   -> FileSystem.OutputApplier 一次性应用正式产物
   -> 清理 _temp
 ```
@@ -66,7 +66,7 @@ HostKeys: ConfigRuntime.DevelopMode -> 校验 xxxxx-Debug/Release 配对 -> 选�
 NetCmds:  跳过注释/无效 Sheet -> 保持名称和内容
   -> _temp/{工作簿名}/{Sheet名}.csv
   -> Luban Pipeline 输出到 _temp/_publish
-  -> NetworkExporter 验证 JSON / C# / SchemaManifest
+  -> NetworkExporter 验证当前格式数据 / C# / SchemaManifest
   -> FileSystem.OutputApplier 一次性应用正式产物
   -> 清理 _temp
 ```
@@ -77,9 +77,9 @@ HostKeys 的 DevelopMode 只来自当前已导出的 ConfigRuntime；缺失时 N
 
 ```text
 Sound Settings、Vibrate 单区域 Settings 或 Localization Font Settings
-  -> 模块 Exporter 把 JSON/C# 输出改写到源目录 _temp/_publish
+  -> 模块 Exporter 把数据/C# 输出改写到源目录 _temp/_publish
   -> Luban Pipeline 生成数据、类型和 SchemaManifest
-  -> 模块验证预期 JSON/C# 完整性
+  -> 模块验证预期数据/C# 完整性
   -> FileSystem.OutputApplier 批量应用正式产物
   -> 清理 _temp
 ```

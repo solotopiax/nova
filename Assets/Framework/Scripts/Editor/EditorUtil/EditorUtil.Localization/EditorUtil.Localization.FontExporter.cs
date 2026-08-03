@@ -130,7 +130,8 @@ namespace NovaFramework.Editor
                         List<LocalizationFontUnitSetting> stagedUnits = CreateStagedUnits(
                             settings.FontUnitsSettings,
                             applier.StagingRoot,
-                            stagedCodeDir);
+                            stagedCodeDir,
+                            settings.DataFormat);
                         if (mode == ExportMode.Code)
                         {
                             SeedStagedData(settings.FontUnitsSettings, stagedUnits);
@@ -141,6 +142,7 @@ namespace NovaFramework.Editor
                             sourceDirPath,
                             adapter,
                             EditorUtil.Luban.LubanExportProfiles.LocalizationFont);
+                        context.DataFormat = settings.DataFormat;
                         if (mode != ExportMode.Data)
                         {
                             context.OutputCodeDir = stagedCodeDir;
@@ -165,6 +167,10 @@ namespace NovaFramework.Editor
                                 applier.AddReplacement(
                                     stagedUnits[i].DatasExportPath,
                                     settings.FontUnitsSettings[i].DatasExportPath);
+                                EditorUtil.Luban.DataArtifact.RegisterCounterpartDeletion(
+                                    applier,
+                                    settings.FontUnitsSettings[i].DatasExportPath,
+                                    settings.DataFormat);
                             }
                         }
                         if (mode != ExportMode.Data)
@@ -201,14 +207,15 @@ namespace NovaFramework.Editor
                 private static List<LocalizationFontUnitSetting> CreateStagedUnits(
                     IReadOnlyList<LocalizationFontUnitSetting> formalUnits,
                     string stagingRoot,
-                    string stagedCodeDir)
+                    string stagedCodeDir,
+                    LubanDataFormat dataFormat)
                 {
                     var result = new List<LocalizationFontUnitSetting>(formalUnits.Count);
                     for (int i = 0; i < formalUnits.Count; i++)
                     {
                         LocalizationFontUnitSetting formal = formalUnits[i];
                         string fileName = string.IsNullOrWhiteSpace(formal.DatasExportPath)
-                            ? i.ToString("D4") + ".json"
+                            ? i.ToString("D4") + (dataFormat == LubanDataFormat.Binary ? ".bytes" : ".json")
                             : IOPath.GetFileName(formal.DatasExportPath);
                         result.Add(new LocalizationFontUnitSetting
                         {
@@ -262,8 +269,19 @@ namespace NovaFramework.Editor
                             Log.Warning(LogTag.Localization, "字体单元设置不完整，导出已跳过。");
                             return false;
                         }
+                        if (mode != ExportMode.Code && !HasExpectedSuffix(unit.DatasExportPath, settings.DataFormat))
+                        {
+                            Log.Warning(LogTag.Localization, "字体数据导出路径与 Luban 格式不匹配：{0}", unit.DatasExportPath);
+                            return false;
+                        }
                     }
                     return true;
+                }
+
+                private static bool HasExpectedSuffix(string path, LubanDataFormat dataFormat)
+                {
+                    string suffix = dataFormat == LubanDataFormat.Binary ? ".bytes" : ".json";
+                    return !string.IsNullOrWhiteSpace(path) && path.EndsWith(suffix, StringComparison.OrdinalIgnoreCase);
                 }
             }
         }

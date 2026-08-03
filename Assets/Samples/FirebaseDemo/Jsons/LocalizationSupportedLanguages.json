@@ -1,4 +1,10 @@
-[
-  "ChineseSimplified",
-  "English"
-]
+﻿{
+  "LocalizationSupportedLanguages": [
+    {
+      "Name": "ChineseSimplified"
+    },
+    {
+      "Name": "English"
+    }
+  ]
+}

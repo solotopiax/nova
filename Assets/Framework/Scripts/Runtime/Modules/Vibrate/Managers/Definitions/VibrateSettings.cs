@@ -20,6 +20,11 @@ namespace NovaFramework.Runtime
     [Serializable]
     public class VibrateSettings
     {
+        /// <summary>
+        /// Emphasis 与 Custom 共用的 Luban 代码与数据导出格式。
+        /// </summary>
+        public LubanDataFormat DataFormat = LubanDataFormat.Json;
+
 #if UNITY_EDITOR
         /// <summary>
         /// Emphasis 数据源目录路径（仅编辑器使用）。

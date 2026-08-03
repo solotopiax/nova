@@ -33,14 +33,16 @@ public static void ExportCustomAll(VibrateSettings settings);
 按区域定位源目录、Unit 与固定 Profile
   -> 单文件入口必须精确匹配 VibrateUnitSetting
   -> 克隆区域 Settings，把输出改写到该区域 _temp/_publish
-  -> 仅代码导出时种入正式 JSON
-  -> Luban Pipeline 生成并验证 JSON / C# / SchemaManifest
+  -> 仅代码导出时种入正式表格数据
+  -> Luban Pipeline 按 VibrateSettings.DataFormat 生成并验证 JSON 或 Binary / C# / SchemaManifest
   -> Luban.GeneratedOutput 写入第一行单行所有权标记并登记安全过期删除
   -> FileSystem.OutputApplier 一次性发布本区域产物
   -> finally 清理该区域 _temp
 ```
 
 单文件类型找不到 Unit 时会记录错误并终止，不再退化为全量代码导出。Pipeline 或发布失败时，正式文件保持或回滚到导出前状态；Pipify 收到 `false` 时立即抛出并终止后续步骤。
+
+Emphasis 与 Custom 共用一个格式选项，默认 JSON；数据发布时各自在自己的事务中删除同名反格式文件及其 `.meta`。
 
 ## 内部测试替换点
 

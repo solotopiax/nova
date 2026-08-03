@@ -118,6 +118,43 @@ namespace NovaFramework.Editor
                     return result;
                 }
 
+                /// <summary>
+                /// 从格式无关的源键集合生成 Map 便捷属性。
+                /// </summary>
+                internal static int GenerateFromSourceKeys(
+                    string tableCodePath,
+                    string tableName,
+                    string valueType,
+                    string topModule,
+                    IReadOnlyList<KeyValuePair<string, string>> sourceKeys)
+                {
+                    var keys = new List<MapKeyEntry>();
+                    var seen = new HashSet<string>(StringComparer.Ordinal);
+                    if (sourceKeys != null)
+                    {
+                        for (int i = 0; i < sourceKeys.Count; i++)
+                        {
+                            KeyValuePair<string, string> pair = sourceKeys[i];
+                            if (!string.IsNullOrEmpty(pair.Key) && seen.Add(pair.Key))
+                            {
+                                keys.Add(new MapKeyEntry(pair.Key, pair.Value ?? string.Empty));
+                            }
+                        }
+                    }
+                    if (keys.Count == 0)
+                    {
+                        RemoveGeneratedProperties(tableCodePath);
+                        return 0;
+                    }
+                    if (!Util.SysIO.File.Exists(tableCodePath))
+                    {
+                        Log.Warning(LogTag.Editor, "Map 属性生成跳过：TbXxx 文件不存在 {0}", tableCodePath);
+                        return 0;
+                    }
+                    AppendMapProperties(tableCodePath, tableName, valueType, topModule, keys);
+                    return keys.Count;
+                }
+
                 private static void RemoveGeneratedProperties(string filePath)
                 {
                     if (!Util.SysIO.File.Exists(filePath))

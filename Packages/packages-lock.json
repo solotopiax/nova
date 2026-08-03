@@ -208,7 +208,7 @@
       "hash": "fd8ff1fb700caf062eb5cce364c1d0a85f99ebe6"
     },
     "com.coplaydev.unity-mcp": {
-      "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.0",
+      "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.2",
       "depth": 0,
       "source": "git",
       "dependencies": {
@@ -222,7 +222,7 @@
         "com.unity.nuget.newtonsoft-json": "3.0.2",
         "com.unity.test-framework": "1.1.31"
       },
-      "hash": "c14de1e6dc01ab42d2bb358730cff954bce0ce6b"
+      "hash": "4ce7dd3cc54e37e2ed6dc59cb5a047f3dccb3f50"
     },
     "com.google.external-dependency-manager": {
       "version": "1.2.187",
@@ -304,7 +304,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.1",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.0.6",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0",
@@ -316,7 +316,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.1",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.0.6"
       }
@@ -326,7 +326,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.0.6",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0"
@@ -337,7 +337,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0"
+        "com.solotopia.nova.framework": "0.6.3"
       }
     },
     "com.solotopia.nova.framework.sdk.aihelp": {
@@ -345,7 +345,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0"
+        "com.solotopia.nova.framework": "0.6.3"
       }
     },
     "com.solotopia.nova.framework.sdk.applesignin": {
@@ -353,7 +353,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0",
         "com.solotopia.nova.framework.kit.network.gamebind": "0.0.6"
       }
@@ -363,7 +363,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.google.external-dependency-manager": "1.2.186",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0"
       }
@@ -373,7 +373,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.unity.collections": "2.4.3",
         "com.starlus.sdk.datamaster": "1.0.1",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0"
@@ -384,7 +384,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.google.external-dependency-manager": "1.2.186",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0",
         "com.solotopia.nova.framework.kit.network.gamebind": "0.0.6"
@@ -395,7 +395,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.google.external-dependency-manager": "1.2.186",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0"
       }
@@ -405,7 +405,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.google.external-dependency-manager": "1.2.186",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0",
         "com.solotopia.nova.framework.kit.network.gamebind": "0.0.6"
@@ -416,7 +416,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0"
       }
@@ -473,7 +473,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.0",
+        "com.solotopia.nova.framework": "0.6.3",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0"
       }
     },

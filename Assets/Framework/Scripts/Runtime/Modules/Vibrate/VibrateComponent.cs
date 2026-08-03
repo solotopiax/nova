@@ -45,6 +45,7 @@ namespace NovaFramework.Runtime
 
             m_VibrateManager.Initialize(new VibrateManagerConfig
             {
+                DataFormat = m_Settings.DataFormat,
                 EmphasisUnitsSettings = m_Settings.EmphasisUnitsSettings,
                 CustomUnitsSettings = m_Settings.CustomUnitsSettings,
             });

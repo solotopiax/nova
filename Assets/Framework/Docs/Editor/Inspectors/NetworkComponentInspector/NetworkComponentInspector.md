@@ -51,6 +51,7 @@ UnityEditor.Editor
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `m_Settings` | `SerializedProperty` | 绑定 `m_Settings`（NetworkSettings 配置对象） |
+| `m_DataFormat` | `SerializedProperty` | HostKey 与 NetCmd 共用的表格数据导出格式，默认 JSON |
 
 ### HostKey 管理区
 
@@ -100,6 +101,7 @@ public override void OnInspectorGUI()
 
 // 绘制方法（私有）
 private void DrawManagerSelectors()
+private void DrawDataFormat()
 private void DrawHostKeyExport()
 private void DrawNetCmdExport()
 private void DrawDoHSettings()
@@ -149,6 +151,7 @@ OnEnable()
   ├─ FindProperty("m_CurWebSocketManagerTypeName")   → m_CurWebSocketManagerTypeName
   │
   ├─ FindProperty("m_Settings")                      → m_Settings
+  ├─ m_Settings.FindPropertyRelative("DataFormat")  → m_DataFormat
   │
   ├─ m_Settings.HostKeySettings.FindPropertyRelative("SourceDirPath") → m_HostKeySourceDirPath
   ├─ m_Settings.HostKeySettings.FindPropertyRelative("HostKeyUnits")  → m_HostKeyUnitsSettings
@@ -213,6 +216,8 @@ OnDisable()
 
 ### HostKey/NetCmd 全量导出管线（DrawHostKeyExport / DrawNetCmdExport）
 
+两个导出区共用 Inspector 顶部的“表格数据导出格式：”选项。选项下方的 HelpBox 以 `(1)`～`(5)` 说明 JSON/Binary 差异、HostKey 与 NetCmd 的统一影响范围、标准后缀切换和反格式清理。切换格式时会同步两组单元的标准 `.json`/`.bytes` 后缀；自定义后缀不改写。正式发布通过 `OutputApplier` 事务替换选中格式，并删除同名反格式文件及其 `.meta`。
+
 点击"导出所有域名表/指令表数据和类型"按钮时执行：
 
 ```
@@ -223,7 +228,7 @@ OnDisable()
 
 3. NetworkExporter
    — HostKeys 校验 Debug/Release 配对并按 ConfigRuntime.DevelopMode 选择 Sheet；NetCmds 保持原结构
-   — Luban 只写入 _temp/_publish，完整验证 JSON/C# 后再通过 FileSystem.OutputApplier 批量发布
+   — Luban 只写入 _temp/_publish，完整验证当前格式数据/C# 后再通过 FileSystem.OutputApplier 批量发布
 
 4. finally 清理 _temp 并刷新 AssetDatabase
 ```

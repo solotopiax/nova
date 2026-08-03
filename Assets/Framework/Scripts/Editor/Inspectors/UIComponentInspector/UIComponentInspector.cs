@@ -48,6 +48,7 @@ namespace NovaFramework.Editor
             m_UIGroups = serializedObject.FindProperty("m_UIGroups");
 
             SerializedProperty uiSettings = serializedObject.FindProperty("m_UISettings");
+            m_DataFormat = uiSettings?.FindPropertyRelative("DataFormat");
             m_SourceDirPath = uiSettings?.FindPropertyRelative("SourceDirPath");
             m_UIUnitsSettings = uiSettings?.FindPropertyRelative("UIUnitsSettings");
             InitializeTemplatePath(uiSettings?.FindPropertyRelative("TemplatePath"));

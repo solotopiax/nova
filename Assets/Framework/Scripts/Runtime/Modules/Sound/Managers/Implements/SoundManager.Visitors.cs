@@ -63,6 +63,11 @@ namespace NovaFramework.Runtime
         private List<SoundUnitSetting> m_SoundUnitsSettings;
 
         /// <summary>
+        /// 声音表格数据格式。
+        /// </summary>
+        private LubanDataFormat m_DataFormat = LubanDataFormat.Json;
+
+        /// <summary>
         /// 序列编号（只增不减）。
         /// </summary>
         private int m_Serial;

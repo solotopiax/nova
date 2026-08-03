@@ -45,6 +45,7 @@ namespace NovaFramework.Runtime
                 EditorLanguage = m_EditorLanguage,
                 RuntimeLanguagePrefer = m_RuntimeLanguagePrefer,
                 AutoFontAdapt = m_AutoFontAdapt,
+                DataFormat = m_LocalizationSettings.DataFormat,
                 TextUnitSettings = m_LocalizationSettings.TextUnitsSettings,
                 FontUnitSettings = m_LocalizationSettings.FontUnitsSettings,
                 SupportedLanguagesAssetLocation = m_SupportedLanguagesAssetLocation,

@@ -38,6 +38,31 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 绘制 Network 表格数据格式，并同步 HostKey 与 NetCmd 的标准数据文件后缀。
+        /// </summary>
+        private void DrawDataFormat()
+        {
+            EditorUtil.Luban.DrawDataFormat(
+                m_DataFormat,
+                "表格数据导出格式：",
+                "HostKey 和 NetCmd",
+                m_HostKeyUnitsSettings,
+                m_NetCmdUnitsSettings);
+            EditorUtil.Draw.Line();
+        }
+
+        /// <summary>
+        /// 获取当前 Network 表格数据格式；字段未绑定时回退到 JSON。
+        /// </summary>
+        /// <returns>当前选择的数据格式。</returns>
+        private LubanDataFormat GetDataFormat()
+        {
+            return m_DataFormat == null
+                ? LubanDataFormat.Json
+                : (LubanDataFormat)m_DataFormat.enumValueIndex;
+        }
+
+        /// <summary>
         /// 绘制域名表（HostKey）导出区域：模板提示、表格目录、文件树、全局导出按钮。
         /// </summary>
         private void DrawHostKeyExport()
@@ -223,7 +248,8 @@ namespace NovaFramework.Editor
                     Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
                     return;
                 }
-                NetworkExporter.ExportHostKeys(hostKeySettings, NetworkExporter.ExportMode.Data, unitSetting);
+                NetworkExporter.ExportHostKeys(
+                    hostKeySettings, NetworkExporter.ExportMode.Data, GetDataFormat(), unitSetting);
                 return;
             }
 
@@ -235,7 +261,8 @@ namespace NovaFramework.Editor
                     Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
                     return;
                 }
-                NetworkExporter.ExportNetCmds(netCmdSettings, NetworkExporter.ExportMode.Data, unitSetting);
+                NetworkExporter.ExportNetCmds(
+                    netCmdSettings, NetworkExporter.ExportMode.Data, GetDataFormat(), unitSetting);
             }
         }
 
@@ -268,7 +295,8 @@ namespace NovaFramework.Editor
                     Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
                     return;
                 }
-                NetworkExporter.ExportHostKeys(hostKeySettings, NetworkExporter.ExportMode.Code, unitSetting);
+                NetworkExporter.ExportHostKeys(
+                    hostKeySettings, NetworkExporter.ExportMode.Code, GetDataFormat(), unitSetting);
                 return;
             }
 
@@ -280,7 +308,8 @@ namespace NovaFramework.Editor
                     Log.Error(LogTag.Editor, "未找到文件 {0} 对应的 UnitSetting。", relativePath);
                     return;
                 }
-                NetworkExporter.ExportNetCmds(netCmdSettings, NetworkExporter.ExportMode.Code, unitSetting);
+                NetworkExporter.ExportNetCmds(
+                    netCmdSettings, NetworkExporter.ExportMode.Code, GetDataFormat(), unitSetting);
             }
         }
 
@@ -305,29 +334,10 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            IReadOnlyList<IDataTableUnitSetting> regionUnits = GetCurrentRegionUnitSettings(settingsPropertyName);
-            if (regionUnits == null)
-            {
-                return;
-            }
-
-            var dataPathsToClear = new HashSet<string>();
-            foreach (IDataTableUnitSetting unit in regionUnits)
-            {
-                if (!string.IsNullOrEmpty(unit.DatasExportPath))
-                {
-                    dataPathsToClear.Add(unit.DatasExportPath);
-                }
-            }
-            foreach (string path in dataPathsToClear)
-            {
-                EditorUtil.FileSystem.DeletePath(path);
-            }
-
             bool success = false;
             if (settingsPropertyName == "HostKeySettings")
             {
-                success = EditorUtil.Network.HostKeyExporter.ExportHostKeyAll(ns.HostKeySettings);
+                success = EditorUtil.Network.HostKeyExporter.ExportHostKeyAll(ns.HostKeySettings, ns.DataFormat);
                 if (success)
                 {
                     m_IsHostKeyLubanConfigExists = true;
@@ -335,7 +345,7 @@ namespace NovaFramework.Editor
             }
             else if (settingsPropertyName == "NetCmdSettings")
             {
-                success = EditorUtil.Network.NetCmdExporter.ExportNetCmdAll(ns.NetCmdSettings);
+                success = EditorUtil.Network.NetCmdExporter.ExportNetCmdAll(ns.NetCmdSettings, ns.DataFormat);
                 if (success)
                 {
                     m_IsNetCmdLubanConfigExists = true;

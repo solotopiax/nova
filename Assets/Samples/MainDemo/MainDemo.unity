@@ -219,6 +219,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.DataFormat
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 819773186674650590, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.SoundUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/MainDemo/Jsons/Sounds.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.DataFormat
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_SupportedLanguagesDataExportPath
+      value: Assets/Samples/MainDemo/Jsons/LocalizationSupportedLanguages.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.FontUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/MainDemo/Jsons/LocalizationFonts.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_LocalizationSettings.TextUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/MainDemo/Jsons/LocalizationTexts_{0}.json
+      objectReference: {fileID: 0}
     - target: {fileID: 3308748334323488271, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Name
       value: Nova
@@ -262,6 +286,38 @@ PrefabInstance:
     - target: {fileID: 3760798730955577934, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.DataFormat
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.CustomUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/MainDemo/Jsons/VibrateCustoms.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 6372012296189289527, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.EmphasisUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/MainDemo/Jsons/VibrateEmphasis.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_UISettings.DataFormat
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7514479087540692999, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_UISettings.UIUnitsSettings.Array.data[0].DatasExportPath
+      value: Assets/Samples/MainDemo/Jsons/UIs.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.DataFormat
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].DatasExportPath
+      value: Assets/Samples/MainDemo/Jsons/NetworkCmds.json
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_Settings.HostKeySettings.HostKeyUnits.Array.data[0].DatasExportPath
+      value: Assets/Samples/MainDemo/Jsons/NetworkHostKeys.json
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

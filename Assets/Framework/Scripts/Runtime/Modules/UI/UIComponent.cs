@@ -75,6 +75,7 @@ namespace NovaFramework.Runtime
                 DestroyMaxNumPerFrame = m_DestroyMaxNumPerFrame,
                 GroupDepthFactor = m_GroupDepthFactor,
                 ViewDepthFactor = m_ViewDepthFactor,
+                DataFormat = m_UISettings?.DataFormat ?? LubanDataFormat.Json,
                 UnitSettings = m_UISettings?.UIUnitsSettings,
             });
 

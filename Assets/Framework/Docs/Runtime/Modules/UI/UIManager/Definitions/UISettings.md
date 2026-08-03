@@ -23,6 +23,7 @@ UI 配置设置，实现 `IDataTableSettings`，供 Luban 导出流水线统一�
 [Serializable]
 public class UISettings : IDataTableSettings
 {
+    public LubanDataFormat DataFormat = LubanDataFormat.Json;             // 表格数据格式，默认 JSON
 #if UNITY_EDITOR
     [FormerlySerializedAs("ExcelDirPath")]
     public string SourceDirPath;                                          // 数据源目录路径
@@ -41,6 +42,8 @@ public class UIUnitSetting : DataTableUnitSettingBase
     protected override string GetIndexField() => "Name";
 }
 ```
+
+`DataFormat` 同时控制 Luban 代码/数据生成与运行时接收器：JSON 使用 `.json`，Binary 使用 `.bytes`。切换格式后，Inspector 只改写标准后缀；正式导出会事务删除同名反格式产物及其 `.meta`。
 
 ---
 

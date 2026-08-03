@@ -82,6 +82,47 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 通过生成的 Binary Binding 构建 Tables，并提取全部 ITable。
+        /// </summary>
+        public static Dictionary<Type, ITable> LoadBinary(
+            string tablesClassName,
+            string namespace_,
+            Func<string, byte[]> loader)
+        {
+            if (loader == null)
+            {
+                throw new ArgumentNullException(nameof(loader));
+            }
+
+            Type bindingType = ResolveType(tablesClassName + "Binding", namespace_);
+            if (bindingType == null || !typeof(ILubanTableBinding).IsAssignableFrom(bindingType))
+            {
+                Log.Error(LogTag.Base, "无法找到 {0} 的 Luban Binary Binding。", tablesClassName);
+                return null;
+            }
+
+            try
+            {
+                var binding = (ILubanTableBinding)Activator.CreateInstance(bindingType);
+                ILubanTables tables = binding.Create(loader);
+                tables.ResolveRef();
+                var result = new Dictionary<Type, ITable>();
+                IReadOnlyList<ITable> allTables = tables.GetAllTables();
+                for (int i = 0; i < allTables.Count; i++)
+                {
+                    ITable table = allTables[i];
+                    result[table.GetType()] = table;
+                }
+                return result;
+            }
+            catch (Exception exception)
+            {
+                Log.Error(LogTag.Base, "构建 {0} Binary Tables 失败：{1}", tablesClassName, exception);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// 在指定命名空间下搜索类型，未命中时回退到全名搜索。
         /// </summary>
         /// <param name="typeName">类型短名称。</param>

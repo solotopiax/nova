@@ -63,7 +63,7 @@ namespace NovaBootstrap
         private const string c_McpKey = "com.coplaydev.unity-mcp";
 
         /// <summary>Unity MCP 包来源（git url，锁定 tag）。</summary>
-        private const string c_McpValue = "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.0";
+        private const string c_McpValue = "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.2";
 
         /// <summary>Nova BestHTTP 封装包键。</summary>
         private const string c_BestHttpKey = "com.solotopia.nova.framework.besthttp";
@@ -85,7 +85,7 @@ namespace NovaBootstrap
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.6.2";
+        private const string c_FrameworkValue = "0.6.3";
 
         /// <summary>PlugPals 配置文件相对工程根的路径。</summary>
         private const string c_PlugPalsRelativePath = "ProjectSettings/Nova/PlugPalsRegistries.json";

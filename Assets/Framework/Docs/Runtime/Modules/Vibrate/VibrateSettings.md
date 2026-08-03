@@ -37,6 +37,10 @@
 - 保留振动模块自己的双区域语义
 - 同时复用通用数据表工具链
 
+### 4. 两个区域共用 `DataFormat`
+
+`DataFormat` 默认是 `LubanDataFormat.Json`，同时控制 Emphasis 与 Custom 的 Luban 生成和运行时加载。JSON 使用 `.json`，Binary 使用 `.bytes`；每个区域仍保持独立导出事务，发布时删除对应的反格式文件及其 `.meta`。
+
 ## 风险点 / 易错点
 
 - 它不是 `IDataTableSettings` 本体；文档如果写成“直接实现”就是错的。
@@ -56,4 +60,3 @@
 - [VibrateManagerConfig.md](VibrateManagerConfig.md)
 - [VibrateUnitSetting.md](VibrateUnitSetting.md)
 - [IDataTableSettings.md](../../Core/Table/IDataTableSettings.md)
-

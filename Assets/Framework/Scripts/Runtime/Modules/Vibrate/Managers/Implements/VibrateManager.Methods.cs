@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 #if NOVA_NICEVIBRATIONS
 using Lofelt.NiceVibrations;
 #endif
@@ -71,7 +70,8 @@ namespace NovaFramework.Runtime
             {
                 VibrateUnitSetting unit = units[i];
                 if (unit == null || string.IsNullOrEmpty(unit.AssetLocation)) continue;
-                new LubanDataReceiver(dataCache, unit, syncLoadFunc, releaseFunc).ReadDataAssetSync(unit.AssetLocation);
+                LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, syncLoadFunc, releaseFunc)
+                    .ReadDataAssetSync(unit.AssetLocation);
             }
         }
 
@@ -90,7 +90,8 @@ namespace NovaFramework.Runtime
             {
                 VibrateUnitSetting unit = units[i];
                 if (unit == null || string.IsNullOrEmpty(unit.AssetLocation)) continue;
-                tasks.Add(new LubanDataReceiver(dataCache, unit, loadFunc, releaseFunc).ReadDataAssetAsync(unit.AssetLocation));
+                tasks.Add(LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, loadFunc, releaseFunc)
+                    .ReadDataAssetAsync(unit.AssetLocation));
             }
         }
 
@@ -107,16 +108,6 @@ namespace NovaFramework.Runtime
                 return false;
             }
 
-            Func<string, JArray> loader = key =>
-            {
-                if (dataCache.DataMap.TryGetValue(key, out object value) && value is JArray jArray)
-                {
-                    return jArray;
-                }
-                Log.Warning(LogTag.Vibrate, "数据缓存中未找到振动数据：{0}", key);
-                return new JArray();
-            };
-
             const string emphasisTablesClassName = "VibrateEmphasisTables";
             const string customTablesClassName = "VibrateCustomTables";
 
@@ -127,7 +118,8 @@ namespace NovaFramework.Runtime
                 return false;
             }
             string namespace_ = configManager.Namespace;
-            Dictionary<Type, ITable> emphasisTables = LubanTablesLoader.Load(emphasisTablesClassName, namespace_, loader);
+            Dictionary<Type, ITable> emphasisTables = LubanRuntimeData.LoadTables(
+                m_DataFormat, emphasisTablesClassName, namespace_, dataCache, LogTag.Vibrate, "Vibrate Emphasis");
             if (emphasisTables != null)
             {
                 foreach (var kv in emphasisTables)
@@ -137,7 +129,8 @@ namespace NovaFramework.Runtime
                 }
             }
 
-            Dictionary<Type, ITable> customTables = LubanTablesLoader.Load(customTablesClassName, namespace_, loader);
+            Dictionary<Type, ITable> customTables = LubanRuntimeData.LoadTables(
+                m_DataFormat, customTablesClassName, namespace_, dataCache, LogTag.Vibrate, "Vibrate Custom");
             if (customTables != null)
             {
                 foreach (var kv in customTables)

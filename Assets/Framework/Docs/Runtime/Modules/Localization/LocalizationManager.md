@@ -31,7 +31,7 @@
 
 ### 它对外负责什么
 
-- 加载 `SupportedLanguagesAssetLocation` 指向的语言列表 JSON
+- 按 `DataFormat` 加载 `SupportedLanguagesAssetLocation` 指向的 Luban 支持语言表
 - 加载字体表并建立 `Language -> FontRows` 映射
 - 解析当前语言
 - 切换语言并重建文本表 / 扁平文本缓存
@@ -41,7 +41,7 @@
 
 - 不负责场景组件生命周期
 - 不负责 UI 文本组件的具体刷新
-- 不负责导出本地化 JSON
+- 不负责导出本地化数据
 
 ## 核心流程
 
@@ -61,7 +61,9 @@
 当前实现里：
 
 - 支持语言列表来自 `m_Config.SupportedLanguagesAssetLocation`
-- 语言列表通过 JSON 数组解析成 `m_SupportedLanguages`
+- 支持语言、字体和文本使用同一个 `LubanDataFormat`
+- JSON 走 `LubanDataReceiver`，Binary 走 `LubanBinaryDataReceiver` 与生成的 `*TablesBinding`
+- 支持语言由独立 `LocalizationSupportedLanguagesTables` 构建；旧 JSON 数组仅作为升级兼容回退
 - 字体数据通过 Luban 表加载进 `m_FontDatas`
 
 也就是说，支持语言来自独立导出的 `SupportedLanguages` 列表，不从文本单元的 Excel Sheet 缓存字段推断。

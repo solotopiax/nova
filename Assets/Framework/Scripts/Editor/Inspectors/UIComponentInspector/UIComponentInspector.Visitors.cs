@@ -72,6 +72,11 @@ namespace NovaFramework.Editor
         private SerializedProperty m_CurUIGroupHelperTypeName;
 
         /// <summary>
+        /// UI 表格数据导出格式属性。
+        /// </summary>
+        private SerializedProperty m_DataFormat;
+
+        /// <summary>
         /// UISettings.SourceDirPath 的缓存属性，避免每帧 FindPropertyRelative。
         /// </summary>
         private SerializedProperty m_SourceDirPath;

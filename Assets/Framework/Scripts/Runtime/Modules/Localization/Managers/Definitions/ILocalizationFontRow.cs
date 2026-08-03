@@ -12,7 +12,7 @@ namespace NovaFramework.Runtime
 {
     /// <summary>
     /// 本地化字体数据行接口。
-    /// Luban 生成的字体 bean 类须实现此接口，框架侧通过接口直接访问字段，彻底消除反射。
+    /// Luban 生成的字体 bean 类须实现此接口，框架侧通过接口直接访问属性，彻底消除反射。
     /// </summary>
     public interface ILocalizationFontRow
     {

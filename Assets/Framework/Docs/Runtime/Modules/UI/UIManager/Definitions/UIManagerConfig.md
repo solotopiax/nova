@@ -24,7 +24,7 @@ UI 管理器配置，由 UIComponent 在 Start 阶段构造并传入 `IUIManager
 | `DestroyMaxNumPerFrame` | `int` | 每帧最多销毁的 UI 数量（回收队列每帧处理上限） |
 | `GroupDepthFactor` | `int` | 视图分组深度换算系数（由 UIComponent Inspector 配置，UIManager 透传到 UIGroup 与 UIGroupHelper） |
 | `ViewDepthFactor` | `int` | 视图内部深度换算系数（由 UIComponent Inspector 配置，UIManager 透传到 UIGroup） |
-| `UnitSettings` | `List<UIUnitSetting>` | UI 注册表单元设置列表，每个 unit 对应一个注册表 JSON 文件 |
+| `UnitSettings` | `List<UIUnitSetting>` | UI 注册表单元设置列表，每个 unit 对应一个注册表数据文件（JSON 或 Binary） |
 | `SafeAreaProvider` | `ISafeAreaProvider` | 安全区域数据提供者；null 时使用 DefaultSafeAreaProvider（基于 Screen.safeArea）；WebGL 平台可注入平台 SDK 实现 |
 
 ## 关联文档

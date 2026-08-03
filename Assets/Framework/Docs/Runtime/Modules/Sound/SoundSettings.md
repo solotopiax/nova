@@ -35,6 +35,10 @@
 
 这两项不应被当成运行时必备字段。
 
+### 4. `DataFormat` 控制导出与运行时加载
+
+`DataFormat` 默认是 `LubanDataFormat.Json`，也可在 Inspector 选择 `Binary`。JSON 使用 `.json` 与 JSON 接收器；Binary 使用 `.bytes` 与 Binary 接收器。正式发布时两种格式互斥，并同步删除反格式 `.meta`。
+
 ## 数据模型特征
 
 - 声音表单元固定使用 `Map` 模式
@@ -60,4 +64,3 @@
 - [SoundManager.md](SoundManager.md)
 - [SoundUnitSetting.md](SoundUnitSetting.md)
 - [IDataTableSettings.md](../../Core/Table/IDataTableSettings.md)
-

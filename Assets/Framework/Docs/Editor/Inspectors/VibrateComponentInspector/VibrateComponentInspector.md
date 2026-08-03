@@ -36,6 +36,7 @@ UnityEditor.Editor
 | `c_CustomTemplateFileName` | `const string` | `"VibrateCustomTemplate.xlsx"` | Custom 模板文件名 |
 | `m_CurManagerTypeName` | `SerializedProperty` | — | 当前管理器类型名称 |
 | `m_Settings` | `SerializedProperty` | — | 振动设置整体 |
+| `m_DataFormat` | `SerializedProperty` | — | Emphasis 与 Custom 共用的数据导出格式，默认 JSON |
 | `m_EmphasisSourceDirPath` | `SerializedProperty` | — | Emphasis 数据源目录路径 |
 | `m_CustomSourceDirPath` | `SerializedProperty` | — | Custom 数据源目录路径 |
 | `m_EmphasisUnitsSettings` | `SerializedProperty` | — | Emphasis 振动单元设置列表 |
@@ -69,6 +70,7 @@ UnityEditor.Editor
 | 签名 | 说明 |
 |------|------|
 | `private void DrawConfigs()` | 绘制管理器类型选择器 |
+| `private void DrawDataFormat()` | 绘制 JSON/Binary 选项及 `(1)`～`(5)` HelpBox，并同步两个区域的标准数据后缀 |
 | `private void DrawEmphasisVibrateExport()` | 绘制 Emphasis 振动表格导出区域（调用 `DrawVibrateUnitExport`） |
 | `private void DrawCustomVibrateExport()` | 绘制 Custom 振动表格导出区域（调用 `DrawVibrateUnitExport`） |
 | `private void DrawVibrateSourceDataOperations(string sectionTitle, string foldoutKey, string templateFileName, SerializedProperty sourceDirPathProp, SerializedProperty unitsSettingsProp, Dictionary<string, bool> foldoutState)` | 绘制单个振动区域的完整导出区域：Foldout、模板路径提示、表格目录位置、数据源文件树、全局导出按钮 |
@@ -110,6 +112,7 @@ UnityEditor.Editor
 - `GUIStyle` 在 `OnEnable` 时 `EditorStyles` 尚未就绪，必须在 `EnsureStylesInitialized()` 中延迟初始化
 - Inspector 不执行 Sheet 名刷新；`EditorUtil.Vibrate` 导出器进入 Pipeline 后扫描 Excel 并构建本次 schema manifest
 - 单文件和全量入口都先生成到各区域的 `_temp/_publish`，验证后通过 `FileSystem.OutputApplier` 发布，Inspector 不直接修改正式产物
+- Emphasis 与 Custom 共用一个“表格数据导出格式：”选项；下方 HelpBox 以 `(1)`～`(5)` 说明格式差异、统一影响范围、后缀切换和反格式清理；发布选中格式时事务删除对应反格式文件及其 `.meta`
 - Emphasis 与 Custom 使用各自固定的 Luban Profile、暂存目录和发布事务，后续 ConfigSyncer、文件筛选和 Map 属性生成共享各自快照
 
 ---

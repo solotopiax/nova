@@ -38,6 +38,7 @@ namespace NovaFramework.Editor
 
             // 业务上下文
             m_Settings = serializedObject.FindProperty("m_Settings");
+            m_DataFormat = m_Settings?.FindPropertyRelative("DataFormat");
 
             // HostKey 属性绑定
             SerializedProperty hostKeySetting = m_Settings?.FindPropertyRelative("HostKeySettings");
@@ -124,6 +125,7 @@ namespace NovaFramework.Editor
         {
             base.OnInspectorGUI();
             DrawManagerSelectors();
+            DrawDataFormat();
             DrawHostKeyExport();
             DrawNetCmdExport();
             DrawProtoManagement();

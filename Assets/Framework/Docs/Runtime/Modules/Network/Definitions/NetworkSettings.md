@@ -37,6 +37,7 @@ NetworkSettings（[Serializable] class，无继承）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
+| `DataFormat` | `LubanDataFormat` | HostKey 与 NetCmd 共用的表格数据格式，默认 `Json` |
 | `HostKeySettings` | `HostKeySettings` | 域名表设置（单套单元列表） |
 | `NetCmdSettings` | `NetCmdSettings` | 指令表设置（单套单元列表） |
 
@@ -96,6 +97,7 @@ NetworkSettings（[Serializable] class，无继承）
 // NetworkSettings（数据容器，无方法）
 public HostKeySettings HostKeySettings;
 public NetCmdSettings NetCmdSettings;
+public LubanDataFormat DataFormat = LubanDataFormat.Json;
 
 // HostKeySettings 接口实现（IDataTableSettings）
 string IDataTableSettings.SourceDirPath          // #if UNITY_EDITOR，返回 SourceDirPath ?? ""
@@ -112,6 +114,8 @@ string IDataTableUnitSetting.IndexField          // 固定 "Name"
 ```
 
 Excel Sheet 结构由 Network 导出器预过滤后交给 Pipeline 扫描，并保存在本次 Editor-only schema manifest 快照中；不进入该 Runtime 接口或单元序列化字段。
+
+HostKey 与 NetCmd 必须使用同一个 `DataFormat`。JSON 产物使用 `.json`，Binary 产物使用 `.bytes`；发布选中格式时会在同一事务中删除同名反格式文件及其 `.meta`。
 
 ---
 

@@ -38,14 +38,14 @@ public static bool ExportSupportedLanguages(string sourceDirPath, string exportP
   -> 逐语言生成 CSV 并把 JSON 暂存到 _temp/_publish/data
   -> 生成代码到 Unity 忽略的 _temp/_publish/code~
   -> 使用暂存 JSON 与暂存代码生成、验证 Map 属性
-  -> 暂存支持语言 JSON
+  -> 通过独立 Luban target 暂存支持语言表
   -> 注册精确的旧语言 JSON 删除项
   -> Luban.GeneratedOutput 为 C# 写入第一行单行所有权标记
   -> FileSystem.OutputApplier 一次应用全部替换与删除
   -> finally 清理 _temp 并刷新 AssetDatabase
 ```
 
-任一语言、Luban、代码、Map 或产物验证失败都会立即终止；调用 `Apply` 前不会修改正式 JSON、C# 或支持语言列表。应用中途失败时，已替换和已删除文件按逆序从备份恢复；回滚也失败会抛出聚合异常并由门面记录一次失败。
+任一语言、Luban、代码、Map 或产物验证失败都会立即终止；调用 `Apply` 前不会修改正式数据、C# 或支持语言列表。应用中途失败时，已替换和已删除文件按逆序从备份恢复；回滚也失败会抛出聚合异常并由门面记录一次失败。
 
 ## 路径和清理契约
 

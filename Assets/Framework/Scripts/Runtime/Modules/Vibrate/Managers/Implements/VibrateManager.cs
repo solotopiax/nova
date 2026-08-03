@@ -37,6 +37,7 @@ namespace NovaFramework.Runtime
         /// <param name="config">振动管理器配置。</param>
         public override void Initialize(VibrateManagerConfig config)
         {
+            m_DataFormat = config.DataFormat;
             m_EmphasisUnitsSettings = config.EmphasisUnitsSettings;
             m_CustomUnitsSettings = config.CustomUnitsSettings;
             m_AssetManager = FrameworkManagersGroup.GetManager<IAssetManager>();

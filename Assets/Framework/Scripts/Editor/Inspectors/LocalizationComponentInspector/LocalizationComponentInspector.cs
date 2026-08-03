@@ -45,6 +45,7 @@ namespace NovaFramework.Editor
             m_AutoFontAdapt = serializedObject.FindProperty("m_AutoFontAdapt");
 
             m_LocalizationSettings = serializedObject.FindProperty("m_LocalizationSettings");
+            m_DataFormat = m_LocalizationSettings?.FindPropertyRelative("DataFormat");
             m_TextSourceDirPath = m_LocalizationSettings?.FindPropertyRelative("TextSourceDirPath");
             m_FontSourceDirPath = m_LocalizationSettings?.FindPropertyRelative("FontSourceDirPath");
             m_TextUnitsSettings = m_LocalizationSettings?.FindPropertyRelative("TextUnitsSettings");
@@ -59,7 +60,7 @@ namespace NovaFramework.Editor
                 m_FontTemplatePath.serializedObject.ApplyModifiedProperties();
             }
 
-            m_SupportedLanguagesJsonExportPath = serializedObject.FindProperty("m_SupportedLanguagesJsonExportPath");
+            m_SupportedLanguagesDataExportPath = serializedObject.FindProperty("m_SupportedLanguagesDataExportPath");
             m_SupportedLanguagesAssetLocation = serializedObject.FindProperty("m_SupportedLanguagesAssetLocation");
 
             m_LocalizationManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(ILocalizationManager)));
@@ -72,6 +73,8 @@ namespace NovaFramework.Editor
         {
             base.OnInspectorGUI();
             DrawConfigs();
+            DrawDataFormat();
+            EditorUtil.Draw.Line();
             DrawTextExportSection();
             DrawFontExportSection();
             FinalRefreshInspectorGUI();

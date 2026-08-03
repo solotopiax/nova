@@ -41,6 +41,7 @@ namespace NovaFramework.Runtime
         /// <param name="config">配置信息。</param>
         public override void Initialize(SoundManagerConfig config)
         {
+            m_DataFormat = config.DataFormat;
             m_SoundUnitsSettings = config.SoundUnitsSettings;
             m_ParentTransform = config.ParentTransform;
             m_AudioMixer = config.AudioMixer;
@@ -94,7 +95,8 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                new LubanDataReceiver(dataCache, unit, syncLoadFunc, releaseFunc).ReadDataAssetSync(unit.AssetLocation);
+                LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, syncLoadFunc, releaseFunc)
+                    .ReadDataAssetSync(unit.AssetLocation);
             }
 
             BuildSoundTablesFromCache(dataCache, m_SoundUnitsSettings.Count);
@@ -123,7 +125,8 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                tasks.Add(new LubanDataReceiver(dataCache, unit, loadFunc, releaseFunc).ReadDataAssetAsync(unit.AssetLocation));
+                tasks.Add(LubanRuntimeData.CreateReceiver(m_DataFormat, dataCache, unit, loadFunc, releaseFunc)
+                    .ReadDataAssetAsync(unit.AssetLocation));
             }
 
             if (tasks.Count > 0)
