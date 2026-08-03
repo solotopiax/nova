@@ -100,7 +100,7 @@ namespace NovaFramework.Sdk.Applesignin.Samples.Runtime
             try
             {
                 AppendFeedback($"正在请求 Nova.Network.Kit<Bind>().BindAsync(Apple, \"{m_CurrentAppleId}\")...");
-                NetResponse<PbNetBindResp> resp = await Nova.Network.Kit<Bind>().BindAsync((int)PbNetChannel.Apple, m_CurrentAppleId);
+                NetResponse<PbNetBindResp> resp = await Nova.Network.Kit<Bind>().BindAsync(ThirdLoginProvider.Apple, m_CurrentAppleId);
                 if (resp.IsSuccess)
                 {
                     AppendFeedback("Apple 账号绑定成功。", FeedbackLevel.Success);

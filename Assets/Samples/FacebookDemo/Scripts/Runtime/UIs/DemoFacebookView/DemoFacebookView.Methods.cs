@@ -111,7 +111,7 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
             try
             {
                 AppendFeedback("正在请求 Nova.Network.Kit<Bind>().BindAsync(Facebook, \"" + m_CurrentFacebookId + "\")...");
-                NetResponse<PbNetBindResp> resp = await Nova.Network.Kit<Bind>().BindAsync((int)PbNetChannel.Facebook, m_CurrentFacebookId);
+                NetResponse<PbNetBindResp> resp = await Nova.Network.Kit<Bind>().BindAsync(ThirdLoginProvider.Facebook, m_CurrentFacebookId);
                 if (resp.IsSuccess)
                 {
                     AppendFeedback("Facebook 账号绑定成功。", FeedbackLevel.Success);

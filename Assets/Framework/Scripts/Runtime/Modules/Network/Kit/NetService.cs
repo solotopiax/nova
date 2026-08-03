@@ -151,10 +151,20 @@ namespace NovaFramework.Runtime
             try
             {
                 LogRequest(netCmdName, url, request, true);
-                httpResponse = await Nova.Network.PostRawDataAsync(url, bodyBytes, -1f, -1f, headerInfos);
+                try
+                {
+                    httpResponse = await Nova.Network.PostRawDataAsync(url, bodyBytes, -1f, -1f, headerInfos);
+                }
+                catch (Exception e)
+                {
+                    LogResponseFailure<TResp>(netCmdName, httpResponse, "transport", e.Message);
+                    throw;
+                }
+
                 if (!httpResponse.IsSuccess || httpResponse.RawData == null)
                 {
                     string error = httpResponse.Error ?? "Network request failed";
+                    LogResponseFailure<TResp>(netCmdName, httpResponse, "http", error);
                     Log.Warning(LogTag.Network, "NetService.SendAsync：HTTP 请求失败，name={0}，error={1}。", netCmdName, error);
                     return NetResponse<TResp>.Fail(NetErrorCode.NETWORK_ERROR, error);
                 }
@@ -172,6 +182,7 @@ namespace NovaFramework.Runtime
                     }
                     catch (Exception e)
                     {
+                        LogResponseFailure<TResp>(netCmdName, httpResponse, "decrypt", e.Message);
                         Log.Error(LogTag.Network, "NetService.SendAsync：AES 解密失败，name={0}，error={1}。", netCmdName, e.Message);
                         return NetResponse<TResp>.Fail(NetErrorCode.AES_DECRYPT_FAILED, $"AES decrypt failed: {e.Message}");
                     }
@@ -184,6 +195,7 @@ namespace NovaFramework.Runtime
                 }
                 catch (Exception e)
                 {
+                    LogResponseFailure<TResp>(netCmdName, httpResponse, "base_response_parse", e.Message);
                     Log.Error(LogTag.Network, "NetService.SendAsync：BaseResponse 解析失败，name={0}，error={1}。", netCmdName, e.Message);
                     return NetResponse<TResp>.Fail(NetErrorCode.PROTO_PARSE_FAILED, $"BaseResponse parse failed: {e.Message}");
                 }
@@ -198,17 +210,20 @@ namespace NovaFramework.Runtime
                         try
                         {
                             TResp errorData = parser.ParseFrom(parseResult.BusinessData);
-                            LogResponse(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message, errorData);
+                            LogResponse(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message,
+                                errorData, rawDataLength: httpResponse.RawData.Length);
                             return NetResponse<TResp>.Fail(parseResult.Code, parseResult.Message, errorData);
                         }
                         catch (Exception e)
                         {
                             Log.Warning(LogTag.Network, "NetService.SendAsync：业务错误响应体解析失败，降级为不带 data，name={0}，error={1}。", netCmdName, e.Message);
-                            LogResponse<TResp>(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message, default, e.Message);
+                            LogResponse<TResp>(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message,
+                                default, "business_response_parse", e.Message, httpResponse.RawData.Length);
                             return NetResponse<TResp>.Fail(parseResult.Code, parseResult.Message);
                         }
                     }
-                    LogResponse<TResp>(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message, default);
+                    LogResponse<TResp>(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message,
+                        default, rawDataLength: httpResponse.RawData.Length);
                     return NetResponse<TResp>.Fail(parseResult.Code, parseResult.Message);
                 }
 
@@ -220,11 +235,13 @@ namespace NovaFramework.Runtime
                 catch (Exception e)
                 {
                     Log.Error(LogTag.Network, "NetService.SendAsync：业务 Proto 解析失败，name={0}，error={1}。", netCmdName, e.Message);
-                    LogResponse<TResp>(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message, default, e.Message);
+                    LogResponse<TResp>(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message,
+                        default, "business_response_parse", e.Message, httpResponse.RawData.Length);
                     return NetResponse<TResp>.Fail(NetErrorCode.PROTO_PARSE_FAILED, $"Response parse failed: {e.Message}");
                 }
 
-                LogResponse(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message, responseData);
+                LogResponse(netCmdName, httpResponse.StatusCode, parseResult.Code, parseResult.Message,
+                    responseData, rawDataLength: httpResponse.RawData.Length);
                 return NetResponse<TResp>.Success(responseData);
             }
             finally
@@ -282,24 +299,56 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 输出尚未得到可解析业务响应时的统一响应终态，保留已获取的 HTTP 状态码与原始响应长度。
+        /// </summary>
+        /// <typeparam name="TResp">响应 Proto 消息类型。</typeparam>
+        /// <param name="netCmdName">网络指令名称。</param>
+        /// <param name="httpResponse">HTTP 响应；传输层抛异常且未返回响应时为空。</param>
+        /// <param name="failureStage">失败阶段。</param>
+        /// <param name="error">失败信息。</param>
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        private static void LogResponseFailure<TResp>(
+            string netCmdName,
+            HttpResponse httpResponse,
+            string failureStage,
+            string error)
+            where TResp : IMessage<TResp>
+        {
+            LogResponse<TResp>(
+                netCmdName,
+                httpResponse?.StatusCode,
+                null,
+                string.Empty,
+                default,
+                failureStage,
+                error,
+                httpResponse?.RawData?.Length ?? 0);
+        }
+
+        /// <summary>
         /// 以统一单行 JSON 输出服务端响应及解析结果；调用在非 Editor、非 Development Build 中会被编译器移除。
         /// </summary>
         /// <typeparam name="TResp">响应 Proto 消息类型。</typeparam>
         /// <param name="netCmdName">网络指令名称。</param>
-        /// <param name="httpStatusCode">HTTP 状态码。</param>
-        /// <param name="code">服务端 BaseResponse 错误码。</param>
+        /// <param name="httpStatusCode">HTTP 状态码；传输层未返回响应时为空。</param>
+        /// <param name="code">服务端 BaseResponse 错误码；协议尚未解析时为空。</param>
         /// <param name="message">服务端 BaseResponse 错误信息。</param>
         /// <param name="response">解析后的业务响应 Proto；无业务体或解析失败时为 null。</param>
-        /// <param name="parseError">业务响应 Proto 解析错误；解析成功时为空。</param>
+        /// <param name="failureStage">失败阶段；响应完整解析时为空。</param>
+        /// <param name="error">失败信息；响应完整解析时为空。</param>
+        /// <param name="rawDataLength">HTTP 原始响应字节数。</param>
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
         private static void LogResponse<TResp>(
             string netCmdName,
-            int httpStatusCode,
-            int code,
+            int? httpStatusCode,
+            int? code,
             string message,
             TResp response,
-            string parseError = null)
+            string failureStage = null,
+            string error = null,
+            int rawDataLength = 0)
             where TResp : IMessage<TResp>
         {
             try
@@ -309,14 +358,19 @@ namespace NovaFramework.Runtime
                     ["source"] = "Nova.NetService",
                     ["stage"] = "response",
                     ["name"] = netCmdName,
-                    ["httpStatusCode"] = httpStatusCode,
-                    ["code"] = code,
+                    ["httpStatusCode"] = httpStatusCode.HasValue ? new JValue(httpStatusCode.Value) : JValue.CreateNull(),
+                    ["code"] = code.HasValue ? new JValue(code.Value) : JValue.CreateNull(),
                     ["msg"] = message ?? string.Empty,
-                    ["data"] = FormatProtoJson(response)
+                    ["data"] = FormatProtoJson(response),
+                    ["rawDataLength"] = rawDataLength
                 };
-                if (!string.IsNullOrEmpty(parseError))
+                if (!string.IsNullOrEmpty(failureStage))
                 {
-                    logData["parseError"] = parseError;
+                    logData["failureStage"] = failureStage;
+                }
+                if (!string.IsNullOrEmpty(error))
+                {
+                    logData["error"] = error;
                 }
                 Log.Debug(LogTag.Network, logData.ToString(Formatting.None));
             }

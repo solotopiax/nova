@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-03
+
+### Changed
+
+- 登录流程统一使用 `ThirdLoginProvider` 表达第三方登录提供方，并将 Framework 最低依赖提升至 `0.6.4`。
+
 ## [0.1.2] - 2026-08-03
 
 ### Changed
@@ -209,7 +215,7 @@
 
 ### Renamed
 - `LoginService` → `Login`：类名简化，与 `Nova.Network.Kit<Login>()` 调用形态对齐。
-- 登录入口方法统一重命名为 `Async()`（原 `LoginAsync()`），提供 `ChannelType` 业务入口重载与完整 Proto 入口重载。
+- 登录入口方法统一重命名为 `Async()`（原 `LoginAsync()`），当时曾提供 `ChannelType` 业务入口重载与完整 Proto 入口重载；该历史重载已移除，当前登录参数不再复用游戏运营渠道类型。
 
 ### Added
 - 新增 `LoginErrorCode` 静态类，占位登录业务错误码段位（7000~7999），与 `NetErrorCode` 客户端段/服务端通用段错开。
@@ -220,7 +226,7 @@
 - 重写 `LoginService`：去除 `NetServiceBase<T>` 继承，改为独立 `sealed class`，自持 `UID` 属性与 `IsLoggedIn` 布尔属性。
 - `Async(cmdRow, channel, openId, forceNewAccount)` 业务入口重载：内部改用 `NetBuilder.BuildHeader()` 填充 Head 后直接传裸 Body 给 `NetService.SendAsync`，不再经 `NetBuilder.BuildRequest()` 装箱为容器。
 - `Login.Async` 合并为单一重载（去除接受 `NetRequest<PbNetLoginReq>` 的版本，因 kit.network 0.0.9 已撤销 NetRequest 容器类型）。
-- `ToProtoChannel` 方法入参改为 `ChannelType`（原为 `PbNetChannel`），在 Service 内部完成映射；`TikTok` / `Official` / `Alipay` 无对应 PbNetChannel 值，统一走 `Unspecified`。
+- `ToProtoChannel` 方法入参改为游戏运营渠道 `ChannelType`（原为 `PbNetChannel`），在 Service 内部完成映射；当时尚未覆盖的渠道值由后续主框架 Header 映射统一补齐。
 
 ---
 

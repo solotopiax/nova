@@ -5,7 +5,7 @@
  * filename:  ChannelType.cs
  * author:    taoye
  * created:   2026/2/3
- * descrip:   业务渠道类型
+ * descrip:   游戏运营渠道类型
  ***************************************************************/
 
 using System;
@@ -13,7 +13,7 @@ using System;
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// 业务渠道类型。
+    /// 游戏运营渠道类型，用于描述包体分发与运营来源。
     /// </summary>
     [Serializable]
     public enum ChannelType : byte

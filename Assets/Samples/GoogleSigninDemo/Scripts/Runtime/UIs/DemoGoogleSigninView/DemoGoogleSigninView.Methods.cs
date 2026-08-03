@@ -102,7 +102,7 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
             try
             {
                 AppendFeedback($"正在请求 Nova.Network.Kit<Bind>().BindAsync(Google, \"{m_CurrentGoogleId}\")...");
-                NetResponse<PbNetBindResp> resp = await Nova.Network.Kit<Bind>().BindAsync((int)PbNetChannel.Google, m_CurrentGoogleId);
+                NetResponse<PbNetBindResp> resp = await Nova.Network.Kit<Bind>().BindAsync(ThirdLoginProvider.Google, m_CurrentGoogleId);
                 if (resp.IsSuccess)
                 {
                     AppendFeedback("Google 账号绑定成功。", FeedbackLevel.Success);

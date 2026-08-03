@@ -1,5 +1,5 @@
 {
-  "version": "2026-07-31-1401",
+  "version": "2026-08-03-1741",
   "generated_by": "nova-obs keyword-rebuild",
   "prelookup_keywords": [
     "10400",
@@ -90,6 +90,7 @@
     "BundleBuilder",
     "CHANGELOG",
     "CHANGELOG 写人话",
+    "ChannelType",
     "CloseUIView",
     "CloseUIViews",
     "Component",
@@ -135,6 +136,7 @@
     "GLO-06",
     "GLO-07",
     "GLO-08",
+    "GLO-09",
     "GM工具图谱",
     "GameBind",
     "GameDlls",
@@ -352,11 +354,14 @@
     "PAT-84",
     "PAT-87",
     "PAT-88",
+    "PbNetChannel",
+    "PbNetPlatform",
     "PersistComponent",
     "Pipify",
     "Pipify 构建流水线图谱",
     "PipifyStep",
     "Pipify图谱",
+    "PlatformType",
     "PlayCustom",
     "PlayEmphasis",
     "PlaySoundParams",
@@ -438,6 +443,7 @@
     "ad_impression",
     "api-naming",
     "bookkeeping",
+    "channel",
     "compounding",
     "cs↔Docs 镜像同步铁律",
     "device_id",
@@ -453,6 +459,8 @@
     "margin 传播",
     "module-literal",
     "new-sdk-plugin",
+    "platform",
+    "provider",
     "pub-sub",
     "sdk-adrs",
     "sdk-plugin-sop",
@@ -557,6 +565,6 @@
     "Config": "MOC-Config",
     "Prefab": "MOC-Prefab"
   },
-  "note_count": 199,
+  "note_count": 200,
   "suggestions_count": 15
 }

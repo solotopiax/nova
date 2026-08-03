@@ -43,7 +43,7 @@ After successful login, the plugin updates `CurrentUserData` with the current Fa
 - `AccessToken`
 - `AvatarPath`
 
-It also publishes `SDKDataKeys.OpenId` with `UserId` and `SDKDataKeys.ThirdPlatform` with the provider name, allowing analytics plugins such as TGA to consume the login identity without a direct package dependency.
+It also publishes `SDKDataKeys.OpenId` with `UserId` and `SDKDataKeys.ThirdLoginProvider` with the provider name, allowing analytics plugins such as TGA to consume the login identity without a direct package dependency.
 
 `AuthResult.Token` maps to the Facebook Access Token. Callers should use `CurrentUserData` for current login state and should not cache old tokens or avatar paths beyond the active session contract.
 

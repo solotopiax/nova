@@ -132,16 +132,19 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 将 Nova.Config.Channel（ChannelType）映射为 PbNetChannel 枚举值。
         /// 渠道来源为 Nova.Config.Channel，在 BuildHeader() 内自动调用，业务 Service 无需传入渠道参数。
-        /// ChannelType.TikTok / Official / Alipay 等在 PbNetChannel 无对应值，统一返回 Unspecified。
+        /// ChannelType.None 映射为 Unspecified，其余有效运营渠道保持同名同值映射。
         /// </summary>
         /// <returns>对应的 PbNetChannel 枚举值，无匹配时返回 Unspecified。</returns>
         private static PbNetChannel InferChannel()
         {
             return Nova.Config.Channel switch
             {
+                ChannelType.Official => PbNetChannel.Official,
                 ChannelType.Google => PbNetChannel.Google,
                 ChannelType.Apple => PbNetChannel.Apple,
                 ChannelType.WeChat => PbNetChannel.Wechat,
+                ChannelType.TikTok => PbNetChannel.TikTok,
+                ChannelType.Alipay => PbNetChannel.Alipay,
                 _ => PbNetChannel.Unspecified,
             };
         }

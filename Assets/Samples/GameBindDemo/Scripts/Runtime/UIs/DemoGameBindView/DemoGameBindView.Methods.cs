@@ -194,7 +194,7 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
             AppendFeedback($"Nova.Network.Kit<Bind>().BindAsync(Google, \"{openId}\") → 请求中...");
 
             NetResponse<PbNetBindResp> resp = await Nova.Network.Kit<Bind>().BindAsync(
-                (int)PbNetChannel.Google, openId);
+                ThirdLoginProvider.Google, openId);
 
             if (resp.IsSuccess)
             {

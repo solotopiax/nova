@@ -22,7 +22,7 @@ namespace NovaFramework.Runtime
         public bool Success;
 
         /// <summary>
-        /// 登录成功后第三方平台返回的用户唯一标识；失败时为 null。
+        /// 登录成功后第三方登录提供方返回的用户唯一标识；失败时为 null。
         /// </summary>
         public string UserId;
 

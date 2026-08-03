@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.12] - 2026-08-03
+
+### Changed
+
+- 第三方登录提供方数据改用 `ThirdLoginProvider`；Framework、GameLogin 与 GameBind 最低依赖分别提升至 `0.6.4`、`0.1.3` 与 `0.0.9`。
+
 ## [0.0.11] - 2026-08-03
 
 ### Changed
@@ -31,7 +37,7 @@
 
 ### Changed
 
-- Google 登录成功后发布 `OpenId` 与 `ThirdPlatform` 数据，供 TGA 等分析插件自动同步用户属性。
+- Google 登录成功后发布 `OpenId` 与 `ThirdLoginProvider` 数据，供 TGA 等分析插件自动同步用户属性。
 - 将 Nova Framework 最低依赖版本提升至 `0.5.42`。
 
 ## [0.0.6] - 2026-07-13

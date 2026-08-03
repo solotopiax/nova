@@ -13,4 +13,4 @@
 - Native or third-party integration lives under `Core/Plugins`.
 - Demo scene lives under `Assets/Samples/GoogleSigninDemo`.
 - Runtime config is injected automatically through `GoogleSignInPlugin.ConfigType`.
-- Successful login publishes `SDKDataKeys.OpenId` and `SDKDataKeys.ThirdPlatform` for cross-plugin identity synchronization.
+- Successful login publishes `SDKDataKeys.OpenId` and `SDKDataKeys.ThirdLoginProvider` for cross-plugin identity synchronization.

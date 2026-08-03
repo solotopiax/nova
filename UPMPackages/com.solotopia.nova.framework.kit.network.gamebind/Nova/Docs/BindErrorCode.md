@@ -28,7 +28,7 @@
 ## 3. 使用示例
 
 ```csharp
-var resp = await Nova.Network.Kit<Bind>().BindAsync((int)PbNetChannel.Google, openid);
+var resp = await Nova.Network.Kit<Bind>().BindAsync(ThirdLoginProvider.Google, openid);
 if (!resp.IsSuccess)
 {
     switch (resp.ErrorCode)

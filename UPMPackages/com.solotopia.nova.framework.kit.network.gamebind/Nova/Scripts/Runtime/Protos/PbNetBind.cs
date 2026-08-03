@@ -372,7 +372,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
     public const int ProviderFieldNumber = 2;
     private int provider_;
     /// <summary>
-    /// 三方平台（与 PbNetChannel 枚举值对齐，直接透传）
+    /// 第三方登录提供方：Facebook=1 / Google=2 / Apple=3 / Wechat=4（0 禁用）
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

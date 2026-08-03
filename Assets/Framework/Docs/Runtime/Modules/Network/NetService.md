@@ -70,10 +70,10 @@ NetService.SetDebugMode(true);
 
   ```json
   {"source":"Nova.NetService","stage":"request","name":"Login","url":"https://example.com/login","sent":true,"data":{}}
-  {"source":"Nova.NetService","stage":"response","name":"Login","httpStatusCode":200,"code":0,"msg":"","data":{}}
+  {"source":"Nova.NetService","stage":"response","name":"Login","httpStatusCode":200,"code":0,"msg":"","data":{},"rawDataLength":64}
   ```
 
-  只有已进入实际 HTTP 发送阶段的请求才使用 `Log.Debug`。URL 缺失、AES 配置缺失或加密失败等未发送请求使用 `Log.Warning`，并输出 `"sent":false` 与 `reason`；不会产生误导性的 Debug 请求日志。业务 Proto 无法解析时，响应日志的 `data` 为 `null`，并追加 `parseError`。正式非 Development Build 会移除这些日志调用，避免输出 UID、OpenID、验证码和存档等敏感内容，也避免 JSON 序列化开销。
+  只有已进入实际 HTTP 发送阶段的请求才使用 `Log.Debug`。URL 缺失、AES 配置缺失或加密失败等未发送请求使用 `Log.Warning`，并输出 `"sent":false` 与 `reason`；不会产生误导性的 Debug 请求日志。HTTP 失败、解密失败、BaseResponse 解析失败、业务 Proto 解析失败或传输异常也会输出一次响应终态；尚未获得的 `httpStatusCode` / `code` 为 `null`，并附 `failureStage`、`error` 与 `rawDataLength`。正式非 Development Build 会移除这些日志调用，避免输出 UID、OpenID、验证码和存档等敏感内容，也避免 JSON 序列化开销。
 - **日志与明文模式分离**：统一诊断日志不复用 `IsDebugMode`；`IsDebugMode` 仍只控制 AES 加解密和 `X-Debug-Plain`，不会决定日志是否输出。
 - **无需初始化**：`UID`、`OpenID` 和 `IsDebugMode` 有默认值，配置在运行时从 `Nova.Config.AppConfigs.AppAesKey / AppAesIV` 自动读取，不需要业务侧手动注入。
 - **仅进程内身份**：`UID` 与 `OpenID` 都不写 PlayerPrefs、FileFragment 或 SQLite；进程重启后均为空，必须重新登录恢复。

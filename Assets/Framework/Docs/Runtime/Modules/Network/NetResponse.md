@@ -36,7 +36,7 @@
 
 ```csharp
 // 业务侧接收 Login 结果
-var resp = await Nova.Network.Kit<Login>().Async(cmdRow, ChannelType.Google, openId);
+var resp = await Nova.Network.Kit<Login>().Async(string.Empty, openId);
 
 if (resp.IsSuccess)
 {

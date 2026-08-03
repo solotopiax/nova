@@ -74,9 +74,9 @@ login.Clear();
 - **删号语义 = 账号不存在 = 强制登出**：`DeleteAsync` 成功后自动清空 UID、OpenID，防止继续以失效身份发后续请求。删号失败时登录态不变。
 - **`DeleteAsync` cmdName 取自 `DeleteCmdName`**：`DeleteAsync` 内部取 `LoginKitConfig.DeleteCmdName` 解析为指令行；在 ConfigWindow 中为 `LoginKitConfig.DeleteCmdName` 填入对应 NetCmd 名称并重导出后方可正常调用。
 - **`LoginKitConfig` 必须配置**：`Async` 内部通过 `Nova.Config.GetKitConfig<LoginKitConfig>()` 取配置，未在 ConfigWindow 配置 `LoginKitConfig` 时抛 `KitConfigMissingException`（开发期 fail-fast，暴露漏配）。
-- **channel 来源**：`Async` 内部取 `Nova.Config.Channel`，业务侧无需传入；渠道在 ConfigWindow 全局配置一次即可。
+- **游戏运营渠道来源**：Header 的 `channel` 由 `NetBuilder.BuildHeader()` 从 `Nova.Config.Channel` 自动读取，业务侧无需传入；它只表示包体分发与运营来源，不表示第三方登录提供方。
 - **`SetDebugMode` 覆盖语义**：`m_DebugModeOverride` 为 `bool?`，调用 `SetDebugMode(true/false)` 后会覆盖全局 `NetService.IsDebugMode`；若需恢复跟随全局，暂无公开 API，需重新 `Kit<Login>()` 获取新实例（全局 Kit 实例由 `NetworkComponent` 管理，视具体注册策略而定）。
-- **`ChannelType` 映射范围**：`ChannelType.Google / Apple / WeChat` 有明确 Proto 映射；`TikTok / Official / Alipay` 及其他渠道统一映射为 `PbNetChannel.Unspecified`。
+- **`ChannelType` 映射范围**：`Official / Google / Apple / WeChat / TikTok / Alipay` 均同名映射到 `PbNetChannel`，只有 `ChannelType.None` 或未知值映射为 `PbNetChannel.Unspecified`。
 - **`Head` 自动填充**：`NetBuilder.BuildHeader()` 在 `SendAsync` 内部调用，业务侧无需手动构建 Header。
 - **依赖主框架公共网络编排层**：`NetService.SendAsync` / `NetBuilder.BuildHeader` / `NetResponse<T>` 均来自主框架包 `com.solotopia.nova.framework` 的 Network Kit 公共层。
 - **失败分支码值归类**：`SendAsync` 失败时调 `LogLoginError`，按 `LoginErrorCode` 常量归类码值打可读日志；不改变返回值，业务侧仍按 `resp.ErrorCode` 自行分支。

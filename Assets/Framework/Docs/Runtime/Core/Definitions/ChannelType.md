@@ -3,7 +3,7 @@
 **类签名**：`[Serializable] public enum ChannelType : byte`
 **命名空间**：`NovaFramework.Runtime`
 
-业务渠道类型枚举，定义应用分发所支持的各个渠道标识。
+游戏运营渠道类型枚举，定义应用分发与运营来源所使用的渠道标识；它与 Facebook、Google、Apple、Wechat 等第三方登录提供方无关。
 
 ---
 

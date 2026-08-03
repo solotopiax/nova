@@ -80,6 +80,13 @@
 - 构建前统一刷新资源导出物
 - 只重导某一模块的数据或代码
 
+`export.config` 的参数区依次显示三个枚举下拉框：`Platform`、`Channel`、`DevelopMode`。新建条目时立即读取当前激活
+`ConfigMasterSO` 的三项当前值并写入 `ParamsJson`，因此参数不会为空。历史空参数条目在第一次执行前执行同样的初始化，
+并立即保存所属 `PipifySettingsSO`；后续执行只使用已经固化的值，不再跟随 ConfigMaster 当前选择变化。
+
+执行时 Step 将三项显式传给 `EditorUtil.Config.Exporter.Export`，只更新目标 `ConfigRuntimeSO`，不会修改、标脏或保存
+`ConfigMasterSO`。CLI 参数覆盖在历史条目固化之后应用，只对本次执行生效，不回写已经保存的 Step 参数。
+
 ### 4. Bundle 构建
 
 目标：
@@ -250,8 +257,9 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 
 ### Config 导出
 
-- 工程内必须能定位到唯一 `ConfigMasterSO`
+- 必须能通过 `EditorUtil.Config.WorkspaceActive` 定位当前激活 `ConfigMasterSO`
 - `ConfigMasterSO.ExportTarget` 不能为空
+- `Platform` / `Channel` 不可为 `None`，且 ConfigMaster 中必须存在对应矩阵配置
 
 ### 组件型导出 Step
 
@@ -280,6 +288,7 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 - UI Excel 校验、Luban 或暂存发布失败：`export.ui.data` / `export.ui.code` 会抛出异常并中断流水线，不再以完成任务返回。
 - Sound/Vibrate 数据或类型批次返回 `false`：对应 Step 立即抛出异常并中断流水线，不会继续执行后续 Step；每个 Sound 或 Vibrate 区域只建立一次发布事务。
 - `ConfigMasterSO.ExportTarget` 没配：`export.config` 会中断流水线。
+- `export.config` 参数为 `None` 或指定矩阵不存在：会携带 Platform / Channel / DevelopMode 坐标中断流水线。
 - HybridCLR 只跑了拷贝，没先生成 DLL：拷贝类 Step 会失去输入产物。
 - Android 没先 `edm4u.android_resolve`：后续构建链可能在依赖目录上失败。
 - 手动移除或跳过 `export.config` 后直接跑 `build.package`：文件名开发模式段会降级为 `Debug`，并输出 Warning。

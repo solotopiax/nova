@@ -10,13 +10,15 @@ enum PbNetPlatform {
     PbNetPlatform_WEBGL = 3;        // WebGL 平台
 }
 
-// 第三方登录渠道枚举
+// 游戏运营渠道枚举：与客户端 ChannelType 的有效值保持一致
 enum PbNetChannel {
     PbNetChannel_UNSPECIFIED = 0;  // 未指定（默认值，禁止实际使用）
-    PbNetChannel_FACEBOOK = 1;     // Facebook 渠道
-    PbNetChannel_GOOGLE = 2;       // Google 渠道
-    PbNetChannel_APPLE = 3;        // Apple 渠道
+    PbNetChannel_OFFICIAL = 1;     // 官网包渠道
+    PbNetChannel_GOOGLE = 2;       // Google Play 渠道
+    PbNetChannel_APPLE = 3;        // App Store 渠道
     PbNetChannel_WECHAT = 4;       // 微信渠道
+    PbNetChannel_TIK_TOK = 5;      // 抖音渠道
+    PbNetChannel_ALIPAY = 6;       // 支付宝渠道
 }
 
 // 请求公共头：每个业务请求都需要携带，供服务端做身份识别与多维统计
@@ -27,7 +29,7 @@ message PbNetReqHeader {
     string language = 4;         // 客户端当前语言（如 zh-CN、en-US）
     string device_id = 5;        // 设备唯一标识，用于设备维度统计与风控
     PbNetPlatform platform = 6;  // 客户端运行平台
-    PbNetChannel channel = 7;    // 客户端第三方渠道
+    PbNetChannel channel = 7;    // 游戏运营渠道，用于区分包体分发与运营来源
     string openid = 8;           // 第三方用户 ID
 }
 

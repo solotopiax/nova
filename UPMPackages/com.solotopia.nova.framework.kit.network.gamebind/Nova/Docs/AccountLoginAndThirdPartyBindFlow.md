@@ -7,7 +7,7 @@
 | 状态 | 含义 | 客户端关键数据 |
 |---|---|---|
 | 游客账号 | 只有游戏 UID，没有三方绑定 | UID、`device_id` |
-| 已绑定账号 | UID 已绑定一个三方账号 | UID、`device_id`、渠道、OpenID |
+| 已绑定账号 | UID 已绑定一个三方账号 | UID、`device_id`、OpenID |
 | 冲突待选择 | 当前账号要绑定的 OpenID 已归属其他 UID | guest UID、目标 OpenID、existing UID、双方进度摘要 |
 
 UID 是游戏账号，OpenID 是第三方平台用户标识。两个 UID 的游戏数据不会由服务端自动合并；同一 OpenID 同一时刻只归属一个 UID。
@@ -22,7 +22,7 @@ UID 是游戏账号，OpenID 是第三方平台用户标识。两个 UID 的游�
 | Login Body `open_id` | 本次登录使用的第三方凭据 | `Login.Async(..., openid, ...)` 参数 |
 | Bind Body `open_id` | 本次要绑定、查询或裁决的目标 | Bind 方法的 `openid` 参数 |
 
-当 Header 同时携带渠道与 OpenID 时，服务端会验证该 OpenID 当前绑定的 UID 是否等于 `head.uid`，不一致直接返回 `10407`，不会继续执行登录、绑定或裁决。
+当 Header 携带 OpenID 时，服务端会验证该 OpenID 当前绑定的 UID 是否等于 `head.uid`，不一致直接返回 `10407`，不会继续执行登录、绑定或裁决。Header 的 `channel` 是独立的游戏运营渠道，不参与表达第三方登录提供方。
 
 因此：
 
@@ -64,7 +64,7 @@ B 访问受保护接口 -> 正常
 
 1. 当前 UID 已登录。
 2. 第三方 SDK 完成授权，业务取得目标 OpenID。
-3. 调用 `BindAsync(provider, openid)`。
+3. 调用 `BindAsync(ThirdLoginProvider provider, string openid)`。
 4. 目标从未绑定时，服务端将其绑定到当前 UID。
 5. 目标已绑定当前 UID 时，按幂等成功处理。
 

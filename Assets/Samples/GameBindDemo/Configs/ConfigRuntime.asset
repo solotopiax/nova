@@ -23,11 +23,11 @@ MonoBehaviour:
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 8085689214958567709
+  - rid: 5208076592847519913
   EnabledKitConfigs:
-  - rid: 8085689214958567710
-  - rid: 8085689214958567711
-  - rid: 8085689214958567712
+  - rid: 5208076592847519914
+  - rid: 5208076592847519915
+  - rid: 5208076592847519916
   HybridConfigs:
     GameEntranceProcedureName: ProcedurePreload
     AotMetadataDlls:
@@ -57,26 +57,28 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 8085689214958567709
+    - rid: 5208076592847519913
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-    - rid: 8085689214958567710
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 5208076592847519914
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:
         m_GetCmdName: GameSaveGet
         m_SetCmdName: GameSaveSet
-    - rid: 8085689214958567711
+    - rid: 5208076592847519915
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: GameAccountDelete
-    - rid: 8085689214958567712
+    - rid: 5208076592847519916
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind

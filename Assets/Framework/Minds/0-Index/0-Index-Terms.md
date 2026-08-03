@@ -16,12 +16,14 @@ date: 2026-06-05
 | 工具门面 | `EditorUtil.Draw`、`Util.TypeCreator`、`Util.Json` 等统一工具入口 | [GLO-04](../2-Areas/Glossary/GLO-04-utility-classes.md) |
 | 三级文档体系 | `INDEX / 模块层 / 类规格` 三层组织 | [GLO-05](../2-Areas/Glossary/GLO-05-three-tier-docs.md) |
 | Asset 地址 | 资源定位字符串的统一中文称呼 | [GLO-07](../2-Areas/Glossary/GLO-07-asset-location.md) |
+| Platform / Channel / Provider | 运行平台 / 运营渠道 / 第三方登录提供方 | [GLO-09](../2-Areas/Glossary/GLO-09-channel-and-third-login-provider.md) |
 
 ## 容易混淆的词
 
 | 推荐用语 | 避免 |
 |---|---|
 | Asset 地址 | 资产地址、资源地址 |
+| 运行平台 / 运营渠道 / 登录提供方 | 将 platform、channel、provider 混为同一概念 |
 | Runtime 模块 | 系统、逻辑块等模糊叫法 |
 | View | 在业务 UI 类名中混用 `Panel`、`Window`、`Dialog` |
 

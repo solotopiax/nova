@@ -531,7 +531,7 @@ namespace NovaFramework.Editor
             BatchItem newItem = new BatchItem { StepId = info.Id };
             if (info.ParamsType != null)
             {
-                object defaultParams = System.Activator.CreateInstance(info.ParamsType);
+                object defaultParams = EditorUtil.Pipify.CreateDefaultParams(info);
                 newItem.ParamsJson = Util.Json.Serialize(defaultParams);
             }
             batch.Items.Add(newItem);
@@ -572,24 +572,25 @@ namespace NovaFramework.Editor
         /// JSON 为空时返回默认新实例；反序列化失败时 Log.Warning 并返回默认新实例。
         /// </summary>
         /// <param name="item">BatchItem 数据。</param>
-        /// <param name="paramsType">参数类型。</param>
-        /// <returns>参数对象实例；paramsType 为 null 时返回 null，否则不为 null。</returns>
-        private static object BuildParamsInstance(BatchItem item, Type paramsType)
+        /// <param name="info">Step 元信息及参数类型。</param>
+        /// <returns>参数对象实例；ParamsType 为 null 时返回 null，否则不为 null。</returns>
+        private static object BuildParamsInstance(BatchItem item, PipifyStepInfo info)
         {
+            Type paramsType = info?.ParamsType;
             if (paramsType == null) return null;
             if (string.IsNullOrWhiteSpace(item.ParamsJson))
             {
-                return System.Activator.CreateInstance(paramsType);
+                return EditorUtil.Pipify.CreateDefaultParams(info);
             }
             try
             {
                 object result = Util.Json.Deserialize(item.ParamsJson, paramsType);
-                return result ?? System.Activator.CreateInstance(paramsType);
+                return result ?? EditorUtil.Pipify.CreateDefaultParams(info);
             }
             catch (Exception ex)
             {
                 Log.Warning(LogTag.Editor, "[PipifyWindow] 参数反序列化失败（{0}），使用默认值。异常：{1}", paramsType.Name, ex.Message);
-                return System.Activator.CreateInstance(paramsType);
+                return EditorUtil.Pipify.CreateDefaultParams(info);
             }
         }
     }

@@ -34,11 +34,12 @@ namespace NovaFramework.Runtime {
             "cHBfaWQYAiABKAUSCwoDdWlkGAMgASgJEg4KBm9wZW5pZBgEIAEoCSp5Cg1Q",
             "Yk5ldFBsYXRmb3JtEh0KGVBiTmV0UGxhdGZvcm1fVU5TUEVDSUZJRUQQABIV",
             "ChFQYk5ldFBsYXRmb3JtX0lPUxABEhkKFVBiTmV0UGxhdGZvcm1fQU5EUk9J",
-            "RBACEhcKE1BiTmV0UGxhdGZvcm1fV0VCR0wQAyqRAQoMUGJOZXRDaGFubmVs",
+            "RBACEhcKE1BiTmV0UGxhdGZvcm1fV0VCR0wQAyrEAQoMUGJOZXRDaGFubmVs",
             "EhwKGFBiTmV0Q2hhbm5lbF9VTlNQRUNJRklFRBAAEhkKFVBiTmV0Q2hhbm5l",
-            "bF9GQUNFQk9PSxABEhcKE1BiTmV0Q2hhbm5lbF9HT09HTEUQAhIWChJQYk5l",
-            "dENoYW5uZWxfQVBQTEUQAxIXChNQYk5ldENoYW5uZWxfV0VDSEFUEARiBnBy",
-            "b3RvMw=="));
+            "bF9PRkZJQ0lBTBABEhcKE1BiTmV0Q2hhbm5lbF9HT09HTEUQAhIWChJQYk5l",
+            "dENoYW5uZWxfQVBQTEUQAxIXChNQYk5ldENoYW5uZWxfV0VDSEFUEAQSGAoU",
+            "UGJOZXRDaGFubmVsX1RJS19UT0sQBRIXChNQYk5ldENoYW5uZWxfQUxJUEFZ",
+            "EAZiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::NovaFramework.Runtime.PbNetPlatform), typeof(global::NovaFramework.Runtime.PbNetChannel), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -73,7 +74,7 @@ namespace NovaFramework.Runtime {
   }
 
   /// <summary>
-  /// 第三方登录渠道枚举
+  /// 游戏运营渠道枚举：与客户端 ChannelType 的有效值保持一致
   /// </summary>
   public enum PbNetChannel {
     /// <summary>
@@ -81,21 +82,29 @@ namespace NovaFramework.Runtime {
     /// </summary>
     [pbr::OriginalName("PbNetChannel_UNSPECIFIED")] Unspecified = 0,
     /// <summary>
-    /// Facebook 渠道
+    /// 官网包渠道
     /// </summary>
-    [pbr::OriginalName("PbNetChannel_FACEBOOK")] Facebook = 1,
+    [pbr::OriginalName("PbNetChannel_OFFICIAL")] Official = 1,
     /// <summary>
-    /// Google 渠道
+    /// Google Play 渠道
     /// </summary>
     [pbr::OriginalName("PbNetChannel_GOOGLE")] Google = 2,
     /// <summary>
-    /// Apple 渠道
+    /// App Store 渠道
     /// </summary>
     [pbr::OriginalName("PbNetChannel_APPLE")] Apple = 3,
     /// <summary>
     /// 微信渠道
     /// </summary>
     [pbr::OriginalName("PbNetChannel_WECHAT")] Wechat = 4,
+    /// <summary>
+    /// 抖音渠道
+    /// </summary>
+    [pbr::OriginalName("PbNetChannel_TIK_TOK")] TikTok = 5,
+    /// <summary>
+    /// 支付宝渠道
+    /// </summary>
+    [pbr::OriginalName("PbNetChannel_ALIPAY")] Alipay = 6,
   }
 
   #endregion
@@ -250,7 +259,7 @@ namespace NovaFramework.Runtime {
     public const int ChannelFieldNumber = 7;
     private global::NovaFramework.Runtime.PbNetChannel channel_ = global::NovaFramework.Runtime.PbNetChannel.Unspecified;
     /// <summary>
-    /// 客户端第三方渠道
+    /// 游戏运营渠道，用于区分包体分发与运营来源
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

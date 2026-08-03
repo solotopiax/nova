@@ -449,6 +449,17 @@ namespace NovaFramework.Editor
             }
 
             EditorUtil.Draw.IncreaseIndentLevel();
+            bool bestHttpTelemetryAvailable = IsBestHttpTelemetryAvailable(System.Type.GetType);
+            using (new EditorGUI.DisabledScope(!bestHttpTelemetryAvailable))
+            {
+                EditorUtil.Draw.Toggle(
+                    "启用 BestHTTP 网络埋点",
+                    m_EnableBestHttpTelemetry,
+                    true,
+                    null,
+                    null,
+                    GUILayout.Width(185));
+            }
             EditorUtil.Draw.Property("HTTP 连接超时时间 (秒)", m_HttpSettings.FindPropertyRelative("ConnectTimeout"), true, GUILayout.Width(175));
             EditorUtil.Draw.Property("HTTP 请求超时时间 (秒)", m_HttpSettings.FindPropertyRelative("RequestTimeout"), true, GUILayout.Width(175));
             EditorUtil.Draw.Layout.Horizontal(() =>
@@ -456,13 +467,26 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Space(16f);
                 EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                 {
-                    "(1)ConnectTimeout 默认 20 秒",
-                    "(2)RequestTimeout 默认 60 秒",
-                    "(3)各 API 的 timeout 参数传 -1 时使用此处的默认值"
+                    bestHttpTelemetryAvailable
+                        ? "(1)BestHTTP 网络埋点会转发到所有可用的 ITrackPlugin"
+                        : "(1)未检测到支持网络埋点的 BestHTTP 商业库，开关不可用",
+                    "(2)ConnectTimeout 默认 20 秒",
+                    "(3)RequestTimeout 默认 60 秒",
+                    "(4)各 API 的 timeout 参数传 -1 时使用此处的默认值"
                 }, false, GUILayout.ExpandWidth(true));
             });
             EditorUtil.Draw.DecreaseIndentLevel();
             EditorUtil.Draw.Line();
+        }
+
+        /// <summary>
+        /// 检测当前工程是否安装了包含结构化遥测契约的 Best HTTP 商业库。
+        /// </summary>
+        /// <param name="typeResolver">按程序集限定名解析类型的入口，测试中可替换。</param>
+        /// <returns>结构化遥测契约类型存在时返回 true。</returns>
+        private static bool IsBestHttpTelemetryAvailable(System.Func<string, System.Type> typeResolver)
+        {
+            return typeResolver?.Invoke("Best.HTTP.Telemetry.BestHttpTelemetry, com.Tivadar.Best.HTTP") != null;
         }
 
         /// <summary>

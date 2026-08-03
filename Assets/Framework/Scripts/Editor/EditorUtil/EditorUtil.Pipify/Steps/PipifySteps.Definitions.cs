@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEngine;
 
@@ -97,6 +98,45 @@ namespace NovaFramework.Editor
             /// 绝对路径直接使用；相对路径基于项目根解析；文件夹不存在时自动创建。
             /// </summary>
             public string OutputFolderPath;
+        }
+
+        /// <summary>
+        /// Step 参数：指定本次 ConfigRuntime 导出的三维配置坐标。
+        /// 字段顺序同时决定 PipifyWindow 中三个枚举下拉框的绘制顺序。
+        /// </summary>
+        [Serializable]
+        public sealed class ConfigExportParams
+        {
+            /// <summary>
+            /// 本次导出的目标平台。
+            /// </summary>
+            public PlatformType Platform;
+
+            /// <summary>
+            /// 本次导出的目标渠道。
+            /// </summary>
+            public ChannelType Channel;
+
+            /// <summary>
+            /// 本次导出的开发模式。
+            /// </summary>
+            public DevelopMode DevelopMode;
+        }
+
+        /// <summary>
+        /// 从指定 ConfigMaster 当前坐标创建 Config 导出参数快照，不修改源资产。
+        /// </summary>
+        /// <param name="master">参数默认值来源；不可为空。</param>
+        /// <returns>与当前三维坐标一致的独立参数实例。</returns>
+        internal static ConfigExportParams CreateConfigExportParams(ConfigMasterSO master)
+        {
+            if (master == null) throw new ArgumentNullException(nameof(master));
+            return new ConfigExportParams
+            {
+                Platform = master.CurrentPlatform,
+                Channel = master.CurrentChannel,
+                DevelopMode = master.CurrentDevelopMode,
+            };
         }
 
         /// <summary>

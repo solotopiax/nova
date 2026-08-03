@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.1.1] - 2026-08-03
+
+### Added
+
+- 自动注册 BestHTTP 结构化遥测接收器，将请求尝试、失败尝试与逻辑请求终态扇出到所有可用的 Nova 通用埋点插件。
+- 新增 Network Inspector 上报开关、启动期有界缓存，以及包内 `Nova/Docs` 事件字段与叶子错误码文档。
+
+### Changed
+
+- Nova Framework 最低依赖提升至 `0.6.4`，Best HTTP / Best TLS Security 最低依赖提升至 `3.0.18` / `3.0.5`。
+
 ## [0.1.0] - 2026-07-29
 
 ### Changed

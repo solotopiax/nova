@@ -57,7 +57,7 @@ FrameworkComponent
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `m_DoHSettings` | `DoHSettings` | DoH 管理器参数（UseDoH / DnsTimeoutSeconds） |
-| `m_HttpSettings` | `HttpSettings` | HTTP 管理器参数（ConnectTimeout / RequestTimeout） |
+| `m_HttpSettings` | `HttpSettings` | HTTP 管理器参数（BestHTTP 埋点开关 / ConnectTimeout / RequestTimeout） |
 | `m_WebSocketSettings` | `WebSocketSettings` | WebSocket 管理器参数（ConnectTimeout 等 7 项） |
 
 **编辑器设置（`[SerializeField]`，`#if UNITY_EDITOR`）**

@@ -31,7 +31,8 @@ auto_generated: true
 ## naming
 
 - [GLO-07 AssetLocation / Asset 地址](../2-Areas/Glossary/GLO-07-asset-location.md) — AssetLocation 统一称为 Asset 地址
+- [GLO-09 运行平台、运营渠道与第三方登录提供方](../2-Areas/Glossary/GLO-09-channel-and-third-login-provider.md) — 区分运行平台、运营渠道与登录提供方
 
 
 ---
-_共 7 条，分布于 5 个 category。_
+_共 8 条，分布于 5 个 category。_

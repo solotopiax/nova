@@ -105,6 +105,27 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 定位实际持有指定 Batch 实例的 PipifySettingsSO，供旧参数首次执行时精确保存原存档。
+            /// </summary>
+            /// <param name="batch">待定位归属的 Batch 实例。</param>
+            /// <returns>持有该实例的 PipifySettingsSO；未找到时返回 null。</returns>
+            internal static PipifySettingsSO FindSettingsContaining(Batch batch)
+            {
+                if (batch == null) return null;
+                string[] guids = AssetDatabase.FindAssets("t:" + nameof(PipifySettingsSO));
+                for (int i = 0; i < guids.Length; i++)
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                    PipifySettingsSO settings = AssetDatabase.LoadAssetAtPath<PipifySettingsSO>(path);
+                    if (settings != null && settings.Batches.Contains(batch))
+                    {
+                        return settings;
+                    }
+                }
+                return null;
+            }
+
+            /// <summary>
             /// UI 宿主入口：使用模态进度条 Reporter 执行 Batch。
             /// 由调用方传入宿主 EditorWindow，Batch 结束后 WindowReporter 通过宿主弹 ShowNotification。
             /// </summary>

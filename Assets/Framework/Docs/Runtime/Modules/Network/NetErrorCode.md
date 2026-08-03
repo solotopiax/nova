@@ -45,7 +45,7 @@
 ## 3. 使用示例
 
 ```csharp
-var resp = await Nova.Network.Kit<Login>().Async(cmdRow, ChannelType.Google, openId);
+var resp = await Nova.Network.Kit<Login>().Async(string.Empty, openId);
 if (!resp.IsSuccess)
 {
     switch (resp.ErrorCode)

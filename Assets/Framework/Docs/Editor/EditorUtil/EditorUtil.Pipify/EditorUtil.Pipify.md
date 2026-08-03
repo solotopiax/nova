@@ -23,7 +23,7 @@
 | `EditorUtil.Pipify/Definitions/Batch.cs` | `Batch` | 批次数据 |
 | `EditorUtil.Pipify/Definitions/BatchItem.cs` | `BatchItem` | 批次条目 |
 | `EditorUtil.Pipify/Definitions/PipifySettingsSO.cs` | `PipifySettingsSO` | 持久化 SO 存档 |
-| `EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs` | `EditorUtil.Pipify` | ApplyOverridesForItem / ConvertOverrideValue 私有工具方法 |
+| `EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs` | `EditorUtil.Pipify` | 参数默认值、旧 Config 参数迁移、CLI 覆盖与类型转换工具方法 |
 | `EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs` | `EditorUtil.Pipify.Runner` | 纯执行引擎（internal static class） |
 | `EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs` | `EditorUtil.Pipify.WindowReporter` | Window 宿主进度 Reporter（EditorUtility 模态进度条） |
 | `EditorUtil.Pipify/EditorUtil.Pipify.CliReporter.cs` | `EditorUtil.Pipify.CliReporter` | CLI 宿主进度 Reporter（纯日志，恒返回 false） |
@@ -38,7 +38,7 @@
 | `EditorUtil.Pipify/Steps/PipifySteps.Export.cs` | `PipifySteps` | 内置 Step：Config 导出 |
 | `EditorUtil.Pipify/Steps/PipifySteps.Export.All.cs` | `PipifySteps` | 内置 Step：`export.excel.all`，顺序聚合所有 Excel 派生导出，排除 Config 与 Proto |
 | `EditorUtil.Pipify/Steps/PipifySteps.Notification.cs` | `PipifySteps` | 内置 Step：`notification.feishu_webhook`，发送飞书机器人文本消息 |
-| `EditorUtil.Pipify/Steps/PipifySteps.Definitions.cs` | `PipifySteps` | 内置 Step 嵌套参数类集中定义（打包、外壳、飞书 Webhook） |
+| `EditorUtil.Pipify/Steps/PipifySteps.Definitions.cs` | `PipifySteps` | 内置 Step 嵌套参数类集中定义（Config 导出、打包、外壳、飞书 Webhook） |
 
 ## §5 完整公开 API
 
@@ -90,7 +90,9 @@
 3. 对每个 `BatchItem`：
    - `ct.ThrowIfCancellationRequested()` 响应外部取消
    - `Registry.FindById(stepId)` 查找元信息，未命中抛 `InvalidOperationException`
-   - 若 `info.ParamsType != null`：ParamsJson 非空则 `Util.Json.Deserialize(json, type)` 反序列化，否则 `Activator.CreateInstance`；再调 `ApplyOverridesForItem` 覆盖 CLI 参数
+   - 若为旧版空参数 `export.config`：从当前激活 ConfigMaster 复制 Platform / Channel / DevelopMode，先写入条目并保存所属 PipifySettingsSO
+   - 其他有参 Step：ParamsJson 非空则反序列化，否则创建默认参数实例
+   - 最后调用 `ApplyOverridesForItem` 应用仅本次执行有效的 CLI 参数；Config 首次固化值不会被 CLI override 回写
    - 构造 `PipifyContext` 并下发
    - `reporter.ReportStep(i, name, 0f)` 返回 true 时抛 `OperationCanceledException`（Window 取消按钮）
    - `info.Method.Invoke(null, args)` 反射调用，得 `UniTask` 后 `await`

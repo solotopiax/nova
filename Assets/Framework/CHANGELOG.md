@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [0.6.4] - 2026-08-03
+
+### Breaking
+
+- 第三方登录提供方常量名与底层数据槽 key 统一为 `SDKDataKeys.ThirdLoginProvider` / `"ThirdLoginProvider"`；相关 SDK 发版时需级联依赖同一最新 Framework 版本，确保跨程序集常量一致。
+- `PbNetChannel` 恢复为游戏运营渠道协议枚举，与 `ChannelType` 的 `Official / Google / Apple / WeChat / TikTok / Alipay` 同名同值；原错误定义的 Facebook 登录类型不再属于 Header 渠道。
+
+### Added
+
+- Network Inspector 新增 BestHTTP 网络埋点开关；仅在 BestHTTP 适配包安装时可用，其他情况下灰置。
+
+### Changed
+
+- Network 运行时暴露 BestHTTP 埋点开关，供适配包启动注册后实时读取。
+
 ## [0.6.3] - 2026-08-03
 
 ### Added
@@ -105,7 +120,7 @@
 ### Added
 
 - 新增基于各 UPM 包 `Tracks.xlsx` 的埋点表聚合工具，支持在 Editor 中生成统一的全局埋点注册表。
-- `SDKDataKeys` 新增 `OpenId` 与 `ThirdPlatform` 跨插件数据槽，供登录 SDK 与分析 SDK 解耦交换身份信息。
+- `SDKDataKeys` 新增 `OpenId` 与第三方登录提供方跨插件数据槽，供登录 SDK 与分析 SDK 解耦交换身份信息；该提供方数据槽现名为 `ThirdLoginProvider`。
 
 ### Changed
 

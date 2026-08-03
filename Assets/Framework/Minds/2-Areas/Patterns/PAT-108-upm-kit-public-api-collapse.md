@@ -79,7 +79,7 @@ public static class NetService
 
 ```csharp
 Nova.Network.SetDebugMode(true);
-var resp = await Nova.Network.Kit<Login>().Async(cmdRow, ChannelType.Google, openId);
+var resp = await Nova.Network.Kit<Login>().Async(string.Empty, openId);
 ```
 
 业务侧根本看不到 NetService / NetBuilder / NetParser / NetRequest / Header 之类的字眼。
@@ -102,4 +102,3 @@ var resp = await Nova.Network.Kit<Login>().Async(cmdRow, ChannelType.Google, ope
 ## 跨项目复用提示
 
 非 Unity / 非 Nova 的 .NET 项目同样适用：库内部 API + 跨程序集共享但不暴露给消费方时，`[EditorBrowsable(Never)]` 是 .NET BCL 自身大量使用的 idiom（如 `Task.GetAwaiter` / `IAsyncResult.AsyncWaitHandle` 部分实现）。可放心搬。
-

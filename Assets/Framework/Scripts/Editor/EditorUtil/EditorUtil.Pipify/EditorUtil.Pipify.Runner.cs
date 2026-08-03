@@ -51,6 +51,7 @@ namespace NovaFramework.Editor
                     // batch 流程不向 Assets 写 .cs，单纯 .bytes / .json 写入只触发 importer，不会触发 cs 编译 + Domain Reload。
                     try
                     {
+                        PipifySettingsSO settings = FindSettingsContaining(batch);
                         for (int i = 0; i < batch.Items.Count; i++)
                         {
                             ct.ThrowIfCancellationRequested();
@@ -58,14 +59,12 @@ namespace NovaFramework.Editor
                             PipifyStepInfo info = Registry.FindById(item.StepId);
                             if (info == null) throw new InvalidOperationException(string.Format("{0} 未注册的 StepId：{1}", c_LogPrefix, item.StepId));
 
-                            object paramsInstance = null;
-                            if (info.ParamsType != null)
-                            {
-                                paramsInstance = string.IsNullOrEmpty(item.ParamsJson)
-                                    ? Activator.CreateInstance(info.ParamsType)
-                                    : Util.Json.Deserialize(item.ParamsJson, info.ParamsType);
-                                ApplyOverridesForItem(info, i, paramsInstance, overrides);
-                            }
+                            object paramsInstance = ResolveParamsForRun(
+                                info,
+                                i,
+                                item,
+                                settings,
+                                overrides);
 
                             PipifyContext ctx = new PipifyContext
                             {

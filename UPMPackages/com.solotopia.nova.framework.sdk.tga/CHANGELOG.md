@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-03
+
+### Breaking
+
+- 第三方登录提供方用户属性由 `nova_third_platform` 更名为 `nova_third_login_provider`，并与 Framework 的 `SDKDataKeys.ThirdLoginProvider` 数据槽语义对齐。
+
+### Changed
+
+- Framework 与 GameLogin 最低依赖分别提升至 `0.6.4` 与 `0.1.3`。
+
 ## [0.1.3] - 2026-08-03
 
 ### Changed
@@ -32,7 +42,7 @@
 
 ### Added
 
-- 自动消费账号插件发布的 `OpenId` / `ThirdPlatform` 数据，通过 TGA `UserSet` 更新 `nova_openid`。
+- 自动消费账号插件发布的 `OpenId` / `ThirdLoginProvider` 数据，通过 TGA `UserSet` 更新 `nova_openid` 与第三方登录提供方属性。
 - 自动同步 AppsFlyer ID 与 Facebook ID 到 TGA `UserSetOnce` 用户属性。
 
 ### Fixed

@@ -49,7 +49,7 @@ not cache stale ID Tokens for long periods. When server verification is needed,
 send the current login result token to the server-side authentication flow.
 
 Successful login also publishes `SDKDataKeys.OpenId` with `UserId` and
-`SDKDataKeys.ThirdPlatform` with the provider name. Analytics plugins can consume
+`SDKDataKeys.ThirdLoginProvider` with the provider name. Analytics plugins can consume
 these slots without taking a direct dependency on the Google Sign-In package.
 
 ## Config

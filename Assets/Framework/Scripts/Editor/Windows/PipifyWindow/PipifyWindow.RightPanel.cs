@@ -249,7 +249,7 @@ namespace NovaFramework.Editor
         {
             if (m_ParamsCache.TryGetValue(index, out object cached) && cached != null) return cached;
 
-            object paramsInstance = BuildParamsInstance(item, info.ParamsType);
+            object paramsInstance = BuildParamsInstance(item, info);
             m_ParamsCache[index] = paramsInstance;
             if (paramsInstance != null)
             {

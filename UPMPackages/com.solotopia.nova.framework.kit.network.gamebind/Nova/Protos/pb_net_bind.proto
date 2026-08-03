@@ -13,7 +13,7 @@ message BindSummary {
 // 绑定请求：为当前账号（head.uid）绑定一个三方 open_id
 message PbNetBindReq {
   NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头（head.uid = 被绑定的当前账号）
-  int32  provider = 2;  // 三方平台（与 PbNetChannel 枚举值对齐，直接透传）
+  int32  provider = 2;  // 第三方登录提供方：Facebook=1 / Google=2 / Apple=3 / Wechat=4（0 禁用）
   string open_id  = 3;  // 要绑定的三方号
 }
 

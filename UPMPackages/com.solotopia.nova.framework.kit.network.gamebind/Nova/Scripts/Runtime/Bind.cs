@@ -35,14 +35,14 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
 
         /// <summary>
         /// 为当前账号绑定三方 OpenID（业务入口，极简形态）。
-        /// 身份由请求 Header.Uid（即 NetService.UID，当前登录态）识别，业务侧只需提供 provider 与 openid。
+        /// 身份由请求 Header.Uid（即 NetService.UID，当前登录态）识别，业务侧只需提供第三方登录提供方与 openid。
         /// 命中 <see cref="BindErrorCode.ErrBindConflict"/>(10402) 时响应带 existing_uid，需继续调 <see cref="QueryConflictAsync"/> 拉冲突详情、由玩家二选一后调 <see cref="ResolveAsync"/>。
         /// cmdName 取自 ConfigWindow 配置的 BindKitConfig.BindCmdName。
         /// </summary>
-        /// <param name="provider">三方平台（与 <see cref="NovaFramework.Runtime.PbNetChannel"/> 枚举值对齐，直接透传）。选值：Facebook=1 / Google=2 / Apple=3 / Wechat=4（0=Unspecified 禁用）。</param>
-        /// <param name="openid">要绑定的第三方平台返回的用户唯一标识。</param>
+        /// <param name="provider">第三方登录提供方；与游戏运营渠道 PbNetChannel 无关。</param>
+        /// <param name="openid">要绑定的第三方登录提供方返回的用户唯一标识。</param>
         /// <returns>包含绑定响应数据或错误信息的 NetResponse。</returns>
-        public async UniTask<NetResponse<PbNetBindResp>> BindAsync(int provider, string openid)
+        public async UniTask<NetResponse<PbNetBindResp>> BindAsync(ThirdLoginProvider provider, string openid)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
             try

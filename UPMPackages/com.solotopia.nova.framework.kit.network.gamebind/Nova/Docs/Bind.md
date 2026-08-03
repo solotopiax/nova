@@ -36,7 +36,7 @@
 |---|---|
 | `public void SetDebugMode(bool debugMode)` | 设置本实例调试模式覆盖；仅影响本实例发出的请求；`false` 时不等于关闭全局，仅取消覆盖 |
 | `public string OpenID` | 当前进程内已确认归属于当前 UID 的 OpenID；直接读取 `NetService.OpenID`，不持久化 |
-| `public UniTask<NetResponse<PbNetBindResp>> BindAsync(int provider, string openid)` | 为当前账号绑定目标 OpenID；Header 只携带当前身份，目标只进 Body；成功后更新 `NetService.OpenID`；命中 10402 时继续冲突流程 |
+| `public UniTask<NetResponse<PbNetBindResp>> BindAsync(ThirdLoginProvider provider, string openid)` | 为当前账号绑定目标 OpenID；Header 只携带当前身份，目标只进 Body；成功后更新 `NetService.OpenID`；命中 10402 时继续冲突流程 |
 | `public UniTask<NetResponse<PbNetBindConflictResp>> QueryConflictAsync(string openid)` | 查询绑定冲突详情，拉取对方账号（existing）进度摘要供玩家二选一决策；服务端自查 existing_uid，guest 侧摘要客户端本地取；cmdName 取自 `BindKitConfig.BindConflictCmdName` |
 | `public UniTask<NetResponse<PbNetBindResolveResp>> ResolveAsync(string openid, string choice, string verifyCode = null)` | 绑定冲突裁决；返回 `FinalUid` + `AbandonedUid`，不处理存档数据；成功后以 `FinalUid` 和目标 OpenID 同步身份 |
 
@@ -44,7 +44,7 @@
 
 | 参数 | 选值 |
 |---|---|
-| `provider` | 与 `NovaFramework.Runtime.PbNetChannel` 枚举值对齐：Facebook=1 / Google=2 / Apple=3 / Wechat=4（0=Unspecified 禁用） |
+| `provider` | `ThirdLoginProvider`：Facebook=1 / Google=2 / Apple=3 / Wechat=4（0=Unspecified 禁用）；与游戏运营渠道 `PbNetChannel` 无关 |
 | `choice` | `"guest"`=保留当前账号（当前登录态账号） / `"existing"`=保留对方账号（open_id 已绑的云端账号） |
 
 ### 协议数据结构
@@ -69,7 +69,7 @@
 var bind = Nova.Network.Kit<Bind>();
 
 // 1. 绑定
-var bindResp = await bind.BindAsync((int)PbNetChannel.Google, openid);
+var bindResp = await bind.BindAsync(ThirdLoginProvider.Google, openid);
 if (bindResp.IsSuccess)
 {
     // 绑定成功，继续游戏

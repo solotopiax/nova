@@ -69,7 +69,7 @@
 | [FrameworkComponent.md](Runtime/Modules/FrameworkComponent.md) | 所有 Component 基类 |
 | [FrameworkManager.md](Runtime/Modules/FrameworkManager.md) | 所有 Manager 基类 |
 | [Definitions.md](Runtime/Core/Definitions/Definitions.md) | 框架级枚举（渠道/平台/模式/语言类型） |
-| [ChannelType.md](Runtime/Core/Definitions/ChannelType.md) | 业务渠道类型枚举（None/Official/Google/Appstore/WX/DY/Alipay） |
+| [ChannelType.md](Runtime/Core/Definitions/ChannelType.md) | 游戏运营渠道类型枚举（None/Official/Google/Apple/WeChat/TikTok/Alipay） |
 | [DevelopMode.md](Runtime/Core/Definitions/DevelopMode.md) | 开发/发布模式枚举（Debug / Publish），Config 第三维度 |
 | [PlatformType.md](Runtime/Core/Definitions/PlatformType.md) | 运行平台类型枚举（None/Android/iOS/PC/WebGL/Mini） |
 | [Language.md](Runtime/Core/Definitions/Language.md) | 游戏语言枚举与 LanguageMetadata（GetDesc/GetFlag 字典查询） |
@@ -297,6 +297,7 @@
 | [ProtoSettings.md](Runtime/Modules/Network/Definitions/ProtoSettings.md) | Protobuf 编辑器设置：ProtoSourceDirPath + ProtoUnits 列表（SourcePath / CSharpExportPath），仅 Editor 工具链使用 |
 | [DoHSettings.md](Runtime/Modules/Network/Definitions/DoHSettings.md) | DoH 管理器配置 |
 | [HttpSettings.md](Runtime/Modules/Network/Definitions/HttpSettings.md) | HTTP 管理器配置 |
+| [BestHTTP 网络埋点文档](../../../UPMPackages/com.solotopia.nova.framework.besthttp/Nova/Docs/INDEX.md) | BestHTTP 三类网络事件、字段、叶子错误码、Nova 自动注册与 Network 面板开关 |
 | [WebSocketSettings.md](Runtime/Modules/Network/Definitions/WebSocketSettings.md) | WebSocket 管理器配置（7 项参数） |
 | [NetworkManager.md](Runtime/Modules/Network/NetworkManager/NetworkManager.md) | NetCmd URL 路由（两阶段 Luban 加载：HostKey + NetCmd）/ 网络状态检测 / 服务器时间 Manager |
 | [NetworkManagerBase.md](Runtime/Modules/Network/NetworkManager/NetworkManagerBase.md) | Network Manager 抽象基类（Priority = 10） |

@@ -11,6 +11,8 @@ Nova Framework 的 BestHTTP 可选 HTTP 后端适配包。
 
 本包只包含 Nova 适配代码，不包含 BestHTTP/TLS 原厂内容。
 
+安装支持结构化遥测的商业库版本后，本包会自动把 BestHTTP 网络事件转发给 Nova 中所有可用的 `ITrackPlugin`。可在 Network Inspector 的 HTTP 区域通过“启用 BestHTTP 网络埋点”统一开启或屏蔽；完整事件与字段定义见 [Nova/Docs/INDEX.md](Nova/Docs/INDEX.md)。
+
 ## 目录结构
 
 - `Nova/`：Nova 自有适配代码。

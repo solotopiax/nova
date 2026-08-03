@@ -152,6 +152,11 @@ namespace NovaFramework.Editor
         private SerializedProperty m_HttpSettings;
 
         /// <summary>
+        /// Best HTTP 网络遥测转发开关属性。
+        /// </summary>
+        private SerializedProperty m_EnableBestHttpTelemetry;
+
+        /// <summary>
         /// WebSocket 管理器配置对象属性。
         /// </summary>
         private SerializedProperty m_WebSocketSettings;

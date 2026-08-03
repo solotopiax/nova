@@ -6,6 +6,24 @@
 
 ---
 
+## [0.6.4] - 2026-08-03
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.4]` 节。
+
+### Added
+
+- Best HTTP `3.0.18` 与 Best TLS Security `3.0.5` 新增不依赖 Nova 的结构化网络遥测、协议叶子错误与 TLS/OCSP 诊断。
+- BestHTTP 适配包 `0.1.1` 自动注册 Nova 遥测接收器，并在 Network Inspector 提供可用性感知的上报开关。
+
+### Changed
+
+- 发布 Framework `0.6.4`、GameLogin `0.1.3`、GameBind `0.0.9`、Apple Sign-In `0.0.11`、Facebook `0.1.3`、Google Sign-In `0.0.12` 与 TGA `0.1.4`，内部依赖下界对齐本轮最新版本。
+- `NovaSpark.cs` 固定 Framework `0.6.4` 与 BestHTTP 适配包 `0.1.1`；EDM 与 unity-mcp 保持当前版本。
+
+### Breaking
+
+- 第三方登录提供方、游戏运营渠道与 TGA 用户属性名称统一到新契约。
+
 ## [0.6.3] - 2026-08-03
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.3]` 节。

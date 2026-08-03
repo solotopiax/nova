@@ -69,6 +69,11 @@ namespace NovaFramework.Runtime
         private HttpSettings m_HttpSettings;
 
         /// <summary>
+        /// 获取 HTTP 管理器参数配置；BestHTTP 适配包使用其中的网络埋点开关。
+        /// </summary>
+        public HttpSettings HttpSettings => m_HttpSettings;
+
+        /// <summary>
         /// DoH 管理器参数配置。
         /// </summary>
         [Tooltip("DoH (DNS over HTTPS) 管理器参数配置")]

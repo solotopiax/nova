@@ -76,14 +76,14 @@ namespace NovaFramework.SDK.Facebook
         /// 更新登录状态。
         /// </summary>
         /// <param name="userData">用户数据。</param>
-        /// <param name="provider">第三方登录渠道名。</param>
+        /// <param name="provider">第三方登录提供方名称。</param>
         private void SetLoginState(FacebookUserData userData, string provider = null)
         {
             m_CurrentUserData = userData;
             if (!string.IsNullOrEmpty(userData?.UserId))
             {
                 PublishData(SDKDataKeys.OpenId, userData.UserId);
-                PublishData(SDKDataKeys.ThirdPlatform, string.IsNullOrEmpty(provider) ? ProviderName : provider);
+                PublishData(SDKDataKeys.ThirdLoginProvider, string.IsNullOrEmpty(provider) ? ProviderName : provider);
             }
         }
 

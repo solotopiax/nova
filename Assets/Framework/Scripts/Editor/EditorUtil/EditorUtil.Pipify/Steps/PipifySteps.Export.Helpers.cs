@@ -26,12 +26,12 @@ namespace NovaFramework.Editor
         internal static class Helpers
         {
             /// <summary>
-            /// 定位工程内唯一的 ConfigMasterSO 资产；未找到时抛出 InvalidOperationException。
+            /// 通过 WorkspaceActive 定位当前激活的 ConfigMasterSO；未找到时抛出 InvalidOperationException。
             /// </summary>
             /// <returns>找到的 ConfigMasterSO 实例。</returns>
             internal static ConfigMasterSO ResolveConfigMaster()
             {
-                ConfigMasterSO master = EditorUtil.Asset.Operator.Find<ConfigMasterSO>();
+                ConfigMasterSO master = EditorUtil.Config.WorkspaceActive.Get();
                 if (master == null)
                 {
                     throw new InvalidOperationException("[Pipify] 未找到 ConfigMasterSO，请在工程内创建并配置后重试。");

@@ -28,7 +28,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         /// </summary>
         /// <param name="cmdRow">NetCmd 指令行数据，由 Async 解析 LoginKitConfig.LoginCmdName 得到。</param>
         /// <param name="uid">显式指定请求 Header 中的 UID；非空时优先覆盖 BuildHeader 填入的 NetService.UID；为空则沿用。</param>
-        /// <param name="openid">第三方平台返回的用户唯一标识。</param>
+        /// <param name="openid">第三方登录提供方返回的用户唯一标识。</param>
         /// <param name="forceNewAccount">是否强制注册新账号。</param>
         /// <returns>包含登录响应数据或错误信息的 NetResponse。</returns>
         private async UniTask<NetResponse<PbNetLoginResp>> SendAsync(

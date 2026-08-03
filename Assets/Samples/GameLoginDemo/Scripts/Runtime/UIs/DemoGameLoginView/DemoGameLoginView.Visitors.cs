@@ -20,7 +20,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Samples.Runtime
     public sealed partial class DemoGameLoginView
     {
         /// <summary>
-        /// openId 输入框；用户在此填入第三方平台返回的用户唯一标识。
+        /// openId 输入框；用户在此填入第三方登录提供方返回的用户唯一标识。
         /// </summary>
 
         [SerializeField] private TMP_InputField m_OpenIdInput;

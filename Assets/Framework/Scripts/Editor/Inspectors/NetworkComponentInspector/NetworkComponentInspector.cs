@@ -79,6 +79,7 @@ namespace NovaFramework.Editor
             // 管理器配置对象
             m_DoHSettings = serializedObject.FindProperty("m_DoHSettings");
             m_HttpSettings = serializedObject.FindProperty("m_HttpSettings");
+            m_EnableBestHttpTelemetry = m_HttpSettings?.FindPropertyRelative("EnableBestHttpTelemetry");
             m_WebSocketSettings = serializedObject.FindProperty("m_WebSocketSettings");
 
             // 实现类列表 — 运行时管理器

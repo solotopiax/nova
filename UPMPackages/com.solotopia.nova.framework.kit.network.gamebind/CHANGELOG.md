@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-08-03
+
+### Breaking
+
+- `BindAsync` 的 `provider` 参数由 `int` 改为 `ThirdLoginProvider`；协议字段仍为 `int32`，调用方改用 `ThirdLoginProvider.Facebook / Google / Apple / Wechat`。
+
+### Fixed
+
+- 移除 GameBind 对游戏运营渠道 `PbNetChannel` 的错误复用，明确 `ThirdLoginProvider` 与 `ChannelType` / `PbNetChannel` 是两套独立契约。
+
+### Changed
+
+- Framework、GameLogin 与 GameSave 最低依赖分别提升至 `0.6.4`、`0.1.3` 与 `0.1.1`。
+
 ## [0.0.8] - 2026-08-03
 
 ### Changed

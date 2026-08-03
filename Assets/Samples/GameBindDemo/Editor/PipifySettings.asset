@@ -80,7 +80,8 @@ MonoBehaviour:
     m_Description: "Config\u5BFC\u51FA\uFF0C\u5BFC\u51FAConfigRuntime"
     m_Items:
     - m_StepId: export.config
-      m_ParamsJson: 
+      m_ParamsJson: "{\n  \"Platform\": 1,\n  \"Channel\": 2,\n  \"DevelopMode\":
+        0\n}"
   - m_Name: "\u66F4\u65B0bundle"
     m_Description: "\u66F4\u65B0bundle"
     m_Items:

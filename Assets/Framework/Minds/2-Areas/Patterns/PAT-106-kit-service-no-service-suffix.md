@@ -44,11 +44,11 @@ related:
 
 ```csharp
 // ❌ 旧
-var resp = await Nova.Network.Kit<LoginService>().Async(cmdRow, ChannelType.Google, openId);
+var resp = await Nova.Network.Kit<LoginService>().Async(string.Empty, openId);
 string uid = Nova.Network.Kit<LoginService>().UID;
 
 // ✅ 新
-var resp = await Nova.Network.Kit<Login>().Async(cmdRow, ChannelType.Google, openId);
+var resp = await Nova.Network.Kit<Login>().Async(string.Empty, openId);
 string uid = Nova.Network.Kit<Login>().UID;
 ```
 
@@ -72,4 +72,3 @@ string uid = Nova.Network.Kit<Login>().UID;
 - ❌ 看到 `Login` 短类名觉得"语义不全要补 Service 表明用途"—— 用途由 `Kit<T>()` 调用语境表达，类名不重复
 - ❌ 把 `Service` 改名理由当作「保留向后兼容」的借口加 `[Obsolete]` shim（违反 [[PAT-104-no-obsolete-shim-rule|PAT-104]]）—— 一次提交全量改完是正解
 - ❌ 改名后忘记同步测试代码、CHANGELOG、文档示例
-

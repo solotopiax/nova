@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using NovaFramework.Runtime;
 
 namespace NovaFramework.Editor
 {
@@ -18,6 +19,64 @@ namespace NovaFramework.Editor
     {
         public static partial class Pipify
         {
+            /// <summary>
+            /// 创建 Step 的默认参数实例；Config 导出参数读取当前激活 ConfigMaster 的三维坐标。
+            /// </summary>
+            /// <param name="info">目标 Step 元信息。</param>
+            /// <param name="configMaster">测试或迁移时显式提供的 ConfigMaster；为空时解析当前激活资产。</param>
+            /// <returns>参数默认实例；无参 Step 返回 null。</returns>
+            internal static object CreateDefaultParams(PipifyStepInfo info, ConfigMasterSO configMaster = null)
+            {
+                if (info?.ParamsType == null) return null;
+                if (info.ParamsType == typeof(PipifySteps.ConfigExportParams))
+                {
+                    ConfigMasterSO master = configMaster ?? PipifySteps.Helpers.ResolveConfigMaster();
+                    return PipifySteps.CreateConfigExportParams(master);
+                }
+                return Activator.CreateInstance(info.ParamsType);
+            }
+
+            /// <summary>
+            /// 为单次 Runner 调用解析参数；旧 Config 条目先固化并保存当前坐标，再应用仅本次生效的 CLI 覆盖。
+            /// </summary>
+            /// <param name="info">当前 Step 元信息。</param>
+            /// <param name="itemIndex">当前条目索引。</param>
+            /// <param name="item">当前条目。</param>
+            /// <param name="settings">条目所属 PipifySettingsSO；无法定位时可为空。</param>
+            /// <param name="overrides">本次执行的临时参数覆盖。</param>
+            /// <param name="configMaster">测试时显式提供的 ConfigMaster；生产执行传空以解析当前激活资产。</param>
+            /// <returns>已经应用本次覆盖的参数实例；无参 Step 返回 null。</returns>
+            internal static object ResolveParamsForRun(
+                PipifyStepInfo info,
+                int itemIndex,
+                BatchItem item,
+                PipifySettingsSO settings,
+                IReadOnlyDictionary<string, string> overrides,
+                ConfigMasterSO configMaster = null)
+            {
+                if (info?.ParamsType == null) return null;
+
+                object paramsInstance;
+                if (info.ParamsType == typeof(PipifySteps.ConfigExportParams))
+                {
+                    ConfigMasterSO master = configMaster ?? PipifySteps.Helpers.ResolveConfigMaster();
+                    paramsInstance = PipifySteps.ResolveAndPersistConfigExportParams(
+                        settings,
+                        item,
+                        master,
+                        out _);
+                }
+                else
+                {
+                    paramsInstance = string.IsNullOrEmpty(item.ParamsJson)
+                        ? CreateDefaultParams(info)
+                        : Util.Json.Deserialize(item.ParamsJson, info.ParamsType);
+                }
+
+                ApplyOverridesForItem(info, itemIndex, paramsInstance, overrides);
+                return paramsInstance;
+            }
+
             /// <summary>
             /// 将 overrides 字典中匹配当前 (stepId, itemIndex) 的键值写回 paramsInstance。
             /// 支持 key 形如 "stepId.字段名"（适配所有索引）或 "stepId[索引].字段名"（仅适配该索引）。

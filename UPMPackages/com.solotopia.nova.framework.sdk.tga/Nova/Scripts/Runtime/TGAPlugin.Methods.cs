@@ -207,7 +207,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         }
 
         /// <summary>
-        /// 从账号插件的数据槽消费第三方登录 ID 与渠道名，并写入 TGA UserSet 属性。
+        /// 从账号插件的数据槽消费第三方登录 ID 与提供方名称，并写入 TGA UserSet 属性。
         /// 不按具体 Facebook / Google / Apple 包类型或插件名查询，保持 SDK 子包之间零依赖。
         /// </summary>
         /// <param name="authPlugin">账号插件实例。</param>
@@ -223,16 +223,16 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
             try
             {
                 var openId = (string)await authPlugin.FetchDataAsync(SDKDataKeys.OpenId, ct);
-                var thirdPlatform = (string)await authPlugin.FetchDataAsync(SDKDataKeys.ThirdPlatform, ct);
-                if (string.IsNullOrEmpty(openId) || string.IsNullOrEmpty(thirdPlatform))
+                var thirdLoginProvider = (string)await authPlugin.FetchDataAsync(SDKDataKeys.ThirdLoginProvider, ct);
+                if (string.IsNullOrEmpty(openId) || string.IsNullOrEmpty(thirdLoginProvider))
                 {
                     return;
                 }
 
                 SetFrameworkUserProperty("nova_openid", openId);
-                SetFrameworkUserProperty("nova_third_platform", thirdPlatform);
+                SetFrameworkUserProperty("nova_third_login_provider", thirdLoginProvider);
                 UserSet(new Dictionary<string, object>());
-                Log.Debug(LogTag.TGA, $"TGA 第三方登录属性已设置：platform={thirdPlatform}, openId={openId}");
+                Log.Debug(LogTag.TGA, $"TGA 第三方登录属性已设置：provider={thirdLoginProvider}, openId={openId}");
             }
             catch (OperationCanceledException)
             {

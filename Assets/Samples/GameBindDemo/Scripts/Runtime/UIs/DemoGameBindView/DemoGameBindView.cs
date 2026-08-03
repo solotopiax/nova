@@ -39,7 +39,7 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
             if (m_BindButton != null)
             {
                 m_BindButton.onClick.AddListener(OnBindButtonClick);
-                SetButtonApiHint(m_BindButton, "Nova.Network.Kit<Bind>().BindAsync(provider, openId)");
+                SetButtonApiHint(m_BindButton, "Nova.Network.Kit<Bind>().BindAsync(ThirdLoginProvider.Google, openId)");
             }
 
             if (m_UploadSaveButton != null)

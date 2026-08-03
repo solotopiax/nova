@@ -1,0 +1,33 @@
+{
+    "name": "NovaFramework.BestHTTP.Tests.Editor",
+    "rootNamespace": "NovaFramework.BestHTTP.Tests",
+    "references": [
+        "NovaFramework.Runtime",
+        "NovaFramework.Editor",
+        "NovaFramework.BestHTTP.Runtime",
+        "com.Tivadar.Best.HTTP",
+        "UniTask"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "NOVA_BEST_HTTP"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.tivadar.best.http",
+            "expression": "3.0.18",
+            "define": "NOVA_BEST_HTTP"
+        }
+    ],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

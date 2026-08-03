@@ -16,9 +16,16 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
 {
     public sealed partial class Bind
     {
+        /// <summary>
+        /// 上报绑定结果，并将第三方登录提供方转换为稳定的埋点字符串值。
+        /// </summary>
+        /// <param name="response">绑定响应。</param>
+        /// <param name="provider">第三方登录提供方。</param>
+        /// <param name="openId">目标第三方用户标识。</param>
+        /// <param name="durationMilliseconds">请求耗时，单位毫秒。</param>
         private static void TrackBind(
             NetResponse<PbNetBindResp> response,
-            int provider,
+            ThirdLoginProvider provider,
             string openId,
             long durationMilliseconds)
         {
@@ -40,7 +47,12 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
             });
         }
 
-        private static void TrackBindException(int provider, long durationMilliseconds)
+        /// <summary>
+        /// 上报绑定请求异常，并保留第三方登录提供方和耗时维度。
+        /// </summary>
+        /// <param name="provider">第三方登录提供方。</param>
+        /// <param name="durationMilliseconds">请求耗时，单位毫秒。</param>
+        private static void TrackBindException(ThirdLoginProvider provider, long durationMilliseconds)
         {
             var properties = new Dictionary<string, object>
             {
@@ -139,14 +151,19 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
             return response.ErrorCode == BindErrorCode.ErrBindBusy ? "busy" : "failed";
         }
 
-        private static string ResolveProvider(int provider)
+        /// <summary>
+        /// 将第三方登录提供方转换为埋点约定的小写名称，未知值统一返回 unknown。
+        /// </summary>
+        /// <param name="provider">第三方登录提供方。</param>
+        /// <returns>埋点使用的第三方登录提供方名称。</returns>
+        private static string ResolveProvider(ThirdLoginProvider provider)
         {
-            switch ((PbNetChannel)provider)
+            switch (provider)
             {
-                case PbNetChannel.Facebook: return "facebook";
-                case PbNetChannel.Google: return "google";
-                case PbNetChannel.Apple: return "apple";
-                case PbNetChannel.Wechat: return "wechat";
+                case ThirdLoginProvider.Facebook: return "facebook";
+                case ThirdLoginProvider.Google: return "google";
+                case ThirdLoginProvider.Apple: return "apple";
+                case ThirdLoginProvider.Wechat: return "wechat";
                 default: return "unknown";
             }
         }

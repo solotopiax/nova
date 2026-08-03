@@ -39,16 +39,16 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         /// Header 由 NetBuilder.BuildHeader() 自动填充（Header.Uid 即当前登录态 UID，为被绑定的账号；渠道由 InferChannel 自动填充）。
         /// </summary>
         /// <param name="cmdRow">NetCmd 指令行数据，由 BindAsync 解析 BindKitConfig.BindCmdName 得到。</param>
-        /// <param name="provider">三方平台（与 PbNetChannel 枚举值对齐，直接透传）。</param>
+        /// <param name="provider">第三方登录提供方，写入协议时转换为约定的 int32 数值。</param>
         /// <param name="openid">要绑定的三方标识。</param>
         /// <returns>包含绑定响应数据或错误信息的 NetResponse。</returns>
         private async UniTask<NetResponse<PbNetBindResp>> SendBindAsync(
-            INetworkCmdRow cmdRow, int provider, string openid)
+            INetworkCmdRow cmdRow, ThirdLoginProvider provider, string openid)
         {
             var body = new PbNetBindReq
             {
                 Head = NetBuilder.BuildHeader(),
-                Provider = provider,
+                Provider = (int)provider,
                 OpenId = openid ?? string.Empty
             };
             var resp = await NetService.SendAsync(cmdRow, body, PbNetBindResp.Parser, m_DebugModeOverride);

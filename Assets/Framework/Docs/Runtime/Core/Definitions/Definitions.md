@@ -4,7 +4,7 @@
 
 | 文件 | 枚举/类 | 说明 |
 |------|---------|------|
-| `ChannelType.cs` | `ChannelType` | 业务渠道类型（Official / Google / Appstore / WX / DY / Alipay） |
+| `ChannelType.cs` | `ChannelType` | 游戏运营渠道类型（Official / Google / Apple / WeChat / TikTok / Alipay） |
 | `DevelopMode.cs` | `DevelopMode` | 开发/发布模式枚举（Debug / Publish），Config 第三维度 |
 | `Language.cs` | `Language`, `LanguageInfo`, `LanguageMetadata` | 游戏语言枚举及描述 / Flag 元数据 |
 | `LanguageSelectionWay.cs` | `LanguageSelectionWay` | 已移除，保留历史兼容说明页 |

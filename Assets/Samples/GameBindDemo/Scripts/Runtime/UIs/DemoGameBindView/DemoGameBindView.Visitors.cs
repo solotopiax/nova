@@ -50,7 +50,7 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
         [SerializeField] private Button m_LoginButton;
 
         /// <summary>
-        /// 绑定按钮；点击后触发 Nova.Network.Kit<Bind>().BindAsync(provider, openId)，provider 演示写死 Google。
+        /// 绑定按钮；点击后触发 Nova.Network.Kit&lt;Bind&gt;().BindAsync(ThirdLoginProvider.Google, openId)。
         /// </summary>
 
         [SerializeField] private Button m_BindButton;
