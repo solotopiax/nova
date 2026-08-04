@@ -6,7 +6,7 @@ import "pb_net_header.proto";
 
 // 获取应用自定义配置请求
 message PbNetAppCustomConfigReq {
-  NovaFramework.Runtime.PbNetReqHeader head = 1;   // 请求头（app_id、version、platform 等）
+  NovaFramework.Runtime.PbNetReqHeader head = 1;   // 请求头（appid、version、platform 等）
   string key  = 2;   	       // 配置键
 }
 

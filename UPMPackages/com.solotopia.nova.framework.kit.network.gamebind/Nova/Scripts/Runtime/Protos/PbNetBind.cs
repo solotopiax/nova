@@ -26,32 +26,32 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
           string.Concat(
             "ChFwYl9uZXRfYmluZC5wcm90bxIqTm92YUZyYW1ld29yay5LaXQuTmV0d29y",
             "ay5HYW1lQmluZC5SdW50aW1lGhNwYl9uZXRfaGVhZGVyLnByb3RvIi0KC0Jp",
-            "bmRTdW1tYXJ5EgsKA3VpZBgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAMiZgoM",
+            "bmRTdW1tYXJ5EgsKA3VpZBgBIAEoCRIRCgl0aW1lc3RhbXAYAiABKAMiZQoM",
             "UGJOZXRCaW5kUmVxEjMKBGhlYWQYASABKAsyJS5Ob3ZhRnJhbWV3b3JrLlJ1",
-            "bnRpbWUuUGJOZXRSZXFIZWFkZXISEAoIcHJvdmlkZXIYAiABKAUSDwoHb3Bl",
-            "bl9pZBgDIAEoCSJbCg1QYk5ldEJpbmRSZXNwEjQKBGhlYWQYASABKAsyJi5O",
-            "b3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXNwSGVhZGVyEhQKDGV4aXN0",
-            "aW5nX3VpZBgCIAEoCSJcChRQYk5ldEJpbmRDb25mbGljdFJlcRIzCgRoZWFk",
-            "GAEgASgLMiUuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVxSGVhZGVy",
-            "Eg8KB29wZW5faWQYAiABKAkioAEKFVBiTmV0QmluZENvbmZsaWN0UmVzcBI0",
-            "CgRoZWFkGAEgASgLMiYuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVz",
-            "cEhlYWRlchJRChBleGlzdGluZ19zdW1tYXJ5GAIgASgLMjcuTm92YUZyYW1l",
-            "d29yay5LaXQuTmV0d29yay5HYW1lQmluZC5SdW50aW1lLkJpbmRTdW1tYXJ5",
-            "IoABChNQYk5ldEJpbmRSZXNvbHZlUmVxEjMKBGhlYWQYASABKAsyJS5Ob3Zh",
-            "RnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXISDwoHb3Blbl9pZBgC",
-            "IAEoCRIOCgZjaG9pY2UYAyABKAkSEwoLdmVyaWZ5X2NvZGUYBCABKAkidgoU",
-            "UGJOZXRCaW5kUmVzb2x2ZVJlc3ASNAoEaGVhZBgBIAEoCzImLk5vdmFGcmFt",
-            "ZXdvcmsuUnVudGltZS5QYk5ldFJlc3BIZWFkZXISEQoJZmluYWxfdWlkGAIg",
-            "ASgJEhUKDWFiYW5kb25lZF91aWQYAyABKAliBnByb3RvMw=="));
+            "bnRpbWUuUGJOZXRSZXFIZWFkZXISEAoIcHJvdmlkZXIYAiABKAUSDgoGb3Bl",
+            "bmlkGAMgASgJIlsKDVBiTmV0QmluZFJlc3ASNAoEaGVhZBgBIAEoCzImLk5v",
+            "dmFGcmFtZXdvcmsuUnVudGltZS5QYk5ldFJlc3BIZWFkZXISFAoMZXhpc3Rp",
+            "bmdfdWlkGAIgASgJIlsKFFBiTmV0QmluZENvbmZsaWN0UmVxEjMKBGhlYWQY",
+            "ASABKAsyJS5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXIS",
+            "DgoGb3BlbmlkGAIgASgJIqABChVQYk5ldEJpbmRDb25mbGljdFJlc3ASNAoE",
+            "aGVhZBgBIAEoCzImLk5vdmFGcmFtZXdvcmsuUnVudGltZS5QYk5ldFJlc3BI",
+            "ZWFkZXISUQoQZXhpc3Rpbmdfc3VtbWFyeRgCIAEoCzI3Lk5vdmFGcmFtZXdv",
+            "cmsuS2l0Lk5ldHdvcmsuR2FtZUJpbmQuUnVudGltZS5CaW5kU3VtbWFyeSJ/",
+            "ChNQYk5ldEJpbmRSZXNvbHZlUmVxEjMKBGhlYWQYASABKAsyJS5Ob3ZhRnJh",
+            "bWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXISDgoGb3BlbmlkGAIgASgJ",
+            "Eg4KBmNob2ljZRgDIAEoCRITCgt2ZXJpZnlfY29kZRgEIAEoCSJ2ChRQYk5l",
+            "dEJpbmRSZXNvbHZlUmVzcBI0CgRoZWFkGAEgASgLMiYuTm92YUZyYW1ld29y",
+            "ay5SdW50aW1lLlBiTmV0UmVzcEhlYWRlchIRCglmaW5hbF91aWQYAiABKAkS",
+            "FQoNYWJhbmRvbmVkX3VpZBgDIAEoCWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.BindSummary), global::NovaFramework.Kit.Network.GameBind.Runtime.BindSummary.Parser, new[]{ "Uid", "Timestamp" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindReq), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindReq.Parser, new[]{ "Head", "Provider", "OpenId" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindReq), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindReq.Parser, new[]{ "Head", "Provider", "Openid" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResp), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResp.Parser, new[]{ "Head", "ExistingUid" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindConflictReq), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindConflictReq.Parser, new[]{ "Head", "OpenId" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindConflictReq), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindConflictReq.Parser, new[]{ "Head", "Openid" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindConflictResp), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindConflictResp.Parser, new[]{ "Head", "ExistingSummary" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveReq), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveReq.Parser, new[]{ "Head", "OpenId", "Choice", "VerifyCode" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveReq), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveReq.Parser, new[]{ "Head", "Openid", "Choice", "VerifyCode" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveResp), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveResp.Parser, new[]{ "Head", "FinalUid", "AbandonedUid" }, null, null, null, null)
           }));
     }
@@ -304,7 +304,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
   }
 
   /// <summary>
-  /// 绑定请求：为当前账号（head.uid）绑定一个三方 open_id
+  /// 绑定请求：为当前账号（head.uid）绑定一个三方 openid
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class PbNetBindReq : pb::IMessage<PbNetBindReq>
@@ -343,7 +343,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
     public PbNetBindReq(PbNetBindReq other) : this() {
       head_ = other.head_ != null ? other.head_.Clone() : null;
       provider_ = other.provider_;
-      openId_ = other.openId_;
+      openid_ = other.openid_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -383,18 +383,18 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
       }
     }
 
-    /// <summary>Field number for the "open_id" field.</summary>
-    public const int OpenIdFieldNumber = 3;
-    private string openId_ = "";
+    /// <summary>Field number for the "openid" field.</summary>
+    public const int OpenidFieldNumber = 3;
+    private string openid_ = "";
     /// <summary>
     /// 要绑定的三方号
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string OpenId {
-      get { return openId_; }
+    public string Openid {
+      get { return openid_; }
       set {
-        openId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        openid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -415,7 +415,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
       }
       if (!object.Equals(Head, other.Head)) return false;
       if (Provider != other.Provider) return false;
-      if (OpenId != other.OpenId) return false;
+      if (Openid != other.Openid) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -425,7 +425,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
       int hash = 1;
       if (head_ != null) hash ^= Head.GetHashCode();
       if (Provider != 0) hash ^= Provider.GetHashCode();
-      if (OpenId.Length != 0) hash ^= OpenId.GetHashCode();
+      if (Openid.Length != 0) hash ^= Openid.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -452,9 +452,9 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
         output.WriteRawTag(16);
         output.WriteInt32(Provider);
       }
-      if (OpenId.Length != 0) {
+      if (Openid.Length != 0) {
         output.WriteRawTag(26);
-        output.WriteString(OpenId);
+        output.WriteString(Openid);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -474,9 +474,9 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
         output.WriteRawTag(16);
         output.WriteInt32(Provider);
       }
-      if (OpenId.Length != 0) {
+      if (Openid.Length != 0) {
         output.WriteRawTag(26);
-        output.WriteString(OpenId);
+        output.WriteString(Openid);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -494,8 +494,8 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
       if (Provider != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Provider);
       }
-      if (OpenId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(OpenId);
+      if (Openid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Openid);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -518,8 +518,8 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
       if (other.Provider != 0) {
         Provider = other.Provider;
       }
-      if (other.OpenId.Length != 0) {
-        OpenId = other.OpenId;
+      if (other.Openid.Length != 0) {
+        Openid = other.Openid;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -552,7 +552,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
             break;
           }
           case 26: {
-            OpenId = input.ReadString();
+            Openid = input.ReadString();
             break;
           }
         }
@@ -586,7 +586,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
             break;
           }
           case 26: {
-            OpenId = input.ReadString();
+            Openid = input.ReadString();
             break;
           }
         }
@@ -888,7 +888,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public PbNetBindConflictReq(PbNetBindConflictReq other) : this() {
       head_ = other.head_ != null ? other.head_.Clone() : null;
-      openId_ = other.openId_;
+      openid_ = other.openid_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -913,18 +913,18 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
       }
     }
 
-    /// <summary>Field number for the "open_id" field.</summary>
-    public const int OpenIdFieldNumber = 2;
-    private string openId_ = "";
+    /// <summary>Field number for the "openid" field.</summary>
+    public const int OpenidFieldNumber = 2;
+    private string openid_ = "";
     /// <summary>
     /// 冲突的三方号
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string OpenId {
-      get { return openId_; }
+    public string Openid {
+      get { return openid_; }
       set {
-        openId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        openid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -944,7 +944,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
         return true;
       }
       if (!object.Equals(Head, other.Head)) return false;
-      if (OpenId != other.OpenId) return false;
+      if (Openid != other.Openid) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -953,7 +953,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
     public override int GetHashCode() {
       int hash = 1;
       if (head_ != null) hash ^= Head.GetHashCode();
-      if (OpenId.Length != 0) hash ^= OpenId.GetHashCode();
+      if (Openid.Length != 0) hash ^= Openid.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -976,9 +976,9 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
         output.WriteRawTag(10);
         output.WriteMessage(Head);
       }
-      if (OpenId.Length != 0) {
+      if (Openid.Length != 0) {
         output.WriteRawTag(18);
-        output.WriteString(OpenId);
+        output.WriteString(Openid);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -994,9 +994,9 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
         output.WriteRawTag(10);
         output.WriteMessage(Head);
       }
-      if (OpenId.Length != 0) {
+      if (Openid.Length != 0) {
         output.WriteRawTag(18);
-        output.WriteString(OpenId);
+        output.WriteString(Openid);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1011,8 +1011,8 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
       if (head_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Head);
       }
-      if (OpenId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(OpenId);
+      if (Openid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Openid);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1032,8 +1032,8 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
         }
         Head.MergeFrom(other.Head);
       }
-      if (other.OpenId.Length != 0) {
-        OpenId = other.OpenId;
+      if (other.Openid.Length != 0) {
+        Openid = other.Openid;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1062,7 +1062,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
             break;
           }
           case 18: {
-            OpenId = input.ReadString();
+            Openid = input.ReadString();
             break;
           }
         }
@@ -1092,7 +1092,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
             break;
           }
           case 18: {
-            OpenId = input.ReadString();
+            Openid = input.ReadString();
             break;
           }
         }
@@ -1403,7 +1403,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public PbNetBindResolveReq(PbNetBindResolveReq other) : this() {
       head_ = other.head_ != null ? other.head_.Clone() : null;
-      openId_ = other.openId_;
+      openid_ = other.openid_;
       choice_ = other.choice_;
       verifyCode_ = other.verifyCode_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -1430,18 +1430,18 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
       }
     }
 
-    /// <summary>Field number for the "open_id" field.</summary>
-    public const int OpenIdFieldNumber = 2;
-    private string openId_ = "";
+    /// <summary>Field number for the "openid" field.</summary>
+    public const int OpenidFieldNumber = 2;
+    private string openid_ = "";
     /// <summary>
     /// 冲突的三方号
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string OpenId {
-      get { return openId_; }
+    public string Openid {
+      get { return openid_; }
       set {
-        openId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        openid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1491,7 +1491,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
         return true;
       }
       if (!object.Equals(Head, other.Head)) return false;
-      if (OpenId != other.OpenId) return false;
+      if (Openid != other.Openid) return false;
       if (Choice != other.Choice) return false;
       if (VerifyCode != other.VerifyCode) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -1502,7 +1502,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
     public override int GetHashCode() {
       int hash = 1;
       if (head_ != null) hash ^= Head.GetHashCode();
-      if (OpenId.Length != 0) hash ^= OpenId.GetHashCode();
+      if (Openid.Length != 0) hash ^= Openid.GetHashCode();
       if (Choice.Length != 0) hash ^= Choice.GetHashCode();
       if (VerifyCode.Length != 0) hash ^= VerifyCode.GetHashCode();
       if (_unknownFields != null) {
@@ -1527,9 +1527,9 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
         output.WriteRawTag(10);
         output.WriteMessage(Head);
       }
-      if (OpenId.Length != 0) {
+      if (Openid.Length != 0) {
         output.WriteRawTag(18);
-        output.WriteString(OpenId);
+        output.WriteString(Openid);
       }
       if (Choice.Length != 0) {
         output.WriteRawTag(26);
@@ -1553,9 +1553,9 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
         output.WriteRawTag(10);
         output.WriteMessage(Head);
       }
-      if (OpenId.Length != 0) {
+      if (Openid.Length != 0) {
         output.WriteRawTag(18);
-        output.WriteString(OpenId);
+        output.WriteString(Openid);
       }
       if (Choice.Length != 0) {
         output.WriteRawTag(26);
@@ -1578,8 +1578,8 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
       if (head_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Head);
       }
-      if (OpenId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(OpenId);
+      if (Openid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Openid);
       }
       if (Choice.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Choice);
@@ -1605,8 +1605,8 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
         }
         Head.MergeFrom(other.Head);
       }
-      if (other.OpenId.Length != 0) {
-        OpenId = other.OpenId;
+      if (other.Openid.Length != 0) {
+        Openid = other.Openid;
       }
       if (other.Choice.Length != 0) {
         Choice = other.Choice;
@@ -1641,7 +1641,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
             break;
           }
           case 18: {
-            OpenId = input.ReadString();
+            Openid = input.ReadString();
             break;
           }
           case 26: {
@@ -1679,7 +1679,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
             break;
           }
           case 18: {
-            OpenId = input.ReadString();
+            Openid = input.ReadString();
             break;
           }
           case 26: {

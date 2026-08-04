@@ -25,25 +25,25 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChJwYl9uZXRfbG9naW4ucHJvdG8SK05vdmFGcmFtZXdvcmsuS2l0Lk5ldHdv",
-            "cmsuR2FtZUxvZ2luLlJ1bnRpbWUaE3BiX25ldF9oZWFkZXIucHJvdG8icAoN",
+            "cmsuR2FtZUxvZ2luLlJ1bnRpbWUaE3BiX25ldF9oZWFkZXIucHJvdG8ifAoN",
             "UGJOZXRMb2dpblJlcRIzCgRoZWFkGAEgASgLMiUuTm92YUZyYW1ld29yay5S",
-            "dW50aW1lLlBiTmV0UmVxSGVhZGVyEg8KB29wZW5faWQYAiABKAkSGQoRZm9y",
-            "Y2VfbmV3X2FjY291bnQYAyABKAgi+AEKDlBiTmV0TG9naW5SZXNwEjQKBGhl",
-            "YWQYASABKAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXNwSGVh",
-            "ZGVyEgsKA3VpZBgCIAEoCRIVCg1yZWdpc3Rlcl90aW1lGAMgASgDEhIKCmxv",
-            "Z2luX3RpbWUYBCABKAMSDwoHY291bnRyeRgFIAEoCRJPCgZzdGF0dXMYBiAB",
-            "KA4yPy5Ob3ZhRnJhbWV3b3JrLktpdC5OZXR3b3JrLkdhbWVMb2dpbi5SdW50",
-            "aW1lLlBiTmV0QWNjb3VudFN0YXR1cxIWCg5pc19uZXdfYWNjb3VudBgHIAEo",
-            "CCq1AQoSUGJOZXRBY2NvdW50U3RhdHVzEiIKHlBiTmV0QWNjb3VudFN0YXR1",
-            "c19VTlNQRUNJRklFRBAAEh0KGVBiTmV0QWNjb3VudFN0YXR1c19OT1JNQUwQ",
-            "ARIdChlQYk5ldEFjY291bnRTdGF0dXNfTE9DS0VEEAISHQoZUGJOZXRBY2Nv",
-            "dW50U3RhdHVzX0JBTk5FRBADEh4KGlBiTmV0QWNjb3VudFN0YXR1c19ERUxF",
-            "VEVEEARiBnByb3RvMw=="));
+            "dW50aW1lLlBiTmV0UmVxSGVhZGVyEg4KBm9wZW5pZBgCIAEoCRIZChFmb3Jj",
+            "ZV9uZXdfYWNjb3VudBgDIAEoCBILCgN1aWQYBCABKAkiiAIKDlBiTmV0TG9n",
+            "aW5SZXNwEjQKBGhlYWQYASABKAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUu",
+            "UGJOZXRSZXNwSGVhZGVyEgsKA3VpZBgCIAEoCRIVCg1yZWdpc3Rlcl90aW1l",
+            "GAMgASgDEhIKCmxvZ2luX3RpbWUYBCABKAMSDwoHY291bnRyeRgFIAEoCRJP",
+            "CgZzdGF0dXMYBiABKA4yPy5Ob3ZhRnJhbWV3b3JrLktpdC5OZXR3b3JrLkdh",
+            "bWVMb2dpbi5SdW50aW1lLlBiTmV0QWNjb3VudFN0YXR1cxIWCg5pc19uZXdf",
+            "YWNjb3VudBgHIAEoCBIOCgZvcGVuaWQYCCABKAkqtQEKElBiTmV0QWNjb3Vu",
+            "dFN0YXR1cxIiCh5QYk5ldEFjY291bnRTdGF0dXNfVU5TUEVDSUZJRUQQABId",
+            "ChlQYk5ldEFjY291bnRTdGF0dXNfTk9STUFMEAESHQoZUGJOZXRBY2NvdW50",
+            "U3RhdHVzX0xPQ0tFRBACEh0KGVBiTmV0QWNjb3VudFN0YXR1c19CQU5ORUQQ",
+            "AxIeChpQYk5ldEFjY291bnRTdGF0dXNfREVMRVRFRBAEYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetAccountStatus), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetLoginReq), global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetLoginReq.Parser, new[]{ "Head", "OpenId", "ForceNewAccount" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetLoginResp), global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetLoginResp.Parser, new[]{ "Head", "Uid", "RegisterTime", "LoginTime", "Country", "Status", "IsNewAccount" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetLoginReq), global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetLoginReq.Parser, new[]{ "Head", "Openid", "ForceNewAccount", "Uid" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetLoginResp), global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetLoginResp.Parser, new[]{ "Head", "Uid", "RegisterTime", "LoginTime", "Country", "Status", "IsNewAccount", "Openid" }, null, null, null, null)
           }));
     }
     #endregion
@@ -118,8 +118,9 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public PbNetLoginReq(PbNetLoginReq other) : this() {
       head_ = other.head_ != null ? other.head_.Clone() : null;
-      openId_ = other.openId_;
+      openid_ = other.openid_;
       forceNewAccount_ = other.forceNewAccount_;
+      uid_ = other.uid_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -144,18 +145,18 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       }
     }
 
-    /// <summary>Field number for the "open_id" field.</summary>
-    public const int OpenIdFieldNumber = 2;
-    private string openId_ = "";
+    /// <summary>Field number for the "openid" field.</summary>
+    public const int OpenidFieldNumber = 2;
+    private string openid_ = "";
     /// <summary>
     /// 可选；三方号凭证，login 只"读"绑定关系找 uid 登入，不做绑定副作用
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string OpenId {
-      get { return openId_; }
+    public string Openid {
+      get { return openid_; }
       set {
-        openId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        openid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -171,6 +172,21 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       get { return forceNewAccount_; }
       set {
         forceNewAccount_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "uid" field.</summary>
+    public const int UidFieldNumber = 4;
+    private string uid_ = "";
+    /// <summary>
+    /// 用户唯一 ID
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Uid {
+      get { return uid_; }
+      set {
+        uid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -190,8 +206,9 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
         return true;
       }
       if (!object.Equals(Head, other.Head)) return false;
-      if (OpenId != other.OpenId) return false;
+      if (Openid != other.Openid) return false;
       if (ForceNewAccount != other.ForceNewAccount) return false;
+      if (Uid != other.Uid) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -200,8 +217,9 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
     public override int GetHashCode() {
       int hash = 1;
       if (head_ != null) hash ^= Head.GetHashCode();
-      if (OpenId.Length != 0) hash ^= OpenId.GetHashCode();
+      if (Openid.Length != 0) hash ^= Openid.GetHashCode();
       if (ForceNewAccount != false) hash ^= ForceNewAccount.GetHashCode();
+      if (Uid.Length != 0) hash ^= Uid.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -224,13 +242,17 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
         output.WriteRawTag(10);
         output.WriteMessage(Head);
       }
-      if (OpenId.Length != 0) {
+      if (Openid.Length != 0) {
         output.WriteRawTag(18);
-        output.WriteString(OpenId);
+        output.WriteString(Openid);
       }
       if (ForceNewAccount != false) {
         output.WriteRawTag(24);
         output.WriteBool(ForceNewAccount);
+      }
+      if (Uid.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Uid);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -246,13 +268,17 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
         output.WriteRawTag(10);
         output.WriteMessage(Head);
       }
-      if (OpenId.Length != 0) {
+      if (Openid.Length != 0) {
         output.WriteRawTag(18);
-        output.WriteString(OpenId);
+        output.WriteString(Openid);
       }
       if (ForceNewAccount != false) {
         output.WriteRawTag(24);
         output.WriteBool(ForceNewAccount);
+      }
+      if (Uid.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Uid);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -267,11 +293,14 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       if (head_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Head);
       }
-      if (OpenId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(OpenId);
+      if (Openid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Openid);
       }
       if (ForceNewAccount != false) {
         size += 1 + 1;
+      }
+      if (Uid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Uid);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -291,11 +320,14 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
         }
         Head.MergeFrom(other.Head);
       }
-      if (other.OpenId.Length != 0) {
-        OpenId = other.OpenId;
+      if (other.Openid.Length != 0) {
+        Openid = other.Openid;
       }
       if (other.ForceNewAccount != false) {
         ForceNewAccount = other.ForceNewAccount;
+      }
+      if (other.Uid.Length != 0) {
+        Uid = other.Uid;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -324,11 +356,15 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
             break;
           }
           case 18: {
-            OpenId = input.ReadString();
+            Openid = input.ReadString();
             break;
           }
           case 24: {
             ForceNewAccount = input.ReadBool();
+            break;
+          }
+          case 34: {
+            Uid = input.ReadString();
             break;
           }
         }
@@ -358,11 +394,15 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
             break;
           }
           case 18: {
-            OpenId = input.ReadString();
+            Openid = input.ReadString();
             break;
           }
           case 24: {
             ForceNewAccount = input.ReadBool();
+            break;
+          }
+          case 34: {
+            Uid = input.ReadString();
             break;
           }
         }
@@ -417,6 +457,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       country_ = other.country_;
       status_ = other.status_;
       isNewAccount_ = other.isNewAccount_;
+      openid_ = other.openid_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -531,6 +572,21 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       }
     }
 
+    /// <summary>Field number for the "openid" field.</summary>
+    public const int OpenidFieldNumber = 8;
+    private string openid_ = "";
+    /// <summary>
+    /// 三方号凭证
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Openid {
+      get { return openid_; }
+      set {
+        openid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -553,6 +609,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       if (Country != other.Country) return false;
       if (Status != other.Status) return false;
       if (IsNewAccount != other.IsNewAccount) return false;
+      if (Openid != other.Openid) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -567,6 +624,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       if (Country.Length != 0) hash ^= Country.GetHashCode();
       if (Status != global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetAccountStatus.Unspecified) hash ^= Status.GetHashCode();
       if (IsNewAccount != false) hash ^= IsNewAccount.GetHashCode();
+      if (Openid.Length != 0) hash ^= Openid.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -613,6 +671,10 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
         output.WriteRawTag(56);
         output.WriteBool(IsNewAccount);
       }
+      if (Openid.Length != 0) {
+        output.WriteRawTag(66);
+        output.WriteString(Openid);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -651,6 +713,10 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
         output.WriteRawTag(56);
         output.WriteBool(IsNewAccount);
       }
+      if (Openid.Length != 0) {
+        output.WriteRawTag(66);
+        output.WriteString(Openid);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -681,6 +747,9 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       }
       if (IsNewAccount != false) {
         size += 1 + 1;
+      }
+      if (Openid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Openid);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -717,6 +786,9 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       }
       if (other.IsNewAccount != false) {
         IsNewAccount = other.IsNewAccount;
+      }
+      if (other.Openid.Length != 0) {
+        Openid = other.Openid;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -768,6 +840,10 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
             IsNewAccount = input.ReadBool();
             break;
           }
+          case 66: {
+            Openid = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -816,6 +892,10 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
           }
           case 56: {
             IsNewAccount = input.ReadBool();
+            break;
+          }
+          case 66: {
+            Openid = input.ReadString();
             break;
           }
         }

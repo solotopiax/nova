@@ -6,6 +6,24 @@
 
 ---
 
+## [0.6.5] - 2026-08-04
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.5]` 节。
+
+### Breaking
+
+- Network Header Proto 字段统一为 `appid/devid`，Login、Bind 与 GameSave Proto 字段同步统一为 `openid/last_devid`；字段号与 wire 类型保持不变。
+- `NetBuilder.BuildHeader` 不再接受候选 OpenID，Header 始终读取已确认身份快照。
+
+### Added
+
+- Framework 新增 UID/OpenID 原子身份读写、清理与非排队身份操作租约，Login、Delete、Bind、Resolve 共用同一并发边界。
+
+### Changed
+
+- 发布 Framework `0.6.5`、BestHTTP `0.1.2`、GameBind `0.0.10`、GameLogin `0.1.4` 与 GameSave `0.1.2`，按实际消费链提升最低依赖。
+- `NovaSpark.cs` 固定 Framework `0.6.5` 与 BestHTTP 适配包 `0.1.2`；EDM `1.2.188` 与 unity-mcp `v10.1.2` 保持当前最新版本。
+
 ## [0.6.4] - 2026-08-03
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.4]` 节。

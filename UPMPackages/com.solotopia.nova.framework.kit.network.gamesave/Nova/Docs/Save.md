@@ -132,7 +132,7 @@ var setFullResp = await gameSave.SetFullAsync(fullPayload);
 
 - **`SetDebugMode` 覆盖语义**：`m_DebugModeOverride` 为 `bool?`，调用 `SetDebugMode(true/false)` 后会覆盖全局 `NetService.IsDebugMode`；若需恢复跟随全局，暂无公开 API，需重新 `Kit<Save>()` 获取新实例。
 - **`Head` 自动填充**：所有 `Async` 入口内部调用 `NetBuilder.BuildHeader()` 填充请求 Head，业务侧无需手动构建。
-- **`Set` 请求元数据自动填充**：`SetAsync` / `SetFullAsync` 内部自动写入三字段 —— `GameVersion` 取自 `m_GameVersion`（业务侧 `SetGameVersion` 注入，未注入则为空串），`AppVersion` 取自 `Application.version`，`LastDeviceId` 通过 `Nova.SDK.TryGet<IDeviceIdProvider>()` 取值（未注册则为空串）。取值口径与 `NetBuilder.BuildHeader` 保持一致。
+- **`Set` 请求元数据自动填充**：`SetAsync` / `SetFullAsync` 自动写入 `GameVersion/AppVersion/LastDevid`；`LastDevid` 通过 `IDeviceIdProvider` 取值。Proto `last_device_id` 已硬切换为 `last_devid`，字段号不变，不提供旧 `LastDeviceId` 属性。
 - **`full` 由接口决定，禁靠 keys 空判**：是否全量完全由具体接口决定 —— 仅 `GetFullAsync` / `SetFullAsync` 写入 `full=true`；`GetFullAsync` 不携带 keys；`SetFullAsync` 将 `value` 作为整包载荷写入 `datas[0].Value`（`Key` 为空字符串）。其余接口一律 `full=false`。**已废弃旧版"keys 为空 = 全量"的隐式回退**。
 - **非全量入参强校验**：非全量 `GetAsync` / `SetAsync` 在 `cmdRow == null` 之前先校验业务参数 —— `key` / `keys` 不得为 `null`/`""`/长度 0；`values` 不得为 `null`、长度必须与 `keys` 一致、任一元素不得为 `null`（允许空字符串）。任一不通过直接返回 `NetErrorCode.PARAM_ERROR`，不发起网络请求。
 - **`cmdName` 由 `SaveKitConfig` 提供**：所有入口内部通过 `Nova.Config.GetKitConfig<SaveKitConfig>()` 取配置，取不到时抛 `KitConfigMissingException`；未注册的 cmdName 会落到 `null` `INetworkCmdRow`，由下层 `NetService.SendAsync` 统一处理。

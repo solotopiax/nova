@@ -20,6 +20,12 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
     public sealed partial class DemoGameBindView
     {
         /// <summary>
+        /// uid 输入框；为空时不传 body.uid，非空时作为候选 UID 登录并覆盖 forceNewAccount。
+        /// </summary>
+
+        [SerializeField] private TMP_InputField m_UidInput;
+
+        /// <summary>
         /// 三方 openId 输入框；绑定 / 冲突查询 / 裁决三步共用同一 openId。
         /// </summary>
 

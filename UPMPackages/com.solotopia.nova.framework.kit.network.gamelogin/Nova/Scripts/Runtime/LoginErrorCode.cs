@@ -23,6 +23,16 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         public const int OK = 0;
 
         /// <summary>
+        /// 删除账号等操作要求当前已有服务端确认身份，但本地身份为空。
+        /// </summary>
+        public const int ErrIdentityRequired = 7000;
+
+        /// <summary>
+        /// 登录传输成功，但业务响应缺少可提交的正常 UID 身份。
+        /// </summary>
+        public const int ErrInvalidLoginResponse = 7001;
+
+        /// <summary>
         /// 用户不存在。
         /// </summary>
         public const int ErrUserNotFound = 10000;
@@ -51,6 +61,11 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         /// 账号已删除。
         /// </summary>
         public const int ErrAccountDeleted = 10011;
+
+        /// <summary>
+        /// 请求体 UID 与请求头 UID 不一致。
+        /// </summary>
+        public const int ErrUIDMismatch = 10012;
 
         /// <summary>
         /// device_id 非最新，被顶号。

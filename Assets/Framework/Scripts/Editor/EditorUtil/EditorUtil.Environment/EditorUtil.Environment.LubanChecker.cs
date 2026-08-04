@@ -5,7 +5,7 @@
  * filename:  EditorUtil.Environment.LubanChecker.cs
  * author:    taoye
  * created:   2026/4/27
- * descrip:   Luban 运行环境检查器，检测 dotnet-sdk 版本是否落在 [8.0.127, 10.0.203] 闭区间
+ * descrip:   Luban 运行环境检查器，检测 dotnet-sdk 版本是否落在 [8.0.127, 10.0.203] 建议区间
  ***************************************************************/
 
 using SIO = System.IO;
@@ -19,7 +19,7 @@ namespace NovaFramework.Editor
         public static partial class Environment
         {
             /// <summary>
-            /// Luban 运行环境检查器，检测 dotnet-sdk 版本是否落在 [8.0.127, 10.0.203] 闭区间。
+            /// Luban 运行环境检查器，检测 dotnet-sdk 版本是否落在 [8.0.127, 10.0.203] 建议区间。
             /// </summary>
             [InitializeOnLoad]
             internal static class LubanChecker
@@ -50,12 +50,27 @@ namespace NovaFramework.Editor
                 private const string c_SessionKeyIssue = "Nova.Luban.EnvCheckIssue";
 
                 /// <summary>
-                /// dotnet 兼容版本下限（闭区间），低于此版本硬阻断。
+                /// SessionState 缓存键：dotnet 独立问题类型（int）。
+                /// </summary>
+                private const string c_SessionKeyDotnetIssue = "Nova.Luban.EnvCheckDotnetIssue";
+
+                /// <summary>
+                /// SessionState 缓存键：Luban.dll 是否就绪。
+                /// </summary>
+                private const string c_SessionKeyLubanDllReady = "Nova.Luban.EnvCheckLubanDllReady";
+
+                /// <summary>
+                /// SessionState 缓存结构版本；独立状态字段加入后用于淘汰旧缓存。
+                /// </summary>
+                private const string c_SessionKeyCacheVersion = "Nova.Luban.EnvCheckCacheVersion";
+
+                /// <summary>
+                /// dotnet 建议版本下限（闭区间）。
                 /// </summary>
                 internal const string c_MinDotnetVersion = "8.0.127";
 
                 /// <summary>
-                /// dotnet 兼容版本上限（闭区间），高于此版本硬阻断。
+                /// dotnet 建议版本上限（闭区间）。
                 /// </summary>
                 internal const string c_MaxDotnetVersion = "10.0.203";
 
@@ -75,12 +90,12 @@ namespace NovaFramework.Editor
                     DotnetNotFound,
 
                     /// <summary>
-                    /// dotnet 版本低于兼容下限。
+                    /// dotnet 版本低于建议下限。
                     /// </summary>
                     DotnetVersionTooLow,
 
                     /// <summary>
-                    /// dotnet 版本高于兼容上限，超出 Luban 兼容区间。
+                    /// dotnet 版本高于建议上限。
                     /// </summary>
                     DotnetVersionTooHigh,
 
@@ -126,6 +141,16 @@ namespace NovaFramework.Editor
                     public readonly EnvironmentIssue Issue;
 
                     /// <summary>
+                    /// dotnet 独立检查结果；即使 Luban.dll 同时缺失也不会被覆盖。
+                    /// </summary>
+                    public readonly EnvironmentIssue DotnetIssue;
+
+                    /// <summary>
+                    /// Luban.dll 是否存在。
+                    /// </summary>
+                    public readonly bool IsLubanDllReady;
+
+                    /// <summary>
                     /// 构造环境检查结果。
                     /// </summary>
                     /// <param name="isReady">是否就绪。</param>
@@ -134,12 +159,36 @@ namespace NovaFramework.Editor
                     /// <param name="errorMessage">错误信息。</param>
                     /// <param name="issue">问题类型。</param>
                     public EnvironmentCheckResult(bool isReady, string dotnetPath, string dotnetVersion, string errorMessage, EnvironmentIssue issue)
+                        : this(
+                            isReady,
+                            dotnetPath,
+                            dotnetVersion,
+                            errorMessage,
+                            issue,
+                            issue == EnvironmentIssue.LubanDllNotFound ? EnvironmentIssue.None : issue,
+                            issue != EnvironmentIssue.LubanDllNotFound)
+                    {
+                    }
+
+                    /// <summary>
+                    /// 构造包含 dotnet 与 Luban.dll 独立状态的环境检查结果。
+                    /// </summary>
+                    public EnvironmentCheckResult(
+                        bool isReady,
+                        string dotnetPath,
+                        string dotnetVersion,
+                        string errorMessage,
+                        EnvironmentIssue issue,
+                        EnvironmentIssue dotnetIssue,
+                        bool isLubanDllReady)
                     {
                         IsReady = isReady;
                         DotnetPath = dotnetPath;
                         DotnetVersion = dotnetVersion;
                         ErrorMessage = errorMessage;
                         Issue = issue;
+                        DotnetIssue = dotnetIssue;
+                        IsLubanDllReady = isLubanDllReady;
                     }
                 }
 
@@ -159,7 +208,8 @@ namespace NovaFramework.Editor
                 public static EnvironmentCheckResult Check()
                 {
                     // 读取缓存
-                    bool cached = SessionState.GetBool(c_SessionKeyReady + "_cached", false);
+                    bool cached = SessionState.GetBool(c_SessionKeyReady + "_cached", false) &&
+                                  SessionState.GetInt(c_SessionKeyCacheVersion, 0) == 2;
                     if (cached)
                     {
                         return ReadFromSession();
@@ -207,11 +257,15 @@ namespace NovaFramework.Editor
                 /// <returns>检查结果。</returns>
                 private static EnvironmentCheckResult DoCheck()
                 {
+                    // Luban.dll 与 dotnet 独立检测，避免 dotnet 版本异常时停留在“待检测”。
+                    string dllPath = Luban.CliRunner.GetLubanDllPath();
+                    bool isLubanDllReady = dllPath != null && SIO.File.Exists(dllPath);
+
                     // 步骤 1：检测 dotnet 路径
                     string dotnetPath = Luban.CliRunner.ResolveDotnetPath();
                     if (dotnetPath == null)
                     {
-                        return new EnvironmentCheckResult(false, null, null, $"未找到 dotnet 可执行文件，请安装 .NET SDK {c_MinDotnetVersion} ~ {c_MaxDotnetVersion}。", EnvironmentIssue.DotnetNotFound);
+                        return new EnvironmentCheckResult(false, null, null, $"未找到 dotnet 可执行文件，请安装 .NET SDK {c_MinDotnetVersion} ~ {c_MaxDotnetVersion}。", EnvironmentIssue.DotnetNotFound, EnvironmentIssue.DotnetNotFound, isLubanDllReady);
                     }
 
                     // 步骤 2：执行 dotnet --version 获取版本号
@@ -221,7 +275,7 @@ namespace NovaFramework.Editor
                         string errMsg = versionResult.TimedOut
                             ? $"dotnet --version 执行超时。\n输出：\n{ProcessRunner.FormatOutput(versionResult)}"
                             : $"dotnet --version 执行失败（ExitCode={versionResult.ExitCode}）。\n输出：\n{ProcessRunner.FormatOutput(versionResult)}";
-                        return new EnvironmentCheckResult(false, dotnetPath, null, errMsg, EnvironmentIssue.DotnetNotExecutable);
+                        return new EnvironmentCheckResult(false, dotnetPath, null, errMsg, EnvironmentIssue.DotnetNotExecutable, EnvironmentIssue.DotnetNotExecutable, isLubanDllReady);
                     }
 
                     string versionStr = versionResult.Stdout.Trim();
@@ -231,31 +285,46 @@ namespace NovaFramework.Editor
                     if (version == null)
                     {
                         string errMsg = $"dotnet --version 输出无法解析为版本号（输出：{versionStr}）。";
-                        return new EnvironmentCheckResult(false, dotnetPath, versionStr, errMsg, EnvironmentIssue.DotnetNotExecutable);
+                        return new EnvironmentCheckResult(false, dotnetPath, versionStr, errMsg, EnvironmentIssue.DotnetNotExecutable, EnvironmentIssue.DotnetNotExecutable, isLubanDllReady);
                     }
 
                     System.Version minVersion = System.Version.Parse(c_MinDotnetVersion);
                     System.Version maxVersion = System.Version.Parse(c_MaxDotnetVersion);
+                    EnvironmentIssue dotnetIssue = EnvironmentIssue.None;
                     if (version < minVersion)
                     {
-                        string errMsg = $"dotnet 版本过低（当前 {versionStr}，需要 {c_MinDotnetVersion} ~ {c_MaxDotnetVersion}）。";
-                        return new EnvironmentCheckResult(false, dotnetPath, versionStr, errMsg, EnvironmentIssue.DotnetVersionTooLow);
+                        dotnetIssue = EnvironmentIssue.DotnetVersionTooLow;
                     }
-
-                    if (version > maxVersion)
+                    else if (version > maxVersion)
                     {
-                        string errMsg = $"dotnet 版本过高（当前 {versionStr}，需要 {c_MinDotnetVersion} ~ {c_MaxDotnetVersion}）。";
-                        return new EnvironmentCheckResult(false, dotnetPath, versionStr, errMsg, EnvironmentIssue.DotnetVersionTooHigh);
+                        dotnetIssue = EnvironmentIssue.DotnetVersionTooHigh;
                     }
 
-                    // 步骤 4：检测 Luban.dll
-                    string dllPath = Luban.CliRunner.GetLubanDllPath();
-                    if (dllPath == null || !SIO.File.Exists(dllPath))
+                    return BuildCompletedCheckResult(dotnetPath, versionStr, dotnetIssue, isLubanDllReady);
+                }
+
+                /// <summary>
+                /// 合并已完成的 dotnet 版本检查与 Luban.dll 检查。
+                /// </summary>
+                private static EnvironmentCheckResult BuildCompletedCheckResult(
+                    string dotnetPath,
+                    string versionStr,
+                    EnvironmentIssue dotnetIssue,
+                    bool isLubanDllReady)
+                {
+                    if (!isLubanDllReady)
                     {
-                        return new EnvironmentCheckResult(false, dotnetPath, versionStr, "未找到 Luban.dll，请确认 com.solotopia.luban UPM 包已安装。", EnvironmentIssue.LubanDllNotFound);
+                        return new EnvironmentCheckResult(false, dotnetPath, versionStr, "未找到 Luban.dll，请确认 com.solotopia.luban UPM 包已安装。", EnvironmentIssue.LubanDllNotFound, dotnetIssue, false);
                     }
 
-                    return new EnvironmentCheckResult(true, dotnetPath, versionStr, null, EnvironmentIssue.None);
+                    if (dotnetIssue == EnvironmentIssue.DotnetVersionTooLow || dotnetIssue == EnvironmentIssue.DotnetVersionTooHigh)
+                    {
+                        string level = dotnetIssue == EnvironmentIssue.DotnetVersionTooLow ? "过低" : "过高";
+                        string errMsg = $"dotnet 版本{level}（当前 {versionStr}，建议 {c_MinDotnetVersion} ~ {c_MaxDotnetVersion}）。";
+                        return new EnvironmentCheckResult(false, dotnetPath, versionStr, errMsg, dotnetIssue, dotnetIssue, true);
+                    }
+
+                    return new EnvironmentCheckResult(true, dotnetPath, versionStr, null, EnvironmentIssue.None, EnvironmentIssue.None, true);
                 }
 
                 /// <summary>
@@ -269,6 +338,9 @@ namespace NovaFramework.Editor
                     SessionState.SetString(c_SessionKeyDotnetVersion, result.DotnetVersion ?? "");
                     SessionState.SetString(c_SessionKeyErrorMessage, result.ErrorMessage ?? "");
                     SessionState.SetInt(c_SessionKeyIssue, (int)result.Issue);
+                    SessionState.SetInt(c_SessionKeyDotnetIssue, (int)result.DotnetIssue);
+                    SessionState.SetBool(c_SessionKeyLubanDllReady, result.IsLubanDllReady);
+                    SessionState.SetInt(c_SessionKeyCacheVersion, 2);
                     SessionState.SetBool(c_SessionKeyReady + "_cached", true);
                 }
 
@@ -283,7 +355,9 @@ namespace NovaFramework.Editor
                     string dotnetVersion = SessionState.GetString(c_SessionKeyDotnetVersion, "");
                     string errorMessage = SessionState.GetString(c_SessionKeyErrorMessage, "");
                     EnvironmentIssue issue = (EnvironmentIssue)SessionState.GetInt(c_SessionKeyIssue, 0);
-                    return new EnvironmentCheckResult(isReady, string.IsNullOrEmpty(dotnetPath) ? null : dotnetPath, string.IsNullOrEmpty(dotnetVersion) ? null : dotnetVersion, string.IsNullOrEmpty(errorMessage) ? null : errorMessage, issue);
+                    EnvironmentIssue dotnetIssue = (EnvironmentIssue)SessionState.GetInt(c_SessionKeyDotnetIssue, (int)(issue == EnvironmentIssue.LubanDllNotFound ? EnvironmentIssue.None : issue));
+                    bool isLubanDllReady = SessionState.GetBool(c_SessionKeyLubanDllReady, issue != EnvironmentIssue.LubanDllNotFound);
+                    return new EnvironmentCheckResult(isReady, string.IsNullOrEmpty(dotnetPath) ? null : dotnetPath, string.IsNullOrEmpty(dotnetVersion) ? null : dotnetVersion, string.IsNullOrEmpty(errorMessage) ? null : errorMessage, issue, dotnetIssue, isLubanDllReady);
                 }
 
                 /// <summary>

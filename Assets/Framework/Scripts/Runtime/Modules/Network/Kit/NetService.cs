@@ -10,6 +10,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using Newtonsoft.Json;
@@ -24,17 +25,40 @@ namespace NovaFramework.Runtime
     /// </summary>
     public static class NetService
     {
+        private static readonly object s_IdentityLock = new object();
+        private static string s_UID = string.Empty;
+        private static string s_OpenID = string.Empty;
+        private static int s_IdentityOperationActive;
+
         /// <summary>
         /// 当前业务流程确认的用户 UID。
         /// 不做持久化，进程重启归空。
         /// </summary>
-        public static string UID { get; private set; } = string.Empty;
+        public static string UID
+        {
+            get
+            {
+                lock (s_IdentityLock)
+                {
+                    return s_UID;
+                }
+            }
+        }
 
         /// <summary>
         /// 当前业务流程确认的第三方 OpenID。
         /// 不做持久化，进程重启归空；空字符串表示当前没有可用 OpenID。
         /// </summary>
-        public static string OpenID { get; private set; } = string.Empty;
+        public static string OpenID
+        {
+            get
+            {
+                lock (s_IdentityLock)
+                {
+                    return s_OpenID;
+                }
+            }
+        }
 
         /// <summary>
         /// 全局调试开关。调试模式下跳过 AES 加解密，发送 X-Debug-Plain 头。
@@ -50,7 +74,10 @@ namespace NovaFramework.Runtime
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void SetUID(string uid)
         {
-            UID = uid ?? string.Empty;
+            lock (s_IdentityLock)
+            {
+                s_UID = uid ?? string.Empty;
+            }
         }
 
         /// <summary>
@@ -61,7 +88,69 @@ namespace NovaFramework.Runtime
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void SetOpenID(string openid)
         {
-            OpenID = openid ?? string.Empty;
+            lock (s_IdentityLock)
+            {
+                s_OpenID = openid ?? string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// 原子写入当前已由服务端确认的 UID/OpenID 身份对。
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static void SetIdentity(string uid, string openid)
+        {
+            lock (s_IdentityLock)
+            {
+                s_UID = uid ?? string.Empty;
+                s_OpenID = openid ?? string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// 原子读取当前已由服务端确认的 UID/OpenID 身份对。
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static void GetIdentity(out string uid, out string openid)
+        {
+            lock (s_IdentityLock)
+            {
+                uid = s_UID;
+                openid = s_OpenID;
+            }
+        }
+
+        /// <summary>
+        /// 原子清空当前身份，后续请求 Header 不再携带 UID/OpenID。
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static void ClearIdentity()
+        {
+            SetIdentity(string.Empty, string.Empty);
+        }
+
+        /// <summary>
+        /// 尝试获取全局身份变更操作租约；已有 Login/Delete/Bind/Resolve 执行时立即返回 null，不排队。
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static IDisposable TryBeginIdentityOperation()
+        {
+            return Interlocked.CompareExchange(ref s_IdentityOperationActive, 1, 0) == 0
+                ? new IdentityOperationLease()
+                : null;
+        }
+
+        private sealed class IdentityOperationLease : IDisposable
+        {
+            private int m_Disposed;
+
+            public void Dispose()
+            {
+                if (Interlocked.Exchange(ref m_Disposed, 1) == 0)
+                {
+                    Volatile.Write(ref s_IdentityOperationActive, 0);
+                }
+            }
         }
 
         /// <summary>

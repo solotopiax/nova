@@ -49,7 +49,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
             {
                 Head = NetBuilder.BuildHeader(),
                 Provider = (int)provider,
-                OpenId = openid ?? string.Empty
+                Openid = openid ?? string.Empty
             };
             var resp = await NetService.SendAsync(cmdRow, body, PbNetBindResp.Parser, m_DebugModeOverride);
             if (!resp.IsSuccess)
@@ -72,7 +72,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
             var body = new PbNetBindConflictReq
             {
                 Head = NetBuilder.BuildHeader(),
-                OpenId = openid ?? string.Empty
+                Openid = openid ?? string.Empty
             };
             var resp = await NetService.SendAsync(cmdRow, body, PbNetBindConflictResp.Parser, m_DebugModeOverride);
             if (!resp.IsSuccess)
@@ -98,7 +98,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
             var body = new PbNetBindResolveReq
             {
                 Head = NetBuilder.BuildHeader(),
-                OpenId = openid ?? string.Empty,
+                Openid = openid ?? string.Empty,
                 Choice = choice ?? string.Empty,
                 VerifyCode = verifyCode ?? string.Empty
             };

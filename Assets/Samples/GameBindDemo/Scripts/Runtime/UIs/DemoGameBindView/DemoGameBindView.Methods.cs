@@ -167,21 +167,40 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
         /// </summary>
         private async UniTaskVoid LoginAsync()
         {
+            bool requestedForceNewAccount = m_ForceNewAccountToggle != null && m_ForceNewAccountToggle.isOn;
+            ResolveLoginParameters(
+                m_UidInput != null ? m_UidInput.text : null,
+                requestedForceNewAccount,
+                out string uid,
+                out bool forceNewAccount);
+
             // openId 以页面输入为准：有值则传入登录，为空则走游客/设备登录
             string openId = ReadOpenId();
-            bool forceNewAccount = m_ForceNewAccountToggle != null && m_ForceNewAccountToggle.isOn;
 
-            AppendFeedback($"Nova.Network.Kit<Login>().Async(string.Empty, \"{openId}\", forceNewAccount={forceNewAccount}) → 请求中...");
-            NetResponse<PbNetLoginResp> resp = await Nova.Network.Kit<Login>().Async(string.Empty, openId, forceNewAccount);
+            AppendFeedback($"Nova.Network.Kit<Login>().Async(\"{uid}\", \"{openId}\", forceNewAccount={forceNewAccount}) → 请求中...");
+            NetResponse<PbNetLoginResp> resp = await Nova.Network.Kit<Login>().Async(uid, openId, forceNewAccount);
             if (resp.IsSuccess)
             {
-                string uid = resp.Data != null ? resp.Data.Uid : string.Empty;
-                AppendFeedback($"登录成功，当前账号 UID={uid}，可继续绑定三方号", FeedbackLevel.Success);
+                string responseUid = resp.Data != null ? resp.Data.Uid : string.Empty;
+                AppendFeedback($"登录成功，当前账号 UID={responseUid}，可继续绑定三方号", FeedbackLevel.Success);
             }
             else
             {
                 AppendFeedback($"登录失败，ErrorCode={resp.ErrorCode}, ErrorMessage={resp.ErrorMessage}", FeedbackLevel.Error);
             }
+        }
+
+        /// <summary>
+        /// 归一化登录 UID，并保证显式 UID 优先于强制新账号。
+        /// </summary>
+        private static void ResolveLoginParameters(
+            string rawUid,
+            bool requestedForceNewAccount,
+            out string uid,
+            out bool forceNewAccount)
+        {
+            uid = string.IsNullOrWhiteSpace(rawUid) ? string.Empty : rawUid.Trim();
+            forceNewAccount = string.IsNullOrEmpty(uid) && requestedForceNewAccount;
         }
 
         /// <summary>

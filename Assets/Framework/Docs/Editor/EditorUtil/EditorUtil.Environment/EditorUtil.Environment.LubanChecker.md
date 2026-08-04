@@ -38,8 +38,11 @@ EditorUtil (public static partial class)
 | `c_SessionKeyDotnetVersion` | `string` | `"Nova.Luban.EnvCheckDotnetVersion"` | SessionState 缓存键：dotnet 版本号 |
 | `c_SessionKeyErrorMessage` | `string` | `"Nova.Luban.EnvCheckErrorMessage"` | SessionState 缓存键：错误信息 |
 | `c_SessionKeyIssue` | `string` | `"Nova.Luban.EnvCheckIssue"` | SessionState 缓存键：问题类型（int） |
-| `c_MinDotnetVersion` | `internal string` | `"8.0.127"` | dotnet 兼容版本下限（闭区间），低于此版本硬阻断 |
-| `c_MaxDotnetVersion` | `internal string` | `"10.0.203"` | dotnet 兼容版本上限（闭区间），高于此版本硬阻断 |
+| `c_SessionKeyDotnetIssue` | `string` | `"Nova.Luban.EnvCheckDotnetIssue"` | SessionState 缓存键：dotnet 独立问题类型 |
+| `c_SessionKeyLubanDllReady` | `string` | `"Nova.Luban.EnvCheckLubanDllReady"` | SessionState 缓存键：Luban.dll 是否就绪 |
+| `c_SessionKeyCacheVersion` | `string` | `"Nova.Luban.EnvCheckCacheVersion"` | 缓存结构版本；自动淘汰旧的单状态缓存 |
+| `c_MinDotnetVersion` | `internal string` | `"8.0.127"` | dotnet 建议版本下限（闭区间） |
+| `c_MaxDotnetVersion` | `internal string` | `"10.0.203"` | dotnet 建议版本上限（闭区间） |
 
 ### EnvironmentIssue 枚举值
 
@@ -47,8 +50,8 @@ EditorUtil (public static partial class)
 |----|------|
 | `None` | 无问题，环境就绪 |
 | `DotnetNotFound` | 未找到 dotnet 可执行文件 |
-| `DotnetVersionTooLow` | dotnet 版本低于兼容下限 |
-| `DotnetVersionTooHigh` | dotnet 版本高于兼容上限，超出 Luban 兼容区间 |
+| `DotnetVersionTooLow` | dotnet 版本低于建议下限 |
+| `DotnetVersionTooHigh` | dotnet 版本高于建议上限 |
 | `DotnetNotExecutable` | dotnet 无法正常执行（进程失败/超时） |
 | `LubanDllNotFound` | 未找到 Luban.dll，UPM 包可能未安装 |
 
@@ -61,6 +64,8 @@ EditorUtil (public static partial class)
 | `DotnetVersion` | `readonly string` | dotnet 版本号字符串（如 `"8.0.100"`，失败时为 null） |
 | `ErrorMessage` | `readonly string` | 错误信息（就绪时为 null） |
 | `Issue` | `readonly EnvironmentIssue` | 环境问题类型 |
+| `DotnetIssue` | `readonly EnvironmentIssue` | dotnet 独立问题类型；不会被同时发生的 Luban.dll 缺失覆盖 |
+| `IsLubanDllReady` | `readonly bool` | Luban.dll 是否存在 |
 
 ---
 
@@ -98,12 +103,13 @@ Recheck()
 
 ## §8 初始化时序
 
-`DoCheck` 执行顺序（四步串行）：
+`DoCheck` 会独立检查 dotnet 与 Luban.dll，并把两个结果同时写入 `EnvironmentCheckResult`：
 
-1. 调用 `EditorUtil.Luban.CliRunner.ResolveDotnetPath()` 获取 dotnet 可执行路径
-2. 调用 `EditorUtil.ProcessRunner.RunSync(dotnetPath, "--version")` 获取版本字符串
-3. 调用 `ParseVersion` 解析版本号，验证落在 `[c_MinDotnetVersion, c_MaxDotnetVersion]` 闭区间；解析失败返回 `DotnetNotExecutable`，版本过低返回 `DotnetVersionTooLow`，版本过高返回 `DotnetVersionTooHigh`
-4. 调用 `EditorUtil.Luban.CliRunner.GetLubanDllPath()` 验证 Luban.dll 是否存在
+1. 调用 `EditorUtil.Luban.CliRunner.GetLubanDllPath()` 检查 Luban.dll，不因 dotnet 异常跳过
+2. 调用 `EditorUtil.Luban.CliRunner.ResolveDotnetPath()` 获取 dotnet 可执行路径
+3. 调用 `EditorUtil.ProcessRunner.RunSync(dotnetPath, "--version")` 获取并解析版本
+4. 验证版本是否落在建议区间；越界仅作为 `DotnetIssue` 警告状态
+5. 合并两项结果：版本越界且 DLL 存在时允许 Pipeline 警告后继续；DLL 缺失始终阻断
 
 ---
 

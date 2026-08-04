@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.6.5] - 2026-08-04
+
+### Breaking
+
+- Network Header Proto 字段 `app_id/device_id` 改为 `appid/devid`，生成属性改为 `Appid/Devid`；字段号与 wire 类型不变，不保留旧属性别名。
+
+### Added
+
+- `NetService` 新增 UID/OpenID 原子读写与清理 API，以及 Login/Delete/Bind/Resolve 共用的非排队身份操作租约。
+
 ## [0.6.4] - 2026-08-03
 
 ### Breaking

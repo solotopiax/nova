@@ -82,5 +82,10 @@ namespace NovaFramework.Runtime
         /// AES 加密失败（客户端段）。
         /// </summary>
         public const int AES_ENCRYPT_FAILED = -5;
+
+        /// <summary>
+        /// 已有身份变更操作执行中；客户端不排队，调用方应稍后重试。
+        /// </summary>
+        public const int IDENTITY_OPERATION_IN_PROGRESS = -6;
     }
 }

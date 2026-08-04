@@ -23,11 +23,11 @@ enum PbNetChannel {
 
 // 请求公共头：每个业务请求都需要携带，供服务端做身份识别与多维统计
 message PbNetReqHeader {
-    int32 app_id = 1;            // 应用 ID，用于区分不同产品/包体
+    int32 appid = 1;             // 应用 ID，用于区分不同产品/包体
     string uid = 2;              // 用户唯一 ID，未登录时可为空
     string version = 3;          // 客户端版本号，用于版本控制与强更判断
     string language = 4;         // 客户端当前语言（如 zh-CN、en-US）
-    string device_id = 5;        // 设备唯一标识，用于设备维度统计与风控
+    string devid = 5;            // 设备唯一标识，用于设备维度统计与风控
     PbNetPlatform platform = 6;  // 客户端运行平台
     PbNetChannel channel = 7;    // 游戏运营渠道，用于区分包体分发与运营来源
     string openid = 8;           // 第三方用户 ID
@@ -36,7 +36,7 @@ message PbNetReqHeader {
 // 响应公共头：每个业务响应都会携带
 message PbNetRespHeader {
     int64 timestamp = 1;  // 服务端时间戳（毫秒），用于客户端校时与日志追踪
-    int32 app_id = 2;     // 应用 ID，用于区分不同产品/包体
+    int32 appid = 2;      // 应用 ID，用于区分不同产品/包体
     string uid = 3;       // 用户唯一 ID，未登录时可为空
     string openid = 4;    // 第三方用户 ID
 }

@@ -63,31 +63,49 @@ namespace NovaFramework.Kit.Network.GameLogin.Samples.Runtime
         }
 
         /// <summary>
-        /// 异步登录流程：读取 openId 与 forceNewAccount 参数，调用 Login.Async，
+        /// 异步登录流程：读取 uid、openId 与 forceNewAccount 参数，调用 Login.Async，
         /// 按响应 IsSuccess 打印 Success/Error 级别反馈并附 UID 或错误信息。
         /// </summary>
         private async UniTaskVoid LoginAsync()
         {
+            bool requestedForceNewAccount = m_ForceNewAccountToggle != null && m_ForceNewAccountToggle.isOn;
+            ResolveLoginParameters(
+                m_UidInput != null ? m_UidInput.text : null,
+                requestedForceNewAccount,
+                out string uid,
+                out bool forceNewAccount);
+
             // openId 以页面输入为准：有则用输入值，为空则传空串（游客/设备登录），不做默认回退
             string openId = (m_OpenIdInput != null && !string.IsNullOrWhiteSpace(m_OpenIdInput.text))
                 ? m_OpenIdInput.text.Trim()
                 : string.Empty;
 
-            bool forceNewAccount = m_ForceNewAccountToggle != null && m_ForceNewAccountToggle.isOn;
+            AppendFeedback($"Nova.Network.Kit<Login>().Async(\"{uid}\", \"{openId}\", forceNewAccount={forceNewAccount}) → 请求中...");
 
-            AppendFeedback($"Nova.Network.Kit<Login>().Async(string.Empty, \"{openId}\", forceNewAccount={forceNewAccount}) → 请求中...");
-
-            NetResponse<PbNetLoginResp> resp = await Nova.Network.Kit<Login>().Async(string.Empty, openId, forceNewAccount);
+            NetResponse<PbNetLoginResp> resp = await Nova.Network.Kit<Login>().Async(uid, openId, forceNewAccount);
 
             if (resp.IsSuccess)
             {
-                string uid = resp.Data != null ? resp.Data.Uid : string.Empty;
-                AppendFeedback($"Nova.Network.Kit<Login>().Async(string.Empty, \"{openId}\", {forceNewAccount}) → IsSuccess=true, UID={uid}", FeedbackLevel.Success);
+                string responseUid = resp.Data != null ? resp.Data.Uid : string.Empty;
+                AppendFeedback($"Nova.Network.Kit<Login>().Async(\"{uid}\", \"{openId}\", {forceNewAccount}) → IsSuccess=true, UID={responseUid}", FeedbackLevel.Success);
             }
             else
             {
-                AppendFeedback($"Nova.Network.Kit<Login>().Async(string.Empty, \"{openId}\", {forceNewAccount}) → IsSuccess=false, ErrorCode={resp.ErrorCode}, ErrorMessage={resp.ErrorMessage}", FeedbackLevel.Error);
+                AppendFeedback($"Nova.Network.Kit<Login>().Async(\"{uid}\", \"{openId}\", {forceNewAccount}) → IsSuccess=false, ErrorCode={resp.ErrorCode}, ErrorMessage={resp.ErrorMessage}", FeedbackLevel.Error);
             }
+        }
+
+        /// <summary>
+        /// 归一化登录 UID，并保证显式 UID 优先于强制新账号。
+        /// </summary>
+        private static void ResolveLoginParameters(
+            string rawUid,
+            bool requestedForceNewAccount,
+            out string uid,
+            out bool forceNewAccount)
+        {
+            uid = string.IsNullOrWhiteSpace(rawUid) ? string.Empty : rawUid.Trim();
+            forceNewAccount = string.IsNullOrEmpty(uid) && requestedForceNewAccount;
         }
     }
 }

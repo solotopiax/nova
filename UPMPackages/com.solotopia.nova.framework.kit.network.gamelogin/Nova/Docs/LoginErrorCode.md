@@ -2,7 +2,7 @@
 
 ## 1. 简介
 
-`LoginErrorCode` 是登录业务错误码常量类，收录登录业务段服务端返回码（10000~10499）。
+`LoginErrorCode` 收录客户端登录策略错误码（7000~7999）和服务端登录业务段（10000~10499）。
 这些码由服务端 `PbNetBaseResponse.Code` 原样返回，经 `NetService` 透传到 `NetResponse.ErrorCode`，业务侧用本类常量与 `resp.ErrorCode` 比对。
 
 **所在文件：** `Nova/Scripts/Runtime/LoginErrorCode.cs`
@@ -17,10 +17,11 @@
 |---|---|
 | `0` | 成功（OK） |
 | `10000~10099` | 登录流程通用错误（账号状态 / UID / device_id 等） |
+| `10012` | 请求体 UID 与请求头 UID 不一致 |
 | `10400` | 顶号（device_id 非最新，登录 / 删除路径共用） |
 | `10404` | 三方号未绑定任何账号 |
 | `10407` | 请求头 OpenID 与 UID 归属不一致 |
-| `7000~7999` | 客户端段（预留，与 `NetErrorCode` 的客户端负数段及服务端通用段错开，当前无定义） |
+| `7000~7999` | 客户端登录策略段；不经过服务端 |
 
 > 服务端通用协议级错误（PARAM_ERROR/SERVER_ERROR/AES_ERROR 等）统一用 `NetErrorCode`，不在本类扩展。
 > 账号绑定业务错误码（10401 三方占用 / 10402 绑定冲突 / 10403 三方鉴权）由 `GameBind` 模块的 `BindErrorCode` 维护。
@@ -32,12 +33,15 @@
 | 常量 | 码值 | 含义 |
 |---|---|---|
 | `OK` | 0 | 成功 |
+| `ErrIdentityRequired` | 7000 | 当前无已确认 UID，客户端拒绝删除账号 |
+| `ErrInvalidLoginResponse` | 7001 | 成功响应缺少 Data/UID，或账号状态非 Normal；旧身份不变 |
 | `ErrUserNotFound` | 10000 | 用户不存在 |
 | `ErrInvalidUID` | 10003 | UID 无效 |
 | `ErrDeviceIdRequired` | 10006 | device_id 不能为空 |
 | `ErrAccountLocked` | 10007 | 账号已锁定 |
 | `ErrAccountBanned` | 10008 | 账号已封禁 |
 | `ErrAccountDeleted` | 10011 | 账号已删除 |
+| `ErrUIDMismatch` | 10012 | 请求体 UID 与请求头 UID 不一致 |
 | `ErrKicked` | 10400 | device_id 非最新，被顶号 |
 | `ErrAccountNotFound` | 10404 | 三方号未绑定任何账号（open_id 登录时未绑，由客户端决定注册新号或走绑定流程） |
 | `ErrOpenidUIDMismatch` | 10407 | 三方账号与当前账号不匹配（open_id 已绑定其他 uid，与当前请求 uid 不一致） |

@@ -20,6 +20,12 @@ namespace NovaFramework.Kit.Network.GameLogin.Samples.Runtime
     public sealed partial class DemoGameLoginView
     {
         /// <summary>
+        /// uid 输入框；为空时不传 body.uid，非空时作为候选 UID 登录并覆盖 forceNewAccount。
+        /// </summary>
+
+        [SerializeField] private TMP_InputField m_UidInput;
+
+        /// <summary>
         /// openId 输入框；用户在此填入第三方登录提供方返回的用户唯一标识。
         /// </summary>
 

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-04
+
+### Breaking
+
+- Proto `open_id` 统一改为 `openid`，生成属性改为 `Openid`；字段号不变，不保留旧属性别名。
+
+### Changed
+
+- 登录候选身份只进 Body，合法成功后仅以响应外层 UID/OpenID 原子提交；删号强制 Header/Body UID 一致并按明确账号状态清理身份。
+- Login/Delete 与 Bind/Resolve 共用非排队身份操作租约。
+- 新增 `LoginErrorCode.ErrUIDMismatch`(10012)，用于识别请求体 UID 与请求头 UID 不一致。
+- GameLoginDemo 支持显式 UID 登录，并保证显式 UID 优先于强制新账号。
+- Framework 最低依赖提升至 `0.6.5`。
+
 ## [0.1.3] - 2026-08-03
 
 ### Changed

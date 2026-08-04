@@ -100,21 +100,40 @@ namespace NovaFramework.Kit.Network.GameSave.Samples.Runtime
         /// </summary>
         private async UniTaskVoid LoginAsync()
         {
+            ResolveLoginParameters(
+                m_UidInput != null ? m_UidInput.text : null,
+                false,
+                out string uid,
+                out bool forceNewAccount);
+
             // openId 以页面输入为准：有值则传入登录，为空则走游客/设备登录，不做默认回退
             string openId = ReadInput(m_OpenIdInput, string.Empty);
-            AppendFeedback($"Nova.Network.Kit<Login>().Async(\"\", \"{openId}\", false) → 登录中...");
+            AppendFeedback($"Nova.Network.Kit<Login>().Async(\"{uid}\", \"{openId}\", forceNewAccount={forceNewAccount}) → 登录中...");
 
-            NetResponse<PbNetLoginResp> resp = await Nova.Network.Kit<Login>().Async(string.Empty, openId, false);
+            NetResponse<PbNetLoginResp> resp = await Nova.Network.Kit<Login>().Async(uid, openId, forceNewAccount);
 
             if (resp.IsSuccess)
             {
-                string uid = resp.Data != null ? resp.Data.Uid : string.Empty;
-                AppendFeedback($"登录成功，UID={uid}，可继续演示存档读写。", FeedbackLevel.Success);
+                string responseUid = resp.Data != null ? resp.Data.Uid : string.Empty;
+                AppendFeedback($"登录成功，UID={responseUid}，可继续演示存档读写。", FeedbackLevel.Success);
             }
             else
             {
                 AppendFeedback($"登录失败，ErrorCode={resp.ErrorCode}, ErrorMessage={resp.ErrorMessage}", FeedbackLevel.Error);
             }
+        }
+
+        /// <summary>
+        /// 归一化登录 UID，并保证显式 UID 优先于强制新账号。
+        /// </summary>
+        private static void ResolveLoginParameters(
+            string rawUid,
+            bool requestedForceNewAccount,
+            out string uid,
+            out bool forceNewAccount)
+        {
+            uid = string.IsNullOrWhiteSpace(rawUid) ? string.Empty : rawUid.Trim();
+            forceNewAccount = string.IsNullOrEmpty(uid) && requestedForceNewAccount;
         }
 
         /// <summary>

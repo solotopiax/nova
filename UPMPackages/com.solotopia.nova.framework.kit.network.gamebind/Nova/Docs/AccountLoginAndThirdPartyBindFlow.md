@@ -19,8 +19,8 @@ UID 是游戏账号，OpenID 是第三方平台用户标识。两个 UID 的游�
 | 位置 | 语义 | 客户端来源 |
 |---|---|---|
 | `PbNetReqHeader.openid` | 当前 UID 已拥有的身份声明 | `NetService.OpenID` |
-| Login Body `open_id` | 本次登录使用的第三方凭据 | `Login.Async(..., openid, ...)` 参数 |
-| Bind Body `open_id` | 本次要绑定、查询或裁决的目标 | Bind 方法的 `openid` 参数 |
+| Login Body `openid` | 本次登录使用的第三方凭据 | `Login.Async(..., openid, ...)` 参数 |
+| Bind Body `openid` | 本次要绑定、查询或裁决的目标 | Bind 方法的 `openid` 参数 |
 
 当 Header 携带 OpenID 时，服务端会验证该 OpenID 当前绑定的 UID 是否等于 `head.uid`，不一致直接返回 `10407`，不会继续执行登录、绑定或裁决。Header 的 `channel` 是独立的游戏运营渠道，不参与表达第三方登录提供方。
 
@@ -33,13 +33,16 @@ UID 是游戏账号，OpenID 是第三方平台用户标识。两个 UID 的游�
 
 ## 3. 登录与顶号
 
-### 3.1 登录入口
+### 3.1 登录入口与身份提交
 
-- 没有有效 UID：按设备登录或注册游客账号。
-- 已知 UID：携带 UID 和当前 `device_id` 登录。
-- 已绑定第三方账号：客户端必须同时恢复 UID，并以 UID + OpenID 登录。
+登录 Header 始终保留旧的已确认 UID/OpenID，候选 UID/OpenID 只放 Body。`forceNewAccount=true` 时 Body 两者清空。只有成功响应外层 UID 非空且状态为 Normal，才用响应外层 UID/OpenID 原子替换全局身份；其余结果保留旧身份。
 
-当前服务端不支持“只有已绑定 OpenID、UID 为空”直接找回账号；该请求会因身份归属不一致返回 `10407`。产品如需跨设备第三方账号恢复，必须先提供 UID 恢复机制。
+- 没有候选 UID/OpenID：按设备登录或注册游客账号。
+- 已知候选 UID：写入 Login Body `uid`。
+- 已知候选 OpenID：写入 Login Body `openid`，由服务端读取既有绑定关系。
+- 两者都已知：同时写入 Login Body，服务端校验其归属关系。
+
+这些候选字段都不得覆盖 Header；Header 中只保留此前已经确认的会话身份。`10407` 表示服务端判定候选或当前身份归属不一致，客户端不得据此覆盖已有全局缓存。
 
 三方登录只读取既有绑定关系，不产生绑定副作用；未绑定返回 `10404`，业务应先进入游客账号，再走 GameBind。
 
@@ -69,6 +72,10 @@ B 访问受保护接口 -> 正常
 5. 目标已绑定当前 UID 时，按幂等成功处理。
 
 Bind 成功后，客户端把目标 OpenID 写入 `NetService.OpenID`。网络中断导致结果不确定时可以安全重试。
+
+Login/Delete/Bind/Resolve 共用一个非排队身份操作租约，避免并发响应以不确定顺序覆盖身份；竞争调用返回 `-6`。QueryConflict 不修改身份，因此不占租约。
+
+删除账号时 Header UID 与 Body UID 必须完全一致且都来自当前确认身份，服务端必须再次校验二者一致；客户端无当前 UID 时返回 7000，不发送请求。
 
 ### 4.2 绑定冲突
 

@@ -8,6 +8,7 @@ import "pb_net_login.proto";
 // 删除用户请求
 message PbNetDeleteReq {
     NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+    string uid = 2;                                 // 用户唯一 ID
 }
 
 // 删除用户响应

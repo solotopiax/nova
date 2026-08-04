@@ -49,9 +49,9 @@ UnityEditor.EditorWindow
 | `c_WindowMinHeight` | `const float` | `650f` | 窗口最小高度 |
 | `c_TopBarHeight` | `const float` | `60f` | 顶部工具栏高度 |
 | `c_LeftTreeWidth` | `const float` | `260f` | 左侧树宽度 |
-| `c_InstallCmdMac` | `const string` | `"curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version " + c_MaxDotnetVersion`（展开后：`"...--version 10.0.203"`） | macOS 精确锁版本安装命令（dotnet-install.sh，推荐安装兼容区间上限版本，拼接 `LubanChecker.c_MaxDotnetVersion`） |
-| `c_InstallCmdWin` | `const string` | `"&([scriptblock]::Create((irm https://dot.net/v1/dotnet-install.ps1))) -Version " + c_MaxDotnetVersion`（展开后：`"...-Version 10.0.203"`） | Windows 精确锁版本安装命令（dotnet-install.ps1 官方脚本，推荐安装兼容区间上限版本，拼接 `LubanChecker.c_MaxDotnetVersion`） |
-| `c_InstallCmdLinux` | `const string` | `"curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version " + c_MaxDotnetVersion`（展开后：`"...--version 10.0.203"`） | Linux 精确锁版本安装命令（dotnet-install.sh，推荐安装兼容区间上限版本，拼接 `LubanChecker.c_MaxDotnetVersion`） |
+| `c_InstallCmdMac` | `const string` | `"curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version " + c_MaxDotnetVersion`（展开后：`"...--version 10.0.203"`） | macOS 精确锁版本安装命令（dotnet-install.sh，推荐安装建议区间上限版本，拼接 `LubanChecker.c_MaxDotnetVersion`） |
+| `c_InstallCmdWin` | `const string` | `"&([scriptblock]::Create((irm https://dot.net/v1/dotnet-install.ps1))) -Version " + c_MaxDotnetVersion`（展开后：`"...-Version 10.0.203"`） | Windows 精确锁版本安装命令（dotnet-install.ps1 官方脚本，推荐安装建议区间上限版本，拼接 `LubanChecker.c_MaxDotnetVersion`） |
+| `c_InstallCmdLinux` | `const string` | `"curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version " + c_MaxDotnetVersion`（展开后：`"...--version 10.0.203"`） | Linux 精确锁版本安装命令（dotnet-install.sh，推荐安装建议区间上限版本，拼接 `LubanChecker.c_MaxDotnetVersion`） |
 | `c_DotnetDownloadUrl` | `const string` | `"https://dotnet.microsoft.com/download/dotnet/10.0"` | .NET 官方下载页（上限版本所属主版本 .NET 10） |
 
 运行时状态字段（Visitors.cs）：
@@ -307,13 +307,13 @@ DrawLubanWindowsExportWarning():
   文案说明：Win11 可能在 Luban 导出时提示“应用程序控制策略已阻止此文件”，根因是操作系统智能应用控制限制，并给出关闭路径：
     设置 -> 隐私和安全性 -> Windows安全中心 -> 应用和浏览器控制 -> 智能应用控制设置 -> 关闭
 DrawLubanInstallGuide():
-  触发条件：Issue == DotnetNotFound 或 DotnetVersionTooLow 或 DotnetVersionTooHigh（三种情况均显示）
-  版本区间说明：兼容区间为 [8.0.127, 10.0.203] 闭区间，过低/过高均为硬阻断
+  触发条件：DotnetIssue == DotnetNotFound 或 DotnetVersionTooLow 或 DotnetVersionTooHigh（三种情况均显示）
+  版本区间说明：建议区间为 [8.0.127, 10.0.203] 闭区间；过低/过高时面板继续提示异常，但导表仅输出 Warning 并继续执行
   分平台精确锁版本安装命令（对应常量 c_InstallCmdMac / c_InstallCmdWin / c_InstallCmdLinux，均拼接 LubanChecker.c_MaxDotnetVersion，当前上限 10.0.203）：
     macOS:   curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version 10.0.203
     Linux:   curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version 10.0.203
     Windows: &([scriptblock]::Create((irm https://dot.net/v1/dotnet-install.ps1))) -Version 10.0.203
-  含安装命令代码块（平台名称 + 命令 + 复制按钮）+ 官网链接（c_DotnetDownloadUrl）
+  含安装命令代码块（明确的平台执行环境标题 + 真实命令 + 复制按钮）；Windows 标题为“Windows PowerShell 安装命令”，不再显示 winget
 ```
 
 ### Python3 面板布局（DrawPython3Section）

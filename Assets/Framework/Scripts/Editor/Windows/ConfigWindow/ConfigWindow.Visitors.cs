@@ -53,17 +53,17 @@ namespace NovaFramework.Editor
         private const float c_LeftTreeWidth = 260f;
 
         /// <summary>
-        /// macOS 安装命令（dotnet-install.sh，推荐安装兼容区间上限版本，精确锁定 c_MaxDotnetVersion）。
+        /// macOS 安装命令（dotnet-install.sh，推荐安装建议区间上限版本，精确锁定 c_MaxDotnetVersion）。
         /// </summary>
         private const string c_InstallCmdMac = "curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version " + c_MaxDotnetVersion;
 
         /// <summary>
-        /// Windows 安装命令（dotnet-install.ps1 官方脚本，推荐安装兼容区间上限版本，精确锁定 c_MaxDotnetVersion）。
+        /// Windows 安装命令（dotnet-install.ps1 官方脚本，推荐安装建议区间上限版本，精确锁定 c_MaxDotnetVersion）。
         /// </summary>
         private const string c_InstallCmdWin = "&([scriptblock]::Create((irm https://dot.net/v1/dotnet-install.ps1))) -Version " + c_MaxDotnetVersion;
 
         /// <summary>
-        /// Linux 安装命令（dotnet-install.sh，推荐安装兼容区间上限版本，精确锁定 c_MaxDotnetVersion）。
+        /// Linux 安装命令（dotnet-install.sh，推荐安装建议区间上限版本，精确锁定 c_MaxDotnetVersion）。
         /// </summary>
         private const string c_InstallCmdLinux = "curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --version " + c_MaxDotnetVersion;
 

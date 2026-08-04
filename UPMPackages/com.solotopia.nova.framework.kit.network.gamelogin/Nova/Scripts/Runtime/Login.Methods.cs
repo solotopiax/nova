@@ -24,40 +24,33 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
     {
         /// <summary>
         /// 登录内部实现：按已解析的 cmdRow 发起请求。
-        /// Header 由 NetBuilder.BuildHeader() 自动填充（含渠道与本次登录 OpenID）；登录成功后以业务响应 UID 同步身份。
+        /// Header 只携带当前已确认身份；本次待登录 UID/OpenID 写入 Body，登录成功后以业务响应身份同步全局缓存。
         /// </summary>
         /// <param name="cmdRow">NetCmd 指令行数据，由 Async 解析 LoginKitConfig.LoginCmdName 得到。</param>
-        /// <param name="uid">显式指定请求 Header 中的 UID；非空时优先覆盖 BuildHeader 填入的 NetService.UID；为空则沿用。</param>
+        /// <param name="uid">本次待登录 UID，只写入 Body。</param>
         /// <param name="openid">第三方登录提供方返回的用户唯一标识。</param>
         /// <param name="forceNewAccount">是否强制注册新账号。</param>
         /// <returns>包含登录响应数据或错误信息的 NetResponse。</returns>
         private async UniTask<NetResponse<PbNetLoginResp>> SendAsync(
             INetworkCmdRow cmdRow, string uid, string openid, bool forceNewAccount = false)
         {
-            var body = new PbNetLoginReq
-            {
-                Head = NetBuilder.BuildHeader(openid ?? string.Empty),
-                OpenId = openid ?? string.Empty,
-                ForceNewAccount = forceNewAccount
-            };
-            // 传入 uid 非空时优先覆盖；否则沿用 BuildHeader 已填入的 NetService.UID
-            if (!string.IsNullOrEmpty(uid))
-            {
-                body.Head.Uid = uid;
-            }
-            if (forceNewAccount)
-            {
-                body.Head.Uid = string.Empty;
-            }
+            PbNetLoginReq body = BuildLoginRequest(NetBuilder.BuildHeader(), uid, openid, forceNewAccount);
             var resp = await NetService.SendAsync(cmdRow, body, PbNetLoginResp.Parser, m_DebugModeOverride);
-            if (resp.IsSuccess && resp.Data != null)
+            if (IsValidLoginResponse(resp))
             {
                 string respUID = resp.Data.Uid ?? string.Empty;
-                string respOpenID = forceNewAccount ? string.Empty : openid ?? string.Empty;
-                NetService.SetUID(respUID);
-                NetService.SetOpenID(respOpenID);
+                string respOpenID = resp.Data.Openid ?? string.Empty;
+                NetService.SetIdentity(respUID, respOpenID);
                 // 通知 SDK 登录成功
                 Nova.SDK.Login(respUID);
+            }
+            else if (resp.IsSuccess)
+            {
+                resp = NetResponse<PbNetLoginResp>.Fail(
+                    LoginErrorCode.ErrInvalidLoginResponse,
+                    "Login response does not contain a normal confirmed identity",
+                    resp.Data);
+                LogLoginError(resp.ErrorCode, resp.ErrorMessage);
             }
             else
             {
@@ -66,6 +59,34 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
             }
 
             return resp;
+        }
+
+        /// <summary>
+        /// 构建登录请求：Header 保留当前确认身份，候选身份只进入 Body；强制新账号时候选身份清空。
+        /// </summary>
+        private static PbNetLoginReq BuildLoginRequest(
+            PbNetReqHeader head, string uid, string openid, bool forceNewAccount)
+        {
+            return new PbNetLoginReq
+            {
+                Head = head,
+                Uid = forceNewAccount ? string.Empty : uid ?? string.Empty,
+                Openid = forceNewAccount ? string.Empty : openid ?? string.Empty,
+                ForceNewAccount = forceNewAccount
+            };
+        }
+
+        /// <summary>
+        /// 仅接受传输成功、Data 非空、UID 非空且账号状态为 Normal 的登录响应。
+        /// OpenID 允许为空，以支持游客身份。
+        /// </summary>
+        private static bool IsValidLoginResponse(NetResponse<PbNetLoginResp> response)
+        {
+            return response != null &&
+                   response.IsSuccess &&
+                   response.Data != null &&
+                   !string.IsNullOrEmpty(response.Data.Uid) &&
+                   response.Data.Status == PbNetAccountStatus.Normal;
         }
 
         /// <summary>
@@ -103,6 +124,9 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
                 case LoginErrorCode.ErrOpenidUIDMismatch:
                     Log.Warning(LogTag.Network, "登录业务错误：三方账号与当前账号不匹配（ErrOpenidUIDMismatch={0}）。msg={1}", errorCode, errorMessage);
                     break;
+                case LoginErrorCode.ErrInvalidLoginResponse:
+                    Log.Warning(LogTag.Network, "登录响应身份无效（ErrInvalidLoginResponse={0}）。msg={1}", errorCode, errorMessage);
+                    break;
                 default:
                     // 非 LoginErrorCode 段（NetErrorCode 通用段或未知），不打登录专属日志，交由 NetService 已有日志覆盖
                     break;
@@ -111,20 +135,50 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
 
         /// <summary>
         /// 删除账号内部实现：按已解析的 cmdRow 发起删除请求。
-        /// 身份由 NetBuilder.BuildHeader() 填充的 Header.Uid（即 NetService.UID）识别，无需传 uid。
+        /// Header.Uid 与 Body.Uid 使用调用方捕获的同一当前身份快照。
         /// 渠道由 BuildHeader 内 InferChannel 从 Nova.Config.Channel 自动填充，无需传入。
-        /// 本方法只负责发送请求；删除成功后的埋点与登录态清理由 DeleteAsync 按顺序处理。
+        /// 本方法只负责发送请求；埋点与按响应状态清理由 DeleteAsync 按顺序处理。
         /// </summary>
         /// <param name="cmdRow">NetCmd 指令行数据，由 DeleteAsync 解析得到。</param>
         /// <returns>包含删除响应数据或错误信息的 NetResponse。</returns>
-        private async UniTask<NetResponse<PbNetDeleteResp>> SendDeleteAsync(INetworkCmdRow cmdRow)
+        private async UniTask<NetResponse<PbNetDeleteResp>> SendDeleteAsync(INetworkCmdRow cmdRow, string targetUID)
         {
-            var body = new PbNetDeleteReq
-            {
-                Head = NetBuilder.BuildHeader()
-            };
+            PbNetDeleteReq body = BuildDeleteRequest(NetBuilder.BuildHeader(), targetUID);
             var resp = await NetService.SendAsync(cmdRow, body, PbNetDeleteResp.Parser, m_DebugModeOverride);
             return resp;
+        }
+
+        /// <summary>
+        /// 由同一身份快照构造删除 Header 与 Body，确保二者 UID 完全一致。
+        /// </summary>
+        private static PbNetDeleteReq BuildDeleteRequest(PbNetReqHeader head, string targetUID)
+        {
+            string normalizedUID = targetUID ?? string.Empty;
+            head.Uid = normalizedUID;
+            return new PbNetDeleteReq
+            {
+                Head = head,
+                Uid = normalizedUID
+            };
+        }
+
+        /// <summary>
+        /// 服务端明确返回目标账号 Locked/Banned/Deleted，且目标仍是当前身份时才清理缓存。
+        /// 业务失败响应携带有效 Data 时同样适用。
+        /// </summary>
+        private static bool ShouldClearIdentity(
+            NetResponse<PbNetDeleteResp> response, string targetUID, string currentUID)
+        {
+            if (response?.Data == null ||
+                string.IsNullOrEmpty(targetUID) ||
+                !string.Equals(targetUID, currentUID, System.StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return response.Data.Status == PbNetAccountStatus.Locked ||
+                   response.Data.Status == PbNetAccountStatus.Banned ||
+                   response.Data.Status == PbNetAccountStatus.Deleted;
         }
     }
 }

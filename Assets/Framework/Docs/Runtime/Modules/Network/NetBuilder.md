@@ -17,7 +17,7 @@
 
 | 签名 | 说明 |
 |---|---|
-| `public static PbNetReqHeader BuildHeader(string openid = null)` | 构建完整请求 Header；包含 Channel、UID、OpenID；显式 `openid` 优先，传 `null` 时回退 `NetService.OpenID`，传空字符串时明确不携带 OpenID |
+| `public static PbNetReqHeader BuildHeader()` | 构建完整请求 Header；UID/OpenID 始终来自 `NetService.GetIdentity` 的同一份已确认身份快照，不接受候选身份参数 |
 | `public static byte[] SerializeBody<T>(T body) where T : IMessage<T>` | 将 Proto 消息序列化为字节数组（`body.ToByteArray()`） |
 | `public static byte[] Encrypt(byte[] plainBytes, string key, string iv)` | AES-128-CBC + PKCS7 加密；委托 `Util.Encrypt.AES.EncryptBytes` |
 | `public static string BuildHeaderInfos(int appId, string aesIV)` | 构建正式环境 HTTP Header JSON：`{"app_id":N,"Encoding-Aes":"Base64(iv)"}` |
@@ -27,14 +27,13 @@
 
 | 字段 | 来源 | 失败处理 |
 |---|---|---|
-| `AppId` | `Nova.Config.AppConfigs.AppID`（int.TryParse） | 解析失败 Log.Warning + 回退 0 |
+| `Appid` | `Nova.Config.AppConfigs.AppID`（int.TryParse） | 解析失败 Log.Warning + 回退 0 |
 | `Version` | `Application.version` | — |
 | `Language` | `LanguageMetadata.GetFlag(Nova.Localization.Language)` | — |
-| `DeviceId` | `Nova.SDK.TryGet<IDeviceIdProvider>().GetDeviceID()` | 未注册时回退空串 |
+| `Devid` | `Nova.SDK.TryGet<IDeviceIdProvider>().GetDeviceID()` | 未注册时回退空串 |
 | `Platform` | `Util.UrlTemplate.ResolveRuntimePlatform()`（按当前编译目标推断 `PbNetPlatform`） | 未匹配平台返回 `Unspecified` |
 | `Channel` | `Nova.Config.Channel`（`ChannelType`，由 `InferChannel()` 映射为 `PbNetChannel`） | `ChannelType.None` 或未知值返回 `Unspecified` |
-| `Uid` | `NetService.UID` | 登录前为空串 |
-| `Openid` | 显式 `openid` → `NetService.OpenID` | C# 名由 Proto 字段 `openid` 生成；最终为空串时 Proto3 不写入 wire |
+| `Uid` / `Openid` | `NetService.GetIdentity(out uid, out openid)` | 原子读取；未确认身份时均为空串，Proto3 不写入 wire |
 
 ---
 
@@ -46,8 +45,8 @@
 // Login.cs (kit.network.login) 内部调用模式
 var body = new PbNetLoginReq
 {
-    Head = NetBuilder.BuildHeader(openid), // Login 以本次登录 OpenID 作为当前身份声明
-    OpenId = openid,
+    Head = NetBuilder.BuildHeader(), // 只声明此前已由服务端确认的身份
+    Openid = openid,                 // 本次登录候选身份只进入 Body
     ForceNewAccount = forceNewAccount
 };
 byte[] protoBytes = NetBuilder.SerializeBody(body);
@@ -63,8 +62,8 @@ string headerJson = NetBuilder.BuildHeaderInfos(appId, aesIv);
 - **`Encrypt` 委托框架层**：加密逻辑委托 `Util.Encrypt.AES.EncryptBytes`，`NetBuilder` 只做职责归属封装，不实现加密算法。
 - **`Platform` 映射范围**：仅 iOS / Android / WebGL 有明确映射，其余平台（含 Editor / Standalone）返回 `PbNetPlatform.Unspecified`；这是有意设计，非遗漏。
 - **`Channel` 只表示游戏运营渠道**：`BuildHeader()` 通过私有 `InferChannel()` 将 `Nova.Config.Channel` 的 `ChannelType` 同名映射为 `PbNetChannel`。`Official / Google / Apple / WeChat / TikTok / Alipay` 均有对应值，`None` 或未知值返回 `PbNetChannel.Unspecified`；该字段与第三方登录提供方无关。
-- **OpenID 空值语义**：不传参数（`null`）时复用 `NetService.OpenID`；显式传空字符串时不回退缓存，生成的 Proto3 Header 不写入该字段。
-- **当前身份与目标身份分离**：Header OpenID 只能声明当前 UID 已拥有的身份。Bind 的目标 OpenID 只放业务 Body，不得传给 `BuildHeader(openid)`。
+- **当前身份与目标身份分离**：Header UID/OpenID 只能声明此前已由服务端确认的身份；Login/Bind 的候选或目标身份只放业务 Body。
+- **字段硬改名**：Proto `app_id/device_id` 已改为 `appid/devid`，生成属性对应为 `Appid/Devid`；字段号和 wire 类型不变，但 JSON/descriptor 名称及 C# 属性名为破坏性变化。
 - **无状态**：所有方法均无副作用，线程安全；UID/OpenID 状态由 `NetService` 持有。
 
 ---

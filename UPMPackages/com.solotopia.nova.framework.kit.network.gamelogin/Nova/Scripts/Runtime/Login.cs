@@ -8,6 +8,7 @@
  * descrip:   登录业务网络 Service，自持 UID 状态，不继承基类
  ***************************************************************/
 
+using System;
 using System.Diagnostics;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -36,17 +37,28 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
 
         /// <summary>
         /// 登录（业务入口，极简形态）。
-        /// open_id 仅用于"读"绑定关系找 uid 登入，不做绑定副作用——服务端查 open_id 已绑的 uid 并登入，未绑返回 <see cref="LoginErrorCode.ErrAccountNotFound"/>(10404)。
-        /// 为当前账号绑定三方 open_id 请使用 gamebind 模块的 Bind 服务（Nova.Network.Kit 泛型获取 Bind 实例后调 BindAsync）。
+        /// 候选 UID/OpenID 只写入登录 Body；Header 保留此前已确认身份。OpenID 仅用于读取绑定关系，不产生绑定副作用。
+        /// 为当前账号绑定三方 OpenID 请使用 gamebind 模块的 Bind 服务（Nova.Network.Kit 泛型获取 Bind 实例后调 BindAsync）。
         /// cmdName 取自 ConfigWindow 配置的 LoginKitConfig.LoginCmdName，渠道由 BuildHeader 自动填充。
         /// </summary>
-        /// <param name="uid">显式指定请求 Header 中的 UID；传入非空值时优先使用此值填充，否则沿用 NetService.UID（登录态自动写回值）。</param>
-        /// <param name="openid">第三方登录提供方返回的用户唯一标识；用于读取 open_id 绑定关系找 uid 登入，未绑返回 10404。</param>
+        /// <param name="uid">本次候选 UID，只写入 Body。</param>
+        /// <param name="openid">本次候选第三方标识，只写入 Body；未绑定时服务端返回 10404。</param>
         /// <param name="forceNewAccount">是否强制注册新账号，默认 false。</param>
         /// <returns>包含登录响应数据或错误信息的 NetResponse。</returns>
         public async UniTask<NetResponse<PbNetLoginResp>> Async(string uid, string openid, bool forceNewAccount = false)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
+            IDisposable identityOperation = NetService.TryBeginIdentityOperation();
+            if (identityOperation == null)
+            {
+                NetResponse<PbNetLoginResp> busyResponse = NetResponse<PbNetLoginResp>.Fail(
+                    NetErrorCode.IDENTITY_OPERATION_IN_PROGRESS,
+                    "Another identity operation is already in progress");
+                TrackLogin(busyResponse, uid, openid, forceNewAccount, stopwatch.ElapsedMilliseconds);
+                return busyResponse;
+            }
+
+            using (identityOperation)
             try
             {
                 LoginKitConfig config = Nova.Config.GetKitConfig<LoginKitConfig>();
@@ -69,17 +81,38 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
 
         /// <summary>
         /// 删除当前登录账号（业务入口，极简形态）。
-        /// 身份由请求 Header.Uid（即 NetService.UID，当前登录态 UID）识别，业务侧无需传参。
+        /// Header.Uid 与 Body.Uid 都取同一个当前确认 UID；无确认 UID 时返回 7000，不发送请求。
         /// 渠道由 BuildHeader 自动填充，业务侧无需传参。
-        /// 删除成功后自动清空本地登录态（UID、OpenID 与 NetService 进程内身份），防止继续以失效 UID 发请求，语义等同登出。
+        /// 服务端明确返回 Locked/Banned/Deleted 且目标仍是当前 UID 时清空本地身份。
         /// cmdName 取自 ConfigWindow 配置的 LoginKitConfig.DeleteCmdName。
         /// </summary>
         /// <returns>包含删除响应数据或错误信息的 NetResponse。</returns>
         public async UniTask<NetResponse<PbNetDeleteResp>> DeleteAsync()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
+            IDisposable identityOperation = NetService.TryBeginIdentityOperation();
+            if (identityOperation == null)
+            {
+                NetResponse<PbNetDeleteResp> busyResponse = NetResponse<PbNetDeleteResp>.Fail(
+                    NetErrorCode.IDENTITY_OPERATION_IN_PROGRESS,
+                    "Another identity operation is already in progress");
+                TrackDeleteAccount(busyResponse, stopwatch.ElapsedMilliseconds);
+                return busyResponse;
+            }
+
+            using (identityOperation)
             try
             {
+                NetService.GetIdentity(out string targetUID, out _);
+                if (string.IsNullOrEmpty(targetUID))
+                {
+                    NetResponse<PbNetDeleteResp> missingIdentity = NetResponse<PbNetDeleteResp>.Fail(
+                        LoginErrorCode.ErrIdentityRequired,
+                        "Deleting an account requires a confirmed current identity");
+                    TrackDeleteAccount(missingIdentity, stopwatch.ElapsedMilliseconds);
+                    return missingIdentity;
+                }
+
                 LoginKitConfig config = Nova.Config.GetKitConfig<LoginKitConfig>();
                 if (config == null)
                 {
@@ -87,11 +120,12 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
                 }
 
                 NetResponse<PbNetDeleteResp> response = await SendDeleteAsync(
-                    Nova.Network.ResolveNetCmdRow(config.DeleteCmdName));
+                    Nova.Network.ResolveNetCmdRow(config.DeleteCmdName), targetUID);
                 TrackDeleteAccount(response, stopwatch.ElapsedMilliseconds);
-                if (response.IsSuccess)
+                NetService.GetIdentity(out string currentUID, out _);
+                if (ShouldClearIdentity(response, targetUID, currentUID))
                 {
-                    Clear();
+                    NetService.ClearIdentity();
                 }
                 return response;
             }
@@ -107,8 +141,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         /// </summary>
         public void Clear()
         {
-            NetService.SetUID(string.Empty);
-            NetService.SetOpenID(string.Empty);
+            NetService.ClearIdentity();
         }
     }
 }

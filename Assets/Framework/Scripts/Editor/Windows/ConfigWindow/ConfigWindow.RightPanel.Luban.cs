@@ -55,7 +55,7 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Label("|", false, GUILayout.Width(8f));
                 EditorUtil.Draw.Space(8f);
 
-                bool lubanOk = m_LubanCheckResult.Issue == EnvironmentIssue.None;
+                bool lubanOk = m_LubanCheckResult.IsLubanDllReady;
                 GUIStyle lubanStyle = lubanOk ? m_StatusReadyStyle : m_StatusErrorStyle;
                 string lubanIcon = lubanOk ? "✓" : "✗";
                 EditorUtil.Draw.Label(lubanIcon, lubanStyle, false, GUILayout.Width(16f));
@@ -119,7 +119,7 @@ namespace NovaFramework.Editor
         /// </summary>
         private void DrawLubanInstallGuide()
         {
-            bool dotnetMissing = m_LubanCheckResult.Issue == EnvironmentIssue.DotnetNotFound || m_LubanCheckResult.Issue == EnvironmentIssue.DotnetVersionTooLow || m_LubanCheckResult.Issue == EnvironmentIssue.DotnetVersionTooHigh;
+            bool dotnetMissing = m_LubanCheckResult.DotnetIssue == EnvironmentIssue.DotnetNotFound || m_LubanCheckResult.DotnetIssue == EnvironmentIssue.DotnetVersionTooLow || m_LubanCheckResult.DotnetIssue == EnvironmentIssue.DotnetVersionTooHigh;
             if (!dotnetMissing)
             {
                 return;
@@ -141,10 +141,8 @@ namespace NovaFramework.Editor
 
             EditorUtil.Draw.Space(4f);
 
-            bool isMac = Application.platform == RuntimePlatform.OSXEditor;
-            bool isWindows = Application.platform == RuntimePlatform.WindowsEditor;
-            string platformName = isMac ? "macOS (dotnet-install.sh)" : (isWindows ? "Windows (winget)" : "Linux (dotnet-install.sh)");
-            string installCmd = isMac ? c_InstallCmdMac : (isWindows ? c_InstallCmdWin : c_InstallCmdLinux);
+            string platformName = GetLubanInstallPlatformText(Application.platform);
+            string installCmd = GetLubanInstallCommand(Application.platform);
 
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
@@ -184,14 +182,14 @@ namespace NovaFramework.Editor
         /// <returns>状态描述。</returns>
         private string ResolveDotnetStatusText()
         {
-            switch (m_LubanCheckResult.Issue)
+            switch (m_LubanCheckResult.DotnetIssue)
             {
                 case EnvironmentIssue.DotnetNotFound:
                     return Runtime.Txt.Format("未找到 dotnet，请安装 {0} ~ {1}", EditorUtil.Environment.LubanChecker.c_MinDotnetVersion, EditorUtil.Environment.LubanChecker.c_MaxDotnetVersion);
                 case EnvironmentIssue.DotnetVersionTooLow:
-                    return Runtime.Txt.Format("版本过低（当前 {0}，需要 {1} ~ {2}）", m_LubanCheckResult.DotnetVersion, EditorUtil.Environment.LubanChecker.c_MinDotnetVersion, EditorUtil.Environment.LubanChecker.c_MaxDotnetVersion);
+                    return Runtime.Txt.Format("版本过低（当前 {0}，建议 {1} ~ {2}）", m_LubanCheckResult.DotnetVersion, EditorUtil.Environment.LubanChecker.c_MinDotnetVersion, EditorUtil.Environment.LubanChecker.c_MaxDotnetVersion);
                 case EnvironmentIssue.DotnetVersionTooHigh:
-                    return Runtime.Txt.Format("版本过高（当前 {0}，需要 {1} ~ {2}）", m_LubanCheckResult.DotnetVersion, EditorUtil.Environment.LubanChecker.c_MinDotnetVersion, EditorUtil.Environment.LubanChecker.c_MaxDotnetVersion);
+                    return Runtime.Txt.Format("版本过高（当前 {0}，建议 {1} ~ {2}）", m_LubanCheckResult.DotnetVersion, EditorUtil.Environment.LubanChecker.c_MinDotnetVersion, EditorUtil.Environment.LubanChecker.c_MaxDotnetVersion);
                 case EnvironmentIssue.DotnetNotExecutable:
                     return "dotnet 执行失败，请检查安装是否完整";
                 default:
@@ -209,26 +207,57 @@ namespace NovaFramework.Editor
         /// <returns>状态描述。</returns>
         private string ResolveLubanDllStatusText()
         {
-            if (m_LubanCheckResult.Issue == EnvironmentIssue.LubanDllNotFound)
+            if (!m_LubanCheckResult.IsLubanDllReady)
             {
                 return "未找到，请确认 com.solotopia.luban 包已安装";
-            }
-
-            if (m_LubanCheckResult.Issue == EnvironmentIssue.DotnetNotFound || m_LubanCheckResult.Issue == EnvironmentIssue.DotnetVersionTooLow || m_LubanCheckResult.Issue == EnvironmentIssue.DotnetVersionTooHigh || m_LubanCheckResult.Issue == EnvironmentIssue.DotnetNotExecutable)
-            {
-                return "（待检测）";
             }
 
             return "就绪";
         }
 
         /// <summary>
-        /// 判断 dotnet 检测是否通过（路径存在且版本在兼容区间内）。
+        /// 判断 dotnet 检测是否处于建议状态（路径存在、可执行且版本在建议区间内）。
         /// </summary>
         /// <returns>dotnet 是否就绪。</returns>
         private bool IsDotnetReady()
         {
-            return m_LubanCheckResult.Issue != EnvironmentIssue.DotnetNotFound && m_LubanCheckResult.Issue != EnvironmentIssue.DotnetVersionTooLow && m_LubanCheckResult.Issue != EnvironmentIssue.DotnetNotExecutable && m_LubanCheckResult.Issue != EnvironmentIssue.DotnetVersionTooHigh;
+            return m_LubanCheckResult.DotnetIssue == EnvironmentIssue.None;
+        }
+
+        /// <summary>
+        /// 获取当前平台的安装命令说明。
+        /// </summary>
+        private static string GetLubanInstallPlatformText(RuntimePlatform platform)
+        {
+            if (platform == RuntimePlatform.OSXEditor)
+            {
+                return "macOS 终端安装命令";
+            }
+
+            if (platform == RuntimePlatform.WindowsEditor)
+            {
+                return "Windows PowerShell 安装命令";
+            }
+
+            return "Linux 终端安装命令";
+        }
+
+        /// <summary>
+        /// 获取当前平台的实际安装命令。
+        /// </summary>
+        private static string GetLubanInstallCommand(RuntimePlatform platform)
+        {
+            if (platform == RuntimePlatform.OSXEditor)
+            {
+                return c_InstallCmdMac;
+            }
+
+            if (platform == RuntimePlatform.WindowsEditor)
+            {
+                return c_InstallCmdWin;
+            }
+
+            return c_InstallCmdLinux;
         }
 
         /// <summary>

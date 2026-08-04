@@ -116,14 +116,14 @@ ConfigWindow.OpenLubanSection(result);     // Pipeline 内部使用：直接跳�
 | 区块 / 控件 | 行为 |
 |------------|------|
 | 标题 | `Luban 环境检测`（`m_SectionTitleStyle`） |
-| .NET SDK 状态块 | 图标 ✓/✗ + `.NET SDK` + 状态描述；`IsDotnetReady()` 判定（Issue 不属于 4 种 dotnet 异常即视为就绪） |
-| Luban.dll 状态块 | 图标 ✓/✗ + `Luban.dll` + 状态描述；与 .NET SDK 状态块同行，用 `\|` 分隔；仅在 Issue 为 `LubanDllNotFound` 时显示"未找到，请确认 com.solotopia.luban 包已安装"，dotnet 未就绪时显示"（待检测）" |
+| .NET SDK 状态块 | 图标 ✓/✗ + `.NET SDK` + 状态描述；读取独立的 `DotnetIssue`，可与 DLL 状态同时显示 |
+| Luban.dll 状态块 | 图标 ✓/✗ + `Luban.dll` + 状态描述；读取独立的 `IsLubanDllReady`，重新检测时始终实际检查，不再因 SDK 版本越界显示“待检测” |
 | 「重新检测」按钮 | 调 `EditorUtil.Environment.LubanChecker.Recheck()` 忽略 SessionState 缓存强刷，结果回写 `m_LubanCheckResult` 并 `Repaint()`；宽 80f，右对齐 |
 | 「打开官网」按钮 | `Application.OpenURL("https://dotnet.microsoft.com/download/dotnet/10.0")`；宽 80f |
 | Windows 平台警告 | 仅 `RuntimePlatform.WindowsEditor` 显示，HelpBox 提示 Win11 智能应用控制可能拦截 Luban 导出，给出「设置 → 隐私和安全性 → Windows 安全中心 → 应用和浏览器控制 → 智能应用控制 → 关闭」操作路径 |
 | 安装指南区 | 仅 dotnet 未就绪时显示（`DotnetNotFound` / `VersionTooLow` / `VersionTooHigh`）；按当前平台显示对应安装命令 HelpBox + 「复制」按钮（写入 `EditorGUIUtility.systemCopyBuffer`） |
 | macOS / Linux 安装命令 | `curl -sSL https://dot.net/v1/dotnet-install.sh \| bash -s -- --version 10.0.203` |
-| Windows 安装命令 | `&([scriptblock]::Create((irm https://dot.net/v1/dotnet-install.ps1))) -Version 10.0.203` |
+| Windows 安装命令 | 标题明确显示“Windows PowerShell 安装命令”，命令框显示 `&([scriptblock]::Create((irm https://dot.net/v1/dotnet-install.ps1))) -Version 10.0.203`；不使用 winget 文案 |
 | 建议版本 | `建议版本：8.0.127 ~ 10.0.203`（拼 `LubanChecker.c_MinDotnetVersion` / `c_MaxDotnetVersion`） |
 
 **未就绪时的状态文案**（`ResolveDotnetStatusText`）：
@@ -131,8 +131,8 @@ ConfigWindow.OpenLubanSection(result);     // Pipeline 内部使用：直接跳�
 | `EnvironmentIssue` | 显示文本 |
 |--------------------|---------|
 | `DotnetNotFound` | `未找到 dotnet，请安装 8.0.127 ~ 10.0.203` |
-| `DotnetVersionTooLow` | `版本过低（当前 {ver}，需要 8.0.127 ~ 10.0.203）` |
-| `DotnetVersionTooHigh` | `版本过高（当前 {ver}，需要 8.0.127 ~ 10.0.203）` |
+| `DotnetVersionTooLow` | `版本过低（当前 {ver}，建议 8.0.127 ~ 10.0.203）` |
+| `DotnetVersionTooHigh` | `版本过高（当前 {ver}，建议 8.0.127 ~ 10.0.203）` |
 | `DotnetNotExecutable` | `dotnet 执行失败，请检查安装是否完整` |
 | `None` 且版本非空 | `就绪（{ver}）` |
 
@@ -264,8 +264,8 @@ ConfigWindow.Open() / OpenLubanSection(result)
 1. **解析 dotnet 路径**：`Luban.CliRunner.ResolveDotnetPath()`，失败 → `DotnetNotFound`
 2. **执行 `dotnet --version`**：超时或失败 → `DotnetNotExecutable`
 3. **版本解析**：剥离 `-preview` / `-rc` 后缀后 `Version.TryParse`，失败 → `DotnetNotExecutable`
-4. **区间校验**：与 `[c_MinDotnetVersion=8.0.127, c_MaxDotnetVersion=10.0.203]` 比对；低于下限 → `DotnetVersionTooLow`，高于上限 → `DotnetVersionTooHigh`（两侧都硬阻断）
-5. **Luban.dll 检测**：`Luban.CliRunner.GetLubanDllPath()` + `File.Exists`，失败 → `LubanDllNotFound`
+4. **区间校验**：与建议区间 `[c_MinDotnetVersion=8.0.127, c_MaxDotnetVersion=10.0.203]` 比对；低于下限 → `DotnetVersionTooLow`，高于上限 → `DotnetVersionTooHigh`
+5. **独立合并**：Luban.dll 无论 dotnet 结果如何都会检测；SDK 越界且 DLL 存在时导表 Warning 后继续，DLL 缺失始终阻断
 6. 全部通过 → `EnvironmentIssue.None`，`IsReady = true`
 
 ### Python3 五策略探测（Python3Checker）
@@ -306,8 +306,8 @@ IsReady = true
 - **误区 4：在 ConfigWindow 里改完系统环境后忘记点「重新检测」**
   用户在系统层面装好 dotnet / Python3 后，如果 ConfigWindow 已经开着，状态不会自动刷新——必须点对应面板的「重新检测」按钮触发 `Recheck()`。
 
-- **误区 5：以为 Luban 环境不就绪会弹窗打断工作流**
-  `RunSilentCheck` 只 `Log.Warning` 不弹窗。真正会"打断"的是 `EditorUtil.Luban.Pipeline.Export*` 三个入口：它们在执行前先调 `LubanChecker.Check()`，不就绪时自动调 `ConfigWindow.OpenLubanSection(result)` 打开窗口并提前返回 `false`，属于**业务管线的守卫**，不是检查器自身的行为。
+- **误区 5：以为所有 Luban 环境异常都会弹窗打断工作流**
+  `RunSilentCheck` 只 `Log.Warning` 不弹窗。`EditorUtil.Luban.Pipeline.Export*` 三个入口会把 `.NET SDK` 版本过低/过高降级为 Warning 并继续；只有未找到 dotnet、dotnet 无法执行或缺少 `Luban.dll` 时才调用 `ConfigWindow.OpenLubanSection(result)` 并提前返回 `false`。
 
 - **误区 6：Python3 Fallback 接受 Python 2**
   策略 E（`python --version`）会用 `^Python 3\.` 正则强校验；`Python 2.x` 输出不会被误判为可用。
@@ -349,11 +349,12 @@ IsReady = true
 ```csharp
 // EditorUtil.Luban.Pipeline.ExportData / ExportCode / ExportAll 内部：
 var envResult = EditorUtil.Environment.LubanChecker.Check();
-if (!envResult.IsReady)
+if (!ValidateEnvironmentForExport(envResult))
 {
-    ConfigWindow.OpenLubanSection(envResult);  // 自动打开窗口并跳到 Luban 面板
     return false;
 }
+// ValidateEnvironmentForExport 对版本区间问题输出 Warning 并返回 true；
+// 其他未就绪问题自动打开窗口并跳到 Luban 面板。
 ```
 
 **Editor 代码直接查询环境状态（不打开窗口）：**

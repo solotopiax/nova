@@ -2,7 +2,7 @@
 
 ## 1. 简介
 
-`Login` 是登录业务网络 Service，封装登录协议发送逻辑全链路（Header 构建 → Proto 序列化 → AES 加密 → HTTP POST → 解析）。登录成功后以业务响应 UID 和本次登录 OpenID 同步 `NetService`，后续请求自动携带当前身份。
+`Login` 是登录业务网络 Service。Header 只声明此前已确认身份，本次候选 UID/OpenID 位于 Body；仅合法成功响应的外层 UID/OpenID 会原子替换 `NetService` 身份。
 
 **所在文件：** `Nova/Scripts/Runtime/Login.cs`
 **命名空间：** `NovaFramework.Kit.Network.GameLogin.Runtime`
@@ -26,8 +26,8 @@
 | 签名 | 说明 |
 |---|---|
 | `public void SetDebugMode(bool debugMode)` | 设置本实例调试模式覆盖；仅影响本实例发出的请求；`false` 时不等于关闭全局，仅取消覆盖 |
-| `public UniTask<NetResponse<PbNetLoginResp>> Async(string uid, string openid, bool forceNewAccount = false)` | 发起登录请求；`uid` 非空时优先填入请求 Header，否则沿用 `NetService.UID`；`openid` 同时进入业务 Body 与 Header 作为本次登录身份；成功后以业务响应 UID 同步身份；未绑返回 10404 |
-| `public UniTask<NetResponse<PbNetDeleteResp>> DeleteAsync()` | 删除当前登录账号；身份靠 `Header.Uid`（即 `NetService.UID`）识别；删除成功后自动清空 UID、OpenID 与 NetService 进程内身份 |
+| `public UniTask<NetResponse<PbNetLoginResp>> Async(string uid, string openid, bool forceNewAccount = false)` | Header 保留旧确认身份；候选 `uid/openid` 只进 Body；强制新账号时 Body 两者置空；仅成功、Data 非空、UID 非空且状态 Normal 时提交响应外层身份 |
+| `public UniTask<NetResponse<PbNetDeleteResp>> DeleteAsync()` | 只删除当前确认 UID；Header UID 与 Body UID 必须一致；无 UID 返回 7000 且不发请求 |
 | `public void Clear()` | 清空 NetService 的 UID、OpenID；后续请求 Header 不再携带身份字段 |
 
 > 为当前账号绑定三方 OpenID 请使用 `GameBind` 模块的 `Nova.Network.Kit<Bind>()`，登录与绑定职责分离。
@@ -66,12 +66,14 @@ login.Clear();
 
 ## 4. 内部约束
 
-- **身份写回**：登录成功后以 `PbNetLoginResp.Uid` 和本次登录 OpenID 更新 `NetService`；`Login.UID` 直接读取同一缓存。
+- **身份写回**：只使用 `PbNetLoginResp.Uid/Openid` 原子更新；不回退请求 OpenID。失败或响应非法返回时保留旧缓存。
 - **仅进程内缓存**：UID、OpenID 都不由 GameLogin 写入 PlayerPrefs、FileFragment 或 SQLite；进程重启后必须重新登录。
-- **强制新账号**：`forceNewAccount=true` 时以业务响应 UID 建立新会话，OpenID 保持为空，不产生绑定副作用。
+- **强制新账号**：`forceNewAccount=true` 时 Body UID/OpenID 都清空，但 Header 仍保留当前确认身份；响应通过相同合法性校验后提交服务端返回身份。
 - **最新设备与顶号**：每次成功登录都把 UID 的最新 `device_id` 更新为当前设备；旧设备后续访问受保护接口收到 `10400`。
-- **跨设备三方登录**：当前服务端要求已绑定 OpenID 与 UID 一致；只有 OpenID、UID 为空会返回 `10407`，业务必须先恢复 UID。
-- **删号语义 = 账号不存在 = 强制登出**：`DeleteAsync` 成功后自动清空 UID、OpenID，防止继续以失效身份发后续请求。删号失败时登录态不变。
+- **候选身份组合**：Body 支持 UID-only、OpenID-only、UID+OpenID 和两者皆空；服务端负责校验候选归属，Header 不参与表达本次候选身份。
+- **删号清理条件**：响应 Data 明确为 Locked/Banned/Deleted，且请求目标 UID 仍等于当前 UID 时清空身份；Normal/Unspecified/null Data/目标已变化均不清理。即使业务失败，只要携带上述明确状态 Data 也执行清理。
+- **并发语义**：Login/Delete 与 GameBind 的 Bind/Resolve 共用非排队身份租约；竞争调用返回 `-6`，不会发请求。
+- **协议生成属性硬切换**：`OpenId` 已改为 `Openid`；字段号不变，不提供旧属性别名。
 - **`DeleteAsync` cmdName 取自 `DeleteCmdName`**：`DeleteAsync` 内部取 `LoginKitConfig.DeleteCmdName` 解析为指令行；在 ConfigWindow 中为 `LoginKitConfig.DeleteCmdName` 填入对应 NetCmd 名称并重导出后方可正常调用。
 - **`LoginKitConfig` 必须配置**：`Async` 内部通过 `Nova.Config.GetKitConfig<LoginKitConfig>()` 取配置，未在 ConfigWindow 配置 `LoginKitConfig` 时抛 `KitConfigMissingException`（开发期 fail-fast，暴露漏配）。
 - **游戏运营渠道来源**：Header 的 `channel` 由 `NetBuilder.BuildHeader()` 从 `Nova.Config.Channel` 自动读取，业务侧无需传入；它只表示包体分发与运营来源，不表示第三方登录提供方。

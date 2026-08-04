@@ -16,8 +16,9 @@ enum PbNetAccountStatus {
 // 登录请求（V1 形态：channel 在 head 里）
 message PbNetLoginReq {
     NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头（含 channel）
-    string open_id = 2;            // 可选；三方号凭证，login 只"读"绑定关系找 uid 登入，不做绑定副作用
+    string openid = 2;            // 可选；三方号凭证，login 只"读"绑定关系找 uid 登入，不做绑定副作用
     bool force_new_account = 3;    // 是否强制注册新账号（同设备已有账号时新建游客号，软删旧号）
+    string uid = 4;                // 用户唯一 ID
 }
 
 // 登录响应
@@ -29,4 +30,5 @@ message PbNetLoginResp {
     string country = 5;                // 根据 IP 解析出的国家/地区代码（ISO 3166-1 alpha-2）
     PbNetAccountStatus status = 6;     // 当前账号状态
     bool is_new_account = 7;           // 是否为本次新注册账号（true 时走新手流程）
+    string openid = 8;                 // 三方号凭证
 }

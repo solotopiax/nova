@@ -8,6 +8,7 @@
  * descrip:   账号绑定业务网络 Service，封装绑定/冲突查询/裁决协议
  ***************************************************************/
 
+using System;
 using System.Diagnostics;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -45,14 +46,26 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         public async UniTask<NetResponse<PbNetBindResp>> BindAsync(ThirdLoginProvider provider, string openid)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
+            IDisposable identityOperation = NetService.TryBeginIdentityOperation();
+            if (identityOperation == null)
+            {
+                NetResponse<PbNetBindResp> busyResponse = NetResponse<PbNetBindResp>.Fail(
+                    NetErrorCode.IDENTITY_OPERATION_IN_PROGRESS,
+                    "Another identity operation is already in progress");
+                TrackBind(busyResponse, provider, openid, stopwatch.ElapsedMilliseconds);
+                return busyResponse;
+            }
+
+            using (identityOperation)
             try
             {
+                NetService.GetIdentity(out string currentUID, out _);
                 BindKitConfig config = ResolveConfig();
                 NetResponse<PbNetBindResp> response = await SendBindAsync(
                     Nova.Network.ResolveNetCmdRow(config.BindCmdName), provider, openid);
                 if (response.IsSuccess)
                 {
-                    NetService.SetOpenID(openid);
+                    NetService.SetIdentity(currentUID, openid);
                 }
                 TrackBind(response, provider, openid, stopwatch.ElapsedMilliseconds);
                 return response;
@@ -105,6 +118,17 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         public async UniTask<NetResponse<PbNetBindResolveResp>> ResolveAsync(string openid, string choice, string verifyCode = null)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
+            IDisposable identityOperation = NetService.TryBeginIdentityOperation();
+            if (identityOperation == null)
+            {
+                NetResponse<PbNetBindResolveResp> busyResponse = NetResponse<PbNetBindResolveResp>.Fail(
+                    NetErrorCode.IDENTITY_OPERATION_IN_PROGRESS,
+                    "Another identity operation is already in progress");
+                TrackResolve(busyResponse, openid, choice, verifyCode, stopwatch.ElapsedMilliseconds);
+                return busyResponse;
+            }
+
+            using (identityOperation)
             try
             {
                 BindKitConfig config = ResolveConfig();
@@ -113,8 +137,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
                 if (response.IsSuccess && response.Data != null)
                 {
                     string finalUID = response.Data.FinalUid ?? string.Empty;
-                    NetService.SetUID(finalUID);
-                    NetService.SetOpenID(openid);
+                    NetService.SetIdentity(finalUID, openid);
                 }
                 TrackResolve(response, openid, choice, verifyCode, stopwatch.ElapsedMilliseconds);
                 return response;

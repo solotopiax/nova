@@ -40,9 +40,12 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
 
             WithTrackPlugin(trackPlugin =>
             {
-                if (response.IsSuccess && !string.IsNullOrEmpty(openId))
+                string confirmedOpenID = response.IsSuccess && response.Data != null
+                    ? response.Data.Openid ?? string.Empty
+                    : string.Empty;
+                if (!string.IsNullOrEmpty(confirmedOpenID))
                 {
-                    trackPlugin.SetUserProperty(LoginTrackFields.OpenId, openId);
+                    trackPlugin.SetUserProperty(LoginTrackFields.OpenId, confirmedOpenID);
                 }
                 trackPlugin.TrackEvent(LoginTrackEvents.Login, properties);
             });

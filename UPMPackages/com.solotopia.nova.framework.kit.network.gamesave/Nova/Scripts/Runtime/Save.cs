@@ -247,7 +247,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime
                 Full = false,
                 GameVersion = m_GameVersion,
                 AppVersion = Application.version,
-                LastDeviceId = ResolveDeviceId(),
+                LastDevid = ResolveDeviceId(),
             };
             for (int i = 0; i < keys.Length; i++)
             {
@@ -281,7 +281,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime
                 Full = true,
                 GameVersion = m_GameVersion,
                 AppVersion = Application.version,
-                LastDeviceId = ResolveDeviceId(),
+                LastDevid = ResolveDeviceId(),
             };
             body.Datas.Add(new PbNetGameDataNode
             {

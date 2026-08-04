@@ -28,16 +28,14 @@ namespace NovaFramework.Runtime
     {
         /// <summary>
         /// 构建标准请求 Header。
-        /// AppId 来自 Nova.Config.AppConfigs.AppID（int.TryParse 失败时 Log.Warning + 回退 0）。
-        /// DeviceId 来自 Nova.SDK.TryGet&lt;IDeviceIdProvider&gt;()（未注册时回退空串）。
-        /// UID 来自 NetService.UID（登录后由 Login 写回）。
-        /// OpenID 优先使用本次请求显式值；未显式传入时取 NetService.OpenID。
+        /// Appid 来自 Nova.Config.AppConfigs.AppID（int.TryParse 失败时 Log.Warning + 回退 0）。
+        /// Devid 来自 Nova.SDK.TryGet&lt;IDeviceIdProvider&gt;()（未注册时回退空串）。
+        /// UID/OpenID 来自 NetService 当前已确认身份的同一份原子快照。
         /// Version / Language / Platform / Channel 在运行时自动内联取值。
         /// Channel 由 InferChannel() 从 Nova.Config.Channel 映射，业务 Service 无需传入。
         /// </summary>
-        /// <param name="openid">本次请求显式使用的 OpenID；传 null 时回退进程内缓存，传空字符串时明确不携带。</param>
         /// <returns>填充了全部公共字段的 PbNetReqHeader 实例。</returns>
-        public static PbNetReqHeader BuildHeader(string openid = null)
+        public static PbNetReqHeader BuildHeader()
         {
             int appId = 0;
             if (!int.TryParse(Nova.Config.AppConfigs.AppID, out appId))
@@ -51,16 +49,17 @@ namespace NovaFramework.Runtime
                 deviceId = deviceIdProvider.GetDeviceID() ?? string.Empty;
             }
 
+            NetService.GetIdentity(out string uid, out string openid);
             return new PbNetReqHeader
             {
-                AppId = appId,
+                Appid = appId,
                 Version = Application.version,
                 Language = LanguageMetadata.GetFlag(Nova.Localization.Language),
-                DeviceId = deviceId,
+                Devid = deviceId,
                 Platform = InferPlatform(),
                 Channel = InferChannel(),
-                Uid = NetService.UID,
-                Openid = openid ?? NetService.OpenID
+                Uid = uid,
+                Openid = openid
             };
         }
 

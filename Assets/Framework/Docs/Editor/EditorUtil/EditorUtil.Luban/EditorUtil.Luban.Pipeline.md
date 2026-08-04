@@ -160,7 +160,7 @@ bool dataSuccess = EditorUtil.Luban.Pipeline.ExportData(ctx);
 
 | 场景 | 说明 |
 |------|------|
-| 环境检查 guard | `ExportData` / `ExportCode` / `ExportAll` 三个入口均在首步执行 `EditorUtil.Environment.LubanChecker.Check()`，未就绪时自动弹出 `ConfigWindow` 并提前返回 false |
+| 环境检查 guard | `ExportData` / `ExportCode` / `ExportAll` 首步执行 `LubanChecker.Check()`；仅 `.NET SDK` 版本低于/高于建议区间时输出 Warning 并继续，未安装、无法执行或缺少 `Luban.dll` 时仍自动弹出 `ConfigWindow` 并返回 false |
 | 临时目录残留 | 正常情况下 `finally` 块会清理。若 Unity 崩溃可能残留 `_luban_temp_*` 目录，需手动删除 |
 | AssetDatabase.Refresh | 每个导出方法结束时自动调用 `AssetDatabase.Refresh()`，无需外部再次调用 |
 | ExportAll 的 OutputCodeDir | 为 null 时退化为纯数据导出（仅调用 `RunDataExport`），不生成代码 |

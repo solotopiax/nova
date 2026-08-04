@@ -129,6 +129,9 @@ else // "existing"
 ## 5. 内部约束
 
 - **Header 只声明当前身份**：三个接口均使用 `NetBuilder.BuildHeader()` 携带 `NetService.UID/OpenID`；方法参数 `openid` 是目标身份，只写入业务 Body。
+- **身份操作互斥**：Bind/Resolve 与 Login/Delete 共用非排队租约，竞争时返回 `NetErrorCode.IDENTITY_OPERATION_IN_PROGRESS(-6)`；QueryConflict 只读，不占租约。
+- **原子身份提交**：Bind 成功保留操作开始时的当前 UID 并与目标 OpenID 成对写入；Resolve 成功将 `FinalUid/OpenID` 成对写入。
+- **生成属性硬切换**：三个 Proto Body 的 C# 属性由 `OpenId` 改为 `Openid`，字段号和 wire 类型不变。
 - **裁决后的身份同步**：`ResolveAsync` 以业务响应 `FinalUid` 与目标 OpenID 覆盖进程内身份；响应 Header 只是请求身份回显。
 - **仅进程内缓存**：Bind 不写 PlayerPrefs、FileFragment 或 SQLite；进程重启后 OpenID 为空。
 - **`BindAsync` 冲突信号**：`ErrBindConflict`(10402) 响应仅带 `ExistingUid`（轻量），不带摘要；摘要需另调 `QueryConflictAsync` 获取。

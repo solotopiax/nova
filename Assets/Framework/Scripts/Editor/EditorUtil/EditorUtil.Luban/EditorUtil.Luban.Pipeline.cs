@@ -120,9 +120,8 @@ namespace NovaFramework.Editor
                 public static bool ExportData(LubanExportContext ctx)
                 {
                     EditorUtil.Environment.LubanChecker.EnvironmentCheckResult envResult = EditorUtil.Environment.LubanChecker.Check();
-                    if (!envResult.IsReady)
+                    if (!ValidateEnvironmentForExport(envResult))
                     {
-                        ConfigWindow.OpenLubanSection(envResult);
                         return false;
                     }
 
@@ -180,9 +179,8 @@ namespace NovaFramework.Editor
                 public static bool ExportCode(LubanExportContext ctx)
                 {
                     EditorUtil.Environment.LubanChecker.EnvironmentCheckResult envResult = EditorUtil.Environment.LubanChecker.Check();
-                    if (!envResult.IsReady)
+                    if (!ValidateEnvironmentForExport(envResult))
                     {
-                        ConfigWindow.OpenLubanSection(envResult);
                         return false;
                     }
 
@@ -218,9 +216,8 @@ namespace NovaFramework.Editor
                 public static bool ExportAll(LubanExportContext ctx)
                 {
                     EditorUtil.Environment.LubanChecker.EnvironmentCheckResult envResult = EditorUtil.Environment.LubanChecker.Check();
-                    if (!envResult.IsReady)
+                    if (!ValidateEnvironmentForExport(envResult))
                     {
-                        ConfigWindow.OpenLubanSection(envResult);
                         return false;
                     }
 
@@ -278,6 +275,40 @@ namespace NovaFramework.Editor
                             Util.SysIO.Directory.Delete(tempDir, true);
                         }
                     }
+                }
+
+                /// <summary>
+                /// 校验导表环境。.NET SDK 版本超出建议区间时仅告警，其他环境问题仍阻断导出。
+                /// </summary>
+                /// <param name="envResult">Luban 环境检测结果。</param>
+                /// <returns>是否允许继续导出。</returns>
+                private static bool ValidateEnvironmentForExport(EditorUtil.Environment.LubanChecker.EnvironmentCheckResult envResult)
+                {
+                    if (!envResult.IsLubanDllReady)
+                    {
+                        ConfigWindow.OpenLubanSection(envResult);
+                        return false;
+                    }
+
+                    if (envResult.DotnetIssue == EditorUtil.Environment.LubanChecker.EnvironmentIssue.DotnetVersionTooLow ||
+                        envResult.DotnetIssue == EditorUtil.Environment.LubanChecker.EnvironmentIssue.DotnetVersionTooHigh)
+                    {
+                        Log.Warning(
+                            LogTag.Editor,
+                            ".NET SDK 版本 {0} 不在建议区间 {1} ~ {2}，将继续导表。",
+                            envResult.DotnetVersion,
+                            EditorUtil.Environment.LubanChecker.c_MinDotnetVersion,
+                            EditorUtil.Environment.LubanChecker.c_MaxDotnetVersion);
+                        return true;
+                    }
+
+                    if (envResult.IsReady)
+                    {
+                        return true;
+                    }
+
+                    ConfigWindow.OpenLubanSection(envResult);
+                    return false;
                 }
 
                 /// <summary>

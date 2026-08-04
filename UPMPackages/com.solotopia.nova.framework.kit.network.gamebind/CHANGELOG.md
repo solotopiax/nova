@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.0.10] - 2026-08-04
+
+### Breaking
+
+- 三个 Proto `open_id` 字段统一改为 `openid`，生成属性改为 `Openid`；字段号不变。
+
+### Changed
+
+- Bind/Resolve 接入 Framework 全局身份操作租约，并改为原子提交 UID/OpenID 身份对；QueryConflict 保持只读。
+- GameBindDemo 支持显式 UID 登录，并按新 Login 身份语义归一化 UID 与强制新账号参数。
+- Framework 与 GameLogin 最低依赖分别提升至 `0.6.5` 与 `0.1.4`。
+
 ## [0.0.9] - 2026-08-03
 
 ### Breaking

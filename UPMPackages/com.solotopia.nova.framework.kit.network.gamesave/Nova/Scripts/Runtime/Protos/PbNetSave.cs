@@ -29,27 +29,27 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
             "TmV0R2FtZURhdGFOb2RlEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCSJ6",
             "ChNQYk5ldEdldEdhbWVEYXRhUmVxEjMKBGhlYWQYASABKAsyJS5Ob3ZhRnJh",
             "bWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXISDAoEZnVsbBgCIAEoCBIM",
-            "CgRrZXlzGAMgAygJEhIKCnRhcmdldF91aWQYBCABKAki9QEKFFBiTmV0R2V0",
+            "CgRrZXlzGAMgAygJEhIKCnRhcmdldF91aWQYBCABKAki8QEKFFBiTmV0R2V0",
             "R2FtZURhdGFSZXNwEjQKBGhlYWQYASABKAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1",
             "bnRpbWUuUGJOZXRSZXNwSGVhZGVyEhQKDGdhbWVfdmVyc2lvbhgCIAEoCRIT",
-            "CgthcHBfdmVyc2lvbhgDIAEoCRIWCg5sYXN0X2RldmljZV9pZBgEIAEoCRIW",
-            "Cg5sYXN0X3RpbWVzdGFtcBgFIAEoAxJMCgVkYXRhcxgGIAMoCzI9Lk5vdmFG",
-            "cmFtZXdvcmsuS2l0Lk5ldHdvcmsuR2FtZVNhdmUuUnVudGltZS5QYk5ldEdh",
-            "bWVEYXRhTm9kZSLpAQoTUGJOZXRTZXRHYW1lRGF0YVJlcRIzCgRoZWFkGAEg",
-            "ASgLMiUuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVxSGVhZGVyEgwK",
-            "BGZ1bGwYAiABKAgSFAoMZ2FtZV92ZXJzaW9uGAMgASgJEhMKC2FwcF92ZXJz",
-            "aW9uGAQgASgJEhYKDmxhc3RfZGV2aWNlX2lkGAUgASgJEkwKBWRhdGFzGAYg",
-            "AygLMj0uTm92YUZyYW1ld29yay5LaXQuTmV0d29yay5HYW1lU2F2ZS5SdW50",
-            "aW1lLlBiTmV0R2FtZURhdGFOb2RlIlwKFFBiTmV0U2V0R2FtZURhdGFSZXNw",
-            "EjQKBGhlYWQYASABKAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRS",
-            "ZXNwSGVhZGVyEg4KBmVmZmVjdBgCIAEoBWIGcHJvdG8z"));
+            "CgthcHBfdmVyc2lvbhgDIAEoCRISCgpsYXN0X2RldmlkGAQgASgJEhYKDmxh",
+            "c3RfdGltZXN0YW1wGAUgASgDEkwKBWRhdGFzGAYgAygLMj0uTm92YUZyYW1l",
+            "d29yay5LaXQuTmV0d29yay5HYW1lU2F2ZS5SdW50aW1lLlBiTmV0R2FtZURh",
+            "dGFOb2RlIuUBChNQYk5ldFNldEdhbWVEYXRhUmVxEjMKBGhlYWQYASABKAsy",
+            "JS5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXISDAoEZnVs",
+            "bBgCIAEoCBIUCgxnYW1lX3ZlcnNpb24YAyABKAkSEwoLYXBwX3ZlcnNpb24Y",
+            "BCABKAkSEgoKbGFzdF9kZXZpZBgFIAEoCRJMCgVkYXRhcxgGIAMoCzI9Lk5v",
+            "dmFGcmFtZXdvcmsuS2l0Lk5ldHdvcmsuR2FtZVNhdmUuUnVudGltZS5QYk5l",
+            "dEdhbWVEYXRhTm9kZSJcChRQYk5ldFNldEdhbWVEYXRhUmVzcBI0CgRoZWFk",
+            "GAEgASgLMiYuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVzcEhlYWRl",
+            "chIOCgZlZmZlY3QYAiABKAViBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGameDataNode), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGameDataNode.Parser, new[]{ "Key", "Value" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataReq), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataReq.Parser, new[]{ "Head", "Full", "Keys", "TargetUid" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataResp), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataResp.Parser, new[]{ "Head", "GameVersion", "AppVersion", "LastDeviceId", "LastTimestamp", "Datas" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetSetGameDataReq), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetSetGameDataReq.Parser, new[]{ "Head", "Full", "GameVersion", "AppVersion", "LastDeviceId", "Datas" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataResp), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetGetGameDataResp.Parser, new[]{ "Head", "GameVersion", "AppVersion", "LastDevid", "LastTimestamp", "Datas" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetSetGameDataReq), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetSetGameDataReq.Parser, new[]{ "Head", "Full", "GameVersion", "AppVersion", "LastDevid", "Datas" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetSetGameDataResp), global::NovaFramework.Kit.Network.GameSave.Runtime.PbNetSetGameDataResp.Parser, new[]{ "Head", "Effect" }, null, null, null, null)
           }));
     }
@@ -664,7 +664,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       head_ = other.head_ != null ? other.head_.Clone() : null;
       gameVersion_ = other.gameVersion_;
       appVersion_ = other.appVersion_;
-      lastDeviceId_ = other.lastDeviceId_;
+      lastDevid_ = other.lastDevid_;
       lastTimestamp_ = other.lastTimestamp_;
       datas_ = other.datas_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -721,18 +721,18 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       }
     }
 
-    /// <summary>Field number for the "last_device_id" field.</summary>
-    public const int LastDeviceIdFieldNumber = 4;
-    private string lastDeviceId_ = "";
+    /// <summary>Field number for the "last_devid" field.</summary>
+    public const int LastDevidFieldNumber = 4;
+    private string lastDevid_ = "";
     /// <summary>
     /// 最近一次的设备ID
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string LastDeviceId {
-      get { return lastDeviceId_; }
+    public string LastDevid {
+      get { return lastDevid_; }
       set {
-        lastDeviceId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        lastDevid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -783,7 +783,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       if (!object.Equals(Head, other.Head)) return false;
       if (GameVersion != other.GameVersion) return false;
       if (AppVersion != other.AppVersion) return false;
-      if (LastDeviceId != other.LastDeviceId) return false;
+      if (LastDevid != other.LastDevid) return false;
       if (LastTimestamp != other.LastTimestamp) return false;
       if(!datas_.Equals(other.datas_)) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -796,7 +796,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       if (head_ != null) hash ^= Head.GetHashCode();
       if (GameVersion.Length != 0) hash ^= GameVersion.GetHashCode();
       if (AppVersion.Length != 0) hash ^= AppVersion.GetHashCode();
-      if (LastDeviceId.Length != 0) hash ^= LastDeviceId.GetHashCode();
+      if (LastDevid.Length != 0) hash ^= LastDevid.GetHashCode();
       if (LastTimestamp != 0L) hash ^= LastTimestamp.GetHashCode();
       hash ^= datas_.GetHashCode();
       if (_unknownFields != null) {
@@ -829,9 +829,9 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
         output.WriteRawTag(26);
         output.WriteString(AppVersion);
       }
-      if (LastDeviceId.Length != 0) {
+      if (LastDevid.Length != 0) {
         output.WriteRawTag(34);
-        output.WriteString(LastDeviceId);
+        output.WriteString(LastDevid);
       }
       if (LastTimestamp != 0L) {
         output.WriteRawTag(40);
@@ -860,9 +860,9 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
         output.WriteRawTag(26);
         output.WriteString(AppVersion);
       }
-      if (LastDeviceId.Length != 0) {
+      if (LastDevid.Length != 0) {
         output.WriteRawTag(34);
-        output.WriteString(LastDeviceId);
+        output.WriteString(LastDevid);
       }
       if (LastTimestamp != 0L) {
         output.WriteRawTag(40);
@@ -888,8 +888,8 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       if (AppVersion.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(AppVersion);
       }
-      if (LastDeviceId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastDeviceId);
+      if (LastDevid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastDevid);
       }
       if (LastTimestamp != 0L) {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(LastTimestamp);
@@ -919,8 +919,8 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       if (other.AppVersion.Length != 0) {
         AppVersion = other.AppVersion;
       }
-      if (other.LastDeviceId.Length != 0) {
-        LastDeviceId = other.LastDeviceId;
+      if (other.LastDevid.Length != 0) {
+        LastDevid = other.LastDevid;
       }
       if (other.LastTimestamp != 0L) {
         LastTimestamp = other.LastTimestamp;
@@ -961,7 +961,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
             break;
           }
           case 34: {
-            LastDeviceId = input.ReadString();
+            LastDevid = input.ReadString();
             break;
           }
           case 40: {
@@ -1007,7 +1007,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
             break;
           }
           case 34: {
-            LastDeviceId = input.ReadString();
+            LastDevid = input.ReadString();
             break;
           }
           case 40: {
@@ -1067,7 +1067,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       full_ = other.full_;
       gameVersion_ = other.gameVersion_;
       appVersion_ = other.appVersion_;
-      lastDeviceId_ = other.lastDeviceId_;
+      lastDevid_ = other.lastDevid_;
       datas_ = other.datas_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -1138,18 +1138,18 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       }
     }
 
-    /// <summary>Field number for the "last_device_id" field.</summary>
-    public const int LastDeviceIdFieldNumber = 5;
-    private string lastDeviceId_ = "";
+    /// <summary>Field number for the "last_devid" field.</summary>
+    public const int LastDevidFieldNumber = 5;
+    private string lastDevid_ = "";
     /// <summary>
     /// 最近一次的设备ID
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string LastDeviceId {
-      get { return lastDeviceId_; }
+    public string LastDevid {
+      get { return lastDevid_; }
       set {
-        lastDeviceId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        lastDevid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1186,7 +1186,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       if (Full != other.Full) return false;
       if (GameVersion != other.GameVersion) return false;
       if (AppVersion != other.AppVersion) return false;
-      if (LastDeviceId != other.LastDeviceId) return false;
+      if (LastDevid != other.LastDevid) return false;
       if(!datas_.Equals(other.datas_)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -1199,7 +1199,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       if (Full != false) hash ^= Full.GetHashCode();
       if (GameVersion.Length != 0) hash ^= GameVersion.GetHashCode();
       if (AppVersion.Length != 0) hash ^= AppVersion.GetHashCode();
-      if (LastDeviceId.Length != 0) hash ^= LastDeviceId.GetHashCode();
+      if (LastDevid.Length != 0) hash ^= LastDevid.GetHashCode();
       hash ^= datas_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1235,9 +1235,9 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
         output.WriteRawTag(34);
         output.WriteString(AppVersion);
       }
-      if (LastDeviceId.Length != 0) {
+      if (LastDevid.Length != 0) {
         output.WriteRawTag(42);
-        output.WriteString(LastDeviceId);
+        output.WriteString(LastDevid);
       }
       datas_.WriteTo(output, _repeated_datas_codec);
       if (_unknownFields != null) {
@@ -1266,9 +1266,9 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
         output.WriteRawTag(34);
         output.WriteString(AppVersion);
       }
-      if (LastDeviceId.Length != 0) {
+      if (LastDevid.Length != 0) {
         output.WriteRawTag(42);
-        output.WriteString(LastDeviceId);
+        output.WriteString(LastDevid);
       }
       datas_.WriteTo(ref output, _repeated_datas_codec);
       if (_unknownFields != null) {
@@ -1293,8 +1293,8 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       if (AppVersion.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(AppVersion);
       }
-      if (LastDeviceId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastDeviceId);
+      if (LastDevid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(LastDevid);
       }
       size += datas_.CalculateSize(_repeated_datas_codec);
       if (_unknownFields != null) {
@@ -1324,8 +1324,8 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
       if (other.AppVersion.Length != 0) {
         AppVersion = other.AppVersion;
       }
-      if (other.LastDeviceId.Length != 0) {
-        LastDeviceId = other.LastDeviceId;
+      if (other.LastDevid.Length != 0) {
+        LastDevid = other.LastDevid;
       }
       datas_.Add(other.datas_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1367,7 +1367,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
             break;
           }
           case 42: {
-            LastDeviceId = input.ReadString();
+            LastDevid = input.ReadString();
             break;
           }
           case 50: {
@@ -1413,7 +1413,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime {
             break;
           }
           case 42: {
-            LastDeviceId = input.ReadString();
+            LastDevid = input.ReadString();
             break;
           }
           case 50: {

@@ -39,6 +39,7 @@
 | `PROTO_PARSE_FAILED` | `-3` | Proto 反序列化失败 |
 | `URL_NOT_FOUND` | `-4` | NetCmd 未找到对应 URL |
 | `AES_ENCRYPT_FAILED` | `-5` | 客户端 AES 加密失败（通常是 Key/IV 未配置） |
+| `IDENTITY_OPERATION_IN_PROGRESS` | `-6` | 已有 Login/Delete/Bind/Resolve 身份变更操作执行中；本次调用不排队、不发请求 |
 
 ---
 

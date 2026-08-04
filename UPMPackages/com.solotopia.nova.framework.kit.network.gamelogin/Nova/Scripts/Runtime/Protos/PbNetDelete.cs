@@ -26,16 +26,16 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
           string.Concat(
             "ChNwYl9uZXRfZGVsZXRlLnByb3RvEitOb3ZhRnJhbWV3b3JrLktpdC5OZXR3",
             "b3JrLkdhbWVMb2dpbi5SdW50aW1lGhNwYl9uZXRfaGVhZGVyLnByb3RvGhJw",
-            "Yl9uZXRfbG9naW4ucHJvdG8iRQoOUGJOZXREZWxldGVSZXESMwoEaGVhZBgB",
-            "IAEoCzIlLk5vdmFGcmFtZXdvcmsuUnVudGltZS5QYk5ldFJlcUhlYWRlciKY",
-            "AQoPUGJOZXREZWxldGVSZXNwEjQKBGhlYWQYASABKAsyJi5Ob3ZhRnJhbWV3",
-            "b3JrLlJ1bnRpbWUuUGJOZXRSZXNwSGVhZGVyEk8KBnN0YXR1cxgCIAEoDjI/",
-            "Lk5vdmFGcmFtZXdvcmsuS2l0Lk5ldHdvcmsuR2FtZUxvZ2luLlJ1bnRpbWUu",
-            "UGJOZXRBY2NvdW50U3RhdHVzYgZwcm90bzM="));
+            "Yl9uZXRfbG9naW4ucHJvdG8iUgoOUGJOZXREZWxldGVSZXESMwoEaGVhZBgB",
+            "IAEoCzIlLk5vdmFGcmFtZXdvcmsuUnVudGltZS5QYk5ldFJlcUhlYWRlchIL",
+            "CgN1aWQYAiABKAkimAEKD1BiTmV0RGVsZXRlUmVzcBI0CgRoZWFkGAEgASgL",
+            "MiYuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVzcEhlYWRlchJPCgZz",
+            "dGF0dXMYAiABKA4yPy5Ob3ZhRnJhbWV3b3JrLktpdC5OZXR3b3JrLkdhbWVM",
+            "b2dpbi5SdW50aW1lLlBiTmV0QWNjb3VudFN0YXR1c2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetLoginReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetDeleteReq), global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetDeleteReq.Parser, new[]{ "Head" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetDeleteReq), global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetDeleteReq.Parser, new[]{ "Head", "Uid" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetDeleteResp), global::NovaFramework.Kit.Network.GameLogin.Runtime.PbNetDeleteResp.Parser, new[]{ "Head", "Status" }, null, null, null, null)
           }));
     }
@@ -82,6 +82,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public PbNetDeleteReq(PbNetDeleteReq other) : this() {
       head_ = other.head_ != null ? other.head_.Clone() : null;
+      uid_ = other.uid_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -106,6 +107,21 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       }
     }
 
+    /// <summary>Field number for the "uid" field.</summary>
+    public const int UidFieldNumber = 2;
+    private string uid_ = "";
+    /// <summary>
+    /// 用户唯一 ID
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Uid {
+      get { return uid_; }
+      set {
+        uid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -122,6 +138,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
         return true;
       }
       if (!object.Equals(Head, other.Head)) return false;
+      if (Uid != other.Uid) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -130,6 +147,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
     public override int GetHashCode() {
       int hash = 1;
       if (head_ != null) hash ^= Head.GetHashCode();
+      if (Uid.Length != 0) hash ^= Uid.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -152,6 +170,10 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
         output.WriteRawTag(10);
         output.WriteMessage(Head);
       }
+      if (Uid.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Uid);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -166,6 +188,10 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
         output.WriteRawTag(10);
         output.WriteMessage(Head);
       }
+      if (Uid.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Uid);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -178,6 +204,9 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
       int size = 0;
       if (head_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Head);
+      }
+      if (Uid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Uid);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -196,6 +225,9 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
           Head = new global::NovaFramework.Runtime.PbNetReqHeader();
         }
         Head.MergeFrom(other.Head);
+      }
+      if (other.Uid.Length != 0) {
+        Uid = other.Uid;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -223,6 +255,10 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
             input.ReadMessage(Head);
             break;
           }
+          case 18: {
+            Uid = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -247,6 +283,10 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime {
               Head = new global::NovaFramework.Runtime.PbNetReqHeader();
             }
             input.ReadMessage(Head);
+            break;
+          }
+          case 18: {
+            Uid = input.ReadString();
             break;
           }
         }

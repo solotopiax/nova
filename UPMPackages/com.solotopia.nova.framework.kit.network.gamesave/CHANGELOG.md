@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-08-04
+
+### Breaking
+
+- Proto `last_device_id` 统一改为 `last_devid`，生成属性改为 `LastDevid`；字段号不变，不保留旧属性别名。
+
+### Changed
+
+- GameSaveDemo 支持显式 UID 登录，并按 GameLogin 新身份语义构造请求参数。
+- GameLogin 最低依赖提升至 `0.1.4`。
+
 ## [0.1.1] - 2026-08-03
 
 ### Changed

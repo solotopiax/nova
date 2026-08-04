@@ -20,6 +20,12 @@ namespace NovaFramework.Kit.Network.GameSave.Samples.Runtime
     public sealed partial class DemoGameSaveView
     {
         /// <summary>
+        /// uid 输入框；为空时不传 body.uid，非空时作为候选 UID 登录。
+        /// </summary>
+
+        [SerializeField] private TMP_InputField m_UidInput;
+
+        /// <summary>
         /// openId 输入框；演示先登录拿到 UID 后再调用 GameSave 接口，存档依赖已登录的用户身份。
         /// </summary>
 
