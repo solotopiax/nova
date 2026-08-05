@@ -15,7 +15,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | `Editor/Windows/ConfigWindow/ConfigWindow.cs` | `ConfigWindow` | public 开口：`Open`、`OpenLubanSection` 与四个 Guard 配置导航入口；Guard 可定位实际 ConfigMaster、导出坐标及应用、名字空间、SDK、Kit 面板 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Visitors.cs` | `ConfigWindow` | 字段：常量 + 运行时状态字段 + `LeftTreeGroup` + `LeftTreeItem` 枚举；新增延迟切坐标守卫字段：`m_HasPendingCoordSwitch`、`m_PendingPlatform`、`m_PendingChannel`、`m_PendingDevelopMode` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs` | `ConfigWindow` | 总调度：`OnEnable`、`OnDisable`、`OnGUI`、`DrawBody`、`DrawMainTitle`、`ApplyPendingCoordSwitch`、`PollChannelChangeForRepaint`、`RefreshPluginCache`、`RunLubanCheck`、`RunPython3Check`、`CommitWorkingCopyToAsset`（保存后广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`）；`EnsureStyles`（GUIStyle 懒初始化） |
-| `Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs` | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyPlatformChannel`（延迟写坐标，见 PAT-22 升级）、`TryApplyDevelopMode`（延迟写坐标，见 PAT-22 升级）、`OnClickExport`（导出成功后追加场景 `DevelopMode` 快照回写） |
+| `Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs` | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyPlatformChannel`（延迟写坐标，见 PAT-22 升级）、`TryApplyDevelopMode`（延迟写坐标，见 PAT-22 升级）、`OnClickExport`（Error 阻断；纯 Warning 要求显式确认后可继续；导出成功后追加场景 `DevelopMode` 快照回写） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.LeftTree.cs` | `ConfigWindow` | 左树：`DrawLeftTree`、`DrawLeftTreeItem`、`DrawSDKTreeItem`、`DrawKitGroupItems`、`DrawKitTreeItem`；SDK/Kit 勾选写 WorkingCopy（`workingSrc.EnabledSDKs/EnabledKits`）+ `m_IsDirty=true`，不直写 `m_Master`，延迟保存机制对齐；`TryChangeSelection` 清除键盘焦点（`GUI.FocusControl(null)` + `EditorGUIUtility.editingTextField=false`）后更新选中状态 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs` | `ConfigWindow` | 右面板：`DrawRightPanel`、`DrawVerticalSeparator`、`DrawNamespacePanel`、`DrawAppConfigsPanel`、`DrawCustomConfigRows`、`DrawSDKPanel`、`DrawKitPanel`；应用配置面板同时编辑 `CustomConfigCmdName / CustomName` 与直接展开的本地 JSONPath key-value 行；标题+掩码内联行由 `DrawPanelTitleWithMask` 统一绘制 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.Luban.cs` | `ConfigWindow` | Luban 面板：`DrawLubanSection`、`DrawLubanStatusAndButtons`、`DrawLubanWindowsExportWarning`、`DrawLubanInstallGuide`、`ResolveDotnetStatusText`、`ResolveLubanDllStatusText`、`IsDotnetReady`、`GetLubanWindowsExportWarningText` |
@@ -24,7 +24,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.CDN.cs` | `ConfigWindow` | CDN 面板：`DrawCdnDeploymentPanel`、`CommitCdnField`；行控件：`DrawCdnSectionTitle`、`DrawCdnTextRow`、`DrawCdnPasswordRow`、`DrawCdnVersionCheckLocalFileRow`、`DrawCdnVersionCheckRemoteFileRow`、`DrawCdnLocalDirectoryRow`、`DrawCdnRemoteDirectoryRow`、`DrawCdnCachePathsRow`、`DrawCdnWideButton`；OSS 标题行右侧提供阿里云地域 Endpoint 文档入口，Cloudflare 的 Zone ID / API Token 行右侧提供官方查询与创建入口；路径辅助：`SelectCdnVersionCheckLocalFile`、`OpenCdnVersionCheckLocalFileDirectory`、`SelectCdnLocalDirectory`、`OpenCdnLocalDirectory`、`GetCdnPresetDisplay`；操作入口：`OnDeployCdn`、`DeployCdnAsync`、`OnPurgeCdnCache`、`PurgeCdnCacheAsync`、`CreateCdnConfigSnapshot`；编辑 OSS、版本检查文件位置、部署目录与 Cloudflare 清缓存参数，云端位置由只读 `PresetOSSPath` 前缀与可编辑后缀组成，上传和清缓存由独立按钮触发，执行期间显示进度并恢复忙碌状态；维度化接线（ADR-055）：标题走 `DrawPanelTitleWithMask`（`PanelKind.CDNEditorConfigs`，内联三 toggle + 维度 HelpBox，加维分裂 / 减维合并由 DimensionProjector 处理）；12 字段快照经 `DimensionalResolver.ResolveCDNEditorConfigs` 按当前坐标解析（IsGlobal 顶层 / 命中 CDNEditorConfigsOverrides 后整份快照独立且空字符串有效 / 无命中回落顶层，恒返回深拷贝）；编辑提交经 `CommitCdnField` 双分支写入（IsGlobal 写顶层 `CDNEditorConfigs`，否则经 `EnsureCDNEditorConfigsOverrideAtCoord` 进入坐标即建份含当前 Resolve 快照后写该条目 `Config`）；`CreateCdnConfigSnapshot` 取当前坐标 `ResolveCDNEditorConfigs` 结果作为部署 / 清缓存快照，与矩阵类一致走 WorkingCopy 延迟落盘（区别于 YooAsset 的 C1 即时落盘） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.YooAsset.cs` | `ConfigWindow` | YooAsset 配置面板：`DrawRightPanelYooAsset`、`DrawYooAssetSettingsPathRow`、`DrawBundleCollectorSettingPathRow`、`BrowseYooAssetSettingsPath`、`BrowseBundleCollectorSettingPath`、`ToProjectRelativePath`（绝对路径 → 项目根相对）；内联标题行：`DrawYooAssetTitleWithMask`（标题+三 toggle 行委托 `DrawTitleWithMaskCore` 渲染，HelpBox 留本方法；toggle 回调作用于真实资产 m_Master，改完即时 SetDirty + SaveAssetIfDirty + `ReInjectYooAsset`）；`ReInjectYooAsset`（调 `DimensionalResolver.ResolveYooAsset` + `YooAssetInjector.InjectByPath`）；`SyncYooAssetDimensionToWorkingCopy`（维度 toggle 直写 m_Master 后将 YooAssetEditorConfigsMask/YooAssetEditorConfigsOverrides 补同步到 WorkingCopy） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.BindGuide.cs` | `ConfigWindow` | 绑定引导面板（m_Master 为 null 时显示）：`DrawBindGuide`、`BrowseAndBindConfigMaster`、`CreateAndBindConfigMaster`、`BindMaster` |
-| `Editor/Windows/ConfigWindow/ConfigWindow.Dialogs.cs` | `ConfigWindow` | 弹框：`ConfirmDiscardDirty`、`HasAnyError`、`ShowValidationDialog`、`PromptMissingRefsIfAny`（启动时检测并可清理 SDK / Kit 的缺失 `SerializeReference`） |
+| `Editor/Windows/ConfigWindow/ConfigWindow.Dialogs.cs` | `ConfigWindow` | 弹框：`ConfirmDiscardDirty`、`HasAnyError`、`ShowValidationDialog`、`ConfirmValidationWarnings`、`BuildValidationMessage`、`PromptMissingRefsIfAny`（启动时检测并可清理 SDK / Kit 的缺失 `SerializeReference`；清理后保存真实 Master 并重建 WorkingCopy） |
 
 ---
 
@@ -154,7 +154,7 @@ OnEnable()
   ├─ EditorSceneManager.sceneOpened += OnSceneOpenedRefresh
   ├─ RunLubanCheck()    跑 Luban 环境检测
   ├─ RunPython3Check()  跑 Python3 环境检测（读 SessionState 缓存，不阻塞）
-  └─ PromptMissingRefsIfAny()   检测并弹框处理 SDK / Kit 配置里的 null 占位
+  └─ PromptMissingRefsIfAny()   检测并弹框处理 SDK / Kit 配置里的 null 占位；确认清理后保存 Master 并重建 WorkingCopy
 
 OnDisable()
   ├─ EditorSceneManager.sceneOpened -= OnSceneOpenedRefresh
@@ -334,11 +334,13 @@ DrawPython3StatusAndButtons():
 OnClickExport()
   1. Validator.Validate(master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode)
   2. HasAnyError(issues) → ShowValidationDialog → return（阻断）
-  3. master.ExportTarget == null → DisplayDialog("未设置导出文件") → return
-  4. assetPath = AssetDatabase.GetAssetPath(master.ExportTarget)
-  5. Exporter.Export(master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode, assetPath)
-  6. master.ExportTarget 为 null 时用导出结果写回
-  7. DisplayDialog("导出成功")
+  3. 仅有 Warning → ConfirmValidationWarnings（继续导出 / 取消）
+  4. master.ExportTarget == null → SaveFilePanelInProject 选择新导出位置
+  5. 否则 assetPath = AssetDatabase.GetAssetPath(master.ExportTarget)
+  6. Exporter.Export(master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode, assetPath)
+  7. master.ExportTarget 原为空时用新建导出结果写回 Master 与 WorkingCopy
+  8. SceneDevelopModeWriter.WriteActiveScene(...) 回写场景启动快照
+  9. DisplayDialog("导出成功")
 ```
 
 > **注意**：导出目标不再通过 `EditorPrefs` GUID 存储，改由 `ConfigMasterSO.ExportTarget`（`[SerializeField]`）直接持久化到 SO 资产中；`RestoreExportTargetFromPrefs` / `SaveExportTargetToPrefs` / `OnDisable` 中的 GUID 持久化链路已删除。

@@ -64,13 +64,45 @@ namespace NovaFramework.Editor
         /// <param name="issues">校验问题列表。</param>
         private void ShowValidationDialog(IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues)
         {
+            EditorUtility.DisplayDialog("导出校验失败", BuildValidationMessage(issues), "知道了");
+        }
+
+        /// <summary>
+        /// 展示不阻断导出的 Warning，并要求用户显式确认是否继续，避免静默忽略失效配置残留。
+        /// </summary>
+        /// <param name="issues">仅包含 Warning 或至少不含 Error 的校验问题列表。</param>
+        /// <returns>用户选择继续导出时返回 true，选择取消时返回 false。</returns>
+        private bool ConfirmValidationWarnings(IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues)
+        {
+            return EditorUtility.DisplayDialog(
+                "导出校验警告",
+                BuildValidationMessage(issues),
+                "继续导出",
+                "取消");
+        }
+
+        /// <summary>
+        /// 构建带当前导出坐标、问题级别和失效配置处理指引的统一校验文本。
+        /// </summary>
+        /// <param name="issues">待展示的校验问题列表。</param>
+        /// <returns>用于 Error 提示或 Warning 确认框的完整文本。</returns>
+        private string BuildValidationMessage(IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues)
+        {
             StringBuilder sb = new();
-            sb.AppendLine("发现以下问题，请修复后再导出：");
+            sb.AppendLine($"发现以下问题（校验范围：平台 {m_Master.CurrentPlatform} / 渠道 {m_Master.CurrentChannel} / 模式 {m_Master.CurrentDevelopMode}），[Error] 项必须修复后再导出，[Warning] 项不阻断本次导出：");
+            bool hasMissingRef = false;
             for (int i = 0; i < issues.Count; i++)
             {
                 sb.AppendLine($"- [{issues[i].Level}] {issues[i].Path}: {issues[i].Message}");
+                if (issues[i].Path.Contains("SDKConfigs[") || issues[i].Path.Contains("KitConfigs[")) hasMissingRef = true;
             }
-            EditorUtility.DisplayDialog("导出校验失败", sb.ToString(), "知道了");
+
+            if (hasMissingRef)
+            {
+                sb.AppendLine();
+                sb.AppendLine("上述「失效配置」的处理方式：重新打开 Config 窗口，在自动弹出的失效配置对话框中选择「清理（推荐）」移除空项；若某项需要启用，请先安装对应插件包，再在左树勾选后重新导出。");
+            }
+            return sb.ToString();
         }
 
         /// <summary>
@@ -89,7 +121,13 @@ namespace NovaFramework.Editor
                 "它们不会生效，也无法在面板里正常编辑。\n\n" +
                 "建议清理这些失效项，让配置保持干净；若选「暂不处理」，它们会保留，下次打开仍会再次提示。",
                 "清理（推荐）", "暂不处理");
-            if (clean) EditorUtil.Config.StructureGuard.CleanMissingPluginRefs(m_Master);
+            if (clean)
+            {
+                EditorUtil.Config.StructureGuard.CleanMissingPluginRefs(m_Master);
+                AssetDatabase.SaveAssetIfDirty(m_Master);
+                DestroyWorkingCopy();
+                RebuildWorkingCopy();
+            }
         }
     }
 }

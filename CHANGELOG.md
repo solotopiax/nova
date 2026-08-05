@@ -6,6 +6,20 @@
 
 ---
 
+## [0.6.6] - 2026-08-05
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.6]` 节。
+
+### Fixed
+
+- Config 导出新增 SDK / Kit 启用清单与当前坐标有效配置的完整性校验；已启用配置缺失或原类型无法确认时阻断，未启用失效残留降级为 Warning。
+- ConfigWindow 清理失效引用后立即保存并重建 WorkingCopy，避免旧副本回写复活已清理空槽位。
+
+### Changed
+
+- 发布 Framework `0.6.6`；纯 Warning 导出改为显式确认后继续。
+- `NovaSpark.cs` 固定 Framework `0.6.6`；BestHTTP `0.1.2`、EDM `1.2.188` 与 unity-mcp `v10.1.2` 保持当前最新版本。
+
 ## [0.6.5] - 2026-08-04
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.5]` 节。

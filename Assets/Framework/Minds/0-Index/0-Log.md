@@ -213,3 +213,6 @@ date: 2026-06-05
 
 ## [2026-07-16 16:32] direct-ingest | cur-session 直接入库 1 份
 入库 PAT-146（缓存 UniTask 完成结果保障启动重试），明确原始 UniTask 不可完成后重复消费、Preserve 只承诺完成后重复等待、并发等待需独立共享完成源与测试；关联 ADR-022，跳过 Inbox 中转；rebuild-index + keyword 已完成，既有 ADR-072 summary 超长待处理。
+
+## [2026-08-05 10:55] direct-ingest | $nova-obs 体检后补 6 份 GLO
+入库 6 份（GLO-10 YooAsset / GLO-11 HybridCLR / GLO-12 UniTask / GLO-13 ObjectPool / GLO-14 ReferencePool / GLO-15 Fsm，补充 lint data-gap-2.1 中的 6 项高频术语候选），编号自 GLO-09 续编，防重未命中；跳过 Inbox；rebuild-index + keyword 已收口。

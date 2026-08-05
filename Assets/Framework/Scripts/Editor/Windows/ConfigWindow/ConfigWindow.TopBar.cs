@@ -235,7 +235,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 导出入口：有未保存改动时提示先保存再导出（导出源为已落盘的配置资产）；
-        /// 先执行校验，存在 Error 级问题时弹校验对话框；
+        /// 先执行校验，存在 Error 级问题时阻断；仅有 Warning 时展示确认框并允许用户显式继续；
         /// 未设置导出目标 SO 时弹 SaveFilePanel 引导用户选择位置创建 ConfigRuntimeSO.asset；
         /// 通过后将数据写入目标 ConfigRuntimeSO，并将结果回写 m_Master.ExportTarget 持久化。
         /// </summary>
@@ -253,6 +253,7 @@ namespace NovaFramework.Editor
                 ShowValidationDialog(issues);
                 return;
             }
+            if (issues.Count > 0 && !ConfirmValidationWarnings(issues)) return;
 
             string assetPath;
             if (m_Master.ExportTarget == null)
