@@ -189,7 +189,33 @@ Step：
 版本检查本地与云端文件位置都非空时，该单文件会与热更资源目录合并进入同一上传计划。
 参数区不提供独立部署按钮，部署只由 Pipify Runner 执行该 Step 时触发。
 
-### 10. CDN 缓存清理
+### 10. CDN 白名单部署
+
+目标：
+
+- 使用当前激活 `ConfigMasterSO` 已配置的 OSS Endpoint、密钥与固定路径前缀
+- 在 Pipify Batch 中配置设备 ID、配置文件云端文件位置、三个 YooAsset 版本文件及其远端目录
+
+Step：
+
+- `cdn.whitelist.deploy`：显示名“白名单批量部署到 CDN”，分类“CDN”
+
+参数：
+
+- `DeviceIDs`：窗口标签为“配置文件-设备ID（每行一个设备ID）”，使用 3–8 行自适应 TextArea
+- `WhitelistRemoteFilePath`：窗口标签为“配置文件云端文件位置”；填写包含 `.json` 文件名的完整对象位置
+- `ManifestBytesLocalFilePath`：窗口标签为“版本文件(.bytes)-本地文件位置”
+- `ManifestHashLocalFilePath`：窗口标签为“版本文件(.hash)-本地文件位置”
+- `PackageVersionLocalFilePath`：窗口标签为“版本文件(.version)-本地文件位置”
+- `RemoteDirectory`：窗口标签为“版本文件云端目录位置”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示
+
+执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅覆盖上述六个参数，不回写
+`ConfigMasterSO`。设备 ID 按行解析，生成 `VersionsCheckWhiteList.json` 时统一去空、Trim 和去重；配置文件上传到
+`WhitelistRemoteFilePath` 指定的完整对象位置，`.bytes/.hash/.version` 三个文件上传到 `RemoteDirectory`。配置文件位置为空或非法时仅跳过
+配置文件，不回退到版本文件目录。五个路径支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`
+占位符。版本文件参数非法或任一实际上传失败时抛错并中断 Batch。
+
+### 11. CDN 缓存清理
 
 目标：
 

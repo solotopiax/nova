@@ -11,8 +11,8 @@
 
 仓库地址在工具栏配置、落盘 `ProjectSettings/Nova/PlugPalsRegistries.json`（该文件 `.gitignore` 不入库）：
 
-- 公网仓库：默认占位 `upm.solotopiax.com`，可在工具栏「公网仓库」输入框修改
-- 内网仓库：默认占位 `4874`，可在工具栏「内网仓库」输入框修改（清空后将不拉取内部云）
+- 配置文件不存在时，公网与内网输入框分别填入 `upm.solotopiax.com` 和 `4874` 默认地址。
+- 配置文件已存在时，两个输入框都严格采用存档 URL；空值也会保留，空地址表示不请求对应仓库。
 
 ## 文件拆分
 
@@ -41,7 +41,8 @@ public static void OpenInternalRegistry();
 
 ## 当前窗口职责
 
-- 分别调用 `EditorUtil.PlugPals.FetchRemotePackagesAsync(...)` 拉取外网仓库与内部云仓库数据。
+- 并发调用 `EditorUtil.PlugPals.FetchRemotePackagesAsync(...)` 拉取外网仓库与内部云仓库数据；任一仓库先返回时立即展示其列表，不等待另一侧完成。
+- 另一侧仍在加载时允许浏览已返回列表，但暂时禁用安装、升级、卸载和一键升级，避免依赖预检或 registry 清理使用不完整的仓库数据。
 - 调用 `EditorUtil.PlugPals.BuildDisplayEntries(...)` 组装本地/远端版本对比结果。
 - 提供搜索、分类筛选、内部云仓库筛选、已安装筛选。
 - 触发 `EditorUtil.PlugPals.InstallPackage(...)` / `UninstallPackage(...)`。

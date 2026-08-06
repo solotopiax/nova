@@ -41,6 +41,7 @@
      - `await assetManager.BootstrapAsync(ct)`
      - `await assetManager.LoadManifestAsync(null, ct)`
      - `m_HasAssetPatch = await assetManager.HasPatchAsync(null, ct)`
+     - 无补丁时调用 `CommitBootableVersion()`，确认当前启动范围可离线复用
 
 ### 3. OnUpdate：完成后写黑板并路由
 

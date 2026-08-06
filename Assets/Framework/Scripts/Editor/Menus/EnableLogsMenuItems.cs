@@ -55,37 +55,37 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 禁用所有日志宏菜单排序优先级。
         /// </summary>
-        private const int c_PriorityDisableAllLogs = 1040;
+        private const int c_PriorityDisableAllLogs = 1042;
 
         /// <summary>
         /// 开启所有日志宏菜单排序优先级。
         /// </summary>
-        private const int c_PriorityEnableAllLogs = 1041;
+        private const int c_PriorityEnableAllLogs = 1043;
 
         /// <summary>
         /// 开启 Debug 及以上级别日志宏菜单排序优先级。
         /// </summary>
-        private const int c_PriorityEnableDebugAndAboveLogs = 1042;
+        private const int c_PriorityEnableDebugAndAboveLogs = 1044;
 
         /// <summary>
         /// 开启 Info 及以上级别日志宏菜单排序优先级。
         /// </summary>
-        private const int c_PriorityEnableInfoAndAboveLogs = 1043;
+        private const int c_PriorityEnableInfoAndAboveLogs = 1045;
 
         /// <summary>
         /// 开启 Warning 及以上级别日志宏菜单排序优先级。
         /// </summary>
-        private const int c_PriorityEnableWarningAndAboveLogs = 1044;
+        private const int c_PriorityEnableWarningAndAboveLogs = 1046;
 
         /// <summary>
         /// 开启 Error 及以上级别日志宏菜单排序优先级。
         /// </summary>
-        private const int c_PriorityEnableErrorAndAboveLogs = 1045;
+        private const int c_PriorityEnableErrorAndAboveLogs = 1047;
 
         /// <summary>
         /// 开启 Fatal 及以上级别日志宏菜单排序优先级。
         /// </summary>
-        private const int c_PriorityEnableFatalAndAboveLogs = 1046;
+        private const int c_PriorityEnableFatalAndAboveLogs = 1048;
 
         /// <summary>
         /// 全局日志总开关宏。

@@ -12,9 +12,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 using IOPath = System.IO.Path;
@@ -26,6 +28,7 @@ namespace NovaFramework.Editor
         public static partial class CDN
         {
             private const int c_CloudflareBatchSize = 100;
+            private const string c_AssetCheckWhitelistFileName = "VersionsCheckWhiteList.json";
             private const string c_CloudflarePurgeUrlPrefix = "https://api.cloudflare.com/client/v4/zones/";
             private const string c_CloudflarePurgeUrlSuffix = "/purge_cache";
 
@@ -309,6 +312,175 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 构建启动白名单配置和三个 YooAsset 版本文件的独立上传计划。
+            /// </summary>
+            /// <param name="config">当前维度生效的 CDN 编辑配置。</param>
+            /// <param name="projectRoot">Unity 项目根绝对路径。</param>
+            /// <param name="generatedWhitelistFilePath">已生成的白名单 JSON 临时文件绝对路径。</param>
+            /// <param name="platform">当前平台。</param>
+            /// <param name="channel">当前渠道。</param>
+            /// <param name="package">YooAsset 默认资源包名。</param>
+            /// <param name="version">应用版本。</param>
+            /// <returns>三个版本文件，以及配置目录有效时追加的白名单配置上传项。</returns>
+            internal static IReadOnlyList<OssUploadItem> BuildAssetCheckWhitelistUploadPlan(
+                CDNEditorConfigs config,
+                string projectRoot,
+                string generatedWhitelistFilePath,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version)
+            {
+                if (config == null) throw new ArgumentNullException(nameof(config));
+                if (string.IsNullOrWhiteSpace(projectRoot))
+                    throw new ArgumentException("项目根目录不能为空。", nameof(projectRoot));
+                string normalizedRoot = IOPath.GetFullPath(projectRoot);
+                string versionRemoteDirectory = ResolvePathPlaceholders(
+                    config.AssetCheckVersionRemoteDirectory,
+                    platform,
+                    channel,
+                    package,
+                    version);
+                OssLocation location = ParseOssLocation(config.PresetOSSPath);
+                var plan = new List<OssUploadItem>();
+                if (TryResolveAssetCheckWhitelistRemoteFilePath(
+                        config.AssetCheckWhitelistRemoteFilePath,
+                        platform,
+                        channel,
+                        package,
+                        version,
+                        out string whitelistRemoteFilePath))
+                {
+                    if (string.IsNullOrWhiteSpace(generatedWhitelistFilePath) || !File.Exists(generatedWhitelistFilePath))
+                        throw new ArgumentException("白名单配置临时文件不存在。", nameof(generatedWhitelistFilePath));
+                    plan.Add(new OssUploadItem(
+                        IOPath.GetFullPath(generatedWhitelistFilePath),
+                        CombineObjectKey(location.Prefix, string.Empty, whitelistRemoteFilePath)));
+                }
+
+                AddAssetCheckVersionFile(
+                    plan,
+                    normalizedRoot,
+                    location.Prefix,
+                    versionRemoteDirectory,
+                    config.AssetCheckManifestBytesLocalFilePath,
+                    ".bytes",
+                    platform,
+                    channel,
+                    package,
+                    version);
+                AddAssetCheckVersionFile(
+                    plan,
+                    normalizedRoot,
+                    location.Prefix,
+                    versionRemoteDirectory,
+                    config.AssetCheckManifestHashLocalFilePath,
+                    ".hash",
+                    platform,
+                    channel,
+                    package,
+                    version);
+                AddAssetCheckVersionFile(
+                    plan,
+                    normalizedRoot,
+                    location.Prefix,
+                    versionRemoteDirectory,
+                    config.AssetCheckPackageVersionLocalFilePath,
+                    ".version",
+                    platform,
+                    channel,
+                    package,
+                    version);
+                return plan;
+            }
+
+            /// <summary>
+            /// 解析配置文件远端文件位置；空值、非 JSON 文件、绝对 URI、查询片段或父级路径均视为不可上传。
+            /// </summary>
+            private static bool TryResolveAssetCheckWhitelistRemoteFilePath(
+                string template,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version,
+                out string remoteFilePath)
+            {
+                remoteFilePath = ResolvePathPlaceholders(template, platform, channel, package, version)?.Trim();
+                if (string.IsNullOrEmpty(remoteFilePath) ||
+                    Uri.TryCreate(remoteFilePath, UriKind.Absolute, out _) ||
+                    remoteFilePath.IndexOfAny(new[] { '?', '#' }) >= 0 ||
+                    !string.Equals(IOPath.GetExtension(remoteFilePath), ".json", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                string[] segments = remoteFilePath
+                    .Replace('\\', '/')
+                    .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                return segments.Length > 0 && segments.All(segment => segment != "." && segment != "..");
+            }
+
+            /// <summary>
+            /// 将设备 ID 列表清理为空白去除、空项过滤和首次出现顺序去重后的 JSON 字符串数组。
+            /// </summary>
+            /// <param name="deviceIDs">界面配置的原始设备 ID 列表。</param>
+            /// <returns>可直接写入 VersionsCheckWhiteList.json 的 JSON。</returns>
+            internal static string SerializeAssetCheckWhitelist(IReadOnlyList<string> deviceIDs)
+            {
+                if (deviceIDs == null) throw new ArgumentNullException(nameof(deviceIDs));
+                var normalized = new List<string>();
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+                foreach (string raw in deviceIDs)
+                {
+                    string value = raw?.Trim();
+                    if (string.IsNullOrEmpty(value) || !seen.Add(value)) continue;
+                    normalized.Add(value);
+                }
+
+                if (normalized.Count == 0)
+                    throw new ArgumentException("白名单设备 ID 至少需要配置一项。", nameof(deviceIDs));
+                return JsonConvert.SerializeObject(normalized, Formatting.Indented);
+            }
+
+            /// <summary>
+            /// 创建仅供本次上传使用的白名单 JSON 临时文件。
+            /// </summary>
+            /// <param name="deviceIDs">界面配置的设备 ID 列表。</param>
+            /// <returns>白名单临时文件绝对路径。</returns>
+            internal static string CreateAssetCheckWhitelistTempFile(IReadOnlyList<string> deviceIDs)
+            {
+                string json = SerializeAssetCheckWhitelist(deviceIDs);
+                string directory = IOPath.Combine(
+                    IOPath.GetTempPath(),
+                    "Nova",
+                    "AssetCheckWhitelist",
+                    Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(directory);
+                string path = IOPath.Combine(directory, c_AssetCheckWhitelistFileName);
+                File.WriteAllText(path, json, new UTF8Encoding(false));
+                return path;
+            }
+
+            /// <summary>
+            /// 删除白名单临时文件所在的本次部署目录；清理失败不遮蔽原部署结果。
+            /// </summary>
+            /// <param name="filePath">白名单临时文件绝对路径。</param>
+            internal static void DeleteAssetCheckWhitelistTempFile(string filePath)
+            {
+                if (string.IsNullOrWhiteSpace(filePath)) return;
+                try
+                {
+                    string directory = IOPath.GetDirectoryName(filePath);
+                    if (!string.IsNullOrEmpty(directory) && Directory.Exists(directory))
+                        Directory.Delete(directory, true);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[CDN] 清理白名单部署临时目录失败：{exception.Message}");
+                }
+            }
+
+            /// <summary>
             /// 解析英文逗号、分号或换行分隔的 Cloudflare 缓存 URL，并按首次出现顺序去重。
             /// </summary>
             /// <param name="value">缓存 URL 文本。</param>
@@ -497,6 +669,54 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 使用注入的单文件执行器顺序上传白名单配置及三个 YooAsset 版本文件。
+            /// </summary>
+            internal static async UniTask<int> DeployAssetCheckWhitelistAsync(
+                CDNEditorConfigs config,
+                string projectRoot,
+                string generatedWhitelistFilePath,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version,
+                Func<OssUploadItem, UniTask> uploadAsync,
+                Action<int, int, string> onProgress)
+            {
+                ValidateOssConfig(config);
+                if (uploadAsync == null) throw new ArgumentNullException(nameof(uploadAsync));
+
+                IReadOnlyList<OssUploadItem> plan = BuildAssetCheckWhitelistUploadPlan(
+                    config,
+                    projectRoot,
+                    generatedWhitelistFilePath,
+                    platform,
+                    channel,
+                    package,
+                    version);
+                if (plan.Count == 0) return 0;
+                onProgress?.Invoke(0, plan.Count, plan[0].LocalPath);
+
+                for (int index = 0; index < plan.Count; index++)
+                {
+                    OssUploadItem item = plan[index];
+                    try
+                    {
+                        await uploadAsync(item);
+                    }
+                    catch (Exception exception)
+                    {
+                        string detail = RedactSecrets(exception.Message, config.AccessKeySecret, config.Token);
+                        throw new InvalidOperationException(
+                            $"白名单部署失败：{item.LocalPath} -> {item.ObjectKey}。{detail}");
+                    }
+
+                    onProgress?.Invoke(index + 1, plan.Count, item.LocalPath);
+                }
+
+                return plan.Count;
+            }
+
+            /// <summary>
             /// 使用注入的批请求执行器顺序清理 Cloudflare 缓存，供实际 HTTP 适配器与测试共用。
             /// </summary>
             /// <param name="config">CDN 编辑态配置。</param>
@@ -555,6 +775,43 @@ namespace NovaFramework.Editor
                     throw new ArgumentException("AccessKeyID 不能为空。", nameof(config));
                 if (string.IsNullOrWhiteSpace(config.AccessKeySecret))
                     throw new ArgumentException("AccessKeySecret 不能为空。", nameof(config));
+            }
+
+            /// <summary>
+            /// 校验并追加一个项目内 YooAsset 版本文件到白名单上传计划。
+            /// </summary>
+            private static void AddAssetCheckVersionFile(
+                ICollection<OssUploadItem> plan,
+                string projectRoot,
+                string remotePrefix,
+                string remoteDirectory,
+                string localPathTemplate,
+                string expectedExtension,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version)
+            {
+                string relativePath = ResolvePathPlaceholders(
+                    localPathTemplate,
+                    platform,
+                    channel,
+                    package,
+                    version);
+                if (string.IsNullOrWhiteSpace(relativePath))
+                    throw new ArgumentException($"版本文件({expectedExtension})本地文件位置不能为空。", nameof(localPathTemplate));
+
+                string fullPath = IOPath.GetFullPath(IOPath.Combine(projectRoot, relativePath));
+                if (!IsPathInsideRoot(fullPath, projectRoot))
+                    throw new ArgumentException($"版本文件({expectedExtension})必须位于 Unity 项目根目录内。", nameof(localPathTemplate));
+                if (!File.Exists(fullPath))
+                    throw new ArgumentException($"版本文件({expectedExtension})不存在：{relativePath}", nameof(localPathTemplate));
+                if (!string.Equals(IOPath.GetExtension(fullPath), expectedExtension, StringComparison.OrdinalIgnoreCase))
+                    throw new ArgumentException($"版本文件扩展名必须为 {expectedExtension}：{relativePath}", nameof(localPathTemplate));
+
+                plan.Add(new OssUploadItem(
+                    fullPath,
+                    CombineObjectKey(remotePrefix, remoteDirectory, IOPath.GetFileName(fullPath))));
             }
 
             /// <summary>

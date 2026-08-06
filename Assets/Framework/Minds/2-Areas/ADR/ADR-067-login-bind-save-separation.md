@@ -8,6 +8,11 @@ date: 2026-07-02
 source: cur-session
 aliases:
   - ADR-067-login-bind-save-separation
+keywords:
+  - ADR-067
+  - 登录绑定分离
+  - 云存档职责
+  - GameBind
 tags: [adr, nova, arch, module, network]
 supersedes: []
 superseded-by: []

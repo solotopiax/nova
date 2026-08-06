@@ -13,7 +13,8 @@ Best HTTP 3.0.18 与 Best TLS Security 3.0.5 在商业库内部采集请求生�
 - Network Inspector 的 HTTP 区域提供“启用 BestHTTP 网络埋点”，默认开启。
 - 仅检测到包含 `Best.HTTP.Telemetry.BestHttpTelemetry` 的商业库时可编辑；其他情况下置灰且不可点击。
 - 开关关闭后，新事件不缓存、不派发，并清空尚未上报的启动期缓存。
-- 适配包在 `AfterAssembliesLoaded` 自动注册，不要求业务写初始化代码。
+- 适配包在 `AfterAssembliesLoaded` 同步注册 sink 和启动缓存入口，不要求业务写初始化代码。
+- SDK 就绪监听延后到 `BeforeSceneLoad` 启动，确保 UniTask 已完成 PlayerLoop 注入；两个阶段之间的事件仍进入启动缓存。
 - SDK 尚未初始化时最多缓存 128 条事件，满载淘汰最旧事件；SDK 就绪后按 FIFO 派发。
 - 每个插件获得独立属性字典，插件修改参数不会污染其他插件。
 

@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -21,6 +22,7 @@ namespace NovaFramework.Editor
     internal sealed partial class ConfigWindow : EditorWindow
     {
         private const float c_CdnLabelWidth = 150f;
+        private const float c_CdnWhitelistLabelWidth = 210f;
         private const float c_CdnSelectButtonWidth = 60f;
         private const float c_CdnCreateButtonWidth = 60f;
         private const float c_CdnOpenButtonWidth = 90f;
@@ -90,6 +92,50 @@ namespace NovaFramework.Editor
             DrawCdnRemoteDirectoryRow(resolved, workingSrc, curCoord);
             DrawCdnHotfixResourcePathHelp();
             DrawCdnWideButton("批量部署到 CDN", m_IsCdnDeploying, OnDeployCdn);
+
+            EditorUtil.Draw.Space(12f);
+            EditorUtil.Draw.Line();
+            EditorUtil.Draw.Space(12f);
+
+            DrawCdnSectionTitle("白名单部署");
+            DrawCdnAssetCheckWhitelistDeviceIDs(resolved, workingSrc, curCoord);
+            DrawCdnAssetCheckRemoteDirectoryRow(
+                "配置文件-云端文件位置",
+                resolved.PresetOSSPath,
+                resolved.AssetCheckWhitelistRemoteFilePath,
+                workingSrc,
+                curCoord,
+                (cfg, value) => cfg.AssetCheckWhitelistRemoteFilePath = value);
+            DrawCdnAssetCheckLocalFileRow(
+                "版本文件(.bytes)-本地文件位置",
+                resolved.AssetCheckManifestBytesLocalFilePath,
+                ".bytes",
+                workingSrc,
+                curCoord,
+                (cfg, value) => cfg.AssetCheckManifestBytesLocalFilePath = value);
+            DrawCdnAssetCheckLocalFileRow(
+                "版本文件(.hash)-本地文件位置",
+                resolved.AssetCheckManifestHashLocalFilePath,
+                ".hash",
+                workingSrc,
+                curCoord,
+                (cfg, value) => cfg.AssetCheckManifestHashLocalFilePath = value);
+            DrawCdnAssetCheckLocalFileRow(
+                "版本文件(.version)-本地文件位置",
+                resolved.AssetCheckPackageVersionLocalFilePath,
+                ".version",
+                workingSrc,
+                curCoord,
+                (cfg, value) => cfg.AssetCheckPackageVersionLocalFilePath = value);
+            DrawCdnAssetCheckRemoteDirectoryRow(
+                "版本文件-云端目录位置",
+                resolved.PresetOSSPath,
+                resolved.AssetCheckVersionRemoteDirectory,
+                workingSrc,
+                curCoord,
+                (cfg, value) => cfg.AssetCheckVersionRemoteDirectory = value);
+            DrawCdnAssetCheckWhitelistHelp();
+            DrawCdnWideButton("批量部署到CDN", m_IsCdnWhitelistDeploying, OnDeployCdnWhitelist);
 
             EditorUtil.Draw.Space(12f);
             EditorUtil.Draw.Line();
@@ -177,6 +223,34 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 将白名单设备 ID 字符串数组按当前维度坐标写入 WorkingCopy，并保持列表引用互相独立。
+        /// </summary>
+        private void CommitCdnWhitelistDeviceIDs(
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord,
+            IReadOnlyList<string> values)
+        {
+            List<string> snapshot = values != null ? new List<string>(values) : new List<string>();
+            if (workingSrc.CDNEditorConfigsMask.IsGlobal)
+            {
+                workingSrc.CDNEditorConfigs ??= new CDNEditorConfigs();
+                workingSrc.CDNEditorConfigs.AssetCheckWhitelistDeviceIDs = snapshot;
+            }
+            else
+            {
+                CDNEditorConfigsOverride entry = EditorUtil.Config.DimensionProjector.EnsureCDNEditorConfigsOverrideAtCoord(workingSrc, curCoord);
+                if (entry != null)
+                {
+                    entry.Config ??= new CDNEditorConfigs();
+                    entry.Config.AssetCheckWhitelistDeviceIDs = snapshot;
+                }
+            }
+
+            m_IsDirty = true;
+            EditorUtility.SetDirty(workingSrc);
+        }
+
+        /// <summary>
         /// 绘制 CDN 面板分区标题。
         /// </summary>
         /// <param name="title">分区标题。</param>
@@ -232,6 +306,173 @@ namespace NovaFramework.Editor
                     "(2) 本地目录位置和云端目录位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符",
                     "(3) {Platform}=当前平台；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名；{Version}=Application.version",
                 }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(8f);
+        }
+
+        /// <summary>
+        /// 绘制白名单部署用途、文件组成与远端目录说明。
+        /// </summary>
+        private static void DrawCdnAssetCheckWhitelistHelp()
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1) 用于部署启动资源校验白名单：命中设备会改用本目录中的三个 YooAsset 版本文件完成版本检查",
+                    "(2) 设备 ID 将去除空项、首尾空白并去重，生成 VersionsCheckWhiteList.json 字符串数组",
+                    "(3) 配置文件上传到「PresetOSSPath + 配置文件云端文件位置」；文件位置为空或非法时不上传配置文件",
+                    "(4) .bytes/.hash/.version 文件上传到「PresetOSSPath + 版本文件云端目录位置」",
+                    "(5) 本地文件位置和云端目录位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符",
+                }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(8f);
+        }
+
+        /// <summary>
+        /// 以可增删的字符串数组绘制 VersionsCheckWhiteList.json 设备 ID 内容。
+        /// </summary>
+        private void DrawCdnAssetCheckWhitelistDeviceIDs(
+            CDNEditorConfigs resolved,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord)
+        {
+            List<string> values = resolved.AssetCheckWhitelistDeviceIDs != null
+                ? new List<string>(resolved.AssetCheckWhitelistDeviceIDs)
+                : new List<string>();
+            bool changed = false;
+            int removeIndex = -1;
+
+            if (values.Count == 0)
+            {
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    EditorUtil.Draw.Space(16f);
+                    EditorUtil.Draw.Label("配置文件-设备ID（字符串数组）", false, GUILayout.Width(c_CdnWhitelistLabelWidth));
+                    EditorUtil.Draw.Label("暂无设备 ID", m_DescStyle, false);
+                    EditorUtil.Draw.Space(16f);
+                });
+                EditorUtil.Draw.Space(4f);
+            }
+
+            for (int index = 0; index < values.Count; index++)
+            {
+                int capturedIndex = index;
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    EditorUtil.Draw.Space(16f);
+                    EditorUtil.Draw.Label(
+                        capturedIndex == 0 ? "配置文件-设备ID（字符串数组）" : string.Empty,
+                        false,
+                        GUILayout.Width(c_CdnWhitelistLabelWidth));
+                    EditorGUI.BeginChangeCheck();
+                    string edited = EditorUtil.Draw.TextField(values[capturedIndex] ?? string.Empty, false, GUILayout.ExpandWidth(true));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        values[capturedIndex] = edited;
+                        changed = true;
+                    }
+                    EditorUtil.Draw.Button(
+                        "删除",
+                        false,
+                        false,
+                        () => removeIndex = capturedIndex,
+                        GUILayout.Width(c_CdnSelectButtonWidth));
+                    EditorUtil.Draw.Space(16f);
+                });
+                EditorUtil.Draw.Space(4f);
+            }
+
+            if (removeIndex >= 0)
+            {
+                values.RemoveAt(removeIndex);
+                changed = true;
+            }
+
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f + c_CdnWhitelistLabelWidth);
+                EditorUtil.Draw.Button(
+                    "添加设备 ID",
+                    false,
+                    () =>
+                    {
+                        values.Add(string.Empty);
+                        CommitCdnWhitelistDeviceIDs(workingSrc, curCoord, values);
+                        GUI.FocusControl(null);
+                    },
+                    GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(4f);
+
+            if (changed)
+                CommitCdnWhitelistDeviceIDs(workingSrc, curCoord, values);
+        }
+
+        /// <summary>
+        /// 绘制一个白名单版本文件本地位置，并提供选择和打开文件夹入口。
+        /// </summary>
+        private void DrawCdnAssetCheckLocalFileRow(
+            string label,
+            string committedValue,
+            string extension,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord,
+            Action<CDNEditorConfigs, string> assign)
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Label(label, false, GUILayout.Width(c_CdnWhitelistLabelWidth));
+                EditorGUI.BeginChangeCheck();
+                string edited = EditorUtil.Draw.TextField(committedValue, false, GUILayout.ExpandWidth(true));
+                if (EditorGUI.EndChangeCheck() && edited != committedValue)
+                    CommitCdnField(workingSrc, curCoord, edited, assign);
+                EditorUtil.Draw.Button(
+                    "选择",
+                    false,
+                    () => SelectCdnAssetCheckLocalFile(committedValue, extension, workingSrc, curCoord, assign),
+                    GUILayout.Width(c_CdnSelectButtonWidth));
+                EditorUtil.Draw.Button(
+                    "打开文件夹",
+                    false,
+                    () => OpenCdnVersionCheckLocalFileDirectory(committedValue, curCoord.Platform, curCoord.Channel),
+                    GUILayout.Width(c_CdnOpenButtonWidth));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(4f);
+        }
+
+        /// <summary>
+        /// 绘制白名单配置或版本文件使用的 OSS 云端目录。
+        /// </summary>
+        private void DrawCdnAssetCheckRemoteDirectoryRow(
+            string label,
+            string presetOssPath,
+            string committedValue,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord,
+            Action<CDNEditorConfigs, string> assign)
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Label(label, false, GUILayout.Width(c_CdnWhitelistLabelWidth));
+                EditorUtil.Draw.DisabledGroup(true, () =>
+                    EditorUtil.Draw.TextField(GetCdnPresetDisplay(presetOssPath), false, GUILayout.MinWidth(250f)));
+                EditorGUI.BeginChangeCheck();
+                string edited = EditorUtil.Draw.TextField(
+                    committedValue,
+                    false,
+                    GUILayout.ExpandWidth(true));
+                if (EditorGUI.EndChangeCheck() && edited != committedValue)
+                {
+                    CommitCdnField(workingSrc, curCoord, edited, assign);
+                }
                 EditorUtil.Draw.Space(16f);
             });
             EditorUtil.Draw.Space(8f);
@@ -630,6 +871,48 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 选择项目内指定扩展名的白名单版本文件，并按当前坐标写回工程根相对路径。
+        /// </summary>
+        private void SelectCdnAssetCheckLocalFile(
+            string currentValue,
+            string extension,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord,
+            Action<CDNEditorConfigs, string> assign)
+        {
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName;
+            if (string.IsNullOrEmpty(projectRoot)) return;
+
+            string initialDirectory = ResolveCdnLocalFileInitialDirectory(
+                projectRoot,
+                currentValue,
+                curCoord.Platform,
+                curCoord.Channel);
+            string selected = EditorUtility.OpenFilePanel(
+                $"选择 {extension} 版本文件",
+                initialDirectory,
+                extension.TrimStart('.'));
+            if (string.IsNullOrEmpty(selected)) return;
+
+            string normalizedRoot = IOPath.GetFullPath(projectRoot)
+                .TrimEnd(IOPath.DirectorySeparatorChar, IOPath.AltDirectorySeparatorChar)
+                + IOPath.DirectorySeparatorChar;
+            string normalizedSelected = IOPath.GetFullPath(selected);
+            if (!normalizedSelected.StartsWith(normalizedRoot, StringComparison.Ordinal))
+            {
+                Log.Warning(LogTag.Editor, "白名单版本文件必须位于 Unity 项目根目录内：{0}", selected);
+                return;
+            }
+
+            GUI.FocusControl(null);
+            CommitCdnField(
+                workingSrc,
+                curCoord,
+                EditorUtil.FileSystem.GetProjectRelativePath(normalizedSelected),
+                assign);
+        }
+
+        /// <summary>
         /// 解析版本检查本地文件位置，并在系统文件管理器中打开其所在目录。
         /// </summary>
         private static void OpenCdnVersionCheckLocalFileDirectory(
@@ -710,6 +993,15 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 启动白名单配置与三个 YooAsset 版本文件部署；重复点击在入口处直接忽略。
+        /// </summary>
+        private void OnDeployCdnWhitelist()
+        {
+            if (m_IsCdnWhitelistDeploying) return;
+            DeployCdnWhitelistAsync().Forget();
+        }
+
+        /// <summary>
         /// 执行阿里云 OSS 目录部署，并保证进度条和忙碌状态在成功或失败后恢复。
         /// </summary>
         private async UniTask DeployCdnAsync()
@@ -743,6 +1035,44 @@ namespace NovaFramework.Editor
             {
                 EditorUtility.ClearProgressBar();
                 m_IsCdnDeploying = false;
+                Repaint();
+            }
+        }
+
+        /// <summary>
+        /// 按配置分别部署白名单 JSON 与三个版本文件，完成后恢复进度条与忙碌状态。
+        /// </summary>
+        private async UniTask DeployCdnWhitelistAsync()
+        {
+            m_IsCdnWhitelistDeploying = true;
+            try
+            {
+                ConfigMasterSO source = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
+                if (source == null)
+                    throw new InvalidOperationException("未找到 CDN 白名单部署配置。");
+                CDNEditorConfigs config = CreateCdnConfigSnapshot();
+                string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
+                    ?? throw new InvalidOperationException("无法解析 Unity 项目根目录。");
+                int count = await EditorUtil.CDN.DeployAssetCheckWhitelistAsync(
+                    config,
+                    projectRoot,
+                    source.CurrentPlatform,
+                    source.CurrentChannel,
+                    (completed, total, path) => EditorUtility.DisplayProgressBar(
+                        "批量部署白名单到 CDN",
+                        $"{completed}/{total}  {path}",
+                        total > 0 ? completed / (float)total : 0f));
+                EditorUtility.DisplayDialog("部署完成", $"已成功上传 {count} 个白名单相关文件。", "知道了");
+            }
+            catch (Exception exception)
+            {
+                Log.Error(LogTag.Editor, $"[CDN] 白名单部署失败：{exception.Message}");
+                EditorUtility.DisplayDialog("部署失败", exception.Message, "知道了");
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+                m_IsCdnWhitelistDeploying = false;
                 Repaint();
             }
         }

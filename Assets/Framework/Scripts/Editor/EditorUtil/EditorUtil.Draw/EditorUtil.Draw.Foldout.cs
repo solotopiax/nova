@@ -48,6 +48,11 @@ namespace NovaFramework.Editor
             private const float c_FoldoutToggleWidth = 16f;
 
             /// <summary>
+            /// 标题后置 Toggle 与标题文字之间的间距。
+            /// </summary>
+            private const float c_FoldoutTitleToggleSpacing = 4f;
+
+            /// <summary>
             /// 统一绘制左对齐 Foldout 行；展开状态只改变箭头方向，不改变任何槽位坐标。
             /// </summary>
             /// <param name="displayName">标题。</param>
@@ -57,6 +62,7 @@ namespace NovaFramework.Editor
             /// <param name="newToggleValue">交互后的 Toggle 值。</param>
             /// <param name="toggleOnTitleClick">是否点击标题切换展开状态。</param>
             /// <param name="drawTrailingContent">右侧操作区。</param>
+            /// <param name="toggleAfterTitle">是否将 Toggle 紧跟在标题文字之后绘制。</param>
             /// <returns>交互后的展开状态。</returns>
             private static bool DrawFoldoutRow(
                 string displayName,
@@ -65,7 +71,8 @@ namespace NovaFramework.Editor
                 bool? toggleValue,
                 out bool newToggleValue,
                 bool toggleOnTitleClick,
-                Action drawTrailingContent)
+                Action drawTrailingContent,
+                bool toggleAfterTitle = false)
             {
                 bool nextExpanded = expanded;
                 bool nextToggleValue = toggleValue ?? false;
@@ -78,12 +85,26 @@ namespace NovaFramework.Editor
                     Rect arrowRect = new Rect(cursorX, row.y, c_FoldoutArrowWidth, row.height);
                     cursorX += c_FoldoutArrowWidth + c_FoldoutSpacing;
                     Rect toggleRect = default;
-                    if (toggleValue.HasValue)
+                    Rect combinedFoldoutRect = default;
+                    if (toggleValue.HasValue && !toggleAfterTitle)
                     {
                         toggleRect = new Rect(cursorX, row.y, c_FoldoutToggleWidth, row.height);
                         cursorX += c_FoldoutToggleWidth + c_FoldoutSpacing;
                     }
-                    Rect titleRect = new Rect(cursorX, row.y, Mathf.Max(0f, row.xMax - cursorX), row.height);
+                    float titleWidth = Mathf.Max(0f, row.xMax - cursorX);
+                    if (toggleValue.HasValue && toggleAfterTitle)
+                    {
+                        float foldoutWidth = Mathf.Min(
+                            EditorStyles.foldout.CalcSize(new GUIContent(displayName)).x,
+                            Mathf.Max(0f, row.width - c_FoldoutToggleWidth - c_FoldoutTitleToggleSpacing));
+                        combinedFoldoutRect = new Rect(row.x, row.y, foldoutWidth, row.height);
+                        toggleRect = new Rect(
+                            combinedFoldoutRect.xMax + c_FoldoutTitleToggleSpacing,
+                            row.y,
+                            c_FoldoutToggleWidth,
+                            row.height);
+                    }
+                    Rect titleRect = new Rect(cursorX, row.y, titleWidth, row.height);
 
                     int previousIndent = EditorGUI.indentLevel;
                     Color previousColor = GUI.contentColor;
@@ -91,12 +112,24 @@ namespace NovaFramework.Editor
                     try
                     {
                         GUI.contentColor = color;
-                        nextExpanded = EditorGUI.Foldout(
-                            arrowRect, expanded, GUIContent.none, false, EditorStyles.foldout);
-                        GUI.Label(titleRect, displayName, EditorStyles.label);
-                        if (toggleOnTitleClick && GUI.Button(titleRect, GUIContent.none, GUIStyle.none))
+                        if (toggleValue.HasValue && toggleAfterTitle)
                         {
-                            nextExpanded = !expanded;
+                            nextExpanded = EditorGUI.Foldout(
+                                combinedFoldoutRect,
+                                expanded,
+                                displayName,
+                                toggleOnTitleClick,
+                                EditorStyles.foldout);
+                        }
+                        else
+                        {
+                            nextExpanded = EditorGUI.Foldout(
+                                arrowRect, expanded, GUIContent.none, false, EditorStyles.foldout);
+                            GUI.Label(titleRect, displayName, EditorStyles.label);
+                            if (toggleOnTitleClick && GUI.Button(titleRect, GUIContent.none, GUIStyle.none))
+                            {
+                                nextExpanded = !expanded;
+                            }
                         }
 
                         if (toggleValue.HasValue)
@@ -226,7 +259,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 绘制“展开箭头、启用复选框、标题、右侧操作区”结构的彩色折叠标题行。
+            /// 绘制带启用复选框和右侧操作区的彩色折叠标题行。
             /// </summary>
             /// <param name="displayName">列表展示名称。</param>
             /// <param name="listName">折叠状态唯一标识。</param>
@@ -235,6 +268,7 @@ namespace NovaFramework.Editor
             /// <param name="newToggleValue">用户操作后的复选框值。</param>
             /// <param name="drawTrailingContent">绘制右侧独立操作控件。</param>
             /// <param name="defaultOpen">首次出现时是否默认展开。</param>
+            /// <param name="toggleAfterTitle">是否将 Toggle 紧跟在标题文字之后绘制；默认保持箭头、Toggle、标题顺序。</param>
             /// <returns>是否展开。</returns>
             public static bool ColoredToggleFoldoutHeader(
                 string displayName,
@@ -243,7 +277,8 @@ namespace NovaFramework.Editor
                 bool toggleValue,
                 out bool newToggleValue,
                 Action drawTrailingContent,
-                bool defaultOpen = false)
+                bool defaultOpen = false,
+                bool toggleAfterTitle = false)
             {
                 listName ??= displayName;
                 if (defaultOpen && m_DefaultOpenInitialized.Add(listName))
@@ -253,7 +288,7 @@ namespace NovaFramework.Editor
 
                 bool currentState = DrawFoldoutRow(
                     displayName, m_OpenedItems.Contains(listName), color,
-                    toggleValue, out newToggleValue, true, drawTrailingContent);
+                    toggleValue, out newToggleValue, true, drawTrailingContent, toggleAfterTitle);
                 return SetCachedFoldoutState(listName, currentState);
             }
 

@@ -9,7 +9,9 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace NovaFramework.Editor
 {
@@ -58,6 +60,37 @@ namespace NovaFramework.Editor
         /// 拼接在固定 OSS 前缀后的可编辑远端目录后缀；支持 {Platform}、{Channel}、{Package}、{Version} 占位符。
         /// </summary>
         public string RemotePathSuffix;
+
+        /// <summary>
+        /// 启动资源校验白名单中的稳定设备 ID；部署时生成 VersionsCheckWhiteList.json 字符串数组。
+        /// </summary>
+        public List<string> AssetCheckWhitelistDeviceIDs = new();
+
+        /// <summary>
+        /// VersionsCheckWhiteList.json 上传到的 OSS 远端文件位置。
+        /// </summary>
+        [FormerlySerializedAs("AssetCheckWhitelistRemoteDirectory")]
+        public string AssetCheckWhitelistRemoteFilePath;
+
+        /// <summary>
+        /// 项目根相对的 YooAsset Manifest 二进制版本文件位置（.bytes）。
+        /// </summary>
+        public string AssetCheckManifestBytesLocalFilePath;
+
+        /// <summary>
+        /// 项目根相对的 YooAsset Manifest 哈希版本文件位置（.hash）。
+        /// </summary>
+        public string AssetCheckManifestHashLocalFilePath;
+
+        /// <summary>
+        /// 项目根相对的 YooAsset 包版本文件位置（.version）。
+        /// </summary>
+        public string AssetCheckPackageVersionLocalFilePath;
+
+        /// <summary>
+        /// 三个 YooAsset 版本文件上传到的 OSS 远端目录后缀。
+        /// </summary>
+        public string AssetCheckVersionRemoteDirectory;
 
         /// <summary>
         /// Cloudflare Zone ID。

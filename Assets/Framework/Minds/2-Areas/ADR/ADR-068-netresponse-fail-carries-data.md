@@ -8,6 +8,11 @@ date: 2026-07-03
 source: cur-session
 aliases:
   - ADR-068-netresponse-fail-carries-data
+keywords:
+  - ADR-068
+  - NetResponse
+  - 失败响应业务体
+  - BusinessData
 tags: [adr, nova, runtime, network]
 supersedes: []
 superseded-by: []

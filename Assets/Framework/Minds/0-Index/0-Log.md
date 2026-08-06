@@ -216,3 +216,6 @@ date: 2026-06-05
 
 ## [2026-08-05 10:55] direct-ingest | $nova-obs 体检后补 6 份 GLO
 入库 6 份（GLO-10 YooAsset / GLO-11 HybridCLR / GLO-12 UniTask / GLO-13 ObjectPool / GLO-14 ReferencePool / GLO-15 Fsm，补充 lint data-gap-2.1 中的 6 项高频术语候选），编号自 GLO-09 续编，防重未命中；跳过 Inbox；rebuild-index + keyword 已收口。
+
+## [2026-08-05 17:34] direct-ingest | PAT-150 Editor 多仓库渐进加载与变更就绪门
+入库 PAT-150（editor），沉淀多仓库并发请求、按完成顺序渐进展示、半份数据期间禁用变更操作、保存时取消旧请求，以及“无存档填默认 / 有存档保留空值”的配置语义；双链关联 PAT-18、ADR-064 与 MOC-Inspector，跳过 Inbox，rebuild-index + keyword 已收口。

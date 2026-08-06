@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-06
+
+### Changed
+
+- `coreVersion` 与 `com.unity.purchasing` 依赖同步为 `5.3.1`。
+
 ## [0.1.2] - 2026-07-31
 
 ### Fixed

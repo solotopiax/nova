@@ -57,5 +57,10 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         /// 请求头声明的 OpenID 不属于当前 UID，需修正或清空请求头 OpenID 后重试。
         /// </summary>
         public const int ErrOpenidUIDMismatch = 10407;
+
+        /// <summary>
+        /// 当前 UID 已绑定其他 OpenID，不能再绑定本次请求中的目标 OpenID。
+        /// </summary>
+        public const int ErrUIDAlreadyBoundOtherOpenID = 10408;
     }
 }

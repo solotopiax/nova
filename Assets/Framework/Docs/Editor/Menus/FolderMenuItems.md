@@ -41,7 +41,7 @@ namespace NovaFramework.Editor
 | `c_MenuOpenFolderCachingWritingPath` | `"Nova/Open Folder/Caching Writing Path"` | 菜单路径 |
 | `c_MenuOpenFolderTemporaryCachePath` | `"Nova/Open Folder/Temporary Cache Path"` | 菜单路径 |
 | `c_PriorityOpenIdeProject` | `1010` | 排序优先级 |
-| `c_PriorityOpenFolder*` | `1020–1026` | 排序优先级（Data Path 1020 起逐项 +1） |
+| `c_PriorityOpenFolder*` | `1021–1027` | 排序优先级（Data Path 1021 起逐项 +1） |
 
 ---
 

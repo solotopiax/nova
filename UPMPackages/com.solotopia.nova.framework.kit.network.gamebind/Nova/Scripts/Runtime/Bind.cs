@@ -5,7 +5,7 @@
  * filename:  Bind.cs
  * author:    taoye
  * created:   2026/7/2
- * descrip:   账号绑定业务网络 Service，封装绑定/冲突查询/裁决协议
+ * descrip:   账号绑定业务网络 Service，封装绑定状态查询/绑定/冲突查询/裁决协议
  ***************************************************************/
 
 using System;
@@ -17,7 +17,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
 {
     /// <summary>
     /// 账号绑定业务网络 Service。
-    /// 封装绑定、冲突查询、裁决三段协议的发送逻辑，通过 NetService.SendAsync 完成 Protobuf 序列化、AES 加密、HTTP 请求及解析全流程。
+    /// 封装绑定状态查询、绑定、冲突查询、裁决协议的发送逻辑，通过 NetService.SendAsync 完成 Protobuf 序列化、AES 加密、HTTP 请求及解析全流程。
     /// 只负责账号归属裁决（open_id 绑哪个 uid、冲突时谁为主），不处理存档数据覆盖——数据流向由业务层配合 GameSave 模块编排。
     /// 身份统一由请求 Header.Uid（即 NetService.UID，当前登录态）识别，业务侧无需传 uid；绑定前提是已登录。
     /// 通过 Nova.Network.Kit<Bind>() 获取实例，不继承任何基类，无参构造即可使用。
@@ -75,6 +75,20 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
                 TrackBindException(provider, stopwatch.ElapsedMilliseconds);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// 查询指定 OpenID 是否已经绑定账号。
+        /// 查询只读取服务端绑定状态，不修改当前 <see cref="NetService"/> 身份；指令名取自
+        /// <see cref="BindKitConfig.BindingQueryCmdName"/>。
+        /// </summary>
+        /// <param name="openid">要查询的第三方账号唯一标识。</param>
+        /// <returns>包含绑定状态及已绑定 UID 的网络响应；未绑定时 UID 为空。</returns>
+        public async UniTask<NetResponse<PbNetBindingQueryResp>> QueryBindingAsync(string openid)
+        {
+            BindKitConfig config = ResolveConfig();
+            return await SendQueryBindingAsync(
+                Nova.Network.ResolveNetCmdRow(config.BindingQueryCmdName), openid);
         }
 
         /// <summary>

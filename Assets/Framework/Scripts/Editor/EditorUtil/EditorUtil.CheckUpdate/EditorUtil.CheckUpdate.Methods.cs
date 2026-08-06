@@ -112,6 +112,11 @@ namespace NovaFramework.Editor
             /// </summary>
             private static async Task<List<UpdateInfo>> CheckRepoAsync(string registryUrl)
             {
+                if (string.IsNullOrEmpty(registryUrl))
+                {
+                    return new List<UpdateInfo>();
+                }
+
                 try
                 {
                     PlugPals.VerdaccioPackageInfo[] remotePackages = await PlugPals.FetchRemotePackagesAsync(registryUrl, PlugPals.c_RegistryApiPath, CancellationToken.None);

@@ -15,6 +15,7 @@
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `BindCmdName` | `string` | 绑定协议的 NetCmd 指令名（如 `GameAccountBind`），`BindAsync` 使用 |
+| `BindingQueryCmdName` | `string` | 绑定状态查询协议的 NetCmd 指令名（`GameAccountBindingQuery`），`QueryBindingAsync` 使用 |
 | `BindConflictCmdName` | `string` | 冲突查询协议的 NetCmd 指令名（如 `GameAccountBindConflict`），`QueryConflictAsync` 使用 |
 | `BindResolveCmdName` | `string` | 裁决协议的 NetCmd 指令名（如 `GameAccountBindResolve`），`ResolveAsync` 使用 |
 | `DisplayName` | `string` | ConfigWindow 左树展示名称，固定为 `"Bind 账号绑定"` |
@@ -24,8 +25,8 @@
 ## 3. 使用说明
 
 1. 在 ConfigWindow → Kit 配置 面板中找到 `Bind 账号绑定` 条目（由 KitConfigScanner 自动扫描注册）。
-2. 填写三个 CmdName，与服务端约定的 NetCmd 指令名保持一致。
-3. 启用后，`Nova.Network.Kit<Bind>()` 取得的实例即可直接调用三个入口，无需业务侧手传 cmdName。
+2. 填写四个 CmdName，与服务端约定的 NetCmd 指令名保持一致；其中 `BindingQueryCmdName` 配置为 `GameAccountBindingQuery`。
+3. 启用后，`Nova.Network.Kit<Bind>()` 取得的实例即可直接调用四个入口，无需业务侧手传 cmdName。
 
 ---
 

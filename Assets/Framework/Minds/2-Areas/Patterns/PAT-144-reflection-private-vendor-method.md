@@ -9,6 +9,11 @@ date: 2026-07-07
 source: cur-session
 aliases:
   - PAT-144-reflection-private-vendor-method
+keywords:
+  - PAT-144
+  - 厂商私有方法
+  - 反射兜底
+  - SDK升级复核
 tags: [pattern, module, sdk, vendor, reflection]
 related: []
 ---

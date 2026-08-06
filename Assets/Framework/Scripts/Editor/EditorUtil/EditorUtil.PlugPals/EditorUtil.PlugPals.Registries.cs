@@ -66,7 +66,7 @@ namespace NovaFramework.Editor
                 public string externalName;
 
                 /// <summary>
-                /// 内部云 registry 根地址（空白时回退默认 4874）。
+                /// 内部云 registry 根地址；存档中为空表示不请求内部云。
                 /// </summary>
                 public string internalUrl;
 
@@ -77,25 +77,28 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 读取 registry 配置；文件缺失或字段空时回退默认（公网 upm.solotopiax.com、内部云内网地址）。
+            /// 读取 registry 配置；文件缺失或解析失败时使用默认地址，已有存档时保留其中的空 URL。
             /// </summary>
             public static RegistriesConfig LoadRegistries()
             {
                 string path = GetRegistriesPath();
-                RegistriesConfig raw = null;
-                if (File.Exists(path))
+                if (!File.Exists(path))
                 {
-                    try
-                    {
-                        raw = JsonUtility.FromJson<RegistriesConfig>(File.ReadAllText(path));
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Warning(LogTag.Editor, "PlugPals.LoadRegistries 解析失败，回退默认: {0}", e.Message);
-                    }
+                    return NormalizeRegistries(null, false);
                 }
 
-                return NormalizeRegistries(raw);
+                try
+                {
+                    RegistriesConfig raw = JsonUtility.FromJson<RegistriesConfig>(File.ReadAllText(path));
+                    return raw == null
+                        ? NormalizeRegistries(null, false)
+                        : NormalizeRegistries(raw, true);
+                }
+                catch (Exception e)
+                {
+                    Log.Warning(LogTag.Editor, "PlugPals.LoadRegistries 解析失败，回退默认: {0}", e.Message);
+                    return NormalizeRegistries(null, false);
+                }
             }
 
             /// <summary>
@@ -103,7 +106,7 @@ namespace NovaFramework.Editor
             /// </summary>
             public static void SaveRegistries(RegistriesConfig config)
             {
-                RegistriesConfig normalized = NormalizeRegistries(config);
+                RegistriesConfig normalized = NormalizeRegistries(config, true);
                 string json = JsonUtility.ToJson(normalized, true);
                 string path = GetRegistriesPath();
                 string dir = System.IO.Path.GetDirectoryName(path);
@@ -137,9 +140,12 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 归一化配置：空白 externalUrl 回退默认公网地址、空白 internalUrl 回退默认内网地址，空 name 回退默认名。
+            /// 归一化 registry 配置：无存档时补默认 URL，有存档时保留空 URL；名称始终补默认值。
             /// </summary>
-            private static RegistriesConfig NormalizeRegistries(RegistriesConfig config)
+            /// <param name="config">待归一化的配置；可为空。</param>
+            /// <param name="hasPersistedConfig">是否已有存档；为 true 时空 URL 表示显式禁用对应仓库。</param>
+            /// <returns>完成裁剪和默认值处理后的配置。</returns>
+            private static RegistriesConfig NormalizeRegistries(RegistriesConfig config, bool hasPersistedConfig)
             {
                 string externalUrl = config?.externalUrl?.Trim();
                 string externalName = config?.externalName?.Trim();
@@ -148,9 +154,9 @@ namespace NovaFramework.Editor
 
                 return new RegistriesConfig
                 {
-                    externalUrl = string.IsNullOrEmpty(externalUrl) ? c_DefaultExternalUrl : externalUrl,
+                    externalUrl = hasPersistedConfig ? externalUrl ?? string.Empty : c_DefaultExternalUrl,
                     externalName = string.IsNullOrEmpty(externalName) ? c_DefaultExternalName : externalName,
-                    internalUrl = string.IsNullOrEmpty(internalUrl) ? c_DefaultInternalUrl : internalUrl,
+                    internalUrl = hasPersistedConfig ? internalUrl ?? string.Empty : c_DefaultInternalUrl,
                     internalName = string.IsNullOrEmpty(internalName) ? c_DefaultInternalName : internalName,
                 };
             }
@@ -161,9 +167,15 @@ namespace NovaFramework.Editor
                 return System.IO.Path.Combine(projectRoot, c_RegistriesRelPath);
             }
 
-            internal static RegistriesConfig NormalizeRegistriesForTest(RegistriesConfig config)
+            /// <summary>
+            /// 为 Editor 测试暴露 registry 归一化规则，不参与生产调用。
+            /// </summary>
+            /// <param name="config">待归一化的配置。</param>
+            /// <param name="hasPersistedConfig">是否已有存档。</param>
+            /// <returns>归一化后的配置。</returns>
+            internal static RegistriesConfig NormalizeRegistriesForTest(RegistriesConfig config, bool hasPersistedConfig)
             {
-                return NormalizeRegistries(config);
+                return NormalizeRegistries(config, hasPersistedConfig);
             }
         }
     }

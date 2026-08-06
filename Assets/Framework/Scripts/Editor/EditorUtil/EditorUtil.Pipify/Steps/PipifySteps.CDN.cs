@@ -5,10 +5,11 @@
  * filename:  PipifySteps.CDN.cs
  * author:    Codex
  * created:   2026/7/23
- * descrip:   Pipify 内置 Step 合集 —— CDN 资源部署与缓存清理
+ * descrip:   Pipify 内置 Step 合集 —— CDN 资源部署、白名单部署与缓存清理
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -17,11 +18,12 @@ using UnityEngine;
 namespace NovaFramework.Editor
 {
     /// <summary>
-    /// Pipify 内置 Step 合集（partial）：基于当前 Config 的 CDN 资源部署与缓存清理入口。
+    /// Pipify 内置 Step 合集（partial）：基于当前 Config 的 CDN 资源部署、白名单部署与缓存清理入口。
     /// </summary>
     internal static partial class PipifySteps
     {
         private const string c_CdnDeployDisplayName = "批量部署资源到 CDN";
+        private const string c_CdnWhitelistDeployDisplayName = "白名单批量部署到 CDN";
         private const string c_CdnPurgeDisplayName = "批量清除 CDN 缓存";
 
         /// <summary>
@@ -75,6 +77,81 @@ namespace NovaFramework.Editor
             snapshot.LocalDirectory = parameters.LocalDirectory ?? string.Empty;
             snapshot.RemotePathSuffix = parameters.RemoteDirectory ?? string.Empty;
             return snapshot;
+        }
+
+        /// <summary>
+        /// 使用当前激活 Config 的 OSS 连接配置，部署白名单配置与三个 YooAsset 版本文件。
+        /// </summary>
+        [PipifyStep(
+            "cdn.whitelist.deploy",
+            c_CdnWhitelistDeployDisplayName,
+            "CDN",
+            ParamsType = typeof(CdnWhitelistDeployParams))]
+        internal static UniTask RunCdnWhitelistDeploy(PipifyContext ctx, CdnWhitelistDeployParams parameters)
+        {
+            ConfigMasterSO master = EditorUtil.Config.WorkspaceActive.Get();
+            if (master == null)
+            {
+                throw new InvalidOperationException("[Pipify] 未找到当前激活的 ConfigMasterSO，无法部署白名单版本文件。");
+            }
+
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
+                ?? throw new InvalidOperationException("[Pipify] 无法解析 Unity 项目根目录。");
+            CDNEditorConfigs config = CreateCdnWhitelistDeploymentSnapshot(master, parameters);
+            return EditorUtil.CDN.DeployAssetCheckWhitelistAsync(
+                config,
+                projectRoot,
+                master.CurrentPlatform,
+                master.CurrentChannel,
+                (completed, total, _) =>
+                {
+                    float progress = total > 0 ? completed / (float)total : 0f;
+                    if (ctx.Reporter.ReportStep(ctx.CurrentStepIndex, c_CdnWhitelistDeployDisplayName, progress))
+                    {
+                        throw new OperationCanceledException(ctx.CancellationToken);
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Resolve 当前维度 CDN 配置，并仅在独立快照中覆盖白名单设备 ID 与四个路径字段。
+        /// </summary>
+        internal static CDNEditorConfigs CreateCdnWhitelistDeploymentSnapshot(
+            ConfigMasterSO master,
+            CdnWhitelistDeployParams parameters)
+        {
+            if (master == null) throw new ArgumentNullException(nameof(master));
+            if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+
+            CDNEditorConfigs snapshot = EditorUtil.Config.DimensionalResolver.ResolveCDNEditorConfigs(
+                master,
+                master.CurrentPlatform,
+                master.CurrentChannel,
+                master.CurrentDevelopMode);
+            snapshot.AssetCheckWhitelistDeviceIDs = ParseCdnWhitelistDeviceIDs(parameters.DeviceIDs);
+            snapshot.AssetCheckWhitelistRemoteFilePath = parameters.WhitelistRemoteFilePath ?? string.Empty;
+            snapshot.AssetCheckManifestBytesLocalFilePath = parameters.ManifestBytesLocalFilePath ?? string.Empty;
+            snapshot.AssetCheckManifestHashLocalFilePath = parameters.ManifestHashLocalFilePath ?? string.Empty;
+            snapshot.AssetCheckPackageVersionLocalFilePath = parameters.PackageVersionLocalFilePath ?? string.Empty;
+            snapshot.AssetCheckVersionRemoteDirectory = parameters.RemoteDirectory ?? string.Empty;
+            return snapshot;
+        }
+
+        /// <summary>
+        /// 将 Pipify 多行设备 ID 文本解析为有序字符串列表；最终去重由白名单 JSON 生成器统一处理。
+        /// </summary>
+        private static List<string> ParseCdnWhitelistDeviceIDs(string value)
+        {
+            string[] lines = (value ?? string.Empty).Split(
+                new[] { '\r', '\n' },
+                StringSplitOptions.RemoveEmptyEntries);
+            var result = new List<string>();
+            foreach (string line in lines)
+            {
+                string deviceID = line.Trim();
+                if (!string.IsNullOrEmpty(deviceID)) result.Add(deviceID);
+            }
+            return result;
         }
 
         /// <summary>

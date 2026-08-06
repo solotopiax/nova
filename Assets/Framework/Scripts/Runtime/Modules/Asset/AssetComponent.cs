@@ -48,6 +48,11 @@ namespace NovaFramework.Runtime
                 DefaultPackageName = m_DefaultPackageName,
                 AutoCleanupOnSceneUnload = m_AutoCleanupOnSceneUnload,
                 EnableHotfix = m_EnableHotfix,
+                EnableStartupWhitelist = m_EnableStartupWhitelist,
+                StartupWhitelistUrl = ResolveStartupWhitelistUrl(),
+                StartupWhitelistUrlFallback = ResolveStartupWhitelistUrlFallback(),
+                StartupWhitelistMetadataRootUrl = ResolveStartupWhitelistMetadataRootUrl(),
+                StartupWhitelistMetadataRootUrlFallback = ResolveStartupWhitelistMetadataRootUrlFallback(),
                 AutoHotfix = m_AutoHotfix,
                 QuitOnFailedOrCancel = m_QuitOnFailedOrCancel,
                 MaxDownloadConcurrency = m_MaxDownloadConcurrency,
@@ -81,6 +86,46 @@ namespace NovaFramework.Runtime
             return DevelopMode == DevelopMode.Debug
                 ? m_HostServerUrlFallbackDebug
                 : m_HostServerUrlFallbackRelease;
+        }
+
+        /// <summary>
+        /// 根据当前场景快照中的开发模式，解析启动白名单文件主地址。
+        /// </summary>
+        private string ResolveStartupWhitelistUrl()
+        {
+            return DevelopMode == DevelopMode.Debug
+                ? m_StartupWhitelistUrlDebug
+                : m_StartupWhitelistUrlRelease;
+        }
+
+        /// <summary>
+        /// 根据当前场景快照中的开发模式，解析启动白名单文件备用地址。
+        /// </summary>
+        private string ResolveStartupWhitelistUrlFallback()
+        {
+            return DevelopMode == DevelopMode.Debug
+                ? m_StartupWhitelistUrlFallbackDebug
+                : m_StartupWhitelistUrlFallbackRelease;
+        }
+
+        /// <summary>
+        /// 根据当前场景快照中的开发模式，解析白名单版本元数据根主地址。
+        /// </summary>
+        private string ResolveStartupWhitelistMetadataRootUrl()
+        {
+            return DevelopMode == DevelopMode.Debug
+                ? m_StartupWhitelistMetadataRootUrlDebug
+                : m_StartupWhitelistMetadataRootUrlRelease;
+        }
+
+        /// <summary>
+        /// 根据当前场景快照中的开发模式，解析白名单版本元数据根备用地址。
+        /// </summary>
+        private string ResolveStartupWhitelistMetadataRootUrlFallback()
+        {
+            return DevelopMode == DevelopMode.Debug
+                ? m_StartupWhitelistMetadataRootUrlFallbackDebug
+                : m_StartupWhitelistMetadataRootUrlFallbackRelease;
         }
 
         /// <summary>

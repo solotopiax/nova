@@ -8,6 +8,12 @@ date: 2026-07-07
 source: cur-session
 aliases:
   - ADR-071-datamaster-topicid-is-params-key
+keywords:
+  - ADR-071
+  - DataMaster
+  - topicId
+  - topic_name
+  - Params字典key
 tags: [adr, nova, module, sdk, datamaster, abtest]
 supersedes: []
 superseded-by: []

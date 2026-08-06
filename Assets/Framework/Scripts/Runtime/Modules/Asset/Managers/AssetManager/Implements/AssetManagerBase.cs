@@ -58,6 +58,18 @@ namespace NovaFramework.Runtime
         public abstract UniTask LoadManifestAsync(string package = null, CancellationToken ct = default);
 
         /// <summary>
+        /// 保存启动白名单使用的稳定设备 ID。
+        /// </summary>
+        /// <param name="deviceId">稳定设备 ID 明文。</param>
+        public abstract void SaveAssetCheckDeviceId(string deviceId);
+
+        /// <summary>
+        /// 将当前激活且已满足启动下载范围的清单版本记录为本地可启动版本。
+        /// </summary>
+        /// <param name="package">包名，null 走默认包。</param>
+        public abstract void CommitBootableVersion(string package = null);
+
+        /// <summary>
         /// 检查指定包是否有补丁需要下载。
         /// 调用前须已完成 LoadManifestAsync；未加载则内部先触发加载。
         /// </summary>

@@ -360,6 +360,15 @@ MonoBehaviour:
   m_DefaultPackageName: Default
   m_AutoCleanupOnSceneUnload: 1
   m_EnableHotfix: 0
+  m_EnableStartupWhitelist: 0
+  m_StartupWhitelistUrlDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/VersionsCheckWhiteList.json
+  m_StartupWhitelistUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/VersionsCheckWhiteList.json
+  m_StartupWhitelistUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/VersionsCheckWhiteList.json
+  m_StartupWhitelistUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/VersionsCheckWhiteList.json
+  m_StartupWhitelistMetadataRootUrlDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/WhiteListVersions
+  m_StartupWhitelistMetadataRootUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/WhiteListVersions
+  m_StartupWhitelistMetadataRootUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/WhiteListVersions
+  m_StartupWhitelistMetadataRootUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/WhiteListVersions
   m_AutoHotfix: 1
   m_QuitOnFailedOrCancel: 0
   m_MaxDownloadConcurrency: 5
@@ -368,10 +377,10 @@ MonoBehaviour:
   m_AutoClearUnusedCacheOnHotfix: 0
   m_CheckTimeout: 5
   m_IdleTimeout: 20
-  m_HostServerUrlDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}
-  m_HostServerUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}
-  m_HostServerUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}
-  m_HostServerUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Channel}/{Package}/{Version}
+  m_HostServerUrlDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
+  m_HostServerUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
+  m_HostServerUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
+  m_HostServerUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/{Version}
   m_Channel: 2
   m_DecryptorType: 0
 --- !u!1 &3308748334323488271
@@ -676,6 +685,7 @@ MonoBehaviour:
   m_CurDoHManagerTypeName: NovaFramework.Runtime.DoHManager
   m_CurWebSocketManagerTypeName: NovaFramework.Runtime.WebSocketManager
   m_Settings:
+    DataFormat: 0
     HostKeySettings:
       SourceDirPath: Assets/Samples/MainDemo/Excels/Networks/HostKeys
       DatasExportPath: 
@@ -695,6 +705,7 @@ MonoBehaviour:
         ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Networks/Cmds
         AssetLocation: NetworkCmds
   m_HttpSettings:
+    EnableBestHttpTelemetry: 1
     ConnectTimeout: 20
     RequestTimeout: 60
   m_DoHSettings:
@@ -783,6 +794,7 @@ MonoBehaviour:
   m_DevelopMode: 0
   m_CurManagerTypeName: NovaFramework.Runtime.VibrateManager
   m_Settings:
+    DataFormat: 0
     EmphasisSourceDirPath: Assets/Samples/MainDemo/Excels/Vibrates/Emphasis
     CustomSourceDirPath: Assets/Samples/MainDemo/Excels/Vibrates/Customs
     EmphasisUnitsSettings:
@@ -946,6 +958,7 @@ MonoBehaviour:
     m_Volume: 1
     m_AgentCount: 4
   m_Settings:
+    DataFormat: 0
     SourceDirPath: Assets/Samples/MainDemo/Excels/Sounds
     TemplatePath: Assets/Framework/Templates/SoundTemplate.xlsx
     SoundUnitsSettings:
@@ -1019,6 +1032,7 @@ MonoBehaviour:
   - m_Name: DemoSub
     m_Depth: 2
   m_UISettings:
+    DataFormat: 0
     SourceDirPath: Assets/Samples/MainDemo/Excels/UIs
     TemplatePath: Assets/Framework/Templates/UITemplate.xlsx
     UIUnitsSettings:
@@ -1340,6 +1354,7 @@ MonoBehaviour:
   m_FallbackLanguage: 14
   m_AutoFontAdapt: 0
   m_LocalizationSettings:
+    DataFormat: 0
     TextSourceDirPath: Assets/Samples/MainDemo/Excels/Localizations/Texts
     FontSourceDirPath: Assets/Samples/MainDemo/Excels/Localizations/Fonts
     TextUnitsSettings:
@@ -1355,4 +1370,4 @@ MonoBehaviour:
   m_SupportedLanguagesAssetLocation: LocalizationSupportedLanguages
   m_TextTemplatePath: Assets/Framework/Templates/LocalizationTextTemplate.xlsx
   m_FontTemplatePath: Assets/Framework/Templates/LocalizationFontTemplate.xlsx
-  m_SupportedLanguagesJsonExportPath: Assets/Samples/MainDemo/Jsons/LocalizationSupportedLanguages.json
+  m_SupportedLanguagesDataExportPath: Assets/Samples/MainDemo/Jsons/LocalizationSupportedLanguages.json

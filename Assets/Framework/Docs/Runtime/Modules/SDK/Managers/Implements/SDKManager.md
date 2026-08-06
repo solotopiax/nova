@@ -39,6 +39,7 @@
 - 先按 `ConfigMaster.EnabledSDKs` 实例化插件，再按`ISDKPlugin.Priority` 分桶
 - 再按桶顺序执行 `UniTask.WhenAll`
 - 单插件初始化失败只记日志，不中断其他插件
+- 所有 Priority 桶完成后，若存在可用 `IDeviceIdProvider`，将非空 `GetDeviceID()` 通过 `IAssetManager.SaveAssetCheckDeviceId` 写入启动白名单缓存；失败不影响初始化
 - 全部完成后设置 `m_IsInitialized = true`
 
 ### InitializePluginAsync

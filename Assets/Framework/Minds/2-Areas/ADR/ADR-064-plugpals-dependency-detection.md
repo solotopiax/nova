@@ -7,10 +7,16 @@ status: accepted
 date: 2026-06-16
 aliases:
   - ADR-064-plugpals-dependency-detection
+keywords:
+  - ADR-064
+  - PlugPals
+  - 依赖检测
+  - versionDefines
 tags: [adr, nova, editor, plugpals]
 supersedes: []
 superseded-by: []
-related: []
+related:
+  - "[[PAT-150-editor-multi-registry-progressive-load-mutation-gate|PAT-150]]"
 ---
 
 # ADR-064：PlugPals 依赖检测与可选库三原则
@@ -44,6 +50,7 @@ PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必�
 - 每个依赖按序短路：前缀 `com.solotopia.` / 前缀 `com.unity.` / 被包自带 `nova.scopedRegistries` 任一 scope 前缀覆盖 / 被**项目 `manifest.json` 当前已配 `scopedRegistries` 任一 scope 前缀覆盖**（用户手工配的 OpenUPM 等私有仓库在此放行，避免误判 EDM/IronSource 等公共第三方库为缺库）/ 本地已装 / 命中 registry（→ `ToAutoScope`）；皆不满足 → 缺失库（`Missing`）。
 - 有缺失库 → `PlugPalsMissingRequiredLibrariesWindow` 弹购买/内部云引导，**中止安装不写 manifest**。
 - 无缺失库 → 对命中依赖按来源 `EnsureScopedRegistry` 自动配 scope，再为主包配 scope、写 `manifest.dependencies`、`ResolvePackages`，命中依赖随主包被 UPM 一并解析安装。
+- 外网与内部云请求可并发并渐进展示，但任一仓库仍在加载时必须禁用安装、升级和卸载，避免依赖检测与共享 registry 清理消费半份内存数据；详见 [[PAT-150-editor-multi-registry-progressive-load-mutation-gate|PAT-150]]。
 
 **移除**：PlugPals 宏注入链（`SyncRequiredLibraryDefineSymbols` 等）、`PlugPalsInjectedDefines.json` 账本、后台审计（`RunRequiredLibraryAudit` / `[InitializeOnLoad]`）、会话级抑制、「scope 已注册」判据。
 
@@ -83,3 +90,4 @@ PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必�
 ## 关联
 
 - 待补关联（入库后）：软可选库迁移落地后补一条迁移 Pattern；fetch 失败降级若实现，补充到本 ADR 验证段或新增条目。
+- [[PAT-150-editor-multi-registry-progressive-load-mutation-gate|PAT-150]]：多仓库并发渐进展示时，变更操作等待合并数据集就绪。

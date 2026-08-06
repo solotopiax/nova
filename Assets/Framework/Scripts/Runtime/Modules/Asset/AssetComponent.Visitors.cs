@@ -70,6 +70,61 @@ namespace NovaFramework.Runtime
         public bool EnableHotfix => m_EnableHotfix;
 
         /// <summary>
+        /// 是否启用启动设备白名单；默认关闭。
+        /// 仅在 EnableHotfix=true 且有效资源模式为 HostPlayMode/WebPlayMode 时生效。
+        /// </summary>
+        [SerializeField]
+        private bool m_EnableStartupWhitelist;
+
+        /// <summary>
+        /// Debug 开发模式下的启动白名单文件 URL。
+        /// </summary>
+        [SerializeField]
+        private string m_StartupWhitelistUrlDebug;
+
+        /// <summary>
+        /// Debug 开发模式下的启动白名单文件备用 URL。
+        /// </summary>
+        [SerializeField]
+        private string m_StartupWhitelistUrlFallbackDebug;
+
+        /// <summary>
+        /// Release 开发模式下的启动白名单文件 URL。
+        /// </summary>
+        [SerializeField]
+        private string m_StartupWhitelistUrlRelease;
+
+        /// <summary>
+        /// Release 开发模式下的启动白名单文件备用 URL。
+        /// </summary>
+        [SerializeField]
+        private string m_StartupWhitelistUrlFallbackRelease;
+
+        /// <summary>
+        /// Debug 开发模式下白名单设备使用的版本元数据根 URL。
+        /// </summary>
+        [SerializeField]
+        private string m_StartupWhitelistMetadataRootUrlDebug;
+
+        /// <summary>
+        /// Debug 开发模式下白名单设备使用的版本元数据备用根 URL。
+        /// </summary>
+        [SerializeField]
+        private string m_StartupWhitelistMetadataRootUrlFallbackDebug;
+
+        /// <summary>
+        /// Release 开发模式下白名单设备使用的版本元数据根 URL。
+        /// </summary>
+        [SerializeField]
+        private string m_StartupWhitelistMetadataRootUrlRelease;
+
+        /// <summary>
+        /// Release 开发模式下白名单设备使用的版本元数据备用根 URL。
+        /// </summary>
+        [SerializeField]
+        private string m_StartupWhitelistMetadataRootUrlFallbackRelease;
+
+        /// <summary>
         /// 启动期资源补丁就绪后是否自动开始下载；默认 true。
         /// </summary>
         [SerializeField]

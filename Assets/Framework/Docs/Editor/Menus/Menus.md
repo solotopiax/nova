@@ -12,6 +12,7 @@ Nova 顶级菜单下的所有菜单项实现，按功能分组拆分为独立文
 | 文件 | 类 | 说明 |
 |------|-----|------|
 | [`FolderMenuItems.cs`](FolderMenuItems.md) | `FolderMenuItems` | Open IDE Project 与 Open Folder 系列菜单项 |
+| [`AssetCacheMenuItems.cs`](AssetCacheMenuItems.md) | `AssetCacheMenuItems` | Clean Hotfix Caches 快捷项 |
 | [`EnableLogsMenuItems.cs`](EnableLogsMenuItems.md) | `EnableLogsMenuItems` | Enable Logs 脚本宏定义管理菜单项 |
 
 ---
@@ -22,21 +23,23 @@ Nova 顶级菜单下的所有菜单项实现，按功能分组拆分为独立文
 Nova/
 ├── Open IDE Project              (priority 1010)
 ├── Open Folder/
-│   ├── Data Path                       (priority 1020)
-│   ├── Persistent Data Path (Unity)    (priority 1021)
-│   ├── Persistent Data Path (YooAsset) (priority 1022)
-│   ├── Bundle Generated Path           (priority 1023)
-│   ├── Streaming Assets Path           (priority 1024)
-│   ├── Caching Writing Path            (priority 1025)
-│   └── Temporary Cache Path            (priority 1026)
+│   ├── Data Path                       (priority 1021)
+│   ├── Persistent Data Path (Unity)    (priority 1022)
+│   ├── Persistent Data Path (YooAsset) (priority 1023)
+│   ├── Bundle Generated Path           (priority 1024)
+│   ├── Streaming Assets Path           (priority 1025)
+│   ├── Caching Writing Path            (priority 1026)
+│   └── Temporary Cache Path            (priority 1027)
+├── Clean Hotfix Caches            (priority 1031)
+├── ─────────────────────────────
 ├── Enable Logs/
-│   ├── Disable All Logs          (priority 1040)
-│   ├── Enable All Logs           (priority 1041)
-│   ├── Enable Debug And Above    (priority 1042)
-│   ├── Enable Info And Above     (priority 1043)
-│   ├── Enable Warning And Above  (priority 1044)
-│   ├── Enable Error And Above    (priority 1045)
-│   └── Enable Fatal And Above    (priority 1046)
+│   ├── Disable All Logs          (priority 1042)
+│   ├── Enable All Logs           (priority 1043)
+│   ├── Enable Debug And Above    (priority 1044)
+│   ├── Enable Info And Above     (priority 1045)
+│   ├── Enable Warning And Above  (priority 1046)
+│   ├── Enable Error And Above    (priority 1047)
+│   └── Enable Fatal And Above    (priority 1048)
 ```
 
 ---

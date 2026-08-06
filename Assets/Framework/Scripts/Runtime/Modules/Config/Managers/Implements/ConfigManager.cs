@@ -430,7 +430,6 @@ namespace NovaFramework.Runtime
                     Log.Warning(LogTag.Config, "Custom 配置磁盘缓存内容无效，使用本地默认值：{0}", parseError);
                     return;
                 }
-                Log.Debug(LogTag.Config, "应用配置已恢复磁盘缓存：name={0}", payload.Name);
             }
             catch (Exception e)
             {

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-08-06
+
+### Changed
+
+- `coreVersion` 同步为 AppLovin MAX `8.6.4`，Moloco Android/iOS adapter 提升至 `4110000.0.0` / `4090000.0.0`，Unity Ads Android/iOS adapter 提升至 `4190001.0.0`。
+- 构建期注入 AppLovinSettings 后改为 `AssetDatabase.SaveAssetIfDirty`，避免全局 `SaveAssets` / `Refresh`。
+
 ## [0.1.1] - 2026-07-31
 
 ### Changed

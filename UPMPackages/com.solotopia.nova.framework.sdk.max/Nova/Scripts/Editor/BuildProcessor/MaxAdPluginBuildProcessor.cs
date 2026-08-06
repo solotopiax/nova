@@ -98,8 +98,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Editor
             }
 
             settings.SaveAsync();
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
+            AssetDatabase.SaveAssetIfDirty(settings);
 
             string platform = isAndroid ? "Android" : "iOS";
             Log.Debug(LogTag.Editor, $"[MaxAdPluginBuildProcessor] {platform} AppLovinSettings 已注入：SdkKey 与 AdMob AppId 已写入 AppLovinSettings.asset。");

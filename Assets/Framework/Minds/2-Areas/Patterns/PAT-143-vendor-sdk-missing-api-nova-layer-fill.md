@@ -9,6 +9,11 @@ date: 2026-07-07
 source: cur-session
 aliases:
   - PAT-143-vendor-sdk-missing-api-nova-layer-fill
+keywords:
+  - PAT-143
+  - 厂商SDK缺口
+  - Public API组合
+  - Nova接入层
 tags: [pattern, module, sdk, vendor, datamaster]
 related: []
 ---

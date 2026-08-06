@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-06
+
+### Fixed
+
+- 将遥测 sink 注册与 UniTask 就绪监听拆分到 `AfterAssembliesLoaded` / `BeforeSceneLoad` 两阶段，修复 iOS IL2CPP 启动时 PlayerLoop 尚未注入导致的空引用异常。
+- 下载请求改为在 BestHTTP 完成回调中复制响应内容，避免响应释放后读取到空数据。
+
+### Changed
+
+- `coreVersion` 同步为 Best HTTP `3.0.18` 与 Best TLS Security `3.0.5`。
+
 ## [0.1.2] - 2026-08-04
 
 ### Changed

@@ -54,6 +54,31 @@ namespace NovaFramework.Runtime
         public bool EnableHotfix = true;
 
         /// <summary>
+        /// 是否启用启动设备白名单；默认关闭。
+        /// </summary>
+        public bool EnableStartupWhitelist;
+
+        /// <summary>
+        /// 当前 DevelopMode 对应的启动白名单文件主 URL。
+        /// </summary>
+        public string StartupWhitelistUrl;
+
+        /// <summary>
+        /// 当前 DevelopMode 对应的启动白名单文件备用 URL。
+        /// </summary>
+        public string StartupWhitelistUrlFallback;
+
+        /// <summary>
+        /// 当前 DevelopMode 对应的白名单版本元数据根主 URL。
+        /// </summary>
+        public string StartupWhitelistMetadataRootUrl;
+
+        /// <summary>
+        /// 当前 DevelopMode 对应的白名单版本元数据根备用 URL。
+        /// </summary>
+        public string StartupWhitelistMetadataRootUrlFallback;
+
+        /// <summary>
         /// 启动期资源补丁就绪后是否自动开始下载。
         /// </summary>
         public bool AutoHotfix = true;

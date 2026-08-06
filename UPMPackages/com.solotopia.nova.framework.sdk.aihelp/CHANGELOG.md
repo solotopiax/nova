@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-08-06
+
+### Changed
+
+- `coreVersion` 从 `1.0.0` 同步为 AIHelp Unity SDK `6.0.+`。
+
 ## [0.0.4] - 2026-08-03
 
 ### Changed

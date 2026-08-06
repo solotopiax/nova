@@ -80,6 +80,62 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 按各自目录上传 VersionsCheckWhiteList.json 与三个 YooAsset 版本文件。
+            /// </summary>
+            /// <param name="config">当前维度生效的 CDN 编辑配置。</param>
+            /// <param name="projectRoot">Unity 项目根绝对路径。</param>
+            /// <param name="platform">当前平台。</param>
+            /// <param name="channel">当前渠道。</param>
+            /// <param name="onProgress">进度回调，参数依次为完成数、总数和当前本地文件。</param>
+            /// <returns>成功上传文件数；配置文件位置无效时仅上传三个版本文件。</returns>
+            internal static async UniTask<int> DeployAssetCheckWhitelistAsync(
+                CDNEditorConfigs config,
+                string projectRoot,
+                PlatformType platform,
+                ChannelType channel,
+                Action<int, int, string> onProgress)
+            {
+                ValidateOssConfig(config);
+                bool shouldUploadWhitelist = TryResolveAssetCheckWhitelistRemoteFilePath(
+                    config.AssetCheckWhitelistRemoteFilePath,
+                    platform,
+                    channel,
+                    ResolveDefaultPackageName(),
+                    UnityEngine.Application.version,
+                    out _);
+                string whitelistFilePath = shouldUploadWhitelist
+                    ? CreateAssetCheckWhitelistTempFile(config.AssetCheckWhitelistDeviceIDs)
+                    : null;
+                try
+                {
+                    OssLocation location = ParseOssLocation(config.PresetOSSPath);
+                    string region = ParseRegion(config.Endpoint);
+                    var sdkConfig = OSS.Configuration.LoadDefault();
+                    sdkConfig.Endpoint = config.Endpoint.Trim();
+                    sdkConfig.Region = region;
+                    sdkConfig.CredentialsProvider = new OSS.Credentials.StaticCredentialsProvider(
+                        config.AccessKeyID,
+                        config.AccessKeySecret);
+
+                    using var client = new OSS.Client(sdkConfig);
+                    return await DeployAssetCheckWhitelistAsync(
+                        config,
+                        projectRoot,
+                        whitelistFilePath,
+                        platform,
+                        channel,
+                        ResolveDefaultPackageName(),
+                        UnityEngine.Application.version,
+                        item => UploadObjectAsync(client, location.Bucket, item),
+                        onProgress);
+                }
+                finally
+                {
+                    DeleteAssetCheckWhitelistTempFile(whitelistFilePath);
+                }
+            }
+
+            /// <summary>
             /// 上传单个本地文件，并在请求完成后释放文件流。
             /// </summary>
             /// <param name="client">已配置的 OSS Client。</param>

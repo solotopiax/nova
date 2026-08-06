@@ -1,8 +1,8 @@
 {
   "name": "com.solotopia.nova.framework.kit.network.gamesave",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
-  "coreVersion": "0.0.2",
+  "coreVersion": "1.0.0",
   "displayName": "Nova Framework - Kit - Network - GameSave",
   "description": "游戏存档业务网络模块，封装云存档获取与上传协议及类型",
   "category": "Runtime",

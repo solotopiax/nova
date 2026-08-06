@@ -9,6 +9,11 @@ date: 2026-07-13
 source: cur-session
 aliases:
   - PAT-145-upm-install-chain-cascade-audit
+keywords:
+  - PAT-145
+  - UPM安装链
+  - 级联发布
+  - 依赖审计
 tags: [pattern, methodology, upm, publishing, dependency, novaspark]
 related:
   - PAT-13

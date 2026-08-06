@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEditor.PackageManager.UI;
@@ -35,6 +36,9 @@ namespace NovaFramework.Editor
             m_ErrorMessage = null;
             m_ExternalErrorMessage = null;
             m_InternalErrorMessage = null;
+            m_ExternalPackages = null;
+            m_InternalPackages = null;
+            m_FilteredPackages = null;
 
             CancelFetchRequest();
             m_CancellationTokenSource = new System.Threading.CancellationTokenSource();
@@ -73,104 +77,43 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 异步获取远程包列表并在主线程回调处理结果。
+        /// 并发获取公网与内部云包列表，并按各自完成顺序渐进更新窗口。
         /// </summary>
         /// <param name="token">取消令牌。</param>
         private async void FetchPackagesAsync(System.Threading.CancellationToken token)
         {
-            List<EditorUtil.PlugPals.PackageDisplayEntry> externalEntries = null;
-            List<EditorUtil.PlugPals.PackageDisplayEntry> internalEntries = null;
-
             try
             {
-                try
+                var pending = new List<Task<RegistryFetchResult>>
                 {
-                    EditorUtil.PlugPals.VerdaccioPackageInfo[] externalPackages = await EditorUtil.PlugPals.FetchRemotePackagesAsync(m_ExternalUrl, EditorUtil.PlugPals.c_RegistryApiPath, token);
+                    FetchRegistryAsync(m_ExternalUrl, false, token),
+                    FetchRegistryAsync(m_InternalUrl, true, token),
+                };
+
+                while (pending.Count > 0)
+                {
+                    Task<RegistryFetchResult> completed = await Task.WhenAny(pending);
+                    pending.Remove(completed);
+                    RegistryFetchResult result = await completed;
                     if (token.IsCancellationRequested)
                     {
                         return;
                     }
 
-                    if (externalPackages != null)
-                    {
-                        externalEntries = EditorUtil.PlugPals.BuildDisplayEntries(externalPackages, m_ExternalUrl);
-                    }
-                    else
-                    {
-                        m_ExternalErrorMessage = "外网仓库解析远程包列表失败：返回数据为空。";
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    m_ExternalErrorMessage = "外网仓库请求超时，请检查网络后重试。";
-                }
-                catch (Exception e)
-                {
-                    if (!token.IsCancellationRequested)
-                    {
-                        m_ExternalErrorMessage = "外网仓库请求失败：" + e.Message;
-                        Log.Warning(LogTag.Editor, "PlugPalsWindow.FetchPackagesAsync 外网仓库请求失败: {0}", e.Message);
-                    }
-                }
-
-                if (string.IsNullOrEmpty(m_InternalUrl))
-                {
-                    internalEntries = new List<EditorUtil.PlugPals.PackageDisplayEntry>();
-                }
-                else
-                {
-                    try
-                    {
-                        EditorUtil.PlugPals.VerdaccioPackageInfo[] internalPackages = await EditorUtil.PlugPals.FetchRemotePackagesAsync(m_InternalUrl, EditorUtil.PlugPals.c_RegistryApiPath, token);
-                        if (token.IsCancellationRequested)
-                        {
-                            return;
-                        }
-
-                        if (internalPackages != null)
-                        {
-                            internalEntries = EditorUtil.PlugPals.BuildDisplayEntries(internalPackages, m_InternalUrl);
-                        }
-                        else
-                        {
-                            m_InternalErrorMessage = "内部云仓库解析远程包列表失败：返回数据为空。";
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            return;
-                        }
-
-                        m_InternalErrorMessage = "内部云仓库请求超时，请检查网络后重试。";
-                    }
-                    catch (Exception e)
-                    {
-                        if (!token.IsCancellationRequested)
-                        {
-                            m_InternalErrorMessage = "内部云仓库请求失败：" + e.Message;
-                            Log.Warning(LogTag.Editor, "PlugPalsWindow.FetchPackagesAsync 内部云仓库请求失败: {0}", e.Message);
-                        }
-                    }
+                    ApplyRegistryFetchResult(result);
                 }
 
                 if (!token.IsCancellationRequested)
                 {
-                    m_ExternalPackages = externalEntries ?? new List<EditorUtil.PlugPals.PackageDisplayEntry>();
-                    m_InternalPackages = internalEntries ?? new List<EditorUtil.PlugPals.PackageDisplayEntry>();
-                    ApplyFilter();
-
                     if (m_ExternalPackages.Count == 0 && m_InternalPackages.Count == 0)
                     {
                         m_ErrorMessage = BuildFatalRepoErrorMessage();
                     }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                // 关闭窗口或刷新请求时由 CancellationToken 主动结束，无需展示失败提示。
             }
             finally
             {
@@ -180,6 +123,83 @@ namespace NovaFramework.Editor
                     Repaint();
                 }
             }
+        }
+
+        /// <summary>
+        /// 请求单个 registry 并将成功、超时和异常统一转换为可展示结果。
+        /// </summary>
+        /// <param name="registryUrl">registry 根地址；为空时直接返回空成功结果。</param>
+        /// <param name="isInternal">是否为内部云 registry。</param>
+        /// <param name="token">取消令牌。</param>
+        /// <returns>包含来源、条目与错误信息的请求结果。</returns>
+        private async Task<RegistryFetchResult> FetchRegistryAsync(string registryUrl, bool isInternal, CancellationToken token)
+        {
+            var result = new RegistryFetchResult
+            {
+                IsInternal = isInternal,
+                Entries = new List<EditorUtil.PlugPals.PackageDisplayEntry>(),
+            };
+
+            if (string.IsNullOrEmpty(registryUrl))
+            {
+                return result;
+            }
+
+            string repoDisplayName = isInternal ? "内部云仓库" : "外网仓库";
+            try
+            {
+                EditorUtil.PlugPals.VerdaccioPackageInfo[] packages = await EditorUtil.PlugPals.FetchRemotePackagesAsync(
+                    registryUrl,
+                    EditorUtil.PlugPals.c_RegistryApiPath,
+                    token);
+                token.ThrowIfCancellationRequested();
+
+                if (packages == null)
+                {
+                    result.ErrorMessage = repoDisplayName + "解析远程包列表失败：返回数据为空。";
+                }
+                else
+                {
+                    result.Entries = EditorUtil.PlugPals.BuildDisplayEntries(packages, registryUrl);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                if (token.IsCancellationRequested)
+                {
+                    throw;
+                }
+
+                result.ErrorMessage = repoDisplayName + "请求超时，请检查网络后重试。";
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = repoDisplayName + "请求失败：" + e.Message;
+                Log.Warning(LogTag.Editor, "PlugPalsWindow.FetchRegistryAsync {0}请求失败: {1}", repoDisplayName, e.Message);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 把单仓库请求结果写入对应窗口状态，并立即刷新当前筛选列表。
+        /// </summary>
+        /// <param name="result">已完成的单仓库请求结果。</param>
+        private void ApplyRegistryFetchResult(RegistryFetchResult result)
+        {
+            if (result.IsInternal)
+            {
+                m_InternalPackages = result.Entries;
+                m_InternalErrorMessage = result.ErrorMessage;
+            }
+            else
+            {
+                m_ExternalPackages = result.Entries;
+                m_ExternalErrorMessage = result.ErrorMessage;
+            }
+
+            ApplyFilter();
+            Repaint();
         }
 
         /// <summary>
@@ -407,6 +427,9 @@ namespace NovaFramework.Editor
             EditorUtil.PlugPals.SyncScopedRegistryUrl(manifestPath, m_ExternalName, m_ExternalUrl);
             EditorUtil.PlugPals.SyncScopedRegistryUrl(manifestPath, m_InternalName, m_InternalUrl);
 
+            // 保存可能发生在加载期间；先取消旧地址请求，确保清空仓库后立即按新存档刷新。
+            CancelFetchRequest();
+            m_IsFetching = false;
             FetchPackages();
         }
 
@@ -764,7 +787,7 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(8f);
-                EditorUtil.Draw.DisabledGroup(m_IsOperating || upgradeableEntries.Count == 0, () =>
+                EditorUtil.Draw.DisabledGroup(m_IsFetching || m_IsOperating || upgradeableEntries.Count == 0, () =>
                 {
                     EditorUtil.Draw.SuccessButton("一键升级", false, () => UpgradeAll(upgradeableEntries),
                         GUILayout.ExpandWidth(true), GUILayout.Height(28f));
@@ -779,7 +802,7 @@ namespace NovaFramework.Editor
         /// </summary>
         private void UpgradeAll(IReadOnlyList<EditorUtil.PlugPals.PackageDisplayEntry> entries)
         {
-            if (entries == null || entries.Count == 0 ||
+            if (m_IsFetching || entries == null || entries.Count == 0 ||
                 !EditorUtility.DisplayDialog("确认一键升级", $"确认升级当前页面中的 {entries.Count} 个可升级包？", "确定", "取消"))
             {
                 return;
@@ -899,7 +922,7 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Layout.Horizontal(() =>
                 {
                     EditorUtil.Draw.Space(c_LabelWidth + 4f);
-                    EditorUtil.Draw.DisabledGroup(!canInstallOrUpgrade, () =>
+                    EditorUtil.Draw.DisabledGroup(m_IsFetching || !canInstallOrUpgrade, () =>
                     {
                         EditorUtil.Draw.SuccessButton(installLabel, false, () =>
                         {
@@ -920,7 +943,7 @@ namespace NovaFramework.Editor
                             Repaint();
                         }, GUILayout.Width(c_ColBtnWidth), GUILayout.Height(c_RowBtnHeight));
                     });
-                    EditorUtil.Draw.DisabledGroup(!canUninstall, () =>
+                    EditorUtil.Draw.DisabledGroup(m_IsFetching || !canUninstall, () =>
                     {
                         EditorUtil.Draw.DangerButton("卸载", false, () =>
                         {
@@ -1009,7 +1032,7 @@ namespace NovaFramework.Editor
 
             try
             {
-                GUI.enabled = !m_IsOperating && canInstallOrUpgrade;
+                GUI.enabled = !m_IsFetching && !m_IsOperating && canInstallOrUpgrade;
                 GUI.color = GUI.enabled ? new Color(0.3f, 0.7f, 0.35f) : new Color(0.2f, 0.4f, 0.22f);
                 if (GUI.Button(new Rect(x, btnY, c_ColBtnWidth, btnH), installLabel) && ConfirmInstall(entry))
                 {
@@ -1027,7 +1050,7 @@ namespace NovaFramework.Editor
                 }
 
                 x += c_ColBtnWidth + 2f;
-                GUI.enabled = !m_IsOperating && canUninstall;
+                GUI.enabled = !m_IsFetching && !m_IsOperating && canUninstall;
                 GUI.color = GUI.enabled ? new Color(0.75f, 0.25f, 0.25f) : new Color(0.45f, 0.2f, 0.2f);
                 if (GUI.Button(new Rect(x, btnY, c_ColBtnWidth, btnH), "卸载") && ConfirmUninstall(entry))
                 {

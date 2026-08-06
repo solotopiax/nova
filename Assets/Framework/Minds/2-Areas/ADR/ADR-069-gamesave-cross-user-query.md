@@ -8,6 +8,11 @@ date: 2026-07-03
 source: cur-session
 aliases:
   - ADR-069-gamesave-cross-user-query
+keywords:
+  - ADR-069
+  - target_uid
+  - 跨用户存档查询
+  - GameSave
 tags: [adr, nova, module, gamesave, network]
 supersedes: []
 superseded-by: []

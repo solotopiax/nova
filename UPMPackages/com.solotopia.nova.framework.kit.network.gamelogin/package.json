@@ -1,8 +1,8 @@
 {
   "name": "com.solotopia.nova.framework.kit.network.gamelogin",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
-  "coreVersion": "0.0.1",
+  "coreVersion": "1.0.0",
   "displayName": "Nova Framework - Kit - Network - GameLogin",
   "description": "登录业务网络模块，封装登录协议及相关协议类型",
   "category": "Runtime",

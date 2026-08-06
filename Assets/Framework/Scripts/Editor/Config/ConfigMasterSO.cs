@@ -462,6 +462,12 @@ namespace NovaFramework.Editor
                     !string.IsNullOrEmpty(config.VersionCheckRemoteFilePath) ||
                     !string.IsNullOrEmpty(config.LocalDirectory) ||
                     !string.IsNullOrEmpty(config.RemotePathSuffix) ||
+                    (config.AssetCheckWhitelistDeviceIDs != null && config.AssetCheckWhitelistDeviceIDs.Count > 0) ||
+                    !string.IsNullOrEmpty(config.AssetCheckWhitelistRemoteFilePath) ||
+                    !string.IsNullOrEmpty(config.AssetCheckManifestBytesLocalFilePath) ||
+                    !string.IsNullOrEmpty(config.AssetCheckManifestHashLocalFilePath) ||
+                    !string.IsNullOrEmpty(config.AssetCheckPackageVersionLocalFilePath) ||
+                    !string.IsNullOrEmpty(config.AssetCheckVersionRemoteDirectory) ||
                     !string.IsNullOrEmpty(config.ZoneID) ||
                     !string.IsNullOrEmpty(config.PurgeURL) ||
                     !string.IsNullOrEmpty(config.Token) ||

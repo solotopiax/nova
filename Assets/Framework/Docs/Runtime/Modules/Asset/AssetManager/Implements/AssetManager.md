@@ -50,6 +50,7 @@
 
 1. 记录 `m_Config`
 2. 新建 `m_Cts`
+3. 缓存 `IHttpManager`，供可选启动白名单文件请求使用
 
 它不会注册包，也不会初始化 YooAsset。
 
@@ -71,36 +72,45 @@
 
 1. `ResolvePackageName` 解析包名，空值走默认包
 2. 已在 `m_ManifestLoadedPackages` 中则直接返回
-3. 如果包尚未成功初始化，Host/Web 模式先对替换完占位符的主备基地址执行 DoH detect-only 预检，再调用 `InitializePackageAsync(options)`
-4. 再 `RequestPackageVersionAsync()`
-5. 再 `LoadPackageManifestAsync(version, 60)`
-6. 成功后先 `SaveLocalCachedVersion(name, pkg.GetPackageVersion())` 记录当前激活版本号到本地，再把包名记入 `m_ManifestLoadedPackages`
+3. 如果包尚未成功初始化，先按配置尝试启动白名单检查，再对实际启用的常规/白名单元数据根地址执行 DoH detect-only 预检
+4. 调用 `InitializePackageAsync(options)`
+5. 再 `RequestPackageVersionAsync()`
+6. 再 `LoadPackageManifestAsync(version, 60)`
+7. 成功后只把包名记入 `m_ManifestLoadedPackages`；Manifest 激活本身不再推进本地可启动版本
 
-这一步既做“包初始化”，也做“版本 + 清单拉取”，而且是按包幂等的。每次远端正常加载成功都会把版本号写入 `persistentDataPath/Persist/Asset/CachedVersion/{package}.version`，作为下次启动远端不可达时的离线回退依据。
+这一步既做“包初始化”，也做“版本 + 清单拉取”，而且是按包幂等的。只有当前启动下载策略确认就绪后，`ProcedureCheckVersion` / `ProcedureHotfix` 才通过 `CommitBootableVersion` 推进本地可启动版本。
+
+#### 启动设备白名单
+
+启动白名单默认关闭，并同时要求 `EnableHotfix=true`、有效模式为 Host/Web、白名单文件 URL 与元数据根 URL 至少各有一个有效地址。本地 DeviceID 来自 `persistentDataPath/Asset/asset-check-device-id.dat`；首次没有缓存时直接跳过，SDK 插件完成初始化后通过 `SaveAssetCheckDeviceId` 原子写入 UTF-8 明文，供后续启动使用。
+
+白名单文件通过 `IHttpManager.DownloadTextAsync` 按主备顺序请求，因此自动受现有 DoH 候选与原域名回退逻辑覆盖。文件必须是 DeviceID JSON 字符串数组；网络失败、空响应或非法 JSON 均按未命中继续。命中后仅 `.version` / `.hash` / `.bytes` 版本元数据优先使用白名单元数据主备根地址，并继续以常规主备作为后备；本次启动会按该候选顺序处理传输失败及 HTTP 200 但内容非法/损坏的失败，全部候选失败后才进入现有离线回退。Bundle 始终走常规主机地址。所有元数据根地址也进入 Asset 的 DoH detect-only 预检，HTTPS 实际请求保持原域名与 Host/SNI。
+
+启动诊断统一使用 `Log.Debug`：输出功能门控状态、白名单文件主备请求结果、命中/未命中结果，以及命中后 `.version` / `.hash` / `.bytes` 的实际请求成功或失败（包含文件名和完整 URL）。命中日志会输出完整 DeviceID，便于现场核对白名单内容；Bundle 请求不会进入这组元数据日志。
 
 HostPlayMode 下如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAsync(version, 60)` 因 DNS、弱网或服务器不可达失败，`AssetManager` 会按 `TryRecoverManifestAsync` 编排的**三级回退链**逐级尝试：
 
 1. **沿用当前已激活清单**：若包已加载过清单（`PackageValid`，如 `RefreshManifestAsync` 弱网场景），直接复用。
-2. **本地缓存版本离线加载**（`TryFallbackToLocalCachedManifestAsync`）：读回本地记录的版本号，在当前 Host 包上直接 `LoadPackageManifestAsync(localVersion, 60)`——YooAsset 的清单下载操作首步即 `CheckExists`，本地沙盒已缓存该版本则零网络命中。**不销毁包、不切运行模式，保留玩家已下载的全部增量缓存。**
+2. **本地可启动版本离线加载**（`TryFallbackToLocalBootableManifestAsync`）：读回本地记录的版本号，在当前 Host 包上直接加载缓存 Manifest，再按当前 `LaunchHotfixTags` 重建启动下载范围；只有下载数为 0 才接受该版本。缓存被清理或 Tag 配置变化导致范围不完整时继续降级内置清单。
 3. **随包内置清单回退**（`TryFallbackToBuiltinManifestAsync`）：销毁 Host 包 → `OfflinePlayModeOptions` 重新初始化 → 从内置版本文件与内置 Manifest 加载（回退到首包版本，丢弃增量）。
 
-整体优先级是：远端最新清单 → 已激活清单 → 本地缓存版本清单 → 随包内置清单 → 抛出原始远端错误。  
-全链路只使用 YooAsset 公开 API，不修改 YooAsset 源码，也不直接读取沙盒 Manifest 内部结构。本地缓存版本回退随 HostPlayMode 默认开启（与内置回退同门控 `CanFallbackToBuiltinManifest`），无独立开关；本地无记录或缓存清单缺失时自动降级到内置回退，三级全失败仍保留原始远端失败并中断，避免把必需资源缺失伪装成可继续状态。
+整体优先级是：远端最新清单 → 已激活清单 → 本地可启动版本清单 → 随包内置清单 → 抛出原始远端错误。
+全链路只使用 YooAsset 公开 API，不修改 YooAsset 源码，也不直接读取沙盒 Manifest 内部结构。本地可启动版本回退随 HostPlayMode 默认开启；本地无记录、缓存 Manifest 缺失或当前启动范围不完整时自动降级到内置回退。
 
-#### 本地缓存版本记录文件（CachedVersion）
+#### 本地可启动版本记录文件（LastBootableVersion）
 
-二级回退（本地缓存版本离线加载）依赖一份 Nova 自管的版本记录文件，由 `SaveLocalCachedVersion` / `TryLoadLocalCachedVersion` / `GetLocalCachedVersionFilePath` 三个 `private static` 纯函数维护。
+二级回退依赖一份 Nova 自管的版本记录文件，由 `SaveLocalBootableVersion` / `TryLoadLocalBootableVersion` / `GetLocalBootableVersionFilePath` 维护。
 
-**路径**：`persistentDataPath/Persist/Asset/CachedVersion/{package}.version`（经 `Path.Persistent.GetFileFullPath` 拼接，与 `Persist/FileFragment`、`Persist/SQLite` 同体系）。
+**路径**：`persistentDataPath/Asset/{package}.version`，根路径仍由 Unity `Application.persistentDataPath` 决定。
 
 **写入 / 覆盖时机**（`File.WriteAllText` 整体覆盖，非追加）：
 
-- **唯一写入点**：`LoadManifestAsync` 中远端版本请求 + 清单加载**两步都成功**后，写入 `pkg.GetPackageVersion()`（刚激活的版本号）。
-- 触发场景：① 每次联网冷启动成功；② `RefreshManifestAsync` 热更切新清单成功（先 `Remove` 再重走 `LoadManifestAsync`），把记录**覆盖为新版本号**，使记录始终跟随玩家热更到的最新版本。
-- 因 `LoadManifestAsync` 按包幂等，一次进程内同包通常只写一次，除非走 `RefreshManifestAsync`。
-- `version` 为空时 `SaveLocalCachedVersion` 直接 return，不会写出空文件。
+- `LaunchHotfixTags` 为空时，整包 Downloader 无差异或完整下载成功后写入。
+- `LaunchHotfixTags` 非空时，对应 Tag 启动范围无差异或完整下载成功后写入。
+- 下载失败、取消或用户跳过补丁时不写入。
+- `version` 为空时 `SaveLocalBootableVersion` 直接返回，不写空文件。
 
-**刻意不写的场景（防污染，关键设计意图）**：三级回退路径——沿用已激活清单 / 本地缓存版本回退 / builtin 内置回退——**一律不写**。断网启动回退到 builtin 首包时绝不能把记录改写成首包版本，否则下次又只能退回首包。记录永远保持「上次远端成功确认的版本」。一句话：**只有远端真正成功（首启或热更切版）才覆盖，任何离线回退都不动它。**
+三级离线回退路径一律不写，避免 builtin 首包覆盖此前可启动版本。旧 `Persist/Asset/CachedVersion` 记录不会读取或自动迁移，因为它只能证明 Manifest 曾激活，不能证明启动范围完整。
 
 **跨平台可达性**：该路径走 `Application.persistentDataPath`（iOS app 沙盒 / Android `files` 目录，各平台官方可写持久区），配 `System.IO.File/Directory` + 绝对路径（`NormalizeSeparator` 统一 `/`），iOS/Android 一致可读写；首次无目录时 `Directory.CreateDirectory` 递归创建。它与 YooAsset 自身沙盒缓存（`GetMobileCacheRoot()` 同样返回 `persistentDataPath`）属同一套读写机制——YooAsset 缓存能读写，本记录文件必然也能，且回退要命中的缓存清单本就在同一 persistentDataPath 根下。注意它**不在 StreamingAssets**（后者在 Android 打进 apk、不能 `File.ReadAllText` 直读，那是内置回退读首包版本时才会遇到的约束），故纯 File API 即可。
 
@@ -183,6 +193,7 @@ HostPlayMode 下如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAs
 - `m_DefaultPackageName`：大部分加载 API 的真实目标包
 - `m_Packages`：已注册的 YooAsset 包
 - `m_ManifestLoadedPackages`：清单幂等集合
+- `m_StartupWhitelistCheckedPackages / m_StartupWhitelistMatchedPackages`：本次进程的白名单检查与命中状态
 - `m_Decryptor`：沙盒文件系统解密器实例
 - `m_Cts`：Manager 生命周期取消源
 
@@ -190,7 +201,7 @@ HostPlayMode 下如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAs
 
 - `Initialize()` 不等于 `BootstrapAsync()`；只注入配置，不做包注册。
 - `LoadManifestAsync()` 之前必须至少完成一次 `BootstrapAsync()`，否则包都还没注册。
-- HostPlayMode 远端版本或 Manifest 请求失败时走三级回退链（已激活清单 → 本地缓存版本 → 内置清单）；这只是弱网启动容错，不代表热更成功。其中本地缓存版本回退依赖上次成功启动写入的 `persistentDataPath/Persist/Asset/CachedVersion/{package}.version`：首次安装即断网（无该记录）时该级失效，自动降级到内置清单。
+- HostPlayMode 远端版本或 Manifest 请求失败时走三级回退链（已激活清单 → 本地可启动版本 → 内置清单）。本地记录位于 `persistentDataPath/Asset/{package}.version`，并会按当前启动 Tag 范围复核；首次安装无记录时自动降级内置清单。
 - 大多数 `Load*` API 都默认走 `m_DefaultPackageName`；如果你以为它们支持多包透传，那是错的。
 - Editor 下用 Host/Offline/Web PlayMode 跑真实包时，TMP 或普通材质出现洋红色块，优先检查 shader bundle 与当前 Editor 渲染端是否跨平台；AssetManager 会对已加载资源做同名 shader 重绑，但这只服务编辑器预览，不代表 Player 会走同一套修复路径。
 - `CreateDownloaderByLocations()` 对空数组会直接抛异常；“整包下载”应该用 `CreateDownloader()`。

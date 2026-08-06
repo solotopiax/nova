@@ -84,6 +84,9 @@ namespace NovaFramework.BestHTTP.Runtime
             }
         }
 
+        /// <summary>
+        /// 执行下载请求，并在 BestHTTP 回调返回前复制响应内容，避免响应释放后读取到空数据。
+        /// </summary>
         private async UniTask<HttpResponse> DownloadCoreAsync(
             string url,
             int idleTimeout,
@@ -126,14 +129,55 @@ namespace NovaFramework.BestHTTP.Runtime
 
             CancellationTokenSource idleCts = new CancellationTokenSource();
             CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, idleCts.Token);
+            var responseTcs = new UniTaskCompletionSource<HttpResponse>();
+            int completionState = 0;
+
+            request.Callback = (req, response) =>
+            {
+                if (Volatile.Read(ref completionState) != 0)
+                {
+                    return;
+                }
+
+                HttpResponse capturedResponse;
+                try
+                {
+                    capturedResponse = BuildDownloadResponse(
+                        req,
+                        response,
+                        cancelledMessage,
+                        exceptionLogPrefix,
+                        url,
+                        lastDownloadedBytes);
+                }
+                catch (Exception exception)
+                {
+                    if (Interlocked.CompareExchange(ref completionState, 1, 0) == 0)
+                    {
+                        responseTcs.TrySetException(exception);
+                    }
+                    return;
+                }
+
+                if (Interlocked.CompareExchange(ref completionState, 1, 0) == 0)
+                {
+                    if (!responseTcs.TrySetResult(capturedResponse))
+                    {
+                        ReferencePool.Put(capturedResponse);
+                    }
+                }
+                else
+                {
+                    ReferencePool.Put(capturedResponse);
+                }
+            };
+            request.Send();
 
             try
             {
-                UniTask<Best.HTTP.HTTPResponse> responseTask = request.GetHTTPResponseAsync(linkedCts.Token).AsUniTask();
-
                 while (true)
                 {
-                    bool completed = responseTask.Status != UniTaskStatus.Pending;
+                    bool completed = responseTcs.Task.Status != UniTaskStatus.Pending;
                     if (completed)
                     {
                         break;
@@ -141,21 +185,28 @@ namespace NovaFramework.BestHTTP.Runtime
 
                     if (Time.realtimeSinceStartup - lastProgressTime > effectiveIdleTimeout)
                     {
-                        idleCts.Cancel();
-                        request.Abort();
-                        return HttpResponse.Create(0, null, null, null, Txt.Format("Idle timeout ({0}s) exceeded for URL: {1}。", effectiveIdleTimeout, url), false, lastDownloadedBytes, -1L);
+                        if (Interlocked.CompareExchange(ref completionState, 2, 0) == 0)
+                        {
+                            idleCts.Cancel();
+                            request.Abort();
+                            return HttpResponse.Create(0, null, null, null, Txt.Format("Idle timeout ({0}s) exceeded for URL: {1}。", effectiveIdleTimeout, url), false, lastDownloadedBytes, -1L);
+                        }
+                        break;
                     }
 
                     await UniTask.Yield(PlayerLoopTiming.Update, linkedCts.Token);
                 }
 
-                Best.HTTP.HTTPResponse response = await responseTask;
-                return BuildHttpResponse(response);
+                return await responseTcs.Task;
             }
             catch (OperationCanceledException)
             {
-                request.Abort();
-                return HttpResponse.Create(0, null, null, null, cancelledMessage, false, lastDownloadedBytes, -1L);
+                if (Interlocked.CompareExchange(ref completionState, 2, 0) == 0)
+                {
+                    request.Abort();
+                    return HttpResponse.Create(0, null, null, null, cancelledMessage, false, lastDownloadedBytes, -1L);
+                }
+                return await responseTcs.Task;
             }
             catch (AsyncHTTPException e)
             {
@@ -167,6 +218,49 @@ namespace NovaFramework.BestHTTP.Runtime
                 linkedCts.Dispose();
                 idleCts.Dispose();
             }
+        }
+
+        /// <summary>
+        /// 在 BestHTTP 完成回调内将请求状态与响应内容转换为框架响应。
+        /// </summary>
+        private static HttpResponse BuildDownloadResponse(
+            HTTPRequest request,
+            Best.HTTP.HTTPResponse response,
+            string cancelledMessage,
+            string exceptionLogPrefix,
+            string url,
+            long downloadedBytes)
+        {
+            if (request.State == HTTPRequestStates.Finished)
+            {
+                return BuildHttpResponse(response);
+            }
+
+            string error;
+            switch (request.State)
+            {
+                case HTTPRequestStates.Aborted:
+                    error = cancelledMessage;
+                    break;
+                case HTTPRequestStates.ConnectionTimedOut:
+                    error = "Connection Timed Out!";
+                    break;
+                case HTTPRequestStates.TimedOut:
+                    error = "Processing the request Timed Out!";
+                    break;
+                case HTTPRequestStates.Error:
+                    error = request.Exception?.Message ?? "No Exception";
+                    break;
+                default:
+                    error = Txt.Format("Unexpected request state: {0}", request.State);
+                    break;
+            }
+
+            if (request.State != HTTPRequestStates.Aborted)
+            {
+                Log.Warning(LogTag.Http, "{0}：{1}，URL：{2}。", exceptionLogPrefix, error, url);
+            }
+            return HttpResponse.Create(0, null, null, null, error, false, downloadedBytes, -1L);
         }
 
         private static HttpResponse BuildHttpResponse(Best.HTTP.HTTPResponse response)

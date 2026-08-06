@@ -120,6 +120,12 @@ MonoBehaviour:
     VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    AssetCheckWhitelistDeviceIDs: []
+    AssetCheckWhitelistRemoteFilePath: 
+    AssetCheckManifestBytesLocalFilePath: 
+    AssetCheckManifestHashLocalFilePath: 
+    AssetCheckPackageVersionLocalFilePath: 
+    AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -137,6 +143,12 @@ MonoBehaviour:
       VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
       LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
       RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+      AssetCheckWhitelistDeviceIDs: []
+      AssetCheckWhitelistRemoteFilePath: 
+      AssetCheckManifestBytesLocalFilePath: 
+      AssetCheckManifestHashLocalFilePath: 
+      AssetCheckPackageVersionLocalFilePath: 
+      AssetCheckVersionRemoteDirectory: 
       ZoneID: YOUR_CLOUDFLARE_ZONE_ID
       PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
       Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -153,6 +165,13 @@ MonoBehaviour:
       VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
       LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
       RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+      AssetCheckWhitelistDeviceIDs:
+      - 46812447-BB13-533A-8F22-8B0B3892FA84
+      AssetCheckWhitelistRemoteFilePath: Nova/{Platform}/{Package}/VersionsCheckWhiteList.json
+      AssetCheckManifestBytesLocalFilePath: Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.bytes
+      AssetCheckManifestHashLocalFilePath: Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.hash
+      AssetCheckPackageVersionLocalFilePath: Bundles/{Platform}/{Package}/2026-07-22-908/Default.version
+      AssetCheckVersionRemoteDirectory: Nova/{Platform}/{Package}/WhiteListVersions
       ZoneID: YOUR_CLOUDFLARE_ZONE_ID
       PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
       Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -343,6 +362,12 @@ MonoBehaviour:
     VersionCheckRemoteFilePath: 
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    AssetCheckWhitelistDeviceIDs: []
+    AssetCheckWhitelistRemoteFilePath: 
+    AssetCheckManifestBytesLocalFilePath: 
+    AssetCheckManifestHashLocalFilePath: 
+    AssetCheckPackageVersionLocalFilePath: 
+    AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN

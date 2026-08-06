@@ -92,6 +92,11 @@ MonoBehaviour:
     VersionCheckRemoteFilePath: 
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    AssetCheckWhitelistDeviceIDs: []
+    AssetCheckManifestBytesLocalFilePath: 
+    AssetCheckManifestHashLocalFilePath: 
+    AssetCheckPackageVersionLocalFilePath: 
+    AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -168,6 +173,11 @@ MonoBehaviour:
     VersionCheckRemoteFilePath: 
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    AssetCheckWhitelistDeviceIDs: []
+    AssetCheckManifestBytesLocalFilePath: 
+    AssetCheckManifestHashLocalFilePath: 
+    AssetCheckPackageVersionLocalFilePath: 
+    AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -1280,6 +1290,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1333,316 +1344,386 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728949
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728950
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728951
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728952
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728953
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728954
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728955
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728956
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728957
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728958
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728959
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728960
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728961
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728962
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728963
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728964
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728965
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728966
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728967
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728968
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728969
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728970
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728971
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728972
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728973
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728974
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728975
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728976
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728977
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728978
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728979
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728980
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728981
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728982
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729212
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2327,10 +2408,12 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 3589943518543478926
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:

@@ -9,6 +9,11 @@ source: cur-session
 aliases:
   - ADR-070-sdk-enable-via-configmaster-enabledsdks
   - sdk-enable-configmaster
+keywords:
+  - ADR-070
+  - EnabledSDKs
+  - SDK启用真相源
+  - ConfigMaster
 tags: [adr, nova, framework, sdk, config]
 supersedes: []
 superseded-by: []

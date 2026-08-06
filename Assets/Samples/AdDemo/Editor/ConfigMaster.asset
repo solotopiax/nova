@@ -1136,6 +1136,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -1164,6 +1165,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1192,6 +1194,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1220,6 +1223,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1248,6 +1252,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1276,6 +1281,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1304,6 +1310,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1332,6 +1339,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1360,6 +1368,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1388,6 +1397,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1416,6 +1426,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1444,6 +1455,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1472,6 +1484,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1500,6 +1513,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1528,6 +1542,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1556,6 +1571,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1584,6 +1600,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1612,6 +1629,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1640,6 +1658,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1668,6 +1687,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1696,6 +1716,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1724,6 +1745,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1752,6 +1774,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1780,6 +1803,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1808,6 +1832,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1836,6 +1861,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -1864,6 +1890,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -1892,6 +1919,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -1920,6 +1948,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -1948,6 +1977,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -1976,6 +2006,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -2004,6 +2035,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -2032,6 +2064,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -2060,6 +2093,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -2088,6 +2122,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:
@@ -2116,6 +2151,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - f9da37dc3a396a90
         m_InterPlacementIds:

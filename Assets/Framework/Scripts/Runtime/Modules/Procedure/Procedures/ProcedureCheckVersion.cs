@@ -145,6 +145,10 @@ namespace NovaFramework.Runtime
                 ct.ThrowIfCancellationRequested();
                 await assetManager.LoadManifestAsync(null, ct);
                 m_HasAssetPatch = await assetManager.HasPatchAsync(null, ct);
+                if (!m_HasAssetPatch)
+                {
+                    assetManager.CommitBootableVersion();
+                }
                 Log.Debug(LogTag.Procedure, Txt.Format("资源补丁检查: HasPatch={0}", m_HasAssetPatch));
             }
             catch (OperationCanceledException)

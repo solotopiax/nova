@@ -34,6 +34,16 @@ namespace NovaFramework.Runtime
         private readonly string m_HostServerUrlFallback;
 
         /// <summary>
+        /// 白名单设备使用的版本元数据根主地址。
+        /// </summary>
+        private readonly string m_MetadataRootUrl;
+
+        /// <summary>
+        /// 白名单设备使用的版本元数据根备用地址。
+        /// </summary>
+        private readonly string m_MetadataRootUrlFallback;
+
+        /// <summary>
         /// 平台枚举值；由编译宏决定，不依赖运行时配置。
         /// </summary>
         private readonly PlatformType m_Platform;
@@ -52,12 +62,22 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 已替换占位符的 URL 前缀缓存。
         /// </summary>
-        private readonly string[] m_Cache;
+        private readonly string[] m_RemoteBaseUrls;
+
+        /// <summary>
+        /// 已替换占位符的白名单版本元数据根地址缓存。
+        /// </summary>
+        private readonly string[] m_MetadataBaseUrls;
+
+        /// <summary>
+        /// 常规与白名单元数据根地址的去重合集，供 DoH 预检。
+        /// </summary>
+        private readonly string[] m_AllBaseUrls;
 
         /// <summary>
         /// 已完成平台、包名与版本占位符替换的远端基地址。
         /// </summary>
-        public IReadOnlyList<string> BaseUrls => m_Cache;
+        public IReadOnlyList<string> BaseUrls => m_AllBaseUrls;
 
         /// <summary>
         /// 构造远端寻址服务。
@@ -66,7 +86,7 @@ namespace NovaFramework.Runtime
         /// <param name="hostServerUrlFallback">备用下载地址配置值，可为空。</param>
         /// <param name="package">当前使用的资源包名。</param>
         public AssetRemoteService(string hostServerUrl, string hostServerUrlFallback, string package)
-            : this(hostServerUrl, hostServerUrlFallback, package, ChannelType.None)
+            : this(hostServerUrl, hostServerUrlFallback, package, ChannelType.None, null, null)
         {
         }
 
@@ -82,14 +102,36 @@ namespace NovaFramework.Runtime
             string hostServerUrlFallback,
             string package,
             ChannelType channel)
+            : this(hostServerUrl, hostServerUrlFallback, package, channel, null, null)
+        {
+        }
+
+        /// <summary>
+        /// 构造可为白名单设备单独指定版本元数据根地址的远端寻址服务。
+        /// </summary>
+        public AssetRemoteService(
+            string hostServerUrl,
+            string hostServerUrlFallback,
+            string package,
+            ChannelType channel,
+            string metadataRootUrl,
+            string metadataRootUrlFallback)
         {
             m_HostServerUrl = hostServerUrl;
             m_HostServerUrlFallback = hostServerUrlFallback;
+            m_MetadataRootUrl = metadataRootUrl;
+            m_MetadataRootUrlFallback = metadataRootUrlFallback;
             m_Platform = Util.UrlTemplate.ResolveRuntimePlatform();
             m_Channel = channel;
             m_Package = package;
             m_Version = Application.version;
-            m_Cache = BuildRemoteUrlCache();
+            m_RemoteBaseUrls = BuildRemoteUrlCache(m_HostServerUrl, m_HostServerUrlFallback);
+            m_MetadataBaseUrls = BuildRemoteUrlCache(m_MetadataRootUrl, m_MetadataRootUrlFallback);
+            m_AllBaseUrls = MergeBaseUrls(m_RemoteBaseUrls, m_MetadataBaseUrls);
+            if (m_RemoteBaseUrls.Length == 0)
+            {
+                Log.Error(LogTag.Asset, "AssetRemoteService 未解析到任何常规远端地址。请配置热更 URL。");
+            }
         }
 
         /// <summary>
@@ -99,12 +141,12 @@ namespace NovaFramework.Runtime
         /// <returns>候选 URL 列表，至少 1 项。</returns>
         public IReadOnlyList<string> GetRemoteUrls(string fileName)
         {
-            int count = m_Cache.Length;
-            string[] urls = new string[count];
-            for (int i = 0; i < count; i++)
+            List<string> urls = new List<string>(4);
+            if (IsVersionMetadataFile(fileName))
             {
-                urls[i] = $"{m_Cache[i]}/{fileName}";
+                AppendFileUrls(urls, m_MetadataBaseUrls, fileName);
             }
+            AppendFileUrls(urls, m_RemoteBaseUrls, fileName);
             return urls;
         }
 
@@ -128,28 +170,85 @@ namespace NovaFramework.Runtime
         /// 直接 URL 优先。
         /// </summary>
         /// <returns>可用远端前缀数组。</returns>
-        private string[] BuildRemoteUrlCache()
+        private string[] BuildRemoteUrlCache(string primaryConfiguredUrl, string fallbackConfiguredUrl)
         {
             List<string> urls = new List<string>(2);
 
-            string primary = ResolveRemoteBaseUrl(m_HostServerUrl);
+            string primary = ResolveRemoteBaseUrl(primaryConfiguredUrl);
             if (!string.IsNullOrEmpty(primary))
             {
                 urls.Add(primary);
             }
 
-            string fallback = ResolveRemoteBaseUrl(m_HostServerUrlFallback);
+            string fallback = ResolveRemoteBaseUrl(fallbackConfiguredUrl);
             if (!string.IsNullOrEmpty(fallback) && !string.Equals(fallback, primary, StringComparison.OrdinalIgnoreCase))
             {
                 urls.Add(fallback);
             }
 
-            if (urls.Count == 0)
+            return urls.ToArray();
+        }
+
+        /// <summary>
+        /// 判断 YooAsset 请求是否属于运行时版本元数据。
+        /// 仅识别 Package.version、Package_PackageVersion.hash 与 Package_PackageVersion.bytes。
+        /// </summary>
+        private bool IsVersionMetadataFile(string fileName)
+        {
+            if (string.Equals(fileName, $"{m_Package}.version", StringComparison.Ordinal))
             {
-                Log.Error(LogTag.Asset, "AssetRemoteService 未解析到任何远端地址。请配置热更 URL。");
+                return true;
             }
 
-            return urls.ToArray();
+            string prefix = $"{m_Package}_";
+            if (fileName == null || !fileName.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            string extension = fileName.EndsWith(".hash", StringComparison.Ordinal)
+                ? ".hash"
+                : fileName.EndsWith(".bytes", StringComparison.Ordinal)
+                    ? ".bytes"
+                    : null;
+            return extension != null && fileName.Length > prefix.Length + extension.Length;
+        }
+
+        /// <summary>
+        /// 将一组根地址拼接文件名追加到结果，并按完整 URL 去重。
+        /// </summary>
+        private static void AppendFileUrls(List<string> result, IReadOnlyList<string> baseUrls, string fileName)
+        {
+            for (int i = 0; i < baseUrls.Count; i++)
+            {
+                string url = $"{baseUrls[i]}/{fileName}";
+                if (!result.Contains(url))
+                {
+                    result.Add(url);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 合并常规与元数据根地址，保留优先级并忽略大小写去重。
+        /// </summary>
+        private static string[] MergeBaseUrls(IReadOnlyList<string> regular, IReadOnlyList<string> metadata)
+        {
+            List<string> result = new List<string>(regular.Count + metadata.Count);
+            AppendUniqueBaseUrls(result, regular);
+            AppendUniqueBaseUrls(result, metadata);
+            return result.ToArray();
+        }
+
+        private static void AppendUniqueBaseUrls(List<string> result, IReadOnlyList<string> source)
+        {
+            for (int i = 0; i < source.Count; i++)
+            {
+                if (!result.Exists(value => string.Equals(value, source[i], StringComparison.OrdinalIgnoreCase)))
+                {
+                    result.Add(source[i]);
+                }
+            }
         }
 
         /// <summary>

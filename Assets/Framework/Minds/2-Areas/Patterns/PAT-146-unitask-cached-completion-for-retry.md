@@ -9,6 +9,11 @@ date: 2026-07-16
 source: cur-session
 aliases:
   - PAT-146-unitask-cached-completion-for-retry
+keywords:
+  - PAT-146
+  - UniTask缓存
+  - Preserve
+  - 启动重试
 tags: [pattern, methodology, unitask, retry, lifecycle, sdk]
 related:
   - ADR-022
@@ -117,4 +122,3 @@ token/version 异常，导致真正的网络失败被新的异步生命周期错
 - 当前实现：`Assets/Framework/Scripts/Runtime/Modules/SDK/SDKComponent.Methods.cs`
 - 回归测试：`Assets/Tests/Editor/SDKComponentInitializeTaskTests.cs`
 - 当前文档：`Assets/Framework/Docs/Runtime/Modules/SDK/SDKComponent.md`
-

@@ -103,6 +103,11 @@ namespace NovaFramework.Editor
         private bool m_IsCdnDeploying;
 
         /// <summary>
+        /// 启动白名单配置与版本文件部署是否正在执行；用于阻止按钮重复触发。
+        /// </summary>
+        private bool m_IsCdnWhitelistDeploying;
+
+        /// <summary>
         /// Cloudflare 缓存清理是否正在执行；用于阻止清缓存按钮重复触发。
         /// </summary>
         private bool m_IsCdnPurging;

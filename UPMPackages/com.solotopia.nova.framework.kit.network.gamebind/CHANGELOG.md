@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.0.11] - 2026-08-06
+
+### Added
+
+- 新增 `QueryBindingAsync(string openid)` 只读查询接口、`BindingQueryCmdName` 配置和 `PbNetBindingQueryReq/Resp` 协议，用于查询指定 OpenID 是否已绑定及对应 UID。
+- GameBindDemo 新增绑定状态查询按钮，继续复用现有 OpenID 输入框。
+- 新增 `ErrUIDAlreadyBoundOtherOpenID`(10408)，用于区分“当前 UID 已绑定其他 OpenID”与“目标 OpenID 已被占用”。
+
+### Fixed
+
+- `PbNetBindingQueryResp.head` 修正为响应公共头 `PbNetRespHeader`。
+
+### Changed
+
+- `coreVersion` 同步为 `1.0.0`。
+
 ## [0.0.10] - 2026-08-04
 
 ### Breaking

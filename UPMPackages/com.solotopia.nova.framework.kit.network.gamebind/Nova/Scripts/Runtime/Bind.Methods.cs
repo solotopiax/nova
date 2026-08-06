@@ -15,7 +15,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
 {
     /// <summary>
     /// 账号绑定业务网络 Service。
-    /// 封装绑定、冲突查询、裁决三段协议的发送逻辑，通过 NetService.SendAsync 完成 Protobuf 序列化、AES 加密、HTTP 请求及解析全流程。
+    /// 封装绑定状态查询、绑定、冲突查询、裁决协议的发送逻辑，通过 NetService.SendAsync 完成 Protobuf 序列化、AES 加密、HTTP 请求及解析全流程。
     /// 通过 Nova.Network.Kit<Bind>() 获取实例，不继承任何基类，无参构造即可使用。
     /// </summary>
     public sealed partial class Bind
@@ -52,6 +52,40 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
                 Openid = openid ?? string.Empty
             };
             var resp = await NetService.SendAsync(cmdRow, body, PbNetBindResp.Parser, m_DebugModeOverride);
+            if (!resp.IsSuccess)
+            {
+                LogBindError(resp.ErrorCode, resp.ErrorMessage);
+            }
+            return resp;
+        }
+
+        /// <summary>
+        /// 构造绑定状态查询请求，Header 与目标 OpenID 均按调用方提供的值写入 Body。
+        /// </summary>
+        /// <param name="header">当前网络请求公共头。</param>
+        /// <param name="openid">要查询的第三方账号唯一标识。</param>
+        /// <returns>可直接发送的绑定状态查询请求。</returns>
+        private static PbNetBindingQueryReq BuildBindingQueryRequest(PbNetReqHeader header, string openid)
+        {
+            return new PbNetBindingQueryReq
+            {
+                Head = header,
+                Openid = openid ?? string.Empty
+            };
+        }
+
+        /// <summary>
+        /// 绑定状态查询内部实现：按已解析的 cmdRow 查询指定 OpenID，不修改当前登录身份。
+        /// </summary>
+        /// <param name="cmdRow">NetCmd 指令行数据，由 QueryBindingAsync 解析 BindingQueryCmdName 得到。</param>
+        /// <param name="openid">要查询的第三方账号唯一标识。</param>
+        /// <returns>包含是否绑定与对应 UID 的网络响应。</returns>
+        private async UniTask<NetResponse<PbNetBindingQueryResp>> SendQueryBindingAsync(
+            INetworkCmdRow cmdRow, string openid)
+        {
+            PbNetBindingQueryReq body = BuildBindingQueryRequest(NetBuilder.BuildHeader(), openid);
+            NetResponse<PbNetBindingQueryResp> resp = await NetService.SendAsync(
+                cmdRow, body, PbNetBindingQueryResp.Parser, m_DebugModeOverride);
             if (!resp.IsSuccess)
             {
                 LogBindError(resp.ErrorCode, resp.ErrorMessage);
@@ -137,6 +171,9 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
                     break;
                 case BindErrorCode.ErrOpenidUIDMismatch:
                     Log.Warning(LogTag.Network, "账号绑定错误：三方账号与当前账号不匹配（ErrOpenidUIDMismatch={0}）。msg={1}", errorCode, errorMessage);
+                    break;
+                case BindErrorCode.ErrUIDAlreadyBoundOtherOpenID:
+                    Log.Warning(LogTag.Network, "账号绑定错误：当前 UID 已绑定其他 OpenID（ErrUIDAlreadyBoundOtherOpenID={0}）。msg={1}", errorCode, errorMessage);
                     break;
                 default:
                     // 非 BindErrorCode 段（NetErrorCode 通用段或未知），不打绑定专属日志，交由 NetService 已有日志覆盖

@@ -49,3 +49,16 @@ message PbNetBindResolveResp {
   string final_uid     = 2;  // 裁决后的主账号 uid
   string abandoned_uid = 3;  // 被放弃但保留的 uid
 }
+
+// 查询三方账号是否已绑定请求
+message PbNetBindingQueryReq {
+  NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+  string openid     = 2;  // 待查询的三方账号id
+}
+
+// 查询三方账号是否已绑定响应
+message PbNetBindingQueryResp {
+  NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
+  bool isBinded  = 2;  // 是否已绑定
+  string uid     = 3;  // 已绑定时对应的 uid，未绑定时为空
+}

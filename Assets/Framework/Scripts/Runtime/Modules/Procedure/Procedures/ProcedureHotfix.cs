@@ -171,6 +171,7 @@ namespace NovaFramework.Runtime
             if (downloader.IsEmpty)
             {
                 Log.Debug(LogTag.Procedure, "无补丁需要下载，直接进入 LoadDll。");
+                assetManager.CommitBootableVersion();
                 m_Success = true;
                 m_Complete = true;
                 return;
@@ -220,6 +221,7 @@ namespace NovaFramework.Runtime
 
             if (ok)
             {
+                assetManager.CommitBootableVersion();
                 if (assetComponent.AutoClearUnusedCacheOnHotfix)
                 {
                     try

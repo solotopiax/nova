@@ -70,6 +70,7 @@ namespace NovaFramework.Runtime
                     await InitializeBucketAsync(buckets[i], ct);
                 }
 
+                CacheAssetCheckDeviceId();
                 m_IsInitialized = true;
                 m_InitializedTcs.TrySetResult();
                 Log.Debug(LogTag.SDK, "SDKManager.InitializeAsync 完成，所有插件初始化流程已执行。");
@@ -79,6 +80,34 @@ namespace NovaFramework.Runtime
                 // 取消时唤醒所有等待者，避免 TCS 永久挂起。
                 m_InitializedTcs.TrySetCanceled();
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// SDK 插件全部初始化后，将可用设备提供者返回的稳定 DeviceID 交给 Asset 模块原子缓存。
+        /// 任一环节不可用或异常均不影响 SDK 初始化完成语义。
+        /// </summary>
+        private void CacheAssetCheckDeviceId()
+        {
+            try
+            {
+                if (!TryGet<IDeviceIdProvider>(out IDeviceIdProvider provider))
+                {
+                    return;
+                }
+
+                string deviceId = provider.GetDeviceID();
+                if (string.IsNullOrWhiteSpace(deviceId))
+                {
+                    return;
+                }
+
+                IAssetManager assetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
+                assetManager?.SaveAssetCheckDeviceId(deviceId);
+            }
+            catch (Exception exception)
+            {
+                Log.Warning(LogTag.SDK, "缓存启动白名单 DeviceID 失败，不影响 SDK 初始化。Error={0}", exception.Message);
             }
         }
 

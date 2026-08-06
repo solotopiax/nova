@@ -82,5 +82,6 @@ MonoBehaviour:
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve

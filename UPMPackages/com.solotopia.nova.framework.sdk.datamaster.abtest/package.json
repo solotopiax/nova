@@ -1,8 +1,8 @@
 {
   "name": "com.solotopia.nova.framework.sdk.datamaster.abtest",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "license": "SEE LICENSE IN LICENSE.md",
-  "coreVersion": "1.0.0",
+  "coreVersion": "1.0.1",
   "displayName": "Nova Framework - SDK - DataMaster - ABTest",
   "description": "Nova Framework 的 Starlus DataMaster 对接层（远程配置 / ABTest / 事件上报），封装 DataMasterPlugin 由 SDKManager 编排。",
   "category": "Runtime",

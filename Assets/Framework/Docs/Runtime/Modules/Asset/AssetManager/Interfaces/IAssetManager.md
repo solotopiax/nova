@@ -12,7 +12,7 @@
 
 它把资源系统拆成四层能力：
 
-- 启动层：`Initialize / BootstrapAsync / LoadManifestAsync`
+- 启动层：`Initialize / BootstrapAsync / LoadManifestAsync / SaveAssetCheckDeviceId`
 - 补丁层：`HasPatchAsync / CreateDownloader*`
 - 资源层：`Load* / Preload*`
 - 治理层：`CleanupAsync / RefreshManifestAsync / ClearUnusedCacheAsync`
@@ -32,6 +32,7 @@
 - `Initialize(config)`：只接收配置
 - `BootstrapAsync()`：注册包、准备底层资源系统
 - `LoadManifestAsync(package)`：初始化包并加载版本 / 清单
+- `SaveAssetCheckDeviceId(deviceId)`：SDK 初始化后向 Asset 模块窄接口回写稳定设备 ID；空值或写入失败不阻断调用方
 
 不要把这三步当成一个动作。
 
@@ -68,6 +69,8 @@
 ## 最小 API 面
 
 - 启动：`BootstrapAsync()` / `LoadManifestAsync()`
+- 启动白名单缓存：`SaveAssetCheckDeviceId()`
+- 可启动版本确认：`CommitBootableVersion()`
 - 补丁：`HasPatchAsync()` / `CreateDownloader()`
 - 加载：`LoadAsync<T>()` / `LoadSync<T>()`
 - 场景：`LoadSceneAsync()`

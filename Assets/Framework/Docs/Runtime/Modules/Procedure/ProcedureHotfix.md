@@ -59,6 +59,7 @@
 
 如果下载器 `IsEmpty`：
 
+- 调用 `CommitBootableVersion()` 记录当前启动范围已就绪的版本
 - 直接标记成功
 - 不弹框
 - 后续 `OnUpdate()` 会直接进入 `ProcedureLoadDll`
@@ -79,6 +80,7 @@
 
 #### 成功
 
+- 调用 `CommitBootableVersion()` 推进本地可启动版本
 - 可选执行 `ClearUnusedCacheAsync(ct)`
 - 缓存清理失败只记 warning，不阻断流程
 - `m_Success = true`

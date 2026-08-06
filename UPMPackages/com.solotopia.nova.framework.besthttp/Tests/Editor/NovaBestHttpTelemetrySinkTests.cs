@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 using Best.HTTP.Telemetry;
@@ -11,6 +12,8 @@ using NovaFramework.BestHTTP.Runtime;
 using NovaFramework.Runtime;
 
 using NUnit.Framework;
+
+using UnityEngine;
 
 namespace NovaFramework.BestHTTP.Tests
 {
@@ -35,6 +38,17 @@ namespace NovaFramework.BestHTTP.Tests
             BestHttpTelemetryRegistration.Reset();
 
             Assert.That(BestHttpTelemetry.Sink, Is.Null);
+        }
+
+        [Test]
+        public void Registration_SeparatesSinkInstallationFromUniTaskReadinessWatch()
+        {
+            Assert.That(
+                GetRuntimeInitializeLoadType(nameof(BestHttpTelemetryRegistration.Register)),
+                Is.EqualTo(RuntimeInitializeLoadType.AfterAssembliesLoaded));
+            Assert.That(
+                GetRuntimeInitializeLoadType("StartReadinessWatch"),
+                Is.EqualTo(RuntimeInitializeLoadType.BeforeSceneLoad));
         }
 
         [Test]
@@ -132,6 +146,23 @@ namespace NovaFramework.BestHTTP.Tests
             Func<IReadOnlyList<ITrackPlugin>> plugins)
         {
             return new NovaBestHttpTelemetrySink(isEnabled, isReady, plugins);
+        }
+
+        /// <summary>
+        /// 读取指定自动初始化方法声明的 Unity 生命周期阶段。
+        /// </summary>
+        /// <param name="methodName">BestHTTP 遥测注册器中的静态方法名。</param>
+        /// <returns>该方法声明的运行时初始化阶段。</returns>
+        private static RuntimeInitializeLoadType GetRuntimeInitializeLoadType(string methodName)
+        {
+            MethodInfo method = typeof(BestHttpTelemetryRegistration).GetMethod(
+                methodName,
+                BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.That(method, Is.Not.Null, $"未找到自动初始化方法：{methodName}");
+
+            CustomAttributeData attribute = method.GetCustomAttributesData()
+                .Single(item => item.AttributeType == typeof(RuntimeInitializeOnLoadMethodAttribute));
+            return (RuntimeInitializeLoadType)attribute.ConstructorArguments[0].Value;
         }
 
         private static BestHttpTelemetryEvent CreateEvent(string name, string value = null)

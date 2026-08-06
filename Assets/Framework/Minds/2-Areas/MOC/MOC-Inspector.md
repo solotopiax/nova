@@ -16,6 +16,7 @@ related:
   - "[[ADR-014-playmode-split-editor-runtime|ADR-014]]"
   - "[[ADR-023-no-editor-prefs-in-framework|ADR-023]]"
   - "[[ADR-027-rule-ban-editor-refcount-batch-apis|ADR-027]]"
+  - "[[PAT-150-editor-multi-registry-progressive-load-mutation-gate|PAT-150]]"
 ---
 
 # MOC-Inspector：Editor 侧图谱
@@ -82,6 +83,7 @@ Editor/EditorUtil/
 | [[PAT-10-imgui-popup-horizontal-wrap\|PAT-10]] | IMGUI 弹窗换行规则 |
 | [[PAT-18-editor-window-vs-util-split\|PAT-18]] | EditorWindow vs EditorUtil 职责分离 |
 | [[PAT-20-editor-panel-title-indent\|PAT-20]] | 面板标题缩进 |
+| [[PAT-150-editor-multi-registry-progressive-load-mutation-gate\|PAT-150]] | 多仓库并发渐进展示，变更操作等待完整数据集 |
 
 ## 常见误区
 

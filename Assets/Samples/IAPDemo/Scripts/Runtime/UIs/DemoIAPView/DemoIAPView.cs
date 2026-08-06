@@ -36,7 +36,9 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             {
                 SetButtonLabel(m_SampleButton, "登录");
                 m_SampleButton.onClick.AddListener(OnLoginClick);
-                SetButtonApiHint(m_SampleButton, string.Empty);
+                SetButtonApiHint(
+                    m_SampleButton,
+                    "Nova.Network.Kit<Login>().Async(string.Empty, openId, forceNewAccount)");
             }
         }
 

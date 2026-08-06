@@ -134,7 +134,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             }
 
             SetButtonLabel(restoreButton, "恢复订阅");
-            SetButtonApiHint(restoreButton, "RestorePurchasesAsync");
+            SetButtonApiHint(restoreButton, "m_IapBridge.RestorePurchasesAsync()");
 
             restoreButton.onClick.RemoveAllListeners();
             restoreButton.onClick.AddListener(OnRestorePurchasesClick);
@@ -168,7 +168,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 }
 
                 SetButtonLabel(payButton, BuildPayButtonText(tableId, groupLabel));
-                SetButtonApiHint(payButton, m_IapBridge != null ? m_IapBridge.GetProductSku(tableId) : string.Empty);
+                SetButtonApiHint(payButton, "m_IapBridge.PayMobileAsync(tableId)");
 
                 long capturedId = tableId;
                 payButton.onClick.RemoveAllListeners();

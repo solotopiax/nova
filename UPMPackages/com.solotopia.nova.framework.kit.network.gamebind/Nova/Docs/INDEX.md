@@ -1,6 +1,6 @@
 # Nova Framework - Kit - Network - GameBind 文档索引
 
-> 本包为 Nova 框架账号绑定业务 Kit，在主框架包 `com.solotopia.nova.framework` 的 Network Kit 公共编排层基础上，封装绑定、冲突查询、裁决三段协议。
+> 本包为 Nova 框架账号绑定业务 Kit，在主框架包 `com.solotopia.nova.framework` 的 Network Kit 公共编排层基础上，封装绑定状态查询、绑定、冲突查询与裁决协议。
 > 业务侧通过 `Nova.Network.Kit<Bind>()` 获取实例，无需关心协议细节。
 >
 > **职责边界：** 本包只负责账号归属裁决（OpenID 绑哪个 UID、冲突时谁为主）；存档数据覆盖（本地覆盖云端 / 云端覆盖本地）由业务层配合 `GameSave` 模块编排。Resolve 会按业务 `FinalUid` 更新进程内登录身份。
@@ -15,14 +15,14 @@
 
 | 类型 | 说明 | 文档 |
 |---|---|---|
-| `Bind` | 账号绑定业务 Service（BindAsync / QueryConflictAsync / ResolveAsync / SetDebugMode） | [Bind.md](./Bind.md) |
+| `Bind` | 账号绑定业务 Service（QueryBindingAsync / BindAsync / QueryConflictAsync / ResolveAsync / SetDebugMode） | [Bind.md](./Bind.md) |
 | `ThirdLoginProvider` | 第三方登录提供方（Facebook / Google / Apple / Wechat），对应 Bind provider 的客户端取值契约 | [Bind.md](./Bind.md) |
-| `BindKitConfig` | 账号绑定 Kit 固有配置（BindCmdName / BindConflictCmdName / BindResolveCmdName），在 ConfigWindow 一次配置后 Bind 内部自动取用 | [BindKitConfig.md](./BindKitConfig.md) |
+| `BindKitConfig` | 账号绑定 Kit 固有配置（BindingQueryCmdName / BindCmdName / BindConflictCmdName / BindResolveCmdName），在 ConfigWindow 一次配置后 Bind 内部自动取用 | [BindKitConfig.md](./BindKitConfig.md) |
 | `BindErrorCode` | 账号绑定业务错误码（服务端绑定业务段 10400~10499 + 客户端段 7000~7999 预留） | [BindErrorCode.md](./BindErrorCode.md) |
 
 ## 协议
 
-- `pb_net_bind.proto` 定义 `BindSummary` / `PbNetBindReq` / `PbNetBindResp` / `PbNetBindConflictReq` / `PbNetBindConflictResp` / `PbNetBindResolveReq` / `PbNetBindResolveResp`；`provider` 保持 `int32`，客户端由 `ThirdLoginProvider` 约束取值。字段说明见 [Bind.md](./Bind.md) 协议数据结构表。
+- `pb_net_bind.proto` 定义绑定状态查询、绑定、冲突查询和裁决消息；`PbNetBindingQueryResp.Head` 使用 `PbNetRespHeader`，`provider` 保持 `int32`，客户端由 `ThirdLoginProvider` 约束取值。字段说明见 [Bind.md](./Bind.md) 协议数据结构表。
 
 ## 错误码
 

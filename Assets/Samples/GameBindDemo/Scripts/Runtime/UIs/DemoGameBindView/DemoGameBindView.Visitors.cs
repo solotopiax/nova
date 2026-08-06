@@ -62,6 +62,12 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
         [SerializeField] private Button m_BindButton;
 
         /// <summary>
+        /// 绑定状态查询按钮；点击后使用现有 OpenID 输入框调用 QueryBindingAsync(openId)。
+        /// </summary>
+
+        [SerializeField] private Button m_QueryBindingButton;
+
+        /// <summary>
         /// 根存档 JSON 输入框；上传时作为整包载荷写入 Nova.Network.Kit<Save>().SetFullAsync(value)。
         /// </summary>
 

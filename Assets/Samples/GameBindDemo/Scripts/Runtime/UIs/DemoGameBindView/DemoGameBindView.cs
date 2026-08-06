@@ -6,14 +6,14 @@
  * author:    taoye
  * created:   2026/07/02
  * descrip:   GameBind Kit 演示 View — 生命周期与公开接口
- *            职责：演示 Nova.Network.Kit<Bind>().BindAsync / QueryConflictAsync / ResolveAsync
- *            三段绑定流程与冲突二选一，附登录（绑定前提）入口。
+ *            职责：演示 Nova.Network.Kit<Bind>().QueryBindingAsync / BindAsync /
+ *            QueryConflictAsync / ResolveAsync，并附登录（绑定前提）入口。
  ***************************************************************/
 
 namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
 {
     /// <summary>
-    /// GameBind Kit 演示 View，展示账号绑定、冲突查询、裁决 API 的调用方式。
+    /// GameBind Kit 演示 View，展示绑定状态查询、账号绑定、冲突查询、裁决 API 的调用方式。
     /// 派生自 BaseDemoView，遵循三段式骨架（TitleBar / InteractionArea / FeedbackArea）。
     /// </summary>
     public sealed partial class DemoGameBindView : BaseDemoView
@@ -40,6 +40,12 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
             {
                 m_BindButton.onClick.AddListener(OnBindButtonClick);
                 SetButtonApiHint(m_BindButton, "Nova.Network.Kit<Bind>().BindAsync(ThirdLoginProvider.Google, openId)");
+            }
+
+            if (m_QueryBindingButton != null)
+            {
+                m_QueryBindingButton.onClick.AddListener(OnQueryBindingButtonClick);
+                SetButtonApiHint(m_QueryBindingButton, "Nova.Network.Kit<Bind>().QueryBindingAsync(openId)");
             }
 
             if (m_UploadSaveButton != null)
@@ -82,7 +88,7 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
         {
             base.OnOpen(userData);
 
-            AppendFeedback("先登录取得当前账号，再绑定三方号；冲突时按查询→二选一→裁决流程操作。");
+            AppendFeedback("可先查询 OpenID 绑定状态；绑定前需登录，冲突时按冲突查询→二选一→裁决流程操作。");
         }
 
         /// <summary>

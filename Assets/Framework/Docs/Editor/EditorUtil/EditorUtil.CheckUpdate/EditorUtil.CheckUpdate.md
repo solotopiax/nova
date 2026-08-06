@@ -38,7 +38,7 @@ NovaFramework.Editor.EditorUtil (public static partial class)
 | `c_ConfigPath` | `const string` | `"Library/Nova/CheckUpdate.json"` | 跳过配置文件相对工程根目录的路径 |
 | `c_MenuPath` | `const string` | `"Nova/Open CheckUpdate"` | Unity 菜单路径 |
 
-> registry 地址不再硬编码：运行时由 `EditorUtil.PlugPals.LoadRegistries()` 读取 `ProjectSettings/Nova/PlugPalsRegistries.json`（公网默认占位、内网默认空，该文件 `.gitignore` 不入库）；包列表 API 路径用 `EditorUtil.PlugPals.c_RegistryApiPath`。内网地址为空时跳过内部云检查。
+> registry 地址由 `EditorUtil.PlugPals.LoadRegistries()` 读取 `ProjectSettings/Nova/PlugPalsRegistries.json`（该文件 `.gitignore` 不入库）：文件不存在时使用公网与内网默认地址，文件存在时保留实际 URL（包括空值）；包列表 API 路径使用 `EditorUtil.PlugPals.c_RegistryApiPath`。任一仓库地址为空时跳过对应更新检查。
 
 ---
 

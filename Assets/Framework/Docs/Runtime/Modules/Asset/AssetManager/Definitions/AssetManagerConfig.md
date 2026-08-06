@@ -29,6 +29,11 @@ AssetManager 启动配置，由 `AssetComponent.Start()` 现场 `new AssetManage
 | `DefaultPackageName` | `string` | `null` | 默认包名；为空时取 Packages[0] |
 | `AutoCleanupOnSceneUnload` | `bool` | `false` | 场景卸载后是否自动 CleanupAsync 默认包 |
 | `EnableHotfix` | `bool` | `true` | **热更新功能总开关**；关闭时启动直跳 ProcedureLoadDll，跳过 CheckVersion / Hotfix / AppDownload 三个 Procedure |
+| `EnableStartupWhitelist` | `bool` | `false` | 启动设备白名单开关；仅在 EnableHotfix=true 且有效模式为 Host/Web 时生效 |
+| `StartupWhitelistUrl` | `string` | `null` | 当前 DevelopMode 对应的 `VersionsCheckWhiteList.json` 主 URL |
+| `StartupWhitelistUrlFallback` | `string` | `null` | 当前 DevelopMode 对应的白名单文件备用 URL |
+| `StartupWhitelistMetadataRootUrl` | `string` | `null` | 白名单设备优先使用的 YooAsset 版本元数据根主 URL |
+| `StartupWhitelistMetadataRootUrlFallback` | `string` | `null` | 白名单设备优先使用的版本元数据根备用 URL |
 | `AutoHotfix` | `bool` | `true` | 启动期资源补丁就绪后是否自动开始下载 |
 | `QuitOnFailedOrCancel` | `bool` | `false` | 下载失败或取消时是否强制退出应用 |
 | `MaxDownloadConcurrency` | `int` | `5` | 资源补丁下载最大并发数（推荐 3-8） |
@@ -56,6 +61,11 @@ m_AssetManager.Initialize(new AssetManagerConfig
     DefaultPackageName = m_DefaultPackageName,
     AutoCleanupOnSceneUnload = m_AutoCleanupOnSceneUnload,
     EnableHotfix = m_EnableHotfix,
+    EnableStartupWhitelist = m_EnableStartupWhitelist,
+    StartupWhitelistUrl = ResolveStartupWhitelistUrl(),
+    StartupWhitelistUrlFallback = ResolveStartupWhitelistUrlFallback(),
+    StartupWhitelistMetadataRootUrl = ResolveStartupWhitelistMetadataRootUrl(),
+    StartupWhitelistMetadataRootUrlFallback = ResolveStartupWhitelistMetadataRootUrlFallback(),
     AutoHotfix = m_AutoHotfix,
     QuitOnFailedOrCancel = m_QuitOnFailedOrCancel,
     MaxDownloadConcurrency = m_MaxDownloadConcurrency,

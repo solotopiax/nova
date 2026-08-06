@@ -22,6 +22,7 @@
 | 10404 | `ErrAccountNotFound` | 查询、裁决或解绑时不存在对应绑定 | 刷新当前绑定状态；裁决场景回到绑定 / 冲突查询 |
 | 10406 | `ErrBindBusy` | 操作繁忙，请稍后重试（`ResolveAsync` 行锁竞争 / 事务超时时返回） | 稍后原样重试 |
 | 10407 | `ErrOpenidUIDMismatch` | 三方账号与当前账号不匹配（open_id 已绑定其他 uid，与当前请求 uid 不一致） | 修正或清空请求头 OpenID 后重试 |
+| 10408 | `ErrUIDAlreadyBoundOtherOpenID` | 当前 UID 已绑定其他 OpenID，目标 OpenID 本身不一定被占用 | 不重复绑定；按产品策略继续使用当前绑定或更换账号 |
 
 ---
 
@@ -38,6 +39,9 @@ if (!resp.IsSuccess)
             break;
         case BindErrorCode.ErrOpenidAlreadyBound:
             // 提示该三方号已被占用
+            break;
+        case BindErrorCode.ErrUIDAlreadyBoundOtherOpenID:
+            // 当前 UID 已有其他绑定，不应提示目标三方号被占用
             break;
         case BindErrorCode.ErrThirdPartyAuthFailed:
             // 提示三方鉴权失败
@@ -66,6 +70,7 @@ if (!resolve.IsSuccess &&
 - **`ErrKicked`(10400) 为设备维度通用码**：绑定各接口经 device_id 顶号校验时可能触发，与登录路径的顶号语义一致。
 - **`ErrBindBusy`(10406) 可重试**：`ResolveAsync` 行锁竞争 / 事务超时时返回，语义为临时性繁忙，客户端原样重试即可，不改变入参。
 - **`ErrOpenidUIDMismatch`(10407) 不可原样重试**：这是 Header 当前身份声明与服务端绑定归属不一致，需先修正 UID/OpenID 组合；若 OpenID 只是待绑定目标，应仅放在业务 Body。
+- **`ErrUIDAlreadyBoundOtherOpenID`(10408) 不表示目标 OpenID 被占用**：它只说明当前 UID 已存在其他 OpenID 绑定，业务提示不得复用 10401 的“三方号已被占用”文案。
 
 ---
 

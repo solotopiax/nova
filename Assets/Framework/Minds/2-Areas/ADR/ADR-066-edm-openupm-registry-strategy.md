@@ -8,6 +8,11 @@ date: 2026-06-17
 source: cur-session
 aliases:
   - ADR-066-edm-openupm-registry-strategy
+keywords:
+  - ADR-066
+  - EDM4U
+  - OpenUPM
+  - scopedRegistries
 tags: [adr, nova, workflow, asset]
 supersedes: []
 superseded-by: []

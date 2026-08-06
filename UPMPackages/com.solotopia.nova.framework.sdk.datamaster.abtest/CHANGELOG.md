@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [0.0.11] - 2026-08-06
+
+### Changed
+
+- `coreVersion` 与 `com.starlus.sdk.datamaster` 依赖同步为 `1.0.1`。
+
 ## [0.0.10] - 2026-08-03
 
 ### Changed

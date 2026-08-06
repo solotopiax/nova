@@ -15,6 +15,7 @@ keywords: [GLO-12, UniTask, Cysharp, async, await, UniTask<T>, Preserve, Cancell
 tags: [glossary, nova, terminology, unitask, async, upm]
 related:
   - "[[PAT-146-unitask-cached-completion-for-retry|PAT-146]]"
+  - "[[PAT-152-runtime-initialize-unitask-cross-stage|PAT-152]]"
 ---
 
 # GLO-12：UniTask 异步基础设施

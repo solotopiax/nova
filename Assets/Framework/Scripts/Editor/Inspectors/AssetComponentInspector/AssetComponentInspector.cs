@@ -45,6 +45,15 @@ namespace NovaFramework.Editor
 
             // ④ 热更配置（开关 + 服务器分发 + 下载行为）
             m_EnableHotfix = serializedObject.FindProperty("m_EnableHotfix");
+            m_EnableStartupWhitelist = serializedObject.FindProperty("m_EnableStartupWhitelist");
+            m_StartupWhitelistUrlDebug = serializedObject.FindProperty("m_StartupWhitelistUrlDebug");
+            m_StartupWhitelistUrlFallbackDebug = serializedObject.FindProperty("m_StartupWhitelistUrlFallbackDebug");
+            m_StartupWhitelistUrlRelease = serializedObject.FindProperty("m_StartupWhitelistUrlRelease");
+            m_StartupWhitelistUrlFallbackRelease = serializedObject.FindProperty("m_StartupWhitelistUrlFallbackRelease");
+            m_StartupWhitelistMetadataRootUrlDebug = serializedObject.FindProperty("m_StartupWhitelistMetadataRootUrlDebug");
+            m_StartupWhitelistMetadataRootUrlFallbackDebug = serializedObject.FindProperty("m_StartupWhitelistMetadataRootUrlFallbackDebug");
+            m_StartupWhitelistMetadataRootUrlRelease = serializedObject.FindProperty("m_StartupWhitelistMetadataRootUrlRelease");
+            m_StartupWhitelistMetadataRootUrlFallbackRelease = serializedObject.FindProperty("m_StartupWhitelistMetadataRootUrlFallbackRelease");
             m_HostServerUrlDebug = serializedObject.FindProperty("m_HostServerUrlDebug");
             m_HostServerUrlFallbackDebug = serializedObject.FindProperty("m_HostServerUrlFallbackDebug");
             m_HostServerUrlRelease = serializedObject.FindProperty("m_HostServerUrlRelease");

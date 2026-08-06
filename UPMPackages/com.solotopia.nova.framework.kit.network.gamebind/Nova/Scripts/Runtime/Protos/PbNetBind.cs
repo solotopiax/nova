@@ -42,7 +42,12 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
             "Eg4KBmNob2ljZRgDIAEoCRITCgt2ZXJpZnlfY29kZRgEIAEoCSJ2ChRQYk5l",
             "dEJpbmRSZXNvbHZlUmVzcBI0CgRoZWFkGAEgASgLMiYuTm92YUZyYW1ld29y",
             "ay5SdW50aW1lLlBiTmV0UmVzcEhlYWRlchIRCglmaW5hbF91aWQYAiABKAkS",
-            "FQoNYWJhbmRvbmVkX3VpZBgDIAEoCWIGcHJvdG8z"));
+            "FQoNYWJhbmRvbmVkX3VpZBgDIAEoCSJbChRQYk5ldEJpbmRpbmdRdWVyeVJl",
+            "cRIzCgRoZWFkGAEgASgLMiUuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0",
+            "UmVxSGVhZGVyEg4KBm9wZW5pZBgCIAEoCSJsChVQYk5ldEJpbmRpbmdRdWVy",
+            "eVJlc3ASNAoEaGVhZBgBIAEoCzImLk5vdmFGcmFtZXdvcmsuUnVudGltZS5Q",
+            "Yk5ldFJlc3BIZWFkZXISEAoIaXNCaW5kZWQYAiABKAgSCwoDdWlkGAMgASgJ",
+            "YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -52,7 +57,9 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindConflictReq), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindConflictReq.Parser, new[]{ "Head", "Openid" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindConflictResp), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindConflictResp.Parser, new[]{ "Head", "ExistingSummary" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveReq), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveReq.Parser, new[]{ "Head", "Openid", "Choice", "VerifyCode" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveResp), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveResp.Parser, new[]{ "Head", "FinalUid", "AbandonedUid" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveResp), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindResolveResp.Parser, new[]{ "Head", "FinalUid", "AbandonedUid" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindingQueryReq), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindingQueryReq.Parser, new[]{ "Head", "Openid" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindingQueryResp), global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindingQueryResp.Parser, new[]{ "Head", "IsBinded", "Uid" }, null, null, null, null)
           }));
     }
     #endregion
@@ -1981,6 +1988,552 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime {
           }
           case 26: {
             AbandonedUid = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// 查询三方账号是否已绑定请求
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PbNetBindingQueryReq : pb::IMessage<PbNetBindingQueryReq>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PbNetBindingQueryReq> _parser = new pb::MessageParser<PbNetBindingQueryReq>(() => new PbNetBindingQueryReq());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PbNetBindingQueryReq> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindReflection.Descriptor.MessageTypes[7]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetBindingQueryReq() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetBindingQueryReq(PbNetBindingQueryReq other) : this() {
+      head_ = other.head_ != null ? other.head_.Clone() : null;
+      openid_ = other.openid_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetBindingQueryReq Clone() {
+      return new PbNetBindingQueryReq(this);
+    }
+
+    /// <summary>Field number for the "head" field.</summary>
+    public const int HeadFieldNumber = 1;
+    private global::NovaFramework.Runtime.PbNetReqHeader head_;
+    /// <summary>
+    /// 请求公共头
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::NovaFramework.Runtime.PbNetReqHeader Head {
+      get { return head_; }
+      set {
+        head_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "openid" field.</summary>
+    public const int OpenidFieldNumber = 2;
+    private string openid_ = "";
+    /// <summary>
+    /// 待查询的三方账号id
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Openid {
+      get { return openid_; }
+      set {
+        openid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PbNetBindingQueryReq);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PbNetBindingQueryReq other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Head, other.Head)) return false;
+      if (Openid != other.Openid) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (head_ != null) hash ^= Head.GetHashCode();
+      if (Openid.Length != 0) hash ^= Openid.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (head_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Head);
+      }
+      if (Openid.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Openid);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (head_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Head);
+      }
+      if (Openid.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Openid);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (head_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Head);
+      }
+      if (Openid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Openid);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PbNetBindingQueryReq other) {
+      if (other == null) {
+        return;
+      }
+      if (other.head_ != null) {
+        if (head_ == null) {
+          Head = new global::NovaFramework.Runtime.PbNetReqHeader();
+        }
+        Head.MergeFrom(other.Head);
+      }
+      if (other.Openid.Length != 0) {
+        Openid = other.Openid;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (head_ == null) {
+              Head = new global::NovaFramework.Runtime.PbNetReqHeader();
+            }
+            input.ReadMessage(Head);
+            break;
+          }
+          case 18: {
+            Openid = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (head_ == null) {
+              Head = new global::NovaFramework.Runtime.PbNetReqHeader();
+            }
+            input.ReadMessage(Head);
+            break;
+          }
+          case 18: {
+            Openid = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// 查询三方账号是否已绑定响应
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PbNetBindingQueryResp : pb::IMessage<PbNetBindingQueryResp>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PbNetBindingQueryResp> _parser = new pb::MessageParser<PbNetBindingQueryResp>(() => new PbNetBindingQueryResp());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PbNetBindingQueryResp> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::NovaFramework.Kit.Network.GameBind.Runtime.PbNetBindReflection.Descriptor.MessageTypes[8]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetBindingQueryResp() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetBindingQueryResp(PbNetBindingQueryResp other) : this() {
+      head_ = other.head_ != null ? other.head_.Clone() : null;
+      isBinded_ = other.isBinded_;
+      uid_ = other.uid_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetBindingQueryResp Clone() {
+      return new PbNetBindingQueryResp(this);
+    }
+
+    /// <summary>Field number for the "head" field.</summary>
+    public const int HeadFieldNumber = 1;
+    private global::NovaFramework.Runtime.PbNetRespHeader head_;
+    /// <summary>
+    /// 响应公共头
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::NovaFramework.Runtime.PbNetRespHeader Head {
+      get { return head_; }
+      set {
+        head_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "isBinded" field.</summary>
+    public const int IsBindedFieldNumber = 2;
+    private bool isBinded_;
+    /// <summary>
+    /// 是否已绑定
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool IsBinded {
+      get { return isBinded_; }
+      set {
+        isBinded_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "uid" field.</summary>
+    public const int UidFieldNumber = 3;
+    private string uid_ = "";
+    /// <summary>
+    /// 已绑定时对应的 uid，未绑定时为空
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Uid {
+      get { return uid_; }
+      set {
+        uid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PbNetBindingQueryResp);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PbNetBindingQueryResp other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Head, other.Head)) return false;
+      if (IsBinded != other.IsBinded) return false;
+      if (Uid != other.Uid) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (head_ != null) hash ^= Head.GetHashCode();
+      if (IsBinded != false) hash ^= IsBinded.GetHashCode();
+      if (Uid.Length != 0) hash ^= Uid.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (head_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Head);
+      }
+      if (IsBinded != false) {
+        output.WriteRawTag(16);
+        output.WriteBool(IsBinded);
+      }
+      if (Uid.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Uid);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (head_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Head);
+      }
+      if (IsBinded != false) {
+        output.WriteRawTag(16);
+        output.WriteBool(IsBinded);
+      }
+      if (Uid.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Uid);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (head_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Head);
+      }
+      if (IsBinded != false) {
+        size += 1 + 1;
+      }
+      if (Uid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Uid);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PbNetBindingQueryResp other) {
+      if (other == null) {
+        return;
+      }
+      if (other.head_ != null) {
+        if (head_ == null) {
+          Head = new global::NovaFramework.Runtime.PbNetRespHeader();
+        }
+        Head.MergeFrom(other.Head);
+      }
+      if (other.IsBinded != false) {
+        IsBinded = other.IsBinded;
+      }
+      if (other.Uid.Length != 0) {
+        Uid = other.Uid;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (head_ == null) {
+              Head = new global::NovaFramework.Runtime.PbNetRespHeader();
+            }
+            input.ReadMessage(Head);
+            break;
+          }
+          case 16: {
+            IsBinded = input.ReadBool();
+            break;
+          }
+          case 26: {
+            Uid = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (head_ == null) {
+              Head = new global::NovaFramework.Runtime.PbNetRespHeader();
+            }
+            input.ReadMessage(Head);
+            break;
+          }
+          case 16: {
+            IsBinded = input.ReadBool();
+            break;
+          }
+          case 26: {
+            Uid = input.ReadString();
             break;
           }
         }

@@ -29,11 +29,12 @@ MonoBehaviour:
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
     - m_StepId: export.config
-      m_ParamsJson: 
+      m_ParamsJson: "{\r\n  \"Platform\": 1,\r\n  \"Channel\": 2,\r\n  \"DevelopMode\":
+        0\r\n}"
     - m_StepId: bundlebuilder.build
       m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
     - m_StepId: build.package
-      m_ParamsJson: "{\r\n  \"Target\": 13,\r\n  \"BuildMode\": 2,\r\n  \"DevelopmentBuild\":
+      m_ParamsJson: "{\r\n  \"Target\": 13,\r\n  \"BuildMode\": 1,\r\n  \"DevelopmentBuild\":
         false,\r\n  \"SplitApplicationBinary\": false,\r\n  \"BuildAppBundle\": false,\r\n 
         \"UseAndroidKeystore\": false,\r\n  \"AndroidKeystorePath\": \"D:\\\\SoloGames-X\\\\nova\\\\Docs\\\\certificates\\\\solotopia.keystore\",\r\n 
         \"AndroidKeystorePass\": \"\",\r\n  \"AndroidKeyalias\": \"solotopia\",\r\n 
@@ -54,7 +55,8 @@ MonoBehaviour:
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
     - m_StepId: export.config
-      m_ParamsJson: 
+      m_ParamsJson: "{\r\n  \"Platform\": 2,\r\n  \"Channel\": 3,\r\n  \"DevelopMode\":
+        0\r\n}"
     - m_StepId: bundlebuilder.build
       m_ParamsJson: '{"Target":9,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
     - m_StepId: build.package

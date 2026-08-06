@@ -39,7 +39,7 @@ NovaFramework.Editor.EditorUtil (public static partial class)
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `s_HttpClient` | `static readonly HttpClient` | `Timeout = 15s` | 全局复用的 HttpClient 实例，避免 socket 耗尽 |
+| `s_HttpClient` | `static readonly HttpClient` | `Timeout = 10s` | 全局复用的 HttpClient 实例，避免 socket 耗尽 |
 | `c_ManifestRelativePath` | `const string` | `"Packages/manifest.json"` | manifest.json 相对工程根目录路径（private） |
 | `c_ChangelogCacheRelDir` | `internal const string` | `"Library/Nova/Changelog"` | 更新日志本地缓存目录，相对工程根目录（永久缓存） |
 | `c_TarballCacheRelDir` | `internal const string` | `"Library/Nova/Tarballs"` | tarball 临时下载目录，相对工程根目录（解压后删除） |

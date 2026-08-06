@@ -84,7 +84,7 @@ namespace NovaFramework.Editor
             DrawCategoryTabs();
             EditorUtil.Draw.Space(2f);
 
-            if (m_IsFetching)
+            if (m_IsFetching && (m_FilteredPackages == null || m_FilteredPackages.Count == 0))
             {
                 EditorUtil.Draw.Layout.Vertical(() =>
                 {
@@ -99,6 +99,11 @@ namespace NovaFramework.Editor
                 });
                 Repaint();
                 return;
+            }
+
+            if (m_IsFetching)
+            {
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "正在加载其余仓库，已返回的包列表可先浏览；加载完成后开放安装与卸载操作。" }, false);
             }
 
             if (!string.IsNullOrEmpty(m_ErrorMessage) && (m_FilteredPackages == null || m_FilteredPackages.Count == 0))

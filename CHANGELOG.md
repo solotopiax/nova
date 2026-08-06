@@ -6,6 +6,29 @@
 
 ---
 
+## [0.6.7] - 2026-08-06
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.7]` 节。
+
+### Breaking
+
+- Framework `IAssetManager` / `AssetManagerBase` 新增设备白名单与可启动版本提交方法，自定义 Asset Manager 实现需同步补齐契约。
+
+### Added
+
+- Framework 新增启动白名单、元数据根地址、URL 候选轮换、可启动版本记录、本地热更缓存清理与 CDN 白名单部署能力。
+- GameBind 新增绑定状态查询协议/API 与 `ErrUIDAlreadyBoundOtherOpenID`(10408) 错误码。
+
+### Fixed
+
+- BestHTTP 修复 iOS IL2CPP 启动期 UniTask PlayerLoop 未就绪异常，并在下载回调释放前复制响应内容。
+
+### Changed
+
+- 发布 Framework `0.6.7`、BestHTTP `0.1.3`、GameBind `0.0.11`、GameLogin `0.1.5`、GameSave `0.1.3`、AIHelp `0.0.5`、DataMaster ABTest `0.0.11`、IAP Mobile `0.1.3` 与 MAX `0.1.2`。
+- 更新各接入包 `coreVersion` / 原厂依赖元数据，MAX 同步 Moloco / Unity Ads adapter 版本并改为仅保存变更的 AppLovinSettings 资产。
+- `NovaSpark.cs` 固定 Framework `0.6.7` 与 BestHTTP `0.1.3`；EDM `1.2.188` 与 unity-mcp `v10.1.2` 保持当前最新版本。
+
 ## [0.6.6] - 2026-08-05
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.6]` 节。

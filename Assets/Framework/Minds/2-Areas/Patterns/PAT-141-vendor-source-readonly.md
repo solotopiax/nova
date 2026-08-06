@@ -10,6 +10,11 @@ source: cur-session
 aliases:
   - PAT-141-vendor-source-readonly
   - vendor-source-readonly
+keywords:
+  - PAT-141
+  - 第三方源码只读
+  - Vendor SDK
+  - SDK封装
 tags: [pattern, nova, sdk, external, discipline]
 related:
   - "[[PAT-33-sdk-plugin-sop|PAT-33]]"

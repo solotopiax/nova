@@ -50,7 +50,7 @@ namespace NovaFramework.BestHTTP.Runtime
         }
 
         /// <summary>
-        /// 程序集加载后自动注册 Nova 接收器，并等待 SDK 初始化完成后派发启动期缓存。
+        /// 程序集加载后同步注册 Nova 接收器，为启动期事件建立缓存入口。
         /// </summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         internal static void Register()
@@ -64,7 +64,26 @@ namespace NovaFramework.BestHTTP.Runtime
             BestHttpTelemetry.Sink = s_Sink;
 
             s_ReadinessCancellation = new CancellationTokenSource();
-            WaitForSdkReadyAsync(s_Sink, s_ReadinessCancellation.Token).Forget();
+        }
+
+        /// <summary>
+        /// 场景加载前启动 SDK 就绪监听，确保此时 UniTask 已完成 PlayerLoop 注入。
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void StartReadinessWatch()
+        {
+            NovaBestHttpTelemetrySink sink = s_Sink;
+            CancellationTokenSource cancellation = s_ReadinessCancellation;
+            if (sink == null || cancellation == null || cancellation.IsCancellationRequested)
+                return;
+
+            if (IsSdkReady())
+            {
+                sink.FlushPendingIfReady();
+                return;
+            }
+
+            WaitForSdkReadyAsync(sink, cancellation.Token).Forget();
         }
 
         /// <summary>

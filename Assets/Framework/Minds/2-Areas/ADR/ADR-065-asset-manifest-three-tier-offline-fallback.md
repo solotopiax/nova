@@ -1,87 +1,141 @@
 ---
 id: ADR-065
-title: 启动期清单加载三级离线回退，远端不可达优先复用玩家本地缓存版本
-summary: 远端不可达先复用本地缓存版本，降级内置兜底
+title: 启动期清单三级离线回退仅接受本地可启动版本
+summary: 远端失败优先复用启动范围完整的本地版本
 category: hotfix
 status: accepted
 date: 2026-06-16
 aliases:
   - ADR-065-asset-manifest-three-tier-offline-fallback
+  - LastBootableVersion
+  - 本地可启动版本
 keywords:
   - ADR-065
-  - 启动期清单加载三级离线回退，远端不可达优先复用玩家本地缓存版本
-  - ADR-065-asset-manifest-three-tier-offline-fallback
-tags: [adr, nova, asset, hotfix]
+  - LastBootableVersion
+  - CommitBootableVersion
+  - 本地可启动版本
+  - 三级离线回退
+  - 启动范围完整性
+tags: [adr, nova, asset, hotfix, offline, yooasset]
 supersedes: []
 superseded-by: []
 related:
+  - "[[ADR-025-yooasset-url-template-placeholders|ADR-025]]"
   - "[[ADR-051-launch-asset-slice-strategy|ADR-051]]"
   - "[[ADR-052-asset-cache-two-layer-cleanup|ADR-052]]"
-  - "[[ADR-025-yooasset-url-template-placeholders|ADR-025]]"
+  - "[[ADR-076-startup-whitelist-metadata-routing|ADR-076]]"
   - "[[MOC-Asset]]"
 ---
 
-# ADR-065：启动期清单加载三级离线回退，远端不可达优先复用玩家本地缓存版本
+# ADR-065：启动期清单三级离线回退仅接受本地可启动版本
 
 ## 背景（Context）
 
-YooAsset 原生在启动期 `RequestPackageVersionAsync`（HostPlayMode/SandboxFileSystem → `RequestRemotePackageVersionOperation`）是**纯远程 HTTP 拉 `.version` 文件，失败即 `SetError`，无任何本地回退**。即云端不可达（弱网 / DNS 异常 / 服务器宕机）时拿不到版本号，启动流程卡死或抛错。
+YooAsset 的 `RequestPackageVersionAsync` 在 HostPlayMode 下需要远端 `.version` 文件。网络不可达时，客户端无法取得版本号；直接回退随包内置版本虽然能启动，却会丢弃玩家已下载的有效增量缓存。
 
-旧的兜底 `TryFallbackToBuiltinManifestAsync` 在远端失败时销毁包 → 切 `OfflinePlayMode` → 回退到**随包内置（首包）版本**，代价是**丢弃玩家已下载的全部增量缓存**，体验差：一个已热更到很新版本的玩家，断网启动会被打回首包资源。
+旧方案在远端 Manifest 激活后立即把版本号写入 `Persist/Asset/CachedVersion/{package}.version`。该标记只能证明版本元数据加载成功，不能证明当前启动所需的 Bundle 已完整缓存：
 
-关键事实：YooAsset 清单加载 `LoadPackageManifestAsync(version)` 的 `DownloadPackageHashOperation` / `DownloadPackageManifestOperation` 第一步都是 `CheckExists`——**本地沙盒已缓存该版本则直接成功、零网络**。所以离线复用玩家最新缓存清单只缺“版本号”这一个字符串。但 YooAsset 不提供“从本地缓存反查最新版本号”的 API（`GetPackageVersion()` 依赖已加载的 `ActiveManifest`，启动探测期不可用）。
+- 整包更新可能尚未下载完。
+- `CreateDownloaderByTags` 只要求启动 Tag 范围，不等价于整包完整。
+- 下载失败、取消或用户跳过后，Manifest 仍可能已经激活。
+- 下次离线直接加载该版本时，可能找不到启动必须的 Bundle。
+
+因此，离线回退版本必须从“最近激活版本”收紧为“最近确认可完成当前启动范围的版本”。
 
 ## 决策（Decision）
 
-### 1. Nova 自记录版本号，零侵入补齐缺口
+### 1. 使用 LastBootableVersion 语义，不再使用 CachedVersion
 
-每次远端正常加载清单成功后，用 `pkg.GetPackageVersion()` 取当前激活版本号写入 `persistentDataPath/Persist/Asset/CachedVersion/{package}.version`（复用 `Path.Persistent`，与 `Persist/FileFragment`、`Persist/SQLite` 同体系）。写失败仅告警不中断启动。三个 helper 为 `private static` 纯函数：`GetLocalCachedVersionFilePath` / `SaveLocalCachedVersion` / `TryLoadLocalCachedVersion`。
+Nova 为每个 YooAsset 包维护一份本地可启动版本记录：
 
-### 2. 三级回退链（`TryRecoverManifestAsync` 统一编排）
+```text
+persistentDataPath/Asset/{package}.version
+```
 
-`LoadManifestAsync` 的版本请求与清单下载**两处失败**都走同一编排，逐级尝试：
+路径根由 Unity `Application.persistentDataPath` 决定，使用 `System.IO` 直接读写，不依赖 `Nova.Persist` 生命周期。旧目录 `persistentDataPath/Persist/Asset/CachedVersion/` 不再读取，也不自动迁移；旧标记的证明强度不足，迁移会重新引入不完整版本漏洞。
 
-| 级 | 方法 | 行为 |
+### 2. 只有启动下载范围完整时才能提交版本
+
+`LoadManifestAsync` 成功只激活 Manifest，不写版本记录。版本推进统一通过 `IAssetManager.CommitBootableVersion`：
+
+- `LaunchHotfixTags` 为空：用整包 Downloader 检查全部 Bundle，下载数为 0 才允许提交。
+- `LaunchHotfixTags` 非空：用相同 Tag 创建 Downloader，只检查启动范围，下载数为 0 才允许提交。
+- `ProcedureCheckVersion` 确认无补丁时提交。
+- `ProcedureHotfix` 确认 Downloader 为空或差异 Bundle 全部下载成功后提交。
+- 下载失败、取消、用户跳过、Manifest 无效或离线恢复路径一律不提交。
+
+记录使用整体覆盖写入，`version` 为空或写入失败时仅跳过或告警，不阻断启动。
+
+### 3. 三级回退链统一验证可启动性
+
+远端版本请求或 Manifest 加载失败后，`TryRecoverManifestAsync` 按以下顺序处理：
+
+| 级别 | 行为 | 接受条件 |
 |---|---|---|
-| ① 沿用当前清单 | `PackageValid` 分支 | 包已加载过清单（如 `RefreshManifestAsync` 弱网）直接复用 |
-| ② 本地缓存版本 | `TryFallbackToLocalCachedManifestAsync` | 读本地记录版本号 → 当前 Host 包上 `LoadPackageManifestAsync(localVersion)` 离线命中沙盒。**不销毁包、不切模式，保留增量** |
-| ③ 内置首包 | `TryFallbackToBuiltinManifestAsync` | 销毁包 → `OfflinePlayMode` → 内置清单（丢弃增量，最终兜底） |
+| ① 当前已激活清单 | 保留当前包和 Manifest | `PackageValid` 且当前启动范围完整 |
+| ② 本地可启动版本 | 读取 `{package}.version`，在当前 Host 包加载缓存 Manifest | Manifest 加载成功且按当前 `LaunchHotfixTags` 重建的启动范围下载数为 0 |
+| ③ 随包内置清单 | 销毁 Host 包，改用 `OfflinePlayMode` 初始化 | 内置版本与 Manifest 可用 |
 
-整体优先级：远端最新清单 → 已激活清单 → 本地缓存版本清单 → 内置清单 → 抛出原始远端错误。
+整体优先级为：远端最新清单 → 当前已激活可启动清单 → 本地可启动版本 → 随包内置版本 → 抛出原始远端错误。
 
-### 3. 门控随 HostPlayMode 默认开启，不加开关
+本地记录只是候选索引，不是无条件信任凭证。即使文件存在，也必须重新加载缓存 Manifest 并验证当前启动范围；缓存被清理、Tag 配置变化或 Manifest 损坏都会使该级失败并继续回退。
 
-本地缓存版本回退复用现有 `CanFallbackToBuiltinManifest()`（仅 HostPlayMode 生效），**不新增 Config 开关、不动 `AssetManagerConfig` / `AssetComponent` Inspector / 五段透传链**。理由：纯增益、命中才用、不命中自动降级，无副作用，加开关只是徒增配置复杂度。
+### 4. 启动 Tag 是完整性边界，不是业务层硬编码补丁
+
+Nova 不要求“全量 Bundle 都缓存”才记录版本，而是以框架已有 `LaunchHotfixTags` 定义启动可用范围：
+
+- 整包项目的可启动版本代表全量 Bundle 完整。
+- 切片项目的可启动版本代表启动 Tag 范围完整；非启动资源继续在运行时按需增量下载。
+
+这样既避免切片项目永远无法晋升版本，也不额外引入“启动必须 Tag”之类偏业务的新概念。
+
+### 5. 白名单路由不绕过可启动版本门
+
+启动白名单命中只切换版本元数据候选地址，不直接写本地版本。无论 Manifest 来自常规还是白名单元数据根，都必须经过同一 Downloader 完整性检查与 `CommitBootableVersion` 门，详见 [[ADR-076-startup-whitelist-metadata-routing|ADR-076]]。
 
 ## 后果（Consequences）
 
 ### 正面
-- 断网启动优先复用玩家最新缓存版本，保留全部增量，不再被打回首包
-- 零侵入 YooAsset 源码，全部公开 API；版本记录文件 Nova 自管，不耦合 YooAsset 沙盒路径规则
-- 编排集中在 `TryRecoverManifestAsync`，版本/清单两处失败复用同一恢复路径
+
+- 断网启动只复用已证明满足当前启动范围的版本，不会因“只激活 Manifest”误判可启动。
+- 整包与 Tag 切片共用一套提交规则，框架不绑定具体业务 Tag。
+- 不读取 YooAsset 内部沙盒结构，不侵入第三方源码。
+- 本地缓存清理或 Tag 配置变化会在回退时再次校验并安全降级。
+- 白名单灰度版本与常规版本遵守同一完整性门。
 
 ### 负面
-- 多一个 Nova 自管文件需随缓存生命周期理解（首次安装即断网无记录 → 该级失效降级内置，符合预期）
-- 记录的是“上次成功启动版本”，非“沙盒中物理存在的最新版本”；若该版本缓存被外部清理，② 级 `LoadPackageManifestAsync` 会失败并自动降级 ③，不会误判
+
+- 每个包多一份 Nova 自管的版本字符串文件。
+- 旧 CachedVersion 不迁移，升级后的第一次离线启动可能直接回退内置版本；需先完成一次正常在线启动才能生成新记录。
+- `LaunchHotfixTags` 发生变化后，旧记录可能因新启动范围不完整而失效。
+- 版本文件存在不代表一定回退成功，缓存 Manifest 与对应启动 Bundle 仍可能被系统或清理逻辑移除。
 
 ## 被排除的方案（Alternatives）
 
 | 方案 | 否决理由 |
 |---|---|
-| 扫描 YooAsset 沙盒目录反解最新版本号 | `GetDefaultCacheRoot()` / `GetCacheManifestFilesRoot()` 均 internal；不改源码就要复刻 YooAsset 路径推导规则，强耦合、包升级易裂；版本号比较 + 半下载/损坏文件判定不鲁棒 |
-| 改 YooAsset 源码让 `RequestPackageVersion` 失败回退本地 | 侵入第三方源码，升级成本高，违背封装原则 |
-| 新增 Config 开关控制本回退 | 纯增益功能无需开关，徒增 Inspector + 五段透传链改动面 |
+| Manifest 激活成功立即记录版本 | 不能证明启动所需 Bundle 已下载完整，是旧 CachedVersion 漏洞根因 |
+| 永远要求全量 Bundle 完整 | 切片项目可能长期无法晋升，违背启动 Tag + 运行时增量策略 |
+| 新增业务“启动必须 Tag”配置 | `LaunchHotfixTags` 已准确表达启动范围，重复配置会漂移 |
+| 允许 `CreateDownloaderByTags` 成功后不记录 | 下一次断网缺少最新可启动候选，会无谓回退首包 |
+| 扫描 YooAsset 沙盒反查最新版本 | 强耦合第三方内部路径，且无法单凭文件存在证明当前启动范围完整 |
+| 迁移旧 CachedVersion 文件 | 旧文件只证明 Manifest 曾激活，不能安全升级为可启动证明 |
+| 改 YooAsset 源码实现回退 | 增加第三方升级成本，破坏 Asset 模块封装边界 |
 
 ## 验证依据（Verification）
-- 源码：`AssetManager.cs`（`TryRecoverManifestAsync` / `TryFallbackToLocalCachedManifestAsync` / 重构后的 `TryFallbackToBuiltinManifestAsync` / `LoadManifestAsync` 写记录）、`AssetManager.Methods.cs`（三个 static helper）
-- grep 关键词：`TryFallbackToLocalCachedManifestAsync` / `SaveLocalCachedVersion` / `CachedVersion`
-- 单测：`AssetLocalCachedVersionTests`（Save→Load 往返 / 缺失 / 空内容，反射静态方法，3/3 通过）
-- 真机三场景：联网成功写版本文件；有缓存后断网重启走 ② 级保留增量；首次安装即断网走 ③ 级内置兜底
-- 审查要点：本地回退不得销毁包/切模式；记录只在远端正常成功路径写；门控不引入新开关
+
+- Runtime：`AssetManager.CommitBootableVersion`、`IsLaunchScopeReady`、`TryFallbackToLocalBootableManifestAsync`、`TryRecoverManifestAsync`。
+- Procedure：`ProcedureCheckVersion` 在无补丁时提交；`ProcedureHotfix` 在无差异或下载成功后提交。
+- 存储 helper：`GetLocalBootableVersionFilePath`、`SaveLocalBootableVersion`、`TryLoadLocalBootableVersion`。
+- 契约测试：`AssetLocalBootableVersionTests`、`AssetManagerManifestFallbackRegressionTests`、`AssetStartupWhitelistTests`。
+- 当前实现与文档提交：`e03e08d8e`。
 
 ## 关联
-- 规范落点：热更链路 / 启动容错
-- 相关 ADR：[[ADR-051-launch-asset-slice-strategy|ADR-051]]（版本检查比对本地缓存物理现状，本 ADR 补齐“远端不可达时的版本号来源”）、[[ADR-052-asset-cache-two-layer-cleanup|ADR-052]]（磁盘缓存清理分工，影响 ② 级缓存是否存在）、[[ADR-025-yooasset-url-template-placeholders|ADR-025]]（CDN 寻址）
-- MOC：[[MOC-Asset]]
+
+- 启动整包与 Tag 切片：[[ADR-051-launch-asset-slice-strategy|ADR-051]]
+- 磁盘缓存清理：[[ADR-052-asset-cache-two-layer-cleanup|ADR-052]]
+- URL 模板与远端寻址：[[ADR-025-yooasset-url-template-placeholders|ADR-025]]
+- 启动设备白名单：[[ADR-076-startup-whitelist-metadata-routing|ADR-076]]
+- 模块入口：[[MOC-Asset]]
 
 ---

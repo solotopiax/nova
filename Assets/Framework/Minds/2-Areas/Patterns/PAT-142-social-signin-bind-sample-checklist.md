@@ -9,6 +9,11 @@ date: 2026-07-06
 source: cur-session
 aliases:
   - PAT-142-social-signin-bind-sample-checklist
+keywords:
+  - PAT-142
+  - 社交登录Sample
+  - GameBind
+  - AOT配置
 tags: [pattern, workflow, sample, gamebind, config]
 related:
   - ADR-067-login-bind-save-separation

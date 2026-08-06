@@ -20,7 +20,7 @@ namespace NovaFramework.Editor
             /// <summary>
             /// 全局复用的 HttpClient 实例，避免 socket 耗尽。
             /// </summary>
-            private static readonly HttpClient s_HttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+            private static readonly HttpClient s_HttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
             /// <summary>
             /// 是否已有待执行的 UPM Resolve 请求。

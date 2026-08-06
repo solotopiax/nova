@@ -213,6 +213,14 @@ namespace NovaFramework.Editor
                                 VersionCheckRemoteFilePath = oc.VersionCheckRemoteFilePath ?? string.Empty,
                                 LocalDirectory = oc.LocalDirectory ?? string.Empty,
                                 RemotePathSuffix = oc.RemotePathSuffix ?? string.Empty,
+                                AssetCheckWhitelistDeviceIDs = oc.AssetCheckWhitelistDeviceIDs != null
+                                    ? new List<string>(oc.AssetCheckWhitelistDeviceIDs)
+                                    : new List<string>(),
+                                AssetCheckWhitelistRemoteFilePath = oc.AssetCheckWhitelistRemoteFilePath ?? string.Empty,
+                                AssetCheckManifestBytesLocalFilePath = oc.AssetCheckManifestBytesLocalFilePath ?? string.Empty,
+                                AssetCheckManifestHashLocalFilePath = oc.AssetCheckManifestHashLocalFilePath ?? string.Empty,
+                                AssetCheckPackageVersionLocalFilePath = oc.AssetCheckPackageVersionLocalFilePath ?? string.Empty,
+                                AssetCheckVersionRemoteDirectory = oc.AssetCheckVersionRemoteDirectory ?? string.Empty,
                                 ZoneID = oc.ZoneID ?? string.Empty,
                                 PurgeURL = oc.PurgeURL ?? string.Empty,
                                 Token = oc.Token ?? string.Empty,
@@ -232,6 +240,14 @@ namespace NovaFramework.Editor
                         VersionCheckRemoteFilePath = top.VersionCheckRemoteFilePath ?? string.Empty,
                         LocalDirectory = top.LocalDirectory ?? string.Empty,
                         RemotePathSuffix = top.RemotePathSuffix ?? string.Empty,
+                        AssetCheckWhitelistDeviceIDs = top.AssetCheckWhitelistDeviceIDs != null
+                            ? new List<string>(top.AssetCheckWhitelistDeviceIDs)
+                            : new List<string>(),
+                        AssetCheckWhitelistRemoteFilePath = top.AssetCheckWhitelistRemoteFilePath ?? string.Empty,
+                        AssetCheckManifestBytesLocalFilePath = top.AssetCheckManifestBytesLocalFilePath ?? string.Empty,
+                        AssetCheckManifestHashLocalFilePath = top.AssetCheckManifestHashLocalFilePath ?? string.Empty,
+                        AssetCheckPackageVersionLocalFilePath = top.AssetCheckPackageVersionLocalFilePath ?? string.Empty,
+                        AssetCheckVersionRemoteDirectory = top.AssetCheckVersionRemoteDirectory ?? string.Empty,
                         ZoneID = top.ZoneID ?? string.Empty,
                         PurgeURL = top.PurgeURL ?? string.Empty,
                         Token = top.Token ?? string.Empty,

@@ -1186,6 +1186,14 @@ namespace NovaFramework.Editor
                         master.CDNEditorConfigs.VersionCheckRemoteFilePath = snapshot.VersionCheckRemoteFilePath;
                         master.CDNEditorConfigs.LocalDirectory = snapshot.LocalDirectory;
                         master.CDNEditorConfigs.RemotePathSuffix = snapshot.RemotePathSuffix;
+                        master.CDNEditorConfigs.AssetCheckWhitelistDeviceIDs = snapshot.AssetCheckWhitelistDeviceIDs != null
+                            ? new List<string>(snapshot.AssetCheckWhitelistDeviceIDs)
+                            : new List<string>();
+                        master.CDNEditorConfigs.AssetCheckWhitelistRemoteFilePath = snapshot.AssetCheckWhitelistRemoteFilePath;
+                        master.CDNEditorConfigs.AssetCheckManifestBytesLocalFilePath = snapshot.AssetCheckManifestBytesLocalFilePath;
+                        master.CDNEditorConfigs.AssetCheckManifestHashLocalFilePath = snapshot.AssetCheckManifestHashLocalFilePath;
+                        master.CDNEditorConfigs.AssetCheckPackageVersionLocalFilePath = snapshot.AssetCheckPackageVersionLocalFilePath;
+                        master.CDNEditorConfigs.AssetCheckVersionRemoteDirectory = snapshot.AssetCheckVersionRemoteDirectory;
                         master.CDNEditorConfigs.ZoneID = snapshot.ZoneID;
                         master.CDNEditorConfigs.PurgeURL = snapshot.PurgeURL;
                         master.CDNEditorConfigs.Token = snapshot.Token;
@@ -1235,7 +1243,7 @@ namespace NovaFramework.Editor
                 /// <summary>
                 /// 确保当前坐标在 CDNEditorConfigsOverrides 中存在对应条目并返回其引用，供面板字段控件直接写入单字段。
                 /// 进入坐标即建份语义：mask 非全局且无命中条目时，新建条目并以当前坐标 ResolveCDNEditorConfigs 结果
-                /// （含顶层回落的整套 12 字段快照）填充，使进入坐标后显示与顶层一致，
+                /// （含顶层回落的整套配置快照）填充，使进入坐标后显示与顶层一致，
                 /// 所有后续写入天然落该坐标份而不污染全局顶层。
                 /// 当 CDNEditorConfigsMask 为全不勾（IsGlobal）时返回 null，调用方应改写顶层 CDNEditorConfigs 字段。
                 /// </summary>
@@ -1293,6 +1301,14 @@ namespace NovaFramework.Editor
                         VersionCheckRemoteFilePath = src.VersionCheckRemoteFilePath,
                         LocalDirectory = src.LocalDirectory,
                         RemotePathSuffix = src.RemotePathSuffix,
+                        AssetCheckWhitelistDeviceIDs = src.AssetCheckWhitelistDeviceIDs != null
+                            ? new List<string>(src.AssetCheckWhitelistDeviceIDs)
+                            : new List<string>(),
+                        AssetCheckWhitelistRemoteFilePath = src.AssetCheckWhitelistRemoteFilePath,
+                        AssetCheckManifestBytesLocalFilePath = src.AssetCheckManifestBytesLocalFilePath,
+                        AssetCheckManifestHashLocalFilePath = src.AssetCheckManifestHashLocalFilePath,
+                        AssetCheckPackageVersionLocalFilePath = src.AssetCheckPackageVersionLocalFilePath,
+                        AssetCheckVersionRemoteDirectory = src.AssetCheckVersionRemoteDirectory,
                         ZoneID = src.ZoneID,
                         PurgeURL = src.PurgeURL,
                         Token = src.Token,

@@ -16,6 +16,8 @@ namespace NovaFramework.Editor
 {
     internal sealed partial class AssetComponentInspector : BaseComponentInspector
     {
+        private const float c_StartupWhitelistUrlLabelWidth = 185f;
+
         /// <summary>
         /// 绘制配置信息。
         /// </summary>
@@ -34,7 +36,8 @@ namespace NovaFramework.Editor
             {
                 "(1)编辑器下的资源加载模式",
                 "(2)EditorSimulateMode 直接读取 Editor 资源",
-                "(3)开发期推荐使用，无网络开销"
+                "(3)EditorSimulateMode 不产生资源补丁，不会进入 ProcedureHotfix",
+                "(4)开发期推荐使用，无网络开销"
             }, false, GUILayout.ExpandWidth(true));
 
             // 终端模式 —— 永远 enable，3 选 1 自定义 Popup（禁 EditorSimulateMode）
@@ -84,7 +87,7 @@ namespace NovaFramework.Editor
 
             EditorUtil.Draw.Line();
 
-            // 唯一分组：热更配置（共 6 个字段，EnableHotfix 为总开关，置于首位）
+            // 唯一分组：热更配置（EnableHotfix 为总开关，置于首位）
             if (EditorUtil.Draw.Foldout("热更配置", "AssetHotfixConfigGroup", true))
             {
                 // 0. 总开关 —— 关闭后直跳 LoadDll；与 RuntimePlayMode 双向联动
@@ -126,6 +129,17 @@ namespace NovaFramework.Editor
                 // 以下字段在 EnableHotfix==false 时联动灰度禁用
                 using (new EditorGUI.DisabledScope(!m_EnableHotfix.boolValue))
                 {
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        {
+                            "(1)运行时按当前节点上的 DevelopMode 选择 Debug 或 Release 这一组地址",
+                            "(2)支持 {Platform}/{Channel}/{Package}/{Version} 占位符，框架会在运行时替换",
+                            "(3){Platform}=PlatformType 枚举名；{Channel}=Config 导出时选中的渠道；{Package}=YooAsset 当前资源包名；{Version}=Application.version"
+                        }, false, GUILayout.ExpandWidth(true));
+                    });
+
                     // 主机服务器地址 URL
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
@@ -147,18 +161,130 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.Property("主机服务器URL-Release [备用]:", m_HostServerUrlFallbackRelease, true, GUILayout.Width(180f));
                     });
+                    // 启动白名单 —— 热更配置下的二级折叠组，标题复选框控制功能开关
+                    bool whitelistExpanded = false;
+                    bool enableStartupWhitelist = m_EnableStartupWhitelist.boolValue;
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(15f);
+                        whitelistExpanded = EditorUtil.Draw.ColoredToggleFoldoutHeader(
+                            "启用白名单",
+                            "AssetStartupWhitelistGroup",
+                            GUI.contentColor,
+                            m_EnableStartupWhitelist.boolValue,
+                            out enableStartupWhitelist,
+                            null,
+                            defaultOpen: false,
+                            toggleAfterTitle: true);
+                    });
+                    if (enableStartupWhitelist != m_EnableStartupWhitelist.boolValue)
+                    {
+                        m_EnableStartupWhitelist.boolValue = enableStartupWhitelist;
+                        serializedObject.ApplyModifiedProperties();
+                    }
+
+                    if (whitelistExpanded)
+                    {
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(32f);
+                            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                            {
+                                "(1)该功能用于让指定测试设备在启动时使用独立版本文件地址进行灰度验证",
+                                "(2)仅在启用热更新且 HostPlayMode / WebPlayMode 下生效",
+                                "(3)关闭或当前 DevelopMode 没有可用 URL 时自动跳过，不阻断启动",
+                                "(4)测试设备首次正常启动后缓存稳定 DeviceID，后续启动当次参与白名单判断",
+                                "(5)运行时按 DevelopMode 选择 Debug 或 Release 主备地址",
+                                "(6)配置文件 VersionsCheckWhiteList.json 为 DeviceID JSON 字符串数组",
+                                "(7)命中后只切换 YooAsset 版本元数据，Bundle 仍走上方常规主机服务器",
+                                "(8)支持 {Platform}/{Channel}/{Package}/{Version}；所有新增 URL 均受现有 DoH 逻辑覆盖"
+                            }, false, GUILayout.ExpandWidth(true));
+                        });
+
+                        using (new EditorGUI.DisabledScope(!m_EnableStartupWhitelist.boolValue))
+                        {
+                            EditorUtil.Draw.Layout.Horizontal(() =>
+                            {
+                                EditorUtil.Draw.Space(32f);
+                                EditorUtil.Draw.Property("配置文件URL-Debug：", m_StartupWhitelistUrlDebug, true, GUILayout.Width(c_StartupWhitelistUrlLabelWidth));
+                            });
+                            EditorUtil.Draw.Layout.Horizontal(() =>
+                            {
+                                EditorUtil.Draw.Space(32f);
+                                EditorUtil.Draw.Property("配置文件URL-Debug [备用]：", m_StartupWhitelistUrlFallbackDebug, true, GUILayout.Width(c_StartupWhitelistUrlLabelWidth));
+                            });
+                            EditorUtil.Draw.Layout.Horizontal(() =>
+                            {
+                                EditorUtil.Draw.Space(32f);
+                                EditorUtil.Draw.Property("配置文件URL-Release：", m_StartupWhitelistUrlRelease, true, GUILayout.Width(c_StartupWhitelistUrlLabelWidth));
+                            });
+                            EditorUtil.Draw.Layout.Horizontal(() =>
+                            {
+                                EditorUtil.Draw.Space(32f);
+                                EditorUtil.Draw.Property("配置文件URL-Release [备用]：", m_StartupWhitelistUrlFallbackRelease, true, GUILayout.Width(c_StartupWhitelistUrlLabelWidth));
+                            });
+                            EditorUtil.Draw.Layout.Horizontal(() =>
+                            {
+                                EditorUtil.Draw.Space(32f);
+                                EditorUtil.Draw.Property("版本文件根URL-Debug：", m_StartupWhitelistMetadataRootUrlDebug, true, GUILayout.Width(c_StartupWhitelistUrlLabelWidth));
+                            });
+                            EditorUtil.Draw.Layout.Horizontal(() =>
+                            {
+                                EditorUtil.Draw.Space(32f);
+                                EditorUtil.Draw.Property("版本文件根URL-Debug [备用]：", m_StartupWhitelistMetadataRootUrlFallbackDebug, true, GUILayout.Width(c_StartupWhitelistUrlLabelWidth));
+                            });
+                            EditorUtil.Draw.Layout.Horizontal(() =>
+                            {
+                                EditorUtil.Draw.Space(32f);
+                                EditorUtil.Draw.Property("版本文件根URL-Release：", m_StartupWhitelistMetadataRootUrlRelease, true, GUILayout.Width(c_StartupWhitelistUrlLabelWidth));
+                            });
+                            EditorUtil.Draw.Layout.Horizontal(() =>
+                            {
+                                EditorUtil.Draw.Space(32f);
+                                EditorUtil.Draw.Property("版本文件根URL-Release [备用]：", m_StartupWhitelistMetadataRootUrlFallbackRelease, true, GUILayout.Width(c_StartupWhitelistUrlLabelWidth));
+                            });
+                        }
+                    }
+
+                    // 1. 启动期切片下载 tag 列表 —— 放在自动下载开关前，突出启动资源范围
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.PropertyField(m_LaunchHotfixTags, "启动期热更 Tag 列表：", true);
+                    });
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)运行时按当前节点上的 DevelopMode 选择 Debug 或 Release 这一组地址",
-                            "(2)支持 {Platform}/{Channel}/{Package}/{Version} 占位符，框架会在运行时替换",
-                            "(3){Platform}=PlatformType 枚举名；{Channel}=Config 导出时选中的渠道；{Package}=YooAsset 当前资源包名；{Version}=Application.version"
+                            "(1)空列表：启动期对全部资源做整包差异更新（适合包体小或单机项目）",
+                            "(2)填入 tag 列表：启动期仅更新命中这些 tag 的资源，其余资源在运行时按需增量下载（适合中重度或含 DLC 的项目）",
+                            "(3)需配套首包构建按 tag 内置使用"
+                        }, false, GUILayout.ExpandWidth(true));
+                    });
+                }
+
+                using (new EditorGUI.DisabledScope(!m_EnableHotfix.boolValue))
+                {
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.DangerButton(
+                            "清空本地热更资源缓存",
+                            true,
+                            EditorUtil.Asset.Cache.ClearAllHotfixResources,
+                            GUILayout.ExpandWidth(true));
+                    });
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        {
+                            "清空 YooAsset Editor 沙盒缓存及框架自主保存的 .version 文件；DeviceID 与其他本地文件不会删除"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 1. 补丁就绪自动开始下载 —— 决定整个补丁流程是否启动，最关键
+                    // 2. 补丁就绪自动开始下载 —— 决定整个补丁流程是否启动
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
@@ -174,7 +300,7 @@ namespace NovaFramework.Editor
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 2. 失败/取消时强制退出 —— 决定异常路径行为
+                    // 3. 失败/取消时强制退出 —— 决定异常路径行为
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
@@ -192,7 +318,7 @@ namespace NovaFramework.Editor
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 3. 下载最大并发数 —— 性能与限速核心参数
+                    // 4. 下载最大并发数 —— 性能与限速核心参数
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
@@ -209,7 +335,7 @@ namespace NovaFramework.Editor
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 4. 下载失败重试次数 —— 容错策略
+                    // 5. 下载失败重试次数 —— 容错策略
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
@@ -222,23 +348,6 @@ namespace NovaFramework.Editor
                         {
                             "(1)单文件失败时的自动重试次数",
                             "(2)取值 0 表示一次失败即终止整批下载"
-                        }, false, GUILayout.ExpandWidth(true));
-                    });
-
-                    // 5. 启动期切片下载 tag 列表 —— 切片策略，空列表=整包下载
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.PropertyField(m_LaunchHotfixTags, "启动期热更 Tag 列表：", true);
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
-                        {
-                            "(1)空列表：启动期对全部资源做整包差异更新（适合包体小或单机项目）",
-                            "(2)填入 tag 列表：启动期仅更新命中这些 tag 的资源，其余资源在运行时按需增量下载（适合中重度或含 DLC 的项目）",
-                            "(3)需配套首包构建按 tag 内置使用"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
@@ -259,7 +368,7 @@ namespace NovaFramework.Editor
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 8. 版本检查超时 —— 弱网相关，发生频率较低
+                    // 7. 版本检查超时 —— 弱网相关，发生频率较低
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);

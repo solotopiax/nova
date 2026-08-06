@@ -3971,6 +3971,7 @@ MonoBehaviour:
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193856
@@ -4152,210 +4153,245 @@ MonoBehaviour:
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193962
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193963
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193964
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193965
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193966
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193967
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193968
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193969
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193970
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193971
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193972
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193973
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193974
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193975
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193976
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193977
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193978
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193979
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193980
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193981
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193982
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193983
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193984
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193985
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193986
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193987
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193988
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193989
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193990
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193991
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193992
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193993
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193994
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193995
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759194243

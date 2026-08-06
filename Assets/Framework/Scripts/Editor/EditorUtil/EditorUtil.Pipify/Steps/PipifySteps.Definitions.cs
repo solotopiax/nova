@@ -215,6 +215,57 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// Step 参数：启动资源校验白名单设备 ID、三个 YooAsset 版本文件及各自远端目录。
+        /// 所有字段仅覆盖本次执行快照，不回写 ConfigMasterSO。
+        /// </summary>
+        [Serializable]
+        [PipifyHelpBox(
+            "设备 ID 每行填写一项；执行时会去除空项和首尾空白，并生成 VersionsCheckWhiteList.json 字符串数组。",
+            "配置文件使用完整云端文件位置，三个版本文件使用云端目录；配置文件位置为空或非法时不上传配置文件。",
+            "本地文件位置和云端目录位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符。")]
+        public sealed class CdnWhitelistDeployParams
+        {
+            /// <summary>
+            /// 白名单稳定设备 ID，多行文本中每行一项。
+            /// </summary>
+            [InspectorName("配置文件-设备ID（每行一个设备ID）")]
+            [TextArea(3, 8)]
+            public string DeviceIDs;
+
+            /// <summary>
+            /// 当前 Config 的 PresetOSSPath 后缀及文件名，仅用于 VersionsCheckWhiteList.json。
+            /// </summary>
+            [InspectorName("配置文件-云端文件位置")]
+            [PipifyCdnRemotePath]
+            public string WhitelistRemoteFilePath;
+
+            /// <summary>
+            /// YooAsset Manifest 二进制版本文件的项目根相对位置。
+            /// </summary>
+            [InspectorName("版本文件(.bytes)-本地文件位置")]
+            public string ManifestBytesLocalFilePath;
+
+            /// <summary>
+            /// YooAsset Manifest 哈希版本文件的项目根相对位置。
+            /// </summary>
+            [InspectorName("版本文件(.hash)-本地文件位置")]
+            public string ManifestHashLocalFilePath;
+
+            /// <summary>
+            /// YooAsset 包版本文件的项目根相对位置。
+            /// </summary>
+            [InspectorName("版本文件(.version)-本地文件位置")]
+            public string PackageVersionLocalFilePath;
+
+            /// <summary>
+            /// 当前 Config 的 PresetOSSPath 后缀，三个 YooAsset 版本文件上传到该目录。
+            /// </summary>
+            [InspectorName("版本文件-云端目录位置")]
+            [PipifyCdnRemotePath]
+            public string RemoteDirectory;
+        }
+
+        /// <summary>
         /// Step 参数：Cloudflare Zone、访问令牌与待清理缓存 URL。
         /// 三个字段仅覆盖本次执行快照，不回写 ConfigMasterSO。
         /// </summary>

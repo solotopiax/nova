@@ -51,6 +51,11 @@
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `m_EnableHotfix` | `SerializedProperty` | 绑定 `AssetComponent.m_EnableHotfix`（热更总开关） |
+| `m_EnableStartupWhitelist` | `SerializedProperty` | 启动设备白名单开关 |
+| `m_StartupWhitelistUrlDebug` / `m_StartupWhitelistUrlFallbackDebug` | `SerializedProperty` | Debug 配置文件主备 URL |
+| `m_StartupWhitelistUrlRelease` / `m_StartupWhitelistUrlFallbackRelease` | `SerializedProperty` | Release 配置文件主备 URL |
+| `m_StartupWhitelistMetadataRootUrlDebug` / `m_StartupWhitelistMetadataRootUrlFallbackDebug` | `SerializedProperty` | Debug 版本元数据根主备 URL |
+| `m_StartupWhitelistMetadataRootUrlRelease` / `m_StartupWhitelistMetadataRootUrlFallbackRelease` | `SerializedProperty` | Release 版本元数据根主备 URL |
 | `m_HostServerUrlDebug` | `SerializedProperty` | 绑定 `AssetComponent.m_HostServerUrlDebug` |
 | `m_HostServerUrlFallbackDebug` | `SerializedProperty` | 绑定 `AssetComponent.m_HostServerUrlFallbackDebug` |
 | `m_HostServerUrlRelease` | `SerializedProperty` | 绑定 `AssetComponent.m_HostServerUrlRelease` |
@@ -87,11 +92,15 @@
       - HostServerUrlFallbackDebug — Debug 备用主机服务器地址 URL
       - HostServerUrlRelease — Release 主机服务器地址 URL
       - HostServerUrlFallbackRelease — Release 备用主机服务器地址 URL
+      - 启动白名单 — 默认收起的二级 Foldout；标题内开关控制功能启停，展开后缩进显示全部子配置
+        - 配置文件 URL Debug/Release 主备 — `VersionsCheckWhiteList.json` 文件地址
+        - 版本元数据根 URL Debug/Release 主备 — 命中后仅用于 YooAsset 版本元数据；Bundle 仍走常规主机地址
+      - LaunchHotfixTags — 启动期切片下载 tag 列表（空列表=整包更新，填入 tag=切片按需下载）
+      - 清空本地热更资源缓存 — 清理动态解析的 YooAsset Editor 沙盒与框架 `*.version` 记录；保留 DeviceID；按钮下方 HelpBox 简述此范围
       - AutoHotfix — 补丁就绪后是否自动开始下载
       - QuitOnFailedOrCancel — 下载失败或取消时是否强制退出
       - MaxDownloadConcurrency — 最大并发数（推荐 3-8）
       - RetryDownloadCount — 单文件重试次数
-      - LaunchHotfixTags — 启动期切片下载 tag 列表（空列表=整包更新，填入 tag=切片按需下载）
       - AutoClearUnusedCacheOnHotfix — 热更完成后是否自动清理旧缓存
       - CheckTimeout — 版本检查超时（秒）
       - IdleTimeout — 文件下载空闲超时（秒）
@@ -99,6 +108,8 @@
 
 所有 Foldout 内条目通过 `EditorUtil.Draw.Space(16f)` 缩进，形成父子层级视觉。
 四个 HostServerUrl 字段之间不再插入额外横线，保持同组平铺；实际生效组由节点上的 `DevelopMode` 决定。
+启动白名单及其 URL 位于 `AutoHotfix` 上方；全部新增 URL 支持既有占位符并进入现有 DoH 逻辑。关闭白名单、未配置当前 DevelopMode 地址或首次没有 DeviceID 缓存时自动跳过。
+缓存清理按钮位于 LaunchHotfixTags 的 HelpBox 下方，复用 `EditorUtil.Asset.Cache`，不直接在 Inspector 中拼接或删除路径。
 
 ---
 

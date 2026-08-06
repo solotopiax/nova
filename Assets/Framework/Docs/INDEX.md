@@ -157,9 +157,10 @@
 | [ISceneHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/ISceneHandle.md) | 场景句柄接口（IsValid / IsDone / UnloadAsync） |
 | [IAssetDownloader.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetDownloader.md) | 资源下载器接口（TotalCount/Progress/RunAsync/Cancel） |
 | [AssetManager.md](Runtime/Modules/Asset/AssetManager/Implements/AssetManager.md) | Asset Manager 三层实现链（AssetManagerBase + AssetManager，12 个 partial 文件） |
-| [AssetManagerConfig.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetManagerConfig.md) | Asset Manager 配置类（包名/自动清理/EditorPlayMode/RuntimePlayMode/热更总开关 EnableHotfix/CheckTimeout/IdleTimeout/并发） |
+| [AssetManagerConfig.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetManagerConfig.md) | Asset Manager 配置类（运行模式、热更总开关、启动白名单、主备 URL、超时与并发） |
 | [AssetDownloader.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetDownloader.md) | IAssetDownloader 实现（YooAsset ResourceDownloaderOperation 包装） |
-| [AssetRemoteService.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetRemoteService.md) | YooAsset 远端寻址服务（`cmdName -> URL` 桥接 + 占位符替换） |
+| [AssetDownloadUrlPolicy.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetDownloadUrlPolicy.md) | YooAsset 候选 URL 轮换策略（传输失败与内容校验失败统一推进且去重） |
+| [AssetRemoteService.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetRemoteService.md) | YooAsset 远端寻址服务（常规主备 + 白名单 metadata-only 路由 + 占位符替换） |
 | [YooAssetHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetHandleAdapter.md) | IAssetHandle 到 YooAsset.AssetHandle 的 ReferencePool 适配器 |
 | [YooAssetSubAssetsHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetSubAssetsHandleAdapter.md) | ISubAssetsHandle 到 YooAsset.SubAssetsHandle 的 ReferencePool 适配器 |
 | [YooAssetAllAssetsHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetAllAssetsHandleAdapter.md) | IAllAssetsHandle 到 YooAsset.AllAssetsHandle 的 ReferencePool 适配器 |
@@ -444,7 +445,7 @@
 | [Definitions/SDKPluginBase.md](Runtime/Modules/SDK/Definitions/SDKPluginBase.md) | SDK 插件通用抽象基类（纯 C#，非 MonoBehaviour，模板方法 + IsAvailable 管理） |
 | [Definitions/PluginBase.md](Runtime/Modules/SDK/Definitions/PluginBase.md) | SDK 插件泛型基类（IPluginBaseMarker + PluginBase<TConfig>，自动 config 注入分支） |
 | [Managers/Interfaces/ISDKManager.md](Runtime/Modules/SDK/Managers/Interfaces/ISDKManager.md) | SDK Manager 接口（Initialize / Get / TryGet / GetAll / Broadcast*） |
-| [Managers/Implements/SDKManager.md](Runtime/Modules/SDK/Managers/Implements/SDKManager.md) | SDK Manager 唯一实现（Priority=16，Priority 分桶并行初始化，失败隔离，自动注入 PluginBase 派生插件） |
+| [Managers/Implements/SDKManager.md](Runtime/Modules/SDK/Managers/Implements/SDKManager.md) | SDK Manager 唯一实现（Priority 分桶初始化、失败隔离、初始化后缓存稳定 DeviceID） |
 | [Managers/Implements/SDKManagerBase.md](Runtime/Modules/SDK/Managers/Implements/SDKManagerBase.md) | SDK Manager 抽象基类（Priority=16） |
 | [Managers/Definitions/SDKManagerConfig.md](Runtime/Modules/SDK/Managers/Definitions/SDKManagerConfig.md) | SDK Manager 配置类（承载 PluginEntries 数组） |
 | [Plugins/Device/IDeviceIdProvider.md](Runtime/Modules/SDK/Plugins/Device/IDeviceIdProvider.md) | 设备唯一标识提供者接口（GetDeviceID）；Kit-Network NetBuilder.BuildHeader 自动读取 |
@@ -524,6 +525,7 @@
 | [EditorUtil.Build.md](Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) | BuildPipeline.BuildPlayer 薄封装，统一异常与日志 |
 | [EditorUtil.CDN.md](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) | CDN 内容部署与缓存清理工具（阿里云 OSS 批量上传 + Cloudflare purge 分批清理；编排/传输适配器分层；无 public API，仅 internal，程序集外经 ConfigWindow「CDN 内容分发网络部署」面板触发） |
 | [EditorUtil.Asset.Operator.md](Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.md) | 通用 ScriptableObject 资产查找/创建/按路径加载（泛型 Find&lt;T&gt; / CreateAt&lt;T&gt; / LoadAt&lt;T&gt;） |
+| [EditorUtil.Asset.Cache.md](Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Cache.md) | 动态解析并清理 YooAsset Editor 沙盒与框架 version 记录 |
 | [EditorUtil.FileSystem.OutputApplier.md](Editor/EditorUtil/EditorUtil.FileSystem/EditorUtil.FileSystem.OutputApplier.md) | Editor 内部批量文件替换、删除、备份与失败回滚基础设施 |
 | [EditorUtil.Config.StructureGuard.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.StructureGuard.md) | Platform×Channel 枚举网格补齐与缺失引用清理 |
 | [EditorUtil.Config.SDKPluginScanner.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) | 全程序集扫描 ISDKPluginConfig 实现类型 + 实例补全/移除（EnsureInstance/RemoveInstance 按 DevelopMode 分组） |
@@ -619,4 +621,5 @@
 |------|------|
 | [Menus.md](Editor/Menus/Menus.md) | Nova 顶级菜单项 |
 | [FolderMenuItems.md](Editor/Menus/FolderMenuItems.md) | Open IDE Project / Open Folder |
+| [AssetCacheMenuItems.md](Editor/Menus/AssetCacheMenuItems.md) | 清空本地热更资源缓存菜单 |
 | [EnableLogsMenuItems.md](Editor/Menus/EnableLogsMenuItems.md) | Enable Logs 菜单 |

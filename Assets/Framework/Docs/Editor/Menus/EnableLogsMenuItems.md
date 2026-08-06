@@ -34,7 +34,7 @@ namespace NovaFramework.Editor
 |-----------|------|----------|
 | `c_MenuDisableAllLogs` | `private const string` | `"Nova/Enable Logs/Disable All Logs"` |
 | `c_MenuEnable*` | `private const string` | 各级别菜单路径（见代码） |
-| `c_Priority*` | `private const int` | `1040–1046` |
+| `c_Priority*` | `private const int` | `1042–1048` |
 | `c_EnableLog` | `private const string` | `"ENABLE_LOG"` — 总开关 |
 | `c_EnableDebugAndAboveLog` | `private const string` | `"ENABLE_DEBUG_AND_ABOVE_LOG"` |
 | `c_EnableInfoAndAboveLog` | `private const string` | `"ENABLE_INFO_AND_ABOVE_LOG"` |

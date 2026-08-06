@@ -41,6 +41,7 @@ namespace NovaFramework.Runtime
 
             m_Config = config;
             m_Cts = new CancellationTokenSource();
+            m_HttpManager = FrameworkManagersGroup.GetManager<IHttpManager>();
         }
 
         /// <summary>
@@ -102,9 +103,14 @@ namespace NovaFramework.Runtime
                 YooAssets.Destroy();
             }
             m_ManifestLoadedPackages.Clear();
+            m_OfflineRecoveredPackages.Clear();
+            m_StartupWhitelistCheckedPackages.Clear();
+            m_StartupWhitelistMatchedPackages.Clear();
+            m_DownloadUrlPolicies.Clear();
             m_Packages.Clear();
             m_Decryptor = null;
             m_Config = null;
+            m_HttpManager = null;
         }
 
         /// <summary>
@@ -125,6 +131,7 @@ namespace NovaFramework.Runtime
             // 故 Initialize 已 Succeeded 时直接跳过本步，继续执行 Version/Manifest，避免上游流程半途失败后重入崩溃。
             if (pkg.InitializeStatus != EOperationStatus.Succeeded)
             {
+                await CheckStartupWhitelistAsync(name, ct);
                 await PreflightRemoteUrlsAsync(name, ct);
                 InitializePackageOptions options = BuildPlayModeOptions(name);
                 var initOp = pkg.InitializePackageAsync(options);
@@ -135,8 +142,7 @@ namespace NovaFramework.Runtime
                 }
             }
 
-            var versionOp = pkg.RequestPackageVersionAsync();
-            await UniTask.WaitUntil(() => versionOp.IsDone, cancellationToken: ct);
+            var versionOp = await RequestPackageVersionWithFallbackAsync(pkg, name, ct);
             if (versionOp.Status != EOperationStatus.Succeeded)
             {
                 bool fallbackSucceeded = await TryRecoverManifestAsync(name, versionOp.Error, ct);
@@ -148,8 +154,7 @@ namespace NovaFramework.Runtime
                 throw new InvalidOperationException($"RequestPackageVersionAsync failed: {versionOp.Error}");
             }
 
-            var manifestOp = pkg.LoadPackageManifestAsync(new LoadPackageManifestOptions(versionOp.PackageVersion, 60));
-            await UniTask.WaitUntil(() => manifestOp.IsDone, cancellationToken: ct);
+            var manifestOp = await LoadPackageManifestWithFallbackAsync(pkg, name, versionOp.PackageVersion, ct);
             if (manifestOp.Status != EOperationStatus.Succeeded)
             {
                 bool fallbackSucceeded = await TryRecoverManifestAsync(name, manifestOp.Error, ct);
@@ -161,8 +166,53 @@ namespace NovaFramework.Runtime
                 throw new InvalidOperationException($"LoadPackageManifestAsync failed: {manifestOp.Error}");
             }
 
-            SaveLocalCachedVersion(name, pkg.GetPackageVersion());
+            m_OfflineRecoveredPackages.Remove(name);
             m_ManifestLoadedPackages.Add(name);
+        }
+
+        /// <summary>
+        /// 保存启动白名单使用的稳定设备 ID。
+        /// 空值、相同值或写入失败均不影响调用方流程。
+        /// </summary>
+        public override void SaveAssetCheckDeviceId(string deviceId)
+        {
+            string normalized = deviceId?.Trim();
+            if (string.IsNullOrEmpty(normalized))
+            {
+                return;
+            }
+
+            if (TryLoadAssetCheckDeviceId(out string cached)
+                && string.Equals(cached, normalized, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            WriteAssetCheckDeviceId(normalized);
+        }
+
+        /// <summary>
+        /// 将当前激活且已满足启动下载范围的清单版本记录为本地可启动版本。
+        /// 仅正常在线清单允许推进；离线恢复不会覆盖之前记录。
+        /// </summary>
+        /// <param name="package">包名，null 走默认包。</param>
+        public override void CommitBootableVersion(string package = null)
+        {
+            string name = ResolvePackageName(package);
+            if (m_OfflineRecoveredPackages.Contains(name))
+            {
+                return;
+            }
+
+            ResourcePackage pkg = GetPackage(name);
+            if (!pkg.PackageValid || !IsLaunchScopeReady(pkg))
+            {
+                Log.Warning(LogTag.Asset,
+                    "跳过可启动版本记录：当前 Manifest 或启动热更范围尚未就绪。Package={0}", name);
+                return;
+            }
+
+            SaveLocalBootableVersion(name, pkg.GetPackageVersion());
         }
 
         /// <summary>
@@ -178,6 +228,11 @@ namespace NovaFramework.Runtime
             if (!m_ManifestLoadedPackages.Contains(name))
             {
                 await LoadManifestAsync(name, ct);
+            }
+
+            if (m_OfflineRecoveredPackages.Contains(name))
+            {
+                return false;
             }
 
             ResourcePackage pkg = GetPackage(name);
@@ -269,7 +324,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 远端版本或清单不可达时的统一恢复编排：① 沿用当前已激活清单 → ② 本地缓存版本离线加载 → ③ 内置首包清单回退。
+        /// 远端版本或清单不可达时的统一恢复编排：① 沿用当前已激活清单 → ② 本地可启动版本离线加载 → ③ 内置首包清单回退。
         /// 任一级成功即返回 true。
         /// </summary>
         /// <param name="name">包名。</param>
@@ -283,10 +338,11 @@ namespace NovaFramework.Runtime
             {
                 Log.Warning(LogTag.Asset, Txt.Format("远端资源清单请求失败，继续使用当前已激活清单。Package={0}, Error={1}", name, remoteError));
                 m_ManifestLoadedPackages.Add(name);
+                m_OfflineRecoveredPackages.Add(name);
                 return true;
             }
 
-            if (await TryFallbackToLocalCachedManifestAsync(name, remoteError, ct))
+            if (await TryFallbackToLocalBootableManifestAsync(name, remoteError, ct))
             {
                 return true;
             }
@@ -295,37 +351,46 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// HostPlayMode 下远端版本或清单不可达时，回退到本地已记录的缓存版本，离线加载玩家最新缓存清单。
-        /// 不销毁资源包、不切换运行模式，直接在当前 Host 包上离线命中沙盒缓存，保留玩家已下载的增量。
+        /// HostPlayMode 下远端版本或清单不可达时，回退到本地已记录的可启动版本。
+        /// 清单加载后按当前 LaunchHotfixTags 再次验证启动范围完整，避免缓存被清理或配置改变后误判。
         /// </summary>
         /// <param name="name">包名。</param>
         /// <param name="remoteError">远端版本或清单请求错误。</param>
         /// <param name="ct">取消令牌。</param>
-        /// <returns>true 表示已成功用本地缓存版本加载清单。</returns>
-        private async UniTask<bool> TryFallbackToLocalCachedManifestAsync(string name, string remoteError, CancellationToken ct)
+        /// <returns>true 表示已成功用本地可启动版本加载清单，且启动范围无需补下载。</returns>
+        private async UniTask<bool> TryFallbackToLocalBootableManifestAsync(string name, string remoteError, CancellationToken ct)
         {
             if (CanFallbackToBuiltinManifest() == false)
             {
                 return false;
             }
-            if (TryLoadLocalCachedVersion(name, out string localVersion) == false)
+            if (TryLoadLocalBootableVersion(name, out string localVersion) == false)
             {
                 return false;
             }
 
-            Log.Warning(LogTag.Asset, Txt.Format("远端资源清单请求失败，尝试回退到本地缓存版本清单。Package={0}, LocalVersion={1}, Error={2}", name, localVersion, remoteError));
+            Log.Warning(LogTag.Asset, Txt.Format("远端资源清单请求失败，尝试回退到本地可启动版本清单。Package={0}, LocalVersion={1}, Error={2}", name, localVersion, remoteError));
 
             ResourcePackage pkg = GetPackage(name);
             var manifestOp = pkg.LoadPackageManifestAsync(new LoadPackageManifestOptions(localVersion, 60));
             await UniTask.WaitUntil(() => manifestOp.IsDone, cancellationToken: ct);
             if (manifestOp.Status != EOperationStatus.Succeeded)
             {
-                Log.Warning(LogTag.Asset, Txt.Format("回退本地缓存版本清单失败。Package={0}, LocalVersion={1}, Error={2}", name, localVersion, manifestOp.Error));
+                Log.Warning(LogTag.Asset, Txt.Format("回退本地可启动版本清单失败。Package={0}, LocalVersion={1}, Error={2}", name, localVersion, manifestOp.Error));
+                return false;
+            }
+
+            if (!IsLaunchScopeReady(pkg))
+            {
+                Log.Warning(LogTag.Asset,
+                    "本地可启动版本的当前启动范围已不完整，放弃该版本并继续回退内置资源。Package={0}, Version={1}",
+                    name, localVersion);
                 return false;
             }
 
             m_ManifestLoadedPackages.Add(name);
-            Log.Warning(LogTag.Asset, Txt.Format("已回退到本地缓存清单，启动流程将跳过本轮远端热更。Package={0}, Version={1}", name, localVersion));
+            m_OfflineRecoveredPackages.Add(name);
+            Log.Warning(LogTag.Asset, Txt.Format("已回退到本地可启动版本，启动流程将跳过本轮远端热更。Package={0}, Version={1}", name, localVersion));
             return true;
         }
 
@@ -390,6 +455,7 @@ namespace NovaFramework.Runtime
             }
 
             m_ManifestLoadedPackages.Add(name);
+            m_OfflineRecoveredPackages.Add(name);
             Log.Warning(LogTag.Asset,
                 "已回退到内置资源清单，启动流程将跳过本轮远端热更。Package={0}, Version={1}",
                 name, builtinVersionOp.PackageVersion);

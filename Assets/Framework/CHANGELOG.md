@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.6.7] - 2026-08-06
+
+### Breaking
+
+- `IAssetManager` / `AssetManagerBase` 新增 `SaveAssetCheckDeviceId` 与 `CommitBootableVersion` 契约；自定义 Asset Manager 实现需同步补齐两个方法。
+
+### Added
+
+- 资源启动链新增设备白名单、独立元数据根地址、可启动版本记录与请求候选 URL 轮换策略。
+- Asset Inspector 与 Unity 菜单新增本地热更资源缓存清理入口。
+- CDN 工具链新增启动白名单文件生成、独立上传与多维配置支持。
+
+### Changed
+
+- PlugPals registry 加载改为并发请求与渐进展示，并保留显式空 URL 的配置语义。
+- 默认 `Nova.prefab` 关闭热更与启动白名单，Editor / Runtime 资源模式分别设为 EditorSimulate / Offline。
+
 ## [0.6.6] - 2026-08-05
 
 ### Fixed

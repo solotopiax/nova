@@ -244,6 +244,18 @@ PrefabInstance:
       value: NovaFramework.SDK.IAP.Runtime.IAPPlugin, NovaFramework.SDK.IAP.Runtime,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       objectReference: {fileID: 0}
+    - target: {fileID: 2901006627018902308, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_EnableHotfix
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901006627018902308, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_RuntimePlayMode
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2901006627018902308, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_EnableStartupWhitelist
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_SupportedLanguagesDataExportPath
       value: Assets/Samples/TGADemo/Jsons/LocalizationSupportedLanguages.json

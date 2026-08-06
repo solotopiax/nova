@@ -94,6 +94,17 @@ MonoBehaviour:
       m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":false,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":0,"BundledCopyParams":""}'
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Bundles/Android/Default"}'
+  - m_Name: "\u6784\u5EFABundle"
+    m_Description: "\u6784\u5EFABundle-\u56FA\u5B9A\u5305\u540D2026-07-22-908"
+    m_Items:
+    - m_StepId: bundlebuilder.build
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
+        \"2026-07-22-908\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\":
+        false,\n  \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n 
+        \"ManifestEncryptorClassName\": \"YooAsset.Editor.ManifestEncryptorNone\",\n 
+        \"ManifestDecryptorClassName\": \"YooAsset.Editor.ManifestDecryptorNone\",\n 
+        \"Compression\": 2,\n  \"FileNameStyle\": 2,\n  \"BundledCopyOption\": 1,\n 
+        \"BundledCopyParams\": \"\"\n}"
   - m_Name: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Description: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Items:
@@ -191,3 +202,13 @@ MonoBehaviour:
         \"VersionCheckRemoteFilePath\": \"Nova/{Platform}/{Package}/AppDownloadRules.json\",\n 
         \"LocalDirectory\": \"Bundles/{Platform}/{Package}/2026-07-22-908\",\n  \"RemoteDirectory\":
         \"Nova/{Platform}/{Package}/{Version}\"\n}"
+  - m_Name: "\u70ED\u66F4\u65B0\u767D\u540D\u5355\u90E8\u7F72CDN"
+    m_Description: 
+    m_Items:
+    - m_StepId: cdn.whitelist.deploy
+      m_ParamsJson: "{\n  \"DeviceIDs\": \"46812447-BB13-533A-8F22-8B0B3892FA84\",\n 
+        \"WhitelistRemoteFilePath\": \"Nova/{Platform}/{Package}/VersionsCheckWhiteList.json\",\n 
+        \"ManifestBytesLocalFilePath\": \"Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.bytes\",\n 
+        \"ManifestHashLocalFilePath\": \"Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.hash\",\n 
+        \"PackageVersionLocalFilePath\": \"Bundles/{Platform}/{Package}/2026-07-22-908/Default.version\",\n 
+        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/WhiteListVersions\"\n}"

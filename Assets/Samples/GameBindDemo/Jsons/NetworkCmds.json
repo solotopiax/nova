@@ -31,6 +31,12 @@
       "Path": "/v1/account/bind/resolve"
     },
     {
+      "Name": "GameAccountBindingQuery",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/openid-bound"
+    },
+    {
       "Name": "GameSaveGet",
       "Way": "HTTP_POST",
       "HostKey": "GameServer",

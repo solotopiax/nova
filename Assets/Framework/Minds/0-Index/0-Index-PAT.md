@@ -23,6 +23,7 @@ auto_generated: true
 
 - [PAT-125 运行时资源增量更新三步走与 YooAsset 缓存寻址认知](../2-Areas/Patterns/PAT-125-runtime-incremental-three-steps.md) — 刷清单按tag下载运行三步；tag不落盘无需维护列表
 - [PAT-138 Editor HostPlayMode 跨平台真实包 Shader 重绑排障](../2-Areas/Patterns/PAT-138-editor-hostplaymode-cross-platform-shader-rebind.md) — 真实包洋红块先验shader
+- [PAT-154 Editor 热更缓存重置必须限定沙盒与框架版本记录](../2-Areas/Patterns/PAT-154-editor-hotfix-cache-reset-boundary.md) — 一键重置仅清 Editor 沙盒与 version 文件
 - [PAT-28 Luban DataReceiver 资源对称释放：Build*Delegates + assetLocationMap 反查](../2-Areas/Patterns/PAT-28-luban-load-release-symmetric.md) — Luban Load与Release必须对称释放
 - [PAT-37 Runtime 侧禁止在 Asset 模块外直接依赖 YooAsset](../2-Areas/Patterns/PAT-37-no-yooasset-outside-asset-module.md) — YooAsset 细节只留在 Asset 模块
 - [PAT-70 YooAsset PackRule 选型与 PackTopDirectory 陷阱](../2-Areas/Patterns/PAT-70-yooasset-packrule-selection.md) — PackRule 按粒度选；TopDir 需子目录
@@ -39,6 +40,7 @@ auto_generated: true
 
 - [PAT-102 按钮内副提示叠加布局：主文字 stretch+Center 副提示锚点贴底](../2-Areas/Patterns/PAT-102-button-overlay-sub-hint-layout.md) — 主文字双居中+副提示锚点贴底
 - [PAT-105 Demo View API 提示就近显示双色规范](../2-Areas/Patterns/PAT-105-api-hint-near-element-split.md) — 一接口一提示就近挂；按钮深蓝、字段白色，标题区清空
+- [PAT-151 Demo API Hint 源码-Prefab 闭环门禁](../2-Areas/Patterns/PAT-151-demo-api-hint-source-prefab-gate.md) — 全局门禁闭环 Demo API 提示源码与 Prefab
 - [PAT-80 Demo View 纯色块与 TMP 样式基线](../2-Areas/Patterns/PAT-80-demo-view-pure-color-style.md) — Demo 默认纯色块加 TMP
 
 ## docs
@@ -56,6 +58,8 @@ auto_generated: true
 
 - [PAT-133 Editor 外部 CLI 解析：PATH+候选兜底，版本卡实测闭区间](../2-Areas/Patterns/PAT-133-editor-cli-path-resolve-version-range.md) — Editor CLI 解析 PATH 兜底，版本卡闭区间
 - [PAT-135 SerializeReference 跨格深拷贝陷阱](../2-Areas/Patterns/PAT-135-serializeref-crosscell-deepcopy-trap.md) — boxedValue 跨格须 JsonUtility 深拷贝
+- [PAT-150 Editor 多仓库渐进加载与变更就绪门](../2-Areas/Patterns/PAT-150-editor-multi-registry-progressive-load-mutation-gate.md) — 多仓库并发渐进展示，变更操作等待数据集完整
+- [PAT-155 Unity Editor 菜单分组按父菜单首项并预留 11 级差](../2-Areas/Patterns/PAT-155-unity-menuitem-priority-grouping.md) — 顶层子菜单继承首项优先级，分割线统一预留 11 级差
 - [PAT-18 EditorWindow 与 EditorUtil 职责分离](../2-Areas/Patterns/PAT-18-editor-window-vs-util-split.md) — EditorWindow与EditorUtil分层职责拆分
 - [PAT-35 Editor 绘制统一走 EditorUtil.Draw](../2-Areas/Patterns/PAT-35-editor-draw-only.md) — 业务侧 Editor 绘制统一走 Draw
 - [PAT-39 EditorUtil.Draw 纪律强化规则](../2-Areas/Patterns/PAT-39-editor-draw-discipline-enforcement.md) — 缺 Draw 接口先补接口再改 UI
@@ -136,6 +140,8 @@ auto_generated: true
 - [PAT-103 VerticalLayoutGroup 动态行容器必开 ChildControlHeight](../2-Areas/Patterns/PAT-103-vlg-child-control-height-mandatory.md) — 动态行 VLG 必开 ChildControlHeight
 - [PAT-117 ScrollRect 不滑动先核对 Viewport vs Content 尺寸](../2-Areas/Patterns/PAT-117-scrollrect-viewport-content-size-check.md) — 滑不动先量 Viewport vs Content 尺寸
 - [PAT-146 缓存 UniTask 完成结果保障启动重试](../2-Areas/Patterns/PAT-146-unitask-cached-completion-for-retry.md) — 缓存异步结果前先明确重复等待语义
+- [PAT-152 RuntimeInitialize 跨阶段启动 UniTask](../2-Areas/Patterns/PAT-152-runtime-initialize-unitask-cross-stage.md) — 同阶段回调无序时跨阶段启动 UniTask
+- [PAT-153 第三方回调响应必须在回调返回前物化](../2-Areas/Patterns/PAT-153-third-party-callback-response-materialization.md) — 回调拥有响应生命周期时须在返回前复制正文与字节
 - [PAT-29 FrameworkComponentsGroup.GetComponent<T> 必须缓存到成员，禁止热路径反复调用](../2-Areas/Patterns/PAT-29-cache-component-lookup-on-init.md) — Component依赖在Init一次缓存禁运行查找
 - [PAT-67 全局禁 UnityEngine.UI.Text，UI 文字一律 TMP](../2-Areas/Patterns/PAT-67-no-ui-text-only-tmp.md) — UI 文字一律 TMP，禁 UGUI Text
 - [PAT-68 Reference 与 ObjectPool 辐射使用原则](../2-Areas/Patterns/PAT-68-pool-reference-spread.md) — 数据走 ReferencePool 组件走 ObjectPool
@@ -173,4 +179,4 @@ auto_generated: true
 
 
 ---
-_共 107 条，分布于 18 个 category。_
+_共 113 条，分布于 18 个 category。_

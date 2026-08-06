@@ -58,7 +58,8 @@ auto_generated: true
 - [ADR-032 放弃 NovaBehaviour 桥接，回归 HybridCLR 原生 MonoBehaviour](../2-Areas/ADR/ADR-032-drop-novabehaviour-bridge.md) — 热更脚本回归原生 MonoBehaviour
 - [ADR-050 Hotfix 整批失败的用户决策与两层重试机制](../2-Areas/ADR/ADR-050-hotfix-batch-fail-user-decision.md) — 整批失败弹窗重试，单文件与用户重试两层独立计数
 - [ADR-051 启动期资源切片策略 A/B 二选一，框架 API 不绑产品决策](../2-Areas/ADR/ADR-051-launch-asset-slice-strategy.md) — 整包差异 XOR 切片增量二选一，框架透传不选策略
-- [ADR-065 启动期清单加载三级离线回退，远端不可达优先复用玩家本地缓存版本](../2-Areas/ADR/ADR-065-asset-manifest-three-tier-offline-fallback.md) — 远端不可达先复用本地缓存版本，降级内置兜底
+- [ADR-065 启动期清单三级离线回退仅接受本地可启动版本](../2-Areas/ADR/ADR-065-asset-manifest-three-tier-offline-fallback.md) — 远端失败优先复用启动范围完整的本地版本
+- [ADR-076 启动设备白名单仅切换版本元数据路由，失败不阻断常规热更新](../2-Areas/ADR/ADR-076-startup-whitelist-metadata-routing.md) — 白名单命中仅切换元数据地址，Bundle 仍走常规 CDN
 
 ## inspector
 
@@ -103,4 +104,4 @@ auto_generated: true
 
 
 ---
-_共 61 条，分布于 10 个 category。_
+_共 62 条，分布于 10 个 category。_

@@ -17,7 +17,7 @@ using NovaFramework.Runtime;
 namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
 {
     /// <summary>
-    /// GameBind Kit 演示 View，展示绑定、冲突查询、裁决三段 API 的调用方式。
+    /// GameBind Kit 演示 View，展示绑定状态查询、绑定、冲突查询、裁决 API 的调用方式。
     /// </summary>
     public sealed partial class DemoGameBindView
     {
@@ -35,6 +35,14 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
         private void OnBindButtonClick()
         {
             BindAsync().Forget();
+        }
+
+        /// <summary>
+        /// 绑定状态查询按钮点击回调，复用现有 OpenID 输入框启动查询流程。
+        /// </summary>
+        private void OnQueryBindingButtonClick()
+        {
+            QueryBindingAsync().Forget();
         }
 
         /// <summary>
@@ -228,6 +236,31 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
             else
             {
                 AppendFeedback($"BindAsync → IsSuccess=false, ErrorCode={resp.ErrorCode}, ErrorMessage={resp.ErrorMessage}", FeedbackLevel.Error);
+            }
+        }
+
+        /// <summary>
+        /// 异步查询指定 OpenID 的绑定状态，并展示绑定结果与对应 UID。
+        /// </summary>
+        private async UniTaskVoid QueryBindingAsync()
+        {
+            string openId = ReadOpenId();
+            AppendFeedback($"Nova.Network.Kit<Bind>().QueryBindingAsync(\"{openId}\") → 请求中...");
+
+            NetResponse<PbNetBindingQueryResp> resp = await Nova.Network.Kit<Bind>().QueryBindingAsync(openId);
+            if (resp.IsSuccess)
+            {
+                bool isBinded = resp.Data != null && resp.Data.IsBinded;
+                string uid = resp.Data != null ? resp.Data.Uid : string.Empty;
+                AppendFeedback(
+                    $"QueryBindingAsync → IsSuccess=true, is_binded={isBinded}, uid={uid}",
+                    FeedbackLevel.Success);
+            }
+            else
+            {
+                AppendFeedback(
+                    $"QueryBindingAsync → IsSuccess=false, ErrorCode={resp.ErrorCode}, ErrorMessage={resp.ErrorMessage}",
+                    FeedbackLevel.Error);
             }
         }
 

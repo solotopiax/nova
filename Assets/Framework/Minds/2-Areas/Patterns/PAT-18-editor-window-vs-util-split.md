@@ -19,6 +19,7 @@ tags:
   - architecture
 related:
   - "[[PAT-09-inspector-config-i18n|PAT-09]]"
+  - "[[PAT-150-editor-multi-registry-progressive-load-mutation-gate|PAT-150]]"
 ---
 
 # PAT-18：EditorWindow 与 EditorUtil 职责分离
@@ -88,4 +89,5 @@ EditorUtil 子模块：`EditorUtil.{FeatureName}`
 ## 关联
 
 - 相关 Pattern：[[PAT-09-inspector-config-i18n|PAT-09]]（Inspector 配置分组与对齐规范）
+- 多源远端数据：[[PAT-150-editor-multi-registry-progressive-load-mutation-gate|PAT-150]]（渐进展示与变更就绪门）
 - 历史源头：2026-04-28 ConfigWindow 设计会话用户原话："window 永远只是 ui 交互相关，具体核心功能都是要走 EditorUtil 的"

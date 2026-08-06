@@ -15,10 +15,12 @@ auto_generated: true
 - [GLO-02 Manager 三层继承链（FrameworkManager / ManagerBase / Manager）](../2-Areas/Glossary/GLO-02-framework-manager-tiers.md) — Manager 采用接口 + Base + 唯一实现的固定结构
 - [GLO-03 Component / Procedure / Manager 职责边界](../2-Areas/Glossary/GLO-03-component-procedure-manager.md) — 三者职责分工
 - [GLO-06 Nova 框架设计模式映射](../2-Areas/Glossary/GLO-06-design-patterns-map.md) — 用通用设计模式理解 Nova 的主要结构与机制
+- [GLO-20 asmdef 与 namespace 的边界](../2-Areas/Glossary/GLO-20-asmdef-namespace-boundary.md) — asmdef 决定编译依赖，namespace 只组织代码名称
 
 ## asset
 
 - [GLO-10 YooAsset 资源管理层](../2-Areas/Glossary/GLO-10-yooasset-asset-management.md) — YooAsset 是 Nova 的资源管理层
+- [GLO-18 AssetBundle、Addressables 与 YooAsset 边界](../2-Areas/Glossary/GLO-18-assetbundle-addressables-yooasset-boundary.md) — Nova用YooAsset管理Bundle资源
 
 ## core
 
@@ -27,6 +29,10 @@ auto_generated: true
 ## docs
 
 - [GLO-05 三级文档体系（L0 / L1 / L2 + INDEX）](../2-Areas/Glossary/GLO-05-three-tier-docs.md) — Docs 由 L0、L1、L2 与 INDEX 组成
+
+## editor
+
+- [GLO-17 Unity Editor 的 Inspector 与 EditorWindow](../2-Areas/Glossary/GLO-17-unity-editor-inspector-window.md) — Inspector 编辑对象契约，Window 承载独立工具流程
 
 ## external
 
@@ -39,6 +45,7 @@ auto_generated: true
 ## module
 
 - [GLO-08 DataMaster 分流用户属性口径（app_version / install_time 必传）](../2-Areas/Glossary/GLO-08-datamaster-user-properties.md) — 两条必传分流属性的口径：版本号 + 安装时间
+- [GLO-19 TMP_Text 文本组件](../2-Areas/Glossary/GLO-19-tmp-text-component.md) — TMP_Text是依赖字体材质链的文本基类
 
 ## naming
 
@@ -50,7 +57,8 @@ auto_generated: true
 - [GLO-13 ObjectPool 可复用对象池](../2-Areas/Glossary/GLO-13-objectpool-reusable-objects.md) — ObjectPool 池化带生命周期对象
 - [GLO-14 ReferencePool 纯数据引用池](../2-Areas/Glossary/GLO-14-referencepool-data-refs.md) — ReferencePool 池化纯数据对象
 - [GLO-15 Fsm 有限状态机与 Procedure](../2-Areas/Glossary/GLO-15-fsm-state-machine.md) — Fsm 驱动 Procedure 状态流转
+- [GLO-16 Unity 对象与生命周期基元](../2-Areas/Glossary/GLO-16-unity-object-lifecycle-primitives.md) — 区分场景对象、组件、层级节点与数据资产
 
 
 ---
-_共 14 条，分布于 9 个 category。_
+_共 19 条，分布于 10 个 category。_

@@ -69,6 +69,51 @@ namespace NovaFramework.Editor
         private SerializedProperty m_EnableHotfix;
 
         /// <summary>
+        /// 是否启用启动设备白名单。
+        /// </summary>
+        private SerializedProperty m_EnableStartupWhitelist;
+
+        /// <summary>
+        /// Debug 启动白名单文件 URL。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistUrlDebug;
+
+        /// <summary>
+        /// Debug 启动白名单文件备用 URL。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistUrlFallbackDebug;
+
+        /// <summary>
+        /// Release 启动白名单文件 URL。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistUrlRelease;
+
+        /// <summary>
+        /// Release 启动白名单文件备用 URL。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistUrlFallbackRelease;
+
+        /// <summary>
+        /// Debug 白名单版本元数据根 URL。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistMetadataRootUrlDebug;
+
+        /// <summary>
+        /// Debug 白名单版本元数据备用根 URL。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistMetadataRootUrlFallbackDebug;
+
+        /// <summary>
+        /// Release 白名单版本元数据根 URL。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistMetadataRootUrlRelease;
+
+        /// <summary>
+        /// Release 白名单版本元数据备用根 URL。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistMetadataRootUrlFallbackRelease;
+
+        /// <summary>
         /// Debug 主机服务器地址 URL。
         /// </summary>
         private SerializedProperty m_HostServerUrlDebug;

@@ -64,6 +64,7 @@ internal static UniTask<int> PurgeAsync(
 - **静态校验前置**：`ValidateOssConfig` / `ValidateCloudflareConfig` 在发起任何网络请求前集中校验所有静态字段，让格式类错误（Endpoint 非标准地域域名、PresetOSSPath 非 oss:// 格式、Zone ID 非法等）在首个请求前暴露。Cloudflare API Token 需要 `Zone -> Cache Purge` 权限。
 - **UniTask 异步**：两个入口均返回 `UniTask<int>`，在 Editor 上以 `async UniTask` / `.Forget()` 驱动；ConfigWindow 侧用 `m_IsCdnDeploying` / `m_IsCdnPurging` 标志在按钮入口处做**重复点击保护**（进行中直接忽略），该保护在调用方而非 `EditorUtil.CDN` 内部。
 - **执行期配置快照**：ConfigWindow 在点击时通过 `DimensionalResolver.ResolveCDNEditorConfigs` 按当前维度坐标 Resolve 出独立 `CDNEditorConfigs` 快照再传入，执行期间继续编辑面板不影响本次请求。
+- **白名单分路径部署**：`VersionsCheckWhiteList.json` 使用包含 `.json` 文件名的完整 `AssetCheckWhitelistRemoteFilePath`，三个 YooAsset 版本文件使用 `AssetCheckVersionRemoteDirectory`。配置文件位置为空、不是 JSON 文件、使用绝对 URI、父级路径或含查询/片段时跳过 JSON，不回退到版本文件目录，也不阻断三个版本文件。
 - **Pipify 路径覆盖**：`cdn.deploy` 同样按当前维度 Resolve 独立快照，用 Step 参数覆盖版本检查文件与热更资源目录四个路径，不回写 `ConfigMasterSO`；OSS 凭据、Endpoint 与 `PresetOSSPath` 始终来自 Config。
 - **Pipify 缓存清理覆盖**：`cdn.purge` 按当前维度 Resolve 独立快照，用 Step 参数覆盖 `ZoneID`、`Token` 与 `CachePaths`，不回写 `ConfigMasterSO`；随后复用同一 `PurgeAsync` 校验、分批、失败即停和脱敏链路。
 

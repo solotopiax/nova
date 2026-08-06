@@ -27,6 +27,27 @@ namespace NovaFramework.Runtime
         private readonly HashSet<string> m_ManifestLoadedPackages = new();
 
         /// <summary>
+        /// 本次启动通过本地可启动版本、当前清单或内置清单完成离线恢复的包。
+        /// 这些包跳过本轮补丁下载，且不得覆盖已有可启动版本记录。
+        /// </summary>
+        private readonly HashSet<string> m_OfflineRecoveredPackages = new();
+
+        /// <summary>
+        /// 当前进程已完成启动白名单检查的包名集合。
+        /// </summary>
+        private readonly HashSet<string> m_StartupWhitelistCheckedPackages = new();
+
+        /// <summary>
+        /// 当前进程已命中启动白名单的包名集合。
+        /// </summary>
+        private readonly HashSet<string> m_StartupWhitelistMatchedPackages = new();
+
+        /// <summary>
+        /// 每个包独立持有的远端 URL 轮换策略。
+        /// </summary>
+        private readonly Dictionary<string, AssetDownloadUrlPolicy> m_DownloadUrlPolicies = new();
+
+        /// <summary>
         /// AssetManager 配置（Inspector 注入，Initialize 写入）。
         /// </summary>
         private AssetManagerConfig m_Config;
@@ -45,5 +66,10 @@ namespace NovaFramework.Runtime
         /// Manager 生命周期取消源；Shutdown 时 Cancel，使所有进行中的异步操作尽快退出。
         /// </summary>
         private CancellationTokenSource m_Cts;
+
+        /// <summary>
+        /// HTTP 管理器，用于下载启动白名单文件；请求自动受现有 DoH 逻辑覆盖。
+        /// </summary>
+        private IHttpManager m_HttpManager;
     }
 }

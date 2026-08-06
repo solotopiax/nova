@@ -1,7 +1,7 @@
 {
     "name": "com.solotopia.yooasset",
-  "version": "1.0.6",
-  "license": "SEE LICENSE IN LICENSE.md",
+    "version": "1.0.6",
+    "license": "SEE LICENSE IN LICENSE.md",
     "coreVersion": "3.0.0-beta",
     "displayName": "YooAsset",
     "description": "Unity 资源管理与热更新解决方案",

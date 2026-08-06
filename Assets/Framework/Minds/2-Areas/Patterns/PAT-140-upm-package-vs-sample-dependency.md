@@ -9,6 +9,11 @@ date: 2026-07-03
 source: cur-session
 aliases:
   - PAT-140-upm-package-vs-sample-dependency
+keywords:
+  - PAT-140
+  - UPM依赖
+  - Sample依赖
+  - asmdef引用
 tags: [pattern, module, upm, sample, dependency]
 related: []
 ---

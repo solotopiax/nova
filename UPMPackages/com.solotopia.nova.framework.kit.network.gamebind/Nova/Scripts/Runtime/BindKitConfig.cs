@@ -32,6 +32,16 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         public string BindCmdName => m_BindCmdName;
 
         /// <summary>
+        /// 绑定状态查询协议 NetCmd 指令名序列化字段。
+        /// </summary>
+        [SerializeField, Tooltip("用于查询指定 OpenID 是否已绑定的协议名。填写 NetCmd 表中的名称，如 GameAccountBindingQuery。")]
+        private string m_BindingQueryCmdName;
+        /// <summary>
+        /// 绑定状态查询协议 NetCmd 指令名。
+        /// </summary>
+        public string BindingQueryCmdName => m_BindingQueryCmdName;
+
+        /// <summary>
         /// 冲突查询协议 NetCmd 指令名序列化字段。
         /// </summary>
         [SerializeField, Tooltip("用于查询绑定冲突详情的协议名。填写 NetCmd 表中的名称，如 GameAccountBindConflict。")]

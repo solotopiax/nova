@@ -8,6 +8,11 @@ date: 2026-07-07
 source: cur-session
 aliases:
   - GLO-08-datamaster-user-properties
+keywords:
+  - GLO-08
+  - DataMaster用户属性
+  - app_version
+  - install_time
 tags: [glossary, module, sdk, datamaster, abtest]
 related: []
 ---

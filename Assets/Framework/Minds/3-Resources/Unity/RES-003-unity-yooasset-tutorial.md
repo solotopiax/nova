@@ -12,6 +12,8 @@ keywords:
   - YooAsset
   - 热更
   - HostPlayMode
+  - PackageFilePrefix
+  - 多版本资源线
 ---
 
 # RES-003：Unity YooAsset 教程
@@ -26,6 +28,8 @@ keywords:
 >
 > 源码版本：`Assets/YooAsset/` 内 YooAsset 3.0.0-beta
 > 参考环境：Unity 6000.4.2f1 + Built-in + UniTask + IL2CPP + HybridCLR（Nova Framework）
+>
+> `PackageFilePrefix` 与清单 CRC32 部分已按 Nova 当前本地包 `UPMPackages/com.solotopia.yooasset` 1.0.6 复核；当前事实以该源码为准。
 
 ---
 
@@ -490,7 +494,40 @@ options.BuiltinFileSystemParameters.AddParameter(
 | 清单二进制 | `{packageName}_{version}.bytes` (L95) | `DefaultPackage_v1_9f8a....bytes` |
 | Bundle 资源（N 个） | 由构建时 `FileNameStyle` 决定（`PackageManifestHelper.cs:184-208`） | 见第四部分 |
 
-都支持 `PackageFilePrefix` 设置前缀，默认为空。
+版本、清单、哈希、JSON 与报告文件都支持 `PackageFilePrefix` 设置前缀，默认为空；Bundle 文件名仍由 `FileNameStyle` 决定。
+
+#### 3.2.1 同目录维护多条 App 资源版本线
+
+当多个 App 版本共用一个 CDN 目录，但需要分别维护自己的“当前资源版本”时，可以在各 App 构建时把 `YooAssetSettings.PackageFilePrefix` 固定为 App 版本或稳定的兼容分支标识。
+
+命名规则不是 `{package}_{prefix}`，而是 **`{prefix}_{package}`**。例如：
+
+```text
+PackageFilePrefix = 1.2.3
+PackageName       = Default
+
+1.2.3_Default.version
+1.2.3_Default_res-1.2.3-008.hash
+1.2.3_Default_res-1.2.3-008.bytes
+```
+
+这里必须区分两种版本：
+
+- `1.2.3` 是 App 版本或兼容分支，固化在该 App 的 `PackageFilePrefix` 中，用于选择独立入口。
+- `res-1.2.3-008` 是 `.version` 文件内容，即该分支当前激活的资源版本；后续热更新只递增它。
+
+同目录可以同时保留：
+
+```text
+1.2.2_Default.version  -> res-1.2.2-005
+1.2.3_Default.version  -> res-1.2.3-008
+1.3.0_Default.version  -> res-1.3.0-002
+```
+
+每条分支只更新自己的 `.version` 指针，因此不需要让所有 App 对齐到同一个当前资源版本，也不需要修改 YooAsset 内部代码或 `IRemoteService`。带版本号的清单与 HashName Bundle 可以继续平铺共存，但资源版本字符串应全局唯一，清理旧文件时必须统计所有仍受支持分支的清单引用。
+
+> [!warning] 已发布旧 App 的兼容边界
+> 已经以空 Prefix 发布、并固定请求 `Default.version` 的 App 不会自动切换到 `1.2.3_Default.version`。这些客户端需要继续共用 legacy `Default.version`，或者通过重新发版获得新的 Prefix 规则。相关远端寻址边界见 [[ADR-025-yooasset-url-template-placeholders|ADR-025]]，YooAsset 与 Nova Asset 层边界见 [[GLO-10-yooasset-asset-management|GLO-10]]。
 
 ---
 
@@ -499,7 +536,7 @@ options.BuiltinFileSystemParameters.AddParameter(
 | 文件 | 大小 | 内容 | 干什么用 |
 |---|---|---|---|
 | **`{pkg}.version`** | 几十字节 | 一个字符串：当前最新版本号（如 `v3_a4b5c6`） | **入口路标**。客户端第一步 `RequestPackageVersionAsync()` 就是下载这个文件，问"我该读哪份清单" |
-| **`{pkg}_{ver}.hash`** | 32 字节左右 | 对应 `.bytes` 的 MD5/哈希值 | **清单校验**。防止 `.bytes` 下载过程中损坏——先下 `.hash` 存着，后下 `.bytes` 时算哈希比对 |
+| **`{pkg}_{ver}.hash`** | 当前为 8 个十六进制字符 | 对应 `.bytes` 的 CRC32；读取端兼容历史 32 字符 MD5 | **清单校验**。防止 `.bytes` 下载过程中损坏——先下 `.hash` 存着，后下 `.bytes` 时算哈希比对 |
 | **`{pkg}_{ver}.bytes`** | KB~MB 级 | 整个 Package 的清单二进制（所有 Asset 的 Address/BundleID/依赖关系表） | **户口本本体**。加载进内存后，`LoadAssetAsync` 这类查询才有数据可查 |
 
 **一次热更的时序：**
