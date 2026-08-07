@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Editor`
 **全局访问**：`EditorUtil.Config.YooAssetInjector`
 
-Asset 模块编辑期注入层；按 ConfigMasterSO 中显式声明的路径字段注入 `YooAssetSettings` 与加载 `BundleCollectorSetting`，替代 `Resources.Load` / `AssetDatabase.FindAssets` 全工程扫描，根除多 Sample 共存时命中错副本问题。
+Asset 模块编辑期注入层；按 ConfigMasterSO 中显式声明的路径字段注入 `YooAssetSettings` 与加载 `BundleCollectorSetting`，替代 `Resources.Load` / `AssetDatabase.FindAssets` 全工程扫描，根除多 Sample 共存时命中错副本问题。Sample 不再常驻 `Resources/YooAssetSettings.asset`；Editor Play Mode 会在 `BeforeSceneLoad` 按当前三维坐标重新注入，Player 构建则由构建期 staging 临时提供运行时副本。
 
 ---
 
@@ -25,6 +25,10 @@ Asset 模块编辑期注入层；按 ConfigMasterSO 中显式声明的路径字�
 // 路径对应资产不存在时记 Log.Warning 并静默返回
 public static void Inject(ConfigMasterSO master);
 
+// 按已经完成三维解析的项目相对路径直接注入 YooAssetSettings。
+// path 为空时静默返回；资产不存在时记录 Warning 并返回。
+public static void InjectByPath(string path);
+
 // 按 ConfigMasterSO.BundleCollectorSettingPath 加载 BundleCollectorSetting
 // master 为 null 或 BundleCollectorSettingPath 为空时返回 null
 // 路径对应资产不存在时返回 null
@@ -38,6 +42,7 @@ public static BundleCollectorSetting LoadBundleCollector(ConfigMasterSO master);
 |------|------|------|
 | `RegisterYooAssetExplicitPathProvider` | Editor 启动 / 域重载 | 向 `SettingLoader.RegisterExplicitPathProvider` 注册回调，按当前激活 master 的 `BundleCollectorSettingPath` 解析 `BundleCollectorSetting`，替代 YooAsset 内置 `AssetDatabase.FindAssets` 全工程扫描；激活 master 缺失或路径字段为空时回调返回 null，YooAsset 自动回退兜底 |
 | `HookSceneOpenedAutoInject` | Editor 启动 / 域重载 | 域级常驻订阅 `EditorSceneManager.sceneOpened`（仅响应 `OpenSceneMode.Single`）；同时 `EditorApplication.delayCall` 启动期立即按当前激活 master `Inject` 一次，不依赖 ConfigWindow 是否打开。解决 Editor 启动后从未打开 ConfigWindow 即触发构建/查询 YooAssetSettings 的流程，避免 `s_settings` 仍为 null → 走 `Resources.Load` 全工程兜底命中错副本 |
+| `YooAssetRuntimeSettingsStaging.InjectForEditorPlayMode` | `BeforeSceneLoad` | YooAsset 在 `SubsystemRegistration` 清空静态 Settings 后，重新按当前 ConfigMaster 的 Platform / Channel / DevelopMode 解析路径并调用 `InjectByPath`；不创建 Resources 副本 |
 
 ---
 

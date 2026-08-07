@@ -5,6 +5,8 @@
 
 BuildPipeline.BuildPlayer 薄封装，提供统一输入校验与日志。
 
+正式 Player 构建会由全局构建回调临时生成唯一的 `Resources/YooAssetSettings.asset`：源文件取当前 `ConfigMasterSO` 三维坐标解析出的 Editor 权威配置，构建结束、失败或取消后自动清理。该机制覆盖 Build Profiles、Pipify、Debug Inspector 与 CLI 等所有 `BuildPipeline.BuildPlayer` 入口；`EditorUtil.Build` 自有入口另有 `finally` 清理兜底。
+
 ---
 
 ## §2 文件表
@@ -15,6 +17,8 @@ BuildPipeline.BuildPlayer 薄封装，提供统一输入校验与日志。
 | `EditorUtil.Build.Visitors.cs` | `EditorUtil.Build` | 常量：c_LogPrefix |
 | `EditorUtil.Build.Methods.cs` | `EditorUtil.Build` | 私有方法：ResolveScenes |
 | `EditorUtil.Build.Definitions.cs` | `EditorUtil.Build` | 嵌套类型：BuildMode 枚举 |
+| `../../BuildProcessor/Core/YooAssetRuntimeSettingsStaging.cs` | `YooAssetRuntimeSettingsStaging` | YooAssetSettings 临时副本的解析、所有权记录、恢复与清理 |
+| `../../BuildProcessor/Core/YooAssetRuntimeSettingsBuildCallbacks.cs` | 构建回调 | 正式 Player 构建前 staging、构建后清理；跳过 HybridCLR 裁剪 AOT 临时构建 |
 
 ---
 
@@ -110,6 +114,16 @@ Application.productName.Replace(" ", "") + ".entitlements"
 **异常：**
 - `ArgumentException`：outputPath / outputFolder 为空时抛出。
 - `InvalidOperationException`：BuildResult 不为 Succeeded 时抛出，message 包含 BuildResult 枚举值。
+- `InvalidOperationException`：当前 ConfigMaster、三维解析出的 YooAssetSettings 缺失，或工程中已有任意常驻 `Resources/YooAssetSettings.asset` 时，在构建预处理阶段中止。
+
+### YooAssetSettings 构建期 staging
+
+- 开发态目标固定为当前 Demo 根目录的 `Resources`。
+- UPM Sample 消费态只在当前 ConfigMaster 所属 Demo 目录树内，由浅到深、同层按路径排序选择已有 `Resources`；不存在时创建 Demo 根目录的 `Resources`。
+- staging 使用 `AssetDatabase.CopyAsset` 生成独立 GUID，不复制 Editor 源资产的 `.meta`。
+- 所有权 marker 写在 `Library/Nova/YooAssetRuntimeSettingsStaging.json`。构建后只删除 marker 指向且正文 SHA-256 未变化的副本；内容被外部修改时保留并报错，避免误删。
+- 正常结束、失败、取消、域重载和下次 Editor 启动都会尝试恢复；HybridCLR `StrippedAOTDllsTempProj` 内部构建不触发 staging。
+- UPM 发布不生成永久 Resources 副本；项目仓库与已发布 Sample 都只保存 `Editor/YooAssetSettings.asset` 权威源。
 
 ---
 

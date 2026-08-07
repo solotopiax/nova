@@ -31,7 +31,12 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
+        \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
+        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
+        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
+        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
+        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
       m_ParamsJson: '{"Target":13,"BuildMode":0,"DevelopmentBuild":true,"SplitApplicationBinary":false,"BuildAppBundle":false,"UseAndroidKeystore":false,"OutputFolderPath":"Build"}'
     - m_StepId: shell.open_folder
@@ -52,12 +57,17 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: '{"Target":9,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
+      m_ParamsJson: "{\n  \"Target\": 9,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
+        \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
+        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
+        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
+        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
+        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
       m_ParamsJson: '{"Target":9,"BuildMode":0,"DevelopmentBuild":true,"BuildAppBundle":false,"SplitApplicationBinary":false,"UseAndroidKeystore":false,"OutputFolderPath":"Build/iOS"}'
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build/iOS"}'
-  - m_Name: "Hybrid+YooAsset\u8054\u5408\u7F16\u8BD1"
+  - m_Name: Hybrid+YooAsset+Bundle
     m_Description: "Hybrid\u4E0EYooAsset\u8054\u5408\u7F16\u8BD1"
     m_Items:
     - m_StepId: edm4u.android_resolve
@@ -75,43 +85,69 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
-  - m_Name: "Config\u5BFC\u51FA"
-    m_Description: "Config\u5BFC\u51FA\uFF0C\u5BFC\u51FAConfigRuntime"
-    m_Items:
-    - m_StepId: export.config
-      m_ParamsJson: 
-  - m_Name: "\u66F4\u65B0bundle"
-    m_Description: "\u66F4\u65B0bundle"
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
+        \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
+        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
+        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
+        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
+        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
+  - m_Name: "\u6784\u5EFABundle+CDN\uFF08\u5927\u7248\u672C\uFF09"
+    m_Description: "\u66F4\u65B0Bundle+CDN"
     m_Items:
     - m_StepId: hybridclr.compile_dll_active_build_target
       m_ParamsJson: 
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
     - m_StepId: export.config
-      m_ParamsJson: 
-    - m_StepId: bundlebuilder.build
-      m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":false,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":0,"BundledCopyParams":""}'
-    - m_StepId: shell.open_folder
-      m_ParamsJson: '{"Path":"Bundles/Android/Default"}'
-  - m_Name: "\u6784\u5EFABundle"
-    m_Description: "\u6784\u5EFABundle-\u56FA\u5B9A\u5305\u540D2026-07-22-908"
-    m_Items:
+      m_ParamsJson: "{\n  \"Platform\": 1,\n  \"Channel\": 2,\n  \"DevelopMode\":
+        0\n}"
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
-        \"2026-07-22-908\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\":
-        false,\n  \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n 
-        \"ManifestEncryptorClassName\": \"YooAsset.Editor.ManifestEncryptorNone\",\n 
-        \"ManifestDecryptorClassName\": \"YooAsset.Editor.ManifestDecryptorNone\",\n 
-        \"Compression\": 2,\n  \"FileNameStyle\": 2,\n  \"BundledCopyOption\": 1,\n 
-        \"BundledCopyParams\": \"\"\n}"
+        \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
+        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
+        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
+        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
+        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
+    - m_StepId: cdn.deploy
+      m_ParamsJson: "{\n  \"VersionCheckLocalFilePath\": \"ProjectSettings/Nova/AppDownloadRules.json\",\n 
+        \"VersionCheckRemoteFilePath\": \"Nova/{Platform}/{Package}/AppDownloadRules.json\",\n 
+        \"AutoLinkLatestVersion\": true,\n  \"LocalDirectory\": \"Bundles/{Platform}/{Package}/2026-07-22-908\",\n 
+        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/Versions\",\n  \"CleanRemoteFilesAndDirectories\":
+        false\n}"
+    - m_StepId: shell.open_folder
+      m_ParamsJson: '{"Path":"Bundles/Android/Default"}'
+  - m_Name: "\u66F4\u65B0Bundle+CDN\uFF08\u5DEE\u5F02\u5316\uFF09"
+    m_Description: "\u66F4\u65B0Bundle+CDN"
+    m_Items:
+    - m_StepId: hybridclr.compile_dll_active_build_target
+      m_ParamsJson: 
+    - m_StepId: hybridclr.copy_game_dll
+      m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson: "{\n  \"Platform\": 1,\n  \"Channel\": 2,\n  \"DevelopMode\":
+        0\n}"
+    - m_StepId: bundlebuilder.build
+      m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":false,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":0,"BundledCopyParams":""}'
+    - m_StepId: cdn.deploy
+      m_ParamsJson: "{\n  \"VersionCheckLocalFilePath\": \"ProjectSettings/Nova/AppDownloadRules.json\",\n 
+        \"VersionCheckRemoteFilePath\": \"Nova/{Platform}/{Package}/AppDownloadRules.json\",\n 
+        \"AutoLinkLatestVersion\": true,\n  \"LocalDirectory\": \"Bundles/{Platform}/{Package}/2026-07-22-908\",\n 
+        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/Versions\",\n  \"CleanRemoteFilesAndDirectories\":
+        false\n}"
+    - m_StepId: shell.open_folder
+      m_ParamsJson: '{"Path":"Bundles/Android/Default"}'
   - m_Name: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Description: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Items:
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
+        \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
+        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
+        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
+        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
+        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
       m_ParamsJson: '{"Target":13,"BuildMode":0,"DevelopmentBuild":true,"BuildAppBundle":false,"SplitApplicationBinary":false,"OutputFolderPath":"Build"}'
     - m_StepId: shell.open_folder
@@ -121,12 +157,15 @@ MonoBehaviour:
     m_Items:
     - m_StepId: edm4u.android_resolve
       m_ParamsJson: 
-    - m_StepId: export.config
-      m_ParamsJson: 
     - m_StepId: build.package
       m_ParamsJson: '{"Target":13,"DevelopmentBuild":false,"OutputPath":"Build/Nova.apk"}'
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
+  - m_Name: "Config\u5BFC\u51FA\u6D4B\u8BD5"
+    m_Description: "Config\u5BFC\u51FA\u6D4B\u8BD5"
+    m_Items:
+    - m_StepId: export.config
+      m_ParamsJson: 
   - m_Name: "Localization\u5BFC\u51FA\u6D4B\u8BD5"
     m_Description: "Localization\u5BFC\u51FA\u6D4B\u8BD5"
     m_Items:
@@ -171,11 +210,6 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: export.vibrate.emphasis.code
       m_ParamsJson: 
-  - m_Name: "Config\u5BFC\u51FA\u6D4B\u8BD5"
-    m_Description: "Config\u5BFC\u51FA\u6D4B\u8BD5"
-    m_Items:
-    - m_StepId: export.config
-      m_ParamsJson: 
   - m_Name: "Table\u5BFC\u51FA\u6D4B\u8BD5"
     m_Description: "Table\u5BFC\u51FA\u6D4B\u8BD5"
     m_Items:
@@ -198,17 +232,19 @@ MonoBehaviour:
     m_Description: "\u8D44\u6E90\u6279\u91CF\u90E8\u7F72CDN"
     m_Items:
     - m_StepId: cdn.deploy
-      m_ParamsJson: "{\n  \"VersionCheckLocalFilePath\": \"Bundles/{Platform}/{Package}/AppDownloadRules.json\",\n 
+      m_ParamsJson: "{\n  \"VersionCheckLocalFilePath\": \"ProjectSettings/Nova/AppDownloadRules.json\",\n 
         \"VersionCheckRemoteFilePath\": \"Nova/{Platform}/{Package}/AppDownloadRules.json\",\n 
-        \"LocalDirectory\": \"Bundles/{Platform}/{Package}/2026-07-22-908\",\n  \"RemoteDirectory\":
-        \"Nova/{Platform}/{Package}/{Version}\"\n}"
+        \"AutoLinkLatestVersion\": true,\n  \"LocalDirectory\": \"Bundles/{Platform}/{Package}/2026-07-22-908\",\n 
+        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/Versions\",\n  \"CleanRemoteFilesAndDirectories\":
+        false\n}"
   - m_Name: "\u70ED\u66F4\u65B0\u767D\u540D\u5355\u90E8\u7F72CDN"
     m_Description: 
     m_Items:
     - m_StepId: cdn.whitelist.deploy
       m_ParamsJson: "{\n  \"DeviceIDs\": \"46812447-BB13-533A-8F22-8B0B3892FA84\",\n 
         \"WhitelistRemoteFilePath\": \"Nova/{Platform}/{Package}/VersionsCheckWhiteList.json\",\n 
-        \"ManifestBytesLocalFilePath\": \"Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.bytes\",\n 
+        \"AutoLinkLatestVersion\": true,\n  \"ManifestBytesLocalFilePath\": \"Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.bytes\",\n 
         \"ManifestHashLocalFilePath\": \"Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.hash\",\n 
         \"PackageVersionLocalFilePath\": \"Bundles/{Platform}/{Package}/2026-07-22-908/Default.version\",\n 
-        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/WhiteListVersions\"\n}"
+        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/WhiteListVersions\",\n 
+        \"CleanRemoteFilesAndDirectories\": false\n}"

@@ -15,6 +15,7 @@
 | [PersistComponentInspector/PersistComponentInspector.md](PersistComponentInspector/PersistComponentInspector.md) | 持久化 Inspector |
 | [AppComponentInspector/AppComponentInspector.md](AppComponentInspector/AppComponentInspector.md) | 大版本检查 Inspector（Manager 选择器 + 3 组 Foldout 配置） |
 | [PrefabComponentInspector/PrefabComponentInspector.md](PrefabComponentInspector/PrefabComponentInspector.md) | Prefab 实例化 Inspector（Manager 选择器 + 单路径回收说明 + 运行时实例列表） |
+| [NativeComponentInspector/NativeComponentInspector.md](NativeComponentInspector/NativeComponentInspector.md) | Native Inspector（Manager 选择器 + 初始化配置 + 通知权限边界） |
 
 ### CustomInspectors（非 FrameworkComponent 的自定义 Inspector 与编辑器工具）
 

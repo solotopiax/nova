@@ -126,6 +126,23 @@ namespace NovaFramework.SDK.MaxAdPlugin.Editor
         /// </summary>
         /// <returns>xcframework 名称数组。</returns>
         protected override string[] GetEmbedXcframeworkNames() => s_DynamicLibrariesToEmbed;
+
+        /// <summary>
+        /// iOS 后处理：先执行基类的 xcframework Embed，再补全 SKAdNetworkItems。
+        /// 本处理器由 NovaBuildPostprocessor（callbackOrder=int.MaxValue）在 AppLovin 的 plist 写入
+        /// （int.MaxValue-10）之后调用，此时 context.XPlistDict 已含 AppLovin 写入内容；
+        /// 补全逻辑离线重算完整网络列表以绕开 AppLovin Client.List() 超时导致的 SKAdNetworkItems 残缺。
+        /// </summary>
+        /// <param name="report">Unity 构建报告。</param>
+        /// <param name="context">Nova 构建上下文，提供已加载的 XPlistDict。</param>
+        public override void OnPostprocessBuildOniOS(BuildReport report, NovaBuildContext context)
+        {
+            base.OnPostprocessBuildOniOS(report, context);
+
+#if NOVA_APPLOVIN_MAX
+            MaxSkAdNetworkPlistCompleter.Complete(context.XPlistDict);
+#endif
+        }
 #endif
     }
 }

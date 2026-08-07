@@ -42,10 +42,19 @@ namespace NovaFramework.Editor
                 Log.Debug(LogTag.Editor,
                     "{0} 开始打包：target={1}, output={2}, dev={3}, mode={4}",
                     c_LogPrefix, target, outputPath, developmentBuild, buildMode);
-                BuildReport report = BuildPipeline.BuildPlayer(opts);
-                if (report.summary.result == BuildResult.Failed)
+                BuildReport report;
+                try
                 {
-                    throw new InvalidOperationException(string.Format("{0} 打包失败：{1}", c_LogPrefix, report.summary.result));
+                    report = BuildPipeline.BuildPlayer(opts);
+                    if (report.summary.result == BuildResult.Failed)
+                    {
+                        throw new InvalidOperationException(string.Format("{0} 打包失败：{1}", c_LogPrefix, report.summary.result));
+                    }
+                }
+                finally
+                {
+                    // 全局 postprocess 可能因构建取消或其他回调异常而未执行；Nova 自有入口在此追加同步兜底。
+                    YooAssetRuntimeSettingsStaging.CleanupAfterBuild();
                 }
                 Log.Debug(LogTag.Editor, "{0} 打包完成：result={1}, output={2}", c_LogPrefix, report.summary.result, report.summary.outputPath);
                 return report;

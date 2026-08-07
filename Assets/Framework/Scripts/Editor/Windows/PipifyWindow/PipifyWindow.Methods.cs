@@ -555,6 +555,10 @@ namespace NovaFramework.Editor
             if (info == null || info.ParamsType == null) return 0f;
             FieldInfo[] fields = info.ParamsType.GetFields(BindingFlags.Public | BindingFlags.Instance);
             object paramsInstance = EnsureParamsInstance(itemIndex, item, info);
+            TryGetCdnAutoLinkDisplayPaths(
+                paramsInstance,
+                out _,
+                out string autoLinkError);
             float helpBoxHeight = GetParamHelpBoxHeight(info.ParamsType);
             float height = 4f + (helpBoxHeight > 0f ? helpBoxHeight + 4f : 0f);
             for (int i = 0; i < fields.Length; i++)
@@ -563,7 +567,12 @@ namespace NovaFramework.Editor
                 if (paramsInstance != null && !IsFieldVisible(field, paramsInstance, info.ParamsType)) continue;
                 object currentValue = paramsInstance == null ? null : field.GetValue(paramsInstance);
                 height += GetParamFieldHeight(field, currentValue) + 2f;
+                float fieldHelpBoxHeight = GetParamFieldHelpBoxHeight(field);
+                if (fieldHelpBoxHeight > 0f)
+                    height += fieldHelpBoxHeight + 4f;
             }
+            float autoLinkErrorHeight = GetCdnAutoLinkErrorHeight(autoLinkError);
+            if (autoLinkErrorHeight > 0f) height += autoLinkErrorHeight + 4f;
             return height;
         }
 

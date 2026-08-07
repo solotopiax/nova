@@ -50,7 +50,8 @@ public static ConfigRuntimeSO Export(
 Export(master, platform, channel, mode, savePath):
   1. master == null → return null
   2. master.TryGetEntry(platform, channel, out entry) 失败 → return null
-  3. System.IO.Path.GetDirectoryName(savePath) → 目录不存在则递归创建
+  3. 按目标坐标 Resolve YooAsset 配置；若配置了 `YooAssetSettingsPath`，使用显式占位符上下文解析 `YooFolderName` / `PackageFilePrefix`，单向写入对应 `YooAssetSettings.asset`
+  4. System.IO.Path.GetDirectoryName(savePath) → 目录不存在则递归创建
   4. AssetDatabase.LoadAssetAtPath<ConfigRuntimeSO>(savePath)：
      - 存在 → existing（覆盖写，保留已有资产引用）
      - 不存在 → ScriptableObject.CreateInstance<ConfigRuntimeSO>()

@@ -250,13 +250,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (m_Hub.ValidationService.TryCompleteAwaitingConfirm(tableId))
             {
-                Log.Debug(LogTag.IAPMobile, $"平台确认 ack 到达，补单确认完成并清理记录，商品表ID={tableId}，商品ID={product.definition.id}");
+                Log.Debug(LogTag.IAPMobile, $"平台确认 ack 到达，补单确认完成并清理记录，商品表ID={tableId}，商品ID={product.definition.id}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}");
                 return;
             }
 
             if (m_PayTcs == null && !m_Hub.ValidationService.HasOrderRecord(tableId))
             {
-                Log.Debug(LogTag.IAPMobile, $"平台订单确认完成，商品表ID={tableId}，商品ID={product.definition.id}");
+                Log.Debug(LogTag.IAPMobile, $"平台订单确认完成，商品表ID={tableId}，商品ID={product.definition.id}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}");
                 return;
             }
 
@@ -275,7 +275,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             m_Hub.ProductService.GetReceiptInfo(product.definition.id, out string orderId, out string googleToken);
             // 从平台票据解出透传字符串（补单/恢复场景也能带回，区别于只在本地流转的 CustomData）
             string receiptParam = MobileStoreParameterCodec.DecodeReceiptParam(encodedUuid);
-            Log.Debug(LogTag.IAPMobile, $"平台订单确认回调：商品表ID={tableId}，商品ID={product.definition.id}，订单号={orderId}，是否补单={isRecovered}");
+            Log.Debug(LogTag.IAPMobile, $"平台订单确认回调：商品表ID={tableId}，商品ID={product.definition.id}，订单号={orderId}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}，透传UUID={encodedUuid}，是否补单={isRecovered}");
 
             var record = new MobileOrderRecord
             {
@@ -347,7 +347,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             m_Hub.ProductService.GetReceiptInfo(product.definition.id, out string orderId, out string googleToken);
             // 从平台票据解出透传字符串（补单/恢复场景也能带回，区别于只在本地流转的 CustomData）
             string receiptParam = MobileStoreParameterCodec.DecodeReceiptParam(encodedUuid);
-            Log.Debug(LogTag.IAPMobile, $"平台待确认购买回调：商品表ID={tableId}，商品ID={product.definition.id}，订单号={orderId}，是否补单={isRecovered}");
+            Log.Debug(LogTag.IAPMobile, $"平台待确认购买回调：商品表ID={tableId}，商品ID={product.definition.id}，订单号={orderId}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}，透传UUID={encodedUuid}，是否补单={isRecovered}");
 
             var record = new MobileOrderRecord
             {
@@ -385,15 +385,19 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         private void HandleConfirmFailed(FailedOrder order)
         {
             long tableId = ResolveTableIdFromFailedOrder(order);
+            string diagnostic = BuildFailedOrderDiagnostic(order, tableId);
             bool hasActivePay = m_PayTcs != null || InPayTableId != 0;
             bool hasLocalOrder = tableId > 0L && m_Hub.ValidationService.HasOrderRecord(tableId);
             if (!hasActivePay && !hasLocalOrder)
             {
-                Log.Debug(LogTag.IAPMobile, $"平台订单确认失败但本地订单已终结，忽略回调，商品表ID={tableId}，原因={order.FailureReason}");
+                Log.Debug(LogTag.IAPMobile, $"平台订单确认失败但本地订单已终结，忽略回调，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
                 return;
             }
 
-            Log.Warning(LogTag.IAPMobile, $"平台确认失败，保留 AwaitingConfirm 记录，等待下次 FetchPurchases 重新拉取订单后重试确认，商品表ID={tableId}，原因={order.FailureReason}");
+            // order.Details 是 Unity IAP 附带的具体失败说明（如 "Order info is null" / "Transaction ID is null or empty"
+            // / "Received invalid order type after confirmation" / 异常 message），是定位 Unknown 失败根因的关键信息，必须打出来。
+            Log.Warning(LogTag.IAPMobile, $"平台确认失败，保留 AwaitingConfirm 记录，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
+
         }
 
         /// <summary>
@@ -404,10 +408,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             long tableId = ResolveTableIdFromFailedOrder(order);
             Product product = m_Hub.ProductService.GetFirstProductInOrder(order);
+            string diagnostic = BuildFailedOrderDiagnostic(order, tableId);
 
             if (m_PayTcs == null && InPayTableId == 0 && !m_Hub.ValidationService.HasOrderRecord(tableId))
             {
-                Log.Warning(LogTag.IAPMobile, $"平台订单确认失败但本地验单流程已结束，忽略回调，商品表ID={tableId}，原因={order.FailureReason}");
+                Log.Warning(LogTag.IAPMobile, $"平台购买失败但本地验单流程已结束，忽略回调，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
                 return;
             }
 
@@ -421,7 +426,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             var payTcs = m_PayTcs;
             m_PayTcs = null;
 
-            Log.Warning(LogTag.IAPMobile, $"平台购买失败，商品表ID={tableId}，原因={order.FailureReason}");
+            Log.Warning(LogTag.IAPMobile, $"平台购买失败，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
             string failReason = $"平台购买失败：{order.FailureReason}";
             m_Hub.Store.TrackLocalPayFailInternal(tableId, product, code, failReason, customData);
             var failResult = new IAPResult(tableId, (int)code, failReason, customData);
@@ -445,6 +450,59 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             // UUID 透传参数解码失败时，回退到 InPayTableId（正常购买）或商品表反查（补单）
             return InPayTableId != 0 ? InPayTableId : ResolveTableIdFromTable(product?.definition.id);
+        }
+
+        /// <summary>
+        /// 构建 FailedOrder 诊断信息，用于区分平台失败是否能明确绑定到当前活跃支付。
+        /// </summary>
+        /// <param name="order">失败订单。</param>
+        /// <param name="resolvedTableId">当前失败处理解析出的商品配置表行 ID。</param>
+        /// <returns>可直接拼接到日志的诊断信息。</returns>
+        private string BuildFailedOrderDiagnostic(FailedOrder order, long resolvedTableId)
+        {
+            Product product = m_Hub.ProductService.GetFirstProductInOrder(order);
+            string productId = product?.definition.id;
+            string googleObfuscatedAccountId = order.Info?.Google?.ObfuscatedAccountId;
+            string appAccountToken = order.Info?.Apple?.AppAccountToken?.ToString();
+            string encodedUuid = googleObfuscatedAccountId ?? appAccountToken;
+            bool hasDecodedTableId = TryParseTableId(encodedUuid, out long decodedTableId);
+            long productTableId = ResolveTableIdFromTable(productId);
+            string tableIdSource = ResolveFailedOrderTableIdSource(resolvedTableId, hasDecodedTableId, decodedTableId, productTableId);
+            string decodedUid = MobileStoreParameterCodec.DecodeUid(encodedUuid);
+            string decodedReceiptParam = MobileStoreParameterCodec.DecodeReceiptParam(encodedUuid);
+            bool hasLocalOrder = resolvedTableId > 0L && m_Hub.ValidationService.HasOrderRecord(resolvedTableId);
+            bool hasPayTcs = m_PayTcs != null;
+            bool hasActivePay = hasPayTcs || InPayTableId != 0;
+
+            return $"诊断：商品ID={productId}，平台交易ID={order.Info?.TransactionID}，AppleOriginalTransactionID={order.Info?.Apple?.OriginalTransactionID}，AppAccountToken={appAccountToken}，GoogleObfuscatedAccountId={googleObfuscatedAccountId}，透传UUID={encodedUuid}，UUID解码TableId={decodedTableId}，UUID解码UID={decodedUid}，UUID解码ReceiptParam={decodedReceiptParam}，解析来源={tableIdSource}，ProductTableId={productTableId}，InPayTableId={InPayTableId}，HasPayTcs={hasPayTcs}，HasActivePay={hasActivePay}，HasLocalOrder={hasLocalOrder}";
+        }
+
+        /// <summary>
+        /// 判断 FailedOrder tableId 的解析来源，暴露是否使用了当前活跃支付兜底。
+        /// </summary>
+        /// <param name="resolvedTableId">当前失败处理解析出的商品配置表行 ID。</param>
+        /// <param name="hasDecodedTableId">是否从平台透传 UUID 成功解出 tableId。</param>
+        /// <param name="decodedTableId">从平台透传 UUID 解出的 tableId。</param>
+        /// <param name="productTableId">从商品 ID 反查出的 tableId。</param>
+        /// <returns>tableId 解析来源。</returns>
+        private string ResolveFailedOrderTableIdSource(long resolvedTableId, bool hasDecodedTableId, long decodedTableId, long productTableId)
+        {
+            if (hasDecodedTableId && resolvedTableId == decodedTableId)
+            {
+                return "PlatformAccountToken";
+            }
+
+            if (InPayTableId != 0L && resolvedTableId == InPayTableId)
+            {
+                return "InPayTableIdFallback";
+            }
+
+            if (productTableId != 0L && resolvedTableId == productTableId)
+            {
+                return "ProductIdFallback";
+            }
+
+            return "Unknown";
         }
 
         /// <summary>

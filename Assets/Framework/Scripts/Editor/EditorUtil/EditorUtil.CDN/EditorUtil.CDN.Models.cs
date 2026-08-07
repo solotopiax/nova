@@ -8,6 +8,8 @@
  * descrip:   CDN 编辑器工具的不可变路径模型
  ***************************************************************/
 
+using System.Collections.Generic;
+
 namespace NovaFramework.Editor
 {
     public static partial class EditorUtil
@@ -69,6 +71,40 @@ namespace NovaFramework.Editor
                 /// 目标 OSS Object Key。
                 /// </summary>
                 internal string ObjectKey { get; }
+            }
+
+            /// <summary>
+            /// 一次部署允许清理的精确对象与目录前缀集合。
+            /// </summary>
+            internal sealed class OssCleanupPlan
+            {
+                internal OssCleanupPlan(
+                    IReadOnlyList<string> exactObjectKeys,
+                    IReadOnlyList<string> directoryPrefixes)
+                {
+                    ExactObjectKeys = exactObjectKeys;
+                    DirectoryPrefixes = directoryPrefixes;
+                }
+
+                internal IReadOnlyList<string> ExactObjectKeys { get; }
+
+                internal IReadOnlyList<string> DirectoryPrefixes { get; }
+            }
+
+            /// <summary>
+            /// OSS 对象分页结果，供适配器与可注入测试执行器共用。
+            /// </summary>
+            internal readonly struct OssObjectPage
+            {
+                internal OssObjectPage(IReadOnlyList<string> objectKeys, string nextContinuationToken)
+                {
+                    ObjectKeys = objectKeys;
+                    NextContinuationToken = nextContinuationToken;
+                }
+
+                internal IReadOnlyList<string> ObjectKeys { get; }
+
+                internal string NextContinuationToken { get; }
             }
 
             /// <summary>

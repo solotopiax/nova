@@ -18,6 +18,7 @@
 | Asset | [AssetComponent.md](Asset/AssetComponent.md) | 资源加载、下载、场景加载 |
 | Config | [ConfigComponent.md](Config/ConfigComponent.md) | 运行时配置访问与导出物读取 |
 | Prefab | [PrefabComponent.md](Prefab/PrefabComponent.md) | Prefab 实例化与回收 |
+| Native | [NativeComponent.md](Native/NativeComponent.md) | 系统通知授权与应用设置桥接 |
 | Event | [EventComponent.md](Event/EventComponent.md) | 事件系统 |
 | Table | [TableComponent.md](Table/TableComponent.md) | 表格系统 |
 | Localization | [LocalizationComponent.md](Localization/LocalizationComponent.md) | 文本与字体本地化 |

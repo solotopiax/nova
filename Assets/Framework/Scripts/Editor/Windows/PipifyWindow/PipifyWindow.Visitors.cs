@@ -143,6 +143,11 @@ namespace NovaFramework.Editor
         private readonly Dictionary<int, object> m_ParamsCache = new Dictionary<int, object>();
 
         /// <summary>
+        /// 单次 OnGUI 内的 CDN 自动关联显示结果缓存，避免高度计算与绘制重复扫描版本目录和报告。
+        /// </summary>
+        private readonly Dictionary<object, CdnAutoLinkDisplayState> m_CdnAutoLinkDisplayCache = new();
+
+        /// <summary>
         /// PipifyDropdown 下拉显示项缓存；<接口类型, 显示文本数组（首项为"未配置"）>。
         /// </summary>
         private readonly Dictionary<System.Type, string[]> m_DropdownDisplaysCache = new Dictionary<System.Type, string[]>();

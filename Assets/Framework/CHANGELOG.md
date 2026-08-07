@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.6.8] - 2026-08-07
+
+### Added
+
+- 新增 Native 通知权限模块，提供 Android / iOS 权限状态查询、显式请求、系统设置跳转、平台回调并发治理与对应 Inspector、构建处理器及 MainDemo 页面。
+- CDN 部署新增可选远端清理、最新 YooAsset 完整版本自动关联与白名单版本文件解析能力。
+- Player Build 期间按当前 `ConfigMasterSO` 临时生成唯一 `Resources/YooAssetSettings.asset`，构建后对称清理，避免多 Sample 永久副本冲突。
+
+### Changed
+
+- YooAsset 版本请求改用 `CheckTimeout` 总超时，文件下载通过 `IdleTimeout` 配置字节流入 watchdog。
+- YooAsset 编辑配置新增输出目录名与包文件前缀，ConfigWindow、Pipify 和导出链同步支持。
+
 ## [0.6.7] - 2026-08-06
 
 ### Breaking

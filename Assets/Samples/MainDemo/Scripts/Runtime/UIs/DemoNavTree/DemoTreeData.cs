@@ -72,6 +72,7 @@ namespace NovaFramework.Samples.Runtime
             AddChild(modules, MakeViewLeaf<DemoVibrateView>("2.14 Vibrate 振动组件"));
             AddChild(modules, MakeViewLeaf<DemoSDKView>("2.15 SDK 插件组件"));
             AddChild(modules, MakeViewLeaf<DemoDebugView>("2.16 Debug 调试组件"));
+            AddChild(modules, MakeViewLeaf<DemoNativeView>("2.17 Native 原生能力组件"));
 
             DemoNode hybridClr = MakeBranch("3.HybridCLR 运行时热更新解决方案", "HybridCLR");
             AddChild(root, hybridClr);

@@ -1,7 +1,7 @@
-# MainDemo 33 Demo 设计稿
+# MainDemo 34 Demo 设计稿
 
 > 设计期产出物。锚点：PAT-65（8 维覆盖）+ PAT-71（三段式模板）+ PAT-72（18 步 SOP）+ ADR-033（sample 自闭包）。
-> 范围：MainDemo（framework sample）唯一。33 叶子覆盖 Core 9 / Modules 16 / HybridCLR 3 / Integration 5。
+> 范围：MainDemo（framework sample）唯一。34 叶子覆盖 Core 9 / Modules 17 / HybridCLR 3 / Integration 5。
 
 ## 历史决策检索
 
@@ -68,7 +68,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 
 ## § 2 8 维覆盖矩阵汇总
 
-> 横向：33 demo（编号 1.1 - 4.5）；纵向：PAT-65 8 维。每格："C"=代表性折叠 / "F"=完整覆盖 / "S"=跳过。
+> 横向：34 demo（编号 1.1 - 4.5）；纵向：PAT-65 8 维。每格："C"=代表性折叠 / "F"=完整覆盖 / "S"=跳过。
 
 | Demo | 生命周期 | 重载族 | 异步 | 配置驱动 | 事件回调 | 错误边界 | 跨模块 | Editor工具 |
 |---|---|---|---|---|---|---|---|---|
@@ -97,6 +97,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 | 2.14 Vibrate | C | C | F | C | S | C | S | S |
 | 2.15 SDK | C | C | F | F | S | S | S | S |
 | 2.16 Debug | C | S | S | C | F | S | S | S |
+| 2.17 Native | C | C | F | S | S | F | S | S |
 | 3.1 AOT metadata | S | S | S | F | S | S | C | S |
 | 3.2 业务 dll | S | S | S | F | S | S | C | S |
 | 3.3 业务 Procedure 注册时序 | S | S | S | S | F | S | F | S |
@@ -113,7 +114,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 
 ---
 
-## § 3 33 叶子细化设计
+## § 3 34 叶子细化设计
 
 > 命名：类名 = `Demo<Module><Topic>View`；prefab 同名；UI 注册表 Name 同名。变体：**R**=只读快照型 / **I**=交互触发型。
 
@@ -182,7 +183,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 反馈样例：`> ReferencePool.Release(null) → throws ArgumentNullException`
 - 资源：无
 
-### 2. Modules 模块库（16 个）
+### 2. Modules 模块库（17 个）
 
 #### 2.1 DemoAppView ｜ I
 - API 副标题：`Nova.App.CheckAsync() / DownloadAsync() / OpenStoreAsync()`
@@ -299,6 +300,15 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 反馈样例：`> Nova.Debug.Activate() → Window=Mini`
 - 资源：无
 
+#### 2.17 DemoNativeView ｜ I
+- API 副标题：`Nova.Native.GetNotificationPermissionStatusAsync / RequestNotificationPermissionAsync / OpenAppSettingsAsync`
+- 主题：通知权限状态查询、显式请求与应用设置跳转
+- InteractionArea：状态卡 +「查询通知权限」「请求 Alert | Sound | Badge」「请求 iOS Provisional」「打开应用设置」4 个按钮；每个按钮直属展示实际调用的 API Hint
+- 反馈样例：请求结果同时展示 `IsOperationSuccessful`、`Status`、`ErrorCode`、`ErrorDomain`、`ErrorMessage`；设置页结果仅表示是否成功发起跳转
+- Editor 行为：查询与请求均显示真实 `Unsupported`，打开设置返回 `false`；页面不会自动请求权限
+- 生命周期：页面关闭仅取消本页等待，不取消已经发起的系统权限请求
+- 资源：无；系统弹窗、Provisional 与设置页跳转仍需 Android / iOS 真机验证
+
 ### 3. HybridCLR 运行时热更新（3 个，全 R）
 
 #### 3.1 DemoHybridClrAotMetadataView ｜ R
@@ -394,7 +404,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 
 > 具体取哪个 Bgm / Click / Confirm 由资源期 7b 收尾时挑短小（≤ 3s 的 SFX，≤ 30s 的 BGM）的版本。**待补**。
 
-### Prefab（4 个，新建）
+### Prefab（5 个，新建）
 
 | Prefab | 路径 | 用途 |
 |---|---|---|
@@ -402,8 +412,9 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 | `DemoPrefabBlock.prefab` | `Prefabs/UIs/DemoPrefabView/` | DemoPrefab 实例化目标（UI 绿块 + 自旋，私有依赖） |
 | `DemoToastView.prefab` | `Prefabs/UIs/DemoToastView/` | DemoUI 子页面 + Localization 演示 |
 | `DemoDialogView.prefab` | `Prefabs/UIs/DemoDialogView/` | DemoUI 子页面（带按钮） |
+| `DemoNativeView.prefab` | `Prefabs/UIs/DemoNativeView/` | Native 通知权限交互页面 |
 
-> 33 个 DemoXxxView.prefab 由 BaseDemoView clone 派生，UnityMCP 串行落地。
+> 34 个 DemoXxxView.prefab 由 BaseDemoView clone 派生，UnityMCP 串行落地。
 
 ---
 
@@ -433,14 +444,14 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 追加 sheet `Demo_VibrateEmphasis`：列 Name / Amplitude / Frequency / PreDuration / Interval，2 行（Demo_Tap / Demo_Knock）。
 
 ### UI 模块（`Excels/UIs/UIs.xlsx`）
-- 追加 33 行 Demo*View 注册（详见 § 6）。
+- 追加 34 行 Demo*View 注册（详见 § 6）。
 
 ### Network / Config / Procedure 模块
 - **不追加**（demo 全是只读快照或在线请求 mock，零数据依赖）。
 
 ---
 
-## § 6 UI 注册表追加清单（33 行追加 `Excels/UIs/UIs.xlsx`）
+## § 6 UI 注册表追加清单（34 行追加 `Excels/UIs/UIs.xlsx`）
 
 > 列：Name / Desc / AssetLocation / UIGroupName / PauseCoveredUIView。`PauseCoveredUIView=false` 全部统一（PAT-71 强制）。`UIGroupName=Demo`（新增分组，深度 50）。
 
@@ -471,6 +482,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 | DemoVibrateView | Modules 2.14 Vibrate | UIs/DemoVibrateView | Demo | false |
 | DemoSDKView | Modules 2.15 SDK | UIs/DemoSDKView | Demo | false |
 | DemoDebugView | Modules 2.16 Debug | UIs/DemoDebugView | Demo | false |
+| DemoNativeView | Modules 2.17 Native | UIs/DemoNativeView | Demo | false |
 | DemoHybridClrAotMetadataView | HybridCLR 3.1 AOT metadata | UIs/DemoHybridClrAotMetadataView | Demo | false |
 | DemoHybridClrGameDllView | HybridCLR 3.2 业务 dll | UIs/DemoHybridClrGameDllView | Demo | false |
 | DemoHybridClrProcedureRegisterView | HybridCLR 3.3 Procedure 注册时序 | UIs/DemoHybridClrProcedureRegisterView | Demo | false |
@@ -512,8 +524,8 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - **文件**：每类 1-2 cs（DemoAssetView / DemoUIView 体量大，可能拆 Methods.cs）
 - **阻塞**：等 D 路 + Table/Localization xlsx 数据追加完成
 
-### C 路（Modules 后 8 + HybridCLR + Integration）
-- **负责**：2.9-2.16 + 3.1-3.3 + 4.1-4.5（共 16 个）
+### C 路（Modules 后 9 + HybridCLR + Integration）
+- **负责**：2.9-2.17 + 3.1-3.3 + 4.1-4.5（共 17 个）
 - **类**：DemoNetworkView / DemoProcedureView / DemoObjectPoolView / DemoPersistView / DemoSoundView / DemoVibrateView / DemoSDKView / DemoDebugView / DemoHybridClrAotMetadataView / DemoHybridClrGameDllView / DemoHybridClrProcedureRegisterView / DemoIntegrationUiLocalizationView / DemoIntegrationUiAssetView / DemoIntegrationProcedureAssetView / DemoIntegrationEventNetworkView / DemoIntegrationConfigHybridClrView
 - **文件**：每类 1 cs（多为只读快照，体量 ≤ 80 行）
 - **阻塞**：等 D 路 + Sound/Vibrate xlsx 数据追加完成
@@ -537,7 +549,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 6. **DemoIntegrationEventNetwork 4.4 mock 方式**：要不要起一个本机 echo websocket？还是直接 fake `Nova.Event.Fire` 模拟收消息后桥接？建议后者（无外部依赖），**待确认**。
 7. **DemoNavTree 现有图标 `icon_arrow_red` 来源**：当前 prefab 已有该图，是否保留作为 § 4 资源清单一员还是另选规范化名？暂按保留处理。
 8. **UI 注册表 `UIGroupName=Demo` 是否与现有 UISettings 冲突**：需在 UISettings.UIGroupSettings 列表追加 `Demo` 组（Depth=50，Visible=true），**待 editor-coder 在 UIComponent Inspector 实操确认**。
-9. **辅助 view DemoToastView/DemoDialogView 是否登记 DemoTreeData 叶子**：当前 DemoTreeData.cs 33 叶不含它们；它们是 2.8/4.1/4.2 内部 spawn 的子页面，**不登记叶子**——需用户确认与现有 33 数对齐。
+9. **辅助 view DemoToastView/DemoDialogView 是否登记 DemoTreeData 叶子**：当前 DemoTreeData.cs 34 叶不含它们；它们是 2.8/4.1/4.2 内部 spawn 的子页面，**不登记叶子**，与现有 34 叶数对齐。
 10. **DemoIntegrationProcedureAsset 4.3 真做热更链路演示还是只读快照**：背景说明"4.3 / 4.5 走只读快照"，但若 EnableHotfix=false 则链路展示无意义，**确认 4.3 仅展示当前总开关 + 节点状态即可，不实际跑下载**。
 
 > 设计稿到此结束。

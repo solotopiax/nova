@@ -13,6 +13,7 @@ using System.Linq;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEngine;
+using YooAsset;
 
 namespace NovaFramework.Editor
 {
@@ -41,6 +42,8 @@ namespace NovaFramework.Editor
                 {
                     if (master == null) return null;
                     if (!master.TryGetEntry(platform, channel, out var entry)) return null;
+
+                    WriteYooAssetSettings(master, platform, channel, mode);
 
                     string dir = System.IO.Path.GetDirectoryName(savePath);
                     if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
@@ -81,6 +84,57 @@ namespace NovaFramework.Editor
                     AssetDatabase.SaveAssets();
                     AssetDatabase.Refresh();
                     return target;
+                }
+
+                /// <summary>
+                /// 按导出坐标解析 ConfigMaster 中的模板，并单向写入指定 YooAssetSettings.asset。
+                /// </summary>
+                private static void WriteYooAssetSettings(
+                    ConfigMasterSO master,
+                    PlatformType platform,
+                    ChannelType channel,
+                    DevelopMode mode)
+                {
+                    DimensionalResolver.YooAssetResult config =
+                        DimensionalResolver.ResolveYooAsset(master, platform, channel, mode);
+                    if (string.IsNullOrWhiteSpace(config.YooAssetSettingsPath))
+                    {
+                        return;
+                    }
+
+                    YooAssetSettings settings =
+                        AssetDatabase.LoadAssetAtPath<YooAssetSettings>(config.YooAssetSettingsPath);
+                    if (settings == null)
+                    {
+                        throw new System.InvalidOperationException(
+                            $"YooAsset 配置导出失败：找不到 YooAssetSettings.asset：{config.YooAssetSettingsPath}");
+                    }
+
+                    PlaceholderContext context = EditorUtil.Placeholder.FromConfigMaster(
+                        master,
+                        platform,
+                        channel,
+                        EditorUtil.Placeholder.ResolveDefaultPackageName(),
+                        Application.version,
+                        System.DateTime.Now);
+                    string yooFolderName = Util.Placeholder.Resolve(config.YooFolderName, context) ?? string.Empty;
+                    string packageFilePrefix = Util.Placeholder.Resolve(config.PackageFilePrefix, context) ?? string.Empty;
+                    if (PathUtility.ContainsInvalidFileNameChars(yooFolderName))
+                    {
+                        throw new System.InvalidOperationException(
+                            $"YooAsset 配置导出失败：YooFolderName 包含非法文件名字符：{yooFolderName}");
+                    }
+                    if (PathUtility.ContainsInvalidFileNameChars(packageFilePrefix))
+                    {
+                        throw new System.InvalidOperationException(
+                            $"YooAsset 配置导出失败：PackageFilePrefix 包含非法文件名字符：{packageFilePrefix}");
+                    }
+
+                    settings.YooFolderName = yooFolderName;
+                    settings.PackageFilePrefix = packageFilePrefix;
+                    EditorUtility.SetDirty(settings);
+                    AssetDatabase.SaveAssetIfDirty(settings);
+                    YooAssetConfiguration.SetSettings(settings);
                 }
 
                 /// <summary>

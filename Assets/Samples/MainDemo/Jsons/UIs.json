@@ -209,6 +209,14 @@
       "InObjectPools": false
     },
     {
+      "Name": "DemoNativeView",
+      "Desc": "Modules 2.17 Native",
+      "AssetLocation": "DemoNativeView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
       "Name": "DemoHybridClrAotMetadataView",
       "Desc": "HybridCLR 3.1 AOT metadata",
       "AssetLocation": "DemoHybridClrAotMetadataView",

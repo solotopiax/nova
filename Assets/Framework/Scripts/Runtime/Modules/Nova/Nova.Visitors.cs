@@ -24,7 +24,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// Nova 版本号。
         /// </summary>
-        public const string Version = "0.6.7";
+        public const string Version = "0.6.8";
 
         /// <summary>
         /// Nova 自身引用。
@@ -102,6 +102,11 @@ namespace NovaFramework.Runtime
         public static VibrateComponent Vibrate { get; private set; }
 
         /// <summary>
+        /// 原生能力组件。
+        /// </summary>
+        public static NativeComponent Native { get; private set; }
+
+        /// <summary>
         /// SDK 组件。
         /// </summary>
         public static SDKComponent SDK { get; private set; }
@@ -131,6 +136,7 @@ namespace NovaFramework.Runtime
             Asset = null;
             Config = null;
             Prefab = null;
+            Native = null;
             Event = null;
             Table = null;
             Localization = null;

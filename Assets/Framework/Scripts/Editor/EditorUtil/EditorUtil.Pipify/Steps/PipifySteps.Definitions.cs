@@ -201,7 +201,16 @@ namespace NovaFramework.Editor
             public string VersionCheckRemoteFilePath;
 
             /// <summary>
-            /// 待上传的项目根相对目录，支持 Platform、Channel、Package、Version 占位符。
+            /// 是否从本地目录锚点自动关联最后生成的完整 YooAsset 版本目录。
+            /// </summary>
+            [InspectorName("自动关联最新版本")]
+            [PipifyHelpBox(
+                "默认开启；执行时会从下方目录锚点关联最新完整的 YooAsset 版本目录。",
+                "版本识别规则与 Config 一致，文件名前缀取自当前 ConfigMaster 当前维度的 YooAsset 配置。")]
+            public bool AutoLinkLatestVersion = true;
+
+            /// <summary>
+            /// 待上传目录或自动关联锚点的项目根相对路径，支持 Platform、Channel、Package、Version 占位符。
             /// </summary>
             [InspectorName("热更资源-本地目录位置")]
             public string LocalDirectory;
@@ -212,6 +221,16 @@ namespace NovaFramework.Editor
             [InspectorName("热更资源-云端目录位置")]
             [PipifyCdnRemotePath]
             public string RemoteDirectory;
+
+            /// <summary>
+            /// 上传前是否清理本次版本检查文件与热更资源远端目录。
+            /// </summary>
+            [InspectorName("清理云端文件和目录")]
+            [PipifyHelpBox(
+                "默认关闭；勾选后会在上传前清理本次部署目标。",
+                "只清理本次部署涉及的文件和目录，不会清空整个 PresetOSSPath。",
+                "清理失败时立即停止，不继续上传。")]
+            public bool CleanRemoteFilesAndDirectories;
         }
 
         /// <summary>
@@ -240,7 +259,16 @@ namespace NovaFramework.Editor
             public string WhitelistRemoteFilePath;
 
             /// <summary>
-            /// YooAsset Manifest 二进制版本文件的项目根相对位置。
+            /// 是否以 .bytes 路径为锚点自动关联最新完整版本的三个 YooAsset 元数据文件。
+            /// </summary>
+            [InspectorName("自动关联最新版本")]
+            [PipifyHelpBox(
+                "默认开启；执行时会从下方 .bytes 路径锚点关联最新完整版本的 .bytes/.hash/.version。",
+                "文件命名取自当前 ConfigMaster 当前维度的 YooAsset 配置，三个文件始终来自同一版本。")]
+            public bool AutoLinkLatestVersion = true;
+
+            /// <summary>
+            /// YooAsset Manifest 二进制版本文件或自动关联锚点的项目根相对位置。
             /// </summary>
             [InspectorName("版本文件(.bytes)-本地文件位置")]
             public string ManifestBytesLocalFilePath;
@@ -263,6 +291,16 @@ namespace NovaFramework.Editor
             [InspectorName("版本文件-云端目录位置")]
             [PipifyCdnRemotePath]
             public string RemoteDirectory;
+
+            /// <summary>
+            /// 上传前是否清理本次白名单文件与版本文件远端目录。
+            /// </summary>
+            [InspectorName("清理云端文件和目录")]
+            [PipifyHelpBox(
+                "默认关闭；勾选后会在上传前清理本次部署目标。",
+                "只清理本次部署涉及的文件和目录，不会清空整个 PresetOSSPath。",
+                "清理失败时立即停止，不继续上传。")]
+            public bool CleanRemoteFilesAndDirectories;
         }
 
         /// <summary>

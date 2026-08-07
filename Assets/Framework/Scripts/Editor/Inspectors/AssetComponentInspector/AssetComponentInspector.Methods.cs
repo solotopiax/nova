@@ -245,13 +245,31 @@ namespace NovaFramework.Editor
                             });
                         }
                     }
+                }
 
-                    // 1. 启动期切片下载 tag 列表 —— 放在自动下载开关前，突出启动资源范围
-                    EditorUtil.Draw.Layout.Horizontal(() =>
+                // 1. 启动期切片下载 tag 列表 —— 数组 Foldout 禁用时只降低内容色，保留 Inspector 原始背景
+                bool enableHotfix = m_EnableHotfix.boolValue;
+                using (new EditorGUI.DisabledScope(!enableHotfix))
+                {
+                    Color previousContentColor = GUI.contentColor;
+                    if (!enableHotfix)
                     {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.PropertyField(m_LaunchHotfixTags, "启动期热更 Tag 列表：", true);
-                    });
+                        GUI.contentColor = new Color(0.5f, 0.5f, 0.5f, previousContentColor.a);
+                    }
+
+                    try
+                    {
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.PropertyField(m_LaunchHotfixTags, "启动期热更 Tag 列表：", true);
+                        });
+                    }
+                    finally
+                    {
+                        GUI.contentColor = previousContentColor;
+                    }
+
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
@@ -311,10 +329,10 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)下载中单文件失败时，由资源系统内部按「下载失败重试次数」自动重试",
-                            "(2)整批重试耗尽仍失败时，弹出重试确认弹窗（文本在 ProcedureComponent 的 Launcher 弹窗配置中维护）",
-                            "(3)点击「重试」：失败计数清零并重新下载，累计重试次数仅用于日志追踪，不设上限",
-                            "(4)点击「取消」：勾选本项则退出应用，不勾选则跳过本次热更新直接进入游戏"
+                            "(1)单文件失败后，先按「下载失败重试次数」自动重试",
+                            "(2)任一文件耗尽重试后，整批停止并显示失败弹窗",
+                            "(3)点击「重试」重新下载整批文件，次数不限",
+                            "(4)点击「取消」：勾选则退出应用；未勾选则跳过热更进入游戏"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
@@ -329,9 +347,8 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)推荐取值 3-8",
-                            "(2)数值过高易触发移动端运营商限速",
-                            "(3)数值过低会拖慢补丁进度"
+                            "(1)同时下载的单文件数量",
+                            "(2)建议 3-8；过高可能被限速，过低会降低下载速度"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
@@ -346,8 +363,8 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)单文件失败时的自动重试次数",
-                            "(2)取值 0 表示一次失败即终止整批下载"
+                            "(1)每个文件下载失败后的自动重试次数",
+                            "(2)0 表示不自动重试；首次失败即终止整批下载"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
@@ -362,41 +379,42 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)勾选后，每次启动热更新完成时自动清理本地不再使用的旧版本资源文件",
-                            "(2)不勾选则由业务侧自行决定清理时机",
-                            "(3)清理后无法快速回退到旧版本资源"
+                            "(1)勾选后，热更成功时删除当前清单不再使用的本地缓存文件",
+                            "(2)未勾选时不自动清理，由业务决定清理时机",
+                            "(3)已删除的文件再次需要时必须重新下载"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 7. 版本检查超时 —— 弱网相关，发生频率较低
+                    // 7. 版本检查请求超时 —— 控制远端版本文件请求的总时长
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("版本检查超时（秒）：", m_CheckTimeout, true, GUILayout.Width(180f));
+                        EditorUtil.Draw.Property("版本检查请求超时（秒）：", m_CheckTimeout, true, GUILayout.Width(180f));
                     });
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)版本请求连续无新字节流入时中止",
-                            "(2)数值过短易在弱网环境下误判失败"
+                            "(1)单次远端版本文件请求的总时长上限",
+                            "(2)超时后按备用地址和本地版本回退策略继续"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 9. 文件下载空闲超时 —— 弱网相关，发生频率较低
+                    // 8. 单文件字节流入超时 —— 只检测连续无新字节的停滞时间
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("文件下载空闲超时（秒）：", m_IdleTimeout, true, GUILayout.Width(180f));
+                        EditorUtil.Draw.Property("单文件字节流入超时（秒）：", m_IdleTimeout, true, GUILayout.Width(180f));
                     });
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)下载过程中连续无新字节流入即中止单文件请求",
-                            "(2)不影响整批下载的总时长上限"
+                            "(1)单个文件连续无新字节流入的时长上限",
+                            "(2)收到任意新字节后重新计时",
+                            "(3)超时后按「下载失败重试次数」自动重试"
                         }, false, GUILayout.ExpandWidth(true));
                     });
                 }

@@ -183,13 +183,13 @@ namespace NovaFramework.Runtime
         public bool AutoClearUnusedCacheOnHotfix => m_AutoClearUnusedCacheOnHotfix;
 
         /// <summary>
-        /// 版本检查空闲超时秒数（连续无新字节流入时中止请求）；默认 5。
+        /// 单次远端版本文件请求的总超时秒数；默认 5。
         /// </summary>
         [SerializeField]
         private int m_CheckTimeout = 5;
 
         /// <summary>
-        /// 文件下载空闲超时秒数（连续无新字节流入时中止下载）；默认 20。
+        /// 单文件字节流入超时秒数（连续无新字节流入时中止下载）；默认 20。
         /// </summary>
         [SerializeField]
         private int m_IdleTimeout = 20;

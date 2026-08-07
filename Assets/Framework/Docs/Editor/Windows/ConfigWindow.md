@@ -84,7 +84,9 @@ UnityEditor.EditorWindow
 | `m_HybridCLRAotMetadataDllsList` | `ReorderableList` | `null` | HybridCLR 面板：AOT 元数据 DLL 列表控件，懒初始化 |
 | `m_HybridCLRGameDllsList` | `ReorderableList` | `null` | HybridCLR 面板：业务 DLL 列表控件，懒初始化 |
 | `m_IsCdnDeploying` | `bool` | `false` | OSS 批量部署是否执行中；控制部署按钮禁用与重复点击保护 |
+| `m_CleanCdnRemoteBeforeDeploy` | `bool` | `false` | 资源部署前是否清理本次版本检查文件与热更资源远端目录；仅窗口会话状态，不写 Config |
 | `m_IsCdnWhitelistDeploying` | `bool` | `false` | 白名单配置及版本文件部署是否执行中；控制白名单部署按钮禁用与重复点击保护 |
+| `m_CleanCdnWhitelistRemoteBeforeDeploy` | `bool` | `false` | 白名单部署前是否清理本次白名单文件与版本文件远端目录；仅窗口会话状态，不写 Config |
 | `m_IsCdnPurging` | `bool` | `false` | Cloudflare 缓存清理是否执行中；控制清缓存按钮禁用与重复点击保护 |
 | `m_LastKnownChannel` | `ChannelType` | `default` | 上次 Channel 值，用于 Repaint 轮询对比 |
 | `m_HasPendingCoordSwitch` | `bool` | `false` | 延迟切坐标标志；TryApply 置 true，ApplyPendingCoordSwitch 消费并置 false（PAT-22 升级）|
@@ -111,7 +113,7 @@ UnityEditor.EditorWindow
 | `AppConfig` | 应用配置面板（通用配置组下） |
 | `NamespaceConfig` | 名字空间配置面板（通用配置组下） |
 | `HybridCLRConfig` | HybridCLR 配置面板（通用配置组下）：业务入口 Procedure 相对名 + AOT 元数据 DLL 列表 + 业务 DLL 列表 |
-| `YooAssetConfig` | YooAsset 配置面板（通用配置组下）：YooAssetSettingsPath / BundleCollectorSettingPath 路径编辑与浏览 |
+| `YooAssetConfig` | YooAsset 配置面板（通用配置组下）：两条资产路径，以及只存 ConfigMaster、导出时单向写入 `YooAssetSettings.asset` 的 `YooFolderName` / `PackageFilePrefix` 模板 |
 | `CDNEditorConfigs` | CDN 内容分发网络部署面板（通用配置组下）：OSS 批量上传与 Cloudflare 缓存清理 |
 | `SDKNode` | SDK Plugin 节点面板 |
 | `KitNode` | Kit 配置节点面板 |
@@ -264,12 +266,12 @@ DrawRightPanel()
 - 显示与写入：整套配置快照经 `DimensionalResolver.ResolveCDNEditorConfigs` 按当前坐标解析（IsGlobal 直接顶层；非全局按 mask 勾选轴匹配首个 CDNEditorConfigsOverrides 条目，命中后整份快照独立生效且空字符串/空列表有效；无命中回落顶层；恒返回深拷贝，禁共享引用）；编辑经 `CommitCdnField` 或白名单数组专用提交入口双分支写入；点击保存后随 WorkingCopy 落入 ConfigMasterSO 资产；整套字段仅在 Editor 编译，不参与 ConfigRuntimeSO 导出。
 - 维度语义：对齐矩阵类面板走 WorkingCopy 延迟落盘（区别于 YooAsset 的 C1 即时落盘）；IsGlobal（三 toggle 全不勾）时全局一份；加维分裂（OnCdnEnabled 按新轴 upsert 坐标条目）/ 减维合并（OnCdnDisabled 裁剪坐标并清理或回填条目，全不勾时回写顶层）/ 广播（BroadcastCdn 将当前坐标快照覆写全组条目）由 DimensionProjector 处理；常规部署、白名单部署与清缓存均经 `CreateCdnConfigSnapshot` 取当前坐标生效份快照执行。
 - OSS 配置包含 `Endpoint`、`AccessKeyID`、`AccessKeySecret` 和 `PresetOSSPath`。Region 从标准地域 Endpoint 推导，`PresetOSSPath` 必须使用 `oss://bucket-name/fixed/prefix` 格式。
-- 部署区顶部以“版本检查-模板文件位置”只读展示 `AppDownloadRulesTemplate.json` 的工程相对位置并提供“打开文件夹”，随后提供“版本检查-本地文件位置”与“版本检查-云端文件位置”：本地位置保存项目根相对文件路径，支持选择、打开所在文件夹；“新建”会让用户选择项目内目录，将模板覆盖复制为固定文件名 `AppDownloadRules.json`，并把创建结果的工程相对路径回写到当前维度。云端位置以只读 `PresetOSSPath` 为前缀，只编辑文件后缀。紧随两项之后的 HelpBox 说明它们用于应用启动时拉取的大版本更新规则文件，与热更新版本检测无关，并列出四类占位符。两项参与 CDN 维度化保存；两项都非空时，“批量部署到 CDN”会把该单文件与热更资源目录合并上传。
-- “热更资源-本地目录位置”保存为 Unity 项目根相对路径。`LocalDirectory` 支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，目录选择器初始位置、“打开文件夹”和部署执行时才解析，配置中保留模板原文。
-- “热更资源-云端目录位置”中的固定前缀只读显示，可编辑输入框只负责 `RemotePathSuffix`；后缀支持同样四项占位符，部署构建 Object Key 前解析。紧随两项之后的 HelpBox 说明热更资源部署作用及占位符。`{Platform}` = 当前 ConfigWindow 平台枚举名，`{Channel}` = `ConfigMasterSO.CurrentChannel`，`{Package}` = Nova.prefab 上 AssetComponent 的默认资源包名（空时回退包列表首项），`{Version}` = `Application.version`。目标 Object Key 为“固定前缀 + 已解析后缀 + 本地相对文件路径”；同名对象覆盖，不清理远端额外对象。
-- “白名单部署”位于常规部署与 Cloudflare 缓存清理之间。设备 ID 以可增删字符串数组编辑，部署时去空、Trim、按首次出现顺序去重并生成 JSON 根数组 `VersionsCheckWhiteList.json`；三个本地版本文件分别要求 `.bytes`、`.hash`、`.version` 扩展名。配置文件使用完整的“`PresetOSSPath + 配置文件云端文件位置`”，三个版本文件上传到“`PresetOSSPath + 版本文件云端目录位置`”，各路径均支持四类占位符。配置文件位置为空、不是 `.json` 文件、使用绝对 URL、父级路径或含查询/片段时仅跳过配置文件，不回退到版本文件目录；三个版本文件仍按版本目录独立部署。该按钮使用独立上传计划，不会改变常规“批量部署到 CDN”的文件集合。
-- Cloudflare 页面配置 `ZoneID`、Bearer `API Token` 与缓存 URL 列表；请求地址内部固定构造为 `https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/purge_cache`。旧资产中的隐藏 `PurgeURL` 仅用于提取 Zone ID 兼容迁移。输入框提示多个路径使用英文逗号分隔，解析同时兼容英文逗号、英文分号和换行，按首次出现顺序去重，并按每 100 条顺序发送。API Token 需要 `Zone -> Cache Purge` 权限。
-- 三个按钮分别触发常规部署、白名单部署和缓存清理，首个失败即停止。Secret/Token 在界面中遮罩，错误信息进入日志或对话框前脱敏，但配置资产中的序列化值仍是明文。
+- “资源部署”区顶部以“版本检查-模板文件位置”只读展示 `AppDownloadRulesTemplate.json` 的工程相对位置并提供“打开文件夹”，随后提供“版本检查-本地文件位置”与“版本检查-云端文件位置”：本地位置保存项目根相对文件路径，支持选择、打开所在文件夹；实时校验文件非空、位于 Unity 项目根内、实际存在、不经过 symlink/junction 且扩展名为 `.json`，不合规时输入框标红并在下方显示包含实际路径的错误提示。“新建”会让用户选择项目内目录，将模板覆盖复制为固定文件名 `AppDownloadRules.json`，并把创建结果的工程相对路径回写到当前维度。云端位置以只读 `PresetOSSPath` 为前缀，只编辑文件后缀。紧随两项之后的 HelpBox 说明它们用于应用启动时拉取的大版本更新规则文件，与热更新版本检测无关，并列出四类占位符。两项参与 CDN 维度化保存；两项都非空时，“批量部署到 CDN”会把该单文件与热更资源目录合并上传。
+- “热更资源-本地目录位置”保存为 Unity 项目根相对路径。其“自动关联最新版本”开关独占上一行，文字使用与下方字段一致的标签列宽，勾选框对齐下方输入框的值列起点；开关下方 HelpBox 说明完整版本识别、`.version` 写入时间排序以及 ConfigMaster 当前维度取值规则。开关随 CDN 当前维度保存且默认开启。输入框只读显示自动解析结果，“选择”仍可选择包根或任一版本目录；文件命名所需 `PackageFilePrefix` 始终从当前 ConfigMaster 当前维度的 YooAsset 配置解析，不读取 `YooAssetSettings.asset` 的实际值。系统仅接受 `.version` 内容与目录名一致，对应 `.bytes`、`.hash`、`.report` 齐全，并且 report 引用的全部 bundle 文件均存在的完整版本目录，按 `.version` 文件 `LastWriteTimeUtc` 选最新。部署时只上传 `.version`、匹配版本的 `.hash/.bytes` 与 report 中 `BundleInfos` 引用的资源文件，不上传 manifest JSON、`.report`、`buildlogtep.json`、`link.xml` 或其他未引用的构建辅助文件；Bundle 文件扩展名不作假设。YooAsset 不定义 `PackageVersion` 大小关系，因此不按日期或 SemVer 解析目录名；多个候选时间完全相同时明确报歧义。找不到有效版本时输入框标红并提示检查当前目录，部署按钮也会阻止执行。关闭开关后恢复手工编辑，并实时校验目录非空、位于 Unity 项目根内、实际存在且不包含 symlink/junction；不合规时输入框标红并在下方显示包含实际路径的错误提示。`LocalDirectory` 支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，配置中保留模板原文。
+- “热更资源-云端目录位置”中的固定前缀只读显示，可编辑输入框只负责 `RemotePathSuffix`；后缀支持同样四项占位符，部署构建 Object Key 前解析。紧随两项之后的 HelpBox 说明热更资源部署作用及占位符。`{Platform}` = 当前 ConfigWindow 平台枚举名，`{Channel}` = `ConfigMasterSO.CurrentChannel`，`{Package}` = Nova.prefab 上 AssetComponent 的默认资源包名（空时回退包列表首项），`{Version}` = `Application.version`。目标 Object Key 为“固定前缀 + 已解析后缀 + 本地相对文件路径”。按钮上方“清理云端文件和目录”默认关闭；标签与同区字段标签列对齐，Toggle 位于值列，下方 HelpBox 与字段整行左边缘对齐并说明清理顺序、范围与失败停止行为。勾选后先删除本次版本检查文件的精确 Object Key，并清理带 `/` 目录边界的本次热更资源远端前缀，再上传。远端目录为空时拒绝清理，绝不会退化为清空整个 `PresetOSSPath`。
+- “白名单部署”位于资源部署与 Cloudflare 缓存清理之间。设备 ID 以可增删字符串数组编辑，部署时去空、Trim、按首次出现顺序去重并生成 JSON 根数组 `VersionsCheckWhiteList.json`。三个版本文件上方有独立的“自动关联最新版本”开关，文字使用与下方字段一致的标签列宽，勾选框对齐下方输入框的值列起点；开关下方 HelpBox 说明 `.bytes` 锚点、三文件自动刷新以及 ConfigMaster 当前维度取值规则。开关随 CDN 当前维度保存；开启时以已配置 `.bytes` 路径的父目录为锚点寻找最新完整版本，根据当前 ConfigMaster 当前维度 YooAsset 配置中的 `PackageFilePrefix`、默认包名和资源版本自动生成匹配的 `.bytes/.hash/.version` 路径，不读取 `YooAssetSettings.asset` 的实际值。三项只读展示且部署前重新解析；`.bytes` 的“选择”仍可改变锚点，`.hash/.version` 的“选择”禁用。关闭后恢复三项手工编辑与选择，并分别实时校验文件非空、位于 Unity 项目根内、实际存在、不经过 symlink/junction 且扩展名匹配；每项独立标红并在其下方显示包含实际路径的错误提示。配置文件使用完整的“`PresetOSSPath + 配置文件云端文件位置`”，三个版本文件上传到“`PresetOSSPath + 版本文件云端目录位置`”，各路径均支持四类占位符。配置文件位置为空、不是 `.json` 文件、使用绝对 URL、父级路径或含查询/片段时仅跳过配置文件，不回退到版本文件目录；三个版本文件仍按版本目录独立部署。该按钮使用独立上传计划，不会改变资源部署的文件集合。按钮上方同名清理 Toggle 默认关闭，按白名单字段标签列对齐，并在值列下方显示同口径 HelpBox；勾选后先删除本次白名单 JSON 的精确 Object Key，并清理本次版本文件远端目录，再上传。
+- Cloudflare 页面配置 `ZoneID`、Bearer `API Token` 与缓存 URL 列表；字段下方、执行按钮上方的 HelpBox 说明清除缓存的用途、分隔与去重规则、每批最多 100 条的顺序发送和 Token 权限。请求地址内部固定构造为 `https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/purge_cache`。旧资产中的隐藏 `PurgeURL` 仅用于提取 Zone ID 兼容迁移。输入框提示多个路径使用英文逗号分隔，解析同时兼容英文逗号、英文分号和换行，按首次出现顺序去重，并按每 100 条顺序发送。API Token 需要 `Zone -> Cache Purge` 权限。
+- 三个按钮分别触发资源部署、白名单部署和缓存清理，首个失败即停止。本地文件或目录不存在、越界或为空时，对话框和日志会明确显示解析后的错误路径。启用部署前清理时，完整上传计划会先完成本地校验；列举或删除任一失败都会停止且不上传。Secret/Token 在界面中遮罩，错误信息进入日志或对话框前脱敏，但配置资产中的序列化值仍是明文。
 
 ### HybridCLR 面板布局（DrawHybridCLRPanel）
 

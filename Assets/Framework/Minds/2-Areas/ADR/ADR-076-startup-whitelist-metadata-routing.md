@@ -24,6 +24,7 @@ related:
   - "[[ADR-065-asset-manifest-three-tier-offline-fallback|ADR-065]]"
   - "[[PAT-43-optional-remote-check-tolerance|PAT-43]]"
   - "[[PAT-137-startup-bootstrap-no-hotfix-resource-backref|PAT-137]]"
+  - "[[PAT-156-cdn-clean-before-deploy-bounded-by-upload-plan|PAT-156]]"
   - "[[MOC-Asset]]"
 ---
 
@@ -147,6 +148,7 @@ Config 的“白名单部署”和 Pipify Step `cdn.whitelist.deploy` 使用同�
 - 离线清单回退：[[ADR-065-asset-manifest-three-tier-offline-fallback|ADR-065]]
 - 可选远端检查容错：[[PAT-43-optional-remote-check-tolerance|PAT-43]]
 - 启动前依赖边界：[[PAT-137-startup-bootstrap-no-hotfix-resource-backref|PAT-137]]
+- CDN 上传前清理边界：[[PAT-156-cdn-clean-before-deploy-bounded-by-upload-plan|PAT-156]]
 - 模块入口：[[MOC-Asset]]
 
 ---

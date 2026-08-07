@@ -1,6 +1,6 @@
-# MainDemo — UIs 33 Demo 索引
+# MainDemo — UIs 34 Demo 索引
 
-> 本文档是 33 个演示子页面的完整索引表。每行含：编号 / 类名 / 变体（R=只读快照 / I=交互触发）/ 演示 API / 资源依赖 / 实现状态。
+> 本文档是 34 个演示子页面的完整索引表。每行含：编号 / 类名 / 变体（R=只读快照 / I=交互触发）/ 演示 API / 资源依赖 / 实现状态。
 >
 > 设计稿全文见 [`DESIGN.md`](DESIGN.md)。
 
@@ -32,7 +32,7 @@
 
 ---
 
-## 2. Modules 模块库（16 个）
+## 2. Modules 模块库（17 个）
 
 | 编号 | 类名 | R/I | 演示 API | 资源依赖 |
 |---|---|---|---|---|
@@ -52,6 +52,7 @@
 | 2.14 | `DemoVibrateView` | I | `Nova.Vibrate.Play(VibrateType.Light) / PlayCustom(...) / StopAll()` | xlsx `Demo_VibrateCustom` / `Demo_VibrateEmphasis` |
 | 2.15 | `DemoSDKView` | R | `Nova.SDK.GetAll<ISDKPlugin>() / TryGet<TPlugin>(out p)` | 无 |
 | 2.16 | `DemoDebugView` | I | `Nova.Debug.IsActiveWindow / Active / Deactive`（与 DebugComponent 对齐） | 无 |
+| 2.17 | `DemoNativeView` | I | `Nova.Native.GetNotificationPermissionStatusAsync / RequestNotificationPermissionAsync / OpenAppSettingsAsync` | 无 |
 
 ---
 
@@ -77,7 +78,7 @@
 
 ---
 
-## 辅助子页面（不计入 33 叶树形导航）
+## 辅助子页面（不计入 34 叶树形导航）
 
 | 类名 | 说明 | 引用方 |
 |---|---|---|
@@ -88,7 +89,7 @@
 
 ## UI 注册表概要
 
-所有 33 个 DemoXxxView 及 2 个辅助 view 均注册在 `Excels/UIs/UIs.xlsx`（JSON 副本：`Jsons/UIs.json`）：
+所有 34 个 DemoXxxView 及 2 个辅助 view 均注册在 `Excels/UIs/UIs.xlsx`（JSON 副本：`Jsons/UIs.json`）：
 
 - `UIGroupName`：Demo 分组（Depth=50，`PauseCoveredUIView=false`）
 - `AssetLocation`：`UIs/DemoXxxView`（与 prefab 同名）
@@ -98,6 +99,6 @@
 
 ## 关联文档
 
-- [`DESIGN.md`](DESIGN.md) — 设计稿全文（§1 BaseDemoView / §2 8维矩阵 / §3 33叶细化 / §4 资源清单 / §5 源数据 / §6 UI注册表）
+- [`DESIGN.md`](DESIGN.md) — 设计稿全文（§1 BaseDemoView / §2 8维矩阵 / §3 34叶细化 / §4 资源清单 / §5 源数据 / §6 UI注册表）
 - [`../../README.md`](../../README.md) — MainDemo 工程总览
 - [`../../../../Framework/Docs/INDEX.md`](../../../../Framework/Docs/INDEX.md) — Framework L2 文档索引

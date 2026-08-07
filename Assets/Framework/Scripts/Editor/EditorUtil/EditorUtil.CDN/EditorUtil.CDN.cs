@@ -130,6 +130,94 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 从已校验的资源上传计划派生本次允许清理的精确对象与资源目录前缀。
+            /// </summary>
+            internal static OssCleanupPlan BuildCleanupPlan(
+                CDNEditorConfigs config,
+                IReadOnlyList<OssUploadItem> uploadPlan,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version)
+            {
+                return BuildCleanupPlanCore(
+                    config,
+                    uploadPlan,
+                    config?.RemotePathSuffix,
+                    platform,
+                    channel,
+                    package,
+                    version);
+            }
+
+            /// <summary>
+            /// 从已校验的白名单上传计划派生本次允许清理的精确对象与版本文件目录前缀。
+            /// </summary>
+            internal static OssCleanupPlan BuildAssetCheckWhitelistCleanupPlan(
+                CDNEditorConfigs config,
+                IReadOnlyList<OssUploadItem> uploadPlan,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version)
+            {
+                return BuildCleanupPlanCore(
+                    config,
+                    uploadPlan,
+                    config?.AssetCheckVersionRemoteDirectory,
+                    platform,
+                    channel,
+                    package,
+                    version);
+            }
+
+            private static OssCleanupPlan BuildCleanupPlanCore(
+                CDNEditorConfigs config,
+                IReadOnlyList<OssUploadItem> uploadPlan,
+                string remoteDirectoryTemplate,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version)
+            {
+                if (config == null) throw new ArgumentNullException(nameof(config));
+                if (uploadPlan == null) throw new ArgumentNullException(nameof(uploadPlan));
+
+                string remoteDirectory = NormalizeObjectKeyPart(ResolvePathPlaceholders(
+                    remoteDirectoryTemplate,
+                    platform,
+                    channel,
+                    package,
+                    version));
+                if (string.IsNullOrEmpty(remoteDirectory))
+                {
+                    throw new ArgumentException(
+                        "启用云端清理时，远端目录不能为空，避免清空整个 PresetOSSPath。",
+                        nameof(config));
+                }
+
+                OssLocation location = ParseOssLocation(config.PresetOSSPath);
+                string directoryPrefix = string.Join("/", new[]
+                    {
+                        NormalizeObjectKeyPart(location.Prefix),
+                        remoteDirectory,
+                    }
+                    .Where(part => !string.IsNullOrEmpty(part))) + "/";
+
+                var exactObjectKeys = new List<string>();
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+                foreach (OssUploadItem item in uploadPlan)
+                {
+                    if (!string.IsNullOrEmpty(item.ObjectKey) && seen.Add(item.ObjectKey))
+                    {
+                        exactObjectKeys.Add(item.ObjectKey);
+                    }
+                }
+
+                return new OssCleanupPlan(exactObjectKeys, new[] { directoryPrefix });
+            }
+
+            /// <summary>
             /// 按 Asset 主机服务器 URL 的同一规则替换 CDN 路径占位符。
             /// </summary>
             internal static string ResolvePathPlaceholders(
@@ -239,6 +327,28 @@ namespace NovaFramework.Editor
                 string package,
                 string version)
             {
+                return BuildUploadPlan(
+                    config,
+                    projectRoot,
+                    platform,
+                    channel,
+                    package,
+                    version,
+                    string.Empty);
+            }
+
+            /// <summary>
+            /// 使用显式 YooAsset PackageFilePrefix 构建上传计划。
+            /// </summary>
+            internal static IReadOnlyList<OssUploadItem> BuildUploadPlan(
+                CDNEditorConfigs config,
+                string projectRoot,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version,
+                string packageFilePrefix)
+            {
                 if (config == null) throw new ArgumentNullException(nameof(config));
                 if (string.IsNullOrWhiteSpace(projectRoot))
                     throw new ArgumentException("项目根目录不能为空。", nameof(projectRoot));
@@ -252,6 +362,20 @@ namespace NovaFramework.Editor
                     channel,
                     package,
                     version);
+                if (config.AutoLinkLatestVersion)
+                {
+                    if (!TryResolveLatestPackageDirectory(
+                            localDirectory,
+                            normalizedRoot,
+                            package,
+                            packageFilePrefix,
+                            out string latestDirectory,
+                            out string resolveError))
+                    {
+                        throw new ArgumentException(resolveError, nameof(config));
+                    }
+                    localDirectory = latestDirectory;
+                }
                 string remotePathSuffix = ResolvePathPlaceholders(
                     config.RemotePathSuffix,
                     platform,
@@ -260,14 +384,27 @@ namespace NovaFramework.Editor
                     version);
                 string localRoot = IOPath.GetFullPath(IOPath.Combine(normalizedRoot, localDirectory));
                 if (!IsPathInsideRoot(localRoot, normalizedRoot))
-                    throw new ArgumentException("本地目录必须位于 Unity 项目根目录内。", nameof(config));
+                    throw new ArgumentException($"本地目录必须位于 Unity 项目根目录内：{localRoot}", nameof(config));
                 if (!Directory.Exists(localRoot))
-                    throw new ArgumentException("本地目录不存在。", nameof(config));
+                    throw new ArgumentException($"本地目录不存在：{localRoot}", nameof(config));
+                if (TryFindReparsePointInTree(localRoot, normalizedRoot, out string reparsePoint))
+                    throw new ArgumentException($"本地部署目录不允许包含符号链接或 junction：{reparsePoint}", nameof(config));
 
                 OssLocation location = ParseOssLocation(config.PresetOSSPath);
-                string[] files = Directory.GetFiles(localRoot, "*", SearchOption.AllDirectories);
+                string[] files;
+                if (!TryGetYooAssetRuntimeUploadFiles(
+                        localRoot,
+                        package,
+                        packageFilePrefix,
+                        out files,
+                        out string yooAssetError))
+                {
+                    if (!string.IsNullOrEmpty(yooAssetError))
+                        throw new ArgumentException(yooAssetError, nameof(config));
+                    files = Directory.GetFiles(localRoot, "*", SearchOption.AllDirectories);
+                }
                 if (files.Length == 0)
-                    throw new ArgumentException("本地目录中没有可部署文件。", nameof(config));
+                    throw new ArgumentException($"本地目录中没有可部署文件：{localRoot}", nameof(config));
 
                 var plan = files
                     .Select(file => new
@@ -299,9 +436,11 @@ namespace NovaFramework.Editor
                     string versionCheckFullPath = IOPath.GetFullPath(
                         IOPath.Combine(normalizedRoot, versionCheckLocalPath));
                     if (!IsPathInsideRoot(versionCheckFullPath, normalizedRoot))
-                        throw new ArgumentException("版本检查本地文件必须位于 Unity 项目根目录内。", nameof(config));
+                        throw new ArgumentException($"版本检查本地文件必须位于 Unity 项目根目录内：{versionCheckFullPath}", nameof(config));
                     if (!File.Exists(versionCheckFullPath))
-                        throw new ArgumentException("版本检查本地文件不存在。", nameof(config));
+                        throw new ArgumentException($"版本检查本地文件不存在：{versionCheckFullPath}", nameof(config));
+                    if (TryFindReparsePointInPath(versionCheckFullPath, normalizedRoot, out string versionCheckLink))
+                        throw new ArgumentException($"版本检查本地文件不允许包含符号链接或 junction：{versionCheckLink}", nameof(config));
 
                     plan.Insert(0, new OssUploadItem(
                         versionCheckFullPath,
@@ -331,6 +470,30 @@ namespace NovaFramework.Editor
                 string package,
                 string version)
             {
+                return BuildAssetCheckWhitelistUploadPlan(
+                    config,
+                    projectRoot,
+                    generatedWhitelistFilePath,
+                    platform,
+                    channel,
+                    package,
+                    version,
+                    string.Empty);
+            }
+
+            /// <summary>
+            /// 使用显式 YooAsset PackageFilePrefix 构建白名单版本文件上传计划。
+            /// </summary>
+            internal static IReadOnlyList<OssUploadItem> BuildAssetCheckWhitelistUploadPlan(
+                CDNEditorConfigs config,
+                string projectRoot,
+                string generatedWhitelistFilePath,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version,
+                string packageFilePrefix)
+            {
                 if (config == null) throw new ArgumentNullException(nameof(config));
                 if (string.IsNullOrWhiteSpace(projectRoot))
                     throw new ArgumentException("项目根目录不能为空。", nameof(projectRoot));
@@ -352,10 +515,35 @@ namespace NovaFramework.Editor
                         out string whitelistRemoteFilePath))
                 {
                     if (string.IsNullOrWhiteSpace(generatedWhitelistFilePath) || !File.Exists(generatedWhitelistFilePath))
-                        throw new ArgumentException("白名单配置临时文件不存在。", nameof(generatedWhitelistFilePath));
+                        throw new ArgumentException($"白名单配置临时文件不存在：{generatedWhitelistFilePath}", nameof(generatedWhitelistFilePath));
                     plan.Add(new OssUploadItem(
                         IOPath.GetFullPath(generatedWhitelistFilePath),
                         CombineObjectKey(location.Prefix, string.Empty, whitelistRemoteFilePath)));
+                }
+
+                string manifestBytesLocalFilePath = config.AssetCheckManifestBytesLocalFilePath;
+                string manifestHashLocalFilePath = config.AssetCheckManifestHashLocalFilePath;
+                string packageVersionLocalFilePath = config.AssetCheckPackageVersionLocalFilePath;
+                if (config.AutoLinkLatestAssetCheckVersionFiles)
+                {
+                    string configuredBytesPath = ResolvePathPlaceholders(
+                        manifestBytesLocalFilePath,
+                        platform,
+                        channel,
+                        package,
+                        version);
+                    if (!TryResolveLatestAssetCheckVersionFiles(
+                            configuredBytesPath,
+                            normalizedRoot,
+                            package,
+                            packageFilePrefix,
+                            out manifestBytesLocalFilePath,
+                            out manifestHashLocalFilePath,
+                            out packageVersionLocalFilePath,
+                            out string resolveError))
+                    {
+                        throw new ArgumentException(resolveError, nameof(config));
+                    }
                 }
 
                 AddAssetCheckVersionFile(
@@ -363,7 +551,7 @@ namespace NovaFramework.Editor
                     normalizedRoot,
                     location.Prefix,
                     versionRemoteDirectory,
-                    config.AssetCheckManifestBytesLocalFilePath,
+                    manifestBytesLocalFilePath,
                     ".bytes",
                     platform,
                     channel,
@@ -374,7 +562,7 @@ namespace NovaFramework.Editor
                     normalizedRoot,
                     location.Prefix,
                     versionRemoteDirectory,
-                    config.AssetCheckManifestHashLocalFilePath,
+                    manifestHashLocalFilePath,
                     ".hash",
                     platform,
                     channel,
@@ -385,7 +573,7 @@ namespace NovaFramework.Editor
                     normalizedRoot,
                     location.Prefix,
                     versionRemoteDirectory,
-                    config.AssetCheckPackageVersionLocalFilePath,
+                    packageVersionLocalFilePath,
                     ".version",
                     platform,
                     channel,
@@ -636,6 +824,68 @@ namespace NovaFramework.Editor
                 Func<OssUploadItem, UniTask> uploadAsync,
                 Action<int, int, string> onProgress)
             {
+                return await DeployAsync(
+                    config,
+                    projectRoot,
+                    platform,
+                    channel,
+                    package,
+                    version,
+                    false,
+                    null,
+                    null,
+                    uploadAsync,
+                    onProgress);
+            }
+
+            /// <summary>
+            /// 可选先清理本次资源部署目标，再按上传计划顺序上传。
+            /// </summary>
+            internal static async UniTask<int> DeployAsync(
+                CDNEditorConfigs config,
+                string projectRoot,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version,
+                bool cleanRemoteFilesAndDirectories,
+                Func<string, string, UniTask<OssObjectPage>> listObjectsAsync,
+                Func<IReadOnlyList<string>, UniTask> deleteObjectsAsync,
+                Func<OssUploadItem, UniTask> uploadAsync,
+                Action<int, int, string> onProgress)
+            {
+                return await DeployAsync(
+                    config,
+                    projectRoot,
+                    platform,
+                    channel,
+                    package,
+                    version,
+                    string.Empty,
+                    cleanRemoteFilesAndDirectories,
+                    listObjectsAsync,
+                    deleteObjectsAsync,
+                    uploadAsync,
+                    onProgress);
+            }
+
+            /// <summary>
+            /// 使用显式 YooAsset PackageFilePrefix 部署资源。
+            /// </summary>
+            internal static async UniTask<int> DeployAsync(
+                CDNEditorConfigs config,
+                string projectRoot,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version,
+                string packageFilePrefix,
+                bool cleanRemoteFilesAndDirectories,
+                Func<string, string, UniTask<OssObjectPage>> listObjectsAsync,
+                Func<IReadOnlyList<string>, UniTask> deleteObjectsAsync,
+                Func<OssUploadItem, UniTask> uploadAsync,
+                Action<int, int, string> onProgress)
+            {
                 ValidateOssConfig(config);
                 if (uploadAsync == null) throw new ArgumentNullException(nameof(uploadAsync));
 
@@ -645,7 +895,27 @@ namespace NovaFramework.Editor
                     platform,
                     channel,
                     package,
-                    version);
+                    version,
+                    packageFilePrefix);
+                if (cleanRemoteFilesAndDirectories)
+                {
+                    OssCleanupPlan cleanupPlan = BuildCleanupPlan(
+                        config,
+                        plan,
+                        platform,
+                        channel,
+                        package,
+                        version);
+                    try
+                    {
+                        await CleanRemoteAsync(cleanupPlan, listObjectsAsync, deleteObjectsAsync);
+                    }
+                    catch (Exception exception)
+                    {
+                        string detail = RedactSecrets(exception.Message, config.AccessKeySecret, config.Token);
+                        throw new InvalidOperationException($"清理云端文件和目录失败：{detail}");
+                    }
+                }
                 onProgress?.Invoke(0, plan.Count, plan[0].LocalPath);
 
                 for (int index = 0; index < plan.Count; index++)
@@ -682,6 +952,72 @@ namespace NovaFramework.Editor
                 Func<OssUploadItem, UniTask> uploadAsync,
                 Action<int, int, string> onProgress)
             {
+                return await DeployAssetCheckWhitelistAsync(
+                    config,
+                    projectRoot,
+                    generatedWhitelistFilePath,
+                    platform,
+                    channel,
+                    package,
+                    version,
+                    false,
+                    null,
+                    null,
+                    uploadAsync,
+                    onProgress);
+            }
+
+            /// <summary>
+            /// 可选先清理本次白名单部署目标，再按上传计划顺序上传。
+            /// </summary>
+            internal static async UniTask<int> DeployAssetCheckWhitelistAsync(
+                CDNEditorConfigs config,
+                string projectRoot,
+                string generatedWhitelistFilePath,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version,
+                bool cleanRemoteFilesAndDirectories,
+                Func<string, string, UniTask<OssObjectPage>> listObjectsAsync,
+                Func<IReadOnlyList<string>, UniTask> deleteObjectsAsync,
+                Func<OssUploadItem, UniTask> uploadAsync,
+                Action<int, int, string> onProgress)
+            {
+                return await DeployAssetCheckWhitelistAsync(
+                    config,
+                    projectRoot,
+                    generatedWhitelistFilePath,
+                    platform,
+                    channel,
+                    package,
+                    version,
+                    string.Empty,
+                    cleanRemoteFilesAndDirectories,
+                    listObjectsAsync,
+                    deleteObjectsAsync,
+                    uploadAsync,
+                    onProgress);
+            }
+
+            /// <summary>
+            /// 使用显式 YooAsset PackageFilePrefix 部署白名单版本文件。
+            /// </summary>
+            internal static async UniTask<int> DeployAssetCheckWhitelistAsync(
+                CDNEditorConfigs config,
+                string projectRoot,
+                string generatedWhitelistFilePath,
+                PlatformType platform,
+                ChannelType channel,
+                string package,
+                string version,
+                string packageFilePrefix,
+                bool cleanRemoteFilesAndDirectories,
+                Func<string, string, UniTask<OssObjectPage>> listObjectsAsync,
+                Func<IReadOnlyList<string>, UniTask> deleteObjectsAsync,
+                Func<OssUploadItem, UniTask> uploadAsync,
+                Action<int, int, string> onProgress)
+            {
                 ValidateOssConfig(config);
                 if (uploadAsync == null) throw new ArgumentNullException(nameof(uploadAsync));
 
@@ -692,8 +1028,28 @@ namespace NovaFramework.Editor
                     platform,
                     channel,
                     package,
-                    version);
+                    version,
+                    packageFilePrefix);
                 if (plan.Count == 0) return 0;
+                if (cleanRemoteFilesAndDirectories)
+                {
+                    OssCleanupPlan cleanupPlan = BuildAssetCheckWhitelistCleanupPlan(
+                        config,
+                        plan,
+                        platform,
+                        channel,
+                        package,
+                        version);
+                    try
+                    {
+                        await CleanRemoteAsync(cleanupPlan, listObjectsAsync, deleteObjectsAsync);
+                    }
+                    catch (Exception exception)
+                    {
+                        string detail = RedactSecrets(exception.Message, config.AccessKeySecret, config.Token);
+                        throw new InvalidOperationException($"清理云端文件和目录失败：{detail}");
+                    }
+                }
                 onProgress?.Invoke(0, plan.Count, plan[0].LocalPath);
 
                 for (int index = 0; index < plan.Count; index++)
@@ -714,6 +1070,59 @@ namespace NovaFramework.Editor
                 }
 
                 return plan.Count;
+            }
+
+            /// <summary>
+            /// 列举目录前缀下的对象，与精确对象合并去重后分批删除。
+            /// </summary>
+            internal static async UniTask<int> CleanRemoteAsync(
+                OssCleanupPlan cleanupPlan,
+                Func<string, string, UniTask<OssObjectPage>> listObjectsAsync,
+                Func<IReadOnlyList<string>, UniTask> deleteObjectsAsync)
+            {
+                if (cleanupPlan == null) throw new ArgumentNullException(nameof(cleanupPlan));
+                if (listObjectsAsync == null) throw new ArgumentNullException(nameof(listObjectsAsync));
+                if (deleteObjectsAsync == null) throw new ArgumentNullException(nameof(deleteObjectsAsync));
+
+                var objectKeys = new List<string>();
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+                foreach (string exactObjectKey in cleanupPlan.ExactObjectKeys)
+                {
+                    if (!string.IsNullOrEmpty(exactObjectKey) && seen.Add(exactObjectKey))
+                    {
+                        objectKeys.Add(exactObjectKey);
+                    }
+                }
+
+                foreach (string directoryPrefix in cleanupPlan.DirectoryPrefixes)
+                {
+                    string continuationToken = null;
+                    do
+                    {
+                        OssObjectPage page = await listObjectsAsync(directoryPrefix, continuationToken);
+                        if (page.ObjectKeys != null)
+                        {
+                            foreach (string objectKey in page.ObjectKeys)
+                            {
+                                if (!string.IsNullOrEmpty(objectKey) &&
+                                    objectKey.StartsWith(directoryPrefix, StringComparison.Ordinal) &&
+                                    seen.Add(objectKey))
+                                {
+                                    objectKeys.Add(objectKey);
+                                }
+                            }
+                        }
+                        continuationToken = page.NextContinuationToken;
+                    } while (!string.IsNullOrEmpty(continuationToken));
+                }
+
+                const int deleteBatchSize = 1000;
+                for (int start = 0; start < objectKeys.Count; start += deleteBatchSize)
+                {
+                    int count = Math.Min(deleteBatchSize, objectKeys.Count - start);
+                    await deleteObjectsAsync(objectKeys.GetRange(start, count));
+                }
+                return objectKeys.Count;
             }
 
             /// <summary>
@@ -803,11 +1212,13 @@ namespace NovaFramework.Editor
 
                 string fullPath = IOPath.GetFullPath(IOPath.Combine(projectRoot, relativePath));
                 if (!IsPathInsideRoot(fullPath, projectRoot))
-                    throw new ArgumentException($"版本文件({expectedExtension})必须位于 Unity 项目根目录内。", nameof(localPathTemplate));
+                    throw new ArgumentException($"版本文件({expectedExtension})必须位于 Unity 项目根目录内：{fullPath}", nameof(localPathTemplate));
                 if (!File.Exists(fullPath))
-                    throw new ArgumentException($"版本文件({expectedExtension})不存在：{relativePath}", nameof(localPathTemplate));
+                    throw new ArgumentException($"版本文件({expectedExtension})不存在：{fullPath}", nameof(localPathTemplate));
+                if (TryFindReparsePointInPath(fullPath, projectRoot, out string versionFileLink))
+                    throw new ArgumentException($"版本文件({expectedExtension})不允许包含符号链接或 junction：{versionFileLink}", nameof(localPathTemplate));
                 if (!string.Equals(IOPath.GetExtension(fullPath), expectedExtension, StringComparison.OrdinalIgnoreCase))
-                    throw new ArgumentException($"版本文件扩展名必须为 {expectedExtension}：{relativePath}", nameof(localPathTemplate));
+                    throw new ArgumentException($"版本文件扩展名必须为 {expectedExtension}：{fullPath}", nameof(localPathTemplate));
 
                 plan.Add(new OssUploadItem(
                     fullPath,

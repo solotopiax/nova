@@ -51,6 +51,25 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Space(4f);
             DrawBundleCollectorSettingPathRow();
 
+            EditorUtil.Draw.Space(12f);
+            EditorUtil.Draw.Line();
+            EditorUtil.Draw.Space(12f);
+            DrawYooAssetSettingValueRow("Yoo Folder Name", true);
+            EditorUtil.Draw.Space(4f);
+            DrawYooAssetSettingValueRow("Package File Prefix", false);
+            EditorUtil.Draw.Space(4f);
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1) 此处只读写 ConfigMaster，不会从 YooAssetSettings.asset 反向读取。",
+                    "(2) 点击顶部「导出」时，才会把当前维度的值写入上方指定的 YooAssetSettings.asset。",
+                    "(3) 支持 {Platform} / {Channel} / {Package} / {Version} / {Time} 占位符。",
+                }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+
             EditorUtil.Draw.Space(16f);
         }
 
@@ -171,11 +190,76 @@ namespace NovaFramework.Editor
                     DevelopMode = o.DevelopMode,
                     YooAssetSettingsPath = o.YooAssetSettingsPath,
                     BundleCollectorSettingPath = o.BundleCollectorSettingPath,
+                    YooFolderName = o.YooFolderName,
+                    PackageFilePrefix = o.PackageFilePrefix,
                 });
             }
             // IsGlobal 写顶层后同步顶层两路径，防止 CopySerialized 以旧 WorkingCopy 值回退即时落盘的顶层字段
             m_WorkingCopy.YooAssetEditorConfigs.YooAssetSettingsPath = m_Master.YooAssetEditorConfigs.YooAssetSettingsPath;
             m_WorkingCopy.YooAssetEditorConfigs.BundleCollectorSettingPath = m_Master.YooAssetEditorConfigs.BundleCollectorSettingPath;
+            m_WorkingCopy.YooAssetEditorConfigs.YooFolderName = m_Master.YooAssetEditorConfigs.YooFolderName;
+            m_WorkingCopy.YooAssetEditorConfigs.PackageFilePrefix = m_Master.YooAssetEditorConfigs.PackageFilePrefix;
+        }
+
+        /// <summary>
+        /// 绘制由 ConfigMaster 单向导出到 YooAssetSettings.asset 的字符串字段。
+        /// </summary>
+        private void DrawYooAssetSettingValueRow(string label, bool isYooFolderName)
+        {
+            ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
+            EditorUtil.Config.DimensionProjector.Coord curCoord = new(
+                workingSrc.CurrentPlatform,
+                workingSrc.CurrentChannel,
+                workingSrc.CurrentDevelopMode);
+            EditorUtil.Config.DimensionalResolver.YooAssetResult resolved =
+                EditorUtil.Config.DimensionalResolver.ResolveYooAsset(
+                    m_Master,
+                    curCoord.Platform,
+                    curCoord.Channel,
+                    curCoord.Mode);
+            string committedValue = isYooFolderName
+                ? resolved.YooFolderName
+                : resolved.PackageFilePrefix;
+
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Label(label, false, GUILayout.Width(160f));
+                EditorGUI.BeginChangeCheck();
+                string editedValue = EditorUtil.Draw.TextField(
+                    committedValue ?? string.Empty,
+                    false,
+                    GUILayout.ExpandWidth(true));
+                if (EditorGUI.EndChangeCheck() && editedValue != committedValue)
+                {
+                    CommitYooAssetSettingValue(isYooFolderName, editedValue, curCoord);
+                    m_IsDirty = true;
+                }
+                EditorUtil.Draw.Space(68f);
+            });
+        }
+
+        /// <summary>
+        /// 将设计态模板值写入 ConfigMaster 当前维度，不修改目标 YooAssetSettings.asset。
+        /// </summary>
+        private void CommitYooAssetSettingValue(
+            bool isYooFolderName,
+            string value,
+            EditorUtil.Config.DimensionProjector.Coord curCoord)
+        {
+            Undo.RecordObject(m_Master, isYooFolderName ? "修改 YooFolderName" : "修改 PackageFilePrefix");
+            YooAssetEditorConfigs target = m_Master.YooAssetEditorConfigsMask.IsGlobal
+                ? m_Master.YooAssetEditorConfigs
+                : EditorUtil.Config.DimensionProjector.EnsureYooAssetEditorConfigsOverrideAtCoord(m_Master, curCoord);
+
+            if (isYooFolderName)
+                target.YooFolderName = value;
+            else
+                target.PackageFilePrefix = value;
+
+            EditorUtility.SetDirty(m_Master);
+            AssetDatabase.SaveAssetIfDirty(m_Master);
+            SyncYooAssetDimensionToWorkingCopy();
         }
 
         /// <summary>

@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: YooAssetSettings
   m_EditorClassIdentifier: YooAsset::YooAsset.YooAssetSettings
   YooFolderName: yooasset
-  PackageFilePrefix: 
+  PackageFilePrefix: 1.0.0

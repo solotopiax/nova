@@ -159,7 +159,7 @@ namespace NovaFramework.Editor
         private SerializedProperty m_CheckTimeout;
 
         /// <summary>
-        /// 文件下载空闲超时（秒）。
+        /// 单文件字节流入超时（秒）。
         /// </summary>
         private SerializedProperty m_IdleTimeout;
 

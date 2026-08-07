@@ -266,7 +266,21 @@ namespace NovaFramework.Editor
                 assetPath = AssetDatabase.GetAssetPath(m_Master.ExportTarget);
             }
 
-            ConfigRuntimeSO result = EditorUtil.Config.Exporter.Export(m_Master, m_Master.CurrentPlatform, m_Master.CurrentChannel, m_Master.CurrentDevelopMode, assetPath);
+            ConfigRuntimeSO result;
+            try
+            {
+                result = EditorUtil.Config.Exporter.Export(
+                    m_Master,
+                    m_Master.CurrentPlatform,
+                    m_Master.CurrentChannel,
+                    m_Master.CurrentDevelopMode,
+                    assetPath);
+            }
+            catch (System.InvalidOperationException exception)
+            {
+                EditorUtility.DisplayDialog("导出失败", exception.Message, "知道了");
+                return;
+            }
             if (result == null)
             {
                 EditorUtility.DisplayDialog("导出失败", $"未找到 Platform={m_Master.CurrentPlatform} × Channel={m_Master.CurrentChannel} 的配置行，请检查 ConfigMasterSO。", "知道了");

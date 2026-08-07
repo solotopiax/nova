@@ -34,7 +34,7 @@ auto_generated: true
 - [ADR-042 AssetManager 移除裸 Load API，所有 LoadXxx 返回 Handle 接口，调用方持有并负责释放](../2-Areas/ADR/ADR-042-assetmanager-load-api-all-return-handle.md) — LoadXxx 全返 Handle，调用方持有并 Release
 - [ADR-052 下载缓存两层清理分工，内存引用计数与磁盘沙盒分离](../2-Areas/ADR/ADR-052-asset-cache-two-layer-cleanup.md) — 内存引用计数与磁盘旧资源文件分两层独立清理
 - [ADR-055 Excel 源数据迁入各 Demo 独立副本，路径生命周期收敛单链](../2-Areas/ADR/ADR-055-excel-source-into-demo-copies.md) — Excel 源移进各 Demo 副本，删 Docs 搬运
-- [ADR-060 本工程直出包时放全局 YooAssetSettings 副本松绑 ADR-049](../2-Areas/ADR/ADR-060-yooasset-settings-global-resources-copy.md) — 直出包放全局 YooAssetSettings 副本兜底
+- [ADR-060 YooAssetSettings 只保留 Editor 权威源并在 Player 构建期临时 staging](../2-Areas/ADR/ADR-060-yooasset-settings-global-resources-copy.md) — 构建期临时生成唯一 YooAssetSettings 副本
 
 ## core
 

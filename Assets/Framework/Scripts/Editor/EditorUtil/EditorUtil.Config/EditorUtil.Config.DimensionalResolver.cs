@@ -70,6 +70,8 @@ namespace NovaFramework.Editor
                     /// BundleCollectorSetting.asset 项目根相对路径；对应 ConfigMasterSO.BundleCollectorSettingPath 或匹配 Override 的值。
                     /// </summary>
                     public string BundleCollectorSettingPath;
+                    public string YooFolderName;
+                    public string PackageFilePrefix;
                 }
 
                 // -------------------------------------------------------
@@ -159,7 +161,13 @@ namespace NovaFramework.Editor
                 /// <returns>YooAssetResult；master 为 null 时两字段返回空字符串。</returns>
                 public static YooAssetResult ResolveYooAsset(ConfigMasterSO master, PlatformType curP, ChannelType curC, DevelopMode curM)
                 {
-                    if (master == null) return new YooAssetResult { YooAssetSettingsPath = string.Empty, BundleCollectorSettingPath = string.Empty };
+                    if (master == null) return new YooAssetResult
+                    {
+                        YooAssetSettingsPath = string.Empty,
+                        BundleCollectorSettingPath = string.Empty,
+                        YooFolderName = "yoo",
+                        PackageFilePrefix = string.Empty,
+                    };
                     PanelDimensionMask mask = master.YooAssetEditorConfigsMask;
                     if (!IsGlobal(mask))
                     {
@@ -170,6 +178,8 @@ namespace NovaFramework.Editor
                             {
                                 YooAssetSettingsPath = o.YooAssetSettingsPath ?? string.Empty,
                                 BundleCollectorSettingPath = o.BundleCollectorSettingPath ?? string.Empty,
+                                YooFolderName = o.YooFolderName ?? string.Empty,
+                                PackageFilePrefix = o.PackageFilePrefix ?? string.Empty,
                             };
                         }
                     }
@@ -177,6 +187,8 @@ namespace NovaFramework.Editor
                     {
                         YooAssetSettingsPath = master.YooAssetEditorConfigs.YooAssetSettingsPath ?? string.Empty,
                         BundleCollectorSettingPath = master.YooAssetEditorConfigs.BundleCollectorSettingPath ?? string.Empty,
+                        YooFolderName = master.YooAssetEditorConfigs.YooFolderName ?? string.Empty,
+                        PackageFilePrefix = master.YooAssetEditorConfigs.PackageFilePrefix ?? string.Empty,
                     };
                 }
 
@@ -212,11 +224,13 @@ namespace NovaFramework.Editor
                                 VersionCheckLocalFilePath = oc.VersionCheckLocalFilePath ?? string.Empty,
                                 VersionCheckRemoteFilePath = oc.VersionCheckRemoteFilePath ?? string.Empty,
                                 LocalDirectory = oc.LocalDirectory ?? string.Empty,
+                                AutoLinkLatestVersion = oc.AutoLinkLatestVersion,
                                 RemotePathSuffix = oc.RemotePathSuffix ?? string.Empty,
                                 AssetCheckWhitelistDeviceIDs = oc.AssetCheckWhitelistDeviceIDs != null
                                     ? new List<string>(oc.AssetCheckWhitelistDeviceIDs)
                                     : new List<string>(),
                                 AssetCheckWhitelistRemoteFilePath = oc.AssetCheckWhitelistRemoteFilePath ?? string.Empty,
+                                AutoLinkLatestAssetCheckVersionFiles = oc.AutoLinkLatestAssetCheckVersionFiles,
                                 AssetCheckManifestBytesLocalFilePath = oc.AssetCheckManifestBytesLocalFilePath ?? string.Empty,
                                 AssetCheckManifestHashLocalFilePath = oc.AssetCheckManifestHashLocalFilePath ?? string.Empty,
                                 AssetCheckPackageVersionLocalFilePath = oc.AssetCheckPackageVersionLocalFilePath ?? string.Empty,
@@ -239,11 +253,13 @@ namespace NovaFramework.Editor
                         VersionCheckLocalFilePath = top.VersionCheckLocalFilePath ?? string.Empty,
                         VersionCheckRemoteFilePath = top.VersionCheckRemoteFilePath ?? string.Empty,
                         LocalDirectory = top.LocalDirectory ?? string.Empty,
+                        AutoLinkLatestVersion = top.AutoLinkLatestVersion,
                         RemotePathSuffix = top.RemotePathSuffix ?? string.Empty,
                         AssetCheckWhitelistDeviceIDs = top.AssetCheckWhitelistDeviceIDs != null
                             ? new List<string>(top.AssetCheckWhitelistDeviceIDs)
                             : new List<string>(),
                         AssetCheckWhitelistRemoteFilePath = top.AssetCheckWhitelistRemoteFilePath ?? string.Empty,
+                        AutoLinkLatestAssetCheckVersionFiles = top.AutoLinkLatestAssetCheckVersionFiles,
                         AssetCheckManifestBytesLocalFilePath = top.AssetCheckManifestBytesLocalFilePath ?? string.Empty,
                         AssetCheckManifestHashLocalFilePath = top.AssetCheckManifestHashLocalFilePath ?? string.Empty,
                         AssetCheckPackageVersionLocalFilePath = top.AssetCheckPackageVersionLocalFilePath ?? string.Empty,

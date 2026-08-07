@@ -83,14 +83,16 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Line();
             EditorUtil.Draw.Space(12f);
 
-            DrawCdnSectionTitle("部署");
+            DrawCdnSectionTitle("资源部署");
             DrawCdnVersionCheckTemplateRow();
             DrawCdnVersionCheckLocalFileRow(resolved, workingSrc, curCoord);
             DrawCdnVersionCheckRemoteFileRow(resolved, workingSrc, curCoord);
             DrawCdnVersionCheckPathHelp();
+            DrawCdnHotfixAutoLinkToggleRow(resolved, workingSrc, curCoord);
             DrawCdnLocalDirectoryRow(resolved, workingSrc, curCoord);
             DrawCdnRemoteDirectoryRow(resolved, workingSrc, curCoord);
             DrawCdnHotfixResourcePathHelp();
+            m_CleanCdnRemoteBeforeDeploy = DrawCdnCleanRemoteBeforeDeploy(m_CleanCdnRemoteBeforeDeploy, c_CdnLabelWidth);
             DrawCdnWideButton("批量部署到 CDN", m_IsCdnDeploying, OnDeployCdn);
 
             EditorUtil.Draw.Space(12f);
@@ -106,27 +108,59 @@ namespace NovaFramework.Editor
                 workingSrc,
                 curCoord,
                 (cfg, value) => cfg.AssetCheckWhitelistRemoteFilePath = value);
+            DrawCdnAssetCheckAutoLinkToggleRow(resolved, workingSrc, curCoord);
+            ResolveCdnAssetCheckVersionFileDisplayPaths(
+                resolved,
+                workingSrc,
+                curCoord,
+                out string assetCheckBytesDisplayPath,
+                out string assetCheckHashDisplayPath,
+                out string assetCheckVersionDisplayPath,
+                out string assetCheckVersionResolveError,
+                out string bytesError,
+                out string hashError,
+                out string versionError);
             DrawCdnAssetCheckLocalFileRow(
                 "版本文件(.bytes)-本地文件位置",
                 resolved.AssetCheckManifestBytesLocalFilePath,
+                assetCheckBytesDisplayPath,
                 ".bytes",
+                resolved.AutoLinkLatestAssetCheckVersionFiles,
+                true,
+                !string.IsNullOrEmpty(assetCheckVersionResolveError) || !string.IsNullOrEmpty(bytesError),
                 workingSrc,
                 curCoord,
                 (cfg, value) => cfg.AssetCheckManifestBytesLocalFilePath = value);
+            if (!string.IsNullOrEmpty(bytesError))
+                DrawCdnPathErrorHelp(bytesError, c_CdnWhitelistLabelWidth);
             DrawCdnAssetCheckLocalFileRow(
                 "版本文件(.hash)-本地文件位置",
                 resolved.AssetCheckManifestHashLocalFilePath,
+                assetCheckHashDisplayPath,
                 ".hash",
+                resolved.AutoLinkLatestAssetCheckVersionFiles,
+                !resolved.AutoLinkLatestAssetCheckVersionFiles,
+                !string.IsNullOrEmpty(assetCheckVersionResolveError) || !string.IsNullOrEmpty(hashError),
                 workingSrc,
                 curCoord,
                 (cfg, value) => cfg.AssetCheckManifestHashLocalFilePath = value);
+            if (!string.IsNullOrEmpty(hashError))
+                DrawCdnPathErrorHelp(hashError, c_CdnWhitelistLabelWidth);
             DrawCdnAssetCheckLocalFileRow(
                 "版本文件(.version)-本地文件位置",
                 resolved.AssetCheckPackageVersionLocalFilePath,
+                assetCheckVersionDisplayPath,
                 ".version",
+                resolved.AutoLinkLatestAssetCheckVersionFiles,
+                !resolved.AutoLinkLatestAssetCheckVersionFiles,
+                !string.IsNullOrEmpty(assetCheckVersionResolveError) || !string.IsNullOrEmpty(versionError),
                 workingSrc,
                 curCoord,
                 (cfg, value) => cfg.AssetCheckPackageVersionLocalFilePath = value);
+            if (!string.IsNullOrEmpty(versionError))
+                DrawCdnPathErrorHelp(versionError, c_CdnWhitelistLabelWidth);
+            if (!string.IsNullOrEmpty(assetCheckVersionResolveError))
+                DrawCdnPathErrorHelp(assetCheckVersionResolveError, c_CdnWhitelistLabelWidth);
             DrawCdnAssetCheckRemoteDirectoryRow(
                 "版本文件-云端目录位置",
                 resolved.PresetOSSPath,
@@ -135,6 +169,7 @@ namespace NovaFramework.Editor
                 curCoord,
                 (cfg, value) => cfg.AssetCheckVersionRemoteDirectory = value);
             DrawCdnAssetCheckWhitelistHelp();
+            m_CleanCdnWhitelistRemoteBeforeDeploy = DrawCdnCleanRemoteBeforeDeploy(m_CleanCdnWhitelistRemoteBeforeDeploy, c_CdnWhitelistLabelWidth);
             DrawCdnWideButton("批量部署到CDN", m_IsCdnWhitelistDeploying, OnDeployCdnWhitelist);
 
             EditorUtil.Draw.Space(12f);
@@ -157,6 +192,7 @@ namespace NovaFramework.Editor
                 (cfg, v) => cfg.Token = v,
                 () => EditorUtil.Draw.LinkButton(c_CloudflareTokenDocsUrl, "创建 API Token"));
             DrawCdnCachePathsRow(resolved, workingSrc, curCoord);
+            DrawCdnCloudflareHelp();
             DrawCdnWideButton("批量清除 CDN 缓存", m_IsCdnPurging, OnPurgeCdnCache);
 
             EditorUtil.Draw.Space(16f);
@@ -218,6 +254,38 @@ namespace NovaFramework.Editor
                     assign(entry.Config, value);
                 }
             }
+            m_IsDirty = true;
+            EditorUtility.SetDirty(workingSrc);
+        }
+
+        /// <summary>
+        /// 将布尔字段按当前维度坐标写入 WorkingCopy。
+        /// </summary>
+        private void CommitCdnBoolField(
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord,
+            bool value,
+            Action<CDNEditorConfigs, bool> assign)
+        {
+            if (workingSrc == null || assign == null) return;
+
+            if (workingSrc.CDNEditorConfigsMask.IsGlobal)
+            {
+                workingSrc.CDNEditorConfigs ??= new CDNEditorConfigs();
+                assign(workingSrc.CDNEditorConfigs, value);
+            }
+            else
+            {
+                CDNEditorConfigsOverride entry = EditorUtil.Config.DimensionProjector.EnsureCDNEditorConfigsOverrideAtCoord(
+                    workingSrc,
+                    curCoord);
+                if (entry != null)
+                {
+                    entry.Config ??= new CDNEditorConfigs();
+                    assign(entry.Config, value);
+                }
+            }
+
             m_IsDirty = true;
             EditorUtility.SetDirty(workingSrc);
         }
@@ -333,6 +401,57 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 绘制 Cloudflare 缓存清理的用途、分批规则与权限要求。
+        /// </summary>
+        private static void DrawCdnCloudflareHelp()
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1) 用于清除 Cloudflare CDN 已缓存的指定 URL，使更新后的云端资源尽快生效",
+                    "(2) 多个缓存路径支持使用英文逗号、英文分号或换行分隔，重复路径会自动去除",
+                    "(3) 请求按输入顺序发送，每批最多 100 条；任一批失败时立即停止后续请求",
+                    "(4) API Token 需要目标 Zone 的 Zone -> Cache Purge 权限",
+                }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(8f);
+        }
+
+        /// <summary>
+        /// 绘制与当前分区字段列对齐的清理开关，并在值列下方说明执行顺序、范围和失败行为。
+        /// </summary>
+        private static bool DrawCdnCleanRemoteBeforeDeploy(bool value, float labelWidth)
+        {
+            bool newValue = value;
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Label("清理云端文件和目录", false, GUILayout.Width(labelWidth));
+                newValue = EditorUtil.Draw.Toggle(value, GUILayout.Width(18f));
+                EditorUtil.Draw.FlexibleSpace();
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(4f);
+
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1) 默认关闭；勾选后会在上传前清理本次部署目标",
+                    "(2) 只清理本次部署涉及的文件和目录，不会清空整个 PresetOSSPath",
+                    "(3) 清理失败时立即停止，不继续上传",
+                }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(8f);
+            return newValue;
+        }
+
+        /// <summary>
         /// 以可增删的字符串数组绘制 VersionsCheckWhiteList.json 设备 ID 内容。
         /// </summary>
         private void DrawCdnAssetCheckWhitelistDeviceIDs(
@@ -414,12 +533,212 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 在热更资源路径上方绘制独占一行的自动关联开关。
+        /// </summary>
+        private void DrawCdnHotfixAutoLinkToggleRow(
+            CDNEditorConfigs resolved,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord)
+        {
+            DrawCdnAutoLinkToggleRow(
+                resolved.AutoLinkLatestVersion,
+                workingSrc,
+                curCoord,
+                c_CdnLabelWidth,
+                (cfg, value) => cfg.AutoLinkLatestVersion = value,
+                new[]
+                {
+                    "(1) 开启后会从当前目录或其上级包目录中，自动选择最后生成的完整 YooAsset 版本目录",
+                    "(2) 最新版本按 .version 文件最后写入时间判断，不比较目录名、日期或语义版本号",
+                    "(3) 文件命名使用当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 YooAssetSettings.asset 的实际值",
+                });
+        }
+
+        /// <summary>
+        /// 在白名单三个版本文件上方绘制独占一行的自动关联开关。
+        /// </summary>
+        private void DrawCdnAssetCheckAutoLinkToggleRow(
+            CDNEditorConfigs resolved,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord)
+        {
+            DrawCdnAutoLinkToggleRow(
+                resolved.AutoLinkLatestAssetCheckVersionFiles,
+                workingSrc,
+                curCoord,
+                c_CdnWhitelistLabelWidth,
+                (cfg, value) => cfg.AutoLinkLatestAssetCheckVersionFiles = value,
+                new[]
+                {
+                    "(1) 开启后以版本文件(.bytes)的配置目录为锚点，自动关联匹配的 .bytes/.hash/.version",
+                    "(2) 最新版本按 .version 文件最后写入时间判断，三个路径会自动刷新并设为只读",
+                    "(3) 文件命名使用当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 YooAssetSettings.asset 的实际值",
+                });
+        }
+
+        /// <summary>
+        /// 绘制与字段标题左边缘对齐的自动关联开关。
+        /// </summary>
+        private void DrawCdnAutoLinkToggleRow(
+            bool committedValue,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord,
+            float labelWidth,
+            Action<CDNEditorConfigs, bool> assign,
+            string[] helpMessages)
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Label("自动关联最新版本", false, GUILayout.Width(labelWidth));
+                bool edited = EditorUtil.Draw.Toggle(committedValue, GUILayout.Width(18f));
+                if (edited != committedValue)
+                {
+                    GUI.FocusControl(null);
+                    CommitCdnBoolField(workingSrc, curCoord, edited, assign);
+                }
+                EditorUtil.Draw.FlexibleSpace();
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(4f);
+            DrawCdnAutoLinkHelp(helpMessages);
+        }
+
+        /// <summary>
+        /// 在自动关联开关下方绘制与字段整行左边缘对齐的说明。
+        /// </summary>
+        private static void DrawCdnAutoLinkHelp(string[] messages)
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(
+                    MessageType.Info,
+                    messages,
+                    false,
+                    GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(8f);
+        }
+
+        /// <summary>
+        /// 解析白名单三个版本文件的显示路径；自动模式以已配置 bytes 文件的父目录为锚点。
+        /// </summary>
+        private static void ResolveCdnAssetCheckVersionFileDisplayPaths(
+            CDNEditorConfigs resolved,
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord,
+            out string bytesDisplayPath,
+            out string hashDisplayPath,
+            out string versionDisplayPath,
+            out string error,
+            out string bytesError,
+            out string hashError,
+            out string versionError)
+        {
+            bytesDisplayPath = EditorUtil.CDN.ResolveEditorPathPlaceholders(
+                resolved.AssetCheckManifestBytesLocalFilePath,
+                curCoord.Platform,
+                curCoord.Channel) ?? string.Empty;
+            hashDisplayPath = EditorUtil.CDN.ResolveEditorPathPlaceholders(
+                resolved.AssetCheckManifestHashLocalFilePath,
+                curCoord.Platform,
+                curCoord.Channel) ?? string.Empty;
+            versionDisplayPath = EditorUtil.CDN.ResolveEditorPathPlaceholders(
+                resolved.AssetCheckPackageVersionLocalFilePath,
+                curCoord.Platform,
+                curCoord.Channel) ?? string.Empty;
+            error = string.Empty;
+            bytesError = string.Empty;
+            hashError = string.Empty;
+            versionError = string.Empty;
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName;
+            if (!resolved.AutoLinkLatestAssetCheckVersionFiles)
+            {
+                EditorUtil.CDN.TryValidateManualLocalFile(
+                    bytesDisplayPath,
+                    projectRoot,
+                    ".bytes",
+                    out bytesError);
+                EditorUtil.CDN.TryValidateManualLocalFile(
+                    hashDisplayPath,
+                    projectRoot,
+                    ".hash",
+                    out hashError);
+                EditorUtil.CDN.TryValidateManualLocalFile(
+                    versionDisplayPath,
+                    projectRoot,
+                    ".version",
+                    out versionError);
+                return;
+            }
+
+            string packageName = EditorUtil.CDN.ResolveDefaultPackageName();
+            string packageFilePrefix = ResolveCdnPackageFilePrefix(workingSrc, curCoord, packageName);
+            if (EditorUtil.CDN.TryResolveLatestAssetCheckVersionFiles(
+                    bytesDisplayPath,
+                    projectRoot,
+                    packageName,
+                    packageFilePrefix,
+                    out string latestBytesPath,
+                    out string latestHashPath,
+                    out string latestVersionPath,
+                    out error))
+            {
+                bytesDisplayPath = latestBytesPath;
+                hashDisplayPath = latestHashPath;
+                versionDisplayPath = latestVersionPath;
+            }
+        }
+
+        /// <summary>
+        /// 从当前 ConfigMaster 当前维度解析 YooAsset 文件前缀，不读取 YooAssetSettings.asset 实际值。
+        /// </summary>
+        private static string ResolveCdnPackageFilePrefix(
+            ConfigMasterSO workingSrc,
+            EditorUtil.Config.DimensionProjector.Coord curCoord,
+            string packageName)
+        {
+            return EditorUtil.CDN.ResolvePackageFilePrefix(
+                workingSrc,
+                curCoord.Platform,
+                curCoord.Channel,
+                curCoord.Mode,
+                packageName,
+                Application.version,
+                DateTime.Now);
+        }
+
+        /// <summary>
+        /// 在指定标签宽度后绘制路径解析错误。
+        /// </summary>
+        private static void DrawCdnPathErrorHelp(string error, float labelWidth)
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f + labelWidth);
+                EditorUtil.Draw.HelpBox(
+                    MessageType.Error,
+                    new[] { error },
+                    false,
+                    GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(4f);
+        }
+
+        /// <summary>
         /// 绘制一个白名单版本文件本地位置，并提供选择和打开文件夹入口。
         /// </summary>
         private void DrawCdnAssetCheckLocalFileRow(
             string label,
             string committedValue,
+            string displayValue,
             string extension,
+            bool readOnly,
+            bool selectionEnabled,
+            bool hasError,
             ConfigMasterSO workingSrc,
             EditorUtil.Config.DimensionProjector.Coord curCoord,
             Action<CDNEditorConfigs, string> assign)
@@ -428,19 +747,32 @@ namespace NovaFramework.Editor
             {
                 EditorUtil.Draw.Space(16f);
                 EditorUtil.Draw.Label(label, false, GUILayout.Width(c_CdnWhitelistLabelWidth));
-                EditorGUI.BeginChangeCheck();
-                string edited = EditorUtil.Draw.TextField(committedValue, false, GUILayout.ExpandWidth(true));
-                if (EditorGUI.EndChangeCheck() && edited != committedValue)
-                    CommitCdnField(workingSrc, curCoord, edited, assign);
-                EditorUtil.Draw.Button(
-                    "选择",
-                    false,
-                    () => SelectCdnAssetCheckLocalFile(committedValue, extension, workingSrc, curCoord, assign),
-                    GUILayout.Width(c_CdnSelectButtonWidth));
+                Color previousBackgroundColor = GUI.backgroundColor;
+                Color previousContentColor = GUI.contentColor;
+                if (hasError)
+                {
+                    GUI.backgroundColor = new Color(1f, 0.35f, 0.35f, 1f);
+                    GUI.contentColor = new Color(1f, 0.55f, 0.5f, 1f);
+                }
+                EditorUtil.Draw.DisabledGroup(readOnly, () =>
+                {
+                    EditorGUI.BeginChangeCheck();
+                    string edited = EditorUtil.Draw.TextField(displayValue, false, GUILayout.ExpandWidth(true));
+                    if (EditorGUI.EndChangeCheck() && edited != committedValue)
+                        CommitCdnField(workingSrc, curCoord, edited, assign);
+                });
+                GUI.backgroundColor = previousBackgroundColor;
+                GUI.contentColor = previousContentColor;
+                EditorUtil.Draw.DisabledGroup(!selectionEnabled, () =>
+                    EditorUtil.Draw.Button(
+                        "选择",
+                        false,
+                        () => SelectCdnAssetCheckLocalFile(displayValue, extension, workingSrc, curCoord, assign),
+                        GUILayout.Width(c_CdnSelectButtonWidth)));
                 EditorUtil.Draw.Button(
                     "打开文件夹",
                     false,
-                    () => OpenCdnVersionCheckLocalFileDirectory(committedValue, curCoord.Platform, curCoord.Channel),
+                    () => OpenCdnVersionCheckLocalFileDirectory(displayValue, curCoord.Platform, curCoord.Channel),
                     GUILayout.Width(c_CdnOpenButtonWidth));
                 EditorUtil.Draw.Space(16f);
             });
@@ -554,10 +886,28 @@ namespace NovaFramework.Editor
             ConfigMasterSO workingSrc,
             EditorUtil.Config.DimensionProjector.Coord curCoord)
         {
+            string displayPath = EditorUtil.CDN.ResolveEditorPathPlaceholders(
+                resolved.VersionCheckLocalFilePath,
+                curCoord.Platform,
+                curCoord.Channel) ?? string.Empty;
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName;
+            EditorUtil.CDN.TryValidateManualLocalFile(
+                displayPath,
+                projectRoot,
+                ".json",
+                out string localFileError);
+
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
                 EditorUtil.Draw.Label("版本检查-本地文件位置", false, GUILayout.Width(c_CdnLabelWidth));
+                Color previousBackgroundColor = GUI.backgroundColor;
+                Color previousContentColor = GUI.contentColor;
+                if (!string.IsNullOrEmpty(localFileError))
+                {
+                    GUI.backgroundColor = new Color(1f, 0.35f, 0.35f, 1f);
+                    GUI.contentColor = new Color(1f, 0.55f, 0.5f, 1f);
+                }
                 EditorGUI.BeginChangeCheck();
                 string edited = EditorUtil.Draw.TextField(
                     resolved.VersionCheckLocalFilePath,
@@ -565,6 +915,8 @@ namespace NovaFramework.Editor
                     GUILayout.ExpandWidth(true));
                 if (EditorGUI.EndChangeCheck() && edited != resolved.VersionCheckLocalFilePath)
                     CommitCdnField(workingSrc, curCoord, edited, (cfg, v) => cfg.VersionCheckLocalFilePath = v);
+                GUI.backgroundColor = previousBackgroundColor;
+                GUI.contentColor = previousContentColor;
                 EditorUtil.Draw.Button(
                     "选择",
                     false,
@@ -586,6 +938,8 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Space(16f);
             });
             EditorUtil.Draw.Space(4f);
+            if (!string.IsNullOrEmpty(localFileError))
+                DrawCdnPathErrorHelp(localFileError, c_CdnLabelWidth);
         }
 
         /// <summary>
@@ -628,29 +982,89 @@ namespace NovaFramework.Editor
             ConfigMasterSO workingSrc,
             EditorUtil.Config.DimensionProjector.Coord curCoord)
         {
+            string displayDirectory = resolved.LocalDirectory ?? string.Empty;
+            string resolveError = string.Empty;
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName;
+            if (resolved.AutoLinkLatestVersion)
+            {
+                string configuredDirectory = EditorUtil.CDN.ResolveEditorPathPlaceholders(
+                    resolved.LocalDirectory,
+                    curCoord.Platform,
+                    curCoord.Channel) ?? string.Empty;
+                string packageName = EditorUtil.CDN.ResolveDefaultPackageName();
+                string packageFilePrefix = ResolveCdnPackageFilePrefix(workingSrc, curCoord, packageName);
+                if (!EditorUtil.CDN.TryResolveLatestPackageDirectory(
+                        configuredDirectory,
+                        projectRoot,
+                        packageName,
+                        packageFilePrefix,
+                        out displayDirectory,
+                        out resolveError))
+                {
+                    displayDirectory = configuredDirectory;
+                }
+            }
+            else
+            {
+                string configuredDirectory = EditorUtil.CDN.ResolveEditorPathPlaceholders(
+                    resolved.LocalDirectory,
+                    curCoord.Platform,
+                    curCoord.Channel) ?? string.Empty;
+                EditorUtil.CDN.TryValidateManualLocalDirectory(
+                    configuredDirectory,
+                    projectRoot,
+                    out resolveError);
+            }
+
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
                 EditorUtil.Draw.Label("热更资源-本地目录位置", false, GUILayout.Width(c_CdnLabelWidth));
-                EditorGUI.BeginChangeCheck();
-                string edited = EditorUtil.Draw.TextField(resolved.LocalDirectory, false, GUILayout.ExpandWidth(true));
-                if (EditorGUI.EndChangeCheck() && edited != resolved.LocalDirectory)
-                    CommitCdnField(workingSrc, curCoord, edited, (cfg, v) => cfg.LocalDirectory = v);
+                Color previousBackgroundColor = GUI.backgroundColor;
+                Color previousContentColor = GUI.contentColor;
+                if (!string.IsNullOrEmpty(resolveError))
+                {
+                    GUI.backgroundColor = new Color(1f, 0.35f, 0.35f, 1f);
+                    GUI.contentColor = new Color(1f, 0.55f, 0.5f, 1f);
+                }
+                EditorUtil.Draw.DisabledGroup(resolved.AutoLinkLatestVersion, () =>
+                {
+                    EditorGUI.BeginChangeCheck();
+                    string edited = EditorUtil.Draw.TextField(displayDirectory, false, GUILayout.ExpandWidth(true));
+                    if (EditorGUI.EndChangeCheck() && edited != resolved.LocalDirectory)
+                        CommitCdnField(workingSrc, curCoord, edited, (cfg, v) => cfg.LocalDirectory = v);
+                });
+                GUI.backgroundColor = previousBackgroundColor;
+                GUI.contentColor = previousContentColor;
+
                 EditorUtil.Draw.Button(
                     "选择",
                     false,
-                    () => SelectCdnLocalDirectory(resolved.LocalDirectory, workingSrc, curCoord),
+                    () => SelectCdnLocalDirectory(displayDirectory, workingSrc, curCoord),
                     GUILayout.Width(c_CdnSelectButtonWidth));
                 EditorUtil.Draw.Button(
                     "打开文件夹",
                     false,
                     () => OpenCdnLocalDirectory(
-                        resolved.LocalDirectory,
+                        displayDirectory,
                         curCoord.Platform,
                         curCoord.Channel),
                     GUILayout.Width(c_CdnOpenButtonWidth));
                 EditorUtil.Draw.Space(16f);
             });
+            if (!string.IsNullOrEmpty(resolveError))
+            {
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    EditorUtil.Draw.Space(16f + c_CdnLabelWidth);
+                    EditorUtil.Draw.HelpBox(
+                        MessageType.Error,
+                        new[] { resolveError },
+                        false,
+                        GUILayout.ExpandWidth(true));
+                    EditorUtil.Draw.Space(16f);
+                });
+            }
             EditorUtil.Draw.Space(4f);
         }
 
@@ -1015,11 +1429,21 @@ namespace NovaFramework.Editor
                 CDNEditorConfigs config = CreateCdnConfigSnapshot();
                 string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
                     ?? throw new InvalidOperationException("无法解析 Unity 项目根目录。");
+                string packageName = EditorUtil.CDN.ResolveDefaultPackageName();
+                string packageFilePrefix = ResolveCdnPackageFilePrefix(
+                    source,
+                    new EditorUtil.Config.DimensionProjector.Coord(
+                        source.CurrentPlatform,
+                        source.CurrentChannel,
+                        source.CurrentDevelopMode),
+                    packageName);
                 int count = await EditorUtil.CDN.DeployAsync(
                     config,
                     projectRoot,
                     source.CurrentPlatform,
                     source.CurrentChannel,
+                    packageFilePrefix,
+                    m_CleanCdnRemoteBeforeDeploy,
                     (completed, total, path) => EditorUtility.DisplayProgressBar(
                         "批量部署到 CDN",
                         $"{completed}/{total}  {path}",
@@ -1053,11 +1477,21 @@ namespace NovaFramework.Editor
                 CDNEditorConfigs config = CreateCdnConfigSnapshot();
                 string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
                     ?? throw new InvalidOperationException("无法解析 Unity 项目根目录。");
+                string packageName = EditorUtil.CDN.ResolveDefaultPackageName();
+                string packageFilePrefix = ResolveCdnPackageFilePrefix(
+                    source,
+                    new EditorUtil.Config.DimensionProjector.Coord(
+                        source.CurrentPlatform,
+                        source.CurrentChannel,
+                        source.CurrentDevelopMode),
+                    packageName);
                 int count = await EditorUtil.CDN.DeployAssetCheckWhitelistAsync(
                     config,
                     projectRoot,
                     source.CurrentPlatform,
                     source.CurrentChannel,
+                    packageFilePrefix,
+                    m_CleanCdnWhitelistRemoteBeforeDeploy,
                     (completed, total, path) => EditorUtility.DisplayProgressBar(
                         "批量部署白名单到 CDN",
                         $"{completed}/{total}  {path}",

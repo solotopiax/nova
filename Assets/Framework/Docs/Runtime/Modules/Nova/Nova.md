@@ -65,6 +65,7 @@ private static void ResetStatics()
 | `Nova.Asset` | `AssetComponent` | 资源加载/卸载；`Nova.Asset.EnableHotfix: bool`（只读，委托 AssetComponent.m_EnableHotfix） |
 | `Nova.Config` | `ConfigComponent` | 配置数据（异步加载，LoadConfigAsync） |
 | `Nova.Prefab` | `PrefabComponent` | 预制体加载/缓存/实例化 |
+| `Nova.Native` | `NativeComponent` | 系统通知授权状态、显式请求与应用设置跳转 |
 | `Nova.Event` | `EventComponent` | 全局事件订阅/发布 |
 | `Nova.App` | `AppComponent` | 大版本检查/APK 下载/商店跳转 |
 | `Nova.Table` | `TableComponent` | 表格数据（异步加载，LoadTablesAsync） |
@@ -139,7 +140,7 @@ Nova 使用 `[DefaultExecutionOrder(-1000)]` 确保其 `Awake()` 和 `Start()` �
 9. 注册 `Application.lowMemory += OnLowMemory`
 
 ### Start()
-1. 从 `FrameworkComponentsGroup` 查找并赋值 App / Asset / Config / Prefab / Event / Table / Localization / UI / Network / Procedure / ObjectPool / Persist / Sound / Vibrate / SDK / Debug
+1. 从 `FrameworkComponentsGroup` 查找并赋值 App / Asset / Config / Prefab / Native / Event / Table / Localization / UI / Network / Procedure / ObjectPool / Persist / Sound / Vibrate / SDK / Debug
 2. 通过 `ValidateComponent` 统一校验每个组件，若为 null 则输出标准化错误日志
 3. 打印 Unity 版本、Nova 版本、APP 版本日志
 

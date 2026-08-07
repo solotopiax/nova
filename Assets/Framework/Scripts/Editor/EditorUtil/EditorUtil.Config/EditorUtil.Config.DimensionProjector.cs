@@ -1052,6 +1052,8 @@ namespace NovaFramework.Editor
                         // 全不勾（IsGlobal）：Override 列表已清空，将减维前当前坐标那份回写顶层默认字段
                         master.YooAssetEditorConfigs.YooAssetSettingsPath = snapshot.YooAssetSettingsPath;
                         master.YooAssetEditorConfigs.BundleCollectorSettingPath = snapshot.BundleCollectorSettingPath;
+                        master.YooAssetEditorConfigs.YooFolderName = snapshot.YooFolderName;
+                        master.YooAssetEditorConfigs.PackageFilePrefix = snapshot.PackageFilePrefix;
                     }
                 }
 
@@ -1071,6 +1073,8 @@ namespace NovaFramework.Editor
                         if (!IsOverrideInGroup(mask, OverrideCoord(o), clipped)) continue;
                         o.YooAssetSettingsPath = snapshot.YooAssetSettingsPath;
                         o.BundleCollectorSettingPath = snapshot.BundleCollectorSettingPath;
+                        o.YooFolderName = snapshot.YooFolderName;
+                        o.PackageFilePrefix = snapshot.PackageFilePrefix;
                     }
                 }
 
@@ -1084,6 +1088,8 @@ namespace NovaFramework.Editor
                         if (!IsOverrideInGroup(mask, OverrideCoord(master.YooAssetEditorConfigsOverrides[i]), clipped)) continue;
                         master.YooAssetEditorConfigsOverrides[i].YooAssetSettingsPath = snapshot.YooAssetSettingsPath;
                         master.YooAssetEditorConfigsOverrides[i].BundleCollectorSettingPath = snapshot.BundleCollectorSettingPath;
+                        master.YooAssetEditorConfigsOverrides[i].YooFolderName = snapshot.YooFolderName;
+                        master.YooAssetEditorConfigsOverrides[i].PackageFilePrefix = snapshot.PackageFilePrefix;
                         return;
                     }
                     master.YooAssetEditorConfigsOverrides.Add(new YooAssetEditorConfigsOverride
@@ -1093,6 +1099,8 @@ namespace NovaFramework.Editor
                         DevelopMode = clipped.Mode,
                         YooAssetSettingsPath = snapshot.YooAssetSettingsPath,
                         BundleCollectorSettingPath = snapshot.BundleCollectorSettingPath,
+                        YooFolderName = snapshot.YooFolderName,
+                        PackageFilePrefix = snapshot.PackageFilePrefix,
                     });
                 }
 
@@ -1185,11 +1193,13 @@ namespace NovaFramework.Editor
                         master.CDNEditorConfigs.VersionCheckLocalFilePath = snapshot.VersionCheckLocalFilePath;
                         master.CDNEditorConfigs.VersionCheckRemoteFilePath = snapshot.VersionCheckRemoteFilePath;
                         master.CDNEditorConfigs.LocalDirectory = snapshot.LocalDirectory;
+                        master.CDNEditorConfigs.AutoLinkLatestVersion = snapshot.AutoLinkLatestVersion;
                         master.CDNEditorConfigs.RemotePathSuffix = snapshot.RemotePathSuffix;
                         master.CDNEditorConfigs.AssetCheckWhitelistDeviceIDs = snapshot.AssetCheckWhitelistDeviceIDs != null
                             ? new List<string>(snapshot.AssetCheckWhitelistDeviceIDs)
                             : new List<string>();
                         master.CDNEditorConfigs.AssetCheckWhitelistRemoteFilePath = snapshot.AssetCheckWhitelistRemoteFilePath;
+                        master.CDNEditorConfigs.AutoLinkLatestAssetCheckVersionFiles = snapshot.AutoLinkLatestAssetCheckVersionFiles;
                         master.CDNEditorConfigs.AssetCheckManifestBytesLocalFilePath = snapshot.AssetCheckManifestBytesLocalFilePath;
                         master.CDNEditorConfigs.AssetCheckManifestHashLocalFilePath = snapshot.AssetCheckManifestHashLocalFilePath;
                         master.CDNEditorConfigs.AssetCheckPackageVersionLocalFilePath = snapshot.AssetCheckPackageVersionLocalFilePath;
@@ -1300,11 +1310,13 @@ namespace NovaFramework.Editor
                         VersionCheckLocalFilePath = src.VersionCheckLocalFilePath,
                         VersionCheckRemoteFilePath = src.VersionCheckRemoteFilePath,
                         LocalDirectory = src.LocalDirectory,
+                        AutoLinkLatestVersion = src.AutoLinkLatestVersion,
                         RemotePathSuffix = src.RemotePathSuffix,
                         AssetCheckWhitelistDeviceIDs = src.AssetCheckWhitelistDeviceIDs != null
                             ? new List<string>(src.AssetCheckWhitelistDeviceIDs)
                             : new List<string>(),
                         AssetCheckWhitelistRemoteFilePath = src.AssetCheckWhitelistRemoteFilePath,
+                        AutoLinkLatestAssetCheckVersionFiles = src.AutoLinkLatestAssetCheckVersionFiles,
                         AssetCheckManifestBytesLocalFilePath = src.AssetCheckManifestBytesLocalFilePath,
                         AssetCheckManifestHashLocalFilePath = src.AssetCheckManifestHashLocalFilePath,
                         AssetCheckPackageVersionLocalFilePath = src.AssetCheckPackageVersionLocalFilePath,

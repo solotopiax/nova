@@ -21,6 +21,7 @@
 | Asset | `Nova.Asset` | [AssetComponent.md](Modules/Asset/AssetComponent.md) |
 | Config | `Nova.Config` | [ConfigComponent.md](Modules/Config/ConfigComponent.md) |
 | Prefab | `Nova.Prefab` | [PrefabComponent.md](Modules/Prefab/PrefabComponent.md) |
+| Native | `Nova.Native` | [NativeComponent.md](Modules/Native/NativeComponent.md) |
 | Event | `Nova.Event` | [EventComponent.md](Modules/Event/EventComponent.md) |
 | Table | `Nova.Table` | [TableComponent.md](Modules/Table/TableComponent.md) |
 | Localization | `Nova.Localization` | [LocalizationComponent.md](Modules/Localization/LocalizationComponent.md) |

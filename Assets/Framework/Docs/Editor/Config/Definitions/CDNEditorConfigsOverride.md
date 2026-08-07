@@ -24,14 +24,14 @@ CDN 面板维度 Override 单项（仅 Editor 期消费）；对应 `ConfigMaste
 | `Platform` | `PlatformType` | `PlatformType.None` | 平台轴；仅 `CDNEditorConfigsMask.ByPlatform == true` 时参与匹配，否则保持 `PlatformType.None` 哨兵 |
 | `Channel` | `ChannelType` | `ChannelType.None` | 渠道轴；仅 `CDNEditorConfigsMask.ByChannel == true` 时参与匹配，否则保持 `ChannelType.None` 哨兵 |
 | `DevelopMode` | `DevelopMode` | `DevelopMode.Debug` | 开发模式轴；仅 `CDNEditorConfigsMask.ByDevelopMode == true` 时参与匹配；`DevelopMode` 枚举无 `None` 哨兵，不参与匹配时维持默认值 `DevelopMode.Debug` |
-| `Config` | `CDNEditorConfigs` | `null` | CDN 部署配置整套快照（12 字段一份）；为 `null` 时回落顶层 `ConfigMasterSO.CDNEditorConfigs` |
+| `Config` | `CDNEditorConfigs` | `null` | CDN 部署配置整套快照；为 `null` 时回落顶层 `ConfigMasterSO.CDNEditorConfigs` |
 
 ---
 
 ## §12 注意事项
 
 - 整个类包裹在 `#if UNITY_EDITOR` 内，运行时程序集中不存在此类型
-- `Config` 为**整套快照**语义：切坐标 = 整套 12 字段一份；命中坐标条目后空字符串也是明确配置，只有无匹配条目或 `Config == null` 时才回落顶层 `CDNEditorConfigs`
+- `Config` 为**整套快照**语义：切坐标 = 整套字段一份；`AutoLinkLatestVersion` 与 `AutoLinkLatestAssetCheckVersionFiles` 两个独立开关都随坐标切换。命中坐标条目后空字符串也是明确配置，只有无匹配条目或 `Config == null` 时才回落顶层 `CDNEditorConfigs`
 - 加维分裂 / 减维合并 / 广播由 `EditorUtil.Config.DimensionProjector` 处理；业务侧不直接维护 `CDNEditorConfigsOverrides` 列表
 - 取数必须经 `DimensionalResolver.ResolveCDNEditorConfigs`，禁止业务侧自行遍历 `CDNEditorConfigsOverrides` 匹配
 

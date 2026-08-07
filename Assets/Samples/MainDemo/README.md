@@ -20,7 +20,7 @@ DemoNavTreeView（树形导航主菜单）
 │   ├─ 1.7 DemoCollectionsView
 │   ├─ 1.8 DemoExtensionsView
 │   └─ 1.9 DemoEdgeCasesView
-├─ 2.Modules 模块库（16 个叶子）
+├─ 2.Modules 模块库（17 个叶子）
 │   ├─ 2.1  DemoAppView
 │   ├─ 2.2  DemoAssetView
 │   ├─ 2.3  DemoPrefabView
@@ -36,7 +36,8 @@ DemoNavTreeView（树形导航主菜单）
 │   ├─ 2.13 DemoSoundView
 │   ├─ 2.14 DemoVibrateView
 │   ├─ 2.15 DemoSDKView
-│   └─ 2.16 DemoDebugView
+│   ├─ 2.16 DemoDebugView
+│   └─ 2.17 DemoNativeView
 ├─ 3.HybridCLR 运行时热更新（3 个叶子）
 │   ├─ 3.1 DemoHybridClrAotMetadataView
 │   ├─ 3.2 DemoHybridClrGameDllView
@@ -49,9 +50,9 @@ DemoNavTreeView（树形导航主菜单）
     └─ 4.5 DemoIntegrationConfigHybridClrView
 ```
 
-共 33 个演示子页面，均继承 `BaseDemoView`（三段式：标题栏 + 交互区 + 反馈区），通过 `Nova.UI.OpenUIViewAsync<T>()` 打开，`PauseCoveredUIView=false` 保持导航菜单始终可见。
+共 34 个演示子页面，均继承 `BaseDemoView`（三段式：标题栏 + 交互区 + 反馈区），通过 `Nova.UI.OpenUIViewAsync<T>()` 打开，`PauseCoveredUIView=false` 保持导航菜单始终可见。
 
-另有 2 个辅助子页面（不计入树形导航 33 叶）：
+另有 2 个辅助子页面（不计入树形导航 34 叶）：
 - `DemoToastView`：DemoUIView / DemoIntegrationUiLocalizationView / DemoIntegrationUiAssetView 内部 spawn 的轻量子页面。
 - `DemoDialogView`：DemoUIView 内部 spawn 的带按钮对话框子页面。
 
@@ -61,11 +62,11 @@ DemoNavTreeView（树形导航主菜单）
 
 | 路径 | 说明 |
 |---|---|
-| `Scripts/Runtime/UIs/` | 33 个 DemoXxxView 脚本 + BaseDemoView 基类 + DemoNavTree |
+| `Scripts/Runtime/UIs/` | 34 个 DemoXxxView 脚本 + BaseDemoView 基类 + DemoNavTree |
 | `Scripts/Runtime/DataTypes/` | Tables / Sounds / Vibrates / Localizations / Networks 数据类型 |
 | `Scripts/Runtime/Procedures/` | 业务侧 Procedure 实现 |
 | `Scripts/Editor/` | 业务侧 Inspector / EditorWindow |
-| `Prefabs/UIs/` | DemoNavTreeView prefab（33 个 DemoXxxView prefab 待 Prefab 期落地） |
+| `Prefabs/UIs/` | DemoNavTreeView prefab + 34 个 DemoXxxView prefab |
 | `Configs/` | 框架 ScriptableObject 配置示例 |
 | `Jsons/` | 多语言 / 表格 JSON 资源 |
 | `Resources/BuiltIn/Prefabs/` | Launcher 启动期 UI Prefab（SplashPanel / ProgressPanel / DialogPanel） |

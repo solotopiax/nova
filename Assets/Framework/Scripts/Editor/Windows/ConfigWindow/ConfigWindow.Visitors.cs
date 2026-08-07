@@ -103,9 +103,19 @@ namespace NovaFramework.Editor
         private bool m_IsCdnDeploying;
 
         /// <summary>
+        /// 资源部署前是否清理本次远端目标；窗口会话状态，默认关闭且不写入 Config。
+        /// </summary>
+        private bool m_CleanCdnRemoteBeforeDeploy;
+
+        /// <summary>
         /// 启动白名单配置与版本文件部署是否正在执行；用于阻止按钮重复触发。
         /// </summary>
         private bool m_IsCdnWhitelistDeploying;
+
+        /// <summary>
+        /// 白名单部署前是否清理本次远端目标；窗口会话状态，默认关闭且不写入 Config。
+        /// </summary>
+        private bool m_CleanCdnWhitelistRemoteBeforeDeploy;
 
         /// <summary>
         /// Cloudflare 缓存清理是否正在执行；用于阻止清缓存按钮重复触发。

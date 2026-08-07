@@ -122,6 +122,7 @@ namespace NovaFramework.Runtime
             Persist = FrameworkComponentsGroup.GetComponent<PersistComponent>();
             Sound = FrameworkComponentsGroup.GetComponent<SoundComponent>();
             Vibrate = FrameworkComponentsGroup.GetComponent<VibrateComponent>();
+            Native = FrameworkComponentsGroup.GetComponent<NativeComponent>();
             SDK = FrameworkComponentsGroup.GetComponent<SDKComponent>();
             Debug = FrameworkComponentsGroup.GetComponent<DebugComponent>();
 
@@ -140,6 +141,7 @@ namespace NovaFramework.Runtime
             ValidateComponent(Persist, nameof(PersistComponent));
             ValidateComponent(Sound, nameof(SoundComponent));
             ValidateComponent(Vibrate, nameof(VibrateComponent));
+            ValidateComponent(Native, nameof(NativeComponent));
             ValidateComponent(SDK, nameof(SDKComponent));
             ValidateComponent(Debug, nameof(DebugComponent));
 

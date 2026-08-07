@@ -20,5 +20,7 @@ namespace NovaFramework.Editor
     {
         public string YooAssetSettingsPath;
         public string BundleCollectorSettingPath;
+        public string YooFolderName = "yoo";
+        public string PackageFilePrefix = string.Empty;
     }
 }

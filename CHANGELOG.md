@@ -6,6 +6,21 @@
 
 ---
 
+## [0.6.8] - 2026-08-07
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.8]` 节。
+
+### Added
+
+- Framework 新增 Native 通知权限模块、CDN 部署前远端清理、最新 YooAsset 版本自动关联和构建期运行时配置临时投影。
+- MAX 新增 iOS 构建后 SKAdNetworkItems 离线补全，规避 AppLovin 在线列表超时导致的条目缺失。
+
+### Changed
+
+- IAP Mobile 扩充平台订单成功与失败诊断日志，补充交易 ID、账号透传字段、失败详情和 tableId 解析来源。
+- 发布 Framework `0.6.8`、IAP Mobile `0.1.4` 与 MAX `0.1.3`。
+- `NovaSpark.cs` 固定 Framework `0.6.8` 与 BestHTTP `0.1.3`；EDM `1.2.188` 与 unity-mcp `v10.1.2` 保持当前最新版本。
+
 ## [0.6.7] - 2026-08-06
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.7]` 节。

@@ -37,16 +37,18 @@ namespace NovaFramework.Editor
             {
                 throw new InvalidOperationException("[Pipify] 未找到当前激活的 ConfigMasterSO，无法部署 CDN 资源。");
             }
-
             string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
                 ?? throw new InvalidOperationException("[Pipify] 无法解析 Unity 项目根目录。");
             CDNEditorConfigs config = CreateCdnDeploymentSnapshot(master, parameters);
+            string packageFilePrefix = ResolveCdnPackageFilePrefix(master);
 
             return EditorUtil.CDN.DeployAsync(
                 config,
                 projectRoot,
                 master.CurrentPlatform,
                 master.CurrentChannel,
+                packageFilePrefix,
+                parameters.CleanRemoteFilesAndDirectories,
                 (completed, total, _) =>
                 {
                     float progress = total > 0 ? completed / (float)total : 0f;
@@ -74,6 +76,7 @@ namespace NovaFramework.Editor
                 master.CurrentDevelopMode);
             snapshot.VersionCheckLocalFilePath = parameters.VersionCheckLocalFilePath ?? string.Empty;
             snapshot.VersionCheckRemoteFilePath = parameters.VersionCheckRemoteFilePath ?? string.Empty;
+            snapshot.AutoLinkLatestVersion = parameters.AutoLinkLatestVersion;
             snapshot.LocalDirectory = parameters.LocalDirectory ?? string.Empty;
             snapshot.RemotePathSuffix = parameters.RemoteDirectory ?? string.Empty;
             return snapshot;
@@ -94,15 +97,17 @@ namespace NovaFramework.Editor
             {
                 throw new InvalidOperationException("[Pipify] 未找到当前激活的 ConfigMasterSO，无法部署白名单版本文件。");
             }
-
             string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
                 ?? throw new InvalidOperationException("[Pipify] 无法解析 Unity 项目根目录。");
             CDNEditorConfigs config = CreateCdnWhitelistDeploymentSnapshot(master, parameters);
+            string packageFilePrefix = ResolveCdnPackageFilePrefix(master);
             return EditorUtil.CDN.DeployAssetCheckWhitelistAsync(
                 config,
                 projectRoot,
                 master.CurrentPlatform,
                 master.CurrentChannel,
+                packageFilePrefix,
+                parameters.CleanRemoteFilesAndDirectories,
                 (completed, total, _) =>
                 {
                     float progress = total > 0 ? completed / (float)total : 0f;
@@ -130,11 +135,28 @@ namespace NovaFramework.Editor
                 master.CurrentDevelopMode);
             snapshot.AssetCheckWhitelistDeviceIDs = ParseCdnWhitelistDeviceIDs(parameters.DeviceIDs);
             snapshot.AssetCheckWhitelistRemoteFilePath = parameters.WhitelistRemoteFilePath ?? string.Empty;
+            snapshot.AutoLinkLatestAssetCheckVersionFiles = parameters.AutoLinkLatestVersion;
             snapshot.AssetCheckManifestBytesLocalFilePath = parameters.ManifestBytesLocalFilePath ?? string.Empty;
             snapshot.AssetCheckManifestHashLocalFilePath = parameters.ManifestHashLocalFilePath ?? string.Empty;
             snapshot.AssetCheckPackageVersionLocalFilePath = parameters.PackageVersionLocalFilePath ?? string.Empty;
             snapshot.AssetCheckVersionRemoteDirectory = parameters.RemoteDirectory ?? string.Empty;
             return snapshot;
+        }
+
+        /// <summary>
+        /// 从当前 ConfigMaster 当前维度解析 YooAsset 文件前缀，不读取 YooAssetSettings.asset 实际值。
+        /// </summary>
+        private static string ResolveCdnPackageFilePrefix(ConfigMasterSO master)
+        {
+            string packageName = EditorUtil.CDN.ResolveDefaultPackageName();
+            return EditorUtil.CDN.ResolvePackageFilePrefix(
+                master,
+                master.CurrentPlatform,
+                master.CurrentChannel,
+                master.CurrentDevelopMode,
+                packageName,
+                Application.version,
+                DateTime.Now);
         }
 
         /// <summary>

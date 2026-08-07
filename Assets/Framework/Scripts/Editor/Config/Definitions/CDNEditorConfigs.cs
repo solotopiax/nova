@@ -57,6 +57,11 @@ namespace NovaFramework.Editor
         public string LocalDirectory;
 
         /// <summary>
+        /// 是否在部署和界面展示时自动关联本地包根目录下最后生成的有效 YooAsset 版本目录。
+        /// </summary>
+        public bool AutoLinkLatestVersion = true;
+
+        /// <summary>
         /// 拼接在固定 OSS 前缀后的可编辑远端目录后缀；支持 {Platform}、{Channel}、{Package}、{Version} 占位符。
         /// </summary>
         public string RemotePathSuffix;
@@ -71,6 +76,11 @@ namespace NovaFramework.Editor
         /// </summary>
         [FormerlySerializedAs("AssetCheckWhitelistRemoteDirectory")]
         public string AssetCheckWhitelistRemoteFilePath;
+
+        /// <summary>
+        /// 是否自动关联最新完整 YooAsset 版本，并据此解析白名单部署使用的三个版本文件。
+        /// </summary>
+        public bool AutoLinkLatestAssetCheckVersionFiles = true;
 
         /// <summary>
         /// 项目根相对的 YooAsset Manifest 二进制版本文件位置（.bytes）。

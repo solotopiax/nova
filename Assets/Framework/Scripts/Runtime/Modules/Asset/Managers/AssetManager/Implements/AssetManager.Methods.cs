@@ -414,7 +414,8 @@ namespace NovaFramework.Runtime
                 AssetDownloadUrlPolicy policy = GetOrCreateDownloadUrlPolicy(packageName);
                 long failureGeneration = policy.FailureGeneration;
                 policy.BeginMetadataRequest();
-                operation = package.RequestPackageVersionAsync();
+                operation = package.RequestPackageVersionAsync(
+                    new RequestPackageVersionOptions(true, m_Config.CheckTimeout));
                 await UniTask.WaitUntil(() => operation.IsDone, cancellationToken: ct);
                 policy.CompleteMetadataRequest(operation.Status == EOperationStatus.Succeeded, operation.Error);
                 if (operation.Status == EOperationStatus.Succeeded)
@@ -623,6 +624,7 @@ namespace NovaFramework.Runtime
             AssetRemoteService remote = CreateRemoteService(package);
             var cacheParams = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remote);
             cacheParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
+            cacheParams.AddParameter(EFileSystemParameter.DownloadWatchdogTimeout, m_Config.IdleTimeout);
             ApplyDecryptor(cacheParams);
             return new HostPlayModeOptions
             {
@@ -641,6 +643,7 @@ namespace NovaFramework.Runtime
             AssetRemoteService remote = CreateRemoteService(package);
             var remoteParams = FileSystemParameters.CreateDefaultWebRemoteFileSystemParameters(remote);
             remoteParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
+            remoteParams.AddParameter(EFileSystemParameter.DownloadWatchdogTimeout, m_Config.IdleTimeout);
             return new WebPlayModeOptions
             {
                 WebServerFileSystemParameters = FileSystemParameters.CreateDefaultWebServerFileSystemParameters(),

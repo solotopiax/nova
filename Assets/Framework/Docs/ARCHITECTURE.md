@@ -21,6 +21,7 @@ Nova 当前是“`Nova` 根组件 + 多个 `FrameworkComponent` 子模块 + 多�
 | `Nova.Asset` | `AssetComponent` | 资源加载、下载、场景加载 |
 | `Nova.Config` | `ConfigComponent` | 运行时配置访问 |
 | `Nova.Prefab` | `PrefabComponent` | Prefab 实例化与回收 |
+| `Nova.Native` | `NativeComponent` | 系统通知授权与应用设置桥接 |
 | `Nova.Event` | `EventComponent` | 事件系统 |
 | `Nova.Table` | `TableComponent` | 表格系统 |
 | `Nova.Localization` | `LocalizationComponent` | 多语言与字体适配 |
@@ -56,6 +57,12 @@ Nova 当前是“`Nova` 根组件 + 多个 `FrameworkComponent` 子模块 + 多�
 - `SDKManager` 根据启用项、优先级和配置类型初始化插件。
 - SDK 配置来自 `ConfigManager` / `ConfigRuntimeSO`，不是手写字典。
 
+### Native 只桥接系统通知授权
+
+- `NativeComponent` / `INativeManager` 负责通知授权状态、业务显式请求和应用设置跳转；框架启动不会自动请求权限。
+- Native 不负责 APNs / FCM Token、远程消息接收或业务通知策略；这些仍属于对应 SDK 或业务层。
+- Android 构建声明 `POST_NOTIFICATIONS`，iOS 构建链接 `UserNotifications.framework`；不因此配置 Push capability 或 APNs entitlements。
+
 ## Manager Priority（当前代码）
 
 以下优先级来自各 `*ManagerBase.Priority`：
@@ -78,6 +85,7 @@ Nova 当前是“`Nova` 根组件 + 多个 `FrameworkComponent` 子模块 + 多�
 | App | 11 |
 | DoH | 11 |
 | Table | 14 |
+| Native | 15 |
 | SDK | 16 |
 | Vibrate | 18 |
 | Sound | 19 |
@@ -97,5 +105,5 @@ Nova 当前是“`Nova` 根组件 + 多个 `FrameworkComponent` 子模块 + 多�
 
 - `Nova.*` 是全局访问外观层，不是业务逻辑真正实现层。
 - `Component` 负责 Unity 入口，`Manager` 负责模块逻辑。
-- Asset/Prefab、Procedure/HybridCLR、Config/SDK 是当前最容易跨模块联动的三组边界。
+- Asset/Prefab、Procedure/HybridCLR、Config/SDK、Native/平台通知授权是当前需明确边界的模块组合。
 - 如果要回答“为什么这样设计”，请去 `Minds`；如果要回答“现在代码怎么实现”，以 `Docs + 源码` 为准。

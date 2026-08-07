@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-07
+
+### Fixed
+
+- iOS 构建后离线补全 `SKAdNetworkItems`，规避 AppLovin 在线网络列表请求超时导致 plist 条目数量不足，并保留已有第三方条目。
+
 ## [0.1.2] - 2026-08-06
 
 ### Changed

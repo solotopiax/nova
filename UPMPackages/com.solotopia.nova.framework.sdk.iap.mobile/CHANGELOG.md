@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-07
+
+### Changed
+
+- 平台订单成功、待确认与失败日志补充交易 ID、Apple Original Transaction ID、App Account Token、Google Obfuscated Account ID、透传 UUID、失败详情及 tableId 解析来源，便于定位订单归属与确认失败。
+
 ## [0.1.3] - 2026-08-06
 
 ### Changed

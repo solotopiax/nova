@@ -24,6 +24,7 @@ auto_generated: true
 - [PAT-125 运行时资源增量更新三步走与 YooAsset 缓存寻址认知](../2-Areas/Patterns/PAT-125-runtime-incremental-three-steps.md) — 刷清单按tag下载运行三步；tag不落盘无需维护列表
 - [PAT-138 Editor HostPlayMode 跨平台真实包 Shader 重绑排障](../2-Areas/Patterns/PAT-138-editor-hostplaymode-cross-platform-shader-rebind.md) — 真实包洋红块先验shader
 - [PAT-154 Editor 热更缓存重置必须限定沙盒与框架版本记录](../2-Areas/Patterns/PAT-154-editor-hotfix-cache-reset-boundary.md) — 一键重置仅清 Editor 沙盒与 version 文件
+- [PAT-157 YooAsset 本地最新构建只能按完整性与写入时间选择](../2-Areas/Patterns/PAT-157-yooasset-latest-build-selection.md) — 先验证完整构建，再按 version 文件写入时间选最新
 - [PAT-28 Luban DataReceiver 资源对称释放：Build*Delegates + assetLocationMap 反查](../2-Areas/Patterns/PAT-28-luban-load-release-symmetric.md) — Luban Load与Release必须对称释放
 - [PAT-37 Runtime 侧禁止在 Asset 模块外直接依赖 YooAsset](../2-Areas/Patterns/PAT-37-no-yooasset-outside-asset-module.md) — YooAsset 细节只留在 Asset 模块
 - [PAT-70 YooAsset PackRule 选型与 PackTopDirectory 陷阱](../2-Areas/Patterns/PAT-70-yooasset-packrule-selection.md) — PackRule 按粒度选；TopDir 需子目录
@@ -60,6 +61,7 @@ auto_generated: true
 - [PAT-135 SerializeReference 跨格深拷贝陷阱](../2-Areas/Patterns/PAT-135-serializeref-crosscell-deepcopy-trap.md) — boxedValue 跨格须 JsonUtility 深拷贝
 - [PAT-150 Editor 多仓库渐进加载与变更就绪门](../2-Areas/Patterns/PAT-150-editor-multi-registry-progressive-load-mutation-gate.md) — 多仓库并发渐进展示，变更操作等待数据集完整
 - [PAT-155 Unity Editor 菜单分组按父菜单首项并预留 11 级差](../2-Areas/Patterns/PAT-155-unity-menuitem-priority-grouping.md) — 顶层子菜单继承首项优先级，分割线统一预留 11 级差
+- [PAT-156 CDN 上传前清理必须受本次上传计划约束](../2-Areas/Patterns/PAT-156-cdn-clean-before-deploy-bounded-by-upload-plan.md) — 远端清理只覆盖本次精确文件和目录前缀，失败时零上传
 - [PAT-18 EditorWindow 与 EditorUtil 职责分离](../2-Areas/Patterns/PAT-18-editor-window-vs-util-split.md) — EditorWindow与EditorUtil分层职责拆分
 - [PAT-35 Editor 绘制统一走 EditorUtil.Draw](../2-Areas/Patterns/PAT-35-editor-draw-only.md) — 业务侧 Editor 绘制统一走 Draw
 - [PAT-39 EditorUtil.Draw 纪律强化规则](../2-Areas/Patterns/PAT-39-editor-draw-discipline-enforcement.md) — 缺 Draw 接口先补接口再改 UI
@@ -161,7 +163,7 @@ auto_generated: true
 - [PAT-118 原子写 JSON 文件（临时文件 + rename）](../2-Areas/Patterns/PAT-118-atomic-write-json-via-rename.md) — JSON 写入用临时文件+rename
 - [PAT-119 UPM 私有 fork 必须显式标注本地改动](../2-Areas/Patterns/PAT-119-upm-private-fork-local-diff-marking.md) — 私有 fork 改动必须留本地标注与包级变更记录
 - [PAT-120 脚手架与样例生成工具的人类可见文案字段必须由用户决定](../2-Areas/Patterns/PAT-120-create-sample-user-decides-dirname.md) — 视觉文案命名权归用户，禁机械派生，未给值必先询问
-- [PAT-121 发版自动化主/子包路径重写逻辑必须对称](../2-Areas/Patterns/PAT-121-publish-sample-rewrite-symmetric.md) — 主包专属步与子包同款步禁单边演进，扫描集与镜像策略全集对齐
+- [PAT-121 发版自动化主/子包路径重写逻辑必须对称](../2-Areas/Patterns/PAT-121-publish-sample-rewrite-symmetric.md) — 主包与子包的 Sample 发布处理必须对称
 - [PAT-122 sample devPathPrefix 不得带尾斜杠 + Python 兜底](../2-Areas/Patterns/PAT-122-sample-devpathprefix-no-trailing-slash.md) — devPathPrefix 无尾斜杠加 rstrip 兜底
 - [PAT-123 UPM Sample displayName 必须等于 sampleName](../2-Areas/Patterns/PAT-123-upm-sample-displayname-equals-samplename.md) — displayName 须等于 sourceDir 末段
 - [PAT-124 UPM 发版描述符禁随 tarball 落到外部工程只读区](../2-Areas/Patterns/PAT-124-upm-sample-tarball-exclude-dev-descriptor.md) — 开发期描述符 .npmignore 排除出 tarball
@@ -179,4 +181,4 @@ auto_generated: true
 
 
 ---
-_共 113 条，分布于 18 个 category。_
+_共 115 条，分布于 18 个 category。_

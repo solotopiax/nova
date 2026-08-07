@@ -180,12 +180,15 @@ Step：
 
 - `VersionCheckLocalFilePath`：窗口标签为“版本检查-本地文件位置”
 - `VersionCheckRemoteFilePath`：窗口标签为“版本检查-云端文件位置”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示
-- `LocalDirectory`：窗口标签为“热更资源-本地目录位置”
+- `AutoLinkLatestVersion`：窗口标签为“自动关联最新版本”，默认 `true`；开启时 `LocalDirectory` 作为包根或版本目录锚点，参数面板实时显示最新完整版本目录并将输入框置为只读，执行前仍按 Config 相同的完整性与写入时间规则重新解析；失败时显示红色路径和错误说明
+- `LocalDirectory`：窗口标签为“热更资源-本地目录位置”；自动关联开启时作为可编辑锚点，关闭时必须手工指向待部署目录
 - `RemoteDirectory`：窗口标签为“热更资源-云端目录位置”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示
+- `CleanRemoteFilesAndDirectories`：窗口标签为“清理云端文件和目录”，默认 `false`；字段下方 HelpBox 与参数整行左边缘对齐，说明先清理再上传、清理范围和失败停止行为
 
 四个路径都支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`。执行时按当前
-`Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅在快照中覆盖这四个路径，不回写
-`ConfigMasterSO`。随后直接调用 `EditorUtil.CDN.DeployAsync`；配置、目录或上传失败时抛错并中断 Batch。
+`Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅在快照中覆盖这四个路径和自动关联开关，不回写
+`ConfigMasterSO`。自动关联的 `PackageFilePrefix` 取当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 `YooAssetSettings.asset`。开启清理时先删除本次版本检查文件并清理本次热更资源目录，再调用上传；清理失败时不上传并中断 Batch。
+随后直接调用 `EditorUtil.CDN.DeployAsync`；配置、目录、清理或上传失败时抛错并中断 Batch。
 版本检查本地与云端文件位置都非空时，该单文件会与热更资源目录合并进入同一上传计划。
 参数区不提供独立部署按钮，部署只由 Pipify Runner 执行该 Step 时触发。
 
@@ -204,16 +207,18 @@ Step：
 
 - `DeviceIDs`：窗口标签为“配置文件-设备ID（每行一个设备ID）”，使用 3–8 行自适应 TextArea
 - `WhitelistRemoteFilePath`：窗口标签为“配置文件云端文件位置”；填写包含 `.json` 文件名的完整对象位置
-- `ManifestBytesLocalFilePath`：窗口标签为“版本文件(.bytes)-本地文件位置”
+- `AutoLinkLatestVersion`：窗口标签为“自动关联最新版本”，默认 `true`；开启时以 `ManifestBytesLocalFilePath` 为锚点，参数面板实时显示同一最新完整版本的 `.bytes/.hash/.version` 并将三项置为只读，执行前再次解析；失败时显示红色路径和错误说明
+- `ManifestBytesLocalFilePath`：窗口标签为“版本文件(.bytes)-本地文件位置”；自动关联开启时作为可编辑锚点
 - `ManifestHashLocalFilePath`：窗口标签为“版本文件(.hash)-本地文件位置”
 - `PackageVersionLocalFilePath`：窗口标签为“版本文件(.version)-本地文件位置”
 - `RemoteDirectory`：窗口标签为“版本文件云端目录位置”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示
+- `CleanRemoteFilesAndDirectories`：窗口标签为“清理云端文件和目录”，默认 `false`；字段下方 HelpBox 与参数整行左边缘对齐，说明先清理再上传、清理范围和失败停止行为
 
-执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅覆盖上述六个参数，不回写
-`ConfigMasterSO`。设备 ID 按行解析，生成 `VersionsCheckWhiteList.json` 时统一去空、Trim 和去重；配置文件上传到
+执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅覆盖上述七个内容参数并读取本次清理开关，不回写
+`ConfigMasterSO`。自动关联的三个文件名取当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 `YooAssetSettings.asset`。设备 ID 按行解析，生成 `VersionsCheckWhiteList.json` 时统一去空、Trim 和去重；配置文件上传到
 `WhitelistRemoteFilePath` 指定的完整对象位置，`.bytes/.hash/.version` 三个文件上传到 `RemoteDirectory`。配置文件位置为空或非法时仅跳过
 配置文件，不回退到版本文件目录。五个路径支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`
-占位符。版本文件参数非法或任一实际上传失败时抛错并中断 Batch。
+占位符。开启清理时先删除本次白名单配置文件并清理版本文件远端目录；远端目录为空、清理失败或任一实际上传失败时抛错并中断 Batch。
 
 ### 11. CDN 缓存清理
 

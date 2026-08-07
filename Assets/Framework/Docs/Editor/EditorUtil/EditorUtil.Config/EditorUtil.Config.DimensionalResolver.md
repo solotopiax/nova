@@ -75,10 +75,10 @@ public static HybridCLRResult ResolveHybridCLR(
     ChannelType curC,
     DevelopMode curM);
 
-// 解析 YooAsset 面板两路径最终生效值（仅 #if UNITY_EDITOR）
+// 解析 YooAsset 面板两路径及两个导出模板的最终生效值（仅 #if UNITY_EDITOR）
 // IsGlobal → 取顶层默认字段；否则遍历 YooAssetEditorConfigsOverrides 找首个匹配条目
 // 命中后使用整份 Override，空路径是有效值；无命中才回落顶层字段
-// master 为 null → 两字段返回空字符串
+// master 为 null → 路径和前缀为空，YooFolderName 回退 yoo
 public static YooAssetResult ResolveYooAsset(
     ConfigMasterSO master,
     PlatformType curP,

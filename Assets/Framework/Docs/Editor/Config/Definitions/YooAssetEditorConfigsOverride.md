@@ -3,7 +3,7 @@
 **类签名**：`#if UNITY_EDITOR [Serializable] public sealed class YooAssetEditorConfigsOverride`
 **命名空间**：`NovaFramework.Editor`
 
-YooAsset 两路径字段的维度 Override 单项（仅 Editor 期消费）；对应 `ConfigMasterSO` 的 `YooAssetSettingsPath` / `BundleCollectorSettingPath` 两个字段。当 `YooAssetEditorConfigsMask` 勾选维度轴后，列表中与当前维度匹配的首个条目覆盖顶层路径字段；无命中时回落顶层字段值。
+YooAsset 四字段的维度 Override 单项（仅 Editor 期消费）；对应两条资产路径及 `YooFolderName` / `PackageFilePrefix` 两个导出模板。当 `YooAssetEditorConfigsMask` 勾选维度轴后，列表中与当前维度匹配的首个条目整份生效；无命中时回落顶层字段值。
 
 > 本类仅在 `#if UNITY_EDITOR` 代码块内定义，运行时（`ConfigRuntimeSO`）零改动，Runtime 侧无感知。
 
@@ -26,6 +26,8 @@ YooAsset 两路径字段的维度 Override 单项（仅 Editor 期消费）；�
 | `DevelopMode` | `DevelopMode` | `DevelopMode.Debug` | 开发模式轴；仅 `YooAssetEditorConfigsMask.ByDevelopMode == true` 时参与匹配 |
 | `YooAssetSettingsPath` | `string` | `null` | `YooAssetSettings.asset` 项目根相对路径 Override；空字符串是当前坐标明确配置的有效值 |
 | `BundleCollectorSettingPath` | `string` | `null` | `BundleCollectorSetting.asset` 项目根相对路径 Override；空字符串是当前坐标明确配置的有效值 |
+| `YooFolderName` | `string` | `yoo` | 导出时写入 `YooAssetSettings.asset` 的根文件夹名称模板，支持标准占位符 |
+| `PackageFilePrefix` | `string` | 空 | 导出时写入 `YooAssetSettings.asset` 的文件名前缀模板，支持标准占位符 |
 
 ---
 
@@ -49,6 +51,8 @@ DimensionalResolver.YooAssetResult result = DimensionalResolver.ResolveYooAsset(
     DevelopMode.Debug);
 string settingsPath = result.YooAssetSettingsPath;
 string collectorPath = result.BundleCollectorSettingPath;
+string yooFolderName = result.YooFolderName;
+string packageFilePrefix = result.PackageFilePrefix;
 ```
 
 ---

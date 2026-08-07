@@ -27,6 +27,7 @@ namespace NovaFramework.Editor
         /// </summary>
         private void DrawRightPanel()
         {
+            m_CdnAutoLinkDisplayCache.Clear();
             EditorUtil.Draw.Layout.Vertical(EditorStyles.helpBox, () =>
             {
                 if (m_Settings == null || m_SettingsSO == null)
@@ -208,6 +209,10 @@ namespace NovaFramework.Editor
             float fieldX = rowRect.x + 26f + c_ParamsInset;
             float fieldW = rowRect.width - (fieldX - rowRect.x) - 8f;
             float labelW = 200f;
+            TryGetCdnAutoLinkDisplayPaths(
+                paramsInstance,
+                out IReadOnlyDictionary<string, string> resolvedDisplayPaths,
+                out string autoLinkError);
 
             EditorGUI.BeginChangeCheck();
             float fieldY = startY;
@@ -227,8 +232,37 @@ namespace NovaFramework.Editor
                 if (!IsFieldVisible(field, paramsInstance, info.ParamsType)) continue;
                 float fieldHeight = GetParamFieldHeight(field, field.GetValue(paramsInstance));
                 Rect fieldRect = new Rect(fieldX, fieldY, fieldW, fieldHeight);
-                DrawParamField(fieldRect, field, paramsInstance, labelW);
+                DrawParamField(
+                    fieldRect,
+                    field,
+                    paramsInstance,
+                    labelW,
+                    resolvedDisplayPaths,
+                    autoLinkError);
                 fieldY += fieldHeight + 2f;
+
+                float fieldHelpBoxHeight = GetParamFieldHelpBoxHeight(field);
+                if (fieldHelpBoxHeight > 0f)
+                {
+                    Rect fieldHelpBoxRect = new Rect(
+                        fieldX,
+                        fieldY,
+                        fieldW,
+                        fieldHelpBoxHeight);
+                    EditorGUI.HelpBox(
+                        fieldHelpBoxRect,
+                        string.Join("\n", GetParamFieldHelpBoxMessages(field)),
+                        MessageType.Info);
+                    fieldY += fieldHelpBoxHeight + 4f;
+                }
+            }
+            if (!string.IsNullOrEmpty(autoLinkError))
+            {
+                float errorHeight = GetCdnAutoLinkErrorHeight(autoLinkError);
+                EditorGUI.HelpBox(
+                    new Rect(fieldX, fieldY, fieldW, errorHeight),
+                    autoLinkError,
+                    MessageType.Error);
             }
 
             if (EditorGUI.EndChangeCheck())
@@ -322,7 +356,13 @@ namespace NovaFramework.Editor
         /// <param name="field">目标字段元信息。</param>
         /// <param name="paramsInstance">参数对象实例。</param>
         /// <param name="labelW">标签列宽度（像素）。</param>
-        private void DrawParamField(Rect rect, FieldInfo field, object paramsInstance, float labelW)
+        private void DrawParamField(
+            Rect rect,
+            FieldInfo field,
+            object paramsInstance,
+            float labelW,
+            IReadOnlyDictionary<string, string> resolvedDisplayPaths,
+            string autoLinkError)
         {
             const float c_LabelGap = 6f;
             Rect labelRect = new Rect(rect.x, rect.y, labelW - c_LabelGap, c_ParamFieldHeight);
@@ -334,6 +374,23 @@ namespace NovaFramework.Editor
 
             if (fieldType == typeof(string))
             {
+                if (resolvedDisplayPaths != null &&
+                    resolvedDisplayPaths.TryGetValue(field.Name, out string resolvedDisplayPath))
+                {
+                    Color previousBackgroundColor = GUI.backgroundColor;
+                    Color previousContentColor = GUI.contentColor;
+                    if (!string.IsNullOrEmpty(autoLinkError))
+                    {
+                        GUI.backgroundColor = new Color(1f, 0.35f, 0.35f, 1f);
+                        GUI.contentColor = new Color(1f, 0.55f, 0.5f, 1f);
+                    }
+                    EditorGUI.BeginDisabledGroup(true);
+                    EditorGUI.TextField(valueRect, resolvedDisplayPath ?? string.Empty);
+                    EditorGUI.EndDisabledGroup();
+                    GUI.backgroundColor = previousBackgroundColor;
+                    GUI.contentColor = previousContentColor;
+                    return;
+                }
                 DrawStringParamField(valueRect, field, paramsInstance, currentValue);
             }
             else if (fieldType == typeof(bool))
@@ -398,6 +455,166 @@ namespace NovaFramework.Editor
                 lineCount = Mathf.Clamp(actualLines, textArea.minLines, textArea.maxLines);
             }
             return Mathf.Max(c_ParamFieldHeight, lineCount * c_ParamFieldHeight);
+        }
+
+        /// <summary>
+        /// 获取参数字段声明的 HelpBox 文案；用于紧跟该字段绘制局部功能说明。
+        /// </summary>
+        internal static string[] GetParamFieldHelpBoxMessages(FieldInfo field)
+        {
+            return field?.GetCustomAttribute<PipifyHelpBoxAttribute>()?.Messages ?? Array.Empty<string>();
+        }
+
+        /// <summary>
+        /// 计算参数字段 HelpBox 的绘制高度；未声明时返回 0。
+        /// </summary>
+        internal static float GetParamFieldHelpBoxHeight(FieldInfo field)
+        {
+            string[] messages = GetParamFieldHelpBoxMessages(field);
+            return messages.Length == 0 ? 0f : messages.Length * c_ParamFieldHeight + 26f;
+        }
+
+        private static float GetCdnAutoLinkErrorHeight(string error)
+        {
+            return string.IsNullOrEmpty(error) ? 0f : c_ParamFieldHeight * 2f + 8f;
+        }
+
+        private bool TryGetCdnAutoLinkDisplayPaths(
+            object paramsInstance,
+            out IReadOnlyDictionary<string, string> displayPaths,
+            out string error)
+        {
+            if (paramsInstance != null &&
+                m_CdnAutoLinkDisplayCache.TryGetValue(paramsInstance, out CdnAutoLinkDisplayState cached))
+            {
+                displayPaths = cached.DisplayPaths;
+                error = cached.Error;
+                return cached.Active;
+            }
+
+            bool active = TryResolveCdnAutoLinkDisplayPaths(
+                paramsInstance,
+                EditorUtil.Config.WorkspaceActive.Get(),
+                System.IO.Directory.GetParent(Application.dataPath)?.FullName,
+                out displayPaths,
+                out error);
+            if (paramsInstance != null)
+            {
+                m_CdnAutoLinkDisplayCache[paramsInstance] = new CdnAutoLinkDisplayState(
+                    active,
+                    displayPaths,
+                    error);
+            }
+            return active;
+        }
+
+        /// <summary>
+        /// 为 CDN Pipify Step 解析自动关联后的只读显示路径；原始参数仅作为锚点，不在绘制阶段回写。
+        /// </summary>
+        internal static bool TryResolveCdnAutoLinkDisplayPaths(
+            object paramsInstance,
+            ConfigMasterSO master,
+            string projectRoot,
+            out IReadOnlyDictionary<string, string> displayPaths,
+            out string error)
+        {
+            var paths = new Dictionary<string, string>(StringComparer.Ordinal);
+            displayPaths = paths;
+            error = string.Empty;
+
+            var resourceParams = paramsInstance as PipifySteps.CdnDeployParams;
+            var whitelistParams = paramsInstance as PipifySteps.CdnWhitelistDeployParams;
+            bool isResourceDeploy = resourceParams?.AutoLinkLatestVersion == true;
+            bool isWhitelistDeploy = whitelistParams?.AutoLinkLatestVersion == true;
+            if (!isResourceDeploy && !isWhitelistDeploy) return false;
+            if (master == null)
+            {
+                error = "自动关联最新版本失败，未找到当前激活的 ConfigMasterSO。";
+                return true;
+            }
+            if (string.IsNullOrWhiteSpace(projectRoot))
+            {
+                error = "自动关联最新版本失败，无法解析 Unity 项目根目录。";
+                return true;
+            }
+
+            string packageName = EditorUtil.CDN.ResolveDefaultPackageName();
+            string packageFilePrefix = EditorUtil.CDN.ResolvePackageFilePrefix(
+                master,
+                master.CurrentPlatform,
+                master.CurrentChannel,
+                master.CurrentDevelopMode,
+                packageName,
+                Application.version,
+                DateTime.Now);
+
+            if (isResourceDeploy)
+            {
+                string configuredDirectory = EditorUtil.CDN.ResolveEditorPathPlaceholders(
+                    resourceParams.LocalDirectory,
+                    master.CurrentPlatform,
+                    master.CurrentChannel) ?? string.Empty;
+                paths[nameof(PipifySteps.CdnDeployParams.LocalDirectory)] = configuredDirectory;
+                if (EditorUtil.CDN.TryResolveLatestPackageDirectory(
+                        configuredDirectory,
+                        projectRoot,
+                        packageName,
+                        packageFilePrefix,
+                        out string latestDirectory,
+                        out error))
+                {
+                    paths[nameof(PipifySteps.CdnDeployParams.LocalDirectory)] = latestDirectory;
+                }
+                return true;
+            }
+
+            string configuredBytes = EditorUtil.CDN.ResolveEditorPathPlaceholders(
+                whitelistParams.ManifestBytesLocalFilePath,
+                master.CurrentPlatform,
+                master.CurrentChannel) ?? string.Empty;
+            paths[nameof(PipifySteps.CdnWhitelistDeployParams.ManifestBytesLocalFilePath)] = configuredBytes;
+            paths[nameof(PipifySteps.CdnWhitelistDeployParams.ManifestHashLocalFilePath)] =
+                EditorUtil.CDN.ResolveEditorPathPlaceholders(
+                    whitelistParams.ManifestHashLocalFilePath,
+                    master.CurrentPlatform,
+                    master.CurrentChannel) ?? string.Empty;
+            paths[nameof(PipifySteps.CdnWhitelistDeployParams.PackageVersionLocalFilePath)] =
+                EditorUtil.CDN.ResolveEditorPathPlaceholders(
+                    whitelistParams.PackageVersionLocalFilePath,
+                    master.CurrentPlatform,
+                    master.CurrentChannel) ?? string.Empty;
+            if (EditorUtil.CDN.TryResolveLatestAssetCheckVersionFiles(
+                    configuredBytes,
+                    projectRoot,
+                    packageName,
+                    packageFilePrefix,
+                    out string latestBytes,
+                    out string latestHash,
+                    out string latestVersion,
+                    out error))
+            {
+                paths[nameof(PipifySteps.CdnWhitelistDeployParams.ManifestBytesLocalFilePath)] = latestBytes;
+                paths[nameof(PipifySteps.CdnWhitelistDeployParams.ManifestHashLocalFilePath)] = latestHash;
+                paths[nameof(PipifySteps.CdnWhitelistDeployParams.PackageVersionLocalFilePath)] = latestVersion;
+            }
+            return true;
+        }
+
+        private readonly struct CdnAutoLinkDisplayState
+        {
+            internal CdnAutoLinkDisplayState(
+                bool active,
+                IReadOnlyDictionary<string, string> displayPaths,
+                string error)
+            {
+                Active = active;
+                DisplayPaths = displayPaths;
+                Error = error;
+            }
+
+            internal bool Active { get; }
+            internal IReadOnlyDictionary<string, string> DisplayPaths { get; }
+            internal string Error { get; }
         }
 
         /// <summary>

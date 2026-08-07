@@ -99,12 +99,12 @@ namespace NovaFramework.Runtime
         public int RetryDownloadCount = 3;
 
         /// <summary>
-        /// 版本检查空闲超时秒数（连续无新字节流入时中止请求）。
+        /// 单次远端版本文件请求的总超时秒数。
         /// </summary>
         public int CheckTimeout = 5;
 
         /// <summary>
-        /// 文件下载空闲超时秒数（连续无新字节流入时中止下载）。
+        /// 单文件字节流入超时秒数（连续无新字节流入时中止下载）。
         /// </summary>
         public int IdleTimeout = 20;
 
