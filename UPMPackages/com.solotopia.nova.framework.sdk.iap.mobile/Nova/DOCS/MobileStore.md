@@ -1,6 +1,6 @@
 ﻿# MobileStore
 
-> 最后更新：2026-07-22
+> 最后更新：2026-08-11
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/**`
 
 **类签名**：`public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable`
@@ -14,12 +14,12 @@
 | 文件 | 类型 | 说明 |
 |---|---|---|
 | `MobileStore.cs` / `.Visitors.cs` / `.Methods.cs` / `.Track.cs` | `MobileStore` | 对外入口、生命周期、持久化辅助、埋点转发 |
-| `MobileStoreConfig.cs` | `MobileStoreConfig` | Mobile Store 专属配置 |
+| `MobileStoreConfig.cs` | `MobileStoreConfig` | 移动端官方内购商店专属配置 |
 | `IAPMobileRequest.cs` | `IAPMobileRequest` | Mobile 支付请求 |
 | `IAPMobileErrorCode.cs` | `IAPMobileErrorCode` | Mobile 支付过程失败原因与错误码 |
 | `IIAPMobileQueryCapable.cs` | `IIAPMobileQueryCapable` | 商品信息查询能力 |
 | `IIAPMobileSubscriptionCapable.cs` | `IIAPMobileSubscriptionCapable` | 订阅和非消耗品查询能力 |
-| `Data/*.cs` | `MobileStorePersistData`、`MobileOrderRecord`、`MobileOrderStatus`、`MobileCheckEntitlementInfo` | 存档、订单、权益检查数据 |
+| `Data/*.cs` | `MobileStorePersistData`、`MobileOrderRecord`、`MobileOrderKey`、`MobileOrderStatus`、`MobileCheckEntitlementInfo` | 存档、订单键、订单状态、权益检查数据 |
 | `Services/MobileServiceHub.cs` | `MobileServiceHub` | 服务聚合容器 |
 | `Services/Net/MobileIapNetService.cs` | `MobileIapNetService` | 查单和验单协议 |
 | `Services/Extended/MobileExtendedService.cs` | `MobileExtendedService` | `StoreController` 收口 |
@@ -27,6 +27,8 @@
 | `Services/Init/*.cs` | `MobileInitService`、`MobileRuntimeContext` | 初始化状态机 |
 | `Services/Purchase/*.cs` | `MobilePurchaseService` | 平台购买和购买回调 |
 | `Services/Validation/*.cs` | `MobileValidationService` | 订单状态机与验单队列 |
+| `Services/Validation/MobileValidationQueueCoordinator.cs` | `MobileValidationQueueCoordinator` | 验单订单键队列去重与单次执行保护 |
+| `Services/Validation/MobileValidationLocalOrderScanner.cs` | `MobileValidationLocalOrderScanner` | 本地订单状态扫描与待验订单键收集 |
 | `Services/Restore/*.cs` | `MobileRestoreService`、`MobileRestoreCoordinator` | Restore 流程 |
 | `Services/Product/*.cs` | `MobileProductService` | Product / Receipt 查询缓存 |
 | `Services/Subscription/*.cs` | `MobileSubscriptionService` | 订阅到期和倒计时 |
@@ -38,13 +40,14 @@
 
 | 属性 | 默认值 | 说明 |
 |---|---|---|
-| `Enabled` | `true` | 是否启用 Mobile Store |
+| `Enabled` | `true` | 是否启用移动端官方内购商店 |
 | `GoogleQueryPendingOrderCmdName` | `IAPGoogleQueryPendingOrder` | Google 查询未完成订单 Cmd |
 | `GoogleVerifyCmdName` | `IAPGoogleVerify` | Google 普通内购验单 Cmd |
 | `GoogleVerifySubscriptionCmdName` | `IAPGoogleVerifySubscription` | Google 订阅验单 Cmd |
 | `AppleQueryPendingOrderCmdName` | `IAPAppleQueryPendingOrder` | Apple 查询未完成订单 Cmd |
 | `AppleVerifyCmdName` | `IAPAppleVerify` | Apple 普通内购验单 Cmd |
 | `AppleVerifySubscriptionCmdName` | `IAPAppleVerifySubscription` | Apple 订阅验单 Cmd |
+| `ProductFetchRetryDelaysMs` | `2000 / 5000 / 10000` | 商品拉取整体失败后的自动重试延迟，单位毫秒；空列表或非正数回落默认值 |
 
 ## 3. MobileStore 关键属性
 
@@ -107,11 +110,26 @@ MobileStore.InitializeAsync(table, config, ctx, ct)
   ├── m_PersistData = CreateEmptyPersistData()
   └── InitService.InitializeAsync(table, ct)
         ├── 商店连接成功即 Ready
-        ├── 商品信息后台 FetchProducts，不阻塞初始化结果
+        ├── 商品信息后台 FetchProducts，不阻塞初始化结果；失败后按 ProductFetchRetryDelaysMs 自动重试，默认 2s/5s/10s，只标记 Controller 缺失 SKU 为不可用
         └── 商品拉取成功后自动 RestoreTransactions + FetchPurchases，恢复平台 PendingOrder 票据；若已登录则合并触发一次补单扫描
 ```
 
 初始化失败时 `MobileInitService` 通过 `IAPInitResult.Fail((int)MobileStoreInitFailureReason, detail)` 上报；支付会被基类 `PayGuardAsync` 的 `IsStoreReady` 检查拦截。初始化成功和失败都会通过父包 `IAPStoreBase.Track*` 封装上报 `nova_iap_init`。
+
+### 5.1 商品拉取与不可用 SKU
+
+商品拉取是商店连接成功后的后台流程，不改变初始化结果：
+
+| 场景 | 当前处理 |
+|---|---|
+| 商店连接成功 | `OnStoreConnected` 标记 Ready，随后调用 `FetchProducts` |
+| 正在拉取或已成功 | `FetchProducts` 直接跳过，避免 Unity IAP 并发商品请求 |
+| 整体失败 | 标记 `ProductFetchState=Failed`，按 `ProductFetchRetryDelaysMs` 自动重试；默认 `2s / 5s / 10s` 共 3 次 |
+| 成功回调 | 取消重试、清理旧失败 SKU、按 Controller 状态恢复仍缺失的 pending SKU、置 `Succeeded`，再触发 Restore / FetchPurchases |
+| 失败数量小于请求数量 | 视为至少有商品成功，置 `Succeeded` 并停止重试；仍缺失 SKU 继续保留拦截 |
+| 成功态迟到失败 | 只补记录 Controller 当前仍缺失的 SKU，不回退 `Failed`，不重试，不重复触发后续流程 |
+
+`m_UnavailableSkus` 只应表达“当前 `StoreController` 查不到”的 SKU。购买和商品查询会通过该集合拦截不可用商品；因此失败回调不能无条件写入失败列表，否则 Unity IAP 的迟到失败会把已成功商品误标记为不可买。成功回调清理旧失败 SKU 后会立即根据当前 Controller 重建仍缺失 SKU，覆盖“14 个商品成功、1 个 SKU 找不到”的部分成功场景。
 
 ## 6. 支付流程
 
@@ -124,7 +142,7 @@ IAPPlugin.PayAsync<IAPResult>(IAPMobileRequest)
         └── PayGuardAsync(request, ct, PurchaseService.PayAsync)
               ├── store 禁用 / 未就绪 / 已有支付 / 商品表缺失 → 失败
               └── MobilePurchaseService.PayAsync
-                    ├── 当前 tableId 已有待验订单 → 优先补验
+                    ├── 当前 `tableId + ReceiptParam` 订单键已有待验订单 → 优先补验
                     ├── 订阅商品自身仍在有效期内 → 返回 SubscriptionIsReady，不发起平台购买
                     ├── 写 Purchasing 占位订单
                     ├── 发起平台购买
@@ -143,9 +161,10 @@ IAPPlugin.CheckLocalOrdersAsync
               ├── 启动期 OnProductsFetched 会先触发平台 RestoreTransactions，再自动 FetchPurchases 恢复平台 PendingOrder
               ├── 登录前收到的 PendingOrder 只暂存在内存，登录后先合并到当前 UID 存档
               ├── 每次扫描都向服务端发送 QueryPendingOrder
-              ├── 优先按服务端返回的 `table_id`（long）将未完成订单 merge 到本地 OrderRecords，`parameter` 解码仅作旧协议兜底
+              ├── 优先按服务端返回的 `table_id`（long）确定商品行，并结合 `parameter` 解码出的 `ReceiptParam` merge 到本地 `OrderRecordsByKey`
               ├── 服务端返回的 Google token 可补齐本地 Purchasing 占位记录
-              ├── 本地扫描 PendingValidate / ValidateFailed / 具备凭据的 Purchasing
+              ├── `MobileValidationLocalOrderScanner` 本地扫描 PendingValidate / ValidateFailed / 具备凭据的 Purchasing
+              ├── `MobileValidationQueueCoordinator` 统一处理订单键入队去重和队列单次执行保护
               ├── AwaitingConfirm 跳过，不重发验单；交由本次 FetchPurchases 重新拉取到 PendingOrder 后重试确认
               ├── Google 订单缺少 purchase token 时保留记录，不发送 VerifyGoogleIap
               └── 本地补单扫描结束后触发一次 CheckEntitlement，刷新订阅和非消耗品权益；商品未就绪时延后到 OnProductsFetched 后补跑
@@ -179,7 +198,7 @@ IAPPlugin.CheckLocalOrdersAsync
 
 上表「删除记录」经 `FinalizeVerifiedOrderRecord` 收尾：若该订单仍持有平台 `PendingOrder`，先置 `AwaitingConfirm` 并落盘、发起 `ConfirmPurchase`，待 ack 回调（`OnPurchaseConfirmed`）到达后再删除；无待确认平台订单时才立即删除。业务发货（`PaySuccess` / 订阅到期更新）在验单成功即刻完成，不等待平台 ack。
 
-`PaySuccess` 派发按 tableId 做运行期去重，不使用平台 `TransactionId` 作为业务判断依据。`MobileStore` 仍维护当前运行期平台订单打点 key 缓存，但只用于平台 Pending / Confirmed 双回调的本地支付成功打点去重：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`。订阅商品只有当前主动 `PayAsync` 对应的订单才走 `PaySuccess`；后台补单、Restore 和订阅刷新只更新订阅到期时间。
+`PaySuccess` 派发按 `tableId + ReceiptParam` 组成的订单键做运行期去重，不使用平台 `TransactionId` 作为业务判断依据。`MobileStore` 仍维护当前运行期平台订单打点 key 缓存，但只用于平台 Pending / Confirmed 双回调的本地支付成功打点去重：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`。订阅商品只有当前主动 `PayAsync` 对应的订单才走 `PaySuccess`；后台补单、Restore 和订阅刷新只更新订阅到期时间。
 
 ### 埋点事件
 
@@ -196,7 +215,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | `nova_iap_validate_fail_finish` | 验单最终失败、无效订单或超出重试后进入 `ValidateFailed` |
 | `nova_iap_validate_success` | 服务端返回 `Verified`、`Delivered` 或 `Reissued` 并终结订单 |
 
-`nova_iap_create_order_success`、`nova_iap_create_order_fail`、`nova_iap_third_pay_close_order` 是第三方支付链路事件，Mobile 官方内购不触发。`nova_iap_deliver_fail` 目前不触发，因为业务发奖不由 Mobile Store 执行。
+`nova_iap_create_order_success`、`nova_iap_create_order_fail`、`nova_iap_third_pay_close_order` 是第三方支付链路事件，移动端官方内购不触发。`nova_iap_deliver_fail` 目前不触发，因为业务发奖不由移动端官方内购商店执行。
 
 关键字段口径：
 
@@ -208,15 +227,18 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | `nova_iap_validate_fail(.finish).nova_reason` | `IAPMobileErrorCode` 的 int 值；验单网络、响应缺失、待完成、凭据缺失和无效订单使用 2000+ 号段 |
 | `nova_reason_detail` | 失败原因的可读补充描述，例如协议错误信息、服务端状态或缺失凭据说明 |
 | `Debug` | 来自父包注入的 `IIAPStoreContext.DevelopMode == DevelopMode.Debug`；不再取 `EnableAlwaysPaySucceed` |
-| 本地业务去重 | `PaySuccess` 按 tableId 去重，不按平台订单号或 purchase token 去重 |
+| 本地业务去重 | `PaySuccess` 按 `tableId + ReceiptParam` 订单键去重，不按平台订单号或 purchase token 去重 |
 
 ## 8. 存档
 
 `MobileStorePersistData` 是当前 UID 的统一存档容器。
 
+`OrderRecordsByKey` 只保存未完成订单，不是订单历史。正常支付在平台回调、服务端验单和平台确认链路全部完成后会删除记录；只有支付中断、网络验单失败、缺少凭据、平台确认失败或服务端未完成订单补回时，记录才会跨启动保留用于补单。
+
 | 字段 | 说明 |
 |---|---|
-| `OrderRecords` | `Dictionary<long, MobileOrderRecord>`，key = tableId；Android 不持久化 `TransactionId`，iOS 持久化 `TransactionId` |
+| `OrderRecordsByKey` | `Dictionary<string, MobileOrderRecord>`，key = `tableId + ReceiptParam` 订单键；Android 不持久化 `TransactionId`，iOS 持久化 `TransactionId` |
+| `OrderRecords` | 旧版 `Dictionary<long, MobileOrderRecord>` 迁移字段，仅用于把旧存档迁移到 `OrderRecordsByKey`，新写入不再使用 |
 | `SubscriptionExpireMs` | 订阅到期 Unix 毫秒 |
 | `NonConsumeOwnership` | 非消耗品持有标记 |
 | `HasQueriedPendingFromServer` | 当前 UID 是否曾成功向服务端同步过未完成订单；不用于阻止后续 QueryPendingOrder |
@@ -247,7 +269,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 6 | `NetworkError` | 网络不可用或请求失败 |
 | 7 | `ServerValidationFailed` | 服务端验单失败或拒绝订单 |
 | 8 | `StoreInitFailed` | MobileStore 初始化失败 |
-| 9 | `InvalidPassthroughParam` | tableId、ReceiptParam 或 uid 超出平台透传参数编码范围 |
+| 9 | `InvalidPassthroughParam` | tableId、ReceiptParam 或 uid 超出长度限制，或 uid / ReceiptParam 不是不以 `0` 开头的十六进制值 |
 | 1000 | `PurchaseFailurePurchasingUnavailable` | Unity IAP 当前不可购买 |
 | 1001 | `PurchaseFailureExistingPurchasePending` | Unity IAP 已有待处理购买 |
 | 1002 | `PurchaseFailureProductUnavailable` | Unity IAP 平台商品不可用 |
@@ -260,7 +282,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 1009 | `PurchaseFailurePurchaseMissing` | Unity IAP 平台未返回购买数据 |
 | 1010 | `PurchaseFailureUnknown` | Unity IAP 未知购买失败 |
 
-0-9 是 Mobile Store 自身流程错误；1000-1010 是 Unity IAP `PurchaseFailureReason` 的专用映射号段；2000+ 是验单失败打点细分号段。`TrackLocalPayFailInternal`、`TrackValidateFailInternal` 和 `TrackValidateFailFinishInternal` 都只接收 `IAPMobileErrorCode`，确保支付过程 `nova_reason` 的枚举域统一。
+0-9 是移动端官方内购商店自身流程错误；1000-1010 是 Unity IAP `PurchaseFailureReason` 的专用映射号段；2000+ 是验单失败打点细分号段。`TrackLocalPayFailInternal`、`TrackValidateFailInternal` 和 `TrackValidateFailFinishInternal` 都只接收 `IAPMobileErrorCode`，确保支付过程 `nova_reason` 的枚举域统一。
 
 | 值 | 名称 | Mobile 使用场景 |
 |---|---|---|
@@ -273,6 +295,18 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 2999 | `ValidateUnknown` | 未知验单失败 |
 
 ## 10. 当前代码口径快照
+
+后台任务生命周期：
+
+| 任务 | 当前口径 |
+|---|---|
+| 验单队列处理 | 经 `MobileServiceHub.RunBackgroundTask` 启动，接入移动端官方内购商店运行期取消令牌 |
+| 商品成功后的权益刷新 | 经 `RunBackgroundTask` 启动；商品未就绪时延后到成功回调后补跑；`RefreshEntitlementsAsync` 返回 `UniTask<IReadOnlyList<IAPResult>>`，后台触发时必须包装为无返回 `UniTask` |
+| 平台已有购买后的补单扫描 | 经 `RunBackgroundTask` 启动；避免 `FetchPurchases` 回调里裸不等待后台任务 |
+| 订阅到期倒计时 | 自身 CTS 与 Hub 运行期取消令牌链接，Dispose 时统一取消 |
+| 支付验单结果桥接 | 经 `RunBackgroundTask` 等待验单 TCS；Dispose 时取消等待，并以 `StoreNotAvailable` 失败结果解除支付 await，不向业务抛取消异常 |
+
+后台任务入口只接受 `Func<CancellationToken, UniTask>`。如果业务动作本身返回 `UniTask<T>`，不能直接作为方法组传入 `RunBackgroundTask`；当前商品成功后的权益刷新使用 `async token => { await RefreshEntitlementsAsync(token); }` 显式等待并丢弃返回列表，确保后台生命周期只承载取消与异常收口，不改变 Restore / 补单结果语义。
 
 当前 Mobile 支付代码按两条失败原因线维护：
 
@@ -287,12 +321,12 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 
 | 场景 | 当前口径 |
 |---|---|
-| 本地存档合并 | 以 `tableId` 为 key；服务端 QueryPendingOrder 优先使用 `table_id`，`parameter` 只作旧协议兜底 |
+| 本地存档合并 | 以 `tableId + ReceiptParam` 订单键为 key；服务端 QueryPendingOrder 优先使用 `table_id` 确定商品行，`parameter` 用于解出 `ReceiptParam`，缺失时按空透传兼容 |
 | Apple 平台订单号 | 写入 `TransactionId` 并随本地存档保留 |
 | Google 平台订单号 | 运行期写入 `TransactionId`，Android 存档时忽略该字段 |
 | Google 验单凭据 | 写入 `GoogleToken` 并持久化 |
 | 本地支付成功打点去重 | Apple 使用 `TransactionId`，Google 使用 `GoogleToken` |
-| 业务 `PaySuccess` 去重 | 使用 tableId，不使用平台订单号或 purchase token |
+| 业务 `PaySuccess` 去重 | 使用 `tableId + ReceiptParam` 订单键，不使用平台订单号或 purchase token |
 | `nova_iap_validate_success.nova_order_id` | 优先服务端验单响应 `OrderId`；缺失时回退当前运行期 `TransactionId` |
 
 渠道打点口径：
@@ -334,7 +368,7 @@ if (iap.TryGetCapability<IIAPMobileSubscriptionCapable>(out var sub))
 ## 12. 常见误区
 
 **误区 1：初始化会等待商品拉取完成。**
-当前初始化只等待商店连接成功。商品信息在 `OnStoreConnected` 后后台拉取，`OnProductsFetchFailed` 不会回退初始化结果。补单末尾的权益刷新会检查商品拉取状态：商品未成功时不把空结果当作完成，而是延后到 `OnProductsFetched` 后补跑。
+当前初始化只等待商店连接成功。商品信息在 `OnStoreConnected` 后后台拉取，`OnProductsFetchFailed` 不会回退初始化结果；整体失败时会按 `MobileStoreConfig.ProductFetchRetryDelaysMs` 自动重试，默认 2s / 5s / 10s 共 3 次，任一轮收到成功商品，或失败数量小于请求数量时，即停止重试。成功回调会清理旧失败 SKU，并按 StoreController 当前状态恢复仍缺失的 pending SKU；迟到失败回调也只会把 StoreController 当前仍缺失的 SKU 标记为不可用，不会把已成功商品重新污染为不可买。补单末尾的权益刷新会检查商品拉取状态：商品未成功时不把空结果当作完成，而是延后到 `OnProductsFetched` 后补跑。
 
 **误区 2：直接访问 `StoreController`。**
 所有平台调用必须经 `MobileExtendedService`，不要在其他服务中缓存或绕过它访问 Controller。

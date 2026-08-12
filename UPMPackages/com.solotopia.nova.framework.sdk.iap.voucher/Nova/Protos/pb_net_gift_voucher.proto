@@ -1,120 +1,113 @@
+// =====================================================================
+// 礼券 / 赠币抵扣
+// =====================================================================
 syntax = "proto3";
-
+// 生成 C# 时必须传入 --csharp_opt=internal_access，避免协议 DTO 泄漏到业务公共 API。
 package NovaFramework.IAP.Voucher.Runtime;
 
-option csharp_namespace = "NovaFramework.IAP.Voucher.Runtime";
+option csharp_namespace = "NovaFramework.SDK.IAP.Voucher.Runtime";
 
 import "pb_net_header.proto";
 
-// 拉取用户礼券数据  post: "/game_recharge/gift_voucher/list"
-// 游戏端登录时调用，获取用户当前持有的礼券和赠币，以服务端数据为准
+// =====================================================================
+// 拉取用户礼券和赠币余额
+// post: "/game_recharge/gift_voucher/list"
+// =====================================================================
+
+// 拉取用户礼券和赠币余额请求
 message PbNetGiftVoucherListReq {
-  NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
+    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
 }
 
-// 拉取用户礼券数据响应
+// 拉取用户礼券和赠币余额响应
 message PbNetGiftVoucherListResp {
-     NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
-    // 礼券分组列表
+    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
     repeated PbNetGiftVoucherGroup voucher_groups = 2;
-    // 货币余额列表
-    repeated PbNetCoinBalance coin_balances = 3;
+    repeated PbNetCoinBalance      coin_balances   = 3;
 }
 
-// 货币余额
+// 赠币余额
 message PbNetCoinBalance {
-    // 币种ID，如 2001=赠币
-    int32 coin_id = 1;
-    // 单个币值（美元），如 "0.10" 表示 $0.10/个
-    string face_value = 2;
-    // 数量
-    int32 quantity = 3;
+    int32  coin_id    = 1;  // 币种 ID，如 2001=赠币
+    string face_value = 2;  // 单个币值（美元），如 "0.10" 表示 $0.10/个
+    int32  quantity    = 3;  // 数量
 }
 
 // 礼券分组（按档位）
 message PbNetGiftVoucherGroup {
-    // 礼券档位ID，如 1001
-    int32 voucher_tier_id = 1;
-    // 面值（美元），如 "4.99"
-    string face_value = 2;
-    // 数量（已领取且未使用）
-    int32 quantity = 3;
-    // 券唯一码列表
-    repeated string voucher_codes = 4;
+    int32           voucher_tier_id = 1;  // 礼券档位 ID，如 1001
+    string          face_value      = 2;  // 面值（美元），如 "4.99"
+    int32           quantity        = 3;  // 已领取且未使用数量
+    repeated string voucher_codes   = 4;  // 券唯一码列表
 }
 
-// 礼券抵扣校验  post: "/game_recharge/gift_voucher/deduct"
-// 游戏端用户兑换礼包时调用，服务端校验并消耗礼券/赠币
+// =====================================================================
+// 礼券和赠币抵扣
+// post: "/game_recharge/gift_voucher/deduct"
+// =====================================================================
+
+// 礼券和赠币抵扣请求
 message PbNetGiftVoucherDeductReq {
-	NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
-    // 游戏内订单号（客户端生成，用于幂等）
-    string game_order_id = 2;
-    // Purchases 表中的ID字段
-    int64 table_id = 3;
-    // 使用的券唯一码列表
-    repeated string voucher_codes = 4;
-    // 使用的虚拟币列表
-    repeated PbNetCoinUsage coin_usages = 5;
-    // 国家
-    string country = 6;
+    NovaFramework.Runtime.PbNetReqHeader head          = 1;  // 请求公共头
+    string                                    game_order_id = 2;  // 客户端生成的游戏订单号，用于服务端幂等
+    int64                                     table_id      = 3;  // Purchases 表 ID
+    repeated string                           voucher_codes = 4;  // 使用的券唯一码列表
+    repeated PbNetCoinUsage                   coin_usages   = 5;  // 使用的赠币列表
+    string                                    country       = 6;  // 国家
 }
 
-// 虚拟币使用明细
+// 赠币使用明细
 message PbNetCoinUsage {
-    // 币种ID，如 2001=赠币
-    int32 coin_id = 1;
-    // 使用数量
-    int32 quantity = 2;
+    int32 coin_id  = 1;  // 币种 ID，如 2001=赠币
+    int32 quantity = 2;  // 使用数量
 }
 
-// 礼券抵扣校验响应
+// 礼券抵扣状态
+enum PbNetGiftVoucherDeductStatus {
+    PB_NET_GIFT_VOUCHER_DEDUCT_STATUS_UNSPECIFIED = 0;  // 未指定
+    PB_NET_GIFT_VOUCHER_DEDUCT_STATUS_SUCCESS     = 1;  // 抵扣成功
+    PB_NET_GIFT_VOUCHER_DEDUCT_STATUS_FAILED      = 2;  // 抵扣失败
+    PB_NET_GIFT_VOUCHER_DEDUCT_STATUS_SHIPPED     = 3;  // 已处理并发货
+}
+
+// 礼券和赠币抵扣响应
 message PbNetGiftVoucherDeductResp {
-    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
-    // 0=无 1=成功 2=失败 3=已发货
-    int32 status = 2;
-    // 失败时的错误信息
-    string message = 3;
-    // 抵扣后各币种余额
-    repeated PbNetCoinBalance coin_balances = 4;
-    // 已消耗档位的剩余礼券数据
-    repeated PbNetGiftVoucherGroup voucher_groups = 5;
+    NovaFramework.Runtime.PbNetRespHeader head           = 1;  // 响应公共头
+    PbNetGiftVoucherDeductStatus               status         = 2;  // 抵扣状态
+    string                                     message        = 3;  // 失败信息
+    repeated PbNetCoinBalance                  coin_balances  = 4;  // 抵扣后的赠币余额
+    repeated PbNetGiftVoucherGroup             voucher_groups = 5;  // 抵扣后的礼券余额
 }
 
-// 测试用：给用户添加礼券+虚拟币  post: "/game_recharge/gift_voucher/test_grant"
-// 仅测试环境可用
+// =====================================================================
+// 测试发放礼券和赠币（仅测试环境）
+// post: "/game_recharge/gift_voucher/test_grant"
+// =====================================================================
+
+// 测试发放礼券和赠币请求
 message PbNetGiftVoucherTestGrantReq {
-    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
-    // 礼券发放列表
-    repeated PbNetVoucherGrant voucher_grants = 3;
-    // 虚拟币发放列表
-    repeated PbNetCoinGrant coin_grants = 4;
+    NovaFramework.Runtime.PbNetReqHeader head           = 1;  // 请求公共头
+    repeated PbNetVoucherGrant              voucher_grants = 3;  // 礼券发放列表
+    repeated PbNetCoinGrant                 coin_grants    = 4;  // 赠币发放列表
 }
 
 // 礼券发放明细
 message PbNetVoucherGrant {
-    // 礼券档位ID，如 1001
-    int32 voucher_tier_id = 1;
-    // 数量
-    int32 quantity = 2;
+    int32 voucher_tier_id = 1;  // 礼券档位 ID，如 1001
+    int32 quantity        = 2;  // 数量
 }
 
-// 虚拟币发放明细
+// 赠币发放明细
 message PbNetCoinGrant {
-    // 币种ID，如 2001
-    int32 coin_id = 1;
-    // 数量
-    int32 quantity = 2;
+    int32 coin_id  = 1;  // 币种 ID，如 2001
+    int32 quantity = 2;  // 数量
 }
 
-// 测试发放礼券+虚拟币响应
+// 测试发放礼券和赠币响应
 message PbNetGiftVoucherTestGrantResp {
-    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
-    // 是否成功
-    bool status = 2;
-    // 失败时的错误信息
-    string message = 3;
-    // 发放后礼券分组
-    repeated PbNetGiftVoucherGroup voucher_groups = 4;
-    // 发放后货币余额
-    repeated PbNetCoinBalance coin_balances = 5;
+    NovaFramework.Runtime.PbNetRespHeader head           = 1;  // 响应公共头
+    bool                                       status         = 2;  // 是否成功
+    string                                     message        = 3;  // 失败信息
+    repeated PbNetGiftVoucherGroup             voucher_groups = 4;  // 发放后的礼券余额
+    repeated PbNetCoinBalance                  coin_balances  = 5;  // 发放后的赠币余额
 }

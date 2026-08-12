@@ -24,6 +24,8 @@
     "com.solotopia.nova.framework.sdk.googlesignin": "file:../UPMPackages/com.solotopia.nova.framework.sdk.googlesignin",
     "com.solotopia.nova.framework.sdk.iap": "file:../UPMPackages/com.solotopia.nova.framework.sdk.iap",
     "com.solotopia.nova.framework.sdk.iap.mobile": "file:../UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile",
+	"com.solotopia.nova.framework.sdk.iap.thirdpay": "file:../UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay",
+	"com.solotopia.nova.framework.sdk.iap.voucher": "file:../UPMPackages/com.solotopia.nova.framework.sdk.iap.voucher",
     "com.solotopia.nova.framework.sdk.max": "file:../UPMPackages/com.solotopia.nova.framework.sdk.max",
     "com.solotopia.nova.framework.sdk.tga": "file:../UPMPackages/com.solotopia.nova.framework.sdk.tga",
     "com.solotopia.simplediskutils": "file:../UPMPackages/com.solotopia.simplediskutils",

@@ -1,76 +1,99 @@
+// =====================================================================
+// 应用内第三方支付
+// =====================================================================
 syntax = "proto3";
 
 package NovaFramework.IAP.ThirdPay.Runtime;
 
-option csharp_namespace = "NovaFramework.IAP.ThirdPay.Runtime";
+option csharp_namespace = "NovaFramework.SDK.IAP.ThirdPay.Runtime";
 
 import "pb_net_header.proto";
 
-// 游戏内三方支付商品列表  post: "/game_recharge/product_list"
+// =====================================================================
+// 第三方支付商品列表
+// post: "/third_pay/product_list"
+// =====================================================================
+
+// 商品列表请求
 message PbNetThirdProductListReq {
     NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
-    string country = 2;                                         // 国家编码 US
+    string country = 2;                            // 国家编码，例如 US
 }
 
-// 游戏内三方支付商品列表响应
+// 商品列表响应
 message PbNetThirdProductListResp {
-    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
-    repeated PbNetProductInfo product_list = 2;                  // 商品列表
-    repeated PbNetPayTypeInfo pay_type_list = 3;                 // 支付方式列表
+    NovaFramework.Runtime.PbNetRespHeader head = 1;          // 响应公共头
+    repeated PbNetThirdProductInfo product_list = 2;         // 商品列表
 }
 
 // 商品信息
-message PbNetProductInfo {
-    int32 id = 1;                 // 商品自增ID（创建订单请求参数ID）
+message PbNetThirdProductInfo {
+    int32 id = 1;                 // 商品自增 ID
     string local_currency = 2;    // 本地币种
     string local_price = 3;       // 本地价格
-    string product_id = 4;        // 商品唯一ID（sku，不同国家下ID相同）
+    string product_id = 4;        // 商品唯一 ID
 }
 
-// 支付方式
-message PbNetPayTypeInfo {
-    int32 id = 1;             // 支付方式ID
-    string pay_method = 2;    // 支付方式
-    string icon = 3;          // 支付方式图标
+// =====================================================================
+// 查询支付成功但尚未校验的订单
+// post: "/third_pay/query_pending_order"
+// =====================================================================
+
+// 未校验订单查询请求
+message PbNetThirdQueryPendingOrderReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头，包含应用 ID 和用户 ID
 }
 
-// 游戏内三方支付创建订单  post: "/game_recharge/create_order"
-message PbNetThirdCreateOrderReq {
-    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
-    string country = 2;                                         // 国家编码 US
-    int32 id = 3;                                               // 商品ID
-    string pay_method = 4;                                      // 支付方式
-    int32 pay_type_id = 5;                                      // 支付方式ID
-    string custom_param = 6;                                    // 自定义参数
+// 未校验订单查询响应
+message PbNetThirdQueryPendingOrderResp {
+    NovaFramework.Runtime.PbNetRespHeader head = 1;              // 响应公共头
+    repeated PbNetThirdQueryPendingOrderInfo order_list = 2;     // 支付成功但尚未校验的订单
 }
 
-// 创建订单响应
-message PbNetThirdCreateOrderResp {
+// 单笔未校验订单
+message PbNetThirdQueryPendingOrderInfo {
+    string client_order_id = 1;  // 客户端订单号
+    int64 table_id = 2;          // 商品配置表 ID
+}
+
+// =====================================================================
+// 查询第三方支付渠道参数
+// post: "/third_pay/get_payment_customer_ids"
+// =====================================================================
+
+// 渠道参数查询请求
+message PbNetThirdPayChannelParamsReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头，包含应用 ID 和用户 ID
+}
+
+// 渠道参数查询响应
+message PbNetThirdPayChannelParamsResp {
     NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
-    string order_id = 2;                                         // 订单ID
-    string pay_url = 3;                                          // 支付页面
-    string pay_param = 4;                                        // 支付参数
-    bool is_force_check_order = 5;                               // 是否强制验单
+    string payment_customer_ids = 2;                 // 部分渠道要求透传的 CID 等参数
 }
 
-// 游戏内三方支付验证订单  post: "/game_recharge/check_order"
-message PbNetThirdCheckOrderReq {
+// =====================================================================
+// 第三方支付验单
+// post: "/third_pay/verify_iap"
+// =====================================================================
+
+// 验单请求
+message PbNetThirdVerifyIapReq {
     NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
-    repeated string order_ids = 3;                              // 订单号List
-    repeated string client_order_ids = 4;                       // 客户端订单号List
+    repeated string client_order_ids = 2;           // 客户端订单号列表
 }
 
-// 验证订单响应
-message PbNetThirdCheckOrderResp {
-    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
-    repeated PbNetThirdCheckOrderInfo list = 2;                  // 验证订单列表
+// 验单响应
+message PbNetThirdVerifyIapResp {
+    NovaFramework.Runtime.PbNetRespHeader head = 1;        // 响应公共头
+    repeated PbNetThirdVerifyOrderResult order_list = 2;   // 验单结果列表
 }
 
-// 验证订单单条信息
-message PbNetThirdCheckOrderInfo {
-    string order_id = 1;          // 订单号
-    int32 status = 2;             // 状态：1=待支付 2=支付中 3=支付成功 4=明确支付失败（含过期） 5=已发货
-    string custom_param = 3;      // 自定义参数
-    int64 table_id = 4;           // 客户端表ID
-    string client_order_id = 5;   // 客户端订单号
+// 单笔验单结果
+message PbNetThirdVerifyOrderResult {
+    string server_order_id = 1;  // 服务端订单号
+    int32 status = 2;            // 1=待支付 2=支付中 3=支付成功 4=支付失败/过期 5=已发货
+    string receipt_param = 3;    // 票据透传参数，对应 IAPResult.ReceiptParam
+    int64 table_id = 4;          // 商品配置表 ID
+    string client_order_id = 5;  // 客户端订单号
 }

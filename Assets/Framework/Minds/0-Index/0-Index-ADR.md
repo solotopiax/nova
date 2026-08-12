@@ -26,6 +26,7 @@ auto_generated: true
 - [ADR-072 Mobile IAP 平台透传参数编码 uid+tableId+receiptParam（8/8/16 布局）](../2-Areas/ADR/ADR-072-iap-mobile-passthrough-param-layout.md) — IAP透传参数采用8/8/16布局
 - [ADR-074 跨 Editor Runtime 导出链的占位符解析统一采用显式上下文](../2-Areas/ADR/ADR-074-placeholder-resolution-explicit-context.md) — 占位符统一算法与多环境显式上下文
 - [ADR-075 启动应用配置由 Config 非阻塞等待 Network Ready 后单次刷新](../2-Areas/ADR/ADR-075-config-startup-remote-refresh-after-network-ready.md) — Config 后台等待网络路由就绪并单次刷新磁盘快照
+- [ADR-077 Mobile IAP 未完成订单身份采用 tableId+ReceiptParam](../2-Areas/ADR/ADR-077-mobile-iap-order-key-tableid-receiptparam.md) — Mobile订单键含ReceiptParam
 
 ## asset
 
@@ -104,4 +105,4 @@ auto_generated: true
 
 
 ---
-_共 62 条，分布于 10 个 category。_
+_共 63 条，分布于 10 个 category。_

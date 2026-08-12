@@ -1,6 +1,6 @@
 ﻿# IAPPlugin
 
-> 最后更新：2026-07-23
+> 最后更新：2026-08-11
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/**`
 
 **类签名**：`public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin`
@@ -16,6 +16,7 @@
 | `Runtime/IAPPlugin.cs` | `IAPPlugin` | 生命周期 override、公开 API |
 | `Runtime/IAPPlugin.Visitors.cs` | `IAPPlugin` partial | 字段、属性、事件容器 |
 | `Runtime/IAPPlugin.Methods.cs` | `IAPPlugin` partial | 反射扫描、Store 初始化、上下文构建、事件桥 |
+| `Runtime/IAPPlugin.BackgroundTasks.cs` | `IAPPlugin` partial | 登录后自动补单等后台任务的取消与异常收口 |
 | `Runtime/IAPPluginConfig.cs` | `IAPPluginConfig`、`IAPStoreConfigList` | 插件序列化配置 |
 | `Runtime/IAPProductTableService.cs` | `IAPProductTableService` | 运行期商品表查询与缓存 |
 | `Runtime/IAPPluginEvents.cs` | `IAPPluginEvents` | 对外 ReplayEvent 容器 |
@@ -63,6 +64,7 @@ IAP Products 支持在 Inspector 中通过 Excel 批量维护：
 | `m_HasDeferredCheckLocalOrders` | `bool` | 登录前是否收到过补单扫描请求 |
 | `m_IsCheckingLocalOrders` | `bool` | 当前是否正在执行补单扫描，用于防并发 |
 | `m_PendingCheckLocalOrders` | `bool` | 扫描中再次触发时标记当前轮结束后补跑一次 |
+| `m_RuntimeTaskCts` | `CancellationTokenSource` | IAPPlugin 运行期后台任务取消源，Dispose 时取消登录后自动补单等后台任务 |
 | `ProductTable` | `IIAPProductTable` | 商品表只读视图；初始化前或商品表为空时为 null |
 | `Events` | `IAPPluginEvents` | 业务层订阅支付、初始化、Restore 事件 |
 | `m_EventManager` | `IEventManager` | 用于订阅 `SDKEventData.UserLogin` 并自动广播 UID |
@@ -101,6 +103,7 @@ public readonly ReplayEvent<IReadOnlyList<IAPResult>> NonConsumeRestored
 
 ```
 OnInitializeAsync(config, ct)
+  ├── 重建 IAPPlugin 运行期后台任务取消源
   ├── config as IAPPluginConfig，失败则 Warning 后返回
   ├── Products 为空则 Warning 后返回，不创建 Store
   ├── BuildStoreContext(config)
@@ -118,11 +121,15 @@ OnInitializeAsync(config, ct)
 
 ```
 OnDisposeAsync(ct)
+  ├── 取消 IAPPlugin 运行期后台任务
   ├── 注销 SDKEventData.UserLogin
   ├── 清空账号 UID 与延后执行事件缓存状态
   ├── 逐个 await store.DisposeAsync(ct)
-  └── 清空 Store、Context、ConfigMap、ProductTable 引用
+  ├── 清空 Store、Context、ConfigMap、ProductTable 引用
+  └── 释放 IAPPlugin 运行期后台任务取消源
 ```
+
+`IAPPlugin.RunBackgroundTask` 入口委托固定为 `Func<CancellationToken, UniTask>`，只负责运行期取消和异常日志收口。Store 层如果要把返回 `UniTask<T>` 的方法接入后台任务，必须先用 lambda 或无返回包装方法显式 `await` 并丢弃返回值，不能直接把有返回值方法组传入后台任务入口。
 
 ## 6. 使用示例
 
@@ -152,7 +159,7 @@ var request = new IAPMobileRequest
 
 IAPResult result = await iap.PayAsync<IAPResult>(request, ct);
 if (!result.IsSuccess)
-    ShowToast(result.FailReason);
+    ShowToast(result.ErrorDesc);
 ```
 
 ## 7. 常见误区
@@ -161,13 +168,15 @@ if (!result.IsSuccess)
 当前配置只保存 `Products` 数据；运行期查询由 `IAPProductTableService` 实现，并通过 `IAPPlugin.ProductTable` 暴露。
 
 **误区 2：认为错误码是全局统一枚举。**
-`IAPResult.ErrorCode` 是 int。核心层只定义 `IAPPluginErrorCode`，Store 内部失败使用各 Store 自己的错误码枚举；业务层需要结合 Store 类型解释错误码。
+`IAPResult.ErrorCode` 是 int。核心层只定义 `IAPPluginErrorCode`，Store 内部失败使用各 Store 自己的错误码枚举；业务层必须结合 `(ErrorSource, ErrorCode)` 解码失败类型。
+
+对于已经发送到服务端并取得明确拒绝结果的订单，Store 可以在失败 `IAPResult` 中同时保留 `OrderId` 和 `IsRecoveredOrder`。业务层仍以 `IsSuccess`、`ErrorDesc` 和 `(ErrorSource, ErrorCode)` 判断失败，不应因为存在订单号就视为支付成功。
 
 **误区 3：业务层直接调用渠道方法。**
 渠道特有能力通过 `TryGetCapability<T>` 获取，例如 Mobile 的 `IIAPMobileQueryCapable` 和 `IIAPMobileSubscriptionCapable`。
 
 **误区 4：登录前不能调用补单扫描。**
-业务层可以提前调用 `CheckLocalOrdersAsync`。如果此时 `SetUserId` 尚未执行，`IAPPlugin` 会记录一次延后补单请求，并在账号 UID 同步后自动执行；如果扫描正在执行，再次调用只会标记当前轮结束后补跑一轮，避免并发重复跑，也避免无上限堆积同类补单事件。
+业务层可以提前调用 `CheckLocalOrdersAsync`。如果此时 `SetUserId` 尚未执行，`IAPPlugin` 会记录一次延后补单请求，并在账号 UID 同步后经后台任务入口自动执行；如果扫描正在执行，再次调用只会标记当前轮结束后补跑一轮，避免并发重复跑，也避免无上限堆积同类补单事件。`OnDisposeAsync` 会先取消后台任务，避免插件释放后继续访问 Store。
 
 **误区 5：打点 reason 可以直接传任意对象。**
 父包 `Track*Fail` 只接收 `Enum` 类型的失败原因，并在上报前转成 `int` 写入 `nova_reason`；可读描述写入 `nova_reason_detail`。Store 侧需要先把失败原因收敛到自己的明确枚举，父包不维护跨 Store 的失败原因全集。Mobile 支付过程失败统一使用 `IAPMobileErrorCode`，初始化失败使用独立的 `MobileStoreInitFailureReason`。

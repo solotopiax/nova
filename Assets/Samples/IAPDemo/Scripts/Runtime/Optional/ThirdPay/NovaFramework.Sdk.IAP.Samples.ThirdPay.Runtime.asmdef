@@ -1,0 +1,28 @@
+{
+    "name": "NovaFramework.Sdk.IAP.Samples.ThirdPay.Runtime",
+    "rootNamespace": "NovaFramework.Sdk.IAP.Samples.Runtime",
+    "references": [
+        "NovaFramework.Sdk.IAP.Samples.Runtime",
+        "NovaFramework.Runtime",
+        "NovaFramework.SDK.IAP.Runtime",
+        "NovaFramework.SDK.IAP.ThirdPay.Runtime",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "NOVA_IAP_THIRDPAY"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.solotopia.nova.framework.sdk.iap.thirdpay",
+            "expression": "0.0.1",
+            "define": "NOVA_IAP_THIRDPAY"
+        }
+    ],
+    "noEngineReferences": false
+}

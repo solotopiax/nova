@@ -20,8 +20,8 @@ MonoBehaviour:
     AppAesIV: YOUR_APP_AES_IV
     CustomConfigCmdName: AppCustomConfig
     CustomName: CustomConfigs
-  Platform: 1
-  Channel: 2
+  Platform: 2
+  Channel: 3
   EnabledSDKConfigs: []
   EnabledKitConfigs: []
   HybridConfigs:

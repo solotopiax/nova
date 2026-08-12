@@ -20,6 +20,8 @@ namespace NovaFramework.Runtime
     {
         private const string c_PostNotificationsPermission = "android.permission.POST_NOTIFICATIONS";
         private const string c_NotificationPermissionRequestedKey = "Nova.Native.NotificationPermissionRequested";
+        private const string c_ApplicationNotificationSettingsAction = "android.settings.APP_NOTIFICATION_SETTINGS";
+        private const string c_ApplicationPackageExtra = "android.provider.extra.APP_PACKAGE";
 
         private PermissionCallbacks m_AndroidPermissionCallbacks;
         private UniTaskCompletionSource<NotificationPermissionResult> m_AndroidPermissionRequest;
@@ -105,6 +107,38 @@ namespace NovaFramework.Runtime
             catch (Exception exception)
             {
                 Log.Error(LogTag.Base, "打开 Android 应用设置失败：{0}。", exception);
+                return UniTask.FromResult(false);
+            }
+        }
+
+        /// <summary>
+        /// Android 8.0 及以上打开当前应用的通知设置页；低版本不回退到应用详情设置页。
+        /// </summary>
+        /// <returns>是否成功发起精准通知设置页跳转。</returns>
+        private UniTask<bool> OpenNotificationSettingsPlatformAsync()
+        {
+            try
+            {
+                if (GetAndroidSdkInt() < 26)
+                {
+                    return UniTask.FromResult(false);
+                }
+
+                using AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                using AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                using AndroidJavaObject intent = new AndroidJavaObject(
+                    "android.content.Intent",
+                    c_ApplicationNotificationSettingsAction);
+                using AndroidJavaObject configuredIntent = intent.Call<AndroidJavaObject>(
+                    "putExtra",
+                    c_ApplicationPackageExtra,
+                    Application.identifier);
+                activity.Call("startActivity", configuredIntent);
+                return UniTask.FromResult(true);
+            }
+            catch (Exception exception)
+            {
+                Log.Error(LogTag.Base, "打开 Android 通知设置失败：{0}。", exception);
                 return UniTask.FromResult(false);
             }
         }

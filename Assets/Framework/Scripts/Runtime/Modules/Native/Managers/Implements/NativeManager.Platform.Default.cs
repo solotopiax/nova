@@ -52,6 +52,15 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 非移动平台没有精准通知设置页入口。
+        /// </summary>
+        /// <returns>固定返回 false。</returns>
+        private UniTask<bool> OpenNotificationSettingsPlatformAsync()
+        {
+            return UniTask.FromResult(false);
+        }
+
+        /// <summary>
         /// 非移动平台无需清理原生桥接。
         /// </summary>
         private void ShutdownPlatform()
@@ -60,4 +69,3 @@ namespace NovaFramework.Runtime
     }
 }
 #endif
-

@@ -28,6 +28,7 @@
 - Mobile 官方内购的 Unity IAP 购买失败已纳入 `IAPMobileErrorCode` 的 1000+ 专用号段，避免与 Mobile 通用错误码 0-9 冲突。
 - 父包不解释渠道订单号语义；例如 Mobile 的 Google 验单和本地支付成功打点使用 purchase token，Apple 才使用 `TransactionId`。
 - IAP Products 支持 Inspector 内导出 SKU Excel 模板并导入 Excel，全量覆盖当前 `IAPPluginConfig.Products`；该能力是 Editor 专用导入工具，不接入 Luban，也不改变运行时商品表读取链路。
+- 登录后自动补单等父包后台任务统一经 IAPPlugin 后台任务入口启动；插件 Dispose 时会先取消后台任务，再释放 Store。后台入口只接受 `Func<CancellationToken, UniTask>`，有返回值的 `UniTask<T>` 方法需要包装后接入。
 
 ## 最新支付代码口径
 

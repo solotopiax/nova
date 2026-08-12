@@ -40,19 +40,19 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
                 Log.Warning(LogTag.AppsFlyer, "sdkComponent 尚未就绪。");
                 return false;
             }
-
+#if UNITY_ANDROID 
             if (string.IsNullOrEmpty(m_RuntimeConfig?.DevKey))
             {
                 Log.Warning(LogTag.AppsFlyer, "AF DevKey 为空，SDK 初始化跳过。");
                 return false;
             }
-
+#elif UNITY_IOS
             if (string.IsNullOrEmpty(m_RuntimeConfig?.AppId))
             {
                 Log.Warning(LogTag.AppsFlyer, "AF AppId 为空，SDK 初始化跳过。");
                 return false;
             }
-
+#endif
             return true;
         }
 

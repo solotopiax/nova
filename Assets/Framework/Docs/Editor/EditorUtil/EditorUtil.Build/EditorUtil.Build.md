@@ -101,6 +101,12 @@ public static BuildReport BuildPackage(BuildTarget target, string outputFolder, 
 - `EditorUserBuildSettings.buildAppBundle`
 - `PlayerSettings.Android.splitApplicationBinary`（核实 API：unity_reflect 确认，非 obsolete 的 `useAPKExpansionFiles`）
 
+**HybridCLR Development ABI 校验：**
+
+当 HybridCLR 已启用时，`BuildPlayer` 会在调用 `BuildPipeline.BuildPlayer` 前临时将显式参数 `developmentBuild` 镜像到 `EditorUserBuildSettings.development`，再严格校验生成的 `MethodBridge.cpp` 中 `// DEVELOPMENT=0|1` 标记；构建完成、失败或取消后恢复原全局值。
+
+标记缺失、格式非法或与 `developmentBuild` 不一致时会抛出 `InvalidOperationException` 并停止导出，要求先以相同 DevelopmentBuild 档位执行 HybridCLR Generate All。这样可避免条件编译类型在桥接代码和最终 IL2CPP 产物之间出现 ABI 不一致。
+
 **iOS Entitlements 命名注意：**
 
 iOS 构建完成后，`NovaBuildPostprocessor` 会为 Xcode capability 注入准备 entitlements 文件路径。该路径当前使用：
@@ -115,6 +121,7 @@ Application.productName.Replace(" ", "") + ".entitlements"
 - `ArgumentException`：outputPath / outputFolder 为空时抛出。
 - `InvalidOperationException`：BuildResult 不为 Succeeded 时抛出，message 包含 BuildResult 枚举值。
 - `InvalidOperationException`：当前 ConfigMaster、三维解析出的 YooAssetSettings 缺失，或工程中已有任意常驻 `Resources/YooAssetSettings.asset` 时，在构建预处理阶段中止。
+- `InvalidOperationException`：HybridCLR 启用但 MethodBridge 的 DEVELOPMENT 标记缺失、非法或与 `developmentBuild` 不一致时，在 Player 构建前中止。
 
 ### YooAssetSettings 构建期 staging
 

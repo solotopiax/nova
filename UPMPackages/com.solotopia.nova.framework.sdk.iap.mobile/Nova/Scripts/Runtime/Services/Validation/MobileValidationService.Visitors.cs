@@ -15,46 +15,49 @@ using UnityEngine.Purchasing;
 
 namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
+    /// <summary>
+    /// MobileValidationService 的字段与属性分部。
+    /// </summary>
     internal sealed partial class MobileValidationService
     {
         /// <summary>
-        /// 待验单的 tableId 队列，防止并发多条同时请求。
+        /// 验单队列协调器，负责订单键入队去重和队列单次执行保护。
         /// </summary>
-        private readonly Queue<long> m_ValidateQueue = new Queue<long>();
+        private readonly MobileValidationQueueCoordinator m_ValidationQueueCoordinator = new MobileValidationQueueCoordinator();
+
+        /// <summary>
+        /// 本地订单扫描器，负责把存档订单按状态筛选为待验单订单键。
+        /// </summary>
+        private readonly MobileValidationLocalOrderScanner m_LocalOrderScanner = new MobileValidationLocalOrderScanner();
 
         /// <summary>
         /// 已收到平台 PendingOrder 但尚未完成服务端验单确认的平台订单。
         /// 只保存在内存中，重启后的补单只做服务端验单，不尝试恢复 PendingOrder 引用。
         /// </summary>
-        private readonly Dictionary<long, PendingOrder> m_PendingPlatformOrders = new Dictionary<long, PendingOrder>();
+        private readonly Dictionary<string, PendingOrder> m_PendingPlatformOrders = new Dictionary<string, PendingOrder>();
 
         /// <summary>
         /// 登录前平台回调收集到的待验订单。
         /// 未登录时不读写账号存档，也不发起验单协议；登录后补单扫描前合并到当前 UID 存档。
         /// </summary>
-        private readonly Dictionary<long, MobileOrderRecord> m_PreLoginOrderRecords = new Dictionary<long, MobileOrderRecord>();
+        private readonly Dictionary<string, MobileOrderRecord> m_PreLoginOrderRecords = new Dictionary<string, MobileOrderRecord>();
 
         /// <summary>
-        /// 当前运行期已经派发过 PaySuccess 的商品表 ID，用于避免服务端补单与平台 PendingOrder 双回调重复通知业务。
-        /// 发起同 tableId 的新支付时会清理对应标记。
+        /// 当前运行期已经派发过 PaySuccess 的订单键，用于避免服务端补单与平台 PendingOrder 双回调重复通知业务。
+        /// 发起同订单键的新支付时会清理对应标记。
         /// </summary>
-        private readonly HashSet<long> m_DispatchedPaySuccessTableIds = new HashSet<long>();
+        private readonly HashSet<string> m_DispatchedPaySuccessOrderKeys = new HashSet<string>(System.StringComparer.Ordinal);
 
         /// <summary>
         /// 当无法访问 Store.PersistData 时使用的兜底空字典，避免空引用。
         /// </summary>
-        private static readonly Dictionary<long, MobileOrderRecord> s_EmptyOrderRecords = new Dictionary<long, MobileOrderRecord>();
+        private static readonly Dictionary<string, MobileOrderRecord> s_EmptyOrderRecords = new Dictionary<string, MobileOrderRecord>();
 
         /// <summary>
-        /// 进行中订单字典，路由到 MobileStore.PersistData.OrderRecords，
+        /// 进行中订单字典，路由到 MobileStore.PersistData.OrderRecordsByKey，
         /// 与统一存档共享同一份字典引用，避免双源不同步。
         /// </summary>
-        private Dictionary<long, MobileOrderRecord> m_OrderRecords => m_Hub.Store?.PersistData?.OrderRecords ?? s_EmptyOrderRecords;
-
-        /// <summary>
-        /// 验单队列是否正在处理中，防止并发重入。
-        /// </summary>
-        private bool m_IsProcessingQueue;
+        private Dictionary<string, MobileOrderRecord> m_OrderRecords => m_Hub.Store?.PersistData?.OrderRecordsByKey ?? s_EmptyOrderRecords;
 
         /// <summary>
         /// 是否正在执行完整补单扫描流程，覆盖查服务端、本地扫描和权益刷新。

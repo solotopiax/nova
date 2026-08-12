@@ -1,4 +1,4 @@
-﻿/***************************************************************
+/***************************************************************
  * (c) copyright 2026 - 2030, Solotopia
  * All Rights Reserved.
  * -------------------------------------------------------------
@@ -12,12 +12,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
     /// <summary>
     /// 第三方支付页打开结果。
-    /// 由 ThirdPayStore.OpenAsync 返回，区分用户路径以决定主链路下一步。
+    /// 由框架内支付页服务返回，区分用户路径以决定主链路下一步。
     /// </summary>
-    public enum ThirdPayOpenResult
+    internal enum ThirdPayOpenResult
     {
         /// <summary>
-        /// 用户支付完成回到 App（Browser 模式由 AppsFlyer DeepLink 命中 OrderId / InAppAuto 模式由 WebView 关闭或 JS bridge 通知）。
+        /// 应用内支付页确认支付流程完成，可以立即发起验单。
         /// </summary>
         Success,
 

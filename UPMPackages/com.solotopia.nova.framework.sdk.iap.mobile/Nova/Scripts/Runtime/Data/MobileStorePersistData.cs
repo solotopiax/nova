@@ -25,9 +25,15 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     public sealed class MobileStorePersistData : IIAPStorePersistData
     {
         /// <summary>
-        /// 进行中订单记录字典，key = tableId，value = 单条订单存档。
+        /// 旧版进行中订单记录字典，key = tableId，value = 单条订单存档。
+        /// 仅用于反序列化旧存档并迁移到 OrderRecordsByKey，新写入不再使用该字段。
         /// </summary>
         public Dictionary<long, MobileOrderRecord> OrderRecords;
+
+        /// <summary>
+        /// 进行中订单记录字典，key = tableId + ReceiptParam 组成的订单键，value = 单条订单存档。
+        /// </summary>
+        public Dictionary<string, MobileOrderRecord> OrderRecordsByKey;
 
         /// <summary>
         /// 订阅商品到期时间字典，key = tableId，value = Unix 毫秒时间戳；0 表示已过期或未订阅。
@@ -50,10 +56,12 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         public void EnsureInitialized()
         {
-            if (OrderRecords == null)
+            if (OrderRecordsByKey == null)
             {
-                OrderRecords = new Dictionary<long, MobileOrderRecord>();
+                OrderRecordsByKey = new Dictionary<string, MobileOrderRecord>();
             }
+
+            MigrateLegacyOrderRecords();
 
             if (SubscriptionExpireMs == null)
             {
@@ -64,6 +72,41 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             {
                 NonConsumeOwnership = new Dictionary<long, bool>();
             }
+        }
+
+        /// <summary>
+        /// 将旧版 tableId 字典迁移到新版订单键字典。
+        /// ReceiptParam 是新版本能力，旧记录通常为空透传，因此迁移为 tableId + 空 ReceiptParam。
+        /// </summary>
+        private void MigrateLegacyOrderRecords()
+        {
+            if (OrderRecords == null || OrderRecords.Count == 0)
+            {
+                OrderRecords = null;
+                return;
+            }
+
+            foreach (KeyValuePair<long, MobileOrderRecord> kv in OrderRecords)
+            {
+                MobileOrderRecord record = kv.Value;
+                if (record == null)
+                {
+                    continue;
+                }
+
+                if (record.TableId == 0L)
+                {
+                    record.TableId = kv.Key;
+                }
+
+                string orderKey = MobileOrderKey.Build(record);
+                if (MobileOrderKey.IsValid(orderKey) && !OrderRecordsByKey.ContainsKey(orderKey))
+                {
+                    OrderRecordsByKey[orderKey] = record;
+                }
+            }
+
+            OrderRecords = null;
         }
     }
 }

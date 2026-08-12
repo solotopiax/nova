@@ -4,6 +4,12 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-12
+
+### Added
+
+- 新增 Facebook Console / Readme 官方快捷入口。
+
 ## [0.1.3] - 2026-08-03
 
 ### Changed

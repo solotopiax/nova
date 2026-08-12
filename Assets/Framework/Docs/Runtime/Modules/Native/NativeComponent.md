@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Runtime`  
 **全局访问**：`Nova.Native`
 
-`NativeComponent` 是 Nova 访问操作系统原生能力的场景门面。当前正式能力仅覆盖**通知授权状态查询、显式请求与打开应用设置**；JNI、P/Invoke、平台状态映射、并发请求协调与回调清理由 `NativeManager` 承担。
+`NativeComponent` 是 Nova 访问操作系统原生能力的场景门面。当前正式能力仅覆盖**通知授权状态查询、显式请求、打开应用设置与精准打开通知设置**；JNI、P/Invoke、平台状态映射、并发请求协调与回调清理由 `NativeManager` 承担。
 
 它不负责 APNs / FCM Token 注册、远程消息接收、通知展示策略或业务弹窗策略。这些能力属于对应 SDK 或业务层。
 
@@ -33,11 +33,15 @@ public UniTask<NotificationPermissionResult> RequestNotificationPermissionAsync(
     CancellationToken ct = default);
 
 public UniTask<bool> OpenAppSettingsAsync();
+
+public UniTask<bool> OpenNotificationSettingsAsync();
 ```
 
 - `GetNotificationPermissionStatusAsync` 返回当前操作系统状态。
 - `RequestNotificationPermissionAsync` 只能由业务在合适的交互时机显式调用；框架初始化和场景启动不会自动弹窗。
-- `OpenAppSettingsAsync` 的 `true` 仅表示已成功发起设置页跳转，不表示用户已经修改授权。
+- `OpenAppSettingsAsync` 打开当前应用的系统设置根页。
+- `OpenNotificationSettingsAsync` 只打开当前应用的通知设置页；不支持或无法精准跳转时直接返回 `false`，绝不回退到应用设置页。
+- 两个设置入口返回 `true` 都只表示框架已成功发起对应的系统跳转请求，不保证用户已经看到目标页面或修改了任何设置。
 - `CancellationToken` 只取消当前调用方的等待；它不取消已发起的共享系统请求。
 
 ## 通知状态与请求选项
@@ -68,9 +72,9 @@ public UniTask<bool> OpenAppSettingsAsync();
 
 ## 平台行为
 
-- **Android**：Android 13（API 33）及以上通过 `POST_NOTIFICATIONS` 请求运行时权限；Android 7（API 24）及以上同时读取应用通知总开关。Android 的 `options` 仅用于保持统一 API，具体展示能力仍由通知渠道决定。
-- **iOS**：原生桥接在 `requestAuthorization` 完成后再次读取 `UNNotificationSettings`，并将回调切回主队列后进入 Unity 托管层。
-- **Editor / 非移动平台**：查询返回 `Unsupported`；请求以成功完成且状态为 `Unsupported` 结束；打开设置返回 `false`。
+- **Android**：Android 13（API 33）及以上通过 `POST_NOTIFICATIONS` 请求运行时权限；Android 7（API 24）及以上同时读取应用通知总开关。`OpenAppSettingsAsync` 打开当前应用详情设置，`OpenNotificationSettingsAsync` 仅在 Android 8（API 26）及以上通过 `ACTION_APP_NOTIFICATION_SETTINGS` 精准打开当前应用通知设置。Android 的 `options` 仅用于保持统一 API，具体展示能力仍由通知渠道决定。
+- **iOS**：原生桥接在 `requestAuthorization` 完成后再次读取 `UNNotificationSettings`，并将回调切回主队列后进入 Unity 托管层。`OpenAppSettingsAsync` 打开当前应用设置根页；`OpenNotificationSettingsAsync` 仅在 iOS 15.4 及以上精准打开当前应用通知设置。
+- **Editor / 非移动平台**：查询返回 `Unsupported`；请求以成功完成且状态为 `Unsupported` 结束；两种设置页入口都返回 `false`。
 
 构建链会向 Android 受控主 Manifest 声明 `POST_NOTIFICATIONS`，并在 iOS 工程链接 `UserNotifications.framework`；它不会注入 Push capability、`aps-environment` 或 APNs 后台模式。
 
@@ -90,15 +94,15 @@ if (status == NotificationPermissionStatus.NotDetermined)
 }
 else if (status == NotificationPermissionStatus.Denied)
 {
-    await Nova.Native.OpenAppSettingsAsync();
+    await Nova.Native.OpenNotificationSettingsAsync();
 }
 ```
 
-上例只演示业务主动触发的路径；是否请求、何时提示用户、拒绝后的产品策略均由业务决定。
+上例只演示业务主动触发的路径；是否请求、何时提示用户、拒绝后的产品策略均由业务决定。若业务希望打开应用设置根页而非通知页，应显式调用 `OpenAppSettingsAsync()`；不能把 `false` 自动改为调用后者。
 
 ## Sample 演示位置
 
-MainDemo 的 `2.Modules > 2.17 Native` 页面完整演示当前三项公开能力：查询通知权限、请求 `Alert | Sound | Badge`、请求 iOS `Provisional`，以及打开应用设置。
+MainDemo 的 `2.Modules > 2.17 Native` 页面演示查询通知权限、请求 `Alert | Sound | Badge`、请求 iOS `Provisional`、打开当前应用设置根页，以及精准打开当前应用通知设置。精准入口返回 `false` 时 Demo 只显示“不支持或启动失败”，不会自动回退到应用设置；用户可在从系统设置返回后点击“查询通知状态”手动刷新。
 
 - 页面源码：[`DemoNativeView.cs`](../../../../../Samples/MainDemo/Scripts/Runtime/UIs/DemoNativeView/DemoNativeView.cs)
 - 页面 Prefab：[`DemoNativeView.prefab`](../../../../../Samples/MainDemo/Prefabs/UIs/DemoNativeView/DemoNativeView.prefab)

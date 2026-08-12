@@ -18,53 +18,20 @@ using UnityEngine.Purchasing;
 
 namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
+    /// <summary>
+    /// MobileInitService 内部辅助方法定义。
+    /// </summary>
     internal sealed partial class MobileInitService
     {
         /// <summary>
-        /// 通过 ExtendedService 向平台发起商品拉取请求，使用 InitializeAsync 阶段构建的商品定义列表。
-        /// 拉取进行中或已经成功时忽略重复请求；失败状态允许后续连接回调重新拉取。
-        /// </summary>
-        private void FetchProducts()
-        {
-            if (ProductFetchState is MobileProductFetchState.Fetching or MobileProductFetchState.Succeeded)
-            {
-                Log.Debug(LogTag.IAPMobile, $"商品拉取请求已跳过，当前状态={ProductFetchState}。");
-                return;
-            }
-
-            ProductFetchState = MobileProductFetchState.Fetching;
-            m_ProductFetchTcs = new UniTaskCompletionSource<MobileProductFetchState>();
-            List<ProductDefinition> productDefs = m_PendingProductDefs ?? new List<ProductDefinition>();
-            Log.Debug(LogTag.IAPMobile, $"Unity IAP 注册商品定义数量={productDefs.Count}。");
-            m_Hub.ExtendedService?.FetchProducts(productDefs);
-        }
-
-        /// <summary>
         /// 等待商品拉取完成；超时不抛出，返回当前状态，调用方自行决定是否延后补跑。
         /// </summary>
+        /// <param name="timeoutMs">等待超时时间，单位毫秒。</param>
+        /// <param name="ct">外部取消令牌。</param>
+        /// <returns>当前商品拉取状态。</returns>
         internal async UniTask<MobileProductFetchState> WaitForProductsFetchedAsync(int timeoutMs, CancellationToken ct)
         {
-            if (ProductFetchState != MobileProductFetchState.Fetching)
-            {
-                return ProductFetchState;
-            }
-
-            UniTaskCompletionSource<MobileProductFetchState> tcs = m_ProductFetchTcs;
-            if (tcs == null)
-            {
-                return ProductFetchState;
-            }
-
-            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            timeoutCts.CancelAfter(timeoutMs);
-            try
-            {
-                return await tcs.Task.AttachExternalCancellation(timeoutCts.Token);
-            }
-            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
-            {
-                return ProductFetchState;
-            }
+            return await m_ProductFetchCoordinator.WaitForProductsFetchedAsync(timeoutMs, ct);
         }
 
         /// <summary>
@@ -75,6 +42,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="detail">失败详情描述。</param>
         private void FailInitialization(MobileStoreInitFailureReason reason, string detail)
         {
+            m_ProductFetchCoordinator.CancelRetry();
             if (m_RuntimeContext == null)
             {
                 m_InitTcs?.TrySetResult(false);
@@ -108,6 +76,16 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 IAPProductType.Subscription => ProductType.Subscription,
                 _ => ProductType.Consumable,
             };
+        }
+
+        /// <summary>
+        /// 商品拉取进入成功态后的后续流程，只由商品拉取协调器首次完成时触发。
+        /// </summary>
+        private void OnProductFetchCompleted()
+        {
+            m_Hub.RestoreService.RequestPlatformRestoreAfterProductsFetched();
+            m_Hub.RestoreService.TryRunPendingEntitlementRefreshAfterProductsFetched();
+            m_Hub.ExtendedService.FetchPurchases();
         }
     }
 }

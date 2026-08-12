@@ -91,29 +91,31 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
-        /// 支付发起前优先处理当前 tableId 已支付但尚未完成服务端验单的订单。
-        /// 命中当前请求 tableId 时，将验单结果直接作为本次 PayAsync 结果返回，避免再次向平台发起购买。
+        /// 支付发起前优先处理当前订单键已支付但尚未完成服务端验单的订单。
+        /// 命中当前请求订单键时，将验单结果直接作为本次 PayAsync 结果返回，避免再次向平台发起购买。
         /// </summary>
         /// <param name="requestTableId">当前支付请求的商品配置表行 ID。</param>
+        /// <param name="requestReceiptParam">当前支付请求的票据透传参数。</param>
         /// <param name="customData">当前支付请求透传数据，仅在旧订单未记录透传数据时兜底使用。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>当前请求命中本地待验订单时返回验单结果；未命中时返回 null。</returns>
-        internal async UniTask<IAPResult> TryValidatePaidLocalOrdersBeforePayAsync(long requestTableId, string customData, CancellationToken ct)
+        internal async UniTask<IAPResult> TryValidatePaidLocalOrdersBeforePayAsync(long requestTableId, string requestReceiptParam, string customData, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             if (CurrentPayTcs != null)
             {
-                return new IAPResult(requestTableId, (int)IAPMobileErrorCode.AlreadyPurchasing, "当前已有支付验单进行中。", customData);
+                return new IAPResult(requestTableId, (int)IAPMobileErrorCode.AlreadyPurchasing, IAPErrorSource.Mobile, "当前已有支付验单进行中。", customData, requestReceiptParam);
             }
 
-            while (m_IsProcessingQueue)
+            while (m_ValidationQueueCoordinator.IsProcessing)
             {
                 await UniTask.Yield(PlayerLoopTiming.Update, ct);
             }
 
             EnsurePersistDataLoaded();
+            string orderKey = MobileOrderKey.Build(requestTableId, requestReceiptParam);
 
-            if (!m_OrderRecords.TryGetValue(requestTableId, out MobileOrderRecord currentRequestRecord) ||
+            if (!m_OrderRecords.TryGetValue(orderKey, out MobileOrderRecord currentRequestRecord) ||
                 !IsPaidUnvalidatedStatus(currentRequestRecord.Status))
             {
                 return null;
@@ -125,10 +127,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 currentRequestRecord.CustomDataParam = customData;
             }
 
-            if (!m_ValidateQueue.Contains(requestTableId))
-            {
-                m_ValidateQueue.Enqueue(requestTableId);
-            }
+            m_ValidationQueueCoordinator.Enqueue(orderKey);
 
             var payTcs = new UniTaskCompletionSource<IAPResult>();
             CurrentPayTcs = payTcs;
@@ -152,28 +151,26 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
-        /// 将指定 tableId 的订单加入验单队列（去重），并触发队列处理。
+        /// 将指定订单记录加入验单队列（去重），并触发队列处理。
         /// </summary>
-        /// <param name="tableId">商品配置表行 ID。</param>
-        internal void EnqueueValidation(long tableId)
+        /// <param name="record">待验单订单记录。</param>
+        internal void EnqueueValidation(MobileOrderRecord record)
         {
-            if (tableId == 0L)
+            string orderKey = MobileOrderKey.Build(record);
+            if (!MobileOrderKey.IsValid(orderKey))
             {
                 return;
             }
 
             if (!IsUserReadyForValidation())
             {
-                Log.Debug(LogTag.IAPMobile, $"账号未登录，暂不启动验单队列，商品表ID={tableId}");
+                Log.Debug(LogTag.IAPMobile, $"账号未登录，暂不启动验单队列，{MobileOrderKey.Describe(record)}");
                 return;
             }
 
-            if (!m_ValidateQueue.Contains(tableId))
-            {
-                m_ValidateQueue.Enqueue(tableId);
-            }
+            m_ValidationQueueCoordinator.Enqueue(orderKey);
 
-            ProcessQueueAsync(CancellationToken.None).Forget();
+            m_Hub.RunBackgroundTask(ProcessQueueAsync, "验单队列处理");
         }
 
         /// <summary>
@@ -187,41 +184,70 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
+            string orderKey = MobileOrderKey.Build(record);
             if (!IsUserReadyForValidation())
             {
-                m_PreLoginOrderRecords[record.TableId] = record;
-                Log.Debug(LogTag.IAPMobile, $"账号未登录，仅暂存待验订单，商品表ID={record.TableId}，订单号={record.TransactionId}");
+                m_PreLoginOrderRecords[orderKey] = record;
+                Log.Debug(LogTag.IAPMobile, $"账号未登录，仅暂存待验订单，{MobileOrderKey.Describe(record)}，订单号={record.TransactionId}");
                 return;
             }
 
-            m_OrderRecords[record.TableId] = record;
+            m_OrderRecords[orderKey] = record;
             SaveOrderRecords();
-            EnqueueValidation(record.TableId);
+            EnqueueValidation(record);
         }
 
         /// <summary>
         /// 登记待服务端验单通过后再确认的平台 PendingOrder。
         /// </summary>
         /// <param name="tableId">商品配置表行 ID。</param>
+        /// <param name="receiptParam">票据透传参数。</param>
         /// <param name="order">平台待确认订单。</param>
-        internal void RegisterPendingPlatformOrder(long tableId, PendingOrder order)
+        internal void RegisterPendingPlatformOrder(long tableId, string receiptParam, PendingOrder order)
         {
-            if (tableId == 0L || order == null)
+            string orderKey = MobileOrderKey.Build(tableId, receiptParam);
+            if (!MobileOrderKey.IsValid(orderKey) || order == null)
             {
                 return;
             }
 
-            m_PendingPlatformOrders[tableId] = order;
+            m_PendingPlatformOrders[orderKey] = order;
         }
 
         /// <summary>
-        /// 判断本地是否仍保留指定 tableId 的待验订单记录。
+        /// 判断本地是否仍保留指定订单键的待验订单记录。
         /// </summary>
         /// <param name="tableId">商品配置表行 ID。</param>
+        /// <param name="receiptParam">票据透传参数。</param>
         /// <returns>仍存在订单记录时返回 true。</returns>
+        internal bool HasOrderRecord(long tableId, string receiptParam)
+        {
+            string orderKey = MobileOrderKey.Build(tableId, receiptParam);
+            return MobileOrderKey.IsValid(orderKey) && m_OrderRecords.ContainsKey(orderKey);
+        }
+
+        /// <summary>
+        /// 判断本地是否保留任意指定 tableId 的待验订单记录。
+        /// 仅用于诊断或无法可靠取得 ReceiptParam 的兜底判断。
+        /// </summary>
+        /// <param name="tableId">商品配置表行 ID。</param>
+        /// <returns>存在同 tableId 订单记录时返回 true。</returns>
         internal bool HasOrderRecord(long tableId)
         {
-            return tableId != 0L && m_OrderRecords.ContainsKey(tableId);
+            if (tableId == 0L)
+            {
+                return false;
+            }
+
+            foreach (MobileOrderRecord record in m_OrderRecords.Values)
+            {
+                if (record != null && record.TableId == tableId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -229,18 +255,20 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// 命中处于 AwaitingConfirm 的记录则删除并落盘，返回 true；否则返回 false，交由常规确认流程处理。
         /// </summary>
         /// <param name="tableId">商品配置表行 ID。</param>
+        /// <param name="receiptParam">票据透传参数。</param>
         /// <returns>命中并完成 AwaitingConfirm 记录时返回 true。</returns>
-        internal bool TryCompleteAwaitingConfirm(long tableId)
+        internal bool TryCompleteAwaitingConfirm(long tableId, string receiptParam)
         {
-            if (tableId == 0L ||
-                !m_OrderRecords.TryGetValue(tableId, out MobileOrderRecord record) ||
+            string orderKey = MobileOrderKey.Build(tableId, receiptParam);
+            if (!MobileOrderKey.IsValid(orderKey) ||
+                !m_OrderRecords.TryGetValue(orderKey, out MobileOrderRecord record) ||
                 record.Status != MobileOrderStatus.AwaitingConfirm)
             {
                 return false;
             }
 
-            m_PendingPlatformOrders.Remove(tableId);
-            m_OrderRecords.Remove(tableId);
+            m_PendingPlatformOrders.Remove(orderKey);
+            m_OrderRecords.Remove(orderKey);
             SaveOrderRecords();
             return true;
         }
@@ -250,19 +278,21 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// 跳过重复的服务端验单。命中并发起重试时返回 true。
         /// </summary>
         /// <param name="tableId">商品配置表行 ID。</param>
+        /// <param name="receiptParam">票据透传参数。</param>
         /// <param name="order">平台重新拉取到的待确认订单。</param>
         /// <returns>命中 AwaitingConfirm 记录并重试确认时返回 true。</returns>
-        internal bool TryReconfirmAwaitingOrder(long tableId, PendingOrder order)
+        internal bool TryReconfirmAwaitingOrder(long tableId, string receiptParam, PendingOrder order)
         {
-            if (tableId == 0L || order == null ||
-                !m_OrderRecords.TryGetValue(tableId, out MobileOrderRecord record) ||
+            string orderKey = MobileOrderKey.Build(tableId, receiptParam);
+            if (!MobileOrderKey.IsValid(orderKey) || order == null ||
+                !m_OrderRecords.TryGetValue(orderKey, out MobileOrderRecord record) ||
                 record.Status != MobileOrderStatus.AwaitingConfirm)
             {
                 return false;
             }
 
-            m_PendingPlatformOrders[tableId] = order;
-            ConfirmPendingPlatformOrder(tableId);
+            m_PendingPlatformOrders[orderKey] = order;
+            ConfirmPendingPlatformOrder(record);
             return true;
         }
 
@@ -272,16 +302,19 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         /// <param name="tableId">待支付商品配置表行 ID。</param>
         /// <param name="customDataParam">业务透传数据，原样写入存档。</param>
-        internal void WritePurchasingRecord(long tableId, string customDataParam)
+        /// <param name="receiptParam">票据透传参数。</param>
+        internal void WritePurchasingRecord(long tableId, string customDataParam, string receiptParam)
         {
-            m_DispatchedPaySuccessTableIds.Remove(tableId);
             var record = new MobileOrderRecord
             {
                 TableId = tableId,
                 Status = MobileOrderStatus.Purchasing,
                 CustomDataParam = customDataParam,
+                ReceiptParam = receiptParam,
             };
-            m_OrderRecords[tableId] = record;
+            string orderKey = MobileOrderKey.Build(record);
+            m_DispatchedPaySuccessOrderKeys.Remove(orderKey);
+            m_OrderRecords[orderKey] = record;
             SaveOrderRecords();
         }
 
@@ -291,7 +324,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         internal void RemoveAllPurchasingRecords()
         {
-            var toRemove = new List<long>();
+            var toRemove = new List<string>();
             foreach (var kv in m_OrderRecords)
             {
                 if (kv.Value.Status == MobileOrderStatus.Purchasing)
@@ -308,9 +341,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             // 批量删除
-            foreach (long id in toRemove)
+            foreach (string orderKey in toRemove)
             {
-                m_OrderRecords.Remove(id);
+                m_OrderRecords.Remove(orderKey);
             }
 
             // 落盘
@@ -322,16 +355,18 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// 如果标记后删除前崩溃，下次启动扫描会按失败终态直接清理，不会误入补单。
         /// </summary>
         /// <param name="tableId">失败订单的商品配置表行 ID。</param>
-        internal void MarkLocalPayFailedAndRemove(long tableId)
+        /// <param name="receiptParam">失败订单的票据透传参数。</param>
+        internal void MarkLocalPayFailedAndRemove(long tableId, string receiptParam)
         {
-            if (tableId == 0L || !m_OrderRecords.TryGetValue(tableId, out MobileOrderRecord record))
+            string orderKey = MobileOrderKey.Build(tableId, receiptParam);
+            if (!MobileOrderKey.IsValid(orderKey) || !m_OrderRecords.TryGetValue(orderKey, out MobileOrderRecord record))
             {
                 return;
             }
 
             record.Status = MobileOrderStatus.LocalPayFailed;
             SaveOrderRecords();
-            m_OrderRecords.Remove(tableId);
+            m_OrderRecords.Remove(orderKey);
             SaveOrderRecords();
         }
 
@@ -394,7 +429,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             foreach (long tableId in tableIds)
             {
-                EnqueueValidation(tableId);
+                MobileOrderRecord record = EnsureRestoreOrderRecord(tableId);
+                EnqueueValidation(record);
             }
         }
 
@@ -411,7 +447,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return null;
             }
 
-            if (m_OrderRecords.TryGetValue(tableId, out MobileOrderRecord existing))
+            string orderKey = MobileOrderKey.Build(tableId, null);
+            if (m_OrderRecords.TryGetValue(orderKey, out MobileOrderRecord existing))
             {
                 existing.IsReplenish = true;
                 FillMissingRestoreCredential(existing, entry);
@@ -425,7 +462,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 IsReplenish = true,
             };
             FillMissingRestoreCredential(record, entry);
-            m_OrderRecords[tableId] = record;
+            m_OrderRecords[orderKey] = record;
             return record;
         }
 
@@ -472,7 +509,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (ShouldRemoveLocalRecordWithoutCredential(record))
             {
-                RemoveLocalOrderRecord(record.TableId, "Restore 订单缺少 iOS order_id，删除本地待验记录。");
+                RemoveLocalOrderRecord(record, "Restore 订单缺少 iOS order_id，删除本地待验记录。");
             }
 
             return false;
@@ -483,13 +520,12 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         internal void Dispose()
         {
-            // 不清空 m_OrderRecords：它指向 Store.PersistData.OrderRecords 共享引用，清空会抹除持久化中未完成订单
-            // 丢弃队列中未处理的 tableId
-            m_ValidateQueue.Clear();
+            // 不清空 m_OrderRecords：它指向 Store.PersistData.OrderRecordsByKey 共享引用，清空会抹除持久化中未完成订单
+            // 丢弃队列中未处理的订单键
+            m_ValidationQueueCoordinator.Clear();
             // PendingOrder 引用只在当前运行期有效
             m_PendingPlatformOrders.Clear();
             // 重置队列锁，防止 Dispose 后无法再入队
-            m_IsProcessingQueue = false;
             m_IsCheckingLocalOrders = false;
             m_PendingCheckLocalOrders = false;
             // 释放可能悬空的 TCS

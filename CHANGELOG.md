@@ -6,6 +6,29 @@
 
 ---
 
+## [0.6.9] - 2026-08-12
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.9]` 节。
+
+### Breaking
+
+- IAP 结果契约扩展 `IIAPResult` 字段，并将 `IAPResult.FailReason` 更名为 `ErrorDesc`；自定义结果实现和业务失败处理需按 `(ErrorSource, ErrorCode)` 适配。
+
+### Added
+
+- Framework 新增精准通知设置入口：Android API 26+、iOS 15.4+ 可直达当前应用的通知设置；不支持时明确返回 `false`，不回退到应用设置。
+- AIHelp、AppsFlyer、Facebook、Firebase、MAX 与 TGA 新增官方 Console / Readme 菜单入口。
+
+### Fixed
+
+- IAP Mobile 修复未完成订单身份、商品拉取重试和迟到失败回调处理，避免共用 SKU 错认订单或网络抖动后商品永久不可用。
+- Pipify / Build 与 HybridCLR Development ABI 校验对齐，避免构建参数和产物不一致。
+
+### Changed
+
+- 发布 Framework `0.6.9`、AIHelp `0.0.6`、AppsFlyer `0.1.3`、Facebook `0.1.4`、Firebase `0.1.3`、IAP `0.1.3`、IAP Mobile `0.1.5`、MAX `0.1.4` 与 TGA `0.1.5`。
+- `NovaSpark.cs` 固定 Framework `0.6.9`；BestHTTP `0.1.3`、EDM `1.2.188` 与 unity-mcp `v10.1.2` 保持当前版本。
+
 ## [0.6.8] - 2026-08-07
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.8]` 节。

@@ -114,26 +114,26 @@ uid + tableId + receiptParam 三值与 GUID 字符串互转工具，用于购买
 
 | 段 | hex 范围 | 字节 | 内容 | 编码方式 |
 |---|---|---|---|---|
-| uid | `[0,8)` | 4 | 用户 UID | **字符串原文左补 0**（支持字母数字，业务约束 ≤8 字符） |
+| uid | `[0,8)` | 4 | 用户 UID | **转大写后左补 0**（支持字母数字，业务约束 ≤8 字符） |
 | tableId | `[8,16)` | 4 | 商品配置表行 ID | **数值左补 0**（业务约束 ≤8 位十进制） |
-| receiptParam | `[16,32)` | 8 | 业务票据透传参数 | **字符串原文左补 0**（支持字母数字，业务约束 ≤16 字符） |
+| receiptParam | `[16,32)` | 8 | 业务票据透传参数 | **转大写后左补 0**（支持字母数字，业务约束 ≤16 字符） |
 
-> uid / receiptParam 允许包含字母，不再要求能解析为 long；tableId 仍按数值写入。三段组合后正好是标准 `8-4-4-4-12` GUID 字符串。
+> uid / receiptParam 允许包含字母，不再要求能解析为 long；编码前统一转大写，tableId 仍按数值写入。三段组合后正好是标准 `8-4-4-4-12` GUID 字符串。
 
 ### §5 完整公开 API
 
 ```csharp
 // 将 uid + tableId + receiptParam 编码为 GUID（8-4-4-4-12）
-// uid / receiptParam 按原字符串写入定长槽；tableId 按数值写入 8 hex
+// uid / receiptParam 转大写后写入定长槽；tableId 按数值写入 8 hex
 internal static string Encode(string uid, long tableId, string receiptParam)
 
 // 解码 tableId（hex [8,16) 数值）；失败返回 0
 internal static long DecodeTableId(string guid)
 
-// 解码 receiptParam（hex [16,32) 字符串原文）；无透传/失败返回 null
+// 解码 receiptParam（hex [16,32) 归一化字符串）；无透传/失败返回 null
 internal static string DecodeReceiptParam(string guid)
 
-// 解码 uid（hex [0,8) 字符串原文）；客户端不依赖，供服务端按同布局对齐
+// 解码 uid（hex [0,8) 归一化字符串）；客户端不依赖，供服务端按同布局对齐
 internal static string DecodeUid(string guid)
 ```
 
@@ -149,17 +149,17 @@ raw    = uidHex + tableHex + receiptHex（共 32 字符）
 result = raw[0..8]-raw[8..12]-raw[12..16]-raw[16..20]-raw[20..32]
 ```
 
-**解码**：`DecodeTableId` 取 `raw[8..16]` 按 hex 解析；`DecodeReceiptParam` / `DecodeUid` 取对应字符串槽位，去掉左侧补 0，全 0 返回 null。
+**解码**：`DecodeTableId` 取 `raw[8..16]` 按 hex 解析；`DecodeReceiptParam` / `DecodeUid` 取对应字符串槽位，去掉左侧补 0，全 0 返回 null。`ReceiptParam` 会参与 Mobile 未完成订单键，空值保持旧 tableId-only 语义，非空值按 codec 的大写归一化结果参与匹配。
 
 **iOS `AppAccountToken`**：iOS 要求 UUID 格式的 `Guid`，`Encode` 结果恰好是标准 GUID 字符串，`PurchaseService.ApplyPurchaseContext` 中直接 `Guid.TryParse(uuid, out Guid)` 后写入。
 
-**校验**：范围/长度校验在 `MobilePurchaseService.TryValidatePassthroughParams`，由 `PayAsync` 入口调用——tableId 超 8 位、uid 超 8 字符、receiptParam 超 16 字符任一越界都直接拒绝支付（`IAPMobileErrorCode.InvalidPassthroughParam`），不会发起平台购买。`ApplyPurchaseContext` 只做纯编码，不再重复校验；codec 自身同样只做纯编解码。
+**校验**：范围/格式校验在 `MobilePurchaseService.TryValidatePassthroughParams`，由 `PayAsync` 入口调用——tableId 超 8 位、uid 超 8 位或 receiptParam 超 16 位、uid / receiptParam 含非十六进制字符、或非空值以 `0` 开头时，都直接拒绝支付（`IAPMobileErrorCode.InvalidPassthroughParam`），不会发起平台购买。后两项避免 iOS `AppAccountToken` 不是合法 GUID，或固定槽位解码去除补零后丢失原值。空值仍表示不透传。`ApplyPurchaseContext` 只做纯编码，不再重复校验；codec 自身同样只做纯编解码。
 
 ### §10 常见误区
 
 **误区 1：receiptParam / uid 需要能解析为数字**
 
-二者是**字符串槽位**，不做 `long.TryParse`，因此支持字母数字混合。只有 tableId 是数值。业务传参超字符上限会被拒绝支付，需自行保证 ≤ 上限。
+二者是**十六进制字符串槽位**，不做 `long.TryParse`，因此支持 `A-F` 与数字混合；只有 tableId 是数值。为区分真实值和左侧补零，非空值不能以 `0` 开头。业务传参超字符上限、包含非十六进制字符或以 `0` 开头都会被拒绝支付。
 
 **误区 2：uid 完整 64 位会进透传参数**
 

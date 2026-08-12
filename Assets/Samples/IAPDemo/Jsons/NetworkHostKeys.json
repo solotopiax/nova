@@ -11,6 +11,14 @@
     {
       "Name": "IAPServer",
       "Value": "https://t-pay-v3.ahameet.com"
+    },
+    {
+      "Name": "ThirdServer",
+      "Value": "https://t-pay-v3.ahameet.com"
+    },
+    {
+      "Name": "ThirdOpenServer",
+      "Value": "https://t-payments.solotopiax.com"
     }
   ]
 }

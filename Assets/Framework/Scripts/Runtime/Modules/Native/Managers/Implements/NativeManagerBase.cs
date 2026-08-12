@@ -49,10 +49,17 @@ namespace NovaFramework.Runtime
             CancellationToken ct = default);
 
         /// <summary>
-        /// 打开应用系统设置。
+        /// 打开应用系统设置。返回 true 仅表示已成功发起跳转，不表示用户已看到页面或修改设置。
         /// </summary>
         /// <returns>是否成功发起跳转。</returns>
         public abstract UniTask<bool> OpenAppSettingsAsync();
+
+        /// <summary>
+        /// 打开当前应用的系统通知设置。返回 true 仅表示已成功发起跳转，不表示用户已看到页面或修改设置。
+        /// 无法精准跳转时返回 false，不回退到应用设置。
+        /// </summary>
+        /// <returns>是否成功发起精准通知设置页跳转。</returns>
+        public abstract UniTask<bool> OpenNotificationSettingsAsync();
 
         /// <summary>
         /// NativeManager 无周期任务。
@@ -65,4 +72,3 @@ namespace NovaFramework.Runtime
         public abstract override void Shutdown();
     }
 }
-

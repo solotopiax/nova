@@ -1,30 +1,21 @@
 # ThirdPayStoreConfig
 
-## 1. 简介
-
-`ThirdPayStoreConfig` 是第三方支付 store 的配置对象，实现 `IIAPStoreConfig`。
-
-## 2. 配置字段
-
 | 字段 | 说明 |
 |---|---|
-| `Enabled` | 是否启用 ThirdPay store |
-| `AndroidOpenMode` | Android 平台打开方式 |
-| `IosOpenMode` | iOS 平台打开方式 |
-| `CountryCode` | 当前默认国家码 |
-| `AppId` | 写入第三方支付请求体的应用 ID |
-| `PayUrlBase` | 第三方支付页地址基址 |
-| `GetProductListCmdName` | 拉商品列表协议名 |
-| `CreateOrderCmdName` | 创建订单协议名 |
-| `CheckOrderCmdName` | 验单协议名 |
+| `Enabled` | 是否启用 ThirdPay Store |
+| `CountryCode` | 默认 ISO 3166-1 alpha-2 国家/地区代码 |
+| `GetProductListCmdName` | 拉取第三方商品列表的 NetCmd 名称 |
+| `QueryPendingOrderCmdName` | 查询支付成功但客户端尚未校验订单的 NetCmd 名称 |
+| `PayChannelParamsCmdName` | 拉取当前账号第三方支付渠道参数的 NetCmd 名称 |
+| `VerifyIapCmdName` | 批量验证第三方订单的 NetCmd 名称 |
+| `GoogleApiTimeoutSeconds` | Google 外链结算网络类操作（连接/资格/生成 token）的超时秒数，默认 15，用户信息页不受此限制 |
 
-## 3. 运行时使用点
+四个协议字段默认分别为 `ThirdGetProductList`、`ThirdQueryPendingOrder`、`ThirdGetPayChannelParams` 和 `ThirdVerifyIap`，可按项目 NetCmd 表覆盖。旧序列化字段会通过 `FormerlySerializedAs` 自动迁移到新名称。
 
-- `ThirdPayStore.InitializeAsync(...)` 缓存本配置
-- `GetCurrentOpenMode()` 根据平台选择 `AndroidOpenMode / IosOpenMode`
-- `ThirdIapNetService` 使用三个 `CmdName` 发送协议
-- `PayUrlBase` / `AppId` / `CountryCode` 参与支付 URL 构造
+请求未提供 `AdaptRectTransform` 时加载的默认面板不再由本配置单独指定，统一复用 iap 模块 `IAPPluginConfig.LoadingPanelPrefab`（默认 `IAP/IAPLoadingPanel`），经 `IAPStoreContext.LoadingPanelPrefab` 注入。
 
-## 4. 关联
+AES Key/IV 继续读取 Nova 全局 `ConfigManager.AppConfigs.AppAesKey/AppAesIV`，不在 Store 配置中重复保存。
 
-- Store 本体：[ThirdPayStore.md](./ThirdPayStore.md)
+支付 URL 基址固定通过 NetCmd `ThirdOpenURL` 解析；应用 ID 统一读取公共请求头的 `AppId`，不在 Store 配置中重复保存。
+
+本配置不再包含打开模式和创建订单协议；ThirdPay 固定为客户端造单 + InAppAuto。

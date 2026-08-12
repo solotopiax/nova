@@ -132,8 +132,15 @@ namespace NovaFramework.SDK.IAP.Runtime
                 m_StoreConfigMap.TryGetValue(store.StoreType, out storeConfig);
             }
 
-            bool enabled = storeConfig == null || storeConfig.Enabled;
-            if (!enabled)
+            if (storeConfig == null)
+            {
+                // 发现了可选 Store 程序集，但当前 IAPPluginConfig 未声明对应 StoreConfig。
+                // 这种情况表示该渠道未配置，不应把 null config 传给 Store 初始化。
+                Log.Debug(LogTag.IAPPlugin, $"IAPStore {t.FullName} 未配置 StoreConfig，跳过初始化。");
+                return;
+            }
+
+            if (!storeConfig.Enabled)
             {
                 // 配置禁用时保留实例但跳过 InitializeAsync，后续 SetStoreEnabled 可懒初始化。
                 store.SetEnabled(false);

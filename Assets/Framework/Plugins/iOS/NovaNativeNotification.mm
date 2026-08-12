@@ -92,20 +92,14 @@ extern "C"
         }];
     }
 
-    /// iOS 15.4 及以上打开通知设置，低版本回退应用设置。
+    /// 打开当前应用的系统设置页。
     void NovaNative_OpenAppSettings(
         uint64_t requestId,
         NovaNativeOpenSettingsCallback callback)
     {
         if (callback == nullptr) return;
         NovaNativeDispatchToMain(^{
-            NSString *settingsUrl = UIApplicationOpenSettingsURLString;
-            if (@available(iOS 15.4, *))
-            {
-                settingsUrl = UIApplicationOpenNotificationSettingsURLString;
-            }
-
-            NSURL *url = [NSURL URLWithString:settingsUrl];
+            NSURL *url = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
             if (url == nil)
             {
                 callback(requestId, 0);
@@ -121,5 +115,34 @@ extern "C"
                 }];
         });
     }
-}
 
+    /// iOS 15.4 及以上打开当前应用的通知设置；低版本不回退到应用设置。
+    void NovaNative_OpenNotificationSettings(
+        uint64_t requestId,
+        NovaNativeOpenSettingsCallback callback)
+    {
+        if (callback == nullptr) return;
+        NovaNativeDispatchToMain(^{
+            if (@available(iOS 15.4, *))
+            {
+                NSURL *url = [NSURL URLWithString:UIApplicationOpenNotificationSettingsURLString];
+                if (url == nil)
+                {
+                    callback(requestId, 0);
+                    return;
+                }
+
+                [[UIApplication sharedApplication]
+                    openURL:url
+                    options:@{}
+                    completionHandler:^(BOOL success)
+                    {
+                        callback(requestId, success ? 1 : 0);
+                    }];
+                return;
+            }
+
+            callback(requestId, 0);
+        });
+    }
+}

@@ -24,7 +24,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="tableId">订阅商品配置表行 ID，用于日志标识。</param>
         /// <param name="expireTimeMs">到期 Unix 毫秒时间戳。</param>
         /// <param name="ct">取消令牌，倒计时被取消或 Dispose 时中断。</param>
-        private async UniTaskVoid RunCountdownAsync(long tableId, long expireTimeMs, CancellationToken ct)
+        private async UniTask RunCountdownAsync(long tableId, long expireTimeMs, CancellationToken ct)
         {
             long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             // 到期时间 + 30 秒缓冲，确保服务端订阅状态已更新
@@ -44,7 +44,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             Log.Debug(LogTag.IAPMobile, $"订阅倒计时到期，商品表ID={tableId}，触发恢复流程。");
             if (m_Hub.RestoreService != null)
             {
-                await m_Hub.RestoreService.RestoreAsync(CancellationToken.None);
+                await m_Hub.RestoreService.RestoreAsync(ct);
             }
         }
     }

@@ -29,7 +29,8 @@ MonoBehaviour:
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
     - m_StepId: export.config
-      m_ParamsJson: 
+      m_ParamsJson: "{\n  \"Platform\": 1,\n  \"Channel\": 2,\n  \"DevelopMode\":
+        0\n}"
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
@@ -38,7 +39,11 @@ MonoBehaviour:
         \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
         2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
-      m_ParamsJson: '{"Target":13,"BuildMode":0,"DevelopmentBuild":true,"SplitApplicationBinary":false,"BuildAppBundle":false,"UseAndroidKeystore":false,"OutputFolderPath":"Build"}'
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
+        true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
+        \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
+        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "\u81EA\u52A8\u90E8\u7F72\u6D4B\u8BD5-\u5168\u91CF\uFF08iOS\uFF09"
@@ -55,7 +60,8 @@ MonoBehaviour:
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
     - m_StepId: export.config
-      m_ParamsJson: 
+      m_ParamsJson: "{\n  \"Platform\": 2,\n  \"Channel\": 3,\n  \"DevelopMode\":
+        0\n}"
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 9,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
@@ -64,7 +70,9 @@ MonoBehaviour:
         \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
         2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
-      m_ParamsJson: '{"Target":9,"BuildMode":0,"DevelopmentBuild":true,"BuildAppBundle":false,"SplitApplicationBinary":false,"UseAndroidKeystore":false,"OutputFolderPath":"Build/iOS"}'
+      m_ParamsJson: "{\n  \"Target\": 9,\n  \"BuildMode\": 1,\n  \"DevelopmentBuild\":
+        true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+        \"UseAndroidKeystore\": false,\n  \"OutputFolderPath\": \"Build/iOS\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build/iOS"}'
   - m_Name: Hybrid+YooAsset+Bundle
@@ -149,7 +157,11 @@ MonoBehaviour:
         \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
         2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
-      m_ParamsJson: '{"Target":13,"BuildMode":0,"DevelopmentBuild":true,"BuildAppBundle":false,"SplitApplicationBinary":false,"OutputFolderPath":"Build"}'
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
+        true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
+        \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
+        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
@@ -158,7 +170,11 @@ MonoBehaviour:
     - m_StepId: edm4u.android_resolve
       m_ParamsJson: 
     - m_StepId: build.package
-      m_ParamsJson: '{"Target":13,"DevelopmentBuild":false,"OutputPath":"Build/Nova.apk"}'
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
+        false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
+        \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
+        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "Config\u5BFC\u51FA\u6D4B\u8BD5"

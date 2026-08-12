@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-12
+
+### Added
+
+- 新增 AppsFlyer Console / Readme 官方快捷入口。
+
+### Fixed
+
+- 配置校验按目标平台执行：Android 仅校验 DevKey，iOS 仅校验 AppId，避免无关字段导致初始化被跳过。
+
 ## [0.1.2] - 2026-08-03
 
 ### Changed

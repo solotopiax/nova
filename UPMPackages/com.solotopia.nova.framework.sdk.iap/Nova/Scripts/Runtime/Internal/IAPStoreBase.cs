@@ -121,25 +121,25 @@ namespace NovaFramework.SDK.IAP.Runtime
             // 前置校验按“渠道可用 -> 初始化状态 -> 支付重入 -> 商品存在”顺序短路。
             if (!m_IsEnabled)
             {
-                var r = new IAPResult(request.TableId, (int)IAPPluginErrorCode.StoreNotAvailable, $"{StoreType} store 已被禁用。", request.CustomData);
+                var r = new IAPResult(request.TableId, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, $"{StoreType} store 已被禁用。", request.CustomData);
                 Context?.EventBridge?.RaisePayFailed(r);
                 return r;
             }
             if (!IsStoreReady)
             {
-                var r = new IAPResult(request.TableId, (int)IAPPluginErrorCode.StoreInitFailed, $"{StoreType} store 尚未初始化完成。", request.CustomData);
+                var r = new IAPResult(request.TableId, (int)IAPPluginErrorCode.StoreInitFailed, IAPErrorSource.PluginRouter, $"{StoreType} store 尚未初始化完成。", request.CustomData);
                 Context?.EventBridge?.RaisePayFailed(r);
                 return r;
             }
             if (IsInPay)
             {
-                var r = new IAPResult(request.TableId, (int)IAPPluginErrorCode.AlreadyPurchasing, $"当前已有支付进行中（tableId={m_InPayTableId}）。", request.CustomData);
+                var r = new IAPResult(request.TableId, (int)IAPPluginErrorCode.AlreadyPurchasing, IAPErrorSource.PluginRouter, $"当前已有支付进行中（tableId={m_InPayTableId}）。", request.CustomData);
                 Context?.EventBridge?.RaisePayFailed(r);
                 return r;
             }
             if (Table != null && Table.FindByTableId(request.TableId) == null)
             {
-                var r = new IAPResult(request.TableId, (int)IAPPluginErrorCode.ProductNotFound, $"TableId={request.TableId} 未在配置中找到对应商品。", request.CustomData);
+                var r = new IAPResult(request.TableId, (int)IAPPluginErrorCode.ProductNotFound, IAPErrorSource.PluginRouter, $"TableId={request.TableId} 未在配置中找到对应商品。", request.CustomData);
                 Context?.EventBridge?.RaisePayFailed(r);
                 return r;
             }
@@ -253,6 +253,15 @@ namespace NovaFramework.SDK.IAP.Runtime
             {
                 m_UnavailableSkus?.Add(productId);
             }
+        }
+
+        /// <summary>
+        /// 清空平台不可购买 SKU 标记。
+        /// 重新向平台拉取商品前调用，避免上一轮网络失败留下的临时失败状态污染后续成功结果。
+        /// </summary>
+        protected void ClearUnavailableSkus()
+        {
+            m_UnavailableSkus?.Clear();
         }
 
         /// <summary>

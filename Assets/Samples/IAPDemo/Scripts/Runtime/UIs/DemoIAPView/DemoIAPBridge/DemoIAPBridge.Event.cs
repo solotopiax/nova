@@ -77,7 +77,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
 
         /// <summary>
         /// IAPPlugin.Events.PaySuccess 全局事件回调；
-        /// 任意位置发起的支付成功都会进入此回调，反馈区前缀【全局事件】用于和发起调用本地的 PayMobileAsync 返回值区分。
+        /// 任意位置发起的支付成功都会进入此回调，反馈区前缀【全局事件】用于和商店模块的本地返回值区分。
         /// </summary>
         /// <param name="result">支付结果。</param>
         private void OnPaySuccess(IAPResult result)
@@ -87,7 +87,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
 
         /// <summary>
         /// IAPPlugin.Events.PayFailed 全局事件回调；
-        /// 任意位置发起的支付失败都会进入此回调，反馈区前缀【全局事件】用于和发起调用本地的 PayMobileAsync 返回值区分。
+        /// 任意位置发起的支付失败都会进入此回调，反馈区前缀【全局事件】用于和商店模块的本地返回值区分。
         /// </summary>
         /// <param name="result">支付结果。</param>
         private void OnPayFailed(IAPResult result)

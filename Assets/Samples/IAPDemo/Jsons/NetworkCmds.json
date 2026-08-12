@@ -31,22 +31,16 @@
       "Path": "/v1/user/loginV1"
     },
     {
-      "Name": "ThirdGetGoodsList",
+      "Name": "ThirdGetProductList",
       "Way": "HTTP_POST",
       "HostKey": "ThirdServer",
-      "Path": "/en/game_recharge/product_list"
+      "Path": "/en/third_pay/product_list"
     },
     {
-      "Name": "ThirdCreateOrder",
+      "Name": "ThirdVerifyIap",
       "Way": "HTTP_POST",
       "HostKey": "ThirdServer",
-      "Path": "/en/game_recharge/create_order"
-    },
-    {
-      "Name": "ThirdValidateOrder",
-      "Way": "HTTP_POST",
-      "HostKey": "ThirdServer",
-      "Path": "/en/game_recharge/check_order"
+      "Path": "/en/third_pay/verify_iap"
     },
     {
       "Name": "ThirdOpenURL",
@@ -55,22 +49,16 @@
       "Path": "/taylor"
     },
     {
-      "Name": "ThirdGetPayUserState",
-      "Way": "HTTP_POST",
-      "HostKey": "IAPServer",
-      "Path": "/en/game_recharge/third_pay_user_check"
-    },
-    {
-      "Name": "ThirdGetValidateSuccessOrderList",
+      "Name": "ThirdQueryPendingOrder",
       "Way": "HTTP_POST",
       "HostKey": "ThirdServer",
-      "Path": "/en/game_recharge/order_list"
+      "Path": "/en/third_pay/query_pending_order"
     },
     {
       "Name": "ThirdGetPayChannelParams",
       "Way": "HTTP_POST",
       "HostKey": "ThirdServer",
-      "Path": "/en/game_recharge/get_payment_customer_ids"
+      "Path": "/en/third_pay/get_payment_customer_ids"
     },
     {
       "Name": "ThirdGetVoucherInfo",

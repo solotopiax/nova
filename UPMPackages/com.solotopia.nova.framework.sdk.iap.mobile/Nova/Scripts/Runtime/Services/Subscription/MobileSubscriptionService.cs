@@ -80,11 +80,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             // 取消旧倒计时
             m_CountdownCts?.Cancel();
             m_CountdownCts?.Dispose();
-            // 创建新的取消源
-            m_CountdownCts = new CancellationTokenSource();
+            // 创建新的取消源，并与移动端官方内购商店运行期取消令牌联动。
+            m_CountdownCts = CancellationTokenSource.CreateLinkedTokenSource(m_Hub.RuntimeTaskToken);
             var ct = m_CountdownCts.Token;
-            // 异步倒计时，不阻塞调用方
-            RunCountdownAsync(tableId, expireTimeMs, ct).Forget();
+            // 异步倒计时，不阻塞调用方。
+            m_Hub.RunBackgroundTask(_ => RunCountdownAsync(tableId, expireTimeMs, ct), "订阅到期倒计时");
         }
 
         /// <summary>

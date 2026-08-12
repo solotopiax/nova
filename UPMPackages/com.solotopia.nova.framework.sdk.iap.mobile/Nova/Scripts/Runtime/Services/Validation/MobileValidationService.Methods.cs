@@ -18,6 +18,9 @@ using UnityEngine.Purchasing;
 
 namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
+    /// <summary>
+    /// MobileValidationService 的私有方法分部。
+    /// </summary>
     internal sealed partial class MobileValidationService
     {
         /// <summary>
@@ -69,7 +72,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            foreach (KeyValuePair<long, MobileOrderRecord> kv in m_PreLoginOrderRecords)
+            foreach (KeyValuePair<string, MobileOrderRecord> kv in m_PreLoginOrderRecords)
             {
                 m_OrderRecords[kv.Key] = kv.Value;
             }
@@ -260,8 +263,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
+            string orderKey = MobileOrderKey.Build(tableId, receiptParam);
             m_Hub.ProductService.GetReceiptInfo(entry.ProductID, out string localOrderId, out string localGoogleToken);
-            m_OrderRecords.TryGetValue(tableId, out MobileOrderRecord existing);
+            m_OrderRecords.TryGetValue(orderKey, out MobileOrderRecord existing);
             var record = existing ?? new MobileOrderRecord
             {
                 TableId = tableId,
@@ -292,7 +296,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             record.Status = MobileOrderStatus.PendingValidate;
             record.IsReplenish = true;
-            m_OrderRecords[tableId] = record;
+            m_OrderRecords[orderKey] = record;
         }
 
         /// <summary>
@@ -302,51 +306,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="ct">取消令牌。</param>
         private async UniTask StartCheckLocalOrdersAsync(CancellationToken ct)
         {
-            var toRemove = new List<long>();
-            foreach (var kv in m_OrderRecords)
+            List<string> validationOrderKeys = m_LocalOrderScanner.CollectValidationOrderKeys(
+                m_OrderRecords,
+                CanEnqueueLocalRecord,
+                ShouldRemoveLocalRecordWithoutCredential);
+            foreach (string orderKey in validationOrderKeys)
             {
-                long tableId = kv.Key;
-                MobileOrderRecord record = kv.Value;
-                switch (record.Status)
-                {
-                    case MobileOrderStatus.Purchasing:
-                        if (!CanEnqueueLocalRecord(record))
-                        {
-                            if (ShouldRemoveLocalRecordWithoutCredential(record))
-                            {
-                                toRemove.Add(tableId);
-                            }
-                            continue;
-                        }
-                        record.Status = MobileOrderStatus.PendingValidate;
-                        break;
-                    case MobileOrderStatus.LocalPayFailed:
-                        toRemove.Add(tableId);
-                        continue;
-                    case MobileOrderStatus.AwaitingConfirm:
-                        // 已验单发货、仅待平台 ack；不重发服务端验单，交由本次 FetchPurchases 重新拉取到 PendingOrder 后重试确认。
-                        continue;
-                }
-                if (record.Status == MobileOrderStatus.PendingValidate || record.Status == MobileOrderStatus.ValidateFailed)
-                {
-                    if (!CanEnqueueLocalRecord(record))
-                    {
-                        if (ShouldRemoveLocalRecordWithoutCredential(record))
-                        {
-                            toRemove.Add(tableId);
-                        }
-                        continue;
-                    }
-                    record.IsReplenish = true;
-                    if (!m_ValidateQueue.Contains(tableId))
-                    {
-                        m_ValidateQueue.Enqueue(tableId);
-                    }
-                }
-            }
-            foreach (long id in toRemove)
-            {
-                m_OrderRecords.Remove(id);
+                m_ValidationQueueCoordinator.Enqueue(orderKey);
             }
 
             SaveOrderRecords();
@@ -355,41 +321,38 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
         /// <summary>
         /// 串行处理验单队列：每轮取出当前全部待验订单，按普通/订阅分组批量请求；
-        /// m_IsProcessingQueue 防止并发重入。
+        /// 队列容器和处理锁由 MobileValidationQueueCoordinator 持有。
         /// </summary>
         /// <param name="ct">取消令牌，ThrowIfCancellationRequested 会中断队列处理。</param>
         private async UniTask ProcessQueueAsync(CancellationToken ct)
         {
-            if (m_IsProcessingQueue)
+            await m_ValidationQueueCoordinator.ProcessAsync(ProcessQueuedValidationBatchAsync, ct);
+        }
+
+        /// <summary>
+        /// 处理队列协调器批量出队的订单键列表，构建验单上下文并发送服务端批量验单。
+        /// </summary>
+        /// <param name="orderKeys">本轮出队的订单键列表。</param>
+        /// <param name="ct">取消令牌。</param>
+        private async UniTask ProcessQueuedValidationBatchAsync(IReadOnlyList<string> orderKeys, CancellationToken ct)
+        {
+            if (orderKeys == null || orderKeys.Count == 0)
             {
                 return;
             }
 
-            m_IsProcessingQueue = true;
-            try
+            var contexts = new List<VerifyOrderContext>();
+            foreach (string orderKey in orderKeys)
             {
-                while (m_ValidateQueue.Count > 0)
+                if (!m_OrderRecords.TryGetValue(orderKey, out MobileOrderRecord record))
                 {
-                    ct.ThrowIfCancellationRequested();
-                    var contexts = new List<VerifyOrderContext>();
-                    while (m_ValidateQueue.Count > 0)
-                    {
-                        long tableId = m_ValidateQueue.Dequeue();
-                        if (!m_OrderRecords.TryGetValue(tableId, out MobileOrderRecord record))
-                        {
-                            continue;
-                        }
-
-                        contexts.Add(BuildVerifyContext(record));
-                    }
-
-                    await ValidateBatchWithServerAsync(contexts, ct);
+                    continue;
                 }
+
+                contexts.Add(BuildVerifyContext(record));
             }
-            finally
-            {
-                m_IsProcessingQueue = false;
-            }
+
+            await ValidateBatchWithServerAsync(contexts, ct);
         }
 
         /// <summary>
@@ -460,6 +423,17 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
+            if (HasDuplicateTableIds(contexts))
+            {
+                Log.Debug(LogTag.IAPMobile, $"验单批次存在重复商品表ID，已拆成单笔请求避免同 SKU 多订单响应错配，数量={contexts.Count}");
+                foreach (VerifyOrderContext context in contexts)
+                {
+                    await ValidateGroupWithServerAsync(new List<VerifyOrderContext> { context }, isSubscription, ct);
+                }
+
+                return;
+            }
+
             int maxRetry = 0;
             foreach (VerifyOrderContext context in contexts)
             {
@@ -527,6 +501,37 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
+        /// 判断验单上下文列表中是否存在重复商品表行 ID。
+        /// 当前服务端验单响应主要按 tableId 匹配，重复 tableId 必须拆成单笔请求避免结果归属错误。
+        /// </summary>
+        /// <param name="contexts">待检查的验单上下文列表。</param>
+        /// <returns>存在重复 tableId 时返回 true。</returns>
+        private static bool HasDuplicateTableIds(List<VerifyOrderContext> contexts)
+        {
+            if (contexts == null || contexts.Count <= 1)
+            {
+                return false;
+            }
+
+            var tableIds = new HashSet<long>();
+            foreach (VerifyOrderContext context in contexts)
+            {
+                long tableId = context?.Record?.TableId ?? 0L;
+                if (tableId == 0L)
+                {
+                    continue;
+                }
+
+                if (!tableIds.Add(tableId))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 首次支付验单因网络/HTTP 异常无法完成时，保留订单用于后续补单，同时结束当前 PayAsync 等待。
         /// 补单路径不触发支付失败回调，避免启动扫描时重复打扰业务层。
         /// </summary>
@@ -540,7 +545,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            var failResult = new IAPResult(record.TableId, (int)code, reason, BuildCustomData(record), record.ReceiptParam);
+            var failResult = new IAPResult(record.TableId, (int)code, IAPErrorSource.Mobile, reason, BuildCustomData(record), record.ReceiptParam);
             m_Hub.Context.EventBridge?.RaisePayFailed(failResult);
             CurrentPayTcs.TrySetResult(failResult);
             CurrentPayTcs = null;
@@ -568,8 +573,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <summary>
         /// 将订单标记为验单失败并通知首次支付等待点；补单路径只保留存档，不重复触发业务失败事件。
         /// </summary>
-        /// <param name="record">目标订单记录。</param>
-        /// <param name="reason">失败原因。</param>
+        /// <param name="context">目标订单验单上下文。</param>
+        /// <param name="trackReason">验单失败打点原因。</param>
+        /// <param name="reasonDetail">验单失败打点详情。</param>
+        /// <param name="reason">返回给当前支付等待点的失败说明。</param>
+        /// <param name="validateCount">本轮验单尝试次数。</param>
+        /// <param name="netError">是否网络错误。</param>
+        /// <param name="protocolCode">协议错误码。</param>
+        /// <param name="protocolMessage">协议错误说明。</param>
         private void MarkValidateFailed(VerifyOrderContext context, IAPMobileErrorCode trackReason, string reasonDetail, string reason, int validateCount, bool netError, int protocolCode, string protocolMessage)
         {
             MobileOrderRecord record = context.Record;
@@ -657,7 +668,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             Log.Warning(LogTag.IAPMobile, $"Apple 验单缺少 order_id，删除本地待验记录，商品表ID={record.TableId}，状态={record.Status}");
             TrackValidateFail(context, 1, false, 0, IAPMobileErrorCode.ValidateCredentialMissing, "Apple 验单缺少 order_id。");
             FailCurrentPayValidationIfNeeded(record, IAPMobileErrorCode.StoreNotAvailable, "Apple 验单缺少 order_id，订单已删除。");
-            RemoveLocalOrderRecord(record.TableId, "Apple 验单缺少 order_id，删除本地待验记录。");
+            RemoveLocalOrderRecord(record, "Apple 验单缺少 order_id，删除本地待验记录。");
             return false;
 #else
             return context?.Record != null;
@@ -681,18 +692,19 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <summary>
         /// 删除本地待验订单并立即落盘。
         /// </summary>
-        /// <param name="tableId">商品配置表行 ID。</param>
+        /// <param name="record">待删除订单记录。</param>
         /// <param name="reason">删除原因，用于日志。</param>
-        private void RemoveLocalOrderRecord(long tableId, string reason)
+        private void RemoveLocalOrderRecord(MobileOrderRecord record, string reason)
         {
-            if (tableId == 0L)
+            string orderKey = MobileOrderKey.Build(record);
+            if (!MobileOrderKey.IsValid(orderKey))
             {
                 return;
             }
 
-            if (m_OrderRecords.Remove(tableId))
+            if (m_OrderRecords.Remove(orderKey))
             {
-                Log.Warning(LogTag.IAPMobile, $"{reason} 商品表ID={tableId}");
+                Log.Warning(LogTag.IAPMobile, $"{reason} {MobileOrderKey.Describe(record)}");
                 SaveOrderRecords();
             }
         }
@@ -703,6 +715,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="context">订单验单上下文。</param>
         /// <param name="orderResult">服务端返回的单笔验单结果。</param>
         /// <param name="isSubscription">当前协议组是否为订阅。</param>
+        /// <param name="validateCount">当前验单尝试次数。</param>
         /// <returns>订单已终结时返回 true；需要重试时返回 false。</returns>
         private bool TryFinishVerifyResult(VerifyOrderContext context, PbNetMobileVerifyOrderResult orderResult, bool isSubscription, int validateCount)
         {
@@ -749,6 +762,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="netError">是否网络错误。</param>
         /// <param name="protocolCode">协议错误码。</param>
         /// <param name="reason">失败原因。</param>
+        /// <param name="reasonDetail">失败原因详情。</param>
         private void TrackValidateFailBatch(List<VerifyOrderContext> contexts, int validateCount, bool netError, int protocolCode, IAPMobileErrorCode reason, string reasonDetail)
         {
             foreach (VerifyOrderContext context in contexts)
@@ -765,6 +779,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="netError">是否网络错误。</param>
         /// <param name="protocolCode">协议错误码。</param>
         /// <param name="reason">失败原因。</param>
+        /// <param name="reasonDetail">失败原因详情。</param>
         private void TrackValidateFail(VerifyOrderContext context, int validateCount, bool netError, int protocolCode, IAPMobileErrorCode reason, string reasonDetail)
         {
             if (context?.Record == null)
@@ -795,11 +810,12 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             if (isFake)
             {
+                string orderKey = MobileOrderKey.Build(record);
                 m_Hub.Store.MarkRuntimeHandledTransactionInternal(record.TransactionId);
-                m_PendingPlatformOrders.Remove(record.TableId);
-                m_OrderRecords.Remove(record.TableId);
+                m_PendingPlatformOrders.Remove(orderKey);
+                m_OrderRecords.Remove(orderKey);
                 SaveOrderRecords();
-                var failResult = new IAPResult(record.TableId, (int)IAPMobileErrorCode.ServerValidationFailed, "服务端拒绝无效订单。", BuildCustomData(record), record.ReceiptParam);
+                var failResult = new IAPResult(record.TableId, (int)IAPMobileErrorCode.ServerValidationFailed, IAPErrorSource.Mobile, "服务端拒绝无效订单。", BuildCustomData(record), record.ReceiptParam);
                 m_Hub.Context.EventBridge?.RaisePayFailed(failResult);
                 if (record.IsReplenish && m_Hub.RestoreService != null)
                 {
@@ -863,16 +879,17 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="record">已验单成功的订单记录。</param>
         private void FinalizeVerifiedOrderRecord(MobileOrderRecord record)
         {
-            if (m_PendingPlatformOrders.ContainsKey(record.TableId))
+            string orderKey = MobileOrderKey.Build(record);
+            if (m_PendingPlatformOrders.ContainsKey(orderKey))
             {
                 record.Status = MobileOrderStatus.AwaitingConfirm;
                 SaveOrderRecords();
                 // ConfirmPurchase 为异步 ack，成功回调后由 TryCompleteAwaitingConfirm 删除记录；失败则保留等待重试。
-                ConfirmPendingPlatformOrder(record.TableId);
+                ConfirmPendingPlatformOrder(record);
                 return;
             }
 
-            m_OrderRecords.Remove(record.TableId);
+            m_OrderRecords.Remove(orderKey);
             SaveOrderRecords();
         }
 
@@ -882,6 +899,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="record">已完成验单的订单记录。</param>
         /// <param name="canDeliver">服务端确认本地需要发奖时为 true。</param>
         /// <param name="isSubscription">当前商品是否为订阅类型。</param>
+        /// <param name="productType">当前商品的 Unity IAP 商品类型。</param>
         /// <returns>需要派发 PaySuccess 时返回 true。</returns>
         private bool ShouldRaisePaySuccess(MobileOrderRecord record, bool canDeliver, bool isSubscription, ProductType productType)
         {
@@ -892,7 +910,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (HasDispatchedPaySuccess(record))
             {
-                Log.Debug(LogTag.IAPMobile, $"订单已派发过支付成功事件，本次只清理订单不重复通知，商品表ID={record.TableId}，订单号={record.TransactionId}");
+                Log.Debug(LogTag.IAPMobile, $"订单已派发过支付成功事件，本次只清理订单不重复通知，{MobileOrderKey.Describe(record)}，订单号={record.TransactionId}");
                 return false;
             }
 
@@ -919,9 +937,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <returns>已派发过时返回 true。</returns>
         private bool HasDispatchedPaySuccess(MobileOrderRecord record)
         {
+            string orderKey = MobileOrderKey.Build(record);
             return record != null &&
-                   record.TableId != 0L &&
-                   m_DispatchedPaySuccessTableIds.Contains(record.TableId);
+                   MobileOrderKey.IsValid(orderKey) &&
+                   m_DispatchedPaySuccessOrderKeys.Contains(orderKey);
         }
 
         /// <summary>
@@ -930,9 +949,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="record">已派发成功事件的订单。</param>
         private void MarkPaySuccessDispatched(MobileOrderRecord record)
         {
-            if (record?.TableId != 0L)
+            string orderKey = MobileOrderKey.Build(record);
+            if (MobileOrderKey.IsValid(orderKey))
             {
-                m_DispatchedPaySuccessTableIds.Add(record.TableId);
+                m_DispatchedPaySuccessOrderKeys.Add(orderKey);
             }
         }
 
@@ -983,15 +1003,16 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <summary>
         /// 服务端验单通过后确认平台 PendingOrder，通知平台业务侧已完成发货处理。
         /// </summary>
-        /// <param name="tableId">商品配置表行 ID。</param>
-        private void ConfirmPendingPlatformOrder(long tableId)
+        /// <param name="record">已通过服务端验单的订单记录。</param>
+        private void ConfirmPendingPlatformOrder(MobileOrderRecord record)
         {
-            if (!m_PendingPlatformOrders.TryGetValue(tableId, out PendingOrder pendingOrder))
+            string orderKey = MobileOrderKey.Build(record);
+            if (!m_PendingPlatformOrders.TryGetValue(orderKey, out PendingOrder pendingOrder))
             {
                 return;
             }
 
-            m_PendingPlatformOrders.Remove(tableId);
+            m_PendingPlatformOrders.Remove(orderKey);
             m_Hub.ExtendedService.ConfirmPurchase(pendingOrder);
         }
 

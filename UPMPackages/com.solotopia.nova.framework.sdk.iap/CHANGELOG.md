@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-12
+
+### Breaking
+
+- `IAPResult.FailReason` 改为 `ErrorDesc`；失败构造路径要求提供 `IAPErrorSource`，业务应以 `(ErrorSource, ErrorCode)` 解码失败类型。
+
+### Added
+
+- 失败结果可保留已生成的 `OrderId` 与补单标记，便于服务端拒绝后的订单定位。
+
+### Fixed
+
+- IAPPlugin 发现已安装但未配置 StoreConfig 的可选 Store 时直接跳过初始化，避免 ThirdPay/Voucher 等可选渠道因 null 配置误初始化并报错。
+- IAPDemo 的 HybridCLR AOT 元数据列表补充 ThirdPay 与 Voucher 可选支付包 DLL，避免安装对应包后缺少补充元数据配置。
+- IAPDemo 的 ConfigRuntime 快照不再序列化 ThirdPay 可选包 Store 配置，避免未加载 `NovaFramework.SDK.IAP.ThirdPay.Runtime` 时 ConfigRuntimeSO 整体反序列化失败。
+- 登录后自动补单后台任务会在插件释放时取消，避免继续访问已释放的 Store。
+
 ## [0.1.2] - 2026-08-03
 
 ### Changed

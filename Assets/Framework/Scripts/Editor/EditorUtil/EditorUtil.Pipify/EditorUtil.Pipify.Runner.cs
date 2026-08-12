@@ -75,30 +75,52 @@ namespace NovaFramework.Editor
                                 CancellationToken = ct
                             };
 
-                            if (reporter.ReportStep(i, info.DisplayName, 0f)) throw new OperationCanceledException(ct);
-
-                            Stopwatch sw = Stopwatch.StartNew();
+                            bool? followingDevelopmentBuild = IsHybridCLRStep(item.StepId)
+                                ? ResolveFollowingPackageDevelopmentBuild(batch, i, settings, overrides)
+                                : null;
+                            bool previousDevelopmentBuild = EditorUserBuildSettings.development;
                             try
                             {
-                                object[] args = info.ParamsType == null ? new object[] { ctx } : new object[] { ctx, paramsInstance };
-                                UniTask invoked = (UniTask)info.Method.Invoke(null, args);
-                                await invoked;
-                                sw.Stop();
-                                reporter.EndStep(i, true, sw.Elapsed, null);
+                                if (followingDevelopmentBuild.HasValue)
+                                {
+                                    EditorUserBuildSettings.development = followingDevelopmentBuild.Value;
+                                    Log.Debug(LogTag.Editor,
+                                        "{0} 对齐 HybridCLR 开发构建：step={1}, developmentBuild={2}",
+                                        c_LogPrefix, item.StepId, followingDevelopmentBuild.Value);
+                                }
+
+                                if (reporter.ReportStep(i, info.DisplayName, 0f)) throw new OperationCanceledException(ct);
+
+                                Stopwatch sw = Stopwatch.StartNew();
+                                try
+                                {
+                                    object[] args = info.ParamsType == null ? new object[] { ctx } : new object[] { ctx, paramsInstance };
+                                    UniTask invoked = (UniTask)info.Method.Invoke(null, args);
+                                    await invoked;
+                                    sw.Stop();
+                                    reporter.EndStep(i, true, sw.Elapsed, null);
+                                }
+                                catch (TargetInvocationException tie)
+                                {
+                                    sw.Stop();
+                                    Exception toThrow = tie.InnerException ?? tie;
+                                    reporter.EndStep(i, false, sw.Elapsed, toThrow);
+                                    ExceptionDispatchInfo.Capture(toThrow).Throw();
+                                    throw; // 编译器可达性占位，实际不执行
+                                }
+                                catch (Exception ex)
+                                {
+                                    sw.Stop();
+                                    reporter.EndStep(i, false, sw.Elapsed, ex);
+                                    throw;
+                                }
                             }
-                            catch (TargetInvocationException tie)
+                            finally
                             {
-                                sw.Stop();
-                                Exception toThrow = tie.InnerException ?? tie;
-                                reporter.EndStep(i, false, sw.Elapsed, toThrow);
-                                ExceptionDispatchInfo.Capture(toThrow).Throw();
-                                throw; // 编译器可达性占位，实际不执行
-                            }
-                            catch (Exception ex)
-                            {
-                                sw.Stop();
-                                reporter.EndStep(i, false, sw.Elapsed, ex);
-                                throw;
+                                if (followingDevelopmentBuild.HasValue)
+                                {
+                                    EditorUserBuildSettings.development = previousDevelopmentBuild;
+                                }
                             }
                         }
                         success = true;
@@ -111,6 +133,63 @@ namespace NovaFramework.Editor
                         total.Stop();
                         reporter.EndBatch(success, total.Elapsed);
                     }
+                }
+
+                /// <summary>
+                /// 解析当前步骤之后首个 Player 打包项的 DevelopmentBuild（含 CLI 覆盖）。
+                /// HybridCLR 的预生成命令读取全局 EditorUserBuildSettings，必须与最终 BuildPlayer 选项一致。
+                /// </summary>
+                /// <returns>找到后续 build.package 时返回最终开发构建值；没有后续 Player 构建时返回 null。</returns>
+                internal static bool? ResolveFollowingPackageDevelopmentBuild(
+                    Batch batch,
+                    int currentStepIndex,
+                    PipifySettingsSO settings,
+                    IReadOnlyDictionary<string, string> overrides)
+                {
+                    if (batch == null) throw new ArgumentNullException(nameof(batch));
+
+                    for (int i = currentStepIndex + 1; i < batch.Items.Count; i++)
+                    {
+                        BatchItem candidate = batch.Items[i];
+                        if (!string.Equals(candidate.StepId, "build.package", StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+
+                        PipifyStepInfo packageInfo = Registry.FindById(candidate.StepId);
+                        if (packageInfo == null)
+                        {
+                            throw new InvalidOperationException(string.Format(
+                                "{0} 未注册的 StepId：{1}",
+                                c_LogPrefix,
+                                candidate.StepId));
+                        }
+
+                        PipifySteps.PackageParams packageParams = ResolveParamsForRun(
+                            packageInfo,
+                            i,
+                            candidate,
+                            settings,
+                            overrides) as PipifySteps.PackageParams;
+                        if (packageParams == null)
+                        {
+                            throw new InvalidOperationException(string.Format(
+                                "{0} StepId {1} 的参数类型必须是 {2}",
+                                c_LogPrefix,
+                                candidate.StepId,
+                                typeof(PipifySteps.PackageParams).FullName));
+                        }
+
+                        return packageParams.DevelopmentBuild;
+                    }
+
+                    return null;
+                }
+
+                private static bool IsHybridCLRStep(string stepId)
+                {
+                    return !string.IsNullOrEmpty(stepId)
+                           && stepId.StartsWith("hybridclr.", StringComparison.Ordinal);
                 }
             }
         }

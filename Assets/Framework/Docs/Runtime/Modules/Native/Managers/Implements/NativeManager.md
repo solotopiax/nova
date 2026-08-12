@@ -3,7 +3,7 @@
 **类签名**：`internal sealed partial class NativeManager : NativeManagerBase`  
 **命名空间**：`NovaFramework.Runtime`
 
-`NativeManager` 是 Native 模块的默认实现。它负责平台分发、通知权限请求的并发协调、调用方取消隔离、关闭清理与迟到回调丢弃；`NativeComponent` 不直接持有任何 JNI、P/Invoke 或平台回调细节。
+`NativeManager` 是 Native 模块的默认实现。它负责平台分发、通知权限请求的并发协调、调用方取消隔离、关闭清理与迟到回调丢弃；`NativeComponent` 不直接持有任何 JNI、P/Invoke 或平台回调细节。设置跳转分为应用设置根页与精准通知设置页两个明确入口，不互相降级。两者返回 `true` 都只表示框架已成功发起系统跳转请求，不保证用户已经看到目标页面或修改了任何设置。
 
 ## 初始化与关闭
 
@@ -30,18 +30,20 @@
 - Android 7（API 24）及以上读取 `NotificationManager.areNotificationsEnabled()`，作为应用通知总开关事实。
 - 低于 Android 13 时不发起运行时权限请求，只返回当前通知总开关状态。
 - 本地 `PlayerPrefs` 标记仅用于区分 Android 13+ 未授权时的首次请求与已请求后拒绝；状态判断仍组合系统运行时权限与通知总开关。
-- 打开设置使用 Android 应用详情设置页。
+- `OpenAppSettingsAsync` 使用 `ACTION_APPLICATION_DETAILS_SETTINGS` 打开当前应用详情设置页。
+- `OpenNotificationSettingsAsync` 仅在 Android 8（API 26）及以上使用 `ACTION_APP_NOTIFICATION_SETTINGS` 与当前包名打开通知设置页；API 26 以下或启动失败均返回 `false`，不回退到应用详情设置页。
 
 ### iOS
 
 - C# 侧通过 `requestId` 跟踪每个状态、请求和设置页操作，防止回调互相覆盖。
 - 原生层调用 `requestAuthorization` 后再次读取 `UNNotificationSettings`，把重新读取的授权状态返回给 C#。
 - 原生回调统一派发到 iOS 主队列，托管侧将 Apple 授权状态映射为 `NotDetermined`、`Denied`、`Authorized`、`Provisional`、`Ephemeral` 或 `Unknown`。
-- 打开设置在 iOS 15.4 及以上尝试通知设置页，低版本回退到应用设置页。
+- `OpenAppSettingsAsync` 始终使用 `UIApplicationOpenSettingsURLString` 打开当前应用设置根页。
+- `OpenNotificationSettingsAsync` 仅在 iOS 15.4 及以上使用 `UIApplicationOpenNotificationSettingsURLString` 打开当前应用通知设置；低版本直接返回 `false`，不回退到应用设置页。
 
 ### Editor 与非移动平台
 
-不初始化原生桥接；状态查询为 `Unsupported`，请求返回成功完成且 `Status == Unsupported`，设置页跳转返回 `false`。
+不初始化原生桥接；状态查询为 `Unsupported`，请求返回成功完成且 `Status == Unsupported`，应用设置与通知设置跳转都返回 `false`。
 
 ## 构建边界
 

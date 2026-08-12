@@ -203,3 +203,6 @@ ProjectSettings/Nova/Globals.json
 # 残留在 Assets 下的旧截图目录同样忽略（迁移过渡期）
 /Assets/Screenshots/
 /Assets/Screenshots.meta
+Assets/Editor Default Resources/CrashlyticsSettings.asset
+Assets/Editor Default Resources/CrashlyticsSettings.asset.meta
+Assets/Editor Default Resources.meta

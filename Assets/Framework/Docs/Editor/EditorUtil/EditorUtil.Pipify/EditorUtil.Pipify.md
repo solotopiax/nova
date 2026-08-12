@@ -93,6 +93,7 @@
    - 若为旧版空参数 `export.config`：从当前激活 ConfigMaster 复制 Platform / Channel / DevelopMode，先写入条目并保存所属 PipifySettingsSO
    - 其他有参 Step：ParamsJson 非空则反序列化，否则创建默认参数实例
    - 最后调用 `ApplyOverridesForItem` 应用仅本次执行有效的 CLI 参数；Config 首次固化值不会被 CLI override 回写
+   - `hybridclr.*` Step 若后续存在 `build.package`：先按同一套参数解析规则（含 CLI override）取得该 Player 构建的 `DevelopmentBuild`，仅在该 HybridCLR Step 执行期间临时镜像到 `EditorUserBuildSettings.development`，并在成功、失败或取消后还原；没有后续 Player 构建的纯热更 Batch 不改全局设置
    - 构造 `PipifyContext` 并下发
    - `reporter.ReportStep(i, name, 0f)` 返回 true 时抛 `OperationCanceledException`（Window 取消按钮）
    - `info.Method.Invoke(null, args)` 反射调用，得 `UniTask` 后 `await`

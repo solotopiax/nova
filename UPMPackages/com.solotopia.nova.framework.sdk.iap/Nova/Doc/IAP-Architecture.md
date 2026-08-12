@@ -1,7 +1,7 @@
 ﻿# IAP 核心包架构文档
 
 > 包名：`com.solotopia.nova.framework.sdk.iap`
-> 最后更新：2026-07-22
+> 最后更新：2026-08-11
 > 代码入口：`Nova/Scripts/Runtime/**`
 
 ## 1. 当前架构
@@ -111,7 +111,9 @@ SDKEventData.UserLogin → IAPPlugin.SetUserId(uid) → 广播给所有 Store
   └── 遍历 Store.CheckLocalOrdersAsync(ct)
 ```
 
-`CheckLocalOrdersAsync` 可以早于登录事件调用。插件层会记录一次延后补单请求，等 `SetUserId` 同步账号 UID 后自动执行，避免每个 Store 重复实现“等待登录后再跑”的动作缓存逻辑。扫描执行中再次触发时只标记当前轮结束后补跑一轮，不并发进入 Store，也不无上限堆积同类补单事件。
+`CheckLocalOrdersAsync` 可以早于登录事件调用。插件层会记录一次延后补单请求，等 `SetUserId` 同步账号 UID 后通过 IAPPlugin 后台任务入口自动执行，避免每个 Store 重复实现“等待登录后再跑”的动作缓存逻辑。扫描执行中再次触发时只标记当前轮结束后补跑一轮，不并发进入 Store，也不无上限堆积同类补单事件。`OnDisposeAsync` 会先取消后台任务，再释放各 Store，避免登录后自动补单在插件释放后继续访问旧 Store。
+
+后台任务统一入口的签名是 `Func<CancellationToken, UniTask>`。返回 `UniTask<T>` 的 Store 内部方法不能直接以方法组接入后台入口；需要用 lambda 或无返回包装方法显式 `await` 并丢弃结果，保证后台任务只承载取消和异常收口，不改变原方法的业务返回语义。
 
 ## 6. 错误码与打点 reason 分层
 

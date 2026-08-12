@@ -22,6 +22,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal void AddUnavailableSkuInternal(string productId) => AddUnavailableSku(productId);
 
         /// <summary>
+        /// 清空平台不可购买 SKU 标记（由商品拉取重试前调用）。
+        /// </summary>
+        internal void ClearUnavailableSkusInternal() => ClearUnavailableSkus();
+
+        /// <summary>
         /// 判断指定商品 ID 是否已被平台标记为不可购买（拉取失败），供各内部服务在查询/购买前提前拦截。
         /// </summary>
         /// <param name="productId">平台商品 ID。</param>

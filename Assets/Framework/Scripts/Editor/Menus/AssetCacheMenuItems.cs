@@ -23,7 +23,7 @@ namespace NovaFramework.Editor
         private const string c_MenuClearLocalHotfixResourceCache = "Nova/Clean Hotfix Caches";
 
         /// <summary>
-        /// 清理菜单排序优先级；与 Open Folder 的 1021 同组，并与 Enable Logs 的 1042 分组显示。
+        /// 清理菜单排序优先级；与 Open Folder 的 1021 同组，并与 Open SDK URL 的 1042 分组显示。
         /// </summary>
         private const int c_PriorityClearLocalHotfixResourceCache = 1031;
 

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-12
+
+### Added
+
+- 通过包内 Editor assembly 新增 TGA Console / Readme 官方快捷入口。
+
 ## [0.1.4] - 2026-08-03
 
 ### Breaking

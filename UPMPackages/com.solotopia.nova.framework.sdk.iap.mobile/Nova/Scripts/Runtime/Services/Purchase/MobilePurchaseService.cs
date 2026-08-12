@@ -58,22 +58,22 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (request == null)
             {
-                return BroadcastFail(new IAPResult(0L, (int)IAPMobileErrorCode.StoreNotAvailable, "移动端支付请求为空。", null));
+                return BroadcastFail(new IAPResult(0L, (int)IAPMobileErrorCode.StoreNotAvailable, IAPErrorSource.Mobile, "移动端支付请求为空。", null));
             }
 
             if (string.IsNullOrEmpty(m_Hub.Store?.GameUID))
             {
-                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.StoreNotAvailable, "未设置账号 UID，不能发起真实支付。", request.CustomData));
+                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.StoreNotAvailable, IAPErrorSource.Mobile, "未设置账号 UID，不能发起真实支付。", request.CustomData, request.ReceiptParam));
             }
 
             // tableId/ReceiptParam/uid 任一超出平台透传参数编码范围都直接拒绝支付，
             // 避免越界值被 codec 截断后仍把钱收了、但透传数据或账号关联是错的。
-            if (!TryValidatePassthroughParams(request.TableId, request.ReceiptParam, m_Hub.Store.GameUID, out string passthroughFailReason))
+            if (!TryValidatePassthroughParams(request.TableId, request.ReceiptParam, m_Hub.Store.GameUID, out string passthroughErrorDesc))
             {
-                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.InvalidPassthroughParam, passthroughFailReason, request.CustomData));
+                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.InvalidPassthroughParam, IAPErrorSource.Mobile, passthroughErrorDesc, request.CustomData, request.ReceiptParam));
             }
 
-            IAPResult localValidationResult = await m_Hub.ValidationService.TryValidatePaidLocalOrdersBeforePayAsync(request.TableId, request.CustomData, ct);
+            IAPResult localValidationResult = await m_Hub.ValidationService.TryValidatePaidLocalOrdersBeforePayAsync(request.TableId, request.ReceiptParam, request.CustomData, ct);
             if (localValidationResult != null)
             {
                 if (!localValidationResult.IsSuccess && localValidationResult.ErrorCode == (int)IAPMobileErrorCode.AlreadyPurchasing)
@@ -87,19 +87,19 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             IAPProductEntry entry = m_Hub.Table?.FindByTableId(request.TableId);
             if (entry == null)
             {
-                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.ProductNotFound, $"TableId={request.TableId} 未在配置中找到对应商品。", request.CustomData));
+                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.ProductNotFound, IAPErrorSource.Mobile, $"TableId={request.TableId} 未在配置中找到对应商品。", request.CustomData, request.ReceiptParam));
             }
 
             // 平台已确认不可购买（拉取失败）的商品提前拦截，避免向平台发起必然失败的请求。
             if (m_Hub.Store.IsUnavailableSkuInternal(entry.ProductID))
             {
-                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.PurchaseFailureProductUnavailable, $"商品 {entry.ProductID} 平台不可购买（拉取失败）。", request.CustomData));
+                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.PurchaseFailureProductUnavailable, IAPErrorSource.Mobile, $"商品 {entry.ProductID} 平台不可购买（拉取失败）。", request.CustomData, request.ReceiptParam));
             }
 
             Product product = m_Hub.ExtendedService.GetProductById(entry.ProductID);
             if (product == null)
             {
-                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.ProductNotFound, $"商品 {entry.ProductID} 在平台不存在。", request.CustomData));
+                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.ProductNotFound, IAPErrorSource.Mobile, $"商品 {entry.ProductID} 在平台不存在。", request.CustomData, request.ReceiptParam));
             }
 
             if (product.definition.type == ProductType.Subscription)
@@ -110,7 +110,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                     return subResult;
                 }
 
-                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.StoreNotAvailable, "订阅商品未进入订阅支付分支。", request.CustomData));
+                return BroadcastFail(new IAPResult(request.TableId, (int)IAPMobileErrorCode.StoreNotAvailable, IAPErrorSource.Mobile, "订阅商品未进入订阅支付分支。", request.CustomData, request.ReceiptParam));
             }
 
             return await DoPlatformPayAsync(request, product);
@@ -181,7 +181,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             if (InPayTableId != 0)
             {
-                var disposeResult = new IAPResult(InPayTableId, (int)IAPMobileErrorCode.StoreNotAvailable, "store 已释放。", m_CurrentCustomData);
+                var disposeResult = new IAPResult(InPayTableId, (int)IAPMobileErrorCode.StoreNotAvailable, IAPErrorSource.Mobile, "移动端官方内购商店已释放。", m_CurrentCustomData, m_CurrentReceiptParam);
                 // 通知业务层支付中断
                 m_Hub.Context.EventBridge?.RaisePayFailed(disposeResult);
                 // 解除 PayAsync 的 await
@@ -193,6 +193,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             InPayTableId = 0;
             // 释放透传数据引用
             m_CurrentCustomData = null;
+            // 释放票据透传参数引用
+            m_CurrentReceiptParam = null;
         }
 
         /// <summary>

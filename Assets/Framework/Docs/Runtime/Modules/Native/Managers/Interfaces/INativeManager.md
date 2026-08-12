@@ -20,6 +20,8 @@ UniTask<NotificationPermissionResult> RequestNotificationPermissionAsync(
     CancellationToken ct = default);
 
 UniTask<bool> OpenAppSettingsAsync();
+
+UniTask<bool> OpenNotificationSettingsAsync();
 ```
 
 ## 契约要求
@@ -28,7 +30,9 @@ UniTask<bool> OpenAppSettingsAsync();
 - 状态查询以操作系统当前状态为准；本地记录只能辅助判断 Android 首次请求状态，不能覆盖系统授权结果。
 - 相同选项的并发请求应共享底层系统请求；不同选项必须串行，不得丢弃后续参数。
 - 调用方取消只影响自己的等待；Manager 关闭时必须取消全部等待者、清空 pending 状态并忽略迟到回调。
-- `OpenAppSettingsAsync` 的结果仅表示设置页跳转是否发起成功。
+- `OpenAppSettingsAsync` 打开当前应用的系统设置根页。
+- `OpenNotificationSettingsAsync` 只允许精准跳转到当前应用的通知设置。平台或版本不支持或启动失败时返回 `false`，不得回退为 `OpenAppSettingsAsync`。
+- 两个设置入口返回 `true` 都只表示框架已成功发起对应的系统跳转请求，不保证用户已经看到目标页面或修改了任何设置。
 
 实现类型会由 Native Inspector 的类型选择器发现。实现 Native 功能时应把 JNI、P/Invoke 与平台回调保留在 Manager 层，不能把它们放回 `NativeComponent` 或 Editor。
 

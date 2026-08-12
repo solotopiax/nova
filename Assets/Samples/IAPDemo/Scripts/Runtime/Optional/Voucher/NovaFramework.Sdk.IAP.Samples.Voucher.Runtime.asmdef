@@ -1,0 +1,28 @@
+{
+    "name": "NovaFramework.Sdk.IAP.Samples.Voucher.Runtime",
+    "rootNamespace": "NovaFramework.Sdk.IAP.Samples.Runtime",
+    "references": [
+        "NovaFramework.Sdk.IAP.Samples.Runtime",
+        "NovaFramework.Runtime",
+        "NovaFramework.SDK.IAP.Runtime",
+        "NovaFramework.SDK.IAP.Voucher.Runtime",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "NOVA_IAP_VOUCHER"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.solotopia.nova.framework.sdk.iap.voucher",
+            "expression": "0.0.1",
+            "define": "NOVA_IAP_VOUCHER"
+        }
+    ],
+    "noEngineReferences": false
+}

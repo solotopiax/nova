@@ -301,11 +301,11 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 资源：无
 
 #### 2.17 DemoNativeView ｜ I
-- API 副标题：`Nova.Native.GetNotificationPermissionStatusAsync / RequestNotificationPermissionAsync / OpenAppSettingsAsync`
-- 主题：通知权限状态查询、显式请求与应用设置跳转
-- InteractionArea：状态卡 +「查询通知权限」「请求 Alert | Sound | Badge」「请求 iOS Provisional」「打开应用设置」4 个按钮；每个按钮直属展示实际调用的 API Hint
-- 反馈样例：请求结果同时展示 `IsOperationSuccessful`、`Status`、`ErrorCode`、`ErrorDomain`、`ErrorMessage`；设置页结果仅表示是否成功发起跳转
-- Editor 行为：查询与请求均显示真实 `Unsupported`，打开设置返回 `false`；页面不会自动请求权限
+- API 副标题：`Nova.Native.GetNotificationPermissionStatusAsync / RequestNotificationPermissionAsync / OpenAppSettingsAsync / OpenNotificationSettingsAsync`
+- 主题：通知权限状态查询、显式请求、应用设置根页与精准通知设置跳转
+- InteractionArea：状态卡 +「查询通知权限」「请求 Alert | Sound | Badge」「请求 iOS Provisional」「打开当前应用设置」「打开当前应用通知设置（精准）」5 个按钮；每个按钮直属展示实际调用的 API Hint
+- 反馈样例：请求结果同时展示 `IsOperationSuccessful`、`Status`、`ErrorCode`、`ErrorDomain`、`ErrorMessage`；两种设置页结果仅表示是否成功发起跳转，精准通知设置返回 `false` 时不会回退到应用设置
+- Editor 行为：查询与请求均显示真实 `Unsupported`，两种打开设置操作均返回 `false`；页面不会自动请求权限
 - 生命周期：页面关闭仅取消本页等待，不取消已经发起的系统权限请求
 - 资源：无；系统弹窗、Provisional 与设置页跳转仍需 Android / iOS 真机验证
 

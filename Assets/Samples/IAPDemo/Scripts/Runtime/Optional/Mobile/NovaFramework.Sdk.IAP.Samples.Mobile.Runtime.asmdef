@@ -1,0 +1,28 @@
+{
+    "name": "NovaFramework.Sdk.IAP.Samples.Mobile.Runtime",
+    "rootNamespace": "NovaFramework.Sdk.IAP.Samples.Runtime",
+    "references": [
+        "NovaFramework.Sdk.IAP.Samples.Runtime",
+        "NovaFramework.Runtime",
+        "NovaFramework.SDK.IAP.Runtime",
+        "NovaFramework.SDK.IAP.Mobile.Runtime",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "NOVA_IAP_MOBILE"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.solotopia.nova.framework.sdk.iap.mobile",
+            "expression": "0.1.2",
+            "define": "NOVA_IAP_MOBILE"
+        }
+    ],
+    "noEngineReferences": false
+}

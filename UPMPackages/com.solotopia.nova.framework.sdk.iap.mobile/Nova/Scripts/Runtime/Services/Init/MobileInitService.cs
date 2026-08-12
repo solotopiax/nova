@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
@@ -32,6 +33,15 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal MobileInitService(MobileServiceHub hub)
         {
             m_Hub = hub;
+            m_ProductFetchCoordinator = new MobileProductFetchCoordinator(
+                () => m_RuntimeContext != null && IsReady,
+                () => m_PendingProductDefs ?? new List<ProductDefinition>(),
+                defs => m_Hub.ExtendedService?.FetchProducts(defs?.ToList() ?? new List<ProductDefinition>()),
+                productId => m_Hub.ExtendedService?.GetProductById(productId) != null,
+                () => m_Hub.Store.ClearUnavailableSkusInternal(),
+                productId => m_Hub.Store.AddUnavailableSkuInternal(productId),
+                OnProductFetchCompleted,
+                retryDelaysMs: m_Hub.Config?.ProductFetchRetryDelaysMs);
         }
 
         /// <summary>
@@ -117,7 +127,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 m_InitTcs?.TrySetResult(true);
                 m_InitTcs = null;
             }
-            FetchProducts();
+            m_ProductFetchCoordinator.StartFetchIfAllowed();
         }
 
         /// <summary>
@@ -151,13 +161,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            Log.Debug(LogTag.IAPMobile, $"商品拉取成功，共 {products.Count} 个。");
-            ProductFetchState = MobileProductFetchState.Succeeded;
-            m_ProductFetchTcs?.TrySetResult(ProductFetchState);
-            m_ProductFetchTcs = null;
-            m_Hub.RestoreService.RequestPlatformRestoreAfterProductsFetched();
-            m_Hub.RestoreService.TryRunPendingEntitlementRefreshAfterProductsFetched();
-            m_Hub.ExtendedService.FetchPurchases();
+            m_ProductFetchCoordinator.OnProductsFetched(products?.Count ?? 0);
         }
 
         /// <summary>
@@ -171,23 +175,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            Log.Warning(LogTag.IAPMobile, $"商品拉取失败，数量={failure.FailedFetchProducts.Count}，原因={failure.FailureReason}");
-            foreach (var def in failure.FailedFetchProducts)
-            {
-                m_Hub.Store.AddUnavailableSkuInternal(def.id);
-            }
-
-            // 部分商品拉取失败（此前已收到成功回调）不把整体状态回退为 Failed：
-            // 可用商品已就绪，失败子集由 IsUnavailableSku 在查询/购买时拦截。
-            // 否则 ProductFetchState 会被永久压到 Failed，导致后续权益刷新一直卡在“商品信息尚未就绪”且无再拉取。
-            if (ProductFetchState == MobileProductFetchState.Succeeded)
-            {
-                return;
-            }
-
-            ProductFetchState = MobileProductFetchState.Failed;
-            m_ProductFetchTcs?.TrySetResult(ProductFetchState);
-            m_ProductFetchTcs = null;
+            MobileProductFetchFailureSnapshot snapshot = MobileProductFetchFailureSnapshot.From(failure);
+            m_ProductFetchCoordinator.OnProductsFetchFailed(snapshot.FailedProducts, snapshot.FailureReason);
         }
 
         /// <summary>
@@ -195,19 +184,22 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         internal void Dispose()
         {
+            m_ProductFetchCoordinator.Dispose();
             // 清空 Controller 引用，断开平台回调
             m_Hub.ExtendedService?.Dispose();
             // 清空状态机，阻止 Dispose 后的回调继续执行
             m_RuntimeContext = null;
             // 标记服务不可用
             IsReady = false;
-            ProductFetchState = MobileProductFetchState.None;
-            m_ProductFetchTcs?.TrySetResult(MobileProductFetchState.Failed);
-            m_ProductFetchTcs = null;
             // 释放可能悬空的 TCS
             m_InitTcs = null;
         }
 
+        /// <summary>
+        /// 从 IAP 商品表构建提交给 Unity IAP 的平台商品定义列表。
+        /// </summary>
+        /// <param name="table">IAP 商品表接口。</param>
+        /// <returns>去重后的 Unity IAP 商品定义列表。</returns>
         internal static List<ProductDefinition> BuildProductDefinitionsForStore(IIAPProductTable table)
         {
             var definitions = new List<ProductDefinition>();

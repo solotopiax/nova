@@ -1,186 +1,128 @@
-﻿/***************************************************************
+/***************************************************************
  * (c) copyright 2026 - 2030, Solotopia
  * All Rights Reserved.
  * -------------------------------------------------------------
  * filename:  VoucherStore.Methods.cs
  * author:    yingzheng
- * created:   2026/5/20
- * descrip:   VoucherStore 私有/受保护方法
+ * created:   2026/8/3
+ * descrip:   VoucherStore 非公开方法
  ***************************************************************/
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
-using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.IAP.Voucher.Runtime
 {
+    /// <summary>
+    /// VoucherStore 非公开方法。
+    /// </summary>
     public sealed partial class VoucherStore
     {
         /// <summary>
-        /// 从持久化层加载当前账号的存档容器；不存在或损坏时落回 IAPStoreBase 提供的空容器。
+        /// 执行一次账号作用域内的钱包加载，并拒绝发布旧账号的迟到响应。
         /// </summary>
-        private void LoadPersistState()
+        /// <param name="scope">发起刷新时捕获的账号作用域。</param>
+        /// <returns>本次钱包刷新结果。</returns>
+        private async UniTask<VoucherRefreshResult> RefreshWalletCoreAsync(VoucherSessionScope scope)
         {
-            m_PersistData = LoadPersistData<VoucherStorePersistData>();
-        }
-
-        /// <summary>
-        /// 将进行中抵扣写入存档并持久化。
-        /// </summary>
-        /// <param name="tableId">配置表行 ID。</param>
-        /// <param name="uid">用户 UID（string 形式）。</param>
-        /// <param name="orderId">服务端抵扣订单 ID。</param>
-        /// <param name="customString">透传业务自定义数据。</param>
-        private void AddPendingDeduct(long tableId, string uid, string orderId, string customString)
-        {
-            if (m_PersistData == null) return;
-            m_PersistData.PendingDeductStates[tableId] = new VoucherPendingDeduct
+            try
             {
-                TableId = tableId,
-                Uid = uid,
-                OrderId = orderId,
-                CustomString = customString,
-            };
-            SavePersistData(m_PersistData);
-        }
-
-        /// <summary>
-        /// 从存档字典移除指定抵扣条目并持久化。
-        /// tableId 不存在时静默跳过。
-        /// </summary>
-        /// <param name="tableId">配置表行 ID。</param>
-        private void RemovePendingDeduct(long tableId)
-        {
-            if (m_PersistData?.PendingDeductStates == null) return;
-            if (!m_PersistData.PendingDeductStates.ContainsKey(tableId)) return;
-            m_PersistData.PendingDeductStates.Remove(tableId);
-            SavePersistData(m_PersistData);
-        }
-
-        /// <summary>
-        /// 异步从服务端拉取礼券档位与赠币余额（待协议接入）。
-        /// 当前为占位实现，直接返回 false 并打日志，不发出网络请求。
-        /// proto 端 user_id 仍为 int32，本方法在调用前对 string uid 做一次 int.TryParse 边界转换；
-        /// 待 pb_net_gift_voucher.proto 把 user_id 改 string 后此处转换可移除。
-        /// </summary>
-        /// <param name="uid">用户 UID（string 形式）。</param>
-        /// <param name="ct">取消令牌。</param>
-        /// <returns>固定 false，待协议接入后改为真实拉取结果。</returns>
-        private async UniTask<bool> FetchBalanceInternalAsync(string uid, CancellationToken ct)
-        {
-            string getVoucherListCmd = m_StoreConfig?.GetVoucherListCmdName;
-            if (string.IsNullOrEmpty(getVoucherListCmd))
-            {
-                Log.Warning(LogTag.IAPVoucher, $"FetchBalance：GetVoucherListCmdName 未配置，uid={uid}");
-                return false;
-            }
-
-            int.TryParse(uid, out int userId);
-            var req = new PbNetGiftVoucherListReq { UserId = userId };
-            var resp = await m_IapNetService.GetVoucherListAsync(getVoucherListCmd, req);
-            if (!resp.IsSuccess || resp.Data == null)
-            {
-                Log.Warning(LogTag.IAPVoucher, $"FetchBalance 失败，uid={uid}");
-                return false;
-            }
-
-            var voucherGroups = new List<GiftVoucherGroup>();
-            foreach (var pb in resp.Data.VoucherGroups)
-            {
-                voucherGroups.Add(new GiftVoucherGroup
+                VoucherGatewayWalletResult result = await m_Gateway.FetchWalletAsync(scope.Token);
+                if (!result.IsSuccess)
                 {
-                    VoucherTierId = pb.VoucherTierId,
-                    FaceValue = pb.FaceValue,
-                    FaceValueMilliCents = VoucherBalanceSnapshot.ParseFaceValueToMilliCents(pb.FaceValue),
-                    Quantity = pb.Quantity,
-                    VoucherCodes = new List<string>(pb.VoucherCodes),
-                });
+                    return new VoucherRefreshResult(false, result.ErrorCode, result.Message, Wallet);
+                }
+
+                bool published = m_Session.TryPublish(scope, result.Vouchers, result.Coins, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+                return published ? new VoucherRefreshResult(true, IAPVoucherErrorCode.None, string.Empty, Wallet) : new VoucherRefreshResult(false, IAPVoucherErrorCode.StaleQuote, "Voucher 钱包响应属于旧账号 generation，已丢弃。", Wallet);
             }
-            var coinBalances = new List<CoinBalance>();
-            foreach (var pb in resp.Data.CoinBalances)
+            catch (OperationCanceledException)
             {
-                coinBalances.Add(new CoinBalance
-                {
-                    CoinId = pb.CoinId,
-                    FaceValue = pb.FaceValue,
-                    FaceValueMilliCents = VoucherBalanceSnapshot.ParseFaceValueToMilliCents(pb.FaceValue),
-                    Quantity = pb.Quantity,
-                });
+                return new VoucherRefreshResult(false, IAPVoucherErrorCode.NetworkError, "Voucher 钱包刷新已取消。", Wallet);
             }
-            m_Snapshot.Clear();
-            m_Snapshot.SetVoucherGroups(voucherGroups);
-            m_Snapshot.SetCoinBalances(coinBalances);
-            m_IsBalanceReady = true;
-            return true;
+            catch (Exception exception)
+            {
+                return new VoucherRefreshResult(false, IAPVoucherErrorCode.NetworkError, exception.Message, Wallet);
+            }
         }
 
         /// <summary>
-        /// 异步向服务端提交代金券/金币抵扣请求（待协议接入）。
-        /// 当前为占位实现，直接清理本地存档并返回 NetworkError，不发出网络请求。
-        /// proto 端 user_id 仍为 int32，本方法在调用前对 string uid 做一次 int.TryParse 边界转换；
-        /// 待 pb_net_gift_voucher.proto 把 user_id 改 string 后此处转换可移除。
+        /// 在捕获的账号作用域内执行一次测试发放，并拒绝发布迟到响应。
         /// </summary>
-        /// <param name="tableId">配置表行 ID。</param>
-        /// <param name="uid">用户 UID（string 形式）。</param>
-        /// <param name="detail">本次抵扣明细；补单路径可为 null。</param>
-        /// <param name="customString">透传业务自定义数据。</param>
-        /// <param name="ct">取消令牌。</param>
-        /// <returns>固定 NetworkError 的支付结果，待协议接入后改为真实抵扣流程。</returns>
-        private async UniTask<IAPResult> SubmitDeductAsync(long tableId, string uid, DeductDetail detail, string customString, CancellationToken ct)
+        /// <param name="request">测试发放请求。</param>
+        /// <param name="scope">发起请求时捕获的账号作用域。</param>
+        /// <param name="ct">调用方取消令牌。</param>
+        /// <returns>测试发放结果及调用完成后的当前钱包。</returns>
+        private async UniTask<VoucherTestGrantResult> TestGrantCoreAsync(VoucherTestGrantRequest request, VoucherSessionScope scope, CancellationToken ct)
         {
-            string deductVoucherCmd = m_StoreConfig?.DeductVoucherCmdName;
-            if (string.IsNullOrEmpty(deductVoucherCmd))
+            using (var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, scope.Token))
             {
-                Log.Warning(LogTag.IAPVoucher, $"SubmitDeduct：DeductVoucherCmdName 未配置，tableId={tableId}");
-                RemovePendingDeduct(tableId);
-                return new IAPResult(tableId, (int)IAPVoucherErrorCode.NetworkError, "DeductVoucherCmdName 未配置。", null);
-            }
-
-            int.TryParse(uid, out int userId);
-            var req = new PbNetGiftVoucherDeductReq
-            {
-                UserId = userId,
-                TableId = tableId,
-            };
-
-            if (detail != null)
-            {
-                if (detail.VoucherUsed != null)
+                try
                 {
-                    foreach (var item in detail.VoucherUsed)
+                    VoucherGatewayWalletResult result = await m_Gateway.TestGrantAsync(request, linkedCancellation.Token);
+                    if (!result.IsSuccess)
                     {
-                        var codes = m_Snapshot.GetVoucherCodes(item.VoucherTierId);
-                        int take = Math.Min(item.Quantity, codes.Count);
-                        for (int i = 0; i < take; i++)
-                            req.VoucherCodes.Add(codes[i]);
+                        return new VoucherTestGrantResult(false, result.ErrorCode, result.Message, Wallet);
                     }
+
+                    bool published = m_Session.TryPublish(scope, result.Vouchers, result.Coins, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+                    return published ? new VoucherTestGrantResult(true, IAPVoucherErrorCode.None, result.Message, Wallet) : new VoucherTestGrantResult(false, IAPVoucherErrorCode.StaleAccount, "Voucher 测试发放响应属于旧账号 generation，已丢弃。", Wallet);
                 }
-                if (detail.CoinUsed != null)
+                catch (OperationCanceledException)
                 {
-                    foreach (var item in detail.CoinUsed)
-                        req.CoinUsages.Add(new PbNetCoinUsage { CoinId = item.CoinId, Quantity = item.Quantity });
+                    bool accountChanged = scope.Token.IsCancellationRequested && !ct.IsCancellationRequested;
+                    return new VoucherTestGrantResult(false, accountChanged ? IAPVoucherErrorCode.StaleAccount : IAPVoucherErrorCode.NetworkError, accountChanged ? "Voucher 测试发放所属账号已经切换。" : "Voucher 测试发放已取消，服务端结果未知。", Wallet);
+                }
+                catch (Exception exception)
+                {
+                    return new VoucherTestGrantResult(false, IAPVoucherErrorCode.NetworkError, exception.Message, Wallet);
                 }
             }
+        }
 
-            var resp = await m_IapNetService.DeductVoucherAsync(deductVoucherCmd, req);
-            RemovePendingDeduct(tableId);
+        /// <summary>
+        /// 创建使用当前交易日志结构的空 Voucher 持久化容器。
+        /// </summary>
+        /// <returns>完成初始化的 Voucher 持久化容器。</returns>
+        protected override IIAPStorePersistData CreateEmptyPersistData()
+        {
+            var data = new VoucherStorePersistData();
+            data.EnsureInitialized();
+            return data;
+        }
 
-            if (!resp.IsSuccess || resp.Data == null)
+        /// <summary>
+        /// 派发已经持久化的成功或明确拒绝终态。
+        /// </summary>
+        /// <param name="result">待派发的 IAP 支付结果。</param>
+        void IVoucherResultDispatcher.Dispatch(IAPResult result)
+        {
+            if (result.IsSuccess)
             {
-                Log.Warning(LogTag.IAPVoucher, $"SubmitDeduct 失败，tableId={tableId}");
-                return new IAPResult(tableId, (int)IAPVoucherErrorCode.NetworkError, "代金券扣减失败。", null);
+                Context?.EventBridge?.RaisePaySuccess(result);
+            }
+            else
+            {
+                Context?.EventBridge?.RaisePayFailed(result);
+            }
+        }
+
+        /// <summary>
+        /// 使用当前账号持久化数据重新创建交易日志和交易协调器。
+        /// </summary>
+        private void BuildCoordinator()
+        {
+            if (m_PersistData == null || m_Session == null || m_Gateway == null)
+            {
+                m_Journal = null;
+                m_Coordinator = null;
+                return;
             }
 
-            if (resp.Data.Status != 0)
-            {
-                Log.Warning(LogTag.IAPVoucher, $"SubmitDeduct 服务端拒绝，status={resp.Data.Status}，tableId={tableId}");
-                return new IAPResult(tableId, (int)IAPVoucherErrorCode.ServerValidationFailed, resp.Data.Message, null);
-            }
-
-            return new IAPResult(tableId, string.Empty, false, true, null);
+            m_Journal = new VoucherTransactionJournal(m_PersistData, SavePersistData);
+            m_Coordinator = new VoucherTransactionCoordinator(m_Gateway, m_Journal, m_Session, this, () => Guid.NewGuid().ToString("N"), () => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), () => string.Empty);
         }
     }
 }

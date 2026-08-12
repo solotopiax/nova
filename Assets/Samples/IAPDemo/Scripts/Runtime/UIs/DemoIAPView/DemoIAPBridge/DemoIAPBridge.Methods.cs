@@ -3,119 +3,84 @@
  * All Rights Reserved.
  * -------------------------------------------------------------
  * filename:  DemoIAPBridge.Methods.cs
- * author:    nova-create-sample
- * created:   2026/06/05
- * descrip:   DemoIAPView IAP 调度桥接层 - 私有方法
+ * author:    yingzheng
+ * created:   2026/8/4
+ * descrip:   IAP Demo Core 与可选商店模块共用的辅助方法
  ***************************************************************/
 
-using System.Collections.Generic;
 using NovaFramework.SDK.IAP.Runtime;
+using UnityEngine;
 
 using FeedbackLevel = NovaFramework.Sdk.IAP.Samples.Runtime.BaseDemoView.FeedbackLevel;
 
 namespace NovaFramework.Sdk.IAP.Samples.Runtime
 {
+    /// <summary>
+    /// IAP Demo Core 与可选商店模块共用方法。
+    /// </summary>
     internal sealed partial class DemoIAPBridge
     {
         /// <summary>
-        /// 查询指定商品表行 id 对应的商品配置条目。
+        /// 查询指定商品表行对应的基础商品配置。
         /// </summary>
-        /// <param name="tableId">商品表行 id。</param>
-        /// <returns>商品配置条目；插件不可用时返回 null。</returns>
-        private IAPProductEntry FindProductEntry(long tableId)
+        /// <param name="tableId">商品表行 ID。</param>
+        /// <returns>商品配置；插件不可用时返回空。</returns>
+        internal IAPProductEntry FindProductEntry(long tableId)
         {
             return TryInitialize() ? m_IAP.ProductTable.FindByTableId(tableId) : null;
         }
 
         /// <summary>
-        /// 刷新指定商品列表的支付按钮文本，逐个通过回调通知 View 更新。
+        /// 向反馈区追加一行文本；桥接层释放后静默跳过。
         /// </summary>
-        /// <param name="tableIds">待刷新商品表行 id 列表。</param>
-        private void RefreshProductTexts(IReadOnlyList<long> tableIds)
-        {
-            if (m_Disposed)
-            {
-                return;
-            }
-
-            if (m_ProductTextChanged == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < tableIds.Count; i++)
-            {
-                long tableId = tableIds[i];
-                IAPProductEntry entry = FindProductEntry(tableId);
-                m_ProductTextChanged(tableId, BuildProductButtonText(tableId, GetGroupLabel(entry)));
-            }
-        }
-
-        /// <summary>
-        /// 向反馈区追加一行文本；已释放时静默跳过。
-        /// </summary>
-        /// <param name="line">反馈文本内容。</param>
+        /// <param name="line">反馈文本。</param>
         /// <param name="level">反馈级别。</param>
-        private void AppendFeedback(string line, FeedbackLevel level)
+        internal void AppendFeedback(string line, FeedbackLevel level)
         {
-            if (m_Disposed)
+            if (!m_Disposed)
             {
-                return;
+                m_Feedback?.Invoke(line, level);
             }
-
-            m_Feedback?.Invoke(line, level);
         }
 
         /// <summary>
-        /// 设置支付按钮可交互状态；已释放时静默跳过。
+        /// 同步全部已发现商店模块的业务按钮交互状态。
         /// </summary>
-        /// <param name="interactable">是否可交互。</param>
-        private void SetPayInteractable(bool interactable)
+        /// <param name="interactable">是否允许交互。</param>
+        internal void SetPayInteractable(bool interactable)
         {
-            if (m_Disposed)
+            if (!m_Disposed)
             {
-                return;
+                m_PayInteractableChanged?.Invoke(interactable);
             }
-
-            m_PayInteractableChanged?.Invoke(interactable);
         }
 
         /// <summary>
-        /// 获取商品分组文案（订阅 / 普通）。
+        /// 构建所有商店共用的演示 JSON 透传数据。
         /// </summary>
-        /// <param name="entry">商品配置条目。</param>
-        /// <returns>分组文案；条目为空时返回空串。</returns>
-        private static string GetGroupLabel(IAPProductEntry entry)
+        /// <param name="tableId">商品表行 ID。</param>
+        /// <returns>JSON 透传数据。</returns>
+        internal static string BuildCustomData(long tableId)
         {
-            if (entry == null)
-            {
-                return string.Empty;
-            }
-
-            if (entry.ProductType == IAPProductType.Subscription)
-            {
-                return "订阅";
-            }
-
-            return System.Convert.ToInt32(entry.ProductType) == 1 ? "非消耗" : "普通";
+            return JsonUtility.ToJson(new PayPayload { TableId = tableId, Scene = c_SceneName });
         }
 
         /// <summary>
-        /// 将分组文案格式化为带方括号的后缀；为空时返回空串。
+        /// 将商品分组格式化为带方括号的后缀。
         /// </summary>
-        /// <param name="groupLabel">分组文案。</param>
-        /// <returns>格式化后的后缀字符串。</returns>
-        private static string FormatGroupLabel(string groupLabel)
+        /// <param name="groupLabel">商品分组。</param>
+        /// <returns>格式化分组后缀。</returns>
+        internal static string FormatGroupLabel(string groupLabel)
         {
             return string.IsNullOrEmpty(groupLabel) ? string.Empty : "  [" + groupLabel + "]";
         }
 
         /// <summary>
-        /// 将支付结果格式化为可读的诊断字符串。
+        /// 将支付结果格式化为可读诊断文本。
         /// </summary>
         /// <param name="result">支付结果。</param>
-        /// <returns>诊断字符串；结果为空时返回 "null"。</returns>
-        private static string FormatResult(IAPResult result)
+        /// <returns>诊断文本；结果为空时返回 null 字样。</returns>
+        internal static string FormatResult(IAPResult result)
         {
             if (result == null)
             {
@@ -126,7 +91,8 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                    + ", IsSuccess=" + result.IsSuccess
                    + ", OrderId=" + result.OrderId
                    + ", ErrorCode=" + result.ErrorCode
-                   + ", FailReason=" + result.FailReason
+                   + ", ErrorSource=" + result.ErrorSource
+                   + ", ErrorDesc=" + result.ErrorDesc
                    + ", IsRecoveredOrder=" + result.IsRecoveredOrder
                    + ", CanDeliver=" + result.CanDeliver
                    + ", ReceiptParam=" + result.ReceiptParam;

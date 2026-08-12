@@ -1,22 +1,20 @@
-﻿/***************************************************************
+/***************************************************************
  * (c) copyright 2026 - 2030, Solotopia
  * All Rights Reserved.
  * -------------------------------------------------------------
  * filename:  IAPVoucherRequest.cs
  * author:    yingzheng
- * created:   2026/5/20
- * descrip:   代金券/金币兑换渠道支付请求
+ * created:   2026/8/3
+ * descrip:   由 Ready Voucher 报价创建的支付请求
  ***************************************************************/
 
-using System.Collections.Generic;
-
+using System;
 using NovaFramework.Runtime;
+
 namespace NovaFramework.SDK.IAP.Runtime
 {
     /// <summary>
-    /// 代金券/金币兑换渠道支付请求。
-    /// 适用于通过持有的代金券码或金币抵扣商品价格的支付流程。
-    /// VoucherCodes 和 CoinUsages 至少提供其一；store 层按 DeductPlan 决定实际扣减组合。
+    /// Voucher 支付请求；业务层不能手工拼装券码或赠币用量。
     /// </summary>
     public sealed class IAPVoucherRequest : IAPRequest
     {
@@ -26,21 +24,29 @@ namespace NovaFramework.SDK.IAP.Runtime
         public override IAPStoreType StoreType => IAPStoreType.Voucher;
 
         /// <summary>
-        /// 参与本次抵扣的代金券激活码列表。
-        /// 为 null 或空表示不使用代金券。
+        /// 创建请求时绑定的不可变可支付报价。
         /// </summary>
-        public List<string> VoucherCodes;
+        public VoucherQuote Quote { get; }
 
         /// <summary>
-        /// 参与本次抵扣的金币用量列表，每项指定金币类型及消耗数量。
-        /// 为 null 或空表示不使用金币。
+        /// 从可提交的 Ready 报价创建 Voucher 支付请求。
         /// </summary>
-        public List<VoucherCoinUsage> CoinUsages;
+        /// <param name="quote">当前 capability 生成的 Ready 报价。</param>
+        /// <exception cref="ArgumentNullException">quote 为空时抛出。</exception>
+        /// <exception cref="ArgumentException">quote 不是 Ready 时抛出。</exception>
+        public IAPVoucherRequest(VoucherQuote quote)
+        {
+            if (quote == null)
+            {
+                throw new ArgumentNullException(nameof(quote));
+            }
+            if (quote.Status != VoucherQuoteStatus.Ready)
+            {
+                throw new ArgumentException("只有 Ready 状态的 VoucherQuote 可以创建支付请求。", nameof(quote));
+            }
 
-        /// <summary>
-        /// 是否向服务端提交对账订单。
-        /// true 时 store 层在扣减成功后发起订单上报；false 时仅本地扣减，不上报。
-        /// </summary>
-        public bool AddOrder;
+            Quote = quote;
+            TableId = quote.TableId;
+        }
     }
 }

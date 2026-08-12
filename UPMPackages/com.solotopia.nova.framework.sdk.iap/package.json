@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.iap",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "coreVersion": "0.0.1",
   "displayName": "Nova Framework - SDK - IAP",
@@ -18,7 +18,7 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.6.3",
+    "com.solotopia.nova.framework": "0.6.9",
     "com.solotopia.unitask": "10.0.6",
     "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0"
   }

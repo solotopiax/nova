@@ -42,6 +42,7 @@ namespace NovaFramework.Runtime
 
         private readonly Dictionary<ulong, UniTaskCompletionSource<NotificationPermissionStatus>> m_IosStatusRequests = new();
         private readonly Dictionary<ulong, UniTaskCompletionSource<NotificationPermissionResult>> m_IosPermissionRequests = new();
+        private readonly object m_IosOpenSettingsLock = new();
         private readonly Dictionary<ulong, UniTaskCompletionSource<bool>> m_IosOpenSettingsRequests = new();
 
         [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
@@ -57,6 +58,11 @@ namespace NovaFramework.Runtime
 
         [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
         private static extern void NovaNative_OpenAppSettings(
+            ulong requestId,
+            OpenSettingsCallback callback);
+
+        [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void NovaNative_OpenNotificationSettings(
             ulong requestId,
             OpenSettingsCallback callback);
 
@@ -121,22 +127,76 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 打开 iOS 通知设置页，低版本由原生层回退到应用设置页。
+        /// 打开 iOS 应用设置页。
         /// </summary>
         /// <returns>是否成功发起跳转。</returns>
         private UniTask<bool> OpenAppSettingsPlatformAsync()
         {
             ulong requestId = NextIosRequestId();
             var pending = new UniTaskCompletionSource<bool>();
-            m_IosOpenSettingsRequests.Add(requestId, pending);
+            lock (m_RequestLock)
+            {
+                if (m_IsShutdown)
+                {
+                    return UniTask.FromResult(false);
+                }
+
+                lock (m_IosOpenSettingsLock)
+                {
+                    m_IosOpenSettingsRequests.Add(requestId, pending);
+                }
+            }
+
             try
             {
                 NovaNative_OpenAppSettings(requestId, s_OpenSettingsCallback);
             }
             catch (Exception exception)
             {
-                m_IosOpenSettingsRequests.Remove(requestId);
+                lock (m_IosOpenSettingsLock)
+                {
+                    m_IosOpenSettingsRequests.Remove(requestId);
+                }
+
                 Log.Error(LogTag.Base, "打开 iOS 应用设置失败：{0}。", exception);
+                pending.TrySetResult(false);
+            }
+            return pending.Task;
+        }
+
+        /// <summary>
+        /// 打开 iOS 通知设置页。低于 iOS 15.4 时由原生层直接返回 false，不回退到应用设置页。
+        /// </summary>
+        /// <returns>是否成功发起精准通知设置页跳转。</returns>
+        private UniTask<bool> OpenNotificationSettingsPlatformAsync()
+        {
+            ulong requestId = NextIosRequestId();
+            var pending = new UniTaskCompletionSource<bool>();
+            lock (m_RequestLock)
+            {
+                if (m_IsShutdown)
+                {
+                    return UniTask.FromResult(false);
+                }
+
+                lock (m_IosOpenSettingsLock)
+                {
+                    m_IosOpenSettingsRequests.Add(requestId, pending);
+                }
+            }
+
+            try
+            {
+                NovaNative_OpenNotificationSettings(requestId, s_OpenSettingsCallback);
+            }
+            catch (Exception exception)
+            {
+                lock (m_IosOpenSettingsLock)
+                {
+                    m_IosOpenSettingsRequests.Remove(requestId);
+                }
+
+                Log.Error(LogTag.Base, "打开 iOS 通知设置失败：{0}。", exception);
                 pending.TrySetResult(false);
             }
             return pending.Task;
@@ -149,7 +209,10 @@ namespace NovaFramework.Runtime
         {
             CancelAndClear(m_IosStatusRequests);
             CancelAndClear(m_IosPermissionRequests);
-            CancelAndClear(m_IosOpenSettingsRequests);
+            lock (m_IosOpenSettingsLock)
+            {
+                CancelAndClear(m_IosOpenSettingsRequests);
+            }
             if (ReferenceEquals(s_ActiveManager, this))
             {
                 s_ActiveManager = null;
@@ -242,10 +305,20 @@ namespace NovaFramework.Runtime
         private static void OnOpenSettings(ulong requestId, int opened)
         {
             NativeManager manager = s_ActiveManager;
-            if (manager == null || !manager.m_IosOpenSettingsRequests.Remove(requestId, out var pending))
+            if (manager == null)
             {
                 return;
             }
+
+            UniTaskCompletionSource<bool> pending;
+            lock (manager.m_IosOpenSettingsLock)
+            {
+                if (!manager.m_IosOpenSettingsRequests.Remove(requestId, out pending))
+                {
+                    return;
+                }
+            }
+
             pending.TrySetResult(opened != 0);
         }
 

@@ -233,7 +233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.size
-      value: 8
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.data[4].Enabled
@@ -281,7 +281,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.data[8].TypeName
-      value: NovaFramework.SDK.AppleSignIn.AppleSignInPlugin, NovaFramework.SDK.AppleSignIn.Runtime,
+      value: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.DataMasterPlugin,
+        NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, Version=0.0.0.0, Culture=neutral,
+        PublicKeyToken=null
+      objectReference: {fileID: 0}
+    - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_PluginEntries.Array.data[9].TypeName
+      value: NovaFramework.SDK.AIHelp.Runtime.AIHelpPlugin, NovaFramework.SDK.AIHelp.Runtime,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       objectReference: {fileID: 0}
     - target: {fileID: 2901006627018902308, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
@@ -482,11 +488,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_ProtoSettings.ProtoSourceDirPath
-      value: UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Protos
+      value: UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Protos
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_ProtoSettings.ProtoUnits.Array.size
-      value: 12
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.NetCmdSettings.SourceDirPath
@@ -501,8 +507,24 @@ PrefabInstance:
       value: pb_net_mobile_pay.proto
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.data[12].SourcePath
+      value: pb_net_third_pay.proto
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.data[13].SourcePath
+      value: pb_net_app_custom_config.proto
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_ProtoSettings.ProtoUnits.Array.data[11].CSharpExportPath
-      value: UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/Protos
+      value: UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Protos
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.data[12].CSharpExportPath
+      value: UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/Protos
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.data[13].CSharpExportPath
+      value: UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Scripts/Runtime/Protos
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].DatasExportPath

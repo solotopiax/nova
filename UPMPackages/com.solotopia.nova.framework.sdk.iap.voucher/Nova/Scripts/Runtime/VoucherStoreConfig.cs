@@ -1,4 +1,4 @@
-﻿/***************************************************************
+/***************************************************************
  * (c) copyright 2026 - 2030, Solotopia
  * All Rights Reserved.
  * -------------------------------------------------------------
@@ -9,10 +9,10 @@
  ***************************************************************/
 
 using System;
-using UnityEngine;
 using NovaFramework.SDK.IAP.Runtime;
-
 using NovaFramework.Runtime;
+using UnityEngine;
+
 namespace NovaFramework.SDK.IAP.Voucher.Runtime
 {
     /// <summary>
@@ -39,7 +39,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
 
         /// <summary>
         /// 获取礼券列表的协议名（对应 INetworkCmdRow.Name）。
-        /// 初始化时由 store 层通过 NetworkManager.ResolveNetCmdRow 解析为 INetworkCmdRow 注入 VoucherIapNetService。
+        /// 发送时由 VoucherIapNetService 通过当前 NetworkManager 解析对应命令行。
         /// </summary>
         [SerializeField, Tooltip("获取礼券列表协议名，如 GetGiftVoucherList")]
         private string m_GetVoucherListCmdName = string.Empty;
@@ -50,7 +50,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
 
         /// <summary>
         /// 扣减代金券/金币的协议名（对应 INetworkCmdRow.Name）。
-        /// 初始化时由 store 层通过 NetworkManager.ResolveNetCmdRow 解析为 INetworkCmdRow 注入 VoucherIapNetService。
+        /// 发送时由 VoucherIapNetService 通过当前 NetworkManager 解析对应命令行。
         /// </summary>
         [SerializeField, Tooltip("扣减代金券/金币协议名，如 DeductGiftVoucher")]
         private string m_DeductVoucherCmdName = string.Empty;
@@ -60,13 +60,14 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
         public string DeductVoucherCmdName => m_DeductVoucherCmdName;
 
         /// <summary>
-        /// 测试发放礼券的协议名（对应 INetworkCmdRow.Name）。
-        /// 初始化时由 store 层通过 NetworkManager.ResolveNetCmdRow 解析为 INetworkCmdRow 注入 VoucherIapNetService。
+        /// 测试发放礼券和赠币的协议名（对应 INetworkCmdRow.Name）。
+        /// 发送时由 VoucherIapNetService 通过当前 NetworkManager 解析对应命令行。
         /// </summary>
-        [SerializeField, Tooltip("测试发放礼券协议名，如 TestGrantGiftVoucher")]
+        [SerializeField, Tooltip("测试发放礼券和赠币协议名，如 ThirdGiftVoucherTestGrant")]
         private string m_TestGrantVoucherCmdName = string.Empty;
+
         /// <summary>
-        /// 测试发放礼券协议名。
+        /// 测试发放礼券和赠币的协议名。
         /// </summary>
         public string TestGrantVoucherCmdName => m_TestGrantVoucherCmdName;
     }

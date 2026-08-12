@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 
@@ -37,17 +38,17 @@ namespace NovaFramework.SDK.IAP.Runtime
         protected override Type ConfigType => typeof(IAPPluginConfig);
 
         /// <summary>
-        /// 当前已初始化的所有渠道 store 列表，PayAsync 时按 CanHandle 路由。
+        /// 当前已初始化的所有渠道商店列表，PayAsync 时按 CanHandle 路由。
         /// </summary>
         private List<IIAPInternalStore> m_Stores;
 
         /// <summary>
-        /// IAP store 运行时上下文，封装持久化、埋点、UI、网络四个跨模块依赖。
+        /// IAP 商店运行时上下文，封装持久化、埋点、UI、网络四个跨模块依赖。
         /// </summary>
         private IIAPStoreContext m_StoreContext;
 
         /// <summary>
-        /// store 类型到专属配置的路由表，由 BuildStoreConfigMap 构建，TryInitializeStoreAsync 消费。
+        /// 商店类型到专属配置的路由表，由 BuildStoreConfigMap 构建，TryInitializeStoreAsync 消费。
         /// </summary>
         private Dictionary<IAPStoreType, IIAPStoreConfig> m_StoreConfigMap;
 
@@ -92,6 +93,11 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// 补单扫描执行期间又收到扫描请求；当前轮结束后再补跑一轮。
         /// </summary>
         private bool m_PendingCheckLocalOrders;
+
+        /// <summary>
+        /// IAPPlugin 运行期后台任务取消源；Dispose 时统一取消登录后自动补单等后台任务。
+        /// </summary>
+        private CancellationTokenSource m_RuntimeTaskCts;
 
     }
 }

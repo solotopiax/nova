@@ -8,20 +8,34 @@
  * descrip:   MobileStore 服务容器，统一持有共享外部依赖与内部服务引用
  ***************************************************************/
 
+using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using NovaFramework.Runtime;
 using NovaFramework.SDK.IAP.Runtime;
 
 namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
     /// <summary>
     /// MobileStore 服务容器。
-    /// 持有共享外部依赖（Context/Config/Table/Store）以及内部服务引用。
+    /// 持有共享外部依赖（Context/Config/Table/Store 属性）以及内部服务引用。
     /// 服务在 MobileStore.InitializeAsync 中按序创建并写入对应属性；
-    /// 各服务在运行时（非构造期）通过 hub 属性互相访问，天然解决循环依赖。
+    /// 各服务在运行时（非构造期）通过服务容器属性互相访问，天然解决循环依赖。
     /// </summary>
     internal sealed class MobileServiceHub
     {
         /// <summary>
-        /// IAP store 运行时上下文，提供持久化、网络、事件桥接等跨模块依赖。
+        /// 移动端官方内购商店运行期后台任务取消源；商店释放时统一取消所有经服务容器启动的后台任务。
+        /// </summary>
+        private readonly CancellationTokenSource m_RuntimeTaskCts = new CancellationTokenSource();
+
+        /// <summary>
+        /// 后台任务取消源是否已经释放，避免 Dispose 后重复读取取消令牌抛异常。
+        /// </summary>
+        private bool m_IsRuntimeTaskCtsDisposed;
+
+        /// <summary>
+        /// IAP 商店运行时上下文，提供持久化、网络、事件桥接等跨模块依赖。
         /// </summary>
         internal IIAPStoreContext Context { get; }
 
@@ -86,9 +100,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal MobileStoreService StoreService { get; set; }
 
         /// <summary>
+        /// 移动端官方内购商店运行期后台任务取消令牌；取消后新后台任务会被拒绝启动。
+        /// </summary>
+        internal CancellationToken RuntimeTaskToken => m_IsRuntimeTaskCtsDisposed ? new CancellationToken(true) : m_RuntimeTaskCts.Token;
+
+        /// <summary>
         /// 构造 MobileServiceHub，写入共享外部依赖；服务引用由 MobileStore.InitializeAsync 填充。
         /// </summary>
-        /// <param name="context">IAP store 运行时上下文。</param>
+        /// <param name="context">IAP 商店运行时上下文。</param>
         /// <param name="config">MobileStore 专属配置。</param>
         /// <param name="table">IAP 商品配置表接口。</param>
         /// <param name="store">所属 MobileStore。</param>
@@ -98,6 +117,78 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             Config = config;
             Table = table;
             Store = store;
+        }
+
+        /// <summary>
+        /// 通过统一入口启动后台任务，自动接入移动端官方内购商店运行期取消令牌并兜底捕获异常。
+        /// </summary>
+        /// <param name="taskFactory">接收运行期取消令牌并返回后台任务的工厂方法。</param>
+        /// <param name="taskName">后台任务名称，用于日志定位。</param>
+        internal void RunBackgroundTask(Func<CancellationToken, UniTask> taskFactory, string taskName)
+        {
+            if (taskFactory == null)
+            {
+                Log.Warning(LogTag.IAPMobile, $"后台任务启动失败，任务名={taskName}，原因=任务工厂为空。");
+                return;
+            }
+
+            if (m_IsRuntimeTaskCtsDisposed || m_RuntimeTaskCts.IsCancellationRequested)
+            {
+                Log.Debug(LogTag.IAPMobile, $"后台任务已跳过，移动端官方内购商店正在释放或已释放，任务名={taskName}。");
+                return;
+            }
+
+            RunBackgroundTaskAsync(taskFactory, taskName, RuntimeTaskToken).Forget();
+        }
+
+        /// <summary>
+        /// 执行后台任务并统一处理取消和异常，避免裸 Forget 丢失异常上下文。
+        /// </summary>
+        /// <param name="taskFactory">后台任务工厂方法。</param>
+        /// <param name="taskName">后台任务名称。</param>
+        /// <param name="ct">移动端官方内购商店运行期取消令牌。</param>
+        private async UniTaskVoid RunBackgroundTaskAsync(Func<CancellationToken, UniTask> taskFactory, string taskName, CancellationToken ct)
+        {
+            try
+            {
+                await taskFactory(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                Log.Debug(LogTag.IAPMobile, $"后台任务已取消，任务名={taskName}。");
+            }
+            catch (Exception e)
+            {
+                Log.Warning(LogTag.IAPMobile, $"后台任务执行异常，任务名={taskName}，详情={e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 取消移动端官方内购商店运行期后台任务；该方法幂等，可在 Dispose 多个阶段重复调用。
+        /// </summary>
+        internal void CancelRuntimeTasks()
+        {
+            if (m_IsRuntimeTaskCtsDisposed || m_RuntimeTaskCts.IsCancellationRequested)
+            {
+                return;
+            }
+
+            m_RuntimeTaskCts.Cancel();
+        }
+
+        /// <summary>
+        /// 释放移动端官方内购商店后台任务取消源；调用前会先执行取消。
+        /// </summary>
+        internal void DisposeRuntimeTasks()
+        {
+            if (m_IsRuntimeTaskCtsDisposed)
+            {
+                return;
+            }
+
+            CancelRuntimeTasks();
+            m_RuntimeTaskCts.Dispose();
+            m_IsRuntimeTaskCtsDisposed = true;
         }
     }
 }

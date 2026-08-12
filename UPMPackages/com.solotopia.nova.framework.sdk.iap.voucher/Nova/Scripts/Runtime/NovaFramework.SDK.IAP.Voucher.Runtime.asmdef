@@ -4,7 +4,6 @@
     "references": [
         "NovaFramework.Runtime",
         "NovaFramework.SDK.IAP.Runtime",
-        "NovaFramework.Kit.Network.Runtime",
         "UniTask"
     ],
     "includePlatforms": [],

@@ -1,7 +1,7 @@
 ﻿# Nova Framework - SDK - IAP - Mobile
 
 > 包名：`com.solotopia.nova.framework.sdk.iap.mobile`
-> 当前版本：`0.1.0`
+> 当前版本：`0.1.5`
 
 Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化、购买、Restore、服务端验单、补单、订阅到期与非消耗品持有状态。
 
@@ -11,23 +11,34 @@ Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.iap.mobile": "0.1.0"
+  "com.solotopia.nova.framework.sdk.iap.mobile": "0.1.5"
 }
 ```
 
 ## 依赖
 
-- `com.solotopia.nova.framework.sdk.iap`: `0.1.0`
+- `com.solotopia.nova.framework`: `0.6.9`
+- `com.solotopia.nova.framework.sdk.iap`: `0.1.3`
+- `com.solotopia.unitask`: `10.0.6`
 - `com.unity.purchasing`: `5.3.1`
 
 ## 当前公开入口
 
 - `MobileStore`：通过父包 `IAPPlugin` 反射发现，不直接手动 new。
-- `IAPMobileRequest`：Mobile 渠道支付请求；`ReceiptParam` 最多 16 字符，并随平台票据往返。
+- `IAPMobileRequest`：Mobile 渠道支付请求；`ReceiptParam` 必须为 1-16 位十六进制且不能以 `0` 开头，空值表示不透传，并随平台票据往返。
 - `MobileStoreConfig`：Google / Apple 查单与验单 NetCmd 名配置。
 - `IIAPMobileQueryCapable`：平台商品信息查询能力。
 - `IIAPMobileSubscriptionCapable`：订阅到期与非消耗品持有查询能力。
 - `MobileIapNetService`：移动内购查单、批量验单协议封装。
+
+## 商品拉取与重试
+
+- Unity IAP 商店连接成功即认为 Mobile Store 初始化完成；商品信息在后台拉取，不阻塞初始化结果。
+- 商品整体拉取失败后会按 `2s / 5s / 10s` 最多自动重试 3 次。
+- 只要任一轮收到成功商品，或失败数量小于本轮请求数量，就认为商品信息链路已完成并停止重试。
+- 成功回调会清理旧失败 SKU，并按 `StoreController` 当前状态恢复仍缺失的 pending SKU。
+- 失败回调只把 `StoreController` 当前仍查不到的 SKU 标记为不可用；迟到失败不会污染已成功商品。
+- 商品成功后才会触发启动期 `RestoreTransactions` 与 `FetchPurchases`，避免商品未进入 `StoreController` 时错误刷新权益或补单凭据。
 
 ## 文档
 

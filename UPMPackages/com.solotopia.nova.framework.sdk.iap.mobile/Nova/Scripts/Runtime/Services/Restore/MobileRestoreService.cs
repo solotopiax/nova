@@ -135,7 +135,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             m_PendingEntitlementRefreshAfterProductsFetched = false;
-            RefreshEntitlementsAsync(CancellationToken.None).Forget();
+            m_Hub.RunBackgroundTask(async token => { await RefreshEntitlementsAsync(token); }, "商品拉取成功后的权益刷新");
         }
 
         /// <summary>
@@ -389,7 +389,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (!string.IsNullOrEmpty(m_Hub.Store?.GameUID))
             {
-                m_Hub.ValidationService.CheckLocalOrdersAsync(CancellationToken.None).Forget();
+                m_Hub.RunBackgroundTask(m_Hub.ValidationService.CheckLocalOrdersAsync, "平台已有购买后的补单扫描");
             }
         }
 

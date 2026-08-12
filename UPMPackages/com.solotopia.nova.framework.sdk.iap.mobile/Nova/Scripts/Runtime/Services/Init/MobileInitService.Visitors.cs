@@ -15,31 +15,8 @@ using UnityEngine.Purchasing;
 namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
     /// <summary>
-    /// Unity IAP 商品拉取状态。
+    /// MobileInitService 字段与只读状态属性定义。
     /// </summary>
-    internal enum MobileProductFetchState
-    {
-        /// <summary>
-        /// 尚未发起商品信息拉取。
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// 商品信息正在拉取中，不允许发起并发请求。
-        /// </summary>
-        Fetching,
-
-        /// <summary>
-        /// 商品信息已经成功拉取，无需重复请求。
-        /// </summary>
-        Succeeded,
-
-        /// <summary>
-        /// 商品信息拉取失败，后续商店连接回调允许重试。
-        /// </summary>
-        Failed,
-    }
-
     internal sealed partial class MobileInitService
     {
         /// <summary>
@@ -64,18 +41,18 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         private List<ProductDefinition> m_PendingProductDefs;
 
         /// <summary>
-        /// 商品拉取状态；初始化成功不代表商品拉取完成。
+        /// 商品拉取状态机；初始化成功不代表商品拉取完成。
         /// </summary>
-        internal MobileProductFetchState ProductFetchState { get; private set; }
-
-        /// <summary>
-        /// 商品拉取完成信号，桥接 OnProductsFetched / OnProductsFetchFailed 到等待方。
-        /// </summary>
-        private UniTaskCompletionSource<MobileProductFetchState> m_ProductFetchTcs;
+        private readonly MobileProductFetchCoordinator m_ProductFetchCoordinator;
 
         /// <summary>
         /// Unity IAP 是否已成功初始化（OnStoreConnected 后为 true，Dispose 后重置为 false）。
         /// </summary>
         internal bool IsReady { get; private set; }
+
+        /// <summary>
+        /// 商品拉取状态；初始化成功不代表商品拉取完成。
+        /// </summary>
+        internal MobileProductFetchState ProductFetchState => m_ProductFetchCoordinator?.State ?? MobileProductFetchState.None;
     }
 }

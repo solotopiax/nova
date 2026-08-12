@@ -5,7 +5,7 @@
  * filename:  MobileStore.cs
  * author:    yingzheng
  * created:   2026/5/25
- * descrip:   Google Play + iOS App Store 官方内购 store 入口（Unity IAP 5.x）
+ * descrip:   Google Play 与 iOS App Store 官方内购商店入口（Unity IAP 5.x）
  ***************************************************************/
 
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ using ProductInfo = NovaFramework.SDK.IAP.Runtime.ProductInfo;
 namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
     /// <summary>
-    /// Google Play 与 iOS App Store 官方移动内购 store（Unity IAP 5.x）。
+    /// Google Play 与 iOS App Store 官方移动内购商店（Unity IAP 5.x）。
     /// 职责收窄为对外接口实现；StoreController 事件由 StoreService 统一路由给各内部服务；
     /// 核心业务逻辑分布在 8 个内部服务中（Extended/Store/Init/Purchase/Validation/Product/Restore/Subscription）。
     /// </summary>
@@ -27,22 +27,22 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable
     {
         /// <summary>
-        /// 当前 store 的渠道类型，固定为 Mobile。
+        /// 当前商店的渠道类型，固定为 Mobile。
         /// </summary>
         public override IAPStoreType StoreType => IAPStoreType.Mobile;
 
         /// <summary>
-        /// 判断当前 store 是否能处理指定请求，仅接受 IAPMobileRequest 类型。
+        /// 判断当前商店是否能处理指定请求，仅接受 IAPMobileRequest 类型。
         /// </summary>
         /// <param name="request">待判断的支付请求。</param>
         /// <returns>请求为 IAPMobileRequest 时返回 true，否则返回 false。</returns>
         public override bool CanHandle(IAPRequest request) => request is IAPMobileRequest;
 
         /// <summary>
-        /// 异步初始化 store：创建内部服务，通过 Unity IAP 5.x StoreController.Connect() 连接平台商店，触发补单扫描。
+        /// 异步初始化商店：创建内部服务，通过 Unity IAP 5.x StoreController.Connect() 连接平台商店，触发补单扫描。
         /// </summary>
-        /// <param name="table">所有 store 共用的商品表接口。</param>
-        /// <param name="config">store 专属配置，应为 MobileStoreConfig 实例；为 null 时以空配置降级运行。</param>
+        /// <param name="table">所有商店共用的商品表接口。</param>
+        /// <param name="config">商店专属配置，应为 MobileStoreConfig 实例；为 null 时以空配置降级运行。</param>
         /// <param name="ctx">运行时上下文，包含跨模块依赖引用。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>初始化完成的异步任务。</returns>
@@ -130,12 +130,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
-        /// 释放 store 资源，依次释放各服务。
+        /// 释放商店资源，依次释放各服务。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         /// <returns>释放完成的异步任务。</returns>
         public override async UniTask DisposeAsync(CancellationToken ct)
         {
+            // 先取消所有经 Hub 启动的后台任务，避免服务释放后仍触发验单、补单或权益刷新。
+            m_Hub?.CancelRuntimeTasks();
             // 终止进行中支付，释放 TCS
             m_Hub?.PurchaseService?.Dispose();
             // 强制结束进行中 Restore
@@ -156,6 +158,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             ClearTrackRuntimeCacheInternal();
             // 断开存档引用
             m_PersistData = null;
+            // 释放后台任务取消源，断开 Hub 引用。
+            m_Hub?.DisposeRuntimeTasks();
+            m_Hub = null;
             await base.DisposeAsync(ct);
         }
 

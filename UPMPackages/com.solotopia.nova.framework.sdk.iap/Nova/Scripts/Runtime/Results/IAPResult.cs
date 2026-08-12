@@ -18,18 +18,24 @@ namespace NovaFramework.SDK.IAP.Runtime
     /// </summary>
     public sealed class IAPResult : IIAPResult
     {
+
+        /// <inheritdoc/>
+        public long TableId { get; }
+
         /// <inheritdoc/>
         public bool IsSuccess { get; }
+
+
+        /// <inheritdoc/>
+        public IAPErrorSource ErrorSource { get; }
 
         /// <inheritdoc/>
         public int ErrorCode { get; }
 
         /// <inheritdoc/>
-        public long TableId { get; }
+        public string ErrorDesc { get; }
 
-        /// <summary>
-        /// 订单唯一 ID，由 store 层在支付成功后生成。
-        /// </summary>
+        /// <inheritdoc/>
         public string OrderId { get; }
 
         /// <summary>
@@ -48,15 +54,11 @@ namespace NovaFramework.SDK.IAP.Runtime
         public string CustomData { get; }
 
         /// <summary>
-        /// 平台票据透传字符串（最多 16 字符，来自 IAPRequest.ReceiptParam）。
-        /// 由 store 层从平台票据解出后经构造回填，支付/补单/恢复均可带回；无透传时为 null。外部只读。
+        /// 票据透传字符串，来自 IAPRequest.ReceiptParam。
+        /// 由 Store 从平台票据或服务端验单响应回填，支付、补单和恢复均可带回；无透传时为 null。外部只读。
         /// </summary>
         public string ReceiptParam { get; }
 
-        /// <summary>
-        /// 支付失败原因描述，IsSuccess 为 true 时为 null。
-        /// </summary>
-        public string FailReason { get; }
 
         /// <summary>
         /// 订阅到期时间（毫秒 Unix 时间戳），仅订阅类商品成功时有值，其余情况为 0。
@@ -76,6 +78,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         {
             IsSuccess = true;
             ErrorCode = 0;
+            ErrorSource = IAPErrorSource.None;
             TableId = tableId;
             OrderId = orderId;
             IsRecoveredOrder = isRecoveredOrder;
@@ -105,17 +108,38 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// </summary>
         /// <param name="tableId">商品配置表行 ID。</param>
         /// <param name="errorCode">store 自定义错误码枚举强转的 int 值。</param>
-        /// <param name="failReason">失败原因描述。</param>
+        /// <param name="errorSource">错误码来源，标识 errorCode 所属的错误码枚举。</param>
+        /// <param name="errorDesc">错误描述。</param>
         /// <param name="customData">调用方传入的自定义数据。</param>
         /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
-        public IAPResult(long tableId, int errorCode, string failReason, string customData, string receiptParam = null)
+        public IAPResult(long tableId, int errorCode, IAPErrorSource errorSource, string errorDesc, string customData, string receiptParam = null)
         {
             IsSuccess = false;
             ErrorCode = errorCode;
+            ErrorSource = errorSource;
             TableId = tableId;
-            FailReason = failReason;
+            ErrorDesc = errorDesc;
             CustomData = customData;
             ReceiptParam = receiptParam;
+        }
+
+        /// <summary>
+        /// 构造已经取得稳定订单号的支付失败结果。
+        /// </summary>
+        /// <param name="tableId">商品配置表行 ID。</param>
+        /// <param name="errorCode">store 自定义错误码枚举强转的 int 值。</param>
+        /// <param name="errorSource">错误码来源，标识 errorCode 所属的错误码枚举。</param>
+        /// <param name="errorDesc">错误描述。</param>
+        /// <param name="customData">调用方传入的自定义数据。</param>
+        /// <param name="orderId">已经发送到服务端的稳定订单号。</param>
+        /// <param name="isRecoveredOrder">是否为补单恢复的历史订单。</param>
+        /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
+        public IAPResult(long tableId, int errorCode, IAPErrorSource errorSource, string errorDesc, string customData, string orderId,
+            bool isRecoveredOrder, string receiptParam = null)
+            : this(tableId, errorCode, errorSource, errorDesc, customData, receiptParam)
+        {
+            OrderId = orderId;
+            IsRecoveredOrder = isRecoveredOrder;
         }
 
         /// <summary>
@@ -132,6 +156,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         {
             IsSuccess = true;
             ErrorCode = 0;
+            ErrorSource = IAPErrorSource.None;
             TableId = tableId;
             OrderId = orderId;
             IsRecoveredOrder = isRecoveredOrder;

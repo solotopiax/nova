@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [0.6.9] - 2026-08-12
+
+### Breaking
+
+- `IIAPResult` 新增 `ErrorSource`、`ErrorDesc` 与 `OrderId`；自定义支付结果实现需同步补齐这些契约字段。
+
+### Added
+
+- 新增 `Nova.Native.OpenNotificationSettingsAsync()`：Android API 26+ 与 iOS 15.4+ 可精准打开当前应用的系统通知设置；不支持或无法精准跳转时返回 `false`，不降级到应用设置页。
+- 已安装 SDK 可在 `Nova/Open SDK URL` 下直接打开官方 Console 与 Readme。
+
+### Fixed
+
+- Pipify 与构建链会临时对齐并恢复 Development Build 状态，并校验 HybridCLR `MethodBridge.cpp` 的 `DEVELOPMENT` 标记，避免实际 Player ABI 与构建参数不一致。
+
 ## [0.6.8] - 2026-08-07
 
 ### Added

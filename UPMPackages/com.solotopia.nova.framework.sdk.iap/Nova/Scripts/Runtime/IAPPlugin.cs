@@ -19,22 +19,24 @@ namespace NovaFramework.SDK.IAP.Runtime
     /// <summary>
     /// IAP 调度插件主类。
     /// 继承 SDKPluginBase，提供多渠道支付（Google/iOS/第三方/代金券）的业务入口。
-    /// 核心支付入口固定为 PayAsync / RestorePurchasesAsync；store 特有能力通过 TryGetCapability 按功能接口取用，
-    /// 避免随 store 增多在此类上堆积转发方法。
+    /// 核心支付入口固定为 PayAsync / RestorePurchasesAsync；商店特有能力通过 TryGetCapability 按功能接口取用，
+    /// 避免随商店增多在此类上堆积转发方法。
     /// </summary>
     public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin
     {
 
         /// <summary>
         /// 异步初始化 IAP 插件。
-        /// 校验配置 → 构造 store 运行时上下文 → 委派 DiscoverAndInitializeStoresAsync 通过反射扫描并初始化所有 store。
-        /// 单个 store 实例化或 InitializeAsync 失败时记录 Warning 后跳过，不影响其余 store 初始化。
+        /// 校验配置 → 构造商店运行时上下文 → 委派 DiscoverAndInitializeStoresAsync 通过反射扫描并初始化所有商店。
+        /// 单个商店实例化或 InitializeAsync 失败时记录 Warning 后跳过，不影响其余商店初始化。
         /// </summary>
         /// <param name="config">由 SDKManager 注入的配置实例，必须为 IAPPluginConfig 类型。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>初始化完成的异步任务。</returns>
         protected override async UniTask OnInitializeAsync(ISDKPluginConfig config, CancellationToken ct)
         {
+            ResetRuntimeTaskCancellation();
+
             IAPPluginConfig iapConfig = config as IAPPluginConfig;
             if (iapConfig == null)
             {
@@ -44,7 +46,7 @@ namespace NovaFramework.SDK.IAP.Runtime
 
             if (iapConfig.Products == null || iapConfig.Products.Count == 0)
             {
-                Log.Warning(LogTag.IAPPlugin, "IAPPlugin 初始化跳过：商品表为空，不创建任何 store。");
+                Log.Warning(LogTag.IAPPlugin, "IAPPlugin 初始化跳过：商品表为空，不创建任何商店。");
                 return;
             }
 
@@ -62,12 +64,13 @@ namespace NovaFramework.SDK.IAP.Runtime
 
         /// <summary>
         /// 异步释放 IAP 插件占用的资源。
-        /// 依次调用各渠道 store 的 DisposeAsync，确保资源按序释放。
+        /// 依次调用各渠道商店的 DisposeAsync，确保资源按序释放。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         /// <returns>释放完成的异步任务。</returns>
         protected override async UniTask OnDisposeAsync(CancellationToken ct)
         {
+            CancelRuntimeTasks();
             m_EventManager?.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
             m_EventManager = null;
             m_CurrentUserId = null;
@@ -77,6 +80,7 @@ namespace NovaFramework.SDK.IAP.Runtime
 
             if (m_Stores == null)
             {
+                DisposeRuntimeTaskCancellation();
                 return;
             }
 
@@ -89,10 +93,11 @@ namespace NovaFramework.SDK.IAP.Runtime
             m_StoreContext = null;
             m_StoreConfigMap = null;
             m_PurchasesTable = null;
+            DisposeRuntimeTaskCancellation();
         }
 
         /// <summary>
-        /// 手动设置当前账号 UID，广播给所有 store。
+        /// 手动设置当前账号 UID，广播给所有商店。
         /// 通常无需主动调用——IAPPlugin 已在初始化时订阅 SDKEventData.UserLogin 自动同步；
         /// 仅在登录事件触达前 IAP 已使用或需要强制切换账号时使用。
         /// </summary>
@@ -120,12 +125,12 @@ namespace NovaFramework.SDK.IAP.Runtime
             if (m_HasDeferredCheckLocalOrders)
             {
                 m_HasDeferredCheckLocalOrders = false;
-                CheckLocalOrdersAsync(CancellationToken.None).Forget();
+                RunBackgroundTask(CheckLocalOrdersAsync, "登录后自动补单扫描");
             }
         }
 
         /// <summary>
-        /// 异步发起支付流程，根据 request 类型路由到对应的 store。
+        /// 异步发起支付流程，根据请求类型路由到对应的商店。
         /// </summary>
         /// <param name="request">支付请求，实现 IIAPRequest 接口的具体子类实例。</param>
         /// <param name="ct">取消令牌。</param>
@@ -135,23 +140,23 @@ namespace NovaFramework.SDK.IAP.Runtime
             if (request == null)
             {
                 Log.Warning(LogTag.IAPPlugin, "IAPPlugin.PayAsync：request 为 null，拒绝处理。");
-                return new IAPResult(0, (int)IAPPluginErrorCode.StoreNotAvailable, "request 为 null。", null) as T;
+                return new IAPResult(0, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, "request 为 null。", null) as T;
             }
             IAPRequest iapRequest = request as IAPRequest;
             IIAPInternalStore store = FindStore(iapRequest);
             if (store == null)
             {
-                Log.Warning(LogTag.IAPPlugin, "IAPPlugin.PayAsync：未找到能处理请求的 store，tableId={0}。", request.TableId);
-                return new IAPResult(request.TableId, (int)IAPPluginErrorCode.StoreNotAvailable, "未找到匹配的支付渠道。", iapRequest?.CustomData) as T;
+                Log.Warning(LogTag.IAPPlugin, "IAPPlugin.PayAsync：未找到能处理请求的商店，tableId={0}。", request.TableId);
+                return new IAPResult(request.TableId, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, "未找到匹配的支付渠道。", iapRequest?.CustomData) as T;
             }
             return await store.PayAsync(iapRequest, ct) as T;
         }
 
         /// <summary>
-        /// 异步恢复历史已购商品，遍历所有 store 收集恢复结果。
+        /// 异步恢复历史已购商品，遍历所有商店收集恢复结果。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
-        /// <returns>所有 store 恢复到的历史订单结果列表。</returns>
+        /// <returns>所有商店恢复到的历史订单结果列表。</returns>
         public async UniTask<IReadOnlyList<T>> RestorePurchasesAsync<T>(CancellationToken ct = default) where T : class, IIAPResult
         {
             var results = new List<T>();
@@ -162,7 +167,7 @@ namespace NovaFramework.SDK.IAP.Runtime
 
             for (int i = 0; i < m_Stores.Count; i++)
             {
-                // 各 store 自行决定恢复订阅/非消耗品，插件层只聚合返回结果。
+                // 各商店自行决定恢复订阅/非消耗品，插件层只聚合返回结果。
                 IReadOnlyList<IAPResult> storeResults = await m_Stores[i].RestorePurchasesAsync(ct);
                 for (int j = 0; j < storeResults.Count; j++)
                 {
@@ -177,11 +182,11 @@ namespace NovaFramework.SDK.IAP.Runtime
         }
 
         /// <summary>
-        /// 异步触发所有 store 的本地补单扫描。
+        /// 异步触发所有商店的本地补单扫描。
         /// 若调用时尚未同步账号 UID，会缓存一次扫描请求，并在 SetUserId 后自动补执行。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
-        /// <returns>所有 store 补单扫描完成的异步任务。</returns>
+        /// <returns>所有商店补单扫描完成的异步任务。</returns>
         public async UniTask CheckLocalOrdersAsync(CancellationToken ct = default)
         {
 
@@ -224,9 +229,9 @@ namespace NovaFramework.SDK.IAP.Runtime
         }
 
         /// <summary>
-        /// 运行时强制启用或禁用指定渠道 store。
-        /// 禁用后该 store 不再参与 PayAsync / RestorePurchasesAsync / CheckLocalOrdersAsync 路由；
-        /// 从禁用转为启用时，若 store 尚未完成初始化（首次启用懒初始化），会自动触发 InitializeAsync。
+        /// 运行时强制启用或禁用指定渠道商店。
+        /// 禁用后该商店不再参与 PayAsync / RestorePurchasesAsync / CheckLocalOrdersAsync 路由；
+        /// 从禁用转为启用时，若商店尚未完成初始化（首次启用懒初始化），会自动触发 InitializeAsync。
         /// </summary>
         /// <param name="storeType">目标渠道类型。</param>
         /// <param name="enabled">true = 启用，false = 禁用。</param>
@@ -251,24 +256,24 @@ namespace NovaFramework.SDK.IAP.Runtime
 
                 if (enabled)
                 {
-                    // 禁用态 store 可能尚未初始化，重新启用时触发一次懒初始化。
+                    // 禁用态商店可能尚未初始化，重新启用时触发一次懒初始化。
                     IIAPStoreConfig cfg = null;
                     m_StoreConfigMap?.TryGetValue(storeType, out cfg);
                     await store.EnableAsync(m_PurchasesTable, cfg, m_StoreContext, ct);
                 }
                 return;
             }
-            Log.Warning(LogTag.IAPPlugin, "SetStoreEnabled：未找到 StoreType={0} 对应的 store 实例。", storeType);
+            Log.Warning(LogTag.IAPPlugin, "SetStoreEnabled：未找到 StoreType={0} 对应的商店实例。", storeType);
         }
 
         /// <summary>
-        /// 查询第一个实现了指定功能接口的 store，并以该接口类型返回。
-        /// 业务层通过此方法取用 store 特有能力（如 IIAPSubscriptionCapable、IIAPQueryCapable），
+        /// 查询第一个实现了指定功能接口的商店，并以该接口类型返回。
+        /// 业务层通过此方法取用商店特有能力（如 IIAPSubscriptionCapable、IIAPQueryCapable），
         /// 无需 IAPPlugin 为每种能力单独暴露转发方法。
         /// </summary>
         /// <typeparam name="T">目标功能接口类型，如 IIAPSubscriptionCapable。</typeparam>
-        /// <param name="capability">找到时输出实现该接口的 store；未找到时输出 null。</param>
-        /// <returns>找到匹配 store 时返回 true，否则返回 false。</returns>
+        /// <param name="capability">找到时输出实现该接口的商店；未找到时输出 null。</param>
+        /// <returns>找到匹配商店时返回 true，否则返回 false。</returns>
         public bool TryGetCapability<T>(out T capability) where T : class, IIAPCapable
         {
             if (m_Stores != null)

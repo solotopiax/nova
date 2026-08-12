@@ -14,6 +14,9 @@ using NovaFramework.SDK.IAP.Runtime;
 
 namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
+    /// <summary>
+    /// MobilePurchaseService 的字段与属性分部。
+    /// </summary>
     internal sealed partial class MobilePurchaseService
     {
         /// <summary>
@@ -31,6 +34,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// 当前活跃支付请求的透传字符串数据，供购买失败回调回传给业务层。
         /// </summary>
         private string m_CurrentCustomData;
+
+        /// <summary>
+        /// 当前活跃支付请求的票据透传参数，配合 InPayTableId 确定唯一未完成订单。
+        /// </summary>
+        private string m_CurrentReceiptParam;
 
         /// <summary>
         /// 订阅升降级时 Android ProrationMode，默认 0（ImmediateWithTimeProration）。

@@ -19,7 +19,7 @@ using UnityEngine.UI;
 namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
-    /// Native 模块完整演示页：查询通知权限、请求常规权限、请求 iOS Provisional 以及打开应用设置。
+    /// Native 模块完整演示页：查询通知权限、请求常规权限、请求 iOS Provisional，以及打开应用设置与精准通知设置。
     /// 所有系统权限请求均由用户点击显式触发，页面打开时不会自动弹窗。
     /// </summary>
     public sealed class DemoNativeView : BaseDemoView
@@ -29,11 +29,12 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private Button m_RequestStandardButton;
         [SerializeField] private Button m_RequestProvisionalButton;
         [SerializeField] private Button m_OpenSettingsButton;
+        [SerializeField] private Button m_OpenNotificationSettingsButton;
 
         private CancellationTokenSource m_Cts;
 
         /// <summary>
-        /// 注册四个显式操作按钮，并就近显示对应公开 API。
+        /// 注册五个显式操作按钮，并就近显示对应公开 API。
         /// </summary>
         /// <param name="userData">用户自定义数据，本 View 不使用。</param>
         protected override void OnInit(object userData)
@@ -69,6 +70,14 @@ namespace NovaFramework.Samples.Runtime
             {
                 m_OpenSettingsButton.onClick.AddListener(OnOpenSettingsButtonClick);
                 SetButtonApiHint(m_OpenSettingsButton, "Nova.Native.OpenAppSettingsAsync()");
+            }
+
+            if (m_OpenNotificationSettingsButton != null)
+            {
+                m_OpenNotificationSettingsButton.onClick.AddListener(OnOpenNotificationSettingsButtonClick);
+                SetButtonApiHint(
+                    m_OpenNotificationSettingsButton,
+                    "Nova.Native.OpenNotificationSettingsAsync()");
             }
         }
 
@@ -113,7 +122,12 @@ namespace NovaFramework.Samples.Runtime
 
         private void OnOpenSettingsButtonClick()
         {
-            OpenSettingsAsync().Forget();
+            OpenAppSettingsAsync().Forget();
+        }
+
+        private void OnOpenNotificationSettingsButtonClick()
+        {
+            OpenNotificationSettingsAsync().Forget();
         }
 
         /// <summary>
@@ -210,9 +224,9 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 打开系统设置；返回值只代表成功发起跳转，不代表用户修改了权限。
+        /// 打开当前应用设置根页；返回值只代表成功发起跳转，不代表用户修改了权限。
         /// </summary>
-        private async UniTaskVoid OpenSettingsAsync()
+        private async UniTaskVoid OpenAppSettingsAsync()
         {
             if (!TryGetNative(out _))
             {
@@ -224,12 +238,36 @@ namespace NovaFramework.Samples.Runtime
                 bool opened = await Nova.Native.OpenAppSettingsAsync();
                 AppendFeedback(
                     "Nova.Native.OpenAppSettingsAsync() -> opened=" + opened +
-                    "（仅表示发起跳转，不代表权限已修改）",
+                    "（仅表示已发起当前应用设置根页跳转，不代表权限已修改）",
                     opened ? FeedbackLevel.Success : FeedbackLevel.Warn);
             }
             catch (Exception exception)
             {
                 AppendException("Nova.Native.OpenAppSettingsAsync()", exception);
+            }
+        }
+
+        /// <summary>
+        /// 精准打开当前应用通知设置；不支持时返回 false，绝不改为打开应用设置根页。
+        /// </summary>
+        private async UniTaskVoid OpenNotificationSettingsAsync()
+        {
+            if (!TryGetNative(out _))
+            {
+                return;
+            }
+
+            try
+            {
+                bool opened = await Nova.Native.OpenNotificationSettingsAsync();
+                AppendFeedback(
+                    "Nova.Native.OpenNotificationSettingsAsync() -> opened=" + opened +
+                    "（true 仅表示已发起精准通知设置跳转；false 表示不支持或启动失败，且不会回退到应用设置）",
+                    opened ? FeedbackLevel.Success : FeedbackLevel.Warn);
+            }
+            catch (Exception exception)
+            {
+                AppendException("Nova.Native.OpenNotificationSettingsAsync()", exception);
             }
         }
 

@@ -1,7 +1,7 @@
 ---
 id: PAT-141
 title: 封装第三方 SDK 时源目录只读，文件完整搬入不增删改
-summary: 第三方源目录只读，封装是复制入包，不写不删不改不省略
+summary: 第三方源码默认只读，确需修改时必须先取得用户明确授权
 category: module
 type: pattern
 status: active
@@ -13,12 +13,14 @@ aliases:
 keywords:
   - PAT-141
   - 第三方源码只读
+  - 第三方源码修改授权
   - Vendor SDK
   - SDK封装
 tags: [pattern, nova, sdk, external, discipline]
 related:
   - "[[PAT-33-sdk-plugin-sop|PAT-33]]"
   - "[[PAT-41-upm-package-layout-and-manifest|PAT-41]]"
+  - "[[PAT-119-upm-private-fork-local-diff-marking|PAT-119]]"
   - "[[ADR-070-sdk-enable-via-configmaster-enabledsdks|ADR-070]]"
 ---
 
@@ -28,12 +30,15 @@ related:
 
 - 把第三方 SDK / 库（原厂交付目录，如 `~/Downloads/<vendor>`）封装成 Nova UPM 包时。
 - 任何"以第三方原始交付物为输入"的加工任务。
+- 修改 `UPMPackages/**/Core` 等已经纳入 Nova 仓库的第三方插件或本地 fork 源码时。
 
 ## 核心做法（What & How）
 
 - **对第三方源目录只读**：只 `cp` / 读取，**绝不**在源目录 `Write` / 新建 / 删除 / 改写任何文件（包括临时笔记、分析文档）。加工产物一律落到 Nova 仓库内。
 - **第三方文件完整搬入包**：源目录里的全部文件（含 `README.md` / 说明文档 / LICENSE / `.meta`）原样复制进包的 `Core/`（或对应 vendor 目录），**不省略、不替换、不改写**。包级 README 另写新文件，但不得以此为由丢弃厂商原 README。
-- **不改第三方代码**：厂商代码原样保留；确需适配（如补依赖引用）只做最小必要且可追溯的改动，并在包文档记录。
+- **第三方源码默认只读**：优先使用插件公开能力或在 Nova 适配层组合实现，不得仅因实现方便直接修改插件源码。
+- **源码修改必须先授权**：现有公开能力与适配层都无法满足需求时，先向用户说明必须修改的原因、影响范围和维护代价；只有取得明确授权后，才允许实施最小必要改动。
+- **授权后仍须可追溯**：获准修改本地 fork 时，按 [[PAT-119-upm-private-fork-local-diff-marking|PAT-119]] 留下文件级标注和包级变更记录；这些记录不能替代事前授权。
 - **对照厂商文档落地**：严格对照厂商 README / 接入文档实现封装，接入顺序与 API 语义逐条对齐，不臆测。
 
 ## 为什么这么做（Why）
@@ -47,6 +52,8 @@ related:
 - ❌ 往第三方源目录 `Write` 分析 / 扫盲 / 笔记文档（污染源目录）。
 - ❌ 封装时"我们写新 README 就不搬厂商 README"——丢弃第三方说明文档。
 - ❌ 改动第三方源目录内任何文件（含删除、重命名、内容修改）。
+- ❌ 未核对插件公开能力与 Nova 适配层就直接修改第三方源码。
+- ❌ 先修改第三方源码，再以注释、CHANGELOG 或“本地 fork”身份补做解释。
 - ❌ 不读厂商 README 就凭记忆实现封装，导致接入顺序 / 语义偏差。
 
 ## 跨项目复用提示
@@ -65,4 +72,5 @@ related:
 
 - 相关 Pattern：[[PAT-33-sdk-plugin-sop|PAT-33]]（SDK 插件接入 SOP）
 - 相关 Pattern：[[PAT-41-upm-package-layout-and-manifest|PAT-41]]（UPM 包布局）
+- 相关 Pattern：[[PAT-119-upm-private-fork-local-diff-marking|PAT-119]]（获准修改后的差异标注）
 - 相关 ADR：[[ADR-070-sdk-enable-via-configmaster-enabledsdks|ADR-070]]（DataMaster 封装同期决策）

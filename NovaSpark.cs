@@ -85,7 +85,7 @@ namespace NovaBootstrap
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.6.8";
+        private const string c_FrameworkValue = "0.6.9";
 
         /// <summary>PlugPals 配置文件相对工程根的路径。</summary>
         private const string c_PlugPalsRelativePath = "ProjectSettings/Nova/PlugPalsRegistries.json";

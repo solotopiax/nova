@@ -1,21 +1,16 @@
-# Nova Framework - SDK - IAP - ThirdPay 文档索引
+# ThirdPay 文档索引
 
-> 本包提供第三方支付 store，实现浏览器 / 应用内 WebView 两类拉起路径。
-> 当前代码已经从旧版“创建订单后再打开 WebView”的设计，演进为“本地造单号 + AES URL + 三态 OpenResult + 补单”的实现。
+本包提供应用内第三方支付 Store，仅支持 InAppAuto。
 
-## 业务侧公开 API
+| 文档 | 内容 |
+|---|---|
+| [ThirdPayStore.md](./ThirdPayStore.md) | 接入流程、订单状态和 Google Policy 行为 |
+| [ThirdPayStoreConfig.md](./ThirdPayStoreConfig.md) | Store 配置字段 |
 
-| 类型 | 说明 | 文档 |
-|---|---|---|
-| `ThirdPayStore` | 第三方支付 store，负责拉商品、拉起支付页、补单与验单 | [ThirdPayStore.md](./ThirdPayStore.md) |
-| `ThirdPayStoreConfig` | 第三方支付配置，承载打开模式、支付页地址与三个协议名 | [ThirdPayStoreConfig.md](./ThirdPayStoreConfig.md) |
+主要公开类型：
 
-## 关键数据类型
+- `IIAPThirdPayCapable`：业务侧能力入口。
+- `IAPThirdPayRequest`：支付请求，包含可选 WebView 适配区域 `AdaptRectTransform`。
+- `ThirdIapNetService`：与 Mobile IAP 同层的商品列表、渠道参数、待补发订单和批量验单协议封装。
 
-- `IAPThirdPayRequest`：第三方支付请求，包含 `PayTypeId`、`PayMethod`、`AdaptRectTransform`
-- `ThirdPayOpenResult`：支付页打开结果三态（`Success / Cancel / Failed`）
-
-## 相关
-
-- [ThirdPayStore.md](./ThirdPayStore.md) — 第三方支付 store
-- [ThirdPayStoreConfig.md](./ThirdPayStoreConfig.md) — 第三方支付配置
+支付 URL 构造、UniWebView 5.11.1 生命周期、支付回调和默认面板均由包内实现，业务无需注入支付页打开器。

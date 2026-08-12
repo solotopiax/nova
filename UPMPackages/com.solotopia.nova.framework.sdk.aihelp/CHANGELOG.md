@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-08-12
+
+### Added
+
+- 新增 `Nova/Open SDK URL/AIHelp Console` 与 `AIHelp Readme`，可直接打开 AIHelp 官方后台和 Unity 接入文档。
+
 ## [0.0.5] - 2026-08-06
 
 ### Changed

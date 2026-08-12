@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Xml;
 using HybridCLR.Editor;
 using NovaFramework.Runtime;
@@ -23,6 +24,62 @@ namespace NovaFramework.Editor
     {
         public static partial class HybridCLR
         {
+            /// <summary>
+            /// 校验 MethodBridge.cpp 中记录的开发构建标记与即将执行的 Player 构建一致。
+            /// HybridCLR 开启时，二者不一致会使条件编译类型的 ABI 与最终 IL2CPP 不匹配。
+            /// </summary>
+            /// <param name="developmentBuild">即将传给 BuildPipeline 的 DevelopmentBuild。</param>
+            internal static void ValidateMethodBridgeDevelopmentBuild(bool developmentBuild)
+            {
+                if (!SettingsUtil.Enable)
+                {
+                    return;
+                }
+
+                string methodBridgePath = Path.Combine(SettingsUtil.GeneratedCppDir, "MethodBridge.cpp");
+                if (!File.Exists(methodBridgePath))
+                {
+                    throw new InvalidOperationException(
+                        $"[HybridCLR] 未找到 MethodBridge.cpp：{methodBridgePath}。请先执行 HybridCLR Generate All。");
+                }
+
+                if (!TryReadMethodBridgeDevelopmentBuild(File.ReadAllText(methodBridgePath), out bool generatedDevelopmentBuild))
+                {
+                    throw new InvalidOperationException(
+                        $"[HybridCLR] MethodBridge.cpp 缺少有效 DEVELOPMENT 标记：{methodBridgePath}。请先执行 HybridCLR Generate All。");
+                }
+
+                if (generatedDevelopmentBuild != developmentBuild)
+                {
+                    throw new InvalidOperationException(
+                        $"[HybridCLR] MethodBridge.cpp DEVELOPMENT={generatedDevelopmentBuild} 与即将执行的 DevelopmentBuild={developmentBuild} 不一致。请先执行与目标构建档位一致的 HybridCLR Generate All。");
+                }
+            }
+
+            /// <summary>
+            /// 严格解析 HybridCLR 生成的 MethodBridge.cpp DEVELOPMENT 标记。
+            /// </summary>
+            /// <param name="source">MethodBridge.cpp 文件内容。</param>
+            /// <param name="developmentBuild">解析得到的开发构建值。</param>
+            /// <returns>仅当存在规范的 // DEVELOPMENT=0 或 // DEVELOPMENT=1 独立行时返回 true。</returns>
+            internal static bool TryReadMethodBridgeDevelopmentBuild(string source, out bool developmentBuild)
+            {
+                developmentBuild = false;
+                if (string.IsNullOrEmpty(source))
+                {
+                    return false;
+                }
+
+                Match match = Regex.Match(source, @"(?m)^// DEVELOPMENT=([01])\r?$");
+                if (!match.Success)
+                {
+                    return false;
+                }
+
+                developmentBuild = match.Groups[1].Value == "1";
+                return true;
+            }
+
             /// <summary>
             /// 读取当前激活 ConfigMaster；未绑定时抛异常，提示用户先切到目标 sample 或在 ConfigWindow 绑定。
             /// </summary>

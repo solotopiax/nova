@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.max",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "8.6.4",
   "displayName": "Nova Framework - SDK - MAX",

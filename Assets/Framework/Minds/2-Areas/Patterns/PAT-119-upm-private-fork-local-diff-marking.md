@@ -19,6 +19,7 @@ tags: [pattern, upm, fork, maintainability]
 related:
   - "[[ADR-049-yooasset-settings-via-configmaster]]"
   - "[[PAT-41-upm-package-layout-and-manifest|PAT-41]]"
+  - "[[PAT-141-vendor-source-readonly|PAT-141]]"
 ---
 
 # PAT-119：UPM 私有 fork 必须显式标注本地改动
@@ -30,6 +31,8 @@ related:
 - 未来仍需要和上游版本持续同步
 
 ## 核心规则
+
+本条只规定**已经获得明确授权**后的差异记录方式，不构成修改第三方源码的授权。任何第三方插件或本地 fork 源码改动，必须先遵循 [[PAT-141-vendor-source-readonly|PAT-141]] 的只读与授权门。
 
 本地 fork 改动必须留下两类痕迹：
 
@@ -69,6 +72,7 @@ related:
 ## 反模式
 
 - 静默改包代码不留痕
+- 未取得明确授权就修改第三方源码，再用本地标注或 CHANGELOG 为既成改动补手续
 - 只留局部注释，不做文件级说明
 - 代码改了但包级 CHANGELOG 不记
 - 改包同时自行发散独立大版本号
@@ -82,3 +86,4 @@ related:
 
 - [[ADR-049-yooasset-settings-via-configmaster]]
 - [[PAT-41-upm-package-layout-and-manifest|PAT-41]]
+- [[PAT-141-vendor-source-readonly|PAT-141]]

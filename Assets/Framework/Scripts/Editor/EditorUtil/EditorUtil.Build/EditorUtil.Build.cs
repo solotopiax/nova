@@ -43,8 +43,13 @@ namespace NovaFramework.Editor
                     "{0} 开始打包：target={1}, output={2}, dev={3}, mode={4}",
                     c_LogPrefix, target, outputPath, developmentBuild, buildMode);
                 BuildReport report;
+                bool previousDevelopmentBuild = EditorUserBuildSettings.development;
                 try
                 {
+                    // HybridCLR 生成阶段读取全局 EditorUserBuildSettings，而此入口使用显式 BuildOptions。
+                    // 构建期间临时镜像并在 finally 恢复，确保两条链路采用相同 ABI 档位。
+                    EditorUserBuildSettings.development = developmentBuild;
+                    HybridCLR.ValidateMethodBridgeDevelopmentBuild(developmentBuild);
                     report = BuildPipeline.BuildPlayer(opts);
                     if (report.summary.result == BuildResult.Failed)
                     {
@@ -53,6 +58,7 @@ namespace NovaFramework.Editor
                 }
                 finally
                 {
+                    EditorUserBuildSettings.development = previousDevelopmentBuild;
                     // 全局 postprocess 可能因构建取消或其他回调异常而未执行；Nova 自有入口在此追加同步兜底。
                     YooAssetRuntimeSettingsStaging.CleanupAfterBuild();
                 }
