@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
@@ -571,6 +572,16 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
+        /// 解析验单协议使用的商品价格，固定使用支付表配置价格，避免平台本地化价格受 Storefront 影响。
+        /// </summary>
+        /// <param name="entry">当前订单对应的 IAP 商品配置。</param>
+        /// <returns>商品配置价格；无法解析时返回 0。</returns>
+        private static float ResolveVerifyPrice(IAPProductEntry entry)
+        {
+            return float.TryParse(entry?.Price, NumberStyles.Float, CultureInfo.InvariantCulture, out float price) ? price : 0f;
+        }
+
+        /// <summary>
         /// 将订单标记为验单失败并通知首次支付等待点；补单路径只保留存档，不重复触发业务失败事件。
         /// </summary>
         /// <param name="context">目标订单验单上下文。</param>
@@ -1045,7 +1056,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 {
                     ProductId = context.Entry?.ProductID ?? string.Empty,
                     Token = context.Record.GoogleToken ?? string.Empty,
-                    Price = context.Product != null ? (float)context.Product.metadata.localizedPrice : 0f,
+                    Price = ResolveVerifyPrice(context.Entry),
                 });
             }
             NetResponse<PbNetMobileVerifyResp> resp = await m_Hub.PayService.VerifyGoogleAsync(cmdName, items, isSubscription);
@@ -1058,7 +1069,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 items.Add(new PbNetAppleVerifyIapOrderItem
                 {
                     OrderId = context.TransactionId,
-                    Price = context.Product != null ? (float)context.Product.metadata.localizedPrice : 0f,
+                    Price = ResolveVerifyPrice(context.Entry),
                 });
             }
             NetResponse<PbNetMobileVerifyResp> resp = await m_Hub.PayService.VerifyAppleAsync(cmdName, items, isSubscription);

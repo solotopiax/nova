@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-08-12
+
+### Fixed
+
+- Google / Apple 验单请求的 `price` 改为支付表 `IAPProductEntry.Price`，并按不受地区影响的格式解析；不再使用 Unity IAP 的 Storefront 本地化价格，避免服务端验单金额漂移。
+
 ## [0.1.5] - 2026-08-12
 
 ### Fixed

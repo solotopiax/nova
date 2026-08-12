@@ -77,7 +77,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="cmdName">验单 NetCmd 协议名，普通订单取 MobileStoreConfig.GoogleVerifyCmdName，订阅订单取 GoogleVerifySubscriptionCmdName。</param>
         /// <param name="productId">应用内商品 SKU。</param>
         /// <param name="token">Google Play purchase token（服务端校验凭据）。</param>
-        /// <param name="price">商品本地化价格，取不到时为 0。</param>
+        /// <param name="price">支付表配置价格，取不到时为 0。</param>
         /// <param name="isSubscription">true = 订阅请求；false = 普通内购请求。</param>
         /// <returns>包含验单响应数据或错误信息的 NetResponse。</returns>
         public UniTask<NetResponse<PbNetMobileVerifyResp>> VerifyGoogleAsync(string cmdName, string productId, string token, float price, bool isSubscription)
@@ -133,7 +133,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         /// <param name="cmdName">验单 NetCmd 协议名，普通订单取 MobileStoreConfig.AppleVerifyCmdName，订阅订单取 AppleVerifySubscriptionCmdName。</param>
         /// <param name="orderId">客户端订单号（透传到服务端，服务端按订单号校验）。</param>
-        /// <param name="price">商品本地化价格，取不到时为 0。</param>
+        /// <param name="price">支付表配置价格，取不到时为 0。</param>
         /// <param name="isSubscription">true = 订阅请求；false = 普通内购请求。</param>
         /// <returns>包含验单响应数据或错误信息的 NetResponse。</returns>
         public UniTask<NetResponse<PbNetMobileVerifyResp>> VerifyAppleAsync(string cmdName, string orderId, float price, bool isSubscription)
