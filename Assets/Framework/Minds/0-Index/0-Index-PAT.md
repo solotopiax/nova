@@ -177,6 +177,7 @@ auto_generated: true
 - [PAT-145 UPM 发布先审真实安装链再判级联](../2-Areas/Patterns/PAT-145-upm-install-chain-cascade-audit.md) — 发版前沿真实安装入口审计依赖级联
 - [PAT-147 UPM 发版前禁止默认批量运行 Test Runner](../2-Areas/Patterns/PAT-147-upm-publish-no-bulk-test-runner.md) — UPM发版禁默认批量Test Runner
 - [PAT-159 iOS Player 导出后处理必须以产物级门禁验收](../2-Areas/Patterns/PAT-159-ios-player-export-postprocess-artifact-gate.md) — iOS 后处理以产物与编译闭环验收
+- [PAT-162 公开快照按包边界分类，并按暂存态验收 Git LFS](../2-Areas/Patterns/PAT-162-public-package-boundary-and-staged-lfs-validation.md) — 公开包边界与暂存态 LFS 验收
 - [PAT-53 发版前校验 CHANGELOG 当前版本节存在，不靠人工自觉](../2-Areas/Patterns/PAT-53-changelog-grep-script-enforce.md) — 发版前校验 CHANGELOG 当前版本节
 - [PAT-55 Python 工具脚本优先用 cwd 或环境变量解析项目根](../2-Areas/Patterns/PAT-55-python-script-cwd-or-env-root.md) — 工具脚本不要把项目根硬绑定到 `__file__` 的目录深度
 - [PAT-62 README / CHANGELOG 双层同步铁律](../2-Areas/Patterns/PAT-62-readme-changelog-dual-sync.md) — 发版前工程根与包内两层文档全字段对齐，禁单层更新
@@ -185,4 +186,4 @@ auto_generated: true
 
 
 ---
-_共 119 条，分布于 18 个 category。_
+_共 120 条，分布于 18 个 category。_

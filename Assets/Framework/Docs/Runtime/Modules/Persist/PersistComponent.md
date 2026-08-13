@@ -2,7 +2,7 @@
 
 `PersistComponent` 是 `Persist` 模块的场景入口。
 
-它不直接做读写，而是在 `Awake` 时反射创建三套后端，在 `LoadAsync()` 里并行初始化，然后把访问入口统一暴露为：
+它不直接做读写，而是在 `Awake` 时反射创建三种存储实现，在 `LoadAsync()` 里并行初始化，然后把访问入口统一暴露为：
 
 - `Nova.Persist.PlayerPrefs`
 - `Nova.Persist.FileFragment`
@@ -10,9 +10,9 @@
 
 ## 什么时候先看这页
 
-- 你要确认三套持久化后端是怎么被创建和初始化的。
+- 你要确认三种持久化存储实现是怎么被创建和初始化的。
 - 你在排查 `Cur...ManagerTypeName` 配错导致的启动异常。
-- 你要决定某类数据该落到哪一种后端。
+- 你要决定某类数据该落到哪一种存储实现。
 
 ## 依赖与边界
 
@@ -26,13 +26,13 @@
 
 ### 它对外负责什么
 
-- 从 Inspector 指定的类型名创建三个后端实例
+- 从 Inspector 指定的类型名创建三个存储实现实例
 - 把 Inspector 配置翻译成三个具体 `Config`
 - 统一提供三种持久化入口
 
 ### 它不负责什么
 
-- 不负责后端内部读写逻辑
+- 不负责存储实现内部读写逻辑
 - 不负责调度每一帧保存，真正的自动保存由各 Manager 自己处理
 - 不负责在 `Awake` 里完成初始化落盘，它只负责创建实例
 
@@ -48,18 +48,18 @@
 
 任一创建失败都会直接抛 `InvalidOperationException`，不会降级运行。
 
-### 2. LoadAsync 才是真正的后端就绪点
+### 2. LoadAsync 才是真正的存储实现就绪点
 
 `LoadAsync()` 不是重复执行型方法，而是带缓存的惰性任务：
 
 - 第一次调用时启动 `RunLoadAsync()`
 - 后续调用返回同一份 `UniTask`
 
-这保证了外部可以多处 await，而不会重复初始化三套后端。
+这保证了外部可以多处 await，而不会重复初始化三种存储实现。
 
-### 3. 三后端会并行初始化
+### 3. 三种存储实现会并行初始化
 
-`RunLoadAsync()` 用 `UniTask.WhenAll(...)` 同时初始化三套后端：
+`RunLoadAsync()` 用 `UniTask.WhenAll(...)` 同时初始化三种存储实现：
 
 - `PlayerPrefsManagerConfig`
 - `FileFragmentManagerConfig`
@@ -67,7 +67,9 @@
 
 其中 SQLite 额外接收 `CipherPassword`。
 
-### 4. Inspector 字段决定后端行为
+任一存储实现启用 AES 时，组件会在进入这段并行初始化前确认 `Util.Encrypt.AES` 默认 Key/IV 已由 `Nova.Config.LoadAsync()` 的隐私配置注入。缺配会记录包含 `Nova/Open Config → 通用配置 → 隐私配置` 的 Error 并抛出，避免 PlayerPrefs/SQLite 的惰性读取让 `LoadAsync()` 表面成功、实际尚未解密存档。标准启动链由 `ProcedureLoadDll` 先等待 Config；业务 `ProcedurePreload` 只需随后等待 Persist。自定义启动链若绕过 `ProcedureLoadDll`，仍必须先等待 Config，再等待 Persist。
+
+### 4. Inspector 字段决定存储实现行为
 
 组件层真正持有的是三类信息：
 
@@ -85,7 +87,8 @@ SQLite 还多一个数据库级 `CipherPassword`。
 
 ## 风险点 / 易错点
 
-- 只创建不初始化：在预加载流程完成前就读写后端，等于绕过就绪保证。
+- 只创建不初始化：在预加载流程完成前就读写存储实现，等于绕过就绪保证。
+- 启用 AES 却绕过标准启动链先加载 Persist：会因默认 Key/IV 未就绪直接失败。标准链由 `ProcedureLoadDll` 先加载 Config；自定义链必须先执行 `await Nova.Config.LoadAsync()`，再执行 `await Nova.Persist.LoadAsync()`。
 - `LoadAsync()` 失败会记日志并继续向上抛异常，不是静默失败。
 - 类型名必须是可实例化的实现类全名，而不是接口或抽象基类。
 - 组件销毁时只清引用和任务缓存，不主动替代 `FrameworkManagersGroup` 的正常 shutdown 顺序。
@@ -103,4 +106,3 @@ SQLite 还多一个数据库级 `CipherPassword`。
 - [FileFragmentManager.md](FileFragmentManager.md)
 - [SQLiteManager.md](SQLiteManager.md)
 - [PersistManagerBase.md](PersistManagerBase.md)
-

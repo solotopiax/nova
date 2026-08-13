@@ -6,6 +6,17 @@
 
 ---
 
+## [0.6.11] - 2026-08-13
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.11]` 节。
+
+### Changed
+
+- 发布 Framework `0.6.11`、Alibaba Cloud OSS Editor Tool `0.0.2` 与 BestHTTP 适配包 `0.1.5`；内部 Best HTTP 升级至 `3.0.19`，Best TLS Security 保持 `3.0.5`。
+- Framework 的 AES 缺配诊断指向隐私配置的当前坐标；启用 AES 的 Persist 存储实现会在加载前校验默认凭据，标准顺序为先加载 Config 再加载 Persist。
+- Alibaba Cloud OSS 改为可选 Editor 工具包，不再进入 Player；缺少时 CDN 面板仅禁用 OSS 部署并提供安装入口。
+- `NovaSpark.cs` 固定 Framework `0.6.11` 与 BestHTTP `0.1.5`；EDM `1.2.188` 与 unity-mcp `v10.1.2` 保持当前版本。
+
 ## [0.6.9] - 2026-08-12
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.9]` 节。

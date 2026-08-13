@@ -50,7 +50,7 @@ namespace NovaFramework.Editor
 
             ResolveInspectorAESCredentials();
 
-            // 各后端初始化
+            // 各存储实现初始化
             OnEnablePlayerPrefs();
             OnEnableFileFragment();
 #if !UNITY_WEBGL

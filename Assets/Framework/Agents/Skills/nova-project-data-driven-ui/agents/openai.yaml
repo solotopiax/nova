@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 数据驱动界面"
+  short_description: "编排已有数据表与业务界面的安全接入导出和运行验证流程"
+  default_prompt: "使用 $nova-project-data-driven-ui 为已有表格数据创建并验证一个 Nova 业务界面。"

@@ -2,7 +2,7 @@
 
 ## 1. 目标与边界
 
-Best HTTP 3.0.18 与 Best TLS Security 3.0.5 在商业库内部采集请求生命周期和底层结构化错误；商业库只依赖后端无关的 `IBestHttpTelemetrySink`，不依赖 Nova、TGA 或其他上报框架。
+Best HTTP 3.0.19 与 Best TLS Security 3.0.5 在商业库内部采集请求生命周期和底层结构化错误；商业库只依赖后端无关的 `IBestHttpTelemetrySink`，不依赖 Nova、TGA 或其他上报框架。
 
 `com.solotopia.nova.framework.besthttp` 负责在运行时自动注册 sink，并将事件原样扇出到 Nova 中所有已初始化且可用的 `ITrackPlugin`。单个插件异常会被隔离，不改变网络请求结果。
 

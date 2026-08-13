@@ -91,7 +91,7 @@ namespace NovaFramework.Editor
 
             if (!IsValidInspectorAESSecret(privacy?.AESKey) || !IsValidInspectorAESSecret(privacy?.AESIV))
             {
-                Log.Error(LogTag.Encrypt, "Persist Inspector 无法读取 AES 配置：隐私配置中的 AES-Key 与 AES-IV 按 UTF-8 编码后必须各为 16 字节。");
+                Log.Error(LogTag.Encrypt, "Persist Inspector 无法读取 AES 配置：请在 Nova/Open Config → 通用配置 → 隐私配置中为当前合法坐标配置 AES-Key / AES-IV（UTF-8 各 16 字节）。");
                 return;
             }
             m_EditorAESKey = privacy.AESKey;
@@ -118,7 +118,7 @@ namespace NovaFramework.Editor
             {
                 return true;
             }
-            Log.Error(LogTag.Encrypt, "Persist Inspector 的 AES 操作已取消：请先在 Nova/Open Config → 通用配置 → 隐私配置中为当前坐标配置有效的 AES-Key/AES-IV。");
+            Log.Error(LogTag.Encrypt, "Persist Inspector 的 AES 操作已取消：请先在 Nova/Open Config → 通用配置 → 隐私配置中为当前合法坐标配置有效的 AES-Key / AES-IV（UTF-8 各 16 字节）。");
             return false;
         }
 
@@ -133,7 +133,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制管理器类型选择区（三后端下拉选择 + 自定义扩展说明）。
+        /// 绘制管理器类型选择区（三种存储实现下拉选择 + 自定义扩展说明）。
         /// </summary>
         private void DrawManagerSection()
         {
@@ -145,7 +145,7 @@ namespace NovaFramework.Editor
                 "(1)实现 IPlayerPrefsManager 接口的自定义类型将出现在 PlayerPrefs 管理器列表",
                 "(2)实现 IFileFragmentManager 接口的自定义类型将出现在 FileFragment 管理器列表",
                 "(3)实现 ISQLiteManager 接口的自定义类型将出现在 SQLite 管理器列表",
-                "(4)SQLite 后端在 WebGL 平台以静默空操作运行",
+                "(4)SQLite 在 WebGL 平台以静默空操作运行",
                 "(5)WebGL 下 Initialize 输出警告，Get 返回默认值，Set 被忽略"
             });
             EditorUtil.Draw.Line();
@@ -175,7 +175,7 @@ namespace NovaFramework.Editor
 #endif
             EditorUtil.Draw.HelpBox(MessageType.Info, new[]
             {
-                "(1)AES 加密勾选后该后端写入自动加密、读取自动解密",
+                "(1)AES 加密勾选后当前存储实现写入自动加密、读取自动解密",
                 "(2)Inspector 始终以明文展示存档内容",
                 "(3)切换 AES 开关会立即对已有存档执行批量迁移",
                 "(4)迁移确保开关状态与实际存储格式一致",
@@ -187,7 +187,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制自动保存配置区（三后端各自的自动保存间隔）。
+        /// 绘制自动保存配置区（三种存储实现各自的自动保存间隔）。
         /// </summary>
         private void DrawAutoSaveSection()
         {
@@ -205,9 +205,9 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 判断 classify/item/value 是否匹配搜索关键词（不区分大小写）。
-        /// 同时考虑全局搜索和后端搜索，两者均为空时视为全部匹配。
+        /// 同时考虑全局搜索和存储实现搜索，两者均为空时视为全部匹配。
         /// </summary>
-        /// <param name="backendSearch">后端搜索关键词。</param>
+        /// <param name="backendSearch">存储实现搜索关键词。</param>
         /// <param name="classify">分类名。</param>
         /// <param name="item">条目名（可为 null 表示仅匹配分类）。</param>
         /// <param name="value">条目值（可为 null 表示不参与匹配）。</param>
@@ -283,7 +283,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制后端搜索栏（内联在各后端折叠区内部）。
+        /// 绘制存储实现搜索栏（内联在各存储实现折叠区内部）。
         /// </summary>
         /// <param name="searchText">当前搜索文本（引用传递以支持修改）。</param>
         /// <returns>更新后的搜索文本。</returns>

@@ -33,6 +33,12 @@ namespace NovaFramework.Runtime
                 private const int c_SecretBytesLength = 16;
 
                 /// <summary>
+                /// 默认 AES 凭据缺失或无效时的统一配置指引；只适用于隐私配置，不得用于应用协议 AES。
+                /// </summary>
+                private const string c_DefaultAesConfigurationGuide =
+                    "请先完成 await Nova.Config.LoadAsync()；在 Nova/Open Config → 通用配置 → 隐私配置中，为当前 Platform × Channel × DevelopMode 配置 AES-Key / AES-IV（UTF-8 各 16 字节），保存后重新导出 ConfigRuntimeSO。";
+
+                /// <summary>
                 /// 运行时注入的默认 Key（UTF-8，16 字节）。框架不内置任何密钥；未配置时为 null，
                 /// 此时调用不显式传 key 的加解密接口将报错。由 Config 隐私配置在加载完成前注入。
                 /// </summary>
@@ -52,7 +58,7 @@ namespace NovaFramework.Runtime
                 [Obsolete("AES 默认 Key/IV 已由 Config 隐私配置接管，禁止手动调用 Configure。")]
                 public static void Configure(string key, string iv)
                 {
-                    Log.Error(LogTag.Encrypt, "AES 默认 Key/IV 已由 Config 隐私配置完全接管，禁止手动调用 Util.Encrypt.AES.Configure。请在 Nova/Open Config → 通用配置 → 隐私配置中维护 AES-Key 与 AES-IV。");
+                    Log.Error(LogTag.Encrypt, "AES 默认 Key/IV 已由 Config 隐私配置完全接管，禁止手动调用 Util.Encrypt.AES.Configure。{0}", c_DefaultAesConfigurationGuide);
                 }
 
                 /// <summary>
@@ -64,12 +70,12 @@ namespace NovaFramework.Runtime
                 {
                     if (config == null)
                     {
-                        throw new InvalidOperationException("AES 初始化失败：ConfigRuntimeSO.PrivacyConfigs 为空。请先在 Config 隐私配置中完成 AES-Key/AES-IV 配置并重新导出。");
+                        throw new InvalidOperationException($"AES 默认 Key/IV 初始化失败：ConfigRuntimeSO.PrivacyConfigs 为空。{c_DefaultAesConfigurationGuide}");
                     }
                     if (!TryEncodeSecret(config.AESKey, "Key", out byte[] keyBytes) ||
                         !TryEncodeSecret(config.AESIV, "IV", out byte[] ivBytes))
                     {
-                        throw new InvalidOperationException("AES 初始化失败：Config 隐私配置中的 AES-Key 与 AES-IV 按 UTF-8 编码后必须各为 16 字节。");
+                        throw new InvalidOperationException($"AES 默认 Key/IV 初始化失败：隐私配置中的 AES-Key 与 AES-IV 按 UTF-8 编码后必须各为 16 字节。{c_DefaultAesConfigurationGuide}");
                     }
                     s_DefaultKey = keyBytes;
                     s_DefaultIV = ivBytes;
@@ -85,6 +91,23 @@ namespace NovaFramework.Runtime
                 }
 
                 /// <summary>
+                /// 确认 Config 生命周期已经注入可用的默认 AES Key/IV；Persist 等默认模式调用方应在执行读写前调用。
+                /// </summary>
+                /// <exception cref="InvalidOperationException">默认凭据尚未由隐私配置注入时抛出。</exception>
+                internal static void EnsureDefaultKeyAndIVReady()
+                {
+                    if (s_DefaultKey != null && s_DefaultKey.Length == c_SecretBytesLength &&
+                        s_DefaultIV != null && s_DefaultIV.Length == c_SecretBytesLength)
+                    {
+                        return;
+                    }
+
+                    string message = $"AES 默认 Key/IV 未初始化。{c_DefaultAesConfigurationGuide}";
+                    Log.Error(LogTag.Encrypt, message);
+                    throw new InvalidOperationException(message);
+                }
+
+                /// <summary>
                 /// 将配置字符串编码为固定长度密钥字节。
                 /// </summary>
                 /// <param name="value">待编码字符串。</param>
@@ -96,7 +119,7 @@ namespace NovaFramework.Runtime
                     bytes = string.IsNullOrEmpty(value) ? null : Encoding.UTF8.GetBytes(value);
                     if (bytes == null || bytes.Length != c_SecretBytesLength)
                     {
-                        Log.Error(LogTag.Encrypt, "Config 隐私配置中的 AES-{0} 无效：按 UTF-8 编码后必须为 16 字节。", name);
+                        Log.Error(LogTag.Encrypt, "AES 默认 Key/IV 初始化失败：隐私配置中的 AES-{0} 按 UTF-8 编码后必须为 16 字节。{1}", name, c_DefaultAesConfigurationGuide);
                         return false;
                     }
                     return true;
@@ -207,49 +230,54 @@ namespace NovaFramework.Runtime
                 }
 
                 /// <summary>
-                /// 解析 Key 和 IV：显式传入优先，否则取 Config 隐私配置注入的默认值。
-                /// 既未传入也未配置默认值时，打印错误日志并返回 false。
+                /// 解析 Key 和 IV：显式模式必须成对传入，否则取 Config 隐私配置注入的默认值。
+                /// 默认凭据未就绪时打印配置指引并返回 false，避免底层 AES 以空凭据执行。
                 /// </summary>
                 /// <param name="key">Key 字符串，为空时取注入的默认 Key。</param>
                 /// <param name="iv">IV 字符串，为空时取注入的默认 IV。</param>
                 /// <param name="keyBytes">解析出的 Key 字节数组。</param>
                 /// <param name="ivBytes">解析出的 IV 字节数组。</param>
                 /// <returns>成功解析返回 true；默认 Key/IV 未初始化返回 false。</returns>
-                /// <exception cref="ArgumentException">显式传入的 key/iv 长度不为 16 字节时抛出。</exception>
+                /// <exception cref="ArgumentException">显式 Key/IV 未成对传入或 UTF-8 长度不为 16 字节时抛出。</exception>
                 private static bool TryResolveKeyAndIV(string key, string iv, out byte[] keyBytes, out byte[] ivBytes)
                 {
-                    if (!string.IsNullOrEmpty(key))
+                    bool hasExplicitKey = !string.IsNullOrEmpty(key);
+                    bool hasExplicitIV = !string.IsNullOrEmpty(iv);
+                    if (hasExplicitKey != hasExplicitIV)
+                    {
+                        throw new ArgumentException("显式 AES Key/IV 必须同时传入，不能与 Config 隐私配置默认值混用。");
+                    }
+
+                    if (hasExplicitKey)
                     {
                         keyBytes = Encoding.UTF8.GetBytes(key);
                         if (keyBytes.Length != c_SecretBytesLength)
                         {
                             throw new ArgumentException("AES Key 长度必须为 16 字节。");
                         }
-                    }
-                    else
-                    {
-                        keyBytes = s_DefaultKey;
-                    }
 
-                    if (!string.IsNullOrEmpty(iv))
-                    {
                         ivBytes = Encoding.UTF8.GetBytes(iv);
                         if (ivBytes.Length != c_SecretBytesLength)
                         {
                             throw new ArgumentException("AES IV 长度必须为 16 字节。");
                         }
-                    }
-                    else
-                    {
-                        ivBytes = s_DefaultIV;
+
+                        return true;
                     }
 
-                    if (keyBytes == null || ivBytes == null)
+                    try
                     {
-                        Log.Error(LogTag.Encrypt, "AES 默认 Key/IV 尚未由 Config 隐私配置初始化：请先等待 Nova.Config.LoadAsync() 完成后再调用默认加解密接口，或显式传入 key/iv。");
+                        EnsureDefaultKeyAndIVReady();
+                        keyBytes = s_DefaultKey;
+                        ivBytes = s_DefaultIV;
+                        return true;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        keyBytes = null;
+                        ivBytes = null;
                         return false;
                     }
-                    return true;
                 }
             }
         }

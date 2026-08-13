@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "package": "com.solotopia.nova.framework",
+  "profiles": {
+    "core": [
+      "nova-project-router",
+      "nova-project-check-readiness"
+    ],
+    "ui": [
+      "nova-project-router",
+      "nova-project-ui-create-view",
+      "nova-project-data-driven-ui"
+    ],
+    "p0": [
+      "nova-project-router",
+      "nova-project-check-readiness",
+      "nova-project-ui-create-view",
+      "nova-project-data-driven-ui"
+    ]
+  },
+  "skills": [
+    {
+      "id": "nova-project-router",
+      "path": "Skills/nova-project-router",
+      "kind": "router",
+      "status": "experimental",
+      "journeys": [
+        "assessment",
+        "feature",
+        "diagnosis"
+      ],
+      "effects": [
+        "read"
+      ],
+      "minimumEvidence": "static"
+    },
+    {
+      "id": "nova-project-check-readiness",
+      "path": "Skills/nova-project-check-readiness",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "assessment",
+        "onboarding",
+        "diagnosis"
+      ],
+      "effects": [
+        "read"
+      ],
+      "minimumEvidence": "static"
+    },
+    {
+      "id": "nova-project-ui-create-view",
+      "path": "Skills/nova-project-ui-create-view",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "compile"
+    },
+    {
+      "id": "nova-project-data-driven-ui",
+      "path": "Skills/nova-project-data-driven-ui",
+      "kind": "workflow",
+      "status": "experimental",
+      "journeys": [
+        "feature"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "play"
+    }
+  ]
+}

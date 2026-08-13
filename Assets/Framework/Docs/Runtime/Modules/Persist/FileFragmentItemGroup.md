@@ -11,7 +11,7 @@
 
 ## 什么时候先看这页
 
-- 你要理解 FileFragment 后端到底把什么写进文件。
+- 你要理解 FileFragment 存储实现到底把什么写进文件。
 - 你在排查单个 `.dat` 文件反序列化失败后的行为。
 - 你要确认基础类型在文件分片模式下是如何编码的。
 
@@ -70,4 +70,3 @@
 
 - [FileFragmentManager.md](FileFragmentManager.md)
 - [IFileFragmentManager.md](IFileFragmentManager.md)
-

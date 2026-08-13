@@ -14,7 +14,9 @@ using System.IO;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
+#if NOVA_ALIBABACLOUD_OSS
 using OSS = AlibabaCloud.OSS.V2;
+#endif
 
 namespace NovaFramework.Editor
 {
@@ -22,6 +24,32 @@ namespace NovaFramework.Editor
     {
         public static partial class CDN
         {
+            private const string c_AlibabaCloudOssPackageName = "com.solotopia.alibabacloud.oss";
+
+            /// <summary>
+            /// 是否已安装可用于 CDN 部署的 Alibaba Cloud OSS Editor 工具包。
+            /// </summary>
+            internal static bool IsAlibabaCloudOssAvailable
+            {
+                get
+                {
+#if NOVA_ALIBABACLOUD_OSS
+                    return true;
+#else
+                    return false;
+#endif
+                }
+            }
+
+            /// <summary>
+            /// 创建 OSS Editor 工具包缺失时的统一错误，供 ConfigWindow 与 Pipify 共用。
+            /// </summary>
+            private static InvalidOperationException CreateAlibabaCloudOssPackageMissingException()
+            {
+                return new InvalidOperationException(
+                    $"未安装 Alibaba Cloud OSS Editor 工具包（{c_AlibabaCloudOssPackageName}），无法执行 OSS 部署。请在 Unity Package Manager 中安装该工具包后重试。");
+            }
+
             /// <summary>
             /// 使用阿里云 OSS SDK 将本地目录顺序部署到配置的 Bucket 与前缀。
             /// </summary>
@@ -95,6 +123,7 @@ namespace NovaFramework.Editor
                 bool cleanRemoteFilesAndDirectories,
                 Action<int, int, string> onProgress)
             {
+#if NOVA_ALIBABACLOUD_OSS
                 ValidateOssConfig(config);
                 OssLocation location = ParseOssLocation(config.PresetOSSPath);
                 string region = ParseRegion(config.Endpoint);
@@ -119,6 +148,9 @@ namespace NovaFramework.Editor
                     keys => DeleteObjectsAsync(client, location.Bucket, keys),
                     item => UploadObjectAsync(client, location.Bucket, item),
                     onProgress);
+#else
+                return await UniTask.FromException<int>(CreateAlibabaCloudOssPackageMissingException());
+#endif
             }
 
             /// <summary>
@@ -179,6 +211,7 @@ namespace NovaFramework.Editor
                 bool cleanRemoteFilesAndDirectories,
                 Action<int, int, string> onProgress)
             {
+#if NOVA_ALIBABACLOUD_OSS
                 ValidateOssConfig(config);
                 bool shouldUploadWhitelist = TryResolveAssetCheckWhitelistRemoteFilePath(
                     config.AssetCheckWhitelistRemoteFilePath,
@@ -221,8 +254,12 @@ namespace NovaFramework.Editor
                 {
                     DeleteAssetCheckWhitelistTempFile(whitelistFilePath);
                 }
+#else
+                return await UniTask.FromException<int>(CreateAlibabaCloudOssPackageMissingException());
+#endif
             }
 
+#if NOVA_ALIBABACLOUD_OSS
             /// <summary>
             /// 上传单个本地文件，并在请求完成后释放文件流。
             /// </summary>
@@ -284,6 +321,7 @@ namespace NovaFramework.Editor
                     Objects = objectKeys.Select(key => new OSS.Models.DeleteObject { Key = key }).ToList(),
                 });
             }
+#endif
         }
     }
 }

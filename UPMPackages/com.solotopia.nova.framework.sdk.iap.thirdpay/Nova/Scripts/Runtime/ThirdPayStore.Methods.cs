@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -74,17 +75,28 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>AES 密钥、向量与支付页基址均已就绪时返回 true。</returns>
         private bool EnsurePayEnvironment()
         {
-            if (!string.IsNullOrEmpty(m_AesKey) && !string.IsNullOrEmpty(m_AesIv) && !string.IsNullOrEmpty(m_PayUrlBase))
+            if (IsValidAppAesSecret(m_AesKey) && IsValidAppAesSecret(m_AesIv) && !string.IsNullOrEmpty(m_PayUrlBase))
             {
                 return true;
             }
 
             IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
+            if (configManager == null || !configManager.IsLoadOver)
+            {
+                LogError("ThirdPayStore 应用业务 AES 配置未就绪：请先完成 await Nova.Config.LoadAsync()；然后在 Nova/Open Config → 通用配置 → 应用配置中，为当前 Platform × Channel × DevelopMode 配置 AppAesKey / AppAesIV（UTF-8 各 16 字节），保存后重新导出 ConfigRuntimeSO。");
+                return false;
+            }
+
             string aesKey = configManager?.AppConfigs?.AppAesKey;
             string aesIv = configManager?.AppConfigs?.AppAesIV;
             INetworkCmdRow openUrlCmd = Nova.Network?.ResolveNetCmdRow(c_OpenUrlCmdName);
             string payUrlBase = Nova.Network?.ResolveNetCmdUrl(openUrlCmd);
-            if (string.IsNullOrEmpty(aesKey) || string.IsNullOrEmpty(aesIv) || string.IsNullOrEmpty(payUrlBase))
+            if (!IsValidAppAesSecret(aesKey) || !IsValidAppAesSecret(aesIv))
+            {
+                LogError("ThirdPayStore 应用业务 AES 配置无效：请在 Nova/Open Config → 通用配置 → 应用配置中，为当前 Platform × Channel × DevelopMode 配置 AppAesKey / AppAesIV（UTF-8 各 16 字节），保存后重新导出 ConfigRuntimeSO。");
+                return false;
+            }
+            if (string.IsNullOrEmpty(payUrlBase))
             {
                 return false;
             }
@@ -93,6 +105,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_AesIv = aesIv;
             m_PayUrlBase = payUrlBase;
             return true;
+        }
+
+        /// <summary>
+        /// 校验应用协议 AES 单个凭据是否为可传入支付 URL 加密器的 UTF-8 16 字节字符串。
+        /// </summary>
+        /// <param name="value">待校验的 AppConfigs AES Key 或 IV。</param>
+        /// <returns>非空且 UTF-8 编码长度为 16 字节时返回 true。</returns>
+        private static bool IsValidAppAesSecret(string value)
+        {
+            return !string.IsNullOrEmpty(value) && Encoding.UTF8.GetByteCount(value) == 16;
         }
 
         /// <summary>

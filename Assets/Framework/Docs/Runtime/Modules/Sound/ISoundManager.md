@@ -19,7 +19,7 @@
 
 ### 1. 这是完整运行契约，不是标记接口
 
-和 `Persist` 那几个后端接口不同，`ISoundManager` 不是空壳，它明确约束了：
+和 `Persist` 那几个存储标记接口不同，`ISoundManager` 不是空壳，它明确约束了：
 
 - 何时初始化
 - 何时加载声音表
@@ -66,4 +66,3 @@
 - [SoundComponent.md](SoundComponent.md)
 - [PlaySoundParams.md](PlaySoundParams.md)
 - [PlaySoundInfo.md](PlaySoundInfo.md)
-

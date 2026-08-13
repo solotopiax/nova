@@ -63,7 +63,7 @@ related:
 
 - 标准层级宽度：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.Layout.cs` 中的 `c_IndentPixelsPerLevel = 11f`。
 - 容器位移排障与真实 Rect 判据：[[PAT-149-imgui-foldout-margin-propagation-layout-shift|PAT-149]]。
-- 2026-08-13 Persist Inspector 的 PlayerPrefs、FileFragment、SQLite 三种后端在 Editor 与 Runtime 绘制路径中，按一级、分类、条目三级文字左缘统一间距。
+- 2026-08-13 Persist Inspector 的 PlayerPrefs、FileFragment、SQLite 三种存储实现在 Editor 与 Runtime 绘制路径中，按一级、分类、条目三级文字左缘统一间距。
 
 ## 关联
 

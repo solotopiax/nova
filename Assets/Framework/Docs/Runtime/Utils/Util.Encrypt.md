@@ -31,14 +31,15 @@ byte[] Util.Encrypt.AES.DecryptBytes(byte[] content, string key = null, string i
 - 模式固定为 `CBC`
 - 填充固定为 `PKCS7`
 - 框架**不内置任何默认 Key/IV**；`key` / `iv` 为空时取 Config 隐私配置在 `Nova.Config.LoadAsync()` 内注入的默认值
-- 默认 Key/IV 尚未初始化又未显式传入时：打印错误日志（提示先等待 `Nova.Config.LoadAsync()` 完成）并返回空结果
-- 显式传入的 `key` / `iv` 必须是 16 字节 UTF-8 字符串，否则抛 `ArgumentException`
+- 默认 Key/IV 尚未初始化又未显式传入时：打印 Error 并返回空结果；日志会指向 `Nova/Open Config → 通用配置 → 隐私配置`，要求为当前 `Platform × Channel × DevelopMode` 配置 `AES-Key / AES-IV`（UTF-8 各 16 字节）并重新导出 `ConfigRuntimeSO`
+- 显式模式的 `key` / `iv` 必须同时传入，且均为 16 字节 UTF-8 字符串；只传其中一个或长度非法都会抛 `ArgumentException`，不会与默认隐私凭据混用
 - 旧 `Configure` 仅保留隐藏兼容壳，调用时记录“隐私配置已接管、禁止手动调用”，不会修改密钥
 
 ### 设计意图
 
 - 默认密钥只在 ConfigWindow 的“隐私配置”中维护；它与 `AppConfigs.AppAesKey / AppAesIV` 完全独立
 - ConfigManager 在标记加载完成前初始化 AES，并在 Shutdown 时清空静态密钥
+- Persist 任一存储实现启用 AES 时，会在 `Nova.Persist.LoadAsync()` 的存储实现并行初始化前确认默认凭据已就绪；缺配会直接失败，标准启动顺序为 `await Nova.Config.LoadAsync()` 后再 `await Nova.Persist.LoadAsync()`
 - 默认 Key / IV 仅适用于本地数据混淆，不应用于高安全场景
 - 每次调用都创建独立 AES 实例，没有静态共享状态
 

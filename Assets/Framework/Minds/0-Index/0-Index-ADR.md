@@ -27,6 +27,7 @@ auto_generated: true
 - [ADR-074 跨 Editor Runtime 导出链的占位符解析统一采用显式上下文](../2-Areas/ADR/ADR-074-placeholder-resolution-explicit-context.md) — 占位符统一算法与多环境显式上下文
 - [ADR-075 启动应用配置由 Config 非阻塞等待 Network Ready 后单次刷新](../2-Areas/ADR/ADR-075-config-startup-remote-refresh-after-network-ready.md) — Config 后台等待网络路由就绪并单次刷新磁盘快照
 - [ADR-077 Mobile IAP 未完成订单身份采用 tableId+ReceiptParam](../2-Areas/ADR/ADR-077-mobile-iap-order-key-tableid-receiptparam.md) — Mobile订单键含ReceiptParam
+- [ADR-078 隐私 AES 默认密钥与应用协议 AES 密钥分域](../2-Areas/ADR/ADR-078-privacy-aes-and-app-aes-separation.md) — 隐私默认 AES 与应用协议 AES 分域
 
 ## asset
 
@@ -105,4 +106,4 @@ auto_generated: true
 
 
 ---
-_共 63 条，分布于 10 个 category。_
+_共 64 条，分布于 10 个 category。_

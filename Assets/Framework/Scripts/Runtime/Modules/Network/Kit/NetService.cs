@@ -10,6 +10,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
@@ -177,20 +178,25 @@ namespace NovaFramework.Runtime
                 return NetResponse<TResp>.Fail(NetErrorCode.URL_NOT_FOUND, Txt.Format("NetCmd not found: {0}", netCmdName));
             }
 
-            string aesKey = Nova.Config.AppConfigs.AppAesKey ?? string.Empty;
-            string aesIv = Nova.Config.AppConfigs.AppAesIV ?? string.Empty;
+            ConfigComponent config = Nova.Config;
+            AppConfigs appConfigs = config?.AppConfigs;
+            string aesKey = appConfigs?.AppAesKey ?? string.Empty;
+            string aesIv = appConfigs?.AppAesIV ?? string.Empty;
 
-            int appId = 0;
-            if (!int.TryParse(Nova.Config.AppConfigs.AppID, out appId))
+            if (config == null || !config.IsLoadOver ||
+                !IsValidAppAesSecret(aesKey) || !IsValidAppAesSecret(aesIv))
             {
-                Log.Warning(LogTag.Network, "NetService.SendAsync：Nova.Config.AppConfigs.AppID 无法解析为 int32，已回退为 0。");
+                LogRequest(netCmdName, url, request, false, "aes_config_invalid");
+                Log.Error(LogTag.Network,
+                    "NetService.SendAsync：应用业务 AES 配置未就绪或无效，name={0}。请先完成 await Nova.Config.LoadAsync()；然后在 Nova/Open Config → 通用配置 → 应用配置中，为当前 Platform × Channel × DevelopMode 配置 AppAesKey / AppAesIV（UTF-8 各 16 字节），保存后重新导出 ConfigRuntimeSO。",
+                    netCmdName);
+                return NetResponse<TResp>.Fail(NetErrorCode.AES_ENCRYPT_FAILED, "App AES Key/IV is not ready");
             }
 
-            if (string.IsNullOrEmpty(aesKey) || string.IsNullOrEmpty(aesIv))
+            int appId = 0;
+            if (!int.TryParse(appConfigs.AppID, out appId))
             {
-                LogRequest(netCmdName, url, request, false, "aes_config_missing");
-                Log.Error(LogTag.Network, "NetService.SendAsync：AES Key/IV not configured, please check Nova.Config.AppConfigs. name={0}.", netCmdName);
-                return NetResponse<TResp>.Fail(NetErrorCode.AES_ENCRYPT_FAILED, "AES Key/IV not configured");
+                Log.Warning(LogTag.Network, "NetService.SendAsync：Nova.Config.AppConfigs.AppID 无法解析为 int32，已回退为 0。");
             }
 
             byte[] protoBytes = NetBuilder.SerializeBody(request);
@@ -306,6 +312,16 @@ namespace NovaFramework.Runtime
                     ReferencePool.Put(httpResponse);
                 }
             }
+        }
+
+        /// <summary>
+        /// 校验应用协议 AES 单个凭据是否为可传入底层 AES 的 UTF-8 16 字节字符串。
+        /// </summary>
+        /// <param name="value">待校验的 AppConfigs AES Key 或 IV。</param>
+        /// <returns>非空且 UTF-8 编码长度为 16 字节时返回 true。</returns>
+        private static bool IsValidAppAesSecret(string value)
+        {
+            return !string.IsNullOrEmpty(value) && Encoding.UTF8.GetByteCount(value) == 16;
         }
 
         /// <summary>

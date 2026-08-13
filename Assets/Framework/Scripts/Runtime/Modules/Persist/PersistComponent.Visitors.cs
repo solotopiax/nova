@@ -16,7 +16,7 @@ namespace NovaFramework.Runtime
     public sealed partial class PersistComponent : FrameworkComponent
     {
         /// <summary>
-        /// LoadAsync 的惰性任务缓存，首次调用时启动三后端 Initialize 的 WhenAll，后续调用返回同一 UniTask。
+        /// LoadAsync 的惰性任务缓存，首次调用时启动三个存储实现的 Initialize WhenAll，后续调用返回同一 UniTask。
         /// </summary>
         private UniTask? m_LoadTask;
 
@@ -45,7 +45,7 @@ namespace NovaFramework.Runtime
         private float m_AutoSaveIntervalPlayerPrefs = 60f;
 
         /// <summary>
-        /// PlayerPrefs 持久化管理器实例（IPlayerPrefsManager 承载 PlayerPrefs 后端）。
+        /// PlayerPrefs 持久化管理器实例（IPlayerPrefsManager 承载 PlayerPrefs 存储实现）。
         /// </summary>
         private IPlayerPrefsManager m_PlayerPrefsManager;
 
@@ -79,7 +79,7 @@ namespace NovaFramework.Runtime
         private float m_AutoSaveIntervalFileFragment = 60f;
 
         /// <summary>
-        /// 文件片段持久化管理器实例（IFileFragmentManager 承载 FileFragment 后端）。
+        /// 文件片段持久化管理器实例（IFileFragmentManager 承载 FileFragment 存储实现）。
         /// </summary>
         private IFileFragmentManager m_FileFragmentManager;
 
@@ -120,7 +120,7 @@ namespace NovaFramework.Runtime
         private float m_AutoSaveIntervalSQLite = 60f;
 
         /// <summary>
-        /// SQLite 持久化管理器实例（ISQLiteManager 承载 SQLite 后端）。
+        /// SQLite 持久化管理器实例（ISQLiteManager 承载 SQLite 存储实现）。
         /// </summary>
         private ISQLiteManager m_SQLiteManager;
 

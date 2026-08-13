@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-router",
+  "kind": "router",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "inputs": [
+    {
+      "name": "userGoal",
+      "required": true
+    },
+    {
+      "name": "projectRoot",
+      "required": true
+    }
+  ],
+  "effects": [
+    "read"
+  ],
+  "writeScope": {
+    "allow": [],
+    "deny": [
+      "all project writes"
+    ]
+  },
+  "locks": [],
+  "idempotency": "read-only",
+  "confirmation": {
+    "requiredFor": [],
+    "rule": "路由只读；把后续写入或外部副作用的确认门原样传递给被选中的 Skill。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": [
+    "success",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "当前项目文件与随包 Docs 的定位证据",
+    "范围、风险与推荐路径"
+  ]
+}

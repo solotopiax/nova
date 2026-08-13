@@ -86,7 +86,7 @@ namespace NovaFramework.Editor
         private List<string> m_SQLiteManagerTypeNames;
 
         /// <summary>
-        /// 全局搜索关键词（跨所有后端，不区分大小写）。
+        /// 全局搜索关键词（跨所有存储实现，不区分大小写）。
         /// </summary>
         private string m_GlobalSearchText = string.Empty;
 
@@ -101,17 +101,17 @@ namespace NovaFramework.Editor
         private string m_EditorAESIV;
 
         /// <summary>
-        /// PlayerPrefs 后端搜索关键词。
+        /// PlayerPrefs 存储实现搜索关键词。
         /// </summary>
         private string m_PPSearchText = string.Empty;
 
         /// <summary>
-        /// FileFragment 后端搜索关键词。
+        /// FileFragment 存储实现搜索关键词。
         /// </summary>
         private string m_FFSearchText = string.Empty;
 
         /// <summary>
-        /// SQLite 后端搜索关键词。
+        /// SQLite 存储实现搜索关键词。
         /// </summary>
         private string m_SQLSearchText = string.Empty;
 

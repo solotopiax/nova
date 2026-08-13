@@ -7,4 +7,4 @@ Verifiable archive: Core/alibabacloud-oss-csharp-sdk-v2-892c0209-source.tar.gz
 
 The vendor snapshot contains every Git-tracked upstream file at the pinned commit and is not modified.
 The source archive preserves all 256 tracked files when a package tool filters nested .gitignore files.
-Unity-specific build files, documentation, binaries, and link metadata live outside that snapshot.
+Unity-specific Editor build files, documentation, binaries, and metadata live outside that snapshot.

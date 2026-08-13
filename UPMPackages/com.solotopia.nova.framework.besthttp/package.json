@@ -1,8 +1,8 @@
 {
   "name": "com.solotopia.nova.framework.besthttp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
-  "coreVersion": "http-3.0.18,tls-3.0.5",
+  "coreVersion": "http-3.0.19,tls-3.0.5",
   "displayName": "Nova Framework - BestHTTP",
   "description": "Nova Framework 的 BestHTTP 可选 HTTP 后端适配包",
   "category": "Runtime",
@@ -18,10 +18,10 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.6.10",
+    "com.solotopia.nova.framework": "0.6.11",
     "com.solotopia.unitask": "10.0.6",
     "com.unity.nuget.newtonsoft-json": "3.2.2",
-    "com.tivadar.best.http": "3.0.18",
+    "com.tivadar.best.http": "3.0.19",
     "com.tivadar.best.tlssecurity": "3.0.5"
   },
   "nova": {

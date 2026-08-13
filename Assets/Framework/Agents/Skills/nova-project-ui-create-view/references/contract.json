@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-ui-create-view",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "viewName",
+      "required": true
+    },
+    {
+      "name": "namespaceAndAssembly",
+      "required": true
+    },
+    {
+      "name": "uiGroup",
+      "required": true
+    },
+    {
+      "name": "prefabPathAndAssetLocation",
+      "required": true
+    },
+    {
+      "name": "uiRegistrationSource",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed business UIView source",
+      "confirmed target Prefab",
+      "confirmed UI registration source",
+      "generated UI output for this registration"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "handwritten Prefab or Scene YAML",
+      "unrelated generated output"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "active-scene",
+    "ui-registration"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous UIGroup, registration source or asset path",
+      "replace non-generated asset",
+      "delete, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认绑定 viewName、写入集和副作用；输入或范围改变后旧确认失效。"
+  },
+  "minimumEvidence": "compile",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "目标源文件和注册源 diff",
+    "Unity 创建的 Prefab 与序列化绑定",
+    "选定 UI 导出结果",
+    "Unity 编译或 Play 证据"
+  ]
+}

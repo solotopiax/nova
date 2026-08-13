@@ -1,6 +1,6 @@
 # SQLiteManager
 
-`SQLiteManager` 是三套持久化后端里最偏“结构化缓存 + 批量提交”的实现。
+`SQLiteManager` 是三种持久化存储实现里最偏“结构化缓存 + 批量提交”的实现。
 
 它仍然沿用统一的 `classify -> item -> value` 逻辑模型，但底层把每个 `classify` 映射为一张 SQLite 表，并通过写缓冲、单次事务批量提交和 WAL 模式提升落盘效率。
 
@@ -8,7 +8,7 @@
 
 - 你要承载更大体量、更多分类的本地数据。
 - 你在排查为什么写入后直到 `Save()` 才真正进入数据库。
-- 你要确认 WebGL 或插件前提下 SQLite 后端的边界。
+- 你要确认 WebGL 或插件前提下 SQLite 存储实现的边界。
 
 ## 依赖与边界
 
@@ -106,4 +106,3 @@
 - [ISQLiteManager.md](ISQLiteManager.md)
 - [SQLiteManagerConfig.md](SQLiteManagerConfig.md)
 - [SQLiteManager.Table.md](SQLiteManager.Table.md)
-

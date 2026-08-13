@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.6.11] - 2026-08-13
+
+### Changed
+
+- AES 默认凭据缺失、无效或显式 Key/IV 未成对传入时，统一输出隐私配置路径与当前坐标的配置指引。
+- 启用 AES 的 Persist 存储实现在 `Nova.Persist.LoadAsync()` 初始化前确认默认凭据已就绪；标准启动顺序为先 `await Nova.Config.LoadAsync()`，再加载 Persist。
+- Persist 代码、Inspector 与文档统一使用“存储实现”术语；Framework 不再强制依赖 Alibaba Cloud OSS Runtime 包，CDN 面板在缺少可选 OSS Editor 工具包时提供安装引导。
+
 ## [0.6.10] - 2026-08-13
 
 ### Breaking

@@ -1,6 +1,6 @@
 # SQLiteManagerConfig
 
-`SQLiteManagerConfig` 是 SQLite 后端初始化时使用的配置 DTO。
+`SQLiteManagerConfig` 是 SQLite 存储实现初始化时使用的配置 DTO。
 
 它在公共持久化配置之外，额外新增了一个 SQLite 专属字段：
 
@@ -8,9 +8,9 @@
 
 ## 什么时候先看这页
 
-- 你要确认 SQLite 后端到底有哪些专属初始化参数。
+- 你要确认 SQLite 存储实现到底有哪些专属初始化参数。
 - 你在区分“值级 AES 加密”和“数据库级 Cipher 加密”。
-- 你打算继续给 SQLite 后端增加专属能力。
+- 你打算继续给 SQLite 存储实现增加专属能力。
 
 ## 配置语义
 
@@ -19,7 +19,7 @@
 - `UseAESEncrypt`
 - `AutoSaveInterval`
 
-这两项对三套后端都成立。
+这两项对三种存储实现都成立。
 
 ### 2. SQLite 专属部分是数据库级密码
 

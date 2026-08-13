@@ -31,6 +31,7 @@ namespace NovaFramework.Editor
         private const string c_CdnEndpointDocsUrl = "https://help.aliyun.com/zh/oss/user-guide/regions-and-endpoints?spm=a2c4g.11186623.0.i30#concept-zt4-cvy-5db";
         private const string c_CloudflareZoneIdDocsUrl = "https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/";
         private const string c_CloudflareTokenDocsUrl = "https://developers.cloudflare.com/fundamentals/api/get-started/create-token/";
+        private const string c_AlibabaCloudOssPackageName = "com.solotopia.alibabacloud.oss";
 
         /// <summary>
         /// 绘制 CDN 内容部署面板，字段写入 ConfigMasterSO WorkingCopy，网络操作由 EditorUtil.CDN 执行。
@@ -58,6 +59,7 @@ namespace NovaFramework.Editor
                 curCoord.Platform,
                 curCoord.Channel,
                 curCoord.Mode);
+            bool isAlibabaCloudOssAvailable = EditorUtil.CDN.IsAlibabaCloudOssAvailable;
 
             // 标题 + 内联维度三 toggle + 维度 HelpBox 全套，与 Common / Namespace 等面板一致
             DrawPanelTitleWithMask("CDN 内容分发网络部署", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.CDNEditorConfigs, null);
@@ -74,6 +76,8 @@ namespace NovaFramework.Editor
                 () => EditorUtil.Draw.LinkButton(
                     c_CdnEndpointDocsUrl,
                     "查询各地域Endpoint信息"));
+            if (!isAlibabaCloudOssAvailable)
+                DrawCdnOssPackageMissingHelp();
             DrawCdnTextRow("Endpoint", resolved.Endpoint, workingSrc, curCoord, (cfg, v) => cfg.Endpoint = v);
             DrawCdnTextRow("AccessKeyID", resolved.AccessKeyID, workingSrc, curCoord, (cfg, v) => cfg.AccessKeyID = v);
             DrawCdnPasswordRow("AccessKeySecret", resolved.AccessKeySecret, workingSrc, curCoord, (cfg, v) => cfg.AccessKeySecret = v);
@@ -93,7 +97,7 @@ namespace NovaFramework.Editor
             DrawCdnRemoteDirectoryRow(resolved, workingSrc, curCoord);
             DrawCdnHotfixResourcePathHelp();
             m_CleanCdnRemoteBeforeDeploy = DrawCdnCleanRemoteBeforeDeploy(m_CleanCdnRemoteBeforeDeploy, c_CdnLabelWidth);
-            DrawCdnWideButton("批量部署到 CDN", m_IsCdnDeploying, OnDeployCdn);
+            DrawCdnWideButton("批量部署到 CDN", m_IsCdnDeploying || !isAlibabaCloudOssAvailable, OnDeployCdn);
 
             EditorUtil.Draw.Space(12f);
             EditorUtil.Draw.Line();
@@ -170,7 +174,7 @@ namespace NovaFramework.Editor
                 (cfg, value) => cfg.AssetCheckVersionRemoteDirectory = value);
             DrawCdnAssetCheckWhitelistHelp();
             m_CleanCdnWhitelistRemoteBeforeDeploy = DrawCdnCleanRemoteBeforeDeploy(m_CleanCdnWhitelistRemoteBeforeDeploy, c_CdnWhitelistLabelWidth);
-            DrawCdnWideButton("批量部署到CDN", m_IsCdnWhitelistDeploying, OnDeployCdnWhitelist);
+            DrawCdnWideButton("批量部署到 CDN", m_IsCdnWhitelistDeploying || !isAlibabaCloudOssAvailable, OnDeployCdnWhitelist);
 
             EditorUtil.Draw.Space(12f);
             EditorUtil.Draw.Line();
@@ -337,6 +341,36 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Space(16f);
             });
             EditorUtil.Draw.Space(4f);
+        }
+
+        /// <summary>
+        /// 缺少 OSS Editor 工具包时绘制安装说明与 UPM 入口。
+        /// </summary>
+        private static void DrawCdnOssPackageMissingHelp()
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Warning, new[]
+                {
+                    "(1) 资源部署和白名单部署需要 Editor 工具包 com.solotopia.alibabacloud.oss",
+                    "(2) 请在 Unity Package Manager 中安装该工具包后重新打开本面板",
+                    "(3) Cloudflare 缓存清理不受影响，仍可正常使用",
+                }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(4f);
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Button(
+                    "打开 UPM 安装 OSS",
+                    false,
+                    () => UnityEditor.PackageManager.UI.Window.Open(c_AlibabaCloudOssPackageName),
+                    GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(8f);
         }
 
         /// <summary>

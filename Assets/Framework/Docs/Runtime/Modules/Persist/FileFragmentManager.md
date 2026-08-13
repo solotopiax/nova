@@ -1,6 +1,6 @@
 # FileFragmentManager
 
-`FileFragmentManager` 是按业务分类拆文件的持久化后端。
+`FileFragmentManager` 是按业务分类拆文件的持久化存储实现。
 
 它把每个 `classify` 对应成一个 `.dat` 文件，文件内容是 JSON，可选 AES 加密。运行时核心不是“整库常驻”，而是“目录扫描 + 分类懒加载 + 脏片段写回”。
 
@@ -8,7 +8,7 @@
 
 - 你要做分业务、分模块的本地存档。
 - 你在排查某个分类为什么第一次访问时才真正反序列化。
-- 你需要一个比 PlayerPrefs 更适合分片存档、又比 SQLite 更轻的后端。
+- 你需要一个比 PlayerPrefs 更适合分片存档、又比 SQLite 更轻的存储实现。
 
 ## 依赖与边界
 
@@ -109,4 +109,3 @@
 - [IFileFragmentManager.md](IFileFragmentManager.md)
 - [FileFragmentManagerConfig.md](FileFragmentManagerConfig.md)
 - [FileFragmentItemGroup.md](FileFragmentItemGroup.md)
-

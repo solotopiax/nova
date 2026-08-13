@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 项目创建界面"
+  short_description: "创建并注册项目组业务 UIView，明确 Prefab数据导出与验证边界"
+  default_prompt: "使用 $nova-project-ui-create-view 创建一个符合当前项目约束的 Nova 业务界面。"

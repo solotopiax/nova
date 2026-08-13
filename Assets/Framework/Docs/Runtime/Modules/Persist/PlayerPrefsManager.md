@@ -1,6 +1,6 @@
 # PlayerPrefsManager
 
-`PlayerPrefsManager` 是三套持久化后端里最偏“轻量键值缓存”的实现。
+`PlayerPrefsManager` 是三种持久化存储实现里最偏“轻量键值缓存”的实现。
 
 它把数据组织成 `classify -> item -> string` 的逻辑层，再映射到 Unity `PlayerPrefs`。写入时先改内存并标脏，真正落盘由 `Save()`、自动保存或 `Shutdown()` 触发。
 
@@ -43,7 +43,7 @@
 
 ### 2. Set 系列默认是写内存 + 标脏
 
-这个后端的关键设计不是立即刷盘，而是：
+这个存储实现的关键设计不是立即刷盘，而是：
 
 - 写值
 - 标记分类为 dirty
@@ -92,4 +92,3 @@
 - [PersistComponent.md](PersistComponent.md)
 - [IPlayerPrefsManager.md](IPlayerPrefsManager.md)
 - [PlayerPrefsManagerConfig.md](PlayerPrefsManagerConfig.md)
-

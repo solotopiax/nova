@@ -1,6 +1,15 @@
-# Alibaba Cloud OSS C# SDK v2 for Unity
+# Alibaba Cloud OSS Editor Tool for Unity
 
-`com.solotopia.alibabacloud.oss` 将阿里云 OSS C# SDK v2 封装为 Nova 可依赖的 Unity UPM Runtime 包。
+`com.solotopia.alibabacloud.oss` 是 Nova CDN 内容部署使用的 Alibaba Cloud OSS C# SDK v2 Editor 工具包。
+
+它不是 Nova Framework 的 Runtime 依赖，也不提供 Player 上传／下载能力。SDK DLL 与桥接程序集均位于 `Nova/Editor/`，不会进入 Player 构建。
+
+## 使用方式
+
+- 仅在需要阿里云 OSS 的资源部署或白名单部署时安装本包。
+- 未安装时，ConfigWindow 的 CDN 面板会显示安装引导，并只禁用两项 OSS 部署操作；Cloudflare 缓存清理不受影响。
+- Pipify 的 `cdn.deploy` 与 `cdn.whitelist.deploy` 在缺包时会返回明确的安装错误，不会静默跳过。
+- Framework 不会自行写入消费者工程的 `manifest.json`；请通过项目已配置的 UPM 来源安装本包。
 
 ## 上游版本
 
@@ -12,10 +21,10 @@ GitHub 提交是本包的版本真相源。完整、未修改的 tracked 源码�
 
 ## 运行环境
 
-支持 Nova 基线 Unity 6000.4 / .NET Standard 2.1 的 Editor 和 Standalone Runtime。Android/iOS 在 API 与程序集层兼容，但本次环境未安装对应 Unity Player Support，仍需在目标工程执行 IL2CPP 构建和真机网络验证。当前不承诺 WebGL：上游默认传输层使用 `System.Net.Http`，没有 UnityWebRequest/WebGL 专用实现。
+支持 Nova 基线 Unity 6000.4 的 Editor。此包不支持、也不需要 Player / IL2CPP / WebGL 运行时接入。
 
 ## 安全要求
 
-禁止在客户端包、配置或代码中保存长期 AccessKey。移动端和桌面客户端应使用服务端签发的 STS 临时凭据，或使用服务端生成的预签名 URL。
+不要把长期 AccessKey 写入会随 Player 发布的客户端包、配置或代码。CDN 编辑器配置仅应使用受限权限的部署凭据，并按项目安全规范保管。
 
 接入示例与限制见 [Nova/Docs/INDEX.md](Nova/Docs/INDEX.md)。上游原始说明见 [Core/alibabacloud-oss-csharp-sdk-v2~/README-CN.md](Core/alibabacloud-oss-csharp-sdk-v2~/README-CN.md)。

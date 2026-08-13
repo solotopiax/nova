@@ -9,8 +9,8 @@
 
 ## 什么时候先看这页
 
-- 你要确认 `PersistComponent` 给 PlayerPrefs 后端传了哪些配置。
-- 你在判断某个配置该放到基类还是只属于具体后端。
+- 你要确认 `PersistComponent` 给 PlayerPrefs 存储实现传了哪些配置。
+- 你在判断某个配置该放到基类还是只属于具体存储实现。
 - 你想核对 Inspector 中 PlayerPrefs 那几项字段最终落到了哪里。
 
 ## 配置语义
@@ -20,7 +20,7 @@
 保留这个类型，不是因为它现在字段多，而是因为：
 
 - `PersistManagerBase<TConfig>` 需要强类型初始化签名
-- `PersistComponent` 需要按后端构造各自独立配置对象
+- `PersistComponent` 需要按存储实现构造各自独立配置对象
 - 后续如有 PlayerPrefs 专属参数，可以在这里安全扩展
 
 ### 2. 当前真正生效的是两个公共参数
@@ -32,7 +32,7 @@
 
 - 这个类不负责 Inspector 展示；Inspector 字段定义在 `PersistComponent`
 - 这个类不负责默认值策略；默认值由组件序列化字段给出
-- 这个类不应该混入与其他后端共享的配置，那应回到 `PersistManagerConfigBase`
+- 这个类不应该混入与其他存储实现共享的配置，那应回到 `PersistManagerConfigBase`
 
 ## 风险点 / 易错点
 
@@ -52,4 +52,3 @@
 - [PlayerPrefsManager.md](PlayerPrefsManager.md)
 - [PersistComponent.md](PersistComponent.md)
 - [PersistManagerConfigBase.md](PersistManagerConfigBase.md)
-

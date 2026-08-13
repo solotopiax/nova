@@ -1,7 +1,7 @@
 ---
 id: MOC-Persist
 title: 持久化系统图谱
-summary: Persist 三后端结构与使用边界速查
+summary: Persist 三种存储实现的结构与使用边界速查
 category: module
 status: active
 date: 2026-06-05
@@ -23,13 +23,13 @@ related:
 
 ## 一句话
 
-Persist 模块把本地存储拆成三个并列后端：`PlayerPrefs / FileFragment / SQLite`；统一入口是 `Nova.Persist`，统一基础契约是 `IPersistManager`。
+Persist 模块把本地存储拆成三种并列存储实现：`PlayerPrefs / FileFragment / SQLite`；统一入口是 `Nova.Persist`，统一基础契约是 `IPersistManager`。
 
 ## 何时查这页
 
 - 要决定数据该落哪种本地存储
 - 要改持久化初始化顺序或公共读写契约
-- 要分清 `PersistComponent` 和三个后端 Manager 的边界
+- 要分清 `PersistComponent` 和三种存储实现 Manager 的边界
 
 ## 当前结构
 
@@ -46,13 +46,13 @@ PersistManagerBase<TConfig> : IPersistManager
 
 组件事实：
 
-- `Awake()` 里装配三套后端
+- `Awake()` 里装配三种存储实现
 - `LoadAsync()` 并行初始化三个 Manager
-- 业务侧随后通过 `Nova.Persist.PlayerPrefs / FileFragment / SQLite` 使用对应后端
+- 业务侧随后通过 `Nova.Persist.PlayerPrefs / FileFragment / SQLite` 使用对应存储实现
 
-## 三个后端怎么分
+## 三种存储实现怎么分
 
-| 后端 | 适合什么 |
+| 存储实现 | 适合什么 |
 |---|---|
 | `PlayerPrefs` | 简单设置、小量键值 |
 | `FileFragment` | 分片文件、存档槽、二进制块 |
@@ -65,7 +65,7 @@ PersistManagerBase<TConfig> : IPersistManager
 - `HasItem / RemoveItem / RemoveAll`
 - `GetXxx / SetXxx`
 
-换句话说，三种后端的“用法心智模型”是一致的，差别主要在底层介质和适用场景。
+换句话说，三种存储实现的“用法心智模型”是一致的，差别主要在底层介质和适用场景。
 
 ## 当前边界
 
@@ -77,14 +77,14 @@ PersistManagerBase<TConfig> : IPersistManager
 
 - `PersistComponent.LoadAsync()` 是启动期统一准备入口，不要把初始化散落到各业务模块里
 - `Save(string classify)` 和 `Save()` 是两层粒度，不要把它们混成同一语义
-- 具体优先级与后端实现细节，以 `Docs` 和源码为准
+- 具体优先级与存储实现细节，以 `Docs` 和源码为准
 
 ## 常见误区
 
 - 直接持有具体实现类而不是接口入口
 - 还没完成加载就开始读值
 - 用 `EditorPrefs` 保存框架长期状态
-- 把“选后端”问题写成一长串 API 手册，而不是先判断存储模型
+- 把“选存储实现”问题写成一长串 API 手册，而不是先判断存储模型
 
 ## 先往哪看
 

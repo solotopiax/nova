@@ -10,3 +10,9 @@ Minds.meta
 # Packages/<pkg>/ 而对 .meta 不认（immutable folder 警告），并触发 SamplePathRewriter 重跑
 nova-samples.json
 nova-samples.json.meta
+
+# Agents 工具的 Python 字节码是本地测试缓存，不随 Framework UPM 包发布
+Agents/Tools/**/__pycache__/
+Agents/Tools/**/*.pyc
+Agents/Tools/**/__pycache__.meta
+Agents/Tools/**/*.pyc.meta

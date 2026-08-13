@@ -273,7 +273,6 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.alibabacloud.oss": "0.0.1",
         "com.unity.textmeshpro": "3.0.9",
         "com.unity.nuget.newtonsoft-json": "3.2.2",
         "com.unity.inputsystem": "1.19.0",
@@ -292,10 +291,10 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.10",
+        "com.solotopia.nova.framework": "0.6.11",
         "com.solotopia.unitask": "10.0.6",
         "com.unity.nuget.newtonsoft-json": "3.2.2",
-        "com.tivadar.best.http": "3.0.18",
+        "com.tivadar.best.http": "3.0.19",
         "com.tivadar.best.tlssecurity": "3.0.5"
       }
     },
@@ -544,7 +543,7 @@
       "url": "http://172.16.22.175:4874"
     },
     "com.tivadar.best.http": {
-      "version": "3.0.18",
+      "version": "3.0.19",
       "depth": 0,
       "source": "registry",
       "dependencies": {

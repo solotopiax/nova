@@ -14,7 +14,7 @@
 
 请求未提供 `AdaptRectTransform` 时加载的默认面板不再由本配置单独指定，统一复用 iap 模块 `IAPPluginConfig.LoadingPanelPrefab`（默认 `IAP/IAPLoadingPanel`），经 `IAPStoreContext.LoadingPanelPrefab` 注入。
 
-AES Key/IV 继续读取 Nova 全局 `ConfigManager.AppConfigs.AppAesKey/AppAesIV`，不在 Store 配置中重复保存。
+AES Key/IV 继续读取 Nova 全局 `ConfigManager.AppConfigs.AppAesKey/AppAesIV`，不在 Store 配置中重复保存。构造支付 URL 前会确认 Config 已加载，并校验 Key 与 IV 均为 UTF-8 16 字节；缺失或非法时记录 Error、取消当前支付环境解析。请在 `Nova/Open Config → 通用配置 → 应用配置` 为当前 `Platform × Channel × DevelopMode` 配置 `AppAesKey / AppAesIV` 后重新导出 `ConfigRuntimeSO`。它不回退到 `PrivacyConfigs` 的默认 AES。
 
 支付 URL 基址固定通过 NetCmd `ThirdOpenURL` 解析；应用 ID 统一读取公共请求头的 `AppId`，不在 Store 配置中重复保存。
 

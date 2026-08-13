@@ -2,6 +2,18 @@
 
 这是一份给 Agent 的 Level 0 路由。首次接触 Nova、接手已有项目、调整场景或资源流程时，先用本页建立最低限度的正确上下文，再按任务进入 Level 1 页面和现有模块文档。
 
+## AI Project Skills 一次性初始化
+
+Nova Project Skills 随 Framework UPM 包发布，但包不能隐式写入消费项目的 `.agents/skills`。首次让 Agent 通过自然语言使用 Nova 项目组 Skill 时，从本 Framework 包根目录先预览所需 Profile：
+
+```bash
+python3 Agents/Tools/nova_skills.py sync --project-root <消费项目根目录> --profile core --dry-run
+```
+
+确认输出的 Profile 与副作用后，再去掉 `--dry-run` 创建受管投影。随后 Agent 可发现 `nova-project-router`，由它路由到相应 Operation 或 Workflow。需要 UI 能力时选择 `ui` 或 `p0` Profile；Profile 收窄不会自动删除已投影 Skill。
+
+这是明确、可审计的一次性初始化，不是编码工作，也不应由 UPM 包在未确认时偷偷写入项目。若产品要求“安装包后无需任何初始化即可触发”，需要由项目模板或 Agent Host 预置 bootstrap；该宿主集成不属于 Framework UPM 包本身。
+
 ## 先检查项目，不要套模板
 
 不要假定当前项目来自 Starter，也不要假定它必须采用固定目录、固定场景数或固定资源拓扑。先检查：

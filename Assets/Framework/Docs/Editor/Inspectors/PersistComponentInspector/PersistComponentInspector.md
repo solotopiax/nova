@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Editor`
 **目标组件**：`NovaFramework.Runtime.PersistComponent`
 
-Persist 组件的 Inspector 面板，分两区绘制：上方为三个后端管理器（PlayerPrefs / FileFragment / SQLite）的实现类选择器，下方为各后端 AES 加密开关及 SQLite Cipher 密码配置。
+Persist 组件的 Inspector 面板，分两区绘制：上方为三种存储实现（PlayerPrefs / FileFragment / SQLite）的管理器实现类选择器，下方为各存储实现的 AES 加密开关及 SQLite Cipher 密码配置。
 
 Editor 模式下，Inspector 通过 `EditorUtil.Config.WorkspaceActive.Get()` 定位当前 ConfigMaster，并按其 `CurrentPlatform / CurrentChannel / CurrentDevelopMode` 合法坐标读取 `PrivacyConfigs`，再将 Key/IV 显式传给 AES 接口；不与 Unity `activeBuildTarget` 强制一致。Play 模式下改读该 Master 的 `ExportTarget`（ConfigRuntimeSO）隐私快照。
 
@@ -16,10 +16,10 @@ Editor 模式下，Inspector 通过 `EditorUtil.Config.WorkspaceActive.Get()` �
 |---|---|---|
 | `PersistComponentInspector.cs` | `sealed partial PersistComponentInspector` | 主体：`OnEnable` 绑定 7 个序列化属性及 3 个类型名列表，`OnInspectorGUI` 调度绘制入口 |
 | `PersistComponentInspector.Visitors.cs` | `partial PersistComponentInspector` | 字段：全部 `SerializedProperty` 引用与 `List<string>` 类型名列表 |
-| `PersistComponentInspector.Methods.cs` | `partial PersistComponentInspector` | 私有方法：`DrawConfigs`（配置区总入口）、`DrawManagerSection`（管理器区）、`DrawEncryptSection`（加密区）、`DrawAutoSaveSection`（自动保存间隔区）、`DrawDataSection` / `DrawGlobalSearchBar` / `DrawBackendSearchBar` / `DrawRuntimeData` / `DrawEditorData`（数据区）、`DrawItemRow`（条目行共用绘制）、`MatchSearch` / `ContainsIgnoreCase`（全局+后端搜索匹配）、`TryReadFragmentFile` / `WriteFragmentFile` / `DecodeForDisplay` / `EncodeForStorage`（FF 文件与 AES 双向处理）、`DrawClassifyFoldout` |
-| `PersistComponentInspector.PlayerPrefs.cs` | `partial PersistComponentInspector` | PlayerPrefs 后端特定绘制与交互逻辑 |
-| `PersistComponentInspector.FileFragment.cs` | `partial PersistComponentInspector` | FileFragment 后端特定绘制与交互逻辑（含 `EditorUtil.FileWatcher` 目录监控） |
-| `PersistComponentInspector.SQLite.cs` | `partial PersistComponentInspector` | SQLite 后端特定绘制与交互逻辑（含 `EditorUtil.FileSystem.DeletePath` 清理导出路径） |
+| `PersistComponentInspector.Methods.cs` | `partial PersistComponentInspector` | 私有方法：`DrawConfigs`（配置区总入口）、`DrawManagerSection`（管理器区）、`DrawEncryptSection`（加密区）、`DrawAutoSaveSection`（自动保存间隔区）、`DrawDataSection` / `DrawGlobalSearchBar` / `DrawBackendSearchBar` / `DrawRuntimeData` / `DrawEditorData`（数据区）、`DrawItemRow`（条目行共用绘制）、`MatchSearch` / `ContainsIgnoreCase`（全局与各存储实现搜索匹配）、`TryReadFragmentFile` / `WriteFragmentFile` / `DecodeForDisplay` / `EncodeForStorage`（FF 文件与 AES 双向处理）、`DrawClassifyFoldout` |
+| `PersistComponentInspector.PlayerPrefs.cs` | `partial PersistComponentInspector` | PlayerPrefs 存储实现特定绘制与交互逻辑 |
+| `PersistComponentInspector.FileFragment.cs` | `partial PersistComponentInspector` | FileFragment 存储实现特定绘制与交互逻辑（含 `EditorUtil.FileWatcher` 目录监控） |
+| `PersistComponentInspector.SQLite.cs` | `partial PersistComponentInspector` | SQLite 存储实现特定绘制与交互逻辑（含 `EditorUtil.FileSystem.DeletePath` 清理导出路径） |
 
 ---
 
@@ -51,7 +51,7 @@ UnityEditor.Editor
 | `m_AutoSaveIntervalSQLite` | `SerializedProperty` | SQLite 自动保存间隔（秒，0/负数禁用） |
 | `m_SQLiteCipherPassword` | `SerializedProperty` | 绑定 `m_SQLiteCipherPassword` |
 | `m_TmpSQLiteCipherPassword` | `string` | Cipher 密码临时输入缓冲；与 `m_SQLiteCipherPassword` 不同步时 "存档转换" 按钮可点 |
-| `m_GlobalSearchText` / `m_PPSearchText` / `m_FFSearchText` / `m_SQLSearchText` | `string` | 全局搜索关键词 + 各后端独立搜索关键词（不区分大小写，作用于 classify/item/value） |
+| `m_GlobalSearchText` / `m_PPSearchText` / `m_FFSearchText` / `m_SQLSearchText` | `string` | 全局搜索关键词 + 各存储实现独立搜索关键词（不区分大小写，作用于 classify/item/value） |
 | `m_PP_Values` / `m_PP_EditBuffers` / `m_PP_EditStates` | `SortedDictionary<...>` | Editor 模式 PlayerPrefs 分类→条目 的值/编辑缓冲/编辑态 |
 | `m_FF_Values` / `m_FF_EditBuffers` / `m_FF_EditStates` | `Dictionary<...>` | Editor 模式 FileFragment 分类→条目 的值/编辑缓冲/编辑态 |
 | `m_SQL_Values` / `m_SQL_EditBuffers` / `m_SQL_EditStates` | `SortedDictionary<...>` | Editor 模式 SQLite 表→条目 的值/编辑缓冲/编辑态（非 WebGL） |
@@ -120,12 +120,12 @@ HelpBox(Info)                 0 或负数禁用自动保存，仅 Shutdown / 手
 ─────────────────────────────────────────────────────────
 [数据区]
 全局搜索                    TextField + ×（作用于 classify / item / value）
-[清除全部持久化数据]        DangerButton（Play 模式下隐藏；同时清三后端，二次确认）
+[清除全部持久化数据]        DangerButton（Play 模式下隐藏；同时清除三种存储实现数据，二次确认）
 
 Editor 模式（非 Play）：
-  [PlayerPrefs（Editor）(n) ▼]   分类折叠 + 后端搜索 + 编辑/保存/清除 + 清除全部
-  [FileFragment（Editor）(n) ▼]  分类折叠 + 后端搜索 + 打开文件夹 + 编辑/保存/清除 + 清除全部
-  [SQLite（Editor）(n) ▼]        分类折叠 + 后端搜索 + 打开文件夹 + 编辑/保存/清除 + 清除全部
+  [PlayerPrefs（Editor）(n) ▼]   分类折叠 + 存储项搜索 + 编辑/保存/清除 + 清除全部
+  [FileFragment（Editor）(n) ▼]  分类折叠 + 存储项搜索 + 打开文件夹 + 编辑/保存/清除 + 清除全部
+  [SQLite（Editor）(n) ▼]        分类折叠 + 存储项搜索 + 打开文件夹 + 编辑/保存/清除 + 清除全部
                                  ├─ Windows：可视化工具 / 应用预览
                                  └─ 连接失败时提供"删除数据库"DangerButton
 
@@ -143,9 +143,9 @@ Runtime 模式（Play 中）：
 
 **Play 模式 SQLite 连接切换**：进入 Play 前通过 `EditorApplication.playModeStateChanged` 关闭 Editor 侧 SQLite 连接，退出 Play 后经 `delayCall` 在 Inspector 仍有效时重建连接；避免 Play 期间 Editor 侧与 Runtime 侧同时持有同一数据库句柄。
 
-**AES 迁移立即执行**：切换任一后端的 AES Toggle 时，立即对该后端已存数据做明文 ↔ 密文批量迁移，保证开关状态与实际存储格式始终一致；Inspector 始终以明文展示。
+**AES 迁移立即执行**：切换任一存储实现的 AES Toggle 时，立即对该存储实现已存数据做明文 ↔ 密文批量迁移，保证开关状态与实际存储格式始终一致；Inspector 始终以明文展示。
 
-**WebGL 平台**：SQLite 后端在 WebGL 上以静默空操作运行，Initialize 输出警告，Get 返回默认值，Set 被忽略；Editor 面板中 SQLite 相关区块整体被 `#if !UNITY_WEBGL` 裁剪。
+**WebGL 平台**：SQLite 存储实现在 WebGL 上以静默空操作运行，Initialize 输出警告，Get 返回默认值，Set 被忽略；Editor 面板中 SQLite 相关区块整体被 `#if !UNITY_WEBGL` 裁剪。
 
 **Editor 模式删除数据库**：当 SQLite 文件存在但连接建立失败（如密码错误）时，Editor 面板提供"删除数据库"DangerButton，便于清理后重新开始。
 

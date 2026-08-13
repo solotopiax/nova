@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-data-driven-ui",
+  "kind": "workflow",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [
+    "nova-project-ui-create-view"
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "tableTypeAndLoadPath",
+      "required": true
+    },
+    {
+      "name": "rowSelectionRule",
+      "required": true
+    },
+    {
+      "name": "fieldBindings",
+      "required": true
+    },
+    {
+      "name": "viewAndUiGroup",
+      "required": true
+    },
+    {
+      "name": "entryPointAndReturnBehavior",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed business UI source",
+      "confirmed target Prefab",
+      "confirmed UI registration source",
+      "confirmed existing navigation source",
+      "generated UI output for this change"
+    ],
+    "deny": [
+      "Nova Manager and UIManager implementation",
+      "Luban or UI generated source",
+      "Packages/com.solotopia.nova.framework/**",
+      "handwritten Prefab or Scene YAML",
+      "unrelated table or Config export"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "active-scene",
+    "ui-registration",
+    "selected-output-directory"
+  ],
+  "idempotency": "orchestrate",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous row selection, UIGroup, field mapping or entry behavior",
+      "table schema/source change",
+      "replace non-generated asset",
+      "delete, external write, credential use, Git commit or push"
+    ],
+    "rule": "Workflow 权限等于子 Operation 权限并集，确认门取最高等级，不因编排扩大授权。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "表加载与公开 API 可用性",
+    "字段绑定与入口行为",
+    "UI 导出和 Unity 编译",
+    "打开、显示、关闭的 Play smoke"
+  ]
+}

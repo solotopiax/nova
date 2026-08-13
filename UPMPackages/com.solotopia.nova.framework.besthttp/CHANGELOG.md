@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-13
+
+### Changed
+
+- Best HTTP 最低依赖与 `coreVersion` 升级至 `3.0.19`；Best TLS Security 保持 `3.0.5`。
+- Framework 最低依赖提升至 `0.6.11`，对齐 AES 默认凭据与 Persist 加载顺序契约。
+
 ## [0.1.4] - 2026-08-13
 
 ### Changed

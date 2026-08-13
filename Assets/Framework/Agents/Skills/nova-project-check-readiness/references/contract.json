@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-check-readiness",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "assessmentGoal",
+      "required": true
+    },
+    {
+      "name": "targetPlatform",
+      "required": false
+    }
+  ],
+  "effects": [
+    "read"
+  ],
+  "writeScope": {
+    "allow": [],
+    "deny": [
+      "manifest.json",
+      "PackageCache",
+      "Framework package",
+      "Prefab and Scene assets"
+    ]
+  },
+  "locks": [],
+  "idempotency": "read-only",
+  "confirmation": {
+    "requiredFor": [
+      "启动 Unity 或进入 Play 以收集运行证据"
+    ],
+    "rule": "默认只读；诊断结论不隐含任何修复授权。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "UPM 解析与版本",
+    "项目拓扑和托管范围",
+    "静态、Unity、Play 证据的明确分级"
+  ]
+}

@@ -1,6 +1,6 @@
 # IFileFragmentManager
 
-`IFileFragmentManager` 是 `FileFragment` 后端的标记契约。
+`IFileFragmentManager` 是 `FileFragment` 存储实现的标记契约。
 
 和 `IPlayerPrefsManager`、`ISQLiteManager` 一样，它不扩展 `IPersistManager` 的成员面，作用是把“文件分片存储实现”从统一持久化契约里显式分出来，便于：
 
@@ -9,15 +9,15 @@
 
 ## 什么时候先看这页
 
-- 你要替换或扩展 FileFragment 后端实现。
+- 你要替换或扩展 FileFragment 存储实现。
 - 你在确认 `Nova.Persist.FileFragment` 到底承诺了什么调用面。
-- 你想判断某个能力应不应该进入所有持久化后端的公共接口。
+- 你想判断某个能力应不应该进入所有持久化存储实现的公共接口。
 
 ## 契约语义
 
 - 上层只能依赖 `IPersistManager` 这一组统一读写能力。
-- 这个接口的职责是“声明后端身份”，不是“增加文件系统专属能力”。
-- 因为契约面保持一致，业务代码可以在不改调用面的前提下切换后端。
+- 这个接口的职责是“声明存储实现身份”，不是“增加文件系统专属能力”。
+- 因为契约面保持一致，业务代码可以在不改调用面的前提下切换存储实现。
 
 ## 与实现的关系
 
@@ -28,8 +28,8 @@
 ## 风险点 / 易错点
 
 - 如果把文件路径、序列化格式之类的实现细节塞进接口，会直接抬高上层耦合。
-- 仅实现 `IPersistManager` 而不实现 `IFileFragmentManager`，无法作为 `PersistComponent` 的 FileFragment 后端被创建。
-- 想做跨后端共享逻辑时，优先依赖 `IPersistManager`，不要依赖这个标记接口。
+- 仅实现 `IPersistManager` 而不实现 `IFileFragmentManager`，无法作为 `PersistComponent` 的 FileFragment 存储实现被创建。
+- 想做跨存储实现共享逻辑时，优先依赖 `IPersistManager`，不要依赖这个标记接口。
 
 ## 继续阅读
 
@@ -43,4 +43,3 @@
 - [FileFragmentManager.md](FileFragmentManager.md)
 - [FileFragmentManagerConfig.md](FileFragmentManagerConfig.md)
 - [PersistComponent.md](PersistComponent.md)
-

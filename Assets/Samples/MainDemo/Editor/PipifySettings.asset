@@ -43,7 +43,7 @@ MonoBehaviour:
         true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
         \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
-        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build\"\n}"
+        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "\u81EA\u52A8\u90E8\u7F72\u6D4B\u8BD5-\u5168\u91CF\uFF08iOS\uFF09"
@@ -161,7 +161,7 @@ MonoBehaviour:
         true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
         \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
-        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build\"\n}"
+        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
@@ -174,7 +174,7 @@ MonoBehaviour:
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
         \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
-        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build\"\n}"
+        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
   - m_Name: "Config\u5BFC\u51FA\u6D4B\u8BD5"

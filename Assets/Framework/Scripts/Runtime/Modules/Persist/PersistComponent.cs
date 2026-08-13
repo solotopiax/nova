@@ -22,7 +22,7 @@ namespace NovaFramework.Runtime
     public sealed partial class PersistComponent : FrameworkComponent
     {
         /// <summary>
-        /// 唤醒：通过 TypeCreator 反射创建三个后端 Manager 实例。
+        /// 唤醒：通过 TypeCreator 反射创建三个持久化 Manager 实例。
         /// </summary>
         protected override void Awake()
         {
@@ -49,9 +49,9 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 异步初始化所有 Manager。由 ProcedurePreload 显式 await，保证后续业务读写命中已就绪状态。
-        /// 幂等：首次调用启动三后端 Initialize 的 WhenAll，重复调用返回同一 UniTask。
+        /// 幂等：首次调用启动三个存储实现的 Initialize WhenAll，重复调用返回同一 UniTask。
         /// </summary>
-        /// <returns>三后端初始化完成的 UniTask。</returns>
+        /// <returns>三个存储实现初始化完成的 UniTask。</returns>
         public UniTask LoadAsync()
         {
             if (m_LoadTask.HasValue)
@@ -64,13 +64,19 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 内部并行调度三后端 Initialize；任一失败时 Log.Error 并向上抛出。
+        /// 内部并行调度三个存储实现的 Initialize；任一失败时 Log.Error 并向上抛出。
         /// </summary>
         /// <returns>初始化完成的 UniTask。</returns>
         private async UniTask RunLoadAsync()
         {
             try
             {
+                if (m_UseAESForPlayerPrefs || m_UseAESForFileFragment || m_UseAESForSQLite)
+                {
+                    // 默认 AES 凭据由 Config 生命周期注入；必须在任一存储实现初始化前阻断，避免懒解密返回空数据或覆盖旧存档。
+                    Util.Encrypt.AES.EnsureDefaultKeyAndIVReady();
+                }
+
                 await UniTask.WhenAll(
                     ((PersistManagerBase<PlayerPrefsManagerConfig>)m_PlayerPrefsManager).Initialize(new PlayerPrefsManagerConfig
                     {

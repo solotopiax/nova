@@ -1,12 +1,11 @@
 {
   "name": "com.solotopia.nova.framework",
-  "version": "0.6.10",
+  "version": "0.6.11",
   "license": "MIT",
   "displayName": "Nova Framework",
   "description": "基于 Unity 引擎深度定制的游戏客户端通用解决方案",
   "unity": "6000.4",
   "dependencies": {
-    "com.solotopia.alibabacloud.oss": "0.0.1",
     "com.unity.textmeshpro": "3.0.9",
     "com.unity.nuget.newtonsoft-json": "3.2.2",
     "com.unity.inputsystem": "1.19.0",

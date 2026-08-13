@@ -20,6 +20,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.solotopia.alibabacloud.oss",
+            "expression": "0.0.1",
+            "define": "NOVA_ALIBABACLOUD_OSS"
+        }
+    ],
     "noEngineReferences": false
 }
