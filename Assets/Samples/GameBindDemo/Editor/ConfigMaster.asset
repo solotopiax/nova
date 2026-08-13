@@ -36,6 +36,10 @@ MonoBehaviour:
     ByPlatform: 0
     ByChannel: 0
     ByDevelopMode: 1
+  PrivacyConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
   SDKMasks:
   - TypeName: NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
     Mask:
@@ -350,6 +354,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -400,6 +413,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -450,6 +472,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -500,6 +531,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -550,6 +590,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -600,6 +649,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -650,6 +708,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -700,6 +767,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -750,6 +826,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -800,6 +885,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -850,6 +944,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -900,6 +1003,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -950,6 +1062,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1000,6 +1121,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1050,6 +1180,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1100,6 +1239,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1150,6 +1298,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1200,6 +1357,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1254,7 +1420,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1293,7 +1458,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1322,7 +1486,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1351,7 +1514,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1380,7 +1542,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1409,7 +1570,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1438,7 +1598,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1467,7 +1626,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1496,7 +1654,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1525,7 +1682,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1554,7 +1710,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1583,7 +1738,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1612,7 +1766,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1641,7 +1794,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1670,7 +1822,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1699,7 +1850,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1728,7 +1878,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1757,7 +1906,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1786,7 +1934,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1815,7 +1962,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1844,7 +1990,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1873,7 +2018,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1902,7 +2046,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1931,7 +2074,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1960,7 +2102,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1989,7 +2130,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2018,7 +2158,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2047,7 +2186,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2076,7 +2214,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2105,7 +2242,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2134,7 +2270,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2163,7 +2298,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2192,7 +2326,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2221,7 +2354,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2250,7 +2382,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2279,7 +2410,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2295,386 +2425,316 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728914
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728915
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728916
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728917
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728918
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728919
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728920
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728921
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728922
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728923
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728924
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728925
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728926
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728927
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728928
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728929
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728930
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728931
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728932
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728933
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728934
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728935
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728936
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728937
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728938
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728939
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728940
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728941
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728942
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728943
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728944
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728945
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728946
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728947
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729497
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3951,12 +4011,10 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 3589943518543478928
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:
@@ -3971,7 +4029,6 @@ MonoBehaviour:
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193856
@@ -4153,245 +4210,210 @@ MonoBehaviour:
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193962
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193963
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193964
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193965
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193966
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193967
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193968
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193969
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193970
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193971
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193972
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193973
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193974
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193975
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193976
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193977
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193978
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193979
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193980
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193981
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193982
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193983
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193984
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193985
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193986
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193987
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193988
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193989
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193990
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193991
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193992
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193993
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193994
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759193995
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
     - rid: 8085688720759194243

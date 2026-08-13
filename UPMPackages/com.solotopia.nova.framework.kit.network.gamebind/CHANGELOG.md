@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.0.12] - 2026-08-13
+
+### Breaking
+
+- 移除绑定请求的明文调试开关；绑定通信固定使用标准 Protobuf 与 AES 加密链路。
+
+### Changed
+
+- 将 Framework、GameLogin 与 GameSave 最低依赖同步至本轮发布版本。
+
 ## [0.0.11] - 2026-08-06
 
 ### Added

@@ -20,8 +20,7 @@
 | `public static PbNetReqHeader BuildHeader()` | 构建完整请求 Header；UID/OpenID 始终来自 `NetService.GetIdentity` 的同一份已确认身份快照，不接受候选身份参数 |
 | `public static byte[] SerializeBody<T>(T body) where T : IMessage<T>` | 将 Proto 消息序列化为字节数组（`body.ToByteArray()`） |
 | `public static byte[] Encrypt(byte[] plainBytes, string key, string iv)` | AES-128-CBC + PKCS7 加密；委托 `Util.Encrypt.AES.EncryptBytes` |
-| `public static string BuildHeaderInfos(int appId, string aesIV)` | 构建正式环境 HTTP Header JSON：`{"app_id":N,"Encoding-Aes":"Base64(iv)"}` |
-| `public static string BuildDebugHeaderInfos(int appId)` | 构建调试环境 HTTP Header JSON：`{"app_id":N,"X-Debug-Plain":"true"}` |
+| `public static string BuildHeaderInfos(int appId, string aesIV)` | 构建 HTTP Header JSON：`{"app_id":N,"Encoding-Aes":"Base64(iv)"}` |
 
 ### Header 字段来源表
 
@@ -50,8 +49,12 @@ var body = new PbNetLoginReq
     ForceNewAccount = forceNewAccount
 };
 byte[] protoBytes = NetBuilder.SerializeBody(body);
-byte[] encryptedBytes = NetBuilder.Encrypt(protoBytes, aesKey, aesIv);
-string headerJson = NetBuilder.BuildHeaderInfos(appId, aesIv);
+byte[] encryptedBytes = NetBuilder.Encrypt(
+    protoBytes,
+    Nova.Config.AppConfigs.AppAesKey,
+    Nova.Config.AppConfigs.AppAesIV
+);
+string headerJson = NetBuilder.BuildHeaderInfos(appId, Nova.Config.AppConfigs.AppAesIV);
 ```
 
 ---
@@ -60,6 +63,7 @@ string headerJson = NetBuilder.BuildHeaderInfos(appId, aesIv);
 
 - **整类 `[EditorBrowsable(Never)]`**：类级别标注，业务侧 Visual Studio / Rider 补全中不显示任何成员。
 - **`Encrypt` 委托框架层**：加密逻辑委托 `Util.Encrypt.AES.EncryptBytes`，`NetBuilder` 只做职责归属封装，不实现加密算法。
+- **固定 AES 配置来源**：`NetService` 固定将 `Nova.Config.AppConfigs.AppAesKey/AppAesIV` 传入 `Encrypt` 与 `BuildHeaderInfos`；业务请求一律构建 AES Header 并加密 Body。
 - **`Platform` 映射范围**：仅 iOS / Android / WebGL 有明确映射，其余平台（含 Editor / Standalone）返回 `PbNetPlatform.Unspecified`；这是有意设计，非遗漏。
 - **`Channel` 只表示游戏运营渠道**：`BuildHeader()` 通过私有 `InferChannel()` 将 `Nova.Config.Channel` 的 `ChannelType` 同名映射为 `PbNetChannel`。`Official / Google / Apple / WeChat / TikTok / Alipay` 均有对应值，`None` 或未知值返回 `PbNetChannel.Unspecified`；该字段与第三方登录提供方无关。
 - **当前身份与目标身份分离**：Header UID/OpenID 只能声明此前已由服务端确认的身份；Login/Bind 的候选或目标身份只放业务 Body。

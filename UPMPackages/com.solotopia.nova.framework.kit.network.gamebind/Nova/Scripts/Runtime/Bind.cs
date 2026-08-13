@@ -25,16 +25,6 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
     public sealed partial class Bind
     {
         /// <summary>
-        /// 设置当前 Service 实例的调试模式覆盖。
-        /// 设置后仅影响本实例发出的请求；传 null 可恢复沿用全局开关。
-        /// </summary>
-        /// <param name="debugMode">是否启用调试模式。</param>
-        public void SetDebugMode(bool debugMode)
-        {
-            m_DebugModeOverride = debugMode;
-        }
-
-        /// <summary>
         /// 为当前账号绑定三方 OpenID（业务入口，极简形态）。
         /// 身份由请求 Header.Uid（即 NetService.UID，当前登录态）识别，业务侧只需提供第三方登录提供方与 openid。
         /// 命中 <see cref="BindErrorCode.ErrBindConflict"/>(10402) 时响应带 existing_uid，需继续调 <see cref="QueryConflictAsync"/> 拉冲突详情、由玩家二选一后调 <see cref="ResolveAsync"/>。

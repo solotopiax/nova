@@ -118,6 +118,39 @@ namespace NovaFramework.Editor
                         }
                     }
 
+                    // 隐私配置使用独立掩码；全局模式下仅把已有种子广播到新补齐的矩阵行。
+                    if (master.PrivacyConfigsMask.IsGlobal)
+                    {
+                        PrivacyConfigs seedDebug = null;
+                        PrivacyConfigs seedRelease = null;
+                        var allEntries = master.EditorEntries;
+                        for (int i = 0; i < allEntries.Count; i++)
+                        {
+                            if (allEntries[i].Platform == PlatformType.None || allEntries[i].Channel == ChannelType.None) continue;
+                            PrivacyConfigs candidate = allEntries[i].GetPrivacyConfigs(DevelopMode.Debug);
+                            if (!string.IsNullOrEmpty(candidate?.AESKey) || !string.IsNullOrEmpty(candidate?.AESIV))
+                            {
+                                seedDebug = candidate;
+                                seedRelease = allEntries[i].GetPrivacyConfigs(DevelopMode.Release);
+                                break;
+                            }
+                        }
+
+                        if (seedDebug != null)
+                        {
+                            for (int i = 0; i < allEntries.Count; i++)
+                            {
+                                if (present.Contains((allEntries[i].Platform, allEntries[i].Channel))) continue;
+                                PrivacyConfigs debug = allEntries[i].GetPrivacyConfigs(DevelopMode.Debug);
+                                debug.AESKey = seedDebug.AESKey;
+                                debug.AESIV = seedDebug.AESIV;
+                                PrivacyConfigs release = allEntries[i].GetPrivacyConfigs(DevelopMode.Release);
+                                release.AESKey = seedRelease?.AESKey;
+                                release.AESIV = seedRelease?.AESIV;
+                            }
+                        }
+                    }
+
                     EditorUtility.SetDirty(master);
                 }
 

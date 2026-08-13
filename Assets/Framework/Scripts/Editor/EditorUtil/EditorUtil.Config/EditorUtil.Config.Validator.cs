@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System.Collections.Generic;
+using System.Text;
 using NovaFramework.Runtime;
 using UnityEditor;
 
@@ -97,6 +98,7 @@ namespace NovaFramework.Editor
                     // 顶层维度化校验路径：经 DimensionalResolver 取当前坐标生效值，避免全不勾/勾选两态校验错位
                     RequireNotEmpty(issues, "Namespace", DimensionalResolver.ResolveNamespace(master, platform, channel, mode));
                     ValidateAppConfigs(master.GetAppConfigs(platform, channel, mode), issues);
+                    ValidatePrivacyConfigs(master.GetPrivacyConfigs(platform, channel, mode), issues);
 
                     if (master.TryGetEntry(platform, channel, out var entry))
                     {
@@ -294,6 +296,39 @@ namespace NovaFramework.Editor
                     RequireNotEmpty(issues, "AppConfigs.AppID", common.AppID);
                     RequireNotEmpty(issues, "AppConfigs.AppAesKey", common.AppAesKey);
                     RequireNotEmpty(issues, "AppConfigs.AppAesIV", common.AppAesIV);
+                }
+
+                /// <summary>
+                /// 校验隐私配置中的 AES Key/IV 均为 16 字节 UTF-8 字符串。
+                /// </summary>
+                /// <param name="privacy">待校验的隐私配置。</param>
+                /// <param name="issues">问题收集列表。</param>
+                private static void ValidatePrivacyConfigs(PrivacyConfigs privacy, List<ValidationIssue> issues)
+                {
+                    if (privacy == null)
+                    {
+                        issues.Add(new ValidationIssue("PrivacyConfigs", "PrivacyConfigs 为 null。", Severity.Error));
+                        return;
+                    }
+
+                    RequireUtf8Length(issues, "PrivacyConfigs.AESKey", privacy.AESKey, 16);
+                    RequireUtf8Length(issues, "PrivacyConfigs.AESIV", privacy.AESIV, 16);
+                }
+
+                /// <summary>
+                /// 要求字符串按 UTF-8 编码后达到指定字节数。
+                /// </summary>
+                /// <param name="issues">问题收集列表。</param>
+                /// <param name="path">字段路径。</param>
+                /// <param name="value">待校验值。</param>
+                /// <param name="expectedBytes">期望字节数。</param>
+                private static void RequireUtf8Length(List<ValidationIssue> issues, string path, string value, int expectedBytes)
+                {
+                    int actualBytes = string.IsNullOrEmpty(value) ? 0 : Encoding.UTF8.GetByteCount(value);
+                    if (actualBytes != expectedBytes)
+                    {
+                        issues.Add(new ValidationIssue(path, $"按 UTF-8 编码后必须为 {expectedBytes} 字节，当前为 {actualBytes} 字节。", Severity.Error));
+                    }
                 }
 
                 /// <summary>

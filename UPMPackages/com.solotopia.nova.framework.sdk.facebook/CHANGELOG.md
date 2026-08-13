@@ -4,6 +4,12 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-13
+
+### Changed
+
+- 将 Framework、GameLogin 与 GameBind 最低依赖同步至本轮发布版本。
+
 ## [0.1.4] - 2026-08-12
 
 ### Added

@@ -2,11 +2,20 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-13
+
+### Changed
+
+- 将随包分发的 Firebase Unity SDK 官方载荷从 `12.10.1` 升级到 `13.14.0`，同步更新 Analytics、App、Crashlytics、Messaging 与 Remote Config 的各平台产物。
+- 将 Framework 与 GameLogin 最低依赖同步至本轮发布版本。
+
+
 ## [0.1.3] - 2026-08-12
 
 ### Added
 
 - 新增 Firebase Console / Readme 官方快捷入口。
+
 
 ## [0.1.2] - 2026-08-03
 

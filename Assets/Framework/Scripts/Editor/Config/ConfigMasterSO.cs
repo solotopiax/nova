@@ -66,6 +66,11 @@ namespace NovaFramework.Editor
         public PanelDimensionMask AppConfigsMask = new();
 
         /// <summary>
+        /// 隐私配置面板的维度掩码；与应用配置完全独立。
+        /// </summary>
+        public PanelDimensionMask PrivacyConfigsMask = new();
+
+        /// <summary>
         /// SDK Plugin 各类型面板的维度掩码列表；每项对应一个 SDK Plugin 配置类型。
         /// TypeName 与 EnabledSDKs 中的元素同口径。
         /// </summary>
@@ -289,6 +294,23 @@ namespace NovaFramework.Editor
                 EditorAddEntry(entry);
             }
             return entry.GetAppConfigs(mode);
+        }
+
+        /// <summary>
+        /// 获取指定 Platform × Channel × DevelopMode 组合对应的隐私配置；缺少矩阵行时自动补齐。
+        /// </summary>
+        /// <param name="platform">目标平台。</param>
+        /// <param name="channel">目标渠道。</param>
+        /// <param name="mode">目标开发模式。</param>
+        /// <returns>对应组合的 PrivacyConfigs 实例，永不为 null。</returns>
+        public PrivacyConfigs GetPrivacyConfigs(PlatformType platform, ChannelType channel, DevelopMode mode)
+        {
+            if (!TryGetEntry(platform, channel, out PlatformChannelEntry entry))
+            {
+                entry = new PlatformChannelEntry { Platform = platform, Channel = channel };
+                EditorAddEntry(entry);
+            }
+            return entry.GetPrivacyConfigs(mode);
         }
 
         /// <summary>

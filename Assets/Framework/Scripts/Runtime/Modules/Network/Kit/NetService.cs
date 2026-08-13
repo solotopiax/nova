@@ -21,7 +21,6 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// 网络请求静态编排器，封装 Protobuf + AES-128-CBC 请求全流程。
     /// 无需业务层调用 Initialize，配置在运行时从 Nova.Config.AppConfigs 与 Nova.SDK 自动读取。
-    /// 全局调试开关由 SetDebugMode 控制；单次请求可通过 debugModeOverride 覆盖。
     /// </summary>
     public static class NetService
     {
@@ -59,12 +58,6 @@ namespace NovaFramework.Runtime
                 }
             }
         }
-
-        /// <summary>
-        /// 全局调试开关。调试模式下跳过 AES 加解密，发送 X-Debug-Plain 头。
-        /// 默认 false，可由 NetworkComponentKitExtensions.SetDebugMode 或 SetDebugMode 方法修改。
-        /// </summary>
-        public static bool IsDebugMode { get; private set; }
 
         /// <summary>
         /// 写回当前 UID。仅供 Login、Bind 等 Network Kit 根据权威业务结果或清理登录态时调用。
@@ -154,15 +147,6 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 设置全局调试模式开关。
-        /// </summary>
-        /// <param name="debugMode">是否启用调试模式。</param>
-        public static void SetDebugMode(bool debugMode)
-        {
-            IsDebugMode = debugMode;
-        }
-
-        /// <summary>
         /// 发送 Protobuf 请求并返回泛型响应。
         /// 流程：URL 解析 → NetBuilder.SerializeBody → NetBuilder.Encrypt → HTTP POST → NetParser.Decrypt → BaseResponse 解析 → 业务 Proto 解析。
         /// AesKey / AesIV 在运行时从 Nova.Config.AppConfigs.AppAesKey / AppAesIV 读取。
@@ -174,18 +158,15 @@ namespace NovaFramework.Runtime
         /// <param name="cmdRow">NetCmd 指令行数据，由调用方通过 GetNetCmd 获取表后点出。</param>
         /// <param name="request">直接传入业务 Proto Body 实例；Body 内须已含 Head（由 NetBuilder.BuildHeader() 填充）。</param>
         /// <param name="parser">响应 Proto 消息解析器（通常为 TResp.Parser）。</param>
-        /// <param name="debugModeOverride">单次请求调试模式覆盖；为 null 时沿用全局 IsDebugMode。</param>
         /// <returns>包含业务响应数据或错误信息的 NetResponse。</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static async UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(
             INetworkCmdRow cmdRow,
             TReq request,
-            MessageParser<TResp> parser,
-            bool? debugModeOverride = null)
+            MessageParser<TResp> parser)
             where TReq : IMessage<TReq>
             where TResp : IMessage<TResp>
         {
-            bool effectiveDebug = debugModeOverride ?? IsDebugMode;
             string netCmdName = cmdRow?.Name ?? "unknown";
 
             string url = Nova.Network.ResolveNetCmdUrl(cmdRow);
@@ -205,7 +186,7 @@ namespace NovaFramework.Runtime
                 Log.Warning(LogTag.Network, "NetService.SendAsync：Nova.Config.AppConfigs.AppID 无法解析为 int32，已回退为 0。");
             }
 
-            if (!effectiveDebug && (string.IsNullOrEmpty(aesKey) || string.IsNullOrEmpty(aesIv)))
+            if (string.IsNullOrEmpty(aesKey) || string.IsNullOrEmpty(aesIv))
             {
                 LogRequest(netCmdName, url, request, false, "aes_config_missing");
                 Log.Error(LogTag.Network, "NetService.SendAsync：AES Key/IV not configured, please check Nova.Config.AppConfigs. name={0}.", netCmdName);
@@ -216,24 +197,16 @@ namespace NovaFramework.Runtime
 
             byte[] bodyBytes;
             string headerInfos;
-            if (effectiveDebug)
+            try
             {
-                bodyBytes = protoBytes;
-                headerInfos = NetBuilder.BuildDebugHeaderInfos(appId);
+                bodyBytes = NetBuilder.Encrypt(protoBytes, aesKey, aesIv);
+                headerInfos = NetBuilder.BuildHeaderInfos(appId, aesIv);
             }
-            else
+            catch (Exception e)
             {
-                try
-                {
-                    bodyBytes = NetBuilder.Encrypt(protoBytes, aesKey, aesIv);
-                    headerInfos = NetBuilder.BuildHeaderInfos(appId, aesIv);
-                }
-                catch (Exception e)
-                {
-                    LogRequest(netCmdName, url, request, false, "aes_encrypt_failed");
-                    Log.Error(LogTag.Network, "NetService.SendAsync：AES 加密失败，name={0}，error={1}。", netCmdName, e.Message);
-                    return NetResponse<TResp>.Fail(NetErrorCode.AES_ENCRYPT_FAILED, $"AES encrypt failed: {e.Message}");
-                }
+                LogRequest(netCmdName, url, request, false, "aes_encrypt_failed");
+                Log.Error(LogTag.Network, "NetService.SendAsync：AES 加密失败，name={0}，error={1}。", netCmdName, e.Message);
+                return NetResponse<TResp>.Fail(NetErrorCode.AES_ENCRYPT_FAILED, $"AES encrypt failed: {e.Message}");
             }
 
             HttpResponse httpResponse = null;
@@ -259,22 +232,15 @@ namespace NovaFramework.Runtime
                 }
 
                 byte[] decryptedBytes;
-                if (effectiveDebug)
+                try
                 {
-                    decryptedBytes = httpResponse.RawData;
+                    decryptedBytes = NetParser.Decrypt(httpResponse.RawData, aesKey, aesIv);
                 }
-                else
+                catch (Exception e)
                 {
-                    try
-                    {
-                        decryptedBytes = NetParser.Decrypt(httpResponse.RawData, aesKey, aesIv);
-                    }
-                    catch (Exception e)
-                    {
-                        LogResponseFailure<TResp>(netCmdName, httpResponse, "decrypt", e.Message);
-                        Log.Error(LogTag.Network, "NetService.SendAsync：AES 解密失败，name={0}，error={1}。", netCmdName, e.Message);
-                        return NetResponse<TResp>.Fail(NetErrorCode.AES_DECRYPT_FAILED, $"AES decrypt failed: {e.Message}");
-                    }
+                    LogResponseFailure<TResp>(netCmdName, httpResponse, "decrypt", e.Message);
+                    Log.Error(LogTag.Network, "NetService.SendAsync：AES 解密失败，name={0}，error={1}。", netCmdName, e.Message);
+                    return NetResponse<TResp>.Fail(NetErrorCode.AES_DECRYPT_FAILED, $"AES decrypt failed: {e.Message}");
                 }
 
                 NetResult parseResult;

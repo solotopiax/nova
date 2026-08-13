@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.6.10] - 2026-08-13
+
+### Breaking
+
+- 网络请求不再提供明文调试旁路；移除 `NetService`、`NetworkComponent` 的调试开关和四参发送入口，调用方需重新编译并统一使用标准加密链路。
+
+### Added
+
+- 隐私配置新增 AES 默认 Key/IV，供框架加解密初始化与 Persist 文件分片加密使用。
+
+### Changed
+
+- Persist Inspector 按当前 ConfigMaster 坐标读取 AES 配置；MainDemo AES 示例改为使用已初始化的默认密钥。
+
 ## [0.6.9] - 2026-08-12
 
 ### Breaking

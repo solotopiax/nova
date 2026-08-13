@@ -20,6 +20,9 @@ MonoBehaviour:
     AppAesIV: YOUR_APP_AES_IV
     CustomConfigCmdName: AppCustomConfig
     CustomName: CustomConfigs
+  PrivacyConfigs:
+    AESKey: NovaSampleKey_16
+    AESIV: NovaSampleIv__16
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
@@ -62,12 +65,10 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 5208076592847519914
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:
@@ -82,6 +83,5 @@ MonoBehaviour:
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
-        m_BindingQueryCmdName: GameAccountBindingQuery
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve

@@ -16,6 +16,8 @@ public sealed class AppConfigs
 
 ConfigWindow 在 Editor 的三维矩阵中维护它，导出时按当前 `Platform × Channel × DevelopMode` 单值化到 `ConfigRuntimeSO.AppConfigs`。运行时通过 `IConfigManager.AppConfigs` 或 `Nova.Config.AppConfigs` 读取。
 
+`AppAesKey / AppAesIV` 是应用业务配置，必须原样保留；它们不用于 `Util.Encrypt.AES` 默认密钥或 Persist 本地数据，也不会迁移到 `PrivacyConfigs`。
+
 - `CustomConfigCmdName`：启动 Custom 配置拉取使用的 NetCmd 名称；为空时关闭自动拉取。
 - `CustomName`：发送到 `PbNetAppCustomConfigReq.key` 的 GM 配置项名称；为空时关闭自动拉取。
 

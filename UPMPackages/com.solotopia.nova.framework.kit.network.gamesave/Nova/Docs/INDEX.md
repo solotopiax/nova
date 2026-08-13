@@ -11,7 +11,7 @@
 
 | 类型 | 说明 | 文档 |
 |---|---|---|
-| `Save` | 游戏存档业务 Service（GetAsync / GetFullAsync / SetAsync / SetFullAsync 6 个极简入口，SetDebugMode） | [Save.md](./Save.md) |
+| `Save` | 游戏存档业务 Service（GetAsync / GetFullAsync / SetAsync / SetFullAsync 6 个极简入口） | [Save.md](./Save.md) |
 | `SaveKitConfig` | 游戏存档 Kit 固有配置（GetCmdName / SetCmdName，在 ConfigWindow「Kit 配置」中填写） | [SaveKitConfig.md](./SaveKitConfig.md) |
 | `SaveErrorCode` | 游戏存档业务错误码（约定段位 8000~8999，待填充） | [SaveErrorCode.md](./SaveErrorCode.md) |
 

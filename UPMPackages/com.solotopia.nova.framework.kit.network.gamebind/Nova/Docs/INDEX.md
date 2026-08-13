@@ -15,7 +15,7 @@
 
 | 类型 | 说明 | 文档 |
 |---|---|---|
-| `Bind` | 账号绑定业务 Service（QueryBindingAsync / BindAsync / QueryConflictAsync / ResolveAsync / SetDebugMode） | [Bind.md](./Bind.md) |
+| `Bind` | 账号绑定业务 Service（QueryBindingAsync / BindAsync / QueryConflictAsync / ResolveAsync） | [Bind.md](./Bind.md) |
 | `ThirdLoginProvider` | 第三方登录提供方（Facebook / Google / Apple / Wechat），对应 Bind provider 的客户端取值契约 | [Bind.md](./Bind.md) |
 | `BindKitConfig` | 账号绑定 Kit 固有配置（BindingQueryCmdName / BindCmdName / BindConflictCmdName / BindResolveCmdName），在 ConfigWindow 一次配置后 Bind 内部自动取用 | [BindKitConfig.md](./BindKitConfig.md) |
 | `BindErrorCode` | 账号绑定业务错误码（服务端绑定业务段 10400~10499 + 客户端段 7000~7999 预留） | [BindErrorCode.md](./BindErrorCode.md) |

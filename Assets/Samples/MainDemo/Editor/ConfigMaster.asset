@@ -32,6 +32,10 @@ MonoBehaviour:
     ByPlatform: 0
     ByChannel: 0
     ByDevelopMode: 0
+  PrivacyConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
   SDKMasks:
   - TypeName: NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
     Mask:
@@ -170,14 +174,13 @@ MonoBehaviour:
       LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
       AutoLinkLatestVersion: 1
       RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
-      AssetCheckWhitelistDeviceIDs:
-      - 46812447-BB13-533A-8F22-8B0B3892FA84
-      AssetCheckWhitelistRemoteFilePath: Nova/{Platform}/{Package}/VersionsCheckWhiteList.json
+      AssetCheckWhitelistDeviceIDs: []
+      AssetCheckWhitelistRemoteFilePath: 
       AutoLinkLatestAssetCheckVersionFiles: 1
-      AssetCheckManifestBytesLocalFilePath: Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.bytes
-      AssetCheckManifestHashLocalFilePath: Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.hash
-      AssetCheckPackageVersionLocalFilePath: Bundles/{Platform}/{Package}/2026-07-22-908/Default.version
-      AssetCheckVersionRemoteDirectory: Nova/{Platform}/{Package}/WhiteListVersions
+      AssetCheckManifestBytesLocalFilePath: 
+      AssetCheckManifestHashLocalFilePath: 
+      AssetCheckPackageVersionLocalFilePath: 
+      AssetCheckVersionRemoteDirectory: 
       ZoneID: YOUR_CLOUDFLARE_ZONE_ID
       PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
       Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -344,8 +347,8 @@ MonoBehaviour:
     DevelopMode: 1
   - YooAssetSettingsPath: Assets/Samples/MainDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/MainDemo/Editor/BundleCollectorSetting.asset
-    YooFolderName: yooasset
-    PackageFilePrefix: '{Version}'
+    YooFolderName: yoo
+    PackageFilePrefix: 
     Platform: 0
     Channel: 0
     DevelopMode: 0
@@ -417,6 +420,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -465,6 +477,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -513,6 +534,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -561,6 +591,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -609,6 +648,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -657,6 +705,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -705,6 +762,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -753,6 +819,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -801,6 +876,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -849,6 +933,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -897,6 +990,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -945,6 +1047,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -993,6 +1104,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1041,6 +1161,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1089,6 +1218,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1137,6 +1275,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1185,6 +1332,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1233,6 +1389,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1306,6 +1471,7 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 2533177004360728671
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:

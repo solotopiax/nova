@@ -41,6 +41,10 @@ namespace NovaFramework.Editor
                     /// </summary>
                     AppConfigs,
                     /// <summary>
+                    /// 隐私配置，对应 m_Entries[i].PrivacyConfigsByMode[m].Config。
+                    /// </summary>
+                    PrivacyConfigs,
+                    /// <summary>
                     /// SDK Plugin 配置（ISDKPluginConfig 实现），对应 m_Entries[i].SDKConfigsByMode[m].SDKConfigs[idx]。
                     /// typeName 字段生效。
                     /// </summary>
@@ -168,6 +172,16 @@ namespace NovaFramework.Editor
                             FillGroupAppConfigs(master, targetCoord, DeepCloneAppConfigs(snapshot));
                         }
                     }
+                    else if (panelKind == PanelKind.PrivacyConfigs)
+                    {
+                        PrivacyConfigs snapshot = DeepClonePrivacyConfigs(GetPrivacyConfigsFromMaster(master, curCoord));
+                        SetAxis(mask, axis, true);
+                        foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
+                        {
+                            if (IsSameCoord(targetCoord, curCoord)) continue;
+                            FillGroupPrivacyConfigs(master, targetCoord, DeepClonePrivacyConfigs(snapshot));
+                        }
+                    }
                     else
                     {
                         // SetAxis 必须先于 masterSO.Update()：mask 是 m_WorkingCopy 上绕过 SerializedProperty 直改的 C# 字段；
@@ -219,6 +233,16 @@ namespace NovaFramework.Editor
                             // 跳过当前格自身，与 BroadcastWithinGroup 的守卫写法对齐，语义一致且避免 SerializedProperty 别名自覆写
                             if (IsSameCoord(memberCoord, curCoord)) continue;
                             FillGroupAppConfigs(master, memberCoord, DeepCloneAppConfigs(snapshot));
+                        }
+                    }
+                    else if (panelKind == PanelKind.PrivacyConfigs)
+                    {
+                        PrivacyConfigs snapshot = DeepClonePrivacyConfigs(GetPrivacyConfigsFromMaster(master, curCoord));
+                        SetAxis(mask, axis, false);
+                        foreach (Coord memberCoord in GroupMembers(master, mask, curCoord))
+                        {
+                            if (IsSameCoord(memberCoord, curCoord)) continue;
+                            FillGroupPrivacyConfigs(master, memberCoord, DeepClonePrivacyConfigs(snapshot));
                         }
                     }
                     else
@@ -285,6 +309,15 @@ namespace NovaFramework.Editor
                         {
                             if (IsSameCoord(memberCoord, curCoord)) continue;
                             FillGroupAppConfigs(master, memberCoord, DeepCloneAppConfigs(srcValue));
+                        }
+                    }
+                    else if (panelKind == PanelKind.PrivacyConfigs)
+                    {
+                        PrivacyConfigs srcValue = DeepClonePrivacyConfigs(GetPrivacyConfigsFromMaster(master, curCoord));
+                        foreach (Coord memberCoord in GroupMembers(master, mask, curCoord))
+                        {
+                            if (IsSameCoord(memberCoord, curCoord)) continue;
+                            FillGroupPrivacyConfigs(master, memberCoord, DeepClonePrivacyConfigs(srcValue));
                         }
                     }
                     else
@@ -389,6 +422,21 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
+                /// 向目标坐标写入隐私配置深拷贝值；对应矩阵行不存在时跳过。
+                /// </summary>
+                /// <param name="master">编辑期 ConfigMasterSO 实例。</param>
+                /// <param name="targetCoord">目标三维坐标。</param>
+                /// <param name="value">待写入的隐私配置。</param>
+                private static void FillGroupPrivacyConfigs(ConfigMasterSO master, Coord targetCoord, PrivacyConfigs value)
+                {
+                    if (!master.TryGetEntry(targetCoord.Platform, targetCoord.Channel, out PlatformChannelEntry entry)) return;
+                    PrivacyConfigs dst = entry.GetPrivacyConfigs(targetCoord.Mode);
+                    if (dst == null || value == null) return;
+                    dst.AESKey = value.AESKey;
+                    dst.AESIV = value.AESIV;
+                }
+
+                /// <summary>
                 /// 向 targetCoord 格写入 SerializeReference 深拷贝；
                 /// 通过 boxedValue 深拷贝保留多态类型；目标格元素不存在时先 EnsureConfigInstance 补位再拷贝。
                 /// </summary>
@@ -457,6 +505,7 @@ namespace NovaFramework.Editor
                     {
                         case PanelKind.SDK: return master.GetSDKMask(typeName);
                         case PanelKind.Kit: return master.GetKitMask(typeName);
+                        case PanelKind.PrivacyConfigs: return master.PrivacyConfigsMask;
                         case PanelKind.Namespace: return master.NamespaceMask;
 #if UNITY_EDITOR
                         case PanelKind.HybridEditorConfigs: return master.HybridEditorConfigsMask;
@@ -529,6 +578,17 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
+                /// 深拷贝隐私配置，避免维度组之间共享引用。
+                /// </summary>
+                /// <param name="src">源隐私配置。</param>
+                /// <returns>字段值相同的独立实例；源为空时返回 null。</returns>
+                private static PrivacyConfigs DeepClonePrivacyConfigs(PrivacyConfigs src)
+                {
+                    if (src == null) return null;
+                    return new PrivacyConfigs { AESKey = src.AESKey, AESIV = src.AESIV };
+                }
+
+                /// <summary>
                 /// 从 master C# 层取指定坐标格的 AppConfigs；行不存在时返回 null。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例。</param>
@@ -538,6 +598,18 @@ namespace NovaFramework.Editor
                 {
                     if (!master.TryGetEntry(coord.Platform, coord.Channel, out PlatformChannelEntry entry)) return null;
                     return entry.GetAppConfigs(coord.Mode);
+                }
+
+                /// <summary>
+                /// 从现有矩阵行只读取得当前坐标隐私配置，不创建缺失行。
+                /// </summary>
+                /// <param name="master">编辑期 ConfigMasterSO 实例。</param>
+                /// <param name="coord">目标三维坐标。</param>
+                /// <returns>命中的隐私配置；矩阵行不存在时返回 null。</returns>
+                private static PrivacyConfigs GetPrivacyConfigsFromMaster(ConfigMasterSO master, Coord coord)
+                {
+                    if (!master.TryGetEntry(coord.Platform, coord.Channel, out PlatformChannelEntry entry)) return null;
+                    return entry.GetPrivacyConfigs(coord.Mode);
                 }
 
                 // -------------------------------------------------------

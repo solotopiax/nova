@@ -126,6 +126,7 @@ namespace NovaFramework.Editor
                         bool open = false;
                         EditorUtil.Draw.Layout.Horizontal(() =>
                         {
+                            EditorUtil.Draw.Space(c_DataClassifyIndent);
                             open = DrawClassifyFoldout(key, $"{classify} ({values.Count})");
                             EditorUtil.Draw.FlexibleSpace();
                             EditorUtil.Draw.DangerButton("清除", false, () =>
@@ -137,35 +138,39 @@ namespace NovaFramework.Editor
                             continue;
                         }
 
-                        EditorUtil.Draw.Layout.Vertical("box", () =>
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
-                            var items = new List<string>(values.Keys);
-                            foreach (var item in items)
+                            EditorUtil.Draw.Space(c_DataItemIndent);
+                            EditorUtil.Draw.Layout.Vertical("box", () =>
                             {
-                                string raw = values[item];
-                                if (!MatchSearch(m_PPSearchText, classify, item, raw))
+                                var items = new List<string>(values.Keys);
+                                foreach (var item in items)
                                 {
-                                    continue;
-                                }
-
-                                string buf = m_PP_EditBuffers[classify][item];
-                                bool editing = m_PP_EditStates[classify][item];
-
-                                DrawItemRow(item, ref buf, ref editing, raw, useAES,
-                                    plainValue =>
+                                    string raw = values[item];
+                                    if (!MatchSearch(m_PPSearchText, classify, item, raw))
                                     {
-                                        m_PP_EditStates[classify][item] = false;
-                                        m_PP_EditBuffers[classify][item] = string.Empty;
-                                        string stored = EncodeForStorage(plainValue, useAES);
-                                        UnityEngine.PlayerPrefs.SetString(classify + c_PPKeySeparator + item, stored);
-                                        UnityEngine.PlayerPrefs.Save();
-                                        m_PP_Values[classify][item] = stored;
-                                    },
-                                    () => DeletePlayerPrefsItem(classify, item));
+                                        continue;
+                                    }
 
-                                m_PP_EditBuffers[classify][item] = buf;
-                                m_PP_EditStates[classify][item] = editing;
-                            }
+                                    string buf = m_PP_EditBuffers[classify][item];
+                                    bool editing = m_PP_EditStates[classify][item];
+
+                                    DrawItemRow(item, ref buf, ref editing, raw, useAES,
+                                        plainValue =>
+                                        {
+                                            m_PP_EditStates[classify][item] = false;
+                                            m_PP_EditBuffers[classify][item] = string.Empty;
+                                            string stored = EncodeForStorage(plainValue, useAES);
+                                            UnityEngine.PlayerPrefs.SetString(classify + c_PPKeySeparator + item, stored);
+                                            UnityEngine.PlayerPrefs.Save();
+                                            m_PP_Values[classify][item] = stored;
+                                        },
+                                        () => DeletePlayerPrefsItem(classify, item));
+
+                                    m_PP_EditBuffers[classify][item] = buf;
+                                    m_PP_EditStates[classify][item] = editing;
+                                }
+                            });
                         });
                     }
                 }
@@ -180,6 +185,7 @@ namespace NovaFramework.Editor
         /// </param>
         private void MigratePlayerPrefsAES(bool enableAES)
         {
+            if (!EnsureInspectorAESCredentials()) return;
             foreach (var classify in m_PP_Values)
             {
                 foreach (var item in classify.Value)
@@ -189,8 +195,8 @@ namespace NovaFramework.Editor
                     try
                     {
                         migrated = enableAES
-                            ? Util.Encrypt.AES.EncryptString(current)
-                            : Util.Encrypt.AES.DecryptString(current);
+                            ? Util.Encrypt.AES.EncryptString(current, m_EditorAESKey, m_EditorAESIV)
+                            : Util.Encrypt.AES.DecryptString(current, m_EditorAESKey, m_EditorAESIV);
                     }
                     catch
                     {
@@ -321,30 +327,39 @@ namespace NovaFramework.Editor
                             continue;
                         }
 
-                        bool clOpen = DrawClassifyFoldout("PP_rt_" + classify, $"{classify} ({items.Length})");
+                        bool clOpen = false;
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(c_DataClassifyIndent);
+                            clOpen = DrawClassifyFoldout("PP_rt_" + classify, $"{classify} ({items.Length})");
+                        });
 
                         if (!clOpen)
                         {
                             continue;
                         }
 
-                        EditorUtil.Draw.Layout.Vertical("box", () =>
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
-                            foreach (var item in items)
+                            EditorUtil.Draw.Space(c_DataItemIndent);
+                            EditorUtil.Draw.Layout.Vertical("box", () =>
                             {
-                                string value = mgr.GetString(classify, item);
-                                if (!MatchSearch(m_PPSearchText, classify, item, value))
+                                foreach (var item in items)
                                 {
-                                    continue;
-                                }
+                                    string value = mgr.GetString(classify, item);
+                                    if (!MatchSearch(m_PPSearchText, classify, item, value))
+                                    {
+                                        continue;
+                                    }
 
-                                EditorUtil.Draw.Layout.Horizontal(() =>
-                                {
-                                    EditorUtil.Draw.Label(item, false, GUILayout.MinWidth(80));
-                                    EditorUtil.Draw.FlexibleSpace();
-                                    EditorUtil.Draw.Label(value, EditorStyles.wordWrappedLabel, false, GUILayout.MaxWidth(280));
-                                });
-                            }
+                                    EditorUtil.Draw.Layout.Horizontal(() =>
+                                    {
+                                        EditorUtil.Draw.Label(item, false, GUILayout.MinWidth(80));
+                                        EditorUtil.Draw.FlexibleSpace();
+                                        EditorUtil.Draw.Label(value, EditorStyles.wordWrappedLabel, false, GUILayout.MaxWidth(280));
+                                    });
+                                }
+                            });
                         });
                     }
                 }

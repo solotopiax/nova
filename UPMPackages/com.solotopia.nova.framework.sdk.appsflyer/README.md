@@ -1,7 +1,7 @@
 # Nova Framework - SDK - AppsFlyer
 
 > 包名：`com.solotopia.nova.framework.sdk.appsflyer`
-> 当前版本：`0.1.0`
+> 当前版本：`0.1.2`
 
 AppsFlyer 归因埋点插件，提供事件追踪服务
 
@@ -11,7 +11,7 @@ AppsFlyer 归因埋点插件，提供事件追踪服务
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.appsflyer": "0.1.0"
+  "com.solotopia.nova.framework.sdk.appsflyer": "0.1.2"
 }
 ```
 

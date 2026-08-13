@@ -32,10 +32,5 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         /// </summary>
         public bool IsLoggedIn => !string.IsNullOrEmpty(UID);
 
-        /// <summary>
-        /// 当前 Service 实例的调试模式覆盖值。
-        /// 为 null 时沿用 NetService.IsDebugMode 全局开关。
-        /// </summary>
-        private bool? m_DebugModeOverride;
     }
 }

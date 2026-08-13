@@ -45,6 +45,19 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 打开隐私配置面板并切换到指定导出坐标。
+        /// </summary>
+        /// <param name="master">设计态 ConfigMasterSO 来源。</param>
+        /// <param name="platform">目标平台。</param>
+        /// <param name="channel">目标渠道。</param>
+        /// <param name="developMode">目标开发模式。</param>
+        public static void OpenPrivacyConfigSection(ConfigMasterSO master, PlatformType platform,
+            ChannelType channel, DevelopMode developMode)
+        {
+            OpenConfigSection(master, platform, channel, developMode, LeftTreeItem.PrivacyConfig, null);
+        }
+
+        /// <summary>
         /// 打开名字空间配置面板并切换到启动 Guard 报告的实际导出坐标。
         /// </summary>
         public static void OpenNamespaceConfigSection(ConfigMasterSO master, PlatformType platform,
@@ -92,6 +105,7 @@ namespace NovaFramework.Editor
                 window.m_LastKnownChannel = channel;
             }
             window.m_GroupExpandedCommon = target == LeftTreeItem.AppConfig ||
+                                           target == LeftTreeItem.PrivacyConfig ||
                                            target == LeftTreeItem.NamespaceConfig ||
                                            window.m_GroupExpandedCommon;
             window.m_GroupExpandedSDK = target == LeftTreeItem.SDKNode || window.m_GroupExpandedSDK;

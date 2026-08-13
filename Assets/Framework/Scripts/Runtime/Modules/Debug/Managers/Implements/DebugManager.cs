@@ -47,7 +47,6 @@ namespace NovaFramework.Runtime
             if (m_CurDiskCheckingConfig.AvailableSpaces == null
                 || m_CurDiskCheckingConfig.AvailableSpaces.Count == 0)
             {
-                Log.Warning(LogTag.Debug, "当前平台磁盘检测档位为空，跳过磁盘检测。");
                 return;
             }
 

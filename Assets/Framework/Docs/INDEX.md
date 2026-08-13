@@ -216,10 +216,11 @@
 | [NamespaceOverride.md](Editor/Config/Definitions/NamespaceOverride.md) | Namespace Editor 维度 Override |
 | [HybridEditorConfigsOverride.md](Editor/Config/Definitions/HybridEditorConfigsOverride.md) | HybridCLR Editor 维度 Override |
 | [YooAssetEditorConfigsOverride.md](Editor/Config/Definitions/YooAssetEditorConfigsOverride.md) | YooAsset Editor 维度 Override |
-| [ConfigRuntimeSO.md](Runtime/Modules/Config/ConfigRuntimeSO.md) | Runtime 快照：Platform / Channel / DevelopMode / AppConfigs / Namespace / HybridConfigs / Custom |
+| [ConfigRuntimeSO.md](Runtime/Modules/Config/ConfigRuntimeSO.md) | Runtime 快照：Platform / Channel / DevelopMode / AppConfigs / PrivacyConfigs / Namespace / HybridConfigs / Custom |
 | [Definitions/IKitConfig.md](Runtime/Modules/Config/Definitions/IKitConfig.md) | Kit 固有配置 marker 接口（DisplayName），全局单份，由 ConfigWindow「Kit 配置」管理 |
 | [Definitions/KitConfigMissingException.md](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) | Kit 配置缺失异常；fail-fast 暴露配置漏填 |
 | [AppConfigs.md](Runtime/Modules/Config/AppConfigs.md) | Runtime 应用配置（应用标识、AES、启动拉取 NetCmd 与配置项名称） |
+| [PrivacyConfigs.md](Runtime/Modules/Config/PrivacyConfigs.md) | Runtime 隐私配置（Util.Encrypt.AES 默认 Key/IV，与 AppConfigs 独立） |
 | [HybridConfigs.md](Runtime/Modules/Config/Definitions/HybridConfigs.md) | Runtime HybridCLR 配置（入口名与 DLL Asset 地址） |
 | [CustomConfigs.md](Runtime/Modules/Config/Definitions/CustomConfigs.md) | Custom 本地 JSONPath 默认值与云端完整 JSON 查询入口 |
 | [PlatformChannelEntry.md](Editor/Config/Definitions/PlatformChannelEntry.md) | Editor 三维配置矩阵行 |
@@ -335,11 +336,10 @@
 
 | 文档 | 说明 |
 |------|------|
-| [NetService.md](Runtime/Modules/Network/NetService.md) | 网络请求静态编排器（Protobuf + AES-128-CBC 全流程；`SendAsync` 带 `[EditorBrowsable(Never)]`，仅供业务 Service 调用） |
+| [NetService.md](Runtime/Modules/Network/NetService.md) | 网络请求静态编排器（Protobuf → 使用 `AppConfigs.AppAesKey/AppAesIV` 的 AES-128-CBC → HTTP → AES 解密；`SendAsync` 带 `[EditorBrowsable(Never)]`，仅供业务 Service 调用） |
 | [NetBuilder.md](Runtime/Modules/Network/NetBuilder.md) | 请求构建静态工具（Header 构建、Proto 序列化、AES 加密、Header JSON；整类 `[EditorBrowsable(Never)]`） |
 | [NetResponse.md](Runtime/Modules/Network/NetResponse.md) | 业务层网络响应泛型包装（`IsSuccess` / `ErrorCode` / `Data`；静态工厂 `Success` / `Fail`） |
 | [NetErrorCode.md](Runtime/Modules/Network/NetErrorCode.md) | 网络层错误码常量（客户端段负数 + 服务端通用段正数） |
-| [NetworkComponentKitExtensions.md](Runtime/Modules/Network/NetworkComponentKitExtensions.md) | `NetworkComponent` Kit 扩展方法（`SetDebugMode`，已下沉至 `NovaFramework.Runtime`） |
 
 ### Network — Kit 公共层
 

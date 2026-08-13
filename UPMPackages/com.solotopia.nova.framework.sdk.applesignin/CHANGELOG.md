@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.12] - 2026-08-13
+
+### Changed
+
+- 将 Framework、GameLogin 与 GameBind 最低依赖同步至本轮发布版本。
+
 ## [0.0.11] - 2026-08-03
 
 ### Changed

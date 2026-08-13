@@ -51,7 +51,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
                 Provider = (int)provider,
                 Openid = openid ?? string.Empty
             };
-            var resp = await NetService.SendAsync(cmdRow, body, PbNetBindResp.Parser, m_DebugModeOverride);
+            var resp = await NetService.SendAsync(cmdRow, body, PbNetBindResp.Parser);
             if (!resp.IsSuccess)
             {
                 LogBindError(resp.ErrorCode, resp.ErrorMessage);
@@ -85,7 +85,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
         {
             PbNetBindingQueryReq body = BuildBindingQueryRequest(NetBuilder.BuildHeader(), openid);
             NetResponse<PbNetBindingQueryResp> resp = await NetService.SendAsync(
-                cmdRow, body, PbNetBindingQueryResp.Parser, m_DebugModeOverride);
+                cmdRow, body, PbNetBindingQueryResp.Parser);
             if (!resp.IsSuccess)
             {
                 LogBindError(resp.ErrorCode, resp.ErrorMessage);
@@ -108,7 +108,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
                 Head = NetBuilder.BuildHeader(),
                 Openid = openid ?? string.Empty
             };
-            var resp = await NetService.SendAsync(cmdRow, body, PbNetBindConflictResp.Parser, m_DebugModeOverride);
+            var resp = await NetService.SendAsync(cmdRow, body, PbNetBindConflictResp.Parser);
             if (!resp.IsSuccess)
             {
                 LogBindError(resp.ErrorCode, resp.ErrorMessage);
@@ -136,7 +136,7 @@ namespace NovaFramework.Kit.Network.GameBind.Runtime
                 Choice = choice ?? string.Empty,
                 VerifyCode = verifyCode ?? string.Empty
             };
-            var resp = await NetService.SendAsync(cmdRow, body, PbNetBindResolveResp.Parser, m_DebugModeOverride);
+            var resp = await NetService.SendAsync(cmdRow, body, PbNetBindResolveResp.Parser);
             if (!resp.IsSuccess)
             {
                 LogBindError(resp.ErrorCode, resp.ErrorMessage);

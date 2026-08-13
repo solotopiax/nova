@@ -46,7 +46,7 @@ related:
 
 需要跨 asmdef 给 sibling Kit 包用，但业务侧不应直接调的：
 - 类型级标 `[EditorBrowsable(Never)]`（如 `NetBuilder`）
-- 方法级标（如 `NetService.SendAsync`、`NetService.SetUid`）
+- 方法级标（如 `NetService.SendAsync`、`NetService.SetUID`）
 
 ```csharp
 [EditorBrowsable(EditorBrowsableState.Never)]
@@ -55,7 +55,7 @@ public static class NetBuilder { ... }
 public static class NetService
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static void SetUid(string uid) { ... }
+    public static void SetUID(string uid) { ... }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static async UniTask<NetResponse<TResp>> SendAsync<...>(...) { ... }
@@ -63,22 +63,19 @@ public static class NetService
 ```
 
 效果：
-- 编译期：`kit.network.login` 的 `Login` 类正常调 `NetBuilder.BuildHeader()` / `NetService.SetUid()` / `NetService.SendAsync()`，跨 asmdef 不报错；
-- IDE 体验：业务侧（main project / 业务 DLL）按 `NetService.` 后**不会出现** `SendAsync` / `SetUid` 等内部方法，看到的只剩 `Uid` / `IsDebugMode` / `SetDebugMode` 等正向 API。
+- 编译期：`kit.network.login` 的 `Login` 类正常调 `NetBuilder.BuildHeader()` / `NetService.SetUID()` / `NetService.SendAsync()`，跨 asmdef 不报错；
+- IDE 体验：业务侧（main project / 业务 DLL）按 `NetService.` 后**不会出现** `SendAsync` / `SetUID` 等内部方法，仅保留 `UID` / `OpenID` 等面向业务的只读状态。
 
 ### 3. public 不加修饰 — 业务侧入口
 
 留给业务直接调的字段、属性、方法：
-- `NetService.Uid`（只读）
-- `NetService.IsDebugMode`、`NetService.SetDebugMode(bool)`
-- `Login.Async(...)`、`Login.UID`、`Login.IsLoggedIn`、`Login.Logout()`
+- `NetService.UID` / `NetService.OpenID`（只读）
+- `Login.Async(...)`、`Login.DeleteAsync()`、`Login.Clear()`、`Login.UID`、`Login.IsLoggedIn`
 - `NetResponse<T>` / `NetErrorCode` / `LoginErrorCode`
-- `NetworkComponentKitExtensions.SetDebugMode(this NetworkComponent, bool)`（扩展方法挂在主框架 Component 上）
 
 ### 业务侧最终接入形态
 
 ```csharp
-Nova.Network.SetDebugMode(true);
 var resp = await Nova.Network.Kit<Login>().Async(string.Empty, openId);
 ```
 
@@ -97,7 +94,7 @@ var resp = await Nova.Network.Kit<Login>().Async(string.Empty, openId);
 - ❌ Kit 包内本可 internal 的类型为了"将来可能跨包用"提前 public。先 internal，跨包需求出现再 public。
 - ❌ 给跨 asmdef 共享但不希望业务调的方法加 `[Obsolete]`。语义错位 + warning 污染。
 - ❌ 在业务侧文档里"靠注释"约束业务"不要调 NetBuilder"。注释不是 enforcement。
-- ❌ 业务侧调用形态出现 `NetBuilder.` / `NetParser.` / `NetService.SetUid(` 字面。出现即说明收口失败。
+- ❌ 业务侧调用形态出现 `NetBuilder.` / `NetParser.` / `NetService.SetUID(` 字面。出现即说明收口失败。
 
 ## 跨项目复用提示
 

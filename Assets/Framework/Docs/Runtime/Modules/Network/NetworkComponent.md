@@ -106,10 +106,6 @@ bool LoadSync()                      // 同步加载，阻塞当前线程直至�
 NetworkSettings GetCurrentSettings() // 返回 m_Settings
 T Kit<T>() where T : class, new()   // 获取或惰性创建 Kit Service 单例；子包 Service 通过此方法访问（不引 Kit asmdef）
 
-// --- Kit 扩展（已下沉至主框架，NovaFramework.Runtime 程序集）---
-// 扩展方法物理在 NetworkComponentKitExtensions.cs，与 NetService 同程序集，无额外依赖。
-void SetDebugMode(bool debugMode)    // 调试模式开关；调试模式下 NetService 跳过 AES 加解密，发送 X-Debug-Plain 头
-
 // --- NetworkManager 透传 (NetworkComponent.Network.cs) ---
 T GetNetCmd<T>() where T : class, ITable    // 获取 Luban 表实例，不存在返回 null
 ITable GetNetCmd(string tbName)              // 按表类型名获取 Luban 表实例
@@ -257,7 +253,6 @@ Nova.Network.SendMessage(WebSocketScope.NetChannelType.TcpPb, "ws://game.server.
 - [IDeviceIdProvider.md](../SDK/Plugins/Device/IDeviceIdProvider.md) — Kit<T>() 访问的 SDK 插件之一；NetService 通过此接口读取设备 ID
 - [NetService.md](NetService.md)
 - [NetBuilder.md](NetBuilder.md)
-- [NetworkComponentKitExtensions.md](NetworkComponentKitExtensions.md)
 
 ---
 

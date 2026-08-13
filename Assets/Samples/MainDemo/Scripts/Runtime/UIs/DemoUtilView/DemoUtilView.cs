@@ -45,7 +45,7 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private TMP_InputField m_AesInput;
 
         /// <summary>
-        /// AES 子卡片：「加密」按钮，使用默认 key 加密。
+        /// AES 子卡片：「加密」按钮，使用 Config 隐私配置初始化的默认 Key/IV 加密。
         /// </summary>
 
         [SerializeField] private Button m_AesEncryptButton;
@@ -74,11 +74,6 @@ namespace NovaFramework.Samples.Runtime
         private string m_LastCipherText = string.Empty;
 
         /// <summary>
-        /// 演示用 AES 密钥（32 字节 ASCII），不含敏感数据。
-        /// </summary>
-        private const string c_DemoAesKey = "NovaDemo1234567890ABCDEF12345678";
-
-        /// <summary>
         /// 初始化钩子，注册所有按钮事件。
         /// </summary>
         /// <param name="userData">用户自定义数据。</param>
@@ -95,13 +90,13 @@ namespace NovaFramework.Samples.Runtime
             if (m_AesEncryptButton != null)
             {
                 m_AesEncryptButton.onClick.AddListener(OnAesEncryptClick);
-                SetButtonApiHint(m_AesEncryptButton, "Util.Encrypt.AES.EncryptString(text, key)");
+                SetButtonApiHint(m_AesEncryptButton, "Util.Encrypt.AES.EncryptString(text)");
             }
 
             if (m_AesDecryptButton != null)
             {
                 m_AesDecryptButton.onClick.AddListener(OnAesDecryptClick);
-                SetButtonApiHint(m_AesDecryptButton, "Util.Encrypt.AES.DecryptString(cipher, key)");
+                SetButtonApiHint(m_AesDecryptButton, "Util.Encrypt.AES.DecryptString(cipher)");
             }
 
             if (m_Md5HashButton != null)
@@ -146,7 +141,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// AES 「加密」点击回调，使用 c_DemoAesKey 加密明文并保存密文供解密。
+        /// AES 「加密」点击回调，使用 Config 隐私配置初始化的默认 Key/IV 加密明文并保存密文供解密。
         /// </summary>
         private void OnAesEncryptClick()
         {
@@ -157,7 +152,7 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            m_LastCipherText = Util.Encrypt.AES.EncryptString(plain, c_DemoAesKey);
+            m_LastCipherText = Util.Encrypt.AES.EncryptString(plain);
             AppendFeedback($"Util.Encrypt.AES.EncryptString(\"{plain}\") -> {m_LastCipherText}", FeedbackLevel.Success);
         }
 
@@ -172,7 +167,7 @@ namespace NovaFramework.Samples.Runtime
                 return;
             }
 
-            string plain = Util.Encrypt.AES.DecryptString(m_LastCipherText, c_DemoAesKey);
+            string plain = Util.Encrypt.AES.DecryptString(m_LastCipherText);
             AppendFeedback($"Util.Encrypt.AES.DecryptString(cipher) -> \"{plain}\"", FeedbackLevel.Success);
         }
 

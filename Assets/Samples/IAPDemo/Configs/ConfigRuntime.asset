@@ -20,6 +20,9 @@ MonoBehaviour:
     AppAesIV: YOUR_APP_AES_IV
     CustomConfigCmdName: AppCustomConfig
     CustomName: CustomConfigs
+  PrivacyConfigs:
+    AESKey: NovaSampleKey_16
+    AESIV: NovaSampleIv__16
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
@@ -80,12 +83,10 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 1468000007792361760
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -127,7 +128,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:

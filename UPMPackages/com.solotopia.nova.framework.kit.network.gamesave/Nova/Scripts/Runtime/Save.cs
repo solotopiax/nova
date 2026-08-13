@@ -24,26 +24,10 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime
     public sealed class Save
     {
         /// <summary>
-        /// 当前 Service 实例的调试模式覆盖值。
-        /// 为 null 时沿用 NetService.IsDebugMode 全局开关。
-        /// </summary>
-        private bool? m_DebugModeOverride;
-
-        /// <summary>
         /// 当前 Service 实例缓存的游戏存档版本号。
         /// 由业务侧通过 SetGameVersion 注入，未设置时所有请求 GameVersion 字段保持空串。
         /// </summary>
         private string m_GameVersion = string.Empty;
-
-        /// <summary>
-        /// 设置当前 Service 实例的调试模式覆盖。
-        /// 设置后仅影响本实例发出的请求；传 null 可恢复沿用全局开关。
-        /// </summary>
-        /// <param name="debugMode">是否启用调试模式。</param>
-        public void SetDebugMode(bool debugMode)
-        {
-            m_DebugModeOverride = debugMode;
-        }
 
         /// <summary>
         /// 设置当前 Service 实例的游戏存档版本号。
@@ -191,7 +175,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime
             {
                 body.Keys.Add(keys[i]);
             }
-            return await NetService.SendAsync(cmdRow, body, PbNetGetGameDataResp.Parser, m_DebugModeOverride);
+            return await NetService.SendAsync(cmdRow, body, PbNetGetGameDataResp.Parser);
         }
 
         /// <summary>
@@ -207,7 +191,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime
                 Full = true,
                 TargetUid = targetUid ?? string.Empty,
             };
-            return await NetService.SendAsync(cmdRow, body, PbNetGetGameDataResp.Parser, m_DebugModeOverride);
+            return await NetService.SendAsync(cmdRow, body, PbNetGetGameDataResp.Parser);
         }
 
         /// <summary>
@@ -257,7 +241,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime
                     Value = values[i],
                 });
             }
-            return await NetService.SendAsync(cmdRow, body, PbNetSetGameDataResp.Parser, m_DebugModeOverride);
+            return await NetService.SendAsync(cmdRow, body, PbNetSetGameDataResp.Parser);
         }
 
         /// <summary>
@@ -288,7 +272,7 @@ namespace NovaFramework.Kit.Network.GameSave.Runtime
                 Key = string.Empty,
                 Value = value,
             });
-            return await NetService.SendAsync(cmdRow, body, PbNetSetGameDataResp.Parser, m_DebugModeOverride);
+            return await NetService.SendAsync(cmdRow, body, PbNetSetGameDataResp.Parser);
         }
 
         /// <summary>

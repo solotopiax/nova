@@ -63,6 +63,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         public override void Shutdown()
         {
+            Util.Encrypt.AES.ResetConfigInitialization();
             m_LifecycleCts?.Cancel();
             m_LifecycleCts?.Dispose();
             m_LifecycleCts = null;
@@ -110,6 +111,16 @@ namespace NovaFramework.Runtime
                 handle.Release();
                 Log.Error(LogTag.Config, "ConfigManager 未能加载 ConfigRuntimeSO：location={0}", m_AssetLocation);
                 throw new InvalidOperationException("ConfigRuntimeSO 加载结果为 null。");
+            }
+
+            try
+            {
+                Util.Encrypt.AES.InitializeFromConfig(handle.Asset.PrivacyConfigs);
+            }
+            catch
+            {
+                handle.Release();
+                throw;
             }
 
             m_ConfigHandle = handle;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-13
+
+### Changed
+
+- 将内置 AppsFlyer Unity Plugin 升级至 `6.18.1`，并同步 Android / iOS 依赖声明。
+- 将 Framework 与 GameLogin 最低依赖同步至本轮发布版本。
+
+
 ## [0.1.3] - 2026-08-12
 
 ### Added
@@ -11,6 +19,7 @@
 ### Fixed
 
 - 配置校验按目标平台执行：Android 仅校验 DevKey，iOS 仅校验 AppId，避免无关字段导致初始化被跳过。
+
 
 ## [0.1.2] - 2026-08-03
 

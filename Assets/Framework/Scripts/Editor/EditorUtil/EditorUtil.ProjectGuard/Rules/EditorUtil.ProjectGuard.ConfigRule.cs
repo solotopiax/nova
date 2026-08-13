@@ -31,6 +31,7 @@ namespace NovaFramework.Editor
             private enum ConfigNavigationSection
             {
                 App,
+                Privacy,
                 Namespace,
                 SDK,
                 Kit,
@@ -127,6 +128,9 @@ namespace NovaFramework.Editor
                 DevelopMode developMode = s_LastConfigRuntime.DevelopMode;
                 switch (s_LastConfigSection)
                 {
+                    case ConfigNavigationSection.Privacy:
+                        ConfigWindow.OpenPrivacyConfigSection(s_LastConfigMaster, platform, channel, developMode);
+                        break;
                     case ConfigNavigationSection.Namespace:
                         ConfigWindow.OpenNamespaceConfigSection(s_LastConfigMaster, platform, channel, developMode);
                         break;
@@ -173,6 +177,18 @@ namespace NovaFramework.Editor
                 ValidateAppId(appConfigs.AppID, runtime, runtimePath, masterPath, report);
                 ValidateAesField("AppAesKey", appConfigs.AppAesKey, runtime, runtimePath, masterPath, report);
                 ValidateAesField("AppAesIV", appConfigs.AppAesIV, runtime, runtimePath, masterPath, report);
+                PrivacyConfigs privacyConfigs = runtime.PrivacyConfigs;
+                if (privacyConfigs == null)
+                {
+                    AddConfigIssue(report, "NOVA-CONFIG-003", runtime, runtimePath, masterPath,
+                        "PrivacyConfigs", "导出值为 null。", "Nova/Open Config → 通用配置 → 隐私配置",
+                        ConfigNavigationSection.Privacy);
+                }
+                else
+                {
+                    ValidatePrivacyAesField("AESKey", privacyConfigs.AESKey, runtime, runtimePath, masterPath, report);
+                    ValidatePrivacyAesField("AESIV", privacyConfigs.AESIV, runtime, runtimePath, masterPath, report);
+                }
                 if (string.IsNullOrWhiteSpace(runtime.Namespace))
                 {
                     AddConfigIssue(report, "NOVA-CONFIG-003", runtime, runtimePath, masterPath,
@@ -239,6 +255,18 @@ namespace NovaFramework.Editor
                         "Nova/Open Config → 通用配置 → 应用配置");
                 }
 
+                PrivacyConfigs sourcePrivacy = entry.GetPrivacyConfigs(runtime.DevelopMode);
+                var changedPrivacyFields = new List<string>();
+                ComparePrivacyField(changedPrivacyFields, "AESKey", sourcePrivacy?.AESKey, runtime.PrivacyConfigs?.AESKey);
+                ComparePrivacyField(changedPrivacyFields, "AESIV", sourcePrivacy?.AESIV, runtime.PrivacyConfigs?.AESIV);
+                if (changedPrivacyFields.Count > 0)
+                {
+                    AddConfigIssue(report, "NOVA-CONFIG-004", runtime, runtimePath, masterPath,
+                        string.Join("、", changedPrivacyFields),
+                        "ConfigMasterSO 隐私配置已修改但 ConfigRuntimeSO 尚未重新导出。请保存并重新导出当前坐标。",
+                        "Nova/Open Config → 通用配置 → 隐私配置", ConfigNavigationSection.Privacy);
+                }
+
                 ValidateEnabledTypeExport("SDK", "EnabledSDKConfigs", master.EnabledSDKs,
                     runtime.EnabledSDKConfigs.Where(config => config != null)
                         .Select(config => config.GetType().FullName),
@@ -292,6 +320,22 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 比较隐私配置字段，仅记录路径而不记录敏感值。
+            /// </summary>
+            /// <param name="changedFields">变更字段收集列表。</param>
+            /// <param name="fieldName">字段名。</param>
+            /// <param name="sourceValue">设计态值。</param>
+            /// <param name="runtimeValue">导出态值。</param>
+            private static void ComparePrivacyField(List<string> changedFields, string fieldName,
+                string sourceValue, string runtimeValue)
+            {
+                if (!string.Equals(sourceValue, runtimeValue, StringComparison.Ordinal))
+                {
+                    changedFields.Add($"PrivacyConfigs.{fieldName}");
+                }
+            }
+
+            /// <summary>
             /// 校验 AppID 是否已经由公开包占位符替换为有效的正整数配置。
             /// </summary>
             private static void ValidateAppId(string value, ConfigRuntimeSO runtime, string runtimePath,
@@ -332,6 +376,28 @@ namespace NovaFramework.Editor
                     AddConfigIssue(report, "NOVA-CONFIG-003", runtime, runtimePath, masterPath,
                         fieldPath, $"当前 {byteCount} 字节，必须为 {c_AesSecretByteLength} 字节 UTF-8 字符串。",
                         configEntry);
+                }
+            }
+
+            /// <summary>
+            /// 校验隐私配置 AES 字段并把问题导航到隐私配置面板。
+            /// </summary>
+            /// <param name="fieldName">字段名。</param>
+            /// <param name="value">字段值。</param>
+            /// <param name="runtime">运行时配置。</param>
+            /// <param name="runtimePath">运行时配置路径。</param>
+            /// <param name="masterPath">设计态配置路径。</param>
+            /// <param name="report">问题收集报告。</param>
+            private static void ValidatePrivacyAesField(string fieldName, string value, ConfigRuntimeSO runtime,
+                string runtimePath, string masterPath, NovaGuardReport report)
+            {
+                int byteCount = string.IsNullOrEmpty(value) ? 0 : Encoding.UTF8.GetByteCount(value);
+                if (byteCount != c_AesSecretByteLength)
+                {
+                    AddConfigIssue(report, "NOVA-CONFIG-003", runtime, runtimePath, masterPath,
+                        $"PrivacyConfigs.{fieldName}",
+                        $"当前 {byteCount} 字节，必须为 {c_AesSecretByteLength} 字节 UTF-8 字符串。",
+                        $"Nova/Open Config → 通用配置 → 隐私配置 → {fieldName}", ConfigNavigationSection.Privacy);
                 }
             }
 
@@ -442,6 +508,10 @@ namespace NovaFramework.Editor
                 else if (string.Equals(fieldPath, "Namespace", StringComparison.Ordinal))
                 {
                     s_LastConfigSection = ConfigNavigationSection.Namespace;
+                }
+                else if (fieldPath.StartsWith("PrivacyConfigs", StringComparison.Ordinal))
+                {
+                    s_LastConfigSection = ConfigNavigationSection.Privacy;
                 }
                 else if (TryParseArrayIndex(fieldPath, "EnabledSDKConfigs.Array.data[", out int sdkIndex) &&
                          sdkIndex >= 0 && sdkIndex < runtime.EnabledSDKConfigs.Count)

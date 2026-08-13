@@ -5,6 +5,7 @@
 ## Runtime 数据来源
 
 - `PlatformChannelEntry.AppConfigsByMode` → `AppConfigs`
+- `PlatformChannelEntry.PrivacyConfigsByMode` → `PrivacyConfigs`；使用独立 `PrivacyConfigsMask`
 - `Namespace` 与 `NamespaceOverrides` → `Namespace`
 - `HybridEditorConfigs.GameEntranceProcedureName / AotMetadataDlls / GameDlls` → 去除构建路径后生成 `HybridConfigs`
 - Runtime SDK 与 Kit 配置矩阵

@@ -4,20 +4,23 @@ FirebaseMessaging iOS and Android Dependencies.
 -->
 
 <dependencies>
+  <remoteSwiftPackage url="https://github.com/firebase/firebase-ios-sdk.git" version="12.16.0">
+    <swiftPackage name="FirebaseMessaging" replacesPod="Firebase/Messaging"/>
+  </remoteSwiftPackage>
   <iosPods>
-    <iosPod name="Firebase/Messaging" version="11.14.0" minTargetSdk="13.0">
+    <iosPod name="Firebase/Messaging" version="12.16.0" minTargetSdk="15.0">
     </iosPod>
   </iosPods>
   <androidPackages>
-    <androidPackage spec="com.google.firebase:firebase-messaging:24.1.1">
+    <androidPackage spec="com.google.firebase:firebase-messaging:25.1.1">
     </androidPackage>
-    <androidPackage spec="com.google.firebase:firebase-analytics:22.4.0">
+    <androidPackage spec="com.google.firebase:firebase-analytics:23.2.0">
     </androidPackage>
     <androidPackage spec="com.google.firebase:firebase-iid:21.1.0">
     </androidPackage>
     <androidPackage spec="com.google.flatbuffers:flatbuffers-java:1.12.0">
     </androidPackage>
-    <androidPackage spec="com.google.firebase:firebase-messaging-unity:12.10.1">
+    <androidPackage spec="com.google.firebase:firebase-messaging-unity:13.14.0">
       <repositories>
         <repository>Packages/com.solotopia.nova.framework.sdk.firebase/Firebase/m2repository</repository>
       </repositories>

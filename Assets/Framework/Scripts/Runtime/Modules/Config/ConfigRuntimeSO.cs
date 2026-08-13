@@ -37,6 +37,11 @@ namespace NovaFramework.Runtime
         public AppConfigs AppConfigs;
 
         /// <summary>
+        /// 隐私运行时配置；由 ConfigManager 在完成加载前用于初始化 Util.Encrypt.AES 默认密钥。
+        /// </summary>
+        public PrivacyConfigs PrivacyConfigs;
+
+        /// <summary>
         /// 本次导出目标平台。
         /// </summary>
         public PlatformType Platform;

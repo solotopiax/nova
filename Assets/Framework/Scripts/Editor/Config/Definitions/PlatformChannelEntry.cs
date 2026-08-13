@@ -17,7 +17,7 @@ namespace NovaFramework.Editor
 {
     /// <summary>
     /// Platform × Channel 矩阵的一行；
-    /// 每一行内部按 DevelopMode 独立存储 AppConfigs、SDK 配置与 Kit 配置，
+    /// 每一行内部按 DevelopMode 独立存储 AppConfigs、PrivacyConfigs、SDK 配置与 Kit 配置，
     /// 使 (Platform, Channel, DevelopMode) 三维任意切换都各自保留独立数据。
     /// </summary>
     [Serializable]
@@ -40,6 +40,11 @@ namespace NovaFramework.Editor
         public List<DevelopModeAppConfigsEntry> AppConfigsByMode = new();
 
         /// <summary>
+        /// 按 DevelopMode 分组的隐私配置列表；默认预置 Debug 与 Release 两份空条目。
+        /// </summary>
+        public List<DevelopModePrivacyConfigsEntry> PrivacyConfigsByMode = new();
+
+        /// <summary>
         /// 旧版按 DevelopMode 分组的 CommonConfig 数据缓冲；迁移成功后清空。
         /// </summary>
         [SerializeField, HideInInspector]
@@ -58,12 +63,14 @@ namespace NovaFramework.Editor
         public List<DevelopModeKitEntry> KitConfigsByMode = new();
 
         /// <summary>
-        /// 无参构造器；为 AppConfigsByMode、SDKConfigsByMode 与 KitConfigsByMode 分别预置 Debug / Release 两份空条目。
+        /// 无参构造器；为 AppConfigsByMode、PrivacyConfigsByMode、SDKConfigsByMode 与 KitConfigsByMode 分别预置 Debug / Release 两份空条目。
         /// </summary>
         public PlatformChannelEntry()
         {
             AppConfigsByMode.Add(new DevelopModeAppConfigsEntry { Mode = DevelopMode.Debug });
             AppConfigsByMode.Add(new DevelopModeAppConfigsEntry { Mode = DevelopMode.Release });
+            PrivacyConfigsByMode.Add(new DevelopModePrivacyConfigsEntry { Mode = DevelopMode.Debug });
+            PrivacyConfigsByMode.Add(new DevelopModePrivacyConfigsEntry { Mode = DevelopMode.Release });
             SDKConfigsByMode.Add(new DevelopModeSDKEntry { Mode = DevelopMode.Debug });
             SDKConfigsByMode.Add(new DevelopModeSDKEntry { Mode = DevelopMode.Release });
             KitConfigsByMode.Add(new DevelopModeKitEntry { Mode = DevelopMode.Debug });
@@ -86,6 +93,25 @@ namespace NovaFramework.Editor
 
             var entry = new DevelopModeAppConfigsEntry { Mode = mode };
             AppConfigsByMode.Add(entry);
+            return entry.Config;
+        }
+
+        /// <summary>
+        /// 按指定 DevelopMode 获取对应的 PrivacyConfigs；缺少条目时自动补齐空配置。
+        /// </summary>
+        /// <param name="mode">目标开发模式。</param>
+        /// <returns>该模式对应的 PrivacyConfigs 实例，永不为 null。</returns>
+        public PrivacyConfigs GetPrivacyConfigs(DevelopMode mode)
+        {
+            PrivacyConfigsByMode ??= new List<DevelopModePrivacyConfigsEntry>();
+            for (int i = 0; i < PrivacyConfigsByMode.Count; i++)
+            {
+                if (PrivacyConfigsByMode[i].Mode == mode)
+                    return PrivacyConfigsByMode[i].Config;
+            }
+
+            var entry = new DevelopModePrivacyConfigsEntry { Mode = mode };
+            PrivacyConfigsByMode.Add(entry);
             return entry.Config;
         }
 
@@ -191,6 +217,23 @@ namespace NovaFramework.Editor
         /// 该模式下的公共配置实例。
         /// </summary>
         public AppConfigs Config = new();
+    }
+
+    /// <summary>
+    /// 单个 DevelopMode 下的隐私配置包装项。
+    /// </summary>
+    [Serializable]
+    public sealed class DevelopModePrivacyConfigsEntry
+    {
+        /// <summary>
+        /// 该条目对应的开发模式。
+        /// </summary>
+        public DevelopMode Mode;
+
+        /// <summary>
+        /// 该模式下的隐私配置。
+        /// </summary>
+        public PrivacyConfigs Config = new();
     }
 
     /// <summary>

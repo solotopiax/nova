@@ -111,6 +111,7 @@ UnityEditor.EditorWindow
 | `Python3Env` | Python3 环境检测面板（环境检测组下） |
 | `HybridCLREnv` | HybridCLR 环境检测面板（环境检测组下） |
 | `AppConfig` | 应用配置面板（通用配置组下） |
+| `PrivacyConfig` | 隐私配置面板：独立维护 Util.Encrypt.AES 默认 Key/IV，携带三维配置头部 |
 | `NamespaceConfig` | 名字空间配置面板（通用配置组下） |
 | `HybridCLRConfig` | HybridCLR 配置面板（通用配置组下）：业务入口 Procedure 相对名 + AOT 元数据 DLL 列表 + 业务 DLL 列表 |
 | `YooAssetConfig` | YooAsset 配置面板（通用配置组下）：两条资产路径，以及只存 ConfigMaster、导出时单向写入 `YooAssetSettings.asset` 的 `YooFolderName` / `PackageFilePrefix` 模板 |
@@ -132,6 +133,8 @@ public static void OpenLubanSection(EnvironmentCheckResult result);
 
 // Play Guard 配置异常导航入口：切换来源资产、导出坐标并打开对应面板
 public static void OpenAppConfigSection(ConfigMasterSO master, PlatformType platform,
+    ChannelType channel, DevelopMode developMode);
+public static void OpenPrivacyConfigSection(ConfigMasterSO master, PlatformType platform,
     ChannelType channel, DevelopMode developMode);
 public static void OpenNamespaceConfigSection(ConfigMasterSO master, PlatformType platform,
     ChannelType channel, DevelopMode developMode);

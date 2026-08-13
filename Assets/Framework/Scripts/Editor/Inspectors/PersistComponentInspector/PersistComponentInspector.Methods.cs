@@ -39,6 +39,90 @@ namespace NovaFramework.Editor
         private const string c_FFFileExtension = ".dat";
 
         /// <summary>
+        /// 分类标题的布局缩进；计入外层 Box 自带内边距后，文字起点相对父级偏移 11f。
+        /// </summary>
+        protected const float c_DataClassifyIndent = 8f;
+
+        /// <summary>
+        /// 条目区域的布局缩进；计入两层 Box 自带内边距后，文字起点相对根级偏移 22f。
+        /// </summary>
+        protected const float c_DataItemIndent = 15f;
+
+        /// <summary>
+        /// 为 Inspector 数据读取解析 AES 凭据：编辑态读取 WorkspaceActive 当前 ConfigMaster 坐标，播放态读取其 ConfigRuntime 导出物。
+        /// </summary>
+        private void ResolveInspectorAESCredentials()
+        {
+            m_EditorAESKey = null;
+            m_EditorAESIV = null;
+            ConfigMasterSO master = EditorUtil.Config.WorkspaceActive.Get();
+            if (master == null)
+            {
+                Log.Error(LogTag.Encrypt, "Persist Inspector 无法读取 AES 配置：当前工程未激活 ConfigMasterSO，请先打开 Nova/Open Config 选择配置。");
+                return;
+            }
+
+            PrivacyConfigs privacy;
+            if (EditorApplication.isPlaying)
+            {
+                ConfigRuntimeSO runtime = master.ExportTarget;
+                if (runtime == null)
+                {
+                    Log.Error(LogTag.Encrypt, "Persist Inspector 无法读取 AES 配置：当前 ConfigMasterSO.ExportTarget 为空，请先导出 ConfigRuntimeSO。");
+                    return;
+                }
+                privacy = runtime.PrivacyConfigs;
+            }
+            else
+            {
+                PlatformType platform = master.CurrentPlatform;
+                ChannelType channel = master.CurrentChannel;
+                DevelopMode developMode = master.CurrentDevelopMode;
+                if (platform == PlatformType.None || channel == ChannelType.None ||
+                    !master.TryGetEntry(platform, channel, out _))
+                {
+                    Log.Error(LogTag.Encrypt,
+                        "Persist Inspector 无法读取 AES 配置：ConfigMaster 当前坐标无效（Platform={0}, Channel={1}, DevelopMode={2}）。请在 Config 窗口选择合法坐标。",
+                        platform, channel, developMode);
+                    return;
+                }
+                privacy = master.GetPrivacyConfigs(platform, channel, developMode);
+            }
+
+            if (!IsValidInspectorAESSecret(privacy?.AESKey) || !IsValidInspectorAESSecret(privacy?.AESIV))
+            {
+                Log.Error(LogTag.Encrypt, "Persist Inspector 无法读取 AES 配置：隐私配置中的 AES-Key 与 AES-IV 按 UTF-8 编码后必须各为 16 字节。");
+                return;
+            }
+            m_EditorAESKey = privacy.AESKey;
+            m_EditorAESIV = privacy.AESIV;
+        }
+
+        /// <summary>
+        /// 校验 Inspector 使用的 AES 字符串是否为 16 字节 UTF-8 数据。
+        /// </summary>
+        /// <param name="value">待校验字符串。</param>
+        /// <returns>长度合法时返回 true。</returns>
+        private static bool IsValidInspectorAESSecret(string value)
+        {
+            return !string.IsNullOrEmpty(value) && Encoding.UTF8.GetByteCount(value) == 16;
+        }
+
+        /// <summary>
+        /// 判断 Inspector 是否已经取得可用的显式 AES 凭据；失败时输出配置入口提示。
+        /// </summary>
+        /// <returns>Key 与 IV 均合法时返回 true。</returns>
+        private bool EnsureInspectorAESCredentials()
+        {
+            if (IsValidInspectorAESSecret(m_EditorAESKey) && IsValidInspectorAESSecret(m_EditorAESIV))
+            {
+                return true;
+            }
+            Log.Error(LogTag.Encrypt, "Persist Inspector 的 AES 操作已取消：请先在 Nova/Open Config → 通用配置 → 隐私配置中为当前坐标配置有效的 AES-Key/AES-IV。");
+            return false;
+        }
+
+        /// <summary>
         /// 绘制配置区（管理器选择 + 加密设置）。
         /// </summary>
         private void DrawConfigs()
@@ -276,7 +360,8 @@ namespace NovaFramework.Editor
 
                 if (useAES)
                 {
-                    bytes = Util.Encrypt.AES.DecryptBytes(bytes);
+                    if (!EnsureInspectorAESCredentials()) return null;
+                    bytes = Util.Encrypt.AES.DecryptBytes(bytes, m_EditorAESKey, m_EditorAESIV);
                 }
 
                 var result = new System.Collections.Generic.Dictionary<string, string>();
@@ -326,7 +411,8 @@ namespace NovaFramework.Editor
 
             if (useAES)
             {
-                bytes = Util.Encrypt.AES.EncryptBytes(bytes);
+                if (!EnsureInspectorAESCredentials()) return;
+                bytes = Util.Encrypt.AES.EncryptBytes(bytes, m_EditorAESKey, m_EditorAESIV);
             }
 
             Util.SysIO.File.WriteAllBytesSync(filePath, bytes);
@@ -345,7 +431,8 @@ namespace NovaFramework.Editor
 
             try
             {
-                return Util.Encrypt.AES.DecryptString(raw);
+                if (!EnsureInspectorAESCredentials()) return raw;
+                return Util.Encrypt.AES.DecryptString(raw, m_EditorAESKey, m_EditorAESIV);
             }
             catch
             {
@@ -357,7 +444,12 @@ namespace NovaFramework.Editor
         /// 对明文值加密以存储：useAES 为 true 时 AES 加密，否则原样返回。
         /// </summary>
         protected string EncodeForStorage(string display, bool useAES)
-            => useAES ? Util.Encrypt.AES.EncryptString(display) : display;
+        {
+            if (!useAES) return display;
+            return EnsureInspectorAESCredentials()
+                ? Util.Encrypt.AES.EncryptString(display, m_EditorAESKey, m_EditorAESIV)
+                : display;
+        }
 
         /// <summary>
         /// 绘制分类折叠标题行，返回是否展开。

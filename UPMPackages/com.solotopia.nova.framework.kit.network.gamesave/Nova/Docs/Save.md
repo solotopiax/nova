@@ -31,11 +31,10 @@
 
 > **全量 vs 非全量：** 仅 `GetFullAsync` / `SetFullAsync` 走全量（请求体 `full=true`），其余接口一律为非全量（`full=false`）。`PbNetGetGameDataReq.full=true` 时服务端忽略 `keys` 拉取该用户全部存档；`PbNetSetGameDataReq.full=true` 时服务端用 `datas` 整体替换该用户存档。
 
-#### 调试 / 元数据
+#### 元数据
 
 | 签名 | 说明 |
 |---|---|
-| `public void SetDebugMode(bool debugMode)` | 设置本实例调试模式覆盖；仅影响本实例发出的请求；`false` 时不等于关闭全局，仅取消覆盖 |
 | `public void SetGameVersion(string gameVersion)` | 设置本实例的游戏存档版本号；后续所有 `SetAsync` / `SetFullAsync` 请求自动写入 `GameVersion` 字段；传 `null` 按空串处理；未调用前默认空串 |
 
 #### 拉取（非全量）
@@ -88,9 +87,6 @@
 // 获取 Save Service 实例
 var gameSave = Nova.Network.Kit<Save>();
 
-// 切换为调试模式（仅影响本实例发出的请求）
-gameSave.SetDebugMode(true);
-
 // 注入游戏存档版本号（登录/初始化阶段调一次即可，后续 Set/SetFull 自动写入）
 gameSave.SetGameVersion("1.0.0");
 
@@ -130,7 +126,7 @@ var setFullResp = await gameSave.SetFullAsync(fullPayload);
 
 ## 4. 内部约束
 
-- **`SetDebugMode` 覆盖语义**：`m_DebugModeOverride` 为 `bool?`，调用 `SetDebugMode(true/false)` 后会覆盖全局 `NetService.IsDebugMode`；若需恢复跟随全局，暂无公开 API，需重新 `Kit<Save>()` 获取新实例。
+- **固定传输加密**：所有云存档业务请求均由 `NetService` 使用 `Nova.Config.AppConfigs.AppAesKey/AppAesIV` 进行 AES-128-CBC 加密后发送，并以同一配置解密响应。
 - **`Head` 自动填充**：所有 `Async` 入口内部调用 `NetBuilder.BuildHeader()` 填充请求 Head，业务侧无需手动构建。
 - **`Set` 请求元数据自动填充**：`SetAsync` / `SetFullAsync` 自动写入 `GameVersion/AppVersion/LastDevid`；`LastDevid` 通过 `IDeviceIdProvider` 取值。Proto `last_device_id` 已硬切换为 `last_devid`，字段号不变，不提供旧 `LastDeviceId` 属性。
 - **`full` 由接口决定，禁靠 keys 空判**：是否全量完全由具体接口决定 —— 仅 `GetFullAsync` / `SetFullAsync` 写入 `full=true`；`GetFullAsync` 不携带 keys；`SetFullAsync` 将 `value` 作为整包载荷写入 `datas[0].Value`（`Key` 为空字符串）。其余接口一律 `full=false`。**已废弃旧版"keys 为空 = 全量"的隐式回退**。

@@ -69,6 +69,9 @@ namespace NovaFramework.Editor
                             case LeftTreeItem.AppConfig when m_MasterSO != null:
                                 DrawAppConfigsPanel();
                                 break;
+                            case LeftTreeItem.PrivacyConfig when m_MasterSO != null:
+                                DrawPrivacyConfigsPanel();
+                                break;
                             case LeftTreeItem.NamespaceConfig when m_MasterSO != null:
                                 DrawNamespacePanel();
                                 break;
@@ -312,6 +315,7 @@ namespace NovaFramework.Editor
             switch (panelKind)
             {
                 case EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs: mask = workingSrc.AppConfigsMask; break;
+                case EditorUtil.Config.DimensionProjector.PanelKind.PrivacyConfigs: mask = workingSrc.PrivacyConfigsMask; break;
                 case EditorUtil.Config.DimensionProjector.PanelKind.Namespace: mask = workingSrc.NamespaceMask; break;
                 case EditorUtil.Config.DimensionProjector.PanelKind.HybridEditorConfigs: mask = workingSrc.HybridEditorConfigsMask; break;
                 case EditorUtil.Config.DimensionProjector.PanelKind.CDNEditorConfigs: mask = workingSrc.CDNEditorConfigsMask; break;
@@ -453,6 +457,81 @@ namespace NovaFramework.Editor
             m_MasterSO.ApplyModifiedProperties();
             // 字段编辑完成后广播同组格，确保组内数据一致（ChangeCheck 覆盖后追加）
             EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs, null, new EditorUtil.Config.DimensionProjector.Coord(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
+            EditorUtil.Draw.Space(16f);
+        }
+
+        /// <summary>
+        /// 绘制隐私配置面板；按 ConfigMaster 当前三维坐标编辑独立的 AES 默认 Key/IV。
+        /// </summary>
+        private void DrawPrivacyConfigsPanel()
+        {
+            ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
+            DrawPanelTitleWithMask("隐私配置", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.PrivacyConfigs, null);
+            if (!workingSrc.TryGetEntry(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, out PlatformChannelEntry entry))
+            {
+                EditorUtil.Draw.HelpBox(MessageType.Warning, new[] { "未找到当前 Platform × Channel 对应的配置行。" }, false);
+                return;
+            }
+
+            m_MasterSO.Update();
+            int entryIndex = workingSrc.EditorEntries.IndexOf(entry);
+            SerializedProperty entries = m_MasterSO.FindProperty("m_Entries");
+            SerializedProperty byMode = entryIndex >= 0 && entries != null
+                ? entries.GetArrayElementAtIndex(entryIndex).FindPropertyRelative("PrivacyConfigsByMode")
+                : null;
+            if (byMode == null)
+            {
+                EditorUtil.Draw.HelpBox(MessageType.Warning, new[] { "序列化字段 PrivacyConfigsByMode 未找到，请检查配置结构。" }, false);
+                return;
+            }
+
+            for (int i = 0; i < byMode.arraySize; i++)
+            {
+                SerializedProperty modeEntry = byMode.GetArrayElementAtIndex(i);
+                SerializedProperty modeProperty = modeEntry.FindPropertyRelative("Mode");
+                if (modeProperty == null || (DevelopMode)modeProperty.enumValueIndex != workingSrc.CurrentDevelopMode) continue;
+                SerializedProperty config = modeEntry.FindPropertyRelative("Config");
+                SerializedProperty key = config?.FindPropertyRelative("AESKey");
+                SerializedProperty iv = config?.FindPropertyRelative("AESIV");
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    EditorUtil.Draw.Space(16f);
+                    if (key != null) EditorUtil.Draw.Property("AES-Key", key, false, GUILayout.Width(140f));
+                    EditorUtil.Draw.Space(16f);
+                });
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    EditorUtil.Draw.Space(16f);
+                    if (iv != null) EditorUtil.Draw.Property("AES-IV", iv, false, GUILayout.Width(140f));
+                    EditorUtil.Draw.Space(16f);
+                });
+                break;
+            }
+
+            EditorUtil.Draw.Space(8f);
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1) 仅用于 Util.Encrypt.AES 默认密钥初始化及 Persist 本地数据加解密。",
+                    "(2) 不属于应用配置中的 AppAesKey / AppAesIV，两套配置相互独立。",
+                    "(3) AES-Key 与 AES-IV 按 UTF-8 编码后必须各为 16 字节。",
+                    "(4) Nova.Config.LoadAsync() 完成前会自动初始化，业务侧禁止手动调用 Util.Encrypt.AES.Configure。",
+                }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+
+            m_MasterSO.ApplyModifiedProperties();
+            EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(
+                workingSrc,
+                m_MasterSO,
+                EditorUtil.Config.DimensionProjector.PanelKind.PrivacyConfigs,
+                null,
+                new EditorUtil.Config.DimensionProjector.Coord(
+                    workingSrc.CurrentPlatform,
+                    workingSrc.CurrentChannel,
+                    workingSrc.CurrentDevelopMode));
             EditorUtil.Draw.Space(16f);
         }
 

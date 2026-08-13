@@ -348,6 +348,11 @@ namespace NovaFramework.Editor
             AppConfig,
 
             /// <summary>
+            /// 隐私配置面板（通用配置组下）。
+            /// </summary>
+            PrivacyConfig,
+
+            /// <summary>
             /// 名字空间配置面板（通用配置组下）。
             /// </summary>
             NamespaceConfig,

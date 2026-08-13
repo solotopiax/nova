@@ -48,6 +48,8 @@ namespace NovaFramework.Editor
             m_SQLiteManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(ISQLiteManager)));
             m_TmpSQLiteCipherPassword = m_SQLiteCipherPassword?.stringValue ?? string.Empty;
 
+            ResolveInspectorAESCredentials();
+
             // 各后端初始化
             OnEnablePlayerPrefs();
             OnEnableFileFragment();

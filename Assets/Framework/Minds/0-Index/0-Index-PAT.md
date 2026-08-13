@@ -62,6 +62,7 @@ auto_generated: true
 - [PAT-150 Editor 多仓库渐进加载与变更就绪门](../2-Areas/Patterns/PAT-150-editor-multi-registry-progressive-load-mutation-gate.md) — 多仓库并发渐进展示，变更操作等待数据集完整
 - [PAT-155 Unity Editor 菜单分组按父菜单首项并预留 11 级差](../2-Areas/Patterns/PAT-155-unity-menuitem-priority-grouping.md) — 顶层子菜单继承首项优先级，分割线统一预留 11 级差
 - [PAT-156 CDN 上传前清理必须受本次上传计划约束](../2-Areas/Patterns/PAT-156-cdn-clean-before-deploy-bounded-by-upload-plan.md) — 远端清理只覆盖本次精确文件和目录前缀，失败时零上传
+- [PAT-161 ConfigWindow 新增配置面板必须携带三维配置头部](../2-Areas/Patterns/PAT-161-configwindow-new-panel-dimension-header.md) — ConfigWindow 新面板必须接入三维配置头部
 - [PAT-18 EditorWindow 与 EditorUtil 职责分离](../2-Areas/Patterns/PAT-18-editor-window-vs-util-split.md) — EditorWindow与EditorUtil分层职责拆分
 - [PAT-35 Editor 绘制统一走 EditorUtil.Draw](../2-Areas/Patterns/PAT-35-editor-draw-only.md) — 业务侧 Editor 绘制统一走 Draw
 - [PAT-39 EditorUtil.Draw 纪律强化规则](../2-Areas/Patterns/PAT-39-editor-draw-discipline-enforcement.md) — 缺 Draw 接口先补接口再改 UI
@@ -184,4 +185,4 @@ auto_generated: true
 
 
 ---
-_共 118 条，分布于 18 个 category。_
+_共 119 条，分布于 18 个 category。_

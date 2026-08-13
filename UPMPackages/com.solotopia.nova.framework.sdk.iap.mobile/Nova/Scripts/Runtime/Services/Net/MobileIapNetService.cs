@@ -23,22 +23,6 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     public sealed class MobileIapNetService
     {
         /// <summary>
-        /// 当前 Service 实例的调试模式覆盖值。
-        /// 为 null 时沿用 NetService.IsDebugMode 全局开关。
-        /// </summary>
-        private bool? m_DebugModeOverride;
-
-        /// <summary>
-        /// 设置当前 Service 实例的调试模式覆盖。
-        /// 设置后仅影响本实例发出的请求；传 null 可恢复沿用全局开关。
-        /// </summary>
-        /// <param name="debugMode">是否启用调试模式。</param>
-        public void SetDebugMode(bool debugMode)
-        {
-            m_DebugModeOverride = debugMode;
-        }
-
-        /// <summary>
         /// 查询谷歌平台未完成订单列表。
         /// 内部构造 PbNetGoogleQueryPendingOrderReq（含协议头），通过 NetService.SendAsync 发送。
         /// </summary>
@@ -49,7 +33,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             var req = new PbNetGoogleQueryPendingOrderReq { Head = NetBuilder.BuildHeader() };
             INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
             LogRequest("QueryPendingOrder", "Google", cmdName, req);
-            NetResponse<PbNetGoogleQueryPendingOrderResp> resp = await NetService.SendAsync(cmdRow, req, PbNetGoogleQueryPendingOrderResp.Parser, m_DebugModeOverride);
+            NetResponse<PbNetGoogleQueryPendingOrderResp> resp = await NetService.SendAsync(cmdRow, req, PbNetGoogleQueryPendingOrderResp.Parser);
             LogResponse("QueryPendingOrder", "Google", cmdName, resp);
             return resp;
         }
@@ -65,7 +49,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             var req = new PbNetAppleQueryPendingOrderReq { Head = NetBuilder.BuildHeader() };
             INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
             LogRequest("QueryPendingOrder", "Apple", cmdName, req);
-            NetResponse<PbNetAppleQueryPendingOrderResp> resp = await NetService.SendAsync(cmdRow, req, PbNetAppleQueryPendingOrderResp.Parser, m_DebugModeOverride);
+            NetResponse<PbNetAppleQueryPendingOrderResp> resp = await NetService.SendAsync(cmdRow, req, PbNetAppleQueryPendingOrderResp.Parser);
             LogResponse("QueryPendingOrder", "Apple", cmdName, resp);
             return resp;
         }
@@ -110,7 +94,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 }
 
                 LogRequest("VerifyGoogleSubscribe", "Google", cmdName, req);
-                NetResponse<PbNetMobileVerifyResp> resp = await NetService.SendAsync(cmdRow, req, PbNetMobileVerifyResp.Parser, m_DebugModeOverride);
+                NetResponse<PbNetMobileVerifyResp> resp = await NetService.SendAsync(cmdRow, req, PbNetMobileVerifyResp.Parser);
                 LogResponse("VerifyGoogleSubscribe", "Google", cmdName, resp);
                 return resp;
             }
@@ -122,7 +106,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             LogRequest("VerifyGoogleIap", "Google", cmdName, iapReq);
-            NetResponse<PbNetMobileVerifyResp> iapResp = await NetService.SendAsync(cmdRow, iapReq, PbNetMobileVerifyResp.Parser, m_DebugModeOverride);
+            NetResponse<PbNetMobileVerifyResp> iapResp = await NetService.SendAsync(cmdRow, iapReq, PbNetMobileVerifyResp.Parser);
             LogResponse("VerifyGoogleIap", "Google", cmdName, iapResp);
             return iapResp;
         }
@@ -166,7 +150,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 }
 
                 LogRequest("VerifyAppleSubscribe", "Apple", cmdName, req);
-                NetResponse<PbNetMobileVerifyResp> resp = await NetService.SendAsync(cmdRow, req, PbNetMobileVerifyResp.Parser, m_DebugModeOverride);
+                NetResponse<PbNetMobileVerifyResp> resp = await NetService.SendAsync(cmdRow, req, PbNetMobileVerifyResp.Parser);
                 LogResponse("VerifyAppleSubscribe", "Apple", cmdName, resp);
                 return resp;
             }
@@ -178,7 +162,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             LogRequest("VerifyAppleIap", "Apple", cmdName, iapReq);
-            NetResponse<PbNetMobileVerifyResp> iapResp = await NetService.SendAsync(cmdRow, iapReq, PbNetMobileVerifyResp.Parser, m_DebugModeOverride);
+            NetResponse<PbNetMobileVerifyResp> iapResp = await NetService.SendAsync(cmdRow, iapReq, PbNetMobileVerifyResp.Parser);
             LogResponse("VerifyAppleIap", "Apple", cmdName, iapResp);
             return iapResp;
         }

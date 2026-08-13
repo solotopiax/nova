@@ -156,7 +156,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 资源：无
 
 #### 1.6 DemoUtilView ｜ R
-- API 副标题：`Util.Json.ToJson(obj) / Util.Encrypt.AESEncrypt(text, key)`
+- API 副标题：`Util.Json.Serialize(obj) / Util.Encrypt.AES.EncryptString(text) / DecryptString(cipher)`
 - 主题：Util 高频静态工具集合
 - InteractionArea：3 子卡片（Json 互转 / AES 加密 / MD5 计算），每卡片 1 输入框 + 1 按钮
 - 反馈样例：`> Util.MD5.HashString("hello") → 5d41402abc4b...`

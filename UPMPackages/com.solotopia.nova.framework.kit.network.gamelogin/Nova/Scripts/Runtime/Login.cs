@@ -26,16 +26,6 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
     public sealed partial class Login
     {
         /// <summary>
-        /// 设置当前 Service 实例的调试模式覆盖。
-        /// 设置后仅影响本实例发出的请求；传 null 可恢复沿用全局开关。
-        /// </summary>
-        /// <param name="debugMode">是否启用调试模式。</param>
-        public void SetDebugMode(bool debugMode)
-        {
-            m_DebugModeOverride = debugMode;
-        }
-
-        /// <summary>
         /// 登录（业务入口，极简形态）。
         /// 候选 UID/OpenID 只写入登录 Body；Header 保留此前已确认身份。OpenID 仅用于读取绑定关系，不产生绑定副作用。
         /// 为当前账号绑定三方 OpenID 请使用 gamebind 模块的 Bind 服务（Nova.Network.Kit 泛型获取 Bind 实例后调 BindAsync）。

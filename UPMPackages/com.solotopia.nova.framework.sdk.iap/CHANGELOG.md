@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-13
+
+### Changed
+
+- 将 Framework 与 GameLogin 最低依赖同步至本轮发布版本。
+
 ## [0.1.3] - 2026-08-12
 
 ### Breaking

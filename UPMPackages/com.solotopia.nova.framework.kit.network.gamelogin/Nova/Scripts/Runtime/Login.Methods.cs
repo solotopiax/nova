@@ -35,7 +35,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
             INetworkCmdRow cmdRow, string uid, string openid, bool forceNewAccount = false)
         {
             PbNetLoginReq body = BuildLoginRequest(NetBuilder.BuildHeader(), uid, openid, forceNewAccount);
-            var resp = await NetService.SendAsync(cmdRow, body, PbNetLoginResp.Parser, m_DebugModeOverride);
+            var resp = await NetService.SendAsync(cmdRow, body, PbNetLoginResp.Parser);
             if (IsValidLoginResponse(resp))
             {
                 string respUID = resp.Data.Uid ?? string.Empty;
@@ -144,7 +144,7 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
         private async UniTask<NetResponse<PbNetDeleteResp>> SendDeleteAsync(INetworkCmdRow cmdRow, string targetUID)
         {
             PbNetDeleteReq body = BuildDeleteRequest(NetBuilder.BuildHeader(), targetUID);
-            var resp = await NetService.SendAsync(cmdRow, body, PbNetDeleteResp.Parser, m_DebugModeOverride);
+            var resp = await NetService.SendAsync(cmdRow, body, PbNetDeleteResp.Parser);
             return resp;
         }
 

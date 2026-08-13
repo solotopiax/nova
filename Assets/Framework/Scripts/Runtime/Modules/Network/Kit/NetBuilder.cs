@@ -101,17 +101,6 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 构建调试环境请求 Header JSON 字符串（跳过 AES 加密标记）。
-        /// 格式：{"app_id":123,"X-Debug-Plain":"true"}
-        /// </summary>
-        /// <param name="appId">应用 ID（int32，直接作为 JSON 数字字段输出）。</param>
-        /// <returns>调试用请求 Header JSON 字符串。</returns>
-        public static string BuildDebugHeaderInfos(int appId)
-        {
-            return $"{{\"app_id\":{appId},\"X-Debug-Plain\":\"true\"}}";
-        }
-
-        /// <summary>
         /// 根据当前编译目标推断对应的 PbNetPlatform 枚举值。
         /// Editor 下跟随当前 Build Target，不使用 Editor 宿主运行平台。
         /// 未能匹配的平台一律返回 Unspecified。

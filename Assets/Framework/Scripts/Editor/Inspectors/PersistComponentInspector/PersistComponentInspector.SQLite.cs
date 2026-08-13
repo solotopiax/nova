@@ -92,6 +92,7 @@ namespace NovaFramework.Editor
         /// </param>
         private void MigrateSQLiteAES(bool enableAES)
         {
+            if (!EnsureInspectorAESCredentials()) return;
             if (m_SQLiteConnection == null)
             {
                 return;
@@ -106,8 +107,8 @@ namespace NovaFramework.Editor
                     try
                     {
                         migrated = enableAES
-                            ? Util.Encrypt.AES.EncryptString(current)
-                            : Util.Encrypt.AES.DecryptString(current);
+                            ? Util.Encrypt.AES.EncryptString(current, m_EditorAESKey, m_EditorAESIV)
+                            : Util.Encrypt.AES.DecryptString(current, m_EditorAESKey, m_EditorAESIV);
                     }
                     catch
                     {
@@ -445,6 +446,7 @@ namespace NovaFramework.Editor
                         string classifyCapture = classify;
                         EditorUtil.Draw.Layout.Horizontal(() =>
                         {
+                            EditorUtil.Draw.Space(c_DataClassifyIndent);
                             open = DrawClassifyFoldout(key, $"{classify} ({values.Count})");
                             EditorUtil.Draw.FlexibleSpace();
                             EditorUtil.Draw.DangerButton("清除", false, () =>
@@ -462,51 +464,55 @@ namespace NovaFramework.Editor
                             continue;
                         }
 
-                        EditorUtil.Draw.Layout.Vertical("box", () =>
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
-                            var items = new List<string>(values.Keys);
-                            foreach (var item in items)
+                            EditorUtil.Draw.Space(c_DataItemIndent);
+                            EditorUtil.Draw.Layout.Vertical("box", () =>
                             {
-                                string raw = values[item];
-                                if (!MatchSearch(m_SQLSearchText, classify, item, raw))
+                                var items = new List<string>(values.Keys);
+                                foreach (var item in items)
                                 {
-                                    continue;
-                                }
-
-                                string buf = m_SQL_EditBuffers[classify].TryGetValue(item, out var b) ? b : string.Empty;
-                                bool editing = m_SQL_EditStates[classify].TryGetValue(item, out var e) && e;
-
-                                DrawItemRow(item, ref buf, ref editing, raw, useAES,
-                                    plainValue =>
+                                    string raw = values[item];
+                                    if (!MatchSearch(m_SQLSearchText, classify, item, raw))
                                     {
-                                        m_SQL_EditStates[classify][item] = false;
-                                        m_SQL_EditBuffers[classify][item] = string.Empty;
-                                        string stored = EncodeForStorage(plainValue, useAES);
-                                        m_SQL_Values[classify][item] = stored;
-                                        Util.SQLite.UpdateData(m_SQLiteConnection, classify, item, new Dictionary<string, object> { { "Value", stored } });
-                                        Util.SQLite.CommitAndBeginTransaction(m_SQLiteConnection);
-                                    },
-                                    () =>
-                                    {
-                                        Util.SQLite.DeleteData(m_SQLiteConnection, classify, item);
-                                        Util.SQLite.CommitAndBeginTransaction(m_SQLiteConnection);
-                                        m_SQL_Values[classify].Remove(item);
-                                        m_SQL_EditBuffers[classify].Remove(item);
-                                        m_SQL_EditStates[classify].Remove(item);
+                                        continue;
+                                    }
 
-                                        if (m_SQL_Values[classify].Count == 0)
+                                    string buf = m_SQL_EditBuffers[classify].TryGetValue(item, out var b) ? b : string.Empty;
+                                    bool editing = m_SQL_EditStates[classify].TryGetValue(item, out var e) && e;
+
+                                    DrawItemRow(item, ref buf, ref editing, raw, useAES,
+                                        plainValue =>
                                         {
-                                            Util.SQLite.DeleteTable(m_SQLiteConnection, classify);
+                                            m_SQL_EditStates[classify][item] = false;
+                                            m_SQL_EditBuffers[classify][item] = string.Empty;
+                                            string stored = EncodeForStorage(plainValue, useAES);
+                                            m_SQL_Values[classify][item] = stored;
+                                            Util.SQLite.UpdateData(m_SQLiteConnection, classify, item, new Dictionary<string, object> { { "Value", stored } });
                                             Util.SQLite.CommitAndBeginTransaction(m_SQLiteConnection);
-                                            m_SQL_Values.Remove(classify);
-                                            m_SQL_EditBuffers.Remove(classify);
-                                            m_SQL_EditStates.Remove(classify);
-                                        }
-                                    });
+                                        },
+                                        () =>
+                                        {
+                                            Util.SQLite.DeleteData(m_SQLiteConnection, classify, item);
+                                            Util.SQLite.CommitAndBeginTransaction(m_SQLiteConnection);
+                                            m_SQL_Values[classify].Remove(item);
+                                            m_SQL_EditBuffers[classify].Remove(item);
+                                            m_SQL_EditStates[classify].Remove(item);
 
-                                m_SQL_EditBuffers[classify][item] = buf;
-                                m_SQL_EditStates[classify][item] = editing;
-                            }
+                                            if (m_SQL_Values[classify].Count == 0)
+                                            {
+                                                Util.SQLite.DeleteTable(m_SQLiteConnection, classify);
+                                                Util.SQLite.CommitAndBeginTransaction(m_SQLiteConnection);
+                                                m_SQL_Values.Remove(classify);
+                                                m_SQL_EditBuffers.Remove(classify);
+                                                m_SQL_EditStates.Remove(classify);
+                                            }
+                                        });
+
+                                    m_SQL_EditBuffers[classify][item] = buf;
+                                    m_SQL_EditStates[classify][item] = editing;
+                                }
+                            });
                         });
                     }
                 }
@@ -561,30 +567,39 @@ namespace NovaFramework.Editor
                             continue;
                         }
 
-                        bool clOpen = DrawClassifyFoldout("SQL_rt_" + classify, $"{classify} ({items.Length})");
+                        bool clOpen = false;
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(c_DataClassifyIndent);
+                            clOpen = DrawClassifyFoldout("SQL_rt_" + classify, $"{classify} ({items.Length})");
+                        });
 
                         if (!clOpen)
                         {
                             continue;
                         }
 
-                        EditorUtil.Draw.Layout.Vertical("box", () =>
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
-                            foreach (var item in items)
+                            EditorUtil.Draw.Space(c_DataItemIndent);
+                            EditorUtil.Draw.Layout.Vertical("box", () =>
                             {
-                                string display = mgr.GetString(classify, item);
-                                if (!MatchSearch(m_SQLSearchText, classify, item, display))
+                                foreach (var item in items)
                                 {
-                                    continue;
-                                }
+                                    string display = mgr.GetString(classify, item);
+                                    if (!MatchSearch(m_SQLSearchText, classify, item, display))
+                                    {
+                                        continue;
+                                    }
 
-                                EditorUtil.Draw.Layout.Horizontal(() =>
-                                {
-                                    EditorUtil.Draw.Label(item, false, GUILayout.MinWidth(80));
-                                    EditorUtil.Draw.FlexibleSpace();
-                                    EditorUtil.Draw.Label(display, EditorStyles.wordWrappedLabel, false, GUILayout.MaxWidth(280));
-                                });
-                            }
+                                    EditorUtil.Draw.Layout.Horizontal(() =>
+                                    {
+                                        EditorUtil.Draw.Label(item, false, GUILayout.MinWidth(80));
+                                        EditorUtil.Draw.FlexibleSpace();
+                                        EditorUtil.Draw.Label(display, EditorStyles.wordWrappedLabel, false, GUILayout.MaxWidth(280));
+                                    });
+                                }
+                            });
                         });
                     }
                 }

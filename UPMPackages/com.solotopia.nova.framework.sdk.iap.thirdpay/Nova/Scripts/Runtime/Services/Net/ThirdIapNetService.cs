@@ -23,21 +23,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     public sealed class ThirdIapNetService
     {
         /// <summary>
-        /// 当前 Service 实例的调试模式覆盖值。
-        /// 为 null 时沿用 NetService.IsDebugMode 全局开关。
-        /// </summary>
-        private bool? m_DebugModeOverride;
-
-        /// <summary>
-        /// 设置当前 Service 实例的调试模式覆盖。
-        /// </summary>
-        /// <param name="debugMode">是否启用调试模式。</param>
-        public void SetDebugMode(bool debugMode)
-        {
-            m_DebugModeOverride = debugMode;
-        }
-
-        /// <summary>
         /// 拉取指定国家或地区的第三方支付商品列表。
         /// </summary>
         /// <param name="cmdName">ThirdPayStoreConfig.GetProductListCmdName。</param>
@@ -48,7 +33,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             var request = new PbNetThirdProductListReq { Head = NetBuilder.BuildHeader(), Country = countryCode ?? string.Empty };
             INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
             LogRequest("GetProductList", cmdName, request);
-            NetResponse<PbNetThirdProductListResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdProductListResp.Parser, m_DebugModeOverride);
+            NetResponse<PbNetThirdProductListResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdProductListResp.Parser);
             LogResponse("GetProductList", cmdName, response);
             return response;
         }
@@ -63,7 +48,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             var request = new PbNetThirdQueryPendingOrderReq { Head = NetBuilder.BuildHeader() };
             INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
             LogRequest("QueryPendingOrder", cmdName, request);
-            NetResponse<PbNetThirdQueryPendingOrderResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdQueryPendingOrderResp.Parser, m_DebugModeOverride);
+            NetResponse<PbNetThirdQueryPendingOrderResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdQueryPendingOrderResp.Parser);
             LogResponse("QueryPendingOrder", cmdName, response);
             return response;
         }
@@ -78,7 +63,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             var request = new PbNetThirdPayChannelParamsReq { Head = NetBuilder.BuildHeader() };
             INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
             LogRequest("GetPayChannelParams", cmdName, request);
-            NetResponse<PbNetThirdPayChannelParamsResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdPayChannelParamsResp.Parser, m_DebugModeOverride);
+            NetResponse<PbNetThirdPayChannelParamsResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdPayChannelParamsResp.Parser);
             LogResponse("GetPayChannelParams", cmdName, response);
             return response;
         }
@@ -104,7 +89,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
             LogRequest("VerifyIap", cmdName, request);
-            NetResponse<PbNetThirdVerifyIapResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdVerifyIapResp.Parser, m_DebugModeOverride);
+            NetResponse<PbNetThirdVerifyIapResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdVerifyIapResp.Parser);
             LogResponse("VerifyIap", cmdName, response);
             return response;
         }

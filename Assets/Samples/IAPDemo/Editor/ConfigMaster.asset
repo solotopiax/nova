@@ -38,6 +38,10 @@ MonoBehaviour:
     ByPlatform: 0
     ByChannel: 0
     ByDevelopMode: 1
+  PrivacyConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
   SDKMasks:
   - TypeName: NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
     Mask:
@@ -135,15 +139,7 @@ MonoBehaviour:
     VersionCheckLocalFilePath: 
     VersionCheckRemoteFilePath: 
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
-    AutoLinkLatestVersion: 1
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
-    AssetCheckWhitelistDeviceIDs: []
-    AssetCheckWhitelistRemoteFilePath: 
-    AutoLinkLatestAssetCheckVersionFiles: 1
-    AssetCheckManifestBytesLocalFilePath: 
-    AssetCheckManifestHashLocalFilePath: 
-    AssetCheckPackageVersionLocalFilePath: 
-    AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -206,20 +202,14 @@ MonoBehaviour:
   YooAssetEditorConfigs:
     YooAssetSettingsPath: Assets/Samples/IAPDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/IAPDemo/Editor/BundleCollectorSetting.asset
-    YooFolderName: yoo
-    PackageFilePrefix: 
   YooAssetEditorConfigsOverrides:
   - YooAssetSettingsPath: Assets/Samples/IAPDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/IAPDemo/Editor/BundleCollectorSetting.asset
-    YooFolderName: yoo
-    PackageFilePrefix: 
     Platform: 0
     Channel: 0
     DevelopMode: 1
   - YooAssetSettingsPath: Assets/Samples/IAPDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/IAPDemo/Editor/BundleCollectorSetting.asset
-    YooFolderName: yoo
-    PackageFilePrefix: 
     Platform: 0
     Channel: 0
     DevelopMode: 0
@@ -247,15 +237,7 @@ MonoBehaviour:
     VersionCheckLocalFilePath: 
     VersionCheckRemoteFilePath: 
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
-    AutoLinkLatestVersion: 1
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
-    AssetCheckWhitelistDeviceIDs: []
-    AssetCheckWhitelistRemoteFilePath: 
-    AutoLinkLatestAssetCheckVersionFiles: 1
-    AssetCheckManifestBytesLocalFilePath: 
-    AssetCheckManifestHashLocalFilePath: 
-    AssetCheckPackageVersionLocalFilePath: 
-    AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -291,6 +273,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -343,6 +334,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -395,6 +395,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -447,6 +456,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -499,6 +517,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -551,6 +578,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -603,6 +639,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -655,6 +700,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -707,6 +761,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -759,6 +822,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -811,6 +883,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -863,6 +944,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -915,6 +1005,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -967,6 +1066,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1019,6 +1127,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1071,6 +1188,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1123,6 +1249,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1175,6 +1310,15 @@ MonoBehaviour:
         AppAesIV: YOUR_APP_AES_IV
         CustomConfigCmdName: AppCustomConfig
         CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
+    - Mode: 1
+      Config:
+        AESKey: NovaSampleKey_16
+        AESIV: NovaSampleIv__16
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1231,7 +1375,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2428,7 +2571,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441126
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2463,7 +2605,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441129
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2498,7 +2639,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441132
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2533,7 +2673,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441135
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2568,7 +2707,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441138
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2603,7 +2741,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441141
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2638,7 +2775,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441144
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2673,7 +2809,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441147
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2708,7 +2843,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441150
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2743,7 +2877,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441153
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2778,7 +2911,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441156
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2813,7 +2945,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441159
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2848,7 +2979,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441162
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2883,7 +3013,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441165
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2918,7 +3047,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441168
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2953,7 +3081,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441171
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -2988,7 +3115,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441174
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3023,7 +3149,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441177
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3058,7 +3183,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441180
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3093,7 +3217,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441183
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3128,7 +3251,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441186
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3163,7 +3285,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441189
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3198,7 +3319,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441192
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3233,7 +3353,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441195
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3268,7 +3387,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441198
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3303,7 +3421,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441201
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3338,7 +3455,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441204
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3373,7 +3489,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441207
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3408,7 +3523,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441210
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3443,7 +3557,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441213
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3478,7 +3591,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441216
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3513,7 +3625,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441219
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3548,7 +3659,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441222
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3583,7 +3693,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441225
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3618,7 +3727,6 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1467999992408441228
       type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
       data:
@@ -3647,7 +3755,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3676,7 +3783,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3705,7 +3811,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3734,7 +3839,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3763,7 +3867,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3792,7 +3895,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3821,7 +3923,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3850,7 +3951,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3879,7 +3979,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3908,7 +4007,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3937,7 +4035,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3966,7 +4063,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3995,7 +4091,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4024,7 +4119,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4053,7 +4147,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4082,7 +4175,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4111,7 +4203,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4140,7 +4231,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4169,7 +4259,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4198,7 +4287,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4227,7 +4315,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4256,7 +4343,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4285,7 +4371,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4314,7 +4399,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4343,7 +4427,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4372,7 +4455,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4401,7 +4483,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4430,7 +4511,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4459,7 +4539,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4488,7 +4567,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4517,7 +4595,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4546,7 +4623,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4575,7 +4651,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4604,7 +4679,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4633,7 +4707,6 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
-        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4843,392 +4916,321 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 2533177004360728913
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728914
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728915
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728916
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728917
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728918
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728919
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728920
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728921
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728922
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728923
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728924
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728925
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728926
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728927
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728928
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728929
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728930
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728931
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728932
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728933
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728934
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728935
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728936
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728937
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728938
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728939
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728940
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728941
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728942
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728943
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728944
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728945
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728946
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728947
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729497
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -5388,12 +5390,10 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
-        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
-        m_AssignDeviceIdToDistinctId: 0
     - rid: 3589943518543478928
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:

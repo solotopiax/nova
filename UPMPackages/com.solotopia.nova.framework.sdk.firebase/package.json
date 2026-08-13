@@ -1,8 +1,8 @@
 {
   "name": "com.solotopia.nova.framework.sdk.firebase",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "SEE LICENSE IN LICENSE.md",
-  "coreVersion": "12.10.1",
+  "coreVersion": "13.14.0",
   "displayName": "Nova Framework - SDK - Firebase",
   "description": "Firebase 聚合插件，统一接入分析、崩溃、推送、远程配置",
   "category": "Runtime",
@@ -21,8 +21,8 @@
     "NovaFramework.SDK.FirebasePlugin.Runtime"
   ],
   "dependencies": {
-    "com.solotopia.nova.framework": "0.6.3",
+    "com.solotopia.nova.framework": "0.6.10",
     "com.google.external-dependency-manager": "1.2.186",
-    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.0"
+    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.6"
   }
 }

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-08-13
+
+### Breaking
+
+- 移除 TGA 上报请求的明文调试开关；埋点通信固定使用标准 Protobuf 与 AES 加密链路。
+
+### Changed
+
+- 将 Framework 与 GameLogin 最低依赖同步至本轮发布版本。
+
 ## [0.1.5] - 2026-08-12
 
 ### Added

@@ -25,7 +25,7 @@
 | 1.3 | `DemoFsmView` | R | `Fsm<T>.Start<TState>() / ChangeState / AddStates` | 无 |
 | 1.4 | `DemoReferenceView` | R | `ReferencePool.Acquire<T>() / Release(reference)` | 无 |
 | 1.5 | `DemoLogView` | R | `Log.Debug / Log.Warning / Log.Error` | 无 |
-| 1.6 | `DemoUtilView` | R | `Util.Json.ToJson(obj) / Util.Encrypt.AESEncrypt(text, key)` | 无 |
+| 1.6 | `DemoUtilView` | R | `Util.Json.Serialize(obj) / Util.Encrypt.AES.EncryptString(text) / DecryptString(cipher)` | 无 |
 | 1.7 | `DemoCollectionsView` | R | `new NovaLinkedSet<int>() / .Add(x) / .Contains(x)` | 无 |
 | 1.8 | `DemoExtensionsView` | R | `"hello".ToTitleCase() / list.IsNullOrEmpty()` | 无 |
 | 1.9 | `DemoEdgeCasesView` | R | `ReferencePool.Release(null) / Fsm.ChangeState before Start` | 无 |

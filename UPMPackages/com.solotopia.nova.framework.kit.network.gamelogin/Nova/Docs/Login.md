@@ -25,7 +25,6 @@
 
 | 签名 | 说明 |
 |---|---|
-| `public void SetDebugMode(bool debugMode)` | 设置本实例调试模式覆盖；仅影响本实例发出的请求；`false` 时不等于关闭全局，仅取消覆盖 |
 | `public UniTask<NetResponse<PbNetLoginResp>> Async(string uid, string openid, bool forceNewAccount = false)` | Header 保留旧确认身份；候选 `uid/openid` 只进 Body；强制新账号时 Body 两者置空；仅成功、Data 非空、UID 非空且状态 Normal 时提交响应外层身份 |
 | `public UniTask<NetResponse<PbNetDeleteResp>> DeleteAsync()` | 只删除当前确认 UID；Header UID 与 Body UID 必须一致；无 UID 返回 7000 且不发请求 |
 | `public void Clear()` | 清空 NetService 的 UID、OpenID；后续请求 Header 不再携带身份字段 |
@@ -77,7 +76,7 @@ login.Clear();
 - **`DeleteAsync` cmdName 取自 `DeleteCmdName`**：`DeleteAsync` 内部取 `LoginKitConfig.DeleteCmdName` 解析为指令行；在 ConfigWindow 中为 `LoginKitConfig.DeleteCmdName` 填入对应 NetCmd 名称并重导出后方可正常调用。
 - **`LoginKitConfig` 必须配置**：`Async` 内部通过 `Nova.Config.GetKitConfig<LoginKitConfig>()` 取配置，未在 ConfigWindow 配置 `LoginKitConfig` 时抛 `KitConfigMissingException`（开发期 fail-fast，暴露漏配）。
 - **游戏运营渠道来源**：Header 的 `channel` 由 `NetBuilder.BuildHeader()` 从 `Nova.Config.Channel` 自动读取，业务侧无需传入；它只表示包体分发与运营来源，不表示第三方登录提供方。
-- **`SetDebugMode` 覆盖语义**：`m_DebugModeOverride` 为 `bool?`，调用 `SetDebugMode(true/false)` 后会覆盖全局 `NetService.IsDebugMode`；若需恢复跟随全局，暂无公开 API，需重新 `Kit<Login>()` 获取新实例（全局 Kit 实例由 `NetworkComponent` 管理，视具体注册策略而定）。
+- **固定传输加密**：所有登录业务请求均由 `NetService` 使用 `Nova.Config.AppConfigs.AppAesKey/AppAesIV` 进行 AES-128-CBC 加密后发送，并以同一配置解密响应。
 - **`ChannelType` 映射范围**：`Official / Google / Apple / WeChat / TikTok / Alipay` 均同名映射到 `PbNetChannel`，只有 `ChannelType.None` 或未知值映射为 `PbNetChannel.Unspecified`。
 - **`Head` 自动填充**：`NetBuilder.BuildHeader()` 在 `SendAsync` 内部调用，业务侧无需手动构建 Header。
 - **依赖主框架公共网络编排层**：`NetService.SendAsync` / `NetBuilder.BuildHeader` / `NetResponse<T>` 均来自主框架包 `com.solotopia.nova.framework` 的 Network Kit 公共层。

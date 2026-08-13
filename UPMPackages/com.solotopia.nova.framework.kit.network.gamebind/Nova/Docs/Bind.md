@@ -35,7 +35,6 @@
 
 | 签名 | 说明 |
 |---|---|
-| `public void SetDebugMode(bool debugMode)` | 设置本实例调试模式覆盖；仅影响本实例发出的请求；`false` 时不等于关闭全局，仅取消覆盖 |
 | `public string OpenID` | 当前进程内已确认归属于当前 UID 的 OpenID；直接读取 `NetService.OpenID`，不持久化 |
 | `public UniTask<NetResponse<PbNetBindResp>> BindAsync(ThirdLoginProvider provider, string openid)` | 为当前账号绑定目标 OpenID；Header 只携带当前身份，目标只进 Body；成功后更新 `NetService.OpenID`；命中 10402 时继续冲突流程 |
 | `public UniTask<NetResponse<PbNetBindingQueryResp>> QueryBindingAsync(string openid)` | 查询指定 OpenID 是否已绑定及对应 UID；只读查询，不修改 `NetService` 身份；cmdName 取自 `BindKitConfig.BindingQueryCmdName` |
@@ -150,6 +149,7 @@ else // "existing"
 - **`ResolveAsync` 不碰存档**：裁决返回账号归属（`FinalUid` / `AbandonedUid`）并更新进程内身份；存档覆盖仍由业务层显式编排。
 - **不支持解绑/改绑**：系统不提供独立的解绑/改绑接口；目标 open_id 已绑他人时仅“双方均有进度”触发 10402 二选一，其余情况返回 `ErrOpenidAlreadyBound`(10401)；当前 UID 已绑定其他 OpenID 时返回 `ErrUIDAlreadyBoundOtherOpenID`(10408)。
 - **`Head` 自动填充**：所有入口内部调用 `NetBuilder.BuildHeader()`，业务侧无需手动构建 Header。
+- **固定传输加密**：所有绑定业务请求均由 `NetService` 使用 `Nova.Config.AppConfigs.AppAesKey/AppAesIV` 进行 AES-128-CBC 加密后发送，并以同一配置解密响应。
 - **失败分支码值归类**：四个接口失败时按 `BindErrorCode` 归类码值打可读日志（`LogBindError`），不改变返回值，业务侧仍按 `resp.ErrorCode` 自行分支。
 - **依赖主框架公共网络编排层**：`NetService.SendAsync` / `NetBuilder.BuildHeader` / `NetResponse<T>` / `INetworkCmdRow` 均来自主框架包 `com.solotopia.nova.framework` 的 Network Kit 公共层。
 

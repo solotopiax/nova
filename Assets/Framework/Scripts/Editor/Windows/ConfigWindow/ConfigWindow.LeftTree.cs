@@ -183,11 +183,12 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制"通用配置"组内二级条目（应用配置 + 名字空间配置 + HybridCLR 配置 + YooAsset 配置 + CDN 部署）。
+        /// 绘制"通用配置"组内二级条目（应用配置 + 隐私配置 + 名字空间配置 + HybridCLR 配置 + YooAsset 配置 + CDN 部署）。
         /// </summary>
         private void DrawCommonGroupItems()
         {
             DrawLeftTreeItem("应用配置", LeftTreeItem.AppConfig, null);
+            DrawLeftTreeItem("隐私配置", LeftTreeItem.PrivacyConfig, null);
             DrawLeftTreeItem("名字空间配置", LeftTreeItem.NamespaceConfig, null);
             DrawLeftTreeItem("HybridCLR 配置", LeftTreeItem.HybridCLRConfig, null);
             DrawLeftTreeItem("YooAsset 配置", LeftTreeItem.YooAssetConfig, null);

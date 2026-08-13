@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-13
+
+### Breaking
+
+- 移除云存档请求的明文调试开关；存档通信固定使用标准 Protobuf 与 AES 加密链路。
+
+### Changed
+
+- 将 Framework 与 GameLogin 最低依赖同步至本轮发布版本。
+
 ## [0.1.3] - 2026-08-06
 
 ### Changed

@@ -24,22 +24,6 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
     public sealed class AppsFlyerReportNetService
     {
         /// <summary>
-        /// 当前 Service 实例的调试模式覆盖值。
-        /// 为 null 时沿用 NetService.IsDebugMode 全局开关。
-        /// </summary>
-        private bool? m_DebugModeOverride;
-
-        /// <summary>
-        /// 设置当前 Service 实例的调试模式覆盖。
-        /// 设置后仅影响本实例发出的请求；传 null 可恢复沿用全局开关。
-        /// </summary>
-        /// <param name="debugMode">是否启用调试模式。</param>
-        public void SetDebugMode(bool debugMode)
-        {
-            m_DebugModeOverride = debugMode;
-        }
-
-        /// <summary>
         /// 上报 AppsFlyer 标识（业务入口）。
         /// Header 由 NetBuilder.BuildHeader() 自动填充；调用方只需提供需要更新的字段，传空串表示不更新。
         /// </summary>
@@ -54,7 +38,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
                 AppsflyerId = appsflyerId ?? string.Empty,
             };
             INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
-            return await NetService.SendAsync(cmdRow, body, PbNetReportAppsFlyerResp.Parser, m_DebugModeOverride);
+            return await NetService.SendAsync(cmdRow, body, PbNetReportAppsFlyerResp.Parser);
         }
     }
 }

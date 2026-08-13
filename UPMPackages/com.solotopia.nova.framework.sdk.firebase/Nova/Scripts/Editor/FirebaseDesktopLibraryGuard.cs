@@ -57,13 +57,13 @@ namespace NovaFramework.SDK.FirebasePlugin.Editor
             string libDir = packageRoot + "/Firebase/Plugins/x86_64";
 
 #if UNITY_EDITOR_OSX
-            const string c_LibName = "FirebaseCppApp-12_10_1.bundle";
+            const string c_LibName = "FirebaseCppApp-13_14_0.bundle";
             bool present = Directory.Exists(libDir + "/" + c_LibName) || File.Exists(libDir + "/" + c_LibName);
 #elif UNITY_EDITOR_WIN
-            const string c_LibName = "FirebaseCppApp-12_10_1.dll";
+            const string c_LibName = "FirebaseCppApp-13_14_0.dll";
             bool present = File.Exists(libDir + "/" + c_LibName);
 #else
-            const string c_LibName = "FirebaseCppApp-12_10_1.so";
+            const string c_LibName = "FirebaseCppApp-13_14_0.so";
             bool present = File.Exists(libDir + "/" + c_LibName);
 #endif
 

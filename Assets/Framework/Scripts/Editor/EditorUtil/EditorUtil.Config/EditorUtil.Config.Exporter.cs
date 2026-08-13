@@ -60,6 +60,7 @@ namespace NovaFramework.Editor
                     target.DevelopMode = mode;
                     target.Namespace = DimensionalResolver.ResolveNamespace(master, platform, channel, mode);
                     target.AppConfigs = CloneAppConfigs(master.GetAppConfigs(platform, channel, mode));
+                    target.PrivacyConfigs = ClonePrivacyConfigs(master.GetPrivacyConfigs(platform, channel, mode));
                     target.Platform = platform;
                     target.Channel = channel;
                     target.EnabledSDKConfigs = FilterEnabled(entry, mode, master.EnabledSDKs);
@@ -155,6 +156,21 @@ namespace NovaFramework.Editor
                         AppAesIV = src.AppAesIV,
                         CustomConfigCmdName = src.CustomConfigCmdName,
                         CustomName = src.CustomName,
+                    };
+                }
+
+                /// <summary>
+                /// 深拷贝隐私配置，确保运行时导出物不与设计态矩阵共享引用。
+                /// </summary>
+                /// <param name="src">待拷贝的隐私配置。</param>
+                /// <returns>独立隐私配置实例；源为空时返回 null。</returns>
+                private static PrivacyConfigs ClonePrivacyConfigs(PrivacyConfigs src)
+                {
+                    if (src == null) return null;
+                    return new PrivacyConfigs
+                    {
+                        AESKey = src.AESKey,
+                        AESIV = src.AESIV,
                     };
                 }
 

@@ -9,7 +9,7 @@
 
 | 类型 | 说明 | 文档 |
 |---|---|---|
-| `Login` | 登录业务 Service（Async / DeleteAsync / Clear / SetDebugMode / UID 属性） | [Login.md](./Login.md) |
+| `Login` | 登录业务 Service（Async / DeleteAsync / Clear / UID 属性） | [Login.md](./Login.md) |
 | `LoginKitConfig` | 登录 Kit 固有配置（LoginCmdName / DeleteCmdName），在 ConfigWindow 一次配置后 Login 内部自动取用 | [LoginKitConfig.md](./LoginKitConfig.md) |
 | `LoginErrorCode` | 登录业务错误码（服务端段 10000~10499 + 客户端段 7000~7999 预留） | [LoginErrorCode.md](./LoginErrorCode.md) |
 

@@ -90,16 +90,13 @@ namespace NovaFramework.Kit.Network.GameBind.Samples.Runtime
         {
             try
             {
-                // 初始化本地存储 AES 默认 Key/IV（示例值；正式项目请替换为自有 16 字节 Key/IV）
-                Util.Encrypt.AES.Configure("NovaSampleKey_16", "NovaSampleIv__16");
-
-                Log.Debug(LogTag.Procedure, "Preload Step 1/9 — 初始化持久化后端。");
-                await Nova.Persist.LoadAsync();
+                Log.Debug(LogTag.Procedure, "Preload Step 1/9 — 加载基础配置。");
+                await Nova.Config.LoadAsync();
                 CancellationToken.ThrowIfCancellationRequested();
                 OnStepComplete();
 
-                Log.Debug(LogTag.Procedure, "Preload Step 2/9 — 加载基础配置。");
-                await Nova.Config.LoadAsync();
+                Log.Debug(LogTag.Procedure, "Preload Step 2/9 — 加载持久化数据。");
+                await Nova.Persist.LoadAsync();
                 CancellationToken.ThrowIfCancellationRequested();
                 OnStepComplete();
 

@@ -123,6 +123,7 @@ namespace NovaFramework.Editor
                         bool open = false;
                         EditorUtil.Draw.Layout.Horizontal(() =>
                         {
+                            EditorUtil.Draw.Space(c_DataClassifyIndent);
                             open = DrawClassifyFoldout(key, $"{classify} ({values.Count})");
                             EditorUtil.Draw.FlexibleSpace();
                             EditorUtil.Draw.DangerButton("清除", false, () =>
@@ -134,53 +135,57 @@ namespace NovaFramework.Editor
                             continue;
                         }
 
-                        EditorUtil.Draw.Layout.Vertical("box", () =>
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
-                            if (values.Count == 0)
+                            EditorUtil.Draw.Space(c_DataItemIndent);
+                            EditorUtil.Draw.Layout.Vertical("box", () =>
                             {
-                                EditorUtil.Draw.Label("（无法解析，可能已启用 AES 加密）", EditorStyles.centeredGreyMiniLabel, false);
-                            }
-                            else
-                            {
-                                var items = new List<string>(values.Keys);
-                                foreach (var item in items)
+                                if (values.Count == 0)
                                 {
-                                    string raw = values[item];
-                                    if (!MatchSearch(m_FFSearchText, classify, item, raw))
-                                    {
-                                        continue;
-                                    }
-
-                                    string buf = m_FF_EditBuffers[classify].TryGetValue(item, out var b) ? b : string.Empty;
-                                    bool editing = m_FF_EditStates[classify].TryGetValue(item, out var e) && e;
-
-                                    DrawItemRow(item, ref buf, ref editing, raw, false,
-                                        plainValue =>
-                                        {
-                                            m_FF_EditStates[classify][item] = false;
-                                            m_FF_EditBuffers[classify][item] = string.Empty;
-                                            m_FF_Values[classify][item] = plainValue;
-                                            WriteFragmentFile(Util.SysIO.Path.Combine(rootPath, classify + c_FFFileExtension), m_FF_Values[classify], useAES);
-                                        },
-                                        () =>
-                                        {
-                                            m_FF_Values[classify].Remove(item);
-                                            m_FF_EditBuffers[classify].Remove(item);
-                                            m_FF_EditStates[classify].Remove(item);
-                                            if (m_FF_Values[classify].Count == 0)
-                                            {
-                                                DeleteFragmentClassify(classify, rootPath);
-                                            }
-                                            else
-                                            {
-                                                WriteFragmentFile(Util.SysIO.Path.Combine(rootPath, classify + c_FFFileExtension), m_FF_Values[classify], useAES);
-                                            }
-                                        });
-
-                                    m_FF_EditBuffers[classify][item] = buf;
-                                    m_FF_EditStates[classify][item] = editing;
+                                    EditorUtil.Draw.Label("（无法解析，可能已启用 AES 加密）", EditorStyles.centeredGreyMiniLabel, false);
                                 }
-                            }
+                                else
+                                {
+                                    var items = new List<string>(values.Keys);
+                                    foreach (var item in items)
+                                    {
+                                        string raw = values[item];
+                                        if (!MatchSearch(m_FFSearchText, classify, item, raw))
+                                        {
+                                            continue;
+                                        }
+
+                                        string buf = m_FF_EditBuffers[classify].TryGetValue(item, out var b) ? b : string.Empty;
+                                        bool editing = m_FF_EditStates[classify].TryGetValue(item, out var e) && e;
+
+                                        DrawItemRow(item, ref buf, ref editing, raw, false,
+                                            plainValue =>
+                                            {
+                                                m_FF_EditStates[classify][item] = false;
+                                                m_FF_EditBuffers[classify][item] = string.Empty;
+                                                m_FF_Values[classify][item] = plainValue;
+                                                WriteFragmentFile(Util.SysIO.Path.Combine(rootPath, classify + c_FFFileExtension), m_FF_Values[classify], useAES);
+                                            },
+                                            () =>
+                                            {
+                                                m_FF_Values[classify].Remove(item);
+                                                m_FF_EditBuffers[classify].Remove(item);
+                                                m_FF_EditStates[classify].Remove(item);
+                                                if (m_FF_Values[classify].Count == 0)
+                                                {
+                                                    DeleteFragmentClassify(classify, rootPath);
+                                                }
+                                                else
+                                                {
+                                                    WriteFragmentFile(Util.SysIO.Path.Combine(rootPath, classify + c_FFFileExtension), m_FF_Values[classify], useAES);
+                                                }
+                                            });
+
+                                        m_FF_EditBuffers[classify][item] = buf;
+                                        m_FF_EditStates[classify][item] = editing;
+                                    }
+                                }
+                            });
                         });
                     }
                 }
@@ -196,6 +201,7 @@ namespace NovaFramework.Editor
         /// </param>
         private void MigrateFileFragmentAES(bool enableAES)
         {
+            if (!EnsureInspectorAESCredentials()) return;
             string rootPath = Path.Persist.FileFragment.FolderFullPath;
             foreach (var classify in m_FF_Values)
             {
@@ -290,30 +296,39 @@ namespace NovaFramework.Editor
                             continue;
                         }
 
-                        bool clOpen = DrawClassifyFoldout("FF_rt_" + classify, $"{classify} ({items.Length})");
+                        bool clOpen = false;
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(c_DataClassifyIndent);
+                            clOpen = DrawClassifyFoldout("FF_rt_" + classify, $"{classify} ({items.Length})");
+                        });
 
                         if (!clOpen)
                         {
                             continue;
                         }
 
-                        EditorUtil.Draw.Layout.Vertical("box", () =>
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
-                            foreach (var item in items)
+                            EditorUtil.Draw.Space(c_DataItemIndent);
+                            EditorUtil.Draw.Layout.Vertical("box", () =>
                             {
-                                string value = mgr.GetString(classify, item);
-                                if (!MatchSearch(m_FFSearchText, classify, item, value))
+                                foreach (var item in items)
                                 {
-                                    continue;
-                                }
+                                    string value = mgr.GetString(classify, item);
+                                    if (!MatchSearch(m_FFSearchText, classify, item, value))
+                                    {
+                                        continue;
+                                    }
 
-                                EditorUtil.Draw.Layout.Horizontal(() =>
-                                {
-                                    EditorUtil.Draw.Label(item, false, GUILayout.MinWidth(80));
-                                    EditorUtil.Draw.FlexibleSpace();
-                                    EditorUtil.Draw.Label(value, EditorStyles.wordWrappedLabel, false, GUILayout.MaxWidth(280));
-                                });
-                            }
+                                    EditorUtil.Draw.Layout.Horizontal(() =>
+                                    {
+                                        EditorUtil.Draw.Label(item, false, GUILayout.MinWidth(80));
+                                        EditorUtil.Draw.FlexibleSpace();
+                                        EditorUtil.Draw.Label(value, EditorStyles.wordWrappedLabel, false, GUILayout.MaxWidth(280));
+                                    });
+                                }
+                            });
                         });
                     }
                 }
