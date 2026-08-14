@@ -21,24 +21,25 @@ namespace NovaFramework.Runtime
     {
         /// <summary>
         /// 执行版本检查核心逻辑：HTTP GET 拉取 CDN 版本配置 JSON → 解析推荐 / 强制两个规则阈值 → 写入结果字段。
-        /// HTTP 失败降级返回 NoDownload；JSON 解析异常降级返回 NoDownload。
+        /// 主地址请求失败、内容为空或版本规则无效时继续尝试备用地址；两者都不可用时降级返回 NoDownload。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         /// <returns>App 版本检查结果枚举值。</returns>
         private async UniTask<AppVersionResult> InnerCheckVersionAsync(CancellationToken ct)
         {
             string body = await TryGetVersionResponseBodyAsync(m_Config.AppDownloadCheckUrl, "主", ct);
-            if (string.IsNullOrEmpty(body))
+            if (TryParseVersionResult(body, out AppVersionResult result))
             {
-                body = await TryGetVersionResponseBodyAsync(m_Config.AppDownloadCheckUrlFallback, "备用", ct);
+                return result;
             }
 
-            if (string.IsNullOrEmpty(body))
+            body = await TryGetVersionResponseBodyAsync(m_Config.AppDownloadCheckUrlFallback, "备用", ct);
+            if (TryParseVersionResult(body, out result))
             {
-                return AppVersionResult.NoDownload;
+                return result;
             }
 
-            return ParseVersionResult(body);
+            return AppVersionResult.NoDownload;
         }
 
         /// <summary>
@@ -93,19 +94,39 @@ namespace NovaFramework.Runtime
         /// 解析服务端版本响应 JSON，返回 AppVersionResult。
         /// 优先级：强制更新规则 > 推荐更新规则。
         /// 命中强制规则返回 ForcedDownload；命中推荐规则返回 RecommendedDownload；其余返回 NoDownload。
-        /// JSON 解析异常时降级返回 NoDownload 并 Log.Error。
+        /// JSON 解析异常或规则无效时返回 NoDownload 并 Log.Error。
         /// </summary>
         /// <param name="json">服务端返回的版本配置 JSON 文本。</param>
         /// <returns>App 版本检查结果枚举值。</returns>
         private AppVersionResult ParseVersionResult(string json)
         {
+            return TryParseVersionResult(json, out AppVersionResult result)
+                ? result
+                : AppVersionResult.NoDownload;
+        }
+
+        /// <summary>
+        /// 尝试解析并应用服务端版本规则。
+        /// 仅当 JSON 可解析且两个版本阈值均符合 App 版本规则时返回 true，合法但未命中更新仍返回 true。
+        /// </summary>
+        /// <param name="json">服务端返回的版本配置 JSON 文本。</param>
+        /// <param name="result">解析后的版本检查结果。</param>
+        /// <returns>规则可用时返回 true；无效时返回 false，供调用方继续尝试备用地址。</returns>
+        private bool TryParseVersionResult(string json, out AppVersionResult result)
+        {
+            result = AppVersionResult.NoDownload;
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return false;
+            }
+
             try
             {
                 AppVersionResponse resp = Util.Json.Deserialize<AppVersionResponse>(json);
-                if (resp == null)
+                if (!IsValidVersionResponse(resp))
                 {
-                    Log.Error(LogTag.App, "大版本检查 JSON 解析结果为 null。");
-                    return AppVersionResult.NoDownload;
+                    Log.Error(LogTag.App, "大版本检查 JSON 不符合 App 版本规则。");
+                    return false;
                 }
 
                 ResetMatchedRuleState();
@@ -115,22 +136,36 @@ namespace NovaFramework.Runtime
                 if (m_Config.UseForcedDownloadRule && IsVersionGreater(resp.ForcedDownloadVersion, localVersion))
                 {
                     ApplyMatchedRule(AppDownloadRule.Forced);
-                    return AppVersionResult.ForcedDownload;
+                    result = AppVersionResult.ForcedDownload;
+                    return true;
                 }
 
                 if (m_Config.UseRecommendedDownloadRule && IsVersionGreater(resp.RecommendedDownloadVersion, localVersion))
                 {
                     ApplyMatchedRule(AppDownloadRule.Recommended);
-                    return AppVersionResult.RecommendedDownload;
+                    result = AppVersionResult.RecommendedDownload;
+                    return true;
                 }
 
-                return AppVersionResult.NoDownload;
+                return true;
             }
             catch (System.Exception ex)
             {
-                Log.Error(LogTag.App, "大版本检查 JSON 解析异常，降级返回 NoDownload：{0}", ex.Message);
-                return AppVersionResult.NoDownload;
+                Log.Error(LogTag.App, "大版本检查 JSON 解析异常：{0}", ex.Message);
+                return false;
             }
+        }
+
+        /// <summary>
+        /// 校验 CDN 响应是否包含符合 App 版本规则的推荐和强制版本阈值。
+        /// </summary>
+        /// <param name="response">待校验的版本响应对象。</param>
+        /// <returns>两个版本阈值都可按 System.Version 解析时返回 true。</returns>
+        private static bool IsValidVersionResponse(AppVersionResponse response)
+        {
+            return response != null
+                   && Version.TryParse(response.RecommendedDownloadVersion, out _)
+                   && Version.TryParse(response.ForcedDownloadVersion, out _);
         }
 
         /// <summary>

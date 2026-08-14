@@ -34,7 +34,7 @@
     "com.solotopia.webglsupport": "file:../UPMPackages/com.solotopia.webglsupport",
     "com.solotopia.yooasset": "file:../UPMPackages/com.solotopia.yooasset",
     "com.starlus.sdk.datamaster": "1.0.1",
-    "com.tivadar.best.http": "3.0.19",
+    "com.tivadar.best.http": "3.0.20",
     "com.tivadar.best.tlssecurity": "3.0.5",
     "com.unity.cinemachine": "3.1.6",
     "com.unity.feature.2d": "2.0.2",
@@ -86,6 +86,9 @@
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
   },
+  "testables": [
+    "com.solotopia.nova.framework.besthttp"
+  ],
   "scopedRegistries": [
     {
       "name": "Solotopia Internal",

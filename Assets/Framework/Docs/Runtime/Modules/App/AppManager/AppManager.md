@@ -35,9 +35,9 @@
 
 主链是：
 
-1. `m_HttpManager.GetAsync(url, timeout)`
-2. 失败或 body 为空时降级 `NoDownload`
-3. `ParseVersionResult(body)`
+1. 先用 `m_HttpManager.GetAsync(url, timeout)` 请求主地址
+2. 主地址请求失败、body 为空、JSON 无法解析或版本规则无效时，请求备用地址
+3. 主备都不能得到有效规则时降级 `NoDownload`；有效规则再由 `ParseVersionResult(body)` 计算结果
 
 `ParseVersionResult(...)` 当前只读取两个规则阈值：
 

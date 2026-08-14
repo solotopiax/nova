@@ -2,11 +2,11 @@
 
 ## 1. 目标与边界
 
-Best HTTP 3.0.19 与 Best TLS Security 3.0.5 的内部版在商业库内部采集请求生命周期和底层结构化错误；商业库通过只使用 BCL 类型的 `EventHandler` 委托输出事件，不依赖 Nova、TGA 或其他上报框架。
+Best HTTP 3.0.20 与 Best TLS Security 3.0.5 的内部版在商业库内部采集请求生命周期和底层结构化错误；商业库通过只使用 BCL 类型的 `EventHandler` 委托输出事件，不依赖 Nova、TGA 或其他上报框架。
 
 `com.solotopia.nova.framework.besthttp` 通过反射检测并注册该委托，将事件原样扇出到 Nova 中所有已初始化且可用的 `ITrackPlugin`。官方原版没有该委托时会静默跳过遥测，不影响网络请求；单个插件异常也会被隔离。
 
-与 Girl v2 的关键差异：Girl 事件描述业务 fallback 链；本契约描述一个 BestHTTP `HTTPRequest` 及其物理 attempt。DoH provider/cache/preheat、业务命令、业务候选域名和 fallback 轮次不是商业库可可靠获知的事实，需要业务方通过 `TelemetryContext` 扩展字段关联。
+普通 BestHTTP 请求仍按单个 `HTTPRequest` 记录。Nova 的 `HostKey + NetCmd` 业务协议会由适配层绑定同一个 `best_http_chain_id`，将主备域名、DoH IP 与系统 DNS 的多个物理请求收口为一条业务请求链。DoH provider/cache/preheat、主备角色和候选序号仍不是商业库可独立判断的事实。
 
 ## 2. 开关与自动注册
 
@@ -22,26 +22,27 @@ Best HTTP 3.0.19 与 Best TLS Security 3.0.5 的内部版在商业库内部采�
 
 | 事件 | 触发时机 | 数量口径 |
 |---|---|---|
-| `best_http_request_attempt` | 每次物理发送开始 | 每个 attempt 1 条 |
-| `best_http_request_error` | 某个 attempt 以网络/协议异常失败 | 每个失败 attempt 最多 1 条；不代表逻辑请求最终失败 |
-| `best_http_request_end` | 逻辑 `HTTPRequest` 进入唯一终态 | 每个逻辑请求恰好 1 条 |
+| `best_http_request_attempt` | 请求开始 | 普通请求每个物理 attempt 1 条；业务请求链全程只发 1 条 |
+| `best_http_request_error` | 某次物理发送以网络/协议异常失败 | 每个失败 attempt 最多 1 条；业务请求链可产生 0～N 条 |
+| `best_http_request_end` | 请求最终结束 | 普通请求每个 `HTTPRequest` 1 条；业务请求链全程只发 1 条 |
 
 语义约束：
 
 - 重试、重定向、认证挑战或陈旧缓存恢复可能产生多个 attempt。
 - attempt 失败后重试成功时，先有 `request_error`，最终 `request_end.result=success` 且 `recovered_by_retry=true`。
 - HTTP 4xx/5xx 是已收到 HTTP 响应的终态，不产生 `request_error`；只产生 `request_end.result=http_error`。
+- 业务请求链固定为 `1 attempt -> 0～N error -> 1 end`；所有事件通过 `best_http_chain_id` 聚合，最终 `end` 表示整条链的唯一结果。
 - 叶子错误按 attempt 原子 first-write；DNS/TCP/TLS/协议层已经记录的精确错误不会被外层超时、关闭或通用 `request_error` 覆盖。
 
 ## 4. 公共与关联字段
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `best_http_schema_version` | int | 当前 schema 版本，固定为 `1`。 |
+| `best_http_schema_version` | int | 当前 schema 版本，固定为 `2`。 |
 | `best_http_request_id` | string | 逻辑请求 ID；同一请求的所有 attempt/error/end 共用。 |
 | `best_http_attempt_id` | string | 物理 attempt ID；每次重发重新生成。 |
 | `best_http_attempt_index` | int | attempt 序号，从 `0` 开始。 |
-| `best_http_correlation_id` | string | 调用方可选关联 ID，例如业务 fallback 链 ID。 |
+| `best_http_chain_id` | string | 请求链关联 ID；Nova 业务主备/IP 轮换中的所有事件共用。 |
 | `best_http_operation_name` | string | 调用方可选业务操作名，不应包含敏感参数。 |
 | `best_http_method` | string | HTTP 方法，大写形式。 |
 | `best_http_scheme` | string | `http` 或 `https`。 |
@@ -52,7 +53,7 @@ Best HTTP 3.0.19 与 Best TLS Security 3.0.5 的内部版在商业库内部采�
 | `best_http_exception_type` | string | 终态异常类型名，不包含 message 或 stack trace。 |
 | `best_http_attempt_elapsed_ms` | long | 当前 attempt 已耗时，毫秒。 |
 
-业务可通过 `HTTPRequest.TelemetryContext` 设置 `CorrelationId`、`OperationName` 和最多 16 个扩展字段。扩展 key 不得以 `best_http_` 开头；值只允许字符串、布尔和数值；字符串移除 query 并截断至 256 字符。
+业务可通过 `HTTPRequest.TelemetryContext` 设置 `ChainId`、`OperationName` 和最多 16 个扩展字段。旧 `CorrelationId` 属性仅作为源码兼容别名保留，实际仍写入 `best_http_chain_id`。扩展 key 不得以 `best_http_` 开头；值只允许字符串、布尔和数值；字符串移除 query 并截断至 256 字符。
 
 ## 5. 终态与时序字段
 
@@ -195,11 +196,11 @@ HTTP/1 叶子码：`http1_invalid_version`、`http1_invalid_status_code`、`http
 
 | 字段 | 详细说明 | 取值、缺省与排障用法 |
 |---|---|---|
-| `best_http_schema_version` | 埋点属性契约版本，不是 Best HTTP 包版本。 | 当前固定为整数 `1`。查询与 ETL 应先按 schema 分支，不要根据客户端版本猜测字段含义。 |
+| `best_http_schema_version` | 埋点属性契约版本，不是 Best HTTP 包版本。 | 当前固定为整数 `2`。查询与 ETL 应先按 schema 分支，不要根据客户端版本猜测字段含义。 |
 | `best_http_request_id` | 一个 `HTTPRequest` 逻辑请求的随机 ID。请求内重试、重定向或认证挑战不会改变它。 | 32 位小写十六进制 GUID，无连字符。用它聚合一次逻辑请求的所有 attempt/error/end。只在单进程内具有跟踪意义。 |
 | `best_http_attempt_id` | 当前物理发送的 ID。 | 当前实现为 `<request_id>-<attempt_index>`，但消费方应当它是不透明字符串。用于把一条 `request_error` 精确连回对应的 `request_attempt`。 |
 | `best_http_attempt_index` | 逻辑请求内物理发送序号。 | 从 `0` 开始。`0` 是首次发送；大于 `0` 说明至少经历过一次重发。它不等同于 Nova 业务 fallback 轮次。 |
-| `best_http_correlation_id` | 调用方提供的跨层关联 ID，例如 Nova fallback chain ID。 | 可选。在 attempt 开始时快照；包含 `?` 时 query 被替换为 `?<redacted>`，最长 256 字符。用于跨 Best HTTP 请求聚合业务链。 |
+| `best_http_chain_id` | 请求链的稳定关联 ID。 | Nova `HostKey + NetCmd` 业务链必填，主备域名、DoH IP 和系统 DNS 候选共用；普通请求可选。包含 `?` 时 query 被替换为 `?<redacted>`，最长 256 字符。 |
 | `best_http_operation_name` | 调用方提供的稳定业务操作名。 | 可选，例如 `login`、`config_download`；不应放 URL、UID 或 token。同样执行 query 脱敏和 256 字符截断。用于按业务场景统计底层错误率。 |
 | 调用方扩展字段 | `TelemetryContext.Set(key, value)` 注入的非保留字段。 | 最多 16 个；key 不得以 `best_http_` 开头；value 只允许 `null`、string、bool 和基础数值类型。字符串执行同样脱敏。请为扩展字段建立独立业务契约，不要依赖临时 key。 |
 
@@ -221,7 +222,7 @@ HTTP/1 叶子码：`http1_invalid_version`、`http1_invalid_status_code`、`http
 |---|---|---|
 | `best_http_state` | Best HTTP `HTTPRequestStates` 终态名。 | 埋点终态常见 `Finished`、`Error`、`Aborted`、`ConnectionTimedOut`、`TimedOut`。`Finished` 只表示已完成 HTTP 处理，不代表 2xx；仍需联合 `result` 和 `status_code`。 |
 | `best_http_result` | 逻辑请求对外统计用的稳定结果。 | `success`：2xx 或 304；`http_error`：`Finished` 但非 2xx/304；`network_error`：非 `Finished` 的普通错误；`timeout`：连接或总请求超时；`aborted`：主动中止。只出现于 `request_end`。 |
-| `best_http_recovered_by_retry` | 前面已发生过物理发送，最终由非首 attempt 得到 2xx 的标记。 | `attempt_index > 0` 且最终状态为 `Finished` 且状态码为 2xx 时才是 `true`。304 虽然 `result=success`，但该字段不会因 304 置 `true`。 |
+| `best_http_recovered_by_retry` | 先发生网络失败、后续请求最终成功的标记。 | 业务请求链仅在已有 `request_error` 且最终 `result=success` 时为 `true`；最终为 HTTP 4xx/5xx 或网络失败时均为 `false`。普通请求仍按 BestHTTP 自身 attempt 是否恢复成功判断。 |
 | `best_http_exception_type` | 逻辑终态或 attempt 完成时的外层异常类型名。 | 例如 `SocketException`、`TimeoutException`；不包命名空间、message 和 stack trace。空值不等于成功，超时和 abort 可以没有异常对象。 |
 | `best_http_leaf_error_code` | 当前 attempt 最先被记录的精确、稳定错误码。 | 原子 first-write；一旦 DNS/TCP/TLS/协议层写入，外层 timeout/error 不覆盖。这是排障主键，必须联合同层 raw 字段。 |
 | `best_http_leaf_exception_type` | 写入叶子失败事实时的底层异常类型名。 | 当前主要由 DNS 和 TCP 失败路径填充。它与 `best_http_exception_type` 可不同：前者描述根因层，后者描述终态外层。 |
@@ -609,7 +610,7 @@ best_http_request_end
 - 物理网络稳定性：按 `best_http_request_error` / attempt 数统计，并单独展示 `recovered_by_retry`。
 - 根因分布：使用 `leaf_error_code`，缺失时再降级到 `state` + `exception_type`。
 - 分阶段耗时：只使用 `request_end` 中的 timing 字段，不把 `attempt_elapsed_ms` 当总耗时。
-- 业务 fallback 链：使用调用方的 `correlation_id`/扩展字段，不从 `attempt_index` 反推。
+- 业务 fallback 链：使用 `best_http_chain_id` 聚合，不从 `request_id` 或 `attempt_index` 反推。
 
 ## 10. 不采集与不内置的字段
 
@@ -617,7 +618,7 @@ best_http_request_end
 
 以下 Girl v2 字段没有被机械搬入商业库，因为底层库无法准确判断：
 
-- 业务 fallback：主/备域名、round/candidate、业务命令名、业务链最终结果。
+- 业务候选细节：主/备域名角色、round/candidate、DoH provider/cache/preheat。
 - Nova DoH：是否启用、provider、预热状态、缓存命中、DNS RCODE、注入 IP。
 - Unity 网络环境：`Application.internetReachability`。
 - 业务 timeout 参数来源、默认值与调用入口。

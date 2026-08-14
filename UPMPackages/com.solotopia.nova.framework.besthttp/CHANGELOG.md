@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-08-14
+
+### Added
+
+- 检测内部 BestHTTP 的业务遥测链扩展；`HostKey + NetCmd` 主备域名、DoH IP 与系统 DNS 候选统一输出一次 attempt、零到多次 error 和一次最终 end，并使用 `best_http_chain_id` 关联。
+
+### Changed
+
+- 遥测 schema 升级为 2，字段 `best_http_correlation_id` 更名为 `best_http_chain_id`；官方 BestHTTP 或未安装 BestHTTP 时保持静默兼容，不影响原有请求。
+- Best HTTP 最低依赖与 `coreVersion` 升级至 `3.0.20`，启用业务整链遥测扩展。
+
 ## [0.1.6] - 2026-08-14
 
 ### Added

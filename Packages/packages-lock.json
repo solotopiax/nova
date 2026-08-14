@@ -291,10 +291,10 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.12",
+        "com.solotopia.nova.framework": "0.6.13",
         "com.solotopia.unitask": "10.0.6",
         "com.unity.nuget.newtonsoft-json": "3.2.2",
-        "com.tivadar.best.http": "3.0.19",
+        "com.tivadar.best.http": "3.0.20",
         "com.tivadar.best.tlssecurity": "3.0.5"
       }
     },
@@ -543,7 +543,7 @@
       "url": "http://172.16.22.175:4874"
     },
     "com.tivadar.best.http": {
-      "version": "3.0.19",
+      "version": "3.0.20",
       "depth": 0,
       "source": "registry",
       "dependencies": {

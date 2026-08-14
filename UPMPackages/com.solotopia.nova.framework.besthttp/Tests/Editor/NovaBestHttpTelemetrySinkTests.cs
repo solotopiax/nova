@@ -56,6 +56,16 @@ namespace NovaFramework.BestHTTP.Tests
         }
 
         [Test]
+        public void BusinessTelemetryCapability_InternalBestHttpCreatesScope()
+        {
+            var transport = new BestHttpTransport();
+
+            using IBusinessHttpTelemetryScope scope = transport.BeginBusinessHttpTelemetry("account_login");
+
+            Assert.That(scope, Is.Not.Null, "内部 BestHTTP 3.0.20 应提供业务整链遥测入口。");
+        }
+
+        [Test]
         public void Track_WhenDisabled_DoesNotBufferOrDispatch()
         {
             var plugin = new RecordingTrackPlugin();

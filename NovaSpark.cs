@@ -69,7 +69,7 @@ namespace NovaBootstrap
         private const string c_BestHttpKey = "com.solotopia.nova.framework.besthttp";
 
         /// <summary>Nova BestHTTP 封装包版本。</summary>
-        private const string c_BestHttpValue = "0.1.6";
+        private const string c_BestHttpValue = "0.1.7";
 
         /// <summary>External Dependency Manager(EDM) 包键。Firebase/AppsFlyer/MAX 等的公共依赖，按策略由工程 manifest 显式固定，不靠各包传递。</summary>
         private const string c_EdmKey = "com.google.external-dependency-manager";
@@ -85,7 +85,7 @@ namespace NovaBootstrap
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.6.12";
+        private const string c_FrameworkValue = "0.6.13";
 
         /// <summary>PlugPals 配置文件相对工程根的路径。</summary>
         private const string c_PlugPalsRelativePath = "ProjectSettings/Nova/PlugPalsRegistries.json";

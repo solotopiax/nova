@@ -7,6 +7,8 @@
 HTTP 管理器，通过 `IHttpTransport` 扩展点执行 HTTP 短连接请求（GET / POST / RawData / File）与异步下载。主框架内置 `UnityWebRequestTransport` 作为默认后端，因此未安装 BestHTTP 时全部 HTTP API 仍然可用；独立 UPM 包 `com.solotopia.nova.framework.besthttp` 注册优先级更高的可选后端，安装后会自动覆盖默认实现。`NovaFramework.Runtime` 不直接依赖 BestHTTP，也不通过 `InternalsVisibleTo` 感知可选后端。
 其中 `GetAsync(...)` 会由当前后端关闭本地缓存，确保启动配置、远端规则等读取到最新 GET 响应。公开的普通 HTTP、资源下载与文件上传保持原有单地址机制；只有 `HostKey + NetCmd` 业务协议通过内部入口执行主备域名与 DoH IP 候选链。
 
+当当前传输实现可选的 `IBusinessHttpTelemetryTransport` 时，`HostKey + NetCmd` 的全部候选共用一个遥测作用域：整条业务协议只产生一次 `best_http_request_attempt`、零到多次 `best_http_request_error` 和一次 `best_http_request_end`，并通过 `best_http_chain_id` 关联。官方 BestHTTP、未安装 BestHTTP 或遥测扩展异常时会自动跳过该能力，不影响请求与主备轮换。
+
 ---
 
 ## § 2 文件表

@@ -70,13 +70,15 @@ namespace NovaFramework.Runtime
         /// <param name="requestTimeout">每次尝试独享的请求超时。</param>
         /// <param name="connectTimeout">每次尝试独享的连接超时。</param>
         /// <param name="headerInfos">整条重试链复用的请求头。</param>
+        /// <param name="operationName">不含请求参数的业务指令名，仅用于可选传输遥测关联。</param>
         /// <returns>服务器正式响应，或全部网络尝试结束后的最后一份失败响应。</returns>
         public async UniTask<HttpResponse> PostBusinessRawDataAsync(
             IReadOnlyList<string> routeUrls,
             byte[] contentBytes,
             float requestTimeout,
             float connectTimeout,
-            string headerInfos)
+            string headerInfos,
+            string operationName)
         {
             if (routeUrls == null || routeUrls.Count == 0)
             {
@@ -93,128 +95,171 @@ namespace NovaFramework.Runtime
                     HttpDeliveryState.NotReachedServer);
             }
 
-            List<BusinessRequestCandidate> candidates = await BuildBusinessCandidatesAsync(routeUrls);
-            HttpResponse lastFailedResponse = null;
-            bool mayHaveReachedServer = false;
-
-            for (int i = 0; i < candidates.Count; i++)
+            IBusinessHttpTelemetryTransport telemetryTransport = m_Transport as IBusinessHttpTelemetryTransport;
+            using (IBusinessHttpTelemetryScope telemetryScope = TryBeginBusinessTelemetry(telemetryTransport, operationName))
             {
-                BusinessRequestCandidate candidate = candidates[i];
-                HttpResponse response;
-                try
-                {
-                    if (candidate.ConnectIPAddress != null &&
-                        m_IPAddressTransport != null &&
-                        m_IPAddressTransport.IsIPAddressRoutingAvailable)
-                    {
-                        response = await m_IPAddressTransport.PostRawDataAsync(
-                            candidate.Url,
-                            candidate.ConnectIPAddress,
-                            contentBytes,
-                            requestTimeout,
-                            connectTimeout,
-                            headerInfos);
+                List<BusinessRequestCandidate> candidates = await BuildBusinessCandidatesAsync(routeUrls);
+                HttpResponse lastFailedResponse = null;
+                bool mayHaveReachedServer = false;
 
-                        if (!m_IPAddressTransport.IsIPAddressRoutingAvailable)
+                for (int i = 0; i < candidates.Count; i++)
+                {
+                    BusinessRequestCandidate candidate = candidates[i];
+                    HttpResponse response;
+                    try
+                    {
+                        if (telemetryScope != null)
+                        {
+                            response = await telemetryTransport.PostBusinessRawDataAsync(
+                                telemetryScope,
+                                candidate.Url,
+                                candidate.ConnectIPAddress,
+                                contentBytes,
+                                requestTimeout,
+                                connectTimeout,
+                                headerInfos);
+                        }
+                        else if (candidate.ConnectIPAddress != null &&
+                                 m_IPAddressTransport != null &&
+                                 m_IPAddressTransport.IsIPAddressRoutingAvailable)
+                        {
+                            response = await m_IPAddressTransport.PostRawDataAsync(
+                                candidate.Url,
+                                candidate.ConnectIPAddress,
+                                contentBytes,
+                                requestTimeout,
+                                connectTimeout,
+                                headerInfos);
+                        }
+                        else if (candidate.ConnectIPAddress != null)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            response = await m_Transport.PostRawDataAsync(
+                                candidate.Url,
+                                contentBytes,
+                                requestTimeout,
+                                connectTimeout,
+                                headerInfos,
+                                null);
+                        }
+
+                        if (candidate.ConnectIPAddress != null &&
+                            m_IPAddressTransport != null &&
+                            !m_IPAddressTransport.IsIPAddressRoutingAvailable)
                         {
                             DisableDoHWithWarning(m_IPAddressTransport.IPAddressRoutingUnavailableReason);
                         }
                     }
-                    else if (candidate.ConnectIPAddress != null)
+                    catch (Exception exception)
                     {
-                        continue;
+                        response = HttpResponse.Create(
+                            0,
+                            null,
+                            null,
+                            null,
+                            exception.GetBaseException().Message,
+                            false,
+                            0,
+                            -1L,
+                            DetermineExceptionDeliveryState(exception));
                     }
-                    else
-                    {
-                        response = await m_Transport.PostRawDataAsync(
-                            candidate.Url,
-                            contentBytes,
-                            requestTimeout,
-                            connectTimeout,
-                            headerInfos,
-                            null);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    response = HttpResponse.Create(
-                        0,
-                        null,
-                        null,
-                        null,
-                        exception.GetBaseException().Message,
-                        false,
-                        0,
-                        -1L,
-                        DetermineExceptionDeliveryState(exception));
-                }
 
-                if (response != null && response.HasServerResponse)
-                {
+                    if (response != null && response.HasServerResponse)
+                    {
+                        if (lastFailedResponse != null)
+                        {
+                            ReferencePool.Put(lastFailedResponse);
+                        }
+
+                        return response;
+                    }
+
+                    mayHaveReachedServer |= response == null || response.DeliveryState != HttpDeliveryState.NotReachedServer;
+                    if (HasRemainingUsableCandidate(candidates, i + 1))
+                    {
+                        Log.Warning(
+                            LogTag.Http,
+                            "【继续重试】{0}，正在尝试下一个地址。当前地址：{1}。",
+                            DescribeFailure(response),
+                            candidate.DisplayName);
+                    }
+
                     if (lastFailedResponse != null)
                     {
                         ReferencePool.Put(lastFailedResponse);
                     }
 
-                    return response;
+                    lastFailedResponse = response;
                 }
 
-                mayHaveReachedServer |= response == null || response.DeliveryState != HttpDeliveryState.NotReachedServer;
-                if (HasRemainingUsableCandidate(candidates, i + 1))
+                if (mayHaveReachedServer)
                 {
-                    Log.Warning(
-                        LogTag.Http,
-                        "【继续重试】{0}，正在尝试下一个地址。当前地址：{1}。",
-                        DescribeFailure(response),
-                        candidate.DisplayName);
+                    Log.Error(LogTag.Http, "【结果未确认】请求可能已到达服务器，但未获得可确认的响应，本次请求已结束。");
                 }
-
-                if (lastFailedResponse != null)
+                else
                 {
-                    ReferencePool.Put(lastFailedResponse);
+                    Log.Error(LogTag.Http, "【通信失败】所有请求均未到达服务器，本次请求已结束。");
                 }
 
-                lastFailedResponse = response;
-            }
+                HttpDeliveryState finalDeliveryState = mayHaveReachedServer
+                    ? HttpDeliveryState.Unknown
+                    : HttpDeliveryState.NotReachedServer;
+                if (lastFailedResponse == null)
+                {
+                    return HttpResponse.Create(
+                        0,
+                        null,
+                        null,
+                        null,
+                        mayHaveReachedServer ? "请求结果未确认。" : "网络通信失败。",
+                        false,
+                        0,
+                        -1L,
+                        finalDeliveryState);
+                }
 
-            if (mayHaveReachedServer)
-            {
-                Log.Error(LogTag.Http, "【结果未确认】请求可能已到达服务器，但未获得可确认的响应，本次请求已结束。");
-            }
-            else
-            {
-                Log.Error(LogTag.Http, "【通信失败】所有请求均未到达服务器，本次请求已结束。");
-            }
-
-            HttpDeliveryState finalDeliveryState = mayHaveReachedServer
-                ? HttpDeliveryState.Unknown
-                : HttpDeliveryState.NotReachedServer;
-            if (lastFailedResponse == null)
-            {
-                return HttpResponse.Create(
-                    0,
-                    null,
-                    null,
-                    null,
-                    mayHaveReachedServer ? "请求结果未确认。" : "网络通信失败。",
-                    false,
-                    0,
-                    -1L,
+                HttpResponse finalResponse = HttpResponse.Create(
+                    lastFailedResponse.StatusCode,
+                    lastFailedResponse.Body,
+                    lastFailedResponse.RawData,
+                    lastFailedResponse.Headers,
+                    lastFailedResponse.Error,
+                    lastFailedResponse.IsSuccess,
+                    lastFailedResponse.DownloadedBytes,
+                    lastFailedResponse.TotalBytes,
                     finalDeliveryState);
+                ReferencePool.Put(lastFailedResponse);
+                return finalResponse;
+            }
+        }
+
+        /// <summary>
+        /// 创建可选业务整链遥测作用域；遥测能力异常必须静默降级，不能中断业务网络请求。
+        /// </summary>
+        /// <param name="telemetryTransport">当前传输实现的可选遥测扩展点。</param>
+        /// <param name="operationName">不含参数的业务操作名。</param>
+        /// <returns>可用作用域；不支持或创建异常时返回 null。</returns>
+        private static IBusinessHttpTelemetryScope TryBeginBusinessTelemetry(
+            IBusinessHttpTelemetryTransport telemetryTransport,
+            string operationName)
+        {
+            if (telemetryTransport == null)
+            {
+                return null;
             }
 
-            HttpResponse finalResponse = HttpResponse.Create(
-                lastFailedResponse.StatusCode,
-                lastFailedResponse.Body,
-                lastFailedResponse.RawData,
-                lastFailedResponse.Headers,
-                lastFailedResponse.Error,
-                lastFailedResponse.IsSuccess,
-                lastFailedResponse.DownloadedBytes,
-                lastFailedResponse.TotalBytes,
-                finalDeliveryState);
-            ReferencePool.Put(lastFailedResponse);
-            return finalResponse;
+            try
+            {
+                return telemetryTransport.BeginBusinessHttpTelemetry(operationName);
+            }
+            catch (Exception exception)
+            {
+                Log.Warning(LogTag.Http, "创建 BestHTTP 业务整链埋点失败，已跳过本次埋点：{0}。", exception.Message);
+                return null;
+            }
         }
 
         /// <summary>

@@ -23,7 +23,7 @@
 - `AppDownloadCheckUrl` 指向当前 DevelopMode 选中的主规则 JSON 地址
 - `AppDownloadCheckUrlFallback` 指向当前 DevelopMode 选中的备用规则 JSON 地址
 - `TimeoutSeconds` 是 GET 请求超时时长，当前默认值为 `5`
-- 版本检查固定先尝试主地址；主地址为空、请求失败、超时或返回空内容时切到备用地址
+- 版本检查固定先尝试主地址；主地址为空、请求失败、超时、返回空内容、JSON 无法解析或版本规则无效时切到备用地址
 - 主备都不可用时，本轮 App 大版本检查直接降级为 `NoDownload`，继续后续启动流程
 
 ### 3. 更新下载输入

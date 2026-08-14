@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.6.13] - 2026-08-14
+
+### Added
+
+- `HostKey + NetCmd` 业务主备/IP 轮换接入可选整链遥测扩展点，允许 BestHTTP 适配包用同一个 `best_http_chain_id` 收口一次 attempt、零到多次 error 和一次最终 end。
+
+### Changed
+
+- App 版本 JSON 在主地址请求失败、内容为空或规则无效时继续尝试备用地址；YooAsset 版本与 Manifest 元数据在常规启动路径同样按原有 URL 策略轮换主备地址。
+
+### Fixed
+
+- DoH HTTPS 请求恢复系统证书校验，不再无条件接受服务端证书。
+
 ## [0.6.12] - 2026-08-14
 
 ### Breaking

@@ -360,16 +360,14 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 白名单命中时按 YooAsset URL 策略轮换候选地址请求版本；未命中时保持单次请求。
+        /// 按 YooAsset URL 策略轮换候选地址请求版本，确保任意包的主地址失败后都会实际请求备用地址。
         /// </summary>
         private async UniTask<RequestPackageVersionOperation> RequestPackageVersionWithFallbackAsync(
             ResourcePackage package,
             string packageName,
             CancellationToken ct)
         {
-            int attempts = m_StartupWhitelistMatchedPackages.Contains(packageName)
-                ? GetMetadataRequestAttemptCount(CreateRemoteService(packageName), packageName)
-                : 1;
+            int attempts = GetMetadataRequestAttemptCount(CreateRemoteService(packageName), packageName);
             RequestPackageVersionOperation operation = null;
             for (int i = 0; i < attempts; i++)
             {
@@ -390,7 +388,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 白名单命中时按 YooAsset URL 策略轮换候选地址加载清单；未命中时保持单次请求。
+        /// 按 YooAsset URL 策略轮换候选地址加载清单，确保任意包的主地址失败后都会实际请求备用地址。
         /// </summary>
         private async UniTask<LoadPackageManifestOperation> LoadPackageManifestWithFallbackAsync(
             ResourcePackage package,
@@ -398,9 +396,7 @@ namespace NovaFramework.Runtime
             string packageVersion,
             CancellationToken ct)
         {
-            int attempts = m_StartupWhitelistMatchedPackages.Contains(packageName)
-                ? GetMetadataRequestAttemptCount(CreateRemoteService(packageName), packageName)
-                : 1;
+            int attempts = GetMetadataRequestAttemptCount(CreateRemoteService(packageName), packageName);
             LoadPackageManifestOperation operation = null;
             for (int i = 0; i < attempts; i++)
             {

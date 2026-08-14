@@ -22,7 +22,7 @@
     "versionDefines": [
         {
             "name": "com.tivadar.best.http",
-            "expression": "3.0.19",
+            "expression": "3.0.20",
             "define": "NOVA_BEST_HTTP"
         }
     ],

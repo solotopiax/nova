@@ -2,23 +2,28 @@
   "NetworkHostKeys": [
     {
       "Name": "GameServer",
-      "Value": "https://t-solo-api-game.ahameet.com"
+      "Value": "https://t-solo-api-game.ahameet.com",
+      "FallbackValue": "https://t-solo-api-game.ahameet.com"
     },
     {
       "Name": "TGAServer",
-      "Value": "https://report.lolipopmobi.com"
+      "Value": "https://report.lolipopmobi.com",
+      "FallbackValue": "https://report.lolipopmobi.com"
     },
     {
       "Name": "IAPServer",
-      "Value": "https://t-pay-v3.ahameet.com"
+      "Value": "https://t-pay-v3.ahameet.com",
+      "FallbackValue": "https://t-pay-v3.ahameet.com"
     },
     {
       "Name": "ThirdServer",
-      "Value": "https://t-pay-v3.ahameet.com"
+      "Value": "https://t-pay-v3.ahameet.com",
+      "FallbackValue": "https://t-pay-v3.ahameet.com"
     },
     {
       "Name": "ThirdOpenServer",
-      "Value": "https://t-payments.solotopiax.com"
+      "Value": "https://t-payments.solotopiax.com",
+      "FallbackValue": "https://t-payments.solotopiax.com"
     }
   ]
 }

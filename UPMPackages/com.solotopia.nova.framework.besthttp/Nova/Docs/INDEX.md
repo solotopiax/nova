@@ -6,7 +6,7 @@
 
 | 文档 | 说明 |
 |---|---|
-| [BestHttpNetworkTelemetry.md](./BestHttpNetworkTelemetry.md) | 三类事件、完整字段、叶子错误码、上报开关、自动注册、隐私边界与验证范围 |
+| [BestHttpNetworkTelemetry.md](./BestHttpNetworkTelemetry.md) | 三类事件、业务整链关联、完整字段、叶子错误码、上报开关、隐私边界与验证范围 |
 
 ## 相关
 

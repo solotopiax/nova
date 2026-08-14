@@ -228,7 +228,8 @@ namespace NovaFramework.Runtime
                         bodyBytes,
                         -1f,
                         -1f,
-                        headerInfos
+                        headerInfos,
+                        netCmdName
                     );
                 }
                 catch (Exception e)

@@ -84,7 +84,7 @@
 
 启动白名单默认关闭，并同时要求 `EnableHotfix=true`、有效模式为 Host/Web、白名单文件 URL 与元数据根 URL 至少各有一个有效地址。本地 DeviceID 来自 `persistentDataPath/Asset/asset-check-device-id.dat`；首次没有缓存时直接跳过，SDK 插件完成初始化后通过 `SaveAssetCheckDeviceId` 原子写入 UTF-8 明文，供后续启动使用。
 
-白名单文件通过 `IHttpManager.DownloadTextAsync` 按主备顺序请求，但资源下载/CDN 与热更新保持原有系统 DNS 机制，不进入业务 DoH 路由。文件必须是 DeviceID JSON 字符串数组；网络失败、空响应或非法 JSON 均按未命中继续。命中后仅 `.version` / `.hash` / `.bytes` 版本元数据优先使用白名单元数据主备根地址，并继续以常规主备作为后备；本次启动会按该候选顺序处理传输失败及 HTTP 200 但内容非法/损坏的失败，全部候选失败后才进入现有离线回退。Bundle 始终走常规主机地址。
+白名单文件通过 `IHttpManager.DownloadTextAsync` 按主备顺序请求，但资源下载/CDN 与热更新保持原有系统 DNS 机制，不进入业务 DoH 路由。文件必须是 DeviceID JSON 字符串数组；网络失败、空响应或非法 JSON 均按未命中继续。`.version` / `.hash` / `.bytes` 版本元数据无论是否命中白名单，都会按候选顺序处理传输失败及 HTTP 200 但内容非法/损坏的失败：未命中时是常规主备，命中时是白名单主备后再到常规主备；全部候选失败后才进入现有离线回退。Bundle 始终走常规主机地址。
 
 启动诊断统一使用 `Log.Debug`：输出功能门控状态、白名单文件主备请求结果、命中/未命中结果，以及命中后 `.version` / `.hash` / `.bytes` 的实际请求成功或失败（包含文件名和完整 URL）。命中日志会输出完整 DeviceID，便于现场核对白名单内容；Bundle 请求不会进入这组元数据日志。
 

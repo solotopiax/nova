@@ -86,12 +86,14 @@ namespace NovaFramework.Runtime
         /// <param name="requestTimeout">每次尝试独享的请求超时。</param>
         /// <param name="connectTimeout">每次尝试独享的连接超时。</param>
         /// <param name="headerInfos">整条尝试链复用的请求头 JSON。</param>
+        /// <param name="operationName">不含请求参数的业务指令名，仅用于可选传输遥测关联。</param>
         UniTask<HttpResponse> PostBusinessRawDataAsync(
             IReadOnlyList<string> routeUrls,
             byte[] contentBytes,
             float requestTimeout,
             float connectTimeout,
-            string headerInfos
+            string headerInfos,
+            string operationName
         );
     }
 }

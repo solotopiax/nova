@@ -337,7 +337,6 @@ namespace NovaFramework.Runtime
             HttpWebRequest request = WebRequest.CreateHttp(uri);
             request.Method = "GET";
             request.Accept = c_JsonContentType;
-            request.ServerCertificateValidationCallback = (_, _, _, _) => true;
             if (timeout == System.Threading.Timeout.Infinite)
             {
                 request.Timeout = System.Threading.Timeout.Infinite;

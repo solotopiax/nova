@@ -53,7 +53,7 @@ public IReadOnlyList<string> GetRemoteUrls(string fileName)
 
 `GetRemoteUrls(fileName)`：
 
-- `<Package>.version`、`<Package>_<PackageVersion>.hash`、`<Package>_<PackageVersion>.bytes`（`PackageVersion` 非空）：白名单元数据主备优先，再回退常规主备；白名单命中时 AssetManager 会在本次启动内按该顺序处理传输失败与内容校验失败。
+- `<Package>.version`、`<Package>_<PackageVersion>.hash`、`<Package>_<PackageVersion>.bytes`（`PackageVersion` 非空）：白名单命中时按“白名单主备 → 常规主备”排序；未命中时使用“常规主备”。AssetManager 会在本次启动内按候选顺序处理传输失败与内容校验失败。
 - Bundle、`.json`、`.report` 及其他文件：只使用常规主备地址。
 
 `ApplyTemplate(template)`：依次替换 `{Platform}`、`{Channel}`、`{Package}`、`{Version}`。

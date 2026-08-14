@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -71,6 +72,215 @@ namespace NovaFramework.BestHTTP.Runtime
                 {
                     s_IPAddressCapabilityChecked = true;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 每个进程只反射检测一次内部 BestHTTP 的业务整链遥测入口。
+        /// 官方原版没有这些入口时保持静默，不影响普通请求或 DoH 能力判断。
+        /// </summary>
+        private static void EnsureBusinessTelemetryCapability()
+        {
+            if (s_BusinessTelemetryCapabilityChecked)
+            {
+                return;
+            }
+
+            lock (s_BusinessTelemetryCapabilityLock)
+            {
+                if (s_BusinessTelemetryCapabilityChecked)
+                {
+                    return;
+                }
+
+                try
+                {
+                    Type telemetryChainType = typeof(HTTPRequest).Assembly.GetType(
+                        "Best.HTTP.Telemetry.BestHttpTelemetryChain",
+                        false);
+                    MethodInfo createMethod = telemetryChainType?.GetMethod(
+                        "Create",
+                        BindingFlags.Public | BindingFlags.Static,
+                        null,
+                        new[] { typeof(string), typeof(string) },
+                        null);
+                    MethodInfo completeMethod = telemetryChainType?.GetMethod(
+                        "Complete",
+                        BindingFlags.Public | BindingFlags.Static,
+                        null,
+                        new[] { typeof(object) },
+                        null);
+                    MethodInfo bindMethod = typeof(HTTPRequest).GetMethod(
+                        "SetTelemetryChain",
+                        BindingFlags.Public | BindingFlags.Instance,
+                        null,
+                        new[] { typeof(object) },
+                        null);
+
+                    if (createMethod != null && completeMethod != null && bindMethod != null)
+                    {
+                        s_CreateBusinessTelemetryChain = (Func<string, string, object>)Delegate.CreateDelegate(
+                            typeof(Func<string, string, object>),
+                            createMethod);
+                        s_SetBusinessTelemetryChain = (Action<HTTPRequest, object>)Delegate.CreateDelegate(
+                            typeof(Action<HTTPRequest, object>),
+                            null,
+                            bindMethod);
+                        s_CompleteBusinessTelemetryChain = (Action<object>)Delegate.CreateDelegate(
+                            typeof(Action<object>),
+                            completeMethod);
+                    }
+                }
+                catch
+                {
+                    // 内部 fork 与官方原版的签名不匹配时静默降级，不能影响请求发送。
+                    s_CreateBusinessTelemetryChain = null;
+                    s_SetBusinessTelemetryChain = null;
+                    s_CompleteBusinessTelemetryChain = null;
+                }
+                finally
+                {
+                    s_BusinessTelemetryCapabilityChecked = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 发送绑定整链遥测的业务候选请求；连接 IP 为空时保留系统 DNS 路径。
+        /// </summary>
+        /// <param name="telemetryScope">本传输创建的整链遥测作用域。</param>
+        /// <param name="url">保留原域名的业务 URL。</param>
+        /// <param name="connectIPAddress">指定 TCP 连接 IP；null 表示系统 DNS。</param>
+        /// <param name="contentBytes">冻结后的业务请求字节。</param>
+        /// <param name="requestTimeout">本候选独享的请求超时。</param>
+        /// <param name="connectTimeout">本候选独享的连接超时。</param>
+        /// <param name="headerInfos">冻结后的请求头 JSON。</param>
+        /// <returns>本候选的网络响应。</returns>
+        private UniTask<HttpResponse> PostBusinessRawDataWithTelemetryAsync(
+            BestHttpBusinessTelemetryScope telemetryScope,
+            string url,
+            IPAddress connectIPAddress,
+            byte[] contentBytes,
+            float requestTimeout,
+            float connectTimeout,
+            string headerInfos)
+        {
+            if (telemetryScope == null)
+            {
+                return connectIPAddress == null
+                    ? PostRawDataAsync(url, contentBytes, requestTimeout, connectTimeout, headerInfos, null)
+                    : PostRawDataAsync(url, connectIPAddress, contentBytes, requestTimeout, connectTimeout, headerInfos);
+            }
+
+            HTTPRequest request = HTTPRequest.CreatePost(url);
+            if (connectIPAddress != null)
+            {
+                EnsureIPAddressCapability();
+                if (s_SetIPAddress == null)
+                {
+                    return UniTask.FromResult(HttpResponse.Create(
+                        0,
+                        null,
+                        null,
+                        null,
+                        IPAddressRoutingUnavailableReason,
+                        false,
+                        0,
+                        -1L,
+                        HttpDeliveryState.NotReachedServer));
+                }
+
+                try
+                {
+                    s_SetIPAddress(request, new[] { connectIPAddress });
+                }
+                catch (Exception exception)
+                {
+                    DisableIPAddressRouting(exception);
+                    return UniTask.FromResult(HttpResponse.Create(
+                        0,
+                        null,
+                        null,
+                        null,
+                        s_IPAddressRoutingUnavailableReason,
+                        false,
+                        0,
+                        -1L,
+                        HttpDeliveryState.NotReachedServer));
+                }
+            }
+
+            telemetryScope.Attach(request, s_SetBusinessTelemetryChain);
+            ApplyTimeoutSettings(request, requestTimeout, connectTimeout);
+            request.UploadSettings.UploadStream = new MemoryStream(contentBytes);
+            request.AddHeader("Content-Type", "application/octet-stream");
+            ApplyHeaderInfos(request, headerInfos, null);
+            return ExecuteRequestAsync(request, url, "POST RawData 请求已取消。", "POST RawData 请求异常");
+        }
+
+        /// <summary>
+        /// 持有内部 fork 业务遥测链对象，并将完成信号收口为最多一次反射调用。
+        /// </summary>
+        private sealed class BestHttpBusinessTelemetryScope : IBusinessHttpTelemetryScope
+        {
+            private readonly object m_Chain;
+            private readonly Action<object> m_Complete;
+            private int m_Completed;
+
+            /// <summary>
+            /// 创建业务整链遥测作用域。
+            /// </summary>
+            /// <param name="chain">内部 fork 创建的链对象。</param>
+            /// <param name="complete">内部 fork 的 BCL 完成委托。</param>
+            internal BestHttpBusinessTelemetryScope(object chain, Action<object> complete)
+            {
+                m_Chain = chain;
+                m_Complete = complete;
+            }
+
+            /// <summary>
+            /// 将共享链对象绑定到一个即将发送的物理 HTTPRequest；绑定异常不会中断业务请求。
+            /// </summary>
+            /// <param name="request">即将发送的物理请求。</param>
+            /// <param name="bind">内部 fork 的 BCL 绑定委托。</param>
+            internal void Attach(HTTPRequest request, Action<HTTPRequest, object> bind)
+            {
+                try
+                {
+                    bind?.Invoke(request, m_Chain);
+                }
+                catch
+                {
+                    // 遥测绑定失败时继续发送，不能让观测能力影响网络可用性。
+                }
+            }
+
+            /// <summary>
+            /// 请求内部 fork 完成整条业务链；重复调用只保留第一次。
+            /// </summary>
+            public void Complete()
+            {
+                if (Interlocked.Exchange(ref m_Completed, 1) != 0)
+                {
+                    return;
+                }
+
+                try
+                {
+                    m_Complete?.Invoke(m_Chain);
+                }
+                catch
+                {
+                    // 遥测收口失败时不影响已完成的业务请求。
+                }
+            }
+
+            /// <summary>
+            /// using 作用域退出时自动完成，保证所有 return 和异常出口都不会遗漏最终收口。
+            /// </summary>
+            public void Dispose()
+            {
+                Complete();
             }
         }
 

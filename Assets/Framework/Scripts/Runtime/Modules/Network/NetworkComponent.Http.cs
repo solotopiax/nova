@@ -88,13 +88,15 @@ namespace NovaFramework.Runtime
         /// <param name="requestTimeout">每次尝试独享的请求超时，-1 使用默认值。</param>
         /// <param name="connectTimeout">每次尝试独享的连接超时，-1 使用默认值。</param>
         /// <param name="headerInfos">整条尝试链复用的请求头 JSON。</param>
+        /// <param name="operationName">不含参数的业务指令名，仅用于可选 BestHTTP 整链埋点。</param>
         /// <returns>服务器正式响应，或全部网络尝试结束后的最终失败响应。</returns>
         internal UniTask<HttpResponse> PostBusinessRawDataAsync(
             IReadOnlyList<string> routeUrls,
             byte[] contentBytes,
             float requestTimeout = -1f,
             float connectTimeout = -1f,
-            string headerInfos = null
+            string headerInfos = null,
+            string operationName = null
         )
         {
             if (contentBytes == null)
@@ -112,7 +114,8 @@ namespace NovaFramework.Runtime
                 contentBytes,
                 requestTimeout,
                 connectTimeout,
-                headerInfos
+                headerInfos,
+                operationName
             );
         }
 

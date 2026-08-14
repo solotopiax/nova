@@ -85,4 +85,51 @@ namespace NovaFramework.Runtime
             float connectTimeout,
             string headerInfos);
     }
+
+    /// <summary>
+    /// 可选的业务整链遥测扩展点。
+    /// 仅 HostKey + NetCmd 业务请求会使用它；未实现时普通 HTTP、UnityWebRequest 和第三方传输保持原有行为。
+    /// </summary>
+    public interface IBusinessHttpTelemetryTransport
+    {
+        /// <summary>
+        /// 创建一条业务请求链的遥测作用域。
+        /// </summary>
+        /// <param name="operationName">不含参数和敏感数据的业务操作名。</param>
+        /// <returns>支持时返回作用域；不支持时返回 null。</returns>
+        IBusinessHttpTelemetryScope BeginBusinessHttpTelemetry(string operationName);
+
+        /// <summary>
+        /// 在指定业务遥测作用域中发送一个主备/IP 候选请求。
+        /// URL 始终保留原域名；connectIPAddress 为 null 时按系统 DNS 发送。
+        /// </summary>
+        /// <param name="telemetryScope">由 <see cref="BeginBusinessHttpTelemetry"/> 创建的作用域。</param>
+        /// <param name="url">原域名业务 URL。</param>
+        /// <param name="connectIPAddress">指定 TCP 连接 IP；null 表示系统 DNS。</param>
+        /// <param name="contentBytes">冻结后的原始请求字节。</param>
+        /// <param name="requestTimeout">本候选独享的请求超时。</param>
+        /// <param name="connectTimeout">本候选独享的连接超时。</param>
+        /// <param name="headerInfos">冻结后的请求头 JSON。</param>
+        /// <returns>本候选的网络响应。</returns>
+        UniTask<HttpResponse> PostBusinessRawDataAsync(
+            IBusinessHttpTelemetryScope telemetryScope,
+            string url,
+            IPAddress connectIPAddress,
+            byte[] contentBytes,
+            float requestTimeout,
+            float connectTimeout,
+            string headerInfos);
+    }
+
+    /// <summary>
+    /// 业务整链遥测作用域。
+    /// 调用方应在所有候选结束后调用 <see cref="Complete"/>；<see cref="Dispose"/> 也必须自动收口，避免 return 或异常出口遗漏最终事件。
+    /// </summary>
+    public interface IBusinessHttpTelemetryScope : IDisposable
+    {
+        /// <summary>
+        /// 标记当前业务请求链已结束，并由传输适配层输出唯一最终 end 事件。
+        /// </summary>
+        void Complete();
+    }
 }
