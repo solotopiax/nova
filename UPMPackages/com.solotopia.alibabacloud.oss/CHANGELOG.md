@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-08-14
+
+### Fixed
+
+- 将 Unity Editor 使用的 Alibaba OSS SDK 程序集改为 `netstandard2.0`，避免 Unity Roslyn analyzer pipeline 拒绝 `netstandard2.1` 引用。
+- 随包提供上游 `netstandard2.0` 目标所需的 `Microsoft.Bcl.AsyncInterfaces` `9.0.2`，避免 Unity 拒绝加载 OSS DLL 并引发 Editor 程序集级联失败。
+
 ## [0.0.2] - 2026-08-13
 
 ### Breaking
