@@ -105,6 +105,8 @@ HybridCLRData/*
 # Python 字节码缓存
 __pycache__/
 *.pyc
+**/__pycache__.meta
+**/*.pyc.meta
 
 # Luban auto-generated config directories（各 Demo Excels 副本内的产物，跟人不跟版本）
 Assets/Samples/*/Excels/**/_configs/
@@ -206,3 +208,9 @@ ProjectSettings/Nova/Globals.json
 Assets/Editor Default Resources/CrashlyticsSettings.asset
 Assets/Editor Default Resources/CrashlyticsSettings.asset.meta
 Assets/Editor Default Resources.meta
+
+# Nova Project Skills 自动投影：仅忽略项目本地受管副本和状态，保留其它 .agents 配置可被版本管理。
+/.agents/skills/nova-project-*/
+/.agents/nova-skills.lock.json
+/.agents/nova-skills.transaction.json
+/.agents/.nova-skills-staging/

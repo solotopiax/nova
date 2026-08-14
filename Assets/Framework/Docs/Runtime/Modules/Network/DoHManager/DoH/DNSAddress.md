@@ -3,7 +3,7 @@
 **类签名**：`public static class DNSAddress`
 **命名空间**：`NovaFramework.Runtime`
 
-预定义 DoH（DNS-over-HTTPS）端点地址常量集合。包含 Cloudflare 和 Google 两套 DoH 服务端点，每套提供域名 URL、IPv4 主备端点和 IPv6 主备端点。供 `DoHClient` 在构建查询请求时轮询使用。
+预定义 DoH（DNS-over-HTTPS）端点地址常量集合。包含 Cloudflare 和 Google 两套服务的域名、IPv4 与 IPv6 地址常量。当前 `DoHClient` 只按顺序尝试 Cloudflare IPv4 主端点、备端点和域名端点；其余常量保留定义，但不会自动进入查询链。
 
 ---
 
@@ -27,6 +27,14 @@
 | `Google.IPv4.Secondary` | `static readonly string` | Google 备 IPv4 端点：`https://8.8.4.4/resolve` |
 | `Google.IPv6.Primary` | `static readonly string` | Google 主 IPv6 端点 |
 | `Google.IPv6.Secondary` | `static readonly string` | Google 备 IPv6 端点 |
+
+当前查询链：
+
+```text
+Cloudflare.IPv4.Primary → Cloudflare.IPv4.Secondary → Cloudflare.URL
+```
+
+Google 与 IPv6 端点不会自动参与轮换。
 
 ## 公开 API
 

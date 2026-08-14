@@ -68,7 +68,7 @@ namespace NovaFramework.Runtime
         private CancellationTokenSource m_Cts;
 
         /// <summary>
-        /// HTTP 管理器，用于下载启动白名单文件；请求自动受现有 DoH 逻辑覆盖。
+        /// HTTP 管理器，用于下载启动白名单文件；该请求保持资源下载原有机制，不进入业务 DoH 路由。
         /// </summary>
         private IHttpManager m_HttpManager;
     }

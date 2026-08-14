@@ -710,8 +710,8 @@ MonoBehaviour:
     ConnectTimeout: 20
     RequestTimeout: 60
   m_DoHSettings:
-    UseDoH: 0
-    DnsTimeoutSeconds: 3
+    UseDoH: 1
+    DnsTimeoutSeconds: 5
   m_WebSocketSettings:
     ConnectTimeout: 10
     AuthenticateTimeout: 10

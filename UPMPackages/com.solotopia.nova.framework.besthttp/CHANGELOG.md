@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-08-14
+
+### Added
+
+- 接入 Framework `0.6.12` 的业务指定连接 IP 能力，保留原始域名 Host/SNI，并在 BestHTTP 不具备 `SetIPAddress` 能力时自动回退系统 DNS。
+- HTTP 响应补充服务器到达状态，遥测注册改为使用稳定事件名和属性字典，降低对 BestHTTP 专属遥测类型的耦合。
+
 ## [0.1.5] - 2026-08-13
 
 ### Changed

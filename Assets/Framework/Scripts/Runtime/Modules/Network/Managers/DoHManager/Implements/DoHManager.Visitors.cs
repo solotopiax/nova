@@ -27,12 +27,23 @@ namespace NovaFramework.Runtime
         /// 是否启用 DoH 解析。
         /// </summary>
         private bool m_UseDoH;
+        public override bool IsEnabled => m_UseDoH;
 
         /// <summary>
-        /// 单个域名的一次 DoH 查询超时时间（毫秒），0 表示跳过 DoH 查询。
-        /// 查询期间的所有候选地址共用该超时时间。
+        /// 单个原始域名完整 DoH 解析链的超时时间（毫秒）；配置秒数小于等于 0 时保存 Timeout.Infinite。
+        /// A 查询与后续全部 CNAME 层共用由该值创建的唯一截止时间。
         /// </summary>
         private int m_DNSTimeout;
+
+        /// <summary>
+        /// 每个域名最多写入缓存的 IPv4 数量；小于等于 0 表示不限制。
+        /// </summary>
+        private int m_MaxIPAddressesPerHost = 3;
+
+        /// <summary>
+        /// 当前 DoH 查询代次；Clear / Shutdown 会递增该值，使清理前发起的异步查询失效。
+        /// </summary>
+        private int m_QueryGeneration;
 
         /// <summary>
         /// 所有已收集的 IP 地址，<原始 URL, 替换 IP 后的 URL 列表>。

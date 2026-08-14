@@ -18,7 +18,7 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// HTTP 管理器，负责 HTTP 短连接请求发送、AES 加解密与 GZip 压缩处理。
     /// </summary>
-    internal sealed partial class HttpManager : HttpManagerBase
+    internal sealed partial class HttpManager : HttpManagerBase, IBusinessHttpManager
     {
         /// <summary>
         /// 初始化 HttpManager 的新实例。
@@ -38,6 +38,7 @@ namespace NovaFramework.Runtime
             m_ConnectTimeout = config.ConnectTimeout;
             m_Transport = HttpTransportRegistry.Create();
             m_Transport.Initialize(m_RequestTimeout, m_ConnectTimeout);
+            ConfigureDoHTransportCapability();
         }
 
         /// <summary>
@@ -50,12 +51,7 @@ namespace NovaFramework.Runtime
         /// <returns>包含响应数据的 HttpResponse。</returns>
         public override UniTask<HttpResponse> GetAsync(string url, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
         {
-            string originalAuthority = GetRequestAuthority(url);
-            return ExecuteDoHResilientAsync(url, requestUrl =>
-            {
-                string hostHeader = !string.Equals(requestUrl, url, StringComparison.OrdinalIgnoreCase) ? originalAuthority : null;
-                return m_Transport.GetAsync(requestUrl, requestTimeout, connectTimeout, headerInfos, hostHeader);
-            }, "GET");
+            return m_Transport.GetAsync(url, requestTimeout, connectTimeout, headerInfos, null);
         }
 
         /// <summary>
@@ -70,12 +66,7 @@ namespace NovaFramework.Runtime
         public override UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
         {
             byte[] bodyBytes = Encoding.UTF8.GetBytes(contentString ?? string.Empty);
-            string originalAuthority = GetRequestAuthority(url);
-            return ExecuteDoHResilientAsync(url, requestUrl =>
-            {
-                string hostHeader = !string.Equals(requestUrl, url, StringComparison.OrdinalIgnoreCase) ? originalAuthority : null;
-                return m_Transport.PostAsync(requestUrl, bodyBytes, requestTimeout, connectTimeout, headerInfos, hostHeader);
-            }, "POST");
+            return m_Transport.PostAsync(url, bodyBytes, requestTimeout, connectTimeout, headerInfos, null);
         }
 
         /// <summary>
@@ -89,12 +80,7 @@ namespace NovaFramework.Runtime
         /// <returns>包含响应数据的 HttpResponse。</returns>
         public override UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
         {
-            string originalAuthority = GetRequestAuthority(url);
-            return ExecuteDoHResilientAsync(url, requestUrl =>
-            {
-                string hostHeader = !string.Equals(requestUrl, url, StringComparison.OrdinalIgnoreCase) ? originalAuthority : null;
-                return m_Transport.PostRawDataAsync(requestUrl, contentBytes, requestTimeout, connectTimeout, headerInfos, hostHeader);
-            }, "POST RawData");
+            return m_Transport.PostRawDataAsync(url, contentBytes, requestTimeout, connectTimeout, headerInfos, null);
         }
 
         /// <summary>
@@ -110,12 +96,7 @@ namespace NovaFramework.Runtime
         /// <returns>包含响应数据的 HttpResponse。</returns>
         public override UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
         {
-            string originalAuthority = GetRequestAuthority(url);
-            return ExecuteDoHResilientAsync(url, requestUrl =>
-            {
-                string hostHeader = !string.Equals(requestUrl, url, StringComparison.OrdinalIgnoreCase) ? originalAuthority : null;
-                return m_Transport.PostFileAsync(requestUrl, bodyJsonData, fileBytes, fileName, requestTimeout, connectTimeout, headerInfos, hostHeader);
-            }, "POST File");
+            return m_Transport.PostFileAsync(url, bodyJsonData, fileBytes, fileName, requestTimeout, connectTimeout, headerInfos, null);
         }
 
         /// <summary>
@@ -128,15 +109,7 @@ namespace NovaFramework.Runtime
         /// <returns>包含下载结果的 HttpResponse。</returns>
         public override UniTask<HttpResponse> DownloadBinaryAsync(string url, int idleTimeout = -1, Action<HttpResponse> progressCallback = null, CancellationToken cancellationToken = default)
         {
-            string originalAuthority = GetRequestAuthority(url);
-            return ExecuteDoHResilientAsync(
-                url,
-                requestUrl =>
-                {
-                    string hostHeader = !string.Equals(requestUrl, url, StringComparison.OrdinalIgnoreCase) ? originalAuthority : null;
-                    return m_Transport.DownloadBinaryAsync(requestUrl, idleTimeout, progressCallback, cancellationToken, hostHeader);
-                },
-                "DownloadBinary");
+            return m_Transport.DownloadBinaryAsync(url, idleTimeout, progressCallback, cancellationToken, null);
         }
 
         /// <summary>
@@ -149,15 +122,7 @@ namespace NovaFramework.Runtime
         /// <returns>包含下载结果的 HttpResponse，文本内容存储在 Body 字段中。</returns>
         public override UniTask<HttpResponse> DownloadTextAsync(string url, int idleTimeout = -1, Action<HttpResponse> progressCallback = null, CancellationToken cancellationToken = default)
         {
-            string originalAuthority = GetRequestAuthority(url);
-            return ExecuteDoHResilientAsync(
-                url,
-                requestUrl =>
-                {
-                    string hostHeader = !string.Equals(requestUrl, url, StringComparison.OrdinalIgnoreCase) ? originalAuthority : null;
-                    return m_Transport.DownloadTextAsync(requestUrl, idleTimeout, progressCallback, cancellationToken, hostHeader);
-                },
-                "DownloadText");
+            return m_Transport.DownloadTextAsync(url, idleTimeout, progressCallback, cancellationToken, null);
         }
 
         /// <summary>
@@ -174,21 +139,7 @@ namespace NovaFramework.Runtime
         {
             m_Transport?.Shutdown();
             m_Transport = null;
-        }
-
-        /// <summary>
-        /// 读取原始 URL 的 authority，用于 IP 直连时补写 Host 请求头。
-        /// </summary>
-        /// <param name="url">原始请求 URL。</param>
-        /// <returns>authority（host 或 host:port），解析失败返回空字符串。</returns>
-        private static string GetRequestAuthority(string url)
-        {
-            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
-            {
-                return string.Empty;
-            }
-
-            return uri.IsDefaultPort ? uri.Host : uri.Authority;
+            m_IPAddressTransport = null;
         }
     }
 }

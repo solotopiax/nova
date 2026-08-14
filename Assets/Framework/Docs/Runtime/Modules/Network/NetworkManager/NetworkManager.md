@@ -24,7 +24,7 @@
 | `m_HostKeyUnitSettings` | `List<HostKeyUnitSetting>` | HostKey 数据单元列表 |
 | `m_NetCmdUnitSettings` | `List<NetCmdUnitSetting>` | NetCmd 数据单元列表 |
 | `m_NetworkDatas` | `Dictionary<string, ITable>` | 已构造的 Luban 表实例，键为表类型名 |
-| `m_HostKeyCache` | `Dictionary<string, string>` | HostKey 名称到 Host URL 的映射 |
+| `m_HostKeyCache` | `Dictionary<string, HostKeyCacheEntry>` | HostKey 名称到主、备基础地址的映射 |
 | `m_CmdCache` | `Dictionary<string, CmdCacheEntry>` | 复合键到网络指令缓存项的映射 |
 | `m_CmdRowIndex` | `Dictionary<string, INetworkCmdRow>` | 按 `row.Name` 建的快速索引 |
 | `m_ServerTimeFetcher` | `Func<UniTask<long>>` | 业务层注入的取时委托 |
@@ -42,6 +42,7 @@ public override bool LoadNetCmdsSync()
 public override string GetNetCmdUrl(string tbName, string dtName)
 public override string GetNetCmdUrl<T>(string dtName) where T : class, ITable
 public override string ResolveNetCmdUrl(INetworkCmdRow cmdRow)
+public override IReadOnlyList<string> ResolveNetCmdUrls(INetworkCmdRow cmdRow)
 public override INetworkCmdRow ResolveNetCmdRow(string cmdName)
 public override IEnumerable<string> GetAllNetCmdUrls()
 public override IEnumerable<string> GetAllHostKeyUrls()
@@ -74,11 +75,17 @@ public override long ServerTime { get; }
 
 1. 用 `IConfigManager.Namespace` 构造 `HostKeyTables`
 2. 把表实例存入 `m_NetworkDatas`
-3. 从实现了 `ITable<INetworkHostKeyRow>` 的表里提取 HostKey 到 `m_HostKeyCache`
+3. 从实现了 `ITable<INetworkHostKeyRow>` 的表里提取主、备域名到 `m_HostKeyCache`，过滤非法或重复地址
 4. 用同样方式构造 `NetworkTables`
 5. 从实现了 `ITable<INetworkCmdRow>` 的表里提取指令缓存到 `m_CmdCache`
 
 ## 路由规则
+
+### HostKey / NetCmd 输入约束
+
+- HostKey 的 `Value` 是主域名，`FallbackValue` 是备用域名。非空值必须是 HTTP(S) 基础地址，首尾不能有空格，末尾不能有 `/`；两个地址同时存在时必须使用相同协议。
+- NetCmd 的 `Path` 可以为空；非空时必须以 `/` 开头。
+- 运行时会忽略无效备用域名；主域名无效而备用域名有效时，备用域名会作为唯一可用地址。
 
 ### 复合键
 
@@ -126,6 +133,8 @@ TbHostKey hostTable = Nova.Network.GetNetCmd<TbHostKey>();
 - `GetNetCmdUrl` 的真实键规则是“表类型名 + 行名”，不是仅靠行名。
 - `GetAllNetCmdUrls` 只收集 `HTTP_GET`、`HTTP_POST`、`HTTP_URL` 三类指令。
 - `GetAllHostKeyUrls` 直接遍历全部 HostKey 缓存，过滤空值并去重；启动 DoH 预热使用该集合，不要求 HostKey 被 NetCmd 引用。
+- `ResolveNetCmdUrl` 保留原有单地址兼容行为；内部业务链使用 `ResolveNetCmdUrls` 同时取得主、备完整 URL。
+- 主域名无效时由备用域名顶替；备用域名无效时忽略；主备相同则运行时去重。
 
 ## 关联文档
 

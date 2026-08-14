@@ -28,7 +28,7 @@ YooAsset 远端寻址服务。常规主备地址负责 Bundle 与默认元数据
 | `m_Version` | `string` | 应用版本号，构造器内读取 `Application.version` |
 | `m_RemoteBaseUrls` | `string[]` | 常规主备 URL 前缀缓存 |
 | `m_MetadataBaseUrls` | `string[]` | 白名单版本元数据 URL 前缀缓存 |
-| `m_AllBaseUrls` | `string[]` | 两组地址去重合集，供 DoH detect-only 预检 |
+| `m_AllBaseUrls` | `string[]` | 两组地址去重合集，供 `BaseUrls` 返回 |
 
 ---
 
@@ -58,7 +58,7 @@ public IReadOnlyList<string> GetRemoteUrls(string fileName)
 
 `ApplyTemplate(template)`：依次替换 `{Platform}`、`{Channel}`、`{Package}`、`{Version}`。
 
-`BaseUrls`：返回常规与白名单元数据基地址的去重合集。`AssetManager` 在 Host/Web 包初始化前对全部实际启用地址执行 DoH detect-only 预检；YooAsset HTTPS 请求仍使用原域名，以保持 Host/SNI 语义。
+`BaseUrls`：返回常规与白名单元数据基地址的去重合集。资源下载/CDN 与热更新保持 YooAsset 原有寻址和系统 DNS 机制，不进入业务 DoH 路由。
 
 ---
 

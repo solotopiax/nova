@@ -2,17 +2,28 @@
 
 这是一份给 Agent 的 Level 0 路由。首次接触 Nova、接手已有项目、调整场景或资源流程时，先用本页建立最低限度的正确上下文，再按任务进入 Level 1 页面和现有模块文档。
 
-## AI Project Skills 一次性初始化
+## AI Project Skills：自动发现与执行边界
 
-Nova Project Skills 随 Framework UPM 包发布，但包不能隐式写入消费项目的 `.agents/skills`。首次让 Agent 通过自然语言使用 Nova 项目组 Skill 时，从本 Framework 包根目录先预览所需 Profile：
+Nova Project Skills 随 `com.solotopia.nova.framework` 同版本管理。用户安装或升级 Nova 后首次打开 Unity，Editor 会自动将包内全部 Skill 投影到项目根 `.agents/skills/`，供宿主和 Agent 发现；不需要执行 `sync` 或手工复制。
 
-```bash
-python3 Agents/Tools/nova_skills.py sync --project-root <消费项目根目录> --profile core --dry-run
+三处位置的职责不同：
+
+- 开发仓 Git 真源：`Assets/Framework/Agents/Skills/`。
+- 已安装包快照：`PackageInfo.resolvedPath/Agents/Skills/`；它随当前 Framework 版本提供，只读且不可反向编辑。
+- Agent 发现入口：`<project>/.agents/skills/nova-project-*`；这是自动生成的受管副本，不是第二真源。
+
+`.agents/skills/` 遇到同名用户目录、已修改或缺失的受管副本时会保守保留现场，并以 `partial` 报告无法完成的项；其他可安全完成的项仍会继续。若已安装包的 Agents 真源不可用，自动 bridge 会 fail-closed 并在 Unity Console 报告错误，不会写入、覆盖或删除项目文件。
+
+`<project>/.agents/nova-skills.lock.json`、`.agents/nova-skills.transaction.json` 与 `.agents/.nova-skills-staging/` 同样属于项目本地生成状态，不应作为 Framework 或 Skill 真源提交。自动投影不会创建、修改或覆盖消费者项目的 `.gitignore`。项目未自行跟踪 `.agents/` 时，无需改动 `.gitignore`；只有项目自行跟踪 `.agents/` 且用户已明确确认本次写入消费者 `.gitignore` 时，Agent 才可添加以下规则。不要忽略整个 `.agents/`，以免吞掉项目自己维护的 Agent 配置：
+
+```gitignore
+/.agents/skills/nova-project-*/
+/.agents/nova-skills.lock.json
+/.agents/nova-skills.transaction.json
+/.agents/.nova-skills-staging/
 ```
 
-确认输出的 Profile 与副作用后，再去掉 `--dry-run` 创建受管投影。随后 Agent 可发现 `nova-project-router`，由它路由到相应 Operation 或 Workflow。需要 UI 能力时选择 `ui` 或 `p0` Profile；Profile 收窄不会自动删除已投影 Skill。
-
-这是明确、可审计的一次性初始化，不是编码工作，也不应由 UPM 包在未确认时偷偷写入项目。若产品要求“安装包后无需任何初始化即可触发”，需要由项目模板或 Agent Host 预置 bootstrap；该宿主集成不属于 Framework UPM 包本身。
+全量可发现不等于全量按顺序执行。Agent 只根据自然语言任务的目标、范围和约束匹配当前需要的 Skill；写入、构建、外部发布和 Git 等副作用仍遵守对应 Skill 的确认门。当前未覆盖的任务仍按本页和具体模块 Docs 推进；完整目录和边界见 [Nova Project Skills](../Agents/INDEX.md)。
 
 ## 先检查项目，不要套模板
 

@@ -132,7 +132,6 @@ namespace NovaFramework.Runtime
             if (pkg.InitializeStatus != EOperationStatus.Succeeded)
             {
                 await CheckStartupWhitelistAsync(name, ct);
-                await PreflightRemoteUrlsAsync(name, ct);
                 InitializePackageOptions options = BuildPlayModeOptions(name);
                 var initOp = pkg.InitializePackageAsync(options);
                 await UniTask.WaitUntil(() => initOp.IsDone, cancellationToken: ct);

@@ -22,11 +22,6 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         private bool m_IsInRestore;
 
         /// <summary>
-        /// 商品拉取成功后是否已经触发过平台恢复。
-        /// </summary>
-        private bool m_HasRequestedProductFetchedRestore;
-
-        /// <summary>
         /// 商品尚未拉取成功时收到过权益刷新请求；商品成功后补跑一次。
         /// </summary>
         private bool m_PendingEntitlementRefreshAfterProductsFetched;

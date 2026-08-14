@@ -33,7 +33,7 @@
 - 商品整体拉取失败后按 `MobileStoreConfig.ProductFetchRetryDelaysMs` 自动重试；默认值为 `2s / 5s / 10s` 共 3 次。配置为空或包含非正数时回落默认值并打印中文警告日志；成功、部分成功或 Dispose 会取消悬空重试并重置重试序号。
 - 任一轮收到 `OnProductsFetched`，或 `OnProductsFetchFailed` 的失败数量小于本轮请求数量时，即认为至少存在成功商品，停止后续商品拉取重试。
 - `OnProductsFetched` 会清理旧失败 SKU，并按 `StoreController` 当前状态恢复仍缺失的 pending SKU。
-- `OnProductsFetchFailed` 先物化为内部失败快照，再只把 `StoreController` 当前仍查不到的 SKU 写入 `m_UnavailableSkus`；成功态下迟到失败不会回退状态、不会重试、不会重复触发 Restore / FetchPurchases。
+- `OnProductsFetchFailed` 先物化为内部失败快照，再只把 `StoreController` 当前仍查不到的 SKU 写入 `m_UnavailableSkus`；成功态下迟到失败不会回退状态、不会重试、不会重复触发商品成功后置流程。
 - 14 个商品成功、1 个 SKU 找不到时，只保留该缺失 SKU 的查询/购买拦截，不会污染其他已成功商品。
 
 ## 当前契约重点
@@ -46,7 +46,7 @@
 - `nova_iap_validate_success.nova_order_id` 优先使用服务端验单响应 `OrderId`；缺失时回退当前运行期 `TransactionId`。
 - `nova_iap_local_pay_fail` / `nova_iap_validate_fail` / `nova_iap_validate_fail_finish` 的 `nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值；补充描述写入 `nova_reason_detail`。
 - Mobile 打点 `Debug` 字段来自父包注入的 `DevelopMode == Debug`，不再使用 `EnableAlwaysPaySucceed`；`EnableAlwaysPaySucceed` 只在 Editor 调试支付时生效。
-- 商品拉取成功后才触发启动期平台 `RestoreTransactions` 与 `FetchPurchases`；`RestoreTransactions` 只用于唤起平台侧订单补全，完整补单扫描仍由统一补单入口串行执行。
+- 商品拉取成功后只自动触发启动期平台 `FetchPurchases` 和延迟权益刷新；订阅倒计时到期会再次 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行权益刷新；`RestoreTransactions` 仅由用户主动恢复购买入口调用，完整补单扫描仍由统一补单入口串行执行。
 - Mobile 后台任务统一经 `MobileServiceHub.RunBackgroundTask` 启动并接入移动端官方内购商店运行期取消令牌；`DisposeAsync` 会先取消后台任务，再释放各内部服务。入口委托固定为 `Func<CancellationToken, UniTask>`，返回 `UniTask<T>` 的动作需要用 lambda 或包装方法显式 `await` 后丢弃返回值。支付验单桥接被取消时返回 `StoreNotAvailable` 失败结果，不向业务层抛取消异常。
 - `MobileValidationService` 已把验单队列单次执行保护拆到 `MobileValidationQueueCoordinator`，本地订单扫描规则拆到 `MobileValidationLocalOrderScanner`；对外补单、支付和 Restore API 不变。
 

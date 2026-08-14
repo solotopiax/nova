@@ -38,7 +38,7 @@ Google Play + iOS App Store 官方内购 Store，实现 Unity IAP 5.x 初始化�
 - 只要任一轮收到成功商品，或失败数量小于本轮请求数量，就认为商品信息链路已完成并停止重试。
 - 成功回调会清理旧失败 SKU，并按 `StoreController` 当前状态恢复仍缺失的 pending SKU。
 - 失败回调只把 `StoreController` 当前仍查不到的 SKU 标记为不可用；迟到失败不会污染已成功商品。
-- 商品成功后才会触发启动期 `RestoreTransactions` 与 `FetchPurchases`，避免商品未进入 `StoreController` 时错误刷新权益或补单凭据。
+- 商品成功后只会自动触发启动期 `FetchPurchases` 和延迟权益刷新；订阅倒计时到期会再次 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行权益刷新；`RestoreTransactions` 仅在用户主动恢复购买时调用，避免 iOS 进游戏或后台刷新时弹出 Apple ID 验证框。
 
 ## 文档
 

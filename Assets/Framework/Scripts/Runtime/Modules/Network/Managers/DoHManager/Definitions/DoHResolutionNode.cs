@@ -24,7 +24,7 @@ namespace NovaFramework.Runtime
         HostKeyPrewarm,
 
         /// <summary>
-        /// HTTP、资源或 WebSocket 请求运行时按需触发。
+        /// 调用方手动调用 DNSQuery 时显式触发。
         /// </summary>
         RuntimeDiscovered
     }
@@ -63,7 +63,7 @@ namespace NovaFramework.Runtime
         public List<DoHResolutionNode> Children { get; }
 
         /// <summary>
-        /// 根查询来源。HostKey 预热优先于运行时按需发现。
+        /// 根查询来源。HostKey 预热优先于手动 DNS 查询。
         /// </summary>
         public DoHResolutionSource Source { get; internal set; }
 

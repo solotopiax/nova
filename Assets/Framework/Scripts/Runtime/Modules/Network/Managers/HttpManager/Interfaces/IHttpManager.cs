@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace NovaFramework.Runtime
 {
@@ -70,5 +71,27 @@ namespace NovaFramework.Runtime
         /// <returns>包含响应数据的 HttpResponse。</returns>
         UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null);
 
+    }
+
+    /// <summary>
+    /// HostKey + NetCmd 业务协议专用的主备路由入口，不暴露给普通 HTTP、资源或第三方 SDK 调用。
+    /// </summary>
+    internal interface IBusinessHttpManager
+    {
+        /// <summary>
+        /// 使用同一份请求数据按主备域名与 DoH IP 候选发送原始字节 POST。
+        /// </summary>
+        /// <param name="routeUrls">主域名、备用域名完整 URL，已按顺序去重。</param>
+        /// <param name="contentBytes">整条尝试链复用的原始请求字节。</param>
+        /// <param name="requestTimeout">每次尝试独享的请求超时。</param>
+        /// <param name="connectTimeout">每次尝试独享的连接超时。</param>
+        /// <param name="headerInfos">整条尝试链复用的请求头 JSON。</param>
+        UniTask<HttpResponse> PostBusinessRawDataAsync(
+            IReadOnlyList<string> routeUrls,
+            byte[] contentBytes,
+            float requestTimeout,
+            float connectTimeout,
+            string headerInfos
+        );
     }
 }

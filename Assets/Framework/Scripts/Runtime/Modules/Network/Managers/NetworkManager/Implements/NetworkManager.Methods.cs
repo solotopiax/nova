@@ -93,7 +93,108 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                m_HostKeyCache[row.Name] = row.Value ?? string.Empty;
+                bool primaryValid = TryNormalizeBaseUrl(row.Value, out string primary);
+                bool fallbackValid = TryNormalizeBaseUrl(row.FallbackValue, out string fallback);
+                if (!primaryValid && !string.IsNullOrWhiteSpace(row.Value))
+                {
+                    Log.Warning(LogTag.Network, "HostKey [{0}] 的主域名格式无效，将尝试使用备用域名。", row.Name);
+                }
+                if (!fallbackValid && !string.IsNullOrWhiteSpace(row.FallbackValue))
+                {
+                    Log.Warning(LogTag.Network, "HostKey [{0}] 的备用域名格式无效，已忽略备用域名。", row.Name);
+                }
+
+                if (!primaryValid && fallbackValid)
+                {
+                    primary = fallback;
+                    fallback = string.Empty;
+                    primaryValid = true;
+                    fallbackValid = false;
+                }
+
+                if (!primaryValid)
+                {
+                    Log.Error(LogTag.Network, "HostKey [{0}] 的主域名和备用域名均无效，相关请求将不会发出。", row.Name);
+                    continue;
+                }
+
+                if (fallbackValid &&
+                    (!HasSameScheme(primary, fallback) || string.Equals(primary, fallback, StringComparison.OrdinalIgnoreCase)))
+                {
+                    fallback = string.Empty;
+                }
+
+                m_HostKeyCache[row.Name] = new HostKeyCacheEntry
+                {
+                    Primary = primary,
+                    Fallback = fallback
+                };
+            }
+        }
+
+        /// <summary>
+        /// 校验并保留 HostKey 基础地址；运行时不主动修剪非法尾空格或尾斜杠。
+        /// </summary>
+        /// <param name="value">原始基础地址。</param>
+        /// <param name="normalized">有效时返回原值，否则返回空字符串。</param>
+        /// <returns>是否为有效的 HTTP(S) 绝对地址。</returns>
+        private static bool TryNormalizeBaseUrl(string value, out string normalized)
+        {
+            normalized = string.Empty;
+            if (string.IsNullOrWhiteSpace(value) ||
+                !string.Equals(value, value.Trim(), StringComparison.Ordinal) ||
+                value.EndsWith("/", StringComparison.Ordinal) ||
+                !Uri.TryCreate(value, UriKind.Absolute, out Uri uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) ||
+                string.IsNullOrWhiteSpace(uri.Host))
+            {
+                return false;
+            }
+
+            normalized = value;
+            return true;
+        }
+
+        /// <summary>
+        /// 判断两个有效基础地址是否使用相同协议。
+        /// </summary>
+        private static bool HasSameScheme(string left, string right)
+        {
+            return Uri.TryCreate(left, UriKind.Absolute, out Uri leftUri) &&
+                   Uri.TryCreate(right, UriKind.Absolute, out Uri rightUri) &&
+                   string.Equals(leftUri.Scheme, rightUri.Scheme, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 向有序列表追加基础地址与 Path 的拼接结果，并忽略空值和重复项。
+        /// </summary>
+        private static void AddUniqueUrl(List<string> urls, string baseUrl, string path)
+        {
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                return;
+            }
+
+            string url = baseUrl + (path ?? string.Empty);
+            for (int i = 0; i < urls.Count; i++)
+            {
+                if (string.Equals(urls[i], url, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+            }
+
+            urls.Add(url);
+        }
+
+        /// <summary>
+        /// 向无序集合追加基础地址与 Path 的拼接结果，并忽略空值。
+        /// </summary>
+        private static void AddUniqueUrl(HashSet<string> urls, string baseUrl, string path)
+        {
+            if (!string.IsNullOrEmpty(baseUrl))
+            {
+                urls.Add(baseUrl + (path ?? string.Empty));
             }
         }
 

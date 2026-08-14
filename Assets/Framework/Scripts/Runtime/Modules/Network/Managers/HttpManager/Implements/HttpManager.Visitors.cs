@@ -26,6 +26,11 @@ namespace NovaFramework.Runtime
         private IHttpTransport m_Transport;
 
         /// <summary>
+        /// 可选的指定连接 IP 传输能力；官方 BestHTTP 或 UnityWebRequest 不具备时为 null。
+        /// </summary>
+        private IHttpIPAddressTransport m_IPAddressTransport;
+
+        /// <summary>
         /// 默认网络连接超时时间（秒）。
         /// </summary>
         private float m_ConnectTimeout = 20f;

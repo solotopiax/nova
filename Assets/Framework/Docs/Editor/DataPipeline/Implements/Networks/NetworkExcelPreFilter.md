@@ -24,9 +24,17 @@ NetworkHostKeys-Release --DevelopMode.Release--> _temp/NetworkHostKeys/NetworkHo
 
 所有工作簿完成命名与配对校验后才开始写 `_temp`。任一工作簿缺少配对、没有基础名或存在无模式后缀的有效 Sheet，整次导出都会终止。
 
+### HostKey 字段输入约束
+
+- `Value` 表示主域名，`FallbackValue` 表示备用域名；两者不能同时为空。
+- 非空地址必须是有效的 HTTP 或 HTTPS 绝对地址，首尾不能有空格，末尾不能有斜杠。
+- 主、备用域名同时填写时，必须使用相同协议。
+
 ## NetCmds 规则
 
 NetCmds 没有环境维度定制。预处理只跳过 `#` 开头的 Sheet、少于 5 行的无效 Sheet、`_configs`、`_temp` 与 `~$` 临时文件，其余 Sheet 名称和内容保持不变。
+
+`Path` 可以为空；非空时必须以 `/` 开头。这样 HostKey 基础地址与 Path 可以直接且唯一地拼接。
 
 ## 内部入口
 

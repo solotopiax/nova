@@ -63,7 +63,7 @@ namespace NovaFramework.Runtime
         public ICoroutineRunner CoroutineRunner;
 
         /// <summary>
-        /// DoH 管理器接口，用于每次物理连接前执行域名检测。
+        /// DoH 管理器接口，保留配置注入兼容性；当前 WebSocket 不参与业务 DoH IP 路由。
         /// </summary>
         public IDoHManager DoHManager;
 

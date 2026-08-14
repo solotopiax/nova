@@ -199,12 +199,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -246,12 +246,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -296,12 +296,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -343,12 +343,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -390,12 +390,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -437,12 +437,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -484,12 +484,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -531,12 +531,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -578,12 +578,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -625,12 +625,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -672,12 +672,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -719,12 +719,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -766,12 +766,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -813,12 +813,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -860,12 +860,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -907,12 +907,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -954,12 +954,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
@@ -1001,12 +1001,12 @@ MonoBehaviour:
     PrivacyConfigsByMode:
     - Mode: 0
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     - Mode: 1
       Config:
-        AESKey: NovaSampleKey_16
-        AESIV: NovaSampleIv__16
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0

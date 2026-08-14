@@ -61,6 +61,13 @@ namespace NovaFramework.Runtime
         string ResolveNetCmdUrl(INetworkCmdRow cmdRow);
 
         /// <summary>
+        /// 根据指令行数据解析主备完整 URL；无效或重复地址会被过滤，主域名保持在前。
+        /// </summary>
+        /// <param name="cmdRow">网络指令行数据。</param>
+        /// <returns>零到两个完整 URL。</returns>
+        IReadOnlyList<string> ResolveNetCmdUrls(INetworkCmdRow cmdRow);
+
+        /// <summary>
         /// 根据指令名称（INetworkCmdRow.Name）解析对应指令行数据。
         /// </summary>
         /// <param name="cmdName">指令名称，对应 INetworkCmdRow.Name。</param>

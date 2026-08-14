@@ -56,7 +56,7 @@ FrameworkComponent
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `m_DoHSettings` | `DoHSettings` | DoH 管理器参数（UseDoH / DnsTimeoutSeconds） |
+| `m_DoHSettings` | `DoHSettings` | DoH 管理器参数（UseDoH / DnsTimeoutSeconds / MaxIPAddressesPerHost） |
 | `m_HttpSettings` | `HttpSettings` | HTTP 管理器参数（BestHTTP 埋点开关 / ConnectTimeout / RequestTimeout） |
 | `m_WebSocketSettings` | `WebSocketSettings` | WebSocket 管理器参数（ConnectTimeout 等 7 项） |
 
@@ -181,7 +181,7 @@ NetworkComponent.Awake()
 
 NetworkComponent.Start()
   ├─ 校验 m_Settings 非 null（null 抛出 InvalidOperationException）
-  ├─ DoHManager.Initialize(DoHManagerConfig { UseDoH, DnsTimeoutSeconds })
+  ├─ DoHManager.Initialize(DoHManagerConfig { UseDoH, DnsTimeoutSeconds, MaxIPAddressesPerHost })
   ├─ HttpManager.Initialize(HttpManagerConfig { ConnectTimeout, RequestTimeout, DoHManager })
   ├─ NetworkManager.Initialize(NetworkManagerConfig {
   │       HostKeyUnitSettings ← m_Settings.HostKeySettings.HostKeyUnits
@@ -194,7 +194,6 @@ NetworkComponent.Start()
 依赖顺序约束：
   DoHManager → HttpManager（HttpManager 注入 IDoHManager）
   NetworkComponent : ICoroutineRunner → WebSocketManager（注入 ICoroutineRunner）
-  DoHManager → WebSocketManager（注入 IDoHManager，连接前 detect-only 预检）
 ```
 
 ---

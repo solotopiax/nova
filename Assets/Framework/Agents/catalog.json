@@ -1,19 +1,13 @@
 {
   "schemaVersion": 1,
   "package": "com.solotopia.nova.framework",
-  "profiles": {
-    "core": [
+  "capabilityGroups": {
+    "assessment": [
       "nova-project-router",
       "nova-project-check-readiness"
     ],
     "ui": [
       "nova-project-router",
-      "nova-project-ui-create-view",
-      "nova-project-data-driven-ui"
-    ],
-    "p0": [
-      "nova-project-router",
-      "nova-project-check-readiness",
       "nova-project-ui-create-view",
       "nova-project-data-driven-ui"
     ]

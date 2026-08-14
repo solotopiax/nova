@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
@@ -55,5 +56,33 @@ namespace NovaFramework.Runtime
         /// 关闭传输后端并释放后端持有的状态。
         /// </summary>
         void Shutdown();
+    }
+
+    /// <summary>
+    /// 可选的业务 HTTPS 指定连接 IP 能力；URL 始终保留原域名，IP 仅用于底层 TCP 连接。
+    /// 未实现该接口的传输继续使用系统 DNS，不影响原有 IHttpTransport 兼容性。
+    /// </summary>
+    public interface IHttpIPAddressTransport
+    {
+        /// <summary>
+        /// 当前运行环境是否具备指定连接 IP 的能力。
+        /// </summary>
+        bool IsIPAddressRoutingAvailable { get; }
+
+        /// <summary>
+        /// 能力不可用时供 Nova 输出的一次性中文原因。
+        /// </summary>
+        string IPAddressRoutingUnavailableReason { get; }
+
+        /// <summary>
+        /// 以原域名 URL 发送业务原始字节 POST，并仅把 TCP 连接目标指定为给定 IPv4。
+        /// </summary>
+        UniTask<HttpResponse> PostRawDataAsync(
+            string url,
+            IPAddress connectIPAddress,
+            byte[] contentBytes,
+            float requestTimeout,
+            float connectTimeout,
+            string headerInfos);
     }
 }

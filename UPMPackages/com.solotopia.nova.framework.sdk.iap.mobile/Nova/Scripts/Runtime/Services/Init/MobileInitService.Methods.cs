@@ -80,10 +80,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
         /// <summary>
         /// 商品拉取进入成功态后的后续流程，只由商品拉取协调器首次完成时触发。
+        /// 启动期不调用平台 RestoreTransactions，避免 iOS 在无用户交互时弹出 Apple ID 验证框。
         /// </summary>
         private void OnProductFetchCompleted()
         {
-            m_Hub.RestoreService.RequestPlatformRestoreAfterProductsFetched();
             m_Hub.RestoreService.TryRunPendingEntitlementRefreshAfterProductsFetched();
             m_Hub.ExtendedService.FetchPurchases();
         }

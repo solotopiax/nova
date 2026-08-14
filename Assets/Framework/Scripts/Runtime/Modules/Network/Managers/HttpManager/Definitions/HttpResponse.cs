@@ -14,6 +14,19 @@ using System.Collections.Generic;
 namespace NovaFramework.Runtime
 {
     /// <summary>
+    /// 单次 HTTP 尝试相对服务器的到达状态，用于底层决定是否继续重试及最终结果分类。
+    /// </summary>
+    public enum HttpDeliveryState
+    {
+        /// <summary>无法确认请求是否已到达服务器。</summary>
+        Unknown = 0,
+        /// <summary>请求确认未到达服务器，例如 DNS、TCP 连接或 TLS 建连失败。</summary>
+        NotReachedServer = 1,
+        /// <summary>服务器已经返回正式 HTTP 响应。</summary>
+        ServerResponded = 2,
+    }
+
+    /// <summary>
     /// HTTP 响应数据，封装请求完成后的状态码、正文、原始字节、响应头及错误信息。
     /// 🔴 红线：本类是 IReference，由 Create 从 ReferencePool 获取。
     /// 调用方持有 return value 的 IHttpManager.XxxAsync 必须用 try/finally 在使用完后
@@ -42,7 +55,16 @@ namespace NovaFramework.Runtime
         /// <param name="downloadedBytes">已下载的字节数。</param>
         /// <param name="totalBytes">总字节数，未知时为 -1。</param>
         /// <returns>初始化完成的 HttpResponse 实例。</returns>
-        public static HttpResponse Create(int statusCode, string body, byte[] rawData, Dictionary<string, string> headers, string error, bool isSuccess, long downloadedBytes, long totalBytes)
+        public static HttpResponse Create(
+            int statusCode,
+            string body,
+            byte[] rawData,
+            Dictionary<string, string> headers,
+            string error,
+            bool isSuccess,
+            long downloadedBytes,
+            long totalBytes,
+            HttpDeliveryState deliveryState = HttpDeliveryState.Unknown)
         {
             HttpResponse resp = ReferencePool.Get<HttpResponse>();
             resp.StatusCode = statusCode;
@@ -53,6 +75,7 @@ namespace NovaFramework.Runtime
             resp.IsSuccess = isSuccess;
             resp.DownloadedBytes = downloadedBytes;
             resp.TotalBytes = totalBytes;
+            resp.DeliveryState = statusCode > 0 ? HttpDeliveryState.ServerResponded : deliveryState;
             return resp;
         }
 
@@ -87,6 +110,16 @@ namespace NovaFramework.Runtime
         public bool IsSuccess { get; private set; }
 
         /// <summary>
+        /// 请求是否已获得服务器正式 HTTP 响应；业务结果成功或失败均返回 true。
+        /// </summary>
+        public bool HasServerResponse => DeliveryState == HttpDeliveryState.ServerResponded;
+
+        /// <summary>
+        /// 当前尝试相对服务器的到达状态。
+        /// </summary>
+        public HttpDeliveryState DeliveryState { get; private set; }
+
+        /// <summary>
         /// 已下载的字节数。
         /// </summary>
         public long DownloadedBytes { get; private set; }
@@ -114,6 +147,7 @@ namespace NovaFramework.Runtime
             IsSuccess = false;
             DownloadedBytes = 0;
             TotalBytes = -1;
+            DeliveryState = HttpDeliveryState.Unknown;
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿# Mobile IAP 内部架构文档
 
 > 包名：`com.solotopia.nova.framework.sdk.iap.mobile`
-> 最后更新：2026-08-11
+> 最后更新：2026-08-14
 > 适用版本：Unity IAP 5.x（`UnityEngine.Purchasing`）
 
 ## 1. 整体架构
@@ -65,7 +65,7 @@ IAPPlugin（父包）
 | `MobileStoreService` | `internal sealed partial` | Unity IAP `On*` 回调统一入口，只做路由 |
 | `MobileInitService` | `internal sealed partial` | Unity IAP 初始化、连接状态、初始化结果上报、商品拉取协调器委托入口 |
 | `MobileProductService` | `internal sealed partial` | Receipt 缓存、Product 查询、平台商品信息查询、权益状态辅助 |
-| `MobileSubscriptionService` | `internal sealed partial` | 订阅到期时间持久化、订阅倒计时、到期后触发 Restore |
+| `MobileSubscriptionService` | `internal sealed partial` | 订阅到期时间持久化、订阅倒计时、到期后触发 FetchPurchases 与权益刷新 |
 | `MobileValidationService` | `internal sealed partial` | 本地订单状态机、服务端查单、批量验单、发货结果派发；验单队列与本地订单扫描规则委托给内部协调类 |
 | `MobileRestoreService` | `internal sealed partial` | Restore 流程、权益检查聚合、Restore 结果事件 |
 | `MobilePurchaseService` | `internal sealed partial` | 发起平台购买、订阅有效期拦截、订阅升降级、处理 Pending / Confirmed / Failed 回调 |
@@ -93,15 +93,15 @@ MobileStore.InitializeAsync
 3. `MobileInitService.OnStoreConnected`
 4. `MarkReady`、`IAPInitResult.Success`、`m_InitTcs.TrySetResult(true)`
 5. `FetchProducts` 后台拉取商品
-6. `OnProductsFetched` 后清理旧失败 SKU，并按 Controller 状态恢复仍缺失的 pending SKU，再先触发一次平台 `RestoreTransactions`，再调用 `FetchPurchases` 拉取平台已有购买
+6. `OnProductsFetched` 后清理旧失败 SKU，并按 Controller 状态恢复仍缺失的 pending SKU，再调用 `FetchPurchases` 拉取平台已有购买；启动期不调用平台 `RestoreTransactions`
 7. `OnPurchasesFetched` 路由到 RestoreService，缓存历史票据并恢复 PendingOrder
 
-商品拉取成功或失败不再决定初始化结果。网络慢时初始化只等待商店连接，不等待商品信息返回；`MobileInitService` 只保留初始化生命周期，商品拉取状态、重试、部分成功、迟到失败和不可用 SKU 校正收口在 `Services/Init` 内部 `MobileProductFetchCoordinator`。商品整体拉取失败后会按 `MobileStoreConfig.ProductFetchRetryDelaysMs` 自动重试，默认 2s / 5s / 10s 共 3 次；配置为空或包含非正数时回落默认值并打印中文警告日志。重试发起前会清理上一轮失败 SKU 缓存；任一轮收到 `OnProductsFetched`，或失败数量小于请求数量时，即认为至少有商品信息已可用并停止后续重试。完整成功回调会清理旧失败 SKU，并按 StoreController 当前状态恢复仍缺失的 pending SKU；失败回调先物化为内部 snapshot，再只把 StoreController 当前仍缺失的 SKU 标记为不可用。因此 14 个商品成功、1 个 SKU 找不到时，只会保留该缺失 SKU 的拦截，不会污染已成功商品。启动期平台恢复交易和平台已有购买拉取在商品信息首次进入成功态后异步触发。商品拉取后的 `RestoreTransactions` 只唤起平台侧订单补全；`FetchPurchases` 回调缓存 receipt / PendingOrder 后，如果账号已登录，会通过 `MobileServiceHub.RunBackgroundTask` 合并触发一次完整补单扫描，由统一补单入口串行执行 QueryPendingOrder / 本地验单 / 权益刷新。
+商品拉取成功或失败不再决定初始化结果。网络慢时初始化只等待商店连接，不等待商品信息返回；`MobileInitService` 只保留初始化生命周期，商品拉取状态、重试、部分成功、迟到失败和不可用 SKU 校正收口在 `Services/Init` 内部 `MobileProductFetchCoordinator`。商品整体拉取失败后会按 `MobileStoreConfig.ProductFetchRetryDelaysMs` 自动重试，默认 2s / 5s / 10s 共 3 次；配置为空或包含非正数时回落默认值并打印中文警告日志。重试发起前会清理上一轮失败 SKU 缓存；任一轮收到 `OnProductsFetched`，或失败数量小于请求数量时，即认为至少有商品信息已可用并停止后续重试。完整成功回调会清理旧失败 SKU，并按 StoreController 当前状态恢复仍缺失的 pending SKU；失败回调先物化为内部 snapshot，再只把 StoreController 当前仍缺失的 SKU 标记为不可用。因此 14 个商品成功、1 个 SKU 找不到时，只会保留该缺失 SKU 的拦截，不会污染已成功商品。启动期平台已有购买拉取在商品信息首次进入成功态后异步触发，但启动期不会调用 `RestoreTransactions`，避免 iOS 在无用户交互时弹出 Apple ID 验证框；`RestoreTransactions` 仅由用户主动恢复购买入口调用。`FetchPurchases` 回调缓存 receipt / PendingOrder 后，如果账号已登录，会通过 `MobileServiceHub.RunBackgroundTask` 合并触发一次完整补单扫描，由统一补单入口串行执行 QueryPendingOrder / 本地验单 / 权益刷新。订阅倒计时到期会再次调用 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行 `RefreshEntitlementsAsync`，不复用手动 `RestoreAsync`。
 
 商品拉取与补单的边界如下：
 
 - `MobileProductFetchCoordinator.CancelRetry` 可以在成功、部分成功、成功态迟到失败、初始化失败和 Dispose 路径被多次调用；它是幂等清理，不会清空业务订单或触发补单。
-- `RestoreTransactions` / `FetchPurchases` 只在商品链路首次进入成功态时触发；成功态迟到失败会直接返回，不重复触发补单后续流程。
+- `FetchPurchases` 在商品链路首次进入成功态时自动触发；成功态迟到失败会直接返回，不重复触发补单后续流程。订阅倒计时到期也会触发一次 `FetchPurchases` 来刷新平台已有购买与票据缓存。`RestoreTransactions` 不在启动期或订阅倒计时触发，只保留给用户主动恢复购买。
 - `m_UnavailableSkus` 是 `HashSet<string>`，重复写同一缺失 SKU 不会无限增长；写入前仍会检查 `StoreController.GetProductById`，避免已成功商品被失败列表污染。
 - 查询、购买和 Restore 权益刷新都会尊重不可用 SKU 拦截；真实缺失 SKU 会被阻断，已进入 Controller 的商品继续可买可查。
 - 后台补单扫描、权益刷新、订阅倒计时和支付验单桥接都经 Hub 后台任务入口启动；Dispose 会先取消这些任务，再释放服务，避免释放后回调继续访问旧 Hub。支付验单桥接被取消时返回 `StoreNotAvailable` 失败结果，不向业务层抛取消异常。
@@ -153,9 +153,9 @@ StoreController 事件
 | 查询商品 | `GetProductById` / `GetProducts` |
 | 确认订单 | `ConfirmPurchase` |
 | 权益检查 | `CheckEntitlement` |
-| Restore | `RestoreTransactions` |
+| 用户主动恢复购买 | `RestoreTransactions` |
 | 商品拉取 | `FetchProducts` |
-| 平台已有购买拉取 | `FetchPurchases` |
+| 平台已有购买拉取 | `FetchPurchases`；用于启动期和订阅倒计时刷新平台已有购买与票据缓存，不触发 Apple ID 验证框 |
 | Android / iOS 透传账号 | `SetObfuscatedAccountId`、`SetObfuscatedProfileId`、`SetAppAccountToken` |
 
 ## 8. 持久化模型
@@ -174,7 +174,7 @@ UID 切换由 `MobileStore.SetUserId` 触发，重新加载整包存档。
 
 补单扫描只能在登录后执行。登录前平台回调先到达时，只将 PendingOrder 解析出的待验订单暂存在内存中，不读写账号存档，也不发送 QueryPendingOrder / Verify 协议。登录后业务调用 `CheckLocalOrdersAsync` 时，流程先合并登录前暂存订单，再请求服务端 QueryPendingOrder，优先使用返回项里的 `table_id`（long）确定商品行，并结合 `parameter` 解码出的 `ReceiptParam` merge 到本地 `OrderRecordsByKey`，随后扫描本地待验订单；`parameter` 缺失或无法解出 `ReceiptParam` 时按空透传兼容旧协议。完整补单流程使用单次执行保护；扫描中再次触发只标记当前轮结束后补跑一轮，避免服务端查单、存档合并、验单队列和权益刷新并发交错。
 
-Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purchasing` 占位记录缺少 token 时保留等待下次平台回调或服务端 QueryPendingOrder 补齐。`OrderRecordsByKey` 是未完成订单仓库，不是订单历史；正常支付在验单和平台确认完成后会删除记录。Restore 权益刷新准备订单时会用最新 receipt 回填已有记录缺失的 token / orderId，避免 CheckEntitlement 早于 FetchPurchases 到达时把空凭据固化到本地记录。iOS Apple 验单协议必须具备 `order_id`（本地 `TransactionId`），缺失时不能发送空订单验单请求，客户端会删除本地待验订单记录并落盘，避免后续启动重复发送无效协议。验单请求中的 `price` 固定来自支付表 `IAPProductEntry.Price`，不使用 Unity IAP 平台本地化价格，避免 Storefront / 账号地区导致客户端验单金额漂移。`TransactionId` 承载平台订单 ID：Android 运行期可写入 Google `OrderId` 供结果和打点回填，但不写入本地存档；iOS 写入 Apple transaction id 并随本地存档保留。它不作为本地存档合并、验单响应匹配或 PaySuccess 去重判断。每次登录后的补单扫描结束后，还会触发一次 `CheckEntitlement` 权益刷新，刷新订阅和非消耗品权益，确保订阅状态不是只依赖倒计时触发；该刷新不重复触发平台 `RestoreTransactions`。Unity IAP 的 `FullyEntitled` 只说明平台侧仍返回持有记录；订阅权益回调会从 `Entitlement.Order.Info.PurchasedProductInfo[*]` 中筛选与当前 `Entitlement.Product` 匹配的条目，读取匹配项 `subscriptionInfo.GetExpireDate()` 的最晚到期时间。当当前商品到期时间明确已过期时，本次状态按 `NotEntitled` 缓存并跳过 Restore 验单；读取不到当前商品匹配的到期时间时仍交由服务端确认。如果商品信息尚未拉取成功，权益刷新会延后，商品成功回调后自动补跑，避免把“平台商品未进入 StoreController”误判为“没有待查询项”。
+Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purchasing` 占位记录缺少 token 时保留等待下次平台回调或服务端 QueryPendingOrder 补齐。`OrderRecordsByKey` 是未完成订单仓库，不是订单历史；正常支付在验单和平台确认完成后会删除记录。Restore / 权益刷新准备订单时会用最新 receipt 回填已有记录缺失的 token / orderId，避免 CheckEntitlement 早于 FetchPurchases 到达时把空凭据固化到本地记录。iOS Apple 验单协议必须具备 `order_id`（本地 `TransactionId`），缺失时不能发送空订单验单请求，客户端会删除本地待验订单记录并落盘，避免后续启动重复发送无效协议。验单请求中的 `price` 固定来自支付表 `IAPProductEntry.Price`，不使用 Unity IAP 平台本地化价格，避免 Storefront / 账号地区导致客户端验单金额漂移。`TransactionId` 承载平台订单 ID：Android 运行期可写入 Google `OrderId` 供结果和打点回填，但不写入本地存档；iOS 写入 Apple transaction id 并随本地存档保留。它不作为本地存档合并、验单响应匹配或 PaySuccess 去重判断。每次登录后的补单扫描结束后，还会触发一次 `CheckEntitlement` 权益刷新，刷新订阅和非消耗品权益，确保订阅状态不是只依赖倒计时触发；该刷新不重复触发平台 `RestoreTransactions`。订阅倒计时到期会先 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行权益刷新，也不会调用 `RestoreTransactions`。Unity IAP 的 `FullyEntitled` 只说明平台侧仍返回持有记录；订阅权益回调会从 `Entitlement.Order.Info.PurchasedProductInfo[*]` 中筛选与当前 `Entitlement.Product` 匹配的条目，读取匹配项 `subscriptionInfo.GetExpireDate()` 的最晚到期时间。当当前商品到期时间明确已过期时，本次状态按 `NotEntitled` 缓存并跳过 Restore 验单；读取不到当前商品匹配的到期时间时仍交由服务端确认。如果商品信息尚未拉取成功，权益刷新会延后，商品成功回调后自动补跑，避免把“平台商品未进入 StoreController”误判为“没有待查询项”。
 
 订阅商品发起购买前会先检查当前 tableId 是否仍在有效期内；命中时本地直接返回 `IAPMobileErrorCode.SubscriptionIsReady`，不写入 `Purchasing` 订单，也不再调用 Unity IAP 平台购买。只有当前商品未订阅时，才继续判断同订阅组内其他有效订阅并进入 Android 升降级或非 Android 已订阅失败分支。
 

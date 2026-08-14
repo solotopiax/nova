@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -72,9 +73,19 @@ namespace NovaFramework.Runtime
         private readonly Random m_Random;
 
         /// <summary>
-        /// DNS 结果缓存条目，有效期内直接返回缓存。
+        /// 释放查询器时用于中止仍在等待的网络请求，避免无限等待阻塞关闭流程。
         /// </summary>
-        private DNSCacheEntry m_AnswersCache;
+        private readonly CancellationTokenSource m_DisposeCancellationTokenSource;
+
+        /// <summary>
+        /// 查询器是否已经释放。
+        /// </summary>
+        private bool m_Disposed;
+
+        /// <summary>
+        /// 按记录类型隔离的 DNS 结果缓存，避免不同查询类型互相覆盖。
+        /// </summary>
+        private readonly Dictionary<ResourceRecordType, DNSCacheEntry> m_AnswersCaches;
 
         /// <summary>
         /// 本查询器对应的主机名。
@@ -82,9 +93,9 @@ namespace NovaFramework.Runtime
         private readonly string m_HostName;
 
         /// <summary>
-        /// 当前正在执行的等待任务（防止同一主机重复并发查询）。
+        /// 按记录类型隔离的进行中查询，同一主机的相同类型只发起一次请求链。
         /// </summary>
-        private UniTask<DNSAnswer[]> m_WaitingTask;
+        private readonly Dictionary<ResourceRecordType, UniTask<DNSAnswer[]>> m_WaitingTasks;
 
         /// <summary>
         /// 构造 DoHClient 实例。
@@ -94,6 +105,9 @@ namespace NovaFramework.Runtime
         {
             m_HostName = hostName;
             m_Random   = GenerateCryptoSeededRandom();
+            m_DisposeCancellationTokenSource = new CancellationTokenSource();
+            m_AnswersCaches = new Dictionary<ResourceRecordType, DNSCacheEntry>();
+            m_WaitingTasks = new Dictionary<ResourceRecordType, UniTask<DNSAnswer[]>>();
         }
 
         /// <summary>
@@ -101,60 +115,84 @@ namespace NovaFramework.Runtime
         /// </summary>
         public void ClearCache()
         {
-            m_AnswersCache = null;
+            m_AnswersCaches.Clear();
         }
 
         /// <summary>
-        /// 异步查询 DNS，优先返回有效缓存；若有并发查询则等待其结果；否则轮询端点直到成功。
+        /// 使用兼容入口查询 A 记录；整次查询共享由 timeout 创建的截止时间。
         /// </summary>
-        /// <param name="timeout">当前域名一次 DoH 查询的超时时间（毫秒）；所有候选地址共用该值，小于等于 0 时跳过查询。</param>
+        /// <param name="timeout">查询超时时间（毫秒）；小于等于 0 时无限等待。</param>
         /// <returns>DNS 应答数组，所有端点均失败时返回 null。</returns>
-        public async UniTask<DNSAnswer[]> QueryAsync(int timeout)
+        public UniTask<DNSAnswer[]> QueryAsync(int timeout)
         {
-            if (timeout <= 0)
+            return QueryAsync(ResourceRecordType.A, CreateQueryDeadlineUtc(timeout));
+        }
+
+        /// <summary>
+        /// 按记录类型查询 DNS；缓存、进行中任务和端点轮询均按记录类型隔离。
+        /// </summary>
+        /// <param name="recordType">要查询的 DNS 记录类型。</param>
+        /// <param name="deadlineUtc">原始域名完整解析链的 UTC 截止时间；null 表示无限等待。</param>
+        /// <returns>DNS 应答数组，截止时间耗尽或所有端点均失败时返回 null。</returns>
+        internal async UniTask<DNSAnswer[]> QueryAsync(ResourceRecordType recordType, DateTime? deadlineUtc)
+        {
+            if (m_Disposed)
             {
                 return null;
             }
 
-            if (m_AnswersCache != null)
+            if (m_AnswersCaches.TryGetValue(recordType, out DNSCacheEntry answersCache))
             {
-                if (m_AnswersCache.ExpireTime <= DateTime.Now)
+                if (answersCache.ExpireTime <= DateTime.Now)
                 {
-                    ClearCache();
+                    m_AnswersCaches.Remove(recordType);
                 }
                 else
                 {
-                    return m_AnswersCache.Answers;
+                    return answersCache.Answers;
                 }
             }
 
-            if (m_WaitingTask.Status == UniTaskStatus.Pending)
+            if (m_WaitingTasks.TryGetValue(recordType, out UniTask<DNSAnswer[]> waitingTask) &&
+                waitingTask.Status == UniTaskStatus.Pending)
             {
-                return await m_WaitingTask;
+                return await AwaitSharedQueryAsync(waitingTask, recordType, deadlineUtc);
             }
 
             UniTaskCompletionSource<DNSAnswer[]> tcs = new UniTaskCompletionSource<DNSAnswer[]>();
-            m_WaitingTask = tcs.Task;
+            m_WaitingTasks[recordType] = tcs.Task;
             DNSAnswer[] finalAnswers = null;
-            DateTime deadlineUtc = DateTime.UtcNow.AddMilliseconds(timeout);
 
             try
             {
                 foreach (string endpoint in s_EndpointsList)
                 {
-                    if (GetRemainingTimeoutMilliseconds(deadlineUtc) <= 0)
+                    if (m_Disposed)
                     {
-                        PrintWarning(endpoint, $"本次 DoH 查询超时时间已耗尽（{timeout} 毫秒）。");
                         break;
                     }
 
-                    DNSAnswer[] answers = await DoQuery(endpoint, deadlineUtc);
-                    if (answers != null && answers.Any())
+                    if (GetRemainingTimeoutMilliseconds(deadlineUtc) == 0)
                     {
-                        m_AnswersCache = new DNSCacheEntry(answers);
-                        finalAnswers = m_AnswersCache.Answers;
+                        PrintWarning(endpoint, $"{recordType} 查询已达到当前域名完整解析链的截止时间。");
                         break;
                     }
+
+                    DNSAnswer[] answers = await DoQuery(endpoint, recordType, deadlineUtc);
+                    if (answers == null)
+                    {
+                        continue;
+                    }
+
+                    if (answers.Length > 0)
+                    {
+                        DNSCacheEntry cacheEntry = new DNSCacheEntry(answers);
+                        m_AnswersCaches[recordType] = cacheEntry;
+                    }
+
+                    // NOERROR 的空 Answer 是合法结果，不能误判为当前 DoH 端点失败。
+                    finalAnswers = answers;
+                    break;
                 }
             }
             catch (Exception e)
@@ -163,7 +201,7 @@ namespace NovaFramework.Runtime
             }
             finally
             {
-                m_WaitingTask = default;
+                m_WaitingTasks.Remove(recordType);
                 tcs.TrySetResult(finalAnswers);
             }
 
@@ -171,33 +209,80 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 释放资源（目前无需清理，保留接口兼容性）。
+        /// 在当前调用方的解析链截止时间内等待已有的同类型查询，不延长当前链路的等待时间。
+        /// </summary>
+        /// <param name="waitingTask">同一主机、同一记录类型的进行中查询。</param>
+        /// <param name="recordType">正在等待的记录类型。</param>
+        /// <param name="deadlineUtc">当前原始域名解析链的 UTC 截止时间；null 表示无限等待。</param>
+        /// <returns>共享查询结果；当前链路先到期时返回 null，且不终止共享查询。</returns>
+        private async UniTask<DNSAnswer[]> AwaitSharedQueryAsync(
+            UniTask<DNSAnswer[]> waitingTask,
+            ResourceRecordType recordType,
+            DateTime? deadlineUtc)
+        {
+            int remainingTimeout = GetRemainingTimeoutMilliseconds(deadlineUtc);
+            if (remainingTimeout == 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                return remainingTimeout == System.Threading.Timeout.Infinite
+                    ? await waitingTask
+                    : await waitingTask.Timeout(TimeSpan.FromMilliseconds(remainingTimeout), DelayType.Realtime);
+            }
+            catch (TimeoutException)
+            {
+                PrintWarning("DoH", $"等待共享的 {recordType} 查询时，当前域名完整解析链已超时。");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 释放查询器，并中止仍在等待的网络请求。
         /// </summary>
         public void Dispose()
         {
+            if (m_Disposed)
+            {
+                return;
+            }
+
+            m_Disposed = true;
+            m_DisposeCancellationTokenSource.Cancel();
+            m_DisposeCancellationTokenSource.Dispose();
         }
 
         /// <summary>
         /// 向指定端点发送实际的 DoH 查询请求并解析 JSON 响应。
         /// </summary>
         /// <param name="endpoint">DoH 端点 URL。</param>
-        /// <param name="deadlineUtc">当前域名本次 DoH 查询的 UTC 截止时间，所有候选地址共用。</param>
+        /// <param name="recordType">要查询的 DNS 记录类型。</param>
+        /// <param name="deadlineUtc">原始域名完整解析链的 UTC 截止时间；null 表示无限等待。</param>
         /// <returns>解析出的 DNS 应答数组，失败时返回 null。</returns>
-        private async UniTask<DNSAnswer[]> DoQuery(string endpoint, DateTime deadlineUtc)
+        private async UniTask<DNSAnswer[]> DoQuery(
+            string endpoint,
+            ResourceRecordType recordType,
+            DateTime? deadlineUtc)
         {
             HttpWebRequest request = null;
             try
             {
                 int remainingTimeout = GetRemainingTimeoutMilliseconds(deadlineUtc);
-                if (remainingTimeout <= 0)
+                if (remainingTimeout == 0)
                 {
                     return null;
                 }
 
-                request = CreateRequest(endpoint, remainingTimeout);
-                using HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync()
-                    .AsUniTask()
-                    .Timeout(TimeSpan.FromMilliseconds(remainingTimeout), DelayType.Realtime);
+                request = CreateRequest(endpoint, remainingTimeout, recordType);
+                using CancellationTokenRegistration cancellationRegistration =
+                    m_DisposeCancellationTokenSource.Token.Register(request.Abort);
+                UniTask<WebResponse> responseTask = request.GetResponseAsync().AsUniTask();
+                WebResponse webResponse = remainingTimeout == System.Threading.Timeout.Infinite
+                    ? await responseTask
+                    : await responseTask.Timeout(TimeSpan.FromMilliseconds(remainingTimeout), DelayType.Realtime);
+                using HttpWebResponse response = (HttpWebResponse)webResponse;
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     PrintWarning(endpoint, $"状态码错误：{(int)response.StatusCode} {response.StatusDescription}。");
@@ -208,16 +293,17 @@ namespace NovaFramework.Runtime
                 if (rs != null)
                 {
                     remainingTimeout = GetRemainingTimeoutMilliseconds(deadlineUtc);
-                    if (remainingTimeout <= 0)
+                    if (remainingTimeout == 0)
                     {
                         request.Abort();
                         return null;
                     }
 
                     using StreamReader reader = new StreamReader(rs, Encoding.UTF8);
-                    string content = await reader.ReadToEndAsync()
-                        .AsUniTask()
-                        .Timeout(TimeSpan.FromMilliseconds(remainingTimeout), DelayType.Realtime);
+                    UniTask<string> readTask = reader.ReadToEndAsync().AsUniTask();
+                    string content = remainingTimeout == System.Threading.Timeout.Infinite
+                        ? await readTask
+                        : await readTask.Timeout(TimeSpan.FromMilliseconds(remainingTimeout), DelayType.Realtime);
                     return HandleJSONResponse(endpoint, content);
                 }
             }
@@ -228,7 +314,10 @@ namespace NovaFramework.Runtime
             }
             catch (Exception e)
             {
-                PrintWarning(endpoint, e.Message);
+                if (!m_Disposed)
+                {
+                    PrintWarning(endpoint, e.Message);
+                }
             }
 
             return null;
@@ -238,17 +327,23 @@ namespace NovaFramework.Runtime
         /// 构建 DoH 查询的 HttpWebRequest 对象。
         /// </summary>
         /// <param name="url">端点基础 URL。</param>
-        /// <param name="timeout">当前候选地址可用的剩余超时时间（毫秒）。</param>
+        /// <param name="timeout">当前候选地址可用的剩余超时时间（毫秒）；Timeout.Infinite 表示无限等待。</param>
+        /// <param name="recordType">要查询的 DNS 记录类型。</param>
         /// <returns>配置好的 HttpWebRequest 实例。</returns>
-        private HttpWebRequest CreateRequest(string url, int timeout)
+        private HttpWebRequest CreateRequest(string url, int timeout, ResourceRecordType recordType)
         {
             ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-            string uri = GenerateQueryUrl(url);
+            string uri = GenerateQueryUrl(url, recordType);
             HttpWebRequest request = WebRequest.CreateHttp(uri);
             request.Method = "GET";
             request.Accept = c_JsonContentType;
             request.ServerCertificateValidationCallback = (_, _, _, _) => true;
-            if (timeout > 0)
+            if (timeout == System.Threading.Timeout.Infinite)
+            {
+                request.Timeout = System.Threading.Timeout.Infinite;
+                request.ReadWriteTimeout = System.Threading.Timeout.Infinite;
+            }
+            else if (timeout > 0)
             {
                 request.Timeout = timeout;
             }
@@ -299,13 +394,14 @@ namespace NovaFramework.Runtime
         /// 生成完整的 DoH 查询 URL（含 name/type/ct/cd 参数与随机填充）。
         /// </summary>
         /// <param name="url">端点基础 URL。</param>
+        /// <param name="recordType">要查询的 DNS 记录类型。</param>
         /// <returns>完整的查询 URL 字符串。</returns>
-        private string GenerateQueryUrl(string url)
+        private string GenerateQueryUrl(string url, ResourceRecordType recordType)
         {
             Dictionary<string, string> fields = new Dictionary<string, string>
             {
                 { "name", m_HostName },
-                { "type", ResourceRecordType.A.ToString() },
+                { "type", recordType.ToString() },
                 { "ct", c_JsonContentType },
                 { "cd", "false" }
             };
@@ -355,17 +451,32 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 计算共享截止时间的剩余毫秒数。
         /// </summary>
-        /// <param name="deadlineUtc">UTC 截止时间。</param>
-        /// <returns>剩余毫秒数；截止时间已到时返回 0。</returns>
-        private static int GetRemainingTimeoutMilliseconds(DateTime deadlineUtc)
+        /// <param name="deadlineUtc">UTC 截止时间；null 表示无限等待。</param>
+        /// <returns>剩余毫秒数；无限等待返回 Timeout.Infinite，截止时间已到时返回 0。</returns>
+        private static int GetRemainingTimeoutMilliseconds(DateTime? deadlineUtc)
         {
-            double remainingMilliseconds = (deadlineUtc - DateTime.UtcNow).TotalMilliseconds;
+            if (!deadlineUtc.HasValue)
+            {
+                return System.Threading.Timeout.Infinite;
+            }
+
+            double remainingMilliseconds = (deadlineUtc.Value - DateTime.UtcNow).TotalMilliseconds;
             if (remainingMilliseconds <= 0)
             {
                 return 0;
             }
 
             return (int)Math.Min(int.MaxValue, Math.Ceiling(remainingMilliseconds));
+        }
+
+        /// <summary>
+        /// 根据兼容入口的超时毫秒数创建一次绝对截止时间。
+        /// </summary>
+        /// <param name="timeout">超时时间（毫秒）；小于等于 0 表示无限等待。</param>
+        /// <returns>UTC 截止时间；无限等待时返回 null。</returns>
+        private static DateTime? CreateQueryDeadlineUtc(int timeout)
+        {
+            return timeout > 0 ? DateTime.UtcNow.AddMilliseconds(timeout) : (DateTime?)null;
         }
 
         /// <summary>

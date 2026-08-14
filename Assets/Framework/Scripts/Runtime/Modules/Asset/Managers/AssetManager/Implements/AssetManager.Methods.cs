@@ -32,44 +32,6 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// Host/Web 模式初始化前触发 DoH 检测。YooAsset 仍使用原域名，避免破坏 Host/SNI。
-        /// </summary>
-        private async UniTask PreflightRemoteUrlsAsync(string package, CancellationToken ct)
-        {
-            AssetPlayMode effectiveMode = Application.isEditor
-                ? m_Config.EditorPlayMode
-                : m_Config.RuntimePlayMode;
-            if (effectiveMode != AssetPlayMode.HostPlayMode && effectiveMode != AssetPlayMode.WebPlayMode)
-            {
-                return;
-            }
-
-            IDoHManager doHManager = FrameworkManagersGroup.GetManager<IDoHManager>();
-            if (doHManager == null)
-            {
-                return;
-            }
-
-            AssetRemoteService remote = CreateRemoteService(package);
-            for (int i = 0; i < remote.BaseUrls.Count; i++)
-            {
-                ct.ThrowIfCancellationRequested();
-                try
-                {
-                    await doHManager.BuildRequestUrlCandidatesAsync(remote.BaseUrls[i], false);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception exception)
-                {
-                    Log.Warning(LogTag.Asset, "远端资源地址 DoH 预检失败，将继续使用原始域名。URL={0}, Error={1}", remote.BaseUrls[i], exception.Message);
-                }
-            }
-        }
-
-        /// <summary>
         /// 在 YooAsset 包初始化前执行一次可选启动白名单检查。
         /// 任意配置、缓存、网络或协议异常均按未命中降级，不阻断现有热更新链路。
         /// </summary>

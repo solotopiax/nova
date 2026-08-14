@@ -26,6 +26,16 @@ namespace NovaFramework.Runtime
         void Initialize(DoHManagerConfig config);
 
         /// <summary>
+        /// 当前运行时是否实际启用 DoH；传输不具备安全 IP 注入能力时为 false。
+        /// </summary>
+        bool IsEnabled { get; }
+
+        /// <summary>
+        /// 在当前进程内禁用 DoH，后续请求改用系统 DNS。
+        /// </summary>
+        void DisableForRuntime();
+
+        /// <summary>
         /// 遍历所有 HostKey URL，异步预热各域名的 IP 地址。
         /// </summary>
         /// <param name="urls">HostKey URL 集合。</param>

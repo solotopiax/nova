@@ -376,7 +376,8 @@ namespace NovaFramework.Runtime
                 isSuccess ? null : request.error,
                 isSuccess,
                 downloadedBytes,
-                totalBytes);
+                totalBytes,
+                DetermineDeliveryState(request, request.error));
         }
 
         /// <summary>
@@ -398,7 +399,59 @@ namespace NovaFramework.Runtime
                 error,
                 false,
                 downloadedBytes,
-                ReadTotalBytes(headers, rawData?.LongLength ?? -1L));
+                ReadTotalBytes(headers, rawData?.LongLength ?? -1L),
+                DetermineDeliveryState(request, error));
+        }
+
+        /// <summary>
+        /// 只把能够明确定位在 DNS、TLS 或 TCP 建连阶段的错误标记为未到达服务器，超时与连接中断保持无法确认。
+        /// </summary>
+        /// <param name="request">当前 UnityWebRequest。</param>
+        /// <param name="error">Unity 返回或框架补充的错误描述。</param>
+        /// <returns>单次请求的到达状态。</returns>
+        private static HttpDeliveryState DetermineDeliveryState(UnityWebRequest request, string error)
+        {
+            if (request != null && request.responseCode > 0)
+            {
+                return HttpDeliveryState.ServerResponded;
+            }
+
+            string message = error ?? string.Empty;
+            if (ContainsAnyNetworkKeyword(
+                    message,
+                    "could not resolve",
+                    "cannot resolve",
+                    "name resolution",
+                    "dns",
+                    "certificate",
+                    "ssl",
+                    "tls",
+                    "failed to connect",
+                    "could not connect",
+                    "cannot connect",
+                    "connection refused",
+                    "no route to host"))
+            {
+                return HttpDeliveryState.NotReachedServer;
+            }
+
+            return HttpDeliveryState.Unknown;
+        }
+
+        /// <summary>
+        /// 忽略大小写判断错误文本是否包含任一明确的网络阶段关键词。
+        /// </summary>
+        private static bool ContainsAnyNetworkKeyword(string value, params string[] keywords)
+        {
+            for (int i = 0; i < keywords.Length; i++)
+            {
+                if (value.IndexOf(keywords[i], StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

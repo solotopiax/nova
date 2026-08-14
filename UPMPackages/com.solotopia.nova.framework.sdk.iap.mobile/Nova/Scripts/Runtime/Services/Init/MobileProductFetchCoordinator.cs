@@ -85,7 +85,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         private CancellationTokenSource m_ProductFetchRetryCts;
 
         /// <summary>
-        /// 后置 Restore / FetchPurchases 流程是否已经触发过。
+        /// 商品成功后置流程是否已经触发过。
         /// </summary>
         private bool m_HasCompletedPostFetchFlow;
 

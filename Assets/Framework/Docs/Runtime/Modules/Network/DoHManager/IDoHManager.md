@@ -51,9 +51,9 @@ DNSAnswer[] DNSAnswers { get; }
 ```
 
 `DNSQuery` / `GetHostName` / `BuildRequestUrlCandidatesAsync` 接受 HTTP、HTTPS、WS、WSS 绝对 URL。
-候选规划在 DoH 关闭、URL 无效、host 为 `localhost` 或 IP literal 时只返回原始 URL；可查询域名会优先读取缓存，未命中时等待一次 `DNSQuery` 并重读缓存。只有 `canUseIpCandidate = true` 才会生成 IP URL，原始 URL 始终在列表末尾保留一次。
+候选规划在 DoH 关闭、URL 无效、host 为 `localhost` 或 IP literal 时只返回原始 URL；可查询域名会优先读取缓存，未命中时等待一次 `DNSQuery` 并重读缓存。只有 `canUseIpCandidate = true` 才会生成 IP URL，原始 URL 始终在列表末尾保留一次。该 API 为兼容既有调用而保留，业务 HTTPS 不应用它直接改写 URL 为 IP。
 
-启动预热覆盖全部 HostKey，不要求 HostKey 已被 NetCmd 引用。HostKey 范围外经 HTTP、Asset 或 WebSocket 链路出现的 URL 会在运行时缓存未命中时按需查询，并以 `RuntimeDiscovered` 来源加入 `ResolutionRoots`。
+启动预热覆盖全部 HostKey，不要求 HostKey 已被 NetCmd 引用。Framework 的 DoH 路由范围仅为 `HostKey + NetCmd` 业务请求；资源下载/CDN、热更新、WebSocket 和第三方 SDK 不会因本接口进入 DoH 路由。
 
 ## 关联文档
 

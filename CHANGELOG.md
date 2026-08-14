@@ -6,6 +6,23 @@
 
 ---
 
+## [0.6.12] - 2026-08-14
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.12]` 节。
+
+### Breaking
+
+- 网络公共 `INetworkManager` / `IDoHManager` 契约新增主备 URL 解析与运行时 DoH 开关方法；自定义实现需重新编译并补齐实现。
+
+### Added
+
+- 发布 Framework `0.6.12`、BestHTTP 适配包 `0.1.6` 与 IAP Mobile `0.1.8`。
+- 业务网络支持主备域名、DoH IPv4 候选和保留原域名 Host/SNI 的指定连接 IP 路由；Nova 安装或升级后自动投影项目组 Skill。
+
+### Fixed
+
+- IAP Mobile 启动和订阅到期刷新不再触发 iOS 平台恢复购买弹窗。
+
 ## [0.6.11] - 2026-08-13
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.11]` 节。

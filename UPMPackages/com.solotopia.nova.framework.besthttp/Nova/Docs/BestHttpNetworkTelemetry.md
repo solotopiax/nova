@@ -2,18 +2,18 @@
 
 ## 1. 目标与边界
 
-Best HTTP 3.0.19 与 Best TLS Security 3.0.5 在商业库内部采集请求生命周期和底层结构化错误；商业库只依赖后端无关的 `IBestHttpTelemetrySink`，不依赖 Nova、TGA 或其他上报框架。
+Best HTTP 3.0.19 与 Best TLS Security 3.0.5 的内部版在商业库内部采集请求生命周期和底层结构化错误；商业库通过只使用 BCL 类型的 `EventHandler` 委托输出事件，不依赖 Nova、TGA 或其他上报框架。
 
-`com.solotopia.nova.framework.besthttp` 负责在运行时自动注册 sink，并将事件原样扇出到 Nova 中所有已初始化且可用的 `ITrackPlugin`。单个插件异常会被隔离，不改变网络请求结果。
+`com.solotopia.nova.framework.besthttp` 通过反射检测并注册该委托，将事件原样扇出到 Nova 中所有已初始化且可用的 `ITrackPlugin`。官方原版没有该委托时会静默跳过遥测，不影响网络请求；单个插件异常也会被隔离。
 
 与 Girl v2 的关键差异：Girl 事件描述业务 fallback 链；本契约描述一个 BestHTTP `HTTPRequest` 及其物理 attempt。DoH provider/cache/preheat、业务命令、业务候选域名和 fallback 轮次不是商业库可可靠获知的事实，需要业务方通过 `TelemetryContext` 扩展字段关联。
 
 ## 2. 开关与自动注册
 
 - Network Inspector 的 HTTP 区域提供“启用 BestHTTP 网络埋点”，默认开启。
-- 仅检测到包含 `Best.HTTP.Telemetry.BestHttpTelemetry` 的商业库时可编辑；其他情况下置灰且不可点击。
+- 仅检测到签名匹配的 `Best.HTTP.Telemetry.BestHttpTelemetry.EventHandler` 时可编辑；官方原版或旧内部版会置灰且不可点击。
 - 开关关闭后，新事件不缓存、不派发，并清空尚未上报的启动期缓存。
-- 适配包在 `AfterAssembliesLoaded` 同步注册 sink 和启动缓存入口，不要求业务写初始化代码。
+- 适配包在 `AfterAssembliesLoaded` 通过反射同步注册委托和启动缓存入口，不要求业务写初始化代码。
 - SDK 就绪监听延后到 `BeforeSceneLoad` 启动，确保 UniTask 已完成 PlayerLoop 注入；两个阶段之间的事件仍进入启动缓存。
 - SDK 尚未初始化时最多缓存 128 条事件，满载淘汰最旧事件；SDK 就绪后按 FIFO 派发。
 - 每个插件获得独立属性字典，插件修改参数不会污染其他插件。

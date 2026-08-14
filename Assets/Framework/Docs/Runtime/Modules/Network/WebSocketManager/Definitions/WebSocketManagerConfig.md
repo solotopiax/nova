@@ -26,7 +26,7 @@ WebSocket 管理器配置类，用于 `WebSocketManager.Initialize()` 时传入�
 | `EnableAutoReconnect` | `bool` | `true` | 是否启用自动重连机制 |
 | `AutoReconnectFailedUIAssetLocation` | `string` | `null` | 自动重连失败提示界面的 Asset 地址；当前配置会被透传，但 `WebSocketManager` 运行时尚未消费 |
 | `CoroutineRunner` | `ICoroutineRunner` | `null` | 协程运行器接口，由 NetworkComponent 注入 |
-| `DoHManager` | `IDoHManager` | `null` | DoH 管理器接口，由 NetworkComponent 注入，用于连接前 detect-only 预检 |
+| `DoHManager` | `IDoHManager` | `null` | DoH 管理器接口，由 NetworkComponent 注入，仅保留配置注入兼容性；WebSocket 不参与业务 DoH IP 路由 |
 | `SpecialMessageCreator` | `Func<NetChannelType, string, NetMessageBase>` | `null` | 特殊消息创建委托（心跳/认证消息），messageCategory 值为 `"heartbeat"` 或 `"authenticate"` |
 
 ## 公开 API

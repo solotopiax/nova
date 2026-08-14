@@ -56,7 +56,7 @@ namespace NovaFramework.Runtime
         private ICoroutineRunner m_CoroutineRunner;
 
         /// <summary>
-        /// DoH 管理器接口，由初始化配置注入。
+        /// DoH 管理器接口，由初始化配置注入；当前 WebSocket 不参与业务 DoH IP 路由。
         /// </summary>
         private IDoHManager m_DoHManager;
 

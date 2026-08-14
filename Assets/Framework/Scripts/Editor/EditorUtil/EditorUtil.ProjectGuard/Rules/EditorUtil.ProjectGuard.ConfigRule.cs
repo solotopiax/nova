@@ -40,6 +40,9 @@ namespace NovaFramework.Editor
             /// <summary>
             /// 从当前 Scene 的 ConfigComponent 读取运行时地址，并沿 WorkspaceActive 锚点定位配置来源。
             /// </summary>
+            /// <param name="configComponent">场景中启用的配置组件。</param>
+            /// <param name="scenePath">关联场景路径。</param>
+            /// <param name="report">问题收集报告。</param>
             private static void ValidateConfigComponent(ConfigComponent configComponent, string scenePath,
                 NovaGuardReport report)
             {
@@ -47,9 +50,10 @@ namespace NovaFramework.Editor
                 string assetLocation = componentObject.FindProperty("m_AssetLocation")?.stringValue;
                 if (string.IsNullOrWhiteSpace(assetLocation))
                 {
-                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
-                        "启动配置未就绪：ConfigComponent.m_AssetLocation 为空。请在 Nova.prefab 的 ConfigComponent 中配置 ConfigRuntimeSO Asset 地址。",
-                        scenePath));
+                    AddConfigSourceIssue(report,
+                        "Nova.prefab 还没有填写运行时配置地址。",
+                        "在 Nova.prefab 的 ConfigComponent 中填写 ConfigRuntimeSO Asset 地址。",
+                        "技术信息：ConfigComponent.m_AssetLocation 为空。", scenePath);
                     return;
                 }
 
@@ -59,15 +63,20 @@ namespace NovaFramework.Editor
             /// <summary>
             /// 以工程级激活 ConfigMaster 为唯一设计态锚点，并通过 ExportTarget 精确定位运行时导出物。
             /// </summary>
+            /// <param name="assetLocation">ConfigComponent 声明的运行时配置地址。</param>
+            /// <param name="master">当前激活的项目配置。</param>
+            /// <param name="scenePath">关联场景路径。</param>
+            /// <param name="report">问题收集报告。</param>
             private static void ValidateConfigSource(string assetLocation, ConfigMasterSO master,
                 string scenePath, NovaGuardReport report)
             {
                 if (master == null)
                 {
-                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
-                        "启动配置来源未就绪：当前工程未激活 ConfigMasterSO。请打开 Nova/Open Config 选择当前项目配置。\n" +
-                        $"配置出处：{scenePath} → ConfigComponent.m_AssetLocation",
-                        scenePath));
+                    AddConfigSourceIssue(report,
+                        "当前项目还没有选择配置。",
+                        "打开 Nova/Open Config，选择当前项目配置。",
+                        $"技术信息：当前工程未激活 ConfigMasterSO。\n配置出处：{scenePath} → ConfigComponent.m_AssetLocation",
+                        scenePath);
                     return;
                 }
 
@@ -75,22 +84,24 @@ namespace NovaFramework.Editor
                 ConfigRuntimeSO runtime = master.ExportTarget;
                 if (runtime == null)
                 {
-                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
-                        "启动配置来源未就绪：当前激活 ConfigMasterSO.ExportTarget 为空。请打开 Nova/Open Config 配置并导出运行时配置。\n" +
+                    AddConfigSourceIssue(report,
+                        "当前项目配置还没有设置导出目标。",
+                        "打开 Nova/Open Config，设置导出目标后重新导出。",
+                        $"技术信息：当前激活 ConfigMasterSO.ExportTarget 为空。\n" +
                         $"设计态来源：{DisplayPath(masterPath)}\n" +
-                        $"配置出处：{scenePath} → ConfigComponent.m_AssetLocation",
-                        masterPath));
+                        $"配置出处：{scenePath} → ConfigComponent.m_AssetLocation", masterPath);
                     return;
                 }
 
                 string runtimePath = AssetDatabase.GetAssetPath(runtime);
                 if (!string.Equals(runtime.name, assetLocation, StringComparison.Ordinal))
                 {
-                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
-                        $"启动配置未就绪：ConfigComponent.m_AssetLocation 为 [{assetLocation}]，但当前激活 ConfigMasterSO.ExportTarget 指向 [{runtime.name}]。\n" +
+                    AddConfigSourceIssue(report,
+                        "启动场景指定的配置与当前项目配置不一致。",
+                        "打开 Nova/Open Config，确认导出目标，并让 Nova.prefab 使用同一份运行时配置。",
+                        $"技术信息：ConfigComponent.m_AssetLocation 为 [{assetLocation}]，但当前激活 ConfigMasterSO.ExportTarget 指向 [{runtime.name}]。\n" +
                         $"配置出处：{scenePath} → ConfigComponent.m_AssetLocation\n" +
-                        $"设计态来源：{DisplayPath(masterPath)}\n运行时导出：{DisplayPath(runtimePath)}",
-                        runtimePath));
+                        $"设计态来源：{DisplayPath(masterPath)}\n运行时导出：{DisplayPath(runtimePath)}", runtimePath);
                     return;
                 }
 
@@ -160,9 +171,10 @@ namespace NovaFramework.Editor
             {
                 if (runtime == null)
                 {
-                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
-                        "启动配置未就绪：未找到当前 Demo 实际使用的 ConfigRuntimeSO。请检查 ConfigComponent.m_AssetLocation 与配置导出结果。",
-                        runtimePath));
+                    AddConfigSourceIssue(report,
+                        "找不到启动场景需要的运行时配置。",
+                        "检查 Nova.prefab 的 ConfigComponent 地址和配置导出结果。",
+                        "技术信息：未找到当前 Demo 实际使用的 ConfigRuntimeSO。", runtimePath);
                     return;
                 }
 
@@ -201,23 +213,30 @@ namespace NovaFramework.Editor
             /// <summary>
             /// 校验设计态 AppConfigs 与运行时导出物是否一致，避免项目组修改 ConfigMasterSO 后漏点导出。
             /// </summary>
+            /// <param name="runtime">当前运行时配置。</param>
+            /// <param name="master">当前激活的项目配置。</param>
+            /// <param name="runtimePath">运行时导出资产路径。</param>
+            /// <param name="masterPath">对应 ConfigMasterSO 设计态来源路径。</param>
+            /// <param name="report">问题收集报告。</param>
             private static void ValidateConfigExport(ConfigRuntimeSO runtime, ConfigMasterSO master,
                 string runtimePath, string masterPath, NovaGuardReport report)
             {
                 if (master == null)
                 {
-                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
-                        $"启动配置来源未就绪：找不到导出到 {DisplayPath(runtimePath)} 的 ConfigMasterSO。请检查 ConfigMasterSO.ExportTarget。",
-                        runtimePath));
+                    AddConfigSourceIssue(report,
+                        "找不到运行时配置对应的项目配置。",
+                        "打开 Nova/Open Config，确认当前项目配置的导出目标。",
+                        $"技术信息：找不到导出到 {DisplayPath(runtimePath)} 的 ConfigMasterSO。", runtimePath);
                     return;
                 }
 
                 if (master.ExportTarget != runtime)
                 {
-                    report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error,
-                        $"启动配置导出目标不一致：ConfigMasterSO.ExportTarget 未指向当前 Demo 使用的 ConfigRuntimeSO。\n" +
-                        $"设计态来源：{DisplayPath(masterPath)}\n运行时导出：{DisplayPath(runtimePath)}",
-                        runtimePath));
+                    AddConfigSourceIssue(report,
+                        "当前项目配置的导出目标与启动场景使用的配置不一致。",
+                        "打开 Nova/Open Config，确认导出目标，并让 Nova.prefab 使用同一份运行时配置。",
+                        $"技术信息：ConfigMasterSO.ExportTarget 未指向当前 Demo 使用的 ConfigRuntimeSO。\n" +
+                        $"设计态来源：{DisplayPath(masterPath)}\n运行时导出：{DisplayPath(runtimePath)}", runtimePath);
                     return;
                 }
 
@@ -397,7 +416,7 @@ namespace NovaFramework.Editor
                     AddConfigIssue(report, "NOVA-CONFIG-003", runtime, runtimePath, masterPath,
                         $"PrivacyConfigs.{fieldName}",
                         $"当前 {byteCount} 字节，必须为 {c_AesSecretByteLength} 字节 UTF-8 字符串。",
-                        $"Nova/Open Config → 通用配置 → 隐私配置 → {fieldName}", ConfigNavigationSection.Privacy);
+                        PrivacyConfigEntry(fieldName), ConfigNavigationSection.Privacy);
                 }
             }
 
@@ -470,6 +489,24 @@ namespace NovaFramework.Editor
             {
                 AddConfigIssue(report, "NOVA-CONFIG-002", runtime, runtimePath, masterPath, fieldPath,
                     "仍为公开包占位符。请配置项目真实参数并重新导出。", configEntry);
+            }
+
+            /// <summary>
+            /// 添加启动配置来源问题，前两行固定提供面板所需的人话摘要，后续行保留完整技术诊断。
+            /// </summary>
+            /// <param name="report">问题收集报告。</param>
+            /// <param name="summary">项目成员可直接理解的问题摘要。</param>
+            /// <param name="action">可直接执行的处理方式。</param>
+            /// <param name="technicalDetails">仅供 Console 与 Editor.log 使用的技术细节。</param>
+            /// <param name="assetPath">关联的配置或场景路径。</param>
+            private static void AddConfigSourceIssue(NovaGuardReport report, string summary, string action,
+                string technicalDetails, string assetPath)
+            {
+                string message = $"启动配置未准备好：{summary}\n处理方式：{action}";
+                if (!string.IsNullOrWhiteSpace(technicalDetails))
+                    message += $"\n{technicalDetails}";
+
+                report.Add(new NovaGuardIssue("NOVA-CONFIG-001", NovaGuardSeverity.Error, message, assetPath));
             }
 
             /// <summary>
@@ -561,10 +598,26 @@ namespace NovaFramework.Editor
                 => !string.IsNullOrEmpty(value) && value.IndexOf("YOUR_", StringComparison.Ordinal) >= 0;
 
             /// <summary>
-            /// 返回应用配置字段在 ConfigWindow 中的精确导航路径。
+            /// 返回应用配置字段的 ConfigWindow 实际显示路径，字段名称与 SerializedProperty.displayName 同源。
             /// </summary>
             private static string AppConfigEntry(string fieldName)
-                => $"Nova/Open Config → 通用配置 → 应用配置 → {fieldName}";
+                => $"Nova/Open Config → 通用配置 → 应用配置 → {ObjectNames.NicifyVariableName(fieldName)}";
+
+            /// <summary>
+            /// 返回隐私 AES 字段的 ConfigWindow 实际显示路径；标签与隐私配置面板的显式标签保持一致。
+            /// </summary>
+            private static string PrivacyConfigEntry(string fieldName)
+            {
+                switch (fieldName)
+                {
+                    case "AESKey":
+                        return "Nova/Open Config → 通用配置 → 隐私配置 → AES-Key";
+                    case "AESIV":
+                        return "Nova/Open Config → 通用配置 → 隐私配置 → AES-IV";
+                    default:
+                        return $"Nova/Open Config → 通用配置 → 隐私配置 → {ObjectNames.NicifyVariableName(fieldName)}";
+                }
+            }
 
             /// <summary>
             /// 将空资产路径转成可读占位说明。

@@ -60,14 +60,14 @@ internal sealed partial class MobileInitService
 | `m_HasProduct` | `Func<string, bool>` | 构造器注入 | `private readonly` | 判断指定平台商品 ID 当前是否已经存在于 StoreController |
 | `m_ClearUnavailableSkus` | `Action` | 构造器注入 | `private readonly` | 清空旧不可用 SKU 缓存 |
 | `m_AddUnavailableSku` | `Action<string>` | 构造器注入 | `private readonly` | 写入当前仍缺失 SKU 到不可用集合 |
-| `m_OnPostFetchCompleted` | `Action` | 构造器注入 | `private readonly` | 商品首次进入成功态后触发 Restore 和已有购买拉取 |
+| `m_OnPostFetchCompleted` | `Action` | 构造器注入 | `private readonly` | 商品首次进入成功态后触发已有购买拉取和延迟权益刷新 |
 | `m_DelayAsync` | `Func<int, CancellationToken, UniTask>` | `DefaultDelayAsync` | `private readonly` | 延迟执行商品重试；测试可替换 |
 | `m_RetryDelaysMs` | `IReadOnlyList<int>` | `MobileStoreConfig.ProductFetchRetryDelaysMs` 或默认 `2s/5s/10s` | `private readonly` | 当前协调器使用的商品拉取重试延迟表；外部传入为空或包含非正数时回落默认值 |
 | `State` | `MobileProductFetchState` | `None` | `internal get` | 当前商品拉取状态 |
 | `RetryIndex` | `int` | `0` | `internal get` | 已调度的商品拉取重试次数；默认延迟表为 2s / 5s / 10s |
 | `m_ProductFetchTcs` | `UniTaskCompletionSource<MobileProductFetchState>` | `null` | `private` | 商品拉取完成信号，桥接 OnProductsFetched / OnProductsFetchFailed 到等待方 |
 | `m_ProductFetchRetryCts` | `CancellationTokenSource` | `null` | `private` | 商品拉取失败后的延迟重试取消源；成功、初始化失败或 Dispose 时取消 |
-| `m_HasCompletedPostFetchFlow` | `bool` | `false` | `private` | 确保 Restore / FetchPurchases 后续流程只在首次进入成功态时触发 |
+| `m_HasCompletedPostFetchFlow` | `bool` | `false` | `private` | 确保商品成功后置流程只在首次进入成功态时触发 |
 
 ### MobileRuntimeContext
 
@@ -171,9 +171,9 @@ MobileProductFetchState 重入规则：
 | 回调顺序 / 场景 | 状态处理 | SKU 处理 | 后续流程 |
 |---|---|---|---|
 | 全失败 | `ProductFetchState=Failed` | 将 Controller 仍缺失的失败 SKU 写入不可用集合 | 调度下一轮重试，最多 3 次 |
-| 失败后成功 | `ProductFetchState=Succeeded` | 成功时清理旧失败 SKU，并按 Controller 状态恢复仍缺失 pending SKU | 触发一次 Restore / FetchPurchases |
-| 成功后迟到失败 | 保持 `Succeeded` | 只补写 Controller 仍缺失的 SKU | 不重试，不重复触发 Restore / FetchPurchases |
-| 部分成功（失败数 < 请求数） | 视为 `Succeeded` | 只保留 Controller 仍缺失 SKU | 停止重试并触发 Restore / FetchPurchases |
+| 失败后成功 | `ProductFetchState=Succeeded` | 成功时清理旧失败 SKU，并按 Controller 状态恢复仍缺失 pending SKU | 触发一次 FetchPurchases 和延迟权益刷新 |
+| 成功后迟到失败 | 保持 `Succeeded` | 只补写 Controller 仍缺失的 SKU | 不重试，不重复触发商品成功后置流程 |
+| 部分成功（失败数 < 请求数） | 视为 `Succeeded` | 只保留 Controller 仍缺失 SKU | 停止重试并触发 FetchPurchases 和延迟权益刷新 |
 
 该规则避免两类问题：旧失败 SKU 在重试成功后继续拦截购买；Unity IAP 迟到失败回调把已进入 Controller 的商品重新标记为不可买。
 
@@ -203,7 +203,7 @@ MobileStore.InitializeAsync
         │               IsReady=true
         │               m_InitTcs.TrySetResult(true)
         │               MobileProductFetchCoordinator.StartFetchIfAllowed()
-        │               → OnProductsFetched 清理旧失败 SKU，并按 Controller 状态恢复仍缺失的 pending SKU，标记 ProductFetchState=Succeeded 后调用 RestoreTransactions() + FetchPurchases()
+        │               → OnProductsFetched 清理旧失败 SKU，并按 Controller 状态恢复仍缺失的 pending SKU，标记 ProductFetchState=Succeeded 后补跑延迟权益刷新并调用 FetchPurchases()
         │               → OnProductsFetchFailed 先物化失败快照，只记录 StoreController 当前仍缺失的 SKU；整体失败时按 MobileStoreConfig.ProductFetchRetryDelaysMs 自动重试，默认 2s/5s/10s；任一成功回调会取消后续重试
         │               → OnPurchasesFetched 路由到 RestoreService 恢复 PendingOrder 票据
         │     → Connect 抛出异常 → FailInitialization(StoreConnectException)
@@ -230,7 +230,7 @@ MobileInitService 在旧版中直接持有 `IStoreController / IExtensionProvide
 
 **误区 3：OnProductsFetchFailed 会回退初始化结果**
 
-商品拉取已经从初始化阻塞链路中拆出，并进一步收口到 `MobileProductFetchCoordinator`。`OnProductsFetchFailed` 不会把已经连接成功的商店回退为初始化失败；它会先物化 Unity IAP 失败回调，再检查 `StoreController` 当前是否已能查询到对应商品，只把仍缺失的 SKU 写入 `m_UnavailableSkus`。整体失败时会按 `MobileStoreConfig.ProductFetchRetryDelaysMs` 自动重试，默认 2s / 5s / 10s 共 3 次。配置为空或包含非正数时回落默认值并打印中文警告日志。若任一轮收到 `OnProductsFetched`，或失败回调中的失败数量小于本轮请求数量，即认为至少有商品信息已可用，取消后续重试并触发 Restore / FetchPurchases。成功态下迟到的失败回调只补记录真实缺失 SKU，不回退状态、不重试、不重复触发 Restore / FetchPurchases。
+商品拉取已经从初始化阻塞链路中拆出，并进一步收口到 `MobileProductFetchCoordinator`。`OnProductsFetchFailed` 不会把已经连接成功的商店回退为初始化失败；它会先物化 Unity IAP 失败回调，再检查 `StoreController` 当前是否已能查询到对应商品，只把仍缺失的 SKU 写入 `m_UnavailableSkus`。整体失败时会按 `MobileStoreConfig.ProductFetchRetryDelaysMs` 自动重试，默认 2s / 5s / 10s 共 3 次。配置为空或包含非正数时回落默认值并打印中文警告日志。若任一轮收到 `OnProductsFetched`，或失败回调中的失败数量小于本轮请求数量，即认为至少有商品信息已可用，取消后续重试并触发 FetchPurchases 和延迟权益刷新。成功态下迟到的失败回调只补记录真实缺失 SKU，不回退状态、不重试、不重复触发商品成功后置流程。启动期不会调用 `RestoreTransactions`，该平台 Restore 入口仅在用户主动恢复购买时触发。
 
 **误区 4：同一个平台 ProductID 需要重复注册给 Unity IAP**
 

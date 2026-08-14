@@ -65,9 +65,9 @@ namespace NovaFramework.Runtime
         private Dictionary<string, ITable> m_NetworkDatas;
 
         /// <summary>
-        /// 域名运行时缓存，<HostKey 名称, Host URL>，从 Luban JSON 中提取。
+        /// 域名运行时缓存，<HostKey 名称, 主备基础地址>，从 Luban JSON 中提取。
         /// </summary>
-        private Dictionary<string, string> m_HostKeyCache;
+        private Dictionary<string, HostKeyCacheEntry> m_HostKeyCache;
 
         /// <summary>
         /// 指令运行时缓存，<"表类型名.Cmd名称", CmdCacheEntry>，复合键避免跨表同名冲突。
@@ -114,6 +114,22 @@ namespace NovaFramework.Runtime
             /// 接口路径，与 HostKey URL 拼接成完整 URL。
             /// </summary>
             public string Path;
+        }
+
+        /// <summary>
+        /// HostKey 主备基础地址缓存；地址在加载时完成运行时兜底校验。
+        /// </summary>
+        private struct HostKeyCacheEntry
+        {
+            /// <summary>
+            /// 有效主域名基础地址；原主域名无效时可由备用域名顶替。
+            /// </summary>
+            public string Primary;
+
+            /// <summary>
+            /// 有效备用域名基础地址；未配置、无效或与主域名重复时为空。
+            /// </summary>
+            public string Fallback;
         }
     }
 }

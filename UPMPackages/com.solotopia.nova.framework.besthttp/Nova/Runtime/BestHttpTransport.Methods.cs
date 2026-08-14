@@ -10,6 +10,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Reflection;
 using System.Threading;
 #if NOVA_BEST_HTTP
 using Best.HTTP;
@@ -24,6 +26,66 @@ namespace NovaFramework.BestHTTP.Runtime
     internal sealed partial class BestHttpTransport
     {
 #if NOVA_BEST_HTTP
+        /// <summary>
+        /// 每个进程只检测一次内部 BestHTTP 的 SetIPAddress，并缓存开放实例委托供后续请求直接调用。
+        /// </summary>
+        private static void EnsureIPAddressCapability()
+        {
+            if (s_IPAddressCapabilityChecked)
+            {
+                return;
+            }
+
+            lock (s_IPAddressCapabilityLock)
+            {
+                if (s_IPAddressCapabilityChecked)
+                {
+                    return;
+                }
+
+                try
+                {
+                    MethodInfo method = typeof(HTTPRequest).GetMethod(
+                        "SetIPAddress",
+                        BindingFlags.Instance | BindingFlags.Public,
+                        null,
+                        new[] { typeof(IPAddress[]) },
+                        null);
+                    if (method != null)
+                    {
+                        s_SetIPAddress = (Action<HTTPRequest, IPAddress[]>)Delegate.CreateDelegate(
+                            typeof(Action<HTTPRequest, IPAddress[]>),
+                            null,
+                            method);
+                    }
+
+                    s_IPAddressRoutingUnavailableReason = s_SetIPAddress == null
+                        ? MissingSetIPAddressWarning
+                        : null;
+                }
+                catch (Exception exception)
+                {
+                    DisableIPAddressRouting(exception);
+                }
+                finally
+                {
+                    s_IPAddressCapabilityChecked = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// SetIPAddress 检测或调用失败后关闭本进程的 IP 路由能力，并保存固定中文原因。
+        /// </summary>
+        /// <param name="exception">导致能力不可用的真实异常。</param>
+        private static void DisableIPAddressRouting(Exception exception)
+        {
+            s_SetIPAddress = null;
+            s_IPAddressRoutingUnavailableReason = Txt.Format(
+                "DoH 已配置为启用，但调用 BestHTTP 的 SetIPAddress 时发生异常，无法继续指定连接 IP，运行时已自动禁用 DoH 并改用系统 DNS。异常原因：{0}。",
+                exception?.GetBaseException().Message ?? "未知异常");
+        }
+
         private void ApplyTimeoutSettings(HTTPRequest request, float requestTimeout, float connectTimeout)
         {
             float effectiveRequestTimeout = requestTimeout < 0f ? m_RequestTimeout : requestTimeout;
@@ -75,13 +137,69 @@ namespace NovaFramework.BestHTTP.Runtime
             catch (OperationCanceledException)
             {
                 request.Abort();
-                return HttpResponse.Create(0, null, null, null, cancelledMessage, false, 0, -1L);
+                return HttpResponse.Create(0, null, null, null, cancelledMessage, false, 0, -1L, HttpDeliveryState.Unknown);
             }
             catch (AsyncHTTPException e)
             {
                 Log.Warning(LogTag.Http, "{0}：{1}，URL：{2}。", exceptionLogPrefix, e.Message, url);
-                return HttpResponse.Create(e.StatusCode, e.Content, null, null, e.Message, false, 0, -1L);
+                return HttpResponse.Create(
+                    e.StatusCode,
+                    e.Content,
+                    null,
+                    null,
+                    e.Message,
+                    false,
+                    0,
+                    -1L,
+                    DetermineDeliveryState(request, e));
             }
+        }
+
+        /// <summary>
+        /// 根据 BestHTTP 已知状态区分确定未发送与结果无法确认；正式 HTTP 状态码由 HttpResponse 自动判为已响应。
+        /// </summary>
+        private static HttpDeliveryState DetermineDeliveryState(HTTPRequest request, Exception exception)
+        {
+            if (request != null && request.State == HTTPRequestStates.ConnectionTimedOut)
+            {
+                return HttpDeliveryState.NotReachedServer;
+            }
+
+            string message = exception?.GetBaseException().Message ?? string.Empty;
+            if (ContainsNetworkKeyword(
+                    message,
+                    "dns",
+                    "resolve",
+                    "name resolution",
+                    "certificate",
+                    "tls",
+                    "ssl",
+                    "failed to connect",
+                    "could not connect",
+                    "cannot connect",
+                    "connection refused",
+                    "no route to host"))
+            {
+                return HttpDeliveryState.NotReachedServer;
+            }
+
+            return HttpDeliveryState.Unknown;
+        }
+
+        /// <summary>
+        /// 忽略大小写判断错误文本是否包含任一网络阶段关键词。
+        /// </summary>
+        private static bool ContainsNetworkKeyword(string value, params string[] keywords)
+        {
+            for (int i = 0; i < keywords.Length; i++)
+            {
+                if (value.IndexOf(keywords[i], StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -171,7 +289,7 @@ namespace NovaFramework.BestHTTP.Runtime
                     ReferencePool.Put(capturedResponse);
                 }
             };
-            request.Send();
+            _ = request.Send();
 
             try
             {

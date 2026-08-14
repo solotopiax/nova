@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace NovaFramework.Runtime
@@ -38,14 +39,31 @@ namespace NovaFramework.Runtime
         public override void Initialize(DoHManagerConfig config)
         {
             m_UseDoH = config.UseDoH;
-            m_DNSTimeout = Math.Max(0, config.DnsTimeoutSeconds * 1000);
+            m_DNSTimeout = config.DnsTimeoutSeconds <= 0
+                ? System.Threading.Timeout.Infinite
+                : (int)Math.Min(int.MaxValue, (long)config.DnsTimeoutSeconds * 1000L);
+            m_MaxIPAddressesPerHost = config.MaxIPAddressesPerHost;
             ServicePointManager.DefaultConnectionLimit = 10;
             m_ConfigManager = FrameworkManagersGroup.GetManager<IConfigManager>();
         }
 
         /// <summary>
-        /// 遍历给定的 URL 列表，并行异步收集各域名 IP 地址。
-        /// DNS 查询阶段并行执行，结果写入字典阶段串行处理以避免竞态。
+        /// 在当前进程内禁用 DoH 并清空已解析结果，后续请求统一使用系统 DNS。
+        /// </summary>
+        public override void DisableForRuntime()
+        {
+            if (!m_UseDoH)
+            {
+                return;
+            }
+
+            m_UseDoH = false;
+            Clear();
+        }
+
+        /// <summary>
+        /// 遍历给定的 URL 列表，并行完成各原始域名的 A 与 CNAME 全链解析。
+        /// 每个域名先形成本地结果，全部完成后再串行写入共享缓存。
         /// </summary>
         /// <param name="urls">目标 URL 集合（由 NetworkManager.GetAllHostKeyUrls() 提供）。</param>
         /// <returns>异步任务。</returns>
@@ -56,8 +74,8 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            List<string> validUrls = new List<string>();
-            List<UniTask<DNSAnswer[]>> queryTasks = new List<UniTask<DNSAnswer[]>>();
+            int queryGeneration = Volatile.Read(ref m_QueryGeneration);
+            List<UniTask<HostResolutionResult>> queryTasks = new List<UniTask<HostResolutionResult>>();
             HashSet<string> uniqueUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (string url in urls)
@@ -67,8 +85,7 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                validUrls.Add(url);
-                queryTasks.Add(QueryDNSResultAsync(url));
+                queryTasks.Add(ResolveUrlSafelyAsync(url, DoHResolutionSource.HostKeyPrewarm, queryGeneration));
             }
 
             if (queryTasks.Count == 0)
@@ -76,11 +93,55 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            DNSAnswer[][] allResults = await UniTask.WhenAll(queryTasks);
-
-            for (int i = 0; i < validUrls.Count; i++)
+            HostResolutionResult[] allResults = await UniTask.WhenAll(queryTasks);
+            if (!IsCurrentQueryGeneration(queryGeneration))
             {
-                await CacheDnsAnswersAsync(validUrls[i], allResults[i], DoHResolutionSource.HostKeyPrewarm);
+                return;
+            }
+
+            for (int i = 0; i < allResults.Length; i++)
+            {
+                CommitResolutionResult(allResults[i], queryGeneration);
+                if (!IsCurrentQueryGeneration(queryGeneration))
+                {
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 隔离单个预热域名的意外异常，使其他域名仍能完成提交，并让失败域名清除旧缓存。
+        /// </summary>
+        /// <param name="url">需要解析的原始 URL。</param>
+        /// <param name="source">本次解析的来源。</param>
+        /// <param name="queryGeneration">发起查询时的 DoH 查询代次。</param>
+        /// <returns>正常结果或用于清除旧缓存的空结果；URL 无效或代次失效时返回 null。</returns>
+        private async UniTask<HostResolutionResult> ResolveUrlSafelyAsync(
+            string url,
+            DoHResolutionSource source,
+            int queryGeneration)
+        {
+            string hostName = NormalizeHostName(GetHostName(url));
+            try
+            {
+                return await ResolveUrlAsync(url, source, queryGeneration);
+            }
+            catch (Exception exception)
+            {
+                if (m_ConfigManager?.DevelopMode == DevelopMode.Debug)
+                {
+                    Log.Error(LogTag.DoH, "DoH 预热异常，host：{0}，已清除旧缓存。异常信息：{1}。", hostName, exception);
+                }
+
+                if (!IsCurrentQueryGeneration(queryGeneration) || string.IsNullOrEmpty(hostName))
+                {
+                    return null;
+                }
+
+                var root = new DoHResolutionNode(hostName, source);
+                var emptyIPs = new List<IPAddress>();
+                ApplyResolutionResult(root, emptyIPs);
+                return new HostResolutionResult(url, hostName, null, root, emptyIPs);
             }
         }
 
@@ -97,6 +158,7 @@ namespace NovaFramework.Runtime
                 return;
             }
 
+            int queryGeneration = Volatile.Read(ref m_QueryGeneration);
             string hostName = GetHostName(url);
             if (string.IsNullOrEmpty(hostName))
             {
@@ -106,14 +168,29 @@ namespace NovaFramework.Runtime
 
             try
             {
-                m_DNSAnswers = await QueryHostAnswersAsync(hostName);
-                await CacheDnsAnswersAsync(url, m_DNSAnswers, DoHResolutionSource.RuntimeDiscovered);
+                HostResolutionResult result = await ResolveUrlAsync(
+                    url,
+                    DoHResolutionSource.RuntimeDiscovered,
+                    queryGeneration);
+                if (!IsCurrentQueryGeneration(queryGeneration))
+                {
+                    return;
+                }
+
+                m_DNSAnswers = result?.Answers;
+                CommitResolutionResult(result, queryGeneration);
             }
             catch (Exception e)
             {
+                m_DNSAnswers = null;
+                if (IsCurrentQueryGeneration(queryGeneration))
+                {
+                    ClearCachedHost(hostName);
+                }
+
                 if (m_ConfigManager?.DevelopMode == DevelopMode.Debug)
                 {
-                    Log.Error(LogTag.DoH, "DNSQuery 异常，host：{0}，异常信息：{1}。", hostName, e);
+                    Log.Error(LogTag.DoH, "DNSQuery 异常，host：{0}，已清除旧缓存。异常信息：{1}。", hostName, e);
                 }
             }
         }
@@ -166,10 +243,11 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 清空所有已收集的 IP 地址与 DNS 缓存。
+        /// 清空所有已收集的 IP 地址与 DNS 缓存，并使清理前发起的异步查询失效。
         /// </summary>
         public override void Clear()
         {
+            Interlocked.Increment(ref m_QueryGeneration);
             foreach (var kvp in m_DoHClients)
             {
                 kvp.Value?.Dispose();

@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.besthttp",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "license": "MIT",
   "coreVersion": "http-3.0.19,tls-3.0.5",
   "displayName": "Nova Framework - BestHTTP",
@@ -18,7 +18,7 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.6.11",
+    "com.solotopia.nova.framework": "0.6.12",
     "com.solotopia.unitask": "10.0.6",
     "com.unity.nuget.newtonsoft-json": "3.2.2",
     "com.tivadar.best.http": "3.0.19",

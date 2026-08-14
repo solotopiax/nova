@@ -28,7 +28,7 @@ namespace NovaFramework.Runtime
         public NetworkManager()
         {
             m_NetworkDatas = new Dictionary<string, ITable>();
-            m_HostKeyCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            m_HostKeyCache = new Dictionary<string, HostKeyCacheEntry>(StringComparer.OrdinalIgnoreCase);
             m_CmdCache = new Dictionary<string, CmdCacheEntry>(StringComparer.OrdinalIgnoreCase);
             m_CmdRowIndex = new Dictionary<string, INetworkCmdRow>(StringComparer.OrdinalIgnoreCase);
         }
@@ -183,13 +183,13 @@ namespace NovaFramework.Runtime
                 return null;
             }
 
-            if (!m_HostKeyCache.TryGetValue(cmd.HostKey, out string hostUrl))
+            if (!m_HostKeyCache.TryGetValue(cmd.HostKey, out HostKeyCacheEntry host))
             {
                 Log.Warning(LogTag.Network, "GetNetCmdUrl NetCmd [{0}.{1}] 的 HostKey [{2}] 未找到对应 Host 配置。", tbName, dtName, cmd.HostKey);
                 return null;
             }
 
-            return hostUrl + cmd.Path;
+            return host.Primary + cmd.Path;
         }
 
         /// <summary>
@@ -215,13 +215,32 @@ namespace NovaFramework.Runtime
                 return null;
             }
 
-            if (!m_HostKeyCache.TryGetValue(cmdRow.HostKey, out string hostUrl))
+            IReadOnlyList<string> urls = ResolveNetCmdUrls(cmdRow);
+            return urls.Count > 0 ? urls[0] : null;
+        }
+
+        /// <summary>
+        /// 根据指令行数据解析主备完整 URL；无效或重复地址会被过滤，主域名保持在前。
+        /// </summary>
+        /// <param name="cmdRow">网络指令行数据。</param>
+        /// <returns>零到两个完整 URL。</returns>
+        public override IReadOnlyList<string> ResolveNetCmdUrls(INetworkCmdRow cmdRow)
+        {
+            if (cmdRow == null)
             {
-                Log.Warning(LogTag.Network, "ResolveNetCmdUrl NetCmd [{0}] 的 HostKey [{1}] 未找到对应 Host 配置。", cmdRow.Name, cmdRow.HostKey);
-                return null;
+                return Array.Empty<string>();
             }
 
-            return hostUrl + cmdRow.Path;
+            if (!m_HostKeyCache.TryGetValue(cmdRow.HostKey, out HostKeyCacheEntry host))
+            {
+                Log.Warning(LogTag.Network, "ResolveNetCmdUrl NetCmd [{0}] 的 HostKey [{1}] 未找到对应 Host 配置。", cmdRow.Name, cmdRow.HostKey);
+                return Array.Empty<string>();
+            }
+
+            var urls = new List<string>(2);
+            AddUniqueUrl(urls, host.Primary, cmdRow.Path);
+            AddUniqueUrl(urls, host.Fallback, cmdRow.Path);
+            return urls;
         }
 
         /// <summary>
@@ -260,12 +279,13 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                if (!m_HostKeyCache.TryGetValue(data.HostKey, out string hostUrl))
+                if (!m_HostKeyCache.TryGetValue(data.HostKey, out HostKeyCacheEntry host))
                 {
                     continue;
                 }
 
-                urls.Add(hostUrl + data.Path);
+                AddUniqueUrl(urls, host.Primary, data.Path);
+                AddUniqueUrl(urls, host.Fallback, data.Path);
             }
 
             return urls;
@@ -278,12 +298,10 @@ namespace NovaFramework.Runtime
         public override IEnumerable<string> GetAllHostKeyUrls()
         {
             HashSet<string> urls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (string hostUrl in m_HostKeyCache.Values)
+            foreach (HostKeyCacheEntry host in m_HostKeyCache.Values)
             {
-                if (!string.IsNullOrWhiteSpace(hostUrl))
-                {
-                    urls.Add(hostUrl);
-                }
+                AddUniqueUrl(urls, host.Primary, string.Empty);
+                AddUniqueUrl(urls, host.Fallback, string.Empty);
             }
 
             return urls;

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import os
 import shutil
@@ -58,7 +59,10 @@ class NovaSkillsToolTests(unittest.TestCase):
         catalog = {
             "schemaVersion": 1,
             "package": "com.solotopia.nova.framework",
-            "profiles": {"core": ["nova-project-router"]},
+            "capabilityGroups": {
+                "assessment": ["nova-project-router"],
+                "ui": ["nova-project-ui-create-view"],
+            },
             "skills": [
                 {
                     "id": "nova-project-router",
@@ -120,11 +124,106 @@ class NovaSkillsToolTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
+    def _write_consumer_manifest(self, framework_dependency: str = "file:../../Framework"):
+        """为模拟消费工程写入指向当前测试 Framework 的最小 UPM manifest。"""
+        packages_dir = self.project_root / "Packages"
+        packages_dir.mkdir(parents=True, exist_ok=True)
+        (packages_dir / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "dependencies": {
+                        "com.solotopia.nova.framework": framework_dependency,
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    def _read_catalog(self) -> dict:
+        """读取当前临时真源 Catalog，供升级和删除场景改写。"""
+        return json.loads((self.agents_root / "catalog.json").read_text(encoding="utf-8"))
+
+    def _write_catalog(self, catalog: dict) -> None:
+        """原子性不属于测试对象，测试直接更新临时真源 Catalog。"""
+        (self.agents_root / "catalog.json").write_text(
+            json.dumps(catalog, indent=2), encoding="utf-8"
+        )
+
+    def _append_skill(self, skill_id: str) -> None:
+        """在临时真源增加一个合法 Operation，以模拟 Framework 升级新增 Skill。"""
+        catalog = self._read_catalog()
+        entry = {
+            "id": skill_id,
+            "path": f"Skills/{skill_id}",
+            "kind": "operation",
+            "status": "experimental",
+            "journeys": ["feature"],
+            "effects": ["read"],
+            "minimumEvidence": "static",
+        }
+        catalog["skills"].append(entry)
+        self._write_catalog(catalog)
+        skill_dir = self.agents_root / entry["path"]
+        references_dir = skill_dir / "references"
+        references_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text(
+            "---\n"
+            f"name: {skill_id}\n"
+            f"description: 测试 {skill_id} 的升级投影。\n"
+            "---\n\n"
+            "# Test Skill\n",
+            encoding="utf-8",
+        )
+        (references_dir / "contract.json").write_text(
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "id": skill_id,
+                    "kind": "operation",
+                    "compatibility": {"framework": ">=0.6.9"},
+                    "requires": [],
+                    "inputs": [{"name": "projectRoot", "required": True}],
+                    "effects": ["read"],
+                    "writeScope": {"allow": [], "deny": []},
+                    "locks": [],
+                    "idempotency": "read-only",
+                    "confirmation": {"requiredFor": [], "rule": "测试"},
+                    "minimumEvidence": "static",
+                    "resultStates": ["success", "partial", "blocked", "not_applicable"],
+                    "evidence": ["测试证据"],
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
     def test_validate_accepts_matching_catalog_skill_and_contract(self):
         """Catalog、SKILL.md 与 contract.json 一致时不应报告错误。"""
         tool = load_tool()
 
         self.assertEqual([], tool.validate_agents_root(self.agents_root))
+
+    def test_tree_hash_sorts_normalized_posix_relative_paths_by_utf8_bytes(self):
+        """Python 与 Editor bridge 必须以同一 UTF-8 字节序计算真实 Skill 目录哈希。"""
+        skill_dir = self.root / "HashFixture"
+        files = {
+            "SKILL.md": b"root\n",
+            "agents.meta": b"folder metadata\n",
+            "agents/openai.yaml": b"interface:\n",
+        }
+        for relative_path, content in files.items():
+            path = skill_dir / relative_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+
+        digest = hashlib.sha256()
+        for relative_path in ("SKILL.md", "agents.meta", "agents/openai.yaml"):
+            digest.update(relative_path.encode("utf-8"))
+            digest.update(b"\0")
+            digest.update(files[relative_path])
+            digest.update(b"\0")
+
+        self.assertEqual(digest.hexdigest(), load_tool()._tree_hash(skill_dir))
 
     def test_validate_accepts_the_canonical_framework_agents_tree(self):
         """随 Framework 发布的真实 Agents 真源也必须通过同一份契约校验。"""
@@ -157,14 +256,85 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertIn("不手工编辑生成的 C# / JSON", content)
         self.assertIn("仅通过第 4 步选定 UI 导出 Action 更新本次变更必需的生成物", content)
 
-    def test_quick_start_documents_one_time_skill_projection(self):
-        """初次接入的 Agent 必须能从随包快速入口发现受管 Skill 初始化动作。"""
+    def test_quick_start_documents_package_snapshot_and_project_local_boundary(self):
+        """快速入口必须区分开发仓真源、安装态快照和项目本地投影。"""
         quick_start_path = TOOL_PATH.parent.parent.parent / "Docs" / "START_HERE.md"
         content = quick_start_path.read_text(encoding="utf-8")
 
-        self.assertIn("一次性初始化", content)
-        self.assertIn("nova_skills.py sync", content)
-        self.assertIn("--profile core --dry-run", content)
+        self.assertIn("Assets/Framework/Agents/Skills/", content)
+        self.assertIn("PackageInfo.resolvedPath/Agents/Skills/", content)
+        self.assertIn(".agents/skills", content)
+        self.assertIn("nova-skills.transaction.json", content)
+        self.assertIn("不需要执行 `sync`", content)
+        self.assertIn("自然语言", content)
+        self.assertIn("不需要执行 `sync` 或手工复制", content)
+        self.assertNotIn("Framework 包内 `Assets/Framework/Agents/Skills/`", content)
+
+    def test_project_skill_guidance_describes_direct_automatic_projection(self):
+        """项目组入口只说明自动全量投影，不引入不存在的安装选择。"""
+        guidance_paths = [
+            TOOL_PATH.parent.parent / "AGENTS.md",
+            TOOL_PATH.parent.parent / "INDEX.md",
+            TOOL_PATH.parent.parent.parent / "Docs" / "START_HERE.md",
+            TOOL_PATH.parent.parent.parent / "Docs" / "INDEX.md",
+            TOOL_PATH.parent.parent.parent / "README.md",
+        ]
+
+        for guidance_path in guidance_paths:
+            with self.subTest(guidance_path=guidance_path):
+                content = guidance_path.read_text(encoding="utf-8")
+                self.assertIn("自动", content)
+                self.assertIn("不需要执行 `sync` 或手工复制", content)
+
+    def test_quick_start_requires_explicit_consent_before_consumer_gitignore_write(self):
+        """消费项目 Git 忽略规则必须可复制，但不得授权 bridge 静默改写该文件。"""
+        quick_start_path = TOOL_PATH.parent.parent.parent / "Docs" / "START_HERE.md"
+        quick_start = quick_start_path.read_text(encoding="utf-8")
+        documentation_index = (quick_start_path.parent / "INDEX.md").read_text(encoding="utf-8")
+
+        self.assertIn("不会创建、修改或覆盖消费者项目的 `.gitignore`", quick_start)
+        self.assertIn("自行跟踪 `.agents/`", quick_start)
+        self.assertIn("用户已明确确认", quick_start)
+        self.assertIn(
+            "```gitignore\n"
+            "/.agents/skills/nova-project-*/\n"
+            "/.agents/nova-skills.lock.json\n"
+            "/.agents/nova-skills.transaction.json\n"
+            "/.agents/.nova-skills-staging/\n"
+            "```",
+            quick_start,
+        )
+        self.assertIn("消费者 Git 边界见 [START_HERE.md]", documentation_index)
+
+    def test_project_skill_docs_route_to_the_canonical_quick_start_boundary(self):
+        """维护入口不得把开发仓物理路径误写为消费端的包内路径。"""
+        framework_root = TOOL_PATH.parents[2]
+        documents = {
+            framework_root / "README.md": "Docs/START_HERE.md",
+            framework_root / "Agents" / "AGENTS.md": "../Docs/START_HERE.md",
+            framework_root / "Agents" / "INDEX.md": "../Docs/START_HERE.md",
+        }
+
+        for document_path, quick_start_link in documents.items():
+            content = document_path.read_text(encoding="utf-8")
+            self.assertIn(quick_start_link, content)
+            self.assertNotIn("Framework 包内 `Assets/Framework/Agents/Skills/`", content)
+
+    def test_root_gitignore_ignores_only_project_local_nova_skill_projection(self):
+        """自动投影不得污染 Git，且不能误忽略项目自己维护的其它 .agents 内容。"""
+        root_gitignore = TOOL_PATH.parents[4] / ".gitignore"
+        content = root_gitignore.read_text(encoding="utf-8")
+
+        for rule in (
+            "/.agents/skills/nova-project-*/",
+            "/.agents/nova-skills.lock.json",
+            "/.agents/nova-skills.transaction.json",
+            "/.agents/.nova-skills-staging/",
+            "**/__pycache__.meta",
+            "**/*.pyc.meta",
+        ):
+            self.assertIn(rule, content)
+        self.assertNotIn("/.agents/\n", content)
 
     def test_agents_contributor_guide_does_not_require_missing_per_skill_validator(self):
         """维护指引不能要求每个 Skill 自带不存在的 quick_validate.py。"""
@@ -184,16 +354,281 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertIn("Agents/Tools/**/__pycache__.meta", content)
         self.assertIn("Agents/Tools/**/*.pyc.meta", content)
 
-    def test_validate_rejects_duplicate_profile_skill_id_before_sync(self):
-        """Profile 不能重复投影同一 Skill，否则会造成中途落盘而状态未写入。"""
+    def test_validate_accepts_catalog_without_capability_groups(self):
+        """全量分发以 catalog.skills 为准，能力分组只是可选导航信息。"""
         catalog_path = self.agents_root / "catalog.json"
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        catalog["profiles"]["core"].append("nova-project-router")
+        catalog.pop("capabilityGroups")
         catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+
+        self.assertEqual([], load_tool().validate_agents_root(self.agents_root))
+
+    def test_validate_accepts_first_release_catalog_schema_version_one(self):
+        """唯一全量 Catalog 格式使用 schemaVersion 1。"""
+        catalog = self._read_catalog()
+        catalog["schemaVersion"] = 1
+        self._write_catalog(catalog)
+
+        self.assertEqual([], load_tool().validate_agents_root(self.agents_root))
+
+    def test_validate_rejects_unrecognized_catalog_schema_version_two(self):
+        """首发格式之外的 Catalog 版本不能被静默当成另一套安装方案。"""
+        catalog = self._read_catalog()
+        catalog["schemaVersion"] = 2
+        self._write_catalog(catalog)
 
         errors = load_tool().validate_agents_root(self.agents_root)
 
-        self.assertTrue(any("重复" in error and "Profile core" in error for error in errors))
+        self.assertTrue(any("schemaVersion 必须为 1" in error for error in errors))
+
+    def test_validate_rejects_unknown_catalog_field(self):
+        """Catalog 顶层未知字段必须按当前 schema fail-closed。"""
+        catalog = self._read_catalog()
+        catalog["unexpected"] = True
+        self._write_catalog(catalog)
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("未知字段" in error and "unexpected" in error for error in errors))
+
+    def test_validate_rejects_unknown_skill_entry_field(self):
+        """Skill entry 未知字段不能绕过当前 schema 的 additionalProperties=false。"""
+        catalog = self._read_catalog()
+        catalog["skills"][0]["unexpected"] = True
+        self._write_catalog(catalog)
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("未知字段" in error and "unexpected" in error for error in errors))
+
+    def test_validate_requires_skill_status_and_journeys(self):
+        """每个 Skill 都必须显式声明 status 与 journeys，不能依赖隐式默认值。"""
+        catalog = self._read_catalog()
+        catalog["skills"][0].pop("status")
+        catalog["skills"][1].pop("journeys")
+        self._write_catalog(catalog)
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("nova-project-router" in error and "status" in error for error in errors))
+        self.assertTrue(
+            any("nova-project-ui-create-view" in error and "journeys" in error for error in errors)
+        )
+
+    def test_validate_rejects_unsupported_skill_status(self):
+        """status 只能使用 experimental、stable 或 deprecated。"""
+        catalog = self._read_catalog()
+        catalog["skills"][0]["status"] = "preview"
+        self._write_catalog(catalog)
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("status" in error and "preview" in error for error in errors))
+
+    def test_validate_rejects_empty_or_non_string_journeys(self):
+        """journeys 必须是非空字符串数组。"""
+        for journeys in ([], ["assessment", 1]):
+            with self.subTest(journeys=journeys):
+                catalog = self._read_catalog()
+                catalog["skills"][0]["journeys"] = journeys
+                self._write_catalog(catalog)
+
+                errors = load_tool().validate_agents_root(self.agents_root)
+
+                self.assertTrue(any("journeys" in error for error in errors))
+
+    def test_validate_rejects_duplicate_skill_effects(self):
+        """effects 必须唯一，避免 Catalog 与 contract 的副作用语义含混。"""
+        catalog = self._read_catalog()
+        catalog["skills"][0]["effects"] = ["read", "read"]
+        self._write_catalog(catalog)
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("effects" in error and "重复" in error for error in errors))
+
+    def test_validate_rejects_skill_id_outside_nova_project_namespace(self):
+        """Catalog 不得把用户或其它系统的 Skill 纳入 Nova 受管投影。"""
+        catalog = self._read_catalog()
+        catalog["skills"][0]["id"] = "project-private-skill"
+        catalog["skills"][0]["path"] = "Skills/project-private-skill"
+        self._write_catalog(catalog)
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("项目组 Skill id" in error for error in errors))
+
+    def test_reconcile_rejects_non_project_skill_in_managed_state(self):
+        """既有 lock 也不得借受管记录取得用户或其它系统 Skill 的所有权。"""
+        self._write_consumer_manifest()
+        agents_dir = self.project_root / ".agents"
+        agents_dir.mkdir(parents=True)
+        zero_hash = "0" * 64
+        (agents_dir / "nova-skills.lock.json").write_text(
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "package": "com.solotopia.nova.framework",
+                    "packageVersion": "0.6.9",
+                    "catalogHash": zero_hash,
+                    "managed": {
+                        "other-system-skill": {
+                            "sourceHash": zero_hash,
+                            "targetHash": zero_hash,
+                        }
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "非项目组 Skill id"):
+            load_tool().reconcile(self.project_root)
+
+    def test_reconcile_projects_every_catalog_skill(self):
+        """首次 reconcile 必须投影 Catalog 声明的完整 Skill 集。"""
+        catalog_path = self.agents_root / "catalog.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        catalog.pop("capabilityGroups")
+        catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+        packages_dir = self.project_root / "Packages"
+        packages_dir.mkdir(parents=True)
+        (packages_dir / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "dependencies": {
+                        "com.solotopia.nova.framework": "file:../../Framework"
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        tool = load_tool()
+        expected_ids = [entry["id"] for entry in catalog["skills"]]
+
+        dry_run = tool.reconcile(self.project_root, dry_run=True)
+        self.assertEqual(expected_ids, dry_run["added"])
+        self.assertFalse((self.project_root / ".agents").exists())
+
+        result = tool.reconcile(self.project_root)
+        self.assertEqual(expected_ids, result["added"])
+        for skill_id in expected_ids:
+            self.assertTrue(
+                (self.project_root / ".agents" / "skills" / skill_id / "SKILL.md").is_file()
+            )
+        state = json.loads(
+            (self.project_root / ".agents" / "nova-skills.lock.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(1, state["schemaVersion"])
+        self.assertEqual(
+            {"schemaVersion", "package", "packageVersion", "catalogHash", "managed"},
+            set(state),
+        )
+        self.assertEqual(set(expected_ids), set(state["managed"]))
+
+    def test_reconcile_rejects_unexpected_lock_field_without_rewriting_it(self):
+        """受管 lock 的未知字段必须保留现场，不能据此认领消费者目录。"""
+        self._write_consumer_manifest()
+        agents_dir = self.project_root / ".agents"
+        agents_dir.mkdir(parents=True)
+        state_path = agents_dir / "nova-skills.lock.json"
+        state_with_unexpected_field = {
+            "schemaVersion": 1,
+            "package": "com.solotopia.nova.framework",
+            "packageVersion": "0.6.9",
+            "catalogHash": "0" * 64,
+            "unexpectedField": "unexpected",
+            "managed": {},
+        }
+        original_content = json.dumps(state_with_unexpected_field)
+        state_path.write_text(original_content, encoding="utf-8")
+
+        with self.assertRaisesRegex(RuntimeError, "unexpectedField"):
+            load_tool().reconcile(self.project_root)
+
+        self.assertEqual(original_content, state_path.read_text(encoding="utf-8"))
+        self.assertFalse((agents_dir / "skills").exists())
+
+    def test_reconcile_rejects_unexpected_transaction_field_without_recovery(self):
+        """受管 journal 的未知字段必须保留现场，不能被 bridge 当作可续传事务。"""
+        self._write_consumer_manifest()
+        tool = load_tool()
+        transaction_id = "a" * 32
+        agents_dir = self.project_root / ".agents"
+        staging_dir = agents_dir / ".nova-skills-staging" / transaction_id
+        source_dir = self.agents_root / "Skills" / "nova-project-router"
+        staged_skill = staging_dir / "nova-project-router"
+        staged_skill.parent.mkdir(parents=True)
+        shutil.copytree(source_dir, staged_skill)
+        skill_hash = tool._tree_hash(staged_skill)
+        transaction_with_unexpected_field = {
+            "schemaVersion": 1,
+            "transactionId": transaction_id,
+            "previousState": None,
+            "finalState": {
+                "schemaVersion": 1,
+                "package": "com.solotopia.nova.framework",
+                "packageVersion": "0.6.9",
+                "unexpectedField": "unexpected",
+                "managed": {
+                    "nova-project-router": {
+                        "sourceHash": skill_hash,
+                        "targetHash": skill_hash,
+                    }
+                },
+            },
+            "pending": [
+                {
+                    "id": "nova-project-router",
+                    "sourceHash": skill_hash,
+                    "targetHash": skill_hash,
+                }
+            ],
+        }
+        transaction_path = agents_dir / "nova-skills.transaction.json"
+        original_content = json.dumps(transaction_with_unexpected_field)
+        transaction_path.write_text(original_content, encoding="utf-8")
+
+        with self.assertRaisesRegex(RuntimeError, "unexpectedField"):
+            tool.reconcile(self.project_root)
+
+        self.assertEqual(original_content, transaction_path.read_text(encoding="utf-8"))
+        self.assertTrue(staged_skill.is_dir())
+        self.assertFalse((agents_dir / "skills" / "nova-project-router").exists())
+
+    def test_reconcile_preserves_user_collision_and_updates_other_skills(self):
+        """同名用户 Skill 不得被认领或覆盖，其他安全的 Nova Skill 仍应继续同步。"""
+        catalog_path = self.agents_root / "catalog.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        catalog.pop("capabilityGroups")
+        catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+        packages_dir = self.project_root / "Packages"
+        packages_dir.mkdir(parents=True)
+        (packages_dir / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "dependencies": {
+                        "com.solotopia.nova.framework": "file:../../Framework"
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        user_skill = self.project_root / ".agents" / "skills" / "nova-project-router"
+        user_skill.mkdir(parents=True)
+        (user_skill / "SKILL.md").write_text("user owned", encoding="utf-8")
+
+        result = load_tool().reconcile(self.project_root)
+
+        self.assertEqual("user owned", (user_skill / "SKILL.md").read_text(encoding="utf-8"))
+        self.assertEqual(["nova-project-ui-create-view"], result["added"])
+        self.assertEqual(
+            [{"id": "nova-project-router", "reason": "unowned-collision"}],
+            result["conflicts"],
+        )
 
     def test_validate_rejects_catalog_and_contract_that_omit_same_required_field(self):
         """Catalog 与 contract 同时漏字段也必须失败，不能被 None == None 掩盖。"""
@@ -398,7 +833,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "Agents.*软链"):
             load_tool().resolve_agents_root(self.project_root)
 
-    def test_sync_rejects_explicit_agents_root_symlink(self):
+    def test_reconcile_rejects_explicit_agents_root_symlink(self):
         """显式测试入口也不能通过预先 resolve 绕过 Agents 根软链检查。"""
         alternate_framework = self.root / "AlternateFramework"
         shutil.copytree(self.agents_root.parent, alternate_framework)
@@ -406,10 +841,9 @@ class NovaSkillsToolTests(unittest.TestCase):
         os.symlink(alternate_framework / "Agents", self.agents_root)
 
         with self.assertRaisesRegex(RuntimeError, "Agents.*软链"):
-            load_tool().sync(
+            load_tool().reconcile(
                 self.project_root,
                 agents_root=self.agents_root,
-                profile="core",
                 dry_run=True,
             )
 
@@ -523,97 +957,62 @@ class NovaSkillsToolTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "packages-lock.json"):
             load_tool().resolve_agents_root(self.project_root)
 
-    def test_sync_projects_only_selected_profile_and_preserves_user_skill(self):
-        """同步只能写入 core Profile，且不得覆盖项目组已有同名外部 Skill。"""
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": "file:../../Framework"
-                    }
-                }
-            ),
-            encoding="utf-8",
-        )
+    def test_reconcile_is_idempotent_and_preserves_unrelated_user_skill(self):
+        """重复 reconcile 只报告 unchanged，且不触碰不重名的项目私有 Skill。"""
+        self._write_consumer_manifest()
         user_skill = self.project_root / ".agents" / "skills" / "project-private-skill"
         user_skill.mkdir(parents=True)
         (user_skill / "SKILL.md").write_text("private", encoding="utf-8")
 
-        result = load_tool().sync(self.project_root, profile="core")
+        tool = load_tool()
+        first = tool.reconcile(self.project_root)
+        result = tool.reconcile(self.project_root)
 
         projected = self.project_root / ".agents" / "skills" / "nova-project-router"
-        self.assertEqual(["nova-project-router"], result["projected"])
+        self.assertEqual(
+            ["nova-project-router", "nova-project-ui-create-view"], first["added"]
+        )
         self.assertTrue((projected / "SKILL.md").is_file())
-        self.assertFalse(
-            (self.project_root / ".agents" / "skills" / "nova-project-ui-create-view").exists()
+        self.assertEqual(
+            ["nova-project-router", "nova-project-ui-create-view"], result["unchanged"]
         )
         self.assertEqual("private", (user_skill / "SKILL.md").read_text(encoding="utf-8"))
 
-    def test_sync_rejects_same_name_user_skill_without_creating_state(self):
-        """同名用户 Skill 必须原样保留，且失败不能留下受管状态文件。"""
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": "file:../../Framework"
-                    }
-                }
-            ),
-            encoding="utf-8",
-        )
+    def test_reconcile_preserves_only_same_name_user_skill_and_writes_other_state(self):
+        """仅有同名用户碰撞时也可安全登记其他全量受管 Skill。"""
+        self._write_consumer_manifest()
         user_skill = self.project_root / ".agents" / "skills" / "nova-project-router"
         user_skill.mkdir(parents=True)
         marker = user_skill / "SKILL.md"
         marker.write_text("user owned", encoding="utf-8")
 
-        with self.assertRaisesRegex(RuntimeError, "不属于受管投影"):
-            load_tool().sync(self.project_root, profile="core")
+        result = load_tool().reconcile(self.project_root)
 
         self.assertEqual("user owned", marker.read_text(encoding="utf-8"))
-        self.assertFalse((self.project_root / ".agents" / "nova-skills.lock.json").exists())
-
-    def test_sync_rejects_project_internal_agents_root_symlink_without_writing_alias(self):
-        """.agents 指向项目内目录时也不能越过受管投影的物理写入边界。"""
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": "file:../../Framework"
-                    }
-                }
-            ),
-            encoding="utf-8",
+        self.assertEqual(["nova-project-ui-create-view"], result["added"])
+        state = json.loads(
+            (self.project_root / ".agents" / "nova-skills.lock.json").read_text(
+                encoding="utf-8"
+            )
         )
+        self.assertNotIn("nova-project-router", state["managed"])
+
+    def test_reconcile_rejects_project_internal_agents_root_symlink_without_writing_alias(self):
+        """.agents 指向项目内目录时也不能越过受管投影的物理写入边界。"""
+        self._write_consumer_manifest()
         aliased_root = self.project_root / "Assets" / "AgentAlias"
         aliased_root.mkdir(parents=True)
         os.symlink(aliased_root, self.project_root / ".agents", target_is_directory=True)
 
         with self.assertRaisesRegex(RuntimeError, "软链"):
-            load_tool().sync(self.project_root, profile="core")
+            load_tool().reconcile(self.project_root)
 
         self.assertFalse((aliased_root / "skills").exists())
         self.assertFalse((aliased_root / "nova-skills.lock.json").exists())
 
-    def test_sync_rejects_project_internal_skills_root_symlink_without_writing_alias(self):
+    def test_reconcile_rejects_project_internal_skills_root_symlink_without_writing_alias(self):
         """.agents/skills 是项目内软链时也不能把 Skill 写到其他业务目录。"""
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": "file:../../Framework"
-                    }
-                }
-            ),
-            encoding="utf-8",
-        )
+        self._write_consumer_manifest()
         agents_dir = self.project_root / ".agents"
         agents_dir.mkdir()
         aliased_skills = self.project_root / "Assets" / "AliasedSkills"
@@ -621,25 +1020,14 @@ class NovaSkillsToolTests(unittest.TestCase):
         os.symlink(aliased_skills, agents_dir / "skills", target_is_directory=True)
 
         with self.assertRaisesRegex(RuntimeError, "软链"):
-            load_tool().sync(self.project_root, profile="core")
+            load_tool().reconcile(self.project_root)
 
         self.assertFalse((aliased_skills / "nova-project-router").exists())
         self.assertFalse((agents_dir / "nova-skills.lock.json").exists())
 
-    def test_sync_rejects_project_internal_state_symlink_without_writing_alias(self):
+    def test_reconcile_rejects_project_internal_state_symlink_without_writing_alias(self):
         """lock 软链不能把受管状态重定向到项目内任意业务文件。"""
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": "file:../../Framework"
-                    }
-                }
-            ),
-            encoding="utf-8",
-        )
+        self._write_consumer_manifest()
         agents_dir = self.project_root / ".agents"
         (agents_dir / "skills").mkdir(parents=True)
         aliased_state = self.project_root / "Assets" / "aliased-state.json"
@@ -647,32 +1035,14 @@ class NovaSkillsToolTests(unittest.TestCase):
         os.symlink(aliased_state, agents_dir / "nova-skills.lock.json")
 
         with self.assertRaisesRegex(RuntimeError, "软链"):
-            load_tool().sync(self.project_root, profile="core")
+            load_tool().reconcile(self.project_root)
 
         self.assertFalse(aliased_state.exists())
         self.assertFalse((agents_dir / "skills" / "nova-project-router").exists())
 
-    def test_sync_recovers_after_interruption_between_profile_skill_replacements(self):
-        """Profile 中断后重试必须续传受管事务，不能遗留无 lock 的孤儿 Skill。"""
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": "file:../../Framework"
-                    }
-                }
-            ),
-            encoding="utf-8",
-        )
-        catalog_path = self.agents_root / "catalog.json"
-        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-        catalog["profiles"]["core"] = [
-            "nova-project-router",
-            "nova-project-ui-create-view",
-        ]
-        catalog_path.write_text(json.dumps(catalog), encoding="utf-8")
+    def test_reconcile_recovers_after_interruption_between_new_skill_replacements(self):
+        """首次全量 reconcile 中断后重试必须续传新增事务，不能遗留孤儿 Skill。"""
+        self._write_consumer_manifest()
         tool = load_tool()
         target_root = self.project_root / ".agents" / "skills"
         first_target = target_root / "nova-project-router"
@@ -682,12 +1052,12 @@ class NovaSkillsToolTests(unittest.TestCase):
         def interrupt_second_skill(source, destination):
             destination_path = Path(destination)
             if destination_path.name == "nova-project-ui-create-view":
-                raise KeyboardInterrupt("模拟 Profile 投影中断")
+                raise KeyboardInterrupt("模拟全量投影中断")
             return original_replace(source, destination)
 
         with mock.patch.object(tool.os, "replace", side_effect=interrupt_second_skill):
             with self.assertRaisesRegex(KeyboardInterrupt, "中断"):
-                tool.sync(self.project_root, profile="core")
+                tool.reconcile(self.project_root)
 
         transaction_path = self.project_root / ".agents" / "nova-skills.transaction.json"
         state_path = self.project_root / ".agents" / "nova-skills.lock.json"
@@ -700,7 +1070,7 @@ class NovaSkillsToolTests(unittest.TestCase):
             tool.doctor(self.project_root)["interrupted"],
         )
 
-        tool.sync(self.project_root, profile="core")
+        tool.reconcile(self.project_root)
 
         self.assertTrue(first_target.is_dir())
         self.assertTrue(second_target.is_dir())
@@ -708,20 +1078,9 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertFalse(transaction_path.exists())
         self.assertFalse(any(tool.doctor(self.project_root).values()))
 
-    def test_sync_rejects_state_changed_before_transaction_finalization(self):
+    def test_reconcile_rejects_state_changed_before_transaction_finalization(self):
         """事务完成前 lock 被外部改写时不得被最终状态静默覆盖。"""
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": "file:../../Framework"
-                    }
-                }
-            ),
-            encoding="utf-8",
-        )
+        self._write_consumer_manifest()
         tool = load_tool()
         state_path = self.project_root / ".agents" / "nova-skills.lock.json"
         transaction_path = self.project_root / ".agents" / "nova-skills.transaction.json"
@@ -741,26 +1100,15 @@ class NovaSkillsToolTests(unittest.TestCase):
 
         with mock.patch.object(tool, "_tree_hash", side_effect=hash_then_change_state):
             with self.assertRaisesRegex(RuntimeError, "受管状态.*变化"):
-                tool.sync(self.project_root, profile="core")
+                tool.reconcile(self.project_root)
 
         self.assertTrue(state_changed)
         self.assertEqual(foreign_state, json.loads(state_path.read_text(encoding="utf-8")))
         self.assertTrue(transaction_path.is_file())
 
-    def test_sync_rejects_source_change_during_hidden_staging_without_visible_projection(self):
+    def test_reconcile_rejects_source_change_during_hidden_staging_without_visible_projection(self):
         """复制期间真源变化时不得登记彼此不一致的 source/target 哈希。"""
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": "file:../../Framework"
-                    }
-                }
-            ),
-            encoding="utf-8",
-        )
+        self._write_consumer_manifest()
         tool = load_tool()
         source_skill = self.agents_root / "Skills" / "nova-project-router"
         original_copytree = tool.shutil.copytree
@@ -777,27 +1125,16 @@ class NovaSkillsToolTests(unittest.TestCase):
 
         with mock.patch.object(tool.shutil, "copytree", side_effect=copy_then_change_source):
             with self.assertRaisesRegex(RuntimeError, "真源.*变化"):
-                tool.sync(self.project_root, profile="core")
+                tool.reconcile(self.project_root)
 
         agents_dir = self.project_root / ".agents"
         self.assertFalse((agents_dir / "skills" / "nova-project-router").exists())
         self.assertFalse((agents_dir / "nova-skills.lock.json").exists())
         self.assertFalse((agents_dir / "nova-skills.transaction.json").exists())
 
-    def test_sync_rejects_an_active_atomic_lock_without_changing_its_owner(self):
-        """另一进程持有内核锁时不得进入同一 Profile 同步临界区。"""
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": "file:../../Framework"
-                    }
-                }
-            ),
-            encoding="utf-8",
-        )
+    def test_reconcile_rejects_an_active_atomic_lock_without_changing_its_owner(self):
+        """另一进程持有内核锁时不得进入同一全量 reconcile 临界区。"""
+        self._write_consumer_manifest()
         holder_script = """
 import importlib.util
 import sys
@@ -818,10 +1155,22 @@ with module._projection_sync_lock(Path(sys.argv[2])):
             text=True,
         ) as holder:
             self.assertEqual("locked\n", holder.stdout.readline())
+            lock_path = (
+                self.project_root
+                / "Library"
+                / "Nova"
+                / "AgentSkills"
+                / ".nova-skills-sync.lock"
+            )
+            owner_before = lock_path.read_text(encoding="utf-8")
             with self.assertRaisesRegex(RuntimeError, "正在进行"):
-                load_tool().sync(self.project_root, profile="core")
+                load_tool().reconcile(self.project_root)
+            self.assertEqual(owner_before, lock_path.read_text(encoding="utf-8"))
             self.assertFalse(
                 (self.project_root / ".agents" / "skills" / "nova-project-router").exists()
+            )
+            self.assertFalse(
+                (self.project_root / ".agents" / ".nova-skills-sync.lock").exists()
             )
             _, holder_stderr = holder.communicate(input="\n", timeout=10)
         self.assertEqual(0, holder.returncode, holder_stderr)
@@ -829,38 +1178,71 @@ with module._projection_sync_lock(Path(sys.argv[2])):
         self.assertTrue(holder.stdout.closed)
         self.assertTrue(holder.stderr.closed)
 
-    def test_sync_reuses_a_released_kernel_lock_before_projecting(self):
+    def test_reconcile_reuses_a_released_kernel_lock_before_projecting(self):
         """已释放的隐藏锁文件可复用，且不会靠删除 lock inode 实现恢复。"""
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": "file:../../Framework"
-                    }
-                }
-            ),
-            encoding="utf-8",
+        self._write_consumer_manifest()
+        lock_path = (
+            self.project_root
+            / "Library"
+            / "Nova"
+            / "AgentSkills"
+            / ".nova-skills-sync.lock"
         )
-        agents_dir = self.project_root / ".agents"
-        agents_dir.mkdir()
-        lock_path = agents_dir / ".nova-skills-sync.lock"
+        lock_path.parent.mkdir(parents=True)
         lock_path.write_text(
             json.dumps({"schemaVersion": 1, "processId": -1, "token": "b" * 32}),
             encoding="utf-8",
         )
 
-        result = load_tool().sync(self.project_root, profile="core")
+        result = load_tool().reconcile(self.project_root)
 
-        self.assertEqual(["nova-project-router"], result["projected"])
+        self.assertEqual(
+            ["nova-project-router", "nova-project-ui-create-view"], result["added"]
+        )
         self.assertTrue(lock_path.is_file())
         owner = json.loads(lock_path.read_text(encoding="utf-8"))
         self.assertEqual(1, owner["schemaVersion"])
         self.assertRegex(owner["token"], r"^[0-9a-f]{32}$")
+        self.assertFalse(
+            (self.project_root / ".agents" / ".nova-skills-sync.lock").exists()
+        )
 
-    def test_canonical_p0_sync_projects_real_skills_into_temporary_consumer(self):
-        """真实 Framework Agents 必须能在干净消费工程中投影、诊断并保持 Profile 边界。"""
+    def test_reconcile_rejects_library_sync_lock_symlink_without_touching_target(self):
+        """Library 共享锁若是软链，reconcile 不得跟随它覆盖任意文件。"""
+        self._write_consumer_manifest()
+        outside = self.root / "outside-lock-owner.json"
+        outside.write_text("outside", encoding="utf-8")
+        lock_path = (
+            self.project_root
+            / "Library"
+            / "Nova"
+            / "AgentSkills"
+            / ".nova-skills-sync.lock"
+        )
+        lock_path.parent.mkdir(parents=True)
+        os.symlink(outside, lock_path)
+
+        with self.assertRaisesRegex(RuntimeError, "软链|安全同步锁"):
+            load_tool().reconcile(self.project_root)
+
+        self.assertEqual("outside", outside.read_text(encoding="utf-8"))
+        self.assertFalse(
+            (self.project_root / ".agents" / "skills" / "nova-project-router").exists()
+        )
+
+    def test_projection_sync_lock_rejects_same_process_reentry(self):
+        """同一 Python 进程也必须互斥，避免 record lock 的进程级语义放行重入。"""
+        tool = load_tool()
+
+        with tool._projection_sync_lock(self.project_root):
+            with self.assertRaisesRegex(RuntimeError, "正在进行"):
+                with tool._projection_sync_lock(self.project_root):
+                    self.fail("同进程重入不应进入临界区")
+        with tool._projection_sync_lock(self.project_root):
+            pass
+
+    def test_canonical_reconcile_projects_real_skills_into_temporary_consumer(self):
+        """真实 Framework Agents 必须完整投影当前 Catalog 的全部已发布 Skill。"""
         canonical_agents_root = TOOL_PATH.parent.parent
         packages_dir = self.project_root / "Packages"
         packages_dir.mkdir(parents=True)
@@ -876,7 +1258,7 @@ with module._projection_sync_lock(Path(sys.argv[2])):
         )
         tool = load_tool()
 
-        dry_run = tool.sync(self.project_root, profile="p0", dry_run=True)
+        dry_run = tool.reconcile(self.project_root, dry_run=True)
         self.assertEqual(
             [
                 "nova-project-router",
@@ -884,20 +1266,32 @@ with module._projection_sync_lock(Path(sys.argv[2])):
                 "nova-project-ui-create-view",
                 "nova-project-data-driven-ui",
             ],
-            dry_run["projected"],
+            dry_run["added"],
         )
         self.assertFalse((self.project_root / ".agents").exists())
 
-        result = tool.sync(self.project_root, profile="core")
+        result = tool.reconcile(self.project_root)
 
         self.assertEqual(
-            ["nova-project-router", "nova-project-check-readiness"], result["projected"]
+            [
+                "nova-project-router",
+                "nova-project-check-readiness",
+                "nova-project-ui-create-view",
+                "nova-project-data-driven-ui",
+            ],
+            result["added"],
         )
         self.assertTrue(
             (self.project_root / ".agents" / "skills" / "nova-project-router" / "SKILL.md").is_file()
         )
-        self.assertFalse(
-            (self.project_root / ".agents" / "skills" / "nova-project-ui-create-view").exists()
+        self.assertTrue(
+            (
+                self.project_root
+                / ".agents"
+                / "skills"
+                / "nova-project-ui-create-view"
+                / "SKILL.md"
+            ).is_file()
         )
         self.assertEqual(
             {
@@ -911,41 +1305,31 @@ with module._projection_sync_lock(Path(sys.argv[2])):
             tool.doctor(self.project_root),
         )
 
-    def test_sync_rejects_profile_downgrade_that_would_retain_extra_skills(self):
-        """Profile 切换不能把写入型 Skill 留在磁盘上却伪称为更小的 Profile。"""
-        canonical_agents_root = TOOL_PATH.parent.parent
-        packages_dir = self.project_root / "Packages"
-        packages_dir.mkdir(parents=True)
-        (packages_dir / "manifest.json").write_text(
-            json.dumps(
-                {
-                    "dependencies": {
-                        "com.solotopia.nova.framework": canonical_agents_root.parent.as_uri()
-                    }
-                }
-            ),
-            encoding="utf-8",
-        )
+    def test_reconcile_removes_unmodified_managed_skill_removed_from_catalog(self):
+        """上游删除且受管副本未改时，reconcile 必须删除目标和 state 记录。"""
+        self._write_consumer_manifest()
         tool = load_tool()
-        tool.sync(self.project_root, profile="p0")
+        tool.reconcile(self.project_root)
+        catalog = self._read_catalog()
+        catalog["skills"] = [
+            entry for entry in catalog["skills"] if entry["id"] != "nova-project-ui-create-view"
+        ]
+        for group_ids in catalog.get("capabilityGroups", {}).values():
+            if "nova-project-ui-create-view" in group_ids:
+                group_ids.remove("nova-project-ui-create-view")
+        self._write_catalog(catalog)
+        shutil.rmtree(self.agents_root / "Skills" / "nova-project-ui-create-view")
         state_path = self.project_root / ".agents" / "nova-skills.lock.json"
 
-        with self.assertRaisesRegex(RuntimeError, "Profile.*保留"):
-            tool.sync(self.project_root, profile="core")
-
+        result = tool.reconcile(self.project_root)
         state = json.loads(state_path.read_text(encoding="utf-8"))
-        self.assertEqual("p0", state["profile"])
-        self.assertTrue(
-            (
-                self.project_root
-                / ".agents"
-                / "skills"
-                / "nova-project-ui-create-view"
-                / "SKILL.md"
-            ).is_file()
+        self.assertEqual(["nova-project-ui-create-view"], result["removed"])
+        self.assertNotIn("nova-project-ui-create-view", state["managed"])
+        self.assertFalse(
+            (self.project_root / ".agents" / "skills" / "nova-project-ui-create-view").exists()
         )
 
-    def test_sync_state_uses_no_absolute_source_or_target_paths(self):
+    def test_reconcile_state_uses_no_absolute_source_or_target_paths(self):
         """受管状态应随消费项目移动；路径必须从当前项目和 Catalog 推导。"""
         canonical_agents_root = TOOL_PATH.parent.parent
         packages_dir = self.project_root / "Packages"
@@ -961,7 +1345,7 @@ with module._projection_sync_lock(Path(sys.argv[2])):
             encoding="utf-8",
         )
 
-        load_tool().sync(self.project_root, profile="core")
+        load_tool().reconcile(self.project_root)
 
         state_path = self.project_root / ".agents" / "nova-skills.lock.json"
         state_text = state_path.read_text(encoding="utf-8")
@@ -969,10 +1353,12 @@ with module._projection_sync_lock(Path(sys.argv[2])):
         managed_entry = state["managed"]["nova-project-router"]
         self.assertNotIn(str(self.project_root.resolve()), state_text)
         self.assertNotIn(str(canonical_agents_root.resolve()), state_text)
+        self.assertEqual(1, state["schemaVersion"])
+        self.assertIn("catalogHash", state)
         self.assertEqual({"sourceHash", "targetHash"}, set(managed_entry))
 
-    def test_doctor_reports_profile_member_missing_from_managed_state(self):
-        """lock 遗漏 Profile 中的 Skill 时，doctor 不能把投影误报为健康。"""
+    def test_doctor_reports_catalog_member_missing_from_managed_state(self):
+        """lock 遗漏 Catalog 中的 Skill 时，doctor 不能把投影误报为健康。"""
         canonical_agents_root = TOOL_PATH.parent.parent
         packages_dir = self.project_root / "Packages"
         packages_dir.mkdir(parents=True)
@@ -987,7 +1373,7 @@ with module._projection_sync_lock(Path(sys.argv[2])):
             encoding="utf-8",
         )
         tool = load_tool()
-        tool.sync(self.project_root, profile="core")
+        tool.reconcile(self.project_root)
         state_path = self.project_root / ".agents" / "nova-skills.lock.json"
         state = json.loads(state_path.read_text(encoding="utf-8"))
         state["managed"].pop("nova-project-check-readiness")
@@ -1021,7 +1407,7 @@ with module._projection_sync_lock(Path(sys.argv[2])):
             encoding="utf-8",
         )
         tool = load_tool()
-        tool.sync(self.project_root, profile="core")
+        tool.reconcile(self.project_root)
         managed_skill = self.project_root / ".agents" / "skills" / "nova-project-router" / "SKILL.md"
         managed_skill.write_text("user edit", encoding="utf-8")
 
@@ -1046,7 +1432,7 @@ with module._projection_sync_lock(Path(sys.argv[2])):
             encoding="utf-8",
         )
         tool = load_tool()
-        tool.sync(self.project_root, profile="core")
+        tool.reconcile(self.project_root)
 
         replacement_framework = self.root / "ReplacementFramework"
         shutil.copytree(self.agents_root.parent, replacement_framework)
@@ -1072,6 +1458,415 @@ with module._projection_sync_lock(Path(sys.argv[2])):
 
         self.assertEqual(["nova-project-router"], report["sourceChanged"])
         self.assertEqual([], report["resolutionChanged"])
+
+    def test_validate_rejects_unlisted_flat_skill_directory(self):
+        """真源中遗漏 Catalog 的平铺目录不能在升级后悄悄失去全量发现。"""
+        extra_skill = self.agents_root / "Skills" / "nova-project-unlisted"
+        extra_skill.mkdir(parents=True)
+        (extra_skill / "SKILL.md").write_text(
+            "---\nname: nova-project-unlisted\ndescription: 漏登记测试。\n---\n",
+            encoding="utf-8",
+        )
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("未登记" in error for error in errors))
+
+    def test_reconcile_updates_unmodified_managed_skill_after_framework_upgrade(self):
+        """受管副本未改时，真源更新必须自动升级，而不是要求项目组手动处理。"""
+        self._write_consumer_manifest()
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+        source_skill = self.agents_root / "Skills" / "nova-project-router" / "SKILL.md"
+        source_skill.write_text(
+            source_skill.read_text(encoding="utf-8") + "\n升级后的说明。\n",
+            encoding="utf-8",
+        )
+
+        result = tool.reconcile(self.project_root)
+        target_skill = self.project_root / ".agents" / "skills" / "nova-project-router" / "SKILL.md"
+
+        self.assertEqual(["nova-project-router"], result["updated"])
+        self.assertIn("升级后的说明。", target_skill.read_text(encoding="utf-8"))
+
+    def test_reconcile_preserves_modified_managed_skill_and_continues_safe_changes(self):
+        """项目改过的受管副本不覆盖，但其他新增 Skill 仍应完成同步。"""
+        self._write_consumer_manifest()
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+        target_skill = self.project_root / ".agents" / "skills" / "nova-project-router" / "SKILL.md"
+        target_skill.write_text("project override", encoding="utf-8")
+        source_skill = self.agents_root / "Skills" / "nova-project-router" / "SKILL.md"
+        source_skill.write_text(
+            source_skill.read_text(encoding="utf-8") + "\n上游新版本。\n",
+            encoding="utf-8",
+        )
+        self._append_skill("nova-project-added-after-upgrade")
+
+        result = tool.reconcile(self.project_root)
+
+        self.assertEqual("project override", target_skill.read_text(encoding="utf-8"))
+        self.assertEqual(["nova-project-added-after-upgrade"], result["added"])
+        self.assertIn(
+            {"id": "nova-project-router", "reason": "modified-managed"},
+            result["conflicts"],
+        )
+
+    def test_reconcile_preserves_modified_managed_skill_when_source_removes_it(self):
+        """上游删除不能删除项目已修改的受管副本，也不能遗忘其受管记录。"""
+        self._write_consumer_manifest()
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+        target_dir = self.project_root / ".agents" / "skills" / "nova-project-router"
+        (target_dir / "SKILL.md").write_text("project override", encoding="utf-8")
+        catalog = self._read_catalog()
+        catalog["skills"] = [
+            entry for entry in catalog["skills"] if entry["id"] != "nova-project-router"
+        ]
+        for group_ids in catalog.get("capabilityGroups", {}).values():
+            if "nova-project-router" in group_ids:
+                group_ids.remove("nova-project-router")
+        self._write_catalog(catalog)
+        shutil.rmtree(self.agents_root / "Skills" / "nova-project-router")
+
+        result = tool.reconcile(self.project_root)
+        state = json.loads(
+            (self.project_root / ".agents" / "nova-skills.lock.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertTrue(target_dir.is_dir())
+        self.assertIn("nova-project-router", state["managed"])
+        self.assertIn(
+            {"id": "nova-project-router", "reason": "modified-managed"},
+            result["conflicts"],
+        )
+
+    def test_reconcile_removes_missing_managed_skill_alongside_other_actions(self):
+        """缺失的旧受管副本不能让同轮新增 Skill 留下不可恢复的 journal。"""
+        self._write_consumer_manifest()
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+
+        removed_id = "nova-project-ui-create-view"
+        shutil.rmtree(self.project_root / ".agents" / "skills" / removed_id)
+        shutil.rmtree(self.agents_root / "Skills" / removed_id)
+        catalog = self._read_catalog()
+        catalog["skills"] = [
+            entry for entry in catalog["skills"] if entry["id"] != removed_id
+        ]
+        for group_ids in catalog.get("capabilityGroups", {}).values():
+            if removed_id in group_ids:
+                group_ids.remove(removed_id)
+        self._write_catalog(catalog)
+        added_id = "nova-project-added-after-missing-removal"
+        self._append_skill(added_id)
+
+        result = tool.reconcile(self.project_root)
+        state = json.loads(
+            (self.project_root / ".agents" / "nova-skills.lock.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertEqual([added_id], result["added"])
+        self.assertEqual([removed_id], result["removed"])
+        self.assertTrue((self.project_root / ".agents" / "skills" / added_id).is_dir())
+        self.assertNotIn(removed_id, state["managed"])
+        self.assertFalse(
+            (self.project_root / ".agents" / "nova-skills.transaction.json").exists()
+        )
+
+    def test_reconcile_reports_missing_managed_catalog_skill_and_continues_safe_add(self):
+        """Catalog 仍声明的受管目录缺失时应保留所有权并继续其它安全 action。"""
+        self._write_consumer_manifest()
+        tool = load_tool()
+        initial = tool.reconcile(self.project_root)
+        self.assertEqual("success", initial["status"])
+        missing_id = "nova-project-router"
+        shutil.rmtree(self.project_root / ".agents" / "skills" / missing_id)
+        added_id = "nova-project-added-beside-missing"
+        self._append_skill(added_id)
+
+        result = tool.reconcile(self.project_root)
+        state = json.loads(
+            (self.project_root / ".agents" / "nova-skills.lock.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertEqual("partial", result["status"])
+        self.assertEqual([added_id], result["added"])
+        self.assertIn(
+            {"id": missing_id, "reason": "missing-managed"},
+            result["conflicts"],
+        )
+        self.assertIn(missing_id, state["managed"])
+        self.assertFalse((self.project_root / ".agents" / "skills" / missing_id).exists())
+        self.assertTrue((self.project_root / ".agents" / "skills" / added_id).is_dir())
+
+    def test_reconcile_rejects_transaction_with_unplanned_final_managed_entry(self):
+        """损坏 journal 不得借 finalState 认领未出现在 pending 中的用户目录。"""
+        self._write_consumer_manifest()
+        agents_dir = self.project_root / ".agents"
+        agents_dir.mkdir(parents=True)
+        zero_hash = "0" * 64
+        transaction_path = agents_dir / "nova-skills.transaction.json"
+        transaction_path.write_text(
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "transactionId": "a" * 32,
+                    "previousState": None,
+                    "finalState": {
+                        "schemaVersion": 1,
+                        "package": "com.solotopia.nova.framework",
+                        "packageVersion": "0.6.9",
+                        "catalogHash": zero_hash,
+                        "managed": {
+                            "nova-project-router": {
+                                "sourceHash": zero_hash,
+                                "targetHash": zero_hash,
+                            }
+                        },
+                    },
+                    "pending": [
+                        {
+                            "action": "add",
+                            "id": "nova-project-ui-create-view",
+                            "sourceHash": zero_hash,
+                            "targetHash": zero_hash,
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "finalState.*不一致"):
+            load_tool().reconcile(self.project_root)
+
+        self.assertTrue(transaction_path.is_file())
+        self.assertFalse((agents_dir / "skills" / "nova-project-router").exists())
+
+    def test_transaction_rejects_add_for_skill_owned_by_previous_state(self):
+        """journal 的 add 不得覆盖 previousState 已拥有的 Skill。"""
+        tool = load_tool()
+        agents_dir = self.project_root / ".agents"
+        agents_dir.mkdir(parents=True)
+        old_hash = "0" * 64
+        new_hash = "1" * 64
+        previous_state = {
+            "schemaVersion": 1,
+            "package": "com.solotopia.nova.framework",
+            "packageVersion": "0.6.9",
+            "catalogHash": "2" * 64,
+            "managed": {
+                "nova-project-router": {
+                    "sourceHash": old_hash,
+                    "targetHash": old_hash,
+                }
+            },
+        }
+        final_state = json.loads(json.dumps(previous_state))
+        final_state["managed"]["nova-project-router"] = {
+            "sourceHash": new_hash,
+            "targetHash": new_hash,
+        }
+        transaction_path = agents_dir / "nova-skills.transaction.json"
+        transaction_path.write_text(
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "transactionId": "c" * 32,
+                    "previousState": previous_state,
+                    "finalState": final_state,
+                    "pending": [
+                        {
+                            "action": "add",
+                            "id": "nova-project-router",
+                            "sourceHash": new_hash,
+                            "targetHash": new_hash,
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "add.*previousState|已经受管"):
+            tool._read_transaction(transaction_path)
+
+    def test_update_recovery_blocks_when_target_and_backup_are_both_missing(self):
+        """update 丢失旧目标与 backup 时不能把 staged 新版当成安全恢复。"""
+        tool = load_tool()
+        agents_dir = self.project_root / ".agents"
+        transaction_id = "d" * 32
+        staged_skill = (
+            agents_dir
+            / ".nova-skills-staging"
+            / transaction_id
+            / "new"
+            / "nova-project-router"
+        )
+        staged_skill.parent.mkdir(parents=True)
+        shutil.copytree(
+            self.agents_root / "Skills" / "nova-project-router",
+            staged_skill,
+        )
+        new_hash = tool._tree_hash(staged_skill)
+        old_hash = "0" * 64
+        previous_state = {
+            "schemaVersion": 1,
+            "package": "com.solotopia.nova.framework",
+            "packageVersion": "0.6.9",
+            "catalogHash": "2" * 64,
+            "managed": {
+                "nova-project-router": {
+                    "sourceHash": old_hash,
+                    "targetHash": old_hash,
+                }
+            },
+        }
+        final_state = json.loads(json.dumps(previous_state))
+        final_state["managed"]["nova-project-router"] = {
+            "sourceHash": new_hash,
+            "targetHash": new_hash,
+        }
+        state_path = agents_dir / "nova-skills.lock.json"
+        state_path.write_text(json.dumps(previous_state), encoding="utf-8")
+        transaction_path = agents_dir / "nova-skills.transaction.json"
+        transaction_path.write_text(
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "transactionId": transaction_id,
+                    "previousState": previous_state,
+                    "finalState": final_state,
+                    "pending": [
+                        {
+                            "action": "update",
+                            "id": "nova-project-router",
+                            "sourceHash": new_hash,
+                            "targetHash": new_hash,
+                            "previousTargetHash": old_hash,
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "目标.*备份.*缺失|无法安全恢复"):
+            tool._resume_transaction(
+                self.project_root,
+                agents_dir / "skills",
+                state_path,
+            )
+
+        self.assertFalse((agents_dir / "skills" / "nova-project-router").exists())
+        self.assertTrue(staged_skill.is_dir())
+        self.assertTrue(transaction_path.is_file())
+
+    def test_reconcile_recovers_interrupted_managed_skill_update(self):
+        """更新已受管副本时中断，重试必须从 backup/staging 恢复到新版本。"""
+        self._write_consumer_manifest()
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+        source_skill = self.agents_root / "Skills" / "nova-project-router" / "SKILL.md"
+        source_skill.write_text(
+            source_skill.read_text(encoding="utf-8") + "\n更新恢复测试。\n",
+            encoding="utf-8",
+        )
+        target_dir = self.project_root / ".agents" / "skills" / "nova-project-router"
+        original_replace = tool.os.replace
+        replacement_count = 0
+
+        def interrupt_staged_update(source, destination):
+            """旧目录移入 backup 后，在新目录进入目标位置前中断。"""
+            nonlocal replacement_count
+            replacement_count += 1
+            if replacement_count == 3:
+                raise KeyboardInterrupt("模拟更新中断")
+            return original_replace(source, destination)
+
+        with mock.patch.object(tool.os, "replace", side_effect=interrupt_staged_update):
+            with self.assertRaisesRegex(KeyboardInterrupt, "更新中断"):
+                tool.reconcile(self.project_root)
+
+        self.assertFalse(target_dir.exists())
+        self.assertTrue((self.project_root / ".agents" / "nova-skills.transaction.json").is_file())
+
+        result = tool.reconcile(self.project_root)
+
+        self.assertTrue(target_dir.is_dir())
+        self.assertIn("更新恢复测试。", (target_dir / "SKILL.md").read_text(encoding="utf-8"))
+        self.assertFalse((self.project_root / ".agents" / "nova-skills.transaction.json").exists())
+        self.assertEqual([], result["updated"])
+
+    def test_reconcile_recovers_interrupted_managed_skill_removal(self):
+        """删除未改受管副本时中断，重试必须完成删除和最终 state 更新。"""
+        self._write_consumer_manifest()
+        tool = load_tool()
+        tool.reconcile(self.project_root)
+        catalog = self._read_catalog()
+        catalog["skills"] = [
+            entry for entry in catalog["skills"] if entry["id"] != "nova-project-ui-create-view"
+        ]
+        for group_ids in catalog.get("capabilityGroups", {}).values():
+            if "nova-project-ui-create-view" in group_ids:
+                group_ids.remove("nova-project-ui-create-view")
+        self._write_catalog(catalog)
+        shutil.rmtree(self.agents_root / "Skills" / "nova-project-ui-create-view")
+        target_dir = self.project_root / ".agents" / "skills" / "nova-project-ui-create-view"
+        original_replace = tool.os.replace
+
+        def move_then_interrupt_removal(source, destination):
+            """目标移入受控 backup 后模拟崩溃，保留可恢复现场。"""
+            result = original_replace(source, destination)
+            if Path(destination).parent.name == "backup":
+                raise KeyboardInterrupt("模拟删除中断")
+            return result
+
+        with mock.patch.object(tool.os, "replace", side_effect=move_then_interrupt_removal):
+            with self.assertRaisesRegex(KeyboardInterrupt, "删除中断"):
+                tool.reconcile(self.project_root)
+
+        self.assertFalse(target_dir.exists())
+        self.assertTrue((self.project_root / ".agents" / "nova-skills.transaction.json").is_file())
+
+        result = tool.reconcile(self.project_root)
+        state = json.loads(
+            (self.project_root / ".agents" / "nova-skills.lock.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertFalse(target_dir.exists())
+        self.assertNotIn("nova-project-ui-create-view", state["managed"])
+        self.assertFalse((self.project_root / ".agents" / "nova-skills.transaction.json").exists())
+        self.assertEqual([], result["removed"])
+
+    def test_cli_reconcile_returns_one_for_partial_result(self):
+        """CLI reconcile 有冲突时以 1 区分 partial，异常仍保留给退出码 2。"""
+        user_skill = self.project_root / ".agents" / "skills" / "nova-project-router"
+        user_skill.mkdir(parents=True)
+        (user_skill / "SKILL.md").write_text("user owned", encoding="utf-8")
+        tool = load_tool()
+
+        with mock.patch("builtins.print"):
+            exit_code = tool.main(
+                [
+                    "reconcile",
+                    "--project-root",
+                    str(self.project_root),
+                    "--agents-root",
+                    str(self.agents_root),
+                ]
+            )
+
+        self.assertEqual(1, exit_code)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,8 @@
 
 `NetService` 是网络请求静态编排器，封装固定的 Protobuf + AES-128-CBC 请求全流程（URL 解析 → 序列化 → 使用 `Nova.Config.AppConfigs.AppAesKey/AppAesIV` 加密 → HTTP POST → 使用同一配置解密 → BaseResponse 解析 → 业务 Proto 解析），并持有全局 UID、OpenID。
 
+发送时会一次性冻结请求字节与请求头，底层自动完成主备域名和 DoH IP 候选切换；业务 Service 不需要感知或决定重试策略。
+
 **所在文件：** `Assets/Framework/Scripts/Runtime/Modules/Network/Kit/NetService.cs`
 **命名空间：** `NovaFramework.Runtime`
 
@@ -66,10 +68,11 @@ var resp = await NetService.SendAsync(
 - **身份对不可撕裂**：UID/OpenID 使用同一把锁成对读写；旧 `SetUID/SetOpenID` 仅保留兼容入口，Nova 内部不得继续分步更新。
 - **身份变更互斥**：Login、Delete、Bind、Resolve 共用一个非排队租约；竞争调用立即返回 `IDENTITY_OPERATION_IN_PROGRESS(-6)`，QueryConflict 不修改身份，因此不占租约。
 - **业务结果为身份真相源**：响应 Header 仅作请求身份回显，`NetService.SendAsync` 不用它覆盖缓存；Login 使用登录响应 UID，Bind/Resolve 使用各自成功结果同步身份。
-- **AES Key/IV 校验**：`SendAsync` 先确认 `Nova.Config.LoadAsync()` 已完成，并校验 `AppAesKey / AppAesIV` 均为非空的 UTF-8 16 字节字符串；任一条件不满足都会记录配置入口、返回 `NetErrorCode.AES_ENCRYPT_FAILED` 且不发出 HTTP 请求。配置路径为 `Nova/Open Config → 通用配置 → 应用配置`，按当前 `Platform × Channel × DevelopMode` 配置后重新导出 `ConfigRuntimeSO`。
+- **AES Key/IV 校验**：`SendAsync` 先确认 `Nova.Config.LoadAsync()` 已完成，并校验 `AppAesKey / AppAesIV` 均为非空的 UTF-8 16 字节字符串；任一条件不满足都会记录配置入口、返回 `NetErrorCode.AES_ENCRYPT_FAILED` 且不发出 HTTP 请求。配置路径为 `Nova/Open Config → 通用配置 → 应用配置 → App Aes Key / App Aes IV`，按当前 `Platform × Channel × DevelopMode` 配置后重新导出 `ConfigRuntimeSO`。
 - **配置分域**：Network 只使用 `AppConfigs.AppAesKey / AppAesIV` 作为应用协议凭据，绝不回退到隐私配置的默认 AES Key/IV。
 - **`AppID` 解析**：`Nova.Config.AppConfigs.AppID` 必须可解析为 `int32`，解析失败时 `Log.Warning` + 回退 0。
 - **`HttpResponse` 池化**：`SendAsync` 内部使用 `ReferencePool.Put(httpResponse)` 在 `finally` 块归还，调用方无需手动释放。
+- **通信层终止条件**：服务器返回任意正式 HTTP 响应后立即结束候选链，业务成功和业务失败都不再触发主备切换；只有通信失败才继续尝试。
 
 ---
 

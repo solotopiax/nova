@@ -12,9 +12,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
-
-using Best.HTTP.Telemetry;
 
 using Cysharp.Threading.Tasks;
 
@@ -30,6 +29,8 @@ namespace NovaFramework.BestHTTP.Runtime
     internal static class BestHttpTelemetryRegistration
     {
         private static NovaBestHttpTelemetrySink s_Sink;
+        private static Action<string, IReadOnlyDictionary<string, object>> s_EventHandler;
+        private static PropertyInfo s_EventHandlerProperty;
         private static CancellationTokenSource s_ReadinessCancellation;
 
         /// <summary>
@@ -42,11 +43,23 @@ namespace NovaFramework.BestHTTP.Runtime
             s_ReadinessCancellation?.Dispose();
             s_ReadinessCancellation = null;
 
-            if (ReferenceEquals(BestHttpTelemetry.Sink, s_Sink))
-                BestHttpTelemetry.Sink = null;
+            try
+            {
+                if (s_EventHandlerProperty != null &&
+                    ReferenceEquals(s_EventHandlerProperty.GetValue(null), s_EventHandler))
+                {
+                    s_EventHandlerProperty.SetValue(null, null);
+                }
+            }
+            catch (Exception exception)
+            {
+                Log.Warning(LogTag.SDK, "清理 BestHTTP 网络埋点委托失败，已忽略：{0}", exception.Message);
+            }
 
             s_Sink?.ClearPending();
             s_Sink = null;
+            s_EventHandler = null;
+            s_EventHandlerProperty = null;
         }
 
         /// <summary>
@@ -57,13 +70,50 @@ namespace NovaFramework.BestHTTP.Runtime
         {
             Reset();
 
+            s_EventHandlerProperty = ResolveEventHandlerProperty();
+            if (s_EventHandlerProperty == null)
+            {
+                return;
+            }
+
             s_Sink = new NovaBestHttpTelemetrySink(
                 IsTelemetryEnabled,
                 IsSdkReady,
                 GetTrackPlugins);
-            BestHttpTelemetry.Sink = s_Sink;
+            s_EventHandler = s_Sink.Track;
+            try
+            {
+                s_EventHandlerProperty.SetValue(null, s_EventHandler);
+            }
+            catch (Exception exception)
+            {
+                Log.Warning(LogTag.SDK, "注册 BestHTTP 网络埋点委托失败，已跳过遥测：{0}", exception.Message);
+                s_Sink = null;
+                s_EventHandler = null;
+                s_EventHandlerProperty = null;
+                return;
+            }
 
             s_ReadinessCancellation = new CancellationTokenSource();
+        }
+
+        /// <summary>
+        /// 一次反射查找内部 BestHTTP 提供的标准委托属性；官方原版不存在时静默跳过遥测。
+        /// </summary>
+        /// <returns>签名匹配的静态属性，不支持时返回 null。</returns>
+        private static PropertyInfo ResolveEventHandlerProperty()
+        {
+            Type telemetryType = typeof(Best.HTTP.HTTPRequest).Assembly.GetType(
+                "Best.HTTP.Telemetry.BestHttpTelemetry",
+                false);
+            PropertyInfo property = telemetryType?.GetProperty(
+                "EventHandler",
+                BindingFlags.Public | BindingFlags.Static);
+            return property != null &&
+                   property.SetMethod?.IsPublic == true &&
+                   property.PropertyType == typeof(Action<string, IReadOnlyDictionary<string, object>>)
+                ? property
+                : null;
         }
 
         /// <summary>

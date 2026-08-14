@@ -21,8 +21,8 @@ MonoBehaviour:
     CustomConfigCmdName: AppCustomConfig
     CustomName: CustomConfigs
   PrivacyConfigs:
-    AESKey: NovaSampleKey_16
-    AESIV: NovaSampleIv__16
+    AESKey: YOUR_PRIVACY_AES_KEY
+    AESIV: YOUR_PRIVACY_AES_IV
   Platform: 2
   Channel: 3
   EnabledSDKConfigs: []

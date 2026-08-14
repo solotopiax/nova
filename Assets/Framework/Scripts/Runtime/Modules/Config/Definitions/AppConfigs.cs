@@ -28,13 +28,13 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// AES 加密密钥。
         /// </summary>
-        [Tooltip("应用业务 AES 密钥（Key）。公司 GM 后台登记的应用参数；不用于 Util.Encrypt.AES 默认密钥或 Persist 本地数据。若仅用于 Nova Demo 展示，可手动填写公开的 Demo 专属物料：ada87355fc39d643；正式项目请使用项目自身配置。")]
+        [Tooltip("App Aes Key：公司 GM 后台登记的应用参数；不用于 Util.Encrypt.AES 默认密钥或 Persist 本地数据。若仅用于 Nova Demo 展示，可手动填写公开的 Demo 专属物料：ada87355fc39d643；正式项目请使用项目自身配置。")]
         public string AppAesKey;
 
         /// <summary>
         /// AES 初始化向量。
         /// </summary>
-        [Tooltip("应用业务 AES 初始化向量（IV）。公司 GM 后台登记的应用参数，与 AppAesKey 配合使用；不用于 Util.Encrypt.AES 默认密钥或 Persist 本地数据。若仅用于 Nova Demo 展示，可手动填写公开的 Demo 专属物料：e461ae0bc82d1130；正式项目请使用项目自身配置。")]
+        [Tooltip("App Aes IV：公司 GM 后台登记的应用参数，与 AppAesKey 配合使用；不用于 Util.Encrypt.AES 默认密钥或 Persist 本地数据。若仅用于 Nova Demo 展示，可手动填写公开的 Demo 专属物料：e461ae0bc82d1130；正式项目请使用项目自身配置。")]
         public string AppAesIV;
 
         /// <summary>

@@ -67,7 +67,8 @@ namespace NovaFramework.Runtime
             m_DoHManager.Initialize(new DoHManagerConfig
             {
                 UseDoH = m_DoHSettings.UseDoH,
-                DnsTimeoutSeconds = m_DoHSettings.DnsTimeoutSeconds
+                DnsTimeoutSeconds = m_DoHSettings.DnsTimeoutSeconds,
+                MaxIPAddressesPerHost = m_DoHSettings.MaxIPAddressesPerHost
             });
 
             m_HttpManager.Initialize(new HttpManagerConfig

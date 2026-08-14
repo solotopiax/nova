@@ -22,8 +22,13 @@ namespace NovaFramework.Runtime
         string Name { get; }
 
         /// <summary>
-        /// 域名 URL 值。
+        /// 主域名基础地址。
         /// </summary>
         string Value { get; }
+
+        /// <summary>
+        /// 备用域名基础地址；未配置时为空字符串。
+        /// </summary>
+        string FallbackValue { get; }
     }
 }

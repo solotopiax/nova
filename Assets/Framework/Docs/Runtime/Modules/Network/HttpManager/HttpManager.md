@@ -5,7 +5,7 @@
 **全局访问**：`Nova.Network`（通过 `NetworkComponent` 公开方法访问）
 
 HTTP 管理器，通过 `IHttpTransport` 扩展点执行 HTTP 短连接请求（GET / POST / RawData / File）与异步下载。主框架内置 `UnityWebRequestTransport` 作为默认后端，因此未安装 BestHTTP 时全部 HTTP API 仍然可用；独立 UPM 包 `com.solotopia.nova.framework.besthttp` 注册优先级更高的可选后端，安装后会自动覆盖默认实现。`NovaFramework.Runtime` 不直接依赖 BestHTTP，也不通过 `InternalsVisibleTo` 感知可选后端。
-其中 `GetAsync(...)` 会由当前后端关闭本地缓存，确保启动配置、远端规则等读取到最新 GET 响应。所有请求发送前都会调用 `DoHManager` 的统一候选规划；是否真正使用 IP 候选由传输后端按 URI 声明能力。
+其中 `GetAsync(...)` 会由当前后端关闭本地缓存，确保启动配置、远端规则等读取到最新 GET 响应。公开的普通 HTTP、资源下载与文件上传保持原有单地址机制；只有 `HostKey + NetCmd` 业务协议通过内部入口执行主备域名与 DoH IP 候选链。
 
 ---
 
@@ -34,7 +34,8 @@ FrameworkManager
 
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `m_DoHManager` | `IDoHManager` | `null` | 由 HttpManagerConfig.DoHManager 注入；DoH 开启时负责读取域名缓存、缺失时触发 DNSQuery，并参与请求候选地址重试 |
+| `m_DoHManager` | `IDoHManager` | `null` | 由 HttpManagerConfig.DoHManager 注入；仅参与 HostKey + NetCmd 业务协议候选链 |
+| `m_IPAddressTransport` | `IHttpIPAddressTransport` | `null` | 可选的指定连接 IP 能力；URL、Host、SNI 与证书校验仍使用原域名 |
 | `m_ConnectTimeout` | `float` | `20f` | 默认连接超时时间（秒），`connectTimeout = -1` 时使用 |
 | `m_RequestTimeout` | `float` | `60f` | 默认请求超时时间（秒），`requestTimeout = -1` 时使用 |
 
@@ -63,21 +64,20 @@ UniTask<HttpResponse> DownloadTextAsync(string url, int idleTimeout = -1, Action
 
 ## § 9 关键算法
 
-### DoH 感知请求候选链
+### HostKey + NetCmd 业务候选链
 
 ```
-ExecuteDoHResilientAsync(originalUrl)
+PostBusinessRawDataAsync(primaryUrl, fallbackUrl)
   │
-  ├─ canUseIp = m_Transport.CanUseIpCandidate(uri)
-  ├─ m_DoHManager.BuildRequestUrlCandidatesAsync(originalUrl, canUseIp)
-  │    ├─ DoH 启用时查询或读取 host 缓存
-  │    ├─ canUseIp = true 时生成 IP 候选
-  │    └─ 始终保留 originalUrl 作为兜底
+  ├─ 主、备域名同时完成 DoH 查询
+  ├─ 生成 P1 → B1 → P2 → B2 → … 的交错 IP 顺序
+  ├─ 每个候选独享 ConnectTimeout 与 RequestTimeout
+  ├─ IP 全部结束后依次使用主、备域名系统 DNS
   │
-  └─ 依次尝试 candidateUrls
-       ├─ IP 直连时自动补写 `Host` 头（host 或 host:port）
-       ├─ 任一候选成功 → 立即返回
-       └─ 全部失败 → 返回最后一次失败响应
+  └─ 服务器返回任意正式 HTTP 响应即结束
+       ├─ 业务成功或业务失败都属于通信成功
+       ├─ DNS/TCP/TLS/超时等通信失败才继续候选链
+       └─ 全部失败后统一输出【通信失败】或【结果未确认】
 ```
 
 ### DownloadBinaryAsync 空闲超时策略
@@ -103,7 +103,7 @@ DownloadBinaryAsync(url, idleTimeout, progressCallback, cancellationToken)
 | 误区 | 正确理解 |
 |---|---|
 | `headerInfos` 传入普通字符串 | `headerInfos` 必须是 JSON 对象格式字符串，如 `{"key": "value"}`，内部会 `JObject.Parse` |
-| DoH 只影响手动预热，不影响正常请求 | 现在 `Get / Post / PostRawData / PostFile / DownloadBinary / DownloadText` 都会先走 DoH 候选链 |
+| 所有 HTTP 都自动走业务主备链 | 只有 `NetService` 的 `HostKey + NetCmd` 业务协议使用；普通 HTTP、资源/CDN、热更新和第三方 SDK 保持原机制 |
 | `requestTimeout` 传入 0 | 传 -1 使用默认值；传 0 表示 0 秒超时，后端会立即超时，应传正数 |
 | `DownloadBinaryAsync` 使用请求超时控制下载 | 应使用 `idleTimeout` 控制空闲等待；长文件下载时只要持续有字节到达就不会超时 |
 | 后端替换后 API 不变 | HTTP 对外接口签名不绑定具体后端；UnityWebRequest 与 BestHTTP 自动切换不影响 `Nova.Network` 调用方式 |
@@ -178,11 +178,11 @@ finally
 | 默认后端 | 未安装 `com.solotopia.nova.framework.besthttp` 时自动使用 `UnityWebRequestTransport`，完整覆盖 GET、两类 POST、文件上传及两类下载 |
 | BestHTTP 后端 | 安装独立包 `com.solotopia.nova.framework.besthttp` 后提供 `NovaFramework.BestHTTP.Runtime`；其工厂优先级为 100，会自动覆盖默认 UnityWebRequest。该 asmdef 通过程序集名引用 `com.Tivadar.Best.HTTP` / `com.Tivadar.Best.TLSSecurity` |
 | SPI 使用边界 | `IHttpTransport` 是框架级后端扩展点，供可选传输程序集注册实现；后端实现用 `HttpResponse.Create(...)` 创建池化响应；普通业务代码仍应通过 `Nova.Network` 调用 HTTP API |
-| DoH IP 直连 | UnityWebRequest 默认后端不声明 IP 候选能力；BestHTTP 当前仅对明文 HTTP 返回支持并补写原始 `Host`。HTTPS 在取得 SNI/证书验证证据前只检测 DoH、仍使用原域名 |
-| DoH 缓存未命中 | 当前请求会先触发一次 `DNSQuery(url)`，成功后立刻重建候选 URL 再发请求 |
+| DoH IP 直连 | 仅在 Inspector 已启用 DoH，且 BestHTTP 提供 `SetIPAddress(IPAddress[])` 时启用；URL 始终保留原域名，IP 只作为 TCP 连接目标 |
+| 能力不足 | Inspector 已启用 DoH 时，若未安装 BestHTTP、使用不含 `SetIPAddress` 的官方原版、调用该方法异常或运行在 WebGL，初始化会输出明确 Warning，并在本进程关闭 DoH、回退系统 DNS |
 | UnityWebRequest 超时 | UnityWebRequest 没有独立连接超时 API，因此默认后端用 `RequestTimeout` 约束连接与完整请求；`ConnectTimeout` 只在支持独立连接超时的可选后端生效 |
 | WebGL 平台 | 默认后端使用 Unity 官方 UnityWebRequest；BestHTTP 在 WebGL 的实机行为待验证，参见 [project_network_webgl_besthttp.md] |
-| HTTPS + 证书校验 | 当前不启用 HTTPS IP 候选；需验证传输可同时保留原始 Host、TLS SNI 与证书校验名后，才能在后端能力方法中开启 |
+| HTTPS + 证书校验 | 指定 IP 时不得把 HTTPS URL 改成 IP；TCP 连接 IP 与原域名 URL 必须分开传递，Host、TLS SNI 与证书校验名继续使用原域名 |
 | 大文件上传进度监听 | `PostFileAsync` 不提供上传进度回调；需要进度时安装可选后端并使用其原生 API |
 | TLS 验证控制 | BestHTTP 的 TLS 验证由 BestHTTP TLS Security 包统一管理，与 DevelopMode 无关 |
 

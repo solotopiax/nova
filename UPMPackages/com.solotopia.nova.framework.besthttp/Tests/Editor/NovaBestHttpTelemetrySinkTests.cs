@@ -4,8 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 
-using Best.HTTP.Telemetry;
-
 using Cysharp.Threading.Tasks;
 
 using NovaFramework.BestHTTP.Runtime;
@@ -23,7 +21,6 @@ namespace NovaFramework.BestHTTP.Tests
         public void TearDown()
         {
             BestHttpTelemetryRegistration.Reset();
-            BestHttpTelemetry.Sink = null;
         }
 
         [Test]
@@ -33,11 +30,18 @@ namespace NovaFramework.BestHTTP.Tests
 
             BestHttpTelemetryRegistration.Register();
 
-            Assert.That(BestHttpTelemetry.Sink, Is.TypeOf<NovaBestHttpTelemetrySink>());
+            if (GetInternalEventHandlerProperty() == null)
+            {
+                Assert.Pass("当前 BestHTTP 未提供内部遥测委托，注册器应静默跳过。");
+            }
+
+            Delegate eventHandler = GetInternalEventHandler();
+            Assert.That(eventHandler, Is.Not.Null);
+            Assert.That(eventHandler.Target, Is.TypeOf<NovaBestHttpTelemetrySink>());
 
             BestHttpTelemetryRegistration.Reset();
 
-            Assert.That(BestHttpTelemetry.Sink, Is.Null);
+            Assert.That(GetInternalEventHandler(), Is.Null);
         }
 
         [Test]
@@ -60,7 +64,7 @@ namespace NovaFramework.BestHTTP.Tests
                 isReady: () => false,
                 plugins: () => new[] { plugin });
 
-            sink.Track(CreateEvent("disabled"));
+            sink.Track("disabled", null);
 
             Assert.That(sink.PendingCount, Is.Zero);
             Assert.That(plugin.Events, Is.Empty);
@@ -76,7 +80,7 @@ namespace NovaFramework.BestHTTP.Tests
                 isReady: () => true,
                 plugins: () => new ITrackPlugin[] { first, second });
 
-            sink.Track(CreateEvent("ready", "value"));
+            sink.Track("ready", CreateProperties("value"));
 
             Assert.That(first.Events.Select(item => item.Name), Is.EqualTo(new[] { "ready" }));
             Assert.That(second.Events.Select(item => item.Name), Is.EqualTo(new[] { "ready" }));
@@ -93,8 +97,8 @@ namespace NovaFramework.BestHTTP.Tests
                 isReady: () => ready,
                 plugins: () => new[] { plugin });
 
-            sink.Track(CreateEvent("first"));
-            sink.Track(CreateEvent("second"));
+            sink.Track("first", null);
+            sink.Track("second", null);
             ready = true;
             sink.FlushPendingIfReady();
 
@@ -112,7 +116,7 @@ namespace NovaFramework.BestHTTP.Tests
                 isReady: () => true,
                 plugins: () => new ITrackPlugin[] { throwing, recording });
 
-            Assert.DoesNotThrow(() => sink.Track(CreateEvent("isolated")));
+            Assert.DoesNotThrow(() => sink.Track("isolated", null));
 
             Assert.That(recording.Events.Select(item => item.Name), Is.EqualTo(new[] { "isolated" }));
         }
@@ -128,7 +132,7 @@ namespace NovaFramework.BestHTTP.Tests
                 plugins: () => new[] { plugin });
 
             for (int i = 0; i < 130; i++)
-                sink.Track(CreateEvent("event-" + i));
+                sink.Track("event-" + i, null);
 
             Assert.That(sink.PendingCount, Is.EqualTo(128));
 
@@ -165,13 +169,30 @@ namespace NovaFramework.BestHTTP.Tests
             return (RuntimeInitializeLoadType)attribute.ConstructorArguments[0].Value;
         }
 
-        private static BestHttpTelemetryEvent CreateEvent(string name, string value = null)
+        private static Dictionary<string, object> CreateProperties(string value)
         {
-            return new BestHttpTelemetryEvent(
-                name,
-                value == null
-                    ? null
-                    : new Dictionary<string, object> { { "key", value } });
+            return value == null
+                ? null
+                : new Dictionary<string, object> { { "key", value } };
+        }
+
+        /// <summary>
+        /// 通过反射读取内部 BestHTTP 的标准遥测委托，避免测试程序集依赖其专属类型。
+        /// </summary>
+        private static Delegate GetInternalEventHandler()
+        {
+            return GetInternalEventHandlerProperty()?.GetValue(null) as Delegate;
+        }
+
+        /// <summary>
+        /// 获取内部 BestHTTP 的标准遥测委托属性；官方原版返回 null。
+        /// </summary>
+        private static PropertyInfo GetInternalEventHandlerProperty()
+        {
+            Type telemetryType = typeof(Best.HTTP.HTTPRequest).Assembly.GetType(
+                "Best.HTTP.Telemetry.BestHttpTelemetry",
+                false);
+            return telemetryType?.GetProperty("EventHandler", BindingFlags.Public | BindingFlags.Static);
         }
 
         private sealed class RecordingTrackPlugin : ITrackPlugin

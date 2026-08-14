@@ -49,7 +49,7 @@ void Update()
 void Shutdown()
 ```
 
-`BuildRequestUrlCandidatesAsync` 统一声明请求候选规划契约：缓存命中时直接使用 IP，未命中时等待 DNS 查询后重读缓存；仅在调用方允许时生成 IP 候选，并始终以原始 URL 兜底。
+`BuildRequestUrlCandidatesAsync` 统一声明旧兼容候选规划契约：缓存命中时可生成 IP URL，未命中时等待 DNS 查询后重读缓存，并始终以原始 URL 兜底。业务 HTTPS 不使用它直接改写 URL，而是保留原域名并由支持指定连接 IP 的传输层处理。
 
 ## 关联文档
 

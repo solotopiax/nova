@@ -20,6 +20,8 @@ public static bool ExportHostKeyData(HostKeySettings settings);
 - 数据格式来自 `NetworkSettings.DataFormat`，与 NetCmd 共用一个选项，默认 JSON；Binary 使用 `.bytes`。
 - 所有有效 Sheet 必须按 `xxxxx-Debug` / `xxxxx-Release` 成对存在。
 - Luban 只读取当前 DevelopMode 对应的 Sheet，临时表名会去掉模式后缀。
+- `Value` 是主域名，`FallbackValue` 是备用域名；非空值必须是无首尾空格、无末尾斜杠的 HTTP(S) 基础地址，同时填写时协议必须相同。
+- NetCmd 的 `Path` 可以为空；非空时必须以 `/` 开头。
 - 生成结果先暂存并验证，再通过 `FileSystem.OutputApplier` 批量发布；失败不会留下部分正式产物。
 - 发布数据时会在同一事务中删除同名反格式文件及其 `.meta`。
 

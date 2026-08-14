@@ -70,7 +70,7 @@ namespace NovaFramework.Runtime
         private readonly string[] m_MetadataBaseUrls;
 
         /// <summary>
-        /// 常规与白名单元数据根地址的去重合集，供 DoH 预检。
+        /// 常规与白名单元数据根地址的去重合集，供 BaseUrls 返回。
         /// </summary>
         private readonly string[] m_AllBaseUrls;
 

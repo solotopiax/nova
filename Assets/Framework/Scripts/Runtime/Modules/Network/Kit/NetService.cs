@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Threading;
@@ -170,8 +171,9 @@ namespace NovaFramework.Runtime
         {
             string netCmdName = cmdRow?.Name ?? "unknown";
 
-            string url = Nova.Network.ResolveNetCmdUrl(cmdRow);
-            if (string.IsNullOrEmpty(url))
+            IReadOnlyList<string> routeUrls = Nova.Network.ResolveNetCmdUrls(cmdRow);
+            string url = routeUrls.Count > 0 ? routeUrls[0] : null;
+            if (routeUrls.Count == 0)
             {
                 LogRequest(netCmdName, url, request, false, "url_not_found");
                 Log.Warning(LogTag.Network, "NetService.SendAsync：未找到 NetCmd URL，name={0}。", netCmdName);
@@ -188,7 +190,7 @@ namespace NovaFramework.Runtime
             {
                 LogRequest(netCmdName, url, request, false, "aes_config_invalid");
                 Log.Error(LogTag.Network,
-                    "NetService.SendAsync：应用业务 AES 配置未就绪或无效，name={0}。请先完成 await Nova.Config.LoadAsync()；然后在 Nova/Open Config → 通用配置 → 应用配置中，为当前 Platform × Channel × DevelopMode 配置 AppAesKey / AppAesIV（UTF-8 各 16 字节），保存后重新导出 ConfigRuntimeSO。",
+                    "NetService.SendAsync：应用配置中的 App Aes Key / App Aes IV 未就绪或无效，name={0}。请先完成 await Nova.Config.LoadAsync()；然后在 Nova/Open Config → 通用配置 → 应用配置 → App Aes Key / App Aes IV 中，为当前 Platform × Channel × DevelopMode 配置 UTF-8 各 16 字节的值，保存后重新导出 ConfigRuntimeSO。",
                     netCmdName);
                 return NetResponse<TResp>.Fail(NetErrorCode.AES_ENCRYPT_FAILED, "App AES Key/IV is not ready");
             }
@@ -221,7 +223,13 @@ namespace NovaFramework.Runtime
                 LogRequest(netCmdName, url, request, true);
                 try
                 {
-                    httpResponse = await Nova.Network.PostRawDataAsync(url, bodyBytes, -1f, -1f, headerInfos);
+                    httpResponse = await Nova.Network.PostBusinessRawDataAsync(
+                        routeUrls,
+                        bodyBytes,
+                        -1f,
+                        -1f,
+                        headerInfos
+                    );
                 }
                 catch (Exception e)
                 {

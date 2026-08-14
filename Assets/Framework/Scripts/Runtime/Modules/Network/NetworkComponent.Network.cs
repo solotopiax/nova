@@ -71,6 +71,16 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 解析框架业务协议使用的主备完整 URL，不向业务调用方暴露切换策略。
+        /// </summary>
+        /// <param name="cmdRow">网络指令行数据。</param>
+        /// <returns>零到两个完整 URL。</returns>
+        internal System.Collections.Generic.IReadOnlyList<string> ResolveNetCmdUrls(INetworkCmdRow cmdRow)
+        {
+            return m_NetworkManager.ResolveNetCmdUrls(cmdRow);
+        }
+
+        /// <summary>
         /// 根据指令名称（INetworkCmdRow.Name）解析对应指令行数据。
         /// </summary>
         /// <param name="cmdName">指令名称。</param>

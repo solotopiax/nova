@@ -24,9 +24,14 @@ namespace NovaFramework.Runtime
         public bool UseDoH;
 
         /// <summary>
-        /// 单个域名的一次 DoH 查询超时时间（秒），默认 3 秒；0 表示跳过 DoH 查询。
-        /// 查询期间的所有候选地址共用该超时时间。
+        /// 单个原始域名的完整 DoH 解析链超时时间（秒），默认 5 秒；小于等于 0 表示无限等待。
+        /// A 查询与后续全部 CNAME 层共用同一截止时间；是否启用 DoH 仅由 UseDoH 控制。
         /// </summary>
-        public int DnsTimeoutSeconds = 3;
+        public int DnsTimeoutSeconds = 5;
+
+        /// <summary>
+        /// 每个域名最多保留的 DoH IPv4 数量，默认 3；小于等于 0 表示保留全部。
+        /// </summary>
+        public int MaxIPAddressesPerHost = 3;
     }
 }

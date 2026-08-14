@@ -5,7 +5,7 @@
  * filename:  MobileRestoreService.cs
  * author:    yingzheng
  * created:   2026/5/25
- * descrip:   IAP 5.x Restore 流程：RestoreTransactions → CheckEntitlement → 分发验单
+ * descrip:   IAP 5.x 手动 Restore 与权益刷新流程
  ***************************************************************/
 
 using System;
@@ -20,8 +20,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
     /// <summary>
     /// Restore 流程协调服务（Unity IAP 5.x）。
-    /// 流程：Controller.RestoreTransactions → 为订阅/非消耗品逐个 CheckEntitlement
-    /// → OnCheckEntitlement 收集全部结果后，批量触发订阅验单和非消耗品验单。
+    /// 手动 Restore 会先调用 Controller.RestoreTransactions；启动期和补单期只执行 CheckEntitlement 权益刷新。
+    /// OnCheckEntitlement 收集全部结果后，批量触发订阅验单和非消耗品验单。
     /// </summary>
     internal sealed partial class MobileRestoreService
     {
@@ -91,32 +91,6 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             });
 
             return await restoreTcs.Task;
-        }
-
-        /// <summary>
-        /// 商品拉取成功后尽早触发平台恢复交易，只唤起平台侧订单补全，不在此处做权益验单。
-        /// </summary>
-        internal void RequestPlatformRestoreAfterProductsFetched()
-        {
-            if (m_HasRequestedProductFetchedRestore)
-            {
-                return;
-            }
-
-            if (!m_Hub.InitService.IsReady || m_Hub.ExtendedService?.IsAttached != true)
-            {
-                return;
-            }
-
-            m_HasRequestedProductFetchedRestore = true;
-            Log.Debug(LogTag.IAPMobile, "商品拉取成功后触发平台恢复交易。");
-            m_Hub.ExtendedService.RestoreTransactions((success, errorInfo) =>
-            {
-                if (!success)
-                {
-                    Log.Warning(LogTag.IAPMobile, $"商品拉取后的平台恢复交易返回失败，详情={errorInfo}");
-                }
-            });
         }
 
         /// <summary>

@@ -13,8 +13,6 @@
 using System;
 using System.Collections.Generic;
 
-using Best.HTTP.Telemetry;
-
 using NovaFramework.Runtime;
 
 namespace NovaFramework.BestHTTP.Runtime
@@ -22,14 +20,14 @@ namespace NovaFramework.BestHTTP.Runtime
     /// <summary>
     /// 将 Best HTTP 的后端无关遥测事件转发给 Nova 当前可用的全部通用埋点插件。
     /// </summary>
-    internal sealed class NovaBestHttpTelemetrySink : IBestHttpTelemetrySink
+    internal sealed class NovaBestHttpTelemetrySink
     {
         internal const int MaxPendingEvents = 128;
 
         private readonly Func<bool> m_IsEnabled;
         private readonly Func<bool> m_IsReady;
         private readonly Func<IReadOnlyList<ITrackPlugin>> m_GetTrackPlugins;
-        private readonly Queue<BestHttpTelemetryEvent> m_PendingEvents = new Queue<BestHttpTelemetryEvent>();
+        private readonly Queue<TelemetryEventData> m_PendingEvents = new Queue<TelemetryEventData>();
         private readonly object m_Gate = new object();
 
         /// <summary>
@@ -60,11 +58,17 @@ namespace NovaFramework.BestHTTP.Runtime
             }
         }
 
-        /// <inheritdoc />
-        public void Track(BestHttpTelemetryEvent telemetryEvent)
+        /// <summary>
+        /// 接收内部 BestHTTP 通过标准委托传出的事件，不依赖其专属遥测类型。
+        /// </summary>
+        /// <param name="eventName">稳定事件名。</param>
+        /// <param name="properties">只读事件属性。</param>
+        public void Track(string eventName, IReadOnlyDictionary<string, object> properties)
         {
-            if (telemetryEvent == null)
+            if (string.IsNullOrEmpty(eventName))
                 return;
+
+            var telemetryEvent = new TelemetryEventData(eventName, properties);
 
             if (!IsEnabled())
             {
@@ -97,7 +101,7 @@ namespace NovaFramework.BestHTTP.Runtime
 
             while (true)
             {
-                BestHttpTelemetryEvent telemetryEvent;
+                TelemetryEventData telemetryEvent;
                 lock (m_Gate)
                 {
                     if (m_PendingEvents.Count == 0)
@@ -154,8 +158,8 @@ namespace NovaFramework.BestHTTP.Runtime
         /// <summary>
         /// 将启动期事件放入固定容量队列；满载时淘汰最旧事件以限制内存占用。
         /// </summary>
-        /// <param name="telemetryEvent">待缓存的不可变 BestHTTP 事件。</param>
-        private void EnqueueBounded(BestHttpTelemetryEvent telemetryEvent)
+        /// <param name="telemetryEvent">待缓存的本地事件快照。</param>
+        private void EnqueueBounded(TelemetryEventData telemetryEvent)
         {
             lock (m_Gate)
             {
@@ -168,8 +172,8 @@ namespace NovaFramework.BestHTTP.Runtime
         /// <summary>
         /// 将单个事件扇出到全部可用埋点插件，并隔离查询与单插件上报异常。
         /// </summary>
-        /// <param name="telemetryEvent">待派发的不可变 BestHTTP 事件。</param>
-        private void Dispatch(BestHttpTelemetryEvent telemetryEvent)
+        /// <param name="telemetryEvent">待派发的本地事件快照。</param>
+        private void Dispatch(TelemetryEventData telemetryEvent)
         {
             IReadOnlyList<ITrackPlugin> trackPlugins;
             try
@@ -205,14 +209,44 @@ namespace NovaFramework.BestHTTP.Runtime
         /// <summary>
         /// 为每个埋点插件复制独立属性字典，避免插件修改污染后续接收方。
         /// </summary>
-        /// <param name="telemetryEvent">属性来源事件。</param>
+        /// <param name="telemetryEvent">属性来源事件快照。</param>
         /// <returns>可由单个插件独立消费的属性字典。</returns>
-        private static Dictionary<string, object> CopyProperties(BestHttpTelemetryEvent telemetryEvent)
+        private static Dictionary<string, object> CopyProperties(TelemetryEventData telemetryEvent)
         {
             var properties = new Dictionary<string, object>(telemetryEvent.Properties.Count);
             foreach (KeyValuePair<string, object> pair in telemetryEvent.Properties)
                 properties.Add(pair.Key, pair.Value);
             return properties;
+        }
+
+        /// <summary>
+        /// 与内部 BestHTTP 类型解耦的不可变事件快照。
+        /// </summary>
+        private sealed class TelemetryEventData
+        {
+            /// <summary>
+            /// 创建事件快照，立即复制属性以隔离调用方后续修改。
+            /// </summary>
+            internal TelemetryEventData(string name, IReadOnlyDictionary<string, object> properties)
+            {
+                Name = name;
+                var copiedProperties = new Dictionary<string, object>();
+                if (properties != null)
+                {
+                    foreach (KeyValuePair<string, object> pair in properties)
+                    {
+                        copiedProperties[pair.Key] = pair.Value;
+                    }
+                }
+
+                Properties = copiedProperties;
+            }
+
+            /// <summary>稳定事件名。</summary>
+            internal string Name { get; }
+
+            /// <summary>事件属性快照。</summary>
+            internal IReadOnlyDictionary<string, object> Properties { get; }
         }
     }
 }

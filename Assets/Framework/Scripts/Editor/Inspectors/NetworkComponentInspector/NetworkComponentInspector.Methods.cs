@@ -406,7 +406,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制 DoH 管理折叠区（UseDoH 开关 / 单次查询超时 / 候选地址说明 / 运行时域名 IP 列表），并加分隔线。
+        /// 绘制 DoH 管理折叠区（UseDoH 开关 / 单域名 DoH 解析链超时 / 候选地址说明 / 运行时域名 IP 列表），并加分隔线。
         /// </summary>
         private void DrawDoHSettings()
         {
@@ -418,18 +418,28 @@ namespace NovaFramework.Editor
 
             EditorUtil.Draw.IncreaseIndentLevel();
             EditorUtil.Draw.Toggle("启用 DoH (DNS-over-HTTPS)", m_DoHSettings.FindPropertyRelative("UseDoH"), true, null, null, GUILayout.Width(185));
-            EditorUtil.Draw.Property("单次 DoH 查询超时时间 (秒)", m_DoHSettings.FindPropertyRelative("DnsTimeoutSeconds"), true, GUILayout.Width(215));
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
                 EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                 {
-                    "每个域名的一次 DoH 查询独立计时，默认 3 秒，0 表示跳过 DoH 查询。",
-                    "查询期间的所有候选地址：",
-                    "1. https://1.1.1.1/dns-query",
-                    "2. https://1.0.0.1/dns-query",
-                    "3. https://cloudflare-dns.com/dns-query",
-                    "将共用该超时时间。"
+                    "DoH 用于更安全地查询域名对应的访问地址，减少本地 DNS 异常或劫持对网络访问的影响。"
+                }, false, GUILayout.ExpandWidth(true));
+            });
+            EditorUtil.Draw.Property("单域名 DoH 解析链超时时间（秒）", m_DoHSettings.FindPropertyRelative("DnsTimeoutSeconds"), true, GUILayout.Width(225));
+            EditorUtil.Draw.Property("单域名最多使用 IP 数量", m_DoHSettings.FindPropertyRelative("MaxIPAddressesPerHost"), true, GUILayout.Width(225));
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1) 每个域名的查询都会单独计时，默认最多等待 5 秒。",
+                    "(2) 填写小于等于 0 的数字时不限制等待时间；如需停用 DoH，请关闭上方开关。",
+                    "(3) 每个域名默认最多使用前 3 个查询结果；填写小于等于 0 的整数时使用全部结果，尝试越多，最终等待时间可能越长。",
+                    "(4) 系统会自动按顺序尝试以下查询服务，整个过程共用上面设置的等待时间：",
+                    "      https://1.1.1.1/dns-query",
+                    "      https://1.0.0.1/dns-query",
+                    "      https://cloudflare-dns.com/dns-query"
                 }, false, GUILayout.ExpandWidth(true));
             });
             DrawRuntimeDoHAddresses((NetworkComponent)target);
@@ -480,13 +490,22 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 检测当前工程是否安装了包含结构化遥测契约的 Best HTTP 商业库。
+        /// 检测当前工程是否安装了包含标准遥测委托的 Best HTTP 内部版。
         /// </summary>
         /// <param name="typeResolver">按程序集限定名解析类型的入口，测试中可替换。</param>
-        /// <returns>结构化遥测契约类型存在时返回 true。</returns>
+        /// <returns>标准遥测委托存在且签名匹配时返回 true。</returns>
         private static bool IsBestHttpTelemetryAvailable(System.Func<string, System.Type> typeResolver)
         {
-            return typeResolver?.Invoke("Best.HTTP.Telemetry.BestHttpTelemetry, com.Tivadar.Best.HTTP") != null;
+            System.Type telemetryType = typeResolver?.Invoke(
+                "Best.HTTP.Telemetry.BestHttpTelemetry, com.Tivadar.Best.HTTP");
+            System.Reflection.PropertyInfo eventHandlerProperty = telemetryType?.GetProperty(
+                "EventHandler",
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            return eventHandlerProperty != null &&
+                   eventHandlerProperty.SetMethod?.IsPublic == true &&
+                   eventHandlerProperty.PropertyType == typeof(System.Action<
+                       string,
+                       System.Collections.Generic.IReadOnlyDictionary<string, object>>);
         }
 
         /// <summary>
@@ -622,7 +641,7 @@ namespace NovaFramework.Editor
                 }
 
                 DrawDoHResolutionGroup(roots, DoHResolutionSource.HostKeyPrewarm, "HostKey 预热", "HostKey");
-                DrawDoHResolutionGroup(roots, DoHResolutionSource.RuntimeDiscovered, "运行时按需发现", "Runtime");
+                DrawDoHResolutionGroup(roots, DoHResolutionSource.RuntimeDiscovered, "手动 DNS 查询", "Runtime");
             });
         }
 

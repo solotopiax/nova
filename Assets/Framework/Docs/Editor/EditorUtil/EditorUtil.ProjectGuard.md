@@ -21,7 +21,7 @@ EditorUtil.ProjectGuard.ValidateRelease(buildTarget);
 
 Scene 检查使用已加载 Scene 或只读 Preview Scene，不保存、不修复、不自动加载 Content。首个启用 Build Scene 作为本次构建入口检查；其它 Build Scene 可以是不含 Nova 和 FrameworkComponent 的 Content 或自定义 Scene。
 
-若 Scene 含启用的 `ConfigComponent`，Guard 会通过 `EditorUtil.Config.WorkspaceActive.Get()` 获取当前激活的 `ConfigMasterSO`，再以其 `ExportTarget` 精确定位 `ConfigRuntimeSO`，并校验 `m_AssetLocation` 与导出物名称一致。配置资产可位于 Scene 目录之外。检查结果同时给出字段路径、`Nova/Open Config` 面板入口、ConfigMaster 路径、ConfigRuntime 路径与导出坐标；不会输出密钥内容。
+若 Scene 含启用的 `ConfigComponent`，Guard 会通过 `EditorUtil.Config.WorkspaceActive.Get()` 获取当前激活的 `ConfigMasterSO`，再以其 `ExportTarget` 精确定位 `ConfigRuntimeSO`，并校验 `m_AssetLocation` 与导出物名称一致。配置资产可位于 Scene 目录之外。只有 Play 被拦截，或用户主动点击 ProjectGuardWindow 的检查按钮时，Console / Editor.log 才会输出字段路径、`Nova/Open Config` 面板入口、ConfigMaster 路径、ConfigRuntime 路径与导出坐标；不会输出密钥内容。
 
 ## 当前规则
 
@@ -40,14 +40,14 @@ Scene 检查使用已加载 Scene 或只读 Preview Scene，不保存、不修�
 
 `Resources/BuiltIn/**` 合法；UPM 与识别为第三方插件所有的 Resources 被忽略。资源归属不能确定时只给 Warning，不阻断 Play 或 Unity Build。
 
-进入 Play Mode 前若存在 Error，Play gate 会取消启动并弹出“Nova 启动配置未就绪”；选择“打开 Config”会切换到报告对应的 ConfigMaster、导出坐标，并定位首个错误所属的应用配置、名字空间、SDK 或 Kit 面板。修正后需保存并重新导出，再次进入 Play。
+进入 Play Mode 前若存在 Error，Play gate 会取消启动并弹出“Nova 启动配置未就绪”；弹窗仅显示每项错误的异常摘要与配置入口，完整的来源、导出物和坐标见 Console / Editor.log。选择“打开 Config”会切换到报告对应的 ConfigMaster、导出坐标，并定位首个错误所属的应用配置、名字空间、SDK 或 Kit 面板。修正后需保存并重新导出，再次进入 Play。
 
 ## 集中位置
 
 规则、scope 和报告模型全部位于 `Scripts/Editor/EditorUtil/EditorUtil.ProjectGuard/`。外围只保留：
 
 - Play gate：同目录中的薄事件适配器。
-- ProjectGuardWindow：只展示 Quick / Build 报告。
+- ProjectGuardWindow：读取规则消息的前两条有效说明，以“状态和编号、问题、处理方式、位置”的编号摘要展示当前场景或构建场景报告；用户主动检查后将完整技术诊断输出到 Console / Editor.log。
 
 ProjectGuard 不注册全局 Build preprocessor。Unity Build、显式 `BuildPlayerOptions.scenes` 和项目自定义 BuildPipeline 均保持原行为；若项目希望发布门禁，应在自己的流水线中显式调用并解释报告。
 

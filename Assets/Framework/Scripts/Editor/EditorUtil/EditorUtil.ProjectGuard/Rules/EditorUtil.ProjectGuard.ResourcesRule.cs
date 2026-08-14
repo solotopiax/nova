@@ -27,6 +27,11 @@ namespace NovaFramework.Editor
                 Violation,
             }
 
+            /// <summary>
+            /// 检查受管目录内需确认归属的 Resources 资源，不修改资源或目录。
+            /// </summary>
+            /// <param name="managedRoots">当前检查范围的目录根节点。</param>
+            /// <param name="report">问题收集报告。</param>
             private static void ValidateResources(string[] managedRoots, NovaGuardReport report)
             {
                 if (managedRoots == null || managedRoots.Length == 0)
@@ -46,7 +51,9 @@ namespace NovaFramework.Editor
                     report.Add(new NovaGuardIssue(
                         "NOVA-RES-001",
                         NovaGuardSeverity.Warning,
-                        "当前范围发现归属待确认的非 BuiltIn Resources；若属于业务资源请评估迁移 Bundle，第三方插件资源合法。",
+                        "发现一个需要确认归属的 Resources 资源。\n" +
+                        "处理方式：业务资源建议迁移到 Bundle；第三方插件资源可以保留。\n" +
+                        "技术信息：当前范围发现归属待确认的非 Resources/BuiltIn 资源。",
                         path));
                 }
             }

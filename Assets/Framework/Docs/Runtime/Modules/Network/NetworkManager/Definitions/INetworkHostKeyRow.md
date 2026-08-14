@@ -20,8 +20,9 @@
 ```csharp
 public interface INetworkHostKeyRow
 {
-    string Name  { get; }   // 域名标识名称（主键）
-    string Value { get; }   // 域名 URL 值
+    string Name          { get; }   // 域名标识名称（主键）
+    string Value         { get; }   // 主域名
+    string FallbackValue { get; }   // 备用域名，可为空
 }
 ```
 
@@ -35,6 +36,7 @@ public partial class TbHostKey : INetworkHostKeyRow
 {
     public string Name  { get; set; }
     public string Value { get; set; }
+    public string FallbackValue { get; set; }
 }
 
 // NetworkManager 通过 ITable<INetworkHostKeyRow> 协变访问
@@ -43,7 +45,7 @@ private void BuildHostKeyCacheFromTable(ITable table)
     if (table is ITable<INetworkHostKeyRow> typedTable)
     {
         foreach (INetworkHostKeyRow row in typedTable.DataList)
-            m_HostKeyCache[row.Name] = row.Value;
+            // NetworkManager 会校验并缓存主、备域名。
     }
 }
 ```

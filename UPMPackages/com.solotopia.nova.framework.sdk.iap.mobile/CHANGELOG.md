@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-08-14
+
+### Fixed
+
+- 启动期商品拉取成功后不再自动调用 `RestoreTransactions`，避免 iOS 进游戏弹出 Apple ID 验证框；订阅和非消耗品恢复仍通过 `FetchPurchases`、服务端查单、本地补单和权益刷新链路兜底。
+- 订阅到期倒计时不再复用手动 `RestoreAsync`，改为先 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行权益刷新，避免后台到期检查触发 iOS 恢复购买弹框。
+
 ## [0.1.7] - 2026-08-13
 
 ### Breaking

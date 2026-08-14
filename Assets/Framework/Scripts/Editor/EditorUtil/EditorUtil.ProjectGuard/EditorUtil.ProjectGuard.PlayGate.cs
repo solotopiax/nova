@@ -81,7 +81,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 构建 Play 阻断弹窗文本，完整保留字段异常、配置入口和资产来源。
+            /// 构建 Play 阻断弹窗文本，仅保留字段异常和配置入口；完整诊断由 Console 与 Editor.log 输出。
             /// </summary>
             private static string BuildPlayBlockedDialogMessage(NovaGuardReport report)
             {
@@ -89,13 +89,10 @@ namespace NovaFramework.Editor
                 foreach (NovaGuardIssue issue in report?.Issues.Where(item =>
                              item.Severity == NovaGuardSeverity.Error) ?? Enumerable.Empty<NovaGuardIssue>())
                 {
+                    string summary = string.Join("\n", issue.Message.Split('\n').Take(2));
                     builder.Append("\n[").Append(issue.RuleId).Append("] ")
-                        .Append(issue.Message);
-                    if (!string.IsNullOrEmpty(issue.AssetPath))
-                    {
-                        builder.Append("\n资产：").Append(issue.AssetPath);
-                    }
-                    builder.Append('\n');
+                        .Append(summary)
+                        .Append('\n');
                 }
                 return builder.ToString();
             }

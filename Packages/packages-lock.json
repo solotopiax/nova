@@ -225,7 +225,7 @@
       "hash": "4ce7dd3cc54e37e2ed6dc59cb5a047f3dccb3f50"
     },
     "com.google.external-dependency-manager": {
-      "version": "1.2.187",
+      "version": "1.2.188",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
@@ -291,7 +291,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.11",
+        "com.solotopia.nova.framework": "0.6.12",
         "com.solotopia.unitask": "10.0.6",
         "com.unity.nuget.newtonsoft-json": "3.2.2",
         "com.tivadar.best.http": "3.0.19",

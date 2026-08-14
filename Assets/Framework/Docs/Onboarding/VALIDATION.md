@@ -38,7 +38,7 @@ Release Strict 由项目或发布 CI 显式启用，可检查该项目声明的 
 
 ## Unity Build 保持可用
 
-Unity Editor 的 Build 菜单、`BuildPipeline.BuildPlayer` 与 `EditorUtil.Build` 都可以直接构建 Player。ProjectGuard 不注册全局 Build preprocessor；菜单中的 Build Validate 以当前启用的 Build Settings Scene 生成报告，但不会替用户启动或阻断构建。自定义 BuildPipeline 若要把报告作为门禁，应由项目显式传递并校验自己的 Scene 闭包；Warning 永不阻断。
+Unity Editor 的 Build 菜单、`BuildPipeline.BuildPlayer` 与 `EditorUtil.Build` 都可以直接构建 Player。ProjectGuard 不注册全局 Build preprocessor；ProjectGuard 窗口中的「检查构建场景」会检查当前启用的 Build Settings Scene 及其所在目录下的资源，但不会替用户启动或阻断构建。自定义 BuildPipeline 若要把报告作为门禁，应由项目显式传递并校验自己的 Scene 闭包；Warning 永不阻断。
 
 Pipify 的 `build.package` 是可选自动化入口，适合批量串联导出、Bundle 与 Player 构建，但它不是唯一入口。普通 Unity Build 不要求先运行 Pipify，也不要求存在 Release Smoke 证据。
 

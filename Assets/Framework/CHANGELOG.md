@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [0.6.12] - 2026-08-14
+
+### Breaking
+
+- 网络公共 `INetworkManager` / `IDoHManager` 契约新增主备 URL 解析与运行时 DoH 开关方法；自定义实现需重新编译并补齐实现。
+
+### Added
+
+- 业务网络支持 HostKey 主备域名、DoH IPv4 候选与保留原域名 Host/SNI 的指定连接 IP 路由，并补充 HTTP 到达状态诊断。
+- Nova 安装或升级后自动将包内项目组 Skill 投影到项目根 `.agents/skills/`，对用户文件和受管文件冲突采取保守保留策略。
+
+### Changed
+
+- 网络请求、DoH、资源启动链、配置窗口与 ProjectGuard 文档和实现同步本轮契约；DoH 不具备安全 IP 注入能力时运行期自动回退系统 DNS。
+
 ## [0.6.11] - 2026-08-13
 
 ### Changed

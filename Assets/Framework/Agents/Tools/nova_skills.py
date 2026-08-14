@@ -12,6 +12,7 @@ import shutil
 import stat
 import sys
 import tempfile
+import threading
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
@@ -30,11 +31,16 @@ except ImportError:  # pragma: no cover - Unix 的等价实现由 fcntl 提供�
 
 
 FRAMEWORK_PACKAGE_NAME = "com.solotopia.nova.framework"
+PROJECT_SKILL_ID_PREFIX = "nova-project-"
 CATALOG_FILE_NAME = "catalog.json"
 STATE_FILE_NAME = "nova-skills.lock.json"
 TRANSACTION_FILE_NAME = "nova-skills.transaction.json"
 STAGING_DIRECTORY_NAME = ".nova-skills-staging"
 SYNC_LOCK_FILE_NAME = ".nova-skills-sync.lock"
+# Catalog、state 与 transaction 共享唯一的 schemaVersion 1；任何不匹配的格式均 fail-closed。
+CATALOG_SCHEMA_VERSION = 1
+STATE_SCHEMA_VERSION = 1
+TRANSACTION_SCHEMA_VERSION = 1
 SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TRANSACTION_ID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
 SKILL_KINDS = {"router", "operation", "workflow"}
@@ -43,10 +49,41 @@ MINIMUM_EVIDENCE_LEVELS = {"static", "compile", "play"}
 CONTRACT_IDEMPOTENCY = {"read-only", "ensure-state", "orchestrate"}
 CONTRACT_RESULT_STATES = {"success", "partial", "blocked", "not_applicable"}
 SHA256_HEX_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+RECONCILE_ACTIONS = {"add", "update", "remove"}
+SKILL_STATUSES = {"experimental", "stable", "deprecated"}
+CATALOG_FIELDS = {"schemaVersion", "package", "capabilityGroups", "skills"}
+CATALOG_SKILL_FIELDS = {
+    "id",
+    "path",
+    "kind",
+    "status",
+    "journeys",
+    "effects",
+    "minimumEvidence",
+}
+STATE_FIELDS = {"schemaVersion", "package", "packageVersion", "catalogHash", "managed"}
+TRANSACTION_FIELDS = {
+    "schemaVersion",
+    "transactionId",
+    "previousState",
+    "finalState",
+    "pending",
+}
+_PROCESS_LOCK_GUARD = threading.Lock()
+_PROCESS_LOCK_PATHS: set[str] = set()
 
 
 class NovaSkillsError(RuntimeError):
     """表示无法在不越权或不覆盖用户内容的前提下继续执行。"""
+
+
+def _is_managed_skill_id(skill_id: object) -> bool:
+    """判断 id 是否属于 Nova 可以声明所有权的项目组 Skill 命名空间。"""
+    return (
+        isinstance(skill_id, str)
+        and SKILL_NAME_PATTERN.fullmatch(skill_id) is not None
+        and skill_id.startswith(PROJECT_SKILL_ID_PREFIX)
+    )
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -104,13 +141,22 @@ def _tree_hash(directory: Path) -> str:
     if symlink is not None:
         raise NovaSkillsError(f"目录包含不允许的软链：{symlink}")
     digest = hashlib.sha256()
-    for path in sorted(candidate for candidate in directory.rglob("*") if candidate.is_file()):
-        relative_path = path.relative_to(directory).as_posix().encode("utf-8")
+    files = [
+        (candidate.relative_to(directory).as_posix().encode("utf-8"), candidate)
+        for candidate in directory.rglob("*")
+        if candidate.is_file()
+    ]
+    for relative_path, path in sorted(files, key=lambda item: item[0]):
         digest.update(relative_path)
         digest.update(b"\0")
         digest.update(path.read_bytes())
         digest.update(b"\0")
     return digest.hexdigest()
+
+
+def _file_hash(path: Path) -> str:
+    """计算单个受管元数据文件的内容哈希，供状态识别当前 Catalog 版本。"""
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _safe_child(root: Path, relative_path: str) -> Path | None:
@@ -379,10 +425,17 @@ def validate_agents_root(agents_root: Path) -> list[str]:
     except NovaSkillsError as exc:
         return [str(exc)]
 
-    if catalog.get("schemaVersion") != 1:
-        errors.append("catalog.json 的 schemaVersion 必须为 1")
+    if catalog.get("schemaVersion") != CATALOG_SCHEMA_VERSION:
+        errors.append(
+            f"catalog.json 的 schemaVersion 必须为 {CATALOG_SCHEMA_VERSION}"
+        )
     if catalog.get("package") != FRAMEWORK_PACKAGE_NAME:
         errors.append(f"catalog.json 的 package 必须为 {FRAMEWORK_PACKAGE_NAME}")
+    unknown_catalog_fields = sorted(set(catalog) - CATALOG_FIELDS)
+    if unknown_catalog_fields:
+        errors.append(
+            "catalog.json 包含未知字段：" + ", ".join(unknown_catalog_fields)
+        )
 
     package_json = agents_root.parent / "package.json"
     try:
@@ -398,9 +451,17 @@ def validate_agents_root(agents_root: Path) -> list[str]:
     for entry in entries:
         skill_id = entry.get("id")
         relative_path = entry.get("path")
+        unknown_entry_fields = sorted(set(entry) - CATALOG_SKILL_FIELDS)
+        if unknown_entry_fields:
+            errors.append(
+                f"{skill_id!r} 的 Catalog 条目包含未知字段："
+                + ", ".join(unknown_entry_fields)
+            )
         if not isinstance(skill_id, str) or not SKILL_NAME_PATTERN.fullmatch(skill_id):
             errors.append(f"Skill id 非法：{skill_id!r}")
             continue
+        if not _is_managed_skill_id(skill_id):
+            errors.append(f"{skill_id} 不是 Nova 项目组 Skill id，必须以 {PROJECT_SKILL_ID_PREFIX} 开头")
         if skill_id in seen_ids:
             errors.append(f"Skill id 重复：{skill_id}")
             continue
@@ -410,11 +471,24 @@ def validate_agents_root(agents_root: Path) -> list[str]:
         kind = entry.get("kind")
         if kind not in SKILL_KINDS:
             errors.append(f"{skill_id} 的 kind 必须是 {sorted(SKILL_KINDS)} 之一")
+        status = entry.get("status")
+        if status not in SKILL_STATUSES:
+            errors.append(
+                f"{skill_id} 的 status {status!r} 必须是 {sorted(SKILL_STATUSES)} 之一"
+            )
+        journeys = entry.get("journeys")
+        if not isinstance(journeys, list) or not journeys or any(
+            not isinstance(journey, str) for journey in journeys
+        ):
+            errors.append(f"{skill_id} 的 journeys 必须是非空字符串数组")
         effects = entry.get("effects")
         if not isinstance(effects, list) or not effects or any(
-            effect not in SKILL_EFFECTS for effect in effects
+            not isinstance(effect, str) or effect not in SKILL_EFFECTS
+            for effect in effects
         ):
             errors.append(f"{skill_id} 的 effects 必须是非空且受支持的数组")
+        elif len(set(effects)) != len(effects):
+            errors.append(f"{skill_id} 的 effects 不得包含重复项")
         minimum_evidence = entry.get("minimumEvidence")
         if minimum_evidence not in MINIMUM_EVIDENCE_LEVELS:
             errors.append(
@@ -474,25 +548,34 @@ def validate_agents_root(agents_root: Path) -> list[str]:
             elif required_id not in known_ids:
                 errors.append(f"{skill_id} 的 contract.json 依赖不存在的 Skill：{required_id}")
 
-    profiles = catalog.get("profiles")
-    if not isinstance(profiles, dict):
-        errors.append("catalog.json 的 profiles 必须是对象")
+    skills_root = agents_root / "Skills"
+    if not skills_root.is_dir():
+        errors.append(f"缺少平铺 Skills 真源目录：{skills_root}")
     else:
-        for profile_name, profile_ids in profiles.items():
-            if not isinstance(profile_name, str) or not isinstance(profile_ids, list):
-                errors.append("profiles 的名称和值必须分别是字符串和数组")
-                continue
-            seen_profile_ids: set[str] = set()
-            for skill_id in profile_ids:
-                if not isinstance(skill_id, str):
-                    errors.append(f"Profile {profile_name} 只能引用字符串 Skill id")
+        for child in sorted(skills_root.iterdir(), key=lambda item: item.name):
+            if child.is_dir() and child.name not in known_ids:
+                errors.append(f"Skills/{child.name} 未登记在 catalog.skills")
+
+    capability_groups = catalog.get("capabilityGroups")
+    if capability_groups is not None:
+        if not isinstance(capability_groups, dict):
+            errors.append("catalog.json 的 capabilityGroups 必须是对象")
+        else:
+            for group_name, group_ids in capability_groups.items():
+                if not isinstance(group_name, str) or not isinstance(group_ids, list):
+                    errors.append("capabilityGroups 的名称和值必须分别是字符串和数组")
                     continue
-                if skill_id in seen_profile_ids:
-                    errors.append(f"Profile {profile_name} 重复引用 Skill：{skill_id}")
-                    continue
-                seen_profile_ids.add(skill_id)
-                if skill_id not in known_ids:
-                    errors.append(f"Profile {profile_name} 引用了不存在的 Skill：{skill_id}")
+                seen_group_ids: set[str] = set()
+                for skill_id in group_ids:
+                    if not isinstance(skill_id, str):
+                        errors.append(f"能力分组 {group_name} 只能引用字符串 Skill id")
+                        continue
+                    if skill_id in seen_group_ids:
+                        errors.append(f"能力分组 {group_name} 重复引用 Skill：{skill_id}")
+                        continue
+                    seen_group_ids.add(skill_id)
+                    if skill_id not in known_ids:
+                        errors.append(f"能力分组 {group_name} 引用了不存在的 Skill：{skill_id}")
     return errors
 
 
@@ -533,16 +616,9 @@ def resolve_agents_root(
     return _package_cache_agents(project_root, lock_entry)
 
 
-def _select_profile(catalog: dict[str, Any], profile: str) -> list[dict[str, Any]]:
-    """按 Profile 选择显式允许投影的条目，保持 Catalog 声明顺序。"""
-    profiles = catalog.get("profiles")
-    if not isinstance(profiles, dict) or profile not in profiles:
-        raise NovaSkillsError(f"不存在的 Skill Profile：{profile}")
-    requested_ids = profiles[profile]
-    if not isinstance(requested_ids, list):
-        raise NovaSkillsError(f"Profile {profile} 必须是 Skill id 数组")
-    entries = {entry["id"]: entry for entry in _catalog_entries(catalog)}
-    return [entries[skill_id] for skill_id in requested_ids]
+def _catalog_skill_ids(catalog: dict[str, Any]) -> list[str]:
+    """按 Catalog 声明顺序返回全量可发现 Skill id，不提供选择性安装分支。"""
+    return [str(entry["id"]) for entry in _catalog_entries(catalog)]
 
 
 def _state_path(project_root: Path) -> Path:
@@ -558,14 +634,12 @@ def _managed_paths(project_root: Path) -> tuple[Path, Path]:
     state_path = agents_dir / STATE_FILE_NAME
     transaction_path = agents_dir / TRANSACTION_FILE_NAME
     staging_root = agents_dir / STAGING_DIRECTORY_NAME
-    sync_lock_path = agents_dir / SYNC_LOCK_FILE_NAME
     for label, path in (
         (".agents", agents_dir),
         (".agents/skills", target_root),
         (STATE_FILE_NAME, state_path),
         (TRANSACTION_FILE_NAME, transaction_path),
         (STAGING_DIRECTORY_NAME, staging_root),
-        (SYNC_LOCK_FILE_NAME, sync_lock_path),
     ):
         if _is_link_or_junction(path):
             raise NovaSkillsError(f"受管投影路径不能是软链或 junction：{label}")
@@ -579,36 +653,80 @@ def _managed_paths(project_root: Path) -> tuple[Path, Path]:
         raise NovaSkillsError(f"{TRANSACTION_FILE_NAME} 必须是普通文件，拒绝修改受管投影")
     if staging_root.exists() and not staging_root.is_dir():
         raise NovaSkillsError(f"{STAGING_DIRECTORY_NAME} 必须是目录，拒绝修改受管投影")
-    if sync_lock_path.exists() and not sync_lock_path.is_file():
-        raise NovaSkillsError(f"{SYNC_LOCK_FILE_NAME} 必须是普通文件，拒绝修改受管投影")
     return target_root, state_path
 
 
-def _read_managed_state(state_path: Path) -> tuple[str, dict[str, dict[str, Any]]]:
-    """读取受管状态，并只接受可由当前项目与 Catalog 重建的最小字段。"""
-    state = _read_json(state_path)
-    if state.get("schemaVersion") != 1:
+def _sync_lock_path(project_root: Path) -> Path:
+    """返回 Library 中的跨语言共享锁，并拒绝父目录或锁文件链接重定向。"""
+    project_root = Path(project_root).resolve()
+    library_dir = project_root / "Library"
+    nova_dir = library_dir / "Nova"
+    lock_dir = nova_dir / "AgentSkills"
+    lock_path = lock_dir / SYNC_LOCK_FILE_NAME
+    for label, path in (
+        ("Library", library_dir),
+        ("Library/Nova", nova_dir),
+        ("Library/Nova/AgentSkills", lock_dir),
+        ("Library/Nova/AgentSkills/" + SYNC_LOCK_FILE_NAME, lock_path),
+    ):
+        if _is_link_or_junction(path):
+            raise NovaSkillsError(f"共享同步锁路径不能是软链或 junction：{label}")
+    for label, path in (
+        ("Library", library_dir),
+        ("Library/Nova", nova_dir),
+        ("Library/Nova/AgentSkills", lock_dir),
+    ):
+        if path.exists() and not path.is_dir():
+            raise NovaSkillsError(f"共享同步锁父路径必须是目录：{label}")
+    if lock_path.exists() and not lock_path.is_file():
+        raise NovaSkillsError(f"{SYNC_LOCK_FILE_NAME} 必须是普通文件，拒绝获取共享同步锁")
+    return lock_path
+
+
+def _validate_managed_entries(
+    managed: Any, state_path: Path, label: str = "受管状态"
+) -> dict[str, dict[str, Any]]:
+    """校验可移动的受管哈希记录，拒绝把损坏 lock 当成用户目录所有权。"""
+    if not isinstance(managed, dict):
+        raise NovaSkillsError(f"{label}格式错误：{state_path}")
+    normalized: dict[str, dict[str, Any]] = {}
+    for skill_id, entry in managed.items():
+        if not isinstance(skill_id, str) or not SKILL_NAME_PATTERN.fullmatch(skill_id):
+            raise NovaSkillsError(f"{label}包含非法 Skill id：{skill_id!r}")
+        if not _is_managed_skill_id(skill_id):
+            raise NovaSkillsError(f"{label}包含非项目组 Skill id：{skill_id}")
+        if not isinstance(entry, dict):
+            raise NovaSkillsError(f"{label}中 {skill_id} 的记录必须是对象")
+        normalized_entry: dict[str, Any] = {}
+        for hash_name in ("sourceHash", "targetHash"):
+            value = entry.get(hash_name)
+            if not isinstance(value, str) or not SHA256_HEX_PATTERN.fullmatch(value):
+                raise NovaSkillsError(f"{label}中 {skill_id} 的 {hash_name} 非法")
+            normalized_entry[hash_name] = value
+        normalized[skill_id] = normalized_entry
+    return normalized
+
+
+def _validate_state_header(state: dict[str, Any], state_path: Path, schema_version: int) -> None:
+    """校验首发受管状态的包身份字段，防止其它包伪造 Nova 受管状态。"""
+    if state.get("schemaVersion") != schema_version:
         raise NovaSkillsError(f"受管状态 schemaVersion 不受支持：{state_path}")
     if state.get("package") != FRAMEWORK_PACKAGE_NAME:
         raise NovaSkillsError(f"受管状态未声明正确的 Framework 包：{state_path}")
     if not isinstance(state.get("packageVersion"), str) or not state["packageVersion"]:
         raise NovaSkillsError(f"受管状态缺少 packageVersion：{state_path}")
-    profile = state.get("profile")
-    if not isinstance(profile, str) or not profile:
-        raise NovaSkillsError(f"受管状态缺少 Profile：{state_path}")
-    managed = state.get("managed")
-    if not isinstance(managed, dict):
-        raise NovaSkillsError(f"受管状态格式错误：{state_path}")
-    for skill_id, entry in managed.items():
-        if not isinstance(skill_id, str) or not SKILL_NAME_PATTERN.fullmatch(skill_id):
-            raise NovaSkillsError(f"受管状态包含非法 Skill id：{skill_id!r}")
-        if not isinstance(entry, dict):
-            raise NovaSkillsError(f"受管状态中 {skill_id} 的记录必须是对象")
-        for hash_name in ("sourceHash", "targetHash"):
-            value = entry.get(hash_name)
-            if not isinstance(value, str) or not SHA256_HEX_PATTERN.fullmatch(value):
-                raise NovaSkillsError(f"受管状态中 {skill_id} 的 {hash_name} 非法")
-    return profile, managed
+
+
+def _read_managed_state(state_path: Path) -> dict[str, Any]:
+    """读取唯一的全量受管状态；未知字段不能被静默当成兼容格式。"""
+    state = _read_json(state_path)
+    _validate_exact_fields(state, STATE_FIELDS, "受管状态")
+    _validate_state_header(state, state_path, STATE_SCHEMA_VERSION)
+    catalog_hash = state.get("catalogHash")
+    if not isinstance(catalog_hash, str) or not SHA256_HEX_PATTERN.fullmatch(catalog_hash):
+        raise NovaSkillsError(f"受管状态缺少合法 catalogHash：{state_path}")
+    state["managed"] = _validate_managed_entries(state.get("managed"), state_path)
+    return state
 
 
 def _transaction_paths(state_path: Path) -> tuple[Path, Path]:
@@ -618,84 +736,164 @@ def _transaction_paths(state_path: Path) -> tuple[Path, Path]:
 
 
 def _managed_state_payload(
-    package: dict[str, Any], profile: str, managed: dict[str, dict[str, Any]]
+    package: dict[str, Any], catalog_hash: str, managed: dict[str, dict[str, Any]]
 ) -> dict[str, Any]:
-    """构造可移动的最小受管状态，不在状态中记录任何机器绝对路径。"""
+    """构造首发全量状态，不在状态中记录机器绝对路径或安装分组。"""
     package_name = package.get("name")
     package_version = package.get("version")
     if package_name != FRAMEWORK_PACKAGE_NAME or not isinstance(package_version, str) or not package_version:
         raise NovaSkillsError("Framework package.json 缺少可用的包名或版本，无法写入受管状态")
+    if not SHA256_HEX_PATTERN.fullmatch(catalog_hash):
+        raise NovaSkillsError("Catalog 哈希非法，无法写入受管状态")
     return {
-        "schemaVersion": 1,
+        "schemaVersion": STATE_SCHEMA_VERSION,
         "package": package_name,
         "packageVersion": package_version,
-        "profile": profile,
+        "catalogHash": catalog_hash,
         "managed": managed,
     }
 
 
-def _read_transaction(transaction_path: Path) -> dict[str, Any]:
-    """读取中断恢复日志，并拒绝任何不能安全恢复的伪造或损坏内容。"""
-    transaction = _read_json(transaction_path)
-    if transaction.get("schemaVersion") != 1:
-        raise NovaSkillsError(f"受管事务 schemaVersion 不受支持：{transaction_path}")
+def _read_state_for_reconcile(
+    state_path: Path,
+) -> tuple[dict[str, Any] | None, dict[str, dict[str, Any]]]:
+    """读取唯一受管状态；目标冲突由后续规划逐项保留为 partial。"""
+    if not state_path.is_file():
+        return None, {}
+    state = _read_managed_state(state_path)
+    return state, {skill_id: dict(entry) for skill_id, entry in state["managed"].items()}
+
+
+def _validate_transaction_state(
+    state: Any, transaction_path: Path, label: str
+) -> dict[str, dict[str, Any]]:
+    """校验 journal 中前后状态的受管边界，并返回规范化的 managed 集合。"""
+    if state is None:
+        return {}
+    if not isinstance(state, dict):
+        raise NovaSkillsError(f"受管事务 {label} 格式错误：{transaction_path}")
+    _validate_exact_fields(state, STATE_FIELDS, f"受管事务 {label}")
+    _validate_state_header(state, transaction_path, STATE_SCHEMA_VERSION)
+    catalog_hash = state.get("catalogHash")
+    if not isinstance(catalog_hash, str) or not SHA256_HEX_PATTERN.fullmatch(catalog_hash):
+        raise NovaSkillsError(f"受管事务 {label} 缺少合法 catalogHash：{transaction_path}")
+    managed = _validate_managed_entries(state.get("managed"), transaction_path, f"受管事务 {label}")
+    state["managed"] = managed
+    return managed
+
+
+def _validate_exact_fields(
+    value: dict[str, Any], expected_fields: set[str], label: str
+) -> None:
+    """要求首发持久化对象字段集合完全匹配，避免伪造或混入未支持语义。"""
+    missing_fields = sorted(expected_fields - set(value))
+    unknown_fields = sorted(set(value) - expected_fields)
+    if unknown_fields:
+        raise NovaSkillsError(f"{label} 包含未知字段：{', '.join(unknown_fields)}")
+    if missing_fields:
+        raise NovaSkillsError(f"{label} 缺少字段：{', '.join(missing_fields)}")
+
+
+def _validate_transaction(
+    transaction: dict[str, Any], transaction_path: Path
+) -> dict[str, Any]:
+    """校验新增、更新、删除 journal 的状态转换与哈希约束。"""
+    _validate_exact_fields(transaction, TRANSACTION_FIELDS, "受管事务")
     transaction_id = transaction.get("transactionId")
     if not isinstance(transaction_id, str) or not TRANSACTION_ID_PATTERN.fullmatch(transaction_id):
         raise NovaSkillsError(f"受管事务缺少合法 transactionId：{transaction_path}")
     previous_state = transaction.get("previousState")
-    if previous_state is not None and not isinstance(previous_state, dict):
-        raise NovaSkillsError(f"受管事务 previousState 格式错误：{transaction_path}")
+    previous_managed = _validate_transaction_state(
+        previous_state, transaction_path, "previousState"
+    )
     final_state = transaction.get("finalState")
-    if not isinstance(final_state, dict):
-        raise NovaSkillsError(f"受管事务缺少 finalState：{transaction_path}")
-    if final_state.get("schemaVersion") != 1 or final_state.get("package") != FRAMEWORK_PACKAGE_NAME:
-        raise NovaSkillsError(f"受管事务 finalState 包身份错误：{transaction_path}")
-    if not isinstance(final_state.get("packageVersion"), str) or not final_state["packageVersion"]:
-        raise NovaSkillsError(f"受管事务 finalState 缺少 packageVersion：{transaction_path}")
-    if not isinstance(final_state.get("profile"), str) or not final_state["profile"]:
-        raise NovaSkillsError(f"受管事务 finalState 缺少 Profile：{transaction_path}")
-    managed = final_state.get("managed")
-    if not isinstance(managed, dict):
-        raise NovaSkillsError(f"受管事务 finalState managed 格式错误：{transaction_path}")
-    for skill_id, managed_entry in managed.items():
-        if not isinstance(skill_id, str) or not SKILL_NAME_PATTERN.fullmatch(skill_id):
-            raise NovaSkillsError(f"受管事务 finalState 包含非法 Skill id：{transaction_path}")
-        if not isinstance(managed_entry, dict):
-            raise NovaSkillsError(f"受管事务 finalState 中 {skill_id} 记录非法")
-        for hash_name in ("sourceHash", "targetHash"):
-            value = managed_entry.get(hash_name)
-            if not isinstance(value, str) or not SHA256_HEX_PATTERN.fullmatch(value):
-                raise NovaSkillsError(f"受管事务 finalState 中 {skill_id} 的 {hash_name} 非法")
+    if not isinstance(final_state, dict) or final_state.get("schemaVersion") != STATE_SCHEMA_VERSION:
+        raise NovaSkillsError(f"受管事务 finalState schemaVersion 不受支持：{transaction_path}")
+    managed = _validate_transaction_state(final_state, transaction_path, "finalState")
     pending = transaction.get("pending")
     if not isinstance(pending, list) or not pending:
         raise NovaSkillsError(f"受管事务 pending 必须是非空数组：{transaction_path}")
     seen_ids: set[str] = set()
+    normalized_pending: list[dict[str, str]] = []
     for item in pending:
         if not isinstance(item, dict):
             raise NovaSkillsError(f"受管事务 pending 包含非法条目：{transaction_path}")
+        action = item.get("action")
+        if action not in RECONCILE_ACTIONS:
+            raise NovaSkillsError(f"受管事务 pending 包含未知 action：{transaction_path}")
         skill_id = item.get("id")
         if not isinstance(skill_id, str) or not SKILL_NAME_PATTERN.fullmatch(skill_id):
             raise NovaSkillsError(f"受管事务 pending 包含非法 Skill id：{transaction_path}")
+        if not _is_managed_skill_id(skill_id):
+            raise NovaSkillsError(f"受管事务 pending 包含非项目组 Skill id：{skill_id}")
         if skill_id in seen_ids:
             raise NovaSkillsError(f"受管事务 pending 重复 Skill：{skill_id}")
         seen_ids.add(skill_id)
-        managed_entry = managed.get(skill_id)
-        if not isinstance(managed_entry, dict):
-            raise NovaSkillsError(f"受管事务缺少 {skill_id} 的最终哈希：{transaction_path}")
-        for hash_name in ("sourceHash", "targetHash"):
-            value = item.get(hash_name)
-            if not isinstance(value, str) or not SHA256_HEX_PATTERN.fullmatch(value):
-                raise NovaSkillsError(f"受管事务中 {skill_id} 的 {hash_name} 非法")
-            if managed_entry.get(hash_name) != value:
-                raise NovaSkillsError(f"受管事务中 {skill_id} 的 {hash_name} 与 finalState 不一致")
+        normalized_item: dict[str, str] = {"action": action, "id": skill_id}
+        if action in {"add", "update"}:
+            for hash_name in ("sourceHash", "targetHash"):
+                value = item.get(hash_name)
+                if not isinstance(value, str) or not SHA256_HEX_PATTERN.fullmatch(value):
+                    raise NovaSkillsError(f"受管事务中 {skill_id} 的 {hash_name} 非法")
+                normalized_item[hash_name] = value
+        if action in {"update", "remove"}:
+            previous_target_hash = item.get("previousTargetHash")
+            if not isinstance(previous_target_hash, str) or not SHA256_HEX_PATTERN.fullmatch(
+                previous_target_hash
+            ):
+                raise NovaSkillsError(f"受管事务中 {skill_id} 的 previousTargetHash 非法")
+            normalized_item["previousTargetHash"] = previous_target_hash
+        normalized_pending.append(normalized_item)
+
+    expected_managed = {
+        skill_id: dict(entry) for skill_id, entry in previous_managed.items()
+    }
+    for item in normalized_pending:
+        action = item["action"]
+        skill_id = item["id"]
+        if action == "add":
+            if skill_id in expected_managed:
+                raise NovaSkillsError(
+                    f"受管事务 add 不能覆盖 previousState 已经受管的 Skill：{skill_id}"
+                )
+            expected_managed[skill_id] = {
+                "sourceHash": item["sourceHash"],
+                "targetHash": item["targetHash"],
+            }
+            continue
+        previous_entry = expected_managed.get(skill_id)
+        if previous_entry is None or previous_entry["targetHash"] != item["previousTargetHash"]:
+            raise NovaSkillsError(
+                f"受管事务 {skill_id} 的 previousTargetHash 与 previousState 不一致"
+            )
+        if action == "update":
+            expected_managed[skill_id] = {
+                "sourceHash": item["sourceHash"],
+                "targetHash": item["targetHash"],
+            }
+        else:
+            expected_managed.pop(skill_id)
+    if managed != expected_managed:
+        raise NovaSkillsError(
+            f"受管事务 finalState 与 previousState/pending 不一致：{transaction_path}"
+        )
     return transaction
+
+
+def _read_transaction(transaction_path: Path) -> dict[str, Any]:
+    """读取唯一事务格式，并拒绝任何不能安全证明的状态转换。"""
+    transaction = _read_json(transaction_path)
+    if transaction.get("schemaVersion") != TRANSACTION_SCHEMA_VERSION:
+        raise NovaSkillsError(f"受管事务 schemaVersion 不受支持：{transaction_path}")
+    return _validate_transaction(transaction, transaction_path)
 
 
 def _acquire_kernel_lock(file_descriptor: int) -> str:
     """获取内核级非阻塞排他锁；进程异常退出时由操作系统自动释放。"""
     if fcntl is not None:
         try:
-            fcntl.flock(file_descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            # 固定首字节的 POSIX record lock，可与 C# FileStream.Lock(0, 1) 互斥。
+            fcntl.lockf(file_descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB, 1, 0, os.SEEK_SET)
         except BlockingIOError as exc:
             raise NovaSkillsError("另一个 Nova Skill 同步正在进行，请等待其完成后再重试") from exc
         except OSError as exc:
@@ -717,7 +915,7 @@ def _acquire_kernel_lock(file_descriptor: int) -> str:
 def _release_kernel_lock(file_descriptor: int, lock_kind: str) -> None:
     """释放当前进程持有的内核锁；文件 inode 保留以避免删除锁导致的新竞态。"""
     if lock_kind == "fcntl" and fcntl is not None:
-        fcntl.flock(file_descriptor, fcntl.LOCK_UN)
+        fcntl.lockf(file_descriptor, fcntl.LOCK_UN, 1, 0, os.SEEK_SET)
     elif lock_kind == "msvcrt" and msvcrt is not None:  # pragma: no cover - Windows 平台。
         os.lseek(file_descriptor, 0, os.SEEK_SET)
         msvcrt.locking(file_descriptor, msvcrt.LK_UNLCK, 1)
@@ -734,50 +932,68 @@ def _write_lock_metadata(file_descriptor: int, owner: dict[str, Any]) -> None:
     os.fsync(file_descriptor)
 
 
+def _acquire_process_lock(lock_path: Path) -> str:
+    """登记当前进程内的锁路径，补足 POSIX record lock 允许同进程重入的语义。"""
+    lock_key = str(lock_path.resolve(strict=False))
+    with _PROCESS_LOCK_GUARD:
+        if lock_key in _PROCESS_LOCK_PATHS:
+            raise NovaSkillsError("另一个 Nova Skill 同步正在进行，请等待其完成后再重试")
+        _PROCESS_LOCK_PATHS.add(lock_key)
+    return lock_key
+
+
+def _release_process_lock(lock_key: str) -> None:
+    """释放当前进程内的共享锁登记，保证异常路径也可再次同步。"""
+    with _PROCESS_LOCK_GUARD:
+        _PROCESS_LOCK_PATHS.discard(lock_key)
+
+
 @contextmanager
 def _projection_sync_lock(project_root: Path) -> Any:
-    """以持久文件上的内核锁串行化 Profile 同步，避免 stale 回收和 inode 删除竞态。"""
-    _, state_path = _managed_paths(project_root)
-    agents_dir = state_path.parent
-    agents_dir.mkdir(parents=True, exist_ok=True)
+    """以 Library 持久文件和进程内门闩串行化跨语言全量 reconcile。"""
     _managed_paths(project_root)
-    lock_path = agents_dir / SYNC_LOCK_FILE_NAME
+    lock_path = _sync_lock_path(project_root)
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = _sync_lock_path(project_root)
+    lock_key = _acquire_process_lock(lock_path)
     flags = os.O_RDWR | os.O_CREAT
     if hasattr(os, "O_NOFOLLOW"):
         flags |= os.O_NOFOLLOW
     try:
-        file_descriptor = os.open(lock_path, flags, 0o600)
-    except OSError as exc:
-        raise NovaSkillsError(f"无法打开安全同步锁：{exc}") from exc
-    lock_kind: str | None = None
-    try:
-        lock_kind = _acquire_kernel_lock(file_descriptor)
-        _managed_paths(project_root)
-        _write_lock_metadata(
-            file_descriptor,
-            {"schemaVersion": 1, "processId": os.getpid(), "token": uuid.uuid4().hex},
-        )
-        yield
+        try:
+            file_descriptor = os.open(lock_path, flags, 0o600)
+        except OSError as exc:
+            raise NovaSkillsError(f"无法打开安全同步锁：{exc}") from exc
+        lock_kind: str | None = None
+        try:
+            lock_kind = _acquire_kernel_lock(file_descriptor)
+            _managed_paths(project_root)
+            _sync_lock_path(project_root)
+            _write_lock_metadata(
+                file_descriptor,
+                {"schemaVersion": 1, "processId": os.getpid(), "token": uuid.uuid4().hex},
+            )
+            yield
+        finally:
+            if lock_kind is not None:
+                try:
+                    _release_kernel_lock(file_descriptor, lock_kind)
+                except OSError:
+                    pass
+            os.close(file_descriptor)
     finally:
-        if lock_kind is not None:
-            try:
-                _release_kernel_lock(file_descriptor, lock_kind)
-            except OSError:
-                pass
-        os.close(file_descriptor)
+        _release_process_lock(lock_key)
 
 
 def _begin_transaction(
     project_root: Path,
     target_root: Path,
     state_path: Path,
-    package: dict[str, Any],
-    profile: str,
-    managed: dict[str, dict[str, Any]],
     previous_state: dict[str, Any] | None,
-    planned: list[tuple[dict[str, Any], Path, Path, str]],
+    final_state: dict[str, Any],
+    planned_actions: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    """将整组待投影 Skill 写入隐藏 staging，并原子登记可恢复事务。"""
+    """将新增/更新内容写入 staging，再原子登记可恢复的全量 reconcile 事务。"""
     transaction_path, staging_root = _transaction_paths(state_path)
     _managed_paths(project_root)
     target_root.mkdir(parents=True, exist_ok=True)
@@ -786,36 +1002,36 @@ def _begin_transaction(
     transaction_id = uuid.uuid4().hex
     staging_dir = staging_root / transaction_id
     staging_dir.mkdir()
-    final_managed = {skill_id: dict(entry) for skill_id, entry in managed.items()}
-    pending: list[dict[str, str]] = []
+    staged_new_root = staging_dir / "new"
+    staged_new_root.mkdir()
+    pending: list[dict[str, Any]] = []
     journal_written = False
     try:
-        for entry, source_dir, _, source_hash in planned:
-            skill_id = entry["id"]
-            staged_skill = staging_dir / skill_id
-            shutil.copytree(source_dir, staged_skill)
-            target_hash = _tree_hash(staged_skill)
-            source_hash_after_copy = _tree_hash(source_dir)
-            if source_hash != target_hash or source_hash_after_copy != source_hash:
-                raise NovaSkillsError(
-                    f"复制 {skill_id} 时 Framework 真源发生变化，拒绝登记混合版本投影"
-                )
-            final_managed[skill_id] = {
-                "sourceHash": source_hash,
-                "targetHash": target_hash,
-            }
-            pending.append(
-                {
-                    "id": skill_id,
-                    "sourceHash": source_hash,
-                    "targetHash": target_hash,
-                }
-            )
+        for action in planned_actions:
+            action_name = action["action"]
+            skill_id = action["id"]
+            pending_item: dict[str, Any] = {"action": action_name, "id": skill_id}
+            if action_name in {"add", "update"}:
+                source_dir = action["sourceDir"]
+                source_hash = action["sourceHash"]
+                staged_skill = staged_new_root / skill_id
+                shutil.copytree(source_dir, staged_skill)
+                target_hash = _tree_hash(staged_skill)
+                source_hash_after_copy = _tree_hash(source_dir)
+                if source_hash != target_hash or source_hash_after_copy != source_hash:
+                    raise NovaSkillsError(
+                        f"复制 {skill_id} 时 Framework 真源发生变化，拒绝登记混合版本投影"
+                    )
+                pending_item["sourceHash"] = source_hash
+                pending_item["targetHash"] = target_hash
+            if action_name in {"update", "remove"}:
+                pending_item["previousTargetHash"] = action["previousTargetHash"]
+            pending.append(pending_item)
         transaction = {
-            "schemaVersion": 1,
+            "schemaVersion": TRANSACTION_SCHEMA_VERSION,
             "transactionId": transaction_id,
             "previousState": previous_state,
-            "finalState": _managed_state_payload(package, profile, final_managed),
+            "finalState": final_state,
             "pending": pending,
         }
         _managed_paths(project_root)
@@ -833,7 +1049,7 @@ def _begin_transaction(
 
 
 def _resume_transaction(project_root: Path, target_root: Path, state_path: Path) -> bool:
-    """续传已登记事务；所有目标哈希匹配后才写入最终受管状态。"""
+    """续传新增、更新或删除事务；最终目标一致后才原子写入最终 state。"""
     transaction_path, staging_root = _transaction_paths(state_path)
     if not transaction_path.is_file():
         return False
@@ -842,6 +1058,8 @@ def _resume_transaction(project_root: Path, target_root: Path, state_path: Path)
     staging_dir = staging_root / transaction_id
     if _is_link_or_junction(staging_dir) or not staging_dir.is_dir():
         raise NovaSkillsError(f"受管事务 staging 不存在或不是普通目录：{staging_dir}")
+    if _find_descendant_symlink(staging_dir) is not None:
+        raise NovaSkillsError(f"受管事务 staging 包含软链或 junction：{staging_dir}")
     previous_state = transaction["previousState"]
     final_state = transaction["finalState"]
     current_state = _read_json(state_path) if state_path.is_file() else None
@@ -850,25 +1068,82 @@ def _resume_transaction(project_root: Path, target_root: Path, state_path: Path)
 
     _managed_paths(project_root)
     target_root.mkdir(parents=True, exist_ok=True)
+    staged_new_root = staging_dir / "new"
+    backup_root = staging_dir / "backup"
     for item in transaction["pending"]:
+        action_name = item["action"]
         skill_id = item["id"]
-        expected_hash = item["targetHash"]
         target_dir = target_root / skill_id
-        staged_skill = staging_dir / skill_id
         if _is_link_or_junction(target_dir):
             raise NovaSkillsError(f"中断事务目标是软链，拒绝恢复：{target_dir}")
-        if target_dir.exists():
-            if not target_dir.is_dir() or _tree_hash(target_dir) != expected_hash:
-                raise NovaSkillsError(f"中断事务目标已变化，拒绝恢复：{target_dir}")
+        staged_skill = staged_new_root / skill_id
+        backup_skill = backup_root / skill_id
+        if _is_link_or_junction(staged_skill) or _is_link_or_junction(backup_skill):
+            raise NovaSkillsError(f"中断事务 staging 包含链接目标：{skill_id}")
+
+        if action_name == "add":
+            expected_hash = item["targetHash"]
+            if target_dir.exists():
+                if not target_dir.is_dir() or _tree_hash(target_dir) != expected_hash:
+                    raise NovaSkillsError(f"中断新增目标已变化，拒绝恢复：{target_dir}")
+                continue
+            if not staged_skill.is_dir() or _tree_hash(staged_skill) != expected_hash:
+                raise NovaSkillsError(f"中断新增 staging 已变化：{staged_skill}")
+            _managed_paths(project_root)
+            os.replace(staged_skill, target_dir)
+            if _tree_hash(target_dir) != expected_hash:
+                raise NovaSkillsError(f"中断新增恢复后哈希不一致：{target_dir}")
             continue
-        if _is_link_or_junction(staged_skill) or not staged_skill.is_dir():
-            raise NovaSkillsError(f"中断事务 staging 缺少 Skill：{staged_skill}")
-        if _tree_hash(staged_skill) != expected_hash:
-            raise NovaSkillsError(f"中断事务 staging 已变化，拒绝恢复：{staged_skill}")
-        _managed_paths(project_root)
-        os.replace(staged_skill, target_dir)
-        if _tree_hash(target_dir) != expected_hash:
-            raise NovaSkillsError(f"中断事务恢复后哈希不一致：{target_dir}")
+
+        previous_target_hash = item["previousTargetHash"]
+        if action_name == "update":
+            expected_hash = item["targetHash"]
+            if target_dir.exists() and target_dir.is_dir() and _tree_hash(target_dir) == expected_hash:
+                continue
+            if not target_dir.exists() and not backup_skill.exists():
+                raise NovaSkillsError(
+                    f"中断更新目标与备份都缺失，无法安全恢复：{skill_id}"
+                )
+            if target_dir.exists() and (
+                not target_dir.is_dir() or _tree_hash(target_dir) != previous_target_hash
+            ):
+                raise NovaSkillsError(f"中断更新目标已变化，拒绝恢复：{target_dir}")
+            if backup_skill.exists() and (
+                not backup_skill.is_dir() or _tree_hash(backup_skill) != previous_target_hash
+            ):
+                raise NovaSkillsError(f"中断更新备份已变化，拒绝恢复：{backup_skill}")
+            if target_dir.exists():
+                if backup_skill.exists():
+                    raise NovaSkillsError(f"中断更新同时存在旧目标与备份：{skill_id}")
+                backup_root.mkdir(exist_ok=True)
+                _managed_paths(project_root)
+                os.replace(target_dir, backup_skill)
+            if not staged_skill.is_dir() or _tree_hash(staged_skill) != expected_hash:
+                raise NovaSkillsError(f"中断更新 staging 已变化：{staged_skill}")
+            _managed_paths(project_root)
+            os.replace(staged_skill, target_dir)
+            if _tree_hash(target_dir) != expected_hash:
+                raise NovaSkillsError(f"中断更新恢复后哈希不一致：{target_dir}")
+            continue
+
+        if action_name == "remove":
+            if target_dir.exists():
+                if not target_dir.is_dir() or _tree_hash(target_dir) != previous_target_hash:
+                    raise NovaSkillsError(f"中断删除目标已变化，拒绝恢复：{target_dir}")
+                if backup_skill.exists():
+                    raise NovaSkillsError(f"中断删除同时存在目标与备份：{skill_id}")
+                backup_root.mkdir(exist_ok=True)
+                _managed_paths(project_root)
+                os.replace(target_dir, backup_skill)
+            if not backup_skill.exists():
+                # 目标在建立事务前或恢复前已不存在。此时没有可删除的用户内容，
+                # 删除受管记录即可完成该幂等 remove 动作。
+                continue
+            if not backup_skill.is_dir() or _tree_hash(backup_skill) != previous_target_hash:
+                raise NovaSkillsError(f"中断删除备份已变化，拒绝恢复：{backup_skill}")
+            continue
+
+        raise NovaSkillsError(f"中断事务包含未知 action：{action_name}")
 
     _managed_paths(project_root)
     latest_state = _read_json(state_path) if state_path.is_file() else None
@@ -878,10 +1153,7 @@ def _resume_transaction(project_root: Path, target_root: Path, state_path: Path)
         _write_json_atomically(state_path, final_state)
     _managed_paths(project_root)
     transaction_path.unlink()
-    try:
-        staging_dir.rmdir()
-    except OSError:
-        pass
+    shutil.rmtree(staging_dir)
     try:
         staging_root.rmdir()
     except OSError:
@@ -889,76 +1161,158 @@ def _resume_transaction(project_root: Path, target_root: Path, state_path: Path)
     return True
 
 
-def _plan_sync(
-    project_root: Path, agents_root: Path, profile: str, dry_run: bool
+def _plan_reconcile(
+    project_root: Path, agents_root: Path, dry_run: bool
 ) -> tuple[
     Path,
     Path,
     dict[str, Any],
-    dict[str, dict[str, Any]],
     dict[str, Any] | None,
-    list[tuple[dict[str, Any], Path, Path, str]],
+    dict[str, Any],
+    list[dict[str, Any]],
     dict[str, Any],
 ]:
-    """在不落盘的前提下冻结本次 Profile 投影的输入、写入集与受管基线。"""
+    """冻结全量 Catalog 与消费者当前状态，规划安全的新增、更新、删除和冲突。"""
     errors = validate_agents_root(agents_root)
     if errors:
         raise NovaSkillsError("Agents 真源校验失败：\n- " + "\n- ".join(errors))
     agents_root = Path(agents_root).resolve()
     catalog = load_catalog(agents_root)
-    selected_entries = _select_profile(catalog, profile)
+    entries = _catalog_entries(catalog)
     target_root, state_path = _managed_paths(project_root)
-    previous_state = _read_json(state_path) if state_path.is_file() else None
-    if previous_state is not None:
-        _, managed = _read_managed_state(state_path)
-    else:
-        managed = {}
-    selected_ids = {entry["id"] for entry in selected_entries}
-    retained_ids = sorted(str(skill_id) for skill_id in managed if skill_id not in selected_ids)
-    if retained_ids:
-        raise NovaSkillsError(
-            f"Profile {profile} 会保留不属于该 Profile 的受管 Skill："
-            f"{', '.join(retained_ids)}；P0 不自动删除既有投影，请显式处理后再切换"
-        )
+    previous_state, managed = _read_state_for_reconcile(state_path)
+    final_managed = {skill_id: dict(entry) for skill_id, entry in managed.items()}
+    catalog_ids = _catalog_skill_ids(catalog)
+    catalog_id_set = set(catalog_ids)
+    actions: list[dict[str, Any]] = []
+    added: list[str] = []
+    updated: list[str] = []
+    removed: list[str] = []
+    unchanged: list[str] = []
+    conflicts: list[dict[str, str]] = []
 
-    planned: list[tuple[dict[str, Any], Path, Path, str]] = []
-    skipped: list[str] = []
-    for entry in selected_entries:
-        skill_id = entry["id"]
+    for entry in entries:
+        skill_id = str(entry["id"])
         source_dir = _safe_child(agents_root, entry["path"])
         if source_dir is None or not source_dir.is_dir():
             raise NovaSkillsError(f"Skill 路径不安全：{skill_id}")
         target_dir = target_root / skill_id
         source_hash = _tree_hash(source_dir)
+        existing = managed.get(skill_id)
         if _is_link_or_junction(target_dir):
-            raise NovaSkillsError(f"目标 Skill 是软链或 junction，拒绝修改：{target_dir}")
+            conflicts.append({"id": skill_id, "reason": "unsafe-link"})
+            continue
         if target_dir.exists():
             if not target_dir.is_dir():
-                raise NovaSkillsError(f"目标 Skill 必须是目录，拒绝修改：{target_dir}")
-            existing = managed.get(skill_id)
+                conflicts.append(
+                    {
+                        "id": skill_id,
+                        "reason": "modified-managed"
+                        if skill_id in managed
+                        else "unowned-collision",
+                    }
+                )
+                continue
             if not isinstance(existing, dict):
-                raise NovaSkillsError(f"目标目录已存在且不属于受管投影：{target_dir}")
-            if _tree_hash(target_dir) != existing.get("targetHash"):
-                raise NovaSkillsError(f"受管 Skill 已被修改，拒绝覆盖：{target_dir}")
-            if existing.get("sourceHash") != source_hash:
-                raise NovaSkillsError(f"源 Skill 已更新，P0 不自动覆盖旧投影：{skill_id}")
-            skipped.append(skill_id)
+                conflicts.append({"id": skill_id, "reason": "unowned-collision"})
+                continue
+            try:
+                target_hash = _tree_hash(target_dir)
+            except NovaSkillsError:
+                conflicts.append({"id": skill_id, "reason": "unsafe-link"})
+                continue
+            if target_hash != existing["targetHash"]:
+                conflicts.append({"id": skill_id, "reason": "modified-managed"})
+                continue
+            if source_hash == existing["sourceHash"]:
+                unchanged.append(skill_id)
+                continue
+            actions.append(
+                {
+                    "action": "update",
+                    "id": skill_id,
+                    "sourceDir": source_dir,
+                    "sourceHash": source_hash,
+                    "previousTargetHash": existing["targetHash"],
+                }
+            )
+            final_managed[skill_id] = {"sourceHash": source_hash, "targetHash": source_hash}
+            updated.append(skill_id)
             continue
-        planned.append((entry, source_dir, target_dir, source_hash))
+        if isinstance(existing, dict):
+            conflicts.append({"id": skill_id, "reason": "missing-managed"})
+            continue
+        actions.append(
+            {
+                "action": "add",
+                "id": skill_id,
+                "sourceDir": source_dir,
+                "sourceHash": source_hash,
+            }
+        )
+        final_managed[skill_id] = {"sourceHash": source_hash, "targetHash": source_hash}
+        added.append(skill_id)
+
+    for skill_id in sorted(skill_id for skill_id in managed if skill_id not in catalog_id_set):
+        target_dir = target_root / skill_id
+        existing = managed[skill_id]
+        if _is_link_or_junction(target_dir):
+            conflicts.append({"id": skill_id, "reason": "unsafe-link"})
+            continue
+        if not target_dir.exists():
+            actions.append(
+                {
+                    "action": "remove",
+                    "id": skill_id,
+                    "previousTargetHash": existing["targetHash"],
+                }
+            )
+            final_managed.pop(skill_id, None)
+            removed.append(skill_id)
+            continue
+        if not target_dir.is_dir():
+            conflicts.append({"id": skill_id, "reason": "modified-managed"})
+            continue
+        try:
+            target_hash = _tree_hash(target_dir)
+        except NovaSkillsError:
+            conflicts.append({"id": skill_id, "reason": "unsafe-link"})
+            continue
+        if target_hash != existing["targetHash"]:
+            conflicts.append({"id": skill_id, "reason": "modified-managed"})
+            continue
+        actions.append(
+            {
+                "action": "remove",
+                "id": skill_id,
+                "previousTargetHash": existing["targetHash"],
+            }
+        )
+        final_managed.pop(skill_id, None)
+        removed.append(skill_id)
 
     package = _read_json(agents_root.parent / "package.json")
+    final_state = _managed_state_payload(
+        package, _file_hash(agents_root / CATALOG_FILE_NAME), final_managed
+    )
     result = {
+        "status": "partial" if conflicts else "success",
         "agentsRoot": str(agents_root),
-        "profile": profile,
-        "projected": [entry["id"] for entry, _, _, _ in planned],
-        "skipped": skipped,
+        "packageVersion": package["version"],
+        "added": added,
+        "updated": updated,
+        "removed": removed,
+        "unchanged": unchanged,
+        "conflicts": conflicts,
         "dryRun": dry_run,
     }
-    return target_root, state_path, package, managed, previous_state, planned, result
+    return target_root, state_path, package, previous_state, final_state, actions, result
 
 
-def sync(project_root: Path, agents_root: Path | None = None, profile: str = "core", dry_run: bool = False) -> dict[str, Any]:
-    """将选中 Profile 以可恢复事务安全投影到消费者项目根 `.agents/skills`。"""
+def reconcile(
+    project_root: Path, agents_root: Path | None = None, dry_run: bool = False
+) -> dict[str, Any]:
+    """将当前 Framework Catalog 的全部项目组 Skill 安全桥接到消费者 `.agents/skills`。"""
     project_root = Path(project_root).resolve()
     _, state_path = _managed_paths(project_root)
     transaction_path, _ = _transaction_paths(state_path)
@@ -974,7 +1328,7 @@ def sync(project_root: Path, agents_root: Path | None = None, profile: str = "co
         resolve_agents_root(project_root) if agents_root is None else Path(agents_root)
     )
     if dry_run:
-        *_, result = _plan_sync(project_root, resolved_agents_root, profile, dry_run=True)
+        *_, result = _plan_reconcile(project_root, resolved_agents_root, dry_run=True)
         return result
 
     with _projection_sync_lock(project_root):
@@ -984,27 +1338,27 @@ def sync(project_root: Path, agents_root: Path | None = None, profile: str = "co
             target_root,
             current_state_path,
             package,
-            managed,
             previous_state,
-            planned,
+            final_state,
+            planned_actions,
             result,
-        ) = _plan_sync(project_root, resolved_agents_root, profile, dry_run=False)
-        if not planned:
+        ) = _plan_reconcile(project_root, resolved_agents_root, dry_run=False)
+        if not planned_actions:
             _managed_paths(project_root)
-            _write_json_atomically(
-                current_state_path, _managed_state_payload(package, profile, managed)
-            )
+            current_state = _read_json(current_state_path) if current_state_path.is_file() else None
+            if current_state != previous_state and current_state != final_state:
+                raise NovaSkillsError("受管状态在 reconcile 规划后发生变化，拒绝覆盖")
+            if current_state != final_state:
+                _write_json_atomically(current_state_path, final_state)
             return result
 
         _begin_transaction(
             project_root,
             target_root,
             current_state_path,
-            package,
-            profile,
-            managed,
             previous_state,
-            planned,
+            final_state,
+            planned_actions,
         )
         _resume_transaction(project_root, target_root, current_state_path)
         return result
@@ -1028,7 +1382,8 @@ def doctor(project_root: Path) -> dict[str, list[str]]:
     if not state_path.is_file():
         report["uninitialized"].append(STATE_FILE_NAME)
         return report
-    profile, managed = _read_managed_state(state_path)
+    state = _read_managed_state(state_path)
+    managed = state["managed"]
 
     current_agents_root: Path | None = None
     current_entries: dict[str, dict[str, Any]] = {}
@@ -1040,22 +1395,23 @@ def doctor(project_root: Path) -> dict[str, list[str]]:
             raise NovaSkillsError("当前 Framework Agents 真源校验失败")
         catalog = load_catalog(current_agents_root)
         current_entries = {entry["id"]: entry for entry in _catalog_entries(catalog)}
-        expected_ids = {entry["id"] for entry in _select_profile(catalog, profile)}
+        expected_ids = set(_catalog_skill_ids(catalog))
         for skill_id in expected_ids:
             if skill_id not in managed:
                 report["missing"].append(skill_id)
         for skill_id in managed:
             if skill_id not in expected_ids:
-                report["modified"].append(skill_id)
+                report["sourceChanged"].append(skill_id)
         package = _read_json(current_agents_root.parent / "package.json")
-        state = _read_json(state_path)
         if state.get("packageVersion") != package.get("version"):
             report["resolutionChanged"].append("package-version")
+        if state.get("catalogHash") != _file_hash(current_agents_root / CATALOG_FILE_NAME):
+            report["resolutionChanged"].append("catalog")
     except NovaSkillsError:
         report["resolutionChanged"].append("unresolved")
         current_agents_root = None
 
-    for skill_id in sorted(expected_ids):
+    for skill_id in sorted(managed):
         entry = managed.get(skill_id)
         if entry is None:
             continue
@@ -1096,11 +1452,12 @@ def _build_parser() -> argparse.ArgumentParser:
     validate_parser.add_argument("--agents-root", required=True, type=Path)
     resolve_parser = subparsers.add_parser("resolve", help="定位消费者已安装的 Framework Agents")
     resolve_parser.add_argument("--project-root", required=True, type=Path)
-    sync_parser = subparsers.add_parser("sync", help="投影选中 Profile 到 .agents/skills")
-    sync_parser.add_argument("--project-root", required=True, type=Path)
-    sync_parser.add_argument("--agents-root", type=Path)
-    sync_parser.add_argument("--profile", default="core")
-    sync_parser.add_argument("--dry-run", action="store_true")
+    reconcile_parser = subparsers.add_parser(
+        "reconcile", help="全量桥接当前 Framework Catalog 到 .agents/skills"
+    )
+    reconcile_parser.add_argument("--project-root", required=True, type=Path)
+    reconcile_parser.add_argument("--agents-root", type=Path)
+    reconcile_parser.add_argument("--dry-run", action="store_true")
     doctor_parser = subparsers.add_parser("doctor", help="只读诊断受管投影漂移")
     doctor_parser.add_argument("--project-root", required=True, type=Path)
     return parser
@@ -1117,9 +1474,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "resolve":
             result = {"agentsRoot": str(resolve_agents_root(args.project_root))}
             exit_code = 0
-        elif args.command == "sync":
-            result = sync(args.project_root, args.agents_root, args.profile, args.dry_run)
-            exit_code = 0
+        elif args.command == "reconcile":
+            result = reconcile(args.project_root, args.agents_root, args.dry_run)
+            exit_code = 1 if result.get("status") == "partial" else 0
         else:
             result = doctor(args.project_root)
             exit_code = 0 if not any(result.values()) else 1

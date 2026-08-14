@@ -3,7 +3,7 @@
 **类签名**：`public sealed class HttpResponse : IReference`
 **命名空间**：`NovaFramework.Runtime`
 
-HTTP 响应数据，实现 IReference 支持 ReferencePool 池化复用。封装请求完成后的状态码、正文、原始字节、响应头、错误信息及下载进度信息。
+HTTP 响应数据，实现 IReference 支持 ReferencePool 池化复用。除状态码、正文和下载信息外，还记录请求是否明确未到达服务器、无法确认或已经获得正式 HTTP 响应。
 
 ---
 
@@ -22,7 +22,7 @@ HTTP 响应数据，实现 IReference 支持 ReferencePool 池化复用。封装
 public HttpResponse()
 
 // --- 工厂方法（public SPI，从 ReferencePool 获取实例并初始化）---
-public static HttpResponse Create(int statusCode, string body, byte[] rawData, Dictionary<string, string> headers, string error, bool isSuccess, long downloadedBytes, long totalBytes)
+public static HttpResponse Create(int statusCode, string body, byte[] rawData, Dictionary<string, string> headers, string error, bool isSuccess, long downloadedBytes, long totalBytes, HttpDeliveryState deliveryState = HttpDeliveryState.Unknown)
 
 // --- IReference.Clear（归还池时重置所有字段；TotalBytes 重置为 -1）---
 public void Clear()
@@ -34,6 +34,8 @@ public byte[] RawData { get; private set; }
 public Dictionary<string, string> Headers { get; private set; }
 public string Error { get; private set; }
 public bool IsSuccess { get; private set; }
+public bool HasServerResponse { get; }
+public HttpDeliveryState DeliveryState { get; private set; }
 public long DownloadedBytes { get; private set; }
 public long TotalBytes { get; private set; }
 
@@ -41,6 +43,8 @@ public long TotalBytes { get; private set; }
 // TotalBytes > 0 时返回 Clamp(DownloadedBytes / TotalBytes, 0, 1)；否则返回 0
 public float DownloadProgress { get; }
 ```
+
+`HttpDeliveryState` 只表达网络通信层结果：`NotReachedServer` 表示明确停在 DNS、TCP 或 TLS 建连阶段；`Unknown` 表示超时等无法确认情况；`ServerResponded` 表示服务器已返回正式 HTTP 响应，不区分业务结果成功或失败。
 
 普通业务调用方不应直接创建有状态实例，应通过 `IHttpManager` / `IDownloadService` 的异步方法获得；可选 HTTP 后端实现可以通过 `Create(...)` 创建池化响应。消费完毕后通过 `ReferencePool.Put(response)` 归还。
 

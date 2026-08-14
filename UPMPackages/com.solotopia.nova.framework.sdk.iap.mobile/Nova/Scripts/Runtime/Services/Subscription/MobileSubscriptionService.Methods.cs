@@ -18,7 +18,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     internal sealed partial class MobileSubscriptionService
     {
         /// <summary>
-        /// 订阅到期倒计时：等待到期时间（含 30 秒缓冲）后触发 RestoreAsync 刷新订阅状态。
+        /// 订阅到期倒计时：等待到期时间（含 30 秒缓冲）后先拉取平台已有购买，再刷新订阅状态。
         /// 30 秒缓冲确保服务端订阅状态已更新，避免刚好到期时拉到旧状态。
         /// </summary>
         /// <param name="tableId">订阅商品配置表行 ID，用于日志标识。</param>
@@ -41,10 +41,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            Log.Debug(LogTag.IAPMobile, $"订阅倒计时到期，商品表ID={tableId}，触发恢复流程。");
+            Log.Debug(LogTag.IAPMobile, $"订阅倒计时到期，商品表ID={tableId}，触发平台购买拉取和权益刷新。");
+            m_Hub.ExtendedService?.FetchPurchases();
             if (m_Hub.RestoreService != null)
             {
-                await m_Hub.RestoreService.RestoreAsync(ct);
+                await m_Hub.RestoreService.RefreshEntitlementsAsync(ct);
             }
         }
     }

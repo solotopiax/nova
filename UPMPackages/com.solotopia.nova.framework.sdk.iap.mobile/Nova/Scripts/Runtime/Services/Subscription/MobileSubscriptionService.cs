@@ -18,7 +18,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// <summary>
     /// 订阅到期时间服务。
     /// 提供订阅到期时间戳的持久化读写，并在验单成功后启动倒计时，
-    /// 到期时自动触发 MobileRestoreService.RestoreAsync 刷新订阅状态。
+    /// 到期时自动拉取平台已有购买并刷新订阅权益，不触发平台 RestoreTransactions。
     /// </summary>
     internal sealed partial class MobileSubscriptionService
     {
@@ -70,7 +70,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
-        /// 启动订阅到期倒计时。到期后自动触发 RestoreAsync 刷新订阅状态。
+        /// 启动订阅到期倒计时。到期后自动拉取平台已有购买并刷新订阅权益。
         /// 新倒计时启动时取消旧的（同一 tableId 同时只有一个倒计时生效）。
         /// </summary>
         /// <param name="tableId">订阅商品配置表行 ID。</param>

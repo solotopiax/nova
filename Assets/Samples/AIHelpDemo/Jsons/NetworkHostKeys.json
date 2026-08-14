@@ -2,15 +2,18 @@
   "NetworkHostKeys": [
     {
       "Name": "GameServer",
-      "Value": "https://t-solo-api-game.ahameet.com"
+      "Value": "https://t-solo-api-game.ahameet.com",
+      "FallbackValue": "https://t-solo-api-game.ahameet.com"
     },
     {
       "Name": "AIHelpServer",
-      "Value": "https://solotopia.aihelp.net"
+      "Value": "https://solotopia.aihelp.net",
+      "FallbackValue": "https://solotopia.aihelp.net"
     },
     {
       "Name": "TGAServer",
-      "Value": "https://report.lolipopmobi.com"
+      "Value": "https://report.lolipopmobi.com",
+      "FallbackValue": "https://report.lolipopmobi.com"
     }
   ]
 }

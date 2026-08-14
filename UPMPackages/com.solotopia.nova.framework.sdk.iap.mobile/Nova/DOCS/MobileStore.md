@@ -1,6 +1,6 @@
 ﻿# MobileStore
 
-> 最后更新：2026-08-11
+> 最后更新：2026-08-14
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/**`
 
 **类签名**：`public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable`
@@ -111,7 +111,7 @@ MobileStore.InitializeAsync(table, config, ctx, ct)
   └── InitService.InitializeAsync(table, ct)
         ├── 商店连接成功即 Ready
         ├── 商品信息后台 FetchProducts，不阻塞初始化结果；失败后按 ProductFetchRetryDelaysMs 自动重试，默认 2s/5s/10s，只标记 Controller 缺失 SKU 为不可用
-        └── 商品拉取成功后自动 RestoreTransactions + FetchPurchases，恢复平台 PendingOrder 票据；若已登录则合并触发一次补单扫描
+        └── 商品拉取成功后自动 FetchPurchases，恢复平台 PendingOrder 票据；若已登录则合并触发一次补单扫描；RestoreTransactions 仅由用户主动恢复购买触发
 ```
 
 初始化失败时 `MobileInitService` 通过 `IAPInitResult.Fail((int)MobileStoreInitFailureReason, detail)` 上报；支付会被基类 `PayGuardAsync` 的 `IsStoreReady` 检查拦截。初始化成功和失败都会通过父包 `IAPStoreBase.Track*` 封装上报 `nova_iap_init`。
@@ -125,7 +125,7 @@ MobileStore.InitializeAsync(table, config, ctx, ct)
 | 商店连接成功 | `OnStoreConnected` 标记 Ready，随后调用 `FetchProducts` |
 | 正在拉取或已成功 | `FetchProducts` 直接跳过，避免 Unity IAP 并发商品请求 |
 | 整体失败 | 标记 `ProductFetchState=Failed`，按 `ProductFetchRetryDelaysMs` 自动重试；默认 `2s / 5s / 10s` 共 3 次 |
-| 成功回调 | 取消重试、清理旧失败 SKU、按 Controller 状态恢复仍缺失的 pending SKU、置 `Succeeded`，再触发 Restore / FetchPurchases |
+| 成功回调 | 取消重试、清理旧失败 SKU、按 Controller 状态恢复仍缺失的 pending SKU、置 `Succeeded`，再触发 FetchPurchases 和延迟权益刷新 |
 | 失败数量小于请求数量 | 视为至少有商品成功，置 `Succeeded` 并停止重试；仍缺失 SKU 继续保留拦截 |
 | 成功态迟到失败 | 只补记录 Controller 当前仍缺失的 SKU，不回退 `Failed`，不重试，不重复触发后续流程 |
 
@@ -158,7 +158,7 @@ IAPPlugin.CheckLocalOrdersAsync
   └── MobileStore.CheckLocalOrdersAsync
         └── MobileValidationService.CheckLocalOrdersAsync
               ├── 未登录时直接跳过，不发起 QueryPendingOrder / Verify 协议
-              ├── 启动期 OnProductsFetched 会先触发平台 RestoreTransactions，再自动 FetchPurchases 恢复平台 PendingOrder
+              ├── 启动期 OnProductsFetched 会自动 FetchPurchases 恢复平台 PendingOrder，不调用 RestoreTransactions
               ├── 登录前收到的 PendingOrder 只暂存在内存，登录后先合并到当前 UID 存档
               ├── 每次扫描都向服务端发送 QueryPendingOrder
               ├── 优先按服务端返回的 `table_id`（long）确定商品行，并结合 `parameter` 解码出的 `ReceiptParam` merge 到本地 `OrderRecordsByKey`
@@ -170,7 +170,7 @@ IAPPlugin.CheckLocalOrdersAsync
               └── 本地补单扫描结束后触发一次 CheckEntitlement，刷新订阅和非消耗品权益；商品未就绪时延后到 OnProductsFetched 后补跑
 ```
 
-登录前平台回调可能先于业务 `SetUserId` 到达。此时 Mobile 只收集待验单数据，不读写账号存档，也不发起服务端协议；商品拉取后的 `RestoreTransactions` 也只用于唤起平台侧订单补全。业务登录后调用 `CheckLocalOrdersAsync`，才会按“合并暂存订单 → 拉取服务端未完成订单 → 本地验单 → 订阅权益查询”的顺序执行。完整补单流程串行执行；扫描中重复触发只会标记下一轮补跑，避免 QueryPendingOrder、存档合并和权益刷新并发交错。
+登录前平台回调可能先于业务 `SetUserId` 到达。此时 Mobile 只收集待验单数据，不读写账号存档，也不发起服务端协议；商品拉取后只自动 `FetchPurchases` 恢复平台已有购买，不调用 `RestoreTransactions`。业务登录后调用 `CheckLocalOrdersAsync`，才会按“合并暂存订单 → 拉取服务端未完成订单 → 本地验单 → 订阅权益查询”的顺序执行。完整补单流程串行执行；扫描中重复触发只会标记下一轮补跑，避免 QueryPendingOrder、存档合并和权益刷新并发交错。订阅倒计时到期同样不会复用手动 `RestoreAsync`，而是先 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行 `RefreshEntitlementsAsync`。
 
 `CheckEntitlement` 的 `FullyEntitled` 只代表平台侧仍返回持有记录，不直接等价于订阅仍有效。订阅权益回调中会从 `Entitlement.Order.Info.PurchasedProductInfo[*]` 里筛选与当前 `Entitlement.Product` 匹配的条目，再读取 `subscriptionInfo.GetExpireDate()`；如果同一商品有多条历史记录，使用匹配项中的最晚到期时间。这样 iOS 票据中混入其他历史订阅时，不会把其他商品的到期时间误用到当前商品。当当前商品匹配到的到期时间明确已经过期时，本次权益状态按 `NotEntitled` 缓存，不进入 Restore 验单。读取不到当前商品匹配的到期时间时保留平台返回状态，仍交由服务端验单确认。非消耗品不受该过滤影响。
 
@@ -303,7 +303,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 验单队列处理 | 经 `MobileServiceHub.RunBackgroundTask` 启动，接入移动端官方内购商店运行期取消令牌 |
 | 商品成功后的权益刷新 | 经 `RunBackgroundTask` 启动；商品未就绪时延后到成功回调后补跑；`RefreshEntitlementsAsync` 返回 `UniTask<IReadOnlyList<IAPResult>>`，后台触发时必须包装为无返回 `UniTask` |
 | 平台已有购买后的补单扫描 | 经 `RunBackgroundTask` 启动；避免 `FetchPurchases` 回调里裸不等待后台任务 |
-| 订阅到期倒计时 | 自身 CTS 与 Hub 运行期取消令牌链接，Dispose 时统一取消 |
+| 订阅到期倒计时 | 自身 CTS 与 Hub 运行期取消令牌链接，Dispose 时统一取消；到期后先 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行 `RefreshEntitlementsAsync`，不进入手动 `RestoreAsync` / `RestoreTransactions` |
 | 支付验单结果桥接 | 经 `RunBackgroundTask` 等待验单 TCS；Dispose 时取消等待，并以 `StoreNotAvailable` 失败结果解除支付 await，不向业务抛取消异常 |
 
 后台任务入口只接受 `Func<CancellationToken, UniTask>`。如果业务动作本身返回 `UniTask<T>`，不能直接作为方法组传入 `RunBackgroundTask`；当前商品成功后的权益刷新使用 `async token => { await RefreshEntitlementsAsync(token); }` 显式等待并丢弃返回列表，确保后台生命周期只承载取消与异常收口，不改变 Restore / 补单结果语义。

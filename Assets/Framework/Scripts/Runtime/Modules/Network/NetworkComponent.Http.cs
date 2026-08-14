@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
 namespace NovaFramework.Runtime
@@ -77,6 +78,42 @@ namespace NovaFramework.Runtime
             }
 
             return m_HttpManager.PostRawDataAsync(url, contentBytes, requestTimeout, connectTimeout, headerInfos);
+        }
+
+        /// <summary>
+        /// 使用冻结的请求数据按主备地址执行业务协议 POST，切换与重试策略完全由网络底层负责。
+        /// </summary>
+        /// <param name="routeUrls">主域名、备用域名完整 URL，已按顺序去重。</param>
+        /// <param name="contentBytes">整条尝试链复用的请求字节。</param>
+        /// <param name="requestTimeout">每次尝试独享的请求超时，-1 使用默认值。</param>
+        /// <param name="connectTimeout">每次尝试独享的连接超时，-1 使用默认值。</param>
+        /// <param name="headerInfos">整条尝试链复用的请求头 JSON。</param>
+        /// <returns>服务器正式响应，或全部网络尝试结束后的最终失败响应。</returns>
+        internal UniTask<HttpResponse> PostBusinessRawDataAsync(
+            IReadOnlyList<string> routeUrls,
+            byte[] contentBytes,
+            float requestTimeout = -1f,
+            float connectTimeout = -1f,
+            string headerInfos = null
+        )
+        {
+            if (contentBytes == null)
+            {
+                throw new ArgumentNullException(nameof(contentBytes));
+            }
+
+            if (!(m_HttpManager is IBusinessHttpManager businessHttpManager))
+            {
+                throw new InvalidOperationException("当前 HTTP 管理器不支持业务主备路由。");
+            }
+
+            return businessHttpManager.PostBusinessRawDataAsync(
+                routeUrls,
+                contentBytes,
+                requestTimeout,
+                connectTimeout,
+                headerInfos
+            );
         }
 
         /// <summary>

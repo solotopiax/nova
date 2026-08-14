@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 using NovaFramework.Runtime;
@@ -19,7 +20,7 @@ namespace NovaFramework.BestHTTP.Tests
         }
 
         [Test]
-        public void CapabilityDetection_RequiresTelemetryApiType()
+        public void CapabilityDetection_RequiresMatchingEventHandler()
         {
             Type inspectorType = Type.GetType("NovaFramework.Editor.NetworkComponentInspector, NovaFramework.Editor");
             MethodInfo method = inspectorType?.GetMethod(
@@ -32,7 +33,7 @@ namespace NovaFramework.BestHTTP.Tests
             Func<string, Type> resolver = typeName =>
             {
                 requestedTypeName = typeName;
-                return typeof(object);
+                return typeof(TelemetryApiStub);
             };
 
             bool available = (bool)method.Invoke(null, new object[] { resolver });
@@ -57,6 +58,11 @@ namespace NovaFramework.BestHTTP.Tests
             bool available = (bool)method.Invoke(null, new object[] { resolver });
 
             Assert.That(available, Is.False);
+        }
+
+        private static class TelemetryApiStub
+        {
+            public static Action<string, IReadOnlyDictionary<string, object>> EventHandler { get; set; }
         }
     }
 }

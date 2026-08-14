@@ -6,7 +6,6 @@
   "required": [
     "schemaVersion",
     "package",
-    "profiles",
     "skills"
   ],
   "properties": {
@@ -16,7 +15,7 @@
     "package": {
       "const": "com.solotopia.nova.framework"
     },
-    "profiles": {
+    "capabilityGroups": {
       "type": "object",
       "additionalProperties": {
         "type": "array",
@@ -45,11 +44,11 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            "pattern": "^nova-project-[a-z0-9]+(?:-[a-z0-9]+)*$"
           },
           "path": {
             "type": "string",
-            "pattern": "^Skills/[a-z0-9]+(?:-[a-z0-9]+)*$"
+            "pattern": "^Skills/nova-project-[a-z0-9]+(?:-[a-z0-9]+)*$"
           },
           "kind": {
             "enum": [
