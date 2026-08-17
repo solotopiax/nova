@@ -42,7 +42,7 @@
 
 它不会在 `Start()` 阶段主动做一次版本检查。
 
-`EnableAppUpdate` 默认开启。关闭后 App 大版本检查稳定返回 `NoDownload`，启动链仍会继续执行 Asset 模块自己的热更新判断。
+`EnableAppUpdate` 默认关闭。关闭后 App 大版本检查稳定返回 `NoDownload`，启动链仍会继续执行 Asset 模块自己的热更新判断；需要 App 大版本检查时，由项目在 Inspector 中主动开启。
 
 ### 运行期 API 都是薄透传
 

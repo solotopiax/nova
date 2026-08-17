@@ -19,6 +19,9 @@ UniTask<NotificationPermissionResult> RequestNotificationPermissionAsync(
                                                NotificationAuthorizationOptions.Badge,
     CancellationToken ct = default);
 
+UniTask<InAppReviewRequestResult> RequestInAppReviewAsync(
+    CancellationToken ct = default);
+
 UniTask<bool> OpenAppSettingsAsync();
 
 UniTask<bool> OpenNotificationSettingsAsync();
@@ -29,6 +32,8 @@ UniTask<bool> OpenNotificationSettingsAsync();
 - `Initialize` 只完成桥接初始化，不能自动查询或请求通知权限。
 - 状态查询以操作系统当前状态为准；本地记录只能辅助判断 Android 首次请求状态，不能覆盖系统授权结果。
 - 相同选项的并发请求应共享底层系统请求；不同选项必须串行，不得丢弃后续参数。
+- 并发 `RequestInAppReviewAsync` 应共享同一次底层原生请求；调用方取消只影响自己的等待。
+- `RequestInAppReviewAsync` 只能由业务显式调用，不能在 `Initialize`、框架启动、场景启动或页面打开时自动发起。`RequestDispatched` 仅表示请求已交给系统，不表示提示展示、用户评价或提交完成。
 - 调用方取消只影响自己的等待；Manager 关闭时必须取消全部等待者、清空 pending 状态并忽略迟到回调。
 - `OpenAppSettingsAsync` 打开当前应用的系统设置根页。
 - `OpenNotificationSettingsAsync` 只允许精准跳转到当前应用的通知设置。平台或版本不支持或启动失败时返回 `false`，不得回退为 `OpenAppSettingsAsync`。

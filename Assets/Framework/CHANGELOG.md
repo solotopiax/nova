@@ -1,6 +1,14 @@
 # Changelog — com.solotopia.nova.framework
 
-## [Unreleased]
+## [0.6.14] - 2026-08-17
+
+### Breaking
+
+- `INativeManager` / `NativeManagerBase` 新增 `RequestInAppReviewAsync(CancellationToken)`；自定义 Native Manager 实现需补齐该成员。
+
+### Added
+
+- `Nova.Native.RequestInAppReviewAsync()` 提供 Android / iOS 的轻量系统应用内评价请求桥接。`RequestDispatched` 只表示请求已交给系统，不表示系统提示展示、用户评价或提交完成。
 
 ## [0.6.13] - 2026-08-14
 

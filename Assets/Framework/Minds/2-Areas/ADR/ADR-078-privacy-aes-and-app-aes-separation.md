@@ -43,7 +43,7 @@ Nova 同时存在两组 AES Key/IV，但它们的职责不同：
 
 ## 决策
 
-- `ConfigManager` 在 `Nova.Config.LoadAsync()` 加载 `ConfigRuntimeSO` 后，调用内部 `Util.Encrypt.AES.InitializeFromConfig(PrivacyConfigs)` 注入默认 Key/IV；Shutdown 时清空该静态状态。
+- `ConfigManager` 在 `Nova.Config.LoadAsync()` 加载 `ConfigRuntimeSO` 后，调用内部 `Util.Encrypt.AES.InitializeFromConfig(PrivacyConfigs)` 注入默认 Key/IV；全部 `FrameworkManager` 完成逆序 Shutdown 后，由 `FrameworkManagersGroup` 的 `finally` 清空该静态状态。
 - 未显式传入 key/iv 的 `Util.Encrypt.AES` 调用只使用隐私配置默认值。配置未加载、字段缺失或 UTF-8 长度不是 16 字节时，调用失败；业务侧不得手动调用已废弃的 `Util.Encrypt.AES.Configure`。
 - `AppConfigs.AppAesKey/AppAesIV` 保持在应用配置中，不迁移到隐私配置，也不得作为 `Util.Encrypt.AES` 默认值。
 - `NetService` 固定从 `AppConfigs.AppAesKey/AppAesIV` 读取 Key/IV，并显式传给 `NetBuilder.Encrypt` 与 `NetParser.Decrypt`。ThirdPay 等经 `NetService` 发出的协议请求继承该约束，不能回退到隐私配置默认 AES。

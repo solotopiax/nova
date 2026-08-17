@@ -14,7 +14,7 @@ using UnityEditor.Build.Reporting;
 namespace NovaFramework.Editor
 {
     /// <summary>
-    /// Native 模块构建处理器：声明 Android 通知权限并链接 iOS UserNotifications.framework。
+    /// Native 模块构建处理器：声明 Android 通知权限，并链接 iOS 原生能力所需系统 Framework。
     /// 不注入 Push capability、aps-environment 或 APNs 后台模式。
     /// </summary>
     public sealed class NativeBuildProcessor : NovaSDKBuildProcessor
@@ -38,19 +38,32 @@ namespace NovaFramework.Editor
 
 #if UNITY_IOS
         /// <summary>
-        /// iOS 构建后链接通知授权 API 所需的 UserNotifications.framework。
+        /// iOS 构建后将原生桥接依赖链接到 UnityFramework，并设置 Swift 源文件的语言版本。
         /// </summary>
         /// <param name="report">构建报告。</param>
         /// <param name="context">Nova 构建上下文。</param>
         public override void OnPostprocessBuildOniOS(BuildReport report, NovaBuildContext context)
         {
+#if UNITY_2019_3_OR_NEWER
+            string frameworkTargetGuid = context.XProj.GetUnityFrameworkTargetGuid();
+#else
+            string frameworkTargetGuid = context.TargetGuid;
+#endif
             XcodeHelper.Project.AddFramework(
                 context.XProj,
-                context.TargetGuid,
+                frameworkTargetGuid,
                 "UserNotifications.framework");
-            Log.Debug(LogTag.Editor, "[Native] iOS 已链接 UserNotifications.framework。");
+            XcodeHelper.Project.AddFramework(
+                context.XProj,
+                frameworkTargetGuid,
+                "StoreKit.framework");
+            XcodeHelper.Project.SetBuildProperty(
+                context.XProj,
+                frameworkTargetGuid,
+                "SWIFT_VERSION",
+                "5.0");
+            Log.Debug(LogTag.Editor, "[Native] iOS 已向 UnityFramework 链接 UserNotifications.framework、StoreKit.framework 并设置 Swift 5。");
         }
 #endif
     }
 }
-

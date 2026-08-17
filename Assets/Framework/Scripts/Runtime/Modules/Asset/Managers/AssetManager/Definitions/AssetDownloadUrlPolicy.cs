@@ -23,8 +23,23 @@ namespace NovaFramework.Runtime
         private readonly bool m_EnableWhitelistMetadataDebugLog;
         private readonly List<string> m_ActiveMetadataUrls = new();
         private readonly HashSet<string> m_TransportFailedMetadataUrls = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, Queue<CandidateSelection>> m_PendingSelections =
+            new(StringComparer.Ordinal);
         private int m_Cursor;
+        private int m_LastCandidateCount;
         private long m_FailureGeneration;
+
+        private readonly struct CandidateSelection
+        {
+            public CandidateSelection(int index, int candidateCount)
+            {
+                Index = index;
+                CandidateCount = candidateCount;
+            }
+
+            public int Index { get; }
+            public int CandidateCount { get; }
+        }
 
         public AssetDownloadUrlPolicy() : this(false)
         {
@@ -50,9 +65,11 @@ namespace NovaFramework.Runtime
                 throw new YooInternalException("Candidate URL list is null or empty.");
             }
 
-            int index = (m_Cursor & int.MaxValue) % candidateUrls.Count;
+            int index = Math.Min(m_Cursor, candidateUrls.Count - 1);
             string selectedUrl = candidateUrls[index];
-            if (m_EnableWhitelistMetadataDebugLog && TryGetMetadataFileName(selectedUrl, out _))
+            m_LastCandidateCount = candidateUrls.Count;
+            RecordSelection(selectedUrl, index, candidateUrls.Count);
+            if (TryGetMetadataFileName(selectedUrl, out _))
             {
                 m_ActiveMetadataUrls.Add(selectedUrl);
             }
@@ -74,12 +91,6 @@ namespace NovaFramework.Runtime
         /// </summary>
         public void CompleteMetadataRequest(bool succeeded, string operationError)
         {
-            if (!m_EnableWhitelistMetadataDebugLog)
-            {
-                BeginMetadataRequest();
-                return;
-            }
-
             int operationFailureIndex = -1;
             if (!succeeded && m_TransportFailedMetadataUrls.Count == 0)
             {
@@ -91,17 +102,23 @@ namespace NovaFramework.Runtime
                 string url = m_ActiveMetadataUrls[i];
                 if (m_TransportFailedMetadataUrls.Contains(url))
                 {
+                    RemovePendingSelections(url);
                     continue;
                 }
 
                 if (i == operationFailureIndex)
                 {
-                    LogMetadataFailure(url, 0L, operationError ?? "Operation failed");
+                    if (m_EnableWhitelistMetadataDebugLog)
+                    {
+                        LogMetadataFailure(url, 0L, operationError ?? "Operation failed");
+                    }
                 }
                 else
                 {
                     OnRequestSucceeded(url);
                 }
+
+                RemovePendingSelections(url);
             }
 
             BeginMetadataRequest();
@@ -112,6 +129,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         public void OnRequestSucceeded(string url)
         {
+            TryTakeSelection(url, out _);
             if (m_EnableWhitelistMetadataDebugLog && TryGetMetadataFileName(url, out string fileName))
             {
                 Log.Debug(LogTag.Asset, "启动白名单版本元数据拉取成功：File={0}, URL={1}", fileName, url);
@@ -119,16 +137,25 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// YooAsset 传输层失败回调；每个失败请求都独立推进一次。
+        /// YooAsset 传输层失败回调。同一候选地址上的并发失败只触发一次切换，
+        /// 已经切到最后一个候选后保持粘滞，不再绕回第一个候选。
         /// </summary>
         public void OnRequestFailed(string url, long httpCode, string httpError)
         {
-            if (m_EnableWhitelistMetadataDebugLog && TryGetMetadataFileName(url, out string fileName))
+            if (TryGetMetadataFileName(url, out string fileName))
             {
                 m_TransportFailedMetadataUrls.Add(url);
-                LogMetadataFailure(fileName, url, httpCode, httpError);
+                if (m_EnableWhitelistMetadataDebugLog)
+                {
+                    LogMetadataFailure(fileName, url, httpCode, httpError);
+                }
             }
-            Advance();
+
+            if (!TryTakeSelection(url, out CandidateSelection selection)
+                || selection.Index == Math.Min(m_Cursor, selection.CandidateCount - 1))
+            {
+                Advance(selection.CandidateCount > 0 ? selection.CandidateCount : m_LastCandidateCount);
+            }
         }
 
         /// <summary>
@@ -139,16 +166,57 @@ namespace NovaFramework.Runtime
         {
             if (m_FailureGeneration == failureGenerationAtStart)
             {
-                Advance();
+                Advance(m_LastCandidateCount);
             }
         }
 
-        private void Advance()
+        private void Advance(int candidateCount)
         {
-            unchecked
+            if (candidateCount > 0 && m_Cursor < candidateCount - 1)
             {
                 m_Cursor++;
+            }
+
+            unchecked
+            {
                 m_FailureGeneration++;
+            }
+        }
+
+        private void RecordSelection(string url, int index, int candidateCount)
+        {
+            if (!m_PendingSelections.TryGetValue(url, out Queue<CandidateSelection> selections))
+            {
+                selections = new Queue<CandidateSelection>();
+                m_PendingSelections.Add(url, selections);
+            }
+
+            selections.Enqueue(new CandidateSelection(index, candidateCount));
+        }
+
+        private bool TryTakeSelection(string url, out CandidateSelection selection)
+        {
+            selection = default;
+            if (string.IsNullOrEmpty(url)
+                || !m_PendingSelections.TryGetValue(url, out Queue<CandidateSelection> selections)
+                || selections.Count == 0)
+            {
+                return false;
+            }
+
+            selection = selections.Dequeue();
+            if (selections.Count == 0)
+            {
+                m_PendingSelections.Remove(url);
+            }
+            return true;
+        }
+
+        private void RemovePendingSelections(string url)
+        {
+            if (!string.IsNullOrEmpty(url))
+            {
+                m_PendingSelections.Remove(url);
             }
         }
 

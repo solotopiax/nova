@@ -19,22 +19,25 @@ using UnityEngine.UI;
 namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
-    /// Native 模块完整演示页：查询通知权限、请求常规权限、请求 iOS Provisional，以及打开应用设置与精准通知设置。
-    /// 所有系统权限请求均由用户点击显式触发，页面打开时不会自动弹窗。
+    /// Native 模块完整演示页：查询和请求通知权限、打开系统设置，以及测试 Android / iOS 应用内评价。
+    /// 所有系统权限和应用内评价请求均由用户点击显式触发，页面打开时不会自动弹窗。
     /// </summary>
     public sealed class DemoNativeView : BaseDemoView
     {
         [SerializeField] private TextMeshProUGUI m_StatusText;
+        [SerializeField] private TextMeshProUGUI m_InAppReviewStatusText;
         [SerializeField] private Button m_QueryButton;
         [SerializeField] private Button m_RequestStandardButton;
         [SerializeField] private Button m_RequestProvisionalButton;
         [SerializeField] private Button m_OpenSettingsButton;
         [SerializeField] private Button m_OpenNotificationSettingsButton;
+        [SerializeField] private Button m_RequestAndroidInAppReviewButton;
+        [SerializeField] private Button m_RequestIosInAppReviewButton;
 
         private CancellationTokenSource m_Cts;
 
         /// <summary>
-        /// 注册五个显式操作按钮，并就近显示对应公开 API。
+        /// 注册七个显式操作按钮，并就近显示对应公开 API。
         /// </summary>
         /// <param name="userData">用户自定义数据，本 View 不使用。</param>
         protected override void OnInit(object userData)
@@ -79,6 +82,23 @@ namespace NovaFramework.Samples.Runtime
                     m_OpenNotificationSettingsButton,
                     "Nova.Native.OpenNotificationSettingsAsync()");
             }
+
+            if (m_RequestAndroidInAppReviewButton != null)
+            {
+                m_RequestAndroidInAppReviewButton.onClick.AddListener(
+                    OnRequestAndroidInAppReviewButtonClick);
+                SetButtonApiHint(
+                    m_RequestAndroidInAppReviewButton,
+                    "Nova.Native.RequestInAppReviewAsync()");
+            }
+
+            if (m_RequestIosInAppReviewButton != null)
+            {
+                m_RequestIosInAppReviewButton.onClick.AddListener(OnRequestIosInAppReviewButtonClick);
+                SetButtonApiHint(
+                    m_RequestIosInAppReviewButton,
+                    "Nova.Native.RequestInAppReviewAsync()");
+            }
         }
 
         /// <summary>
@@ -90,6 +110,8 @@ namespace NovaFramework.Samples.Runtime
             base.OnOpen(userData);
             ResetCancellationSource();
             SetStatusText("未查询");
+            SetInAppReviewStatusText("未请求");
+            RefreshInAppReviewButtonAvailability();
         }
 
         /// <summary>
@@ -128,6 +150,22 @@ namespace NovaFramework.Samples.Runtime
         private void OnOpenNotificationSettingsButtonClick()
         {
             OpenNotificationSettingsAsync().Forget();
+        }
+
+        /// <summary>
+        /// Android 应用内评价测试按钮回调；实际平台分发仍由统一 Native 门面负责。
+        /// </summary>
+        private void OnRequestAndroidInAppReviewButtonClick()
+        {
+            RequestInAppReviewAsync("Android").Forget();
+        }
+
+        /// <summary>
+        /// iOS 应用内评价测试按钮回调；实际平台分发仍由统一 Native 门面负责。
+        /// </summary>
+        private void OnRequestIosInAppReviewButtonClick()
+        {
+            RequestInAppReviewAsync("iOS").Forget();
         }
 
         /// <summary>
@@ -271,6 +309,39 @@ namespace NovaFramework.Samples.Runtime
             }
         }
 
+        /// <summary>
+        /// 显式请求应用内评价流程，并只展示 Native 已将请求交给系统的技术状态。
+        /// </summary>
+        /// <param name="platformLabel">当前按钮对应的平台标签，仅用于 Demo 反馈说明。</param>
+        private async UniTaskVoid RequestInAppReviewAsync(string platformLabel)
+        {
+            if (!TryGetNative(out CancellationToken token))
+            {
+                return;
+            }
+
+            try
+            {
+                InAppReviewRequestResult result = await Nova.Native.RequestInAppReviewAsync(token);
+                SetInAppReviewStatusText(result.Status.ToString());
+                AppendFeedback(
+                    "Nova.Native.RequestInAppReviewAsync() [" + platformLabel + "]" +
+                    " -> status=" + result.Status +
+                    ", requestDispatched=" + result.IsRequestDispatched +
+                    ", errorMessage=" + FormatOptional(result.ErrorMessage) +
+                    "（RequestDispatched 仅表示已交给系统流程，不表示系统提示已展示、用户已评价或提交成功）",
+                    GetInAppReviewFeedbackLevel(result.Status));
+            }
+            catch (OperationCanceledException)
+            {
+                // View 关闭后的正常结束，不追加误导性失败反馈。
+            }
+            catch (Exception exception)
+            {
+                AppendException("Nova.Native.RequestInAppReviewAsync()", exception);
+            }
+        }
+
         private bool TryGetNative(out CancellationToken token)
         {
             token = m_Cts?.Token ?? default;
@@ -298,6 +369,54 @@ namespace NovaFramework.Samples.Runtime
             }
         }
 
+        /// <summary>
+        /// 刷新应用内评价状态卡，不混用通知权限状态的展示语义。
+        /// </summary>
+        /// <param name="status">应用内评价请求状态文本。</param>
+        private void SetInAppReviewStatusText(string status)
+        {
+            if (m_InAppReviewStatusText != null)
+            {
+                m_InAppReviewStatusText.text = "应用内评价状态：" + status;
+            }
+        }
+
+        /// <summary>
+        /// 在移动真机只启用对应平台的测试按钮；Editor 与其他平台保留两个入口用于验证统一回退结果。
+        /// </summary>
+        private void RefreshInAppReviewButtonAvailability()
+        {
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                SetButtonInteractable(m_RequestAndroidInAppReviewButton, true);
+                SetButtonInteractable(m_RequestIosInAppReviewButton, false);
+                return;
+            }
+
+            if (Application.platform == RuntimePlatform.IPhonePlayer)
+            {
+                SetButtonInteractable(m_RequestAndroidInAppReviewButton, false);
+                SetButtonInteractable(m_RequestIosInAppReviewButton, true);
+                return;
+            }
+
+            SetButtonInteractable(m_RequestAndroidInAppReviewButton, true);
+            SetButtonInteractable(m_RequestIosInAppReviewButton, true);
+        }
+
+        /// <summary>
+        /// 安全设置可选 Demo 按钮的交互状态。
+        /// </summary>
+        /// <param name="button">待更新的按钮。</param>
+        /// <param name="interactable">是否允许点击。</param>
+        private static void SetButtonInteractable(Button button, bool interactable)
+        {
+            if (button != null)
+            {
+                button.interactable = interactable;
+            }
+        }
+
         private void AppendException(string api, Exception exception)
         {
             AppendFeedback(
@@ -321,6 +440,22 @@ namespace NovaFramework.Samples.Runtime
                 NotificationPermissionStatus.Denied => FeedbackLevel.Warn,
                 NotificationPermissionStatus.Unsupported => FeedbackLevel.Warn,
                 NotificationPermissionStatus.NotDetermined => FeedbackLevel.Info,
+                _ => FeedbackLevel.Error,
+            };
+        }
+
+        /// <summary>
+        /// 将应用内评价技术状态映射为 Demo 反馈等级。
+        /// </summary>
+        /// <param name="status">平台原生请求状态。</param>
+        /// <returns>对应的反馈等级。</returns>
+        private static FeedbackLevel GetInAppReviewFeedbackLevel(InAppReviewRequestStatus status)
+        {
+            return status switch
+            {
+                InAppReviewRequestStatus.RequestDispatched => FeedbackLevel.Success,
+                InAppReviewRequestStatus.Unsupported => FeedbackLevel.Warn,
+                InAppReviewRequestStatus.Unavailable => FeedbackLevel.Warn,
                 _ => FeedbackLevel.Error,
             };
         }

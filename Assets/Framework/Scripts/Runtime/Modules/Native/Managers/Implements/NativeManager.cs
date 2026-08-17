@@ -30,9 +30,10 @@ namespace NovaFramework.Runtime
         private bool m_IsShutdown = true;
         private UniTaskCompletionSource<NotificationPermissionResult> m_InFlightPermissionRequest;
         private NotificationAuthorizationOptions m_InFlightPermissionOptions;
+        private UniTaskCompletionSource<InAppReviewRequestResult> m_InFlightInAppReviewRequest;
 
         /// <summary>
-        /// 初始化平台桥接。初始化阶段不会查询或请求通知权限。
+        /// 初始化平台桥接。初始化阶段不会查询或请求通知权限，也不发起应用内评价。
         /// </summary>
         /// <param name="config">NativeManager 配置。</param>
         public override void Initialize(NativeManagerConfig config)
@@ -56,6 +57,7 @@ namespace NovaFramework.Runtime
         public override void Shutdown()
         {
             UniTaskCompletionSource<NotificationPermissionResult> pending;
+            UniTaskCompletionSource<InAppReviewRequestResult> inAppReviewPending;
             lock (m_RequestLock)
             {
                 if (m_IsShutdown)
@@ -68,10 +70,13 @@ namespace NovaFramework.Runtime
                 pending = m_InFlightPermissionRequest;
                 m_InFlightPermissionRequest = null;
                 m_InFlightPermissionOptions = NotificationAuthorizationOptions.None;
+                inAppReviewPending = m_InFlightInAppReviewRequest;
+                m_InFlightInAppReviewRequest = null;
             }
 
             ShutdownPlatform();
             pending?.TrySetCanceled();
+            inAppReviewPending?.TrySetCanceled();
         }
 
         /// <summary>
@@ -100,6 +105,17 @@ namespace NovaFramework.Runtime
             EnsureInitialized();
             ValidateOptions(options);
             return RequestNotificationPermissionCoreAsync(options, ct);
+        }
+
+        /// <summary>
+        /// 发起应用内评价请求；并发调用共享同一次平台请求，调用方取消只影响自己的等待。
+        /// </summary>
+        /// <param name="ct">调用方取消令牌。</param>
+        /// <returns>平台原生请求状态。</returns>
+        public override UniTask<InAppReviewRequestResult> RequestInAppReviewAsync(CancellationToken ct = default)
+        {
+            EnsureInitialized();
+            return RequestInAppReviewCoreAsync(ct);
         }
 
         /// <summary>
@@ -174,6 +190,29 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 协调并发应用内评价请求，避免同一时刻重复进入平台原生流程。
+        /// </summary>
+        /// <param name="ct">调用方取消令牌。</param>
+        /// <returns>平台原生请求状态。</returns>
+        private async UniTask<InAppReviewRequestResult> RequestInAppReviewCoreAsync(CancellationToken ct)
+        {
+            UniTaskCompletionSource<InAppReviewRequestResult> pending;
+            lock (m_RequestLock)
+            {
+                EnsureRequestCanContinue();
+                pending = m_InFlightInAppReviewRequest;
+                if (pending == null)
+                {
+                    pending = new UniTaskCompletionSource<InAppReviewRequestResult>();
+                    m_InFlightInAppReviewRequest = pending;
+                    CompleteInAppReviewRequestAsync(pending).Forget();
+                }
+            }
+
+            return await pending.Task.AttachExternalCancellation(ct);
+        }
+
+        /// <summary>
         /// 执行单个底层权限请求，并确保异常与清理都汇聚到共享 TCS。
         /// </summary>
         /// <param name="options">通知授权选项。</param>
@@ -208,6 +247,51 @@ namespace NovaFramework.Runtime
                     {
                         m_InFlightPermissionRequest = null;
                         m_InFlightPermissionOptions = NotificationAuthorizationOptions.None;
+                    }
+                }
+            }
+
+            if (canceled)
+            {
+                pending.TrySetCanceled();
+            }
+            else
+            {
+                pending.TrySetResult(result);
+            }
+        }
+
+        /// <summary>
+        /// 执行单个应用内评价平台请求，并将技术异常收口为不泄漏平台实现细节的失败结果。
+        /// </summary>
+        /// <param name="pending">本次共享请求完成源。</param>
+        private async UniTaskVoid CompleteInAppReviewRequestAsync(
+            UniTaskCompletionSource<InAppReviewRequestResult> pending)
+        {
+            InAppReviewRequestResult result = default;
+            bool canceled = false;
+            try
+            {
+                result = await RequestInAppReviewPlatformAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                canceled = true;
+            }
+            catch (Exception exception)
+            {
+                Log.Error(LogTag.Base, "应用内评价请求发生原生异常：{0}。", exception);
+                result = new InAppReviewRequestResult(
+                    InAppReviewRequestStatus.Failed,
+                    "应用内评价请求失败。");
+            }
+            finally
+            {
+                lock (m_RequestLock)
+                {
+                    if (ReferenceEquals(m_InFlightInAppReviewRequest, pending))
+                    {
+                        m_InFlightInAppReviewRequest = null;
                     }
                 }
             }

@@ -25,6 +25,7 @@
 | `EditorUtil.Pipify/Definitions/PipifySettingsSO.cs` | `PipifySettingsSO` | 持久化 SO 存档 |
 | `EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs` | `EditorUtil.Pipify` | 参数默认值、旧 Config 参数迁移、CLI 覆盖与类型转换工具方法 |
 | `EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs` | `EditorUtil.Pipify.Runner` | 纯执行引擎（internal static class） |
+| `EditorUtil.Pipify/EditorUtil.Pipify.AsyncJob.cs` | `EditorUtil.Pipify` | Editor 外部调用的异步任务启动、状态保存与查询 |
 | `EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs` | `EditorUtil.Pipify.WindowReporter` | Window 宿主进度 Reporter（EditorUtility 模态进度条） |
 | `EditorUtil.Pipify/EditorUtil.Pipify.CliReporter.cs` | `EditorUtil.Pipify.CliReporter` | CLI 宿主进度 Reporter（纯日志，恒返回 false） |
 | `EditorUtil.Pipify/Steps/PipifySteps.HybridCLR.cs` | `PipifySteps` | 内置 Step：HybridCLR 分组 10 个 Step（3 个主流程：`hybridclr.validate_linkxml` / `hybridclr.copy_aot_dll` / `hybridclr.copy_game_dll`；仅编译 DLL 入口：`hybridclr.compile_dll_active_build_target`；对齐 HybridCLR/Generate 子菜单的 6 个细粒度入口：`hybridclr.generate_all` / `hybridclr.generate_linkxml` / `hybridclr.generate_method_bridge` / `hybridclr.generate_aot_generic_reference` / `hybridclr.generate_il2cpp_def` / `hybridclr.generate_aot_dlls`） |
@@ -48,6 +49,8 @@
 |---|---|---|
 | `RunBatchAsync` | `static UniTask RunBatchAsync(Batch, EditorWindow host)` | UI 宿主入口：使用模态进度条 WindowReporter 执行 Batch；host 用于 Batch 末尾 `ShowNotification` 弹结果浮窗，传 null 时只写日志 |
 | `RunBatchForCliAsync` | `static UniTask RunBatchForCliAsync(Batch, IReadOnlyDictionary<string, string>)` | CLI 宿主入口：使用纯日志 CliReporter 执行 Batch，支持参数覆盖；overrides 为 null 表示不覆盖 |
+| `StartBatchJob` | `static string StartBatchJob(Batch, IReadOnlyDictionary<string, string>)` | Editor 外部调用入口：只登记任务并立即返回任务编号，下一次 Editor update 才开始执行 Batch；同一时间只允许一条等待或运行中的任务 |
+| `GetBatchJob` | `static BatchJobSnapshot GetBatchJob(string)` | 按任务编号查询状态；不存在时返回 null。`StateName` 为 Waiting / Running / Succeeded / Failed，失败详情见 `Error` |
 | `Registry` | — | Step 元信息注册表（嵌套静态类） |
 
 ### EditorUtil.Pipify.Registry（注册表）
@@ -109,6 +112,18 @@ key 格式优先级（高 > 低）：
 
 字段类型转换顺序：`string` → enum（`Enum.Parse` 大小写敏感）→ `Convert.ChangeType`（数字 / bool）。字段不存在时抛 `InvalidOperationException`。
 
+### Editor 外部异步任务
+
+`StartBatchJob` 用于 Unity Pipeline `/api/exec` 等必须快速返回的 Editor 外部调用：
+
+1. 当前调用只创建任务记录并返回 `JobId`，状态为 `Waiting`。
+2. 下一次 `EditorApplication.update` 解除调度回调后，任务进入 `Running` 并复用原有 `RunBatchForCliAsync`。
+3. Runner 正常结束后状态为 `Succeeded`；任何异常都会保存为 `Failed` 与 `Error`，同时输出 Error 日志。
+4. 外部调用方使用 `GetBatchJob(jobId)` 查询最终结果。未知任务编号返回 null。
+5. 任务状态保存在当前 Editor 域内；Domain Reload 后旧任务编号不可再查询。
+
+该入口只把耗时 Batch 移出 `/api/exec` 的当前调用栈，不改变 Runner 顺序、Step 行为、参数覆盖或 Reporter 语义。正式 batchmode CLI 仍使用 `Cli.Run()` 同步等待并根据结果退出进程。
+
 ## §11 使用示例
 
 ```csharp
@@ -141,6 +156,11 @@ await EditorUtil.Pipify.RunBatchForCliAsync(batch, overrides);
 
 // CLI 宿主：不覆盖参数
 await EditorUtil.Pipify.RunBatchForCliAsync(batch, null);
+
+// Unity Pipeline / 其他 Editor 外部调用：立即取得任务编号，再轮询状态
+string jobId = EditorUtil.Pipify.StartBatchJob(batch, overrides: null);
+EditorUtil.Pipify.BatchJobSnapshot job = EditorUtil.Pipify.GetBatchJob(jobId);
+Debug.Log($"{job.StateName}: {job.Error}");
 ```
 
 ## §13 关联文档

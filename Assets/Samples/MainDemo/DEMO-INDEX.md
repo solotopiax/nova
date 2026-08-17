@@ -52,7 +52,7 @@
 | 2.14 | `DemoVibrateView` | I | `Nova.Vibrate.Play(VibrateType.Light) / PlayCustom(...) / StopAll()` | xlsx `Demo_VibrateCustom` / `Demo_VibrateEmphasis` |
 | 2.15 | `DemoSDKView` | R | `Nova.SDK.GetAll<ISDKPlugin>() / TryGet<TPlugin>(out p)` | 无 |
 | 2.16 | `DemoDebugView` | I | `Nova.Debug.IsActiveWindow / Active / Deactive`（与 DebugComponent 对齐） | 无 |
-| 2.17 | `DemoNativeView` | I | `Nova.Native.GetNotificationPermissionStatusAsync / RequestNotificationPermissionAsync / OpenAppSettingsAsync / OpenNotificationSettingsAsync` | 无 |
+| 2.17 | `DemoNativeView` | I | `Nova.Native.GetNotificationPermissionStatusAsync / RequestNotificationPermissionAsync / OpenAppSettingsAsync / OpenNotificationSettingsAsync / RequestInAppReviewAsync` | 无 |
 
 ---
 

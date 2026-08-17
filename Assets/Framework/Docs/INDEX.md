@@ -21,7 +21,7 @@
 | **新增业务 UI 界面**（UIView 子类） | [UIComponent.md · 泛型 Open API + 注册表](Runtime/Modules/UI/UIComponent.md) → [UIView.md · UIView 继承模板](Runtime/Modules/UI/Definitions/UIView.md) → [UIManager.md · OpenUIView 流程](Runtime/Modules/UI/UIManager/UIManager.md) |
 | **新增全局事件** | [EventManager.md · EventData模板 + 订阅/发布](Runtime/Modules/Event/EventManager.md) |
 | **新增 Runtime 模块**（Component + Manager） | [Runtime.md · 9 步骤](Runtime/Runtime.md) → [FrameworkComponent.md](Runtime/Modules/FrameworkComponent.md) → [FrameworkManager.md · 三层继承规范](Runtime/Modules/FrameworkManager.md) |
-| **查询 / 请求系统通知权限**（Native） | [NativeComponent.md · 显式请求、状态与平台边界](Runtime/Modules/Native/NativeComponent.md) → [NativeManager.md · Android / iOS 分发与并发语义](Runtime/Modules/Native/Managers/Implements/NativeManager.md) |
+| **查询 / 请求系统通知权限或应用内评价**（Native） | [NativeComponent.md · 显式请求、状态与平台边界](Runtime/Modules/Native/NativeComponent.md) → [NativeManager.md · Android / iOS 分发与并发语义](Runtime/Modules/Native/Managers/Implements/NativeManager.md) |
 | **新增 Inspector 面板** | [Editor.md · 开发规范](Editor/Editor.md) → [BaseComponentInspector.md · 子类模板](Editor/Inspectors/BaseComponentInspector.md) |
 | **Inspector 运行时数据面板** | [IEditorRuntimeDrawer.md](Editor/Definitions/IEditorRuntimeDrawer.md) → [EditorUtil.Serializer.md · 读取私有字段](Editor/EditorUtil/EditorUtil.Serializer/EditorUtil.Serializer.md) |
 | **复用纯 C# 对象（零 GC）** | [ReferencePool.md · IReference + Get/Put](Runtime/Core/Reference/ReferencePool.md) |

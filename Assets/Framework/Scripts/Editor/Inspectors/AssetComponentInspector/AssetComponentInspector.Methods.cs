@@ -120,8 +120,8 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                     {
                         "(1)热更新功能总开关",
-                        "(2)关闭后启动流程直跳 LoadDll",
-                        "(3)关闭后跳过版本检查、资源补丁、强更下载三个阶段",
+                        "(2)关闭后只跳过资源热更新检查与下载流程",
+                        "(3)App 大版本检查与应用更新流程不受此开关影响",
                         "(4)关闭后 RuntimePlayMode 自动锁定为 OfflinePlayMode"
                     }, false, GUILayout.ExpandWidth(true));
                 });
@@ -136,7 +136,9 @@ namespace NovaFramework.Editor
                         {
                             "(1)运行时按当前节点上的 DevelopMode 选择 Debug 或 Release 这一组地址",
                             "(2)支持 {Platform}/{Channel}/{Package}/{Version} 占位符，框架会在运行时替换",
-                            "(3){Platform}=PlatformType 枚举名；{Channel}=Config 导出时选中的渠道；{Package}=YooAsset 当前资源包名；{Version}=Application.version"
+                            "(3){Platform}=PlatformType 枚举名；{Channel}=Config 导出时选中的渠道；{Package}=YooAsset 当前资源包名；{Version}=Application.version",
+                            "(4)主地址失败后，同一资源包后续新下载改走备用地址；已开始的下载不受影响",
+                            "(5)备用地址失败后不会自动绕回主地址"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
@@ -197,7 +199,7 @@ namespace NovaFramework.Editor
                                 "(5)运行时按 DevelopMode 选择 Debug 或 Release 主备地址",
                                 "(6)配置文件 VersionsCheckWhiteList.json 为 DeviceID JSON 字符串数组",
                                 "(7)命中后只切换 YooAsset 版本元数据，Bundle 仍走上方常规主机服务器",
-                                "(8)支持 {Platform}/{Channel}/{Package}/{Version}；所有新增 URL 均受现有 DoH 逻辑覆盖"
+                                "(8)支持 {Platform}/{Channel}/{Package}/{Version}；这些地址沿用资源下载机制，不进入业务接口的 DoH 路由"
                             }, false, GUILayout.ExpandWidth(true));
                         });
 

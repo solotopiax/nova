@@ -44,6 +44,13 @@ namespace NovaFramework.Runtime
             CancellationToken ct = default);
 
         /// <summary>
+        /// 向系统发起应用内评价请求。返回已发起不表示系统展示弹窗、用户评价或提交完成。
+        /// </summary>
+        /// <param name="ct">只取消当前调用方等待，不取消已发起的系统请求。</param>
+        /// <returns>平台原生请求状态。</returns>
+        UniTask<InAppReviewRequestResult> RequestInAppReviewAsync(CancellationToken ct = default);
+
+        /// <summary>
         /// 打开应用系统设置。返回 true 只表示成功发起跳转，不表示用户修改了设置。
         /// </summary>
         /// <returns>是否成功发起设置页跳转。</returns>

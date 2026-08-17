@@ -205,6 +205,9 @@ namespace NovaFramework.Editor
             if (paramsInstance == null) return;
 
             FieldInfo[] fields = info.ParamsType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            // 仅 PackageParams 需要在用户取消风险提示时恢复本次编辑前的完整值快照。
+            PipifySteps.PackageParams packageParamsBeforeEdit = ClonePackageParams(
+                paramsInstance as PipifySteps.PackageParams);
             // 主 Step 文本起点约为 rect.x + 26f（序号列 24f + 2f 间距）；参数区整体相对主文本再错开一个汉字（c_ParamsInset）。
             float fieldX = rowRect.x + 26f + c_ParamsInset;
             float fieldW = rowRect.width - (fieldX - rowRect.x) - 8f;
@@ -267,8 +270,102 @@ namespace NovaFramework.Editor
 
             if (EditorGUI.EndChangeCheck())
             {
+                PipifySteps.PackageParams packageParamsAfterEdit = paramsInstance as PipifySteps.PackageParams;
+                if (ShouldConfirmAndroidDevelopmentAabSigningRisk(
+                        packageParamsBeforeEdit,
+                        packageParamsAfterEdit,
+                        EditorUserBuildSettings.exportAsGoogleAndroidProject))
+                {
+                    Log.Warning(LogTag.Editor,
+                        "{0} 当前参数将生成 Android DevelopmentBuild AAB。该 AAB 不包含上传签名，即使已配置 keystore；请勿上传至 Google Play Console。",
+                        c_LogTag);
+                    bool keepRiskyConfiguration = EditorUtility.DisplayDialog(
+                        "Android Development AAB 签名警告",
+                        "当前配置将生成 Android DevelopmentBuild AAB。\n\n" +
+                        "在当前构建链中，该 AAB 不包含上传签名，即使已配置 keystore。请勿将此 AAB 上传至 Google Play Console。\n\n" +
+                        "如需上传 AAB，请关闭 DevelopmentBuild 后重新打包。是否仍要保留此配置？",
+                        "仍要保留",
+                        "取消并恢复");
+                    if (!keepRiskyConfiguration)
+                    {
+                        RestorePackageParams(packageParamsAfterEdit, packageParamsBeforeEdit);
+                        Repaint();
+                        return;
+                    }
+                }
+
                 item.ParamsJson = Util.Json.Serialize(paramsInstance);
                 MarkDirty();
+            }
+        }
+
+        /// <summary>
+        /// 判断参数编辑是否首次进入 Android DevelopmentBuild AAB 的上传签名风险状态。
+        /// 已处于风险状态时编辑无关字段不重复弹窗；导出 Google Android 工程时不会生成 AAB，因此不提示。
+        /// </summary>
+        /// <param name="before">本次编辑前的打包参数快照。</param>
+        /// <param name="after">本次编辑后的打包参数。</param>
+        /// <param name="exportAsGoogleAndroidProject">是否导出 Google Android 工程。</param>
+        /// <returns>首次进入风险状态时返回 true。</returns>
+        private static bool ShouldConfirmAndroidDevelopmentAabSigningRisk(
+            PipifySteps.PackageParams before,
+            PipifySteps.PackageParams after,
+            bool exportAsGoogleAndroidProject)
+        {
+            return !IsAndroidDevelopmentAabSigningRisk(before, exportAsGoogleAndroidProject) &&
+                   IsAndroidDevelopmentAabSigningRisk(after, exportAsGoogleAndroidProject);
+        }
+
+        /// <summary>
+        /// 判断单个打包参数是否会生成缺少上传签名的 Android DevelopmentBuild AAB。
+        /// </summary>
+        /// <param name="parameters">待判断的打包参数。</param>
+        /// <param name="exportAsGoogleAndroidProject">是否导出 Google Android 工程。</param>
+        /// <returns>命中 Android DevelopmentBuild AAB 风险组合时返回 true。</returns>
+        private static bool IsAndroidDevelopmentAabSigningRisk(
+            PipifySteps.PackageParams parameters,
+            bool exportAsGoogleAndroidProject)
+        {
+            return parameters != null &&
+                   parameters.Target == BuildTarget.Android &&
+                   parameters.DevelopmentBuild &&
+                   parameters.BuildAppBundle &&
+                   !exportAsGoogleAndroidProject;
+        }
+
+        /// <summary>
+        /// 创建 PackageParams 的独立字段快照，用于取消风险提示后无副作用恢复本次编辑。
+        /// </summary>
+        /// <param name="source">编辑前的打包参数。</param>
+        /// <returns>独立快照；源参数为空时返回 null。</returns>
+        private static PipifySteps.PackageParams ClonePackageParams(PipifySteps.PackageParams source)
+        {
+            if (source == null) return null;
+
+            var snapshot = new PipifySteps.PackageParams();
+            foreach (FieldInfo field in typeof(PipifySteps.PackageParams).GetFields(
+                         BindingFlags.Public | BindingFlags.Instance))
+            {
+                field.SetValue(snapshot, field.GetValue(source));
+            }
+            return snapshot;
+        }
+
+        /// <summary>
+        /// 将 PackageParams 恢复为编辑前快照；只恢复内存参数缓存，不写入 ParamsJson 或脏标记。
+        /// </summary>
+        /// <param name="target">需要恢复的当前参数实例。</param>
+        /// <param name="snapshot">编辑前的参数快照。</param>
+        private static void RestorePackageParams(
+            PipifySteps.PackageParams target,
+            PipifySteps.PackageParams snapshot)
+        {
+            if (target == null || snapshot == null) return;
+
+            foreach (FieldInfo field in typeof(PipifySteps.PackageParams).GetFields(
+                         BindingFlags.Public | BindingFlags.Instance))
+            {
+                field.SetValue(target, field.GetValue(snapshot));
             }
         }
 

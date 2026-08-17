@@ -33,7 +33,7 @@ UnityEditor.Editor
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `m_CurManagerTypeName` | `SerializedProperty` | IAppManager 实现类全名 |
-| `m_EnableAppUpdate` | `SerializedProperty` | App 更新功能总开关，默认开启 |
+| `m_EnableAppUpdate` | `SerializedProperty` | App 更新功能总开关，默认关闭 |
 | `m_AppDownloadCheckUrlDebug` | `SerializedProperty` | Debug 主版本检查地址 |
 | `m_AppDownloadCheckUrlFallbackDebug` | `SerializedProperty` | Debug 备用版本检查地址 |
 | `m_AppDownloadCheckUrlRelease` | `SerializedProperty` | Release 主版本检查地址 |

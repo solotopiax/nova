@@ -43,6 +43,15 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 非移动平台不支持应用内评价请求。
+        /// </summary>
+        /// <returns>不支持结果。</returns>
+        private UniTask<InAppReviewRequestResult> RequestInAppReviewPlatformAsync()
+        {
+            return UniTask.FromResult(new InAppReviewRequestResult(InAppReviewRequestStatus.Unsupported));
+        }
+
+        /// <summary>
         /// 非移动平台没有应用设置页入口。
         /// </summary>
         /// <returns>固定返回 false。</returns>

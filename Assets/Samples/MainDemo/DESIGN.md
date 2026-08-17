@@ -301,13 +301,13 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 资源：无
 
 #### 2.17 DemoNativeView ｜ I
-- API 副标题：`Nova.Native.GetNotificationPermissionStatusAsync / RequestNotificationPermissionAsync / OpenAppSettingsAsync / OpenNotificationSettingsAsync`
-- 主题：通知权限状态查询、显式请求、应用设置根页与精准通知设置跳转
-- InteractionArea：状态卡 +「查询通知权限」「请求 Alert | Sound | Badge」「请求 iOS Provisional」「打开当前应用设置」「打开当前应用通知设置（精准）」5 个按钮；每个按钮直属展示实际调用的 API Hint
-- 反馈样例：请求结果同时展示 `IsOperationSuccessful`、`Status`、`ErrorCode`、`ErrorDomain`、`ErrorMessage`；两种设置页结果仅表示是否成功发起跳转，精准通知设置返回 `false` 时不会回退到应用设置
-- Editor 行为：查询与请求均显示真实 `Unsupported`，两种打开设置操作均返回 `false`；页面不会自动请求权限
-- 生命周期：页面关闭仅取消本页等待，不取消已经发起的系统权限请求
-- 资源：无；系统弹窗、Provisional 与设置页跳转仍需 Android / iOS 真机验证
+- API 副标题：`Nova.Native.GetNotificationPermissionStatusAsync / RequestNotificationPermissionAsync / OpenAppSettingsAsync / OpenNotificationSettingsAsync / RequestInAppReviewAsync`
+- 主题：通知权限状态查询、显式请求、应用设置根页与精准通知设置跳转，以及 Android / iOS 原生应用内评价测试
+- InteractionArea：通知权限状态卡 + 应用内评价状态卡 +「查询通知权限」「请求 Alert | Sound | Badge」「请求 iOS Provisional」「打开当前应用设置」「打开当前应用通知设置（精准）」5 个按钮，以及「Android 应用内评价测试」「iOS 应用内评价测试」2 个按钮；每个按钮直属展示实际调用的 API Hint
+- 反馈样例：通知请求结果同时展示 `IsOperationSuccessful`、`Status`、`ErrorCode`、`ErrorDomain`、`ErrorMessage`；两种设置页结果仅表示是否成功发起跳转，精准通知设置返回 `false` 时不会回退到应用设置；应用内评价展示 `Status`、`IsRequestDispatched`、`ErrorMessage`，其中 `RequestDispatched` 只表示已交给系统流程，不表示提示已展示、用户已评价或提交成功
+- Editor 行为：通知查询与请求、两个应用内评价按钮均显示真实 `Unsupported`，两种打开设置操作均返回 `false`；页面不会自动请求权限或应用内评价
+- 生命周期：页面关闭仅取消本页等待，不取消已经发起的系统权限或应用内评价请求
+- 资源：无；系统弹窗、Provisional、设置页跳转和应用内评价均需 Android / iOS（评价为 iOS 16+）真机验证，系统是否展示评价提示及用户交互结果由平台控制
 
 ### 3. HybridCLR 运行时热更新（3 个，全 R）
 

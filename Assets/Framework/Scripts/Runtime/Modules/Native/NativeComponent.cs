@@ -22,7 +22,7 @@ namespace NovaFramework.Runtime
     public sealed partial class NativeComponent : FrameworkComponent
     {
         /// <summary>
-        /// 唤醒时创建 NativeManager，但不触发任何系统权限请求。
+        /// 唤醒时创建 NativeManager，但不触发任何系统权限或应用内评价请求。
         /// </summary>
         protected override void Awake()
         {
@@ -35,7 +35,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 开始时初始化 NativeManager，不自动查询或请求通知权限。
+        /// 开始时初始化 NativeManager，不自动查询或请求通知权限，也不发起应用内评价。
         /// </summary>
         private void Start()
         {
@@ -73,6 +73,16 @@ namespace NovaFramework.Runtime
             CancellationToken ct = default)
         {
             return m_NativeManager.RequestNotificationPermissionAsync(options, ct);
+        }
+
+        /// <summary>
+        /// 向系统发起应用内评价请求。框架不会在启动阶段自动调用，也无法确认系统是否展示弹窗或用户是否完成评价。
+        /// </summary>
+        /// <param name="ct">只取消当前调用方等待，不取消已发起的系统请求。</param>
+        /// <returns>平台原生请求状态。</returns>
+        public UniTask<InAppReviewRequestResult> RequestInAppReviewAsync(CancellationToken ct = default)
+        {
+            return m_NativeManager.RequestInAppReviewAsync(ct);
         }
 
         /// <summary>

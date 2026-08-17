@@ -10,7 +10,7 @@
 
 - `EnableAppUpdate`
 
-默认值为 `true`。关闭时 `CheckAsync()` 不发起版本检查请求，直接返回 `NoDownload`；资源热更新仍由 Asset 模块的 `EnableHotfix` 独立控制。
+默认值为 `false`。关闭时 `CheckAsync()` 不发起版本检查请求，直接返回 `NoDownload`；资源热更新仍由 Asset 模块的 `EnableHotfix` 独立控制。需要 App 大版本检查时，调用方应显式设为 `true`。
 
 ### 2. 版本检查输入
 

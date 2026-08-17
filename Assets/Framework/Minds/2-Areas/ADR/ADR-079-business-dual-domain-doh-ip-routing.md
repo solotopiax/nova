@@ -86,7 +86,7 @@ Nova 的 BestHTTP 适配包在进程内只反射检测一次该方法：
 - 候选数量越多，最坏等待时间按每个候选独立超时累加。
 - 本版只消费 IPv4 A 记录，不提供 IPv6 路由。
 - 未引入跨物理请求的操作编号，框架不能单独证明有副作用接口的服务端幂等性。
-- 内部 BestHTTP fork 仍需通过正式 UPM 发布，Nova2 当前消费的旧版本不会自动具备 `SetIPAddress`。
+- 该能力要求版本组合至少为 Nova Framework `0.6.13`、BestHTTP 适配包 `0.1.7` 与内部 BestHTTP `3.0.20`；官方 BestHTTP 仍按能力门自动降级到系统 DNS。
 
 ## 被排除方案（Rejected Alternatives）
 
@@ -100,7 +100,10 @@ Nova 的 BestHTTP 适配包在进程内只反射检测一次该方法：
 
 - 本轮两次定向执行 `dotnet build NovaFramework.Runtime.Tests.Editor.csproj --no-restore` 均退出码为 `0`，没有编译错误。
 - Unity EditMode 定向类 `NovaFramework.Tests.Editor.DoHConsumerRoutingTests` 本轮通过 `19/19`，覆盖同 hostname 全部 URL 快照的替换/清除、异常域名隔离，以及资源与 WebSocket 不进入 DoH 路由。
-- 以上是 Nova2 Framework 本轮的验证证据；内部 BestHTTP fork 的发布闭环、所有 Demo 的实际导出与真机网络/TLS 行为不在此处宣称已验证。
+- Nova Framework `0.6.13`、BestHTTP 适配包 `0.1.7` 与内部 BestHTTP `3.0.20` 已完成正式发布；Nova2 当前本地依赖也已对齐到该版本组合。
+- 发布闭环对应 release tag 为 `upm-release-2026.08.14-03`。
+- Android 真机 `SM_G9860` 使用 Development APK 验证主备切换：主路线首个 DoH IP 被故障注入为回环地址后连接失败，框架继续备用路线并收到 HTTP `200`；整链埋点为 `1 attempt + 1 error + 1 end`，三类事件共用同一个 `best_http_chain_id`。
+- 同一设备验证 DoH 全失败后的系统 DNS 兜底：两个 DoH IP 依次故障后，第 3 个候选明确进入 `system_dns` 并收到 HTTP `200`；整链埋点为 `1 attempt + 2 errors + 1 end`，全部事件共用同一个 `best_http_chain_id`。
 
 ## 当前事实来源（Sources）
 

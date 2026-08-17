@@ -39,8 +39,8 @@ MonoBehaviour:
         \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
         2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
-        true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 1,\n  \"DevelopmentBuild\":
+        false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
         \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
@@ -158,7 +158,7 @@ MonoBehaviour:
         2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
-        true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+        false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
         \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
@@ -171,7 +171,7 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
-        true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+        false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
         \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"

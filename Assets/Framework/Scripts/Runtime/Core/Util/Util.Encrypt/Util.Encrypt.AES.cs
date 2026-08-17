@@ -36,7 +36,7 @@ namespace NovaFramework.Runtime
                 /// 默认 AES 凭据缺失或无效时的统一配置指引；只适用于隐私配置，不得用于应用协议 AES。
                 /// </summary>
                 private const string c_DefaultAesConfigurationGuide =
-                    "请先完成 await Nova.Config.LoadAsync()；在 Nova/Open Config → 通用配置 → 隐私配置中，为当前 Platform × Channel × DevelopMode 配置 AES-Key / AES-IV（UTF-8 各 16 字节），保存后重新导出 ConfigRuntimeSO。";
+                    "请在 Nova/Open Config → 通用配置 → 隐私配置中，为当前 Platform × Channel × DevelopMode 配置 AES-Key / AES-IV（UTF-8 各 16 字节），保存后重新导出 ConfigRuntimeSO。";
 
                 /// <summary>
                 /// 运行时注入的默认 Key（UTF-8，16 字节）。框架不内置任何密钥；未配置时为 null，
@@ -82,7 +82,8 @@ namespace NovaFramework.Runtime
                 }
 
                 /// <summary>
-                /// 清空 Config 生命周期内注入的默认密钥，避免关闭或禁用 Domain Reload 后残留旧配置。
+                /// 仅允许在所有 FrameworkManager 完成 Shutdown 后调用；清空 Config 生命周期内注入的默认密钥，
+                /// 避免关闭或禁用 Domain Reload 后残留上一次运行的默认凭据。
                 /// </summary>
                 internal static void ResetConfigInitialization()
                 {

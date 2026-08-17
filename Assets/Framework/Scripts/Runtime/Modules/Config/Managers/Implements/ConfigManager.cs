@@ -63,7 +63,6 @@ namespace NovaFramework.Runtime
         /// </summary>
         public override void Shutdown()
         {
-            Util.Encrypt.AES.ResetConfigInitialization();
             m_LifecycleCts?.Cancel();
             m_LifecycleCts?.Dispose();
             m_LifecycleCts = null;

@@ -62,6 +62,7 @@ auto_generated: true
 - [ADR-051 启动期资源切片策略 A/B 二选一，框架 API 不绑产品决策](../2-Areas/ADR/ADR-051-launch-asset-slice-strategy.md) — 整包差异 XOR 切片增量二选一，框架透传不选策略
 - [ADR-065 启动期清单三级离线回退仅接受本地可启动版本](../2-Areas/ADR/ADR-065-asset-manifest-three-tier-offline-fallback.md) — 远端失败优先复用启动范围完整的本地版本
 - [ADR-076 启动设备白名单仅切换版本元数据路由，失败不阻断常规热更新](../2-Areas/ADR/ADR-076-startup-whitelist-metadata-routing.md) — 白名单命中仅切换元数据地址，Bundle 仍走常规 CDN
+- [ADR-080 资源下载按包粘滞切换备用地址且禁止候选回绕](../2-Areas/ADR/ADR-080-asset-package-sticky-fallback-routing.md) — 主地址失败后同包后续下载粘在备用，并发失败只切一次
 
 ## inspector
 
@@ -107,4 +108,4 @@ auto_generated: true
 
 
 ---
-_共 65 条，分布于 10 个 category。_
+_共 66 条，分布于 10 个 category。_

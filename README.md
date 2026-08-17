@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.6.13-blue.svg)
+![release](https://img.shields.io/badge/release-v0.6.14-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 

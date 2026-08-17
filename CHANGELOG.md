@@ -6,6 +6,28 @@
 
 ---
 
+## [0.6.14] - 2026-08-17
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.14]` 节。
+
+### Breaking
+
+- `INativeManager` / `NativeManagerBase` 新增 `RequestInAppReviewAsync(CancellationToken)`；自定义 Native Manager 实现需补齐该成员。
+
+### Added
+
+- 发布 Framework `0.6.14`，新增 Android / iOS 应用内评价原生桥接与 MainDemo 显式演示入口。
+
+### Changed
+
+- Pipify 支持外部异步任务状态展示；Framework 关闭链在所有 Manager 完成关闭后清理默认 AES 凭据。
+
+### Fixed
+
+- App 更新默认关闭；资源下载 URL 策略、配置关闭路径与 Native 构建桥接同步收敛。
+
+---
+
 ## [0.6.12] - 2026-08-14
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.12]` 节。

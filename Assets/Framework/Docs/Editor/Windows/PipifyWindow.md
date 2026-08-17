@@ -75,8 +75,8 @@ public static void Open()
 | 删除按钮 | 通过 `EditorApplication.delayCall` 延迟移除，防止 Layout/Repaint 阶段直接修改集合导致崩溃；同时清空 `m_ExpandedItemIndices` / `m_ParamsCache` 并设 `m_ItemsListBoundBatchIndex = -1` 强制重建 ReorderableList，避免 key 移位错位 |
 | `onAddDropdownCallback` | 按 Category 分组弹 GenericMenu，选中后调用 `AddBatchItemFromStep(info)` |
 | `onReorderCallback` | 拖拽排序后清空 `m_ExpandedItemIndices` 和 `m_ParamsCache` 并 `MarkDirty()` |
-| 参数内联 Drawer | 参数类型标注 `PipifyHelpBoxAttribute` 时先绘制通用说明框；随后反射遍历 `ParamsType.GetFields(Public | Instance)` 按类型分发：普通 `string`→TextField；标注 `TextAreaAttribute` 的 `string`→按 3–8 行等声明范围自适应高度的 TextArea；`bool`→Toggle；`int`→IntField；`float`→FloatField；`Enum`→EnumPopup；其他复杂类型→Log.Warning 跳过 |
-| 参数持久化 | `EditorGUI.BeginChangeCheck/EndChangeCheck` 包住字段组；有变化则 `Util.Json.Serialize(paramsInstance)` 写回 `item.ParamsJson` + `MarkDirty()` |
+| 参数内联 Drawer | 参数类型标注 `PipifyHelpBoxAttribute` 时先绘制通用说明框；随后反射遍历 `ParamsType.GetFields(Public | Instance)` 按类型分发：普通 `string`→TextField；标注 `TextAreaAttribute` 的 `string`→按 3–8 行等声明范围自适应高度的 TextArea；`bool`→Toggle；`int`→IntField；`float`→FloatField；`Enum`→EnumPopup；其他复杂类型→Log.Warning 跳过。`build.package` 首次进入 Android `DevelopmentBuild + BuildAppBundle` 风险组合时立即 Warning + 弹窗，取消会恢复编辑前快照 |
+| 参数持久化 | `EditorGUI.BeginChangeCheck/EndChangeCheck` 包住字段组；普通变化或用户确认风险组合后，`Util.Json.Serialize(paramsInstance)` 写回 `item.ParamsJson` + `MarkDirty()`；用户取消风险弹窗时不持久化，也不置脏 |
 | `DrawExecute()` | 顶部 `EditorUtil.Draw.Line()` 分割线 + 右对齐 `SuccessButton("▶ 运行")`；禁用条件：`batch.Items.Count == 0 \|\| m_IsDirty`；点击后 fire-and-forget 调用 `EditorUtil.Pipify.RunBatchAsync(batch, this)`，Runner 内部通过 WindowReporter 以模态进度条呈现执行进度，结束后通过宿主窗口 `ShowNotification` 弹右下角结果浮窗 |
 
 ---
@@ -165,7 +165,7 @@ DrawBody()
 
 ## §12 注意事项
 
-- **修改参数字段后务必 MarkDirty + 回写 ParamsJson**：参数编辑走纯 C# 对象，不走 SerializedProperty，Unity 不会自动检测 dirty。`DrawItemParams` 内 `EndChangeCheck` 为 true 时必须同时调用 `item.ParamsJson = Util.Json.Serialize(paramsInstance)` 和 `MarkDirty()`。
+- **修改参数字段后务必 MarkDirty + 回写 ParamsJson**：参数编辑走纯 C# 对象，不走 SerializedProperty，Unity 不会自动检测 dirty。`DrawItemParams` 内 `EndChangeCheck` 为 true 时通常必须同时调用 `item.ParamsJson = Util.Json.Serialize(paramsInstance)` 和 `MarkDirty()`；仅 Android DevelopmentBuild AAB 风险弹窗被取消时恢复编辑前快照，不持久化也不置脏。
 - **行内删除走 delayCall**：`DrawItemElement` 的删除按钮通过 `EditorApplication.delayCall` 延迟执行列表修改，避免在 ReorderableList 绘制阶段（Layout/Repaint）直接修改集合引发 IndexOutOfRange。
 - **删除 Item 后必须整表清空展开态与参数缓存**：`m_ExpandedItemIndices` 和 `m_ParamsCache` 以索引为 key；删除 index=k 后所有 `> k` 的 key 均移位。单独 Remove(k) 不够，必须调 `m_ExpandedItemIndices.Clear()` + `InvalidateParamsCache(-1)` + 设 `m_ItemsListBoundBatchIndex = -1` 强制重建 ReorderableList。
 

@@ -34,9 +34,13 @@ namespace NovaFramework.Runtime
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void OpenSettingsCallback(ulong requestId, int opened);
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void InAppReviewCallback(ulong requestId, int status);
+
         private static readonly NotificationStatusCallback s_NotificationStatusCallback = OnNotificationStatus;
         private static readonly NotificationRequestCallback s_NotificationRequestCallback = OnNotificationRequest;
         private static readonly OpenSettingsCallback s_OpenSettingsCallback = OnOpenSettings;
+        private static readonly InAppReviewCallback s_InAppReviewCallback = OnInAppReviewRequest;
         private static NativeManager s_ActiveManager;
         private static long s_NextIosRequestId;
 
@@ -44,6 +48,7 @@ namespace NovaFramework.Runtime
         private readonly Dictionary<ulong, UniTaskCompletionSource<NotificationPermissionResult>> m_IosPermissionRequests = new();
         private readonly object m_IosOpenSettingsLock = new();
         private readonly Dictionary<ulong, UniTaskCompletionSource<bool>> m_IosOpenSettingsRequests = new();
+        private readonly Dictionary<ulong, UniTaskCompletionSource<InAppReviewRequestResult>> m_IosInAppReviewRequests = new();
 
         [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
         private static extern void NovaNative_GetNotificationPermissionStatus(
@@ -65,6 +70,11 @@ namespace NovaFramework.Runtime
         private static extern void NovaNative_OpenNotificationSettings(
             ulong requestId,
             OpenSettingsCallback callback);
+
+        [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void NovaNative_RequestInAppReview(
+            ulong requestId,
+            InAppReviewCallback callback);
 
         /// <summary>
         /// 注册当前 NativeManager 作为静态 AOT 回调接收者。
@@ -122,6 +132,30 @@ namespace NovaFramework.Runtime
                     false,
                     NotificationPermissionStatus.Unknown,
                     errorMessage: exception.Message));
+            }
+            return pending.Task;
+        }
+
+        /// <summary>
+        /// 发起 iOS 应用内评价请求；原生层仅在 iOS 16 及以上且存在前台场景时调用系统 API。
+        /// </summary>
+        /// <returns>平台原生请求状态。</returns>
+        private UniTask<InAppReviewRequestResult> RequestInAppReviewPlatformAsync()
+        {
+            ulong requestId = NextIosRequestId();
+            var pending = new UniTaskCompletionSource<InAppReviewRequestResult>();
+            m_IosInAppReviewRequests.Add(requestId, pending);
+            try
+            {
+                NovaNative_RequestInAppReview(requestId, s_InAppReviewCallback);
+            }
+            catch (Exception exception)
+            {
+                m_IosInAppReviewRequests.Remove(requestId);
+                Log.Error(LogTag.Base, "调用 iOS 应用内评价桥接失败：{0}。", exception);
+                pending.TrySetResult(new InAppReviewRequestResult(
+                    InAppReviewRequestStatus.Failed,
+                    "应用内评价请求失败。"));
             }
             return pending.Task;
         }
@@ -209,6 +243,7 @@ namespace NovaFramework.Runtime
         {
             CancelAndClear(m_IosStatusRequests);
             CancelAndClear(m_IosPermissionRequests);
+            CancelAndClear(m_IosInAppReviewRequests);
             lock (m_IosOpenSettingsLock)
             {
                 CancelAndClear(m_IosOpenSettingsRequests);
@@ -320,6 +355,32 @@ namespace NovaFramework.Runtime
             }
 
             pending.TrySetResult(opened != 0);
+        }
+
+        /// <summary>
+        /// 接收 iOS 应用内评价桥接结果。请求标识保证旧 Manager 的迟到回调不会命中新请求。
+        /// </summary>
+        /// <param name="requestId">请求标识。</param>
+        /// <param name="status">桥接返回的平台无关状态值。</param>
+        [MonoPInvokeCallback(typeof(InAppReviewCallback))]
+        private static void OnInAppReviewRequest(ulong requestId, int status)
+        {
+            NativeManager manager = s_ActiveManager;
+            if (manager == null || !manager.m_IosInAppReviewRequests.Remove(requestId, out var pending))
+            {
+                return;
+            }
+
+            InAppReviewRequestStatus requestStatus = status switch
+            {
+                0 => InAppReviewRequestStatus.Unsupported,
+                1 => InAppReviewRequestStatus.Unavailable,
+                2 => InAppReviewRequestStatus.RequestDispatched,
+                _ => InAppReviewRequestStatus.Failed,
+            };
+            pending.TrySetResult(new InAppReviewRequestResult(
+                requestStatus,
+                requestStatus == InAppReviewRequestStatus.Failed ? "应用内评价请求失败。" : null));
         }
 
         /// <summary>

@@ -16,12 +16,15 @@
 - `Initialize(NativeManagerConfig config)`
 - `GetNotificationPermissionStatusAsync(CancellationToken ct = default)`
 - `RequestNotificationPermissionAsync(NotificationAuthorizationOptions options, CancellationToken ct = default)`
+- `RequestInAppReviewAsync(CancellationToken ct = default)`
 - `OpenAppSettingsAsync()`
 - `OpenNotificationSettingsAsync()`
 
 `Update()` 当前没有周期性工作；平台回调为事件驱动。`Shutdown()` 是权限请求等待者和平台回调引用的统一清理边界。
 
 两种设置入口返回 `true` 都只表示框架已成功发起对应的系统跳转请求，不保证用户已经看到目标页面或修改了任何设置。`OpenNotificationSettingsAsync()` 无法精准跳转时返回 `false`，不降级为应用设置。
+
+`RequestInAppReviewAsync()` 返回 `RequestDispatched` 仅表示系统原生请求已被调用，不表示系统提示展示、用户评价或提交成功。
 
 ## 关联文档
 

@@ -16,9 +16,9 @@ namespace NovaFramework.Runtime
     public sealed class AppManagerConfig
     {
         /// <summary>
-        /// App 更新功能总开关；默认开启以兼容既有配置与自定义调用方。
+        /// App 更新功能总开关；默认关闭，需由调用方显式开启。
         /// </summary>
-        public bool EnableAppUpdate = true;
+        public bool EnableAppUpdate;
 
         /// <summary>
         /// CDN 版本检查 JSON 地址。

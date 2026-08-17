@@ -374,14 +374,27 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 
 `SplitApplicationBinary` is declared above `BuildAppBundle`, so PipifyWindow draws it above the AAB switch. Both fields are Android-only output options: `BuildAppBundle` controls `EditorUserBuildSettings.buildAppBundle`, while `SplitApplicationBinary` controls `PlayerSettings.Android.splitApplicationBinary`. The Step passes both values to `EditorUtil.Build.BuildPackage`, which temporarily writes both settings, then restores them in `finally`.
 
+### Android DevelopmentBuild AAB Signing Risk
+
+When the PipifyWindow parameter Drawer first enters the following `build.package` combination, it immediately writes a Warning and displays a confirmation dialog:
+
+```text
+Target == Android
+&& DevelopmentBuild == true
+&& BuildAppBundle == true
+&& !EditorUserBuildSettings.exportAsGoogleAndroidProject
+```
+
+In the current Unity build chain, this combination produces an AAB without an upload signature even when a keystore is configured. Choosing **取消并恢复** restores the entire `PackageParams` snapshot and does not write `ParamsJson` or mark the Batch dirty; choosing **仍要保留** persists the edited parameters normally. The dialog belongs to parameter editing and is not deferred until the Batch runs. To upload an AAB to Google Play Console, turn off `DevelopmentBuild` before packaging.
+
 ## Android Signing In `build.package`
 
 `build.package` exposes Android signing parameters on `PackageParams`:
 
 - `UseAndroidKeystore`
-- `AndroidKeystoreName`
+- `AndroidKeystorePath`
 - `AndroidKeystorePass`
-- `AndroidKeyaliasName`
+- `AndroidKeyalias`
 - `AndroidKeyaliasPass`
 
 These fields are visible only for Android builds, and the four value fields are visible only when `UseAndroidKeystore` is enabled. Password fields use `PipifyPasswordAttribute`, so `PipifyWindow` renders them with `PasswordField`; the stored value is still a normal string for `PipifySettingsSO` and CLI overrides.

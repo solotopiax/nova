@@ -55,14 +55,22 @@ namespace NovaFramework.Runtime
         /// </summary>
         public static void Shutdown()
         {
-            for (LinkedListNode<FrameworkManager> current = s_FrameworkManagers.Last; current != null; current = current.Previous)
+            try
             {
-                current.Value.Shutdown();
+                for (LinkedListNode<FrameworkManager> current = s_FrameworkManagers.Last;
+                     current != null;
+                     current = current.Previous)
+                {
+                    current.Value.Shutdown();
+                }
             }
-
-            s_FrameworkManagers.Clear();
-            s_ManagerCache.Clear();
-            ReferencePool.ClearAll();
+            finally
+            {
+                Util.Encrypt.AES.ResetConfigInitialization();
+                s_FrameworkManagers.Clear();
+                s_ManagerCache.Clear();
+                ReferencePool.ClearAll();
+            }
         }
 
         /// <summary>

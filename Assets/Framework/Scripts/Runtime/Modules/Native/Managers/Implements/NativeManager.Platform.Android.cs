@@ -22,9 +22,14 @@ namespace NovaFramework.Runtime
         private const string c_NotificationPermissionRequestedKey = "Nova.Native.NotificationPermissionRequested";
         private const string c_ApplicationNotificationSettingsAction = "android.settings.APP_NOTIFICATION_SETTINGS";
         private const string c_ApplicationPackageExtra = "android.provider.extra.APP_PACKAGE";
+        private const string c_InAppReviewBridgeClass = "com.solotopia.nova.nativebridge.NovaNativeReviewBridge";
+        private const string c_InAppReviewCallbackInterface =
+            "com.solotopia.nova.nativebridge.NovaNativeReviewBridge$Callback";
 
         private PermissionCallbacks m_AndroidPermissionCallbacks;
         private UniTaskCompletionSource<NotificationPermissionResult> m_AndroidPermissionRequest;
+        private UniTaskCompletionSource<InAppReviewRequestResult> m_AndroidInAppReviewRequest;
+        private AndroidInAppReviewCallback m_AndroidInAppReviewCallback;
 
         /// <summary>
         /// Android 桥接无需预初始化，权限仅在业务显式调用时请求。
@@ -80,6 +85,39 @@ namespace NovaFramework.Runtime
                     false,
                     NotificationPermissionStatus.Unknown,
                     errorMessage: exception.Message));
+            }
+        }
+
+        /// <summary>
+        /// 调用 Android 原生桥接依次请求并启动应用内评价流程。
+        /// </summary>
+        /// <returns>平台原生请求状态。</returns>
+        private UniTask<InAppReviewRequestResult> RequestInAppReviewPlatformAsync()
+        {
+            try
+            {
+                using AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                using AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                if (activity == null)
+                {
+                    return UniTask.FromResult(new InAppReviewRequestResult(InAppReviewRequestStatus.Unavailable));
+                }
+
+                var pending = new UniTaskCompletionSource<InAppReviewRequestResult>();
+                m_AndroidInAppReviewRequest = pending;
+                m_AndroidInAppReviewCallback = new AndroidInAppReviewCallback(this);
+                using AndroidJavaClass bridge = new AndroidJavaClass(c_InAppReviewBridgeClass);
+                bridge.CallStatic("requestReview", activity, m_AndroidInAppReviewCallback);
+                return pending.Task;
+            }
+            catch (Exception exception)
+            {
+                m_AndroidInAppReviewRequest = null;
+                m_AndroidInAppReviewCallback = null;
+                Log.Error(LogTag.Base, "调用 Android 应用内评价桥接失败：{0}。", exception);
+                return UniTask.FromResult(new InAppReviewRequestResult(
+                    InAppReviewRequestStatus.Failed,
+                    "应用内评价请求失败。"));
             }
         }
 
@@ -151,6 +189,49 @@ namespace NovaFramework.Runtime
             m_AndroidPermissionRequest?.TrySetCanceled();
             m_AndroidPermissionRequest = null;
             m_AndroidPermissionCallbacks = null;
+            m_AndroidInAppReviewRequest?.TrySetCanceled();
+            m_AndroidInAppReviewRequest = null;
+            m_AndroidInAppReviewCallback = null;
+        }
+
+        /// <summary>
+        /// 将 Android Java 回调切回 Unity PlayerLoop 后再完成请求，避免业务等待方在 Android 界面线程续跑。
+        /// </summary>
+        /// <param name="status">桥接返回的平台无关状态值。</param>
+        /// <param name="errorMessage">技术失败时的桥接错误描述。</param>
+        private async UniTaskVoid CompleteAndroidInAppReviewRequestAsync(int status, string errorMessage)
+        {
+            await UniTask.SwitchToMainThread();
+            CompleteAndroidInAppReviewRequest(status, errorMessage);
+        }
+
+        /// <summary>
+        /// 在 Unity PlayerLoop 中接收 Android 应用内评价桥接结果，并在 Manager 关闭后丢弃迟到回调。
+        /// </summary>
+        /// <param name="status">桥接返回的平台无关状态值。</param>
+        /// <param name="errorMessage">技术失败时的桥接错误描述。</param>
+        private void CompleteAndroidInAppReviewRequest(int status, string errorMessage)
+        {
+            UniTaskCompletionSource<InAppReviewRequestResult> pending = m_AndroidInAppReviewRequest;
+            m_AndroidInAppReviewRequest = null;
+            m_AndroidInAppReviewCallback = null;
+
+            if (pending == null || m_IsShutdown)
+            {
+                return;
+            }
+
+            InAppReviewRequestStatus requestStatus = status switch
+            {
+                0 => InAppReviewRequestStatus.Unsupported,
+                1 => InAppReviewRequestStatus.Unavailable,
+                2 => InAppReviewRequestStatus.RequestDispatched,
+                _ => InAppReviewRequestStatus.Failed,
+            };
+            pending.TrySetResult(new InAppReviewRequestResult(requestStatus,
+                requestStatus == InAppReviewRequestStatus.Failed
+                    ? string.IsNullOrEmpty(errorMessage) ? "应用内评价请求失败。" : errorMessage
+                    : null));
         }
 
         /// <summary>
@@ -181,6 +262,34 @@ namespace NovaFramework.Runtime
                     false,
                     NotificationPermissionStatus.Unknown,
                     errorMessage: exception.Message));
+            }
+        }
+
+        /// <summary>
+        /// 承接 Android Java 接口回调，并保持代理对象存活直到原生流程结束。
+        /// </summary>
+        private sealed class AndroidInAppReviewCallback : AndroidJavaProxy
+        {
+            private readonly NativeManager m_Manager;
+
+            /// <summary>
+            /// 创建 Android 应用内评价回调代理。
+            /// </summary>
+            /// <param name="manager">接收回调的 NativeManager。</param>
+            public AndroidInAppReviewCallback(NativeManager manager)
+                : base(c_InAppReviewCallbackInterface)
+            {
+                m_Manager = manager;
+            }
+
+            /// <summary>
+            /// 接收 Java 桥接完成回调。Android 界面线程不等同于 Unity PlayerLoop，后续由 Manager 切回 Unity 主线程。
+            /// </summary>
+            /// <param name="status">桥接返回的平台无关状态值。</param>
+            /// <param name="errorMessage">技术失败时的桥接错误描述。</param>
+            public void onComplete(int status, string errorMessage)
+            {
+                m_Manager.CompleteAndroidInAppReviewRequestAsync(status, errorMessage).Forget();
             }
         }
 
