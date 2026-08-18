@@ -48,6 +48,11 @@ namespace NovaFramework.Runtime
         private readonly Dictionary<string, AssetDownloadUrlPolicy> m_DownloadUrlPolicies = new();
 
         /// <summary>
+        /// 每个包的版本元数据编排互斥门，避免初始化、版本请求与清单加载并发修改同一 YooAsset 包状态。
+        /// </summary>
+        private readonly Dictionary<string, SemaphoreSlim> m_PackageMetadataGates = new();
+
+        /// <summary>
         /// AssetManager 配置（Inspector 注入，Initialize 写入）。
         /// </summary>
         private AssetManagerConfig m_Config;

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-08-18
+
+### Fixed
+
+- `MobileStore.PayAsync` 返回失败 `IAPResult` 时统一补齐 `nova_iap_local_pay_fail`，覆盖商品未获取、商品不可用、透传参数非法、Store guard、平台失败与主动支付后的验单失败；平台失败回调不再直接上报该事件，避免同一次失败重复打点。
+
+### Changed
+
+- 将 Framework 与 IAP 最低依赖同步至 `0.6.15`、`0.1.5`，并将商品拉取重试默认值投影到 Sample ConfigMaster。
+
 ## [0.1.8] - 2026-08-14
 
 ### Fixed

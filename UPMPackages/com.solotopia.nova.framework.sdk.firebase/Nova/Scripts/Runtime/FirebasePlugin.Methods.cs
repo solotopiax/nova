@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -37,6 +38,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             {
                 m_ReportNetService = new FirebaseReportNetService();
                 m_RuntimeConfig = config as FirebasePluginConfig;
+                InitializePushTaskServices();
                 m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
                 m_EventManager.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
 #if (UNITY_IOS || UNITY_ANDROID)
@@ -50,16 +52,19 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                         FirebaseMessaging.TokenReceived += OnTokenReceived;
                         FirebaseMessaging.MessageReceived += OnMessageReceived;
                         m_InitOver = true;
-        
-                    Firebase.Analytics.FirebaseAnalytics.GetAnalyticsInstanceIdAsync().ContinueWithOnMainThread(idTask =>
-                    {
-                        if (idTask.IsCompleted && !string.IsNullOrEmpty(idTask.Result))
+                        m_PushTaskDispatcher?.SetFirebaseReady(true);
+                        ApplyPendingUserIdIfReady();
+                        StartDefaultTopicSync();
+
+                        Firebase.Analytics.FirebaseAnalytics.GetAnalyticsInstanceIdAsync().ContinueWithOnMainThread(idTask =>
                         {
-                            m_AnalyticsInstanceId = idTask.Result;
-                            PublishData(SDKDataKeys.FirebaseAnalyticsInstanceId, m_AnalyticsInstanceId);
-                            Log.Debug(LogTag.Firebase, $"AnalyticsInstanceId : {m_AnalyticsInstanceId} 。");
-                        }
-                    });
+                            if (idTask.IsCompleted && !string.IsNullOrEmpty(idTask.Result))
+                            {
+                                m_AnalyticsInstanceId = idTask.Result;
+                                PublishData(SDKDataKeys.FirebaseAnalyticsInstanceId, m_AnalyticsInstanceId);
+                                Log.Debug(LogTag.Firebase, $"AnalyticsInstanceId : {m_AnalyticsInstanceId} 。");
+                            }
+                        });
                         Log.Debug(LogTag.Firebase, "初始化完成。");
                     }
                     else
@@ -85,6 +90,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// <returns>释放完成的异步任务。</returns>
         protected override UniTask OnDisposeAsync(CancellationToken ct)
         {
+            CancelPushTaskFlush();
+            CancelDefaultTopicSync();
             if (m_EventManager != null)
             {
                 m_EventManager.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
@@ -138,6 +145,40 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             if (!m_RuntimeReceivedMessageIDs.Contains(message.MessageId))
             {
                 m_RuntimeReceivedMessageIDs.Add(message.MessageId);
+
+     
+                // GM 后台创建的任务 ID
+                string pushTaskId = string.Empty;
+                if (message.Data != null && message.Data.Count > 0 && message.Data.TryGetValue("push_task_id", out string messagePushTaskId))
+                {
+                    pushTaskId = messagePushTaskId;
+                }
+
+                // 对应协议上传的 task_key 
+                string pushTaskKey = string.Empty;
+                if (message.Data != null && message.Data.Count > 0 && message.Data.TryGetValue("task_key", out string messagePushTaskKey))
+                {
+                    pushTaskKey = messagePushTaskKey;
+                }
+
+                // GM 后台创建的模版 ID
+                string templateId = string.Empty;
+                if (message.Data != null && message.Data.Count > 0 && message.Data.TryGetValue("template_id", out string messageTemplateId))
+                {
+                    templateId = messageTemplateId;
+                }
+                 
+                SDKComponent sdkComponent = FrameworkComponentsGroup.GetComponent<SDKComponent>();
+                if (sdkComponent != null && sdkComponent.TryGet<ITrackPlugin>(out ITrackPlugin trackPlugin))
+                {
+                    trackPlugin.TrackEvent("nova_firebase_fcm_click", new Dictionary<string, object>
+                    {
+                        { "nova_firebase_fcm_message_id", message.MessageId },
+                        { "nova_firebase_push_task_id", pushTaskId },
+                        { "nova_firebase_push_task_key", pushTaskKey },
+                        { "nova_firebase_template_id", templateId },
+                    });
+                }
                 Log.Debug(LogTag.Firebase, $"推送点击，MessageId：{message.MessageId}。");
             }
         }
@@ -176,9 +217,34 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
 #if !UNITY_WEBGL
         /// <summary>
+        /// 在 Firebase 初始化完成后应用已记录的用户 ID，并通知 push task 调度器用户身份是否就绪。
+        /// </summary>
+        private void ApplyPendingUserIdIfReady()
+        {
+            if (!m_InitOver)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(m_PendingUserId))
+            {
+                return;
+            }
+
+#if (UNITY_IOS || UNITY_ANDROID)
+            Firebase.Analytics.FirebaseAnalytics.SetUserId(m_PendingUserId);
+            if (Firebase.Crashlytics.Crashlytics.IsCrashlyticsCollectionEnabled)
+            {
+                Firebase.Crashlytics.Crashlytics.SetUserId(m_PendingUserId);
+            }
+#endif
+            m_PushTaskDispatcher?.SetUserReady();
+        }
+
+        /// <summary>
         /// SDKEventData.UserLogin 事件处理器；调用 Firebase 的 SetUserId 同步用户身份，
         /// 然后以 Fire-and-Forget 方式触发 ReportOnLoginAsync 走异步上报流程。
-        /// 现有 SetUserId 内部已通过 m_InitOver 守卫，订阅触发时该字段必为 true。
+        /// SetUserId 会记录用户 ID；若 Firebase 尚未初始化完成，会在初始化成功后补同步。
         /// </summary>
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件数据，期望为 SDKEventData.UserLogin。</param>
@@ -194,7 +260,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
         /// <summary>
         /// 登录后异步上报 Firebase 标识至服务端：先 await FetchDataAsync 等待 FirebasePushToken / FirebaseAnalyticsInstanceId
-        /// 数据槽位就绪，直接拿 fetch 返回值作为协议参数，与 AppsFlyerPlugin / TGAPlugin 的 ReportOnLoginAsync 同构。
+        /// 数据槽位就绪，再解析国家码和当前时区作为协议参数，与 AppsFlyerPlugin / TGAPlugin 的 ReportOnLoginAsync 同构。
         /// 把"初始化结果"与"登录结果"统一为"先 await 拿值、再用值"的可等待过程。
         /// 数据槽位由本插件自身发布（FirebasePushToken 在 OnTokenReceived 主线程回调，
         /// FirebaseAnalyticsInstanceId 在 GetAnalyticsInstanceIdAsync 主线程回调）；
@@ -216,7 +282,11 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 object instanceIdObj = await FetchDataAsync(SDKDataKeys.FirebaseAnalyticsInstanceId, default);
                 string pushToken = pushTokenObj as string ?? string.Empty;
                 string instanceId = instanceIdObj as string ?? string.Empty;
-                m_ReportNetService.Async(m_RuntimeConfig.ReportCmdName, pushToken, instanceId).Forget();
+                string resolvedCountryCode = await ResolveFirebaseCountryCodeAsync(default);
+                string country = FirebaseDefaultTopicBuilder.NormalizeReportCountryCode(resolvedCountryCode);
+                TimeSpan utcOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
+                string timezoneOffset = FirebaseDefaultTopicBuilder.FormatReportTimezoneOffset(utcOffset);
+                m_ReportNetService.Async(m_RuntimeConfig.ReportCmdName, pushToken, instanceId, country, timezoneOffset).Forget();
             }
             catch (OperationCanceledException)
             {

@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Editor`
 **全局访问**：`EditorUtil.HybridCLR`
 
-HybridCLR 原子操作合集：提供 link.xml 校验/补全、对齐 HybridCLR/Generate 子菜单的细粒度入口（`GenerateAll()` 一键及 5 个单项）、仅编译热更 DLL 的独立入口、AOT 元数据拷贝、业务 DLL 拷贝等独立方法。框架不再提供全流程封装，流水线编排统一交给 `EditorUtil.Pipify` 按需组装。DLL 列表配置通过 `EditorUtil.Asset.Operator.Find<ConfigMasterSO>()` 读取。
+HybridCLR 原子操作合集：提供 link.xml 校验/补全、对齐 HybridCLR/Generate 子菜单的细粒度入口（`GenerateAll()` 一键及 5 个单项）、仅编译热更 DLL 的独立入口、AOT 元数据拷贝、业务 DLL 拷贝等独立方法。框架不再提供全流程封装，流水线编排统一交给 `EditorUtil.Pipify` 按需组装。配置先通过 `EditorUtil.Config.WorkspaceActive.Get()` 锚定当前激活 `ConfigMasterSO`，再按该 Master 当前 `Platform / Channel / DevelopMode` 三维坐标解析最终生效的 `HybridEditorConfigs`。
 
 ---
 
@@ -13,8 +13,8 @@ HybridCLR 原子操作合集：提供 link.xml 校验/补全、对齐 HybridCLR/
 | 文件 | 类 | 说明 |
 |------|----|------|
 | `EditorUtil.HybridCLR.cs` | `partial EditorUtil.HybridCLR` | 公有接口：`ValidateLinkXml()` / `CopyAotDlls()` / `CopyGameDlls()` 三个主流程操作；仅编译热更 DLL 的独立入口 `CompileDllActiveBuildTarget()`；对齐 HybridCLR/Generate 子菜单的细粒度入口：`GenerateAll()` / `GenerateLinkXml()` / `GenerateMethodBridgeAndReversePInvokeWrapper()` / `GenerateAotGenericReference()` / `GenerateIl2CppDef()` / `GenerateAotDlls()` |
-| `EditorUtil.HybridCLR.Visitors.cs` | `partial EditorUtil.HybridCLR` | 常量：`c_LinkXmlPath` |
-| `EditorUtil.HybridCLR.Methods.cs` | `partial EditorUtil.HybridCLR` | 私有方法：`ValidateAndPatchLinkXml`、`CopyDllEntries`、`StripDllSuffix` |
+| `EditorUtil.HybridCLR.Visitors.cs` | `partial EditorUtil.HybridCLR` | 当前为空的 partial 占位文件 |
+| `EditorUtil.HybridCLR.Methods.cs` | `partial EditorUtil.HybridCLR` | 私有方法：激活 Master/当前坐标解析、`ValidateAndPatchLinkXml`、`CopyDllEntries`、`StripDllSuffix` |
 
 ---
 
@@ -31,24 +31,26 @@ NovaFramework.Editor.EditorUtil (public static partial class)
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `c_LinkXmlPath` | `const string` | `"Assets/link.xml"` | link.xml 在 AssetDatabase 中的固定路径；Step 1 中通过 `SettingsUtil.ProjectDir` 拼接为绝对路径 |
+| `ResolveLinkXmlPath()` | private method | 当前坐标 `LinkXmlTargetPath`，空时回退 `"Assets/link.xml"` | 返回项目根相对的 link.xml 路径；当前实现没有 `c_LinkXmlPath` 常量 |
 
 ---
 
 ## §5 完整公开 API
 
 ```csharp
-/// 校验 Assets/link.xml，缺失则补全 ConfigMasterSO.AotMetadataDlls 每项的 preserve 记录。
+/// 校验当前激活 ConfigMaster 当前三维坐标的 LinkXmlTargetPath；配置为空时回退 Assets/link.xml，缺失则补全由 ConfigMasterSO.HybridEditorConfigs 与 HybridEditorConfigsOverrides 解析出的 AotMetadataDlls 每项 preserve 记录。
 /// 未找到 ConfigMasterSO 时抛 InvalidOperationException。
 public static void ValidateLinkXml()
 
-/// 拷贝 AOT 元数据 DLL 到 ConfigMasterSO 中各条目配置的目标位置，完成后调用 AssetDatabase.Refresh()。
+/// 拷贝 AOT 元数据 DLL 到当前激活 ConfigMaster 当前三维坐标中各条目配置的目标位置。
 /// 源/目标路径均从 DllMasterAssetEntry.SourceLocation / TargetLocation 读取（项目根相对路径，所见即所得，不追加 .bytes）。
+/// 仅当目标位于 Assets/ 时逐文件调用 AssetDatabase.ImportAsset(..., ForceSynchronousImport)。
 /// 未找到 ConfigMasterSO 时抛 InvalidOperationException；源文件不存在或配置缺失时抛 FileNotFoundException。
 public static void CopyAotDlls()
 
-/// 拷贝业务层热更 DLL 到 ConfigMasterSO 中各条目配置的目标位置，完成后调用 AssetDatabase.Refresh()。
+/// 拷贝业务层热更 DLL 到当前激活 ConfigMaster 当前三维坐标中各条目配置的目标位置。
 /// 源/目标路径均从 DllMasterAssetEntry.SourceLocation / TargetLocation 读取（项目根相对路径，所见即所得，不追加 .bytes）。
+/// 仅当目标位于 Assets/ 时逐文件调用 AssetDatabase.ImportAsset(..., ForceSynchronousImport)。
 /// 未找到 ConfigMasterSO 时抛 InvalidOperationException；源文件不存在或配置缺失时抛 FileNotFoundException。
 public static void CopyGameDlls()
 
@@ -57,6 +59,7 @@ public static void CopyGameDlls()
 /// HybridCLR/Generate/All：按 HybridCLR 预设顺序执行编译热更 DLL + 全部 Generate 产物（桥接 / AOT 泛型引用 / Il2CppDef / AOT 裁剪 DLL / LinkXml）。
 /// 对应 HybridCLR 菜单中的一键入口，等价于依次手动点击 Generate 子菜单的全部项。
 /// 内部转发到 HybridCLR.Editor.Commands.PrebuildCommand.GenerateAll()。
+/// 其中 AOT 裁剪会临时启用 script-only 并调用 BuildPipeline.BuildPlayer；该临时产物不是最终 Player 构建成功证据。
 public static void GenerateAll()
 
 /// HybridCLR/Generate/LinkXml：编译 ActiveBuildTarget 热更 DLL 并基于热更代码引用生成 link.xml。
@@ -90,13 +93,15 @@ public static void CompileDllActiveBuildTarget()
 
 ## §9 关键算法
 
-### ConfigMasterSO 自治查找
+### 激活 ConfigMaster 与当前三维坐标
 
-`ValidateLinkXml` / `CopyAotDlls` / `CopyGameDlls` 各自内部调用 `Asset.Operator.Find<ConfigMasterSO>()` 查找主配置，未找到时抛 `InvalidOperationException`。`AssetDatabase.Refresh()` 在 `CopyAotDlls` 与 `CopyGameDlls` 各自内部调用，框架不再做跨步骤编排。
+`ValidateLinkXml` / `CopyAotDlls` / `CopyGameDlls` 先通过 `Config.WorkspaceActive.Get()` 读取当前激活 `ConfigMasterSO`；未绑定时由 `ResolveActiveMasterOrThrow()` 抛 `InvalidOperationException`。随后 `ResolveHybridCLRForCurrentCoord()` 使用 `master.CurrentPlatform / CurrentChannel / CurrentDevelopMode` 调用 `Config.DimensionalResolver.ResolveHybridCLR(...)`，因此 AOT/Game DLL 列表和 link.xml 路径都来自当前激活 Master 的当前三维坐标，而不是全工程任意查找。
+
+`CopyAotDlls` / `CopyGameDlls` 不调用全局 `AssetDatabase.Refresh()`。每个文件复制完成后，只有解析后的目标路径位于 `Assets/` 时才调用 `AssetDatabase.ImportAsset(assetRelative, ImportAssetOptions.ForceSynchronousImport)`；其他项目内目标只做文件复制。
 
 ### link.xml 校验与补全（ValidateAndPatchLinkXml）
 
-1. 将 `c_LinkXmlPath` 与 `SettingsUtil.ProjectDir` 拼接为绝对路径。
+1. 通过当前激活 Master 的当前三维坐标解析 `LinkXmlTargetPath`；为空时回退 `Assets/link.xml`，再与 `SettingsUtil.ProjectDir` 拼接为绝对路径。
 2. 若文件**不存在**，自动创建空骨架（`<?xml?>` + 根节点 `<linker>`）并记录日志；若存在则用 `XmlDocument` 加载，校验根节点为 `<linker>`，否则抛 `InvalidOperationException`。
 3. 收集所有已存在 `<assembly fullname="...">` 的 fullname 到 `HashSet<string>`。
 4. 遍历 `aotEntries`（`IReadOnlyList<DllMasterAssetEntry>`），对每个 `entry.AssetLocation` 调用 `StripDllSuffix` 剥离 `.dll` 后缀得到逻辑名（link.xml 规范不允许带扩展名）；若不在 Set 中则追加 `<assembly fullname="{logicalName}" preserve="all"/>` 并记录 `patched = true`。
@@ -107,10 +112,17 @@ public static void CompileDllActiveBuildTarget()
 `CopyAotDlls` / `CopyGameDlls` 共用同一私有方法，签名：`CopyDllEntries(IReadOnlyList<DllMasterAssetEntry> entries, string tag)`。
 
 逻辑：
-1. **预检**：遍历所有条目，若 `SourceLocation` 或 `TargetLocation` 为空字符串，标记为配置缺失；若源文件不存在（`{projectRoot}/{entry.SourceLocation}`），标记为文件缺失；有任何缺失则整批抛 `FileNotFoundException`，不执行部分拷贝。
-2. **拷贝**：确认全部存在后，对每条目创建目标父目录，将源文件拷贝到 `{projectRoot}/{entry.TargetLocation}`（`overwrite: true`）。目标路径所见即所得，**不追加** `.bytes` 或任何后缀。
+1. **预检**：遍历所有条目，若 `SourceLocation` 或 `TargetLocation` 为空字符串，标记为配置缺失；源/目标路径先解析 `{ActiveBuildTarget}`，再相对 `SettingsUtil.ProjectDir` 取完整路径。若任一源文件不存在则整批抛 `FileNotFoundException`，不执行部分拷贝。
+2. **拷贝**：确认全部存在后，对每条目创建目标父目录，将源文件拷贝到解析后的目标路径（`overwrite: true`）。目标路径所见即所得，**不追加** `.bytes` 或任何后缀。
+3. **导入**：将目标路径分隔符统一为 `/`；只有以 `Assets/` 开头的目标才逐文件调用 `AssetDatabase.ImportAsset(..., ForceSynchronousImport)`，不执行全局 Refresh。
 
 源目录不再来自 `SettingsUtil`（旧设计），改为由每条 `DllMasterAssetEntry.SourceLocation` 自描述（项目根相对路径）。
+
+### GenerateAll 的临时 script-only Player
+
+`GenerateAll()` 转发到当前 HybridCLR 包的 `PrebuildCommand.GenerateAll()`。该入口依次编译当前 `activeBuildTarget` 的热更 DLL、生成 Il2CppDef 与 link.xml、调用 `StripAOTDllCommand.GenerateStripedAOTDlls(target)` 生成裁剪后的 AOT DLL，之后再生成 MethodBridge 与 AOT 泛型引用。
+
+`GenerateStripedAOTDlls` 会把 `EditorUserBuildSettings.buildScriptsOnly` 临时设为 `true`，以 Build Settings 中启用的场景调用 `BuildPipeline.BuildPlayer`，输出到 `HybridCLRData/StrippedAOTDllsTempProj/{target}`，并在 `finally` 恢复原构建位置和平台设置。这个 temporary script-only BuildPipeline.BuildPlayer 只为生成 stripped AOT DLL 服务：即使它成功，也绝不是最终 Player 安装包、平台工程、运行时或真机构建成功证据。
 
 ### StripDllSuffix
 
@@ -126,7 +138,7 @@ private static string StripDllSuffix(string assetLocation)
 
 **误区 1：跳过编译步骤直接执行 `CopyAotDlls` / `CopyGameDlls`**
 
-`CopyDllEntries` 的预检步骤在源文件缺失时整批失败。`CopyAotDlls` / `CopyGameDlls` 依赖前置编译 + AOT 裁剪步骤（如 Pipify 中 `hybridclr.compile_dll_active_build_target` + `hybridclr.generate_aot_dlls`）产出的 DLL 文件，次序错误会抛 `FileNotFoundException`。依赖次序由调用方（Pipify Batch 等）自行保证，本类不做跨方法编排。
+`CopyDllEntries` 的预检步骤在源文件缺失时整批失败。`CopyGameDlls` 依赖当前 Target 的业务热更 DLL 编译产物，典型最窄顺序是 `hybridclr.compile_dll_active_build_target` -> `hybridclr.copy_game_dll`；`CopyAotDlls` 则依赖另行生成的 AOT 裁剪产物。二者不能因共用拷贝方法而混成同一前置链，依赖次序由调用方（Pipify Batch 等）自行保证。
 
 **误区 2：以为目标路径会自动追加 `.bytes`**
 
@@ -135,17 +147,17 @@ private static string StripDllSuffix(string assetLocation)
 
 **误区 3：以为 DLL 列表配置来自 ProcedureComponent**
 
-HybridCLR 的 DLL 条目来源已迁移到 `ConfigMasterSO`（`AotMetadataDlls` / `GameDlls`，类型 `List<DllMasterAssetEntry>`），由各需要读取配置的方法内部各自调用 `Asset.Operator.Find<ConfigMasterSO>()` 读取，不再依赖 `ProcedureComponent`。
+HybridCLR 的 DLL 条目来源是 `ConfigMasterSO.HybridEditorConfigs` 与 `HybridEditorConfigsOverrides`；各入口通过 `Config.WorkspaceActive.Get()` 锚定激活 Master，再按当前三维坐标解析最终生效的 `HybridEditorConfigs` 中 `AotMetadataDlls` / `GameDlls`（类型 `List<DllMasterAssetEntry>`）。它不依赖 `ProcedureComponent`，也不会扫描并任取一个 ConfigMaster。
 
 **误区 4：混淆 `DllMasterAssetEntry`（Master 三字段）与 `DllAssetEntry`（Runtime 单字段）**
 
-`ConfigMasterSO.AotMetadataDlls / GameDlls` 是 `List<DllMasterAssetEntry>`（编辑期视图，含 SourceLocation / TargetLocation / AssetLocation）。导出到 `ConfigRuntimeSO` 后只保留 `DllAssetEntry`（单字段 AssetLocation）。`CopyDllEntries` 接收 Master 视图；运行期 `ProcedureLoadDll` 接收 Runtime 视图。
+当前三维坐标解析出的 `HybridEditorConfigs.AotMetadataDlls / GameDlls` 是 `List<DllMasterAssetEntry>`（编辑期视图，含 SourceLocation / TargetLocation / AssetLocation）。导出到 `ConfigRuntimeSO` 后只保留 `DllAssetEntry`（单字段 AssetLocation）。`CopyDllEntries` 接收解析后的 Editor 视图；运行期 `ProcedureLoadDll` 接收 Runtime 视图。
 
 ---
 
 ## §11 使用示例
 
-每个方法内部自行完成 ConfigMasterSO 查找与空值检查，独立可调用。流水线编排由 Pipify Batch 负责，本类不再提供整体封装。
+每个方法内部自行完成激活 ConfigMasterSO 与当前三维坐标解析及空值检查，独立可调用。流水线编排由 Pipify Batch 负责，本类不再提供整体封装。
 
 ```csharp
 // 仅校验/补全 link.xml
@@ -164,14 +176,14 @@ EditorUtil.HybridCLR.GenerateAotGenericReference();
 EditorUtil.HybridCLR.GenerateIl2CppDef();
 EditorUtil.HybridCLR.GenerateLinkXml();
 
-// 仅拷贝 AOT 元数据 DLL（内含 AssetDatabase.Refresh）
+// 仅拷贝 AOT 元数据 DLL（Assets/ 目标逐文件同步 ImportAsset）
 EditorUtil.HybridCLR.CopyAotDlls();
 
-// 仅拷贝业务 DLL（内含 AssetDatabase.Refresh）
+// 仅拷贝业务 DLL（Assets/ 目标逐文件同步 ImportAsset）
 EditorUtil.HybridCLR.CopyGameDlls();
 ```
 
-注意：`CopyAotDlls` / `CopyGameDlls` 依赖前置编译 + AOT 裁剪步骤（`CompileDllActiveBuildTarget` + `GenerateAotDlls` 或 `GenerateAll`）产出的 DLL 文件，在 Pipify Batch 中按此顺序安排，次序错误预检阶段将抛 `FileNotFoundException`。
+注意：仅刷新业务 DLL 时使用 `CompileDllActiveBuildTarget` -> `CopyGameDlls`；AOT 元数据复制另行依赖 AOT 裁剪产物。不要为了业务 DLL 本地刷新调用 `GenerateAll`，也不要把 `GenerateAll` 内部用于生成 stripped AOT 的临时 script-only Player 当作最终 Player 证据。
 
 ---
 
@@ -187,6 +199,7 @@ EditorUtil.HybridCLR.CopyGameDlls();
 
 - [EditorUtil.md](../EditorUtil.md) — EditorUtil 工具集概览
 - [DllAssetEntry.md](../../../Runtime/Modules/Config/Definitions/DllAssetEntry.md) — DLL 资产寻址条目（AssetLocation 单字段）
-- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md) — AotMetadataDlls / GameDlls 配置来源
-- [EditorUtil.Asset.Operator.md](../EditorUtil.Asset/EditorUtil.Asset.Operator.md) — ConfigMasterSO 查找入口（`Find<ConfigMasterSO>()`）
+- [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md) — HybridEditorConfigs / HybridEditorConfigsOverrides 配置来源
+- [EditorUtil.Config.WorkspaceActive.md](../EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) — 当前激活 ConfigMasterSO 锚点
+- [EditorUtil.Config.DimensionalResolver.md](../EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) — 当前三维坐标的 HybridCLR 配置解析
 - [Editor.md](../../Editor.md) — Editor 层级总览

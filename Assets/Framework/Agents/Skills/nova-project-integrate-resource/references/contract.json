@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-integrate-resource",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "unity-mcp",
+      "entry": "Unity MCP business asset and BundleCollectorSetting editing",
+      "when": "更新已确认的资源资产、Collector 成员或序列化引用"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Config.YooAssetInjector.LoadBundleCollector",
+      "when": "按已确认 ConfigMaster 定位当前项目已有的 Collector"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Asset.Load* / IAssetHandle.Release",
+      "when": "加载非场景资源并在消费方生命周期结束时释放 Handle"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Prefab.Instantiate* / Nova.Prefab.Destroy",
+      "when": "资源是需要统一实例回收链的 Prefab"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.BundleBuilder.BuildAssetBundle",
+      "when": "本次确需构建已确认的单一 Package"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "resourceAssetAndOwnership",
+      "required": true
+    },
+    {
+      "name": "targetPackageAndAddress",
+      "required": true
+    },
+    {
+      "name": "consumerAndLifetime",
+      "required": true
+    },
+    {
+      "name": "targetPlatformChannelAndMode",
+      "required": false
+    },
+    {
+      "name": "localBuildIntent",
+      "required": false
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed business resource asset",
+      "confirmed BundleCollectorSetting membership and address",
+      "confirmed business consumer source and lifecycle ownership",
+      "selected Package local build output when explicitly requested"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "handwritten Unity asset, Prefab or Scene YAML",
+      "unconfirmed Collector or ConfigMaster",
+      "third-party plugin resources",
+      "unrelated Package output, cache cleanup, CDN deployment or Player build"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "bundle-collector",
+    "selected-package-output"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous ownership, Package, address, ConfigMaster, Collector or resource lifetime",
+      "replace non-generated asset or change existing resource ownership",
+      "build target or output scope change",
+      "delete, cache cleanup, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认资源所有权、唯一地址、消费方、生命周期和最小写入集；输入或范围改变后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "资源所有权、Collector、Package 和地址证据",
+    "Handle 的持有与 Release 或场景 UnloadAsync 责任",
+    "选定 Package 的 BuildResult（如本次构建）",
+    "当前 PlayMode 下的最小加载与释放证据"
+  ]
+}

@@ -19,7 +19,7 @@ namespace YooAsset
         }
 
         private readonly SandboxBundleCache _fileCache;
-        private IEnumerator<string> _filesEnumerator = null;
+        private IEnumerator<string> _shardEnumerator = null;
         private double _verifyStartTime;
         private ESteps _steps = ESteps.None;
 
@@ -50,7 +50,7 @@ namespace YooAsset
                 if (Directory.Exists(_fileCache.RootPath))
                 {
                     var directories = Directory.EnumerateDirectories(_fileCache.RootPath);
-                    _filesEnumerator = directories.GetEnumerator();
+                    _shardEnumerator = directories.GetEnumerator();
                     _verifyStartTime = TimeUtility.RealtimeSinceStartup;
                     _steps = ESteps.SearchFiles;
                 }
@@ -66,35 +66,35 @@ namespace YooAsset
                 if (SearchFiles())
                     return;
 
-                _filesEnumerator.Dispose();
-                _filesEnumerator = null;
+                _shardEnumerator.Dispose();
+                _shardEnumerator = null;
 
                 _steps = ESteps.Done;
                 SetResult();
                 double costTime = TimeUtility.RealtimeSinceStartup - _verifyStartTime;
-                YooLogger.Log($"Cache file search completed in {costTime:f1} seconds.");
+                YooLogger.Log($"Cache file search completed in {costTime:f1} seconds. Found {Result.Count} cache files.");
             }
         }
         protected override void InternalDispose()
         {
-            if (_filesEnumerator != null)
+            if (_shardEnumerator != null)
             {
-                _filesEnumerator.Dispose();
-                _filesEnumerator = null;
+                _shardEnumerator.Dispose();
+                _shardEnumerator = null;
             }
         }
 
         private bool SearchFiles()
         {
-            bool isFindItem;
+            bool hasMore;
             while (true)
             {
-                isFindItem = _filesEnumerator.MoveNext();
-                if (isFindItem == false)
+                hasMore = _shardEnumerator.MoveNext();
+                if (hasMore == false)
                     break;
 
-                var rootFolder = _filesEnumerator.Current;
-                var childDirectories = Directory.EnumerateDirectories(rootFolder);
+                var shardFolder = _shardEnumerator.Current;
+                var childDirectories = Directory.EnumerateDirectories(shardFolder);
                 foreach (var childDirectory in childDirectories)
                 {
                     string bundleGuid = Path.GetFileName(childDirectory);
@@ -113,7 +113,7 @@ namespace YooAsset
                     break;
             }
 
-            return isFindItem;
+            return hasMore;
         }
     }
 }

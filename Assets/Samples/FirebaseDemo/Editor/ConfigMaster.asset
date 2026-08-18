@@ -17,6 +17,7 @@ MonoBehaviour:
   EnabledSDKs:
   - NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePluginConfig
   - NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+  - NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
   EnabledKits:
   - NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
   Custom:
@@ -46,6 +47,11 @@ MonoBehaviour:
       ByChannel: 0
       ByDevelopMode: 0
   - TypeName: NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
     Mask:
       ByPlatform: 0
       ByChannel: 0
@@ -81,7 +87,15 @@ MonoBehaviour:
     VersionCheckLocalFilePath: 
     VersionCheckRemoteFilePath: 
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+    AutoLinkLatestVersion: 1
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    AssetCheckWhitelistDeviceIDs: []
+    AssetCheckWhitelistRemoteFilePath: 
+    AutoLinkLatestAssetCheckVersionFiles: 1
+    AssetCheckManifestBytesLocalFilePath: 
+    AssetCheckManifestHashLocalFilePath: 
+    AssetCheckPackageVersionLocalFilePath: 
+    AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -135,6 +149,8 @@ MonoBehaviour:
   YooAssetEditorConfigs:
     YooAssetSettingsPath: Assets/Samples/FirebaseDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/FirebaseDemo/Editor/BundleCollectorSetting.asset
+    YooFolderName: yoo
+    PackageFilePrefix: 
   YooAssetEditorConfigsOverrides: []
   CommonMask:
     ByPlatform: 0
@@ -160,7 +176,15 @@ MonoBehaviour:
     VersionCheckLocalFilePath: 
     VersionCheckRemoteFilePath: 
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+    AutoLinkLatestVersion: 1
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    AssetCheckWhitelistDeviceIDs: []
+    AssetCheckWhitelistRemoteFilePath: 
+    AutoLinkLatestAssetCheckVersionFiles: 1
+    AssetCheckManifestBytesLocalFilePath: 
+    AssetCheckManifestHashLocalFilePath: 
+    AssetCheckPackageVersionLocalFilePath: 
+    AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -212,13 +236,15 @@ MonoBehaviour:
       - rid: 3589942986135568530
       - rid: 2533177004360729060
       - rid: 209362707701039360
-      - rid: 1394692065978744940
+      - rid: 1468000078667710604
+      - rid: 1468000084595310793
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568531
       - rid: 2533177004360729061
       - rid: 209362707701039361
-      - rid: 1394692065978744941
+      - rid: 1468000078667710605
+      - rid: 1468000084595310794
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -270,7 +296,8 @@ MonoBehaviour:
       - rid: 3589942986135568533
       - rid: 2533177004360729062
       - rid: 209362707701039363
-      - rid: 1394692065978744943
+      - rid: 1468000078667710606
+      - rid: 1468000084595310795
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -313,13 +340,15 @@ MonoBehaviour:
       - rid: 3589942986135568534
       - rid: 2533177004360729063
       - rid: 209362707701039364
-      - rid: 1394692065978744944
+      - rid: 1468000078667710607
+      - rid: 1468000084595310796
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568535
       - rid: 2533177004360729064
       - rid: 209362707701039365
-      - rid: 1394692065978744945
+      - rid: 1468000078667710608
+      - rid: 1468000084595310797
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -362,13 +391,15 @@ MonoBehaviour:
       - rid: 3589942986135568536
       - rid: 2533177004360729065
       - rid: 209362707701039366
-      - rid: 1394692065978744946
+      - rid: 1468000078667710609
+      - rid: 1468000084595310798
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568537
       - rid: 2533177004360729066
       - rid: 209362707701039367
-      - rid: 1394692065978744947
+      - rid: 1468000078667710610
+      - rid: 1468000084595310799
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -411,13 +442,15 @@ MonoBehaviour:
       - rid: 3589942986135568538
       - rid: 2533177004360729067
       - rid: 209362707701039368
-      - rid: 1394692065978744948
+      - rid: 1468000078667710611
+      - rid: 1468000084595310800
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568539
       - rid: 2533177004360729068
       - rid: 209362707701039369
-      - rid: 1394692065978744949
+      - rid: 1468000078667710612
+      - rid: 1468000084595310801
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -460,13 +493,15 @@ MonoBehaviour:
       - rid: 3589942986135568540
       - rid: 2533177004360729069
       - rid: 209362707701039370
-      - rid: 1394692065978744950
+      - rid: 1468000078667710613
+      - rid: 1468000084595310802
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568541
       - rid: 2533177004360729070
       - rid: 209362707701039371
-      - rid: 1394692065978744951
+      - rid: 1468000078667710614
+      - rid: 1468000084595310803
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -509,13 +544,15 @@ MonoBehaviour:
       - rid: 3589942986135568542
       - rid: 2533177004360729071
       - rid: 209362707701039372
-      - rid: 1394692065978744952
+      - rid: 1468000078667710615
+      - rid: 1468000084595310804
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568543
       - rid: 2533177004360729072
       - rid: 209362707701039373
-      - rid: 1394692065978744953
+      - rid: 1468000078667710616
+      - rid: 1468000084595310805
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -558,13 +595,15 @@ MonoBehaviour:
       - rid: 3589942986135568544
       - rid: 2533177004360729073
       - rid: 209362707701039374
-      - rid: 1394692065978744954
+      - rid: 1468000078667710617
+      - rid: 1468000084595310806
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568545
       - rid: 2533177004360729074
       - rid: 209362707701039375
-      - rid: 1394692065978744955
+      - rid: 1468000078667710618
+      - rid: 1468000084595310807
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -607,13 +646,15 @@ MonoBehaviour:
       - rid: 3589942986135568546
       - rid: 2533177004360729075
       - rid: 209362707701039376
-      - rid: 1394692065978744956
+      - rid: 1468000078667710619
+      - rid: 1468000084595310808
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568547
       - rid: 2533177004360729076
       - rid: 209362707701039377
-      - rid: 1394692065978744957
+      - rid: 1468000078667710620
+      - rid: 1468000084595310809
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -656,13 +697,15 @@ MonoBehaviour:
       - rid: 3589942986135568548
       - rid: 2533177004360729077
       - rid: 209362707701039378
-      - rid: 1394692065978744958
+      - rid: 1468000078667710621
+      - rid: 1468000084595310810
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568549
       - rid: 2533177004360729078
       - rid: 209362707701039379
-      - rid: 1394692065978744959
+      - rid: 1468000078667710622
+      - rid: 1468000084595310811
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -705,13 +748,15 @@ MonoBehaviour:
       - rid: 3589942986135568550
       - rid: 2533177004360729079
       - rid: 209362707701039380
-      - rid: 1394692065978744960
+      - rid: 1468000078667710623
+      - rid: 1468000084595310812
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568551
       - rid: 2533177004360729080
       - rid: 209362707701039381
-      - rid: 1394692065978744961
+      - rid: 1468000078667710624
+      - rid: 1468000084595310813
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -754,13 +799,15 @@ MonoBehaviour:
       - rid: 3589942986135568552
       - rid: 2533177004360729081
       - rid: 209362707701039382
-      - rid: 1394692065978744962
+      - rid: 1468000078667710625
+      - rid: 1468000084595310814
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568553
       - rid: 2533177004360729082
       - rid: 209362707701039383
-      - rid: 1394692065978744963
+      - rid: 1468000078667710626
+      - rid: 1468000084595310815
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -803,13 +850,15 @@ MonoBehaviour:
       - rid: 3589942986135568554
       - rid: 2533177004360729083
       - rid: 209362707701039384
-      - rid: 1394692065978744964
+      - rid: 1468000078667710627
+      - rid: 1468000084595310816
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568555
       - rid: 2533177004360729084
       - rid: 209362707701039385
-      - rid: 1394692065978744965
+      - rid: 1468000078667710628
+      - rid: 1468000084595310817
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -852,13 +901,15 @@ MonoBehaviour:
       - rid: 3589942986135568556
       - rid: 2533177004360729085
       - rid: 209362707701039386
-      - rid: 1394692065978744966
+      - rid: 1468000078667710629
+      - rid: 1468000084595310818
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568557
       - rid: 2533177004360729086
       - rid: 209362707701039387
-      - rid: 1394692065978744967
+      - rid: 1468000078667710630
+      - rid: 1468000084595310819
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -901,13 +952,15 @@ MonoBehaviour:
       - rid: 3589942986135568558
       - rid: 2533177004360729087
       - rid: 209362707701039388
-      - rid: 1394692065978744968
+      - rid: 1468000078667710631
+      - rid: 1468000084595310820
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568559
       - rid: 2533177004360729088
       - rid: 209362707701039389
-      - rid: 1394692065978744969
+      - rid: 1468000078667710632
+      - rid: 1468000084595310821
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -950,13 +1003,15 @@ MonoBehaviour:
       - rid: 3589942986135568560
       - rid: 2533177004360729089
       - rid: 209362707701039390
-      - rid: 1394692065978744970
+      - rid: 1468000078667710633
+      - rid: 1468000084595310822
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568561
       - rid: 2533177004360729090
       - rid: 209362707701039391
-      - rid: 1394692065978744971
+      - rid: 1468000078667710634
+      - rid: 1468000084595310823
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -999,13 +1054,15 @@ MonoBehaviour:
       - rid: 3589942986135568562
       - rid: 2533177004360729091
       - rid: 209362707701039392
-      - rid: 1394692065978744972
+      - rid: 1468000078667710635
+      - rid: 1468000084595310824
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568563
       - rid: 2533177004360729092
       - rid: 209362707701039393
-      - rid: 1394692065978744973
+      - rid: 1468000078667710636
+      - rid: 1468000084595310825
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1048,13 +1105,15 @@ MonoBehaviour:
       - rid: 3589942986135568564
       - rid: 2533177004360729093
       - rid: 209362707701039394
-      - rid: 1394692065978744974
+      - rid: 1468000078667710637
+      - rid: 1468000084595310826
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568565
       - rid: 2533177004360729094
       - rid: 209362707701039395
-      - rid: 1394692065978744975
+      - rid: 1468000078667710638
+      - rid: 1468000084595310827
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1435,6 +1494,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -1483,465 +1543,925 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1394692065978744940
-      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
-      data:
-        m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744941
-      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
-      data:
-        m_ReportCmdName: FirebaseReport
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 1394692065978744942
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744943
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710604
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744944
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710605
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744945
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710606
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744946
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710607
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744947
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710608
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744948
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710609
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744949
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710610
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744950
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710611
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744951
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710612
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744952
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710613
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744953
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710614
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744954
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710615
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744955
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710616
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744956
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710617
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744957
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710618
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744958
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710619
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744959
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710620
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744960
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710621
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744961
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710622
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744962
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710623
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744963
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710624
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744964
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710625
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744965
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710626
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744966
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710627
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744967
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710628
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744968
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710629
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744969
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710630
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744970
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710631
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744971
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710632
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744972
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710633
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744973
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710634
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744974
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710635
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
-    - rid: 1394692065978744975
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710636
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710637
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000078667710638
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: FirebasePush
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
+    - rid: 1468000084595310793
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310794
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310795
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310796
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310797
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310798
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310799
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310800
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310801
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310802
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310803
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310804
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310805
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310806
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310807
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310808
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310809
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310810
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310811
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310812
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310813
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310814
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310815
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310816
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310817
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310818
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310819
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310820
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310821
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310822
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310823
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310824
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310825
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310826
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1468000084595310827
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
     - rid: 2533177004360729060
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729061
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729062
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729063
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729064
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729065
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729066
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729067
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729068
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729069
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729070
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729071
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729072
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729073
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729074
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729075
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729076
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729077
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729078
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729079
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729080
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729081
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729082
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729083
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729084
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729085
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729086
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729087
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729088
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729089
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729090
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729091
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729092
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729093
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729094
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177010352816801
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
@@ -2482,10 +3002,12 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 3589943518543478926
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:

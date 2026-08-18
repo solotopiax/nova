@@ -80,7 +80,7 @@ namespace YooAsset
             PackageName = packageName;
             RootPath = rootPath;
             Config = config;
-            IsReadOnly = true;
+            IsReadOnly = config.VirtualDownloadMode == false;
         }
 
         /// <inheritdoc />
@@ -117,14 +117,19 @@ namespace YooAsset
         /// <inheritdoc />
         public BCLoadBundleOperation LoadBundleAsync(BCLoadBundleOptions options)
         {
-            if (options.Bundle.GetBundleType() == (int)EBundleType.VirtualBundle)
+            if (options.Bundle.GetBundleType() == (int)EBundleType.VirtualAssetBundle)
             {
-                var operation = new EBCLoadVirtualBundleOperation(this, options.Bundle);
+                var operation = new EBCLoadVirtualAssetBundleOperation(this, options.Bundle);
                 return operation;
             }
-            else if (options.Bundle.GetBundleType() == (int)EBundleType.RawBundle)
+            else if (options.Bundle.GetBundleType() == (int)EBundleType.VirtualRawBundle)
             {
-                var operation = new EBCLoadRawBundleOperation(this, options.Bundle);
+                var operation = new EBCLoadVirtualRawBundleOperation(this, options.Bundle);
+                return operation;
+            }
+            else if (options.Bundle.GetBundleType() == (int)EBundleType.VirtualArchiveBundle)
+            {
+                var operation = new EBCLoadVirtualArchiveBundleOperation(this, options.Bundle);
                 return operation;
             }
             else
@@ -137,10 +142,16 @@ namespace YooAsset
         /// <inheritdoc />
         public bool IsCached(string bundleGuid)
         {
-            if (Config.VirtualDownloadMode)
-                return _cacheEntries.ContainsKey(bundleGuid);
-            else
+            if (Config.VirtualDownloadMode == false)
                 return true;
+
+            return _cacheEntries.ContainsKey(bundleGuid);
+        }
+        /// <inheritdoc />
+        public string GetCacheFilePath(string bundleGuid)
+        {
+            YooLogger.LogWarning($"{nameof(EditorBundleCache)} does not support local cache file path.");
+            return null;
         }
 
         /// <summary>
@@ -197,7 +208,42 @@ namespace YooAsset
             if (_cacheEntries.TryGetValue(bundleGuid, out EditorBundleCacheEntry entry))
             {
                 _cacheEntries.Remove(bundleGuid);
+                entry.Delete();
             }
+        }
+
+        /// <summary>
+        /// 获取 marker 文件路径
+        /// </summary>
+        /// <param name="bundle">资源包描述</param>
+        /// <returns>marker 文件的完整路径</returns>
+        internal string GetMarkerFilePath(PackageBundle bundle)
+        {
+            string bundleGuid = bundle.BundleGuid;
+            string hashFolder = GetHashFolderName(bundleGuid);
+            return PathUtility.Combine(RootPath, hashFolder, bundleGuid, EditorBundleCacheConsts.MarkerFileName);
+        }
+
+        /// <summary>
+        /// 获取 marker 临时文件路径
+        /// </summary>
+        /// <param name="bundle">资源包描述</param>
+        /// <returns>marker 临时文件的完整路径</returns>
+        internal string GetMarkerTempFilePath(PackageBundle bundle)
+        {
+            string bundleGuid = bundle.BundleGuid;
+            string hashFolder = GetHashFolderName(bundleGuid);
+            return PathUtility.Combine(RootPath, hashFolder, bundleGuid, EditorBundleCacheConsts.MarkerTempFileName);
+        }
+
+        private string GetHashFolderName(string bundleGuid)
+        {
+            if (string.IsNullOrEmpty(bundleGuid))
+                throw new YooInternalException("Bundle GUID is null or empty.");
+
+            if (bundleGuid.Length <= EditorBundleCacheConsts.HashFolderNameLength)
+                return bundleGuid;
+            return bundleGuid.Substring(0, EditorBundleCacheConsts.HashFolderNameLength);
         }
         #endregion
     }

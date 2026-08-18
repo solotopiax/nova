@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 本地 Player 构建"
+  short_description: "按已确认平台、模式与输出路径生成本地 Player 并核验 BuildReport"
+  default_prompt: "使用 $nova-project-build-player 为当前 Nova 项目构建并核验本地 Player。"

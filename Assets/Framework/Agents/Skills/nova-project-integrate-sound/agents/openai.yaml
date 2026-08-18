@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 接入业务声音"
+  short_description: "接入并验证 Nova 项目的 BGM、音效和声音播放闭环"
+  default_prompt: "使用 $nova-project-integrate-sound 将已确认的业务声音接入当前 Nova 项目并完成实际播放验证。"

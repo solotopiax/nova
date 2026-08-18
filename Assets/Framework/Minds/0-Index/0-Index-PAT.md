@@ -111,6 +111,8 @@ auto_generated: true
 - [PAT-148 广告收益打点与展示回调边界](../2-Areas/Patterns/PAT-148-ad-revenue-track-callback-boundary.md) — Banner ILRD聚合，impression即时
 - [PAT-158 SDK UPM 包必须自带官方 Console 与 Readme 菜单入口](../2-Areas/Patterns/PAT-158-sdk-package-official-url-menu-entry.md) — SDK 包自带官方后台与文档菜单入口
 - [PAT-160 Mobile IAP 商品拉取与后台任务边界](../2-Areas/Patterns/PAT-160-mobile-iap-product-fetch-background-task-boundary.md) — 商品拉取成功态单向收敛，后台任务只做取消与异常收口
+- [PAT-164 Firebase 默认 Topic 分层同步与差异存档](../2-Areas/Patterns/PAT-164-firebase-default-topic-sync.md) — 默认Topic分层同步并存档差异
+- [PAT-165 Mobile IAP 支付失败打点边界](../2-Areas/Patterns/PAT-165-mobile-iap-pay-failure-track-boundary.md) — PayAsync失败补打，官方回调直接打点
 - [PAT-33 新增 SDK Plugin 的 6 步 SOP](../2-Areas/Patterns/PAT-33-sdk-plugin-sop.md) — SDK Plugin SOP UPM包加ISDKPlugin
 - [PAT-69 UGUI 等比铺满父宽的零脚本配置法](../2-Areas/Patterns/PAT-69-ugui-aspect-fit-fill-width.md) — ARF+水平 stretch 实现等比满宽零脚本
 
@@ -187,4 +189,4 @@ auto_generated: true
 
 
 ---
-_共 121 条，分布于 18 个 category。_
+_共 123 条，分布于 18 个 category。_

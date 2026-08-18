@@ -5,7 +5,7 @@
  * filename:  AssetManager.LoadRaw.cs
  * author:    taoye
  * created:   2026/5/14
- * descrip:   AssetManager Raw 字节加载 —— 直连 YooAsset RawFile 通道
+ * descrip:   AssetManager Raw 字节加载 —— 通过 RawFileObject 维持 Nova 原始文件句柄契约
  ***************************************************************/
 
 using System.Threading;
@@ -26,17 +26,27 @@ namespace NovaFramework.Runtime
         public override IRawFileHandle LoadRawSync(string location)
         {
             ResourcePackage pkg = GetPackage(m_DefaultPackageName);
-            RawFileHandle inner = pkg.LoadRawFileSync(location);
+            AssetHandle inner = null;
             YooAssetRawFileHandleAdapter adapter = null;
             try
             {
+                inner = pkg.LoadAssetSync<RawFileObject>(location);
+                if (inner.Status != EOperationStatus.Succeeded)
+                    throw new System.InvalidOperationException($"LoadAssetSync<RawFileObject> failed: {inner.Error}");
+
+                RawFileObject rawFile = inner.GetAssetObject<RawFileObject>();
+                if (rawFile == null)
+                    throw new System.InvalidOperationException($"RawFileObject is null: {location}");
+
                 adapter = ReferencePool.Get<YooAssetRawFileHandleAdapter>();
-                adapter.Bind(inner);
+                // EnsureBundleFileOperation 不支持同步等待；同步加载仍可靠提供字节，但底层 bundle 路径为空。
+                adapter.Bind(inner, rawFile, null);
+                inner = null;
                 return adapter;
             }
             catch
             {
-                inner.Release();
+                inner?.Release();
                 if (adapter != null) ReferencePool.Put(adapter);
                 throw;
             }
@@ -53,17 +63,35 @@ namespace NovaFramework.Runtime
         public override async UniTask<IRawFileHandle> LoadRawAsync(string location, CancellationToken ct = default)
         {
             ResourcePackage pkg = GetPackage(m_DefaultPackageName);
-            RawFileHandle inner = pkg.LoadRawFileAsync(location);
-            YooAssetRawFileHandleAdapter adapter = ReferencePool.Get<YooAssetRawFileHandleAdapter>();
-            adapter.Bind(inner);
+            AssetHandle inner = null;
+            YooAssetRawFileHandleAdapter adapter = null;
             try
             {
+                inner = pkg.LoadAssetAsync<RawFileObject>(location);
                 await UniTask.WaitUntil(() => inner.IsDone, cancellationToken: ct);
+                if (inner.Status != EOperationStatus.Succeeded)
+                    throw new System.InvalidOperationException($"LoadAssetAsync<RawFileObject> failed: {inner.Error}");
+
+                RawFileObject rawFile = inner.GetAssetObject<RawFileObject>();
+                if (rawFile == null)
+                    throw new System.InvalidOperationException($"RawFileObject is null: {location}");
+
+                // 路径是尽力补充信息：Web/内存文件系统不支持 Ensure，失败时不影响已成功加载的 RawFileObject 字节。
+                EnsureBundleFileOperation ensureOperation = pkg.EnsureBundleFileAsync(new EnsureBundleFileOptions(inner.GetAssetInfo()));
+                await UniTask.WaitUntil(() => ensureOperation.IsDone, cancellationToken: ct);
+                string filePath = ensureOperation.Status == EOperationStatus.Succeeded
+                    ? ensureOperation.Detail.BundleFilePath
+                    : null;
+
+                adapter = ReferencePool.Get<YooAssetRawFileHandleAdapter>();
+                adapter.Bind(inner, rawFile, filePath);
+                inner = null;
                 return adapter;
             }
             catch
             {
-                adapter.Release();
+                inner?.Release();
+                if (adapter != null) ReferencePool.Put(adapter);
                 throw;
             }
         }

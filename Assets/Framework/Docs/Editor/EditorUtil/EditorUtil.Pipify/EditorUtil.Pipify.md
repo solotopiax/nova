@@ -29,7 +29,7 @@
 | `EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs` | `EditorUtil.Pipify.WindowReporter` | Window 宿主进度 Reporter（EditorUtility 模态进度条） |
 | `EditorUtil.Pipify/EditorUtil.Pipify.CliReporter.cs` | `EditorUtil.Pipify.CliReporter` | CLI 宿主进度 Reporter（纯日志，恒返回 false） |
 | `EditorUtil.Pipify/Steps/PipifySteps.HybridCLR.cs` | `PipifySteps` | 内置 Step：HybridCLR 分组 10 个 Step（3 个主流程：`hybridclr.validate_linkxml` / `hybridclr.copy_aot_dll` / `hybridclr.copy_game_dll`；仅编译 DLL 入口：`hybridclr.compile_dll_active_build_target`；对齐 HybridCLR/Generate 子菜单的 6 个细粒度入口：`hybridclr.generate_all` / `hybridclr.generate_linkxml` / `hybridclr.generate_method_bridge` / `hybridclr.generate_aot_generic_reference` / `hybridclr.generate_il2cpp_def` / `hybridclr.generate_aot_dlls`） |
-| `EditorUtil.Pipify/Steps/PipifySteps.BundleBuilder.cs` | `PipifySteps` | 内置 Step：构建资源 分组 1 个 Step（`bundlebuilder.build` / DisplayName=Bundles：YooAsset ScriptableBuildPipeline 薄封装，参数类 `AssetBundleBuildArgs` 复用 EditorUtil.BundleBuilder） |
+| `EditorUtil.Pipify/Steps/PipifySteps.BundleBuilder.cs` | `PipifySteps` | 内置 Step：构建资源分组 2 个独立入口（`bundlebuilder.build` / DisplayName=Bundles：标准 ScriptableBuildPipeline + AssetBundle；`bundlebuilder.build_raw_file` / DisplayName=Raw Files：PackRawFile 对应 RawFileBuildPipeline + RawBundle） |
 | `EditorUtil.Pipify/Definitions/PipifyDropdownAttribute.cs` | `PipifyDropdownAttribute` | string 字段渲染特性：以接口实现类下拉框形式编辑（存储 FullName） |
 | `EditorUtil.Pipify/Definitions/PipifyDynamicDropdownAttribute.cs` | `PipifyDynamicDropdownAttribute` | string 字段渲染特性：动态选项下拉框（每帧调用 Provider 取 string[]） |
 | `EditorUtil.Pipify/Definitions/PipifyDynamicDefaultAttribute.cs` | `PipifyDynamicDefaultAttribute` | string 字段渲染特性：值为空时显示动态默认值占位（不写回字段） |

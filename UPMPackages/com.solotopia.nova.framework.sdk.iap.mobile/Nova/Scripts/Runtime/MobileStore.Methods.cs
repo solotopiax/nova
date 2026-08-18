@@ -8,6 +8,8 @@
  * descrip:   MobileStore 非公开方法
  ***************************************************************/
 
+using System;
+using NovaFramework.Runtime;
 using NovaFramework.SDK.IAP.Runtime;
 using UnityEngine.Purchasing;
 
@@ -48,6 +50,82 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal void SavePersistDataInternal()
         {
             SavePersistData(m_PersistData);
+        }
+
+        /// <summary>
+        /// Mobile 的 guard 失败不在基类直接上报；PayGuardAsync 返回失败结果后由 PayAsync 返回边界统一上报。
+        /// </summary>
+        /// <param name="result">支付前置校验生成的失败结果。</param>
+        /// <returns>固定返回 false，禁止基类在 guard 内直接上报。</returns>
+        protected override bool ShouldTrackPayGuardFailure(IAPResult result)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// 上报 MobileStore.PayAsync 返回的失败结果，作为移动内购失败打点的统一出口。
+        /// </summary>
+        /// <param name="result">PayAsync 返回的支付结果。</param>
+        internal void TrackReturnedPayFailureInternal(IAPResult result)
+        {
+            if (result == null || result.IsSuccess)
+            {
+                return;
+            }
+
+            IAPMobileErrorCode reason = MapPayFailureResultToMobileReason(result);
+            string reasonDetail = string.IsNullOrEmpty(result.ErrorDesc)
+                ? $"{result.ErrorSource}:{result.ErrorCode}"
+                : $"{result.ErrorSource}:{result.ErrorCode} {result.ErrorDesc}";
+            Product product = ResolveTrackProduct(result.TableId);
+            TrackLocalPayFail(tableId: result.TableId,
+                productId: ResolveProductId(result.TableId, product),
+                debug: IsTrackDebugMode(),
+                price: ResolvePrice(result.TableId),
+                reason: reason,
+                reasonDetail: reasonDetail,
+                customData: result.CustomData);
+        }
+
+        /// <summary>
+        /// 将 PayAsync 失败结果映射到 Mobile 打点使用的 IAPMobileErrorCode 枚举域。
+        /// </summary>
+        /// <param name="result">PayAsync 返回的失败结果。</param>
+        /// <returns>用于 nova_reason 的 Mobile 错误码。</returns>
+        private IAPMobileErrorCode MapPayFailureResultToMobileReason(IAPResult result)
+        {
+            if (result.ErrorSource == IAPErrorSource.Mobile)
+            {
+                return Enum.IsDefined(typeof(IAPMobileErrorCode), result.ErrorCode)
+                    ? (IAPMobileErrorCode)result.ErrorCode
+                    : IAPMobileErrorCode.StoreNotAvailable;
+            }
+
+            if (result.ErrorSource != IAPErrorSource.PluginRouter ||
+                !Enum.IsDefined(typeof(IAPPluginErrorCode), result.ErrorCode))
+            {
+                return IAPMobileErrorCode.StoreNotAvailable;
+            }
+
+            return (IAPPluginErrorCode)result.ErrorCode switch
+            {
+                IAPPluginErrorCode.ProductNotFound => IAPMobileErrorCode.ProductNotFound,
+                IAPPluginErrorCode.StoreInitFailed => IAPMobileErrorCode.StoreInitFailed,
+                IAPPluginErrorCode.AlreadyPurchasing => IAPMobileErrorCode.AlreadyPurchasing,
+                IAPPluginErrorCode.StoreNotAvailable => IAPMobileErrorCode.StoreNotAvailable,
+                _ => IAPMobileErrorCode.StoreNotAvailable,
+            };
+        }
+
+        /// <summary>
+        /// 解析失败打点使用的 Unity IAP 商品对象。
+        /// </summary>
+        /// <param name="tableId">商品配置表行 ID。</param>
+        /// <returns>Unity IAP Product；无法解析时返回 null。</returns>
+        private Product ResolveTrackProduct(long tableId)
+        {
+            IAPProductEntry entry = Table?.FindByTableId(tableId);
+            return string.IsNullOrEmpty(entry?.ProductID) ? null : m_Hub?.ProductService?.GetProduct(entry.ProductID);
         }
 
         /// <summary>

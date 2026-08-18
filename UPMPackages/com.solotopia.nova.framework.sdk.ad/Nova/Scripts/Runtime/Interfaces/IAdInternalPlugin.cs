@@ -46,6 +46,12 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         float GetMaxRevenue(AdFormat format);
 
         /// <summary>
+        /// 获取当前渠道 SDK 返回的国家或地区代码；渠道未提供时返回空字符串。
+        /// </summary>
+        /// <returns>国家或地区代码，通常为 ISO 3166-1 alpha-2 格式；不可用时返回空字符串。</returns>
+        string GetCountryCode();
+
+        /// <summary>
         /// 广告收入业务事件，每次广告展示产生收入后由基类排入 Unity 主线程触发；收益打点可在 SDK 原始回调线程即时执行。
         /// AdPlugin 订阅此事件后聚合转发给业务层。
         /// </summary>

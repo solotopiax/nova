@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.0] - 2026-08-18
+
+### Changed (local fork)
+
+- Core 基线升级为官方 YooAsset 3.0.5（commit `94422fc41491228eed0999ce4845d7b23ee2b8ae`），保留 `com.solotopia.yooasset` 私包身份与外层 `1.1.0` 版本。
+- Unity 6000.4 的 Scriptable Build Pipeline 依赖对齐为 `2.6.1`，构建任务使用 `CreateBuiltInBundle`。
+- 保留 Nova 显式 Settings 路径注入、BundleCollector 缓存重置、YooAssetSettings 注入与 `NovaFramework.Editor` 友元扩展。
+- Runtime asmdef 的 versionDefines 改为私包名，版本条件与私包 `1.1.0` 对齐，并采用 3.0.5 上游的 `YOOASSET_3*` 宏名称。
+- 归一上游大小写冲突目录为 `BuiltinFileSystem/Operations/internal/`，保留上游 `internal.meta` GUID。
+- Nova 的 `IRawFileHandle` 签名和调用方式保持不变，`GetBytes()` 继续可靠返回原始内容副本；`FilePath` 从旧原始文件绝对路径改为 best-effort 底层 bundle 路径，同步/Web/内存/不支持 Ensure 的路径允许为 null。该项不是完全语义兼容；仓库检索未发现框架内部 `FilePath` 消费方，外部消费方需改用 `GetBytes()`。
+
 ## [1.0.6] - 2026-06-18
 
 ### Changed

@@ -1,7 +1,7 @@
 # Nova Framework - SDK - AIHelp
 
 > 包名：`com.solotopia.nova.framework.sdk.aihelp`
-> 当前版本：`0.0.2`
+> 当前版本：`0.0.8`
 
 Nova Framework 的 AIHelp 智能客服 / 帮助中心对接层，封装 `AIHelpPlugin`（继承 `SDKPluginBase`，由 `SDKManager` 统一编排），提供智能客服会话、帮助中心 FAQ、未读消息 / 工单数、用户信息同步等能力。
 

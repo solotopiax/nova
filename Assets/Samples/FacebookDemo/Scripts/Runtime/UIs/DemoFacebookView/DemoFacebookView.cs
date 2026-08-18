@@ -24,7 +24,7 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
         {
             base.OnOpen(userData);
 
-            AppendFeedback("Facebook 演示已打开，可登录、绑定、解绑、分享并读取好友列表。");
+            AppendFeedback("Facebook 演示已打开，可登录、绑定、解绑、分享、读取好友列表并发送 App Events 打点。");
         }
 
         /// <summary>

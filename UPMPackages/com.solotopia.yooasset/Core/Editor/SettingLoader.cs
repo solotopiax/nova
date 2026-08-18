@@ -2,9 +2,7 @@
 using UnityEngine;
 using UnityEditor;
 
-// modify: by taoye - 新增 LoadSettingDataAtPath 重载与 ExplicitPathProvider 注入点；
-//         BundleCollectorSetting 等 Editor-only Settings 优先按 Nova ConfigMaster 显式路径加载，
-//         替代 AssetDatabase.FindAssets 全工程扫描，根除多 sample 共存命中错副本问题。
+// modify: local fork - 支持 Nova 注册显式配置路径并在未命中时回退到上游全工程扫描。
 
 namespace YooAsset.Editor
 {
@@ -13,14 +11,12 @@ namespace YooAsset.Editor
     /// </summary>
     public static class SettingLoader
     {
-        // modify: by taoye - 外部（Nova ConfigMaster）注册显式路径回调；命中即旁路全工程扫描。
         private static Func<Type, string> s_explicitPathProvider;
 
         /// <summary>
-        /// 注册显式路径回调；同一时刻仅保留一个 provider，重复注册覆盖前值。
-        /// <para>provider 收到 settingType，需返回 Assets 相对路径或 null/empty 表示该类型无显式配置。</para>
+        /// 注册配置资产显式路径提供器；重复注册会覆盖旧值，传入 null 会注销提供器。
         /// </summary>
-        /// <param name="provider">类型 → 资产路径的回调；传 null 则注销。</param>
+        /// <param name="provider">按配置类型返回 Assets 相对路径的回调；无显式配置时返回 null 或空字符串。</param>
         public static void RegisterExplicitPathProvider(Func<Type, string> provider)
         {
             s_explicitPathProvider = provider;
@@ -35,12 +31,13 @@ namespace YooAsset.Editor
         {
             var settingType = typeof(TSetting);
 
-            // modify: by taoye - 优先走外部注入的显式路径，命中则跳过全工程扫描，避免多副本异常。
+            // Nova 的 ConfigMaster 可以为多份同类型配置指定当前激活路径；路径未配置或资产不存在时保持上游扫描语义。
             if (s_explicitPathProvider != null)
             {
                 string explicitPath = s_explicitPathProvider(settingType);
-                var explicitSetting = LoadSettingDataAtPath<TSetting>(explicitPath);
-                if (explicitSetting != null) return explicitSetting;
+                TSetting explicitSetting = LoadSettingDataAtPath<TSetting>(explicitPath);
+                if (explicitSetting != null)
+                    return explicitSetting;
             }
 
             var guids = AssetDatabase.FindAssets($"t:{settingType.Name}");
@@ -75,15 +72,16 @@ namespace YooAsset.Editor
         }
 
         /// <summary>
-        /// 按显式资产路径加载 Settings；空路径返回 null，资产不存在返回 null。
+        /// 按显式 Assets 相对路径加载指定类型的配置资产。
         /// </summary>
-        /// <typeparam name="TSetting">配置文件类型，必须继承自 ScriptableObject。</typeparam>
-        /// <param name="assetPath">Assets 相对路径（如 Assets/Samples/MainDemo/Editor/BundleCollectorSetting.asset）。</param>
-        /// <returns>加载到的配置实例；路径为空或资产不存在时返回 null。</returns>
+        /// <typeparam name="TSetting">必须继承 ScriptableObject 的配置类型。</typeparam>
+        /// <param name="assetPath">Assets 相对路径；为空或资产不存在时不命中。</param>
+        /// <returns>已加载的配置实例；路径为空或资产不存在时返回 null。</returns>
         public static TSetting LoadSettingDataAtPath<TSetting>(string assetPath)
             where TSetting : ScriptableObject
         {
-            if (string.IsNullOrEmpty(assetPath)) return null;
+            if (string.IsNullOrEmpty(assetPath))
+                return null;
             return AssetDatabase.LoadAssetAtPath<TSetting>(assetPath);
         }
     }

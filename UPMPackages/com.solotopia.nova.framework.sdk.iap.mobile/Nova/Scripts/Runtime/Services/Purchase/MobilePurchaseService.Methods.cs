@@ -453,6 +453,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             long tableId = ResolveTableIdFromFailedOrder(order);
             string receiptParam = ResolveReceiptParamFromFailedOrder(order);
+            Product product = m_Hub.ProductService.GetFirstProductInOrder(order);
             string diagnostic = BuildFailedOrderDiagnostic(order, tableId);
             bool hasActivePay = m_PayTcs != null || InPayTableId != 0;
             bool hasLocalOrder = tableId > 0L && m_Hub.ValidationService.HasOrderRecord(tableId, receiptParam);
@@ -465,7 +466,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             // order.Details 是 Unity IAP 附带的具体失败说明（如 "Order info is null" / "Transaction ID is null or empty"
             // / "Received invalid order type after confirmation" / 异常 message），是定位 Unknown 失败根因的关键信息，必须打出来。
             Log.Warning(LogTag.IAPMobile, $"平台确认失败，保留 AwaitingConfirm 记录，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
-
+            IAPMobileErrorCode code = MapPurchaseFailureReason(order.FailureReason);
+            string errorDesc = $"平台确认失败：{order.FailureReason}，详情={order.Details}";
+            m_Hub.Store.TrackLocalPayFailInternal(tableId, product, code, errorDesc, hasActivePay ? m_CurrentCustomData : null);
         }
 
         /// <summary>
@@ -623,7 +626,6 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             m_Hub.Store.SubWaitingRef(true);
 
-            m_Hub.Store.TrackLocalPayFailInternal(tableId, null, code, message, customData);
             var failResult = new IAPResult(tableId, (int)code, IAPErrorSource.Mobile, message, customData, receiptParam);
             m_Hub.Context.EventBridge?.RaisePayFailed(failResult);
             payTcs?.TrySetResult(failResult);

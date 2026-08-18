@@ -1,7 +1,7 @@
 ﻿# IAP 核心包架构文档
 
 > 包名：`com.solotopia.nova.framework.sdk.iap`
-> 最后更新：2026-08-11
+> 最后更新：2026-08-17
 > 代码入口：`Nova/Scripts/Runtime/**`
 
 ## 1. 当前架构
@@ -75,6 +75,18 @@ SDKComponent
 - `InSubscriptionPeriod` 订阅有效期判断扩展
 - `Track*` 系列支付打点方法；子 Store 可通过内部转发方法在自身服务层接入，Mobile 官方内购已接入初始化、购买、平台支付、验单相关事件。`Track*Fail` 的 reason 参数统一为 `Enum`，父包转成 `int` 写入 `nova_reason`，失败描述写入 `nova_reason_detail`。
 
+`IAPStoreBase` partial 文件职责固定如下：
+
+| 文件 | 职责 |
+|---|---|
+| `IAPStoreBase.cs` | public/abstract 调用面、生命周期入口和业务侧可见方法 |
+| `IAPStoreBase.Visitors.cs` | 字段、状态属性、protected 属性和常量 |
+| `IAPStoreBase.Methods.cs` | protected/private/internal 模板方法与辅助方法，包括 `PayGuardAsync`、持久化模板、SKU 过滤和日志辅助 |
+| `IAPStoreBase.Track.cs` | 支付打点封装 |
+| `IAPStoreBase.Net.cs` | 通用网络请求能力 |
+
+新增非 public helper 时写入 `.Methods.cs`，新增成员状态时写入 `.Visitors.cs`；无后缀文件不承载 protected/private/internal 辅助方法或成员字段。
+
 ## 5. 公开调用链
 
 ### 初始化
@@ -135,6 +147,8 @@ SDKEventData.UserLogin → IAPPlugin.SetUserId(uid) → 广播给所有 Store
 | 补充描述字符串 | 写入 `nova_reason_detail` |
 
 因此 Store 侧必须先把失败域收敛到明确枚举，且失败原因枚举由具体 Store 定义，父包不维护跨 Store 的失败原因全集。Mobile 官方内购的支付过程失败统一使用 `IAPMobileErrorCode`：0-9 是业务返回粗粒度错误，1000-1010 是 Unity `PurchaseFailureReason` 映射号段，2000+ 是验单打点细分原因，并可读取 `nova_reason_detail` 做排查。
+
+`IAPStoreBase.PayGuardAsync` 对禁用、未就绪、重入和商品表缺失会返回 `ErrorSource.PluginRouter` + `IAPPluginErrorCode`。默认 Store 由基类在 guard 失败完成路径上补打 `nova_iap_local_pay_fail`；需要把 guard 失败映射到自身错误码域的 Store 可以覆写 `ShouldTrackPayGuardFailure`，并在自身 `PayAsync` 返回边界统一上报。
 
 当前父包应保持以下边界：
 

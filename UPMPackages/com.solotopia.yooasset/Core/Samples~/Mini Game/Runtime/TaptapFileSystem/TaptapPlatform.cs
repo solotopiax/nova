@@ -8,12 +8,14 @@ using TapTapMiniGame;
 /// TapTap 小游戏平台实现
 /// 参考：https://developer.taptap.cn/minigameapidoc/dev/engine/unity-adaptation/guide/
 /// </summary>
-internal class TaptapPlatform : IWebGamePlatform
+internal class TaptapPlatform : IWebPlatformStrategy
 {
     /// <inheritdoc/>
-    public UnityWebRequest CreateAssetBundleRequest(string url)
+    public UnityWebRequest CreateAssetBundleRequest(WebAssetBundleRequestArgs args)
     {
-        return TapAssetBundle.GetAssetBundle(url);
+        UnityWebRequest request = TapAssetBundle.GetAssetBundle(args.Url);
+        request.disposeDownloadHandlerOnDispose = true;
+        return request;
     }
 
     /// <inheritdoc/>
@@ -27,18 +29,6 @@ internal class TaptapPlatform : IWebGamePlatform
     public void UnloadAssetBundle(AssetBundle assetBundle, bool unloadAll)
     {
         assetBundle.TapUnload(unloadAll);
-    }
-
-    /// <inheritdoc/>
-    public bool IsCached(string cacheFilePath)
-    {
-        return false;
-    }
-
-    /// <inheritdoc/>
-    public string GetCacheFilePath(string rootPath, PackageBundle bundle)
-    {
-        return PathUtility.Combine(rootPath, bundle.GetFileName());
     }
 }
 #endif

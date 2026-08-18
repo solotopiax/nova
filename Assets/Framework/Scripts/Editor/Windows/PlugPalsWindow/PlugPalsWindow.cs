@@ -61,6 +61,9 @@ namespace NovaFramework.Editor
         /// </summary>
         private void OnEnable()
         {
+            EditorApplication.update -= RepaintAnimatedUpgradeVersion;
+            EditorApplication.update += RepaintAnimatedUpgradeVersion;
+
             EditorUtil.PlugPals.RegistriesConfig registries = EditorUtil.PlugPals.LoadRegistries();
             m_ExternalUrl = registries.externalUrl;
             m_ExternalName = registries.externalName;
@@ -70,6 +73,25 @@ namespace NovaFramework.Editor
             if (m_ExternalPackages == null && m_InternalPackages == null)
             {
                 FetchPackages();
+            }
+        }
+
+        /// <summary>
+        /// 窗口禁用时取消动画刷新回调。
+        /// </summary>
+        private void OnDisable()
+        {
+            EditorApplication.update -= RepaintAnimatedUpgradeVersion;
+        }
+
+        /// <summary>
+        /// 有包条目时，按编辑器更新帧刷新最新版本号颜色。
+        /// </summary>
+        private void RepaintAnimatedUpgradeVersion()
+        {
+            if (m_FilteredPackages != null && m_FilteredPackages.Count > 0)
+            {
+                Repaint();
             }
         }
 
@@ -128,6 +150,7 @@ namespace NovaFramework.Editor
                 }
                 EditorUtil.Draw.Space(10f);
                 EditorGUILayout.EndScrollView();
+
             }
         }
 

@@ -58,6 +58,23 @@ namespace NovaFramework.Runtime
         public abstract UniTask LoadManifestAsync(string package = null, CancellationToken ct = default);
 
         /// <summary>
+        /// 获取指定包当前已激活 Manifest 的资源版本。
+        /// 包尚未完成 LoadManifestAsync 时返回 null。
+        /// </summary>
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <returns>当前已激活 Manifest 的资源版本；尚未激活时为 null。</returns>
+        public abstract string GetCurrentPackageVersion(string package = null);
+
+        /// <summary>
+        /// 仅在 Host/Web 模式请求指定包远端 .version 文件中的最新资源版本，不加载或切换 Manifest。
+        /// Offline/EditorSimulate 模式及已离线回退的包返回 null。
+        /// </summary>
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>远端 .version 文件声明的最新资源版本；不支持远端请求时为 null。</returns>
+        public abstract UniTask<string> RequestLatestPackageVersionAsync(string package = null, CancellationToken ct = default);
+
+        /// <summary>
         /// 保存启动白名单使用的稳定设备 ID。
         /// </summary>
         /// <param name="deviceId">稳定设备 ID 明文。</param>

@@ -27,6 +27,18 @@ namespace NovaFramework.Editor
             {
                 private const string c_FrameworkAssetFolderName = "Asset";
 
+#if UNITY_EDITOR_WIN
+                /// <summary>
+                /// Windows Editor 路径比较保持不区分大小写。
+                /// </summary>
+                private const StringComparison c_PathComparison = StringComparison.OrdinalIgnoreCase;
+#else
+                /// <summary>
+                /// 非 Windows Editor 路径比较保持区分大小写，避免放宽递归删除边界。
+                /// </summary>
+                private const StringComparison c_PathComparison = StringComparison.Ordinal;
+#endif
+
                 private static readonly string[] s_ProtectedProjectFolders =
                 {
                     "Assets",
@@ -81,6 +93,10 @@ namespace NovaFramework.Editor
                 /// <summary>
                 /// 根据项目根目录与 YooAsset 文件夹配置解析并校验 Editor 沙盒根目录。
                 /// </summary>
+                /// <param name="projectRoot">Unity 项目根目录。</param>
+                /// <param name="yooFolderName">YooAsset 配置的缓存文件夹名称。</param>
+                /// <returns>位于项目 Library 下的 Editor 沙盒绝对路径。</returns>
+                /// <exception cref="InvalidOperationException">路径为空、越出 Library 或落入受保护目录时抛出。</exception>
                 internal static string ResolveEditorSandboxRoot(string projectRoot, string yooFolderName)
                 {
                     if (string.IsNullOrWhiteSpace(projectRoot))
@@ -93,16 +109,21 @@ namespace NovaFramework.Editor
                     }
 
                     projectRoot = Path.GetFullPath(projectRoot);
-                    string sandboxRoot = Path.GetFullPath(Path.Combine(projectRoot, yooFolderName));
-                    if (PathsEqual(sandboxRoot, projectRoot) || !IsChildPath(sandboxRoot, projectRoot))
+                    string libraryRoot = Path.GetFullPath(Path.Combine(projectRoot, "Library"));
+                    string sandboxRoot = Path.GetFullPath(Path.Combine(libraryRoot, yooFolderName));
+                    if (PathsEqual(sandboxRoot, projectRoot)
+                        || PathsEqual(sandboxRoot, libraryRoot)
+                        || !IsChildPath(sandboxRoot, libraryRoot))
                     {
-                        throw new InvalidOperationException($"YooAsset Editor 沙盒路径不安全，已拒绝清理：{sandboxRoot}");
+                        throw new InvalidOperationException($"YooAsset Editor 沙盒必须位于项目 Library 子目录，已拒绝清理：{sandboxRoot}");
                     }
 
                     foreach (string protectedFolder in s_ProtectedProjectFolders)
                     {
                         string protectedRoot = Path.GetFullPath(Path.Combine(projectRoot, protectedFolder));
-                        if (PathsEqual(sandboxRoot, protectedRoot) || IsChildPath(sandboxRoot, protectedRoot))
+                        bool isLibraryRoot = string.Equals(protectedFolder, "Library", StringComparison.OrdinalIgnoreCase);
+                        if (PathsEqual(sandboxRoot, protectedRoot)
+                            || (!isLibraryRoot && IsChildPath(sandboxRoot, protectedRoot)))
                         {
                             throw new InvalidOperationException($"YooAsset Editor 沙盒路径指向项目关键目录，已拒绝清理：{sandboxRoot}");
                         }
@@ -139,8 +160,10 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 校验递归删除目标不是文件系统根目录。
+                /// 校验递归删除目标不是文件系统根、当前项目根、Library 根或其他项目保护目录。
                 /// </summary>
+                /// <param name="targetPath">准备递归删除的目录。</param>
+                /// <exception cref="InvalidOperationException">目标为空或命中受保护路径时抛出。</exception>
                 private static void ValidateDeleteTarget(string targetPath)
                 {
                     if (string.IsNullOrWhiteSpace(targetPath))
@@ -153,27 +176,52 @@ namespace NovaFramework.Editor
                     {
                         throw new InvalidOperationException($"YooAsset Editor 沙盒路径指向文件系统根目录，已拒绝清理：{fullPath}");
                     }
+
+                    string projectRoot = Path.GetFullPath(Path.GetDirectoryName(Application.dataPath) ?? string.Empty);
+                    string libraryRoot = Path.GetFullPath(Path.Combine(projectRoot, "Library"));
+                    if (PathsEqual(fullPath, projectRoot) || PathsEqual(fullPath, libraryRoot))
+                    {
+                        throw new InvalidOperationException($"YooAsset Editor 沙盒路径指向项目或 Library 根目录，已拒绝清理：{fullPath}");
+                    }
+
+                    foreach (string protectedFolder in s_ProtectedProjectFolders)
+                    {
+                        if (string.Equals(protectedFolder, "Library", StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        string protectedRoot = Path.GetFullPath(Path.Combine(projectRoot, protectedFolder));
+                        if (PathsEqual(fullPath, protectedRoot) || IsChildPath(fullPath, protectedRoot))
+                        {
+                            throw new InvalidOperationException($"YooAsset Editor 沙盒路径指向项目关键目录，已拒绝清理：{fullPath}");
+                        }
+                    }
                 }
 
                 /// <summary>
                 /// 判断候选路径是否严格位于父目录之下。
                 /// </summary>
+                /// <param name="candidate">待判断的绝对路径。</param>
+                /// <param name="parent">父目录绝对路径。</param>
+                /// <returns>候选路径按当前 Editor 平台规则严格位于父目录下时返回 true。</returns>
                 private static bool IsChildPath(string candidate, string parent)
                 {
                     string normalizedParent = parent.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
                         + Path.DirectorySeparatorChar;
-                    return candidate.StartsWith(normalizedParent, StringComparison.OrdinalIgnoreCase);
+                    return candidate.StartsWith(normalizedParent, c_PathComparison);
                 }
 
                 /// <summary>
                 /// 判断两个绝对路径是否相同。
                 /// </summary>
+                /// <param name="left">左侧路径。</param>
+                /// <param name="right">右侧路径。</param>
+                /// <returns>按当前 Editor 平台规则比较并忽略末尾目录分隔符后相同时返回 true。</returns>
                 private static bool PathsEqual(string left, string right)
                 {
                     return string.Equals(
                         left?.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
                         right?.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
-                        StringComparison.OrdinalIgnoreCase);
+                        c_PathComparison);
                 }
             }
         }

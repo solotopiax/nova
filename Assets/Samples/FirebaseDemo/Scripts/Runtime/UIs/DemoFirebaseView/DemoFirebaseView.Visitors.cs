@@ -66,10 +66,41 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
         [SerializeField] private Button m_LoginButton;
 
         /// <summary>
+        /// push task 的固定 task_key 下拉框。
+        /// </summary>
+        [SerializeField] private TMP_Dropdown m_PushTaskKeyDropdown;
+
+        /// <summary>
+        /// push task 的 UTC+0 触发时间预设下拉框。
+        /// </summary>
+        [SerializeField] private TMP_Dropdown m_PushTaskTriggerTimeDropdown;
+
+        /// <summary>
+        /// push task 是否取消同 task_key 服务端任务的开关。
+        /// </summary>
+        [SerializeField] private Toggle m_PushTaskCancelToggle;
+
+        /// <summary>
+        /// push task 的服务端模板 ID 下拉框。
+        /// </summary>
+        [SerializeField] private TMP_Dropdown m_PushTaskTemplateIdDropdown;
+
+        /// <summary>
+        /// 点击后缓存并按 FirebasePlugin 配置发送 push task。
+        /// </summary>
+        [SerializeField] private Button m_SendPushTaskButton;
+
+        /// <summary>
+        /// 显示当前 push task 固定参数预览。
+        /// </summary>
+        [SerializeField] private TextMeshProUGUI m_PushTaskPreviewText;
+
+        /// <summary>
         /// 用于显示当前待发送打点参数的预览文本。
         /// </summary>
         [SerializeField] private TextMeshProUGUI m_EventParamsPreviewText;
 
         private readonly Dictionary<string, object> m_EventParams = new Dictionary<string, object>();
+        private bool m_HasLoggedIn;
     }
 }

@@ -72,7 +72,7 @@ IAdChannelConfig  <── MaxAdChannelConfig  (配置值对象，非插件本体
 | `m_BannerPosition` | `MaxSdkBase.AdViewPosition` | `BottomCenter` | Banner 当前位置；`UpdateBannerPosition` 同步更新 |
 | `m_CreatedBannerPlacementIds` | `HashSet<string>` | 空集合 | 已创建 native Banner view 的广告位集合，用于避免重复 `CreateBanner` |
 | `m_BannerDesiredVisible` | `bool` | `false` | 业务是否期望 Banner 可见；加载恢复后据此决定是否重新显示 |
-| `m_CountryCode` | `string` | `null` | MAX SDK 初始化完成后由 `SdkConfiguration` 返回的国家代码 |
+| `m_CountryCode` | `string` | `null` | MAX SDK 初始化完成后由 `SdkConfiguration.CountryCode` 返回的国家代码；`GetCountryCode()` 对外返回该缓存值 |
 | `m_RevenueMonetizeTracker` | `IMonetizeTrackPlugin` | `null` | 收益回调打点用的变现插件引用；初始化主线程缓存 |
 | `m_RevenueAttributionTracker` | `IAttributionPlugin` | `null` | 收益回调打点用的归因插件引用；初始化主线程缓存 |
 | `m_RevenueEventTracker` | `ITrackPlugin` | `null` | 收益回调打点用的通用埋点插件引用；初始化主线程缓存 |
@@ -107,6 +107,9 @@ string Name { get; }  // => "Max"
 
 // 对应广告渠道类型
 AdChannelType Channel { get; }  // => AdChannelType.MAX
+
+// 返回 MAX SDK 初始化回调中的 SdkConfiguration.CountryCode；尚未初始化或未返回时为空字符串。
+public override string GetCountryCode()
 ```
 
 ### 用户身份同步（override，来自 MaxAdPlugin.UserId.cs）

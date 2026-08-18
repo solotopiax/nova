@@ -36,9 +36,20 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         private AdChannelConfigList m_ChannelConfigs = new AdChannelConfigList();
 
         /// <summary>
+        /// 等待广告 SDK 返回国家码的超时时间，单位秒。
+        /// </summary>
+        [SerializeField, HideInInspector, Tooltip("等待广告 SDK 返回国家码的超时时间（秒）。默认 5 秒；超时后读取广告模块上次成功缓存，缓存不存在则返回空字符串。")]
+        private float m_CountryCodeWaitTimeoutSeconds = 5f;
+
+        /// <summary>
         /// 渠道配置访问入口，AdPlugin 通过 Items 遍历渠道，通过其余只读属性读取全局开关。
         /// </summary>
         public AdChannelConfigList ChannelConfigs => m_ChannelConfigs;
+
+        /// <summary>
+        /// 等待广告 SDK 返回国家码的超时时间，单位秒。
+        /// </summary>
+        public float CountryCodeWaitTimeoutSeconds => m_CountryCodeWaitTimeoutSeconds;
 
         /// <summary>
         /// 无参构造器；供 ConfigWindow SDKPluginScanner 通过 Activator 创建空实例使用。

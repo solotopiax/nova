@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 刷新业务热更 DLL"
+  short_description: "编译并整批刷新当前坐标的本地 HybridCLR 业务 DLL"
+  default_prompt: "使用 $nova-project-refresh-hotfix-dlls 在当前 Target 与激活 ConfigMaster 坐标下完成业务热更 DLL 的本地 compile-copy-import 闭环。"

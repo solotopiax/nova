@@ -68,6 +68,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="tableId">商品配置表行 ID。</param>
         /// <param name="product">Unity IAP 商品对象。</param>
         /// <param name="reason">Mobile 支付错误码。</param>
+        /// <param name="reasonDetail">平台失败回调或返回结果提供的失败详情。</param>
         /// <param name="customData">业务透传数据。</param>
         internal void TrackLocalPayFailInternal(long tableId, Product product, IAPMobileErrorCode reason, string reasonDetail, string customData)
         {
@@ -252,6 +253,5 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             return Context?.DevelopMode == DevelopMode.Debug;
         }
-
     }
 }

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package NovaFramework.SDK.FirebasePlugin.Runtime;
+
+import "pb_net_header.proto";
+
+message PbPushTask {
+    string task_key = 1;     // 客户端定义的覆盖/取消键，例如 "daily_reward"
+    int64 trigger_time = 2;  // Unix 秒；小于等于当前时间即尽快派发
+    bool cancel = 3;         // true 时只接受 task_key，取消该键尚未派发的任务
+    int64 template_id = 4;   // 服务端消息模板 ID；创建任务时必填
+
+    reserved 5, 6, 7;
+    reserved "slot", "inline", "schedule_mode", "local_time";
+}
+
+message PbNetCreatePushTasksReq {
+    NovaFramework.Runtime.PbNetReqHeader head = 1;
+    repeated PbPushTask tasks = 2;
+}
+
+message PbPushTaskResult {
+    string task_id = 1;
+    string status = 2;
+    int64 cancelled_count = 3;
+}
+
+message PbNetCreatePushTasksResp {
+    NovaFramework.Runtime.PbNetRespHeader head = 1;
+    repeated PbPushTaskResult results = 2;
+}

@@ -7,6 +7,23 @@
     "unity": ">=6000.4"
   },
   "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed business UIView source and UI registration source",
+      "when": "View、命名空间、UIGroup 和注册源已经冻结时"
+    },
+    {
+      "kind": "unity-mcp",
+      "entry": "Unity Editor/MCP Prefab creation and serialized reference binding",
+      "when": "用户已确认目标 Prefab 与 Unity 写入范围时"
+    },
+    {
+      "kind": "unity-menu",
+      "entry": "confirmed project UI export entry",
+      "when": "当前项目已有且已确认本次需要的 UI 导出入口时"
+    }
+  ],
   "inputs": [
     {
       "name": "projectRoot",

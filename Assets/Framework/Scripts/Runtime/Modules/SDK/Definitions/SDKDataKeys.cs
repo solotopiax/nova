@@ -59,6 +59,13 @@ namespace NovaFramework.Runtime
         /// </summary>
         public const string FirebaseAnalyticsInstanceId = "FirebaseAnalyticsInstanceId";
 
+        /// <summary>
+        /// 广告 SDK 返回的国家或地区代码（string 类型）。
+        /// 由 IAdPlugin 聚合层在渠道返回有效国家码后通过 PublishData 发布；
+        /// FirebasePlugin 可 Fetch 后用于国家维度的默认推送 Topic 订阅。
+        /// </summary>
+        public const string AdCountryCode = "AdCountryCode";
+
 
         /// <summary>
         /// 第三方登录后的用户 ID（string 类型）。

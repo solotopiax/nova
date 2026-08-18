@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-integrate-network-api",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-edit",
+      "entry": "project-confirmed HostKey/NetCmd source and business request entry",
+      "when": "只修改已冻结的路由行、协议映射和允许的业务调用入口"
+    },
+    {
+      "kind": "unity-mcp",
+      "entry": "NetworkComponentInspector",
+      "when": "需要更新已确认的 NetworkComponent、NetworkSettings 或序列化引用"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Network.HostKeyExporter.ExportHostKeyData / ExportHostKeyCode",
+      "when": "导出已冻结 HostKey 数据或类型"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Network.NetCmdExporter.ExportNetCmdData / ExportNetCmdCode",
+      "when": "导出已冻结 NetCmd 数据或类型"
+    },
+    {
+      "kind": "pipify",
+      "entry": "export.network.hostkey.data / export.network.hostkey.code / export.network.netcmd.data / export.network.netcmd.code / export.network.proto",
+      "when": "复用已确认的全启用描述 Batch；Proto 仅在 Schema 与生成范围明确时执行"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Network.LoadAsync / GetNetCmdUrl / ResolveNetCmdRow / PostAsync",
+      "when": "在 Play Mode 中加载路由、验证 URL，并对适用的公开 HTTP 请求路径验证响应"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "networkComponentAndConfigRuntime",
+      "required": true
+    },
+    {
+      "name": "hostKeyAndNetCmdSource",
+      "required": true
+    },
+    {
+      "name": "routeAndProtocolContract",
+      "required": true
+    },
+    {
+      "name": "authenticationContract",
+      "required": true
+    },
+    {
+      "name": "requestResponseAndReplaySemantics",
+      "required": true
+    },
+    {
+      "name": "businessRequestEntry",
+      "required": true
+    },
+    {
+      "name": "testEndpointAccountAndSuccessProbe",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed HostKey and NetCmd source rows",
+      "confirmed NetworkComponent settings through Unity Editor or MCP",
+      "confirmed network generated output for the selected route",
+      "confirmed business request entry and its local verification probe"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "handwritten Prefab, Scene or Unity asset YAML",
+      "manual edits to generated network output",
+      "unconfirmed Proto schema, authentication, endpoint or server contract",
+      "internal NetService calls from business code",
+      "unrelated HostKey, NetCmd, protocol source, service endpoint or production data"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "network-settings",
+    "network-export-output",
+    "business-network-entry",
+    "active-scene"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous HostKey, NetCmd row, HTTP method, path, protocol, authentication or response contract",
+      "unknown request replay semantics, primary/backup behavior, test endpoint, test account or success probe",
+      "create or replace a business request entry, Proto schema, generated type or NetworkComponent setting",
+      "credential use, production request, server-side write, delete, external write, Git commit or push"
+    ],
+    "rule": "确认唯一的路由、协议、认证、请求响应与重放语义、业务调用入口、测试端点、测试账号和成功探针；任一输入或范围变化后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "冻结的 HostKey / NetCmd 源、协议、认证与业务调用入口",
+    "定向导出结果与 Unity 编译证据",
+    "Play Mode 中 Nova.Network.LoadAsync、路由解析和目标 URL 证据",
+    "测试端点与账号的预期响应、成功探针，以及受控通信失败下的主备验证（如本次范围包含主备）"
+  ]
+}

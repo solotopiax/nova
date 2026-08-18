@@ -37,6 +37,11 @@ namespace NovaFramework.Editor
         private const float c_RowSpacing = 4f;
 
         /// <summary>
+        /// 可升级包最新版本彩虹色的每秒色相循环次数，保持缓慢连续变化而不闪烁。
+        /// </summary>
+        private const float c_UpgradeVersionHueCyclesPerSecond = 0.12f;
+
+        /// <summary>
         /// Package 列宽。
         /// </summary>
         private const float c_ColPackageWidth = 480f;
@@ -87,11 +92,6 @@ namespace NovaFramework.Editor
         private static readonly Color s_RowEvenColor = new Color(0.22f, 0.22f, 0.22f, 0.4f);
 
         /// <summary>
-        /// Latest 列高亮色（绿色）。
-        /// </summary>
-        private static readonly Color s_LatestColor = new Color(0.6f, 0.9f, 0.4f);
-
-        /// <summary>
         /// 内部云仓库包名色（浅橙色）。
         /// </summary>
         private static readonly Color s_InternalPackageNameColor = new Color(1f, 0.82f, 0.62f);
@@ -137,11 +137,6 @@ namespace NovaFramework.Editor
         private GUIStyle m_HeaderStyle;
 
         /// <summary>
-        /// Latest 版本列文本样式（绿色）。
-        /// </summary>
-        private GUIStyle m_LatestStyle;
-
-        /// <summary>
         /// 空态提示文本样式（居中灰色）。
         /// </summary>
         private GUIStyle m_EmptyStyle;
@@ -155,11 +150,6 @@ namespace NovaFramework.Editor
         /// Current/Latest 列右对齐样式。
         /// </summary>
         private GUIStyle m_RightAlignedStyle;
-
-        /// <summary>
-        /// Latest 列右对齐绿色样式。
-        /// </summary>
-        private GUIStyle m_RightAlignedLatestStyle;
 
         /// <summary>
         /// 当前版本 / 最新版本 / 更新日志按钮三列右边缘之间的统一步长（相邻两列右边缘的距离）。

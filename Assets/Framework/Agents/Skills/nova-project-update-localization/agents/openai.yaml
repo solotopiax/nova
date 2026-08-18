@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 更新本地化"
+  short_description: "定向更新已有本地化文本字体与绑定，并验证语言切换显示"
+  default_prompt: "使用 $nova-project-update-localization 更新当前 Nova 项目的指定文本、字体或已有本地化绑定并完成双语言验证。"

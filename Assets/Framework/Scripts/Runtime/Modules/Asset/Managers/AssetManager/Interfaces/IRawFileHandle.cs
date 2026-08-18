@@ -30,13 +30,12 @@ namespace NovaFramework.Runtime
         bool IsDone { get; }
 
         /// <summary>
-        /// 原始文件在本地磁盘的绝对路径（IsDone 为 false 时为 null 或空字符串）。
+        /// 尽力解析的底层资源包文件路径；同步加载、未完成、Web 或内存文件系统下可能为 null。
         /// </summary>
         string FilePath { get; }
 
         /// <summary>
-        /// 读取文件全部字节（IsDone 为 false 时返回 null）。
-        /// 每次调用均执行磁盘 IO，建议调用方缓存结果。
+        /// 读取原始文件的全部字节副本（IsDone 为 false 时返回 null）。
         /// </summary>
         /// <returns>文件字节数组，或 null（未就绪 / 文件不存在）。</returns>
         byte[] GetBytes();

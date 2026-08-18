@@ -1,7 +1,7 @@
 # Nova Framework - SDK - AdMob
 
 > 包名：`com.solotopia.nova.framework.sdk.admob`
-> 当前版本：`0.0.1`
+> 当前版本：`0.0.5`
 
 Google AdMob 广告渠道插件，提供广告展示服务
 
@@ -11,7 +11,7 @@ Google AdMob 广告渠道插件，提供广告展示服务
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.admob": "0.0.1"
+  "com.solotopia.nova.framework.sdk.admob": "0.0.5"
 }
 ```
 

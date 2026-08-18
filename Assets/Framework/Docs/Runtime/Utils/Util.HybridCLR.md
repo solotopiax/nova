@@ -61,7 +61,7 @@ public static async UniTask<System.Reflection.Assembly> LoadGameAssemblyAsync(
   ├─ s_LoadedAOTMetadata.Add(location) 失败（已存在）→ 直接 return（幂等）
   ├─ bytes = await LoadDllBytesAsync(location)
   │    ← FrameworkManagersGroup.GetManager<IAssetManager>()
-  │    ← assetManager.LoadRawAsync(location)
+  │    ← assetManager.LoadAsync<TextAsset>(location)
   ├─ result = HybridCLR.RuntimeApi.LoadMetadataForAOTAssembly(bytes, mode)
   ├─ result != OK → 抛 InvalidOperationException（含 location 和错误码）
   └─ Log.Debug 记录成功
@@ -91,7 +91,7 @@ public static async UniTask<System.Reflection.Assembly> LoadGameAssemblyAsync(
 |---|---|
 | 在 Editor 中调用有实际效果 | `#if UNITY_EDITOR` 分支 no-op；AOT metadata 补充只在 IL2CPP 构建（Android/Standalone）下生效 |
 | 重复调用 | 两个守卫 HashSet 保证幂等；同名程序集多次调用安全 |
-| 底层直接走 File IO | 已切换为 `IAssetManager.LoadRawAsync(location)`，DLL 必须打入 AB 包并以 `.bytes` 扩展名存入 |
+| 底层直接走 File IO | 已切换为 `IAssetManager.LoadAsync<TextAsset>(location)`，DLL 必须作为 TextAsset 打入普通 AssetBundle 并以 `.bytes` 扩展名存入 |
 | 错误码非 OK 时不处理 | `LoadAotMetadataAsync` 已在非 OK 时抛 `InvalidOperationException`，调用方无需额外检查返回值 |
 | `AssetComponent` 为 null | `FrameworkComponentsGroup.GetComponent<AssetComponent>()` 返回 null 时方法记录 Error 并返回 null 字节，调用方会收到 `InvalidOperationException` |
 

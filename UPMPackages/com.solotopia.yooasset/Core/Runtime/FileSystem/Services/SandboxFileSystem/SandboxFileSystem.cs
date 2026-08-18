@@ -50,9 +50,7 @@ namespace YooAsset
         /// </summary>
         public IDownloadBackend DownloadBackend { get; private set; }
 
-        /// <summary>
-        /// 包裹名称
-        /// </summary>
+        /// <inheritdoc />
         public string PackageName { get; private set; }
 
         #region 自定义参数
@@ -126,6 +124,11 @@ namespace YooAsset
         public IBundleDecryptor RawBundleDecryptor { get; private set; }
 
         /// <summary>
+        /// 自定义参数：ArchiveBundle 解密器
+        /// </summary>
+        public IBundleDecryptor ArchiveBundleDecryptor { get; private set; }
+
+        /// <summary>
         /// 自定义参数：AssetBundle 备用解密器
         /// </summary>
         public IBundleMemoryDecryptor AssetBundleFallbackDecryptor { get; private set; }
@@ -174,6 +177,12 @@ namespace YooAsset
         public FSLoadPackageBundleOperation LoadPackageBundleAsync(FSLoadPackageBundleOptions options)
         {
             var operation = new SFSLoadPackageBundleOperation(this, options);
+            return operation;
+        }
+        /// <inheritdoc />
+        public FSEnsurePackageBundleOperation EnsurePackageBundleAsync(FSEnsurePackageBundleOptions options)
+        {
+            var operation = new SFSEnsurePackageBundleOperation(this, options);
             return operation;
         }
         /// <inheritdoc />
@@ -271,15 +280,19 @@ namespace YooAsset
             {
                 RemoteService = FileSystemHelper.CastParameter<IRemoteService>(paramName, value);
             }
-            else if (paramName == nameof(EFileSystemParameter.AssetbundleDecryptor))
+            else if (paramName == nameof(EFileSystemParameter.AssetBundleDecryptor))
             {
                 AssetBundleDecryptor = FileSystemHelper.CastParameter<IBundleDecryptor>(paramName, value);
             }
-            else if (paramName == nameof(EFileSystemParameter.RawbundleDecryptor))
+            else if (paramName == nameof(EFileSystemParameter.RawBundleDecryptor))
             {
                 RawBundleDecryptor = FileSystemHelper.CastParameter<IBundleDecryptor>(paramName, value);
             }
-            else if (paramName == nameof(EFileSystemParameter.AssetbundleFallbackDecryptor))
+            else if (paramName == nameof(EFileSystemParameter.ArchiveBundleDecryptor))
+            {
+                ArchiveBundleDecryptor = FileSystemHelper.CastParameter<IBundleDecryptor>(paramName, value);
+            }
+            else if (paramName == nameof(EFileSystemParameter.AssetBundleFallbackDecryptor))
             {
                 AssetBundleFallbackDecryptor = FileSystemHelper.CastParameter<IBundleMemoryDecryptor>(paramName, value);
             }
@@ -306,7 +319,7 @@ namespace YooAsset
             PackageName = packageName;
 
             if (string.IsNullOrEmpty(packageRoot))
-                _packageRoot = GetDefaultCachePackageRoot(packageName);
+                _packageRoot = YooAssetConfiguration.GetDefaultCacheRoot(packageName);
             else
                 _packageRoot = packageRoot;
 
@@ -333,6 +346,7 @@ namespace YooAsset
                     fileVerifyLevel: FileVerifyLevel,
                     assetBundleDecryptor: AssetBundleDecryptor,
                     rawBundleDecryptor: RawBundleDecryptor,
+                    archiveBundleDecryptor: ArchiveBundleDecryptor,
                     assetBundleFallbackDecryptor: AssetBundleFallbackDecryptor);
                 BundleCache = new SandboxBundleCache(PackageName, _cacheBundleFilesRoot, cacheConfig);
             }
@@ -382,15 +396,6 @@ namespace YooAsset
         }
 
         #region 内部方法
-        /// <summary>
-        /// 获取默认的缓存包裹根目录
-        /// </summary>
-        public string GetDefaultCachePackageRoot(string packageName)
-        {
-            string rootDirectory = YooAssetConfiguration.GetDefaultCacheRoot();
-            return PathUtility.Combine(rootDirectory, packageName);
-        }
-
         /// <summary>
         /// 获取缓存清单文件的根目录
         /// </summary>

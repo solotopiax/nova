@@ -26,6 +26,7 @@ public interface ISDKPlugin
 ISDKPlugin
   ├── ITrackPlugin
   ├── IMonetizeTrackPlugin
+  ├── IAcquisitionTrackPlugin
   ├── IAttributionPlugin
   ├── IAuthPlugin
   ├── IAdPlugin

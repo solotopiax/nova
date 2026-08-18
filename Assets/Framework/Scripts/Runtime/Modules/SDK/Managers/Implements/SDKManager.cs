@@ -292,11 +292,17 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 通知用户登录，向 EventManager 发送 SDKEventData.UserLogin 事件。
+        /// 通知用户登录，userId 为空时忽略；有效时向 EventManager 发送 SDKEventData.UserLogin 事件。
         /// </summary>
         /// <param name="userId">已登录用户的唯一标识。</param>
         public override void Login(string userId)
         {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                Log.Warning(LogTag.SDK, "SDKManager.Login：userId 为空，已跳过登录事件广播。");
+                return;
+            }
+
             m_EventManager?.Fire(this, SDKEventData.UserLogin.Create(userId));
         }
 

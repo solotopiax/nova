@@ -98,6 +98,11 @@ namespace NovaFramework.Editor
         private const float c_RowHeight = 22f;
 
         /// <summary>
+        /// 可升级包最新版本彩虹色的每秒色相循环次数，保持快速连续变化。
+        /// </summary>
+        private const float c_UpgradeVersionHueCyclesPerSecond = 0.65f;
+
+        /// <summary>
         /// 详情按钮行统一高度。安装/卸载/UPM/导入 Samples/更新日志 5 个按钮共享。
         /// </summary>
         private const float c_RowBtnHeight = 22f;

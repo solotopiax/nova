@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-18
+
+### Fixed
+
+- `PayAsync` 路由层和 `IAPStoreBase.PayGuardAsync` 公共 guard 失败现在也会补齐 `nova_iap_local_pay_fail`，未命中具体 Store 时通过 `nova_channel` 和 `nova_reason_detail` 保留路由失败来源，便于排查未找到支付渠道、Store 禁用、未初始化、重入和商品表缺失等早期失败。
+
+### Changed
+
+- 将 Framework 与 GameLogin 最低依赖同步至 `0.6.15`、`0.1.8`。
+
 ## [0.1.4] - 2026-08-13
 
 ### Changed

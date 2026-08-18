@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-setup-entry-scene",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "unity-mcp",
+      "entry": "Unity MCP entry scene, canonical Prefab and Build Settings editing",
+      "when": "在已确认范围内修改场景、connected instance 或启用场景顺序"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.ProjectGuard.ValidateQuick / ValidatePlay / ValidateBuild",
+      "when": "按当前场景或已确认 BuildTarget 收集 ProjectGuard 证据"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Asset.LoadSceneAsync / ISceneHandle.UnloadAsync",
+      "when": "Content 场景已确认采用 Nova 资源系统的 Additive 加载与卸载"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "entrySceneAndNovaTopology",
+      "required": true
+    },
+    {
+      "name": "buildSettingsChangeScope",
+      "required": true
+    },
+    {
+      "name": "contentSceneOwnership",
+      "required": false
+    },
+    {
+      "name": "targetBuildTargetAndValidationIntent",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed entry scene",
+      "confirmed canonical Nova.prefab connected instance",
+      "confirmed Build Settings scene entries and order",
+      "confirmed Content ownership source"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "handwritten Prefab or Scene YAML",
+      "unconfirmed Sample, test, plugin or alternative entry scene",
+      "automatic Content loading or unloading",
+      "Player build, external publish, scene deletion or Git operation"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "active-scene",
+    "build-settings",
+    "scene-topology"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous entry scene, Nova topology, Content ownership or Build Settings scope",
+      "add, remove or reorder enabled Build Settings scenes",
+      "replace non-generated Prefab or alter existing scene ownership",
+      "delete, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认入口、运行拓扑、Build Settings 闭包、Content 责任和最小写入集；输入或范围改变后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "入口场景中的 canonical Nova.prefab connected instance",
+    "启用 Build Settings 场景与顺序",
+    "Content 的显式加载和卸载责任",
+    "ProjectGuard Rule ID、路径和入口 Play smoke"
+  ]
+}

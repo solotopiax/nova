@@ -102,7 +102,7 @@ namespace NovaFramework.Runtime
         void BroadcastQuit();
 
         /// <summary>
-        /// 通知用户登录，向 EventManager 发送 SDKEventData.UserLogin 事件。
+        /// 通知用户登录，userId 为空时忽略；有效时向 EventManager 发送 SDKEventData.UserLogin 事件。
         /// </summary>
         /// <param name="userId">已登录用户的唯一标识。</param>
         void Login(string userId);

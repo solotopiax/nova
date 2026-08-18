@@ -1,5 +1,12 @@
 # Changelog — com.solotopia.nova.framework
 
+## [0.6.15] - 2026-08-18
+
+### Changed
+
+- 收录本轮已合入的 YooAsset RawFile 构建、资源版本检查与配置投影更新；MainDemo 的本地版本检查文件改为 `ProjectSettings/Nova/AppDownloadRules.json`。
+- Framework 最低配套包统一解析至 HybridCLR `10.1.0`、Luban `10.1.0` 与 YooAsset `1.1.0`，Sample ConfigMaster 同步补齐新增配置字段的序列化默认值。
+
 ## [0.6.14] - 2026-08-17
 
 ### Breaking

@@ -32,6 +32,11 @@ def load_tool():
 class NovaSkillsToolTests(unittest.TestCase):
     """验证消费工程只投影显式受管的 Nova Project Skills。"""
 
+    COMMON_BASELINE = (
+        "触发后先读取当前 Framework 的 `Docs/START_HERE.md`，"
+        "作为所有 `nova-project-*` Skill 的共同底线。"
+    )
+
     def setUp(self):
         """为每个测试建立相互隔离的模拟 UPM 包和消费者工程。"""
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -47,6 +52,11 @@ class NovaSkillsToolTests(unittest.TestCase):
     def _write_agents_root(self):
         """创建包含一个核心 Router 和一个 UI Skill 的最小真源。"""
         self.agents_root.mkdir(parents=True)
+        docs_root = self.agents_root.parent / "Docs"
+        docs_root.mkdir()
+        (docs_root / "START_HERE.md").write_text(
+            "# Nova 项目组入口\n", encoding="utf-8"
+        )
         (self.agents_root.parent / "package.json").write_text(
             json.dumps(
                 {
@@ -96,7 +106,10 @@ class NovaSkillsToolTests(unittest.TestCase):
                 f"name: {entry['id']}\n"
                 f"description: 测试 {entry['id']} 的受管投影。\n"
                 "---\n\n"
-                "# Test Skill\n",
+                "# Test Skill\n\n"
+                f"{self.COMMON_BASELINE}\n\n"
+                "## 渐进式披露\n\n"
+                "仅在需要执行具体动作时读取对应 references。\n",
                 encoding="utf-8",
             )
             (references_dir / "contract.json").write_text(
@@ -107,6 +120,13 @@ class NovaSkillsToolTests(unittest.TestCase):
                         "kind": entry["kind"],
                         "compatibility": {"framework": ">=0.6.9"},
                         "requires": [],
+                        "actionAdapters": [
+                            {
+                                "kind": "workspace-inspection",
+                                "entry": "test adapter",
+                                "when": "测试",
+                            }
+                        ],
                         "inputs": [{"name": "projectRoot", "required": True}],
                         "effects": entry["effects"],
                         "writeScope": {"allow": [], "deny": []},
@@ -171,7 +191,10 @@ class NovaSkillsToolTests(unittest.TestCase):
             f"name: {skill_id}\n"
             f"description: 测试 {skill_id} 的升级投影。\n"
             "---\n\n"
-            "# Test Skill\n",
+            "# Test Skill\n\n"
+            f"{self.COMMON_BASELINE}\n\n"
+            "## 渐进式披露\n\n"
+            "仅在需要执行具体动作时读取对应 references。\n",
             encoding="utf-8",
         )
         (references_dir / "contract.json").write_text(
@@ -182,6 +205,13 @@ class NovaSkillsToolTests(unittest.TestCase):
                     "kind": "operation",
                     "compatibility": {"framework": ">=0.6.9"},
                     "requires": [],
+                    "actionAdapters": [
+                        {
+                            "kind": "workspace-inspection",
+                            "entry": "test adapter",
+                            "when": "测试",
+                        }
+                    ],
                     "inputs": [{"name": "projectRoot", "required": True}],
                     "effects": ["read"],
                     "writeScope": {"allow": [], "deny": []},
@@ -197,11 +227,802 @@ class NovaSkillsToolTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def _append_workflow(self, skill_id: str, requires: list[str]) -> None:
+        """在临时真源追加一个 Workflow，供内部 DAG 约束测试使用。"""
+        self._append_skill(skill_id)
+        catalog = self._read_catalog()
+        entry = next(item for item in catalog["skills"] if item["id"] == skill_id)
+        entry["kind"] = "workflow"
+        self._write_catalog(catalog)
+        contract_path = (
+            self.agents_root / entry["path"] / "references" / "contract.json"
+        )
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        contract["kind"] = "workflow"
+        contract["requires"] = requires
+        contract_path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
+
     def test_validate_accepts_matching_catalog_skill_and_contract(self):
         """Catalog、SKILL.md 与 contract.json 一致时不应报告错误。"""
         tool = load_tool()
 
         self.assertEqual([], tool.validate_agents_root(self.agents_root))
+
+    def test_validate_rejects_missing_shared_quick_start(self):
+        """没有共同入口文档时不能发布无法按共同底线执行的 Skill 真源。"""
+        (self.agents_root.parent / "Docs" / "START_HERE.md").unlink()
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("Docs/START_HERE.md" in error for error in errors))
+
+    def test_validate_rejects_common_baseline_outside_first_body_paragraph(self):
+        """共同底线不能藏在后文，避免 Agent 在动作前漏读。"""
+        skill_path = self.agents_root / "Skills" / "nova-project-router" / "SKILL.md"
+        skill_path.write_text(
+            "---\n"
+            "name: nova-project-router\n"
+            "description: 测试。\n"
+            "---\n\n"
+            "# Test Skill\n\n"
+            "先执行其它步骤。\n\n"
+            f"{self.COMMON_BASELINE}\n\n"
+            "## 渐进式披露\n\n"
+            "仅在需要执行具体动作时读取对应 references。\n",
+            encoding="utf-8",
+        )
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("首个正文段落" in error for error in errors))
+
+    def test_validate_rejects_missing_progressive_disclosure_route(self):
+        """每个 Skill 都必须明确后续资料按需读取的路由，而非全量展开。"""
+        skill_path = self.agents_root / "Skills" / "nova-project-router" / "SKILL.md"
+        skill_path.write_text(
+            skill_path.read_text(encoding="utf-8").replace(
+                "## 渐进式披露\n\n仅在需要执行具体动作时读取对应 references。\n",
+                "## 执行\n\n读取所有资料。\n",
+            ),
+            encoding="utf-8",
+        )
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("渐进式披露" in error for error in errors))
+
+    def test_validate_rejects_contract_without_action_adapters(self):
+        """Skill 不能只写自然语言流程，必须声明可重复调用的动作入口。"""
+        contract_path = (
+            self.agents_root
+            / "Skills"
+            / "nova-project-router"
+            / "references"
+            / "contract.json"
+        )
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        del contract["actionAdapters"]
+        contract_path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("actionAdapters" in error for error in errors))
+
+    def test_validate_rejects_workflow_as_action_adapter(self):
+        """Workflow 是编排层，不能伪装为实际执行 Action Adapter。"""
+        contract_path = (
+            self.agents_root
+            / "Skills"
+            / "nova-project-router"
+            / "references"
+            / "contract.json"
+        )
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        contract["actionAdapters"] = [
+            {
+                "kind": "workflow",
+                "entry": "not an executor",
+                "when": "测试",
+            }
+        ]
+        contract_path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("actionAdapters" in error for error in errors))
+
+    def test_validate_accepts_build_specific_evidence(self):
+        """Bundle 构建必须使用构建产物证据，不能以编译通过替代。"""
+        catalog = self._read_catalog()
+        build_entry = catalog["skills"][1]
+        build_entry["effects"].append("generated-output")
+        build_entry["effects"].append("build")
+        build_entry["minimumEvidence"] = "bundle-build"
+        self._write_catalog(catalog)
+        contract_path = (
+            self.agents_root
+            / build_entry["path"]
+            / "references"
+            / "contract.json"
+        )
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        contract["effects"] = build_entry["effects"]
+        contract["minimumEvidence"] = "bundle-build"
+        contract["actionAdapters"] = [
+            {
+                "kind": "pipify",
+                "entry": "bundlebuilder.build",
+                "when": "已冻结本地构建输入",
+            }
+        ]
+        contract_path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
+
+        self.assertEqual([], load_tool().validate_agents_root(self.agents_root))
+
+    def test_validate_rejects_build_effect_without_build_artifact_evidence(self):
+        """声明 build 副作用时不能用 compile 或 play 充当构建产物证据。"""
+        catalog = self._read_catalog()
+        build_entry = catalog["skills"][1]
+        build_entry["effects"].append("build")
+        self._write_catalog(catalog)
+        contract_path = (
+            self.agents_root
+            / build_entry["path"]
+            / "references"
+            / "contract.json"
+        )
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        contract["effects"] = build_entry["effects"]
+        contract_path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("build 副作用" in error for error in errors))
+
+    def test_validate_rejects_build_evidence_without_build_effect(self):
+        """构建产物级证据只能用于声明 build 副作用的 Skill。"""
+        catalog = self._read_catalog()
+        build_entry = catalog["skills"][1]
+        build_entry["minimumEvidence"] = "bundle-build"
+        self._write_catalog(catalog)
+        contract_path = (
+            self.agents_root
+            / build_entry["path"]
+            / "references"
+            / "contract.json"
+        )
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        contract["minimumEvidence"] = "bundle-build"
+        contract_path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("构建产物级证据" in error for error in errors))
+
+    def test_catalog_schema_declares_p1_lifecycle_and_build_values(self):
+        """静态 Schema 必须与 P1 的生命周期与构建证据契约保持一致。"""
+        canonical_schema_path = TOOL_PATH.parent.parent / "Schemas" / "catalog.schema.json"
+        schema = json.loads(canonical_schema_path.read_text(encoding="utf-8"))
+        skill_properties = schema["properties"]["skills"]["items"]["properties"]
+
+        self.assertIn("replacedBy", skill_properties)
+        self.assertIn("build", skill_properties["effects"]["items"]["enum"])
+        self.assertIn("bundle-build", skill_properties["minimumEvidence"]["enum"])
+        self.assertIn("player-build", skill_properties["minimumEvidence"]["enum"])
+
+    def test_current_catalog_registers_project_skill_set_including_p2a_skills(self):
+        """Catalog 必须发现 P1 能力及 P2-A 已落地的网络与声音闭环。"""
+        canonical_catalog_path = TOOL_PATH.parent.parent / "catalog.json"
+        catalog = json.loads(canonical_catalog_path.read_text(encoding="utf-8"))
+        entries = {entry["id"]: entry for entry in catalog["skills"]}
+
+        self.assertEqual(
+            {
+                "nova-project-router",
+                "nova-project-check-readiness",
+                "nova-project-integrate-table",
+                "nova-project-configure-runtime",
+                "nova-project-diagnose-startup",
+                "nova-project-ui-create-view",
+                "nova-project-update-ui-view",
+                "nova-project-integrate-resource",
+                "nova-project-setup-entry-scene",
+                "nova-project-update-localization",
+                "nova-project-build-bundles",
+                "nova-project-build-player",
+                "nova-project-data-driven-ui",
+                "nova-project-integrate-network-api",
+                "nova-project-integrate-sound",
+                "nova-project-refresh-hotfix-dlls",
+            },
+            set(entries),
+        )
+        self.assertEqual("workflow", entries["nova-project-data-driven-ui"]["kind"])
+        self.assertIn("build", entries["nova-project-build-bundles"]["effects"])
+        self.assertEqual(
+            "bundle-build",
+            entries["nova-project-build-bundles"]["minimumEvidence"],
+        )
+        self.assertEqual(
+            "player-build",
+            entries["nova-project-build-player"]["minimumEvidence"],
+        )
+        network_api = entries["nova-project-integrate-network-api"]
+        self.assertEqual("operation", network_api["kind"])
+        self.assertEqual(["feature", "network"], network_api["journeys"])
+        self.assertEqual(
+            ["workspace-write", "unity-write", "generated-output"],
+            network_api["effects"],
+        )
+        self.assertEqual("play", network_api["minimumEvidence"])
+        self.assertIn(
+            "nova-project-integrate-network-api",
+            catalog["capabilityGroups"]["network"],
+        )
+
+        agents_root = TOOL_PATH.parent.parent
+        contract = json.loads(
+            (
+                agents_root
+                / "Skills"
+                / "nova-project-integrate-network-api"
+                / "references"
+                / "contract.json"
+            ).read_text(encoding="utf-8")
+        )
+        input_names = {item["name"] for item in contract["inputs"]}
+        input_requirements = {
+            item["name"]: item["required"] for item in contract["inputs"]
+        }
+        adapter_entries = {item["entry"] for item in contract["actionAdapters"]}
+        skill_content = (
+            agents_root
+            / "Skills"
+            / "nova-project-integrate-network-api"
+            / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        openai_yaml = (
+            agents_root
+            / "Skills"
+            / "nova-project-integrate-network-api"
+            / "agents"
+            / "openai.yaml"
+        ).read_text(encoding="utf-8")
+        agents_index = (agents_root / "INDEX.md").read_text(encoding="utf-8")
+        router_content = (
+            agents_root / "Skills" / "nova-project-router" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertEqual([], contract["requires"])
+        self.assertIn("routeAndProtocolContract", input_names)
+        self.assertIn("requestResponseAndReplaySemantics", input_names)
+        self.assertIn("authenticationContract", input_names)
+        self.assertIn("testEndpointAccountAndSuccessProbe", input_names)
+        self.assertNotIn("testEndpointAndSuccessProbe", input_names)
+        self.assertTrue(input_requirements["authenticationContract"])
+        self.assertTrue(input_requirements["testEndpointAccountAndSuccessProbe"])
+        self.assertTrue(
+            any("HostKeyExporter" in entry for entry in adapter_entries)
+        )
+        self.assertTrue(any("NetCmdExporter" in entry for entry in adapter_entries))
+        self.assertTrue(any("Nova.Network.LoadAsync" in entry for entry in adapter_entries))
+        expected_network_pipify_steps = (
+            "export.network.hostkey.data / export.network.hostkey.code / "
+            "export.network.netcmd.data / export.network.netcmd.code / "
+            "export.network.proto"
+        )
+        self.assertIn(expected_network_pipify_steps, adapter_entries)
+        self.assertIn(
+            expected_network_pipify_steps,
+            skill_content.replace("`", ""),
+        )
+        self.assertIn("不猜测协议", skill_content)
+        self.assertIn("4xx / 5xx", skill_content)
+        self.assertIn("内部 `NetService`", skill_content)
+        self.assertIn("无测试端点、账号或成功探针时返回 `blocked`", skill_content)
+        self.assertIn("输入已确认且已执行允许步骤", skill_content)
+        self.assertIn("当前 Catalog 共 16 项", agents_index)
+        self.assertNotIn("当前包含 13 个实验性 Skill", agents_index)
+        self.assertIn("必填输入未确认按 Skill 返回 `blocked`", agents_index)
+        self.assertIn(
+            "输入已确认且已执行但未达到更高证据层级时才返回 `partial`",
+            agents_index,
+        )
+        router_network_ambiguity_line = next(
+            line
+            for line in router_content.splitlines()
+            if line.startswith("| 登录 / 领奖 / 业务 API |")
+        )
+        router_network_route_line = next(
+            line
+            for line in router_content.splitlines()
+            if "nova-project-integrate-network-api" in line
+        )
+        self.assertIn(
+            "HostKey / NetCmd 行、协议、认证、请求/响应、重放语义、业务调用入口、测试端点、测试账号和成功探针",
+            router_network_ambiguity_line,
+        )
+        self.assertIn(
+            "已确认协议、认证、路由、请求/响应、重放语义、业务调用入口、测试端点、测试账号和成功探针",
+            router_network_route_line,
+        )
+        confirmation_content = json.dumps(contract["confirmation"], ensure_ascii=False)
+        evidence_content = json.dumps(contract["evidence"], ensure_ascii=False)
+        for required_confirmation_input in ("authentication", "测试账号", "成功探针"):
+            self.assertIn(required_confirmation_input, confirmation_content)
+        for required_evidence_input in ("认证", "账号", "成功探针"):
+            self.assertIn(required_evidence_input, evidence_content)
+        self.assertIn("$nova-project-integrate-network-api", openai_yaml)
+
+    def test_current_catalog_registers_sound_integration_skill(self):
+        """P2-A 的声音闭环必须以真实 Adapter、播放证据和安全边界登记。"""
+        agents_root = TOOL_PATH.parent.parent
+        catalog = json.loads((agents_root / "catalog.json").read_text(encoding="utf-8"))
+        entries = {entry["id"]: entry for entry in catalog["skills"]}
+        sound = entries["nova-project-integrate-sound"]
+
+        self.assertEqual("operation", sound["kind"])
+        self.assertEqual(["feature", "sound"], sound["journeys"])
+        self.assertEqual(
+            ["workspace-write", "unity-write", "generated-output"],
+            sound["effects"],
+        )
+        self.assertEqual("play", sound["minimumEvidence"])
+        self.assertIn("nova-project-integrate-sound", catalog["capabilityGroups"]["sound"])
+
+        sound_root = agents_root / "Skills" / "nova-project-integrate-sound"
+        contract = json.loads(
+            (sound_root / "references" / "contract.json").read_text(encoding="utf-8")
+        )
+        input_requirements = {
+            item["name"]: item["required"] for item in contract["inputs"]
+        }
+        adapter_entries = {item["entry"] for item in contract["actionAdapters"]}
+        skill_content = (sound_root / "SKILL.md").read_text(encoding="utf-8")
+        router_content = (
+            agents_root / "Skills" / "nova-project-router" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        agents_index = (agents_root / "INDEX.md").read_text(encoding="utf-8")
+        docs_index = (agents_root.parent / "Docs" / "INDEX.md").read_text(
+            encoding="utf-8"
+        )
+        quick_start = (agents_root.parent / "Docs" / "START_HERE.md").read_text(
+            encoding="utf-8"
+        )
+        openai_yaml = (sound_root / "agents" / "openai.yaml").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertEqual([], contract["requires"])
+        for required_input in (
+            "projectRoot",
+            "soundComponentSettingsAndActiveScene",
+            "soundTableAndExportScope",
+            "audioClipOwnershipCollectorAndAddress",
+            "soundRowAndGroupContract",
+            "businessTriggerAndLifecycle",
+            "runtimeSuccessProbe",
+            "activeConfigMasterAndResolvedYooAssetPaths",
+            "targetPlatformChannelAndMode",
+        ):
+            self.assertTrue(input_requirements.get(required_input))
+        self.assertIn(
+            "EditorUtil.Config.DimensionalResolver.ResolveYooAsset / "
+            "YooAsset.Editor.SettingLoader.LoadSettingDataAtPath<BundleCollectorSetting>",
+            adapter_entries,
+        )
+        self.assertNotIn(
+            "EditorUtil.Config.YooAssetInjector.LoadBundleCollector",
+            adapter_entries,
+        )
+        self.assertIn(
+            "EditorUtil.Sound.Exporter.ExportData / ExportCode / ExportAll",
+            adapter_entries,
+        )
+        self.assertIn("export.sound.data / export.sound.code", adapter_entries)
+        self.assertIn(
+            "Nova.Sound.LoadAsync / HasSoundGroup / PlaySound / StopSound / ReleaseAssetBySerialID",
+            adapter_entries,
+        )
+        self.assertIn("serialID 不是播放成功证据", skill_content)
+        self.assertIn("LoadAsync()==true 也不是播放成功证据", skill_content)
+        self.assertIn("输入已确认且已执行允许步骤", skill_content)
+        self.assertIn("实际 AudioSource 播放", skill_content)
+        self.assertIn("不得默认使用 `export.excel.all`", skill_content)
+        self.assertIn("YooAssetEditorConfigsMask", skill_content)
+        self.assertIn("ResolveYooAsset", skill_content)
+        self.assertIn("不得调用 `YooAssetInjector.LoadBundleCollector`", skill_content)
+        self.assertTrue(
+            {
+                "active-config-master",
+                "yooasset-config-coordinate",
+            }
+            <= set(contract["locks"])
+        )
+        self.assertIn("当前 Catalog 共 16 项", agents_index)
+        self.assertIn("nova-project-integrate-sound", agents_index)
+        self.assertIn("当前 16 项能力", docs_index)
+        self.assertIn("大厅 BGM", quick_start)
+        router_sound_ambiguity_line = next(
+            line
+            for line in router_content.splitlines()
+            if line.startswith("| BGM / 背景音乐 / 点击音效 / 声音 |")
+        )
+        router_sound_route_line = next(
+            line
+            for line in router_content.splitlines()
+            if "nova-project-integrate-sound" in line
+        )
+        self.assertIn(
+            "真实 AudioClip、Collector、地址、Sound 表、声音组、加载入口、业务触发、停止生命周期和实际播放成功探针",
+            router_sound_ambiguity_line,
+        )
+        self.assertIn(
+            "已确认声音表、真实 AudioClip、Collector、地址、声音组、加载入口、业务触发、停止生命周期和实际播放探针",
+            router_sound_route_line,
+        )
+        self.assertIn("$nova-project-integrate-sound", openai_yaml)
+        for relative_path in (
+            "SKILL.md",
+            "SKILL.md.meta",
+            "agents.meta",
+            "agents/openai.yaml",
+            "agents/openai.yaml.meta",
+            "references.meta",
+            "references/contract.json",
+            "references/contract.json.meta",
+        ):
+            self.assertTrue((sound_root / relative_path).is_file())
+        self.assertTrue((sound_root.parent / "nova-project-integrate-sound.meta").is_file())
+
+    def test_current_catalog_registers_hotfix_dll_refresh_skill(self):
+        """P2 业务热更 DLL 刷新必须锁定单坐标 compile-copy-import 闭环。"""
+        agents_root = TOOL_PATH.parent.parent
+        catalog = json.loads((agents_root / "catalog.json").read_text(encoding="utf-8"))
+        entries = {entry["id"]: entry for entry in catalog["skills"]}
+        hotfix = entries["nova-project-refresh-hotfix-dlls"]
+
+        self.assertEqual(16, len(entries))
+        self.assertEqual("operation", hotfix["kind"])
+        self.assertEqual(["build", "hotfix"], hotfix["journeys"])
+        self.assertEqual(
+            ["workspace-write", "unity-write", "generated-output"],
+            hotfix["effects"],
+        )
+        self.assertEqual("compile", hotfix["minimumEvidence"])
+        self.assertIn(
+            "nova-project-refresh-hotfix-dlls",
+            catalog["capabilityGroups"]["hotfix"],
+        )
+
+        skill_root = agents_root / "Skills" / "nova-project-refresh-hotfix-dlls"
+        contract = json.loads(
+            (skill_root / "references" / "contract.json").read_text(encoding="utf-8")
+        )
+        input_requirements = {
+            item["name"]: item["required"] for item in contract["inputs"]
+        }
+        adapter_entries = {item["entry"] for item in contract["actionAdapters"]}
+        skill_content = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+        openai_yaml = (skill_root / "agents" / "openai.yaml").read_text(
+            encoding="utf-8"
+        )
+        router_content = (
+            agents_root / "Skills" / "nova-project-router" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        agents_index = (agents_root / "INDEX.md").read_text(encoding="utf-8")
+        docs_index = (agents_root.parent / "Docs" / "INDEX.md").read_text(
+            encoding="utf-8"
+        )
+        quick_start = (agents_root.parent / "Docs" / "START_HERE.md").read_text(
+            encoding="utf-8"
+        )
+        hybridclr_docs = (
+            agents_root.parent
+            / "Docs"
+            / "Editor"
+            / "EditorUtil"
+            / "EditorUtil.HybridCLR"
+            / "EditorUtil.HybridCLR.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertEqual([], contract["requires"])
+        for required_input in (
+            "projectRoot",
+            "activeBuildTarget",
+            "developmentBuild",
+            "activeConfigMaster",
+            "platformChannelDevelopMode",
+            "resolvedGameDllEntries",
+            "executionEntry",
+        ):
+            self.assertTrue(input_requirements[required_input])
+        self.assertNotIn("hotUpdateAssemblySet", input_requirements)
+        self.assertNotIn("runtimeSmokeContext", input_requirements)
+        self.assertEqual(
+            {
+                "EditorUtil.HybridCLR.CompileDllActiveBuildTarget / CopyGameDlls",
+                "hybridclr.compile_dll_active_build_target / hybridclr.copy_game_dll",
+            },
+            adapter_entries,
+        )
+        pipify_adapter = next(
+            adapter
+            for adapter in contract["actionAdapters"]
+            if adapter["kind"] == "pipify"
+        )
+        self.assertIn("完整 Items", pipify_adapter["when"])
+        self.assertIn("仅为", pipify_adapter["when"])
+        self.assertEqual(
+            [
+                "unity-editor",
+                "asset-database",
+                "build-settings",
+                "active-config-master",
+                "hybridclr-hot-update-output",
+                "game-dll-targets",
+            ],
+            contract["locks"],
+        )
+        self.assertEqual("ensure-state", contract["idempotency"])
+        self.assertEqual("compile", contract["minimumEvidence"])
+        self.assertEqual(
+            ["success", "partial", "blocked", "not_applicable"],
+            contract["resultStates"],
+        )
+        write_scope = json.dumps(contract["writeScope"], ensure_ascii=False)
+        for allowed_scope in (
+            "current activeBuildTarget",
+            "complete HybridCLR compile output root",
+            "GameDlls",
+            "Unity import",
+            "本次证据",
+        ):
+            self.assertIn(allowed_scope, write_scope)
+        for denied_scope in (
+            "AOT metadata",
+            "link.xml",
+            "GenerateAll",
+            "GeneratedCpp",
+            "Il2CppDef",
+            "ConfigMaster",
+            "ConfigRuntime",
+            "Bundle",
+            "Player",
+            "CDN",
+            "Git",
+            "Framework",
+            "Library",
+            "其他 Target",
+        ):
+            self.assertIn(denied_scope, write_scope)
+        confirmation = json.dumps(contract["confirmation"], ensure_ascii=False)
+        for frozen_value in (
+            "activeBuildTarget",
+            "developmentBuild",
+            "activeConfigMaster",
+            "Platform/Channel/DevelopMode",
+            "完整 HybridCLR 编译输出根目录",
+            "完整 DLL 映射",
+            "executionEntry",
+            "旧确认失效",
+        ):
+            self.assertIn(frozen_value, confirmation)
+
+        self.assertIn("禁止单独调用 `CopyGameDlls`", skill_content)
+        self.assertIn("compile -> copy", skill_content)
+        self.assertIn("SHA-256", skill_content)
+        self.assertNotIn("runtimeSmokeContext", skill_content)
+        self.assertNotIn("hotUpdateAssemblySet", skill_content)
+        self.assertIn("完整 Items 必须且只能是", skill_content)
+        self.assertIn("完整 HybridCLR 编译输出根目录", skill_content)
+        self.assertIn("不得把编译或本地 DLL 刷新称为 Bundle、Player、CDN", skill_content)
+        self.assertIn("运行时或真机成功", skill_content)
+        self.assertIn("full GenerateAll", skill_content)
+        self.assertIn("对应既有或未来 Operation", skill_content)
+        self.assertIn("$nova-project-refresh-hotfix-dlls", openai_yaml)
+
+        router_hotfix_ambiguity_line = next(
+            line
+            for line in router_content.splitlines()
+            if line.startswith("| HybridCLR / 热更 DLL |")
+        )
+        router_hotfix_route_line = next(
+            line
+            for line in router_content.splitlines()
+            if "nova-project-refresh-hotfix-dlls" in line
+        )
+        self.assertIn(
+            "业务 DLL 本地刷新、full AOT、Bundle、Player、CDN 或运行时诊断",
+            router_hotfix_ambiguity_line,
+        )
+        self.assertIn("compile -> copy", router_hotfix_route_line)
+        self.assertIn("full AOT、Bundle、Player", router_hotfix_route_line)
+        self.assertIn("当前 Catalog 共 16 项", agents_index)
+        self.assertIn("仅刷新本地业务 DLL，不是发布", agents_index)
+        self.assertIn("当前 16 项能力", docs_index)
+        self.assertIn("刷新 HybridCLR 业务热更 DLL", docs_index)
+        self.assertIn("当前 16 项", quick_start)
+        self.assertIn("刷新 HybridCLR 业务热更 DLL", quick_start)
+        self.assertIn("ConfigMasterSO.HybridEditorConfigs", hybridclr_docs)
+        self.assertNotIn("ConfigMasterSO.AotMetadataDlls", hybridclr_docs)
+
+    def test_data_driven_ui_workflow_declares_required_operation_boundaries(self):
+        """数据驱动 UI 编排 Table 与 UI Operation 时必须显式继承两者的授权边界。"""
+        skills_root = TOOL_PATH.parent.parent / "Skills"
+
+        def read_contract(skill_id: str) -> dict:
+            return json.loads(
+                (skills_root / skill_id / "references" / "contract.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+
+        workflow = read_contract("nova-project-data-driven-ui")
+        table = read_contract("nova-project-integrate-table")
+        ui_create = read_contract("nova-project-ui-create-view")
+        workflow_input_names = {item["name"] for item in workflow["inputs"]}
+        child_input_names = {
+            item["name"] for child in (table, ui_create) for item in child["inputs"]
+        }
+        workflow_allowed_scope = set(workflow["writeScope"]["allow"])
+        child_allowed_scope = {
+            path
+            for child in (table, ui_create)
+            for path in child["writeScope"]["allow"]
+        }
+        workflow_adapter_kinds = {
+            adapter["kind"] for adapter in workflow["actionAdapters"]
+        }
+        workflow_confirmation = "\n".join(workflow["confirmation"]["requiredFor"])
+
+        self.assertTrue(child_input_names <= workflow_input_names)
+        self.assertTrue(child_allowed_scope <= workflow_allowed_scope)
+        self.assertTrue(set(table["locks"]) <= set(workflow["locks"]))
+        self.assertTrue(
+            {"workspace-edit", "unity-editor-api", "pipify", "unity-mcp", "unity-menu"}
+            <= workflow_adapter_kinds
+        )
+        self.assertIn("ProjectId", workflow_confirmation)
+        self.assertIn("DescriptionId", workflow_confirmation)
+        self.assertIn("DataTarget", workflow_confirmation)
+        self.assertIn("Asset address", workflow_confirmation)
+
+    def test_docs_expose_current_catalog_skills_and_progressive_entry(self):
+        """项目组入口必须能发现全部 Catalog Skill 与渐进式执行方式。"""
+        canonical_catalog_path = TOOL_PATH.parent.parent / "catalog.json"
+        catalog = json.loads(canonical_catalog_path.read_text(encoding="utf-8"))
+        agents_index = (TOOL_PATH.parent.parent / "INDEX.md").read_text(encoding="utf-8")
+        quick_start = (TOOL_PATH.parent.parent.parent / "Docs" / "START_HERE.md").read_text(
+            encoding="utf-8"
+        )
+
+        for entry in catalog["skills"]:
+            self.assertIn(entry["id"], agents_index)
+        self.assertIn("渐进式披露", quick_start)
+        self.assertIn("自然语言", quick_start)
+
+    def test_validate_accepts_deprecated_skill_with_replacement(self):
+        """弃用 Skill 可保留一次发布期，并明确引导到当前替代 Skill。"""
+        catalog = self._read_catalog()
+        catalog["skills"][0]["status"] = "deprecated"
+        catalog["skills"][0]["replacedBy"] = "nova-project-ui-create-view"
+        self._write_catalog(catalog)
+
+        self.assertEqual([], load_tool().validate_agents_root(self.agents_root))
+
+    def test_validate_rejects_deprecated_skill_without_replacement(self):
+        """已弃用 Skill 不能没有项目组可执行的替代路径。"""
+        catalog = self._read_catalog()
+        catalog["skills"][0]["status"] = "deprecated"
+        self._write_catalog(catalog)
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("replacedBy" in error for error in errors))
+
+    def test_validate_rejects_cycle_in_workflow_requires(self):
+        """Workflow 的内部 DAG 不能形成循环；这与安装和全量发现无关。"""
+        catalog = self._read_catalog()
+        for entry in catalog["skills"]:
+            entry["kind"] = "workflow"
+        self._write_catalog(catalog)
+        first_contract_path = (
+            self.agents_root
+            / "Skills"
+            / "nova-project-router"
+            / "references"
+            / "contract.json"
+        )
+        second_contract_path = (
+            self.agents_root
+            / "Skills"
+            / "nova-project-ui-create-view"
+            / "references"
+            / "contract.json"
+        )
+        first_contract = json.loads(first_contract_path.read_text(encoding="utf-8"))
+        second_contract = json.loads(second_contract_path.read_text(encoding="utf-8"))
+        first_contract["kind"] = "workflow"
+        second_contract["kind"] = "workflow"
+        first_contract["requires"] = ["nova-project-ui-create-view"]
+        second_contract["requires"] = ["nova-project-router"]
+        first_contract_path.write_text(json.dumps(first_contract, indent=2), encoding="utf-8")
+        second_contract_path.write_text(json.dumps(second_contract, indent=2), encoding="utf-8")
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("循环" in error for error in errors))
+
+    def test_validate_rejects_requires_on_non_workflow(self):
+        """Operation 和 Router 不得把 requires 当作安装或隐藏编排依赖。"""
+        contract_path = (
+            self.agents_root
+            / "Skills"
+            / "nova-project-router"
+            / "references"
+            / "contract.json"
+        )
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        contract["requires"] = ["nova-project-ui-create-view"]
+        contract_path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("仅 Workflow" in error for error in errors))
+
+    def test_validate_rejects_workflow_requires_non_operation(self):
+        """Workflow 的内部 DAG 只能编排可独立验收的 Operation。"""
+        self._append_workflow(
+            "nova-project-test-workflow", ["nova-project-router"]
+        )
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("只能依赖 Operation" in error for error in errors))
+
+    def test_cli_adapters_use_resolved_package_project_and_host_python(self):
+        """消费端 CLI 必须使用已解析包、项目根及宿主平台可用的 Python 3.9+。"""
+        for skill_id in (
+            "nova-project-check-readiness",
+            "nova-project-diagnose-startup",
+        ):
+            contract_path = (
+                TOOL_PATH.parent.parent
+                / "Skills"
+                / skill_id
+                / "references"
+                / "contract.json"
+            )
+            contract = json.loads(contract_path.read_text(encoding="utf-8"))
+            cli_adapters = [
+                adapter
+                for adapter in contract["actionAdapters"]
+                if adapter["kind"] == "cli"
+            ]
+            cli_entries = {adapter["entry"] for adapter in cli_adapters}
+            cli_conditions = {adapter["when"] for adapter in cli_adapters}
+            for cli_entry in cli_entries:
+                self.assertNotIn("Assets/Framework", cli_entry)
+                self.assertIn("Agents/Tools/nova_skills.py", cli_entry)
+                self.assertIn("--project-root <projectRoot>", cli_entry)
+            self.assertTrue(any(entry.startswith("python3 ") for entry in cli_entries))
+            self.assertTrue(any(entry.startswith("py -3 ") for entry in cli_entries))
+            self.assertTrue(any("macOS/Linux" in condition for condition in cli_conditions))
+            self.assertTrue(any("Windows" in condition for condition in cli_conditions))
+            skill_path = TOOL_PATH.parent.parent / "Skills" / skill_id / "SKILL.md"
+            skill_content = skill_path.read_text(encoding="utf-8")
+            self.assertIn("Python 3.9+", skill_content)
+            self.assertIn("py -3", skill_content)
+
+    def test_docs_reference_real_bundlebuilder_pipify_step(self):
+        """项目文档不能把旧 Step 名称教给消费端 Agent。"""
+        docs_index = (TOOL_PATH.parent.parent.parent / "Docs" / "INDEX.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("bundlebuilder.build", docs_index)
+        self.assertNotIn("assetbundle.build", docs_index)
 
     def test_tree_hash_sorts_normalized_posix_relative_paths_by_utf8_bytes(self):
         """Python 与 Editor bridge 必须以同一 UTF-8 字节序计算真实 Skill 目录哈希。"""
@@ -230,6 +1051,37 @@ class NovaSkillsToolTests(unittest.TestCase):
         canonical_agents_root = TOOL_PATH.parent.parent
 
         self.assertEqual([], load_tool().validate_agents_root(canonical_agents_root))
+
+    def test_canonical_project_skills_read_shared_quick_start_first(self):
+        """每个随包项目组 Skill 都要先加载同一份 Nova 共同底线。"""
+        canonical_agents_root = TOOL_PATH.parent.parent
+        catalog = load_tool().load_catalog(canonical_agents_root)
+        expected_first_paragraph = (
+            "触发后先读取当前 Framework 的 `Docs/START_HERE.md`，"
+            "作为所有 `nova-project-*` Skill 的共同底线。"
+        )
+
+        self.assertTrue((canonical_agents_root.parent / "Docs" / "START_HERE.md").is_file())
+        for entry in catalog["skills"]:
+            skill_id = entry["id"]
+            with self.subTest(skill_id=skill_id):
+                content = (
+                    canonical_agents_root / entry["path"] / "SKILL.md"
+                ).read_text(encoding="utf-8")
+                body = content.split("---", 2)[2].strip()
+                paragraphs = [paragraph.strip() for paragraph in body.split("\n\n") if paragraph.strip()]
+
+                self.assertGreaterEqual(len(paragraphs), 2)
+                self.assertEqual(expected_first_paragraph, paragraphs[1])
+
+    def test_quick_start_declares_shared_project_skill_source_and_namespace(self):
+        """项目组入口必须说明共享真源及其与框架开发 Skill 的边界。"""
+        quick_start_path = TOOL_PATH.parent.parent.parent / "Docs" / "START_HERE.md"
+        content = quick_start_path.read_text(encoding="utf-8")
+
+        self.assertIn("所有 `nova-project-*` Skill 触发后都先读取本页", content)
+        self.assertIn("开发态和消费态共享的唯一 Git 真源", content)
+        self.assertIn("框架开发态 Skill 保留在仓库根 `.agents/skills/`", content)
 
     def test_canonical_ui_create_view_references_existing_framework_docs(self):
         """UI 创建 Skill 引用的随包文档必须存在，不能把 Agent 引向失效路径。"""
@@ -1257,42 +2109,24 @@ with module._projection_sync_lock(Path(sys.argv[2])):
             encoding="utf-8",
         )
         tool = load_tool()
+        expected_skill_ids = [
+            entry["id"]
+            for entry in json.loads(
+                (canonical_agents_root / "catalog.json").read_text(encoding="utf-8")
+            )["skills"]
+        ]
 
         dry_run = tool.reconcile(self.project_root, dry_run=True)
-        self.assertEqual(
-            [
-                "nova-project-router",
-                "nova-project-check-readiness",
-                "nova-project-ui-create-view",
-                "nova-project-data-driven-ui",
-            ],
-            dry_run["added"],
-        )
+        self.assertEqual(expected_skill_ids, dry_run["added"])
         self.assertFalse((self.project_root / ".agents").exists())
 
         result = tool.reconcile(self.project_root)
 
-        self.assertEqual(
-            [
-                "nova-project-router",
-                "nova-project-check-readiness",
-                "nova-project-ui-create-view",
-                "nova-project-data-driven-ui",
-            ],
-            result["added"],
-        )
-        self.assertTrue(
-            (self.project_root / ".agents" / "skills" / "nova-project-router" / "SKILL.md").is_file()
-        )
-        self.assertTrue(
-            (
-                self.project_root
-                / ".agents"
-                / "skills"
-                / "nova-project-ui-create-view"
-                / "SKILL.md"
-            ).is_file()
-        )
+        self.assertEqual(expected_skill_ids, result["added"])
+        for skill_id in expected_skill_ids:
+            self.assertTrue(
+                (self.project_root / ".agents" / "skills" / skill_id / "SKILL.md").is_file()
+            )
         self.assertEqual(
             {
                 "missing": [],

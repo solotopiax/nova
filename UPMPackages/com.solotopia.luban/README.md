@@ -1,7 +1,7 @@
 # Luban
 
 > 包名：`com.solotopia.luban`
-> 当前版本：`10.0.4`
+> 当前版本：`10.1.0`
 
 鲁班是一个功能强大，易于使用，优雅稳定的游戏配置解决方案。
 
@@ -11,7 +11,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.luban": "10.0.0"
+  "com.solotopia.luban": "10.1.0"
 }
 ```
 

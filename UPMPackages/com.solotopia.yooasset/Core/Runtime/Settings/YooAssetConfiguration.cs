@@ -2,8 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 
-// modify: by taoye - 暴露 SetSettings 注入点；支持外部按路径加载 YooAssetSettings，
-//         避免多 sample 共存时 Resources.Load 命中错误副本（详见 ADR-DRAFT-2026-05-28-yooasset-settings-via-configmaster）。
+// modify: local fork - 支持 Nova 注入当前 ConfigMaster 选定的 YooAssetSettings 实例。
 
 namespace YooAsset
 {
@@ -51,9 +50,9 @@ namespace YooAsset
         }
 
         /// <summary>
-        /// 注入 YooAssetSettings 实例；GetSettings 后续调用优先返回此实例，避开 Resources.Load。
+        /// 注入 YooAssetSettings 实例，使后续配置读取优先使用显式实例。
         /// </summary>
-        /// <param name="settings">要注入的 YooAssetSettings 实例；为 null 时清空注入，回落 Resources.Load。</param>
+        /// <param name="settings">要注入的配置实例；传入 null 时清空并恢复 Resources 加载。</param>
         internal static void SetSettings(YooAssetSettings settings)
         {
             s_settings = settings;
@@ -63,7 +62,7 @@ namespace YooAsset
         /// <summary>
         /// 获取资源包裹的根文件夹名称
         /// </summary>
-        /// <returns>文件夹名称。如果未配置则返回默认值 "yoo"。</returns>
+        /// <returns>文件夹名称。如果未配置则返回默认值 "yoo"</returns>
         public static string GetYooFolderName()
         {
             return GetSettings().YooFolderName;
@@ -110,26 +109,6 @@ namespace YooAsset
         }
 
         /// <summary>
-        /// 获取清单 JSON 文件的文件名
-        /// </summary>
-        /// <param name="packageName">包裹名称</param>
-        /// <param name="packageVersion">包裹版本号</param>
-        /// <returns>包含 .json 扩展名的文件名</returns>
-        public static string GetManifestJsonFileName(string packageName, string packageVersion)
-        {
-            if (string.IsNullOrEmpty(packageName))
-                throw new ArgumentNullException(nameof(packageName));
-            if (string.IsNullOrEmpty(packageVersion))
-                throw new ArgumentNullException(nameof(packageVersion));
-
-            var settings = GetSettings();
-            if (string.IsNullOrEmpty(settings.PackageFilePrefix))
-                return $"{packageName}_{packageVersion}.json";
-            else
-                return $"{settings.PackageFilePrefix}_{packageName}_{packageVersion}.json";
-        }
-
-        /// <summary>
         /// 获取包裹的哈希校验文件名
         /// </summary>
         /// <param name="packageName">包裹名称</param>
@@ -173,17 +152,18 @@ namespace YooAsset
         /// <returns>缓存文件根目录的绝对路径</returns>
         internal static string GetEditorCacheRoot()
         {
-            // 注意：为了方便调试查看，编辑器下把存储目录放到项目根目录下。
+            // 注意：为了方便调试查看，编辑器下把存储目录放到项目的 Library 目录下。
             string projectPath = Path.GetDirectoryName(Application.dataPath);
             if (string.IsNullOrEmpty(projectPath))
                 throw new InvalidOperationException("Could not determine project root path from Application.dataPath.");
             projectPath = PathUtility.NormalizePath(projectPath);
 
+            string libraryPath = PathUtility.Combine(projectPath, "Library");
             var settings = GetSettings();
             if (string.IsNullOrEmpty(settings.YooFolderName))
-                return projectPath;
+                return libraryPath;
             else
-                return PathUtility.Combine(projectPath, settings.YooFolderName);
+                return PathUtility.Combine(libraryPath, settings.YooFolderName);
         }
 
         /// <summary>
@@ -255,6 +235,20 @@ namespace YooAsset
 #else
             return GetMobileCacheRoot();
 #endif
+        }
+
+        /// <summary>
+        /// 获取默认的缓存包裹根目录
+        /// </summary>
+        /// <param name="packageName">包裹名称</param>
+        /// <returns>缓存包裹根目录的绝对路径</returns>
+        internal static string GetDefaultCacheRoot(string packageName)
+        {
+            if (string.IsNullOrEmpty(packageName))
+                throw new ArgumentNullException(nameof(packageName));
+
+            string cacheRoot = GetDefaultCacheRoot();
+            return PathUtility.Combine(cacheRoot, packageName);
         }
 
         /// <summary>

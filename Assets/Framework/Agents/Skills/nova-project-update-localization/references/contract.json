@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-update-localization",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-edit",
+      "entry": "project-confirmed localization source editor",
+      "when": "修改已经冻结的文本或字体源条目"
+    },
+    {
+      "kind": "unity-editor-api",
+      "entry": "LocalizationComponentInspector and TextLocalizing",
+      "when": "更新已确认的本地化设置或既有 UI 绑定"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Localization.TextExporter and FontExporter",
+      "when": "导出确认范围内的文本、字体、类型或支持语言产物"
+    },
+    {
+      "kind": "pipify",
+      "entry": "export.localization.text.* / export.localization.font.*",
+      "when": "复用已确认的本地化导出 Batch"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Localization.SetLanguageSync / SetLanguageAsync",
+      "when": "在 Play Mode 中切换冻结的验证语言"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "localizationComponentAndDataFormat",
+      "required": true
+    },
+    {
+      "name": "sourceChangeScope",
+      "required": true
+    },
+    {
+      "name": "targetKeysLanguagesAndFontMarks",
+      "required": true
+    },
+    {
+      "name": "existingBindingTargets",
+      "required": true
+    },
+    {
+      "name": "playVerificationLanguages",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed localization text or font source entries",
+      "confirmed LocalizationComponent settings through Unity Editor or MCP",
+      "confirmed existing TextLocalizing bindings through Unity Editor or MCP",
+      "confirmed localization generated text, font, type and supported-language output"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "handwritten Prefab or Scene YAML",
+      "manual edits to generated localization output",
+      "global FixMissingInPrefabs scan or unrelated localization source and binding"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "localization-source",
+    "localization-output",
+    "selected-prefab"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous source entry, Key, language, FontMark, output path or target binding",
+      "add or remove Key, language, FontMark, supported language, data format or fallback rule",
+      "replace non-generated asset or change a TextLocalizing binding",
+      "delete, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认绑定源数据范围、已有 UI 绑定、导出范围和验证语言；任一范围变化后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "定向源数据与既有 TextLocalizing 绑定 diff",
+    "选定文本、字体、类型和语言列表导出结果",
+    "Unity 编译和 Play Mode 双语言切换证据"
+  ]
+}

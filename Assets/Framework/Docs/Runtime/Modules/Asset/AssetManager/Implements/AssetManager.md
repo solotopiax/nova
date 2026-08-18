@@ -135,6 +135,10 @@ HostPlayMode 下如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAs
 也就是说，当前设计里并不是每个加载 API 都支持任意包名切换。  
 显式 `package` 主要出现在清单、下载器、tag 查询、回收这类 API 上。
 
+`LoadRawSync/Async` 的 Nova 公共签名与调用方式不变，但路径行为不是完全兼容。YooAsset 3.0.5 下内部改为 `AssetHandle + RawFileObject`：`GetBytes()` 从 `RawFileObject` 可靠返回原始内容副本；异步路径尽力从 `EnsureBundleFileAsync` 获取底层 bundle 文件路径，失败不影响字节加载。同步操作无法等待 Ensure，Web/内存文件系统也可能不支持本地路径，所以 `FilePath` 可以为 null。同步、异步、异常与取消路径都由 AssetManager/Adapter 成对释放 `AssetHandle`。仓库检索未发现框架内部的 `IRawFileHandle.FilePath` 消费方；外部消费方需要按新语义复核。
+
+WebPlayMode 使用 3.0.5 的 `WebNetworkFileSystemParameters`。该文件系统不接受 Sandbox 专用的 `DownloadWatchdogTimeout`；HostPlayMode 的 Sandbox 文件系统仍保留 watchdog 配置。
+
 在 Unity Editor 下，如果 `EditorPlayMode` 不是 `EditorSimulateMode`，这些真实 AssetBundle 加载 API 会在资源出句柄前执行一次 **Editor-only shader 重绑**：
 
 - `LoadSync/Async`
@@ -203,6 +207,7 @@ HostPlayMode 下如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAs
 - `LoadManifestAsync()` 之前必须至少完成一次 `BootstrapAsync()`，否则包都还没注册。
 - HostPlayMode 远端版本或 Manifest 请求失败时走三级回退链（已激活清单 → 本地可启动版本 → 内置清单）。本地记录位于 `persistentDataPath/Asset/{package}.version`，并会按当前启动 Tag 范围复核；首次安装无记录时自动降级内置清单。
 - 大多数 `Load*` API 都默认走 `m_DefaultPackageName`；如果你以为它们支持多包透传，那是错的。
+- Raw 文件内容应通过 `IRawFileHandle.GetBytes()` 获取；`FilePath` 是底层 bundle 路径，不能假定为可直接读取的原始文件路径。
 - Editor 下用 Host/Offline/Web PlayMode 跑真实包时，TMP 或普通材质出现洋红色块，优先检查 shader bundle 与当前 Editor 渲染端是否跨平台；AssetManager 会对已加载资源做同名 shader 重绑，但这只服务编辑器预览，不代表 Player 会走同一套修复路径。
 - `CreateDownloaderByLocations()` 对空数组会直接抛异常；“整包下载”应该用 `CreateDownloader()`。
 - `CreateDownloaderByLocations()` 遇到无效 location 会跳过并记 warning，不会整体失败。

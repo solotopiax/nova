@@ -95,6 +95,17 @@ namespace NovaFramework.Editor
             private const string c_ProjectSkillIdPrefix = "nova-project-";
 
             /// <summary>
+            /// 所有项目组 Skill 首个正文段落必须声明的共同底线。
+            /// </summary>
+            private const string c_ProjectSkillCommonBaseline =
+                "触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。";
+
+            /// <summary>
+            /// 项目组 Skill 声明按需加载资料时使用的固定章节标题。
+            /// </summary>
+            private const string c_ProgressiveDisclosureHeading = "## 渐进式披露";
+
+            /// <summary>
             /// 项目组 Skill 允许的 id 正则。
             /// </summary>
             private static readonly Regex s_SkillIdPattern = new Regex(
@@ -139,6 +150,7 @@ namespace NovaFramework.Editor
                 "workspace-write",
                 "unity-write",
                 "generated-output",
+                "build",
             };
 
             /// <summary>
@@ -149,6 +161,33 @@ namespace NovaFramework.Editor
                 "static",
                 "compile",
                 "play",
+                "bundle-build",
+                "player-build",
+            };
+
+            /// <summary>
+            /// contract 可声明的固定 Action Adapter 类型集合。
+            /// </summary>
+            private static readonly HashSet<string> s_ActionAdapterKinds = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "csharp-api",
+                "cli",
+                "pipify",
+                "unity-editor-api",
+                "unity-mcp",
+                "unity-menu",
+                "workspace-edit",
+                "workspace-inspection",
+            };
+
+            /// <summary>
+            /// 单个 Action Adapter 必须且只能包含的字段。
+            /// </summary>
+            private static readonly HashSet<string> s_ActionAdapterFields = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "kind",
+                "entry",
+                "when",
             };
 
             /// <summary>
@@ -205,6 +244,7 @@ namespace NovaFramework.Editor
                 "journeys",
                 "effects",
                 "minimumEvidence",
+                "replacedBy",
             };
 
             /// <summary>
@@ -873,6 +913,12 @@ namespace NovaFramework.Editor
             {
                 EnsureNormalDirectory(agentsRoot, "Agents 真源目录");
                 EnsureNoReparsePoints(agentsRoot);
+                string startHerePath = Path.Combine(agentsRoot, "..", "Docs", "START_HERE.md");
+                if (!File.Exists(startHerePath))
+                {
+                    throw new InvalidOperationException("Framework 真源缺少 Docs/START_HERE.md。");
+                }
+
                 catalog = ReadJsonObject(Path.Combine(agentsRoot, c_CatalogFileName));
                 package = ReadJsonObject(Path.Combine(agentsRoot, "..", "package.json"));
                 ValidateObjectFields(catalog, s_CatalogFields, s_RequiredCatalogFields, "catalog.json");
@@ -900,6 +946,8 @@ namespace NovaFramework.Editor
                 var result = new List<CatalogSkill>();
                 var ids = new HashSet<string>(StringComparer.Ordinal);
                 var requirements = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+                var entriesById = new Dictionary<string, JObject>(StringComparer.Ordinal);
+                var replacements = new Dictionary<string, string>(StringComparer.Ordinal);
                 foreach (JToken token in skills)
                 {
                     JObject entry = token as JObject;
@@ -921,6 +969,8 @@ namespace NovaFramework.Editor
                         throw new InvalidOperationException($"catalog.json 重复声明 Skill：{skillId}。");
                     }
 
+                    entriesById[skillId] = entry;
+
                     if (!string.Equals(relativePath, $"Skills/{skillId}", StringComparison.Ordinal))
                     {
                         throw new InvalidOperationException($"{skillId} 必须位于平铺目录 Skills/{skillId}。");
@@ -934,6 +984,11 @@ namespace NovaFramework.Editor
                     }
 
                     requirements[skillId] = ValidateSkillSourceContract(skillId, entry, sourceDirectory);
+                    if (string.Equals((string)entry["status"], "deprecated", StringComparison.Ordinal))
+                    {
+                        replacements[skillId] = (string)entry["replacedBy"];
+                    }
+
                     result.Add(new CatalogSkill(skillId, relativePath));
                 }
 
@@ -950,6 +1005,64 @@ namespace NovaFramework.Editor
                         {
                             throw new InvalidOperationException($"{requirement.Key} 的 contract.json 依赖不存在的 Skill：{requiredSkillId}。");
                         }
+                    }
+                }
+
+                ValidateDependencyCycles(requirements, "requires");
+
+                foreach (KeyValuePair<string, List<string>> requirement in requirements)
+                {
+                    string sourceKind = (string)entriesById[requirement.Key]["kind"];
+                    if (requirement.Value.Count > 0
+                        && !string.Equals(sourceKind, "workflow", StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException(
+                            $"{requirement.Key} 的 contract.json requires 仅 workflow 可以声明。");
+                    }
+
+                    foreach (string requiredSkillId in requirement.Value)
+                    {
+                        if (!string.Equals(
+                            (string)entriesById[requiredSkillId]["kind"],
+                            "operation",
+                            StringComparison.Ordinal))
+                        {
+                            throw new InvalidOperationException(
+                                $"{requirement.Key} 的 contract.json requires 只能指向 operation：{requiredSkillId}。");
+                        }
+                    }
+                }
+
+                foreach (KeyValuePair<string, string> replacement in replacements)
+                {
+                    if (string.Equals(replacement.Key, replacement.Value, StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException($"{replacement.Key} 的 replacedBy 不可指向自身。");
+                    }
+
+                    if (!entriesById.ContainsKey(replacement.Value))
+                    {
+                        throw new InvalidOperationException(
+                            $"{replacement.Key} 的 replacedBy 指向不存在的 Skill：{replacement.Value}。");
+                    }
+                }
+
+                var replacementGraph = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+                foreach (KeyValuePair<string, string> replacement in replacements)
+                {
+                    replacementGraph[replacement.Key] = new List<string> { replacement.Value };
+                }
+
+                ValidateDependencyCycles(replacementGraph, "replacedBy");
+                foreach (KeyValuePair<string, string> replacement in replacements)
+                {
+                    if (string.Equals(
+                        (string)entriesById[replacement.Value]["status"],
+                        "deprecated",
+                        StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException(
+                            $"{replacement.Key} 的 replacedBy 不可继续指向已弃用 Skill：{replacement.Value}。");
                     }
                 }
 
@@ -1032,6 +1145,20 @@ namespace NovaFramework.Editor
                     throw new InvalidOperationException($"{skillId} 的 status 不受支持。");
                 }
 
+                JProperty replacementProperty = catalogEntry.Property("replacedBy");
+                string replacement = replacementProperty == null ? null : (string)replacementProperty.Value;
+                if (string.Equals(status, "deprecated", StringComparison.Ordinal))
+                {
+                    if (!IsManagedProjectSkillId(replacement))
+                    {
+                        throw new InvalidOperationException($"{skillId} 已弃用时必须声明合法 replacedBy。");
+                    }
+                }
+                else if (replacementProperty != null)
+                {
+                    throw new InvalidOperationException($"{skillId} 仅 deprecated 状态可以声明 replacedBy。");
+                }
+
                 ReadStringArray(
                     catalogEntry["journeys"],
                     $"{skillId} 的 journeys",
@@ -1062,11 +1189,30 @@ namespace NovaFramework.Editor
                     throw new InvalidOperationException($"{skillId} 的 minimumEvidence 不受支持。");
                 }
 
+                bool hasBuildEffect = effects.Contains("build");
+                bool hasBuildEvidence = string.Equals(minimumEvidence, "bundle-build", StringComparison.Ordinal)
+                    || string.Equals(minimumEvidence, "player-build", StringComparison.Ordinal);
+                if (hasBuildEffect != hasBuildEvidence)
+                {
+                    throw new InvalidOperationException(
+                        $"{skillId} 的 build effect 与 minimumEvidence 构建证据必须成对声明。");
+                }
+
                 string skillFile = Path.Combine(sourceDirectory, "SKILL.md");
                 if (!string.Equals(ReadSkillFrontmatterName(skillFile), skillId, StringComparison.Ordinal))
                 {
                     throw new InvalidOperationException($"{skillId} 与 SKILL.md frontmatter name 不一致。");
                 }
+
+                string firstBodyParagraph = ReadFirstSkillBodyParagraph(skillFile);
+                if (firstBodyParagraph == null
+                    || firstBodyParagraph.IndexOf(c_ProjectSkillCommonBaseline, StringComparison.Ordinal) < 0)
+                {
+                    throw new InvalidOperationException(
+                        $"{skillId} 的 SKILL.md 首个正文段落必须包含“{c_ProjectSkillCommonBaseline}”。");
+                }
+
+                ValidateSkillProgressiveDisclosure(skillId, skillFile);
 
                 JObject contract = ReadJsonObject(Path.Combine(sourceDirectory, "references", "contract.json"));
                 if ((int?)contract["schemaVersion"] != 1)
@@ -1126,6 +1272,7 @@ namespace NovaFramework.Editor
                     }
                 }
 
+                ValidateActionAdapters(skillId, contract["actionAdapters"]);
                 ValidateContractInputs(skillId, contract["inputs"]);
                 ValidateContractWriteScope(skillId, contract["writeScope"]);
                 ReadStringArray(contract["locks"], $"{skillId} 的 contract.json locks", false, true, true);
@@ -1165,6 +1312,63 @@ namespace NovaFramework.Editor
 
                 ReadStringArray(contract["evidence"], $"{skillId} 的 contract.json evidence", true, true, false);
                 return requires;
+            }
+
+            /// <summary>
+            /// 校验 contract 至少声明一个严格且不重复的 Action Adapter。
+            /// </summary>
+            private static void ValidateActionAdapters(string skillId, JToken token)
+            {
+                JArray adapters = token as JArray;
+                if (adapters == null || adapters.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"{skillId} 的 contract.json actionAdapters 必须是非空数组。");
+                }
+
+                var identities = new HashSet<string>(StringComparer.Ordinal);
+                foreach (JToken adapterToken in adapters)
+                {
+                    JObject adapter = adapterToken as JObject;
+                    if (adapter == null || adapter.Count != s_ActionAdapterFields.Count)
+                    {
+                        throw new InvalidOperationException(
+                            $"{skillId} 的 contract.json actionAdapters 项必须只含 kind、entry、when。");
+                    }
+
+                    foreach (JProperty property in adapter.Properties())
+                    {
+                        if (!s_ActionAdapterFields.Contains(property.Name))
+                        {
+                            throw new InvalidOperationException(
+                                $"{skillId} 的 contract.json actionAdapters 项必须只含 kind、entry、when。");
+                        }
+                    }
+
+                    string kind = adapter["kind"] == null || adapter["kind"].Type != JTokenType.String
+                        ? null
+                        : (string)adapter["kind"];
+                    string entry = adapter["entry"] == null || adapter["entry"].Type != JTokenType.String
+                        ? null
+                        : (string)adapter["entry"];
+                    string when = adapter["when"] == null || adapter["when"].Type != JTokenType.String
+                        ? null
+                        : (string)adapter["when"];
+                    if (!s_ActionAdapterKinds.Contains(kind)
+                        || string.IsNullOrEmpty(entry)
+                        || string.IsNullOrEmpty(when))
+                    {
+                        throw new InvalidOperationException(
+                            $"{skillId} 的 contract.json actionAdapters 项不合法。");
+                    }
+
+                    string identity = kind + "\0" + entry + "\0" + when;
+                    if (!identities.Add(identity))
+                    {
+                        throw new InvalidOperationException(
+                            $"{skillId} 的 contract.json actionAdapters 不能重复。");
+                    }
+                }
             }
 
             /// <summary>
@@ -1340,6 +1544,180 @@ namespace NovaFramework.Editor
                 }
 
                 return null;
+            }
+
+            /// <summary>
+            /// 读取 frontmatter 后的首个正文段落；跳过空行和 Markdown 标题，命中段落后立即停止。
+            /// </summary>
+            /// <param name="skillFile">SKILL.md 文件路径。</param>
+            /// <returns>首个正文段落；不存在时返回 null。</returns>
+            private static string ReadFirstSkillBodyParagraph(string skillFile)
+            {
+                using (var reader = new StreamReader(skillFile, Encoding.UTF8, true))
+                {
+                    if (!string.Equals(reader.ReadLine(), "---", StringComparison.Ordinal))
+                    {
+                        return null;
+                    }
+
+                    string line;
+                    while ((line = reader.ReadLine()) != null
+                        && !string.Equals(line.TrimEnd('\r'), "---", StringComparison.Ordinal))
+                    {
+                    }
+
+                    if (line == null)
+                    {
+                        return null;
+                    }
+
+                    var paragraph = new StringBuilder();
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        string trimmed = line.Trim();
+                        if (trimmed.Length == 0)
+                        {
+                            if (paragraph.Length > 0)
+                            {
+                                break;
+                            }
+
+                            continue;
+                        }
+
+                        if (paragraph.Length == 0 && IsMarkdownHeading(trimmed))
+                        {
+                            continue;
+                        }
+
+                        if (paragraph.Length > 0)
+                        {
+                            paragraph.Append('\n');
+                        }
+
+                        paragraph.Append(trimmed);
+                    }
+
+                    return paragraph.Length == 0 ? null : paragraph.ToString();
+                }
+            }
+
+            /// <summary>
+            /// 判断一行是否为 ATX Markdown 标题。
+            /// </summary>
+            private static bool IsMarkdownHeading(string line)
+            {
+                int markerCount = 0;
+                while (markerCount < line.Length && markerCount < 6 && line[markerCount] == '#')
+                {
+                    markerCount++;
+                }
+
+                return markerCount > 0
+                    && markerCount < line.Length
+                    && char.IsWhiteSpace(line[markerCount]);
+            }
+
+            /// <summary>
+            /// 校验 Skill 声明固定渐进式披露章节及按需读取语义。
+            /// </summary>
+            private static void ValidateSkillProgressiveDisclosure(string skillId, string skillFile)
+            {
+                bool hasHeading = false;
+                bool hasOnDemandRoute = false;
+                using (var reader = new StreamReader(skillFile, Encoding.UTF8, true))
+                {
+                    string line;
+                    bool inBody = false;
+                    int frontmatterDelimiterCount = 0;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        string trimmed = line.Trim();
+                        if (!inBody)
+                        {
+                            if (string.Equals(trimmed, "---", StringComparison.Ordinal))
+                            {
+                                frontmatterDelimiterCount++;
+                                inBody = frontmatterDelimiterCount == 2;
+                            }
+
+                            continue;
+                        }
+
+                        if (!hasHeading
+                            && string.Equals(trimmed, c_ProgressiveDisclosureHeading, StringComparison.Ordinal))
+                        {
+                            hasHeading = true;
+                        }
+
+                        if (!hasOnDemandRoute && trimmed.IndexOf("仅在", StringComparison.Ordinal) >= 0)
+                        {
+                            hasOnDemandRoute = true;
+                        }
+
+                        if (hasHeading && hasOnDemandRoute)
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                throw new InvalidOperationException(
+                    $"{skillId} 的 SKILL.md 必须声明 {c_ProgressiveDisclosureHeading}，并以“仅在”描述按需读取路由。");
+            }
+
+            /// <summary>
+            /// 校验 Skill 有向关系图不包含循环。
+            /// </summary>
+            private static void ValidateDependencyCycles(
+                Dictionary<string, List<string>> graph,
+                string label)
+            {
+                var visited = new HashSet<string>(StringComparer.Ordinal);
+                var visiting = new HashSet<string>(StringComparer.Ordinal);
+                var ids = new List<string>(graph.Keys);
+                ids.Sort(StringComparer.Ordinal);
+                foreach (string skillId in ids)
+                {
+                    VisitDependencyNode(skillId, graph, label, visiting, visited);
+                }
+            }
+
+            /// <summary>
+            /// 深度优先访问一个 Skill 关系节点，并在回边处快速失败。
+            /// </summary>
+            private static void VisitDependencyNode(
+                string skillId,
+                Dictionary<string, List<string>> graph,
+                string label,
+                HashSet<string> visiting,
+                HashSet<string> visited)
+            {
+                if (visiting.Contains(skillId))
+                {
+                    throw new InvalidOperationException($"{label} 出现循环：{skillId}。");
+                }
+
+                if (visited.Contains(skillId))
+                {
+                    return;
+                }
+
+                visiting.Add(skillId);
+                List<string> nextIds;
+                if (graph.TryGetValue(skillId, out nextIds))
+                {
+                    foreach (string nextId in nextIds)
+                    {
+                        if (graph.ContainsKey(nextId))
+                        {
+                            VisitDependencyNode(nextId, graph, label, visiting, visited);
+                        }
+                    }
+                }
+
+                visiting.Remove(skillId);
+                visited.Add(skillId);
             }
 
             /// <summary>

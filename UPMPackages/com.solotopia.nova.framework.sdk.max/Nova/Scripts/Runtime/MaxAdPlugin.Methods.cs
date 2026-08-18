@@ -18,6 +18,12 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
     {
 #if NOVA_APPLOVIN_MAX
         /// <summary>
+        /// 获取 MAX SDK 初始化回调返回的国家或地区代码。
+        /// </summary>
+        /// <returns>MAX SDK 返回的国家或地区代码；尚未初始化或未返回时为空字符串。</returns>
+        public override string GetCountryCode() => m_CountryCode ?? string.Empty;
+
+        /// <summary>
         /// MAX SDK 初始化完成回调，在 InitializeSdk 异步返回后由 MaxSdkCallbacks.OnSdkInitializedEvent 触发。
         /// 负责打印国家代码、应用静音设置、启用调试开关、注册各广告格式回调，最后通知上层初始化完成。
         /// </summary>

@@ -81,7 +81,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 通知用户登录，向 EventManager 发送登录事件并广播至所有 ISDKUserListener 插件。
+        /// 通知用户登录，userId 为空时由 SDKManager 忽略；有效时向 EventManager 发送登录事件。
         /// </summary>
         /// <param name="userId">已登录用户的唯一标识。</param>
         public void Login(string userId)

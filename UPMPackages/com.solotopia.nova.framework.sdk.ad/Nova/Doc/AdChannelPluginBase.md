@@ -142,6 +142,9 @@ public virtual void SetUserId(string userId);
 /// 查询指定格式已加载广告的最高预期收益（USD）；基类返回 0。
 public virtual float GetMaxRevenue(AdFormat format);
 
+/// 获取当前渠道 SDK 返回的国家或地区代码；基类默认返回空字符串，渠道可按 SDK 能力覆盖。
+public virtual string GetCountryCode();
+
 /// 执行渠道 SDK 的实际释放逻辑；基类返回 UniTask.CompletedTask。
 protected virtual UniTask DisposeChannelSDKAsync(CancellationToken ct);
 

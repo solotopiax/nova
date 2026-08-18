@@ -28,9 +28,7 @@ namespace YooAsset
         /// </summary>
         public IDownloadBackend DownloadBackend { get; private set; }
 
-        /// <summary>
-        /// 包裹名称
-        /// </summary>
+        /// <inheritdoc />
         public string PackageName { get; private set; }
 
         #region 自定义参数
@@ -118,6 +116,12 @@ namespace YooAsset
         public FSLoadPackageBundleOperation LoadPackageBundleAsync(FSLoadPackageBundleOptions options)
         {
             var operation = new EFSLoadPackageBundleOperation(this, options);
+            return operation;
+        }
+        /// <inheritdoc />
+        public FSEnsurePackageBundleOperation EnsurePackageBundleAsync(FSEnsurePackageBundleOptions options)
+        {
+            var operation = new EFSEnsurePackageBundleOperation(this, options);
             return operation;
         }
         /// <inheritdoc />
@@ -227,7 +231,8 @@ namespace YooAsset
                 virtualWebGLMode: VirtualWebGLMode,
                 asyncSimulateMinFrame: AsyncSimulateMinFrame,
                 asyncSimulateMaxFrame: AsyncSimulateMaxFrame);
-            BundleCache = new EditorBundleCache(packageName, _packageRoot, cacheConfig);
+            string cacheRoot = GetEditorBundleCacheRoot();
+            BundleCache = new EditorBundleCache(packageName, cacheRoot, cacheConfig);
         }
         /// <inheritdoc />
         public void OnDestroy()
@@ -273,6 +278,15 @@ namespace YooAsset
         }
 
         #region 内部方法
+        /// <summary>
+        /// 获取编辑器缓存根目录路径
+        /// </summary>
+        private string GetEditorBundleCacheRoot()
+        {
+            string root = YooAssetConfiguration.GetEditorCacheRoot();
+            return PathUtility.Combine(root, PackageName, EditorFileSystemConsts.CacheFolderName);
+        }
+
         /// <summary>
         /// 获取编辑器包裹版本文件路径
         /// </summary>

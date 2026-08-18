@@ -91,15 +91,18 @@
 
 目标：
 
-- 跑 YooAsset ScriptableBuildPipeline 资源构建
+- 按目标资源类型选择标准 AssetBundle 或 RawFile 构建
 
 高频 Step：
 
-- `bundlebuilder.build`
+- `bundlebuilder.build`：`ScriptableBuildPipeline` + `AssetBundle`
+- `bundlebuilder.build_raw_file`：仅针对 `PackRawFile` 资源，使用 `RawFileBuildPipeline` + `RawBundle`
 
 适合场景：
 
 - 资源包构建阶段
+
+两个 Step 是独立的可选构建入口，不要求在同一 Batch 中连续运行。
 
 ### 5. Player 打包
 
@@ -276,7 +279,7 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 
 1. `export.config`
 2. 按需追加其他资源导出 Step
-3. `bundlebuilder.build`
+3. 按目标资源选择 `bundlebuilder.build` 或 `bundlebuilder.build_raw_file`
 4. `build.package`
 5. `shell.open_folder`
 
@@ -308,7 +311,7 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 
 ### Bundle / Build
 
-- 构建类 Batch 应在 `bundlebuilder.build` / `build.package` 前先跑 `export.config`
+- 构建类 Batch 应先跑 `export.config`，再按目标资源选择 `bundlebuilder.build`（标准 AssetBundle）或 `bundlebuilder.build_raw_file`（`PackRawFile`）；需要 Player 产物时再运行 `build.package`
 - 其他前置导出物必须已就绪
 - `build.package` 的产物命名还依赖当前激活 `ConfigRuntimeSO` 的 `DevelopMode`
 - `build.package` 的 `OutputFolderPath` 不做特殊字符清洗；相对路径基于项目根解析，绝对路径直接使用

@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.Facebook
 {
@@ -91,6 +92,11 @@ namespace NovaFramework.SDK.Facebook
         /// Share 服务。
         /// </summary>
         private FacebookShareService m_ShareService;
+
+        /// <summary>
+        /// Event manager used to listen for Nova business user login events.
+        /// </summary>
+        private IEventManager m_EventManager;
 
         /// <summary>
         /// 当前用户。

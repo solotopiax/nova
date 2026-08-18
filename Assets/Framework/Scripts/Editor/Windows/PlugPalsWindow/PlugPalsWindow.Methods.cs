@@ -570,10 +570,22 @@ namespace NovaFramework.Editor
             GUI.Label(new Rect(m_ColBorders[1], y, m_ColBorders[2] - m_ColBorders[1], h), entry.LocalVersion ?? "-----", m_RowVersionStyle);
 
             bool highlightLatestVersion = ShouldHighlightLatestVersion(entry);
+            bool animateLatestVersion = ShouldAnimateLatestVersion(entry);
             Color prevContent = GUI.contentColor;
-            if (highlightLatestVersion) { GUI.contentColor = Color.green; }
-            GUI.Label(new Rect(m_ColBorders[2], y, m_ColBorders[3] - m_ColBorders[2], h), entry.LatestVersion, m_RowVersionStyle);
-            GUI.contentColor = prevContent;
+            try
+            {
+                if (highlightLatestVersion)
+                {
+                    GUI.contentColor = animateLatestVersion
+                        ? GetAnimatedUpgradeVersionColor(EditorApplication.timeSinceStartup)
+                        : Color.green;
+                }
+                GUI.Label(new Rect(m_ColBorders[2], y, m_ColBorders[3] - m_ColBorders[2], h), entry.LatestVersion, m_RowVersionStyle);
+            }
+            finally
+            {
+                GUI.contentColor = prevContent;
+            }
 
             DrawRowActionArea(entry, new Rect(m_ColBorders[3], y, m_ColBorders[4] - m_ColBorders[3], h));
 
@@ -592,7 +604,7 @@ namespace NovaFramework.Editor
 
                     DrawInfoField("Name", entry.Name, false);
                     DrawInfoField("Local Version", entry.LocalVersion ?? "-----", false);
-                    DrawInfoField("Latest Version", entry.LatestVersion, ShouldHighlightLatestVersion(entry));
+                    DrawInfoField("Latest Version", entry.LatestVersion, ShouldHighlightLatestVersion(entry), ShouldAnimateLatestVersion(entry));
                     if (!string.IsNullOrEmpty(entry.CoreVersion))
                     {
                         DrawInfoField("Core Version", entry.CoreVersion, false);
@@ -612,16 +624,30 @@ namespace NovaFramework.Editor
         /// </summary>
         /// <param name="label">字段标签。</param>
         /// <param name="value">字段值。</param>
-        /// <param name="highlight">是否以绿色高亮显示值。</param>
-        private void DrawInfoField(string label, string value, bool highlight)
+        /// <param name="highlight">是否高亮显示值。</param>
+        /// <param name="animateHighlight">高亮时是否使用动态彩虹色。</param>
+        private void DrawInfoField(string label, string value, bool highlight, bool animateHighlight = false)
         {
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Label(label, m_LabelStyle, false, GUILayout.Width(c_LabelWidth));
-                if (highlight) { GUI.contentColor = Color.green; }
-                GUIStyle style = label == "Description" ? m_DescStyle : m_ValueStyle;
-                EditorUtil.Draw.Label(value ?? "", style, false, GUILayout.ExpandWidth(true));
-                if (highlight) { GUI.contentColor = Color.white; }
+                Color previousContentColor = GUI.contentColor;
+                try
+                {
+                    if (highlight)
+                    {
+                        GUI.contentColor = animateHighlight
+                            ? GetAnimatedUpgradeVersionColor(EditorApplication.timeSinceStartup)
+                            : Color.green;
+                    }
+
+                    GUIStyle style = label == "Description" ? m_DescStyle : m_ValueStyle;
+                    EditorUtil.Draw.Label(value ?? "", style, false, GUILayout.ExpandWidth(true));
+                }
+                finally
+                {
+                    GUI.contentColor = previousContentColor;
+                }
             });
         }
 
@@ -725,6 +751,29 @@ namespace NovaFramework.Editor
         private static bool ShouldHighlightLatestVersion(EditorUtil.PlugPals.PackageDisplayEntry entry)
         {
             return entry != null && (string.IsNullOrEmpty(entry.LocalVersion) || HasRemoteUpgrade(entry));
+        }
+
+        /// <summary>
+        /// 判断最新版本号是否应播放动态彩虹色，仅真实可升级的仓库包满足条件。
+        /// </summary>
+        /// <param name="entry">待判断的包条目。</param>
+        /// <returns>需要播放动态色彩返回 true。</returns>
+        private static bool ShouldAnimateLatestVersion(EditorUtil.PlugPals.PackageDisplayEntry entry)
+        {
+            return entry != null
+                   && entry.Status == EditorUtil.PlugPals.PackageStatus.Upgradeable
+                   && HasRemoteUpgrade(entry);
+        }
+
+        /// <summary>
+        /// 根据编辑器运行时间计算可升级版本号的平滑彩虹提示色。
+        /// </summary>
+        /// <param name="elapsedSeconds">编辑器启动后的已运行秒数。</param>
+        /// <returns>当前时刻应显示的彩虹色。</returns>
+        private static Color GetAnimatedUpgradeVersionColor(double elapsedSeconds)
+        {
+            float hue = Mathf.Repeat((float)(elapsedSeconds * c_UpgradeVersionHueCyclesPerSecond), 1f);
+            return Color.HSVToRGB(hue, 0.72f, 1f);
         }
 
         /// <summary>

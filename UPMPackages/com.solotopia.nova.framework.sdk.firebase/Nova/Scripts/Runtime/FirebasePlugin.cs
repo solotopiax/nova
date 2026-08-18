@@ -26,7 +26,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
     /// Firebase SDK 插件，继承 SDKPluginBase，实现 Analytics 埋点（IMonetizeTrackPlugin）与 FCM 推送（IPushPlugin）契约。
     /// 负责 Firebase 初始化、Analytics 事件上报、FCM Token 接收及推送主题订阅管理。
     /// </summary>
-    public sealed partial class FirebasePlugin : SDKPluginBase, IMonetizeTrackPlugin, IPushPlugin
+    public sealed partial class FirebasePlugin : SDKPluginBase, IMonetizeTrackPlugin, IPushPlugin, IFirebasePushTaskPlugin, ISDKPauseListener
     {
         /// <summary>
         /// 上报携带自定义参数的埋点事件。
@@ -135,17 +135,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// <param name="userId">用户唯一标识。</param>
         public void SetUserId(string userId)
         {
-            if (!m_InitOver)
+            if (string.IsNullOrWhiteSpace(userId))
             {
+                Log.Warning(LogTag.Firebase, "Firebase SetUserId：userId 为空，已跳过用户身份同步。");
                 return;
             }
-#if (UNITY_IOS || UNITY_ANDROID)
-            FirebaseAnalytics.SetUserId(userId);
-            if (Firebase.Crashlytics.Crashlytics.IsCrashlyticsCollectionEnabled)
-            {
-                Firebase.Crashlytics.Crashlytics.SetUserId(userId);
-            }
-#endif
+
+            m_PendingUserId = userId;
+            ApplyPendingUserIdIfReady();
         }
 
         /// <summary>
@@ -171,20 +168,47 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
         /// <summary>
         /// 订阅或取消订阅指定 FCM 推送主题。
-        /// 内部委托 SubscribeAsync / UnsubscribeAsync 执行；SDK 未初始化时由委托方法记录 Warning 并返回。
+        /// SDK 未初始化、Topic 无效或平台订阅失败时由内部实现记录日志，不向调用方抛异常。
         /// </summary>
         /// <param name="topic">主题名称，由业务层定义。</param>
         /// <param name="subscribed">true 订阅，false 取消订阅。</param>
         public void SetTopicSubscribed(string topic, bool subscribed)
         {
-            if (subscribed)
+            SetTopicSubscriptionInternalAsync(topic, subscribed, CancellationToken.None).Forget();
+        }
+
+        /// <summary>
+        /// 写入或覆盖一条 Firebase push task 缓存。
+        /// 本方法只保证本地缓存写入；实际协议发送由内部按配置的时间阈值或数量阈值批量触发。
+        /// </summary>
+        /// <param name="task">待推送任务，TaskKey 为唯一主键。</param>
+        /// <param name="ct">取消令牌，仅作用于本地缓存写入等待。</param>
+        /// <returns>本地缓存写入成功返回 true。</returns>
+        public UniTask<bool> QueuePushTaskAsync(FirebasePushTask task, CancellationToken ct = default)
+        {
+            return QueuePushTaskInternalAsync(task, ct);
+        }
+
+        /// <summary>
+        /// 接收 SDKComponent 转发的应用前后台切换事件。
+        /// 进入后台时不处理；从后台恢复前台时主动请求发送当前本地 push task 缓存。
+        /// </summary>
+        /// <param name="isPaused">true 表示进入后台，false 表示恢复前台。</param>
+        public void OnPause(bool isPaused)
+        {
+            if (isPaused)
             {
-                SubscribeAsync(topic);
+                m_WasApplicationPaused = true;
+                return;
             }
-            else
+
+            if (!m_WasApplicationPaused)
             {
-                UnsubscribeAsync(topic);
+                return;
             }
+
+            m_WasApplicationPaused = false;
+            RequestPushTaskFlushOnForeground();
         }
 
         /// <summary>
@@ -220,37 +244,6 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             return m_AnalyticsInstanceId;
         }
 
-        /// <summary>
-        /// 订阅指定 Firebase Cloud Messaging 推送主题（异步发起，不等待结果）。
-        /// </summary>
-        /// <param name="topic">要订阅的主题名称。</param>
-        public void SubscribeAsync(string topic)
-        {
-            if (!m_InitOver)
-            {
-                Log.Warning(LogTag.Firebase, $"SubscribeAsync：SDK 尚未初始化，无法订阅主题：{topic}。");
-                return;
-            }
-#if (UNITY_IOS || UNITY_ANDROID)
-            FirebaseMessaging.SubscribeAsync(topic);
-#endif
-        }
-
-        /// <summary>
-        /// 取消订阅指定 Firebase Cloud Messaging 推送主题（异步发起，不等待结果）。
-        /// </summary>
-        /// <param name="topic">要取消订阅的主题名称。</param>
-        public void UnsubscribeAsync(string topic)
-        {
-            if (!m_InitOver)
-            {
-                Log.Warning(LogTag.Firebase, $"UnsubscribeAsync：SDK 尚未初始化，无法取消订阅主题：{topic}。");
-                return;
-            }
-#if (UNITY_IOS || UNITY_ANDROID)
-            FirebaseMessaging.UnsubscribeAsync(topic);
-#endif
-        }
     }
 }
 #endif

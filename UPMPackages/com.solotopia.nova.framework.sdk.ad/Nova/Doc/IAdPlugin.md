@@ -46,6 +46,11 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
     /// 查询指定广告格式是否正在播放中（插屏/RV 播放期间为 true）。
     bool IsAdPlaying(AdFormat format);
 
+    // === 国家码 ===
+
+    /// 异步获取广告 SDK 返回的有效国家或地区代码；超时后使用广告模块上次成功缓存，仍不可用时返回空字符串。
+    UniTask<string> GetCountryCodeAsync(CancellationToken ct = default);
+
     // === 预加载 ===
 
     /// 向所有渠道并行发起预加载请求；未注册该格式的渠道 fail-soft 自动过滤。
@@ -77,6 +82,8 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
 
 `IAdPlugin` 由 `SDKManager` 在 `InitializeAsync` 阶段通过 `TypeCreator` 创建 `AdPlugin` 实例并注入 `AdPluginConfig`。业务层无需关心初始化顺序，可直接通过 `Events.InitResult.Subscribe` 等待 SDK 就绪通知。
 
+国家码不通过 `IAdPlugin` 同步查询。`AdPlugin` 会在内部渠道返回有效国家码后发布 `SDKDataKeys.AdCountryCode` 并写入广告模块上次成功缓存；其他插件应通过 `GetCountryCodeAsync(ct)` 统一等待最终结果，不再直接等待数据槽位或自行做系统区域兜底。只有等待超时时会读取广告模块缓存，拿到空值或 `IV` 时直接返回空字符串。
+
 ---
 
 ## §10 常见误区
@@ -85,6 +92,7 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
 - **误区：调用 `Supports(format)` 检查格式兼容性**：`Supports` 方法已全链路删除；直接调 `RequestAsync`，未注册该格式的渠道会 fail-soft 返回 `Success=false` 的 `AdLoadResult`，不抛异常。
 - **误区：从 `ShowAsync` 读取 `AdResult`**：`ShowAsync` 返回 `UniTask`，只用于等待展示流程结束；展示成功、失败和关闭结果分别从 `Events.ShowCompleted`、`Events.ShowFailed`、`Events.AdClosed` 获取。激励奖励以 `AdClosed` 的 `UserCompleted == true` 为准。
 - **误区：Banner 用 ShowAsync**：Banner 走 `RequestAsync(AdFormat.Banner)` 预加载后用 `ShowBanner()` 展示，`ShowAsync` 不适用 Banner 格式。
+- **误区：通过广告公共接口同步查询国家码**：公共接口不暴露同步国家码查询；跨 SDK 消费用 `GetCountryCodeAsync(ct)`，等待、超时和缓存兜底均由广告模块负责。
 - **误区：业务层沿用旧 C# event 订阅方式**：`IAdPlugin` 不再暴露 `OnAdRevenuePaid / OnAdLoaded / OnAdLoadFailed` 等 C# event；业务层改为通过 `AdPlugin.Events.RevenuePaid.Subscribe()` 等方式订阅。
 
 ---

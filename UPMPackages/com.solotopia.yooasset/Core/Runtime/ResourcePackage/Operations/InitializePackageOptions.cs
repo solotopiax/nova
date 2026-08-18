@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace YooAsset
 {
     /// <summary>
-    /// 初始化参数
+    /// 初始化资源包的操作选项
     /// </summary>
     public abstract class InitializePackageOptions
     {
@@ -24,7 +24,7 @@ namespace YooAsset
     }
 
     /// <summary>
-    /// 编辑器下模拟运行模式的初始化参数
+    /// 编辑器下模拟运行模式的操作选项
     /// </summary>
     public class EditorSimulateModeOptions : InitializePackageOptions
     {
@@ -35,7 +35,7 @@ namespace YooAsset
     }
 
     /// <summary>
-    /// 离线运行模式的初始化参数
+    /// 离线运行模式的操作选项
     /// </summary>
     public class OfflinePlayModeOptions : InitializePackageOptions
     {
@@ -46,7 +46,7 @@ namespace YooAsset
     }
 
     /// <summary>
-    /// 联机运行模式的初始化参数
+    /// 联机运行模式的操作选项
     /// </summary>
     public class HostPlayModeOptions : InitializePackageOptions
     {
@@ -62,23 +62,23 @@ namespace YooAsset
     }
 
     /// <summary>
-    /// WebGL运行模式的初始化参数
+    /// WebGL运行模式的操作选项
     /// </summary>
     public class WebPlayModeOptions : InitializePackageOptions
     {
         /// <summary>
-        /// Web服务器文件系统初始化参数
+        /// Web 服务器文件系统初始化参数
         /// </summary>
         public FileSystemParameters WebServerFileSystemParameters { get; set; }
 
         /// <summary>
-        /// Web远程文件系统初始化参数
+        /// Web 网络文件系统初始化参数
         /// </summary>
-        public FileSystemParameters WebRemoteFileSystemParameters { get; set; }
+        public FileSystemParameters WebNetworkFileSystemParameters { get; set; }
     }
 
     /// <summary>
-    /// 自定义运行模式的初始化参数
+    /// 自定义运行模式的操作选项
     /// </summary>
     public class CustomPlayModeOptions : InitializePackageOptions
     {

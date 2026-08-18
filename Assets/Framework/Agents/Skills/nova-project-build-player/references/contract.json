@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-build-player",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Build.BuildPlayer(BuildTarget, string, bool, BuildMode)",
+      "when": "目标是已确认完整路径的一次本地 Player 构建"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Build.BuildPackage(BuildTarget, string, bool, BuildMode, bool, bool, DevelopMode)",
+      "when": "需要输出文件夹自动命名或 Android AAB 与 Split 选项"
+    },
+    {
+      "kind": "pipify",
+      "entry": "build.package",
+      "when": "项目明确选择已有 Pipify Batch 作为本次本地 Player 构建入口"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "targetPlatform",
+      "required": true
+    },
+    {
+      "name": "enabledBuildScenes",
+      "required": true
+    },
+    {
+      "name": "outputPathOrFolder",
+      "required": true
+    },
+    {
+      "name": "buildMode",
+      "required": true
+    },
+    {
+      "name": "developmentBuild",
+      "required": true
+    },
+    {
+      "name": "developMode",
+      "required": true
+    },
+    {
+      "name": "platformOutputAndSigningOptions",
+      "required": true
+    },
+    {
+      "name": "executionEntry",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output",
+    "build"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed local Player output path or platform project directory",
+      "documented build-processor staging, markers and generated platform files",
+      "temporary Build Settings, Android output and signing values restored by existing adapters"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/** and Library/PackageCache/**",
+      "manual permanent Resources/YooAssetSettings.asset",
+      "unrelated source, Scene, Prefab or generated output",
+      "CDN, store upload and any remote release write",
+      "Git commit or push and UPM publish"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "build-settings",
+    "player-output-directory"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "覆盖已有 Player 或平台工程输出",
+      "CleanBuild 或 ForceSkipDataBuild",
+      "Android DevelopmentBuild 与 AAB 组合",
+      "读取或临时应用签名凭据",
+      "delete, external write, Git commit or push"
+    ],
+    "rule": "确认绑定 Target、Scene 闭包、输出路径、BuildMode、DevelopmentBuild、DevelopMode 和平台专属选项；任一输入改变后旧确认失效。"
+  },
+  "minimumEvidence": "player-build",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "冻结的 Target、Build Settings Scene、输出路径与两类构建模式",
+    "BuildReport.summary.result 和 outputPath",
+    "本次本地 Player 或平台工程产物",
+    "临时 Build Settings、YooAsset staging 与签名值的恢复结果",
+    "未执行真机、商店、CDN、Git 与 UPM 发布的边界说明"
+  ]
+}

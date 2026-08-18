@@ -1,7 +1,7 @@
 # HybridCLR
 
 > 包名：`com.solotopia.hybridclr`
-> 当前版本：`10.0.4`
+> 当前版本：`10.1.0`
 
 全平台 C# 原生热更新方案，零成本、高性能、低内存
 
@@ -11,7 +11,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.hybridclr": "10.0.1"
+  "com.solotopia.hybridclr": "10.1.0"
 }
 ```
 

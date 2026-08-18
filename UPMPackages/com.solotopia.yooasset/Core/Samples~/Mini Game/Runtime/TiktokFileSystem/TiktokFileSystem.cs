@@ -1,35 +1,32 @@
 #if UNITY_WEBGL && DOUYINMINIGAME
 using YooAsset;
-using TTSDK;
 
 public static class TiktokFileSystemCreater
 {
-    public static FileSystemParameters CreateFileSystemParameters(string packageRoot, IRemoteService remoteService)
+    public static FileSystemParameters CreateFileSystemParameters(IRemoteService remoteService)
     {
-        string fileSystemClass = $"{nameof(TiktokFileSystem)},YooAsset.MiniGame";
-        var fileSystemParams = new FileSystemParameters(fileSystemClass, packageRoot);
-        fileSystemParams.AddParameter(EFileSystemParameter.RemoteService, remoteService);
+        var fileSystemParams = CreateBaseFileSystemParameters(remoteService);
         return fileSystemParams;
     }
-    public static FileSystemParameters CreateFileSystemParameters(string packageRoot, IRemoteService remoteService, IBundleDecryptor decryptor)
+    public static FileSystemParameters CreateFileSystemParameters(IRemoteService remoteService, IBundleDecryptor assetBundleDecryptor)
     {
-        string fileSystemClass = $"{nameof(TiktokFileSystem)},YooAsset.MiniGame";
-        var fileSystemParams = new FileSystemParameters(fileSystemClass, packageRoot);
-        fileSystemParams.AddParameter(EFileSystemParameter.RemoteService, remoteService);
-        fileSystemParams.AddParameter(EFileSystemParameter.AssetbundleDecryptor, decryptor);
+        var fileSystemParams = CreateBaseFileSystemParameters(remoteService);
+        fileSystemParams.AddParameter(EFileSystemParameter.AssetBundleDecryptor, assetBundleDecryptor);
         return fileSystemParams;
     }
-}
+    public static FileSystemParameters CreateFileSystemParameters(IRemoteService remoteService, IBundleDecryptor assetBundleDecryptor, IBundleDecryptor rawBundleDecryptor)
+    {
+        var fileSystemParams = CreateBaseFileSystemParameters(remoteService);
+        fileSystemParams.AddParameter(EFileSystemParameter.AssetBundleDecryptor, assetBundleDecryptor);
+        fileSystemParams.AddParameter(EFileSystemParameter.RawBundleDecryptor, rawBundleDecryptor);
+        return fileSystemParams;
+    }
 
-/// <summary>
-/// 抖音小游戏文件系统
-/// </summary>
-internal class TiktokFileSystem : WebGameFileSystem
-{
-    /// <inheritdoc/>
-    protected override IWebGamePlatform CreatePlatform(string packageRoot)
+    private static FileSystemParameters CreateBaseFileSystemParameters(IRemoteService remoteService)
     {
-        return new TiktokPlatform(TT.GetFileSystemManager());
+        var fileSystemParams = FileSystemParameters.CreateDefaultWebNetworkFileSystemParameters(remoteService, true);
+        fileSystemParams.AddParameter(EFileSystemParameter.WebPlatformStrategy, new TiktokPlatform());
+        return fileSystemParams;
     }
 }
 #endif

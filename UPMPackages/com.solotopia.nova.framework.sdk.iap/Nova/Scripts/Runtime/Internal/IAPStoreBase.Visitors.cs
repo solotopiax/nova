@@ -1,4 +1,4 @@
-﻿/***************************************************************
+/***************************************************************
  * (c) copyright 2026 - 2030, Solotopia
  * All Rights Reserved.
  * -------------------------------------------------------------
@@ -18,6 +18,29 @@ namespace NovaFramework.SDK.IAP.Runtime
     public abstract partial class IAPStoreBase
     {
         /// <summary>
+        /// 商品表，由 InitializeAsync 阶段注入；为 null 时表示该 store 在当前配置下被禁用，子类自行决定降级行为。
+        /// </summary>
+        protected IIAPProductTable Table { get; private set; }
+
+        /// <summary>
+        /// store 运行时上下文，由 InitializeAsync 阶段注入，提供持久化/埋点/UI/网络能力。
+        /// </summary>
+        protected IIAPStoreContext Context { get; private set; }
+
+        /// <summary>
+        /// 当前 store 是否已初始化就绪，可以接受支付请求。
+        /// 默认返回 true（ThirdPay / Voucher 无异步初始化步骤）；
+        /// 依赖平台异步初始化的渠道（如 MobileStore）须重写此属性。
+        /// </summary>
+        protected virtual bool IsStoreReady => true;
+
+        /// <summary>
+        /// 当前 store 使用的日志标签字符串，由子类返回对应渠道的 LogTag 常量。
+        /// 供 LogDebug / LogWarning / LogError 方法内部使用，调用方无需每次指定标签。
+        /// </summary>
+        protected abstract string StoreLogTag { get; }
+
+        /// <summary>
         /// 当前登录用户的唯一标识，用于存档 UID 分区及订单参数透传。
         /// 通过 SetUserId 写入，子类只读使用。
         /// </summary>
@@ -28,6 +51,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// PayAsync 开始时写入 tableId，完成或失败后清零。
         /// </summary>
         protected long m_InPayTableId;
+
         /// <summary>
         /// 当前是否有支付进行中。
         /// </summary>
@@ -37,6 +61,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// 当前 store 是否处于启用状态；由 config.Enabled 初始化，可通过 SetEnabled 动态覆盖。
         /// </summary>
         private bool m_IsEnabled = true;
+
         /// <summary>
         /// 当前 store 是否处于启用状态。
         /// </summary>
@@ -46,6 +71,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// 当前 store 是否已完成 InitializeAsync；config.Enabled=false 时懒初始化尚未触发则为 false。
         /// </summary>
         private bool m_IsInitialized;
+
         /// <summary>
         /// 当前 store 是否已完成 InitializeAsync。
         /// </summary>

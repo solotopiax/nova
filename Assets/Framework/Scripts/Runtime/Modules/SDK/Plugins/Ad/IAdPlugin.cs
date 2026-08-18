@@ -32,6 +32,15 @@ namespace NovaFramework.Runtime
         bool IsAdPlaying(AdFormat format);
 
         /// <summary>
+        /// 异步获取广告 SDK 返回的有效国家或地区代码。
+        /// 内部会等待广告渠道发布国家码；超时后读取广告模块上次成功缓存，仍不可用时返回空字符串。
+        /// 空值和 IV 不会作为有效国家码返回。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>大写国家或地区代码；不可用时返回空字符串。</returns>
+        UniTask<string> GetCountryCodeAsync(CancellationToken ct = default);
+
+        /// <summary>
         /// 向所有支持指定格式的渠道并行发起预加载请求。
         /// 返回统一的 AdLoadResult；Success=true 表示加载成功，Success=false 时携带错误码和错误描述。
         /// 业务层可 await 此方法后直接判断 Success，无需单独订阅加载事件才能取得失败详情。

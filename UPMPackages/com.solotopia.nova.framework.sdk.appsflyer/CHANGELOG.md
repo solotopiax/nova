@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-18
+
+### Changed
+
+- 将 Framework 与 GameLogin 最低依赖同步至 `0.6.15`、`0.1.8`。
+
 ## [0.1.4] - 2026-08-13
 
 ### Changed

@@ -1,0 +1,22 @@
+{
+    "name": "NovaFramework.SDK.FirebasePlugin.Tests.Editor",
+    "rootNamespace": "NovaFramework.SDK.FirebasePlugin.Tests",
+    "references": [
+        "NovaFramework.Runtime",
+        "NovaFramework.SDK.FirebasePlugin.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

@@ -24,6 +24,7 @@
 - `IAPResult.ErrorCode` 和 `IAPInitResult.FailReason` 都是 `int` 透传；核心层只定义通用调度错误，渠道 Store 使用自己的错误码枚举。
 - 打点字段 `nova_reason` 由父包 `Track*Fail` 方法把 Store 侧传入的明确 `Enum` 转成 `int` 后写入；补充描述写入 `nova_reason_detail`。
 - 父包不定义跨 Store 的打点失败原因枚举；`nova_reason` 只要求 Store 侧传入明确 `Enum`，具体枚举下沉到各 Store，上报载荷使用枚举整数值。
+- `IAPStoreBase` partial 布局固定：无后缀文件保留 public/abstract 调用面，`.Visitors.cs` 放字段和状态属性，`.Methods.cs` 放 protected/private/internal 模板与辅助方法，`.Track.cs` / `.Net.cs` 分别承载打点与网络能力。
 - Store 打点 Debug 字段应读取 `IIAPStoreContext.DevelopMode == DevelopMode.Debug`；`EnableAlwaysPaySucceed` 只控制 Editor 调试支付是否跳过真实平台调用，非 Editor 编译态固定关闭。
 - Mobile 官方内购的 Unity IAP 购买失败已纳入 `IAPMobileErrorCode` 的 1000+ 专用号段，避免与 Mobile 通用错误码 0-9 冲突。
 - 父包不解释渠道订单号语义；例如 Mobile 的 Google 验单和本地支付成功打点使用 purchase token，Apple 才使用 `TransactionId`。

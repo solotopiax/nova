@@ -1,6 +1,6 @@
 # FacebookPlugin
 
-`FacebookPlugin` is Nova's Facebook login plugin. It implements `IAuthPlugin` and wraps Facebook Unity SDK initialization, login, profile/avatar access, friend queries, and link sharing.
+`FacebookPlugin` is Nova's Facebook login and acquisition tracking plugin. It implements `IAuthPlugin` and `IAcquisitionTrackPlugin`, and wraps Facebook Unity SDK initialization, login, profile/avatar access, friend queries, link sharing, and App Events.
 
 ## Public API
 
@@ -16,6 +16,9 @@
 | `LoginAsync(string provider, CancellationToken ct = default)` | Starts Facebook login and returns Nova `AuthResult`. |
 | `LogoutAsync(CancellationToken ct = default)` | Calls Facebook logout and clears local current-user state. |
 | `EnsureFriendsPermissionAsync(CancellationToken ct = default)` | Requests `user_friends` permission for platform-visible friend data. |
+| `SetUserId(string userId)` | Syncs the Nova business user id to Facebook App Events through `FB.Mobile.UserID`. |
+| `TrackEvent(TrackEvent evt)` | Logs a Facebook App Event from the common Nova event payload. |
+| `TrackEvent(string eventName, Dictionary<string, object> parameters)` | Logs a Facebook App Event through `FB.LogAppEvent`. |
 
 ## Config
 
@@ -44,6 +47,8 @@ After successful login, the plugin updates `CurrentUserData` with the current Fa
 - `AvatarPath`
 
 It also publishes `SDKDataKeys.OpenId` with `UserId` and `SDKDataKeys.ThirdLoginProvider` with the provider name, allowing analytics plugins such as TGA to consume the login identity without a direct package dependency.
+
+During initialization, the plugin also subscribes to `SDKEventData.UserLogin`. When the Nova business user logs in, `OnUserLogin` calls `SetUserId(login.UserId)` so Facebook App Events can associate acquisition events with the business user id.
 
 `AuthResult.Token` maps to the Facebook Access Token. Callers should use `CurrentUserData` for current login state and should not cache old tokens or avatar paths beyond the active session contract.
 
@@ -74,6 +79,12 @@ me/friends?fields=id,name,picture
 `Share.ShareLinkAsync(FacebookShareRequest request, CancellationToken ct = default)` wraps `FB.ShareLink` and returns `FacebookShareResult`.
 
 `FacebookShareRequest` must include a shareable link. If the link is empty, the service returns a failed result and writes `ErrorMessage`. For a broader Facebook Unity SDK API map extracted from the removed examples, see [FacebookSdkUsage.md](./FacebookSdkUsage.md).
+
+## Acquisition Tracking
+
+`FacebookPlugin` implements `IAcquisitionTrackPlugin` for 投放 / 买量转化事件. `TrackEvent` forwards events to Facebook App Events through `FB.LogAppEvent`; empty event names are ignored. Parameter dictionaries may be `null`; empty keys and `null` values are skipped, primitive values are preserved, and unsupported objects are converted with `ToString()`.
+
+This interface intentionally does not expose `SetUserProperty`, because Facebook App Events integration in this package only needs user id sync and event logging.
 
 ## ATT-Limited Data Handling
 

@@ -64,6 +64,10 @@
               "deprecated"
             ]
           },
+          "replacedBy": {
+            "type": "string",
+            "pattern": "^nova-project-[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
           "journeys": {
             "type": "array",
             "minItems": 1,
@@ -80,7 +84,8 @@
                 "read",
                 "workspace-write",
                 "unity-write",
-                "generated-output"
+                "generated-output",
+                "build"
               ]
             }
           },
@@ -88,10 +93,38 @@
             "enum": [
               "static",
               "compile",
-              "play"
+              "play",
+              "bundle-build",
+              "player-build"
             ]
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "deprecated"
+                }
+              },
+              "required": [
+                "status"
+              ]
+            },
+            "then": {
+              "required": [
+                "replacedBy"
+              ]
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "replacedBy"
+                ]
+              }
+            }
+          }
+        ]
       }
     }
   }

@@ -7,6 +7,13 @@
     "unity": ">=6000.4"
   },
   "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-inspection",
+      "entry": "catalog.json + selected references/contract.json",
+      "when": "需要从已发现的消费端 Skill 中选择最窄路径时"
+    }
+  ],
   "inputs": [
     {
       "name": "userGoal",

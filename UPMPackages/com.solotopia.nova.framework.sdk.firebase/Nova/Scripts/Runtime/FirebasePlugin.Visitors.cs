@@ -11,6 +11,7 @@
 #if !UNITY_WEBGL
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.FirebasePlugin.Runtime
@@ -81,9 +82,43 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         private FirebaseReportNetService m_ReportNetService;
 
         /// <summary>
+        /// Firebase push task 调度器，集中管理缓存、计时器和 flush 状态。
+        /// </summary>
+        private FirebasePushTaskDispatcher m_PushTaskDispatcher;
+
+        /// <summary>
         /// 由 SDKManager 注入并在初始化期缓存的运行时配置；事件回调（如 OnUserLogin）需读取协议名等字段时使用。
         /// </summary>
         private FirebasePluginConfig m_RuntimeConfig;
+
+        /// <summary>
+        /// 等待同步到 Firebase 的用户 ID。
+        /// SetUserId 可能早于 Firebase 真正初始化，需缓存非空 UID，初始化完成后再补同步。
+        /// </summary>
+        private string m_PendingUserId;
+
+        /// <summary>
+        /// 默认 Topic 同步后台任务的取消令牌源。
+        /// Firebase 释放时取消基础 Topic 和国家 Topic 的异步订阅流程，避免插件销毁后继续访问状态。
+        /// </summary>
+        private CancellationTokenSource m_DefaultTopicSyncCts;
+
+        /// <summary>
+        /// 基础默认 Topic 同步锁。
+        /// 启动同步和 Localization 刷新同步都可能写 BaseState，需串行化读写存档和 Firebase 订阅差异。
+        /// </summary>
+        private readonly SemaphoreSlim m_DefaultBaseTopicSyncLock = new SemaphoreSlim(1, 1);
+
+        /// <summary>
+        /// 是否已订阅 Localization 刷新事件。
+        /// </summary>
+        private bool m_DefaultTopicLocalizationSubscribed;
+
+        /// <summary>
+        /// 应用是否已经进入过后台暂停状态。
+        /// 用于区分真正的后台恢复与 Unity 启动期可能派发的 OnApplicationPause(false)。
+        /// </summary>
+        private bool m_WasApplicationPaused;
     }
 }
 #endif

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 项目配置启动场景"
+  short_description: "检查并配置启动场景、Nova 根、Content 职责和 Build Settings"
+  default_prompt: "使用 $nova-project-setup-entry-scene 配置当前 Nova 项目的启动场景和运行拓扑。"

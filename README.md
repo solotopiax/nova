@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.6.14-blue.svg)
+![release](https://img.shields.io/badge/release-v0.6.15-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -24,14 +24,14 @@
 | com.unity.textmeshpro | 3.0.9 |
 | com.unity.nuget.newtonsoft-json | 3.2.2 |
 | com.unity.inputsystem | 1.19.0 |
-| com.solotopia.hybridclr | 10.0.6 |
+| com.solotopia.hybridclr | 10.1.0 |
 | com.solotopia.unitask | 10.0.6 |
 | com.solotopia.sqlcipher4unity3d | 10.0.5 |
 | com.solotopia.simplediskutils | 1.0.7 |
 | com.solotopia.excelio | 1.0.6 |
 | com.solotopia.nicevibrations | 10.0.5 |
-| com.solotopia.luban | 10.0.6 |
-| com.solotopia.yooasset | 1.0.6 |
+| com.solotopia.luban | 10.1.0 |
+| com.solotopia.yooasset | 1.1.0 |
 
 ## 架构概览
 

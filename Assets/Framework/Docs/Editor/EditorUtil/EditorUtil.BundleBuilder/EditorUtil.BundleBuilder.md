@@ -3,7 +3,7 @@
 **类签名**：`public static partial class EditorUtil.BundleBuilder`
 **命名空间**：`NovaFramework.Editor`
 
-YooAsset ScriptableBuildPipeline 资源包构建薄封装。一一对齐 BundleBuilderWindow → ScriptableBuildPipeline 视图的 11 项配置。
+YooAsset 标准 AssetBundle 与可选 RawFile 构建薄封装。两个入口使用独立 DTO、构建参数和 Pipify Step，互不改变对方语义。
 
 ---
 
@@ -11,10 +11,11 @@ YooAsset ScriptableBuildPipeline 资源包构建薄封装。一一对齐 BundleB
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.BundleBuilder.cs` | `EditorUtil.BundleBuilder` | public API：`BuildAssetBundle` / `GetDefaultPackageVersion` |
+| `EditorUtil.BundleBuilder.cs` | `EditorUtil.BundleBuilder` | public API：`BuildAssetBundle` / `BuildRawFileBundle` / `GetDefaultPackageVersion` |
 | `EditorUtil.BundleBuilder.Visitors.cs` | `EditorUtil.BundleBuilder` | 常量：`c_LogPrefix` |
 | `EditorUtil.BundleBuilder.Methods.cs` | `EditorUtil.BundleBuilder` | 私有方法：`ResolveClassName` / `CreateInstanceOrNull` / `ResolveBuiltinShaderBundleName` |
-| `AssetBundleBuildArgs.cs` | `AssetBundleBuildArgs` | `[Serializable]` 参数 DTO（11 项字段） |
+| `AssetBundleBuildArgs.cs` | `AssetBundleBuildArgs` | `[Serializable]` 标准 AssetBundle 构建参数 DTO |
+| `RawFileBuildArgs.cs` | `RawFileBuildArgs` | `[Serializable]` RawFile 构建参数 DTO |
 
 ---
 
@@ -25,7 +26,7 @@ EditorUtil (public static partial class)
   └── BundleBuilder (public static partial class)
 ```
 
-`AssetBundleBuildArgs` 为同命名空间下独立 sealed class（直接 namespace 顶层定义，不嵌套），便于被 Pipify Step 反射读取并序列化。
+`AssetBundleBuildArgs` 与 `RawFileBuildArgs` 均为同命名空间下的独立 sealed class，便于 Pipify Step 反射读取并序列化。
 
 ---
 
@@ -39,13 +40,18 @@ EditorUtil (public static partial class)
 public static BuildResult BuildAssetBundle(AssetBundleBuildArgs args);
 
 /// <summary>
+/// 使用 RawFileBuildPipeline 启动一次原生文件构建。
+/// </summary>
+public static BuildResult BuildRawFileBundle(RawFileBuildArgs args);
+
+/// <summary>
 /// 生成默认包裹版本号（yyyy-MM-dd-totalMinutes）。
 /// 与 BuildPipelineViewerBase.GetDefaultPackageVersion 完全一致。
 /// </summary>
 public static string GetDefaultPackageVersion();
 ```
 
-**`AssetBundleBuildArgs` 字段（11 项）：**
+**`AssetBundleBuildArgs` 字段：**
 
 | 字段 | 类型 | 默认值 | 说明 | 标记 |
 |---|---|---|---|---|
@@ -54,13 +60,32 @@ public static string GetDefaultPackageVersion();
 | `BuildVersion` | `string` | `""` | 包裹版本号；空字符串时按 `yyyy-MM-dd-totalMinutes` 自动生成 | `[PipifyDynamicDefault(typeof(EditorUtil.BundleBuilder), nameof(EditorUtil.BundleBuilder.GetDefaultPackageVersion))]` |
 | `ClearBuildCache` | `bool` | `true` | 是否清理构建缓存 | — |
 | `UseAssetDependencyDB` | `bool` | `false` | 是否使用资源依赖数据库 | — |
-| `BundleEncryptorClassName` | `string` | `""` | 资源包加密器全类型名；空时回退 `YooAsset.Editor.EncryptionNone` | `[PipifyDropdown(typeof(IBundleEncryptor))]` |
-| `ManifestEncryptorClassName` | `string` | `""` | 资源清单加密器全类型名；空时回退 `YooAsset.Editor.ManifestEncryptorNone` | `[PipifyDropdown(typeof(IManifestEncryptor))]` |
-| `ManifestDecryptorClassName` | `string` | `""` | 资源清单解密器全类型名；空时回退 `YooAsset.Editor.ManifestDecryptorNone` | `[PipifyDropdown(typeof(IManifestDecryptor))]` |
+| `BundleEncryptorClassName` | `string` | `typeof(EncryptionNone).FullName` | 资源包加密器全类型名；空时同样回退 `YooAsset.Editor.EncryptionNone` | `[PipifyDropdown(typeof(IBundleEncryptor))]` |
+| `ManifestEncryptorClassName` | `string` | `typeof(ManifestEncryptorNone).FullName` | 资源清单加密器全类型名；空时同样回退 `YooAsset.Editor.ManifestEncryptorNone` | `[PipifyDropdown(typeof(IManifestEncryptor))]` |
+| `ManifestDecryptorClassName` | `string` | `typeof(ManifestDecryptorNone).FullName` | 资源清单解密器全类型名；空时同样回退 `YooAsset.Editor.ManifestDecryptorNone` | `[PipifyDropdown(typeof(IManifestDecryptor))]` |
 | `Compression` | `ECompressOption` | `LZ4` | 压缩方式（`Uncompressed` / `LZMA` / `LZ4`） | — |
 | `FileNameStyle` | `EFileNameStyle` | `BundleName_HashName` | 远端资源文件命名风格 | — |
 | `BundledCopyOption` | `EBundledCopyOption` | `ClearAndCopyAll` | 首包资源拷贝选项 | — |
 | `BundledCopyParams` | `string` | `""` | 首包资源拷贝标签（仅按标签拷贝时生效） | `[PipifyVisibleWhen(nameof(BundledCopyOption), (int)ClearAndCopyByTags, (int)OnlyCopyByTags)]` |
+
+**`RawFileBuildArgs` 字段：**
+
+| 字段 | 类型 | 默认值 | 说明 | 标记 |
+|---|---|---|---|---|
+| `Target` | `BuildTarget` | `NoTarget` | 目标平台；`NoTarget` 时使用 `EditorUserBuildSettings.activeBuildTarget` | — |
+| `PackageName` | `string` | `"Default"` | 包裹名称（**必填**） | `[PipifyDynamicDropdown(typeof(AssetBundleBuildArgs), nameof(AssetBundleBuildArgs.GetPackageNameOptions))]` |
+| `BuildVersion` | `string` | `""` | 包裹版本号；空字符串时生成默认版本号 | `[PipifyDynamicDefault(typeof(EditorUtil.BundleBuilder), nameof(EditorUtil.BundleBuilder.GetDefaultPackageVersion))]` |
+| `ClearBuildCache` | `bool` | `true` | 是否清理构建缓存 | — |
+| `UseAssetDependencyDB` | `bool` | `false` | 是否使用资源依赖数据库 | — |
+| `BundleEncryptorClassName` | `string` | `typeof(EncryptionNone).FullName` | RawBundle 加密器全类型名 | `[PipifyDropdown(typeof(IBundleEncryptor))]` |
+| `ManifestEncryptorClassName` | `string` | `typeof(ManifestEncryptorNone).FullName` | 资源清单加密器全类型名 | `[PipifyDropdown(typeof(IManifestEncryptor))]` |
+| `ManifestDecryptorClassName` | `string` | `typeof(ManifestDecryptorNone).FullName` | 资源清单解密器全类型名 | `[PipifyDropdown(typeof(IManifestDecryptor))]` |
+| `FileNameStyle` | `EFileNameStyle` | `BundleName_HashName` | 远端资源文件命名风格 | — |
+| `BundledCopyOption` | `EBundledCopyOption` | `ClearAndCopyAll` | 首包资源拷贝选项 | — |
+| `BundledCopyParams` | `string` | `""` | 首包资源拷贝标签参数 | `[PipifyVisibleWhen(nameof(BundledCopyOption), (int)ClearAndCopyByTags, (int)OnlyCopyByTags)]` |
+| `IncludePathInHash` | `bool` | `false` | 计算 RawFile 哈希时是否包含文件路径 | — |
+
+Raw DTO 不包含 `Compression`、`BuiltinShadersBundleName` 等 ScriptableBuildPipeline 专属配置。
 
 **Pipify 渲染特性（PipifyWindow 解析，BundleBuilder 自身不依赖）：**
 - `PipifyDropdown(InterfaceType)`：将 string 字段渲染为接口实现类下拉框，存储 `Type.FullName`，首项 `(未配置 → Default)` 表示空串。
@@ -72,13 +97,20 @@ public static string GetDefaultPackageVersion();
 - `ArgumentException`：`PackageName` 为空。
 - `InvalidOperationException`：`BuildResult.Success == false`。
 
-**固定行为（与 BundleBuilder 窗口对齐，不外暴露）：**
+**标准 AssetBundle 固定行为：**
 - 输出根目录 = `BundleBuilderHelper.GetDefaultBuildOutputRoot()`（项目根 `/Bundles`）
 - BundledFileRoot = `BundleBuilderHelper.GetStreamingAssetsRoot()`
 - BuildPipeline = `EBuildPipeline.ScriptableBuildPipeline`
 - BuildBundleType = `EBundleType.AssetBundle`
 - `EnableSharePackRule = true` / `VerifyBuildingResult = true`
 - `BuiltinShadersBundleName` 由 `BundleCollectorSettingData.Setting.UniqueBundleName` + `DefaultBundlePackRule.CreateShadersPackRuleResult()` 推导
+
+**RawFile 固定行为：**
+- 输出根目录与 BundledFileRoot 使用相同的 YooAsset 默认路径
+- BuildPipeline = `EBuildPipeline.RawFileBuildPipeline`
+- BuildBundleType = `EBundleType.RawBundle`
+- `VerifyBuildingResult = true`
+- 仅处理 Collector 中使用 `PackRawFile` 的目标资源
 
 ---
 
@@ -100,9 +132,20 @@ EditorUtil.BundleBuilder.BuildAssetBundle(new AssetBundleBuildArgs
     ClearBuildCache = true,
     BundledCopyOption = EBundledCopyOption.ClearAndCopyAll,
 });
+
+// 可选 RawFile 构建：目标资源必须使用 PackRawFile
+EditorUtil.BundleBuilder.BuildRawFileBundle(new RawFileBuildArgs
+{
+    PackageName = "RawPackage",
+    Target = BuildTarget.Android,
+    IncludePathInHash = false,
+});
 ```
 
-Pipify Step `assetbundle.build` 直接复用 `AssetBundleBuildArgs` 作为参数类。
+- `bundlebuilder.build` 复用 `AssetBundleBuildArgs`，保持 `ScriptableBuildParameters` + `ScriptableBuildPipeline` + `AssetBundle`。
+- `bundlebuilder.build_raw_file` 复用 `RawFileBuildArgs`，使用 `RawFileBuildParameters` + `RawFileBuildPipeline` + `RawBundle`。
+
+HybridCLR DLL 不走 RawFile 通道，仍按标准 AssetBundle 构建并通过 `LoadAsync<TextAsset>` 加载。
 
 ---
 

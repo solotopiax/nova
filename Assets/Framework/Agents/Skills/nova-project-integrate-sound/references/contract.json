@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-integrate-sound",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-edit",
+      "entry": "project-confirmed Sound source and business sound trigger",
+      "when": "只修改已冻结的声音源行、业务触发和停止 / 释放生命周期"
+    },
+    {
+      "kind": "unity-mcp",
+      "entry": "SoundComponentInspector, AudioClip, BundleCollectorSetting and existing trigger target editing",
+      "when": "更新已确认的 SoundComponent、组壳、Mixer、AudioClip、Collector 或既有触发目标"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Config.DimensionalResolver.ResolveYooAsset / YooAsset.Editor.SettingLoader.LoadSettingDataAtPath<BundleCollectorSetting>",
+      "when": "冻结 active ConfigMaster、YooAssetEditorConfigsMask 与 target Platform/Channel/DevelopMode 后，按解析出的 BundleCollectorSettingPath 定位既有 Collector；解析为空、漂移或与确认 Collector 不一致时 blocked"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Sound.Exporter.ExportData / ExportCode / ExportAll",
+      "when": "导出已冻结 Sound Unit 的数据、类型或完整确认范围"
+    },
+    {
+      "kind": "pipify",
+      "entry": "export.sound.data / export.sound.code",
+      "when": "仅在全部 SoundUnitsSettings 的导出范围已确认时复用 Batch"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Sound.LoadAsync / HasSoundGroup / PlaySound / StopSound / ReleaseAssetBySerialID",
+      "when": "在 Play Mode 中加载、确认目标组、触发并验证停止或释放责任"
+    },
+    {
+      "kind": "unity-mcp",
+      "entry": "Play Mode AudioSource playback inspection",
+      "when": "等待异步 AudioClip 加载后检查目标 AudioSource 播放与停止"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "soundComponentSettingsAndActiveScene",
+      "required": true
+    },
+    {
+      "name": "soundTableAndExportScope",
+      "required": true
+    },
+    {
+      "name": "audioClipOwnershipCollectorAndAddress",
+      "required": true
+    },
+    {
+      "name": "soundRowAndGroupContract",
+      "required": true
+    },
+    {
+      "name": "businessTriggerAndLifecycle",
+      "required": true
+    },
+    {
+      "name": "runtimeSuccessProbe",
+      "required": true
+    },
+    {
+      "name": "activeConfigMasterAndResolvedYooAssetPaths",
+      "required": true
+    },
+    {
+      "name": "targetPlatformChannelAndMode",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed Sound source rows and selected data or type output",
+      "confirmed AudioClip asset, existing Collector membership and address",
+      "confirmed SoundComponent, SoundSettings, SoundGroupShell or AudioMixer settings through Unity Editor or MCP",
+      "confirmed existing business sound trigger and its stop or release lifecycle",
+      "confirmed existing target Prefab binding directly related to the sound trigger"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "handwritten Unity asset, Prefab, Scene or meta YAML",
+      "manual edits to generated Sound JSON, bytes or C# output",
+      "placeholder, generated or unconfirmed AudioClip, Collector, Package or address",
+      "unrelated Sound Unit, Collector, Package, AudioMixer, UI layout, View, UIGroup or registration",
+      "export.excel.all, CDN deployment, Bundle or Player build, Framework Sound API, Manager or Inspector changes"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "active-config-master",
+    "yooasset-config-coordinate",
+    "bundle-collector",
+    "sound-settings",
+    "sound-export-output",
+    "business-sound-entry",
+    "selected-target-prefab",
+    "active-scene"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous Sound source, Unit, Name, AudioClip, Collector, Package, address, group, Mixer, AgentCount, load entry or runtime success probe",
+      "active ConfigMaster、YooAssetEditorConfigsMask、target Platform/Channel/DevelopMode、有效 YooAssetSettingsPath 或 BundleCollectorSettingPath 不明确、漂移或与确认 Collector 不一致",
+      "change data format, source or output path, SoundGroupShell, AudioMixer, Collector, Package, address, existing audio asset, business trigger or lifecycle",
+      "replace a non-generated asset, create or change an existing target Prefab binding, remove a source row or clean generated output",
+      "delete, external write, credential use, Bundle or Player build, Git commit or push"
+    ],
+    "rule": "确认激活 ConfigMaster、YooAssetEditorConfigsMask、target Platform/Channel/DevelopMode、ResolveYooAsset 的有效路径、真实 AudioClip、唯一地址、Sound 表和导出范围、SoundComponent 加载入口、声音组、业务触发与停止生命周期、实际播放成功探针及最小写入集；任一输入或范围变化后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "冻结的 active ConfigMaster、YooAssetEditorConfigsMask、target Platform/Channel/DevelopMode、ResolveYooAsset 有效路径，以及 Sound 表行、AudioClip、Collector、Package、地址和声音组映射",
+    "定向 Exporter 或已确认 Sound Batch 的暂存发布与 Unity 编译证据",
+    "Play Mode 中 Nova.Sound.LoadAsync、HasSoundGroup、业务触发和实际 AudioSource 播放证据",
+    "BGM 停止或 SFX 停止 / ReleaseAssetBySerialID 的生命周期证据"
+  ]
+}

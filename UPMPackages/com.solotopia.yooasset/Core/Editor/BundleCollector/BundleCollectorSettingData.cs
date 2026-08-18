@@ -5,6 +5,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
+// modify: local fork - 支持 Nova 切换激活 ConfigMaster 后显式作废资源收集配置缓存。
+
 namespace YooAsset.Editor
 {
     /// <summary>
@@ -175,17 +177,24 @@ namespace YooAsset.Editor
             }
         }
 
-        // modify: by taoye - 显式作废 s_setting 缓存；外部（Nova WorkspaceActive 切换激活 ConfigMaster 时）调用，
-        //         让下一次 Setting getter 重新走 SettingLoader 的显式路径 provider，避免 sample 切换后仍命中旧缓存。
         /// <summary>
-        /// 作废 BundleCollectorSetting 静态缓存。
-        /// <para>调用后下一次访问 Setting 会重新通过 SettingLoader 加载，IsDirty 一并清零。</para>
-        /// <para>典型触发：外部切换激活 ConfigMaster（例如多 sample 共存时切到另一份 BundleCollectorSetting）。</para>
+        /// 作废资源收集配置静态缓存，使下次访问重新通过 SettingLoader 解析当前显式路径。
         /// </summary>
         public static void ResetCache()
         {
             s_setting = null;
             IsDirty = false;
+        }
+
+        /// <summary>
+        /// 工程中是否已存在收集器配置文件
+        /// </summary>
+        /// <returns>存在返回 true</returns>
+        public static bool HasSettingAsset()
+        {
+            string typeName = nameof(BundleCollectorSetting);
+            var guids = AssetDatabase.FindAssets($"t:{typeName}");
+            return guids != null && guids.Length > 0;
         }
 
         /// <summary>

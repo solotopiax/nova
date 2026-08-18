@@ -8,6 +8,9 @@
  * descrip:   DemoFirebaseView 演示 View — 生命周期与公开接口
  ***************************************************************/
 
+using System.Collections.Generic;
+using TMPro;
+
 namespace NovaFramework.Sdk.Firebase.Samples.Runtime
 {
     /// <summary>
@@ -62,7 +65,86 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
                 SetButtonApiHint(m_LoginButton, "Nova.Network.Kit<Login>().Async(...) / Nova.SDK.Login(uid)");
             }
 
+            InitializePushTaskControls();
             RefreshEventParamsPreview();
+        }
+
+        // 初始化 push task 测试控件的固定选项和事件监听。
+        private void InitializePushTaskControls()
+        {
+            if (m_PushTaskKeyDropdown != null)
+            {
+                m_PushTaskKeyDropdown.ClearOptions();
+                m_PushTaskKeyDropdown.AddOptions(new List<TMP_Dropdown.OptionData>
+                {
+                    new TMP_Dropdown.OptionData("demo_push_task_1"),
+                    new TMP_Dropdown.OptionData("demo_push_task_2"),
+                    new TMP_Dropdown.OptionData("demo_push_task_3"),
+                    new TMP_Dropdown.OptionData("demo_push_task_4"),
+                });
+                m_PushTaskKeyDropdown.value = 0;
+                m_PushTaskKeyDropdown.RefreshShownValue();
+                m_PushTaskKeyDropdown.onValueChanged.AddListener(_ => RefreshPushTaskPreview());
+            }
+
+            if (m_PushTaskTriggerTimeDropdown != null)
+            {
+                m_PushTaskTriggerTimeDropdown.ClearOptions();
+                m_PushTaskTriggerTimeDropdown.AddOptions(new List<TMP_Dropdown.OptionData>
+                {
+                    new TMP_Dropdown.OptionData("UTC+0 当前时间"),
+                    new TMP_Dropdown.OptionData("UTC+0 1 分钟后"),
+                    new TMP_Dropdown.OptionData("UTC+0 5 分钟后"),
+                    new TMP_Dropdown.OptionData("UTC+0 10 分钟后"),
+                    new TMP_Dropdown.OptionData("UTC+0 1 小时后"),
+                    new TMP_Dropdown.OptionData("UTC+0 3 小时后"),
+                    new TMP_Dropdown.OptionData("UTC+0 12 小时后"),
+                    new TMP_Dropdown.OptionData("UTC+0 24 小时后"),
+                });
+                m_PushTaskTriggerTimeDropdown.value = 0;
+                m_PushTaskTriggerTimeDropdown.RefreshShownValue();
+                m_PushTaskTriggerTimeDropdown.onValueChanged.AddListener(_ => RefreshPushTaskPreview());
+            }
+
+            if (m_PushTaskTemplateIdDropdown != null)
+            {
+                m_PushTaskTemplateIdDropdown.ClearOptions();
+                m_PushTaskTemplateIdDropdown.AddOptions(new List<TMP_Dropdown.OptionData>
+                {
+                    new TMP_Dropdown.OptionData("1"),
+                    new TMP_Dropdown.OptionData("2"),
+                    new TMP_Dropdown.OptionData("3"),
+                    new TMP_Dropdown.OptionData("4"),
+                });
+                m_PushTaskTemplateIdDropdown.value = 0;
+                m_PushTaskTemplateIdDropdown.RefreshShownValue();
+                m_PushTaskTemplateIdDropdown.onValueChanged.AddListener(_ => RefreshPushTaskPreview());
+            }
+
+            if (m_PushTaskCancelToggle != null)
+            {
+                m_PushTaskCancelToggle.isOn = false;
+                m_PushTaskCancelToggle.onValueChanged.AddListener(_ => RefreshPushTaskPreview());
+            }
+
+            if (m_SendPushTaskButton != null)
+            {
+                m_SendPushTaskButton.onClick.AddListener(OnSendPushTaskButtonClick);
+                SetPushTaskSendButtonInteractable(false);
+                SetButtonApiHint(m_SendPushTaskButton, "IFirebasePushTaskPlugin.QueuePushTaskAsync(FirebasePushTask)");
+            }
+
+            RefreshPushTaskPreview();
+        }
+
+        private void SetPushTaskSendButtonInteractable(bool interactable)
+        {
+            if (m_SendPushTaskButton == null)
+            {
+                return;
+            }
+
+            m_SendPushTaskButton.interactable = interactable;
         }
 
         /// <summary>
@@ -74,7 +156,7 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
         {
             base.OnOpen(userData);
 
-            AppendFeedback("Firebase 演示已打开，可获取 Instance ID、Token，编辑事件属性、发送打点或执行登录。");
+            AppendFeedback("Firebase 演示已打开，可获取 Instance ID、Token，编辑事件属性、发送打点或执行登录；Push Task 需先登录后才可发送。");
         }
 
         /// <summary>

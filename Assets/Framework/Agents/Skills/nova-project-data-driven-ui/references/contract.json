@@ -7,7 +7,45 @@
     "unity": ">=6000.4"
   },
   "requires": [
+    "nova-project-integrate-table",
     "nova-project-ui-create-view"
+  ],
+  "actionAdapters": [
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed Luban source, business UIView source and UI registration source",
+      "when": "表源、View、命名空间、UIGroup 和注册源均已经冻结时"
+    },
+    {
+      "kind": "unity-editor-api",
+      "entry": "TableComponentInspector",
+      "when": "配置已确认的 Luban Project、导出描述和运行时加载描述时"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Table.Exporter.ExportCode / ExportData / ExportAll",
+      "when": "导出已冻结的 ProjectId 和 DescriptionId 时"
+    },
+    {
+      "kind": "pipify",
+      "entry": "export.table.code / export.table.data",
+      "when": "复用已确认且范围为全部启用描述的 Table Batch 时"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Table.HasTable<T>() / Nova.Table.GetTable<T>()",
+      "when": "已确认表已接入当前项目的运行时加载链时"
+    },
+    {
+      "kind": "unity-mcp",
+      "entry": "Unity Editor/MCP Prefab and existing navigation binding",
+      "when": "用户已确认 Unity 写入范围和入口行为时"
+    },
+    {
+      "kind": "unity-menu",
+      "entry": "confirmed project UI export entry",
+      "when": "当前项目已有且本次确需 UI 导出时"
+    }
   ],
   "inputs": [
     {
@@ -15,7 +53,19 @@
       "required": true
     },
     {
-      "name": "tableTypeAndLoadPath",
+      "name": "lubanProjectAndSource",
+      "required": true
+    },
+    {
+      "name": "exportDescriptionAndOutputScope",
+      "required": true
+    },
+    {
+      "name": "runtimeLoadDescriptionAndAssetAddresses",
+      "required": true
+    },
+    {
+      "name": "targetTableTypeAndReadProbe",
       "required": true
     },
     {
@@ -27,7 +77,23 @@
       "required": true
     },
     {
-      "name": "viewAndUiGroup",
+      "name": "viewName",
+      "required": true
+    },
+    {
+      "name": "namespaceAndAssembly",
+      "required": true
+    },
+    {
+      "name": "uiGroup",
+      "required": true
+    },
+    {
+      "name": "prefabPathAndAssetLocation",
+      "required": true
+    },
+    {
+      "name": "uiRegistrationSource",
       "required": true
     },
     {
@@ -42,23 +108,31 @@
   ],
   "writeScope": {
     "allow": [
-      "confirmed business UI source",
+      "confirmed Luban schema and data source",
+      "confirmed TableComponent settings through Unity Editor or MCP",
+      "confirmed table code and data output for the selected export description",
+      "confirmed business read probe",
+      "confirmed business UIView source",
       "confirmed target Prefab",
       "confirmed UI registration source",
       "confirmed existing navigation source",
-      "generated UI output for this change"
+      "generated UI output for this registration"
     ],
     "deny": [
       "Nova Manager and UIManager implementation",
-      "Luban or UI generated source",
       "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
       "handwritten Prefab or Scene YAML",
-      "unrelated table or Config export"
+      "manual edits to generated table or UI output",
+      "unrelated Luban project, export description, table output or Config export",
+      "unrelated UI registration, navigation or generated output"
     ]
   },
   "locks": [
     "unity-editor",
     "asset-database",
+    "table-settings",
+    "table-export-output",
     "active-scene",
     "ui-registration",
     "selected-output-directory"
@@ -66,8 +140,9 @@
   "idempotency": "orchestrate",
   "confirmation": {
     "requiredFor": [
-      "ambiguous row selection, UIGroup, field mapping or entry behavior",
-      "table schema/source change",
+      "ambiguous table source, schema, ProjectId, DescriptionId, output, DataTarget or Asset address",
+      "ambiguous row selection, field mapping, UIGroup, registration source, asset path or entry behavior",
+      "create or change a table schema, source or runtime load description",
       "replace non-generated asset",
       "delete, external write, credential use, Git commit or push"
     ],
@@ -81,9 +156,10 @@
     "not_applicable"
   ],
   "evidence": [
+    "选定 Luban 输入与 TableSettings 映射",
+    "精确表导出结果、UI 导出和 Unity 编译",
     "表加载与公开 API 可用性",
     "字段绑定与入口行为",
-    "UI 导出和 Unity 编译",
     "打开、显示、关闭的 Play smoke"
   ]
 }

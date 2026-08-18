@@ -44,7 +44,8 @@
 - Google 验单与本地支付成功打点去重使用 `GoogleToken`，不是 `TransactionId`。
 - `nova_iap_local_pay_success.nova_order_id` 优先使用 Unity IAP receipt 解析出的平台 `OrderId`；缺失时回退当前运行期 `TransactionId`。
 - `nova_iap_validate_success.nova_order_id` 优先使用服务端验单响应 `OrderId`；缺失时回退当前运行期 `TransactionId`。
-- `nova_iap_local_pay_fail` / `nova_iap_validate_fail` / `nova_iap_validate_fail_finish` 的 `nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值；补充描述写入 `nova_reason_detail`。
+- `nova_iap_local_pay_fail` 覆盖所有 `MobileStore.PayAsync` 返回失败 `IAPResult` 的场景；Unity IAP `OnPurchaseFailed` 与 `OnPurchaseConfirmed(FailedOrder)` 也会直接上报本地支付失败点。失败打点不做运行期去重；`nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值，`PluginRouter` guard 失败会映射到 Mobile 错误码并在 `nova_reason_detail` 保留原始 `ErrorSource:ErrorCode`。
+- `nova_iap_validate_fail` / `nova_iap_validate_fail_finish` 的 `nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值；补充描述写入 `nova_reason_detail`。
 - Mobile 打点 `Debug` 字段来自父包注入的 `DevelopMode == Debug`，不再使用 `EnableAlwaysPaySucceed`；`EnableAlwaysPaySucceed` 只在 Editor 调试支付时生效。
 - 商品拉取成功后只自动触发启动期平台 `FetchPurchases` 和延迟权益刷新；订阅倒计时到期会再次 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行权益刷新；`RestoreTransactions` 仅由用户主动恢复购买入口调用，完整补单扫描仍由统一补单入口串行执行。
 - Mobile 后台任务统一经 `MobileServiceHub.RunBackgroundTask` 启动并接入移动端官方内购商店运行期取消令牌；`DisposeAsync` 会先取消后台任务，再释放各内部服务。入口委托固定为 `Func<CancellationToken, UniTask>`，返回 `UniTask<T>` 的动作需要用 lambda 或包装方法显式 `await` 后丢弃返回值。支付验单桥接被取消时返回 `StoreNotAvailable` 失败结果，不向业务层抛取消异常。
@@ -53,7 +54,7 @@
 ## 最新实现快照
 
 - 初始化失败原因只有一套：`MobileStoreInitFailureReason`，用于 `IAPInitResult.FailReason` 和 `nova_iap_init.nova_init_failure_reason`。
-- 支付过程失败原因只有一套：`IAPMobileErrorCode`，其中 0-9 是业务返回粗粒度错误，1000-1010 是 Unity IAP 本地购买失败映射，2000+ 是验单打点细分原因。
+- 支付过程失败原因只有一套：`IAPMobileErrorCode`，其中 0-9 是业务返回粗粒度错误，1000-1010 是 Unity IAP 本地购买失败映射，2000+ 是验单打点细分原因；`PluginRouter` 层 guard 失败在 Mobile 本地支付失败打点中映射到该枚举域，原始来源保留在 `nova_reason_detail`。
 - 本地未完成订单仓库以 `tableId + ReceiptParam` 订单键合并订单；不传 `ReceiptParam` 时保持旧 tableId-only 语义。`TransactionId` 可承载平台订单号，但 Android 不持久化，iOS 随本地存档保留。
 - Google 使用 `GoogleToken` 作为验单凭据和本地支付成功打点去重 key；Apple 使用 `TransactionId`。
 - `TrackChannel` 按平台输出 `google` / `ios` / `mobile`，TGA 侧可用该值区分 `solar_channel`。

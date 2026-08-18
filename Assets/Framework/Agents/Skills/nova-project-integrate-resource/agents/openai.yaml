@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 项目接入资源"
+  short_description: "将业务资源安全接入既有 Collector、地址、加载和释放链"
+  default_prompt: "使用 $nova-project-integrate-resource 将一个业务资源接入当前 Nova 项目的运行时资源链。"

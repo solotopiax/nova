@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.kit.network.gamebind",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "license": "MIT",
   "coreVersion": "1.0.0",
   "displayName": "Nova Framework - Kit - Network - GameBind",
@@ -18,10 +18,10 @@
     "name": "Solotopia"
   },
   "dependencies": {
-    "com.solotopia.nova.framework": "0.6.10",
+    "com.solotopia.nova.framework": "0.6.15",
     "com.solotopia.unitask": "10.0.6",
-    "com.solotopia.luban": "10.0.6",
-    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.6",
-    "com.solotopia.nova.framework.kit.network.gamesave": "0.1.4"
+    "com.solotopia.luban": "10.1.0",
+    "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
+    "com.solotopia.nova.framework.kit.network.gamesave": "0.1.6"
   }
 }

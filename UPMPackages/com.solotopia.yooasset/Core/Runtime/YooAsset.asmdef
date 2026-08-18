@@ -11,19 +11,19 @@
     "defineConstraints": [],
     "versionDefines": [
         {
-            "name": "com.tuyoogame.yooasset",
+            "name": "com.solotopia.yooasset",
             "expression": "",
-            "define": "YOO_ASSET_3"
+            "define": "YOOASSET_3"
         },
         {
-            "name": "com.tuyoogame.yooasset",
-            "expression": "3.0.0-beta",
-            "define": "YOO_ASSET_3_0"
+            "name": "com.solotopia.yooasset",
+            "expression": "1.1.0",
+            "define": "YOOASSET_3_0"
         },
         {
-            "name": "com.tuyoogame.yooasset",
-            "expression": "3.0.0-beta",
-            "define": "YOO_ASSET_3_0_OR_NEWER"
+            "name": "com.solotopia.yooasset",
+            "expression": "1.1.0",
+            "define": "YOOASSET_3_0_OR_NEWER"
         }
     ],
     "noEngineReferences": false

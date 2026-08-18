@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 项目启动诊断"
+  short_description: "定位 Nova 项目编译、Play 门禁、黑屏与启动链故障的直接证据"
+  default_prompt: "使用 $nova-project-diagnose-startup 只读定位当前 Nova 项目的启动故障。"

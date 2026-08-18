@@ -71,7 +71,7 @@ public static class TestPackageBuilder
             buildParameters.ClearBuildCacheFiles = true;
             buildParameters.UseAssetDependencyDB = true;
             buildParameters.BuiltinShadersBundleName = builtinShaderBundleName;
-            buildParameters.BundleEncryptor = new TestFileStreamEncryption();
+            buildParameters.BundleEncryptor = new TestAssetBundleEncryptor();
             buildParameters.ManifestEncryptor = new TestManifestEncryptor();
             buildParameters.ManifestDecryptor = new TestManifestDecryptor();
 
@@ -115,7 +115,7 @@ public static class TestPackageBuilder
             buildParameters.CompressOption = ECompressOption.LZ4;
             buildParameters.ClearBuildCacheFiles = true;
             buildParameters.UseAssetDependencyDB = true;
-            buildParameters.BundleEncryptor = new TestFileStreamEncryption();
+            buildParameters.BundleEncryptor = new TestAssetBundleEncryptor();
             buildParameters.ManifestEncryptor = new TestManifestEncryptor();
             buildParameters.ManifestDecryptor = new TestManifestDecryptor();
 
@@ -157,6 +157,7 @@ public static class TestPackageBuilder
             buildParameters.BundledCopyParams = string.Empty;
             buildParameters.ClearBuildCacheFiles = true;
             buildParameters.UseAssetDependencyDB = true;
+            buildParameters.BundleEncryptor = new TestRawBundleEncryptor();
 
             var pipeline = new RawFileBuildPipeline();
             BuildResult buildResult = pipeline.Run(buildParameters, false);
@@ -175,6 +176,47 @@ public static class TestPackageBuilder
             {
                 Debug.LogError(buildResult.ErrorInfo);
                 throw new System.Exception($"{nameof(RawFileBuildPipeline)} build failed !");
+            }
+        }
+        else if (buildPipelineName == EBuildPipeline.ArchiveFileBuildPipeline.ToString())
+        {
+            string projectPath = EditorPathUtility.GetProjectPath();
+            string outputRoot = $"{projectPath}/Bundles/Tester_AFBP";
+
+            var buildParameters = new ArchiveFileBuildParameters();
+            buildParameters.BuildOutputRoot = outputRoot;
+            buildParameters.BundledFileRoot = BundleBuilderHelper.GetStreamingAssetsRoot();
+            buildParameters.BuildPipeline = EBuildPipeline.ArchiveFileBuildPipeline.ToString();
+            buildParameters.BuildBundleType = (int)EBundleType.ArchiveBundle;
+            buildParameters.BuildTarget = EditorUserBuildSettings.activeBuildTarget;
+            buildParameters.PackageName = packageName;
+            buildParameters.PackageVersion = "TestVersion";
+            buildParameters.VerifyBuildingResult = true;
+            buildParameters.FileNameStyle = EFileNameStyle.HashName;
+            buildParameters.BundledCopyOption = EBundledCopyOption.None;
+            buildParameters.BundledCopyParams = string.Empty;
+            buildParameters.ClearBuildCacheFiles = true;
+            buildParameters.UseAssetDependencyDB = true;
+            buildParameters.FileAlignment = 4;
+            buildParameters.BundleEncryptor = new TestArchiveBundleEncryptor();
+
+            var pipeline = new ArchiveFileBuildPipeline();
+            BuildResult buildResult = pipeline.Run(buildParameters, false);
+            if (buildResult.Success)
+            {
+                string packageRoot = buildResult.OutputPackageDirectory;
+                bool result = BuiltinCatalogHelper.CreateFile(null, packageName, packageRoot);
+                if (result == false)
+                    Debug.LogError($"Create package {packageName} catalog file failed ! See the detail error in console !");
+
+                var packageResult = new PackageBuildResult();
+                packageResult.PackageRootDirectory = packageRoot;
+                return packageResult;
+            }
+            else
+            {
+                Debug.LogError(buildResult.ErrorInfo);
+                throw new System.Exception($"{nameof(ArchiveFileBuildPipeline)} build failed !");
             }
         }
         else

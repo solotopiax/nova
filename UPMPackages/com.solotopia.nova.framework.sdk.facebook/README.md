@@ -6,7 +6,7 @@ This package wraps the official Facebook Unity SDK `18.0.0` in Nova's UPM packag
 
 ## What This Package Contains
 
-- `Nova/**`: Solotopia / Nova-owned adapter layer, including `FacebookPlugin`, configuration, runtime data models, editor integration, and package documentation.
+- `Nova/**`: Solotopia / Nova-owned adapter layer, including `FacebookPlugin`, configuration, runtime data models, editor integration, App Events acquisition tracking, and package documentation.
 - `Core/FacebookSDK/**`: vendored upstream Facebook Unity SDK material.
 - `Core/Editor/DisableBitcode.cs`: imported with the Facebook SDK package and treated as upstream SDK material unless replaced by a Nova-owned implementation.
 - `Core/FacebookSDK/Plugins/Editor/Dependencies.xml`: EDM4U dependency declarations for Android artifacts and iOS CocoaPods used by the upstream SDK.
@@ -22,10 +22,13 @@ The official examples were intentionally excluded because they are not part of t
 ## Login Behavior
 
 - `FacebookPlugin` implements Nova `IAuthPlugin` login/logout behavior.
+- `FacebookPlugin` also implements `IAcquisitionTrackPlugin` for Facebook App Events acquisition tracking.
 - The default login permission request is `public_profile`.
 - `email` is not requested by default.
 - Friend data requires an additional `user_friends` permission flow through `EnsureFriendsPermissionAsync`.
 - Link sharing is handled through the Facebook SDK share dialog wrapper.
+- Nova `SDKEventData.UserLogin` is subscribed during initialization; business user login syncs `UserId` to `FB.Mobile.UserID`.
+- Acquisition events are sent through `FB.LogAppEvent`; this package does not expose `SetUserProperty` for Facebook.
 
 ## iOS ATT And Limited Profile Data
 

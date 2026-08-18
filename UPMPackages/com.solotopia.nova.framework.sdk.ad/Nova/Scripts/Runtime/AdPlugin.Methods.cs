@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -165,7 +166,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             channel.OnAdRevenuePaid += e => Events.RevenuePaid.Invoke(e);
             channel.OnAdLoaded += e => Events.AdLoaded.Invoke(e);
             channel.OnAdLoadFailed += e => Events.AdLoadFailed.Invoke(e);
-            channel.OnInitResult += v => Events.InitResult.Invoke(v);
+            channel.OnInitResult += success => OnChannelInitResult(channel, success);
             channel.OnShowCompleted += r => Events.ShowCompleted.Invoke(r);
             channel.OnShowFailed += r => Events.ShowFailed.Invoke(r);
             channel.OnAdClosed += r => Events.AdClosed.Invoke(r);
@@ -178,6 +179,146 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         private void RegisterChannel(IAdInternalPlugin channel)
         {
             m_ChannelPlugins.Add(channel);
+            TryPublishCountryCodeFromChannel(channel);
+        }
+
+        /// <summary>
+        /// 渠道初始化完成回调，转发初始化事件并在成功时发布渠道国家码。
+        /// 国家码通常只有渠道 SDK 初始化完成后才可用，因此在此处做一次内部发布收口。
+        /// </summary>
+        /// <param name="channel">触发初始化结果的渠道。</param>
+        /// <param name="success">渠道初始化是否成功。</param>
+        private void OnChannelInitResult(IAdInternalPlugin channel, bool success)
+        {
+            Events.InitResult.Invoke(success);
+            if (success)
+            {
+                TryPublishCountryCodeFromChannel(channel);
+            }
+        }
+
+        /// <summary>
+        /// 尝试从指定广告渠道读取国家或地区代码并发布到 SDK 数据槽位。
+        /// 渠道尚未初始化、未返回、返回 IV 占位值或抛出异常时仅记录诊断，不发布数据。
+        /// </summary>
+        /// <param name="channel">广告渠道实例。</param>
+        private void TryPublishCountryCodeFromChannel(IAdInternalPlugin channel)
+        {
+            if (channel == null)
+            {
+                return;
+            }
+
+            try
+            {
+                TryPublishCountryCode(channel.GetCountryCode());
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(LogTag.AD, $"渠道国家代码发布失败：{channel.Channel}，{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 尝试发布广告国家或地区代码到 SDK 数据槽位。
+        /// 只发布非空且不等于 IV 的国家码，并统一转换为大写，供其他 SDK 通过 FetchDataAsync 等待。
+        /// </summary>
+        /// <param name="countryCode">渠道返回的国家或地区代码。</param>
+        private void TryPublishCountryCode(string countryCode)
+        {
+            if (!TryNormalizeCountryCode(countryCode, out string normalizedCountryCode))
+            {
+                return;
+            }
+
+            PublishData(SDKDataKeys.AdCountryCode, normalizedCountryCode);
+            SaveCountryCodeCache(normalizedCountryCode);
+            Log.Debug(LogTag.AD, $"已发布广告国家代码：{normalizedCountryCode}。");
+        }
+
+        /// <summary>
+        /// 规范化广告国家或地区代码。
+        /// 返回 false 表示输入为空、清洗后为空或为广告 SDK 的 IV 占位值，不应发布或用于订阅。
+        /// </summary>
+        /// <param name="countryCode">原始国家或地区代码。</param>
+        /// <param name="normalizedCountryCode">规范化后的大写国家或地区代码。</param>
+        /// <returns>国家码有效返回 true，否则返回 false。</returns>
+        private static bool TryNormalizeCountryCode(string countryCode, out string normalizedCountryCode)
+        {
+            normalizedCountryCode = string.IsNullOrWhiteSpace(countryCode)
+                ? string.Empty
+                : countryCode.Trim().ToUpper(CultureInfo.InvariantCulture);
+
+            return normalizedCountryCode.Length > 0
+                   && !string.Equals(normalizedCountryCode, "IV", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// 获取广告国家码等待超时时间。
+        /// 配置值小于等于 0、NaN 或无穷大时不等待，直接读取本地缓存。
+        /// </summary>
+        /// <returns>等待超时时间。</returns>
+        private TimeSpan GetCountryCodeWaitTimeout()
+        {
+            float timeoutSeconds = m_RuntimeConfig?.CountryCodeWaitTimeoutSeconds
+                                   ?? c_DefaultCountryCodeWaitTimeoutSeconds;
+            if (float.IsNaN(timeoutSeconds) || float.IsInfinity(timeoutSeconds) || timeoutSeconds <= 0f)
+            {
+                return TimeSpan.Zero;
+            }
+
+            double timeoutMilliseconds = Math.Min(timeoutSeconds * 1000d, int.MaxValue);
+            return TimeSpan.FromMilliseconds(timeoutMilliseconds);
+        }
+
+        /// <summary>
+        /// 读取广告模块上次成功获取到的国家码缓存。
+        /// 缓存为空、为 IV 或持久化模块不可用时返回空字符串。
+        /// </summary>
+        /// <returns>大写国家或地区代码；不可用时返回空字符串。</returns>
+        private static string ReadCountryCodeCache()
+        {
+            try
+            {
+                IFileFragmentManager persistManager = FrameworkManagersGroup.GetManager<IFileFragmentManager>();
+                string countryCode = persistManager.GetObject<string>(
+                    c_CountryCodePersistClassify,
+                    c_CountryCodePersistItem,
+                    string.Empty);
+                return TryNormalizeCountryCode(countryCode, out string normalizedCountryCode)
+                    ? normalizedCountryCode
+                    : string.Empty;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(LogTag.AD, $"读取广告国家码缓存失败：{ex.Message}");
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// 保存广告模块上次成功获取到的国家码。
+        /// 只有有效国家码会写入缓存，空值和 IV 会被忽略。
+        /// </summary>
+        /// <param name="normalizedCountryCode">已规范化的国家或地区代码。</param>
+        private static void SaveCountryCodeCache(string normalizedCountryCode)
+        {
+            if (!TryNormalizeCountryCode(normalizedCountryCode, out string countryCode))
+            {
+                return;
+            }
+
+            try
+            {
+                IFileFragmentManager persistManager = FrameworkManagersGroup.GetManager<IFileFragmentManager>();
+                persistManager.SetObject(c_CountryCodePersistClassify, c_CountryCodePersistItem, countryCode);
+                persistManager.Save(c_CountryCodePersistClassify);
+                Log.Debug(LogTag.AD, $"广告国家码缓存已更新：{countryCode}。");
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(LogTag.AD, $"保存广告国家码缓存失败：{ex.Message}");
+            }
         }
 
         /// <summary>

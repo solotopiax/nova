@@ -1,6 +1,6 @@
 ﻿# MobileStore
 
-> 最后更新：2026-08-14
+> 最后更新：2026-08-17
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/**`
 
 **类签名**：`public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable`
@@ -13,7 +13,10 @@
 
 | 文件 | 类型 | 说明 |
 |---|---|---|
-| `MobileStore.cs` / `.Visitors.cs` / `.Methods.cs` / `.Track.cs` | `MobileStore` | 对外入口、生命周期、持久化辅助、埋点转发 |
+| `MobileStore.cs` | `MobileStore` | Store 对外入口、生命周期和 public/override API |
+| `MobileStore.Visitors.cs` | `MobileStore` partial | 字段、状态属性和运行期缓存 |
+| `MobileStore.Methods.cs` | `MobileStore` partial | internal/protected/private 辅助方法；包括 PayAsync 返回失败打点映射 |
+| `MobileStore.Track.cs` | `MobileStore` partial | Mobile 打点转发入口 |
 | `MobileStoreConfig.cs` | `MobileStoreConfig` | 移动端官方内购商店专属配置 |
 | `IAPMobileRequest.cs` | `IAPMobileRequest` | Mobile 支付请求 |
 | `IAPMobileErrorCode.cs` | `IAPMobileErrorCode` | Mobile 支付过程失败原因与错误码 |
@@ -151,6 +154,8 @@ IAPPlugin.PayAsync<IAPResult>(IAPMobileRequest)
                     └── 验单通过且持有平台 PendingOrder → 置 AwaitingConfirm + ConfirmPurchase，ack 回调后删除记录
 ```
 
+`MobileStore.PayAsync` 只要拿到失败 `IAPResult`，都会在返回给业务层前调用 `TrackReturnedPayFailureInternal` 上报一次 `nova_iap_local_pay_fail`。这包括 `PayGuardAsync` 产生的 Store 禁用、未就绪、重入和商品表缺失，也包括 `MobilePurchaseService` 返回的商品未获取、商品不可用、透传参数非法、平台购买发起异常、主动支付验单失败等结果。Mobile 覆写 `ShouldTrackPayGuardFailure` 返回 `false`，避免 guard 内直接按父包枚举域上报；最终由 PayAsync 返回边界映射到 `IAPMobileErrorCode`。
+
 ## 6.1 补单扫描流程
 
 ```
@@ -209,7 +214,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | `nova_iap_init` | 商店连接成功或初始化失败 |
 | `nova_iap_buy` | 用户发起真实平台购买前；Editor 下 `EnableAlwaysPaySucceed` 调试支付也会上报 |
 | `nova_iap_local_pay_success` | Unity IAP 返回 Pending / Confirmed 并登记本地订单后；同一订单号在当前运行期去重 |
-| `nova_iap_local_pay_fail` | 平台购买失败、平台购买发起异常或活跃支付被主动结束为失败 |
+| `nova_iap_local_pay_fail` | `MobileStore.PayAsync` 返回失败 `IAPResult`；Unity IAP `OnPurchaseFailed`；`OnPurchaseConfirmed(FailedOrder)` |
 | `nova_iap_validate_fail` | 单轮验单失败但订单仍可能重试或补单 |
 | `nova_iap_first_pay_order_validate` | 当前主动支付订单第一次验单失败 |
 | `nova_iap_validate_fail_finish` | 验单最终失败、无效订单或超出重试后进入 `ValidateFailed` |
@@ -217,15 +222,17 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 
 `nova_iap_create_order_success`、`nova_iap_create_order_fail`、`nova_iap_third_pay_close_order` 是第三方支付链路事件，移动端官方内购不触发。`nova_iap_deliver_fail` 目前不触发，因为业务发奖不由移动端官方内购商店执行。
 
+平台官方失败回调会直接补打一条本地支付失败点：`OnPurchaseFailed` 映射 Unity IAP `PurchaseFailureReason` 到 `IAPMobileErrorCode` 的 1000-1010 号段；`OnPurchaseConfirmed(FailedOrder)` 映射为确认失败对应的本地支付失败详情。该回调打点不和 `PayAsync` 返回边界打点去重；如果一次真实支付既收到官方失败回调，又最终返回失败 `IAPResult`，两条 `nova_iap_local_pay_fail` 都会上报，用于还原完整失败流程。
+
 关键字段口径：
 
 | 字段 | 口径 |
 |---|---|
 | `nova_iap_local_pay_success.nova_order_id` | 优先使用 Unity IAP receipt 解析出的平台 `OrderId`；缺失时回退 Apple `TransactionId` |
 | `nova_iap_validate_success.nova_order_id` | 优先使用服务端验单响应 `OrderId`；缺失时回退当前运行期 `TransactionId` |
-| `nova_iap_local_pay_fail.nova_reason` | `IAPMobileErrorCode` 的 int 值；Unity IAP `PurchaseFailureReason` 映射到 1000-1010 |
+| `nova_iap_local_pay_fail.nova_reason` | `IAPMobileErrorCode` 的 int 值；`PluginRouter` guard 失败会映射到对应 Mobile 错误码，Unity IAP `PurchaseFailureReason` 映射到 1000-1010 |
 | `nova_iap_validate_fail(.finish).nova_reason` | `IAPMobileErrorCode` 的 int 值；验单网络、响应缺失、待完成、凭据缺失和无效订单使用 2000+ 号段 |
-| `nova_reason_detail` | 失败原因的可读补充描述，例如协议错误信息、服务端状态或缺失凭据说明 |
+| `nova_reason_detail` | 失败原因的可读补充描述，例如协议错误信息、服务端状态或缺失凭据说明；从 `PluginRouter` 映射而来的失败会保留原始 `ErrorSource:ErrorCode` |
 | `Debug` | 来自父包注入的 `IIAPStoreContext.DevelopMode == DevelopMode.Debug`；不再取 `EnableAlwaysPaySucceed` |
 | 本地业务去重 | `PaySuccess` 按 `tableId + ReceiptParam` 订单键去重，不按平台订单号或 purchase token 去重 |
 
@@ -282,7 +289,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 1009 | `PurchaseFailurePurchaseMissing` | Unity IAP 平台未返回购买数据 |
 | 1010 | `PurchaseFailureUnknown` | Unity IAP 未知购买失败 |
 
-0-9 是移动端官方内购商店自身流程错误；1000-1010 是 Unity IAP `PurchaseFailureReason` 的专用映射号段；2000+ 是验单失败打点细分号段。`TrackLocalPayFailInternal`、`TrackValidateFailInternal` 和 `TrackValidateFailFinishInternal` 都只接收 `IAPMobileErrorCode`，确保支付过程 `nova_reason` 的枚举域统一。
+0-9 是移动端官方内购商店自身流程错误；1000-1010 是 Unity IAP `PurchaseFailureReason` 的专用映射号段；2000+ 是验单失败打点细分号段。`MobileStore.PayAsync` 返回失败时会统一补齐 `nova_iap_local_pay_fail`，并把 `PluginRouter` 层 guard 失败映射到 `IAPMobileErrorCode` 后写入 `nova_reason`；原始 `ErrorSource:ErrorCode` 保留在 `nova_reason_detail`。Unity IAP 官方失败回调也会直接上报本地支付失败点，且失败打点不做运行期去重。`TrackLocalPayFailInternal`、`TrackReturnedPayFailureInternal`、`TrackValidateFailInternal` 和 `TrackValidateFailFinishInternal` 都只接收 `IAPMobileErrorCode`，确保支付过程 `nova_reason` 的枚举域统一。
 
 | 值 | 名称 | Mobile 使用场景 |
 |---|---|---|
@@ -315,7 +322,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 初始化失败 | `MobileStoreInitFailureReason` | 初始化阶段失败分类，写入 `IAPInitResult.FailReason` 和 `nova_iap_init.nova_init_failure_reason` |
 | 支付过程失败 | `IAPMobileErrorCode` | 支付、平台本地支付失败、验单失败分类，写入 `IAPResult.ErrorCode` 或支付失败打点 `nova_reason` |
 
-支付过程失败统一落到 `IAPMobileErrorCode` 后，`TrackLocalPayFailInternal`、`TrackValidateFailInternal`、`TrackValidateFailFinishInternal` 都不再接受其他失败原因枚举。`nova_reason_detail` 只存可读补充描述，不参与主分类。
+支付过程失败统一落到 `IAPMobileErrorCode` 后，`TrackLocalPayFailInternal`、`TrackReturnedPayFailureInternal`、`TrackValidateFailInternal`、`TrackValidateFailFinishInternal` 都不再接受其他失败原因枚举。`nova_reason_detail` 只存可读补充描述，不参与主分类；当失败原始来源不是 `Mobile` 时，必须在该字段保留原始错误域，避免把不同枚举的相同整数误读为同一语义。失败打点按发生次数上报，不通过运行期 key 去重；只有本地支付成功点继续按平台订单 key 去重。
 
 订单身份和存档口径：
 

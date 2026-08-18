@@ -26,16 +26,17 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
           string.Concat(
             "ChxwYl9uZXRfZmlyZWJhc2VfcmVwb3J0LnByb3RvEihOb3ZhRnJhbWV3b3Jr",
             "LlNESy5GaXJlYmFzZVBsdWdpbi5SdW50aW1lGhNwYl9uZXRfaGVhZGVyLnBy",
-            "b3RvIpIBChZQYk5ldFJlcG9ydEZpcmViYXNlUmVxEjMKBGhlYWQYASABKAsy",
+            "b3RvIrwBChZQYk5ldFJlcG9ydEZpcmViYXNlUmVxEjMKBGhlYWQYASABKAsy",
             "JS5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXISGwoTZmly",
             "ZWJhc2VfcHVzaF90b2tlbhgCIAEoCRImCh5maXJlYmFzZV9hbmFseXRpY3Nf",
-            "aW5zdGFuY2VfaWQYAyABKAkiTwoXUGJOZXRSZXBvcnRGaXJlYmFzZVJlc3AS",
-            "NAoEaGVhZBgBIAEoCzImLk5vdmFGcmFtZXdvcmsuUnVudGltZS5QYk5ldFJl",
-            "c3BIZWFkZXJiBnByb3RvMw=="));
+            "aW5zdGFuY2VfaWQYAyABKAkSDwoHY291bnRyeRgEIAEoCRIXCg90aW1lem9u",
+            "ZV9vZmZzZXQYBSABKAkiTwoXUGJOZXRSZXBvcnRGaXJlYmFzZVJlc3ASNAoE",
+            "aGVhZBgBIAEoCzImLk5vdmFGcmFtZXdvcmsuUnVudGltZS5QYk5ldFJlc3BI",
+            "ZWFkZXJiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.FirebasePlugin.Runtime.PbNetReportFirebaseReq), global::NovaFramework.SDK.FirebasePlugin.Runtime.PbNetReportFirebaseReq.Parser, new[]{ "Head", "FirebasePushToken", "FirebaseAnalyticsInstanceId" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.FirebasePlugin.Runtime.PbNetReportFirebaseReq), global::NovaFramework.SDK.FirebasePlugin.Runtime.PbNetReportFirebaseReq.Parser, new[]{ "Head", "FirebasePushToken", "FirebaseAnalyticsInstanceId", "Country", "TimezoneOffset" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.FirebasePlugin.Runtime.PbNetReportFirebaseResp), global::NovaFramework.SDK.FirebasePlugin.Runtime.PbNetReportFirebaseResp.Parser, new[]{ "Head" }, null, null, null, null)
           }));
     }
@@ -84,6 +85,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
       head_ = other.head_ != null ? other.head_.Clone() : null;
       firebasePushToken_ = other.firebasePushToken_;
       firebaseAnalyticsInstanceId_ = other.firebaseAnalyticsInstanceId_;
+      country_ = other.country_;
+      timezoneOffset_ = other.timezoneOffset_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -127,7 +130,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
     public const int FirebaseAnalyticsInstanceIdFieldNumber = 3;
     private string firebaseAnalyticsInstanceId_ = "";
     /// <summary>
-    /// Firebase 客户端实例化 ID
+    /// Firebase 客户端实例 ID
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -135,6 +138,36 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
       get { return firebaseAnalyticsInstanceId_; }
       set {
         firebaseAnalyticsInstanceId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "country" field.</summary>
+    public const int CountryFieldNumber = 4;
+    private string country_ = "";
+    /// <summary>
+    /// 客户端国家/地区代码，用于 Push 画像
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Country {
+      get { return country_; }
+      set {
+        country_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "timezone_offset" field.</summary>
+    public const int TimezoneOffsetFieldNumber = 5;
+    private string timezoneOffset_ = "";
+    /// <summary>
+    /// UTC 时区偏移，例如 +08:00
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string TimezoneOffset {
+      get { return timezoneOffset_; }
+      set {
+        timezoneOffset_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -156,6 +189,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
       if (!object.Equals(Head, other.Head)) return false;
       if (FirebasePushToken != other.FirebasePushToken) return false;
       if (FirebaseAnalyticsInstanceId != other.FirebaseAnalyticsInstanceId) return false;
+      if (Country != other.Country) return false;
+      if (TimezoneOffset != other.TimezoneOffset) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -166,6 +201,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
       if (head_ != null) hash ^= Head.GetHashCode();
       if (FirebasePushToken.Length != 0) hash ^= FirebasePushToken.GetHashCode();
       if (FirebaseAnalyticsInstanceId.Length != 0) hash ^= FirebaseAnalyticsInstanceId.GetHashCode();
+      if (Country.Length != 0) hash ^= Country.GetHashCode();
+      if (TimezoneOffset.Length != 0) hash ^= TimezoneOffset.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -196,6 +233,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
         output.WriteRawTag(26);
         output.WriteString(FirebaseAnalyticsInstanceId);
       }
+      if (Country.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Country);
+      }
+      if (TimezoneOffset.Length != 0) {
+        output.WriteRawTag(42);
+        output.WriteString(TimezoneOffset);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -218,6 +263,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
         output.WriteRawTag(26);
         output.WriteString(FirebaseAnalyticsInstanceId);
       }
+      if (Country.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Country);
+      }
+      if (TimezoneOffset.Length != 0) {
+        output.WriteRawTag(42);
+        output.WriteString(TimezoneOffset);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -236,6 +289,12 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
       }
       if (FirebaseAnalyticsInstanceId.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(FirebaseAnalyticsInstanceId);
+      }
+      if (Country.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Country);
+      }
+      if (TimezoneOffset.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(TimezoneOffset);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -260,6 +319,12 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
       }
       if (other.FirebaseAnalyticsInstanceId.Length != 0) {
         FirebaseAnalyticsInstanceId = other.FirebaseAnalyticsInstanceId;
+      }
+      if (other.Country.Length != 0) {
+        Country = other.Country;
+      }
+      if (other.TimezoneOffset.Length != 0) {
+        TimezoneOffset = other.TimezoneOffset;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -295,6 +360,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
             FirebaseAnalyticsInstanceId = input.ReadString();
             break;
           }
+          case 34: {
+            Country = input.ReadString();
+            break;
+          }
+          case 42: {
+            TimezoneOffset = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -327,6 +400,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime {
           }
           case 26: {
             FirebaseAnalyticsInstanceId = input.ReadString();
+            break;
+          }
+          case 34: {
+            Country = input.ReadString();
+            break;
+          }
+          case 42: {
+            TimezoneOffset = input.ReadString();
             break;
           }
         }

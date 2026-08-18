@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Kit.Network.GameBind.Runtime;
 using NovaFramework.Kit.Network.GameLogin.Runtime;
@@ -45,6 +46,73 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
                 m_FriendsButton.onClick.AddListener(() => LoadFriendsAsync().Forget());
                 SetButtonApiHint(m_FriendsButton, "EnsureFriendsPermissionAsync() / Friends.GetFriendsWithAvatarsAsync()");
             }
+
+            if (m_AddEventParamButton != null)
+            {
+                m_AddEventParamButton.onClick.AddListener(OnAddEventParamButtonClick);
+            }
+
+            if (m_ClearEventParamsButton != null)
+            {
+                m_ClearEventParamsButton.onClick.AddListener(OnClearEventParamsButtonClick);
+            }
+
+            if (m_SendEventButton != null)
+            {
+                m_SendEventButton.onClick.AddListener(OnSendEventButtonClick);
+                SetButtonApiHint(m_SendEventButton, "FacebookPlugin.TrackEvent(eventName, parameters)");
+            }
+
+            RefreshEventParamsPreview();
+        }
+
+        /// <summary>
+        /// 将输入框里的 key/value 写入当前待发送的打点参数。
+        /// </summary>
+        private void OnAddEventParamButtonClick()
+        {
+            string key = m_EventParamKeyInput != null ? m_EventParamKeyInput.text?.Trim() : string.Empty;
+            string value = m_EventParamValueInput != null ? m_EventParamValueInput.text : string.Empty;
+            if (string.IsNullOrEmpty(key))
+            {
+                AppendFeedback("添加打点属性失败：属性名不能为空。", FeedbackLevel.Warn);
+                return;
+            }
+
+            m_EventParams[key] = value ?? string.Empty;
+            RefreshEventParamsPreview();
+            AppendFeedback($"添加打点属性：{key}={m_EventParams[key]}", FeedbackLevel.Success);
+        }
+
+        /// <summary>
+        /// 清空当前打点参数缓存，并刷新界面预览。
+        /// </summary>
+        private void OnClearEventParamsButtonClick()
+        {
+            m_EventParams.Clear();
+            RefreshEventParamsPreview();
+            AppendFeedback("已清空当前打点属性。", FeedbackLevel.Success);
+        }
+
+        /// <summary>
+        /// 校验事件名后，将当前参数发送到 Facebook。
+        /// </summary>
+        private void OnSendEventButtonClick()
+        {
+            string eventName = m_EventNameInput != null ? m_EventNameInput.text?.Trim() : string.Empty;
+            if (string.IsNullOrEmpty(eventName))
+            {
+                AppendFeedback("发送打点失败：打点名字不能为空。", FeedbackLevel.Warn);
+                return;
+            }
+
+            if (!TryGetFacebookPlugin(out FacebookPlugin plugin))
+            {
+                return;
+            }
+
+            plugin.TrackEvent(eventName, m_EventParams);
+            AppendFeedback($"{plugin.GetType().Name}.TrackEvent(\"{eventName}\", params={FormatEventParams()})", FeedbackLevel.Success);
         }
 
         /// <summary>
@@ -379,6 +447,76 @@ namespace NovaFramework.Sdk.Facebook.Samples.Runtime
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// 根据当前打点参数刷新界面上的参数预览文本。
+        /// </summary>
+        private void RefreshEventParamsPreview()
+        {
+            if (m_EventParamsPreviewText == null)
+            {
+                return;
+            }
+
+            m_EventParamsPreviewText.text = m_EventParams.Count == 0
+                ? "当前属性：空"
+                : "当前属性：" + FormatEventParams();
+        }
+
+        /// <summary>
+        /// 将当前打点参数格式化为反馈区使用的 JSON 字符串。
+        /// </summary>
+        /// <returns>当前打点参数的 JSON 字符串。</returns>
+        private string FormatEventParams()
+        {
+            return FormatKeyValueData(m_EventParams);
+        }
+
+        /// <summary>
+        /// 将 key/value 数据格式化为稳定的 JSON 字符串，空数据返回空对象。
+        /// </summary>
+        /// <param name="data">待格式化的数据。</param>
+        /// <returns>JSON 字符串。</returns>
+        private static string FormatKeyValueData(IReadOnlyDictionary<string, object> data)
+        {
+            if (data == null || data.Count == 0)
+            {
+                return "{}";
+            }
+
+            var builder = new StringBuilder();
+            builder.Append('{');
+            bool first = true;
+            foreach (KeyValuePair<string, object> pair in data)
+            {
+                if (!first)
+                {
+                    builder.Append(", ");
+                }
+
+                first = false;
+                builder.Append('"');
+                builder.Append(EscapeJson(pair.Key));
+                builder.Append("\": \"");
+                builder.Append(EscapeJson(pair.Value?.ToString() ?? string.Empty));
+                builder.Append('"');
+            }
+
+            builder.Append('}');
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// 转义示例预览 JSON 中的字符串特殊字符。
+        /// </summary>
+        /// <param name="value">原始字符串。</param>
+        /// <returns>转义后的字符串。</returns>
+        private static string EscapeJson(string value)
+        {
+            return string.IsNullOrEmpty(value)
+                ? string.Empty
+                : value.Replace("\\", "\\\\").Replace("\"", "\\\"");
         }
     }
 }

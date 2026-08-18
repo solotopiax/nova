@@ -1,7 +1,7 @@
 # Nova Framework - SDK - MAX
 
 > 包名：`com.solotopia.nova.framework.sdk.max`
-> 当前版本：`0.1.0`
+> 当前版本：`0.1.6`
 
 MAX 广告聚合插件，提供广告展示服务。
 
@@ -13,7 +13,7 @@ MAX 广告聚合插件，提供广告展示服务。
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.max": "0.1.0"
+  "com.solotopia.nova.framework.sdk.max": "0.1.6"
 }
 ```
 

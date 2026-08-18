@@ -113,12 +113,6 @@ namespace NovaFramework.Editor
                 alignment = TextAnchor.MiddleLeft
             };
 
-            m_LatestStyle = new GUIStyle(EditorStyles.label)
-            {
-                alignment = TextAnchor.MiddleLeft,
-                normal = { textColor = s_LatestColor }
-            };
-
             m_EmptyStyle = new GUIStyle(EditorStyles.label)
             {
                 alignment = TextAnchor.MiddleCenter,
@@ -138,11 +132,6 @@ namespace NovaFramework.Editor
                 alignment = TextAnchor.MiddleRight,
             };
 
-            m_RightAlignedLatestStyle = new GUIStyle(EditorStyles.label)
-            {
-                alignment = TextAnchor.MiddleRight,
-                normal = { textColor = s_LatestColor },
-            };
         }
 
         /// <summary>
@@ -245,7 +234,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制单条包更新行（斑马纹背景 + Latest 列绿色高亮 + 更新日志按钮）。
+        /// 绘制单条包更新行（斑马纹背景 + 可升级 Latest 列动态彩色提示 + 更新日志按钮）。
         /// 使用 GUILayoutUtility.GetRect 取得行矩形，直接 EditorGUI.LabelField 以固定子矩形绘制，
         /// 避免在 ScrollView 内使用 GUILayout.BeginArea 导致内容错位不可见。
         /// </summary>
@@ -269,12 +258,50 @@ namespace NovaFramework.Editor
             EditorGUI.LabelField(packageRect, info.PackageName);
             GUI.contentColor = prevColor;
             EditorGUI.LabelField(currentRect, info.CurrentVersion ?? "—", m_RightAlignedStyle);
-            EditorGUI.LabelField(latestRect, info.LatestVersion, m_RightAlignedLatestStyle);
+
+            Color previousLatestColor = GUI.contentColor;
+            try
+            {
+                if (HasAvailableUpgrade(info))
+                {
+                    GUI.contentColor = GetAnimatedUpgradeVersionColor(EditorApplication.timeSinceStartup);
+                }
+
+                EditorGUI.LabelField(latestRect, info.LatestVersion ?? "—", m_RightAlignedStyle);
+            }
+            finally
+            {
+                GUI.contentColor = previousLatestColor;
+            }
 
             if (GUI.Button(changelogRect, c_ChangelogLabel))
             {
                 OpenChangelogAsync(info);
             }
+        }
+
+        /// <summary>
+        /// 判断更新提示条目是否仍表示远端版本严格高于当前版本。
+        /// </summary>
+        /// <param name="info">待判断的更新提示条目。</param>
+        /// <returns>远端版本更高且可播放动态色彩返回 true。</returns>
+        private static bool HasAvailableUpgrade(EditorUtil.CheckUpdate.UpdateInfo info)
+        {
+            return info != null
+                   && !string.IsNullOrEmpty(info.CurrentVersion)
+                   && !string.IsNullOrEmpty(info.LatestVersion)
+                   && EditorUtil.PlugPals.CompareSemVer(info.LatestVersion, info.CurrentVersion) > 0;
+        }
+
+        /// <summary>
+        /// 根据编辑器运行时间计算可升级版本号的平滑彩虹提示色。
+        /// </summary>
+        /// <param name="elapsedSeconds">编辑器启动后的已运行秒数。</param>
+        /// <returns>当前时刻应显示的彩虹色。</returns>
+        private static Color GetAnimatedUpgradeVersionColor(double elapsedSeconds)
+        {
+            float hue = Mathf.Repeat((float)(elapsedSeconds * c_UpgradeVersionHueCyclesPerSecond), 1f);
+            return Color.HSVToRGB(hue, 0.72f, 1f);
         }
 
         /// <summary>

@@ -36,10 +36,10 @@ UnityEditor.EditorWindow
 | `c_MinWidth` | `const float` | `520f` | 窗口最小宽度 |
 | `c_MinHeight` | `const float` | `320f` | 窗口最小高度 |
 | `c_RowSpacing` | `const float` | `4f` | 行间距（singleLineHeight + c_RowSpacing = 行高） |
+| `c_UpgradeVersionHueCyclesPerSecond` | `const float` | `0.12f` | 可升级版本号彩虹色的每秒色相循环次数 |
 | `c_ColPackageWidth` | `const float` | `240f` | Package 列宽 |
 | `c_ColVersionWidth` | `const float` | `110f` | Current / Latest 列宽（共用） |
 | `s_RowEvenColor` | `static readonly Color` | `new Color(0.22f, 0.22f, 0.22f, 0.4f)` | 斑马纹偶数行背景色（浅灰） |
-| `s_LatestColor` | `static readonly Color` | `new Color(0.6f, 0.9f, 0.4f)` | Latest 列高亮色（绿色） |
 | `s_InternalPackageNameColor` | `static readonly Color` | `new Color(1f, 0.82f, 0.62f)` | 内部云仓库包名色（浅橙色） |
 | `s_Instance` | `static CheckUpdateWindow` | `null` | 窗口单例引用 |
 | `m_Items` | `List<EditorUtil.CheckUpdate.UpdateInfo>` | `null` | 当前展示的更新列表 |
@@ -49,7 +49,6 @@ UnityEditor.EditorWindow
 | `m_Scroll` | `Vector2` | `default` | 滚动位置 |
 | `m_DontShowAgain` | `bool` | `false` | 是否勾选"不再提示这些版本" |
 | `m_HeaderStyle` | `GUIStyle` | `null` | 标题样式（懒初始化，`EnsureStyles` 标志） |
-| `m_LatestStyle` | `GUIStyle` | `null` | Latest 版本列文本样式（绿色） |
 | `m_EmptyStyle` | `GUIStyle` | `null` | 空态提示文本样式（居中灰色） |
 
 ---
@@ -158,7 +157,7 @@ CheckUpdateWindow.Open();
 |------|------|
 | `m_DontShowAgain` 生效时机 | 勾选后需**关闭窗口**才触发 `OnDisable` 写入 `MarkSkip`；直接点击 Close 调用 `Close()` 会触发 `OnDisable` |
 | 重复打开防抖 | `Open()` 检查 `m_IsChecking`，若正在拉取则仅 Focus 不重新发起请求 |
-| Latest 列颜色含义 | 始终以绿色（`s_LatestColor`）显示最新版本号，无论与当前版本的差异大小 |
+| Latest 列颜色含义 | 仅当前版本确实低于远端版本时，版本号以缓慢、平滑的彩虹色循环提示升级；其他条目保持普通文本色 |
 | 包名排序规则 | 外网与内部云仓库条目合并后统一按**包名**字母升序展示，不按仓库分组顺序绘制 |
 | 内部云仓库条目 | 包名显示为浅橙色；点击"日志"时按内部云仓库地址拉取 CHANGELOG |
 | `ScrollView` 直接使用 `EditorGUILayout` | `EditorUtil.Draw` 尚未封装 `BeginScrollView`，此处直接使用，不视为违规 |

@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-build-bundles",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.BundleBuilder.BuildAssetBundle(AssetBundleBuildArgs)",
+      "when": "直接按冻结参数执行一次 YooAsset ScriptableBuildPipeline 构建"
+    },
+    {
+      "kind": "pipify",
+      "entry": "bundlebuilder.build",
+      "when": "项目明确选择已有 Pipify Batch 作为本次本地 Bundle 构建入口"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "targetPlatform",
+      "required": true
+    },
+    {
+      "name": "packageName",
+      "required": true
+    },
+    {
+      "name": "buildVersion",
+      "required": true
+    },
+    {
+      "name": "effectiveOutputRoot",
+      "required": true
+    },
+    {
+      "name": "buildAndBundledCopyOptions",
+      "required": true
+    },
+    {
+      "name": "executionEntry",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output",
+    "build"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed project-local Bundles output for the selected Package and version",
+      "documented YooAsset build cache and temporary output",
+      "selected BundledCopy output under StreamingAssets"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/** and Library/PackageCache/**",
+      "unrelated Package, version or generated output",
+      "CDN, object storage, cache purge and any remote write",
+      "store upload, Git commit or push, and UPM publish"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "bundle-output-directory",
+    "streaming-assets"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "覆盖已有同 Package 同版本输出",
+      "清理构建缓存",
+      "改变 BundledCopy 集合或覆盖 StreamingAssets 产物",
+      "使用非默认加密器",
+      "delete, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认绑定 Target、PackageName、BuildVersion、固定输出根和完整构建选项；任一输入改变后旧确认失效。"
+  },
+  "minimumEvidence": "bundle-build",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "冻结的 Target、PackageName、BuildVersion 与 AssetBundleBuildArgs",
+    "BuildResult.Success 和 OutputPackageDirectory",
+    "本次输出目录及 YooAsset 构建报告",
+    "未执行 CDN、商店、Git 与 UPM 发布的边界说明"
+  ]
+}

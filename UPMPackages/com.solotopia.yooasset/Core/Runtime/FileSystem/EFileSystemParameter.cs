@@ -109,17 +109,22 @@ namespace YooAsset
         /// <summary>
         /// AssetBundle 解密器 <see cref="IBundleDecryptor"/>
         /// </summary>
-        AssetbundleDecryptor,
+        AssetBundleDecryptor,
 
         /// <summary>
         /// RawBundle 解密器 <see cref="IBundleDecryptor"/>
         /// </summary>
-        RawbundleDecryptor,
+        RawBundleDecryptor,
+
+        /// <summary>
+        /// ArchiveBundle 解密器 <see cref="IBundleDecryptor"/>
+        /// </summary>
+        ArchiveBundleDecryptor,
 
         /// <summary>
         /// AssetBundle 备用解密器 <see cref="IBundleMemoryDecryptor"/>
         /// </summary>
-        AssetbundleFallbackDecryptor,
+        AssetBundleFallbackDecryptor,
 
         /// <summary>
         /// 资源清单解密器 <see cref="IManifestDecryptor"/>
@@ -135,5 +140,20 @@ namespace YooAsset
         /// URL 选择策略 <see cref="IDownloadUrlPolicy"/>
         /// </summary>
         DownloadUrlPolicy,
+
+        /// <summary>
+        /// WebGL 平台策略 <see cref="IWebPlatformStrategy"/>
+        /// </summary>
+        WebPlatformStrategy,
+
+        /// <summary>
+        /// 内置资源包解包策略 <see cref="IBundleUnpackPolicy"/>
+        /// </summary>
+        BundleUnpackPolicy,
+
+        /// <summary>
+        /// 内置文件访问器 <see cref="IBuiltinFileAccessor"/>
+        /// </summary>
+        BuiltinFileAccessor,
     }
 }

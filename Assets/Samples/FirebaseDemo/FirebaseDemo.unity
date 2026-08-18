@@ -237,8 +237,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1883624282997543242, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_PluginEntries.Array.data[4].TypeName
-      value: NovaFramework.IAP.Runtime.IAPPlugin, NovaFramework.IAP.Runtime, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
+      value: NovaFramework.SDK.Facebook.FacebookPlugin, NovaFramework.SDK.Facebook.Runtime,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       objectReference: {fileID: 0}
     - target: {fileID: 3015432987591676535, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_SupportedLanguagesDataExportPath
@@ -422,7 +422,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_ProtoSettings.ProtoSourceDirPath
-      value: Assets/Samples/FirebaseDemo/Protos
+      value: UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Protos
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.size
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.NetCmdSettings.SourceDirPath
@@ -431,6 +435,22 @@ PrefabInstance:
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.HostKeySettings.SourceDirPath
       value: Assets/Samples/FirebaseDemo/Excels/Networks/HostKeys
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.data[12].SourcePath
+      value: pb_net_firebase_report.proto
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.data[13].SourcePath
+      value: pb_net_push.proto
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.data[12].CSharpExportPath
+      value: UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Protos
+      objectReference: {fileID: 0}
+    - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
+      propertyPath: m_ProtoSettings.ProtoUnits.Array.data[13].CSharpExportPath
+      value: UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Protos
       objectReference: {fileID: 0}
     - target: {fileID: 7684810507095310089, guid: 045d894d6a90aa04f9d2e0820d04deb4, type: 3}
       propertyPath: m_Settings.NetCmdSettings.NetCmdUnits.Array.data[0].DatasExportPath

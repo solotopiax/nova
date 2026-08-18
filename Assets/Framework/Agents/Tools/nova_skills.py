@@ -44,10 +44,26 @@ TRANSACTION_SCHEMA_VERSION = 1
 SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TRANSACTION_ID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
 SKILL_KINDS = {"router", "operation", "workflow"}
-SKILL_EFFECTS = {"read", "workspace-write", "unity-write", "generated-output"}
-MINIMUM_EVIDENCE_LEVELS = {"static", "compile", "play"}
+SKILL_EFFECTS = {"read", "workspace-write", "unity-write", "generated-output", "build"}
+MINIMUM_EVIDENCE_LEVELS = {"static", "compile", "play", "bundle-build", "player-build"}
+BUILD_ARTIFACT_EVIDENCE_LEVELS = {"bundle-build", "player-build"}
 CONTRACT_IDEMPOTENCY = {"read-only", "ensure-state", "orchestrate"}
 CONTRACT_RESULT_STATES = {"success", "partial", "blocked", "not_applicable"}
+ACTION_ADAPTER_KINDS = {
+    "csharp-api",
+    "cli",
+    "pipify",
+    "unity-editor-api",
+    "unity-mcp",
+    "unity-menu",
+    "workspace-edit",
+    "workspace-inspection",
+}
+COMMON_BASELINE_SENTENCE = (
+    "触发后先读取当前 Framework 的 `Docs/START_HERE.md`，"
+    "作为所有 `nova-project-*` Skill 的共同底线。"
+)
+PROGRESSIVE_DISCLOSURE_HEADING = "## 渐进式披露"
 SHA256_HEX_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 RECONCILE_ACTIONS = {"add", "update", "remove"}
 SKILL_STATUSES = {"experimental", "stable", "deprecated"}
@@ -60,6 +76,7 @@ CATALOG_SKILL_FIELDS = {
     "journeys",
     "effects",
     "minimumEvidence",
+    "replacedBy",
 }
 STATE_FIELDS = {"schemaVersion", "package", "packageVersion", "catalogHash", "managed"}
 TRANSACTION_FIELDS = {
@@ -125,6 +142,42 @@ def _read_skill_name(skill_path: Path) -> str | None:
         if name_match:
             return name_match.group(1).strip().strip('"').strip("'")
     return None
+
+
+def _skill_body(skill_path: Path) -> str | None:
+    """提取 SKILL.md 的 frontmatter 后正文，供共同执行契约做最小结构校验。"""
+    content = skill_path.read_text(encoding="utf-8")
+    match = re.match(r"^---\r?\n.*?\r?\n---(?:\r?\n|$)", content, re.DOTALL)
+    if match is None:
+        return None
+    return content[match.end() :].strip()
+
+
+def _first_body_paragraph(body: str) -> str | None:
+    """跳过 Markdown 标题，返回 frontmatter 后首个真正的正文段落。"""
+    for paragraph in re.split(r"\r?\n\s*\r?\n", body):
+        normalized = paragraph.strip()
+        if not normalized:
+            continue
+        lines = [line.strip() for line in normalized.splitlines() if line.strip()]
+        if lines and all(line.startswith("#") for line in lines):
+            continue
+        return normalized
+    return None
+
+
+def _validate_skill_progressive_disclosure(skill_id: str, skill_path: Path) -> list[str]:
+    """校验共同入口先行，且 Skill 至少声明按需读取资料的渐进式路由。"""
+    errors: list[str] = []
+    body = _skill_body(skill_path)
+    if body is None:
+        return [f"{skill_id} 的 SKILL.md 缺少可解析的 frontmatter"]
+    first_paragraph = _first_body_paragraph(body)
+    if first_paragraph is None or COMMON_BASELINE_SENTENCE not in first_paragraph:
+        errors.append(f"{skill_id} 的共同底线必须位于 frontmatter 后首个正文段落")
+    if PROGRESSIVE_DISCLOSURE_HEADING not in body or "仅在" not in body:
+        errors.append(f"{skill_id} 的 SKILL.md 必须声明渐进式披露的按需读取路由")
+    return errors
 
 
 def _find_descendant_symlink(directory: Path) -> Path | None:
@@ -203,6 +256,7 @@ def _validate_contract_shape(skill_id: str, contract: dict[str, Any]) -> list[st
     required_fields = {
         "compatibility",
         "requires",
+        "actionAdapters",
         "inputs",
         "writeScope",
         "locks",
@@ -226,6 +280,29 @@ def _validate_contract_shape(skill_id: str, contract: dict[str, Any]) -> list[st
         errors.append(f"{skill_id} 的 contract.json requires 必须是合法 Skill id 数组")
     elif len(requires) != len(set(requires)):
         errors.append(f"{skill_id} 的 contract.json requires 不能重复")
+
+    action_adapters = contract.get("actionAdapters")
+    if not isinstance(action_adapters, list) or not action_adapters:
+        errors.append(f"{skill_id} 的 contract.json actionAdapters 必须是非空数组")
+    else:
+        seen_adapters: set[tuple[str, str, str]] = set()
+        for adapter in action_adapters:
+            if not isinstance(adapter, dict) or set(adapter) != {"kind", "entry", "when"}:
+                errors.append(
+                    f"{skill_id} 的 contract.json actionAdapters 项必须只含 kind、entry、when"
+                )
+                continue
+            kind = adapter.get("kind")
+            entry = adapter.get("entry")
+            when = adapter.get("when")
+            if kind not in ACTION_ADAPTER_KINDS or not isinstance(entry, str) or not entry or not isinstance(when, str) or not when:
+                errors.append(f"{skill_id} 的 contract.json actionAdapters 项不合法")
+                continue
+            identity = (kind, entry, when)
+            if identity in seen_adapters:
+                errors.append(f"{skill_id} 的 contract.json actionAdapters 不能重复")
+                continue
+            seen_adapters.add(identity)
 
     inputs = contract.get("inputs")
     if not isinstance(inputs, list) or not inputs:
@@ -445,9 +522,15 @@ def validate_agents_root(agents_root: Path) -> list[str]:
     except NovaSkillsError as exc:
         errors.append(str(exc))
 
+    quick_start = agents_root.parent / "Docs" / "START_HERE.md"
+    if not quick_start.is_file():
+        errors.append(f"缺少项目组共同入口文档：{quick_start}")
+
     seen_ids: set[str] = set()
     known_ids: set[str] = set()
     contracts: list[tuple[str, dict[str, Any]]] = []
+    entries_by_id: dict[str, dict[str, Any]] = {}
+    replacements: dict[str, str] = {}
     for entry in entries:
         skill_id = entry.get("id")
         relative_path = entry.get("path")
@@ -467,6 +550,7 @@ def validate_agents_root(agents_root: Path) -> list[str]:
             continue
         seen_ids.add(skill_id)
         known_ids.add(skill_id)
+        entries_by_id[skill_id] = entry
 
         kind = entry.get("kind")
         if kind not in SKILL_KINDS:
@@ -476,6 +560,14 @@ def validate_agents_root(agents_root: Path) -> list[str]:
             errors.append(
                 f"{skill_id} 的 status {status!r} 必须是 {sorted(SKILL_STATUSES)} 之一"
             )
+        replacement = entry.get("replacedBy")
+        if status == "deprecated":
+            if not isinstance(replacement, str) or not _is_managed_skill_id(replacement):
+                errors.append(f"{skill_id} 已弃用时必须声明合法 replacedBy")
+            else:
+                replacements[skill_id] = replacement
+        elif replacement is not None:
+            errors.append(f"{skill_id} 仅 deprecated 状态可以声明 replacedBy")
         journeys = entry.get("journeys")
         if not isinstance(journeys, list) or not journeys or any(
             not isinstance(journey, str) for journey in journeys
@@ -494,6 +586,16 @@ def validate_agents_root(agents_root: Path) -> list[str]:
             errors.append(
                 f"{skill_id} 的 minimumEvidence 必须是 {sorted(MINIMUM_EVIDENCE_LEVELS)} 之一"
             )
+        elif isinstance(effects, list) and all(effect in SKILL_EFFECTS for effect in effects):
+            # 构建会产生 Bundle 或 Player 产物，不能由一般编译或 Play 证据替代。
+            if "build" in effects and minimum_evidence not in BUILD_ARTIFACT_EVIDENCE_LEVELS:
+                errors.append(
+                    f"{skill_id} 声明 build 副作用时 minimumEvidence 必须是构建产物级证据"
+                )
+            elif "build" not in effects and minimum_evidence in BUILD_ARTIFACT_EVIDENCE_LEVELS:
+                errors.append(
+                    f"{skill_id} 使用构建产物级证据时必须声明 build 副作用"
+                )
         if not isinstance(relative_path, str):
             errors.append(f"{skill_id} 缺少 path")
             continue
@@ -510,6 +612,7 @@ def validate_agents_root(agents_root: Path) -> list[str]:
             continue
         if _read_skill_name(skill_file) != skill_id:
             errors.append(f"{skill_id} 与 SKILL.md frontmatter name 不一致")
+        errors.extend(_validate_skill_progressive_disclosure(skill_id, skill_file))
         try:
             contract = _read_json(contract_file)
         except NovaSkillsError as exc:
@@ -542,11 +645,59 @@ def validate_agents_root(agents_root: Path) -> list[str]:
         requires = contract.get("requires")
         if not isinstance(requires, list):
             continue
+        # requires 仅描述 Workflow 内部的 Operation DAG，不能成为安装或隐式执行依赖。
+        skill_kind = entries_by_id[skill_id].get("kind")
+        if requires and skill_kind != "workflow":
+            errors.append(f"{skill_id} 的 contract.json requires 仅 Workflow 可声明")
         for required_id in requires:
             if required_id == skill_id:
                 errors.append(f"{skill_id} 的 contract.json 不可依赖自身")
             elif required_id not in known_ids:
                 errors.append(f"{skill_id} 的 contract.json 依赖不存在的 Skill：{required_id}")
+            elif skill_kind == "workflow" and entries_by_id[required_id].get("kind") != "operation":
+                errors.append(
+                    f"{skill_id} 的 Workflow requires 只能依赖 Operation：{required_id}"
+                )
+
+    for skill_id, replacement in replacements.items():
+        if replacement == skill_id:
+            errors.append(f"{skill_id} 的 replacedBy 不可指向自身")
+            continue
+        target = entries_by_id.get(replacement)
+        if target is None:
+            errors.append(f"{skill_id} 的 replacedBy 指向不存在的 Skill：{replacement}")
+        elif target.get("status") == "deprecated":
+            errors.append(f"{skill_id} 的 replacedBy 不可继续指向已弃用 Skill：{replacement}")
+
+    def append_cycles(graph: dict[str, list[str]], label: str) -> None:
+        visited: set[str] = set()
+        visiting: set[str] = set()
+
+        def visit(skill_id: str) -> None:
+            if skill_id in visiting:
+                errors.append(f"{label} 出现循环：{skill_id}")
+                return
+            if skill_id in visited:
+                return
+            visiting.add(skill_id)
+            for next_id in graph.get(skill_id, []):
+                if next_id in graph:
+                    visit(next_id)
+            visiting.remove(skill_id)
+            visited.add(skill_id)
+
+        for graph_skill_id in sorted(graph):
+            visit(graph_skill_id)
+
+    append_cycles({skill_id: [replacement] for skill_id, replacement in replacements.items()}, "replacedBy")
+    append_cycles(
+        {
+            skill_id: list(contract.get("requires", []))
+            for skill_id, contract in contracts
+            if isinstance(contract.get("requires"), list)
+        },
+        "requires",
+    )
 
     skills_root = agents_root / "Skills"
     if not skills_root.is_dir():

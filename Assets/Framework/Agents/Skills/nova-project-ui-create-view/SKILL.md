@@ -5,7 +5,17 @@ description: Use when 项目组要在现有 Nova 消费项目中创建并注册�
 
 # Nova 创建业务界面
 
-先读取 `references/contract.json`、随包 `Docs/Runtime/Modules/UI/UIComponent.md`、`Docs/Runtime/Modules/UI/Definitions/UIView.md` 和 `Docs/Runtime/Modules/UI/UIManager/UIManager.md`，再检查当前项目最近的同类业务页面。只修改业务项目内容，不修改 Nova Framework、PackageCache 或 UIManager；不手工编辑生成的 C# / JSON，只能通过选定导出 Action 更新本次需要的生成物。
+触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
+
+再读取 `references/contract.json`、随包 `Docs/Runtime/Modules/UI/UIComponent.md`、`Docs/Runtime/Modules/UI/Definitions/UIView.md` 和 `Docs/Runtime/Modules/UI/UIManager/UIManager.md`，然后检查当前项目最近的同类业务页面。只修改业务项目内容，不修改 Nova Framework、PackageCache 或 UIManager；不手工编辑生成的 C# / JSON，只能通过选定导出 Action 更新本次需要的生成物。
+
+## 渐进式披露
+
+- L0：先用 frontmatter、Catalog 与共同底线判断页面创建是否属于本 Skill。
+- L1：只读取本 Skill、`references/contract.json` 和已列出的 UI Docs，冻结 View、UIGroup、注册源与写入集。
+- L2：仅在这些输入已确认后，读取项目中最近的同类 View、Prefab 和实际导出入口；不要预先展开全部 UI、Table 或 Config 文档。
+- L3：确认后才调用源码编辑、Unity Editor/MCP 和项目既有 UI 导出 Adapter；Unity 资产写入保持单写者。
+- L4：只验证本次 View 的导出、编译和按需 Play 证据；未执行的层级保持 `partial`。
 
 ## 冻结输入与预检
 

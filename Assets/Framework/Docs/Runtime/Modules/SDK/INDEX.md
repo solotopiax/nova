@@ -61,6 +61,7 @@ find UPMPackages Packages Library/PackageCache -ipath '*/Nova/doc*/INDEX.md' -pr
 |---|---|
 | [Plugins/Tracking/ITrackPlugin.md](./Plugins/Tracking/ITrackPlugin.md) | 通用埋点接口 |
 | [Plugins/Tracking/IMonetizeTrackPlugin.md](./Plugins/Tracking/IMonetizeTrackPlugin.md) | 变现分析事件接口 |
+| [Plugins/Tracking/IAcquisitionTrackPlugin.md](./Plugins/Tracking/IAcquisitionTrackPlugin.md) | 投放 / 买量转化事件接口 |
 | [Plugins/Tracking/IAttributionPlugin.md](./Plugins/Tracking/IAttributionPlugin.md) | 归因接口 |
 
 ### Ad

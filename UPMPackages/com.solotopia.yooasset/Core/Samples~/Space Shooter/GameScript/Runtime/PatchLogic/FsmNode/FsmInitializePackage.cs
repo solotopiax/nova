@@ -38,7 +38,7 @@ internal class FsmInitializePackage : IStateNode
         InitializePackageOperation initializationOperation = null;
         if (playMode == EPlayMode.EditorSimulateMode)
         {
-            var buildResult = EditorSimulateBuildInvoker.Build(packageName, (int)EBundleType.VirtualBundle);
+            var buildResult = EditorSimulateBuildInvoker.Build(packageName, (int)EBundleType.VirtualAssetBundle);
             var packageRoot = buildResult.PackageRootDirectory;
             var createParameters = new EditorSimulateModeOptions();
             createParameters.EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(packageRoot);
@@ -77,13 +77,13 @@ internal class FsmInitializePackage : IStateNode
         // Web play mode.
         if (playMode == EPlayMode.WebPlayMode)
         {
-#if UNITY_WEBGL && WEIXINMINIGAME && !UNITY_EDITOR
+#if UNITY_WEBGL && (WEIXINMINIGAME || UNITY_WECHATMINIGAME) && !UNITY_EDITOR
             var createParameters = new WebPlayModeOptions();
             string defaultHostServer = GetHostServerURL();
             string fallbackHostServer = GetHostServerURL();
             string packageRoot = $"{WeChatWASM.WX.env.USER_DATA_PATH}/__GAME_FILE_CACHE"; // Change this path if subdirectories are required.
             IRemoteService remoteService = new RemoteService(defaultHostServer, fallbackHostServer);
-            createParameters.WebServerFileSystemParameters = WechatFileSystemCreater.CreateFileSystemParameters(packageRoot, remoteService);
+            createParameters.WebNetworkFileSystemParameters = WechatFileSystemCreater.CreateFileSystemParameters(packageRoot, remoteService);
             initializationOperation = package.InitializePackageAsync(createParameters);
 #else
             var createParameters = new WebPlayModeOptions();

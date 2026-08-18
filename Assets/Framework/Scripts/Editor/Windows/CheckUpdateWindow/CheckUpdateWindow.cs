@@ -96,6 +96,11 @@ namespace NovaFramework.Editor
             EditorGUILayout.EndScrollView();
 
             DrawFooter();
+
+            if (Event.current.type == EventType.Repaint && m_Items.Exists(HasAvailableUpgrade))
+            {
+                Repaint();
+            }
         }
 
         /// <summary>

@@ -20,10 +20,32 @@ namespace YooAsset.Editor
         [MenuItem("YooAsset/Bundle Collector", false, 101)]
         public static void OpenWindow()
         {
+            OpenWindowInternal();
+        }
+
+        /// <summary>
+        /// 打开资源收集器窗口并定位到指定的收集器
+        /// </summary>
+        /// <param name="packageName">包裹名称</param>
+        /// <param name="groupName">分组名称</param>
+        /// <param name="collectPath">收集路径</param>
+        public static void OpenWindow(string packageName, string groupName, string collectPath)
+        {
+            BundleCollectorWindow window = OpenWindowInternal();
+            window.SetFocusCollector(packageName, groupName, collectPath);
+            window.RefreshWindow();
+            window.Focus();
+        }
+
+        private static BundleCollectorWindow OpenWindowInternal()
+        {
             Type[] dockedTypes = EditorWindowDefine.GetDockedWindowTypes();
             BundleCollectorWindow window = GetWindow<BundleCollectorWindow>("Bundle Collector", true, dockedTypes);
             window.minSize = new Vector2(800, 600);
+            return window;
         }
+
+        private const string PlaceholderClass = "search-placeholder";
 
         private Button _saveButton;
         private List<string> _collectorTypeList;
@@ -34,6 +56,11 @@ namespace YooAsset.Editor
         private List<RuleDisplayName> _assetIgnoreRuleList;
 
         private VisualElement _helpBoxContainer;
+
+        private ToolbarSearchField _searchField;
+        private TextField _searchTextField;
+        private Button _searchButton;
+        private Label _searchResultLabel;
 
         private Button _globalSettingsButton;
         private Button _packageSettingsButton;
@@ -66,8 +93,11 @@ namespace YooAsset.Editor
         private ScrollView _collectorScrollView;
         private PopupField<RuleDisplayName> _activeRulePopupField;
 
+        private string _highlightAssetPath;
+        private int _highlightCollectorIndex = -1;
         private int _lastModifyPackageIndex = 0;
         private int _lastModifyGroupIndex = 0;
+        private bool _hasFocusCollector = false;
         private bool _showGlobalSettings = false;
         private bool _showPackageSettings = false;
 
@@ -218,6 +248,44 @@ namespace YooAsset.Editor
                 // 配置保存按钮
                 _saveButton = root.Q<Button>("SaveButton");
                 _saveButton.clicked += OnSaveButtonClicked;
+
+                // 搜索相关
+                _searchField = root.Q<ToolbarSearchField>("SearchField");
+                _searchTextField = _searchField.Q<TextField>();
+                _searchTextField.RegisterCallback<FocusInEvent>(evt =>
+                {
+                    if (_searchTextField.ClassListContains(PlaceholderClass))
+                    {
+                        _searchField.value = string.Empty;
+                        ClearSearchPlaceholder();
+                    }
+                });
+                _searchTextField.RegisterCallback<FocusOutEvent>(evt =>
+                {
+                    if (string.IsNullOrEmpty(_searchField.value))
+                        ApplySearchPlaceholder();
+                });
+                _searchField.RegisterCallback<DragUpdatedEvent>(evt =>
+                {
+                    if (DragAndDrop.objectReferences.Length > 0)
+                        DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
+                });
+                _searchField.RegisterCallback<DragPerformEvent>(evt =>
+                {
+                    if (DragAndDrop.objectReferences.Length > 0)
+                    {
+                        string assetPath = AssetDatabase.GetAssetPath(DragAndDrop.objectReferences[0]);
+                        if (string.IsNullOrEmpty(assetPath) == false)
+                        {
+                            _searchField.value = assetPath;
+                            ClearSearchPlaceholder();
+                        }
+                    }
+                });
+                ApplySearchPlaceholder();
+                _searchButton = root.Q<Button>("SearchButton");
+                _searchButton.clicked += OnSearchButtonClicked;
+                _searchResultLabel = root.Q<Label>("SearchResultLabel");
 
                 // 包裹容器
                 _packageContainer = root.Q("PackageContainer");
@@ -423,6 +491,9 @@ namespace YooAsset.Editor
 
         private void RefreshWindow()
         {
+            _highlightAssetPath = null;
+            if (_hasFocusCollector == false)
+                _highlightCollectorIndex = -1;
             _groupContainer.visible = false;
             _collectorContainer.visible = false;
 
@@ -455,6 +526,55 @@ namespace YooAsset.Editor
         {
             BundleCollectorSettingData.SaveFile();
         }
+        private void OnSearchButtonClicked()
+        {
+            _highlightAssetPath = null;
+            _highlightCollectorIndex = -1;
+            _hasFocusCollector = false;
+            FillCollectorViewData();
+
+            string searchInput = GetSearchInput();
+            var pathError = CollectAssetSearchUtility.ValidateSearchPath(searchInput);
+            if (pathError != ECollectAssetSearchError.None)
+            {
+                string message = CollectAssetSearchUtility.GetSearchPathErrorMessage(pathError, searchInput);
+                ShowSearchResult(message, new Color(1f, 0.4f, 0.4f));
+                return;
+            }
+
+            var selectPackage = _packageListView.selectedItem as BundleCollectorPackage;
+            if (selectPackage == null)
+            {
+                string message = "No package selected. Please select a package first.";
+                ShowSearchResult(message, new Color(1f, 0.8f, 0.3f));
+                return;
+            }
+
+            var searchResult = CollectAssetSearchUtility.SearchAssetPath(selectPackage, searchInput);
+            if (searchResult == null)
+            {
+                string message = $"No results found in package '{selectPackage.PackageName}'.";
+                ShowSearchResult(message, new Color(1f, 0.8f, 0.3f));
+                return;
+            }
+
+            string resultMessage = $"Found in group '{searchResult.Group.GroupName}', collector '{searchResult.Collector.CollectPath}'";
+            ShowSearchResult(resultMessage, Color.white);
+
+            _searchResultLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+            _searchResultLabel.style.unityTextAlign = TextAnchor.MiddleLeft;
+
+            _highlightAssetPath = searchResult.AssetPath;
+            _highlightCollectorIndex = searchResult.CollectorIndex;
+
+            _groupContainer.visible = true;
+            _lastModifyGroupIndex = searchResult.GroupIndex;
+
+            if (_groupListView.selectedIndex == searchResult.GroupIndex)
+                FillCollectorViewData();
+            else
+                _groupListView.selectedIndex = searchResult.GroupIndex;
+        }
         private void OnGlobalSettingsButtonClicked()
         {
             _showGlobalSettings = !_showGlobalSettings;
@@ -478,6 +598,85 @@ namespace YooAsset.Editor
                 return ruleDisplayName.DisplayName;
             else
                 return ruleDisplayName.ClassName;
+        }
+
+        // 焦点相关
+        private void SetFocusCollector(string packageName, string groupName, string collectPath)
+        {
+            var packages = BundleCollectorSettingData.Setting.Packages;
+            int packageIndex = packages.FindIndex(item => item.PackageName == packageName);
+            if (packageIndex < 0)
+            {
+                Debug.LogWarning($"Package not found: '{packageName}'.");
+                _highlightCollectorIndex = -1;
+                _hasFocusCollector = false;
+                return;
+            }
+
+            var package = packages[packageIndex];
+            int groupIndex = package.Groups.FindIndex(item => item.GroupName == groupName);
+            if (groupIndex < 0)
+            {
+                Debug.LogWarning($"Group not found: '{groupName}' in package '{packageName}'.");
+                _highlightCollectorIndex = -1;
+                _hasFocusCollector = false;
+                return;
+            }
+
+            var group = package.Groups[groupIndex];
+            int collectorIndex = group.Collectors.FindIndex(item => string.Equals(item.CollectPath, collectPath, StringComparison.OrdinalIgnoreCase));
+            if (collectorIndex < 0)
+            {
+                Debug.LogWarning($"Collector not found: '{collectPath}'.");
+                _highlightCollectorIndex = -1;
+                _hasFocusCollector = false;
+                return;
+            }
+
+            _highlightAssetPath = null;
+            _highlightCollectorIndex = collectorIndex;
+            _lastModifyPackageIndex = packageIndex;
+            _lastModifyGroupIndex = groupIndex;
+            _hasFocusCollector = true;
+        }
+
+        // 搜索栏相关
+        private void ShowSearchResult(string message, Color color)
+        {
+            _searchResultLabel.text = message;
+            _searchResultLabel.style.color = color;
+            _searchResultLabel.style.unityFontStyleAndWeight = FontStyle.Normal;
+            _searchResultLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            _searchResultLabel.style.display = DisplayStyle.Flex;
+        }
+        private void ClearSearchResult()
+        {
+            _searchResultLabel.text = string.Empty;
+            _searchResultLabel.style.display = DisplayStyle.None;
+        }
+        private void ApplySearchPlaceholder()
+        {
+            _searchField.value = "Drag or enter asset path here (e.g. Assets/Res/icon.png)";
+            if (_searchTextField.ClassListContains(PlaceholderClass) == false)
+                _searchTextField.AddToClassList(PlaceholderClass);
+
+            var inputElement = _searchTextField.Q("unity-text-input");
+            inputElement.style.color = new Color(0.7f, 0.7f, 0.7f, 0.6f);
+        }
+        private void ClearSearchPlaceholder()
+        {
+            if (_searchTextField.ClassListContains(PlaceholderClass))
+            {
+                _searchTextField.RemoveFromClassList(PlaceholderClass);
+                var inputElement = _searchTextField.Q("unity-text-input");
+                inputElement.style.color = StyleKeyword.Null;
+            }
+        }
+        private string GetSearchInput()
+        {
+            if (_searchTextField.ClassListContains(PlaceholderClass))
+                return string.Empty;
+            return _searchField.value;
         }
 
         // 设置栏相关
@@ -607,6 +806,8 @@ namespace YooAsset.Editor
         }
         private void OnPackageListViewSelectionChange(IEnumerable<object> objs)
         {
+            ClearSearchResult();
+
             var selectPackage = _packageListView.selectedItem as BundleCollectorPackage;
             if (selectPackage == null)
             {
@@ -751,6 +952,16 @@ namespace YooAsset.Editor
                 VisualElement element = MakeCollectorListViewItem();
                 BindCollectorListViewItem(element, i);
                 _collectorScrollView.Add(element);
+            }
+
+            if (_highlightCollectorIndex >= 0 && _highlightCollectorIndex < selectGroup.Collectors.Count)
+            {
+                var targetElement = _collectorScrollView[_highlightCollectorIndex];
+                var foldout = targetElement.Q<Foldout>("Foldout1");
+                if (foldout != null)
+                    foldout.value = true;
+                _highlightCollectorIndex = -1;
+                _hasFocusCollector = false;
             }
         }
         private VisualElement MakeCollectorListViewItem()
@@ -1033,13 +1244,6 @@ namespace YooAsset.Editor
             // 清空旧元素
             foldout.Clear();
 
-            // 检测配置是否有效
-            if (collector.IsValid() == false)
-            {
-                collector.CheckConfigError();
-                return;
-            }
-
             List<CollectAssetInfo> collectAssetInfos = null;
 
             try
@@ -1055,12 +1259,15 @@ namespace YooAsset.Editor
                 command.IncludeAssetGUID = _includeAssetGUIDToggle.value;
                 command.AutoCollectShaders = _autoCollectShadersToggle.value;
 
+                // 检测配置是否有效
                 collector.CheckConfigError();
+
+                // 收集有效资源信息
                 collectAssetInfos = collector.GetAllCollectAssets(command, group);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                Debug.LogError(e.ToString());
+                Debug.LogError($"Invalid collector : {collector.CollectPath}, error: {e.Message}");
             }
 
             if (collectAssetInfos != null)
@@ -1085,6 +1292,13 @@ namespace YooAsset.Editor
                     label.style.width = 300;
                     label.style.marginLeft = 0;
                     label.style.flexGrow = 1;
+
+                    if (string.IsNullOrEmpty(_highlightAssetPath) == false &&
+                        string.Equals(collectAsset.AssetInfo.AssetPath, _highlightAssetPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        label.style.color = new Color(1f, 0.2f, 0.2f);
+                    }
+
                     elementRow.Add(label);
                 }
             }

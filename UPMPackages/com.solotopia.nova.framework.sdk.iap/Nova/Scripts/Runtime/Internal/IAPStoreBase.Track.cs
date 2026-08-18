@@ -97,7 +97,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         }
 
         /// <summary>
-        /// 上报 nova_iap_local_pay_fail 事件（平台侧拒绝支付）。
+        /// 上报 nova_iap_local_pay_fail 事件（PayAsync 返回失败）。
         /// </summary>
         /// <param name="tableId">商品配置表行 ID。</param>
         /// <param name="productId">平台商品 ID。</param>
@@ -120,6 +120,66 @@ namespace NovaFramework.SDK.IAP.Runtime
             };
             AppendCustomData(properties, customData);
             Context?.TrackPlugin?.TrackEvent(IAPTrackEvents.LocalPayFail, properties);
+        }
+
+        /// <summary>
+        /// 根据失败 IAPResult 上报 nova_iap_local_pay_fail。
+        /// </summary>
+        /// <param name="result">失败支付结果。</param>
+        /// <param name="reason">写入 nova_reason 的错误码。</param>
+        /// <param name="reasonDetail">失败原因补充描述。</param>
+        protected void TrackPayFailureResult(IAPResult result, int reason, string reasonDetail)
+        {
+            if (result == null || result.IsSuccess)
+            {
+                return;
+            }
+
+            var properties = new Dictionary<string, object>
+            {
+                { IAPTrackFields.TableId, result.TableId },
+                { IAPTrackFields.ProductId, ResolveTrackProductId(result.TableId) },
+                { IAPTrackFields.Debug, Context?.DevelopMode == DevelopMode.Debug },
+                { IAPTrackFields.Price, ResolveTrackPrice(result.TableId) },
+                { IAPTrackFields.Channel, TrackChannel },
+                { IAPTrackFields.Reason, reason },
+                { IAPTrackFields.ReasonDetail, FormatPayFailureReasonDetail(result, reasonDetail) },
+            };
+            AppendCustomData(properties, result.CustomData);
+            Context?.TrackPlugin?.TrackEvent(IAPTrackEvents.LocalPayFail, properties);
+        }
+
+        /// <summary>
+        /// 解析失败打点使用的平台商品 ID。
+        /// </summary>
+        /// <param name="tableId">商品配置表行 ID。</param>
+        /// <returns>平台商品 ID；无法解析时返回空字符串。</returns>
+        protected virtual string ResolveTrackProductId(long tableId)
+        {
+            return Table?.FindByTableId(tableId)?.ProductID ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 解析失败打点使用的商品价格。
+        /// </summary>
+        /// <param name="tableId">商品配置表行 ID。</param>
+        /// <returns>商品配置价格；无法解析时返回 0。</returns>
+        protected virtual float ResolveTrackPrice(long tableId)
+        {
+            string price = Table?.FindByTableId(tableId)?.Price;
+            return float.TryParse(price, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float value) ? value : 0f;
+        }
+
+        /// <summary>
+        /// 格式化 Store 层 PayAsync 失败打点的可读详情，保留错误来源与错误码域。
+        /// </summary>
+        /// <param name="result">失败支付结果。</param>
+        /// <param name="reasonDetail">失败原因补充描述。</param>
+        /// <returns>包含 ErrorSource、ErrorCode 和补充描述的详情字符串。</returns>
+        private static string FormatPayFailureReasonDetail(IAPResult result, string reasonDetail)
+        {
+            string prefix = $"{result.ErrorSource}:{result.ErrorCode}";
+            return string.IsNullOrEmpty(reasonDetail) ? prefix : $"{prefix} {reasonDetail}";
         }
 
         /// <summary>

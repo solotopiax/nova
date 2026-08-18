@@ -20,6 +20,9 @@ AdPlugin 配置，由 SDKManager 注入 AdPlugin 初始化；持有所有渠道�
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `m_ChannelConfigs` | `AdChannelConfigList` | `new AdChannelConfigList()` | Inspector 渠道配置列表，由 `AdChannelConfigListDrawer` 绘制；同时承载 5 个全局开关 |
+| `m_CountryCodeWaitTimeoutSeconds` | `float` | `5f` | `IAdPlugin.GetCountryCodeAsync` 等待广告 SDK 返回国家码的超时时间（秒）；超时后读取广告模块上次成功缓存，缓存不存在则返回空字符串 |
+
+面板显示顺序上，`m_CountryCodeWaitTimeoutSeconds` 仍序列化在 `AdPluginConfig`，但通过 `AdChannelConfigListDrawer` 绘制在“重试加载间隔(秒)”下方，避免和渠道全局配置割裂。
 
 `AdChannelConfigList` 内含字段（均有 SerializeField）：
 
@@ -47,6 +50,9 @@ public sealed class AdPluginConfig : ISDKPluginConfig
     /// .MuteAd / .RetryLoadAdMaxNum / .RetryLoadAdInterv 读取全局开关。
     /// AdPlugin 调用 ApplyGlobalConfig(ChannelConfigs) 将全局开关一次性写入各渠道实例。
     public AdChannelConfigList ChannelConfigs { get; }
+
+    /// 等待广告 SDK 返回国家码的超时时间，单位秒。
+    public float CountryCodeWaitTimeoutSeconds { get; }
 
     /// 无参构造器；供 ConfigWindow SDKPluginScanner 通过 Activator 创建空实例使用。
     public AdPluginConfig();

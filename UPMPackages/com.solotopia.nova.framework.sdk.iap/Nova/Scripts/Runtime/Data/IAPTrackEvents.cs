@@ -31,7 +31,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         public const string LocalPaySuccess = "nova_iap_local_pay_success";
 
         /// <summary>
-        /// 平台侧拒绝支付事件。
+        /// PayAsync 返回失败事件。
         /// </summary>
         public const string LocalPayFail = "nova_iap_local_pay_fail";
 

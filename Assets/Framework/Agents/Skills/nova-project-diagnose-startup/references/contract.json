@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-diagnose-startup",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "cli",
+      "entry": "python3 \"<resolved Framework package>/Agents/Tools/nova_skills.py\" resolve --project-root <projectRoot>",
+      "when": "macOS/Linux 已解析到 Python 3.9+，且需要确认消费项目实际解析到的 Framework 包与随包 Docs 时"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 \"<resolved Framework package>/Agents/Tools/nova_skills.py\" resolve --project-root <projectRoot>",
+      "when": "Windows 已解析到 Python 3.9+，且需要确认消费项目实际解析到的 Framework 包与随包 Docs 时"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.ProjectGuard.ValidateQuick / ValidatePlay",
+      "when": "需要当前 Scene 或 Play 门禁的只读结构与配置报告"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "consumer project source, configuration, Console and Editor.log",
+      "when": "定位编译、初始化与启动链的最早直接失败证据"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "startupSymptom",
+      "required": true
+    },
+    {
+      "name": "reproductionEntry",
+      "required": true
+    },
+    {
+      "name": "targetPlatformChannelAndDevelopMode",
+      "required": true
+    },
+    {
+      "name": "unityEvidenceAllowed",
+      "required": false
+    }
+  ],
+  "effects": [
+    "read"
+  ],
+  "writeScope": {
+    "allow": [],
+    "deny": [
+      "all project source, configuration and generated output",
+      "Scene, Prefab and Build Settings",
+      "Packages and Library/PackageCache",
+      "Library, cache and build output deletion"
+    ]
+  },
+  "locks": [],
+  "idempotency": "read-only",
+  "confirmation": {
+    "requiredFor": [
+      "启动或关闭 Unity",
+      "触发编译或进入 Play 复现",
+      "访问设备、网络或外部服务日志"
+    ],
+    "rule": "诊断授权只允许收集证据；任何修复、清理或项目写入都必须进入独立后续任务。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "实际解析的 Framework 与目标运行上下文",
+    "可复现入口和最早失败阶段",
+    "文件、ProjectGuard 规则 ID 或日志位置",
+    "已验证事实、推断与未验证项的分级"
+  ]
+}

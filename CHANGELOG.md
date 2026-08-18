@@ -6,6 +6,17 @@
 
 ---
 
+## [0.6.15] - 2026-08-18
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.15]` 节。
+
+### Changed
+
+- 发布 Framework `0.6.15`，收录本轮资源版本检查、YooAsset RawFile 构建和 Sample ConfigMaster 配置投影更新。
+- Framework 依赖闭环同步至 Luban `10.1.0`、HybridCLR `10.1.0` 与 YooAsset `1.1.0`；下游 UPM 包同步提升最低依赖。
+
+---
+
 ## [0.6.14] - 2026-08-17
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.14]` 节。

@@ -4,12 +4,51 @@
   "capabilityGroups": {
     "assessment": [
       "nova-project-router",
-      "nova-project-check-readiness"
+      "nova-project-check-readiness",
+      "nova-project-diagnose-startup"
+    ],
+    "onboarding": [
+      "nova-project-router",
+      "nova-project-check-readiness",
+      "nova-project-setup-entry-scene",
+      "nova-project-configure-runtime"
+    ],
+    "data": [
+      "nova-project-router",
+      "nova-project-integrate-table",
+      "nova-project-configure-runtime",
+      "nova-project-update-localization",
+      "nova-project-data-driven-ui"
     ],
     "ui": [
       "nova-project-router",
       "nova-project-ui-create-view",
+      "nova-project-update-ui-view",
       "nova-project-data-driven-ui"
+    ],
+    "resource": [
+      "nova-project-router",
+      "nova-project-integrate-resource",
+      "nova-project-build-bundles"
+    ],
+    "hotfix": [
+      "nova-project-router",
+      "nova-project-refresh-hotfix-dlls",
+      "nova-project-build-bundles",
+      "nova-project-diagnose-startup"
+    ],
+    "network": [
+      "nova-project-router",
+      "nova-project-integrate-network-api"
+    ],
+    "sound": [
+      "nova-project-router",
+      "nova-project-integrate-sound"
+    ],
+    "delivery": [
+      "nova-project-router",
+      "nova-project-build-bundles",
+      "nova-project-build-player"
     ]
   },
   "skills": [
@@ -20,7 +59,11 @@
       "status": "experimental",
       "journeys": [
         "assessment",
+        "onboarding",
         "feature",
+        "configuration",
+        "resource",
+        "build",
         "diagnosis"
       ],
       "effects": [
@@ -44,12 +87,104 @@
       "minimumEvidence": "static"
     },
     {
+      "id": "nova-project-diagnose-startup",
+      "path": "Skills/nova-project-diagnose-startup",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "diagnosis"
+      ],
+      "effects": [
+        "read"
+      ],
+      "minimumEvidence": "static"
+    },
+    {
+      "id": "nova-project-setup-entry-scene",
+      "path": "Skills/nova-project-setup-entry-scene",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "onboarding",
+        "configuration"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-configure-runtime",
+      "path": "Skills/nova-project-configure-runtime",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "onboarding",
+        "configuration"
+      ],
+      "effects": [
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "compile"
+    },
+    {
+      "id": "nova-project-integrate-table",
+      "path": "Skills/nova-project-integrate-table",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "data"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-update-localization",
+      "path": "Skills/nova-project-update-localization",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "localization"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
       "id": "nova-project-ui-create-view",
       "path": "Skills/nova-project-ui-create-view",
       "kind": "operation",
       "status": "experimental",
       "journeys": [
-        "feature"
+        "feature",
+        "ui"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "compile"
+    },
+    {
+      "id": "nova-project-update-ui-view",
+      "path": "Skills/nova-project-update-ui-view",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "ui"
       ],
       "effects": [
         "workspace-write",
@@ -64,7 +199,9 @@
       "kind": "workflow",
       "status": "experimental",
       "journeys": [
-        "feature"
+        "feature",
+        "ui",
+        "data"
       ],
       "effects": [
         "workspace-write",
@@ -72,6 +209,104 @@
         "generated-output"
       ],
       "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-integrate-resource",
+      "path": "Skills/nova-project-integrate-resource",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "resource"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-integrate-network-api",
+      "path": "Skills/nova-project-integrate-network-api",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "network"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-integrate-sound",
+      "path": "Skills/nova-project-integrate-sound",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "sound"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-refresh-hotfix-dlls",
+      "path": "Skills/nova-project-refresh-hotfix-dlls",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "build",
+        "hotfix"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "compile"
+    },
+    {
+      "id": "nova-project-build-bundles",
+      "path": "Skills/nova-project-build-bundles",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "build",
+        "resource"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output",
+        "build"
+      ],
+      "minimumEvidence": "bundle-build"
+    },
+    {
+      "id": "nova-project-build-player",
+      "path": "Skills/nova-project-build-player",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "build",
+        "delivery"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output",
+        "build"
+      ],
+      "minimumEvidence": "player-build"
     }
   ]
 }

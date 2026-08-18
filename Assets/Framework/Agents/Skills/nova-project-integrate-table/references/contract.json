@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-integrate-table",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-edit",
+      "entry": "project-confirmed Luban source editor",
+      "when": "修改已经冻结的 Schema、Excel 或表范围"
+    },
+    {
+      "kind": "unity-editor-api",
+      "entry": "TableComponentInspector",
+      "when": "配置已确认的 Luban Project、导出描述和运行时加载描述"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Table.Exporter.ExportCode / ExportData / ExportAll",
+      "when": "导出已冻结的 ProjectId 和 DescriptionId"
+    },
+    {
+      "kind": "pipify",
+      "entry": "export.table.code / export.table.data",
+      "when": "复用已确认且范围为全部启用描述的 Batch"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Table.LoadAsync / LoadSync / HasTable<T> / GetTable<T>",
+      "when": "在 Play Mode 中加载并读取冻结的目标表"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "lubanProjectAndSource",
+      "required": true
+    },
+    {
+      "name": "exportDescriptionAndOutputScope",
+      "required": true
+    },
+    {
+      "name": "runtimeLoadDescriptionAndAssetAddresses",
+      "required": true
+    },
+    {
+      "name": "targetTableTypeAndReadProbe",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed Luban schema and data source",
+      "confirmed TableComponent settings through Unity Editor or MCP",
+      "confirmed table code and data output for the selected export description",
+      "confirmed business read probe"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "handwritten Prefab or Scene YAML",
+      "manual edits to generated table output",
+      "unrelated Luban project, export description or output"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "table-settings",
+    "table-export-output",
+    "active-scene"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous table source, schema, ProjectId, DescriptionId, output, DataTarget or Asset address",
+      "create or change a table schema, source or runtime load description",
+      "replace non-generated asset",
+      "delete, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认绑定表源、导出描述、运行时加载映射和读取样例；任何一项改变后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "选定 Luban 输入与 TableSettings 映射",
+    "精确导出结果和 Unity 编译",
+    "Play Mode 加载、HasTable 和 GetTable 读取证据"
+  ]
+}

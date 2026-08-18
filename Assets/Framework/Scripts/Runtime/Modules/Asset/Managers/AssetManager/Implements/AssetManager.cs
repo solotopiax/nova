@@ -107,6 +107,7 @@ namespace NovaFramework.Runtime
             m_StartupWhitelistCheckedPackages.Clear();
             m_StartupWhitelistMatchedPackages.Clear();
             m_DownloadUrlPolicies.Clear();
+            m_PackageMetadataGates.Clear();
             m_Packages.Clear();
             m_Decryptor = null;
             m_Config = null;
@@ -126,47 +127,105 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            ResourcePackage pkg = GetPackage(name);
-            // 分阶段幂等：YooAsset.InitializePackageAsync 在 _initializeOp != null 时抛 "already initialized"，
-            // 故 Initialize 已 Succeeded 时直接跳过本步，继续执行 Version/Manifest，避免上游流程半途失败后重入崩溃。
-            if (pkg.InitializeStatus != EOperationStatus.Succeeded)
+            SemaphoreSlim metadataGate = GetPackageMetadataGate(name);
+            await metadataGate.WaitAsync(ct);
+            try
             {
-                await CheckStartupWhitelistAsync(name, ct);
-                InitializePackageOptions options = BuildPlayModeOptions(name);
-                var initOp = pkg.InitializePackageAsync(options);
-                await UniTask.WaitUntil(() => initOp.IsDone, cancellationToken: ct);
-                if (initOp.Status != EOperationStatus.Succeeded)
-                {
-                    throw new InvalidOperationException($"InitializePackageAsync failed: {initOp.Error}");
-                }
-            }
-
-            var versionOp = await RequestPackageVersionWithFallbackAsync(pkg, name, ct);
-            if (versionOp.Status != EOperationStatus.Succeeded)
-            {
-                bool fallbackSucceeded = await TryRecoverManifestAsync(name, versionOp.Error, ct);
-                if (fallbackSucceeded)
+                if (m_ManifestLoadedPackages.Contains(name))
                 {
                     return;
                 }
 
-                throw new InvalidOperationException($"RequestPackageVersionAsync failed: {versionOp.Error}");
-            }
+                ResourcePackage pkg = GetPackage(name);
+                await EnsurePackageInitializedAsync(pkg, name, ct);
 
-            var manifestOp = await LoadPackageManifestWithFallbackAsync(pkg, name, versionOp.PackageVersion, ct);
-            if (manifestOp.Status != EOperationStatus.Succeeded)
-            {
-                bool fallbackSucceeded = await TryRecoverManifestAsync(name, manifestOp.Error, ct);
-                if (fallbackSucceeded)
+                var versionOp = await RequestPackageVersionWithFallbackAsync(pkg, name, ct);
+                if (versionOp.Status != EOperationStatus.Succeeded)
                 {
-                    return;
+                    bool fallbackSucceeded = await TryRecoverManifestAsync(name, versionOp.Error, ct);
+                    if (fallbackSucceeded)
+                    {
+                        return;
+                    }
+
+                    throw new InvalidOperationException($"RequestPackageVersionAsync failed: {versionOp.Error}");
                 }
 
-                throw new InvalidOperationException($"LoadPackageManifestAsync failed: {manifestOp.Error}");
+                var manifestOp = await LoadPackageManifestWithFallbackAsync(pkg, name, versionOp.PackageVersion, ct);
+                if (manifestOp.Status != EOperationStatus.Succeeded)
+                {
+                    bool fallbackSucceeded = await TryRecoverManifestAsync(name, manifestOp.Error, ct);
+                    if (fallbackSucceeded)
+                    {
+                        return;
+                    }
+
+                    throw new InvalidOperationException($"LoadPackageManifestAsync failed: {manifestOp.Error}");
+                }
+
+                m_OfflineRecoveredPackages.Remove(name);
+                m_ManifestLoadedPackages.Add(name);
+            }
+            finally
+            {
+                metadataGate.Release();
+            }
+        }
+
+        /// <summary>
+        /// 获取指定包当前已激活 Manifest 的资源版本。
+        /// </summary>
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <returns>当前已激活 Manifest 的资源版本；尚未激活时为 null。</returns>
+        public override string GetCurrentPackageVersion(string package = null)
+        {
+            string name = ResolvePackageName(package);
+            if (m_ManifestLoadedPackages.Contains(name) == false)
+            {
+                return null;
             }
 
-            m_OfflineRecoveredPackages.Remove(name);
-            m_ManifestLoadedPackages.Add(name);
+            return GetPackage(name).GetPackageVersion();
+        }
+
+        /// <summary>
+        /// 仅请求指定包远端 .version 文件中的最新资源版本，不加载或切换 Manifest。
+        /// </summary>
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>远端 .version 文件声明的最新资源版本。</returns>
+        public override async UniTask<string> RequestLatestPackageVersionAsync(string package = null, CancellationToken ct = default)
+        {
+            string name = ResolvePackageName(package);
+            if (CanRequestLatestPackageVersion(name) == false || m_OfflineRecoveredPackages.Contains(name))
+            {
+                return null;
+            }
+
+            SemaphoreSlim metadataGate = GetPackageMetadataGate(name);
+            await metadataGate.WaitAsync(ct);
+            try
+            {
+                if (CanRequestLatestPackageVersion(name) == false || m_OfflineRecoveredPackages.Contains(name))
+                {
+                    return null;
+                }
+
+                ResourcePackage pkg = GetPackage(name);
+                await EnsurePackageInitializedAsync(pkg, name, ct);
+
+                RequestPackageVersionOperation versionOp = await RequestPackageVersionWithFallbackAsync(pkg, name, ct);
+                if (versionOp.Status != EOperationStatus.Succeeded)
+                {
+                    throw new InvalidOperationException($"RequestPackageVersionAsync failed: {versionOp.Error}");
+                }
+
+                return versionOp.PackageVersion;
+            }
+            finally
+            {
+                metadataGate.Release();
+            }
         }
 
         /// <summary>

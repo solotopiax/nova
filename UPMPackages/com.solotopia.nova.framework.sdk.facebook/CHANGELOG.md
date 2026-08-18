@@ -4,6 +4,17 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-08-18
+
+### Added
+
+- Added Facebook acquisition tracking support through `IAcquisitionTrackPlugin` and `FB.LogAppEvent`.
+- Subscribed to Nova `SDKEventData.UserLogin` so business user login syncs `UserId` to Facebook App Events.
+
+### Changed
+
+- 将 Framework 与 GameLogin 最低依赖同步至 `0.6.15`、`0.1.8`；GameBind 保持本轮未发布的 `0.1.0` 目标版本。
+
 ## [0.1.5] - 2026-08-13
 
 ### Changed

@@ -92,7 +92,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="request">支付请求。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>包含支付结果的 IAPResult。</returns>
-        public override UniTask<IAPResult> PayAsync(IAPRequest request, CancellationToken ct)
+        public override async UniTask<IAPResult> PayAsync(IAPRequest request, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             m_LoadingGuard.HasUserInteracted = true;
@@ -100,13 +100,15 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             if (Context.EnableAlwaysPaySucceed)
             {
                 TrackBuyInternal(request.TableId, null, request.CustomData);
-                var result = new IAPResult(request.TableId, "MOCK_ORDER_MOBILE", false, true, request.CustomData, request.ReceiptParam);
-                Context.EventBridge?.RaisePaySuccess(result);
-                return UniTask.FromResult(result);
+                var mockResult = new IAPResult(request.TableId, "MOCK_ORDER_MOBILE", false, true, request.CustomData, request.ReceiptParam);
+                Context.EventBridge?.RaisePaySuccess(mockResult);
+                return mockResult;
             }
 #endif
 
-            return PayGuardAsync(request, ct, () => m_Hub.PurchaseService.PayAsync(request as IAPMobileRequest, ct));
+            IAPResult result = await PayGuardAsync(request, ct, () => m_Hub.PurchaseService.PayAsync(request as IAPMobileRequest, ct));
+            TrackReturnedPayFailureInternal(result);
+            return result;
         }
 
         /// <summary>

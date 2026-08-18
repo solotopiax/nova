@@ -1,5 +1,22 @@
 # Changelog
 
+## [10.1.0] - 2026-08-18
+
+### Changed
+
+- 将 Nova UPM 分发版本升级至 `10.1.0`，并同步消费包的最低依赖。
+
+---
+
+## [10.0.7] - 2026-08-18
+
+### Changed
+
+- 官方 Luban 工具由 v4.7.0 升级至 v4.11.0。
+- 保留 Nova 增量：Unity Runtime 使用的 `Google.Protobuf.dll`，以及 macOS / Windows `protoc` 与标准 Proto include 文件。
+
+---
+
 ## [10.0.6] - 2026-06-18
 
 ### Changed

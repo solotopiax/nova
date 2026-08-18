@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 本地 Bundle 构建"
+  short_description: "按已确认平台与包参数构建本地 YooAsset Bundle 并核验产物"
+  default_prompt: "使用 $nova-project-build-bundles 为当前 Nova 项目构建并核验本地 Bundle。"

@@ -2,7 +2,7 @@
 
 > 首次接入 Nova、接手陌生项目或开始场景/资源/构建任务，先读 [Nova Agent 快速入口](START_HERE.md)。
 >
-> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；投影目录见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
+> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 16 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
 >
 > 架构总览、设计规范、陷阱说明见 [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -35,7 +35,7 @@
 | **Config 面板按平台/渠道/模式分别配置**（per-panel 可勾选维度） | [PanelDimensionMask.md · Editor 掩码三轴+IsGlobal](Editor/Config/Definitions/PanelDimensionMask.md) → [EditorUtil.Config.DimensionProjector.md · 三操作+双路径](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) → [EditorUtil.Config.DimensionalResolver.md · 只读取数+回落逻辑](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) |
 | **新增 SDK PluginConfig**（ISDKPluginConfig + 自动注入） | [PluginBase.md · PluginBase<TConfig>泛型基类+自动注入](Runtime/Modules/SDK/Definitions/PluginBase.md) → [ISDKPluginConfig.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) → [EditorUtil.Config.SDKPluginScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) → [PlatformChannelEntry.md · Editor 矩阵行结构](Editor/Config/Definitions/PlatformChannelEntry.md) |
 | **新增 Kit 配置（IKitConfig + ConfigWindow 配置）** | [IKitConfig.md · marker 接口](Runtime/Modules/Config/Definitions/IKitConfig.md) → [KitConfigMissingException.md · 缺失异常](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) → [EditorUtil.Config.KitConfigScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.md) → [ConfigWindow.md · Kit 配置一级组](Editor/Windows/ConfigWindow.md) |
-| **构建 AssetBundle (CI/编辑器菜单)** | [EditorUtil.BundleBuilder.md · YooAsset SBP 构建封装](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) → [PipifySteps.md · `assetbundle.build` Step](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) |
+| **构建 AssetBundle / RawFile (CI/编辑器菜单)** | [EditorUtil.BundleBuilder.md · YooAsset Scriptable/RawFile 构建封装](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) → [PipifySteps.md · `bundlebuilder.build` / `bundlebuilder.build_raw_file` Step](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) |
 | **管理私有 UPM 包（安装/升级/卸载/搜索/UPM 联动）** | [PlugPalsWindow.md · Verdaccio 包管理窗口](Editor/Windows/PlugPalsWindow.md) → [EditorUtil.PlugPals.md · 工具层能力](Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md) |
 | **检查 UPM 包是否有新版本（启动弹窗 / 手动打开）** | [EditorUtil.CheckUpdate.md · 版本检查工具](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) → [CheckUpdateWindow.md · 更新提示窗口](Editor/Windows/CheckUpdateWindow.md) |
 | **Inspector GUI 绘制工具** | [EditorUtil.Draw.md · 全方法签名](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.md) |
@@ -43,6 +43,7 @@
 | 理解 UIGroup 深度 / 遮挡排序 | [UIGroupHelper.md](Runtime/Modules/UI/UIGroupHelper/UIGroupHelper.md) → [UIManager.md · UIGroup.Refresh 算法](Runtime/Modules/UI/UIManager/UIManager.md) |
 | **新增游戏流程**（Procedure） | [ProcedureBase.md · 继承模板+GetNextProcedureType](Runtime/Modules/Procedure/ProcedureBase.md) → [ProcedureComponent.md · 自动发现+初始化时序](Runtime/Modules/Procedure/ProcedureComponent.md) → [ProcedureManager.md · FSM 驱动](Runtime/Modules/Procedure/ProcedureManager.md)（具体 Procedure 实现由 Game 层提供，Bootstrap 分发） |
 | **HybridCLR 业务 DLL 加载**（DLL 加载流程） | [ProcedureLoadDll.md · AOT metadata + DLL 加载 + 延迟注册](Runtime/Modules/Procedure/Procedures/ProcedureLoadDll.md) → [HybridConfigs.md · Runtime 加载配置](Runtime/Modules/Config/Definitions/HybridConfigs.md) → [DllAssetEntry.md · Runtime 单字段条目](Runtime/Modules/Config/Definitions/DllAssetEntry.md) → [HybridEditorConfigs.md · Editor 构建配置](Editor/Config/Definitions/HybridEditorConfigs.md) → [DllMasterAssetEntry.md · Editor 三字段条目](Editor/Config/Definitions/DllMasterAssetEntry.md) → [Util.HybridCLR.md · LoadAotMetadataAsync/LoadGameAssemblyAsync](Runtime/Utils/Util.HybridCLR.md) |
+| **刷新 HybridCLR 业务热更 DLL**（消费态本地 Operation） | [nova-project-refresh-hotfix-dlls](../Agents/Skills/nova-project-refresh-hotfix-dlls/SKILL.md) → [EditorUtil.HybridCLR.md · compile/copy/import 事实](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) → [HybridEditorConfigs.md](Editor/Config/Definitions/HybridEditorConfigs.md) → [DllMasterAssetEntry.md](Editor/Config/Definitions/DllMasterAssetEntry.md)；只覆盖当前 Target、DevelopmentBuild 与激活 ConfigMaster 当前坐标，不代表 AOT、Bundle、Player、CDN 或运行时成功。 |
 | **HybridCLR 编辑期原子操作**（由 Pipify 编排流水线） | [EditorUtil.HybridCLR.md · link.xml/Generate/DLL 拷贝 API](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) |
 | **一键流水线 Step / 批处理配置**（Pipify 自动化） | [EditorUtil.Pipify.md · Registry+Runner+Reporters](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) → [PipifySteps.md · 全 Step 清单](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) → [PipifySteps.Export.Helpers.md · 定位辅助](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.Export.Helpers.md) |
 | **Pipify 导出新模块 Step（Table/UI/Localization/Network/Sound/Vibrate）** | [PipifySteps.md · 导出分组表](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) → 对应 EditorUtil.\*.Exporter.md |
@@ -168,7 +169,7 @@
 | [YooAssetHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetHandleAdapter.md) | IAssetHandle 到 YooAsset.AssetHandle 的 ReferencePool 适配器 |
 | [YooAssetSubAssetsHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetSubAssetsHandleAdapter.md) | ISubAssetsHandle 到 YooAsset.SubAssetsHandle 的 ReferencePool 适配器 |
 | [YooAssetAllAssetsHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetAllAssetsHandleAdapter.md) | IAllAssetsHandle 到 YooAsset.AllAssetsHandle 的 ReferencePool 适配器 |
-| [YooAssetRawFileHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetRawFileHandleAdapter.md) | IRawFileHandle 到 YooAsset.RawFileHandle 的 ReferencePool 适配器 |
+| [YooAssetRawFileHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetRawFileHandleAdapter.md) | IRawFileHandle 到 YooAsset AssetHandle + RawFileObject 的 ReferencePool 适配器（FilePath 为尽力提供的 bundle 路径） |
 | [YooAssetSceneHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetSceneHandleAdapter.md) | ISceneHandle 到 YooAsset.SceneHandle 的 ReferencePool 适配器 |
 | [AssetPlayMode.md](Runtime/Modules/Asset/Definitions/AssetPlayMode.md) | 资源运行模式枚举（EditorSimulate/Offline/Host/Web） |
 | [AssetDecryptorType.md](Runtime/Modules/Asset/Definitions/AssetDecryptorType.md) | AB 解密器类型枚举 |
@@ -571,8 +572,7 @@
 
 | 文档 | 说明 |
 |------|------|
-| [EditorUtil.BundleBuilder.md](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) | YooAsset ScriptableBuildPipeline 资源包构建封装（11 项参数） |
-| [EditorUtil.BundleBuilder.md](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) | AB 名称整理与构建封装 |
+| [EditorUtil.BundleBuilder.md](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) | YooAsset 标准 AssetBundle 与可选 RawFile 构建封装 |
 | [PlugPalsWindow.md](Editor/Windows/PlugPalsWindow.md) | 私有 Verdaccio 仓库 UPM 包管理窗口（安装/升级/卸载/搜索/UPM 联动） |
 
 ## Editor — Inspector

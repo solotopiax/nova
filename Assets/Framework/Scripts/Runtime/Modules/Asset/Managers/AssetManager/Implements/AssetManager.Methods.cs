@@ -32,6 +32,59 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 获取指定包的版本元数据编排互斥门。
+        /// </summary>
+        private SemaphoreSlim GetPackageMetadataGate(string package)
+        {
+            if (m_PackageMetadataGates.TryGetValue(package, out SemaphoreSlim metadataGate) == false)
+            {
+                metadataGate = new SemaphoreSlim(1, 1);
+                m_PackageMetadataGates.Add(package, metadataGate);
+            }
+
+            return metadataGate;
+        }
+
+        /// <summary>
+        /// 判断当前模式是否允许请求远端资源版本。
+        /// Host/Web 模式允许；Offline/EditorSimulate 直接返回 null。
+        /// </summary>
+        private bool CanRequestLatestPackageVersion(string package)
+        {
+            if (m_Config == null)
+            {
+                return false;
+            }
+
+            AssetPlayMode effectiveMode = Application.isEditor
+                ? m_Config.EditorPlayMode
+                : m_Config.RuntimePlayMode;
+            return effectiveMode == AssetPlayMode.HostPlayMode || effectiveMode == AssetPlayMode.WebPlayMode;
+        }
+
+        /// <summary>
+        /// 确保包已完成 YooAsset 初始化；版本查询和清单加载共用该前置步骤。
+        /// </summary>
+        private async UniTask EnsurePackageInitializedAsync(ResourcePackage package, string packageName, CancellationToken ct)
+        {
+            // YooAsset 在已初始化后重复 InitializePackageAsync 会抛 "already initialized"，
+            // 因此仅在未成功初始化时执行，允许启动流程中断后安全重入。
+            if (package.InitializeStatus == EOperationStatus.Succeeded)
+            {
+                return;
+            }
+
+            await CheckStartupWhitelistAsync(packageName, ct);
+            InitializePackageOptions options = BuildPlayModeOptions(packageName);
+            var initOp = package.InitializePackageAsync(options);
+            await UniTask.WaitUntil(() => initOp.IsDone, cancellationToken: ct);
+            if (initOp.Status != EOperationStatus.Succeeded)
+            {
+                throw new InvalidOperationException($"InitializePackageAsync failed: {initOp.Error}");
+            }
+        }
+
+        /// <summary>
         /// 在 YooAsset 包初始化前执行一次可选启动白名单检查。
         /// 任意配置、缓存、网络或协议异常均按未命中降级，不阻断现有热更新链路。
         /// </summary>
@@ -550,7 +603,7 @@ namespace NovaFramework.Runtime
         {
 #if UNITY_EDITOR
             string pkgName = ResolvePackageName(package);
-            var buildResult = EditorSimulateBuildInvoker.Build(pkgName, (int)EBundleType.VirtualBundle);
+            var buildResult = EditorSimulateBuildInvoker.Build(pkgName, (int)EBundleType.VirtualAssetBundle);
             return new EditorSimulateModeOptions
             {
                 EditorFileSystemParameters = FileSystemParameters.CreateDefaultEditorFileSystemParameters(buildResult.PackageRootDirectory),
@@ -561,51 +614,58 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 构造离线运行模式初始化参数。
+        /// 构造离线运行模式初始化参数，并向内置文件系统注入解密器。
         /// </summary>
         /// <returns>OfflinePlayModeOptions 实例。</returns>
         private InitializePackageOptions BuildOfflineOptions()
         {
+            var builtinParams = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
+            ApplyDecryptor(builtinParams, true);
             return new OfflinePlayModeOptions
             {
-                BuiltinFileSystemParameters = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters(),
+                BuiltinFileSystemParameters = builtinParams,
             };
         }
 
         /// <summary>
-        /// 构造联机运行模式初始化参数，含解密器注入。
+        /// 构造联机运行模式初始化参数，并向内置与缓存文件系统注入解密器。
         /// </summary>
         /// <param name="package">包名，用于构建远端 URL 模板。</param>
         /// <returns>HostPlayModeOptions 实例。</returns>
         private InitializePackageOptions BuildHostOptions(string package)
         {
             AssetRemoteService remote = CreateRemoteService(package);
+            var builtinParams = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
             var cacheParams = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remote);
             cacheParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
             cacheParams.AddParameter(EFileSystemParameter.DownloadWatchdogTimeout, m_Config.IdleTimeout);
-            ApplyDecryptor(cacheParams);
+            ApplyDecryptor(builtinParams, true);
+            ApplyDecryptor(cacheParams, true);
             return new HostPlayModeOptions
             {
-                BuiltinFileSystemParameters = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters(),
+                BuiltinFileSystemParameters = builtinParams,
                 CacheFileSystemParameters = cacheParams,
             };
         }
 
         /// <summary>
-        /// 构造 WebGL 运行模式初始化参数。
+        /// 构造 WebGL 运行模式初始化参数，并向服务器与网络文件系统注入标准解密器。
         /// </summary>
         /// <param name="package">包名，用于构建远端 URL 模板。</param>
         /// <returns>WebPlayModeOptions 实例。</returns>
         private InitializePackageOptions BuildWebOptions(string package)
         {
             AssetRemoteService remote = CreateRemoteService(package);
-            var remoteParams = FileSystemParameters.CreateDefaultWebRemoteFileSystemParameters(remote);
+            var serverParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+            var remoteParams = FileSystemParameters.CreateDefaultWebNetworkFileSystemParameters(remote);
             remoteParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
-            remoteParams.AddParameter(EFileSystemParameter.DownloadWatchdogTimeout, m_Config.IdleTimeout);
+            // WebNetworkFileSystem 不支持 Sandbox 的下载 watchdog 参数，WebGL 仅保留自身支持的远端寻址策略。
+            ApplyDecryptor(serverParams, false);
+            ApplyDecryptor(remoteParams, false);
             return new WebPlayModeOptions
             {
-                WebServerFileSystemParameters = FileSystemParameters.CreateDefaultWebServerFileSystemParameters(),
-                WebRemoteFileSystemParameters = remoteParams,
+                WebServerFileSystemParameters = serverParams,
+                WebNetworkFileSystemParameters = remoteParams,
             };
         }
 
@@ -628,12 +688,13 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 把解密器注入沙盒文件系统参数。
-        /// IBundleMemoryDecryptor 走备用解密通道；
-        /// IBundleDecryptor（如 OffsetBundleDecryptor）走标准解密通道。
+        /// 把解密器注入文件系统参数。
+        /// IBundleMemoryDecryptor 仅在文件系统支持时走 AssetBundle 备用解密通道；
+        /// 其他 IBundleDecryptor（如 OffsetBundleDecryptor）覆盖 Asset、Raw、Archive 三类标准通道。
         /// </summary>
-        /// <param name="parameters">沙盒文件系统参数，将被就地修改。</param>
-        private void ApplyDecryptor(FileSystemParameters parameters)
+        /// <param name="parameters">文件系统参数，将被就地修改。</param>
+        /// <param name="supportsMemoryFallback">当前文件系统是否支持 AssetBundle 备用内存解密参数。</param>
+        private void ApplyDecryptor(FileSystemParameters parameters, bool supportsMemoryFallback)
         {
             if (m_Decryptor == null)
             {
@@ -641,11 +702,17 @@ namespace NovaFramework.Runtime
             }
             if (m_Decryptor is IBundleMemoryDecryptor)
             {
-                parameters.AddParameter(EFileSystemParameter.AssetbundleFallbackDecryptor, m_Decryptor);
+                if (supportsMemoryFallback)
+                {
+                    parameters.AddParameter(EFileSystemParameter.AssetBundleFallbackDecryptor, m_Decryptor);
+                }
+                return;
             }
             else if (m_Decryptor is IBundleDecryptor)
             {
-                parameters.AddParameter(EFileSystemParameter.AssetbundleDecryptor, m_Decryptor);
+                parameters.AddParameter(EFileSystemParameter.AssetBundleDecryptor, m_Decryptor);
+                parameters.AddParameter(EFileSystemParameter.RawBundleDecryptor, m_Decryptor);
+                parameters.AddParameter(EFileSystemParameter.ArchiveBundleDecryptor, m_Decryptor);
             }
         }
 

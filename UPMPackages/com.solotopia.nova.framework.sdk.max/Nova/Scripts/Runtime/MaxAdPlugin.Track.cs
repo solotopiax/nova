@@ -51,6 +51,21 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             sdkComponent.TryGet(out m_RevenueMonetizeTracker);
             sdkComponent.TryGet(out m_RevenueAttributionTracker);
             sdkComponent.TryGet(out m_RevenueEventTracker);
+
+            if (m_RevenueMonetizeTracker == null)
+            {
+                Log.Warning(LogTag.Max, "MAX 收益打点插件缓存缺失：IMonetizeTrackPlugin 未找到。");
+            }
+
+            if (m_RevenueAttributionTracker == null)
+            {
+                Log.Warning(LogTag.Max, "MAX 收益打点插件缓存缺失：IAttributionPlugin 未找到。");
+            }
+
+            if (m_RevenueEventTracker == null)
+            {
+                Log.Warning(LogTag.Max, "MAX 收益打点插件缓存缺失：ITrackPlugin 未找到。");
+            }
         }
 
         /// <summary>

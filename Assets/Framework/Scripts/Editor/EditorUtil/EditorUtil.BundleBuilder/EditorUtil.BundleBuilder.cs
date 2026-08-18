@@ -5,7 +5,7 @@
  * filename:  EditorUtil.BundleBuilder.cs
  * author:    taoye
  * created:   2026/5/19
- * descrip:   YooAsset 资源包构建薄封装（ScriptableBuildPipeline）
+ * descrip:   YooAsset 标准资源与 RawFile 构建薄封装
  ***************************************************************/
 
 using System;
@@ -19,8 +19,8 @@ namespace NovaFramework.Editor
     public static partial class EditorUtil
     {
         /// <summary>
-        /// YooAsset 资源包构建薄封装。
-        /// 仅做 ScriptableBuildPipeline 的薄封装 + 必要输入校验；不处理依赖收集 / 上传 / 通知等外围逻辑。
+        /// YooAsset 标准资源与 RawFile 构建薄封装。
+        /// 仅封装对应构建管线并执行必要输入校验；不处理依赖收集、上传、通知等外围逻辑。
         /// </summary>
         public static partial class BundleBuilder
         {
@@ -78,6 +78,59 @@ namespace NovaFramework.Editor
                     throw new InvalidOperationException(string.Format("{0} 构建失败：FailedTask={1}, Error={2}", c_LogPrefix, result.FailedTask, result.ErrorInfo));
                 }
                 Log.Debug(LogTag.Editor, "{0} 构建成功：{1}", c_LogPrefix, result.OutputPackageDirectory);
+                return result;
+            }
+
+            /// <summary>
+            /// 启动一次 YooAsset 原生文件构建，仅处理配置为 PackRawFile 的资源。
+            /// 使用 RawFileBuildParameters、RawFileBuildPipeline 与 RawBundle，不改变标准 AssetBundle 构建入口。
+            /// </summary>
+            /// <param name="args">RawFile 构建参数。</param>
+            /// <returns>YooAsset 构建结果。</returns>
+            public static BuildResult BuildRawFileBundle(RawFileBuildArgs args)
+            {
+                if (args == null)
+                {
+                    throw new ArgumentNullException(nameof(args));
+                }
+                if (string.IsNullOrEmpty(args.PackageName))
+                {
+                    throw new ArgumentException(string.Format("{0} PackageName 不能为空", c_LogPrefix));
+                }
+
+                BuildTarget target = args.Target == BuildTarget.NoTarget ? EditorUserBuildSettings.activeBuildTarget : args.Target;
+                string version = string.IsNullOrEmpty(args.BuildVersion) ? GetDefaultPackageVersion() : args.BuildVersion;
+
+                RawFileBuildParameters parameters = new RawFileBuildParameters();
+                parameters.BuildOutputRoot = BundleBuilderHelper.GetDefaultBuildOutputRoot();
+                parameters.BundledFileRoot = BundleBuilderHelper.GetStreamingAssetsRoot();
+                parameters.BuildPipeline = nameof(EBuildPipeline.RawFileBuildPipeline);
+                parameters.BuildBundleType = (int)EBundleType.RawBundle;
+                parameters.BuildTarget = target;
+                parameters.PackageName = args.PackageName;
+                parameters.PackageVersion = version;
+                parameters.VerifyBuildingResult = true;
+                parameters.FileNameStyle = args.FileNameStyle;
+                parameters.BundledCopyOption = args.BundledCopyOption;
+                parameters.BundledCopyParams = args.BundledCopyParams ?? string.Empty;
+                parameters.ClearBuildCacheFiles = args.ClearBuildCache;
+                parameters.UseAssetDependencyDB = args.UseAssetDependencyDB;
+                parameters.BundleEncryptor = CreateInstanceOrNull<IBundleEncryptor>(ResolveClassName(args.BundleEncryptorClassName, typeof(EncryptionNone)));
+                parameters.ManifestEncryptor = CreateInstanceOrNull<IManifestEncryptor>(ResolveClassName(args.ManifestEncryptorClassName, typeof(ManifestEncryptorNone)));
+                parameters.ManifestDecryptor = CreateInstanceOrNull<IManifestDecryptor>(ResolveClassName(args.ManifestDecryptorClassName, typeof(ManifestDecryptorNone)));
+                parameters.IncludePathInHash = args.IncludePathInHash;
+
+                Log.Debug(LogTag.Editor,
+                    "{0} 开始 RawFile 构建：package={1}, version={2}, target={3}, clearCache={4}, includePathInHash={5}",
+                    c_LogPrefix, args.PackageName, version, target, args.ClearBuildCache, args.IncludePathInHash);
+
+                RawFileBuildPipeline pipeline = new RawFileBuildPipeline();
+                BuildResult result = pipeline.Run(parameters, true);
+                if (!result.Success)
+                {
+                    throw new InvalidOperationException(string.Format("{0} RawFile 构建失败：FailedTask={1}, Error={2}", c_LogPrefix, result.FailedTask, result.ErrorInfo));
+                }
+                Log.Debug(LogTag.Editor, "{0} RawFile 构建成功：{1}", c_LogPrefix, result.OutputPackageDirectory);
                 return result;
             }
 

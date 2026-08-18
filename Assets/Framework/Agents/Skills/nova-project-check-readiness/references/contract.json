@@ -7,6 +7,23 @@
     "unity": ">=6000.4"
   },
   "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "cli",
+      "entry": "python3 \"<resolved Framework package>/Agents/Tools/nova_skills.py\" resolve --project-root <projectRoot>",
+      "when": "macOS/Linux 已解析到 Python 3.9+，且需要确认消费项目实际解析到的 Framework 包时"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 \"<resolved Framework package>/Agents/Tools/nova_skills.py\" resolve --project-root <projectRoot>",
+      "when": "Windows 已解析到 Python 3.9+，且需要确认消费项目实际解析到的 Framework 包时"
+    },
+    {
+      "kind": "unity-mcp",
+      "entry": "Unity MCP read-only scene and Console inspection",
+      "when": "用户明确允许收集 Unity 或 Play 证据时"
+    }
+  ],
   "inputs": [
     {
       "name": "projectRoot",

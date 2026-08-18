@@ -31,8 +31,11 @@ namespace YooAsset
         public IDownloadBackend DownloadBackend { get; private set; }
 
         /// <summary>
-        /// 包裹名称
+        /// 平台策略
         /// </summary>
+        public IWebPlatformStrategy PlatformStrategy { get; private set; }
+
+        /// <inheritdoc />
         public string PackageName { get; private set; }
 
         #region 自定义参数
@@ -60,6 +63,16 @@ namespace YooAsset
         /// 自定义参数：AssetBundle 解密器
         /// </summary>
         public IBundleDecryptor AssetBundleDecryptor { get; private set; }
+
+        /// <summary>
+        /// 自定义参数：RawBundle 解密器
+        /// </summary>
+        public IBundleDecryptor RawBundleDecryptor { get; private set; }
+
+        /// <summary>
+        /// 自定义参数：ArchiveBundle 解密器
+        /// </summary>
+        public IBundleDecryptor ArchiveBundleDecryptor { get; private set; }
 
         /// <summary>
         /// 自定义参数：资源清单解密器
@@ -108,6 +121,12 @@ namespace YooAsset
             return operation;
         }
         /// <inheritdoc />
+        public FSEnsurePackageBundleOperation EnsurePackageBundleAsync(FSEnsurePackageBundleOptions options)
+        {
+            var operation = new FSEnsurePackageBundleFailureOperation($"{nameof(WebServerFileSystem)} does not support ensure bundle file operation.");
+            return operation;
+        }
+        /// <inheritdoc />
         public FSDownloadBundleOperation DownloadBundleAsync(FSDownloadBundleOptions options)
         {
             var operation = new FSDownloadBundleCompleteOperation($"{nameof(WebServerFileSystem)} does not support download operation.");
@@ -144,9 +163,17 @@ namespace YooAsset
             {
                 DownloadVerifyLevel = FileSystemHelper.CastParameter<EFileVerifyLevel>(paramName, value);
             }
-            else if (paramName == nameof(EFileSystemParameter.AssetbundleDecryptor))
+            else if (paramName == nameof(EFileSystemParameter.AssetBundleDecryptor))
             {
                 AssetBundleDecryptor = FileSystemHelper.CastParameter<IBundleDecryptor>(paramName, value);
+            }
+            else if (paramName == nameof(EFileSystemParameter.RawBundleDecryptor))
+            {
+                RawBundleDecryptor = FileSystemHelper.CastParameter<IBundleDecryptor>(paramName, value);
+            }
+            else if (paramName == nameof(EFileSystemParameter.ArchiveBundleDecryptor))
+            {
+                ArchiveBundleDecryptor = FileSystemHelper.CastParameter<IBundleDecryptor>(paramName, value);
             }
             else if (paramName == nameof(EFileSystemParameter.ManifestDecryptor))
             {
@@ -159,6 +186,10 @@ namespace YooAsset
             else if (paramName == nameof(EFileSystemParameter.DownloadUrlPolicy))
             {
                 DownloadUrlPolicy = FileSystemHelper.CastParameter<IDownloadUrlPolicy>(paramName, value);
+            }
+            else if (paramName == nameof(EFileSystemParameter.WebPlatformStrategy))
+            {
+                PlatformStrategy = FileSystemHelper.CastParameter<IWebPlatformStrategy>(paramName, value);
             }
             else
             {
@@ -187,12 +218,19 @@ namespace YooAsset
             if (DownloadUrlPolicy == null)
                 DownloadUrlPolicy = new DefaultDownloadUrlPolicy();
 
+            // 创建默认的平台策略
+            if (PlatformStrategy == null)
+                PlatformStrategy = new DefaultWebPlatformStrategy(WebRequestCreator);
+
             // 创建Web文件缓存系统
             var cacheConfig = new WebServerBundleCache.Configuration(
                 watchdogTimeout: DownloadWatchdogTimeout,
                 disableUnityWebCache: DisableUnityWebCache,
                 downloadVerifyLevel: DownloadVerifyLevel,
                 assetBundleDecryptor: AssetBundleDecryptor,
+                rawBundleDecryptor: RawBundleDecryptor,
+                archiveBundleDecryptor: ArchiveBundleDecryptor,
+                platformStrategy: PlatformStrategy,
                 downloadBackend: DownloadBackend,
                 downloadRetryPolicy: DownloadRetryPolicy,
                 downloadUrlPolicy: DownloadUrlPolicy);

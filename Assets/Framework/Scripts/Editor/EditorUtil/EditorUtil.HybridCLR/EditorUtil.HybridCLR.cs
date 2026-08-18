@@ -54,7 +54,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 校验 Assets/link.xml，缺失则补全 ConfigMasterSO.AotMetadataDlls 每项的 preserve 记录。
+            /// 校验当前激活 ConfigMaster 当前三维坐标的 LinkXmlTargetPath；配置为空时回退 Assets/link.xml，缺失则补全当前坐标解析出的 HybridEditorConfigs.AotMetadataDlls 每项 preserve 记录。
             /// </summary>
             public static void ValidateLinkXml()
             {

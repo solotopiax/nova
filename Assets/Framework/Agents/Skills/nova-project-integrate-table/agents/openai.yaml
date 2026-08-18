@@ -1,0 +1,5 @@
+interface:
+  display_name: "Nova 接入数据表"
+  short_description: "接入 Luban 表源并验证 Nova 运行时加载与目标表读取"
+  default_prompt: "使用 $nova-project-integrate-table 将一个已确认的 Luban 数据表接入当前 Nova 项目并完成运行验证。"
+

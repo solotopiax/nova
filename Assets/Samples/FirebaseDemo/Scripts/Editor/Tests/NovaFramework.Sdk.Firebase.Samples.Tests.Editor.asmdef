@@ -1,0 +1,24 @@
+{
+    "name": "NovaFramework.Sdk.Firebase.Samples.Tests.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:336641901ee54b9ab09044eb75420327",
+        "GUID:8638de339ec64713bad44e6634318ab4",
+        "GUID:ec176dfd18a8dc548bc9f294bb78d9fb",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

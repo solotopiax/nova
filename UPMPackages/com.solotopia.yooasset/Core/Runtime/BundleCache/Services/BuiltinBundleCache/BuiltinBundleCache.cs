@@ -21,14 +21,21 @@ namespace YooAsset
             public IBundleDecryptor RawBundleDecryptor { get; }
 
             /// <summary>
+            /// ArchiveBundle 解密器
+            /// </summary>
+            public IBundleDecryptor ArchiveBundleDecryptor { get; }
+
+            /// <summary>
             /// 下载后台
             /// </summary>
             public IDownloadBackend DownloadBackend { get; }
 
-            public Configuration(IBundleDecryptor assetBundleDecryptor, IBundleDecryptor rawBundleDecryptor, IDownloadBackend downloadBackend)
+            public Configuration(IBundleDecryptor assetBundleDecryptor, IBundleDecryptor rawBundleDecryptor,
+                IBundleDecryptor archiveBundleDecryptor, IDownloadBackend downloadBackend)
             {
                 AssetBundleDecryptor = assetBundleDecryptor;
                 RawBundleDecryptor = rawBundleDecryptor;
+                ArchiveBundleDecryptor = archiveBundleDecryptor;
                 DownloadBackend = downloadBackend;
             }
         }
@@ -118,6 +125,11 @@ namespace YooAsset
                 var operation = new BBCLoadRawBundleOperation(this, options.Bundle);
                 return operation;
             }
+            else if (options.Bundle.GetBundleType() == (int)EBundleType.ArchiveBundle)
+            {
+                var operation = new BBCLoadArchiveBundleOperation(this, options.Bundle);
+                return operation;
+            }
             else
             {
                 string error = $"{nameof(BuiltinBundleCache)} does not support bundle type: {options.Bundle.GetBundleType()}.";
@@ -129,6 +141,17 @@ namespace YooAsset
         public bool IsCached(string bundleGuid)
         {
             return _cacheEntries.ContainsKey(bundleGuid);
+        }
+        /// <inheritdoc />
+        public string GetCacheFilePath(string bundleGuid)
+        {
+            if (_cacheEntries.TryGetValue(bundleGuid, out BuiltinBundleCacheEntry entry))
+            {
+                return entry.FilePath;
+            }
+
+            YooLogger.LogWarning($"Cache file path not found. Bundle GUID: '{bundleGuid}'.");
+            return null;
         }
 
         #region 内部方法

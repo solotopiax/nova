@@ -5,10 +5,18 @@ using System.Collections.Generic;
 using UnityEditor.Build.Pipeline;
 using UnityEditor.Build.Pipeline.Interfaces;
 
+// modify: local fork - 适配 Unity 6000.4 使用的 SBP 2.6.1 内置资源包构建任务类型。
+
 namespace UnityEditor.Build.Pipeline.Tasks
 {
     public static class SBPBuildTasks
     {
+        /// <summary>
+        /// 创建 YooAsset 的 Scriptable Build Pipeline 标准构建任务序列。
+        /// </summary>
+        /// <param name="builtInShaderBundleName">内置 Shader 资源包名称。</param>
+        /// <param name="monoScriptsBundleName">Mono 脚本资源包名称。</param>
+        /// <returns>按执行顺序排列的构建任务集合。</returns>
         public static IList<IBuildTask> Create(string builtInShaderBundleName, string monoScriptsBundleName)
         {
             var buildTasks = new List<IBuildTask>();

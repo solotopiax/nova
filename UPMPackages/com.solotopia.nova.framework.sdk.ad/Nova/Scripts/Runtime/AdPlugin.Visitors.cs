@@ -26,6 +26,26 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public override int Priority => 80;
 
         /// <summary>
+        /// 广告国家码上次成功缓存的持久化分类名。
+        /// </summary>
+        private const string c_CountryCodePersistClassify = "AdCountryCode";
+
+        /// <summary>
+        /// 广告国家码上次成功缓存的持久化条目名。
+        /// </summary>
+        private const string c_CountryCodePersistItem = "LastSuccess";
+
+        /// <summary>
+        /// 未注入配置时等待广告国家码的默认超时时间。
+        /// </summary>
+        private const float c_DefaultCountryCodeWaitTimeoutSeconds = 5f;
+
+        /// <summary>
+        /// SDKManager 注入的广告运行时配置。
+        /// </summary>
+        private AdPluginConfig m_RuntimeConfig;
+
+        /// <summary>
         /// 所有已注册渠道插件；OnInitializeAsync 从全量 ISDKPlugin 中过滤 IAdInternalPlugin 填充。
         /// </summary>
         private List<IAdInternalPlugin> m_ChannelPlugins;

@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-update-ui-view",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-edit",
+      "entry": "project-confirmed business UIView source",
+      "when": "定向修改已冻结的业务 View 生命周期、绑定或行为"
+    },
+    {
+      "kind": "unity-mcp",
+      "entry": "Unity MCP target Prefab and serialized binding editing",
+      "when": "修改已确认的 Prefab 节点、组件或序列化引用"
+    },
+    {
+      "kind": "unity-menu",
+      "entry": "confirmed project UI registration and export entry",
+      "when": "注册内容确有变化且需要更新本次生成物"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.UI OpenUIView* / CloseUIView* / GetUIView*",
+      "when": "获授权后验证目标页面的打开、关闭和查询行为"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "existingViewAndPrefab",
+      "required": true
+    },
+    {
+      "name": "desiredChangeAndAcceptance",
+      "required": true
+    },
+    {
+      "name": "uiGroupAndRegistrationSource",
+      "required": false
+    },
+    {
+      "name": "uiExportAction",
+      "required": false
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed existing business UIView source",
+      "confirmed existing target Prefab and serialized bindings",
+      "confirmed existing UI registration source",
+      "generated UI output required by this registration change"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "handwritten Prefab or Scene YAML",
+      "unknown layout or unrelated Prefab nodes",
+      "unrelated UI registration or generated output"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "active-scene",
+    "ui-registration"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous existing View, Prefab, UIGroup, registration source or layout scope",
+      "change UIGroup or registration semantics",
+      "replace non-generated asset",
+      "delete, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认目标页面、最小写入集和副作用；输入或范围改变后旧确认失效。"
+  },
+  "minimumEvidence": "compile",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "目标 View、Prefab 和注册源的局部 diff",
+    "Unity 保存的 Prefab 与序列化绑定",
+    "选定 UI 导出 Action 的结果",
+    "Unity 编译或明确授权后的 Play smoke"
+  ]
+}

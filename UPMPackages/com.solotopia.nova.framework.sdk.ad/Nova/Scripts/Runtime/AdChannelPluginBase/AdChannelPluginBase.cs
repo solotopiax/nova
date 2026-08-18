@@ -97,6 +97,12 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public virtual float GetMaxRevenue(AdFormat format) => 0f;
 
         /// <summary>
+        /// 获取当前渠道 SDK 返回的国家或地区代码；默认渠道无可用国家代码。
+        /// </summary>
+        /// <returns>国家或地区代码；默认返回空字符串。</returns>
+        public virtual string GetCountryCode() => string.Empty;
+
+        /// <summary>
         /// 同步登录用户 userId 到本渠道 SDK，默认空实现。
         /// 渠道有原生 SetUserId（如 MaxSdk.SetUserId）时 override。
         /// </summary>

@@ -1,8 +1,8 @@
 {
   "name": "com.solotopia.luban",
-  "version": "10.0.6",
+  "version": "10.1.0",
   "license": "SEE LICENSE IN LICENSE.md",
-  "coreVersion": "4.7.0",
+  "coreVersion": "4.11.0",
   "displayName": "Luban",
   "description": "鲁班是一个功能强大，易于使用，优雅稳定的游戏配置解决方案。",
   "category": "Runtime",

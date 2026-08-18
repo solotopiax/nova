@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-configure-runtime",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "unity-menu",
+      "entry": "Nova/Open Config",
+      "when": "编辑并保存已冻结三维坐标的 ConfigMasterSO"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Config.Exporter.Export",
+      "when": "导出已冻结 Platform Channel DevelopMode 的 ConfigRuntimeSO"
+    },
+    {
+      "kind": "pipify",
+      "entry": "export.config",
+      "when": "复用参数已经冻结的 Config 导出 Batch"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "configMaster",
+      "required": true
+    },
+    {
+      "name": "platformChannelDevelopMode",
+      "required": true
+    },
+    {
+      "name": "configChangeSet",
+      "required": true
+    },
+    {
+      "name": "configRuntimeTarget",
+      "required": true
+    },
+    {
+      "name": "activeSceneSnapshotRequest",
+      "required": false
+    }
+  ],
+  "effects": [
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed ConfigMasterSO at the selected Platform Channel DevelopMode coordinate",
+      "confirmed ConfigRuntimeSO target",
+      "resolved YooAssetSettings.asset for the confirmed coordinate when configured",
+      "active-scene startup snapshot only when explicitly confirmed"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "unconfirmed Platform Channel DevelopMode coordinates",
+      "handwritten Scene or ScriptableObject YAML",
+      "remote config, CDN, Bundle, Player or external deployment"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "config-master",
+    "config-runtime-target",
+    "active-scene"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous ConfigMaster, coordinate, field change, runtime target or scene snapshot",
+      "create a ConfigMasterSO or ConfigRuntimeSO",
+      "change another coordinate, resolved YooAsset settings or active scene snapshot",
+      "delete, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认绑定一个三维坐标、字段变更和 Runtime 目标；坐标、目标或附加场景写入变化后旧确认失效。"
+  },
+  "minimumEvidence": "compile",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "ConfigMasterSO 保存与三维坐标证据",
+    "ConfigRuntimeSO 导出结果",
+    "Unity 编译证据"
+  ]
+}

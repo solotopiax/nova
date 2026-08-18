@@ -1,10 +1,10 @@
 # Nova Framework - SDK - Firebase
 
 > 包名：`com.solotopia.nova.framework.sdk.firebase`
-> 当前版本：`0.1.2`
+> 当前版本：`0.1.5`
 > Firebase Unity SDK：`13.14.0`
 
-Firebase 聚合插件，统一接入分析、崩溃、推送、远程配置
+Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置，并提供 Nova 侧默认 Topic 同步与业务 push task 缓存发送能力。
 
 ## 安装
 
@@ -12,13 +12,40 @@ Firebase 聚合插件，统一接入分析、崩溃、推送、远程配置
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.firebase": "0.1.2"
+  "com.solotopia.nova.framework.sdk.firebase": "0.1.5"
 }
 ```
+
+## 能力概览
+
+- Analytics：`TrackEvent(...)`、`SetUserId(...)`、`SetUserProperty(...)`。
+- FCM：`GetTokenAsync(...)`、`OnTokenRefreshed`、`SetTopicSubscribed(...)`。
+- 默认 Topic：初始化后自动同步 `top_all`、语言、平台、时区和国家 Topic，并通过 `IFileFragmentManager` 记录订阅状态，变化时先退订旧 Topic 再订阅新 Topic。
+- Push task：业务通过 `IFirebasePushTaskPlugin.QueuePushTaskAsync(...)` 写入本地缓存，按配置的时间阈值、数量阈值或应用恢复前台触发批量发送；发送成功后才删除缓存。
+- 登录上报：收到 `SDKEventData.UserLogin` 后，上报 Firebase Push Token、Analytics Instance ID、国家码和时区偏移。
+
+## 运行时配置
+
+`FirebasePluginConfig` 主要配置业务服务器协议名和 push task 发送策略：
+
+- `ReportCmdName`：登录后上报 Firebase 标识使用的 NetCmd 名称。
+- `PushCmdName`：批量创建或取消服务端 push task 使用的 NetCmd 名称；为空时保留本地缓存并等待下次发送。
+- `PushFlushIntervalSeconds`：push task 本地缓存后的时间阈值，默认 `100` 秒。
+- `PushFlushBatchSize`：push task 缓存数量阈值，默认 `5` 条。
+
+国家码不在 Firebase 配置中单独设置；默认国家 Topic 和登录上报会通过 `IAdPlugin.GetCountryCodeAsync(...)` 获取，等待超时和上次成功缓存兜底由 AD 模块负责。
+
+## Push Task 约束
+
+`FirebasePushTask.TaskKey` 是本地缓存主键，相同 `TaskKey` 的新任务会覆盖旧任务。协议发送必须等待 Firebase 初始化完成且 `SetUserId(...)` 已成功同步用户身份，避免缺少用户相关协议参数。
+
+`FirebasePushTask.Cancel == true` 表示取消同 `TaskKey` 下未派发的服务端任务。此时协议层只发送 `task_key` 和 `cancel`，不会携带 `trigger_time` 或 `template_id`。
 
 ## 维护
 
 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。每次发版必须在 CHANGELOG 中追加对应版本节，否则发布脚本会中断。
+
+详细运行时说明见 [Nova/Doc/INDEX.md](./Nova/Doc/INDEX.md)。
 
 ## 当前开源状态
 

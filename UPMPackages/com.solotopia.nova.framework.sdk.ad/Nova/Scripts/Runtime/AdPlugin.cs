@@ -41,7 +41,8 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <returns>初始化完成的异步任务。</returns>
         protected override UniTask OnInitializeAsync(ISDKPluginConfig config, CancellationToken ct)
         {
-            var adConfig = config as AdPluginConfig;
+            m_RuntimeConfig = config as AdPluginConfig;
+            var adConfig = m_RuntimeConfig;
             m_ChannelPlugins = new List<IAdInternalPlugin>();
             if (adConfig == null) return UniTask.CompletedTask;
             var configs = adConfig.ChannelConfigs.Items;
@@ -76,6 +77,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             Events.ShowFailed.Clear();
             Events.RevenuePaid.Clear();
             Events.AdClosed.Clear();
+            m_RuntimeConfig = null;
             return UniTask.CompletedTask;
         }
 
@@ -86,6 +88,52 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <param name="format">广告格式。</param>
         /// <returns>至少一个渠道正在播放返回 true，否则 false。</returns>
         public bool IsAdPlaying(AdFormat format) => false;
+
+        /// <summary>
+        /// 异步获取广告 SDK 返回的有效国家或地区代码。
+        /// 优先等待广告国家码数据槽位；等待超时后读取广告模块上次成功缓存，仍不可用时返回空字符串。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>大写国家或地区代码；不可用时返回空字符串。</returns>
+        public async UniTask<string> GetCountryCodeAsync(CancellationToken ct = default)
+        {
+            TimeSpan waitTimeout = GetCountryCodeWaitTimeout();
+            if (waitTimeout <= TimeSpan.Zero)
+            {
+                return ReadCountryCodeCache();
+            }
+
+            using (CancellationTokenSource timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct))
+            {
+                timeoutCts.CancelAfter(waitTimeout);
+                try
+                {
+                    object countryObj = await FetchDataAsync(SDKDataKeys.AdCountryCode, timeoutCts.Token);
+                    string countryCode = countryObj as string;
+                    if (TryNormalizeCountryCode(countryCode, out string normalizedCountryCode))
+                    {
+                        return normalizedCountryCode;
+                    }
+
+                    Log.Debug(LogTag.AD, $"广告国家码无效，返回空字符串：{countryCode ?? string.Empty}。");
+                    return string.Empty;
+                }
+                catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+                {
+                    string cachedCountryCode = ReadCountryCodeCache();
+                    if (string.IsNullOrEmpty(cachedCountryCode))
+                    {
+                        Log.Debug(LogTag.AD, "等待广告国家码超时，且没有可用的广告国家码缓存。");
+                    }
+                    else
+                    {
+                        Log.Debug(LogTag.AD, $"等待广告国家码超时，使用广告国家码缓存：{cachedCountryCode}。");
+                    }
+
+                    return cachedCountryCode;
+                }
+            }
+        }
 
         /// <summary>
         /// 向所有支持指定格式的渠道并行发起预加载请求。

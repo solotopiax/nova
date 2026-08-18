@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 接入网络 API"
+  short_description: "接入并验证 Nova 项目的业务 HTTP 网络 API 闭环"
+  default_prompt: "使用 $nova-project-integrate-network-api 接入当前 Nova 项目的已确认业务网络 API，完成路由、请求与运行验证。"

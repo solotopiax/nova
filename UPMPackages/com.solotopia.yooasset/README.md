@@ -1,7 +1,7 @@
 # YooAsset
 
 > 包名：`com.solotopia.yooasset`
-> 当前版本：`1.0.4`
+> 当前版本：`1.1.0`
 
 Unity 资源管理与热更新解决方案
 
@@ -11,7 +11,7 @@ Unity 资源管理与热更新解决方案
 
 ```json
 "dependencies": {
-  "com.solotopia.yooasset": "1.0.0"
+  "com.solotopia.yooasset": "1.1.0"
 }
 ```
 

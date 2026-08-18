@@ -71,7 +71,7 @@ namespace YooAsset
                 options.AutoUnloadBundleWhenUnused = wpp.AutoUnloadBundleWhenUnused;
                 options.WebGLForceSyncLoadAsset = wpp.WebGLForceSyncLoadAsset;
                 options.WebServerFileSystemParameters = wpp.WebServerFileSystemParameters;
-                options.WebRemoteFileSystemParameters = wpp.WebRemoteFileSystemParameters;
+                options.WebNetworkFileSystemParameters = wpp.WebRemoteFileSystemParameters;
                 var operation = InitializePackageAsync(options);
                 var wrapper = new InitializationOperation(operation);
                 AsyncOperationSystem.StartOperation(PackageName, wrapper);
@@ -327,6 +327,32 @@ namespace YooAsset
             }
             var options = new BundleImporterOptions(bundleInfos, importerMaxNumber, failedTryAgain);
             return CreateResourceImporter(options);
+        }
+        #endregion
+
+        #region 资源包文件加载
+        [Obsolete("Use LoadBundleFileSync(AssetInfo) instead.")]
+        public BundleFileHandle LoadRawFileSync(AssetInfo assetInfo)
+        {
+            return LoadBundleFileSync(assetInfo);
+        }
+
+        [Obsolete("Use LoadBundleFileSync(string) instead.")]
+        public BundleFileHandle LoadRawFileSync(string location)
+        {
+            return LoadBundleFileSync(location);
+        }
+
+        [Obsolete("Use LoadBundleFileAsync(AssetInfo, uint) instead.")]
+        public BundleFileHandle LoadRawFileAsync(AssetInfo assetInfo, uint priority = 0)
+        {
+            return LoadBundleFileAsync(assetInfo, priority);
+        }
+
+        [Obsolete("Use LoadBundleFileAsync(string, uint) instead.")]
+        public BundleFileHandle LoadRawFileAsync(string location, uint priority = 0)
+        {
+            return LoadBundleFileAsync(location, priority);
         }
         #endregion
     }

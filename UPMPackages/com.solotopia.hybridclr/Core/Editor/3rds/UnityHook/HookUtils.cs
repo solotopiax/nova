@@ -50,7 +50,7 @@ namespace MonoHook
             if (ptr == IntPtr.Zero)
                 return;
 
-#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+#if UNITY_EDITOR_WIN || (!UNITY_EDITOR && UNITY_STANDALONE_WIN)
             uint oldProtect;
             bool ret = VirtualProtect(ptr, (uint)size, Protection.PAGE_EXECUTE_READWRITE, out oldProtect);
             UnityEngine.Debug.Assert(ret);
@@ -223,7 +223,7 @@ namespace MonoHook
         };
 
 
-#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+#if UNITY_EDITOR_WIN || (!UNITY_EDITOR && UNITY_STANDALONE_WIN)
         [Flags]
         public enum Protection
         {

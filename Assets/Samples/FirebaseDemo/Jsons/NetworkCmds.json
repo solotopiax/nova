@@ -23,6 +23,12 @@
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
       "Path": "/v1/common/app-config"
+    },
+    {
+      "Name": "FirebasePush",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/push/tasks"
     }
   ]
 }

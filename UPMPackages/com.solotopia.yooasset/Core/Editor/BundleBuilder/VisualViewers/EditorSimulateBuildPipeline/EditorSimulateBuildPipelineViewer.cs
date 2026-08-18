@@ -30,6 +30,11 @@ namespace YooAsset.Editor
         /// </summary>
         protected TextField _buildVersionField;
 
+        /// <summary>
+        /// 构建资源包类型下拉框
+        /// </summary>
+        protected PopupField<string> _buildBundleTypeField;
+
 
         public override void CreateView(VisualElement parent)
         {
@@ -49,6 +54,10 @@ namespace YooAsset.Editor
             // 构建版本
             _buildVersionField = Root.Q<TextField>("BuildVersion");
             SetBuildVersionField(_buildVersionField);
+
+            // 构建资源包类型
+            var buildBundleTypeContainer = Root.Q<VisualElement>("BuildBundleType");
+            _buildBundleTypeField = CreateBuildBundleTypeField(buildBundleTypeContainer);
 
             // 构建按钮
             var buildButton = Root.Q<Button>("Build");
@@ -80,7 +89,7 @@ namespace YooAsset.Editor
             buildParameters.BuildOutputRoot = BundleBuilderHelper.GetDefaultBuildOutputRoot();
             buildParameters.BundledFileRoot = BundleBuilderHelper.GetStreamingAssetsRoot();
             buildParameters.BuildPipeline = PipelineName.ToString();
-            buildParameters.BuildBundleType = (int)EBundleType.VirtualBundle;
+            buildParameters.BuildBundleType = (int)Enum.Parse(typeof(EBundleType), _buildBundleTypeField.value);
             buildParameters.BuildTarget = BuildTarget;
             buildParameters.PackageName = PackageName;
             buildParameters.PackageVersion = _buildVersionField.value;
@@ -93,6 +102,27 @@ namespace YooAsset.Editor
             var buildResult = pipeline.Run(buildParameters, true);
             if (buildResult.Success)
                 EditorUtility.RevealInFinder(buildResult.OutputPackageDirectory);
+        }
+
+        private PopupField<string> CreateBuildBundleTypeField(VisualElement container)
+        {
+            var bundleTypes = Enum.GetValues(typeof(EBundleType))
+                .Cast<EBundleType>()
+                .Where(type => type.ToString().StartsWith("Virtual"))
+                .Select(type => type.ToString())
+                .ToList();
+
+            int defaultIndex = bundleTypes.IndexOf(EBundleType.VirtualAssetBundle.ToString());
+            if (defaultIndex < 0)
+                defaultIndex = 0;
+
+            var popupField = new PopupField<string>(bundleTypes, defaultIndex);
+            popupField.label = "Build Bundle Type";
+            popupField.style.width = StyleWidth;
+
+            container.Add(popupField);
+            UIElementsTools.SetElementLabelMinWidth(popupField, LabelMinWidth);
+            return popupField;
         }
     }
 }

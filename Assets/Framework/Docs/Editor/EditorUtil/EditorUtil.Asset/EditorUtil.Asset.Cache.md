@@ -4,7 +4,7 @@ Editor 下热更资源缓存的一键清理能力，由 AssetComponent Inspector
 
 ## 清理范围
 
-- YooAsset Editor 沙盒根目录：通过 `YooAssetConfiguration.GetYooFolderName()` 与当前项目根目录动态解析，不写死 `yoo` 等目录名。
+- YooAsset Editor 沙盒根目录：`<project>/Library/<YooFolderName>`，其中目录名通过 `YooAssetConfiguration.GetYooFolderName()` 动态获取。
 - 框架自主保存的可启动版本记录：仅删除 `Application.persistentDataPath/Asset` 第一层的 `*.version` 文件。
 
 以下内容不会删除：
@@ -17,8 +17,9 @@ Editor 下热更资源缓存的一键清理能力，由 AssetComponent Inspector
 
 - Play Mode 中禁止执行。
 - 点击入口后直接删除，不显示执行前确认框；完成或失败后显示结果提示。
-- `YooFolderName` 为空、沙盒路径退化为项目根或逃逸到项目外时拒绝清理。
-- 递归删除目标为文件系统根目录时拒绝清理。
+- `YooFolderName` 为空、沙盒路径退化为 `Library` 根/项目根、逃逸出 `Library` 或落入其他项目保护目录时拒绝清理。
+- Windows Editor 的路径边界比较不区分大小写，非 Windows Editor 区分大小写；因此大小写错误的 `library` 不会在非 Windows 平台被接受为 `Library` 子目录。
+- 递归删除目标为文件系统根、项目根、`Library` 根或其他项目保护目录时拒绝清理。
 
 ## API
 

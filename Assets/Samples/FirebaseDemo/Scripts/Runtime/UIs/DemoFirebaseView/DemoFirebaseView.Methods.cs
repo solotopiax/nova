@@ -14,6 +14,7 @@ using NovaFramework.Kit.Network.GameLogin.Runtime;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.FirebasePlugin.Runtime;
 using Newtonsoft.Json;
+using TMPro;
 
 namespace NovaFramework.Sdk.Firebase.Samples.Runtime
 {
@@ -120,9 +121,24 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
                 if (resp.IsSuccess)
                 {
                     string uid = resp.Data != null ? resp.Data.Uid : string.Empty;
-                    if (!string.IsNullOrEmpty(uid) && Nova.SDK != null)
+                    if (string.IsNullOrEmpty(uid))
+                    {
+                        m_HasLoggedIn = false;
+                        SetPushTaskSendButtonInteractable(false);
+                        AppendFeedback("登录成功但 UID 为空，Push Task 发送按钮保持禁用。", FeedbackLevel.Warn);
+                    }
+                    else if (Nova.SDK == null)
+                    {
+                        m_HasLoggedIn = false;
+                        SetPushTaskSendButtonInteractable(false);
+                        AppendFeedback("登录成功但 Nova.SDK 不可用，Push Task 发送按钮保持禁用。", FeedbackLevel.Warn);
+                    }
+                    else
                     {
                         Nova.SDK.Login(uid);
+                        m_HasLoggedIn = true;
+                        SetPushTaskSendButtonInteractable(true);
+                        AppendFeedback("登录成功，Push Task 发送按钮已启用。", FeedbackLevel.Info);
                     }
 
                     AppendFeedback($"Nova.Network.Kit<Login>().Async(string.Empty, \"{openId}\", {forceNewAccount}) -> IsSuccess=true, UID={uid}", FeedbackLevel.Success);
@@ -136,6 +152,134 @@ namespace NovaFramework.Sdk.Firebase.Samples.Runtime
             {
                 AppendFeedback($"登录异常：{ex.Message}", FeedbackLevel.Error);
             }
+        }
+
+        /// <summary>
+        /// 启动 push task 缓存流程，避免按钮回调直接阻塞。
+        /// </summary>
+        private void OnSendPushTaskButtonClick()
+        {
+            if (!m_HasLoggedIn)
+            {
+                SetPushTaskSendButtonInteractable(false);
+                AppendFeedback("请先登录，PushTask 协议发送依赖登录 UID。", FeedbackLevel.Warn);
+                return;
+            }
+
+            SendPushTaskAsync().Forget();
+        }
+
+        /// <summary>
+        /// 构造 FirebasePushTask 并写入 FirebasePlugin 的本地缓存。
+        /// </summary>
+        private async UniTaskVoid SendPushTaskAsync()
+        {
+            if (!TryGetFirebasePlugin(out FirebasePlugin plugin))
+            {
+                return;
+            }
+
+            FirebasePushTask task = BuildSelectedPushTask();
+            try
+            {
+                IFirebasePushTaskPlugin pushTaskPlugin = plugin;
+                bool queued = await pushTaskPlugin.QueuePushTaskAsync(task);
+                if (queued)
+                {
+                    AppendFeedback($"{plugin.GetType().Name}.QueuePushTaskAsync(task) -> task_key={task.TaskKey}, trigger_time={task.TriggerTime}, cancel={task.Cancel}, template_id={task.TemplateId}", FeedbackLevel.Success);
+                    AppendFeedback("PushTask 已写入本地缓存；协议发送需等待 Firebase 初始化、登录 SetUserId，以及数量或时间阈值。", FeedbackLevel.Info);
+                }
+                else
+                {
+                    AppendFeedback($"{plugin.GetType().Name}.QueuePushTaskAsync(task) -> false", FeedbackLevel.Warn);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendFeedback($"QueuePushTaskAsync 异常：{ex.Message}", FeedbackLevel.Error);
+            }
+        }
+
+        /// <summary>
+        /// 基于当前 UI 选项创建一份 push task。
+        /// </summary>
+        private FirebasePushTask BuildSelectedPushTask()
+        {
+            DateTimeOffset triggerTime = DateTimeOffset.UtcNow.Add(GetSelectedPushTaskDelay());
+            return new FirebasePushTask
+            {
+                TaskKey = GetSelectedPushTaskKey(),
+                TriggerTime = triggerTime.ToUnixTimeSeconds(),
+                Cancel = m_PushTaskCancelToggle != null && m_PushTaskCancelToggle.isOn,
+                TemplateId = GetSelectedPushTaskTemplateId(),
+            };
+        }
+
+        /// <summary>
+        /// 刷新 push task 参数预览。
+        /// </summary>
+        private void RefreshPushTaskPreview()
+        {
+            if (m_PushTaskPreviewText == null)
+            {
+                return;
+            }
+
+            FirebasePushTask task = BuildSelectedPushTask();
+            DateTimeOffset triggerTime = DateTimeOffset.FromUnixTimeSeconds(task.TriggerTime);
+            m_PushTaskPreviewText.text = $"PushTask: task_key={task.TaskKey}, utc0={triggerTime:yyyy-MM-dd HH:mm:ss}, cancel={task.Cancel}, template_id={task.TemplateId}";
+        }
+
+        private string GetSelectedPushTaskKey()
+        {
+            string selected = GetSelectedDropdownText(m_PushTaskKeyDropdown);
+            return string.IsNullOrEmpty(selected) ? "demo_push_task_1" : selected;
+        }
+
+        private TimeSpan GetSelectedPushTaskDelay()
+        {
+            int index = m_PushTaskTriggerTimeDropdown != null ? m_PushTaskTriggerTimeDropdown.value : 0;
+            switch (index)
+            {
+                case 1:
+                    return TimeSpan.FromMinutes(1);
+                case 2:
+                    return TimeSpan.FromMinutes(5);
+                case 3:
+                    return TimeSpan.FromMinutes(10);
+                case 4:
+                    return TimeSpan.FromHours(1);
+                case 5:
+                    return TimeSpan.FromHours(3);
+                case 6:
+                    return TimeSpan.FromHours(12);
+                case 7:
+                    return TimeSpan.FromHours(24);
+                default:
+                    return TimeSpan.Zero;
+            }
+        }
+
+        private long GetSelectedPushTaskTemplateId()
+        {
+            int index = m_PushTaskTemplateIdDropdown != null ? m_PushTaskTemplateIdDropdown.value : 0;
+            return index >= 0 && index < 4 ? index + 1 : 1;
+        }
+
+        private static string GetSelectedDropdownText(TMP_Dropdown dropdown)
+        {
+            if (dropdown == null || dropdown.options == null || dropdown.options.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            int index = dropdown.value;
+            if (index < 0 || index >= dropdown.options.Count)
+            {
+                return string.Empty;
+            }
+
+            return dropdown.options[index]?.text ?? string.Empty;
         }
 
         /// <summary>

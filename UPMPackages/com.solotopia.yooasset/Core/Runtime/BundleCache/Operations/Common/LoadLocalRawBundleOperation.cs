@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 
 namespace YooAsset
 {
@@ -23,7 +22,7 @@ namespace YooAsset
         /// <summary>
         /// 创建本地 RawBundle 加载操作实例
         /// </summary>
-        /// <param name="options">从本地加载 RawBundle 的配置选项</param>
+        /// <param name="options">从本地加载 RawBundle 的操作选项</param>
         public LoadLocalRawBundleOperation(LoadLocalRawBundleOptions options)
         {
             _options = options;
@@ -62,7 +61,7 @@ namespace YooAsset
                     if (decryptor == null)
                     {
                         _steps = ESteps.Done;
-                        SetError($"{_options.CacheName} decryptor is null.");
+                        SetError($"{_options.CacheName} raw bundle decryptor is null.");
                         return;
                     }
 
@@ -74,7 +73,7 @@ namespace YooAsset
                     else
                     {
                         _steps = ESteps.Done;
-                        SetError($"{_options.CacheName} does not support '{decryptor.GetType().Name}'.");
+                        SetError($"{_options.CacheName} does not support '{decryptor.GetType().Name}' for RawBundle.");
                         return;
                     }
 
@@ -100,7 +99,7 @@ namespace YooAsset
                 {
                     _steps = ESteps.Done;
                     SetResult();
-                    BundleHandle = new RawBundleHandle(_options.FilePath, _options.Bundle, _rawBundle);
+                    BundleHandle = new RawBundleHandle(_options.Bundle, _rawBundle);
                 }
             }
         }
@@ -113,13 +112,12 @@ namespace YooAsset
         {
             try
             {
-                byte[] data = File.ReadAllBytes(_options.FilePath);
-                _rawBundle = new RawBundle(data);
+                _rawBundle = RawBundleHelper.LoadFromFile(_options.FilePath);
                 return LoadResult.Default();
             }
             catch (Exception ex)
             {
-                return LoadResult.Failure($"Failed to read raw bundle file: {ex.Message}.");
+                return LoadResult.Failure($"Failed to load raw bundle file: {ex.Message}.");
             }
         }
         private LoadResult LoadFromMemory(IBundleMemoryDecryptor decryptor)
@@ -129,7 +127,7 @@ namespace YooAsset
             if (binaryData == null)
                 return LoadResult.Failure($"{_options.CacheName} decryptor returned null data.");
 
-            _rawBundle = new RawBundle(binaryData);
+            _rawBundle = RawBundleHelper.LoadFromMemory(binaryData);
             return LoadResult.Default();
         }
     }

@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-18
+
+### Added
+
+- 新增 `IFirebasePushTaskPlugin.QueuePushTaskAsync(...)` 业务 push task 接口；任务会先写入 `IFileFragmentManager` 本地缓存，按 `PushFlushIntervalSeconds`（默认 100 秒）或 `PushFlushBatchSize`（默认 5 条）批量发送，发送成功后按 `task_key + int CacheVersion` 精确删除，避免发送过程中同 key 覆盖的新任务被误删。
+- `FirebasePlugin` 在 Firebase 真实初始化完成后自动同步 `top_all`、语言、平台、时区和国家默认 FCM topic；国家码通过 AD 模块统一获取，同步状态会持久化，并在变化时先退订旧 topic 再订阅新 topic。
+
+### Changed
+
+- 将随包分发的 Firebase Unity SDK 官方载荷从 `12.10.1` 升级到 `13.14.0`，同步更新 Analytics、App、Crashlytics、Messaging 与 Remote Config 的 Editor 依赖描述、桌面库、iOS/tvOS 原生库和 Android m2repository 产物。
+- Firebase 登录后上报 `PbNetReportFirebaseReq` 时同步携带国家码与 `+08:00` 这类服务端可读时区偏移；默认时区 topic 仍保持 `utc_plus_08` 等 Firebase 安全格式。
+- Firebase 默认国家 topic 和登录上报改为通过 AD 模块获取国家码；Firebase 不再配置国家码等待超时、不再直接等待广告数据槽位，也不再使用系统区域作为国家码兜底。
+- Firebase push task 在应用从后台恢复前台时会主动请求发送当前本地缓存；实际发送仍受 Firebase 初始化完成和 `SetUserId` 就绪门槛保护。
+- Firebase push task 取消任务时协议层只发送 `task_key` 与 `cancel`，不再携带 `trigger_time` 或 `template_id`。
+- 收口 FCM topic 订阅公开入口，移除 `SubscribeAsync` / `UnsubscribeAsync` 包装方法，统一通过 `SetTopicSubscribed(topic, subscribed)` 订阅或退订。
+- 默认语言 topic 等待 `LocalizationRefreshEventData` 提供真实当前语言后再同步；`Nova.Localization.Language` 仍为 `Unspecified` 时仅同步全量、平台和时区 topic，并保留旧语言 topic 直到新语言就绪后再按差异退订/订阅。
+- 将 Framework 与 GameLogin 最低依赖同步至 `0.6.15`、`0.1.8`，并将新增 Firebase push 默认值投影到 Sample ConfigMaster。
+
 ## [0.1.4] - 2026-08-13
 
 ### Changed

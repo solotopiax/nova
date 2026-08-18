@@ -224,9 +224,10 @@ namespace NovaFramework.Editor
             {
                 // 统计 append 前各族是否已存在至少一条有效条目（TypeName 存在于当前 entriesProp）。
                 // 使用与 DrawGroupedEntries 相同的调用顺序决定族归属，确保面板显示与数据一致：
-                // Normal > Monetize > Ad > Attribution > Account > Cloud
+                // Normal > Monetize > Acquisition > Ad > Attribution > Account > Cloud
                 bool hasExistingNormal = false;
                 bool hasExistingMonetize = false;
+                bool hasExistingAcquisition = false;
                 bool hasExistingAd = false;
                 bool hasExistingAttribution = false;
                 bool hasExistingAccount = false;
@@ -241,6 +242,7 @@ namespace NovaFramework.Editor
                     if (existingType == null) continue;
                     if (!hasExistingNormal && IsNormalTrackPlugin(existingType)) hasExistingNormal = true;
                     if (!hasExistingMonetize && IsMonetizeTrackPlugin(existingType)) hasExistingMonetize = true;
+                    if (!hasExistingAcquisition && IsAcquisitionTrackPlugin(existingType)) hasExistingAcquisition = true;
                     if (!hasExistingAd && IsAdPlugin(existingType)) hasExistingAd = true;
                     if (!hasExistingAttribution && IsAttributionPlugin(existingType)) hasExistingAttribution = true;
                     if (!hasExistingAccount && IsAccountPlugin(existingType)) hasExistingAccount = true;
@@ -251,6 +253,7 @@ namespace NovaFramework.Editor
                 // 本轮 append 时，各族是否已 append 过第一个条目（用于"首 append 自动启用"判定）。
                 bool firstAppendedNormal = false;
                 bool firstAppendedMonetize = false;
+                bool firstAppendedAcquisition = false;
                 bool firstAppendedAd = false;
                 bool firstAppendedAttribution = false;
                 bool firstAppendedAccount = false;
@@ -280,6 +283,14 @@ namespace NovaFramework.Editor
                         {
                             enabledDefault = true;
                             firstAppendedMonetize = true;
+                        }
+                    }
+                    else if (IsAcquisitionTrackPlugin(pluginType))
+                    {
+                        if (!hasExistingAcquisition && !firstAppendedAcquisition)
+                        {
+                            enabledDefault = true;
+                            firstAppendedAcquisition = true;
                         }
                     }
                     else if (IsAdPlugin(pluginType))
@@ -405,6 +416,7 @@ namespace NovaFramework.Editor
 
                 DrawGroupSelector("普通埋点", entriesProp, entries, so, IsNormalTrackPlugin);
                 DrawGroupSelector("变现埋点", entriesProp, entries, so, IsMonetizeTrackPlugin);
+                DrawGroupSelector("投放打点", entriesProp, entries, so, IsAcquisitionTrackPlugin);
                 DrawGroupSelector("广告", entriesProp, entries, so, IsAdPlugin);
                 DrawGroupSelector("归因埋点", entriesProp, entries, so, IsAttributionPlugin);
                 DrawAccountMultiSelect(entriesProp, entries, so);
@@ -664,6 +676,7 @@ namespace NovaFramework.Editor
             {
                 return typeof(ITrackPlugin).IsAssignableFrom(type)
                     && !typeof(IMonetizeTrackPlugin).IsAssignableFrom(type)
+                    && !typeof(IAcquisitionTrackPlugin).IsAssignableFrom(type)
                     && !typeof(IAttributionPlugin).IsAssignableFrom(type);
             }
 
@@ -675,6 +688,16 @@ namespace NovaFramework.Editor
             private static bool IsMonetizeTrackPlugin(Type type)
             {
                 return typeof(IMonetizeTrackPlugin).IsAssignableFrom(type);
+            }
+
+            /// <summary>
+            /// 投放打点：实现了 IAcquisitionTrackPlugin。
+            /// </summary>
+            /// <param name="type">Plugin 类型。</param>
+            /// <returns>是否属于投放打点族。</returns>
+            private static bool IsAcquisitionTrackPlugin(Type type)
+            {
+                return typeof(IAcquisitionTrackPlugin).IsAssignableFrom(type);
             }
 
             /// <summary>

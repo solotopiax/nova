@@ -2,19 +2,23 @@
 
 这是一份给 Agent 的 Level 0 路由。首次接触 Nova、接手已有项目、调整场景或资源流程时，先用本页建立最低限度的正确上下文，再按任务进入 Level 1 页面和现有模块文档。
 
-## AI Project Skills：自动发现与执行边界
+## AI Project Skills：共同底线、自动发现与执行边界
 
-Nova Project Skills 随 `com.solotopia.nova.framework` 同版本管理。用户安装或升级 Nova 后首次打开 Unity，Editor 会自动将包内全部 Skill 投影到项目根 `.agents/skills/`，供宿主和 Agent 发现；不需要执行 `sync` 或手工复制。
+所有 `nova-project-*` Skill 触发后都先读取本页。本页定义项目组消费态日常任务的共同底线；它不是需要用户手工选择或按顺序执行的 Skill。
+
+`Assets/Framework/Agents/` 是开发态和消费态共享的唯一 Git 真源。在 Nova 开发仓中，Editor 会用这份真源在仓库根 `.agents/skills/` 生成 `nova-project-*` 的自动生成受管同步副本（下文简称“投影”），让开发者快速验证项目组消费态下的发现和触发效果；发布后，消费项目从已安装的 Framework 包获得同一份内容。该目录只包含项目组消费态 Skill：每个 Skill 的目录名、Catalog id 与 `SKILL.md` 的 `name` 都必须使用 `nova-project-*`。框架开发态 Skill 保留在仓库根 `.agents/skills/` 的既有 `nova-*` 命名空间；两者可在开发仓并列发现，但只有 `nova-project-*` 进入本 Catalog 与 UPM 同步范围。
+
+Nova Project Skills 随 `com.solotopia.nova.framework` 同版本管理。用户安装或升级 Nova 后首次打开 Unity，Editor 会在编译和包更新结束后检查，并按需把包内 Catalog Skill 同步为项目根 `.agents/skills/` 下的受管同步副本，供宿主和 Agent 发现；不需要执行 `sync` 或手工复制。
 
 三处位置的职责不同：
 
 - 开发仓 Git 真源：`Assets/Framework/Agents/Skills/`。
 - 已安装包快照：`PackageInfo.resolvedPath/Agents/Skills/`；它随当前 Framework 版本提供，只读且不可反向编辑。
-- Agent 发现入口：`<project>/.agents/skills/nova-project-*`；这是自动生成的受管副本，不是第二真源。
+- Agent 发现入口：`<project>/.agents/skills/nova-project-*`；这是自动生成的受管同步副本（简称“投影”），不是第二真源。
 
-`.agents/skills/` 遇到同名用户目录、已修改或缺失的受管副本时会保守保留现场，并以 `partial` 报告无法完成的项；其他可安全完成的项仍会继续。若已安装包的 Agents 真源不可用，自动 bridge 会 fail-closed 并在 Unity Console 报告错误，不会写入、覆盖或删除项目文件。
+`.agents/skills/` 遇到同名用户目录、已修改或缺失的受管同步副本时会保守保留现场，并以 `partial` 报告无法完成的项；其他可安全完成的项仍会继续。若已安装包的 Agents 真源不可用，自动同步器会 fail-closed 并在 Unity Console 报告错误，不会写入、覆盖或删除项目文件。
 
-`<project>/.agents/nova-skills.lock.json`、`.agents/nova-skills.transaction.json` 与 `.agents/.nova-skills-staging/` 同样属于项目本地生成状态，不应作为 Framework 或 Skill 真源提交。自动投影不会创建、修改或覆盖消费者项目的 `.gitignore`。项目未自行跟踪 `.agents/` 时，无需改动 `.gitignore`；只有项目自行跟踪 `.agents/` 且用户已明确确认本次写入消费者 `.gitignore` 时，Agent 才可添加以下规则。不要忽略整个 `.agents/`，以免吞掉项目自己维护的 Agent 配置：
+`<project>/.agents/nova-skills.lock.json`、`.agents/nova-skills.transaction.json` 与 `.agents/.nova-skills-staging/` 同样属于项目本地生成状态，不应作为 Framework 或 Skill 真源提交。自动同步器不会创建、修改或覆盖消费者项目的 `.gitignore`。项目未自行跟踪 `.agents/` 时，无需改动 `.gitignore`；只有项目自行跟踪 `.agents/` 且用户已明确确认本次写入消费者 `.gitignore` 时，Agent 才可添加以下规则。不要忽略整个 `.agents/`，以免吞掉项目自己维护的 Agent 配置：
 
 ```gitignore
 /.agents/skills/nova-project-*/
@@ -23,7 +27,15 @@ Nova Project Skills 随 `com.solotopia.nova.framework` 同版本管理。用户�
 /.agents/.nova-skills-staging/
 ```
 
-全量可发现不等于全量按顺序执行。Agent 只根据自然语言任务的目标、范围和约束匹配当前需要的 Skill；写入、构建、外部发布和 Git 等副作用仍遵守对应 Skill 的确认门。当前未覆盖的任务仍按本页和具体模块 Docs 推进；完整目录和边界见 [Nova Project Skills](../Agents/INDEX.md)。
+全量可发现不等于全量按顺序执行。当前 16 项消费态能力只根据自然语言任务的目标、范围和约束匹配需要的 Skill；写入、构建、外部发布和 Git 等副作用仍遵守对应 Skill 的确认门。当前未覆盖的任务仍按本页和具体模块 Docs 推进；完整目录和边界见 [Nova Project Skills](../Agents/INDEX.md)。
+
+## 日常任务如何无缝使用 Skills
+
+项目组只需用自然语言说明目标、已知范围和约束，不必记住或手工执行 Skill 名称。Agent 先从项目根 `.agents/skills/nova-project-*` 发现当前 Framework 自带的全量能力：任务不清楚时先用 `nova-project-router`，任务已明确时可直接进入对应 Operation。常见匹配包括：接手项目→`nova-project-check-readiness`；启动失败→`nova-project-diagnose-startup`；新增/更新页面→`nova-project-ui-create-view` / `nova-project-update-ui-view`；接入已确认协议的业务 HTTP API→`nova-project-integrate-network-api`；加入大厅 BGM、按钮点击音效或其他已确认业务声音→`nova-project-integrate-sound`；刷新 HybridCLR 业务热更 DLL→`nova-project-refresh-hotfix-dlls`（只覆盖当前 Target、DevelopmentBuild 与激活 ConfigMaster 当前坐标的本地 compile -> copy/import，不代表 AOT、Bundle、Player、CDN 或运行时成功）；表、配置、本地化、资源、启动场景、Bundle、Player 分别进入同名领域 Operation；表驱动页面则由 `nova-project-data-driven-ui` 编排。
+
+每个匹配到的 Skill 都按渐进式披露执行：L0 只用 Catalog、frontmatter 与本页发现能力；L1 读取当前 Skill 和契约，冻结输入、写入集、确认门与最低证据；L2 仅按当前分支读取需要的模块 Docs 和项目事实；L3 在确认后调用声明的 Action Adapter（C# API、Unity Editor/MCP、Pipify、CLI 或工作区编辑）；L4 只验证本次需要的证据。这样既能复用日常流程，也不会为了一个任务重复分析所有 Nova 模块。
+
+Workflow 的 `requires` 只描述其内部 Operation 的依赖图，不影响安装、升级或发现范围。所有 Catalog Skill 随当前 Nova 版本全量提供；Workflow 只在确有多个依赖操作时编排 DAG，Unity Editor、AssetDatabase、活动场景和同一输出目录仍按单写者串行。
 
 ## 先检查项目，不要套模板
 

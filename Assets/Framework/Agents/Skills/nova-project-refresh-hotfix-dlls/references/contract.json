@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-refresh-hotfix-dlls",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.HybridCLR.CompileDllActiveBuildTarget / CopyGameDlls",
+      "when": "同一次已确认执行严格按 compile -> copy 顺序刷新当前 Target 与当前 ConfigMaster 坐标的完整 GameDlls 映射"
+    },
+    {
+      "kind": "pipify",
+      "entry": "hybridclr.compile_dll_active_build_target / hybridclr.copy_game_dll",
+      "when": "项目已有 Pipify Batch 的完整 Items 已明确核对，且仅为 compile -> copy 两步并严格按该顺序执行；否则 blocked，不临时拼接 Batch"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "activeBuildTarget",
+      "required": true
+    },
+    {
+      "name": "developmentBuild",
+      "required": true
+    },
+    {
+      "name": "activeConfigMaster",
+      "required": true
+    },
+    {
+      "name": "platformChannelDevelopMode",
+      "required": true
+    },
+    {
+      "name": "resolvedGameDllEntries",
+      "required": true
+    },
+    {
+      "name": "executionEntry",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "current activeBuildTarget complete HybridCLR compile output root, including all compiler-produced script DLL/PDB",
+      "frozen GameDlls target files and Unity import for targets under Assets/",
+      "本次证据，包括完整 source-target 映射、SHA-256 与 import 结果"
+    ],
+    "deny": [
+      "AOT metadata, link.xml, full GenerateAll, GeneratedCpp, Il2CppDef and other AOT prebuild output",
+      "ConfigMaster or ConfigRuntime changes",
+      "Bundle, Player, CDN, store, runtime deployment or device validation",
+      "Git commit or push, UPM publish, Framework/** and Library/**",
+      "其他 Target、其他 Platform/Channel/DevelopMode 坐标或冻结 GameDlls 映射外条目"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "build-settings",
+    "active-config-master",
+    "hybridclr-hot-update-output",
+    "game-dll-targets"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "执行当前 activeBuildTarget 与 developmentBuild 的完整 HybridCLR 编译输出根目录写入（含所有编译器生成的脚本 DLL/PDB）",
+      "覆盖 activeConfigMaster 当前 Platform/Channel/DevelopMode 坐标下完整 DLL 映射的目标文件",
+      "选择直接 C# 闭环或项目已有 Pipify Batch executionEntry",
+      "改变 Target、DevelopmentBuild、Master、坐标、映射、executionEntry 或覆盖范围"
+    ],
+    "rule": "确认绑定 activeBuildTarget、developmentBuild、activeConfigMaster、当前 Platform/Channel/DevelopMode、完整 HybridCLR 编译输出根目录（含所有编译器生成的脚本 DLL/PDB）、完整 DLL 映射、executionEntry 与覆盖范围；任一值或范围变化后旧确认失效。"
+  },
+  "minimumEvidence": "compile",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "冻结的 activeBuildTarget、developmentBuild、activeConfigMaster、Platform/Channel/DevelopMode 与 executionEntry",
+    "当前 Target 完整 HybridCLR 编译输出根目录，以及从完整 resolvedGameDllEntries 的去重 SourceLocation 派生的必需编译产物记录",
+    "完整 resolvedGameDllEntries 的 source、target、AssetLocation 与执行前后漂移检查",
+    "CopyGameDlls 整批完成及 Assets/ 目标 ForceSynchronousImport 结果",
+    "每个 source/target 文件对应的 SHA-256 一致性",
+    "未执行 AOT、Bundle、Player、CDN、运行时、真机、Git 与发布的边界说明"
+  ]
+}

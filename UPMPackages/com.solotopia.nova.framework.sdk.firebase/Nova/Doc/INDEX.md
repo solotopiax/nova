@@ -7,14 +7,16 @@
 
 | 类型 | 说明 | 文档 |
 |---|---|---|
-| `FirebasePlugin` | Firebase 聚合插件，实现 `IMonetizeTrackPlugin` 与 `IPushPlugin` | [FirebasePlugin.md](./FirebasePlugin.md) |
-| `FirebasePluginConfig` | Firebase 插件配置，当前仅承载三方标识上报的 `ReportCmdName` | [FirebasePluginConfig.md](./FirebasePluginConfig.md) |
+| `FirebasePlugin` | Firebase 聚合插件，实现 `IMonetizeTrackPlugin`、`IPushPlugin`、`IFirebasePushTaskPlugin` 与 `ISDKPauseListener` | [FirebasePlugin.md](./FirebasePlugin.md) |
+| `IFirebasePushTaskPlugin` | Firebase 专用业务 push task 缓存与批量发送接口 | [FirebasePlugin.md](./FirebasePlugin.md) |
+| `FirebasePluginConfig` | Firebase 插件配置，承载标识上报与 push task 批量发送等框架级配置 | [FirebasePluginConfig.md](./FirebasePluginConfig.md) |
 
 ## 当前能力
 
 - Analytics 事件上报：`TrackEvent(...)`
 - 用户标识与属性：`SetUserId(...)`、`SetUserProperty(...)`
 - FCM 推送：`GetTokenAsync(...)`、`OnTokenRefreshed`、`SetTopicSubscribed(...)`
+- Push task：`QueuePushTaskAsync(...)` 本地缓存后按 `100` 秒、`5` 条默认阈值或恢复前台触发批量发送，可通过 `FirebasePluginConfig` 调整；发送前要求 Firebase 初始化完成且用户 ID 就绪，取消任务只向服务端发送 `task_key` 与 `cancel`
 - 登录联动：监听 `SDKEventData.UserLogin`，自动上报 Firebase Push Token / Analytics Instance ID
 
 ## 平台边界

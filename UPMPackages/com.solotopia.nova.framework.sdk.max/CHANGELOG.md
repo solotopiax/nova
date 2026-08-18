@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-08-18
+
+### Added
+
+- `MaxAdPlugin` 新增 `GetCountryCode()` override，返回 MAX SDK 初始化回调 `SdkConfiguration.CountryCode` 缓存值。
+
+### Changed
+
+- 将 Ad SDK 最低依赖提升至 `1.1.4`，并将 Banner 自动刷新默认值投影到 Sample ConfigMaster。
+
 ## [0.1.5] - 2026-08-13
 
 ### Changed

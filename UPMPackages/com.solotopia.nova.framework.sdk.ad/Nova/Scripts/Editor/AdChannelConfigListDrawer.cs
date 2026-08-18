@@ -43,6 +43,17 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         /// </summary>
         private const float c_FieldIndent = 12f;
 
+        /// <summary>
+        /// AdPluginConfig 中渠道配置字段名。
+        /// </summary>
+        private const string c_ChannelConfigsFieldName = "m_ChannelConfigs";
+
+        /// <summary>
+        /// AdPluginConfig 中国家码等待超时字段名。
+        /// 该字段序列化在 AdPluginConfig 上，但为保持面板阅读顺序，在渠道全局配置区绘制。
+        /// </summary>
+        private const string c_CountryCodeWaitTimeoutFieldName = "m_CountryCodeWaitTimeoutSeconds";
+
         /// <inheritdoc/>
         protected override string HeaderTitle => "渠道列表";
 
@@ -70,6 +81,16 @@ namespace NovaFramework.SDK.AdPlugin.Editor
             y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_MuteAd", "广告静音");
             y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_RetryLoadAdMaxNum", "加载重试次数");
             y = DrawFieldWithHelp(position, y, lineH, lineStep, property, "m_RetryLoadAdInterv", "重试加载间隔(秒)");
+            SerializedProperty countryCodeWaitTimeout = FindCountryCodeWaitTimeoutProperty(property);
+            y = DrawFieldWithHelp(
+                position,
+                y,
+                lineH,
+                lineStep,
+                countryCodeWaitTimeout,
+                typeof(AdPluginConfig),
+                c_CountryCodeWaitTimeoutFieldName,
+                "国家码等待超时(秒)");
 
             y += c_GlobalSectionSpacing;
             return y - startY;
@@ -79,7 +100,8 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         protected override float GetGlobalFieldsHeight(SerializedProperty property, AdChannelConfigList wrapper)
         {
             float lineStep = EditorGUIUtility.singleLineHeight + 2f;
-            float h = lineStep * 5f + c_GlobalSectionSpacing;
+            bool hasCountryCodeWaitTimeout = FindCountryCodeWaitTimeoutProperty(property) != null;
+            float h = lineStep * (hasCountryCodeWaitTimeout ? 6f : 5f) + c_GlobalSectionSpacing;
             // 使用 EditorGUIUtility.currentViewWidth - c_FieldIndent 近似可用宽度，
             // 与基类 GetEntryHeight 同款策略对齐，避免 HelpBox 高度估算偏差。
             float availableWidth = EditorGUIUtility.currentViewWidth - c_FieldIndent;
@@ -88,6 +110,10 @@ namespace NovaFramework.SDK.AdPlugin.Editor
             h += CalcGlobalTooltipHeight("m_MuteAd", availableWidth);
             h += CalcGlobalTooltipHeight("m_RetryLoadAdMaxNum", availableWidth);
             h += CalcGlobalTooltipHeight("m_RetryLoadAdInterv", availableWidth);
+            if (hasCountryCodeWaitTimeout)
+            {
+                h += CalcTooltipHeight(typeof(AdPluginConfig), c_CountryCodeWaitTimeoutFieldName, availableWidth);
+            }
             return h;
         }
 
@@ -105,13 +131,38 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         private static float DrawFieldWithHelp(Rect position, float y, float lineH, float lineStep, SerializedProperty property, string fieldName, string label)
         {
             SerializedProperty prop = property.FindPropertyRelative(fieldName);
+            return DrawFieldWithHelp(position, y, lineH, lineStep, prop, typeof(AdChannelConfigList), fieldName, label);
+        }
+
+        /// <summary>
+        /// 绘制指定 SerializedProperty 及其 Tooltip HelpBox。
+        /// </summary>
+        /// <param name="position">Inspector 完整矩形。</param>
+        /// <param name="y">当前绘制 y 坐标。</param>
+        /// <param name="lineH">单行高度。</param>
+        /// <param name="lineStep">单行步进（含底部间距）。</param>
+        /// <param name="prop">待绘制字段属性。</param>
+        /// <param name="tooltipOwnerType">Tooltip 所在类型。</param>
+        /// <param name="fieldName">字段名（含 m_ 前缀）。</param>
+        /// <param name="label">显示标签文本。</param>
+        /// <returns>绘制完成后的新 y 值。</returns>
+        private static float DrawFieldWithHelp(
+            Rect position,
+            float y,
+            float lineH,
+            float lineStep,
+            SerializedProperty prop,
+            Type tooltipOwnerType,
+            string fieldName,
+            string label)
+        {
             if (prop == null)
             {
                 return y;
             }
             EditorUtil.Draw.PropertyField(new Rect(position.x, y, position.width, lineH), prop, label);
             y += lineStep;
-            string tooltip = EditorUtil.Reflect.GetFieldTooltip(typeof(AdChannelConfigList), fieldName);
+            string tooltip = EditorUtil.Reflect.GetFieldTooltip(tooltipOwnerType, fieldName);
             if (!string.IsNullOrEmpty(tooltip))
             {
                 // HelpBox 宽度铺满可用宽度（起点 position.x + c_FieldIndent，宽度 = position.width - c_FieldIndent）
@@ -165,12 +216,48 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         /// <returns>HelpBox 高度（含 4f 间距），或 0。</returns>
         private static float CalcGlobalTooltipHeight(string fieldName, float availableWidth)
         {
-            string tooltip = EditorUtil.Reflect.GetFieldTooltip(typeof(AdChannelConfigList), fieldName);
+            return CalcTooltipHeight(typeof(AdChannelConfigList), fieldName, availableWidth);
+        }
+
+        /// <summary>
+        /// 计算指定类型字段的 Tooltip HelpBox 高度（含底部 4f 间距）。
+        /// 字段没有 TooltipAttribute 时返回 0。
+        /// </summary>
+        /// <param name="tooltipOwnerType">Tooltip 所在类型。</param>
+        /// <param name="fieldName">字段名（含 m_ 前缀）。</param>
+        /// <param name="availableWidth">可用宽度（像素）。</param>
+        /// <returns>HelpBox 高度（含 4f 间距），或 0。</returns>
+        private static float CalcTooltipHeight(Type tooltipOwnerType, string fieldName, float availableWidth)
+        {
+            string tooltip = EditorUtil.Reflect.GetFieldTooltip(tooltipOwnerType, fieldName);
             if (string.IsNullOrEmpty(tooltip))
             {
                 return 0f;
             }
             return EditorUtil.Draw.CalcHelpBoxHeight(MessageType.Info, tooltip, availableWidth) + 4f;
+        }
+
+        /// <summary>
+        /// 从 AdPluginConfig.m_ChannelConfigs 定位同级国家码等待超时字段。
+        /// </summary>
+        /// <param name="channelConfigsProperty">当前渠道配置列表属性。</param>
+        /// <returns>国家码等待超时属性；路径不匹配时返回 null。</returns>
+        private static SerializedProperty FindCountryCodeWaitTimeoutProperty(SerializedProperty channelConfigsProperty)
+        {
+            if (channelConfigsProperty == null)
+            {
+                return null;
+            }
+
+            string path = channelConfigsProperty.propertyPath;
+            if (!path.EndsWith(c_ChannelConfigsFieldName, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            string siblingPath = path.Substring(0, path.Length - c_ChannelConfigsFieldName.Length)
+                                 + c_CountryCodeWaitTimeoutFieldName;
+            return channelConfigsProperty.serializedObject.FindProperty(siblingPath);
         }
     }
 }

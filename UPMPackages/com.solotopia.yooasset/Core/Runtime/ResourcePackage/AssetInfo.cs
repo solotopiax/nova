@@ -32,9 +32,9 @@ namespace YooAsset
         LoadScene,
 
         /// <summary>
-        /// 加载原生文件
+        /// 加载资源包文件
         /// </summary>
-        LoadRawFile,
+        LoadBundleFile,
     }
 
     /// <summary>
@@ -122,6 +122,19 @@ namespace YooAsset
                 if (_packageAsset == null)
                     return string.Empty;
                 return _packageAsset.AssetPath;
+            }
+        }
+
+        /// <summary>
+        /// 资源标签集合
+        /// </summary>
+        public PackageTags Tags
+        {
+            get
+            {
+                if (_packageAsset == null)
+                    return PackageTags.Empty;
+                return _packageAsset.Tags;
             }
         }
 

@@ -140,16 +140,72 @@ namespace NovaFramework.SDK.IAP.Runtime
             if (request == null)
             {
                 Log.Warning(LogTag.IAPPlugin, "IAPPlugin.PayAsync：request 为 null，拒绝处理。");
-                return new IAPResult(0, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, "request 为 null。", null) as T;
+                var result = new IAPResult(0, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, "request 为 null。", null);
+                TrackRouterPayFail(result, null);
+                return result as T;
             }
             IAPRequest iapRequest = request as IAPRequest;
             IIAPInternalStore store = FindStore(iapRequest);
             if (store == null)
             {
                 Log.Warning(LogTag.IAPPlugin, "IAPPlugin.PayAsync：未找到能处理请求的商店，tableId={0}。", request.TableId);
-                return new IAPResult(request.TableId, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, "未找到匹配的支付渠道。", iapRequest?.CustomData) as T;
+                var result = new IAPResult(request.TableId, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, "未找到匹配的支付渠道。", iapRequest?.CustomData, iapRequest?.ReceiptParam);
+                TrackRouterPayFail(result, iapRequest);
+                return result as T;
             }
             return await store.PayAsync(iapRequest, ct) as T;
+        }
+
+        /// <summary>
+        /// 上报 IAPPlugin 路由层在命中具体 Store 前产生的 PayAsync 失败。
+        /// </summary>
+        /// <param name="result">待上报的失败支付结果。</param>
+        /// <param name="request">原始支付请求；为空时表示 request 本身为空。</param>
+        private void TrackRouterPayFail(IAPResult result, IAPRequest request)
+        {
+            if (result == null || result.IsSuccess)
+            {
+                return;
+            }
+
+            string channel = request == null ? "router" : request.StoreType.ToString().ToLowerInvariant();
+            var properties = new Dictionary<string, object>
+            {
+                { IAPTrackFields.TableId, result.TableId },
+                { IAPTrackFields.ProductId, string.Empty },
+                { IAPTrackFields.Debug, m_StoreContext?.DevelopMode == DevelopMode.Debug },
+                { IAPTrackFields.Price, 0f },
+                { IAPTrackFields.Channel, channel },
+                { IAPTrackFields.Reason, result.ErrorCode },
+                { IAPTrackFields.ReasonDetail, FormatPayFailureReasonDetail(result) },
+            };
+            AppendRouterCustomData(properties, result.CustomData);
+            m_StoreContext?.TrackPlugin?.TrackEvent(IAPTrackEvents.LocalPayFail, properties);
+        }
+
+        /// <summary>
+        /// 格式化 PayAsync 失败打点的可读详情，保留错误来源与错误码域。
+        /// </summary>
+        /// <param name="result">失败支付结果。</param>
+        /// <returns>包含 ErrorSource、ErrorCode 和错误描述的详情字符串。</returns>
+        private static string FormatPayFailureReasonDetail(IAPResult result)
+        {
+            return string.IsNullOrEmpty(result.ErrorDesc)
+                ? $"{result.ErrorSource}:{result.ErrorCode}"
+                : $"{result.ErrorSource}:{result.ErrorCode} {result.ErrorDesc}";
+        }
+
+        /// <summary>
+        /// 将业务透传数据追加到路由层失败打点参数中；空值不写入。
+        /// </summary>
+        /// <param name="properties">待上报的打点参数字典。</param>
+        /// <param name="customData">业务层透传字符串。</param>
+        private static void AppendRouterCustomData(Dictionary<string, object> properties, string customData)
+        {
+            if (!string.IsNullOrEmpty(customData))
+            {
+                properties[IAPTrackFields.CustomData] = customData;
+            }
         }
 
         /// <summary>
