@@ -1136,6 +1136,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039361
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1146,6 +1147,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039362
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1157,6 +1159,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039363
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1167,6 +1170,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039364
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1177,6 +1181,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039365
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1187,6 +1192,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039366
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1197,6 +1203,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039367
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1207,6 +1214,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039368
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1217,6 +1225,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039369
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1227,6 +1236,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039370
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1237,6 +1247,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039371
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1247,6 +1258,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039372
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1257,6 +1269,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039373
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1267,6 +1280,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039374
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1277,6 +1291,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039375
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1287,6 +1302,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039376
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1297,6 +1313,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039377
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1307,6 +1324,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039378
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1317,6 +1335,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039379
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1327,6 +1346,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039380
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1337,6 +1357,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039381
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1347,6 +1368,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039382
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1357,6 +1379,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039383
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1367,6 +1390,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039384
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1377,6 +1401,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039385
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1387,6 +1412,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039386
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1397,6 +1423,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039387
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1407,6 +1434,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039388
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1417,6 +1445,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039389
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1427,6 +1456,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039390
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1437,6 +1467,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039391
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1447,6 +1478,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039392
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1457,6 +1489,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039393
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1467,6 +1500,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039394
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1477,6 +1511,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039395
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1487,6 +1522,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039396
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1551,7 +1587,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710604
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1559,7 +1594,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710605
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1567,7 +1601,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710606
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1575,7 +1608,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710607
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1583,7 +1615,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710608
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1591,7 +1622,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710609
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1599,7 +1629,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710610
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1607,7 +1636,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710611
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1615,7 +1643,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710612
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1623,7 +1650,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710613
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1631,7 +1657,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710614
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1639,7 +1664,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710615
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1647,7 +1671,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710616
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1655,7 +1678,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710617
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1663,7 +1685,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710618
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1671,7 +1692,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710619
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1679,7 +1699,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710620
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1687,7 +1706,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710621
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1695,7 +1713,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710622
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1703,7 +1720,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710623
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1711,7 +1727,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710624
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1719,7 +1734,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710625
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1727,7 +1741,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710626
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1735,7 +1748,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710627
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1743,7 +1755,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710628
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1751,7 +1762,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710629
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1759,7 +1769,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710630
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1767,7 +1776,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710631
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1775,7 +1783,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710632
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1783,7 +1790,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710633
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1791,7 +1797,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710634
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1799,7 +1804,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710635
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1807,7 +1811,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710636
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1815,7 +1818,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710637
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1823,7 +1825,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000078667710638
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -1831,7 +1832,6 @@ MonoBehaviour:
         m_PushCmdName: FirebasePush
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
-        m_DefaultCountryTopicAdWaitTimeoutSeconds: 10
     - rid: 1468000084595310793
       type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
       data:

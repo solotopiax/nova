@@ -64,10 +64,11 @@ Export(master, platform, channel, mode, savePath):
   10. target.EnabledSDKConfigs = FilterEnabled(entry, mode, master.EnabledSDKs)
   11. target.EnabledKitConfigs = FilterEnabledKits(entry, mode, master.EnabledKits)
   12. DimensionalResolver.HybridCLRResult hybridCLR = DimensionalResolver.ResolveHybridCLR(master, platform, channel, mode)
-       // D6.2：经 HybridEditorConfigsMask + HybridEditorConfigsOverrides 解析最终四字段值（全不勾时 = 顶层各默认字段）
+       // 解析 AOT、Startup、Running 三个 Editor 列表；导出前校验 Startup/Running 不重复
   13. target.GameEntranceProcedureName = hybridCLR.GameEntranceProcedureName
   14. target.AotMetadataDlls = hybridCLR.AotMetadataDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList()
-  15. target.GameDlls        = hybridCLR.GameDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList()
+  15. target.StartupGameDlls = hybridCLR.StartupGameDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList()
+       // RunningGameDlls 仅供 Editor 编译/复制/校验，不导出
   15. target.Custom = CloneCustomConfig(master.Custom)
   16. existing == null → CreateAsset；否则 SetDirty
   17. SaveAssets + Refresh → return target

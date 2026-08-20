@@ -74,19 +74,19 @@ namespace NovaFramework.Samples.Runtime
             AddChild(modules, MakeViewLeaf<DemoDebugView>("2.16 Debug 调试组件"));
             AddChild(modules, MakeViewLeaf<DemoNativeView>("2.17 Native 原生能力组件"));
 
-            DemoNode hybridClr = MakeBranch("3.HybridCLR 运行时热更新解决方案", "HybridCLR");
+            DemoNode hybridClr = MakeBranch("3.HybridCLR 热更新解决方案", "HybridCLR");
             AddChild(root, hybridClr);
             AddChild(hybridClr, MakeViewLeaf<DemoHybridClrAotMetadataView>("3.1 AOT metadata 加载演示"));
-            AddChild(hybridClr, MakeViewLeaf<DemoHybridClrGameDllView>("3.2 业务 dll 加载演示"));
+            AddChild(hybridClr, MakeViewLeaf<DemoHybridClrGameDllView>("3.2 启动时业务 DLL 加载演示"));
             AddChild(hybridClr, MakeViewLeaf<DemoHybridClrProcedureRegisterView>("3.3 业务 Procedure 注册时序"));
+            AddChild(hybridClr, MakeViewLeaf<DemoHybridClrRuntimeUpdateView>("3.4 运行时增量热更新"));
 
             DemoNode integration = MakeBranch("4.Integration 跨模块联动", "Integration");
             AddChild(root, integration);
             AddChild(integration, MakeViewLeaf<DemoIntegrationUiLocalizationView>("4.1 UI + Localization 切语言"));
             AddChild(integration, MakeViewLeaf<DemoIntegrationUiAssetView>("4.2 UI + Asset 异步加载 prefab"));
-            AddChild(integration, MakeViewLeaf<DemoIntegrationProcedureAssetView>("4.3 Procedure + Asset 热更链路"));
-            AddChild(integration, MakeViewLeaf<DemoIntegrationEventNetworkView>("4.4 Event + Network 事件桥接"));
-            AddChild(integration, MakeViewLeaf<DemoIntegrationConfigHybridClrView>("4.5 Config + HybridCLR Namespace 注入"));
+            AddChild(integration, MakeViewLeaf<DemoIntegrationEventNetworkView>("4.3 Event + Network 事件桥接"));
+            AddChild(integration, MakeViewLeaf<DemoIntegrationConfigHybridClrView>("4.4 Config + HybridCLR Namespace 注入"));
 
             return root;
         }

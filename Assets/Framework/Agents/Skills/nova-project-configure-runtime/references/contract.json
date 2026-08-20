@@ -9,19 +9,29 @@
   "requires": [],
   "actionAdapters": [
     {
+      "kind": "workspace-inspection",
+      "entry": "Packages/manifest.json + Packages/packages-lock.json + <resolved SDK/Kit package>/package.json + <resolved package>/Nova/{Doc,Docs,DOCS}/INDEX.md",
+      "when": "冻结字段触及已安装 Nova SDK/Kit 时，先确认目标包的 id、版本、source、根路径和文档入口"
+    },
+    {
       "kind": "unity-menu",
       "entry": "Nova/Open Config",
       "when": "编辑并保存已冻结三维坐标的 ConfigMasterSO"
     },
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.Config.Exporter.Export",
-      "when": "导出已冻结 Platform Channel DevelopMode 的 ConfigRuntimeSO"
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.config.inspect-plugin-types|nova.project.config.ensure-plugin-instances)",
+      "when": "扫描已加载 SDK/Kit Config 类型，或在精确坐标/矩阵范围内确认后补齐插件实例"
     },
     {
-      "kind": "pipify",
-      "entry": "export.config",
-      "when": "复用参数已经冻结的 Config 导出 Batch"
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.config.validate-coordinate|nova.project.config.inspect-bundle-collector)",
+      "when": "只读校验精确 Config 坐标或定位其 Bundle Collector"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.config.export-runtime)",
+      "when": "确认精确 write set 后导出已冻结 Platform Channel DevelopMode 的 ConfigRuntimeSO"
     }
   ],
   "inputs": [
@@ -48,6 +58,14 @@
     {
       "name": "activeSceneSnapshotRequest",
       "required": false
+    },
+    {
+      "name": "targetSdkOrKitPackages",
+      "required": false
+    },
+    {
+      "name": "targetSdkOrKitConfigTypes",
+      "required": false
     }
   ],
   "effects": [
@@ -56,7 +74,7 @@
   ],
   "writeScope": {
     "allow": [
-      "confirmed ConfigMasterSO at the selected Platform Channel DevelopMode coordinate",
+      "confirmed ConfigMasterSO at the selected Platform Channel DevelopMode coordinate and explicit EnabledSDKs or EnabledKits members for the target Config types",
       "confirmed ConfigRuntimeSO target",
       "resolved YooAssetSettings.asset for the confirmed coordinate when configured",
       "active-scene startup snapshot only when explicitly confirmed"
@@ -64,7 +82,10 @@
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
       "Library/PackageCache/**",
+      "resolved SDK/Kit package contents",
       "unconfirmed Platform Channel DevelopMode coordinates",
+      "unconfirmed SDK/Kit Config types or EnabledSDKs/EnabledKits members",
+      "SDKComponent.m_PluginEntries as an SDK enable source",
       "handwritten Scene or ScriptableObject YAML",
       "remote config, CDN, Bundle, Player or external deployment"
     ]
@@ -74,17 +95,19 @@
     "asset-database",
     "config-master",
     "config-runtime-target",
-    "active-scene"
+    "active-scene",
+    "sdk-kit-config-type"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
     "requiredFor": [
       "ambiguous ConfigMaster, coordinate, field change, runtime target or scene snapshot",
+      "ambiguous SDK/Kit package, Config type, package precondition or EnabledSDKs/EnabledKits membership",
       "create a ConfigMasterSO or ConfigRuntimeSO",
       "change another coordinate, resolved YooAsset settings or active scene snapshot",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "确认绑定一个三维坐标、字段变更和 Runtime 目标；坐标、目标或附加场景写入变化后旧确认失效。"
+    "rule": "确认绑定一个三维坐标、字段变更和 Runtime 目标；SDK/Kit 还须绑定目标包、Config 类型和 EnabledSDKs/EnabledKits 成员。坐标、目标、目标类型或附加场景写入变化后旧确认失效。"
   },
   "minimumEvidence": "compile",
   "resultStates": [
@@ -95,6 +118,7 @@
   ],
   "evidence": [
     "ConfigMasterSO 保存与三维坐标证据",
+    "目标 SDK/Kit 的 package id、版本、source、INDEX、Scanner 类型发现与 EnabledSDKs/EnabledKits 单格映射证据（适用时）",
     "ConfigRuntimeSO 导出结果",
     "Unity 编译证据"
   ]

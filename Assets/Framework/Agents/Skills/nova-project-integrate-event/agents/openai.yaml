@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 接入业务事件"
+  short_description: "接入并验证 Nova 业务事件的发布、订阅与生命周期"
+  default_prompt: "使用 $nova-project-integrate-event 在当前 Nova 项目中接入已确认的业务事件，并完成分发时序、订阅注销与回池边界的 Play 验证。"

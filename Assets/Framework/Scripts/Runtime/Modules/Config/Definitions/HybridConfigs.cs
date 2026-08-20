@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEngine.Serialization;
 
 namespace NovaFramework.Runtime
 {
@@ -31,8 +32,9 @@ namespace NovaFramework.Runtime
         public List<DllAssetEntry> AotMetadataDlls = new();
 
         /// <summary>
-        /// 业务 DLL 的运行时 Asset 地址列表。
+        /// 启动阶段自动加载的业务 DLL 运行时 Asset 地址列表。
         /// </summary>
-        public List<DllAssetEntry> GameDlls = new();
+        [FormerlySerializedAs("GameDlls")]
+        public List<DllAssetEntry> StartupGameDlls = new();
     }
 }

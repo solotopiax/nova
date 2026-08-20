@@ -9,14 +9,9 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.HybridCLR.CompileDllActiveBuildTarget / CopyGameDlls",
-      "when": "同一次已确认执行严格按 compile -> copy 顺序刷新当前 Target 与当前 ConfigMaster 坐标的完整 GameDlls 映射"
-    },
-    {
-      "kind": "pipify",
-      "entry": "hybridclr.compile_dll_active_build_target / hybridclr.copy_game_dll",
-      "when": "项目已有 Pipify Batch 的完整 Items 已明确核对，且仅为 compile -> copy 两步并严格按该顺序执行；否则 blocked，不临时拼接 Batch"
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.hotfix.refresh-game-dlls)",
+      "when": "确认完整 write set 后严格按 compile -> copy 闭环刷新当前 Target 与当前 ConfigMaster 坐标的完整 DLL 映射"
     }
   ],
   "inputs": [
@@ -57,7 +52,7 @@
   "writeScope": {
     "allow": [
       "current activeBuildTarget complete HybridCLR compile output root, including all compiler-produced script DLL/PDB",
-      "frozen GameDlls target files and Unity import for targets under Assets/",
+      "frozen StartupGameDlls + RunningGameDlls union target files and Unity import for targets under Assets/",
       "本次证据，包括完整 source-target 映射、SHA-256 与 import 结果"
     ],
     "deny": [
@@ -65,7 +60,7 @@
       "ConfigMaster or ConfigRuntime changes",
       "Bundle, Player, CDN, store, runtime deployment or device validation",
       "Git commit or push, UPM publish, Framework/** and Library/**",
-      "其他 Target、其他 Platform/Channel/DevelopMode 坐标或冻结 GameDlls 映射外条目"
+      "其他 Target、其他 Platform/Channel/DevelopMode 坐标或冻结 StartupGameDlls + RunningGameDlls 并集映射外条目"
     ]
   },
   "locks": [

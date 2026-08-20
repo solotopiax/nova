@@ -38,13 +38,8 @@ namespace NovaFramework.Editor
         public DevelopMode DevelopMode;
 
         /// <summary>
-        /// AOT 元数据 DLL 列表 Override（编辑期三字段视图）；
-        /// 覆盖顶层 ConfigMasterSO.AotMetadataDlls；空列表是当前坐标明确配置的有效值。
-        /// </summary>
-
-        /// <summary>
-        /// 业务 DLL 列表 Override（编辑期三字段视图）；
-        /// 覆盖顶层 ConfigMasterSO.GameDlls；空列表是当前坐标明确配置的有效值。
+        /// 继承的三个 DLL 列表分别覆盖顶层 AotMetadataDlls、StartupGameDlls 与 RunningGameDlls；
+        /// 空列表是当前坐标明确配置的有效值。
         /// </summary>
 
         /// <summary>

@@ -51,6 +51,7 @@ auto_generated: true
 - [ADR-059 SerializeReference 跨格深拷贝改用 boxedValue](../2-Areas/ADR/ADR-059-serializeref-deepcopy-boxedvalue.md) — 跨格深拷贝改用 JsonUtility round-trip
 - [ADR-064 PlugPals 依赖检测与可选库三原则](../2-Areas/ADR/ADR-064-plugpals-dependency-detection.md) — 依赖进 dependencies，宏由 asmdef 配置
 - [ADR-073 Excel 导出业务边界：仅 Table 通用，其他模块专用](../2-Areas/ADR/ADR-073-excel-export-business-boundary.md) — 仅 Table 通用，其他模块按业务语义定制
+- [ADR-081 Nova Project Action 采用按操作性质分类的受控执行层](../2-Areas/ADR/ADR-081-project-action-controlled-execution-layer.md) — Project Skill 统一调用受控 C# Action
 
 ## hotfix
 
@@ -108,4 +109,4 @@ auto_generated: true
 
 
 ---
-_共 66 条，分布于 10 个 category。_
+_共 67 条，分布于 10 个 category。_

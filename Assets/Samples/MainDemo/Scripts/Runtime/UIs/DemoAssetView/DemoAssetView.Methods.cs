@@ -8,7 +8,6 @@
  * descrip:   Modules 2.2 Asset 演示 View — 私有方法
  ***************************************************************/
 
-using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -139,109 +138,5 @@ namespace NovaFramework.Samples.Runtime
             m_LoadCts = null;
         }
 
-        /// <summary>
-        /// 检查增量下载按钮点击回调，启动三步完整下载流程。
-        /// </summary>
-        private void OnCheckPatchButtonClick()
-        {
-            CheckPatchAsync().Forget();
-        }
-
-        /// <summary>
-        /// 演示无效 Asset 地址跳过按钮点击回调。
-        /// </summary>
-        private void OnInvalidLocationButtonClick()
-        {
-            DemoInvalidLocationAsync().Forget();
-        }
-
-        /// <summary>
-        /// 运行时增量下载三步走演示：
-        /// 1. Nova.Asset.RefreshManifestAsync() — 强刷清单；
-        /// 2. Nova.Asset.CreateDownloaderByTags(tags) — 按 tag 创建切片下载器；
-        /// 3. downloader.RunAsync(ct) — 运行下载。
-        /// EditorSimulateMode 下 downloader.IsEmpty=true，反馈区标注需联机/真机才有实际下载。
-        /// </summary>
-        private async UniTaskVoid CheckPatchAsync()
-        {
-            if (Nova.Asset == null)
-            {
-                AppendFeedback("Nova.Asset == null，AssetComponent 未初始化", FeedbackLevel.Error);
-                return;
-            }
-
-            CancelPatch();
-            m_PatchCts = new CancellationTokenSource();
-            CancellationToken ct = m_PatchCts.Token;
-
-            AppendFeedback("Nova.Asset.RefreshManifestAsync() -> 刷新中...");
-            try
-            {
-                await Nova.Asset.RefreshManifestAsync(ct: ct);
-            }
-            catch (OperationCanceledException)
-            {
-                AppendFeedback("Nova.Asset.RefreshManifestAsync() -> 已取消", FeedbackLevel.Warn);
-                return;
-            }
-            catch (Exception ex)
-            {
-                AppendFeedback("Nova.Asset.RefreshManifestAsync() -> 失败: " + ex.Message, FeedbackLevel.Error);
-                return;
-            }
-
-            AppendFeedback("Nova.Asset.RefreshManifestAsync() -> ok", FeedbackLevel.Success);
-
-            IAssetDownloader downloader = Nova.Asset.CreateDownloaderByTags(new[] { "demo_runtime_patch" });
-            AppendFeedback(string.Format("CreateDownloaderByTags([\"demo_runtime_patch\"]) -> Scope={0} / 文件数={1}", downloader.Scope, downloader.TotalCount));
-
-            if (downloader.IsEmpty)
-            {
-                AppendFeedback("downloader.IsEmpty=true — EditorSimulate 下无补丁（联机/真机才有实际下载）", FeedbackLevel.Warn);
-                return;
-            }
-
-            bool ok = false;
-            try
-            {
-                ok = await downloader.RunAsync(ct);
-            }
-            catch (OperationCanceledException)
-            {
-                AppendFeedback("downloader.RunAsync() -> 已取消", FeedbackLevel.Warn);
-                return;
-            }
-
-            AppendFeedback(string.Format("downloader.RunAsync() -> ok={0}", ok), ok ? FeedbackLevel.Success : FeedbackLevel.Error);
-        }
-
-        /// <summary>
-        /// 演示 CreateDownloaderByLocations 传入无效 Asset 地址的行为：
-        /// 资源系统会对无效 Asset 地址发出 Warning 并跳过，IsEmpty=true 是预期行为。
-        /// </summary>
-        private async UniTaskVoid DemoInvalidLocationAsync()
-        {
-            if (Nova.Asset == null)
-            {
-                AppendFeedback("Nova.Asset == null，AssetComponent 未初始化", FeedbackLevel.Error);
-                return;
-            }
-
-            AppendFeedback("Nova.Asset.CreateDownloaderByLocations([\"invalid_xyz\"]) -> 创建中...");
-            await UniTask.Yield();
-
-            IAssetDownloader downloader = Nova.Asset.CreateDownloaderByLocations(new[] { "invalid_xyz" });
-            AppendFeedback(string.Format("CreateDownloaderByLocations([\"invalid_xyz\"]) -> Scope={0} / IsEmpty={1}（无效 Asset 地址被资源系统 Warning 跳过）", downloader.Scope, downloader.IsEmpty), FeedbackLevel.Warn);
-        }
-
-        /// <summary>
-        /// 取消当前增量下载任务并释放令牌源。
-        /// </summary>
-        private void CancelPatch()
-        {
-            m_PatchCts?.Cancel();
-            m_PatchCts?.Dispose();
-            m_PatchCts = null;
-        }
     }
 }

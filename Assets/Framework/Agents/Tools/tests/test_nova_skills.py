@@ -410,8 +410,8 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertIn("bundle-build", skill_properties["minimumEvidence"]["enum"])
         self.assertIn("player-build", skill_properties["minimumEvidence"]["enum"])
 
-    def test_current_catalog_registers_project_skill_set_including_p2a_skills(self):
-        """Catalog 必须发现 P1 能力及 P2-A 已落地的网络与声音闭环。"""
+    def test_current_catalog_registers_project_skill_set_including_next_wave_skills(self):
+        """Catalog 必须发现当前完整消费端能力集合。"""
         canonical_catalog_path = TOOL_PATH.parent.parent / "catalog.json"
         catalog = json.loads(canonical_catalog_path.read_text(encoding="utf-8"))
         entries = {entry["id"]: entry for entry in catalog["skills"]}
@@ -434,6 +434,19 @@ class NovaSkillsToolTests(unittest.TestCase):
                 "nova-project-integrate-network-api",
                 "nova-project-integrate-sound",
                 "nova-project-refresh-hotfix-dlls",
+                "nova-project-manage-upm-package",
+                "nova-project-upgrade-framework",
+                "nova-project-integrate-vibration",
+                "nova-project-integrate-procedure",
+                "nova-project-generate-hybridclr-artifacts",
+                "nova-project-integrate-event",
+                "nova-project-integrate-persistence",
+                "nova-project-integrate-content-scene",
+                "nova-project-diagnose-build",
+                "nova-project-onboard-sdk-kit",
+                "nova-project-diagnose-device-runtime",
+                "nova-project-preflight-build",
+                "nova-project-resolve-android-dependencies",
             },
             set(entries),
         )
@@ -521,7 +534,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertIn("内部 `NetService`", skill_content)
         self.assertIn("无测试端点、账号或成功探针时返回 `blocked`", skill_content)
         self.assertIn("输入已确认且已执行允许步骤", skill_content)
-        self.assertIn("当前 Catalog 共 16 项", agents_index)
+        self.assertIn("当前 Catalog 共 29 项", agents_index)
         self.assertNotIn("当前包含 13 个实验性 Skill", agents_index)
         self.assertIn("必填输入未确认按 Skill 返回 `blocked`", agents_index)
         self.assertIn(
@@ -553,6 +566,55 @@ class NovaSkillsToolTests(unittest.TestCase):
         for required_evidence_input in ("认证", "账号", "成功探针"):
             self.assertIn(required_evidence_input, evidence_content)
         self.assertIn("$nova-project-integrate-network-api", openai_yaml)
+
+    def test_current_catalog_registers_event_persist_scene_sdk_and_diagnostics_wave(self):
+        """本轮八项能力必须保持业务写入、只读诊断与受控 Action 的边界。"""
+        agents_root = TOOL_PATH.parent.parent
+        catalog = json.loads((agents_root / "catalog.json").read_text(encoding="utf-8"))
+        entries = {entry["id"]: entry for entry in catalog["skills"]}
+
+        def contract(skill_id: str) -> dict:
+            return json.loads(
+                (agents_root / "Skills" / skill_id / "references" / "contract.json")
+                .read_text(encoding="utf-8")
+            )
+
+        for skill_id in (
+            "nova-project-integrate-event",
+            "nova-project-integrate-persistence",
+            "nova-project-integrate-content-scene",
+        ):
+            self.assertEqual(["workspace-write"], entries[skill_id]["effects"])
+            self.assertEqual("play", entries[skill_id]["minimumEvidence"])
+            self.assertEqual([], contract(skill_id)["requires"])
+
+        for skill_id in (
+            "nova-project-diagnose-build",
+            "nova-project-diagnose-device-runtime",
+            "nova-project-preflight-build",
+        ):
+            self.assertEqual(["read"], entries[skill_id]["effects"])
+            self.assertEqual([], contract(skill_id)["writeScope"]["allow"])
+
+        onboarding = contract("nova-project-onboard-sdk-kit")
+        self.assertEqual(
+            ["nova-project-manage-upm-package", "nova-project-configure-runtime"],
+            onboarding["requires"],
+        )
+        self.assertEqual("workflow", entries["nova-project-onboard-sdk-kit"]["kind"])
+
+        preflight_entries = {
+            adapter["entry"] for adapter in contract("nova-project-preflight-build")["actionAdapters"]
+        }
+        self.assertTrue(any("nova.project.build.inspect-readiness" in entry for entry in preflight_entries))
+
+        android = contract("nova-project-resolve-android-dependencies")
+        self.assertTrue(any("exposure=blocked" in adapter["entry"] for adapter in android["actionAdapters"]))
+        self.assertIn("generated-output", android["effects"])
+        self.assertIn(
+            "nova-project-resolve-android-dependencies",
+            catalog["capabilityGroups"]["build"],
+        )
 
     def test_current_catalog_registers_sound_integration_skill(self):
         """P2-A 的声音闭环必须以真实 Adapter、播放证据和安全边界登记。"""
@@ -639,9 +701,9 @@ class NovaSkillsToolTests(unittest.TestCase):
             }
             <= set(contract["locks"])
         )
-        self.assertIn("当前 Catalog 共 16 项", agents_index)
+        self.assertIn("当前 Catalog 共 29 项", agents_index)
         self.assertIn("nova-project-integrate-sound", agents_index)
-        self.assertIn("当前 16 项能力", docs_index)
+        self.assertIn("当前 29 项能力", docs_index)
         self.assertIn("大厅 BGM", quick_start)
         router_sound_ambiguity_line = next(
             line
@@ -682,7 +744,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         entries = {entry["id"]: entry for entry in catalog["skills"]}
         hotfix = entries["nova-project-refresh-hotfix-dlls"]
 
-        self.assertEqual(16, len(entries))
+        self.assertEqual(29, len(entries))
         self.assertEqual("operation", hotfix["kind"])
         self.assertEqual(["build", "hotfix"], hotfix["journeys"])
         self.assertEqual(
@@ -741,18 +803,12 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertNotIn("runtimeSmokeContext", input_requirements)
         self.assertEqual(
             {
-                "EditorUtil.HybridCLR.CompileDllActiveBuildTarget / CopyGameDlls",
-                "hybridclr.compile_dll_active_build_target / hybridclr.copy_game_dll",
+                "nova_project_action(describe/plan/execute/verify, action_id=nova.project.hotfix.refresh-game-dlls)",
             },
             adapter_entries,
         )
-        pipify_adapter = next(
-            adapter
-            for adapter in contract["actionAdapters"]
-            if adapter["kind"] == "pipify"
-        )
-        self.assertIn("完整 Items", pipify_adapter["when"])
-        self.assertIn("仅为", pipify_adapter["when"])
+        self.assertEqual("unity-editor-automation", contract["actionAdapters"][0]["kind"])
+        self.assertIn("compile -> copy", contract["actionAdapters"][0]["when"])
         self.assertEqual(
             [
                 "unity-editor",
@@ -774,7 +830,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         for allowed_scope in (
             "current activeBuildTarget",
             "complete HybridCLR compile output root",
-            "GameDlls",
+            "StartupGameDlls + RunningGameDlls",
             "Unity import",
             "本次证据",
         ):
@@ -814,7 +870,8 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertIn("SHA-256", skill_content)
         self.assertNotIn("runtimeSmokeContext", skill_content)
         self.assertNotIn("hotUpdateAssemblySet", skill_content)
-        self.assertIn("完整 Items 必须且只能是", skill_content)
+        self.assertIn("固定为 MCP Action", skill_content)
+        self.assertIn("不退化为任意代码执行", skill_content)
         self.assertIn("完整 HybridCLR 编译输出根目录", skill_content)
         self.assertIn("不得把编译或本地 DLL 刷新称为 Bundle、Player、CDN", skill_content)
         self.assertIn("运行时或真机成功", skill_content)
@@ -838,11 +895,11 @@ class NovaSkillsToolTests(unittest.TestCase):
         )
         self.assertIn("compile -> copy", router_hotfix_route_line)
         self.assertIn("full AOT、Bundle、Player", router_hotfix_route_line)
-        self.assertIn("当前 Catalog 共 16 项", agents_index)
+        self.assertIn("当前 Catalog 共 29 项", agents_index)
         self.assertIn("仅刷新本地业务 DLL，不是发布", agents_index)
-        self.assertIn("当前 16 项能力", docs_index)
+        self.assertIn("当前 29 项能力", docs_index)
         self.assertIn("刷新 HybridCLR 业务热更 DLL", docs_index)
-        self.assertIn("当前 16 项", quick_start)
+        self.assertIn("当前 29 项", quick_start)
         self.assertIn("刷新 HybridCLR 业务热更 DLL", quick_start)
         self.assertIn("ConfigMasterSO.HybridEditorConfigs", hybridclr_docs)
         self.assertNotIn("ConfigMasterSO.AotMetadataDlls", hybridclr_docs)
@@ -880,7 +937,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertTrue(child_allowed_scope <= workflow_allowed_scope)
         self.assertTrue(set(table["locks"]) <= set(workflow["locks"]))
         self.assertTrue(
-            {"workspace-edit", "unity-editor-api", "pipify", "unity-mcp", "unity-menu"}
+            {"workspace-edit", "unity-editor-api", "pipify", "unity-editor-automation", "unity-menu"}
             <= workflow_adapter_kinds
         )
         self.assertIn("ProjectId", workflow_confirmation)
@@ -1777,6 +1834,95 @@ class NovaSkillsToolTests(unittest.TestCase):
         )
 
         with self.assertRaisesRegex(RuntimeError, "版本"):
+            load_tool().resolve_agents_root(self.project_root)
+
+    def test_resolve_registry_cache_accepts_hashed_directory_with_matching_version(self):
+        """Unity 的 registry 缓存目录使用哈希后缀时，仍按 lock 版本解析。"""
+        packages_dir = self.project_root / "Packages"
+        packages_dir.mkdir(parents=True)
+        (packages_dir / "manifest.json").write_text(
+            json.dumps(
+                {"dependencies": {"com.solotopia.nova.framework": "0.6.13"}}
+            ),
+            encoding="utf-8",
+        )
+        (packages_dir / "packages-lock.json").write_text(
+            json.dumps(
+                {
+                    "dependencies": {
+                        "com.solotopia.nova.framework": {
+                            "version": "0.6.13",
+                            "source": "registry",
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        cache_package = (
+            self.project_root
+            / "Library"
+            / "PackageCache"
+            / "com.solotopia.nova.framework@50452fefa54c"
+        )
+        (cache_package / "Agents").mkdir(parents=True)
+        (cache_package / "package.json").write_text(
+            json.dumps(
+                {
+                    "name": "com.solotopia.nova.framework",
+                    "version": "0.6.13",
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        self.assertEqual(
+            (cache_package / "Agents").resolve(),
+            load_tool().resolve_agents_root(self.project_root),
+        )
+
+    def test_resolve_registry_cache_rejects_multiple_matching_hashed_directories(self):
+        """同一 lock 版本命中多个哈希缓存时，不得任意选择其中一个。"""
+        packages_dir = self.project_root / "Packages"
+        packages_dir.mkdir(parents=True)
+        (packages_dir / "manifest.json").write_text(
+            json.dumps(
+                {"dependencies": {"com.solotopia.nova.framework": "0.6.13"}}
+            ),
+            encoding="utf-8",
+        )
+        (packages_dir / "packages-lock.json").write_text(
+            json.dumps(
+                {
+                    "dependencies": {
+                        "com.solotopia.nova.framework": {
+                            "version": "0.6.13",
+                            "source": "registry",
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        for cache_suffix in ("50452fefa54c", "8a51b18a04c2"):
+            cache_package = (
+                self.project_root
+                / "Library"
+                / "PackageCache"
+                / f"com.solotopia.nova.framework@{cache_suffix}"
+            )
+            (cache_package / "Agents").mkdir(parents=True)
+            (cache_package / "package.json").write_text(
+                json.dumps(
+                    {
+                        "name": "com.solotopia.nova.framework",
+                        "version": "0.6.13",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+        with self.assertRaisesRegex(RuntimeError, "多个 registry Framework 候选"):
             load_tool().resolve_agents_root(self.project_root)
 
     def test_resolve_rejects_package_cache_when_framework_lock_is_missing(self):

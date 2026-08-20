@@ -33,7 +33,8 @@ public string AssetLocation
 ## §11 使用示例
 
 ```csharp
-// 由 Inspector 序列化，通过 ConfigMasterSO 的 AotMetadataDlls / GameDlls 访问
+// 由 Inspector 序列化，通过 ConfigMasterSO 的 AotMetadataDlls /
+// StartupGameDlls / RunningGameDlls 访问
 // 在 ConfigWindow → HybridCLR 配置面板编辑条目
 
 ConfigMasterSO master = EditorUtil.Asset.Operator.Find<ConfigMasterSO>();
@@ -52,6 +53,6 @@ foreach (DllMasterAssetEntry entry in master.AotMetadataDlls)
 ## §13 关联文档
 
 - [DllAssetEntry.md](../../../Runtime/Modules/Config/Definitions/DllAssetEntry.md)（运行期单字段视图，供 ConfigRuntimeSO 使用）
-- [ConfigMasterSO.md](../ConfigMasterSO.md)（AotMetadataDlls / GameDlls 编辑入口）
-- [ConfigRuntimeSO.md](../../../Runtime/Modules/Config/ConfigRuntimeSO.md)（导出产物，AotMetadataDlls / GameDlls 为 DllAssetEntry 列表）
+- [ConfigMasterSO.md](../ConfigMasterSO.md)（三个 DLL 列表的编辑入口）
+- [ConfigRuntimeSO.md](../../../Runtime/Modules/Config/ConfigRuntimeSO.md)（导出产物，仅含 AotMetadataDlls / StartupGameDlls）
 - [EditorUtil.HybridCLR.md](../../EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md)（拷贝逻辑消费方）

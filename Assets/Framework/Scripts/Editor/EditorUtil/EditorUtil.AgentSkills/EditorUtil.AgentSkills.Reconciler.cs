@@ -174,7 +174,7 @@ namespace NovaFramework.Editor
                 "cli",
                 "pipify",
                 "unity-editor-api",
-                "unity-mcp",
+                "unity-editor-automation",
                 "unity-menu",
                 "workspace-edit",
                 "workspace-inspection",

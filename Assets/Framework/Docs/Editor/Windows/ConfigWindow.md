@@ -294,7 +294,8 @@ DrawHybridCLRPanel()
 
   DrawHybridCLRGameDllSection()
     标题：Label("业务 DLL 列表", m_SectionTitleStyle)
-    gameProp = ResolveHybridCLRDllListProp(curCoord, "GameDlls")  // 同上维度化解析
+    startupProp = ResolveHybridCLRDllListProp(curCoord, "StartupGameDlls")
+    runningProp = ResolveHybridCLRDllListProp(curCoord, "RunningGameDlls")
     EnsureHybridCLRGameDllsList(workingSrc, curCoord, gameProp) → 路径变化时重建 list
     m_HybridCLRGameDllsList.DoLayoutList()
       每条目：DrawHybridCLRDllEntryElementCore（三行：源位置 / 目标位置 / Asset 地址，布局同上；写入同上经 Commit 落 Override 份）

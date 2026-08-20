@@ -14,7 +14,7 @@
       "when": "View、命名空间、UIGroup 和注册源已经冻结时"
     },
     {
-      "kind": "unity-mcp",
+      "kind": "unity-editor-automation",
       "entry": "Unity Editor/MCP Prefab creation and serialized reference binding",
       "when": "用户已确认目标 Prefab 与 Unity 写入范围时"
     },

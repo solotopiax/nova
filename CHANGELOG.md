@@ -6,6 +6,25 @@
 
 ---
 
+## [0.6.16] - 2026-08-20
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.16]` 节。
+
+### Breaking
+
+- HybridCLR 的 `GameDlls` 源码字段更名为 `StartupGameDlls`；序列化资产兼容，直接访问旧字段的外部代码需同步改名。
+
+### Added
+
+- 发布 Nova 消费端 Skills、受控 Project Action 执行层与 `com.solotopia.nova.framework.mcp@0.1.0`。
+
+### Changed
+
+- 发布 Framework `0.6.16`，统一 Sample 场景配置路由，并更新 Config、HybridCLR、构建链与 MainDemo。
+- 仅对本轮 Sample 实际变化的 Kit/SDK 包提升 Framework 最低依赖，不级联未变化包。
+
+---
+
 ## [0.6.15] - 2026-08-18
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.15]` 节。

@@ -134,14 +134,14 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 拷贝业务层热更 DLL 到 ConfigMasterSO 中各条目配置的目标位置。
+            /// 拷贝启动时与运行时业务热更 DLL 到 ConfigMasterSO 中各条目配置的目标位置。
             /// 源/目标路径均从 DllMasterAssetEntry.SourceLocation / TargetLocation 读取，均为项目根相对的具体文件路径，含文件名与扩展名（源端如 .dll，目标端如 .dll.bytes），路径支持 {ActiveBuildTarget} 占位符自动解析。
             /// </summary>
             public static void CopyGameDlls()
             {
                 ConfigMasterSO master = ResolveActiveMasterOrThrow();
                 var hybrid = ResolveHybridCLRForCurrentCoord(master);
-                CopyDllEntries(hybrid.GameDlls, "业务 DLL");
+                CopyGameDllEntries(hybrid);
             }
 
             /// <summary>

@@ -14,9 +14,9 @@ using System.Collections.Generic;
 namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
-    /// HybridCLR Demo 3.1：AOT metadata 已加载列表快照。
+    /// HybridCLR Demo 3.1：启动阶段 AOT Metadata 配置与加载结果快照。
     /// API 副标题：Util.HybridCLR.LoadAotMetadataAsync(dlls)（启动期已调，本 demo 仅展示快照）。
-    /// 只读快照型：展示 ConfigManager.AotMetadataDlls 清单 + HomologousImageMode 卡片。
+    /// 只读快照型：展示 ConfigRuntimeSO.AotMetadataDlls 清单 + HomologousImageMode 卡片。
     /// </summary>
     public sealed class DemoHybridClrAotMetadataView : BaseDemoView
     {
@@ -48,12 +48,16 @@ namespace NovaFramework.Samples.Runtime
 
             for (int i = 0; i < dlls.Count; i++)
             {
-                AppendFeedback(string.Format("  [{0}] {1}", i, dlls[i].AssetLocation), FeedbackLevel.Info);
+#if UNITY_EDITOR
+                AppendFeedback(string.Format("  [{0}] {1} configured（Editor 跳过 Metadata 加载）", i, dlls[i].AssetLocation), FeedbackLevel.Info);
+#else
+                AppendFeedback(string.Format("  [{0}] {1} 启动阶段已按配置完成", i, dlls[i].AssetLocation), FeedbackLevel.Success);
+#endif
             }
 
             if (dlls.Count == 0)
             {
-                AppendFeedback("(Empty — Editor 模式下跳过 AOT metadata 加载)", FeedbackLevel.Warn);
+                AppendFeedback("(Empty — 未配置 AOT Metadata DLL)", FeedbackLevel.Warn);
             }
 
             AppendFeedback("HomologousImageMode -> SuperSet", FeedbackLevel.Info);

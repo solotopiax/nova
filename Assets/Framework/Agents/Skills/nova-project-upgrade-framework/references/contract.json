@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-upgrade-framework",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.15",
+    "unity": ">=6000.4",
+    "externalUpmHost": "a Framework-external controlled UPM client with live single-package upgrade and Resolve capabilities"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "unity-editor-automation",
+      "entry": "external UPM host live capability list and package-management Schema (never nova_project_action)",
+      "when": "升级前确认 Provider 已连接、具备单包 direct dependency 升级能力，并由包外宿主冻结或执行唯一 Framework 版本变更时"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "Packages/manifest.json + Packages/packages-lock.json + configured scoped registries + resolved Framework package/package.json",
+      "when": "升级前后只读冻结或核验 current/target Framework direct entry、版本、来源和可解析依赖闭包；registry 凭据不得输出"
+    },
+    {
+      "kind": "cli",
+      "entry": "python3 \"<resolved Framework package>/Agents/Tools/nova_skills.py\" doctor --project-root <projectRoot>",
+      "when": "新版本 Resolve、编译和自动投影稳定后，以新解析 catalog.json 的实际 Skill 数量核验 .agents/skills 受管状态，不手工 sync 或 reconcile"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "MCP tools/list -> nova_project_action presence check only",
+      "when": "重新连接同一消费工程后确认目标 Framework 的 Nova MCP 默认 Adapter 已恢复；只检查 Tool 可见性，不能用它升级自身"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "targetSelectorLatestOrExactHigherVersion",
+      "required": true
+    },
+    {
+      "name": "currentFrameworkDirectManifestEntry",
+      "required": true
+    },
+    {
+      "name": "currentFrameworkLockEntryAndSource",
+      "required": true
+    },
+    {
+      "name": "configuredRegistryIdentityAndReachabilityWithoutCredentials",
+      "required": true
+    },
+    {
+      "name": "externalUpmHostAndLivePackageManagementSchema",
+      "required": true
+    },
+    {
+      "name": "targetFrameworkMcpDefaultAdapterClosure",
+      "required": true
+    },
+    {
+      "name": "confirmedUpgradePlan",
+      "required": false
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write"
+  ],
+  "writeScope": {
+    "allow": [
+      "the confirmed external UPM host change to the single direct com.solotopia.nova.framework manifest entry, retaining the frozen configured registry source",
+      "Packages/packages-lock.json and resolved dependency closure updates produced only by Unity Package Manager Resolve after that confirmed change"
+    ],
+    "deny": [
+      "nova_project_action, Framework C# AgentAction, arbitrary C#, reflection, execute_code or menu simulation for Framework self-upgrade",
+      "manual Packages/manifest.json or Packages/packages-lock.json edits, Git/file/local source, registry switch, downgrade or batch package upgrade",
+      "direct changes to Packages/com.solotopia.nova.framework/**, Library/PackageCache/**, package cache or Library cleanup",
+      "ConfigMaster, ConfigRuntimeSO, business Config fields, SDK/Kit setup, Sample, Scene, Prefab, Bundle or Player changes",
+      "automatic retry, rollback, dependency substitution, Git commit/push, UPM publish, external deployment or credential output"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "unity-package-manager",
+    "Packages/manifest.json",
+    "Packages/packages-lock.json",
+    "nova-framework-direct-dependency",
+    "nova-framework-mcp-adapter-closure",
+    "default-mcp-provider-adapter",
+    "domain-reload",
+    "managed-skill-projection"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "the exact current Framework version/source and one latest or explicit higher target version/source",
+      "the external UPM host's exact direct-dependency diff, target metadata, registry identity and reachable dependency closure",
+      "manifest change, Unity Resolve and the expected domain reload or MCP connection interruption",
+      "any changed project root, current/target version, registry, host Schema, default Provider dependency, MCP Adapter closure or package graph",
+      "cache cleanup, rollback, source switch, credential use, Git commit/push, publish or external deployment"
+    ],
+    "rule": "确认只绑定当前 direct Framework entry、同源目标、外部宿主 Schema、registry 可达性和目标 Nova MCP 默认 Adapter 闭包。任何 manifest、lock、registry、目标元数据、Provider 依赖或 Editor domain 漂移都会使旧确认失效；断线或 reload 后只做恢复核验，绝不自动重放升级。"
+  },
+  "minimumEvidence": "compile",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "升级前冻结的 current direct manifest entry、lock version/source、脱敏 registry identity、目标 metadata 和外部 UPM host capability",
+    "用户对唯一同源目标及其外部 UPM diff 的明确确认，以及 host 提供的提交 receipt（如有）",
+    "Resolve 与 domain reload 稳定后的 direct manifest、packages-lock 和 resolved Framework package 精确版本/来源，以及 Unity 编译结果",
+    "目标 Framework 的 catalog.json 实际 Skill 数量和 nova_skills.py doctor 对 .agents/skills 的 clean 结果；数量不硬编码为 28",
+    "同一项目重连后 MCP tools/list 中 nova_project_action 的可见性，及缺失时未使用它或任意 C# 绕过的事实",
+    "未执行 Config、缓存清理、回滚、Git、发布、外部部署或凭据输出的边界说明"
+  ]
+}

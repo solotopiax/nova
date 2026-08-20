@@ -5,7 +5,7 @@
  * filename:  DemoHybridClrGameDllView.cs
  * author:    taoye
  * created:   2026/05/23
- * descrip:   HybridCLR 3.2 — 业务 dll 已加载列表快照展示
+ * descrip:   HybridCLR 3.2 — 启动时业务 DLL 加载结果展示
  ***************************************************************/
 
 using NovaFramework.Runtime;
@@ -14,10 +14,9 @@ using System.Collections.Generic;
 namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
-    /// HybridCLR Demo 3.2：业务 dll 已加载列表快照。
-    /// API 副标题：Util.HybridCLR.LoadGameAssemblyAsync(dlls)。
-    /// 只读快照型：展示 ConfigManager.GameDlls 清单 + Namespace 卡片。
-    /// MainDemo 场景下 dll 列表可能为空，届时显式标注。
+    /// HybridCLR Demo 3.2：启动时业务 DLL 加载结果。
+    /// API 副标题：ProcedureLoadDll -> Util.HybridCLR.LoadGameAssemblyAsync(location)。
+    /// 只读快照型：展示 ConfigRuntimeSO 中实际导出的 StartupGameDlls 清单与 Namespace。
     /// </summary>
     public sealed class DemoHybridClrGameDllView : BaseDemoView
     {
@@ -33,7 +32,7 @@ namespace NovaFramework.Samples.Runtime
         }
 
         /// <summary>
-        /// 视图打开钩子，读取 ConfigManager.GameDlls 并逐行写入反馈区。
+        /// 视图打开钩子，读取 ConfigManager.StartupGameDlls 并逐行写入反馈区。
         /// </summary>
         /// <param name="userData">用户自定义数据，本 View 不使用。</param>
         public override void OnOpen(object userData)
@@ -45,18 +44,22 @@ namespace NovaFramework.Samples.Runtime
             string ns = Nova.Config.Namespace;
             AppendFeedback(string.Format("Namespace -> \"{0}\"", string.IsNullOrEmpty(ns) ? "(empty)" : ns), FeedbackLevel.Info);
 
-            IReadOnlyList<DllAssetEntry> dlls = Nova.Config.HybridConfigs?.GameDlls
+            IReadOnlyList<DllAssetEntry> dlls = Nova.Config.HybridConfigs?.StartupGameDlls
                 ?? (IReadOnlyList<DllAssetEntry>)System.Array.Empty<DllAssetEntry>();
-            AppendFeedback(string.Format("GameDlls -> {0} entries", dlls.Count), FeedbackLevel.Info);
+            AppendFeedback(string.Format("StartupGameDlls -> {0} entries", dlls.Count), FeedbackLevel.Info);
 
             for (int i = 0; i < dlls.Count; i++)
             {
-                AppendFeedback(string.Format("  [{0}] {1} loaded", i, dlls[i].AssetLocation), FeedbackLevel.Success);
+#if UNITY_EDITOR
+                AppendFeedback(string.Format("  [{0}] {1} configured（Editor 跳过 Assembly.Load）", i, dlls[i].AssetLocation), FeedbackLevel.Info);
+#else
+                AppendFeedback(string.Format("  [{0}] {1} 启动阶段已按配置完成", i, dlls[i].AssetLocation), FeedbackLevel.Success);
+#endif
             }
 
             if (dlls.Count == 0)
             {
-                AppendFeedback("(Empty — MainDemo 场景未启用业务 DLL 热更)", FeedbackLevel.Warn);
+                AppendFeedback("(Empty — 未配置启动时业务 DLL)", FeedbackLevel.Warn);
             }
         }
     }

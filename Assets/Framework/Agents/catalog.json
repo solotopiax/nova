@@ -5,13 +5,19 @@
     "assessment": [
       "nova-project-router",
       "nova-project-check-readiness",
-      "nova-project-diagnose-startup"
+      "nova-project-diagnose-startup",
+      "nova-project-preflight-build",
+      "nova-project-diagnose-build",
+      "nova-project-diagnose-device-runtime"
     ],
     "onboarding": [
       "nova-project-router",
       "nova-project-check-readiness",
+      "nova-project-manage-upm-package",
+      "nova-project-upgrade-framework",
       "nova-project-setup-entry-scene",
-      "nova-project-configure-runtime"
+      "nova-project-configure-runtime",
+      "nova-project-onboard-sdk-kit"
     ],
     "data": [
       "nova-project-router",
@@ -29,11 +35,13 @@
     "resource": [
       "nova-project-router",
       "nova-project-integrate-resource",
+      "nova-project-integrate-content-scene",
       "nova-project-build-bundles"
     ],
     "hotfix": [
       "nova-project-router",
       "nova-project-refresh-hotfix-dlls",
+      "nova-project-generate-hybridclr-artifacts",
       "nova-project-build-bundles",
       "nova-project-diagnose-startup"
     ],
@@ -45,10 +53,60 @@
       "nova-project-router",
       "nova-project-integrate-sound"
     ],
+    "vibration": [
+      "nova-project-router",
+      "nova-project-integrate-vibration"
+    ],
+    "procedure": [
+      "nova-project-router",
+      "nova-project-integrate-procedure"
+    ],
+    "package": [
+      "nova-project-router",
+      "nova-project-manage-upm-package",
+      "nova-project-upgrade-framework",
+      "nova-project-onboard-sdk-kit"
+    ],
     "delivery": [
       "nova-project-router",
+      "nova-project-preflight-build",
       "nova-project-build-bundles",
-      "nova-project-build-player"
+      "nova-project-build-player",
+      "nova-project-diagnose-build",
+      "nova-project-diagnose-device-runtime"
+    ],
+    "event": [
+      "nova-project-router",
+      "nova-project-integrate-event"
+    ],
+    "persistence": [
+      "nova-project-router",
+      "nova-project-integrate-persistence"
+    ],
+    "scene": [
+      "nova-project-router",
+      "nova-project-setup-entry-scene",
+      "nova-project-integrate-content-scene"
+    ],
+    "sdk-kit": [
+      "nova-project-router",
+      "nova-project-manage-upm-package",
+      "nova-project-configure-runtime",
+      "nova-project-onboard-sdk-kit",
+      "nova-project-resolve-android-dependencies",
+      "nova-project-diagnose-device-runtime"
+    ],
+    "build": [
+      "nova-project-router",
+      "nova-project-preflight-build",
+      "nova-project-resolve-android-dependencies",
+      "nova-project-build-bundles",
+      "nova-project-build-player",
+      "nova-project-diagnose-build"
+    ],
+    "device": [
+      "nova-project-router",
+      "nova-project-diagnose-device-runtime"
     ]
   },
   "skills": [
@@ -126,6 +184,37 @@
       "effects": [
         "unity-write",
         "generated-output"
+      ],
+      "minimumEvidence": "compile"
+    },
+    {
+      "id": "nova-project-manage-upm-package",
+      "path": "Skills/nova-project-manage-upm-package",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "onboarding",
+        "package",
+        "configuration"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write"
+      ],
+      "minimumEvidence": "compile"
+    },
+    {
+      "id": "nova-project-upgrade-framework",
+      "path": "Skills/nova-project-upgrade-framework",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "onboarding",
+        "package"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write"
       ],
       "minimumEvidence": "compile"
     },
@@ -259,8 +348,54 @@
       "minimumEvidence": "play"
     },
     {
+      "id": "nova-project-integrate-vibration",
+      "path": "Skills/nova-project-integrate-vibration",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "vibration"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-integrate-procedure",
+      "path": "Skills/nova-project-integrate-procedure",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "procedure"
+      ],
+      "effects": [
+        "workspace-write"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
       "id": "nova-project-refresh-hotfix-dlls",
       "path": "Skills/nova-project-refresh-hotfix-dlls",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "build",
+        "hotfix"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "compile"
+    },
+    {
+      "id": "nova-project-generate-hybridclr-artifacts",
+      "path": "Skills/nova-project-generate-hybridclr-artifacts",
       "kind": "operation",
       "status": "experimental",
       "journeys": [
@@ -307,6 +442,126 @@
         "build"
       ],
       "minimumEvidence": "player-build"
+    },
+    {
+      "id": "nova-project-integrate-event",
+      "path": "Skills/nova-project-integrate-event",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "event"
+      ],
+      "effects": [
+        "workspace-write"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-integrate-persistence",
+      "path": "Skills/nova-project-integrate-persistence",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "data",
+        "persistence"
+      ],
+      "effects": [
+        "workspace-write"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-integrate-content-scene",
+      "path": "Skills/nova-project-integrate-content-scene",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "feature",
+        "resource",
+        "scene"
+      ],
+      "effects": [
+        "workspace-write"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-diagnose-build",
+      "path": "Skills/nova-project-diagnose-build",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "build",
+        "diagnosis"
+      ],
+      "effects": [
+        "read"
+      ],
+      "minimumEvidence": "static"
+    },
+    {
+      "id": "nova-project-onboard-sdk-kit",
+      "path": "Skills/nova-project-onboard-sdk-kit",
+      "kind": "workflow",
+      "status": "experimental",
+      "journeys": [
+        "onboarding",
+        "package",
+        "configuration"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "play"
+    },
+    {
+      "id": "nova-project-diagnose-device-runtime",
+      "path": "Skills/nova-project-diagnose-device-runtime",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "diagnosis",
+        "device"
+      ],
+      "effects": [
+        "read"
+      ],
+      "minimumEvidence": "static"
+    },
+    {
+      "id": "nova-project-preflight-build",
+      "path": "Skills/nova-project-preflight-build",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "build",
+        "assessment"
+      ],
+      "effects": [
+        "read"
+      ],
+      "minimumEvidence": "static"
+    },
+    {
+      "id": "nova-project-resolve-android-dependencies",
+      "path": "Skills/nova-project-resolve-android-dependencies",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "onboarding",
+        "build",
+        "android"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
+      ],
+      "minimumEvidence": "static"
     }
   ]
 }

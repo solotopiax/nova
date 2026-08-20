@@ -30,8 +30,8 @@ namespace NovaFramework.Editor
                 // -------------------------------------------------------
 
                 /// <summary>
-                /// HybridCLR 面板维度解析结果（四字段聚合）。
-                /// <para>AotMetadataDlls / GameDlls 为深拷贝列表（禁共享引用）；其余两字段为不可变 string。</para>
+                /// HybridCLR 面板维度解析结果（五字段聚合）。
+                /// <para>三个 DLL 列表均为深拷贝（禁共享引用）；其余两字段为不可变 string。</para>
                 /// </summary>
                 public sealed class HybridCLRResult
                 {
@@ -40,9 +40,13 @@ namespace NovaFramework.Editor
                     /// </summary>
                     public List<DllMasterAssetEntry> AotMetadataDlls;
                     /// <summary>
-                    /// 业务 DLL 列表（深拷贝）；对应 ConfigMasterSO.GameDlls 或匹配 Override 的 GameDlls。
+                    /// 启动时业务 DLL 列表（深拷贝）。
                     /// </summary>
-                    public List<DllMasterAssetEntry> GameDlls;
+                    public List<DllMasterAssetEntry> StartupGameDlls;
+                    /// <summary>
+                    /// 运行时业务 DLL 列表（深拷贝，仅供 Editor 使用）。
+                    /// </summary>
+                    public List<DllMasterAssetEntry> RunningGameDlls;
                     /// <summary>
                     /// link.xml 目标路径；对应 ConfigMasterSO.LinkXmlTargetPath 或匹配 Override 的 LinkXmlTargetPath。
                     /// </summary>
@@ -102,10 +106,10 @@ namespace NovaFramework.Editor
 
 #if UNITY_EDITOR
                 /// <summary>
-                /// 按当前坐标解析 HybridCLR 面板四字段的最终生效值。
+                /// 按当前坐标解析 HybridCLR 面板五字段的最终生效值。
                 /// <para>全不勾（IsGlobal）→ 直接取顶层各默认字段；否则在 HybridEditorConfigsOverrides 中匹配首个符合条目，
                 /// 命中后使用整份 Override（空字符串和空列表均为有效值），无命中回落顶层字段。</para>
-                /// <para>AotMetadataDlls / GameDlls 返回深拷贝列表（禁共享引用）。</para>
+                /// <para>三个 DLL 列表均返回深拷贝（禁共享引用）。</para>
                 /// </summary>
                 /// <param name="master">ConfigMasterSO 实例。</param>
                 /// <param name="curP">当前平台。</param>
@@ -119,7 +123,8 @@ namespace NovaFramework.Editor
                         return new HybridCLRResult
                         {
                             AotMetadataDlls = new List<DllMasterAssetEntry>(),
-                            GameDlls = new List<DllMasterAssetEntry>(),
+                            StartupGameDlls = new List<DllMasterAssetEntry>(),
+                            RunningGameDlls = new List<DllMasterAssetEntry>(),
                             LinkXmlTargetPath = string.Empty,
                             GameEntranceProcedureName = string.Empty,
                         };
@@ -133,7 +138,8 @@ namespace NovaFramework.Editor
                             return new HybridCLRResult
                             {
                                 AotMetadataDlls = CloneDllList(o.AotMetadataDlls),
-                                GameDlls = CloneDllList(o.GameDlls),
+                                StartupGameDlls = CloneDllList(o.StartupGameDlls),
+                                RunningGameDlls = CloneDllList(o.RunningGameDlls),
                                 LinkXmlTargetPath = o.LinkXmlTargetPath ?? string.Empty,
                                 GameEntranceProcedureName = o.GameEntranceProcedureName ?? string.Empty,
                             };
@@ -143,7 +149,8 @@ namespace NovaFramework.Editor
                     return new HybridCLRResult
                     {
                         AotMetadataDlls = CloneDllList(master.HybridEditorConfigs.AotMetadataDlls),
-                        GameDlls = CloneDllList(master.HybridEditorConfigs.GameDlls),
+                        StartupGameDlls = CloneDllList(master.HybridEditorConfigs.StartupGameDlls),
+                        RunningGameDlls = CloneDllList(master.HybridEditorConfigs.RunningGameDlls),
                         LinkXmlTargetPath = master.HybridEditorConfigs.LinkXmlTargetPath ?? string.Empty,
                         GameEntranceProcedureName = master.HybridEditorConfigs.GameEntranceProcedureName ?? string.Empty,
                     };

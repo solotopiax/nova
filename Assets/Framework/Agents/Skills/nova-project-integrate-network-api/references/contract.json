@@ -14,7 +14,7 @@
       "when": "只修改已冻结的路由行、协议映射和允许的业务调用入口"
     },
     {
-      "kind": "unity-mcp",
+      "kind": "unity-editor-automation",
       "entry": "NetworkComponentInspector",
       "when": "需要更新已确认的 NetworkComponent、NetworkSettings 或序列化引用"
     },

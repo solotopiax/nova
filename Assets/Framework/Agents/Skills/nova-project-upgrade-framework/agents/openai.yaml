@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 项目 Framework 升级"
+  short_description: "经外部 UPM 宿主安全升级 Framework 并完成重载后恢复验证"
+  default_prompt: "使用 $nova-project-upgrade-framework 将当前 Nova 消费项目升级到最新或指定更高 Framework 版本，并在重载后验证 Skills 与 MCP 恢复。"

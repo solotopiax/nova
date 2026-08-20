@@ -46,13 +46,29 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
-      - CollectPath: Assets/Samples/MainDemo/Dlls
-        CollectorGUID: 4b1e93c9319ff4388917f3a0fd1399ad
+      - CollectPath: Assets/Samples/MainDemo/Dlls/AOTMetas
+        CollectorGUID: 3b692b16a88184c87910f52c72f90db0
         CollectorType: 0
         AddressRuleName: AddressByFileName
         PackRuleName: PackSeparately
         FilterRuleName: CollectAll
         AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MainDemo/Dlls/GameDlls
+        CollectorGUID: 4f3cc5974952b475db380e6d16dd5f65
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MainDemo/Dlls/RunningGameDlls
+        CollectorGUID: e7b0218395f1049e8a5be17250b2865c
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectAll
+        AssetTags: demo_runtime_hotupdate
         UserData: 
       - CollectPath: Assets/Samples/MainDemo/Prefabs/UIs
         CollectorGUID: 61ac0eee7a3cb4b789c406e0dabda371
@@ -84,5 +100,13 @@ MonoBehaviour:
         AddressRuleName: AddressByFileName
         PackRuleName: PackDirectory
         FilterRuleName: CollectAll
-        AssetTags:
-        UserData:
+        AssetTags: 
+        UserData: 
+      - CollectPath: Assets/Samples/MainDemo/Scenes/RuntimeHotUpdate/DemoRuntimeHotUpdateContent.unity
+        CollectorGUID: 0dd0de4ede18a482891bbbafe8a39b61
+        CollectorType: 0
+        AddressRuleName: AddressByFileName
+        PackRuleName: PackSeparately
+        FilterRuleName: CollectScene
+        AssetTags: demo_runtime_hotupdate
+        UserData: 

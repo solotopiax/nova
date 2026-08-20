@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-onboard-sdk-kit",
+  "kind": "workflow",
+  "compatibility": {
+    "framework": ">=0.6.15",
+    "unity": ">=6000.4"
+  },
+  "requires": [
+    "nova-project-manage-upm-package",
+    "nova-project-configure-runtime"
+  ],
+  "actionAdapters": [
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.upm.manage-latest)",
+      "when": "仅通过 nova-project-manage-upm-package 为一个精确的已配置 registry SDK/Kit 计划、确认并验证 install-latest 或 upgrade-latest 时"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "Packages/manifest.json + Packages/packages-lock.json + resolved SDK/Kit package/package.json + <resolved package>/Nova/{Doc,Docs,DOCS}/INDEX.md",
+      "when": "Resolve 稳定后确认精确包 id、版本、来源及其首个存在的包内文档入口；不能用主框架文档替代目标包文档"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.config.inspect-plugin-types|nova.project.config.ensure-plugin-instances|nova.project.config.validate-coordinate|nova.project.config.export-runtime)",
+      "when": "只对目标包文档定义的 SDK/Kit Config 类型和已确认 Platform Channel DevelopMode 坐标执行受控配置、导出与验证，不接受任意字段 JSON patch"
+    },
+    {
+      "kind": "unity-editor-api",
+      "entry": "target package INDEX-documented existing platform prerequisite or configuration entry",
+      "when": "目标包文档明确列出入口、精确项目写入集和目标平台，且用户已单独确认该平台前置变更时"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "Play Mode state inspection and target package INDEX-documented local initialization probe",
+      "when": "配置和编译完成、用户允许使用现有项目入口，且探针不要求安装应用、厂商后台写入或声称真机成功时"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "sdkOrKitPackageName",
+      "required": true
+    },
+    {
+      "name": "packageManagementIntent",
+      "required": true
+    },
+    {
+      "name": "resolvedPackageDocumentationEntry",
+      "required": true
+    },
+    {
+      "name": "configMaster",
+      "required": true
+    },
+    {
+      "name": "platformChannelDevelopMode",
+      "required": true
+    },
+    {
+      "name": "targetSdkOrKitConfigTypesAndDocumentedChangeSet",
+      "required": true
+    },
+    {
+      "name": "configRuntimeTarget",
+      "required": true
+    },
+    {
+      "name": "targetPlatformAndDocumentedPreconditions",
+      "required": true
+    },
+    {
+      "name": "documentedLocalRuntimeProbe",
+      "required": true
+    },
+    {
+      "name": "confirmedUpmPlanId",
+      "required": false
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "Packages/manifest.json and Packages/packages-lock.json changes produced only by the confirmed nova-project-manage-upm-package plan and Unity Package Manager Resolve",
+      "confirmed ConfigMasterSO, explicit EnabledSDKs or EnabledKits members, ConfigRuntimeSO target and resolved YooAssetSettings.asset changes delegated to nova-project-configure-runtime",
+      "target package INDEX-documented project-local platform prerequisite or configuration target only after its exact write set has separate user confirmation"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**, resolved SDK/Kit package contents or Library/PackageCache/** manual edits",
+      "arbitrary JSON, YAML, reflection or execute_code field patches",
+      "unconfirmed ConfigMaster coordinate, Config type, platform prerequisite, native project file, Sample, Scene, Prefab or business source",
+      "vendor dashboard, credential, store, CDN, external deployment, application install or device state changes",
+      "Bundle or Player build, Git commit or push"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "unity-package-manager",
+    "Packages/manifest.json",
+    "Packages/packages-lock.json",
+    "domain-reload",
+    "target-sdk-or-kit-package",
+    "target-package-documentation",
+    "config-master",
+    "config-runtime-target",
+    "target-platform-prerequisites",
+    "active-scene"
+  ],
+  "idempotency": "orchestrate",
+  "confirmation": {
+    "requiredFor": [
+      "the exact nova-project-manage-upm-package plan for install-latest or upgrade-latest",
+      "ambiguous package identity, source, package documentation entry, ConfigMaster, coordinate, Config type, field change, runtime target, platform prerequisite or local probe",
+      "any documented platform prerequisite that writes project configuration or native platform files",
+      "create or change SDK/Kit configuration, ConfigRuntimeSO, project platform settings or generated output",
+      "credential use, vendor dashboard operation, external write, application install, delete, Git commit or push"
+    ],
+    "rule": "Workflow 权限等于子 Operation 与目标包文档化平台入口的精确权限并集；每次确认只绑定唯一包、版本/来源、包内文档、三维坐标、Config 类型、写入集、平台前置和本地探针。包 Resolve、文档、坐标、字段、平台或写入集漂移后旧确认失效，且密钥值永不进入确认或报告。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "UPM Plan、用户确认、Resolve 后的精确 package id、版本与来源",
+    "目标已解析包的首个存在 Nova/Doc、Nova/Docs 或 Nova/DOCS INDEX，以及仅由该 INDEX 指向的配置和平台前置证据",
+    "单一 Platform Channel DevelopMode 的 ConfigMaster、目标 Config 类型、ConfigRuntimeSO 导出与 Unity 编译证据",
+    "目标包文档定义的最小本地初始化、注册、可用性或错误信号",
+    "已脱敏的平台前置结论、未验证外部条件，以及未声称厂商后台或真实设备成功的边界说明"
+  ]
+}

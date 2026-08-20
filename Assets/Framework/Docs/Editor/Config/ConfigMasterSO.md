@@ -7,14 +7,14 @@
 - `PlatformChannelEntry.AppConfigsByMode` → `AppConfigs`
 - `PlatformChannelEntry.PrivacyConfigsByMode` → `PrivacyConfigs`；使用独立 `PrivacyConfigsMask`
 - `Namespace` 与 `NamespaceOverrides` → `Namespace`
-- `HybridEditorConfigs.GameEntranceProcedureName / AotMetadataDlls / GameDlls` → 去除构建路径后生成 `HybridConfigs`
+- `HybridEditorConfigs.GameEntranceProcedureName / AotMetadataDlls / StartupGameDlls` → 去除构建路径后生成 `HybridConfigs`
 - Runtime SDK 与 Kit 配置矩阵
 - 顶层 `Custom` → 本地 JSONPath/string 默认值；云端完整 JSON 不受这些路径限制
 
 ## Editor-only 数据
 
 - `YooAssetEditorConfigs` 与 `YooAssetEditorConfigsOverrides`
-- `HybridEditorConfigs.LinkXmlTargetPath`、DLL 源/目标路径及对应 Overrides
+- `HybridEditorConfigs.RunningGameDlls`、`LinkXmlTargetPath`、DLL 源/目标路径及对应 Overrides
 - `CDNEditorConfigs` 与 `CDNEditorConfigsOverrides`
 - 各 Editor 面板维度掩码和当前编辑坐标
 

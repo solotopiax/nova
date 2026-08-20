@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova Player 构建前置检查"
+  short_description: "只读检查 Player 构建前的场景、配置、资源与 HybridCLR 条件"
+  default_prompt: "使用 $nova-project-preflight-build 检查当前 Nova 项目是否具备 Player 构建前置。"

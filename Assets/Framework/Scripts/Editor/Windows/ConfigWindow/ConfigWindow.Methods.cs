@@ -164,7 +164,7 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 场景切换回调（仅响应 Single 加载模式）；切换后重新从 WorkspaceActive 读取激活 Master，
-        /// 若 Master 发生变更则销毁旧 WorkingCopy、重建新 WorkingCopy 并重注入 YooAsset 配置。
+        /// 若 Master 发生变更则销毁旧 WorkingCopy、重建新 WorkingCopy。YooAsset 注入由 SceneRoute 统一完成。
         /// </summary>
         /// <param name="scene">新打开的场景。</param>
         /// <param name="mode">打开模式。</param>
@@ -182,7 +182,6 @@ namespace NovaFramework.Editor
                 RebuildWorkingCopy();
                 RefreshPluginCache();
                 EditorUtil.Config.StructureGuard.SyncEnumGrid(m_Master);
-                EditorUtil.Config.YooAssetInjector.Inject(m_Master);
             }
             m_IsDirty = false;
             Repaint();
@@ -208,9 +207,11 @@ namespace NovaFramework.Editor
         private void DestroyWorkingCopy()
         {
             m_HybridCLRAotMetadataDllsList = null;
-            m_HybridCLRGameDllsList = null;
+            m_HybridCLRStartupGameDllsList = null;
+            m_HybridCLRRunningGameDllsList = null;
             m_AotDllFoldouts.Clear();
-            m_GameDllFoldouts.Clear();
+            m_StartupGameDllFoldouts.Clear();
+            m_RunningGameDllFoldouts.Clear();
 
             if (m_MasterSO != null)
             {

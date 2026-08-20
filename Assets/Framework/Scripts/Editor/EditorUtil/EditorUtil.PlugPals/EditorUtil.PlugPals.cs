@@ -424,36 +424,7 @@ namespace NovaFramework.Editor
                     return;
                 }
 
-                if (manifest.dependencies != null)
-                {
-                    manifest.dependencies.Remove(entry.Name);
-
-                    // 兼容清理旧版 PlugPals 曾随主包写入顶层的、被声明 registry scope 覆盖的依赖。
-                    foreach (string declaredDepName in CollectDeclaredRegistryDependencies(entry).Keys)
-                    {
-                        manifest.dependencies.Remove(declaredDepName);
-                    }
-                }
-
-                CleanupScopedRegistry(manifest, registryUrl);
-
-                if (entry.Nova?.scopedRegistries != null)
-                {
-                    foreach (ScopedRegistry declared in entry.Nova.scopedRegistries)
-                    {
-                        if (declared == null || string.IsNullOrEmpty(declared.url))
-                        {
-                            continue;
-                        }
-
-                        if (registryUrlsNeededByOthers != null && registryUrlsNeededByOthers.Contains(declared.url))
-                        {
-                            continue;
-                        }
-
-                        RemoveDeclaredScopedRegistryByUrl(manifest, declared.url);
-                    }
-                }
+                ApplyUninstallManifestChanges(manifest, registryUrl, entry, registryUrlsNeededByOthers, true);
 
                 SaveManifest(manifestPath, manifest);
                 ResolvePackages();

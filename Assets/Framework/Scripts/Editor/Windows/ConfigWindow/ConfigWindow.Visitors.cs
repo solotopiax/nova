@@ -282,9 +282,14 @@ namespace NovaFramework.Editor
         private ReorderableList m_HybridCLRAotMetadataDllsList;
 
         /// <summary>
-        /// HybridCLR 面板：业务 DLL 列表的 ReorderableList 控件。
+        /// HybridCLR 面板：启动时业务 DLL 列表的 ReorderableList 控件。
         /// </summary>
-        private ReorderableList m_HybridCLRGameDllsList;
+        private ReorderableList m_HybridCLRStartupGameDllsList;
+
+        /// <summary>
+        /// HybridCLR 面板：运行时业务 DLL 列表的 ReorderableList 控件。
+        /// </summary>
+        private ReorderableList m_HybridCLRRunningGameDllsList;
 
         /// <summary>
         /// HybridCLR 面板：AOT 元数据 DLL 列表各条目的折叠状态（按 index，默认全部收缩）。
@@ -292,9 +297,14 @@ namespace NovaFramework.Editor
         private List<bool> m_AotDllFoldouts = new List<bool>();
 
         /// <summary>
-        /// HybridCLR 面板：业务 DLL 列表各条目的折叠状态（按 index，默认全部收缩）。
+        /// HybridCLR 面板：启动时业务 DLL 列表各条目的折叠状态（按 index，默认全部收缩）。
         /// </summary>
-        private List<bool> m_GameDllFoldouts = new List<bool>();
+        private List<bool> m_StartupGameDllFoldouts = new List<bool>();
+
+        /// <summary>
+        /// HybridCLR 面板：运行时业务 DLL 列表各条目的折叠状态（按 index，默认全部收缩）。
+        /// </summary>
+        private List<bool> m_RunningGameDllFoldouts = new List<bool>();
 
         /// <summary>
         /// 左侧树一级组枚举。

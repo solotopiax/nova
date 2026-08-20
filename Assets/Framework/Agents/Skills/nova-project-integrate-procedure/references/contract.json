@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-integrate-procedure",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.15",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-inspection",
+      "entry": "business asmdef and source ownership; ProcedureBase / ProcedureComponent / ProcedureLoadDll / IProcedureManager registration chain",
+      "when": "只读确认业务程序集、命名空间、热更 DLL 归属和既有自动发现/延迟注册链，不修改 Framework"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed business Procedure source, existing business call site and local Play probe",
+      "when": "只修改已冻结的业务 Procedure、必要的既有调用点与探针，并绑定 Procedure CancellationToken"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "Unity script refresh, compilation and Play Mode Procedure transition inspection",
+      "when": "等待编译后从冻结调用点验证注册、进入、离开、取消与下一状态；不改 Scene、Config 或 Nova Prefab"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "businessAssemblyNamespaceAndHotfixDllOwnership",
+      "required": true
+    },
+    {
+      "name": "targetProcedureTypesAndSourceFiles",
+      "required": true
+    },
+    {
+      "name": "enterAndLeaveResponsibilities",
+      "required": true
+    },
+    {
+      "name": "nextProcedureAndTransitionCondition",
+      "required": true
+    },
+    {
+      "name": "existingBusinessCallSite",
+      "required": true
+    },
+    {
+      "name": "asyncWorkAndCancellationExpectation",
+      "required": true
+    },
+    {
+      "name": "playRegistrationEnterLeaveCancelAndTransitionProbe",
+      "required": true
+    },
+    {
+      "name": "allowedWriteSet",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed business Procedure C# source in the frozen business assembly and namespace",
+      "confirmed existing business call site required to reach or leave the target Procedure",
+      "confirmed local C# Play probe used to observe enter, leave, cancellation and next-state transition"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "Assets/Framework/Scripts/Runtime/** built-in Procedure or registration implementation",
+      "ProcedureComponent, ProcedureLoadDll or a second Procedure registrar",
+      "entry Scene, ConfigMasterSO, ConfigRuntimeSO, Nova.prefab or serialized Unity YAML",
+      "business asmdef, namespace, DLL loading map or generated hotfix DLL unless separately and explicitly confirmed",
+      "unconfirmed Procedure, call site, lifecycle responsibility, next state or test probe",
+      "Bundle or Player output, device installation, CDN publication or unrelated business code"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "script-compilation",
+    "business-procedure-source-set",
+    "business-procedure-call-site",
+    "business-assembly-and-namespace",
+    "procedure-play-probe-session"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous project root, target Procedure, source file, assembly, namespace, hotfix DLL ownership, lifecycle responsibility, next state, transition condition, call site, cancellation expectation or Play probe",
+      "create or replace a business Procedure, change an existing business call site, public contract, enter/leave responsibility or next-state behavior",
+      "move a type, change assembly or namespace, alter asmdef/DLL mapping, create a new registration path, or modify entry Scene, Config, Nova Prefab or Framework",
+      "delete, build Bundle or Player, install to device, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认唯一业务程序集、命名空间、热更 DLL 归属、目标类型、进入/离开职责、下一状态与条件、既有调用点、异步取消预期、Play 探针和最小写入集；任一输入、运行坐标或范围变化后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "业务 asmdef/编译单元、命名空间、完整类型名与热更 DLL 归属的冻结记录",
+    "ProcedureBase、ProcedureComponent、ProcedureLoadDll 与 IProcedureManager 现有自动发现/延迟注册链的只读证据，且不存在第二注册器",
+    "Unity 编译无本次新增错误",
+    "Play Mode 中目标 Procedure 已注册并从冻结调用点进入的证据",
+    "Play Mode 中离开职责、Procedure CancellationToken 取消和异步副作用停止的证据",
+    "Play Mode 中跳转到精确下一 Procedure 的证据"
+  ]
+}

@@ -28,8 +28,8 @@ description: Use when 项目组要检查或配置 Nova 项目的启动场景、B
 
 | Input | 现有 Action Adapter | Artifact | Evidence |
 |---|---|---|
-| 已确认的入口场景与 Nova 托管范围 | Unity Editor / Unity MCP | 使用完整 canonical `Nova.prefab` 的已保存场景 | 连接实例与场景层级检查 |
-| 已确认的 Build Settings 变更 | Unity Editor / Unity MCP 的 Build Settings 操作 | 精确的启用场景及顺序 | Build Settings 差异 |
+| 已确认的入口场景与 Nova 托管范围 | Unity Editor 自动化通道 | 使用完整 canonical `Nova.prefab` 的已保存场景 | 连接实例与场景层级检查 |
+| 已确认的 Build Settings 变更 | Unity Editor 自动化通道 的 Build Settings 操作 | 精确的启用场景及顺序 | Build Settings 差异 |
 | 已确认的 Content 加载/卸载责任 | 当前项目已有启动/场景代码；YooAsset 场景使用 `Nova.Asset.LoadSceneAsync` 与 `ISceneHandle.UnloadAsync` | 显式的 Content 所有者与生命周期 | 代码与运行时加载/卸载证据 |
 | 目标场景与 BuildTarget | `EditorUtil.ProjectGuard.ValidateQuick`、`ValidatePlay` 或 `ValidateBuild(buildTarget)` | 与本次范围对应的 Guard 报告 | Rule ID、路径和严重性结果 |
 

@@ -89,8 +89,8 @@ namespace NovaFramework.Editor
         public PanelDimensionMask NamespaceMask = new();
 
         /// <summary>
-        /// HybridCLR 面板全部字段（AotMetadataDlls / GameDlls / LinkXmlTargetPath /
-        /// GameEntranceProcedureName）共用的维度掩码；全不勾时各字段使用顶层默认值。
+        /// HybridCLR 面板全部字段（AotMetadataDlls / StartupGameDlls / RunningGameDlls /
+        /// LinkXmlTargetPath / GameEntranceProcedureName）共用的维度掩码；全不勾时各字段使用顶层默认值。
         /// </summary>
         public PanelDimensionMask HybridEditorConfigsMask = new();
 
@@ -128,7 +128,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// HybridCLR 面板维度 Override 列表（仅 Editor 期消费）；列表为空时等同全不勾。
         /// DimensionalResolver 从列表中匹配首个符合条目后取对应字段值，
-        /// 无命中回退顶层 AotMetadataDlls / GameDlls / LinkXmlTargetPath / GameEntranceProcedureName。
+        /// 无命中回退顶层 AotMetadataDlls / StartupGameDlls / RunningGameDlls / LinkXmlTargetPath / GameEntranceProcedureName。
         /// </summary>
         public HybridEditorConfigs HybridEditorConfigs = new();
 
@@ -417,7 +417,8 @@ namespace NovaFramework.Editor
                     GameEntranceProcedureName = GameEntranceProcedureName,
                     LinkXmlTargetPath = LinkXmlTargetPath,
                     AotMetadataDlls = AotMetadataDlls == null ? new List<DllMasterAssetEntry>() : new List<DllMasterAssetEntry>(AotMetadataDlls),
-                    GameDlls = GameDlls == null ? new List<DllMasterAssetEntry>() : new List<DllMasterAssetEntry>(GameDlls),
+                    StartupGameDlls = GameDlls == null ? new List<DllMasterAssetEntry>() : new List<DllMasterAssetEntry>(GameDlls),
+                    RunningGameDlls = new List<DllMasterAssetEntry>(),
                 };
             }
 
@@ -504,7 +505,8 @@ namespace NovaFramework.Editor
         private static bool HasHybridValue(HybridEditorConfigs config)
         {
             return config != null &&
-                   (HasItems(config.AotMetadataDlls) || HasItems(config.GameDlls) ||
+                   (HasItems(config.AotMetadataDlls) || HasItems(config.StartupGameDlls) ||
+                    HasItems(config.RunningGameDlls) ||
                     !string.IsNullOrEmpty(config.LinkXmlTargetPath) ||
                     !string.IsNullOrEmpty(config.GameEntranceProcedureName));
         }

@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-integrate-content-scene",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-inspection",
+      "entry": "confirmed Content scene ownership, existing Collector/Package, default Package mapping, location, source call site and handle owner",
+      "when": "只读冻结资源化场景的解析前提；不改 Collector、Config、Scene 或 Build Settings"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed business Content-scene owner, existing call site and local Play probe",
+      "when": "只修改冻结的业务加载/卸载源码与局部探针，持有 ISceneHandle 并在精确结束时机仅调用一次 UnloadAsync"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Asset.LoadSceneAsync / ISceneHandle.UnloadAsync",
+      "when": "目标已确认是当前默认 Package 可解析的 Nova 资源化场景，且 mode、owner、取消语义与卸载时机已经冻结"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "Unity script refresh, compilation and Play Mode content-scene load/unload inspection",
+      "when": "仅观察冻结调用点的编译与运行证据；不编辑序列化 Scene、Prefab、Collector 或 Config"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "contentSceneAssetAndBusinessOwnership",
+      "required": true
+    },
+    {
+      "name": "targetPackageDefaultPackageMappingAndLocation",
+      "required": true
+    },
+    {
+      "name": "targetPlatformChannelAndDevelopMode",
+      "required": true
+    },
+    {
+      "name": "loadSceneMode",
+      "required": true
+    },
+    {
+      "name": "loadOwnerAndExistingCallSite",
+      "required": true
+    },
+    {
+      "name": "unloadTimingAndTrigger",
+      "required": true
+    },
+    {
+      "name": "cancellationAndFailureHandling",
+      "required": true
+    },
+    {
+      "name": "playLoadAndUnloadProbe",
+      "required": true
+    },
+    {
+      "name": "allowedWriteSet",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed business Content-scene owner source",
+      "confirmed existing business call site for the Content scene",
+      "confirmed local C# Play probe for the frozen load and unload lifecycle"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "BundleCollectorSetting, ConfigMasterSO, ConfigRuntimeSO or Package/default-Package mapping",
+      "entry Scene, Build Settings, Nova.prefab or serialized Unity YAML",
+      "normal non-scene resource or Prefab loading lifecycle",
+      "direct YooAsset scene API, Object.Destroy, SceneManager.UnloadSceneAsync, ordinary Release() or a discarded ISceneHandle",
+      "Bundle or Player output, cache cleanup, device installation, CDN publication or unrelated business code"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "script-compilation",
+    "business-content-scene-source-set",
+    "content-scene-owner-and-call-site",
+    "content-scene-play-probe-session"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous scene ownership, Package/default-Package mapping, location, mode, load owner, call site, unload timing, cancellation behavior, runtime coordinate, Play probe or allowed write set",
+      "create or change a business Content-scene owner, call site, transition behavior or public contract",
+      "change Collector, Package/default-Package mapping, Config, entry Scene, Build Settings, Nova Prefab or serialized Unity asset",
+      "delete or move a scene, build Bundle or Player, install to device, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认目标 Content 场景、资源化 Package/default-Package 映射、唯一 location、LoadSceneMode、唯一 Handle 所有者、卸载触发与时机、取消语义、运行坐标、Play 探针和最小写入集；任一输入或范围变化后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "Content 场景归属、现有 Collector/Package、默认 Package 映射与唯一 location 的冻结证据",
+    "LoadSceneMode、加载调用点、唯一 ISceneHandle 所有者、取消语义和卸载时机的冻结记录",
+    "业务源码只使用 Nova.Asset.LoadSceneAsync，并在 Handle 返回后由同一所有者恰好一次 UnloadAsync 的证据",
+    "Unity 编译无本次新增错误",
+    "当前项目实际运行坐标下的 Play Mode load、持有和 unload 完成证据，以及卸载后不再访问 Handle 的证据"
+  ]
+}

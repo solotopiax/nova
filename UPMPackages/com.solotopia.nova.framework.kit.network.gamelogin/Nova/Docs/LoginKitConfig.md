@@ -6,7 +6,9 @@
 **命名空间：** `NovaFramework.Kit.Network.GameLogin.Runtime`
 **类签名：** `[Serializable] public sealed class LoginKitConfig : IKitConfig`
 
-登录 Kit 固有配置，持有登录协议指令名（LoginCmdName）、账号删除协议指令名（DeleteCmdName）与绑定冲突二选一协议指令名（BindResolveCmdName），分别由 `Login.Async` / `Login.DeleteAsync` / `Login.BindResolveAsync` 在运行时通过 `Nova.Config.GetKitConfig<LoginKitConfig>()` 拉取。在 ConfigWindow「Kit 配置」面板中全局静态配置一次，业务侧无需感知。
+登录 Kit 固有配置，持有登录协议指令名（LoginCmdName）、账号删除协议指令名（DeleteCmdName）与绑定冲突二选一协议指令名（BindResolveCmdName），分别由 `Login.Async` / `Login.DeleteAsync` / `Login.BindResolveAsync` 在运行时通过 `Nova.Config.GetKitConfig<LoginKitConfig>()` 拉取。
+
+在 ConfigWindow「Kit 配置」面板中按 Platform×Channel×DevelopMode 坐标配置：实例存于 `PlatformChannelEntry.KitConfigsByMode`，`ConfigMasterSO.EnabledKits` 仅作类型白名单，Exporter 将当前格的已启用配置导出为单格 `ConfigRuntimeSO`；业务侧无需感知。
 
 > **序列化迁移说明：** `LoginCmdName` 对应的序列化字段 `m_LoginCmdName` 上标注了 `[FormerlySerializedAs("m_CmdName")]`，存量 .asset 中旧字段值（`m_CmdName`）在 Unity 域重载后自动迁移至 `m_LoginCmdName`，无需手动重填登录指令名。`DeleteCmdName` / `BindResolveCmdName` 为后续新增字段，存量 .asset 中初始为空，需在 ConfigWindow 补填后重导出。
 

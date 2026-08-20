@@ -9,14 +9,9 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.BundleBuilder.BuildAssetBundle(AssetBundleBuildArgs)",
-      "when": "直接按冻结参数执行一次 YooAsset ScriptableBuildPipeline 构建"
-    },
-    {
-      "kind": "pipify",
-      "entry": "bundlebuilder.build",
-      "when": "项目明确选择已有 Pipify Batch 作为本次本地 Bundle 构建入口"
+      "kind": "unity-editor-automation",
+      "entry": "registered actions nova.project.bundle.build-asset|nova.project.bundle.build-raw-file; nova_project_action exposure=blocked",
+      "when": "当前只能从 Framework 文档识别已实现 Action；MCP describe/plan/execute 均不可用，可信审批与 allowlist 完成前返回 blocked"
     }
   ],
   "inputs": [

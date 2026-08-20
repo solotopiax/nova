@@ -148,8 +148,8 @@ namespace NovaFramework.Runtime
                 CancellationToken.ThrowIfCancellationRequested();
 
                 // 3. 并行发起所有 AOT metadata 加载（IL2CPP 下生效，Editor no-op）。
-                // LoadMetadataForAOTAssembly 多次调用无顺序依赖，UniTask 调度仍在主线程，
-                // HashSet 写入由 LoadAotMetadataAsync 内部原子化守卫保护。
+                // LoadMetadataForAOTAssembly 多次调用无顺序依赖；同一程序集的并发请求
+                // 由 LoadAotMetadataAsync 内部共享进行中任务并等待同一结果。
                 // 注意：AOT metadata 必须在业务 DLL 之前全部加载完成。
                 IReadOnlyList<DllAssetEntry> aotList = configManager.HybridConfigs?.AotMetadataDlls
                     ?? (IReadOnlyList<DllAssetEntry>)Array.Empty<DllAssetEntry>();
@@ -167,7 +167,7 @@ namespace NovaFramework.Runtime
                 }
 
                 // 4. 加载业务 DLL（IL2CPP 下生效，Editor no-op）。
-                IReadOnlyList<DllAssetEntry> dllList = configManager.HybridConfigs?.GameDlls
+                IReadOnlyList<DllAssetEntry> dllList = configManager.HybridConfigs?.StartupGameDlls
                     ?? (IReadOnlyList<DllAssetEntry>)Array.Empty<DllAssetEntry>();
                 int dllCount = dllList != null ? dllList.Count : 0;
                 for (int i = 0; i < dllCount; i++)
@@ -191,7 +191,7 @@ namespace NovaFramework.Runtime
                 if (businessAsm == null)
                 {
                     throw new InvalidOperationException(
-                        Txt.Format("[ProcedureLoadDll] 业务程序集 '{0}' 未加载，请检查 ConfigRuntimeSO.HybridConfigs.GameDlls 配置。", businessAssemblyName));
+                        Txt.Format("[ProcedureLoadDll] 业务程序集 '{0}' 未加载，请检查 ConfigRuntimeSO.HybridConfigs.StartupGameDlls 配置。", businessAssemblyName));
                 }
 
                 Type[] procTypes = businessAsm.GetTypes()

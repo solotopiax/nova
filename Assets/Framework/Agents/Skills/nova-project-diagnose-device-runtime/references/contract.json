@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-diagnose-device-runtime",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.15",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "cli",
+      "entry": "python3 \"<resolved Framework package>/Agents/Tools/nova_skills.py\" resolve --project-root <projectRoot>",
+      "when": "macOS/Linux 已解析到 Python 3.9+，且需要确认消费项目实际解析到的 Framework 与随包 Docs 时"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 \"<resolved Framework package>/Agents/Tools/nova_skills.py\" resolve --project-root <projectRoot>",
+      "when": "Windows 已解析到 Python 3.9+，且需要确认消费项目实际解析到的 Framework 与随包 Docs 时"
+    },
+    {
+      "kind": "cli",
+      "entry": "adb devices -l; adb -s <deviceSerial> shell getprop; adb -s <deviceSerial> shell dumpsys package <bundleIdentifier>; adb -s <deviceSerial> shell pidof <bundleIdentifier>; adb -s <deviceSerial> logcat -d -v threadtime -T <windowStart>",
+      "when": "Android serial、Bundle ID、带时区的时间窗和脱敏规则均已冻结，且每条命令在当前 host 上只读可用时"
+    },
+    {
+      "kind": "cli",
+      "entry": "xcrun devicectl list devices; xcrun devicectl device info apps --device <udid>; xcrun devicectl device info processes --device <udid>; xcrun devicectl device log stream --device <udid>",
+      "when": "iOS UDID、Bundle ID、带时区的时间窗和脱敏规则均已冻结；仅在当前 Xcode 支持且 log stream 能可靠限制时间窗时使用"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "existing Unity Editor.log, Player.log, Console, redacted time-bounded Xcode or device-log export, and resolved target package Nova/{Doc,Docs,DOCS}/INDEX.md",
+      "when": "关联已冻结症状的现有日志与包内文档，只读取、不新建导出文件、不修改项目"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "devicePlatform",
+      "required": true
+    },
+    {
+      "name": "deviceSerialOrUdid",
+      "required": true
+    },
+    {
+      "name": "bundleIdentifier",
+      "required": true
+    },
+    {
+      "name": "timeWindowWithTimezone",
+      "required": true
+    },
+    {
+      "name": "runtimeSymptomAndReproductionEntry",
+      "required": true
+    },
+    {
+      "name": "allowedLogSources",
+      "required": true
+    },
+    {
+      "name": "redactionRules",
+      "required": true
+    },
+    {
+      "name": "targetSdkOrKitPackageIfKnown",
+      "required": false
+    }
+  ],
+  "effects": [
+    "read"
+  ],
+  "writeScope": {
+    "allow": [],
+    "deny": [
+      "all project source, configuration, Scene, Prefab, Build Settings, generated output and package contents",
+      "Unity launch, shutdown, compile, Play Mode or asset database changes",
+      "device application install, uninstall, launch, stop, clear-data, package mutation, sandbox access, certificate installation, settings change, adb forwarding or reverse forwarding",
+      "adb logcat clear, unbounded log capture, new raw-log export or local diagnostic artifact creation",
+      "vendor dashboard, external service, credential use, Git commit or push"
+    ]
+  },
+  "locks": [
+    "target-device-session",
+    "target-device-log-source",
+    "redaction-policy"
+  ],
+  "idempotency": "read-only",
+  "confirmation": {
+    "requiredFor": [
+      "accessing a connected Android or iOS device, device-specific log source or external Xcode / Console export",
+      "a device serial or UDID, Bundle ID, time window, log source or redaction-rule change",
+      "starting any bounded iOS log stream",
+      "any operation that would install, clear data, launch an application, modify a device, write a project file, create an artifact, use credentials, delete, commit or push"
+    ],
+    "rule": "确认只允许读取已冻结单设备、Bundle ID、时间窗和日志源，并在输出前按冻结规则脱敏；它不授权启动应用、改变设备状态、写入本地文件或修复工程。任一目标、时间窗、来源或脱敏规则变化后重新确认。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "已脱敏的冻结平台、设备身份、Bundle ID、时间窗、日志来源与复现上下文",
+    "只读设备/包事实和时间窗内最早直接的已脱敏日志位置、异常或平台错误码",
+    "仅在命中时读取的目标 SDK/Kit 已解析包与 Nova/Doc、Nova/Docs 或 Nova/DOCS INDEX 语义",
+    "客户端事实、根因假设、未验证项与不声称厂商后台或真实设备功能成功的边界说明"
+  ]
+}

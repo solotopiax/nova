@@ -10,7 +10,7 @@
 | 类型 | 说明 | 文档 |
 |---|---|---|
 | `Login` | 登录业务 Service（Async / DeleteAsync / Clear / UID 属性） | [Login.md](./Login.md) |
-| `LoginKitConfig` | 登录 Kit 固有配置（LoginCmdName / DeleteCmdName），在 ConfigWindow 一次配置后 Login 内部自动取用 | [LoginKitConfig.md](./LoginKitConfig.md) |
+| `LoginKitConfig` | 登录 Kit 固有配置（LoginCmdName / DeleteCmdName），按 Platform×Channel×DevelopMode 配置后由当前单格 ConfigRuntimeSO 供 Login 内部自动取用 | [LoginKitConfig.md](./LoginKitConfig.md) |
 | `LoginErrorCode` | 登录业务错误码（服务端段 10000~10499 + 客户端段 7000~7999 预留） | [LoginErrorCode.md](./LoginErrorCode.md) |
 
 > 账号绑定（含冲突二选一）由独立的 `com.solotopia.nova.framework.kit.network.gamebind` 模块负责，登录与绑定职责分离。

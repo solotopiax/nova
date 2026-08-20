@@ -31,6 +31,14 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: "{\n  \"Platform\": 1,\n  \"Channel\": 2,\n  \"DevelopMode\":
         0\n}"
+    - m_StepId: export.network.hostkey.code
+      m_ParamsJson: 
+    - m_StepId: export.network.hostkey.data
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.code
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.data
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
@@ -62,6 +70,14 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: "{\n  \"Platform\": 2,\n  \"Channel\": 3,\n  \"DevelopMode\":
         0\n}"
+    - m_StepId: export.network.hostkey.code
+      m_ParamsJson: 
+    - m_StepId: export.network.hostkey.data
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.code
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.data
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 9,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
@@ -92,6 +108,14 @@ MonoBehaviour:
       m_ParamsJson: 
     - m_StepId: export.config
       m_ParamsJson: 
+    - m_StepId: export.network.hostkey.code
+      m_ParamsJson: 
+    - m_StepId: export.network.hostkey.data
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.code
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.data
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
@@ -109,6 +133,14 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: "{\n  \"Platform\": 1,\n  \"Channel\": 2,\n  \"DevelopMode\":
         0\n}"
+    - m_StepId: export.network.hostkey.code
+      m_ParamsJson: 
+    - m_StepId: export.network.hostkey.data
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.code
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.data
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
@@ -134,6 +166,14 @@ MonoBehaviour:
     - m_StepId: export.config
       m_ParamsJson: "{\n  \"Platform\": 1,\n  \"Channel\": 2,\n  \"DevelopMode\":
         0\n}"
+    - m_StepId: export.network.hostkey.code
+      m_ParamsJson: 
+    - m_StepId: export.network.hostkey.data
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.code
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.data
+      m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: '{"Target":13,"PackageName":"Default","BuildVersion":"","ClearBuildCache":false,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":0,"BundledCopyParams":""}'
     - m_StepId: cdn.deploy
@@ -148,6 +188,14 @@ MonoBehaviour:
     m_Description: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Items:
     - m_StepId: export.config
+      m_ParamsJson: 
+    - m_StepId: export.network.hostkey.code
+      m_ParamsJson: 
+    - m_StepId: export.network.hostkey.data
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.code
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.data
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":

@@ -9,8 +9,8 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "unity-mcp",
-      "entry": "Unity MCP business asset and BundleCollectorSetting editing",
+      "kind": "unity-editor-automation",
+      "entry": "Unity Editor 自动化通道 business asset and BundleCollectorSetting editing",
       "when": "更新已确认的资源资产、Collector 成员或序列化引用"
     },
     {
@@ -27,11 +27,6 @@
       "kind": "csharp-api",
       "entry": "Nova.Prefab.Instantiate* / Nova.Prefab.Destroy",
       "when": "资源是需要统一实例回收链的 Prefab"
-    },
-    {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.BundleBuilder.BuildAssetBundle",
-      "when": "本次确需构建已确认的单一 Package"
     }
   ],
   "inputs": [
@@ -69,8 +64,7 @@
     "allow": [
       "confirmed business resource asset",
       "confirmed BundleCollectorSetting membership and address",
-      "confirmed business consumer source and lifecycle ownership",
-      "selected Package local build output when explicitly requested"
+      "confirmed business consumer source and lifecycle ownership"
     ],
     "deny": [
       "Packages/com.solotopia.nova.framework/**",
@@ -78,6 +72,7 @@
       "handwritten Unity asset, Prefab or Scene YAML",
       "unconfirmed Collector or ConfigMaster",
       "third-party plugin resources",
+      "direct BundleBuilder invocation or Package build output; route these to nova-project-build-bundles",
       "unrelated Package output, cache cleanup, CDN deployment or Player build"
     ]
   },
@@ -85,7 +80,7 @@
     "unity-editor",
     "asset-database",
     "bundle-collector",
-    "selected-package-output"
+    "business-resource-consumer"
   ],
   "idempotency": "ensure-state",
   "confirmation": {
@@ -107,7 +102,7 @@
   "evidence": [
     "资源所有权、Collector、Package 和地址证据",
     "Handle 的持有与 Release 或场景 UnloadAsync 责任",
-    "选定 Package 的 BuildResult（如本次构建）",
+    "如需构建，由 nova-project-build-bundles 独立返回的 BuildResult",
     "当前 PlayMode 下的最小加载与释放证据"
   ]
 }

@@ -38,19 +38,19 @@ DemoNavTreeView（树形导航主菜单）
 │   ├─ 2.15 DemoSDKView
 │   ├─ 2.16 DemoDebugView
 │   └─ 2.17 DemoNativeView
-├─ 3.HybridCLR 运行时热更新（3 个叶子）
+├─ 3.HybridCLR 热更新解决方案（4 个叶子）
 │   ├─ 3.1 DemoHybridClrAotMetadataView
 │   ├─ 3.2 DemoHybridClrGameDllView
-│   └─ 3.3 DemoHybridClrProcedureRegisterView
-└─ 4.Integration 跨模块联动（5 个叶子）
+│   ├─ 3.3 DemoHybridClrProcedureRegisterView
+│   └─ 3.4 DemoHybridClrRuntimeUpdateView
+└─ 4.Integration 跨模块联动（4 个叶子）
     ├─ 4.1 DemoIntegrationUiLocalizationView
     ├─ 4.2 DemoIntegrationUiAssetView
-    ├─ 4.3 DemoIntegrationProcedureAssetView
-    ├─ 4.4 DemoIntegrationEventNetworkView
-    └─ 4.5 DemoIntegrationConfigHybridClrView
+    ├─ 4.3 DemoIntegrationEventNetworkView
+    └─ 4.4 DemoIntegrationConfigHybridClrView
 ```
 
-共 34 个演示子页面，均继承 `BaseDemoView`（三段式：标题栏 + 交互区 + 反馈区），通过 `Nova.UI.OpenUIViewAsync<T>()` 打开，`PauseCoveredUIView=false` 保持导航菜单始终可见。
+共 34 个演示子页面，均继承 `BaseDemoView`（三段式：标题栏 + 交互区 + 反馈区），通过 `Nova.UI.OpenUIViewAsync<T>()` 打开，`PauseCoveredUIView=false` 保持导航菜单始终可见。3.4 固定使用启动阶段选定的 Manifest，仅下载该 Manifest 内带 `demo_runtime_hotupdate` 标签的内容，再依次加载 Running DLL、业务入口和增量场景。
 
 另有 2 个辅助子页面（不计入树形导航 34 叶）：
 - `DemoToastView`：DemoUIView / DemoIntegrationUiLocalizationView / DemoIntegrationUiAssetView 内部 spawn 的轻量子页面。

@@ -39,7 +39,7 @@ MonoBehaviour:
     - m_AssetLocation: Unity.TextMeshPro.dll
     - m_AssetLocation: NovaFramework.Runtime.dll
     - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_AssetLocation: NovaFramework.Samples.Runtime.dll
   Custom:
     Entries:

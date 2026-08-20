@@ -142,7 +142,7 @@ ProjectSettings/AndroidResolverDependencies.xml
 !/[Aa]ssets/[Ss]amples/*/[Dd]lls/.gitkeep
 
 # Assets/Plugins（根）仅存放自动生成内容：Unity 模板选项勾选 / EDM resolve 刷新的 gradle 模板与
-# proguard、unity-mcp 生成的 Roslyn 库、Firebase 构建产物等，均无需人为维护，整目录不入库。
+# proguard、当前启用的 Editor MCP Provider 生成的 Roslyn 库、Firebase 构建产物等，均无需人为维护，整目录不入库。
 # 注：仅匹配根 Assets/Plugins/，不影响 Assets/Samples/**/Plugins 与 UPMPackages/**/Plugins。
 # 与 Assets/StreamingAssets / Resources / GeneratedLocalRepo 同例，连同文件夹元数据一并忽略
 # （全自动生成目录，保留 .meta 在干净 clone 上会变孤儿 meta 被 Unity 删除，制造无谓 diff）。

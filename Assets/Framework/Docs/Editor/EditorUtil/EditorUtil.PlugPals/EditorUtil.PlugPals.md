@@ -21,7 +21,8 @@
 | `EditorUtil.PlugPals.cs` | `partial EditorUtil.PlugPals` | 公有接口：所有 public static 方法 |
 | `EditorUtil.PlugPals.Visitors.cs` | `partial EditorUtil.PlugPals` | 常量声明：`s_HttpClient`、`c_ManifestRelativePath`、`c_ChangelogCacheRelDir`、`c_TarballCacheRelDir`、`c_ChangelogTarEntry` |
 | `EditorUtil.PlugPals.Methods.cs` | `partial EditorUtil.PlugPals` | 私有方法：`ResolveEntryVersion`、`GetCachedPackageVersion`、`IsNonRegistryReference`、`RunTarExtract`、`ExtractScope`、`EnsureScopedRegistry`、`CleanupScopedRegistry` |
-| `EditorUtil.PlugPals.Definitions.cs` | `partial EditorUtil.PlugPals` | 嵌套类型：`PackageCategory`、`PackageStatus`、`VerdaccioPackageInfo`、`PackageDisplayEntry`、`PackageJsonData`、`NovaPackageMetadata`、`RequiredLibraryGuide`、`MissingRequiredLibraryInfo`、`ManifestData`、`ScopedRegistry`、`LocalPackageJson`、`PackagesLockData`、`PackagesLockEntry` |
+| `EditorUtil.PlugPals.Definitions.cs` | `partial EditorUtil.PlugPals` | 包、registry、manifest 与 packages-lock 数据模型 |
+| `EditorUtil.PlugPals.AgentOperations.cs` | `partial EditorUtil.PlugPals` | 消费项目 Agent 的单包 `Plan -> Confirm -> Execute -> Verify` Adapter |
 | `EditorUtil.PlugPals.RequiredLibraries.cs` | `partial EditorUtil.PlugPals` | 安装前依赖预检查（`CheckDependencies`）：遍历目标包 `dependencies`，判定 registry 命中与缺失库，缺失时打开 `PlugPalsMissingRequiredLibrariesWindow` 引导并中止安装 |
 
 ---
@@ -93,18 +94,38 @@ public static void SaveManifest(string manifestPath, ManifestData manifest)
 /// <summary>
 /// 安装指定包到 manifest.json 并触发 UPM 解析；安装前执行 CheckDependencies 做依赖预检（零额外联网），缺失库时中止并弹引导窗口。
 /// </summary>
-public static bool InstallPackage(string manifestPath, string registryUrl, string registryName, PackageDisplayEntry entry)
+public static bool InstallPackage(string manifestPath, string registryUrl, string registryName, PackageDisplayEntry entry, IReadOnlyDictionary<string, RegistrySource> knownRegistryPackages)
 
 /// <summary>
 /// 从 manifest.json 中卸载指定包并触发 UPM 解析。
 /// </summary>
-public static void UninstallPackage(string manifestPath, string registryUrl, PackageDisplayEntry entry)
+public static void UninstallPackage(string manifestPath, string registryUrl, PackageDisplayEntry entry, ISet<string> registryUrlsNeededByOthers)
 
 /// <summary>
 /// 延迟触发 UPM 包解析，优先使用 Client.Resolve（Unity 2020.1+），不可用时回退 AssetDatabase.Refresh。
 /// </summary>
 public static void ResolvePackages()
 ```
+
+### Agent 单包 Adapter
+
+消费端 Skill 的稳定入口是 C# Project Action `nova.project.upm.manage-latest`，由 `EditorUtil.AgentActions` 提供统一 Registry、一次性计划、确认令牌、资源锁与结果协议；该 Handler 复用以下 PlugPals 领域实现，不复制 UPM 业务逻辑。
+
+```csharp
+public static Task<ProjectPackageOperationPlan> PlanProjectPackageOperationAsync(
+    ProjectPackageOperationRequest request,
+    CancellationToken token)
+
+public static Task<ProjectPackageOperationResult> ExecutePlannedProjectPackageOperationAsync(
+    string planId,
+    bool confirmed,
+    CancellationToken token)
+
+public static ProjectPackageOperationResult VerifyProjectPackageOperation(
+    ProjectPackageOperationReceipt receipt)
+```
+
+该入口只支持 `install-latest`、`upgrade-latest` 与 `uninstall`，不接受指定版本、降级、任意 registry、来源切换或 Framework 自身。Plan 必须完整读取全部已配置 registry，任一来源失败都会阻断，避免在来源或依赖信息不完整时写项目；Execute 仅消费一次已确认且未漂移的计划，写入 manifest 并排队 Resolve 后返回 `partial`；只有 Verify 在 Unity 包更新与 domain reload 稳定后核对 manifest、packages-lock 的精确版本与 registry URL，才返回 `success`。卸载前会遍历 packages-lock 的依赖图阻止仍有消费者的目标，并使用当前已安装包元数据判断共享 registry。
 
 ### 版本比较
 

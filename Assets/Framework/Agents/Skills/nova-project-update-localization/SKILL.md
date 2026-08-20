@@ -17,7 +17,7 @@ description: Use when 项目组要定向更新已有 Nova 本地化文本、字�
 
 - 仅通过已确认、可复现的项目数据源编辑入口修改指定的文本或字体源；没有这类入口时返回 `blocked`，不得自行重建 `.xlsx`、更换表结构或新造导出管线。
 - 增删 Key、语言列、字体 Mark、支持语言、数据格式、回退规则或输出路径都需要新的确认。值的定向改动不默认升级为全量语言或全项目扫描。
-- 只更新已确认的 `TextLocalizing` / TMP 绑定。所有 Prefab、Scene、组件和序列化引用写入必须经 Unity Editor / Unity MCP；不得手写 YAML，也不得调用全工程的“修复缺失 TextLocalizing”作为默认动作。
+- 只更新已确认的 `TextLocalizing` / TMP 绑定。所有 Prefab、Scene、组件和序列化引用写入必须经 Unity Editor 自动化通道；不得手写 YAML，也不得调用全工程的“修复缺失 TextLocalizing”作为默认动作。
 
 ## Input → Action Adapter → Artifact → Evidence
 
@@ -25,7 +25,7 @@ description: Use when 项目组要定向更新已有 Nova 本地化文本、字�
 |---|---|---|---|
 | 已冻结的文本、字体源与单元设置 | 项目现有的已确认数据源编辑入口；LocalizationComponent Inspector 用于设置与路径 | 指定源数据与 LocalizationSettings 配置 | 变更仅覆盖确认的 Key、语言、Font Mark 与路径 |
 | 文本、语言列表或字体的导出范围 | 文本使用 `EditorUtil.Localization.TextExporter.ExportTextData` / `ExportTextCode` / `ExportTextAll`；字体使用 `FontExporter.ExportFontData` / `ExportFontCode` / `ExportFontAll`；复用既有 Batch 时用对应 `export.localization.*` Step | 选定的文本、字体、类型和支持语言正式产物 | Exporter 的暂存发布成功；不手改生成物 |
-| 已确认的既有 UI 绑定与验证语言 | Unity Editor / Unity MCP 更新 `TextLocalizing`；运行时经 `Nova.Localization.SetLanguageSync()` 或 `SetLanguageAsync()` 切换 | 正确 Key / FontMark 绑定的 TMP 显示 | Unity 编译通过，Play Mode 下两种语言都显示目标文本；启用字体适配时字体也匹配 |
+| 已确认的既有 UI 绑定与验证语言 | Unity Editor 自动化通道 更新 `TextLocalizing`；运行时经 `Nova.Localization.SetLanguageSync()` 或 `SetLanguageAsync()` 切换 | 正确 Key / FontMark 绑定的 TMP 显示 | Unity 编译通过，Play Mode 下两种语言都显示目标文本；启用字体适配时字体也匹配 |
 
 文本仅改值且语言集合、类型和 Key 结构未变时，只导出所需数据；新增 Key、语言或类型输出变化时才调用对应完整导出。完整文本导出会同时处理支持语言列表；不要把单独的语言列表 Step 当成文本更新的默认替代。
 

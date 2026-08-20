@@ -48,7 +48,11 @@ namespace NovaFramework.Editor
                 try
                 {
                     Log.Debug(LogTag.Editor, "[AndroidResolver] 开始执行 Android 依赖解析（forceResolution=true）...");
-                    method.Invoke(null, new object[] { true });
+                    object invocationResult = method.Invoke(null, new object[] { true });
+                    if (!(invocationResult is bool succeeded) || !succeeded)
+                    {
+                        throw new InvalidOperationException("[AndroidResolver] ResolveSync 已返回失败，依赖状态和生成目录不能视为有效结果。");
+                    }
                     Log.Debug(LogTag.Editor, "[AndroidResolver] Android 依赖解析完成。");
                 }
                 catch (TargetInvocationException tie)

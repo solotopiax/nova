@@ -12,7 +12,6 @@
  ***************************************************************/
 
 using NovaFramework.Runtime;
-using NovaFramework.Runtime;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

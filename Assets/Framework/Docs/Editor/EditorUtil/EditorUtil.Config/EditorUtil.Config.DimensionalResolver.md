@@ -40,7 +40,8 @@ EditorUtil (public static partial class)
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `AotMetadataDlls` | `List<DllMasterAssetEntry>` | AOT 元数据 DLL 列表深拷贝；禁共享引用 |
-| `GameDlls` | `List<DllMasterAssetEntry>` | 业务 DLL 列表深拷贝；禁共享引用 |
+| `StartupGameDlls` | `List<DllMasterAssetEntry>` | 启动时 DLL 列表深拷贝；禁共享引用 |
+| `RunningGameDlls` | `List<DllMasterAssetEntry>` | 运行时 DLL 列表深拷贝；仅供 Editor 使用 |
 | `LinkXmlTargetPath` | `string` | link.xml 目标路径 |
 | `GameEntranceProcedureName` | `string` | 业务入口 Procedure 相对类型名 |
 
@@ -68,7 +69,7 @@ public static string ResolveNamespace(
 // 解析 HybridCLR 面板四字段最终生效值（仅 #if UNITY_EDITOR）
 // IsGlobal → 取顶层各默认字段；否则遍历 HybridEditorConfigsOverrides 找首个匹配条目
 // 命中后使用整份 Override，空字符串和空列表均为有效值；无命中才回落顶层字段
-// AotMetadataDlls / GameDlls 返回深拷贝列表；master 为 null → 各字段返回空值
+// 三个 DLL 列表均返回深拷贝；master 为 null → 各字段返回空值
 public static HybridCLRResult ResolveHybridCLR(
     ConfigMasterSO master,
     PlatformType curP,

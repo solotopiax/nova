@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEngine.Serialization;
 
 namespace NovaFramework.Editor
 {
@@ -20,7 +21,18 @@ namespace NovaFramework.Editor
     public class HybridEditorConfigs
     {
         public List<DllMasterAssetEntry> AotMetadataDlls = new();
-        public List<DllMasterAssetEntry> GameDlls = new();
+
+        /// <summary>
+        /// 启动阶段自动加载的业务 DLL；该列表会导出到 ConfigRuntimeSO。
+        /// </summary>
+        [FormerlySerializedAs("GameDlls")]
+        public List<DllMasterAssetEntry> StartupGameDlls = new();
+
+        /// <summary>
+        /// 游戏运行过程中按需加载的业务 DLL；仅供 Editor 编译产物映射、复制与校验。
+        /// </summary>
+        public List<DllMasterAssetEntry> RunningGameDlls = new();
+
         public string LinkXmlTargetPath;
         public string GameEntranceProcedureName;
     }

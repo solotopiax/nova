@@ -1,5 +1,4 @@
 interface:
   display_name: "Nova 配置运行时快照"
-  short_description: "配置单一三维坐标并导出验证对应 ConfigRuntimeSO 快照"
-  default_prompt: "使用 $nova-project-configure-runtime 配置当前 Nova 项目的指定平台、渠道和开发模式，并导出运行时配置。"
-
+  short_description: "配置单一三维坐标及已安装 SDK/Kit 运行时快照"
+  default_prompt: "使用 $nova-project-configure-runtime 在单一三维坐标配置已安装 Nova SDK/Kit 并导出运行时快照。"

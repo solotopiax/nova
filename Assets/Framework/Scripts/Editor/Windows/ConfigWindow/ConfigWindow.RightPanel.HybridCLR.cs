@@ -20,8 +20,8 @@ namespace NovaFramework.Editor
     internal sealed partial class ConfigWindow : EditorWindow
     {
         /// <summary>
-        /// 绘制 HybridCLR 配置面板（业务入口 Procedure / AOT 元数据 DLL / 业务 DLL 三个 section）。
-        /// 整个 HybridCLR 面板（AotMetadataDlls/GameDlls/LinkXmlTargetPath/GameEntranceProcedureName）共用一套 HybridEditorConfigsMask（同进同退）。
+        /// 绘制 HybridCLR 配置面板（业务入口 Procedure / AOT 元数据 DLL / 两类业务 DLL / link.xml）。
+        /// 整个面板共用一套 HybridEditorConfigsMask（同进同退）。
         /// </summary>
         private void DrawHybridCLRPanel()
         {
@@ -35,15 +35,17 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Space(8f);
             DrawHybridCLRAotMetadataSection();
             EditorUtil.Draw.Space(8f);
-            DrawHybridCLRGameDllSection();
+            DrawHybridCLRStartupGameDllSection();
+            EditorUtil.Draw.Space(8f);
+            DrawHybridCLRRunningGameDllSection();
             EditorUtil.Draw.Space(8f);
             DrawHybridCLRLinkXmlSection();
 
             m_MasterSO.ApplyModifiedProperties();
             // 修复 4：移除每帧无条件 BroadcastWithinGroup。
-            // 全部四个字段（GameEntranceProcedureName / LinkXmlTargetPath / AotMetadataDlls / GameDlls）写入时
+            // 全部字段写入时
             // 均经 EnsureHybridEditorConfigsOverride(AtCoord/IndexAtCoord) 裁剪坐标，一条 clipped 条目覆盖整组（靠 MatchesMask），
-            // 无需每帧广播同步。每帧调用会触发 ResolveHybridCLR 深拷贝两个 List<DllMasterAssetEntry>，造成不必要的 GC 分配。
+            // 无需每帧广播同步。每帧调用会触发 ResolveHybridCLR 深拷贝 DLL 列表，造成不必要的 GC 分配。
             EditorUtil.Draw.Space(16f);
         }
 
@@ -170,7 +172,7 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Space(32f);
                 EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                 {
-                    "(1) AOT DLL 按序加载以支持 HybridCLR 泛型共享",
+                    "(1) AOT Metadata DLL 会在启动阶段并行加载，并在业务 DLL 加载前全部完成",
                     "(2) 源位置 / 目标位置为项目根相对的具体文件路径（含文件名与扩展名，如 .dll / .dll.bytes），所见即所得",
                     "(3) Asset 地址为运行期 Asset 模块加载地址",
                     "(4) 路径支持占位符 {ActiveBuildTarget}，自动替换为当前激活构建平台（如 Android / iOS / WebGL）",
@@ -185,14 +187,14 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制"业务 DLL 列表"section。
+        /// 绘制"启动时 DLL 列表"section。
         /// </summary>
-        private void DrawHybridCLRGameDllSection()
+        private void DrawHybridCLRStartupGameDllSection()
         {
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.Label("业务 DLL 列表", m_SectionTitleStyle, false);
+                EditorUtil.Draw.Label("启动时 DLL 列表", m_SectionTitleStyle, false);
                 EditorUtil.Draw.Space(16f);
             });
             EditorUtil.Draw.Space(4f);
@@ -200,27 +202,27 @@ namespace NovaFramework.Editor
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
             EditorUtil.Config.DimensionProjector.Coord curCoord = new(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
             // 按当前坐标 + HybridEditorConfigsMask 解析目标 SerializedProperty：IsGlobal 回落顶层；mask 非全局时进入坐标即建份（含顶层快照），list 绑 Override 内嵌列表。
-            SerializedProperty gameProp = ResolveHybridCLRDllListProp(workingSrc, curCoord, "GameDlls");
+            SerializedProperty gameProp = ResolveHybridCLRDllListProp(workingSrc, curCoord, "StartupGameDlls");
             if (gameProp == null)
             {
                 EditorUtil.Draw.Layout.Horizontal(() =>
                 {
                     EditorUtil.Draw.Space(16f);
-                    EditorUtil.Draw.HelpBox(MessageType.Warning, new[] { "未找到 GameDlls 字段，请检查 ConfigMasterSO 结构。" }, false, GUILayout.ExpandWidth(true));
+                    EditorUtil.Draw.HelpBox(MessageType.Warning, new[] { "未找到 StartupGameDlls 字段，请检查 ConfigMasterSO 结构。" }, false, GUILayout.ExpandWidth(true));
                     EditorUtil.Draw.Space(16f);
                 });
                 EditorUtil.Draw.Space(2f);
                 return;
             }
 
-            EnsureHybridCLRGameDllsList(workingSrc, curCoord, gameProp);
+            EnsureHybridCLRStartupGameDllsList(workingSrc, curCoord, gameProp);
             // 用 Horizontal + Space(32f) + Vertical 包裹，使 ReorderableList 整体缩进 32f 对齐其他子条目；右侧 Space(16f) 与面板边距对称。
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(32f);
                 EditorUtil.Draw.Layout.Vertical(() =>
                 {
-                    m_HybridCLRGameDllsList.DoLayoutList();
+                    m_HybridCLRStartupGameDllsList.DoLayoutList();
                 });
                 EditorUtil.Draw.Space(16f);
             });
@@ -230,14 +232,62 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Space(32f);
                 EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                 {
-                    "(1) 业务 DLL 按序加载后注册程序集",
-                    "(2) 源位置 / 目标位置为项目根相对的具体文件路径（含文件名与扩展名，如 .dll / .dll.bytes），所见即所得",
-                    "(3) Asset 地址为运行期 Asset 模块加载地址",
-                    "(4) 路径支持占位符 {ActiveBuildTarget}，自动替换为当前激活构建平台（如 Android / iOS / WebGL）",
-                    "(5) 选择按钮仅定位到目标目录，回填后请手动追加文件名",
-                    "(6) 热更红线：列表新增的 dll 字节必须同步存在于当前资源系统 manifest，否则 ProcedureLoadDll 阶段 LoadAsync<TextAsset> 会失败",
-                    "(7) 改业务 DLL 列表后必须走完整 Pipify 原子构建（ConfigRuntimeSO + dll 字节 + AB 同 manifest）",
-                    "(8) 禁单独热推 ConfigRuntimeSO 或 dll，必须三者同批发布",
+                    "(1) 启动时 DLL 列表：用于应用启动阶段自动加载的业务 DLL。",
+                    "(2) 该列表会导出到 ConfigRuntimeSO，并由 ProcedureLoadDll 按配置顺序加载。",
+                    "(3) 仅放置主业务及启动必需程序集。",
+                    "(4) 源位置 / 目标位置是项目根相对文件路径，Asset 地址是运行时资源地址。",
+                    "(5) 程序集是否参与编译仍由 HybridCLR Settings 决定。",
+                }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(2f);
+        }
+
+        /// <summary>
+        /// 绘制"运行时 DLL 列表"section。
+        /// </summary>
+        private void DrawHybridCLRRunningGameDllSection()
+        {
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.Label("运行时 DLL 列表", m_SectionTitleStyle, false);
+                EditorUtil.Draw.Space(16f);
+            });
+            EditorUtil.Draw.Space(4f);
+
+            ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
+            EditorUtil.Config.DimensionProjector.Coord curCoord = new(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
+            SerializedProperty gameProp = ResolveHybridCLRDllListProp(workingSrc, curCoord, "RunningGameDlls");
+            if (gameProp == null)
+            {
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    EditorUtil.Draw.Space(16f);
+                    EditorUtil.Draw.HelpBox(MessageType.Warning, new[] { "未找到 RunningGameDlls 字段，请检查 ConfigMasterSO 结构。" }, false, GUILayout.ExpandWidth(true));
+                    EditorUtil.Draw.Space(16f);
+                });
+                EditorUtil.Draw.Space(2f);
+                return;
+            }
+
+            EnsureHybridCLRRunningGameDllsList(workingSrc, curCoord, gameProp);
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(32f);
+                EditorUtil.Draw.Layout.Vertical(() => m_HybridCLRRunningGameDllsList.DoLayoutList());
+                EditorUtil.Draw.Space(16f);
+            });
+
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(32f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1) 运行时 DLL 列表：用于游戏运行过程中按需加载的业务 DLL。",
+                    "(2) 该列表仅供 Editor 记录编译产物路径、执行复制和配置校验。",
+                    "(3) 该列表不会导出到 ConfigRuntimeSO，也不会在启动阶段自动加载。",
+                    "(4) 程序集是否参与编译仍由 HybridCLR Settings 决定。",
                 }, false, GUILayout.ExpandWidth(true));
                 EditorUtil.Draw.Space(16f);
             });
@@ -337,7 +387,7 @@ namespace NovaFramework.Editor
 
             m_HybridCLRAotMetadataDllsList = new ReorderableList(m_MasterSO, aotProp, true, true, true, true);
             m_HybridCLRAotMetadataDllsList.drawHeaderCallback = rect => EditorUtil.Draw.Label(rect, $"AOT 元数据 DLL 列表 ({aotProp.arraySize})");
-            // lambda 闭包捕获 workingSrc/curCoord/field/aotProp/m_AotDllFoldouts，确保与 m_HybridCLRGameDllsList 使用各自独立的坐标上下文、SerializedProperty 和折叠状态
+            // lambda 闭包捕获独立的坐标上下文、SerializedProperty 和折叠状态。
             m_HybridCLRAotMetadataDllsList.drawElementCallback = (rect, index, isActive, isFocused) => DrawHybridCLRDllEntryElementCore(workingSrc, curCoord, "AotMetadataDlls", aotProp, m_AotDllFoldouts, rect, index);
             m_HybridCLRAotMetadataDllsList.elementHeightCallback = index =>
             {
@@ -350,32 +400,57 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 按需构建业务 DLL 条目的 ReorderableList；SerializedProperty 路径变化时重建。
-        /// 路径随 HybridEditorConfigsMask 与当前坐标动态切换（顶层 GameDlls ↔ HybridEditorConfigsOverrides[i].GameDlls）。
+        /// 按需构建启动时业务 DLL 条目的 ReorderableList；SerializedProperty 路径变化时重建。
+        /// 路径随 HybridEditorConfigsMask 与当前坐标动态切换。
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前坐标格。</param>
-        /// <param name="gameProp">已按当前坐标解析出的 GameDlls SerializedProperty。</param>
-        private void EnsureHybridCLRGameDllsList(ConfigMasterSO workingSrc, EditorUtil.Config.DimensionProjector.Coord curCoord, SerializedProperty gameProp)
+        /// <param name="gameProp">已按当前坐标解析出的 StartupGameDlls SerializedProperty。</param>
+        private void EnsureHybridCLRStartupGameDllsList(ConfigMasterSO workingSrc, EditorUtil.Config.DimensionProjector.Coord curCoord, SerializedProperty gameProp)
         {
-            if (m_HybridCLRGameDllsList != null && m_HybridCLRGameDllsList.serializedProperty.propertyPath == gameProp.propertyPath)
+            if (m_HybridCLRStartupGameDllsList != null && m_HybridCLRStartupGameDllsList.serializedProperty.propertyPath == gameProp.propertyPath)
             {
-                SyncFoldoutCapacity(m_GameDllFoldouts, gameProp.arraySize);
+                SyncFoldoutCapacity(m_StartupGameDllFoldouts, gameProp.arraySize);
                 return;
             }
 
-            m_HybridCLRGameDllsList = new ReorderableList(m_MasterSO, gameProp, true, true, true, true);
-            m_HybridCLRGameDllsList.drawHeaderCallback = rect => EditorUtil.Draw.Label(rect, $"业务 DLL 列表 ({gameProp.arraySize})");
-            // lambda 闭包捕获 workingSrc/curCoord/field/gameProp/m_GameDllFoldouts，确保与 m_HybridCLRAotMetadataDllsList 使用各自独立的坐标上下文、SerializedProperty 和折叠状态
-            m_HybridCLRGameDllsList.drawElementCallback = (rect, index, isActive, isFocused) => DrawHybridCLRDllEntryElementCore(workingSrc, curCoord, "GameDlls", gameProp, m_GameDllFoldouts, rect, index);
-            m_HybridCLRGameDllsList.elementHeightCallback = index =>
+            m_HybridCLRStartupGameDllsList = new ReorderableList(m_MasterSO, gameProp, true, true, true, true);
+            m_HybridCLRStartupGameDllsList.drawHeaderCallback = rect => EditorUtil.Draw.Label(rect, $"启动时 DLL 列表 ({gameProp.arraySize})");
+            m_HybridCLRStartupGameDllsList.drawElementCallback = (rect, index, isActive, isFocused) => DrawHybridCLRDllEntryElementCore(workingSrc, curCoord, "StartupGameDlls", gameProp, m_StartupGameDllFoldouts, rect, index);
+            m_HybridCLRStartupGameDllsList.elementHeightCallback = index =>
             {
                 // 折叠状态 index 越界时默认收缩，返回单行 header 高度
-                bool expanded = index < m_GameDllFoldouts.Count && m_GameDllFoldouts[index];
+                bool expanded = index < m_StartupGameDllFoldouts.Count && m_StartupGameDllFoldouts[index];
                 return expanded ? EditorGUIUtility.singleLineHeight * 4 + 10f : EditorGUIUtility.singleLineHeight + 4f;
             };
-            m_HybridCLRGameDllsList.onAddCallback = list => OnAddHybridCLRGameDllEntry(workingSrc, curCoord, "GameDlls");
-            SyncFoldoutCapacity(m_GameDllFoldouts, gameProp.arraySize);
+            m_HybridCLRStartupGameDllsList.onAddCallback = list => OnAddHybridCLRGameDllEntry(workingSrc, curCoord, "StartupGameDlls");
+            SyncFoldoutCapacity(m_StartupGameDllFoldouts, gameProp.arraySize);
+        }
+
+        /// <summary>
+        /// 按需构建运行时业务 DLL 条目的 ReorderableList；SerializedProperty 路径变化时重建。
+        /// </summary>
+        /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
+        /// <param name="curCoord">当前坐标格。</param>
+        /// <param name="gameProp">已按当前坐标解析出的 RunningGameDlls SerializedProperty。</param>
+        private void EnsureHybridCLRRunningGameDllsList(ConfigMasterSO workingSrc, EditorUtil.Config.DimensionProjector.Coord curCoord, SerializedProperty gameProp)
+        {
+            if (m_HybridCLRRunningGameDllsList != null && m_HybridCLRRunningGameDllsList.serializedProperty.propertyPath == gameProp.propertyPath)
+            {
+                SyncFoldoutCapacity(m_RunningGameDllFoldouts, gameProp.arraySize);
+                return;
+            }
+
+            m_HybridCLRRunningGameDllsList = new ReorderableList(m_MasterSO, gameProp, true, true, true, true);
+            m_HybridCLRRunningGameDllsList.drawHeaderCallback = rect => EditorUtil.Draw.Label(rect, $"运行时 DLL 列表 ({gameProp.arraySize})");
+            m_HybridCLRRunningGameDllsList.drawElementCallback = (rect, index, isActive, isFocused) => DrawHybridCLRDllEntryElementCore(workingSrc, curCoord, "RunningGameDlls", gameProp, m_RunningGameDllFoldouts, rect, index);
+            m_HybridCLRRunningGameDllsList.elementHeightCallback = index =>
+            {
+                bool expanded = index < m_RunningGameDllFoldouts.Count && m_RunningGameDllFoldouts[index];
+                return expanded ? EditorGUIUtility.singleLineHeight * 4 + 10f : EditorGUIUtility.singleLineHeight + 4f;
+            };
+            m_HybridCLRRunningGameDllsList.onAddCallback = list => OnAddHybridCLRGameDllEntry(workingSrc, curCoord, "RunningGameDlls");
+            SyncFoldoutCapacity(m_RunningGameDllFoldouts, gameProp.arraySize);
         }
 
         /// <summary>
@@ -385,7 +460,7 @@ namespace NovaFramework.Editor
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前坐标格。</param>
-        /// <param name="field">字段名（"AotMetadataDlls" 或 "GameDlls"）。</param>
+        /// <param name="field">DLL 列表字段名。</param>
         /// <returns>对应 SerializedProperty；m_MasterSO 为 null 或字段不存在时返回 null。</returns>
         private SerializedProperty ResolveHybridCLRDllListProp(ConfigMasterSO workingSrc, EditorUtil.Config.DimensionProjector.Coord curCoord, string field)
         {
@@ -440,7 +515,7 @@ namespace NovaFramework.Editor
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前坐标格。</param>
-        /// <param name="field">字段名（"AotMetadataDlls" 或 "GameDlls"）。</param>
+        /// <param name="field">DLL 列表字段名。</param>
         /// <param name="listProp">所属列表的 SerializedProperty（已按当前坐标解析）。</param>
         /// <param name="foldouts">该列表对应的折叠状态集合（按 index，自动扩容）。</param>
         /// <param name="rect">绘制区域。</param>
@@ -524,7 +599,7 @@ namespace NovaFramework.Editor
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前坐标格。</param>
-        /// <param name="field">列表字段名（"AotMetadataDlls" 或 "GameDlls"）。</param>
+        /// <param name="field">DLL 列表字段名。</param>
         /// <param name="index">条目索引。</param>
         /// <param name="subField">条目内子字段名（m_SourceLocation / m_TargetLocation / m_AssetLocation）。</param>
         /// <param name="value">要写入的字符串值。</param>
@@ -559,7 +634,7 @@ namespace NovaFramework.Editor
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前坐标格。</param>
-        /// <param name="field">列表字段名（"AotMetadataDlls" 或 "GameDlls"）。</param>
+        /// <param name="field">DLL 列表字段名。</param>
         /// <param name="index">条目索引。</param>
         /// <param name="subField">条目内子字段名（m_SourceLocation / m_TargetLocation）。</param>
         /// <param name="currentValue">当前字段值（用于解析 initialFolder）。</param>
@@ -659,7 +734,7 @@ namespace NovaFramework.Editor
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前坐标格。</param>
-        /// <param name="field">字段名（"GameDlls"）。</param>
+        /// <param name="field">StartupGameDlls 或 RunningGameDlls。</param>
         private void OnAddHybridCLRGameDllEntry(ConfigMasterSO workingSrc, EditorUtil.Config.DimensionProjector.Coord curCoord, string field)
         {
             OnAddHybridCLRDllEntry(workingSrc, curCoord, field);
@@ -673,7 +748,7 @@ namespace NovaFramework.Editor
         /// </summary>
         /// <param name="workingSrc">编辑期 ConfigMasterSO 实例（工作副本）。</param>
         /// <param name="curCoord">当前坐标格。</param>
-        /// <param name="field">字段名（"AotMetadataDlls" 或 "GameDlls"）。</param>
+        /// <param name="field">DLL 列表字段名。</param>
         private void OnAddHybridCLRDllEntry(ConfigMasterSO workingSrc, EditorUtil.Config.DimensionProjector.Coord curCoord, string field)
         {
             SerializedProperty listProp = ResolveHybridCLRDllListProp(workingSrc, curCoord, field);

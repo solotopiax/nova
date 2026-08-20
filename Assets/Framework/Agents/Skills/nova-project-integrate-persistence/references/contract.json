@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-integrate-persistence",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.15",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-inspection",
+      "entry": "business data ownership and existing Nova.Config/Nova.Persist startup and call sites",
+      "when": "只读确认业务数据归属、当前加载顺序、classify/item、既有 PersistComponent 与 ConfigRuntime 前置，不修改配置资产"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "PersistComponentInspector and ConfigWindow read-only inspection; Unity script refresh, compilation and Play Mode persistence inspection",
+      "when": "只读核验现有存储实现、当前 ConfigRuntime 坐标与 Privacy AES 前置，并在编译后执行 Play 验证；不修改 Unity 资产"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed business persistence source and local Play probe",
+      "when": "只修改已冻结的业务数据模型、读写/保存/清理调用和探针，不改 PersistComponent、Config 或生成物"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Config.LoadAsync / Nova.Persist.LoadAsync / Nova.Persist.PlayerPrefs / FileFragment / SQLite / IPersistManager.Save / RemoveItem / RemoveAll",
+      "when": "在已确认的 Config 后 Persist 顺序、存储实现、保存时机和清理范围内执行既有公开持久化 API；不执行任意 C#"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "configRuntimeCoordinateAndPersistComponentReadiness",
+      "required": true
+    },
+    {
+      "name": "businessDataModelAndClassifyItemContract",
+      "required": true
+    },
+    {
+      "name": "selectedStorageImplementationAndPlatformSupport",
+      "required": true
+    },
+    {
+      "name": "configThenPersistLoadOrderAndExistingStartupOwner",
+      "required": true
+    },
+    {
+      "name": "saveDurabilityAndAutosaveContract",
+      "required": true
+    },
+    {
+      "name": "cleanupScopeAndDeletionConfirmation",
+      "required": true
+    },
+    {
+      "name": "privacyAesPrerequisiteAndSQLiteCipherBoundary",
+      "required": true
+    },
+    {
+      "name": "playReadWriteDurabilityAndCleanupProbe",
+      "required": true
+    },
+    {
+      "name": "allowedWriteSet",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed business persistence C# source in the frozen business assembly and namespace",
+      "confirmed business data model and local persistence call sites",
+      "confirmed local C# Play probe used to observe load, durability and cleanup of test data"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "Assets/Framework/Scripts/Runtime/Modules/Persist/**",
+      "PersistComponent, ConfigMasterSO, ConfigRuntimeSO, Privacy AES Key/IV or SQLite CipherPassword",
+      "Nova.prefab, Prefab, Scene or handwritten Unity YAML",
+      "business asmdef, namespace, SQLite plugin, generated ConfigRuntime output or unrelated business data",
+      "real user save data, unconfirmed classify/item, cleanup target, storage selection, save timing or encryption prerequisite",
+      "Bundle or Player output, device installation, external service or unrelated business code"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "script-compilation",
+    "config-runtime-coordinate",
+    "persist-component-readiness",
+    "business-persistence-source-set",
+    "business-persistence-data-schema",
+    "persistence-play-probe-session"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous project root, ConfigRuntime coordinate, PersistComponent readiness, data model, classify/item, storage selection, platform support, startup owner, save timing, cleanup scope, encryption prerequisite or Play probe",
+      "create or replace business persistence source, data contract, storage call site, save timing, cleanup behavior or local Play probe",
+      "change storage implementation, automatic save policy, UseAESEncrypt, SQLite CipherPassword, Privacy AES Key/IV, PersistComponent, ConfigMasterSO or ConfigRuntimeSO",
+      "delete or migrate persisted data, target non-test data, build Bundle or Player, install to device, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认唯一 ConfigRuntime 坐标与既有 Persist 前置、数据模型、classify/item、存储实现和平台、Config 后 Persist 的加载所有者、保存耐久性、清理目标、加密前置、Play 探针和最小写入集；任一输入、坐标或范围变化后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "当前 ConfigRuntime 坐标、PersistComponent、所选存储实现、目标平台与 Privacy AES 前置的冻结记录",
+    "业务数据模型、classify/item、Config 后 Persist 加载顺序、保存时机和清理范围的源码证据",
+    "Unity 编译无本次新增错误",
+    "Play Mode 中先完成 Nova.Config.LoadAsync 再完成 Nova.Persist.LoadAsync，随后由选定存储实现完成目标写入与读取的证据",
+    "Save 后通过独立读取、重载或等价耐久性边界验证的证据，而非同一缓存内 Set 后 Get",
+    "本次范围包含清理时，已确认测试数据在该存储实现要求的保存/删除边界后不再可读的证据"
+  ]
+}

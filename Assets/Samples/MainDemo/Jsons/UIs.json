@@ -226,7 +226,7 @@
     },
     {
       "Name": "DemoHybridClrGameDllView",
-      "Desc": "HybridCLR 3.2 业务 dll",
+      "Desc": "HybridCLR 3.2 启动时业务 DLL",
       "AssetLocation": "DemoHybridClrGameDllView",
       "UIGroupName": "Demo",
       "PauseCoveredUIView": false,
@@ -236,6 +236,14 @@
       "Name": "DemoHybridClrProcedureRegisterView",
       "Desc": "HybridCLR 3.3 Procedure 注册时序",
       "AssetLocation": "DemoHybridClrProcedureRegisterView",
+      "UIGroupName": "Demo",
+      "PauseCoveredUIView": false,
+      "InObjectPools": false
+    },
+    {
+      "Name": "DemoHybridClrRuntimeUpdateView",
+      "Desc": "HybridCLR 3.4 运行时增量热更新",
+      "AssetLocation": "DemoHybridClrRuntimeUpdateView",
       "UIGroupName": "Demo",
       "PauseCoveredUIView": false,
       "InObjectPools": false
@@ -257,16 +265,8 @@
       "InObjectPools": false
     },
     {
-      "Name": "DemoIntegrationProcedureAssetView",
-      "Desc": "Integration 4.3 Procedure+Asset",
-      "AssetLocation": "DemoIntegrationProcedureAssetView",
-      "UIGroupName": "Demo",
-      "PauseCoveredUIView": false,
-      "InObjectPools": false
-    },
-    {
       "Name": "DemoIntegrationEventNetworkView",
-      "Desc": "Integration 4.4 Event+Network",
+      "Desc": "Integration 4.3 Event+Network",
       "AssetLocation": "DemoIntegrationEventNetworkView",
       "UIGroupName": "Demo",
       "PauseCoveredUIView": false,
@@ -274,7 +274,7 @@
     },
     {
       "Name": "DemoIntegrationConfigHybridClrView",
-      "Desc": "Integration 4.5 Config+HybridCLR",
+      "Desc": "Integration 4.4 Config+HybridCLR",
       "AssetLocation": "DemoIntegrationConfigHybridClrView",
       "UIGroupName": "Demo",
       "PauseCoveredUIView": false,

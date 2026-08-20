@@ -9,7 +9,7 @@
   → Router Skill
   → Workflow Skill（按依赖图编排，可选）
   → Operation Skill（可单独验收）
-  → Action Adapter（Unity MCP / Pipify / 脚本 / API）
+  → Action Adapter（Unity Editor 自动化通道 / Pipify / 脚本 / API）
 ```
 
 这不是固定顺序：用户提出一个独立操作时可直接进入 Operation；Workflow 只在多个操作存在依赖时生成 DAG。Unity Editor、AssetDatabase、活动场景和同一导出目录均视为单写者资源，不能因 DAG 而盲目并行。
@@ -21,10 +21,18 @@
 1. L0：Catalog、frontmatter 与 [Agent 快速入口](../Docs/START_HERE.md) 只用于发现和共同底线。
 2. L1：命中后只读当前 `SKILL.md` 与 `references/contract.json`，冻结输入、写入集、确认门和最低证据。
 3. L2：仅在当前决策分支需要时读取该 Skill 指向的模块 Docs、项目事实或直接依赖；不预加载所有 Nova 文档。
-4. L3：用户确认写入、构建或外部副作用后，才调用已声明的 Action Adapter（C# API、Unity Editor/MCP、Pipify、CLI 或工作区编辑）。
+4. L3：用户确认写入、构建或外部副作用后，才调用已声明且当前真实可用的 Action Adapter。交互 Agent 调 Unity C# Project Action 目前只能通过已安装 MCP 的 `nova_project_action`，且仅限 Tool `describe` 返回的 Action ID；`csharp-api` 只描述 Framework、人工或既有 CI 的底层实现入口，不等于 Agent 可直接执行任意 C#。
 5. L4：只收集本次契约要求的最小证据；必填输入未确认按 Skill 返回 `blocked`，输入已确认且已执行但未达到更高证据层级时才返回 `partial`，不把编译或旧产物冒充成功。
 
 `requires` 只表示某个 Workflow 内部的 Operation DAG，既不控制安装，也不控制全量同步。每次安装或升级 Nova 后，Catalog 的全部 Skill 仍会自动发现；自然语言任务只触发其中匹配的一项或少数组合。
+
+### C# Project Action
+
+稳定、可类型化、可验证且可跨项目复用的单元操作优先注册为 `EditorUtil.AgentActions` 下的 C# Project Action。Action 使用 `nova.project.<domain>.<verb>` 稳定 ID，并独立声明操作类型、副作用、幂等性、必需证据、确认门和资源锁；一个 Action 可以被多个 Skill 复用，不与 Skill 一对一绑定。
+
+Skill 仍负责自然语言路由、冻结业务输入和开放式决策；Action 负责确定性执行。业务代码设计、Prefab/Scene 结构设计、协议语义和真机体感不能被“万能反射 Action”替代。完整执行协议见 [EditorUtil.AgentActions](../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md)。
+
+当前 Registry 已实现 14 个 Action，MCP 显式开放其中 8 个。`Destructive`、`ExternalWrite`、`Credential` 与 `Delivery` 在可信审批通道完成前不开放；Skill 遇到这些已实现但未开放的 Action 时必须报告 `blocked`，不能退化到 `execute_code`、反射或临时 C#。
 
 ## 目录、真源与自动发现
 
@@ -52,6 +60,8 @@
 | `nova-project-diagnose-startup` | Operation | 编译失败、Play 门禁、黑屏或启动链故障的只读诊断 | 静态定位 |
 | `nova-project-setup-entry-scene` | Operation | 配置入口场景、Build Settings、Nova 根和 Content 职责 | Play |
 | `nova-project-configure-runtime` | Operation | 配置一个三维坐标并导出 `ConfigRuntimeSO` | 编译 |
+| `nova-project-manage-upm-package` | Operation | 计划、确认并验证单个最新版本安装/升级或 direct dependency 卸载 | UPM 精确解析状态 |
+| `nova-project-upgrade-framework` | Operation | 由包外 UPM 宿主升级 direct Nova Framework，并在重载后验证 Skills 与 MCP 恢复 | 编译 + UPM/Skill/MCP 恢复状态 |
 | `nova-project-integrate-table` | Operation | 接入已确认 Luban 表并验证运行时读取 | Play |
 | `nova-project-update-localization` | Operation | 更新已有文本、字体或绑定并切换语言验证 | Play |
 | `nova-project-ui-create-view` | Operation | 创建并注册业务 UIView、Prefab 与 UI 导出项 | 编译 |
@@ -60,15 +70,26 @@
 | `nova-project-integrate-resource` | Operation | 接入业务资源、Collector、地址、加载和释放链 | Play |
 | `nova-project-integrate-network-api` | Operation | 接入已确认协议的业务 HTTP API，并验证路由、请求与响应 | Play |
 | `nova-project-integrate-sound` | Operation | 接入已确认 BGM、音效、声音表、声音组和业务触发，并验证实际播放 | Play |
-| `nova-project-refresh-hotfix-dlls` | Operation | 在当前 Target、DevelopmentBuild 与激活 ConfigMaster 当前坐标下编译并整批刷新 GameDlls；仅刷新本地业务 DLL，不是发布 | 编译 + 映射/导入/哈希 |
+| `nova-project-integrate-vibration` | Operation | 接入 Emphasis / Custom 振动数据、业务触发与停止，并验证真机体感 | 真机反馈 |
+| `nova-project-integrate-procedure` | Operation | 新增或调整业务 Procedure，并验证进入、离开、异步取消与跳转 | Play |
+| `nova-project-refresh-hotfix-dlls` | Operation | 在当前 Target、DevelopmentBuild 与激活 ConfigMaster 当前坐标下编译并整批刷新 StartupGameDlls + RunningGameDlls；仅刷新本地业务 DLL，不是发布 | 编译 + 映射/导入/哈希 |
+| `nova-project-generate-hybridclr-artifacts` | Operation | 执行 HybridCLR Generate All 与 link.xml 验证；不含 DLL Copy、最终 Player 或发布 | 生成物 + 编译 |
 | `nova-project-build-bundles` | Operation | 构建并核验本地 YooAsset Bundle 产物 | Bundle 构建产物 |
 | `nova-project-build-player` | Operation | 构建并核验本地 Player 或平台工程 | Player `BuildReport` 与产物 |
+| `nova-project-integrate-event` | Operation | 接入业务事件定义、发布订阅、分发时序、注销和回池生命周期 | Play |
+| `nova-project-integrate-persistence` | Operation | 接入 PlayerPrefs、FileFragment 或 SQLite 业务存储并验证耐久性 | Play |
+| `nova-project-integrate-content-scene` | Operation | 接入 Nova 资源化 Content 场景并验证 ISceneHandle 加载/卸载生命周期 | Play |
+| `nova-project-diagnose-build` | Operation | 只读定位 Player、Gradle、Xcode 或 WebGL 构建链的最早失败阶段 | 静态定位 |
+| `nova-project-onboard-sdk-kit` | Workflow | 编排已发布 SDK/Kit 的安装/升级、三维配置、平台前置与最小本地探针 | Play |
+| `nova-project-diagnose-device-runtime` | Operation | 在冻结设备、Bundle ID、时间窗与脱敏规则下只读诊断真机日志 | 静态定位 |
+| `nova-project-preflight-build` | Operation | 构建前只读检查 Target、场景、Config、YooAsset Package 与 HybridCLR 前置 | 静态规则 |
+| `nova-project-resolve-android-dependencies` | Operation | 冻结 EDM4U 图并受控重建、核验 Android 依赖输出；MCP 当前因 Destructive 保持关闭 | 解析状态与产物摘要 |
 
-P1 定义了 13 个实验性 Skill：1 个 Router、11 个可独立验收的 Operation、1 个 Workflow。P2-A 前两项新增 `nova-project-integrate-network-api` 与 `nova-project-integrate-sound`，P2 再新增严格限定为本地业务 DLL compile -> copy/import 的 `nova-project-refresh-hotfix-dlls`，使当前 Catalog 共 16 项；它覆盖日常项目接入、开发、资源、构建、诊断、业务 HTTP API、声音与本地热更 DLL 刷新闭环。暂不加入本地 RC Workflow，等 Config、Table、Bundle 和 Player 的独立 Operation 在真实项目中稳定后再组合。后续仍按用户旅程扩展，不把单一 API 或 Pipify Step 拆成顶层 Skill。
+当前 Catalog 共 29 项。Framework 自升级独立为 `nova-project-upgrade-framework`，由包外 UPM 宿主跨 reload 执行；其余包继续走通用包管理 Skill。Build Preflight 使用已开放的只读 Action；Android Resolve 虽已注册稳定 Action，但因 Force Resolve 会替换 EDM4U 受管输出，仍等待可信审批通道后才向 MCP 开放。HybridCLR 两项继续严格分工：`refresh-hotfix-dlls` 只做当前坐标的业务 DLL compile -> copy/import，`generate-hybridclr-artifacts` 只做 Generate All 与 link.xml 验证；最终 Player 后的 `CopyAotDlls` 不归入二者。CDN 与本地 RC Workflow 仍等待发布顺序和独立 Operation 在真实项目中稳定后再组合。
 
 ## 当前限制
 
 - Skill 定义与 Framework UPM 同版本发布，不维护独立 Skill 版本。
 - 自动同步遇到冲突或来源问题时只做安全项，并以 `partial` 提示项目组处理；不要把受管同步副本当作可反向编辑的来源。
-- 当前包含 16 个实验性 Skill；新增 Skill 前应先按用户旅程和风险面确认其是否应成为顶层 Skill。
+- 当前包含 29 个实验性 Skill；新增 Skill 前应先按用户旅程和风险面确认其是否应成为顶层 Skill。
 - 静态检查、Unity 编译、Play 验证和真机/服务端证据彼此独立；报告必须标明实际达到的层级。

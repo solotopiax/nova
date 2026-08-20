@@ -9,8 +9,8 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "unity-mcp",
-      "entry": "Unity MCP entry scene, canonical Prefab and Build Settings editing",
+      "kind": "unity-editor-automation",
+      "entry": "Unity Editor 自动化通道 entry scene, canonical Prefab and Build Settings editing",
       "when": "在已确认范围内修改场景、connected instance 或启用场景顺序"
     },
     {

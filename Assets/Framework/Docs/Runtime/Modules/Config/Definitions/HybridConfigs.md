@@ -8,8 +8,8 @@ public sealed class HybridConfigs
 {
     public string GameEntranceProcedureName;
     public List<DllAssetEntry> AotMetadataDlls = new();
-    public List<DllAssetEntry> GameDlls = new();
+    public List<DllAssetEntry> StartupGameDlls = new();
 }
 ```
 
-`link.xml` 和 DLL 构建源/目标路径属于 Editor，不在此类型中。
+`StartupGameDlls` 由 `ProcedureLoadDll` 在启动阶段自动加载。`RunningGameDlls`、`link.xml` 和 DLL 构建源/目标路径都属于 Editor，不进入 Runtime 配置；运行时按需 DLL 由业务持有地址并调用 `Util.HybridCLR.LoadGameAssemblyAsync`。

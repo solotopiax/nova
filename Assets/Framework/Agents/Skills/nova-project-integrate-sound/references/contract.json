@@ -14,7 +14,7 @@
       "when": "只修改已冻结的声音源行、业务触发和停止 / 释放生命周期"
     },
     {
-      "kind": "unity-mcp",
+      "kind": "unity-editor-automation",
       "entry": "SoundComponentInspector, AudioClip, BundleCollectorSetting and existing trigger target editing",
       "when": "更新已确认的 SoundComponent、组壳、Mixer、AudioClip、Collector 或既有触发目标"
     },
@@ -39,7 +39,7 @@
       "when": "在 Play Mode 中加载、确认目标组、触发并验证停止或释放责任"
     },
     {
-      "kind": "unity-mcp",
+      "kind": "unity-editor-automation",
       "entry": "Play Mode AudioSource playback inspection",
       "when": "等待异步 AudioClip 加载后检查目标 AudioSource 播放与停止"
     }

@@ -147,11 +147,11 @@ private static string StripDllSuffix(string assetLocation)
 
 **误区 3：以为 DLL 列表配置来自 ProcedureComponent**
 
-HybridCLR 的 DLL 条目来源是 `ConfigMasterSO.HybridEditorConfigs` 与 `HybridEditorConfigsOverrides`；各入口通过 `Config.WorkspaceActive.Get()` 锚定激活 Master，再按当前三维坐标解析最终生效的 `HybridEditorConfigs` 中 `AotMetadataDlls` / `GameDlls`（类型 `List<DllMasterAssetEntry>`）。它不依赖 `ProcedureComponent`，也不会扫描并任取一个 ConfigMaster。
+HybridCLR 的 DLL 条目来源是 `ConfigMasterSO.HybridEditorConfigs` 与 `HybridEditorConfigsOverrides`；各入口通过 `Config.WorkspaceActive.Get()` 锚定激活 Master，再按当前三维坐标解析 `AotMetadataDlls` / `StartupGameDlls` / `RunningGameDlls`。它不依赖 `ProcedureComponent`，也不会扫描并任取一个 ConfigMaster。
 
 **误区 4：混淆 `DllMasterAssetEntry`（Master 三字段）与 `DllAssetEntry`（Runtime 单字段）**
 
-当前三维坐标解析出的 `HybridEditorConfigs.AotMetadataDlls / GameDlls` 是 `List<DllMasterAssetEntry>`（编辑期视图，含 SourceLocation / TargetLocation / AssetLocation）。导出到 `ConfigRuntimeSO` 后只保留 `DllAssetEntry`（单字段 AssetLocation）。`CopyDllEntries` 接收解析后的 Editor 视图；运行期 `ProcedureLoadDll` 接收 Runtime 视图。
+三个列表都是 `List<DllMasterAssetEntry>`（含 SourceLocation / TargetLocation / AssetLocation），`CopyGameDlls` 会校验并复制 Startup 与 Running 两份业务列表。导出到 `ConfigRuntimeSO` 时仅保留 AOT 与 Startup 的 `DllAssetEntry`；Running 不导出，也不会被 `ProcedureLoadDll` 启动加载。
 
 ---
 

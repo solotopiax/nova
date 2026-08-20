@@ -54,7 +54,7 @@ ACTION_ADAPTER_KINDS = {
     "cli",
     "pipify",
     "unity-editor-api",
-    "unity-mcp",
+    "unity-editor-automation",
     "unity-menu",
     "workspace-edit",
     "workspace-inspection",
@@ -442,10 +442,28 @@ def _package_cache_agents(project_root: Path, lock_entry: dict[str, Any]) -> Pat
     if source == "registry":
         if not isinstance(version, str) or not version or version.startswith("file:"):
             raise NovaSkillsError("registry Framework lock 缺少有效版本")
+        candidates: list[Path] = []
+        for candidate in sorted(cache_root.glob(f"{FRAMEWORK_PACKAGE_NAME}@*")):
+            if not candidate.is_dir():
+                continue
+            try:
+                package = _read_json(candidate / "package.json")
+            except NovaSkillsError:
+                continue
+            if (
+                package.get("name") == FRAMEWORK_PACKAGE_NAME
+                and package.get("version") == version
+            ):
+                candidates.append(candidate)
+        if len(candidates) == 1:
+            return _agents_from_package_root(candidates[0], "PackageCache", version)
+        if len(candidates) > 1:
+            raise NovaSkillsError("PackageCache 中存在多个 registry Framework 候选，无法安全选择")
+
         package_root = cache_root / f"{FRAMEWORK_PACKAGE_NAME}@{version}"
-        if not package_root.is_dir():
-            raise NovaSkillsError("PackageCache 中未找到 lock 指定版本的 Framework 包")
-        return _agents_from_package_root(package_root, "PackageCache", version)
+        if package_root.is_dir():
+            return _agents_from_package_root(package_root, "PackageCache", version)
+        raise NovaSkillsError("PackageCache 中未找到 lock 指定版本的 Framework 包")
 
     if source == "git":
         git_hash = lock_entry.get("hash")

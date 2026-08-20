@@ -14,8 +14,8 @@
       "when": "定向修改已冻结的业务 View 生命周期、绑定或行为"
     },
     {
-      "kind": "unity-mcp",
-      "entry": "Unity MCP target Prefab and serialized binding editing",
+      "kind": "unity-editor-automation",
+      "entry": "Unity Editor 自动化通道 target Prefab and serialized binding editing",
       "when": "修改已确认的 Prefab 节点、组件或序列化引用"
     },
     {

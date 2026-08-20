@@ -5,7 +5,7 @@
  * filename:  DemoIntegrationConfigHybridClrView.cs
  * author:    taoye
  * created:   2026/05/23
- * descrip:   Integration 4.5 — Config + HybridCLR Namespace 注入快照
+ * descrip:   Integration 4.4 — Config + HybridCLR Namespace 注入快照
  ***************************************************************/
 
 using NovaFramework.Runtime;
@@ -15,10 +15,10 @@ using System.Reflection;
 namespace NovaFramework.Samples.Runtime
 {
     /// <summary>
-    /// Integration Demo 4.5：Namespace 注入 -> 程序集解析只读快照。
+    /// Integration Demo 4.4：Namespace 注入 -> 程序集解析只读快照。
     /// API 副标题：Nova.Config.ConfigManager.Namespace -> Util.Assembly.GetAssembly(ns)。
     /// 只读快照型：展示 Namespace 卡片 + 解析得到的 Assembly 卡片 + 已注册 ProcedureBase 子类计数。
-    /// MainDemo 场景下业务 DLL 未加载时子类数为 0，显式标注。
+    /// MainDemo 已配置启动业务 DLL，因此程序集和业务 Procedure 应均可解析。
     /// </summary>
     public sealed class DemoIntegrationConfigHybridClrView : BaseDemoView
     {
@@ -57,14 +57,13 @@ namespace NovaFramework.Samples.Runtime
             if (assembly == null)
             {
                 AppendFeedback(string.Format("Util.Assembly.GetAssembly(\"{0}\") -> null (未加载或未找到)", ns), FeedbackLevel.Warn);
-                AppendFeedback("(MainDemo 场景下业务 DLL 未加载，程序集不存在)", FeedbackLevel.Warn);
                 return;
             }
 
             AppendFeedback(string.Format("Util.Assembly.GetAssembly(\"{0}\") -> Assembly resolved", ns), FeedbackLevel.Success);
 
             int procedureCount = CountProcedureSubclasses(assembly);
-            AppendFeedback(string.Format("ProcedureBase 子类计数 -> {0}{1}", procedureCount, procedureCount == 0 ? " (MainDemo)" : ""), procedureCount > 0 ? FeedbackLevel.Success : FeedbackLevel.Warn);
+            AppendFeedback(string.Format("ProcedureBase 子类计数 -> {0}", procedureCount), procedureCount > 0 ? FeedbackLevel.Success : FeedbackLevel.Warn);
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ HybridCLR 生态唯一 Facade。封装 AOT 元数据补充加载（`LoadAotMetad
 
 | 文件 | 说明 |
 |---|---|
-| `Runtime/Core/Util/Util.HybridCLR/Util.HybridCLR.cs` | 全部实现：`LoadAotMetadataAsync` / `LoadGameAssemblyAsync` / `LoadDllBytesAsync`（private） + 两个幂等守卫 `HashSet` |
+| `Runtime/Core/Util/Util.HybridCLR/Util.HybridCLR.cs` | 全部实现：AOT / 业务 DLL 加载、完成态缓存与同程序集并发共享 |
 
 ---
 
@@ -19,8 +19,10 @@ HybridCLR 生态唯一 Facade。封装 AOT 元数据补充加载（`LoadAotMetad
 
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `s_LoadedAOTMetadata` | `HashSet<string>` | 空集合（Ordinal 比较） | 已加载 AOT 元数据程序集名称守卫，防止重复调用 `RuntimeApi.LoadMetadataForAOTAssembly` |
-| `s_LoadedGameAssemblies` | `HashSet<string>` | 空集合（Ordinal 比较） | 已加载业务程序集名称守卫，防止重复 `Assembly.Load` |
+| `s_LoadedAOTMetadata` | `HashSet<string>` | 空集合 | 已完成加载的 AOT 元数据程序集身份 |
+| `s_LoadingAOTMetadata` | `Dictionary<string, UniTaskCompletionSource>` | 空字典 | 同程序集并发加载共享完成结果 |
+| `s_LoadedGameAssemblies` | `Dictionary<string, Assembly>` | 空字典 | 已完成加载的业务程序集缓存 |
+| `s_LoadingGameAssemblies` | `Dictionary<string, UniTaskCompletionSource<Assembly>>` | 空字典 | 同程序集并发加载共享 Assembly 或异常 |
 
 ---
 
@@ -58,13 +60,15 @@ public static async UniTask<System.Reflection.Assembly> LoadGameAssemblyAsync(
   → Log.Debug no-op，直接 return
 
 #else（IL2CPP 运行时）
-  ├─ s_LoadedAOTMetadata.Add(location) 失败（已存在）→ 直接 return（幂等）
+  ├─ 已完成 → 直接 return
+  ├─ 正在加载 → await 同一 UniTaskCompletionSource
   ├─ bytes = await LoadDllBytesAsync(location)
   │    ← FrameworkManagersGroup.GetManager<IAssetManager>()
   │    ← assetManager.LoadAsync<TextAsset>(location)
   ├─ result = HybridCLR.RuntimeApi.LoadMetadataForAOTAssembly(bytes, mode)
   ├─ result != OK → 抛 InvalidOperationException（含 location 和错误码）
-  └─ Log.Debug 记录成功
+  ├─ 成功 → 写完成态并唤醒全部等待者
+  └─ 失败 → 向等待者传播异常并移除进行中状态，允许重试
 ```
 
 ### LoadGameAssemblyAsync 流程
@@ -74,11 +78,13 @@ public static async UniTask<System.Reflection.Assembly> LoadGameAssemblyAsync(
   → Log.Debug no-op，返回 Util.Assembly.GetAssembly(location)
 
 #else（IL2CPP 运行时）
-  ├─ s_LoadedGameAssemblies.Add(location) 失败（已存在）→ return 已有 Assembly（幂等）
+  ├─ 已完成 → return 缓存 Assembly
+  ├─ 正在加载 → await 同一 UniTaskCompletionSource<Assembly>
   ├─ bytes = await LoadDllBytesAsync(location)
   ├─ asm = System.Reflection.Assembly.Load(bytes)
   ├─ Util.Assembly.RefreshAssemblies()
-  └─ return asm
+  ├─ 成功 → 缓存并向全部等待者返回同一 Assembly
+  └─ 失败 → 传播异常并移除进行中状态，允许重试
 ```
 
 **HomologousImageMode.SuperSet 选择理由**：SuperSet 模式允许 AOT 程序集中的泛型实例化为热更代码中实际使用的超集，兼容性最佳，是 HybridCLR 官方推荐的默认值。
@@ -90,7 +96,7 @@ public static async UniTask<System.Reflection.Assembly> LoadGameAssemblyAsync(
 | 误区 | 说明 |
 |---|---|
 | 在 Editor 中调用有实际效果 | `#if UNITY_EDITOR` 分支 no-op；AOT metadata 补充只在 IL2CPP 构建（Android/Standalone）下生效 |
-| 重复调用 | 两个守卫 HashSet 保证幂等；同名程序集多次调用安全 |
+| 重复或并发调用 | `.dll` 后缀会被归一化；同程序集并发调用等待同一加载结果，不会提前返回 null |
 | 底层直接走 File IO | 已切换为 `IAssetManager.LoadAsync<TextAsset>(location)`，DLL 必须作为 TextAsset 打入普通 AssetBundle 并以 `.bytes` 扩展名存入 |
 | 错误码非 OK 时不处理 | `LoadAotMetadataAsync` 已在非 OK 时抛 `InvalidOperationException`，调用方无需额外检查返回值 |
 | `AssetComponent` 为 null | `FrameworkComponentsGroup.GetComponent<AssetComponent>()` 返回 null 时方法记录 Error 并返回 null 字节，调用方会收到 `InvalidOperationException` |
@@ -100,7 +106,7 @@ public static async UniTask<System.Reflection.Assembly> LoadGameAssemblyAsync(
 ## §11 使用示例
 
 ```csharp
-// 由 ProcedureLoadDll 内部循环调用，业务层不直接使用
+// 启动列表由 ProcedureLoadDll 调用；运行时按需 DLL 也必须走同一 Facade
 
 // AOT metadata 加载（顺序：全部 AOT metadata 完成后再加载业务 DLL）
 foreach (DllAssetEntry entry in settings.AotMetadataDlls)
@@ -109,7 +115,7 @@ foreach (DllAssetEntry entry in settings.AotMetadataDlls)
 }
 
 // 业务 DLL 加载
-foreach (DllAssetEntry entry in settings.GameDlls)
+foreach (DllAssetEntry entry in settings.StartupGameDlls)
 {
     await Util.HybridCLR.LoadGameAssemblyAsync(entry.AssetLocation);
 }

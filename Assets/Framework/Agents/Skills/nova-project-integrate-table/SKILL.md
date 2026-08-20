@@ -17,7 +17,7 @@ description: Use when 项目组要把已确认的 Luban 表源接入现有 Nova 
 
 - 表源、Schema、输出目录、DataTarget、Asset 地址或加载时序有多个合理候选时，先请求选择；无已确认的 Nova 根节点、`TableComponent` 或运行时加载描述时保持 `blocked`。
 - 仅修改数据时，不重导代码；新增/修改表结构、Target、格式或代码输出时，才导出对应代码与数据。生成物不是手工编辑目标。
-- 需要创建或更新 `TableSettings`、Prefab、场景引用或 Asset 地址时，只能通过 Unity Editor / Unity MCP 和 TableComponent Inspector 写入，绝不手写 Prefab、Scene 或其他 Unity YAML。
+- 需要创建或更新 `TableSettings`、Prefab、场景引用或 Asset 地址时，只能通过 Unity Editor 自动化通道 和 TableComponent Inspector 写入，绝不手写 Prefab、Scene 或其他 Unity YAML。
 
 ## Input → Action Adapter → Artifact → Evidence
 

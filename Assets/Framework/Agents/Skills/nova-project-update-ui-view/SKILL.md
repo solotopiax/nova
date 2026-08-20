@@ -29,7 +29,7 @@ description: Use when 项目组要在既有 Nova 消费项目中定向更新已�
 | Input | 现有 Action Adapter | Artifact | Evidence |
 |---|---|---|---|
 | 已确认的业务 View、目标行为与源码范围 | 当前项目的业务源码与 `UIView` 生命周期模式 | 定向更新的业务 View 源码 | 局部 diff 与 Unity 编译 |
-| 已确认的 Prefab、节点和绑定范围 | Unity Editor / Unity MCP | Unity 保存的 Prefab 与序列化绑定 | 目标 Prefab 检查结果 |
+| 已确认的 Prefab、节点和绑定范围 | Unity Editor 自动化通道 | Unity 保存的 Prefab 与序列化绑定 | 目标 Prefab 检查结果 |
 | 已确认的 UI 注册源与导出入口（仅变更时） | 当前项目已有的 UI 注册/导出 Action | 本次注册变更及必要生成物 | 注册 diff 与选定导出结果 |
 | 需要验证的打开/关闭行为 | 已存在的 `Nova.UI` 打开、关闭与查询入口 | 可复现的目标页面行为 | 明确授权后的 Play smoke |
 

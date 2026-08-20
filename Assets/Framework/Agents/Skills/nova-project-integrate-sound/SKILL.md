@@ -29,7 +29,7 @@ description: Use when 项目组要在现有 Nova 项目中加入或修改大厅 
 | 已确认真实 AudioClip、Collector、Package、地址与有效 ConfigMaster 坐标 | 先以 `EditorUtil.Config.DimensionalResolver.ResolveYooAsset` 解析有效 `BundleCollectorSettingPath`，再以 `YooAsset.Editor.SettingLoader.LoadSettingDataAtPath<BundleCollectorSetting>` 定位既有 Collector；Unity Editor / MCP 更新 AudioClip、Collector 和引用 | 可由当前项目加载的 AudioClip 地址 | 激活 Master、掩码、坐标、解析路径、Collector、Package、地址与目标表行一致 |
 | 已确认 `SoundComponent`、组壳和 Mixer | Unity Editor / MCP 的 `SoundComponentInspector` | 目标组壳、代理容量、静音 / 音量和可选 Mixer 路由 | 目标场景启动后 `Nova.Sound.HasSoundGroup(group)` 为真 |
 | 已确认的既有业务触发和生命周期 | 项目既有业务入口；`Nova.Sound.PlaySound` / `StopSound` / `ReleaseAssetBySerialID` | BGM 进入/退出或 SFX 单次触发链 | 绑定不重复，BGM 不叠播，停止 / 释放责任明确 |
-| 已确认的 Play 验证样例 | `Nova.Sound.LoadAsync`、`HasSoundGroup`、`PlaySound`、`StopSound` 与 Unity MCP Play Mode / AudioSource 检查 | 目标请求对应的实际播放与停止 | 实际 AudioSource 播放、可听确认或等价可观察探针；serialID 仅作请求关联 |
+| 已确认的 Play 验证样例 | `Nova.Sound.LoadAsync`、`HasSoundGroup`、`PlaySound`、`StopSound` 与 Unity Editor 自动化通道 Play Mode / AudioSource 检查 | 目标请求对应的实际播放与停止 | 实际 AudioSource 播放、可听确认或等价可观察探针；serialID 仅作请求关联 |
 
 ## 实施与验证边界
 

@@ -21,9 +21,9 @@ description: Use when Nova 项目组需要为已配置的 YooAsset Package 按�
 
 ## 已有 Action Adapter
 
-1. 直接入口使用 `EditorUtil.BundleBuilder.BuildAssetBundle(AssetBundleBuildArgs)`；参数与当前文档的 11 项字段一致。
-2. 项目已有并明确选择 Pipify Batch 时使用 Step `bundlebuilder.build`，其参数同样复用 `AssetBundleBuildArgs`。Pipify 只是顺序执行适配器，不扩大本 Operation 的写入或发布权限。
-3. 同一输出目录与 Unity Editor、AssetDatabase、StreamingAssets 拷贝区按单写者串行执行。覆盖同版本产物、清理构建缓存或改变首包拷贝集合前先通过确认门。
+Framework 已注册 `nova.project.bundle.build-asset` 与 `nova.project.bundle.build-raw-file`，但二者会删除或重建已有构建目录，带 `Destructive` 副作用；当前 MCP 的确认来源仍是 caller-asserted，因此尚未开放。不得伪称可经 `nova_project_action` 调用，也不得用任意 C# 执行绕过。现有 C#/Pipify 入口只作为人工或既有流水线兼容路径；待可信审批通道落地后，本 Skill 再切换到正式 Action。
+
+当前 MCP 连 `describe` 都只返回已开放 Action，因此这里的 ID 只能从当前 Framework 文档确认，不能从 Tool 读取 Schema，也不能 Plan/Execute。请求真正构建时返回 `blocked` 并明确缺口是“可信审批 + MCP allowlist”，不要退化到 `execute_code`、反射或临时 Pipify。人工或既有 CI 使用底层 C#/Pipify 不属于本 Skill 已完成的 Agent 执行证据。
 
 ## Artifact → Evidence
 

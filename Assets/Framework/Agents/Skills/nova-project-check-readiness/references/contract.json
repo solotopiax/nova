@@ -19,8 +19,18 @@
       "when": "Windows 已解析到 Python 3.9+，且需要确认消费项目实际解析到的 Framework 包时"
     },
     {
-      "kind": "unity-mcp",
-      "entry": "Unity MCP read-only scene and Console inspection",
+      "kind": "workspace-inspection",
+      "entry": "Packages/manifest.json + Packages/packages-lock.json + <resolved SDK/Kit package>/package.json + <resolved package>/Nova/{Doc,Docs,DOCS}/INDEX.md",
+      "when": "已安装或本次范围点名 Nova SDK/Kit，且需要只读确认 package id、版本、source、实际根路径和包内文档入口时"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.config.inspect-plugin-types, request.kind=sdk|kit|all)",
+      "when": "Unity 已就绪且用户允许收集已安装 SDK/Kit Config 类型的稳定只读元数据时；Tool 不可用则保留 partial"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "Unity Editor 自动化通道 read-only scene and Console inspection",
       "when": "用户明确允许收集 Unity 或 Play 证据时"
     }
   ],
@@ -36,6 +46,10 @@
     {
       "name": "targetPlatform",
       "required": false
+    },
+    {
+      "name": "installedSdkOrKitPackageScope",
+      "required": false
     }
   ],
   "effects": [
@@ -44,9 +58,10 @@
   "writeScope": {
     "allow": [],
     "deny": [
-      "manifest.json",
-      "PackageCache",
-      "Framework package",
+      "Packages/manifest.json",
+      "Packages/packages-lock.json",
+      "Library/PackageCache/**",
+      "resolved Framework, SDK and Kit package contents",
       "Prefab and Scene assets"
     ]
   },
@@ -68,6 +83,8 @@
   "evidence": [
     "UPM 解析与版本",
     "项目拓扑和托管范围",
+    "已安装 Nova SDK/Kit 的 package id、版本、source、INDEX 路径及 Config/路由/资源/平台前置证据缺口",
+    "nova.project.config.inspect-plugin-types 的只读类型发现证据（取得时）",
     "静态、Unity、Play 证据的明确分级"
   ]
 }

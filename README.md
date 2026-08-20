@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.6.15-blue.svg)
+![release](https://img.shields.io/badge/release-v0.6.16-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -14,7 +14,7 @@
 ## 系统需求
 
 - Unity `6000.4.2f1` 或更高版本。
-- 可访问 Solotopia UPM Registry；EDM 依赖通过 OpenUPM 解析。
+- 可访问 Solotopia UPM Registry；EDM 与默认 Unity MCP Provider 通过 OpenUPM 解析。
 - Android / iOS 构建仍需安装相应平台模块、SDK 与签名环境。
 
 ## 核心依赖

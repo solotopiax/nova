@@ -1,5 +1,22 @@
 # Changelog — com.solotopia.nova.framework
 
+## [0.6.16] - 2026-08-20
+
+### Breaking
+
+- HybridCLR 配置与生成结果中的 `GameDlls` 字段更名为 `StartupGameDlls`；序列化资产通过 `FormerlySerializedAs` 兼容，直接访问旧字段的外部 C# 代码需同步改名。
+
+### Added
+
+- 新增并完善 29 个 `nova-project-*` 消费端 Skills，以及可审计的 Nova Project Action 执行层。
+- Framework 显式依赖 `com.solotopia.nova.framework.mcp@0.1.0`，为项目组提供默认 MCP Action 桥接。
+- 新增统一 Sample `SceneRoute`、构建前检查、Android 依赖解析与 HybridCLR/Bundle/Player 构建 Action。
+
+### Changed
+
+- HybridCLR 区分启动 DLL 与运行时按需 DLL，Config 三维配置、Kit 导出和 MainDemo 同步适配。
+- Sample 场景配置注入改由 Framework 统一编排，移除各 Sample 重复的 `SampleSceneAutoFix`。
+
 ## [0.6.15] - 2026-08-18
 
 ### Changed

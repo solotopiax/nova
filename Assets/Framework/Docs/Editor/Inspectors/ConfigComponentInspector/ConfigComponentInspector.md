@@ -84,7 +84,7 @@ DrawRuntimeInfo()  [仅 Play Mode]
               DevelopMode / AppID / AppAesKey / AppAesIV /
               Namespace / Platform / Channel / GameEntranceProcedureName
         ├── DrawDllAssetEntryList("AOT 元数据 DLL", AotMetadataDlls)
-        ├── DrawDllAssetEntryList("业务 DLL", GameDlls)
+        ├── DrawDllAssetEntryList("启动时业务 DLL", StartupGameDlls)
         └── 已启用 SDK 配置 [Label + forEach DrawPluginConfig]
 ```
 

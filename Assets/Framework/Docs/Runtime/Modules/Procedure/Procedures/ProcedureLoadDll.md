@@ -12,7 +12,7 @@
 
 - 你要看业务 DLL 是在什么时候加载的。
 - 你要排查为什么业务入口 Procedure 没有被找到。
-- 你要判断 `ConfigManager.Namespace / GameEntranceProcedureName / GameDlls` 在启动里怎么被消费。
+- 你要判断 `ConfigManager.Namespace / GameEntranceProcedureName / StartupGameDlls` 在启动里怎么被消费。
 - 你要排查 `RegisterAdditionalProcedures` 为什么要延后到下一帧。
 
 ## 输入 / 输出
@@ -24,7 +24,7 @@
 - `ConfigRuntimeSO.Namespace`
 - `ConfigRuntimeSO.HybridConfigs.GameEntranceProcedureName`
 - `ConfigRuntimeSO.HybridConfigs.AotMetadataDlls`
-- `ConfigRuntimeSO.HybridConfigs.GameDlls`
+- `ConfigRuntimeSO.HybridConfigs.StartupGameDlls`
 
 ### 输出
 
@@ -69,7 +69,7 @@
 顺序要求非常严格：
 
 1. 并行加载 `AotMetadataDlls`
-2. 顺序加载 `GameDlls`
+2. 顺序加载 `StartupGameDlls`
 
 原因：
 
@@ -109,7 +109,7 @@
 - `IConfigManager` 必须已注册
 - `ConfigRuntimeSO.Namespace` 必须有值
 - `ConfigRuntimeSO.HybridConfigs.GameEntranceProcedureName` 必须有值
-- `ConfigRuntimeSO.HybridConfigs.GameDlls` 必须能覆盖业务程序集
+- `ConfigRuntimeSO.HybridConfigs.StartupGameDlls` 必须能覆盖启动业务程序集
 
 其中任何一项缺失，最后都会变成“程序集找不到”或“入口 Procedure 找不到”。
 
@@ -151,7 +151,7 @@
 
 - `ConfigWindow` 导出的 `ConfigRuntimeSO` 是否包含正确 `Namespace`
 
-### 3. `GameDlls` 配置不完整
+### 3. `StartupGameDlls` 配置不完整
 
 表现：
 
@@ -159,7 +159,7 @@
 
 优先排查：
 
-- `ConfigMasterSO.GameDlls`
+- `ConfigMasterSO.HybridEditorConfigs.StartupGameDlls`
 - DLL 是否真的被拷贝到可加载位置
 
 ### 4. `GameEntranceProcedureName` 配错

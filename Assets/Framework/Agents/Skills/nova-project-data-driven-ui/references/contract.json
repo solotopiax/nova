@@ -37,7 +37,7 @@
       "when": "已确认表已接入当前项目的运行时加载链时"
     },
     {
-      "kind": "unity-mcp",
+      "kind": "unity-editor-automation",
       "entry": "Unity Editor/MCP Prefab and existing navigation binding",
       "when": "用户已确认 Unity 写入范围和入口行为时"
     },

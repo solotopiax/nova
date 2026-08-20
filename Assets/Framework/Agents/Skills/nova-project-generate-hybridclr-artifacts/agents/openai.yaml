@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 生成 HybridCLR 产物"
+  short_description: "按当前构建档位生成并验证 HybridCLR 预构建产物"
+  default_prompt: "使用 $nova-project-generate-hybridclr-artifacts 按当前 Target、DevelopmentBuild 与激活 ConfigMaster 坐标生成并验证 HybridCLR 预构建产物。"

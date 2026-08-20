@@ -30,18 +30,18 @@ public DllAssetEntry(string assetLocation)
 ## §11 使用示例
 
 ```csharp
-// 由 ConfigRuntimeSO 的 AotMetadataDlls / GameDlls 持有，通过 IConfigManager 访问
+// 由 ConfigRuntimeSO.HybridConfigs 的 AotMetadataDlls / StartupGameDlls 持有
 // 编辑期配置入口见 DllMasterAssetEntry + ConfigMasterSO
 
 // 遍历 AOT metadata 条目（由 ProcedureLoadDll 内部调用）
-IReadOnlyList<DllAssetEntry> aotList = configManager.AotMetadataDlls;
+IReadOnlyList<DllAssetEntry> aotList = configManager.HybridConfigs.AotMetadataDlls;
 foreach (DllAssetEntry entry in aotList)
 {
     await Util.HybridCLR.LoadAotMetadataAsync(entry.AssetLocation);
 }
 
 // 遍历业务 DLL 条目
-IReadOnlyList<DllAssetEntry> dllList = configManager.GameDlls;
+IReadOnlyList<DllAssetEntry> dllList = configManager.HybridConfigs.StartupGameDlls;
 foreach (DllAssetEntry entry in dllList)
 {
     await Util.HybridCLR.LoadGameAssemblyAsync(entry.AssetLocation);
@@ -54,6 +54,6 @@ foreach (DllAssetEntry entry in dllList)
 
 - [ProcedureLoadDll.md](../../Procedure/Procedures/ProcedureLoadDll.md)
 - [DllMasterAssetEntry.md](DllMasterAssetEntry.md)（编辑期三字段视图，供 ConfigMasterSO 使用）
-- [ConfigRuntimeSO.md](../ConfigRuntimeSO.md)（AotMetadataDlls / GameDlls 运行时来源）
+- [ConfigRuntimeSO.md](../ConfigRuntimeSO.md)（AotMetadataDlls / StartupGameDlls 运行时来源）
 - [Util.HybridCLR.md](../../../Utils/Util.HybridCLR.md)
 - [EditorUtil.HybridCLR.md](../../../../Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md)

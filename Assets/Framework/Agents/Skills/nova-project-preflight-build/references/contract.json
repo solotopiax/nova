@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-preflight-build",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.15",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.build.inspect-readiness)",
+      "when": "Unity 已连接且稳定，并已冻结唯一 BuildTarget 与可选 YooAsset Package；仅执行只读规则检查"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "current Build Settings, ProjectSettings/Nova/Globals.json and Action result rule evidence",
+      "when": "只读解释当前快照和规则来源，不修改 ProjectSettings、资产或生成物"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "targetBuildTarget",
+      "required": true
+    },
+    {
+      "name": "targetYooAssetPackage",
+      "required": false
+    }
+  ],
+  "effects": [
+    "read"
+  ],
+  "writeScope": {
+    "allow": [],
+    "deny": [
+      "all project source, ProjectSettings, Build Settings, Config, Scene, Prefab, Collector and package writes",
+      "platform switch, Config export, HybridCLR generation, Android Resolve, Bundle or Player build",
+      "cache cleanup, output deletion, device installation, credential use, external write, Git commit or push"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "build-settings",
+    "active-config-master",
+    "yooasset-settings",
+    "hybridclr-settings"
+  ],
+  "idempotency": "read-only",
+  "confirmation": {
+    "requiredFor": [
+      "starting Unity or changing the selected project, BuildTarget or Package",
+      "switching platform, modifying any failed rule, exporting Config, resolving dependencies, generating artifacts, building, deleting, installing, external write, credential use, Git commit or push"
+    ],
+    "rule": "只读检查授权绑定唯一项目、BuildTarget 和可选 Package；它不授权修复、生成或构建。任一输入变化后重新冻结请求。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "运行中的 nova.project.build.inspect-readiness Descriptor 与本次冻结请求",
+    "目标 BuildTarget、activeBuildTarget 与 Build Support 规则",
+    "启用场景、Globals ConfigMaster 绑定、三维坐标与 ConfigRuntimeSO 一致性规则",
+    "YooAsset Settings、Collector、目标 Package 与 HybridCLR 前置规则",
+    "data.ready、错误/警告计数、逐条规则及未执行任何修复或构建的边界"
+  ]
+}

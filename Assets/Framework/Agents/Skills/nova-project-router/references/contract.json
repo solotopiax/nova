@@ -12,6 +12,11 @@
       "kind": "workspace-inspection",
       "entry": "catalog.json + selected references/contract.json",
       "when": "需要从已发现的消费端 Skill 中选择最窄路径时"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(operation=describe, action_id=<selected action id>)",
+      "when": "所选 Skill 引用 Project Action，且需要区分当前 MCP 可执行、传输未就绪或 Action 未开放时；只允许 describe"
     }
   ],
   "inputs": [
@@ -46,7 +51,8 @@
     "not_applicable"
   ],
   "evidence": [
-    "当前项目文件与随包 Docs 的定位证据",
-    "范围、风险与推荐路径"
+    "当前项目文件、所选 Skill 契约与随包 Docs 的定位证据",
+    "所选 Project Action 的 live describe 可用性；未引用 Action 时记录真实 Adapter 类型",
+    "范围、风险、推荐路径及是否命中 SDK/Kit、事件、持久化、Content 场景、构建前检/诊断、Android Resolve、真机诊断或既有专项 Operation 的消歧证据"
   ]
 }

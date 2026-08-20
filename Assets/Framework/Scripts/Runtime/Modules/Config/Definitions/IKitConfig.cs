@@ -12,7 +12,8 @@ namespace NovaFramework.Runtime
 {
     /// <summary>
     /// Kit 固有配置接口。
-    /// 在 ConfigMasterSO 中以全局单份静态配置（不进 Platform×Channel×DevelopMode 矩阵），由 ConfigRuntimeSO 承载；Kit Service 方法内通过 Nova.Config.GetKitConfig 按类型拉取并强转使用。
+    /// 配置实例存储在 ConfigMasterSO 的 PlatformChannelEntry.KitConfigsByMode 中，按 DevelopMode 分格；ConfigMasterSO.EnabledKits 仅为 Kit 类型白名单。
+    /// Exporter 将当前 Platform×Channel×DevelopMode 坐标的已启用配置导出为单格 ConfigRuntimeSO；Kit Service 方法内通过 Nova.Config.GetKitConfig 按类型拉取并强转使用。
     /// 实现类必须提供 DisplayName，供 ConfigWindow 左树渲染中文名；右侧字段悬停提示由字段上的 [Tooltip] 特性承载。
     /// </summary>
     public interface IKitConfig

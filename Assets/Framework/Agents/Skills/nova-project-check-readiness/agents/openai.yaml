@@ -1,4 +1,4 @@
 interface:
-  display_name: "Nova 项目就绪检查"
-  short_description: "检查 Nova 项目结构配置入口与可安全继续执行的前置条件"
-  default_prompt: "使用 $nova-project-check-readiness 检查当前项目是否已具备 Nova 开发前置条件。"
+  display_name: "Nova 项目就绪与扩展包检查"
+  short_description: "只读检查 Nova 拓扑、已装 SDK/Kit 与配置前置证据"
+  default_prompt: "使用 $nova-project-check-readiness 只读检查当前项目及已安装 Nova SDK/Kit 的接入和配置前置。"

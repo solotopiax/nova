@@ -4,6 +4,12 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-08-20
+
+### Changed
+
+- FacebookDemo 移除重复场景监听，改由 Framework `0.6.16` 的统一 `SceneRoute` 接管；最低 Framework 依赖同步提升至 `0.6.16`。
+
 ## [0.1.6] - 2026-08-18
 
 ### Added

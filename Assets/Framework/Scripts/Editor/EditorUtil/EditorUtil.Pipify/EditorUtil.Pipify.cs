@@ -14,7 +14,6 @@ using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEngine.SceneManagement;
 
 namespace NovaFramework.Editor
 {
@@ -27,31 +26,20 @@ namespace NovaFramework.Editor
         public static partial class Pipify
         {
             /// <summary>
-            /// 域重载后挂载 sample scene 打开日志守卫：
-            /// 仅在 Single 模式打开 sample scene 且命中其自身配对的 PipifySettings.asset 时输出 Debug 日志。
+            /// 记录指定 Sample 场景配对的 PipifySettings。
+            /// 由 EditorUtil.SceneRoute 在 Single 场景打开后调用，避免自身重复订阅 sceneOpened。
             /// </summary>
-            [InitializeOnLoadMethod]
-            private static void HookAutoLogActiveSampleSettings()
+            /// <param name="scenePath">当前打开场景的项目相对路径。</param>
+            internal static void LogActiveSettingsForScene(string scenePath)
             {
-                EditorSceneManager.sceneOpened -= OnSceneOpenedAutoLogActiveSampleSettings;
-                EditorSceneManager.sceneOpened += OnSceneOpenedAutoLogActiveSampleSettings;
-            }
-
-            /// <summary>
-            /// Sample scene 打开回调：记录当前 sample 配对的 PipifySettings。
-            /// </summary>
-            private static void OnSceneOpenedAutoLogActiveSampleSettings(Scene scene, OpenSceneMode mode)
-            {
-                if (mode != OpenSceneMode.Single) return;
-
-                PipifySettingsSO settings = FindSettingsForScene(scene.path);
+                PipifySettingsSO settings = FindSettingsForScene(scenePath);
                 if (settings == null) return;
 
                 string assetPath = AssetDatabase.GetAssetPath(settings);
                 if (string.IsNullOrEmpty(assetPath)) return;
 
                 string guid = AssetDatabase.AssetPathToGUID(assetPath);
-                Log.Debug(LogTag.Editor, "{0} 已设置激活 PipifySettings：{1}（{2}）", c_LogPrefix, assetPath, guid);
+                Log.Debug(LogTag.Editor, "{0} 已激活 PipifySettings：{1}（{2}）", c_LogPrefix, assetPath, guid);
             }
 
             /// <summary>

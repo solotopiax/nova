@@ -85,7 +85,7 @@ ScanAll():
 
 ## §10 常见误区
 
-- `EnsureInstance` / `RemoveInstance` 直接接受 `List<IKitConfig>`（全局单份），无 PlatformChannelEntry / DevelopMode 参数——与 SDKPluginScanner 不同，不要按 SDK 模式调用。
+- `EnsureInstance` / `RemoveInstance` 接受 `PlatformChannelEntry` 与 `DevelopMode`，只操作该三维格的 `List<IKitConfig>`；`EnabledKits` 仅为导出白名单，Exporter 将当前格导出为单格 `ConfigRuntimeSO`。
 - 扫描结果每次调用都遍历全程序集，建议调用方缓存结果。
 
 ---

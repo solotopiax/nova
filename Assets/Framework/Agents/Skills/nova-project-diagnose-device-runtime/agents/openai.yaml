@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova 真机运行诊断"
+  short_description: "在指定设备、Bundle ID、时间窗和脱敏规则下只读定位运行问题"
+  default_prompt: "使用 $nova-project-diagnose-device-runtime 在不安装、不清数据、不启动应用和不改工程的前提下，只读诊断当前 Nova 项目的真机运行问题。"

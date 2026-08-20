@@ -68,7 +68,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 
 ## § 2 8 维覆盖矩阵汇总
 
-> 横向：34 demo（编号 1.1 - 4.5）；纵向：PAT-65 8 维。每格："C"=代表性折叠 / "F"=完整覆盖 / "S"=跳过。
+> 横向：34 demo（编号 1.1 - 4.4）；纵向：PAT-65 8 维。每格："C"=代表性折叠 / "F"=完整覆盖 / "S"=跳过。
 
 | Demo | 生命周期 | 重载族 | 异步 | 配置驱动 | 事件回调 | 错误边界 | 跨模块 | Editor工具 |
 |---|---|---|---|---|---|---|---|---|
@@ -101,11 +101,11 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 | 3.1 AOT metadata | S | S | S | F | S | S | C | S |
 | 3.2 业务 dll | S | S | S | F | S | S | C | S |
 | 3.3 业务 Procedure 注册时序 | S | S | S | S | F | S | F | S |
+| 3.4 运行时增量热更新 | C | S | F | F | S | F | F | S |
 | 4.1 UI+Localization | C | S | F | C | F | S | F | S |
 | 4.2 UI+Asset | C | C | F | S | S | C | F | S |
-| 4.3 Procedure+Asset | S | S | S | F | S | S | F | S |
-| 4.4 Event+Network | C | S | F | S | F | S | F | S |
-| 4.5 Config+HybridCLR Namespace | S | S | S | F | S | S | F | S |
+| 4.3 Event+Network | C | S | F | S | F | S | F | S |
+| 4.4 Config+HybridCLR Namespace | S | S | S | F | S | S | F | S |
 
 **审查结论：**
 - Editor 工具维度全 S：MainDemo 不演示 Inspector / EditorWindow（PAT-65 §8 默认仅演示业务可见部分，Editor 工具走 Inspector 自动展示）
@@ -309,30 +309,38 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 生命周期：页面关闭仅取消本页等待，不取消已经发起的系统权限或应用内评价请求
 - 资源：无；系统弹窗、Provisional、设置页跳转和应用内评价均需 Android / iOS（评价为 iOS 16+）真机验证，系统是否展示评价提示及用户交互结果由平台控制
 
-### 3. HybridCLR 运行时热更新（3 个，全 R）
+### 3. HybridCLR 热更新解决方案（4 个）
 
 #### 3.1 DemoHybridClrAotMetadataView ｜ R
 - API 副标题：`Util.HybridCLR.LoadAotMetadataAsync(dlls)`（启动期已调，本 demo 仅展示快照）
-- 主题：AOT metadata 已加载列表
-- InteractionArea：DLL 名列表（来自 `Nova.Config.ConfigManager.AotMetadataDlls`）+ HomologousImageMode 卡片（SuperSet）
+- 主题：启动阶段 AOT Metadata 配置与加载结果
+- InteractionArea：DLL 名列表（来自 `ConfigRuntimeSO.HybridConfigs.AotMetadataDlls`）+ HomologousImageMode 卡片（SuperSet）
 - 反馈样例：`> AotMetadataDlls → 5 entries (mscorlib.dll, System.dll, ...)`
 - 资源：无
 
 #### 3.2 DemoHybridClrGameDllView ｜ R
-- API 副标题：`Util.HybridCLR.LoadGameAssemblyAsync(dlls)`
-- 主题：业务 dll 已加载列表
-- InteractionArea：dll 名列表（来自 ConfigManager.GameDlls）+ 命名空间卡片
-- 反馈样例：`> GameDlls → Game.Runtime.dll loaded`（MainDemo 场景下可能为空，显式标注）
+- API 副标题：`ProcedureLoadDll → Util.HybridCLR.LoadGameAssemblyAsync(location)`
+- 主题：启动时业务 DLL 配置与加载结果
+- InteractionArea：DLL 名列表（来自 `ConfigRuntimeSO.HybridConfigs.StartupGameDlls`）+ Namespace 卡片
+- 反馈样例：`> StartupGameDlls → NovaFramework.Samples.Runtime.dll 启动阶段已按配置完成`
 - 资源：无
 
 #### 3.3 DemoHybridClrProcedureRegisterView ｜ R
 - API 副标题：`ProcedureLoadDll → RegisterAdditionalProcedures(...)`
 - 主题：业务 Procedure 注册时序快照
-- InteractionArea：时序条（Manifest → Config → AOT → DLL → Register → Jump）+ 每步 Elapsed 卡片（来自 ProcedureRunInfo）
-- 反馈样例：`> ProcedureLoadDll Elapsed=1.234s → handed off`
+- InteractionArea：真实时序（Yield → Manifest/Config → AOT → Startup DLL/Refresh → Register → OnUpdate Jump）+ 入口注册结果 + CurrentProcedure
+- 反馈样例：`> 入口注册 → NovaFramework.Samples.Runtime.ProcedurePreload`
 - 资源：无
 
-### 4. Integration 跨模块联动（5 个）
+#### 3.4 DemoHybridClrRuntimeUpdateView ｜ I
+- API 副标题：`CreateDownloaderByTags → LoadGameAssemblyAsync → Entry → LoadSceneAsync(Additive)`
+- 主题：固定启动 Manifest 的运行时增量内容激活
+- InteractionArea：「执行运行时增量热更新」按钮
+- 执行顺序：下载 `demo_runtime_hotupdate` 标签 → 加载 `RunningGameDlls` 中的独立程序集 → 反射调用完整入口类型 → Additive 加载增量场景
+- 边界：不调用 `RefreshManifestAsync`；Editor 只验证已编译程序集与本地场景链，IL2CPP DLL/AOT 行为需真机验证
+- 资源：`NovaFramework.Samples.Running.dll` + `DemoRuntimeHotUpdateContent`
+
+### 4. Integration 跨模块联动（4 个）
 
 #### 4.1 DemoIntegrationUiLocalizationView ｜ I
 - API 副标题：`Nova.Localization.SetLanguageAsync + Nova.UI.OpenUIViewAsync<T>`
@@ -348,25 +356,18 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - 反馈样例：`> Nova.Asset.LoadAsync<GameObject>("...") → instantiated; UI handle=2007`
 - 依赖资源：prefab `DemoSubPanel`（共用 2.3 资产或新建轻量版）
 
-#### 4.3 DemoIntegrationProcedureAssetView ｜ R
-- API 副标题：`ProcedureCheckVersion → ProcedureHotfix → ProcedureLoadDll`
-- 主题：热更链路只读快照
-- InteractionArea：链路图（5 个节点）+ 每节点状态卡片 + EnableHotfix 总开关卡片（来自 AssetManagerConfig）
-- 反馈样例：`> EnableHotfix=false → Hotfix procedures skipped`
-- 资源：无
-
-#### 4.4 DemoIntegrationEventNetworkView ｜ I
+#### 4.3 DemoIntegrationEventNetworkView ｜ I
 - API 副标题：`Nova.Network.OnWebSocketReceiveMessage += h → Nova.Event.Fire(this, e)`
 - 主题：网络消息桥接到事件总线
 - InteractionArea：「Connect Mock」按钮 + 「Send Mock Message」按钮 + 「Subscribe Bridged Event」按钮 + 收到消息卡片
 - 反馈样例：`> WS receive → Event.Fire(NetworkBridgedEventData) → handlers=1`
 - 资源：无（mock 用本地 echo）
 
-#### 4.5 DemoIntegrationConfigHybridClrView ｜ R
+#### 4.4 DemoIntegrationConfigHybridClrView ｜ R
 - API 副标题：`Nova.Config.ConfigManager.Namespace → Util.Assembly.GetAssembly(ns)`
 - 主题：Namespace 注入 → 程序集解析
 - InteractionArea：Namespace 卡片 + 解析得到的 Assembly 卡片 + 已注册 ProcedureBase 子类计数
-- 反馈样例：`> Namespace="Game.Runtime" → Assembly resolved / 0 Procedure subclasses (MainDemo)`
+- 反馈样例：`> Namespace="NovaFramework.Samples.Runtime" → Assembly resolved / ProcedureBase 子类计数 > 0`
 - 资源：无
 
 ---
@@ -486,17 +487,19 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 | DemoHybridClrAotMetadataView | HybridCLR 3.1 AOT metadata | UIs/DemoHybridClrAotMetadataView | Demo | false |
 | DemoHybridClrGameDllView | HybridCLR 3.2 业务 dll | UIs/DemoHybridClrGameDllView | Demo | false |
 | DemoHybridClrProcedureRegisterView | HybridCLR 3.3 Procedure 注册时序 | UIs/DemoHybridClrProcedureRegisterView | Demo | false |
+| DemoHybridClrRuntimeUpdateView | HybridCLR 3.4 运行时增量热更新 | UIs/DemoHybridClrRuntimeUpdateView | Demo | false |
 | DemoIntegrationUiLocalizationView | Integration 4.1 UI+Localization | UIs/DemoIntegrationUiLocalizationView | Demo | false |
 | DemoIntegrationUiAssetView | Integration 4.2 UI+Asset | UIs/DemoIntegrationUiAssetView | Demo | false |
-| DemoIntegrationProcedureAssetView | Integration 4.3 Procedure+Asset | UIs/DemoIntegrationProcedureAssetView | Demo | false |
-| DemoIntegrationEventNetworkView | Integration 4.4 Event+Network | UIs/DemoIntegrationEventNetworkView | Demo | false |
-| DemoIntegrationConfigHybridClrView | Integration 4.5 Config+HybridCLR | UIs/DemoIntegrationConfigHybridClrView | Demo | false |
+| DemoIntegrationEventNetworkView | Integration 4.3 Event+Network | UIs/DemoIntegrationEventNetworkView | Demo | false |
+| DemoIntegrationConfigHybridClrView | Integration 4.4 Config+HybridCLR | UIs/DemoIntegrationConfigHybridClrView | Demo | false |
 
 > 辅助 view（DemoToastView / DemoDialogView）由 2.8 / 4.1 / 4.2 共享，独立追加 2 行（Pause=false / UIGroup=DemoSub）。
 
 ---
 
-## § 7 4 路并发切分定稿
+## § 7 历史实施切分（已完成）
+
+> 本节仅保留初次建设时的分工背景；当前演示结构以 § 3、README 与 DEMO-INDEX 为准。
 
 > 命名 A/B/C/D = 4 路 runtime-coder + E = doc-writer。前置阻塞：D 路先单独跑 BaseDemoView，A/B/C 等 BaseDemoView 落盘后并发起步。
 
@@ -525,8 +528,8 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 - **阻塞**：等 D 路 + Table/Localization xlsx 数据追加完成
 
 ### C 路（Modules 后 9 + HybridCLR + Integration）
-- **负责**：2.9-2.17 + 3.1-3.3 + 4.1-4.5（共 17 个）
-- **类**：DemoNetworkView / DemoProcedureView / DemoObjectPoolView / DemoPersistView / DemoSoundView / DemoVibrateView / DemoSDKView / DemoDebugView / DemoHybridClrAotMetadataView / DemoHybridClrGameDllView / DemoHybridClrProcedureRegisterView / DemoIntegrationUiLocalizationView / DemoIntegrationUiAssetView / DemoIntegrationProcedureAssetView / DemoIntegrationEventNetworkView / DemoIntegrationConfigHybridClrView
+- **负责**：2.9-2.17 + 3.1-3.4 + 4.1-4.4（共 17 个）
+- **类**：DemoNetworkView / DemoProcedureView / DemoObjectPoolView / DemoPersistView / DemoSoundView / DemoVibrateView / DemoSDKView / DemoDebugView / DemoNativeView / DemoHybridClrAotMetadataView / DemoHybridClrGameDllView / DemoHybridClrProcedureRegisterView / DemoHybridClrRuntimeUpdateView / DemoIntegrationUiLocalizationView / DemoIntegrationUiAssetView / DemoIntegrationEventNetworkView / DemoIntegrationConfigHybridClrView
 - **文件**：每类 1 cs（多为只读快照，体量 ≤ 80 行）
 - **阻塞**：等 D 路 + Sound/Vibrate xlsx 数据追加完成
 
@@ -546,10 +549,10 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 3. **DemoSDK 在 MainDemo 场景下默认无插件**：MainDemo 自带的 Nova.prefab 是否启用任何 SDKPlugin？若全空则 demo 信息卡片为空清单（这是合理的"零插件态"演示），需用户确认是否额外搭一个 fake plugin 演示注册流程。
 4. **DemoCollections 重载族折叠**：NovaLinkedList / NovaMultiDictionary / NovaOrderedDictionary 是否合并到 1.7 单 demo 还是各拆一叶？目前 DemoTreeData.cs 只有 1.7 单叶，按"代表性折叠"原则放在 1.7 内子卡片切换。**确认无需拆叶。**
 5. **DemoUtil 子卡片选择**：Util 工具集体量大（Json / Encrypt / SysIO / MD5 / Convert / TypeCreator / Assembly / HybridCLR），1.6 单叶选 3 子卡片（Json / AES / MD5）覆盖代表性，**Convert / SysIO / TypeCreator 是否补卡片**待用户拍板。
-6. **DemoIntegrationEventNetwork 4.4 mock 方式**：要不要起一个本机 echo websocket？还是直接 fake `Nova.Event.Fire` 模拟收消息后桥接？建议后者（无外部依赖），**待确认**。
+6. **DemoIntegrationEventNetwork 4.3 mock 方式**：当前使用无外部依赖的本地模拟消息桥接。
 7. **DemoNavTree 现有图标 `icon_arrow_red` 来源**：当前 prefab 已有该图，是否保留作为 § 4 资源清单一员还是另选规范化名？暂按保留处理。
 8. **UI 注册表 `UIGroupName=Demo` 是否与现有 UISettings 冲突**：需在 UISettings.UIGroupSettings 列表追加 `Demo` 组（Depth=50，Visible=true），**待 editor-coder 在 UIComponent Inspector 实操确认**。
 9. **辅助 view DemoToastView/DemoDialogView 是否登记 DemoTreeData 叶子**：当前 DemoTreeData.cs 34 叶不含它们；它们是 2.8/4.1/4.2 内部 spawn 的子页面，**不登记叶子**，与现有 34 叶数对齐。
-10. **DemoIntegrationProcedureAsset 4.3 真做热更链路演示还是只读快照**：背景说明"4.3 / 4.5 走只读快照"，但若 EnableHotfix=false 则链路展示无意义，**确认 4.3 仅展示当前总开关 + 节点状态即可，不实际跑下载**。
+10. **运行时热更新归属**：旧 `DemoIntegrationProcedureAssetView` 已删除；完整演示统一归入 3.4，固定启动 Manifest 后执行 Tag 下载、Running DLL、入口与 Additive Scene。
 
 > 设计稿到此结束。

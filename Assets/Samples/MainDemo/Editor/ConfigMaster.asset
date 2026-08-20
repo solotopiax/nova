@@ -214,10 +214,11 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Samples.Runtime.dll
+    RunningGameDlls: []
     LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
   HybridEditorConfigsOverrides:
@@ -249,10 +250,11 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Samples.Runtime.dll
+    RunningGameDlls: []
     LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
     Platform: 2
@@ -286,10 +288,11 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Samples.Runtime.dll
+    RunningGameDlls: []
     LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
     Platform: 3
@@ -323,10 +326,11 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Samples.Runtime.dll
+    RunningGameDlls: []
     LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
     Platform: 1

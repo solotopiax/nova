@@ -12,7 +12,8 @@ Asset 模块编辑期注入层；按 ConfigMasterSO 中显式声明的路径字�
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.cs` | `EditorUtil.Config.YooAssetInjector` | 全部逻辑：`Inject` / `LoadBundleCollector` |
+| `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.cs` | `EditorUtil.Config.YooAssetInjector` | 注入与收集器加载：`Inject` / `LoadBundleCollector` |
+| `Editor/EditorUtil/EditorUtil.SceneRoute.cs` | `EditorUtil.SceneRoute` | Single 场景打开时的 ConfigMaster / YooAsset / Pipify 路由编排与四阶段日志摘要 |
 
 ---
 
@@ -41,7 +42,8 @@ public static BundleCollectorSetting LoadBundleCollector(ConfigMasterSO master);
 | 钩子 | 时机 | 行为 |
 |------|------|------|
 | `RegisterYooAssetExplicitPathProvider` | Editor 启动 / 域重载 | 向 `SettingLoader.RegisterExplicitPathProvider` 注册回调，按当前激活 master 的 `BundleCollectorSettingPath` 解析 `BundleCollectorSetting`，替代 YooAsset 内置 `AssetDatabase.FindAssets` 全工程扫描；激活 master 缺失或路径字段为空时回调返回 null，YooAsset 自动回退兜底 |
-| `HookSceneOpenedAutoInject` | Editor 启动 / 域重载 | 域级常驻订阅 `EditorSceneManager.sceneOpened`（仅响应 `OpenSceneMode.Single`）；同时 `EditorApplication.delayCall` 启动期立即按当前激活 master `Inject` 一次，不依赖 ConfigWindow 是否打开。解决 Editor 启动后从未打开 ConfigWindow 即触发构建/查询 YooAssetSettings 的流程，避免 `s_settings` 仍为 null → 走 `Resources.Load` 全工程兜底命中错副本 |
+| `InjectActiveSettingsOnEditorLoad` | Editor 启动 / 域重载 | 通过 `EditorApplication.delayCall` 启动期按当前激活 master `Inject` 一次，不依赖 ConfigWindow 是否打开。解决 Editor 启动后从未打开 ConfigWindow 即触发构建/查询 YooAssetSettings 的流程，避免 `s_settings` 仍为 null → 走 `Resources.Load` 全工程兜底命中错副本 |
+| `EditorUtil.SceneRoute` | `EditorSceneManager.sceneOpened` 的 `OpenSceneMode.Single` | 解析 active ConfigMaster 一次，依次输出 Scene / ConfigMaster / YooAssetSettings / PipifySettings 四条摘要，并调用 `YooAssetInjector.Inject`。Additive 打开不切换路由；相同场景重开仅重新确认和注入，不会为了日志额外写入 `Globals.json` |
 | `YooAssetRuntimeSettingsStaging.InjectForEditorPlayMode` | `BeforeSceneLoad` | YooAsset 在 `SubsystemRegistration` 清空静态 Settings 后，重新按当前 ConfigMaster 的 Platform / Channel / DevelopMode 解析路径并调用 `InjectByPath`；不创建 Resources 副本 |
 
 ---
@@ -49,7 +51,7 @@ public static BundleCollectorSetting LoadBundleCollector(ConfigMasterSO master);
 ## §11 使用示例
 
 ```csharp
-// 业务侧通常无需手动调用 Inject——HookSceneOpenedAutoInject 已在域重载/场景切换时自动触发
+// 业务侧通常无需手动调用 Inject——SceneRoute 已在 Single 场景切换时自动触发，启动期也会延迟注入一次
 // 仅在「字段编辑后立即生效」等显式刷新场景下需要手动调用
 ConfigMasterSO master = EditorUtil.Config.WorkspaceActive.Get();
 EditorUtil.Config.YooAssetInjector.Inject(master);
@@ -69,4 +71,4 @@ if (collector == null)
 
 - [ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)（字段来源：`YooAssetSettingsPath` / `BundleCollectorSettingPath`）
 - [EditorUtil.Config.WorkspaceActive.md](EditorUtil.Config.WorkspaceActive.md)（调用前获取 master 的入口）
-- [ConfigWindow.md](../../Windows/ConfigWindow.md)（主要调用方：OnSceneOpenedRefresh 阶段调用 `Inject`）
+- [ConfigWindow.md](../../Windows/ConfigWindow.md)（窗口打开或显式绑定时调用 `Inject`；场景切换注入由 `SceneRoute` 统一完成）

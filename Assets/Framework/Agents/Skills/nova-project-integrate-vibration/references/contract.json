@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-integrate-vibration",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.15",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-edit",
+      "entry": "project-confirmed Emphasis or Custom vibration data source and existing business vibration trigger",
+      "when": "只修改已冻结的区域数据、既有业务触发和唯一停止生命周期"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "VibrateComponentInspector and confirmed Nova Prefab, Scene, VibrateSettings, VibrateUnitSetting, Collector, asset address or existing trigger binding editing",
+      "when": "更新已确认的组件、资源映射或序列化引用；不得手写 Unity YAML"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "EditorUtil.Vibrate.ExportEmphasisData / ExportEmphasisCode / ExportEmphasisAll / ExportCustomData / ExportCustomCode / ExportCustomAll",
+      "when": "按冻结范围导出单文件或已完整确认的 Emphasis 或 Custom 区域"
+    },
+    {
+      "kind": "pipify",
+      "entry": "export.vibrate.emphasis.data / export.vibrate.emphasis.code / export.vibrate.custom.data / export.vibrate.custom.code",
+      "when": "仅在当前活动场景的 Nova 与 VibrateComponent 存在且相应完整区域范围已确认时复用 Batch"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "Nova.Vibrate.LoadAsync / Play / PlayCustom / PlayEmphasis / StopAll",
+      "when": "在运行时完成加载，触发冻结的预设或命名区域，并由确认责任方停止"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "Play Mode state inspection and target-device feedback capture",
+      "when": "核验加载、平台支持、业务触发和停止；成功仍须取得真实设备的测试者体感反馈"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "activeSceneNovaAndVibrateComponent",
+      "required": true
+    },
+    {
+      "name": "targetVibrateAreasAndSourceScope",
+      "required": true
+    },
+    {
+      "name": "vibrateSettingsUnitsDataFormatAndOutputScope",
+      "required": true
+    },
+    {
+      "name": "runtimeAssetLocationsCollectorAndPackageOwnership",
+      "required": true
+    },
+    {
+      "name": "businessTriggerAndSingleStopOwner",
+      "required": true
+    },
+    {
+      "name": "targetPlatformDeviceAndPhysicalFeedbackProbe",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed Emphasis or Custom source data and selected generated output",
+      "confirmed VibrateComponent, VibrateSettings, VibrateUnitSetting, asset address or Collector membership through Unity Editor or MCP",
+      "confirmed existing business vibration trigger and its single StopAll lifecycle owner",
+      "confirmed existing target Prefab or Scene binding directly related to the vibration trigger"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "NiceVibrations source, package contents, compile switches or vendor configuration",
+      "handwritten Unity asset, Prefab, Scene or meta YAML",
+      "manual edits to generated Vibrate JSON, bytes or C# output",
+      "unconfirmed source area, Unit, Collector, Package, asset address, Prefab, Scene, business trigger or device install target",
+      "unrelated Emphasis or Custom area, generated output, resource package, UI, View, UIGroup or registration",
+      "export.excel.all, Bundle or Player build, CDN deployment, Framework Vibrate API, Manager or Inspector changes"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "active-scene",
+    "nova-root-prefab",
+    "vibrate-component-settings",
+    "vibrate-emphasis-source-and-export-output",
+    "vibrate-custom-source-and-export-output",
+    "vibrate-resource-address-and-collector",
+    "business-vibration-entry-and-stop-owner",
+    "target-device-feedback-session"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous target area, source file, Sheet, row, Unit, Name, Order, data field, DataFormat, output, AssetLocation, Collector, Package, trigger, stop owner, target platform or physical feedback probe",
+      "create or change VibrateSettings, VibrateUnitSetting, data source or output path, asset address, Collector, existing business trigger, lifecycle, Prefab or Scene binding",
+      "replace a non-generated asset, remove a source row or clean generated output",
+      "build or install a Player, delete, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认唯一 Nova/场景/VibrateComponent、目标 Emphasis 或 Custom 区域及其数据和 Unit、DataFormat、输出和运行时地址、既有业务触发与唯一停止责任、目标真机和反馈探针，以及最小写入集；任一输入或范围改变后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "冻结的目标区域、源数据、VibrateSettings、Unit、DataFormat、输出、AssetLocation、Collector 和 Package 映射",
+    "定向 Exporter 或已确认 Pipify 区域 Step 的结果，以及相关 Unity 编译证据",
+    "Play Mode 中 Nova.Vibrate.LoadAsync、平台支持、业务触发和 StopAll 生命周期证据",
+    "目标真机上的实际测试者体感反馈；没有该反馈时结果最高为 partial"
+  ]
+}

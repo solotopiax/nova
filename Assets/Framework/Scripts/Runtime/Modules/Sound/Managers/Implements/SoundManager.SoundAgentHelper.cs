@@ -51,7 +51,17 @@ namespace NovaFramework.Runtime
             /// <summary>
             /// 获取或设置播放位置。
             /// </summary>
-            public float Time { get => m_AudioSource.time; set => m_AudioSource.time = value; }
+            public float Time
+            {
+                get => m_AudioSource.clip != null ? m_AudioSource.time : 0f;
+                set
+                {
+                    if (m_AudioSource.clip != null)
+                    {
+                        m_AudioSource.time = value;
+                    }
+                }
+            }
 
             /// <summary>
             /// 获取或设置是否静音。

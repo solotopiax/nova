@@ -7,8 +7,7 @@
  * created:   2026/05/23
  * descrip:   Modules 2.2 — Asset 同步/异步/取消三态演示 View（交互型）
  *            职责：演示 Nova.Asset.LoadAsync<Sprite> 和 Nova.Asset.Release，
- *            支持 Sync/Async/Cancel 三种加载模式，结果用 Image 展示；
- *            同时演示运行时增量下载（RefreshManifest + tag 切片）API 调用姿势。
+ *            支持 Async/Cancel/Release 三种资源生命周期操作，结果用 Image 展示。
  ***************************************************************/
 
 using System.Threading;
@@ -56,23 +55,6 @@ namespace NovaFramework.Samples.Runtime
         [SerializeField] private Image m_ResultImage;
 
         /// <summary>
-        /// 检查并下载 tag 增量按钮，触发 RefreshManifest + CreateDownloaderByTags + RunAsync 三步流程。
-        /// </summary>
-
-        [SerializeField] private Button m_CheckPatchButton;
-
-        /// <summary>
-        /// 演示无效 Asset 地址跳过按钮，触发 CreateDownloaderByLocations Warning 跳过行为。
-        /// </summary>
-
-        [SerializeField] private Button m_InvalidLocationButton;
-
-        /// <summary>
-        /// 运行时增量下载任务的取消令牌源，视图关闭时取消。
-        /// </summary>
-        private CancellationTokenSource m_PatchCts;
-
-        /// <summary>
         /// 当前已加载的资源句柄，用于 Release。
         /// </summary>
         private NovaFramework.Runtime.IAssetHandle<Sprite> m_CurrentHandle;
@@ -110,17 +92,6 @@ namespace NovaFramework.Samples.Runtime
                 SetButtonApiHint(m_ReleaseButton, "IAssetHandle.Release()");
             }
 
-            if (m_CheckPatchButton != null)
-            {
-                m_CheckPatchButton.onClick.AddListener(OnCheckPatchButtonClick);
-                SetButtonApiHint(m_CheckPatchButton, "Nova.Asset.RefreshManifestAsync() -> CreateDownloaderByTags(tags) -> RunAsync(ct)");
-            }
-
-            if (m_InvalidLocationButton != null)
-            {
-                m_InvalidLocationButton.onClick.AddListener(OnInvalidLocationButtonClick);
-                SetButtonApiHint(m_InvalidLocationButton, "Nova.Asset.CreateDownloaderByLocations(locations) -> Scope/IsEmpty");
-            }
         }
 
         /// <summary>
@@ -152,7 +123,6 @@ namespace NovaFramework.Samples.Runtime
         {
             CancelLoad();
             ReleaseCurrentAsset();
-            CancelPatch();
             base.OnClose(isShutdown, userData);
         }
     }

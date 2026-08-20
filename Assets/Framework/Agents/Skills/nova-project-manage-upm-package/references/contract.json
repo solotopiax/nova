@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-manage-upm-package",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.15",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(operation=plan, action_id=nova.project.upm.manage-latest, request=object)",
+      "when": "只读生成 install-latest 或 upgrade-latest 的一次性计划"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(operation=execute, action_id=nova.project.upm.manage-latest, plan_id=string, confirmation_token=string)",
+      "when": "用户确认精确计划且 manifest、lock、registry 与远端版本均未漂移后提交一次写入与 Resolve"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(operation=verify, action_id=nova.project.upm.manage-latest, receipt=string)",
+      "when": "UPM 更新、编译和 domain reload 稳定后只读核验安装或升级结果，不自动重放"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "nova_project_action(action_id=nova.project.upm.uninstall-direct, exposure=blocked)",
+      "when": "direct dependency 卸载已拆为含 Destructive 的独立 Action；当前 MCP 不开放，必须返回可信审批阻断"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "action",
+      "required": true
+    },
+    {
+      "name": "packageName",
+      "required": true
+    },
+    {
+      "name": "configuredRegistryUrlForDisambiguation",
+      "required": false
+    },
+    {
+      "name": "confirmedPlanId",
+      "required": false
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write"
+  ],
+  "writeScope": {
+    "allow": [
+      "Packages/manifest.json direct dependency and scoped registry changes described by the confirmed plan",
+      "Packages/packages-lock.json updates produced only by Unity Package Manager Resolve"
+    ],
+    "deny": [
+      "com.solotopia.nova.framework self install, upgrade or uninstall",
+      "Packages/com.solotopia.nova.framework/** and Library/PackageCache/** manual edits",
+      "fixed historical version, downgrade, arbitrary registry, git/file/registry source switch or batch upgrade",
+      "ProjectSettings/Nova/PlugPalsRegistries.json changes",
+      "manual packages-lock edits, cache deletion or automatic replay after failure",
+      "SDK or Kit enablement, ConfigMaster, Samples, business source, Bundle, Player, UPM publish or Git operations"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "unity-package-manager",
+    "Packages/manifest.json",
+    "Packages/packages-lock.json",
+    "domain-reload"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "every install-latest, upgrade-latest or uninstall-direct execution",
+      "the exact action, packageName, currentVersion, targetVersion and selected configured registry",
+      "the exact manifest and scoped registry diff",
+      "delete, external write, credential use, Git commit or push"
+    ],
+    "rule": "Plan 只读；确认只绑定一次性 planId 及其精确输入和前置指纹。manifest、lock、远端版本、registry 状态或 Editor domain 任一变化后旧确认失效，必须重新计划。"
+  },
+  "minimumEvidence": "compile",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "只读 Plan 中冻结的动作、包名、当前版本、目标版本、registry、依赖和消费者",
+    "用户针对一次性 planId 的明确确认",
+    "Execute 返回的 partial receipt，且没有自动重放",
+    "Unity 稳定后 manifest 与 packages-lock 的精确版本和 registry 来源，或卸载后的双重消失证据",
+    "未执行 SDK/Kit 启用、Sample、业务改动、构建、发布或 Git 操作的边界说明"
+  ]
+}

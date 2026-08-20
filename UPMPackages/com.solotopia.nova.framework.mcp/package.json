@@ -1,0 +1,25 @@
+{
+  "name": "com.solotopia.nova.framework.mcp",
+  "version": "0.1.0",
+  "license": "MIT",
+  "coreVersion": "0.0.1",
+  "displayName": "Nova Framework - MCP",
+  "description": "Nova Framework 的 Provider 中立 MCP 契约与受控 Project Action 桥接基础包",
+  "category": "Editor",
+  "unity": "6000.4",
+  "keywords": [
+    "nova",
+    "framework",
+    "mcp",
+    "agent",
+    "editor",
+    "project-actions"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
+  "dependencies": {
+    "com.coplaydev.unity-mcp": "10.1.2",
+    "com.unity.nuget.newtonsoft-json": "3.2.2"
+  }
+}

@@ -34,19 +34,16 @@ description: Use when 已配置 HybridCLR 的 Nova 消费项目需要在当前 a
 3. `developmentBuild`：当前 `EditorUserBuildSettings.development`，不得用 Config 的 `DevelopMode` 猜测。
 4. `activeConfigMaster`：`EditorUtil.Config.WorkspaceActive.Get()` 返回的激活资产及其稳定身份。
 5. `platformChannelDevelopMode`：激活 ConfigMaster 当前 `Platform / Channel / DevelopMode` 三维坐标。
-6. `resolvedGameDllEntries`：当前坐标下完整 `GameDlls` 映射；逐项记录程序集、解析 `{ActiveBuildTarget}` 后的 SourceLocation、TargetLocation 与 AssetLocation，不得只选其中一部分。其去重后的 `SourceLocation` 就是本 Operation 要验证的必需编译产物集合；不得另读或猜测 `HybridCLRSettings`。
-7. `executionEntry`：已确认的直接 C# 闭环，或项目中已经存在且已确认的 Pipify Batch 与其有效 Step 顺序。
+6. `resolvedGameDllEntries`：当前坐标下 `StartupGameDlls + RunningGameDlls` 的完整并集映射；逐项记录所属列表、程序集、解析 `{ActiveBuildTarget}` 后的 SourceLocation、TargetLocation 与 AssetLocation，不得只选其中一部分。其去重后的 `SourceLocation` 就是本 Operation 要验证的必需编译产物集合；不得另读或猜测 `HybridCLRSettings`。
+7. `executionEntry`：固定为 MCP Action `nova.project.hotfix.refresh-game-dlls`；不得切换为直接 C#、Pipify 或手工复制。
 
 任一必填输入缺失、当前值与冻结值不一致、映射存在空项/重复目标/越界目标，或确认后 Target、DevelopmentBuild、Master、三维坐标、完整映射、执行入口或覆盖范围发生变化时，停止执行并返回 `blocked`；旧确认失效。
 
 ## Action Adapter
 
-只允许以下二选一闭环：
+唯一正式入口是 MCP Tool `nova_project_action` 的 `nova.project.hotfix.refresh-game-dlls`。先 `describe` 获取当前 Request Schema，再以冻结的 Master、坐标、activeBuildTarget 和 developmentBuild 调 `plan`；展示完整映射、写入集与证据后取得确认，再调用 `execute`，同时传 `action_id`、`plan_id` 与 `confirmation_token=plan_id`。Execute 返回后只用 `recovery_token` 调 `verify`，不得自动重放。
 
-1. **直接 C#**：在同一次已确认执行中，先调用 `EditorUtil.HybridCLR.CompileDllActiveBuildTarget()`，再对当前坐标完整映射执行 `EditorUtil.HybridCLR.CopyGameDlls()`。
-2. **已有 Pipify Batch**：仅复用项目中已经存在、内容已核对且明确确认的 Batch；其完整 Items 必须且只能是 `hybridclr.compile_dll_active_build_target` -> `hybridclr.copy_game_dll` 两步，并严格按该顺序执行。Pipify 没有执行切片 API；只要 Batch 夹带 AOT、`GenerateAll`、Bundle、Player、CDN 或任何其他 Step，就返回 `blocked`。
-
-禁止单独调用 `CopyGameDlls`，也禁止只运行 `hybridclr.copy_game_dll`。直接 C# 路径同样必须是已确认的 compile -> copy 闭环。不得为本 Operation 临时新拼 Batch，不得用手工文件复制、单条目复制或其他未登记入口旁路整批预检。
+该 Action 内部固定复用 `CompileDllActiveBuildTarget -> CopyGameDlls` 闭环。禁止单独调用 `CopyGameDlls`。Skill 不再临时拼直接 C#、Pipify Batch、手工复制或单条目旁路；Tool/Action 未安装或未开放时返回 `blocked` 并报告缺少 `com.solotopia.nova.framework.mcp`，不退化为任意代码执行。
 
 ## 执行与整批验证
 
@@ -54,13 +51,13 @@ description: Use when 已配置 HybridCLR 的 Nova 消费项目需要在当前 a
 2. 在写入前重新读取 Target、DevelopmentBuild、WorkspaceActive Master 与三维坐标；与冻结值不一致时不执行。
 3. 执行编译入口，记录当前 Target 的完整 HybridCLR 编译输出根目录及其中全部编译器产物；从冻结 `resolvedGameDllEntries` 派生去重后的 SourceLocation，并确认全部已产出。编译失败时不得继续 Copy。
 4. 用冻结的 `resolvedGameDllEntries` 对编译后所有 SourceLocation 做整批预检，记录每个源文件的 SHA-256。任何源缺失或映射漂移都停止 Copy。
-5. 一次性执行 `CopyGameDlls` 或对应 Pipify copy Step。该入口先校验完整 `GameDlls` 源集合，再覆盖目标；不得把一部分成功描述为整批完成。
+5. 一次性执行 Action 内的 `CopyGameDlls`。该入口先校验 Startup/Running 不跨列表重复，再校验完整并集源集合并覆盖目标；不得把一部分成功描述为整批完成。
 6. 对每个目标重新计算 SHA-256，逐项确认与对应源文件一致。TargetLocation 位于 `Assets/` 时，还必须记录 `AssetDatabase.ImportAsset(..., ForceSynchronousImport)` 已完成的 Unity 导入证据；非 `Assets/` 目标不得伪造 AssetDatabase 导入结果。
 7. 报告冻结坐标、实际 Adapter、编译输出、完整 source -> target -> SHA-256 映射、Assets 目标导入结果和未验证边界。
 
 ## 写入边界与确认门
 
-允许写入仅包括：当前 `activeBuildTarget` 的完整 HybridCLR 编译输出根目录（含编译器生成的全部脚本 DLL/PDB）、冻结 `GameDlls` 映射的目标文件、目标位于 `Assets/` 时由既有入口触发的 Unity import，以及本次本地证据。
+允许写入仅包括：当前 `activeBuildTarget` 的完整 HybridCLR 编译输出根目录（含编译器生成的全部脚本 DLL/PDB）、冻结 `StartupGameDlls + RunningGameDlls` 并集映射的目标文件、目标位于 `Assets/` 时由既有入口触发的 Unity import，以及本次本地证据。
 
 禁止写入或扩大到：AOT metadata、`link.xml`、`GenerateAll`、`GeneratedCpp`、`Il2CppDef`、ConfigMaster、ConfigRuntime、Bundle、Player、CDN、商店、Git、Framework、`Library/**`、其他 Target、其他三维坐标或映射外条目。
 

@@ -21,12 +21,9 @@ Android 还要冻结 APK/AAB/导出工程、SplitApplicationBinary 与签名策�
 
 ## 已有 Action Adapter
 
-1. 已给出完整产物路径时使用 `EditorUtil.Build.BuildPlayer(BuildTarget, string, bool, BuildMode)`。
-2. 需要按输出文件夹自动命名，或需要 Android AAB / Split 选项时使用 `EditorUtil.Build.BuildPackage(...)`。
-3. 项目已有并明确选择 Pipify Batch 时使用 Step `build.package`。该 Step 可临时应用 Android 签名参数并在 `finally` 恢复；凭据必须来自用户确认的安全来源，不写入报告或日志。
-4. 执行前确认 ConfigMaster/YooAssetSettings 构建前置、Build Settings Scene 与 HybridCLR DEVELOPMENT 标记。缺失时保留现场并报告，不手工创建常驻 `Resources/YooAssetSettings.asset`，不绕过 ABI 校验。
+Framework 已注册 `nova.project.player.build`，但它同时声明 `Destructive` 与 `ExternalWrite`；当前 MCP 的确认来源仍是 caller-asserted，因此尚未开放。不得伪称可经 `nova_project_action` 调用，也不得用任意 C# 执行绕过。现有 C#/Pipify 入口只作为人工或既有流水线兼容路径；待可信审批通道落地后，本 Skill 再切换到正式 Action。
 
-Unity Editor、AssetDatabase、Build Settings、签名设置与同一输出目录按单写者串行。覆盖既有产物、CleanBuild、ForceSkipDataBuild、Android Development AAB 或使用签名凭据必须经过确认门。
+当前 MCP 连 `describe` 都只返回已开放 Action，因此这里的 ID 只能从当前 Framework 文档确认，不能从 Tool 读取 Schema，也不能 Plan/Execute。请求真正构建时返回 `blocked` 并明确缺口是“可信审批 + MCP allowlist”，不要退化到 `execute_code`、反射或临时 Pipify。人工或既有 CI 使用底层 C#/Pipify 不属于本 Skill 已完成的 Agent 执行证据。
 
 ## Artifact → Evidence
 

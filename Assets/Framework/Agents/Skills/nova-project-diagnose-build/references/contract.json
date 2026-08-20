@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-diagnose-build",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "cli",
+      "entry": "python3 \"<resolved Framework package>/Agents/Tools/nova_skills.py\" resolve --project-root <projectRoot>",
+      "when": "macOS/Linux 已解析到 Python 3.9+，且需要只读确认消费项目实际解析到的 Framework 包与随包 Docs 时"
+    },
+    {
+      "kind": "cli",
+      "entry": "py -3 \"<resolved Framework package>/Agents/Tools/nova_skills.py\" resolve --project-root <projectRoot>",
+      "when": "Windows 已解析到 Python 3.9+，且需要只读确认消费项目实际解析到的 Framework 包与随包 Docs 时"
+    },
+    {
+      "kind": "workspace-inspection",
+      "entry": "existing BuildReport, Unity Console, Editor.log, build invocation record, output artifacts, platform tool logs and matching resolved Framework BuildProcessor source",
+      "when": "按原始时间线定位编译、BuildReport、staging、BuildProcessor、Android Gradle、iOS Xcode 或 WebGL 的最早直接失败证据；不重跑命令"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "read-only Unity Console, compilation status and existing build information inspection",
+      "when": "当前 Unity 已打开且只需收集已有 Editor 证据；不触发刷新、编译、Play、Build、Resolve 或资产保存"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "buildFailureSymptom",
+      "required": true
+    },
+    {
+      "name": "originalBuildEntryAndTargetPlatform",
+      "required": true
+    },
+    {
+      "name": "buildInvocationTimeOrEvidenceWindow",
+      "required": true
+    },
+    {
+      "name": "existingBuildReportConsoleAndEditorLogLocations",
+      "required": true
+    },
+    {
+      "name": "existingOutputPathAndPlatformArtifacts",
+      "required": false
+    },
+    {
+      "name": "unityConsoleReadAllowed",
+      "required": false
+    }
+  ],
+  "effects": [
+    "read"
+  ],
+  "writeScope": {
+    "allow": [],
+    "deny": [
+      "all project source, configuration, Scene, Prefab, Build Settings and generated output",
+      "Packages, Library/PackageCache, cache, Gradle, Xcode and WebGL output mutation or deletion",
+      "BuildPipeline, EditorUtil.Build, Pipify, EDM4U Resolve, Gradle, xcodebuild, WebGL export or any retry invocation",
+      "package install or upgrade, credential use, external write, Git commit or push"
+    ]
+  },
+  "locks": [],
+  "idempotency": "read-only",
+  "confirmation": {
+    "requiredFor": [
+      "access to CI, device, remote Gradle, Xcode, store or other external logs outside the supplied project evidence scope",
+      "start Unity, trigger refresh or compilation, run Build/Resolve/Gradle/Xcode/WebGL commands, delete cache/output, or modify any project state"
+    ],
+    "rule": "本 Skill 的授权只允许收集既有证据；任何重试、修复、清理、构建、平台导出或项目写入均不属于本 Operation，必须在独立后续任务重新确认。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "实际解析的 Framework、原始构建入口、目标平台、输出路径与失败时间窗",
+    "最早直接失败的 BuildReport、Console、Editor.log、平台工具日志或 BuildProcessor 调用链位置",
+    "失败位于编译、Unity Build、staging、前处理、平台转换或后处理的证据分级，而非仅凭 Warning 推断",
+    "Android Gradle、iOS Xcode 或 WebGL 平台分支的直接证据或明确缺失记录",
+    "已验证事实、推断、未验证项和未执行任何重试/修复/写入的边界说明"
+  ]
+}

@@ -26,7 +26,7 @@ description: Use when 项目组要在现有 Nova 消费项目中创建并注册�
 ## 实施顺序
 
 1. 在项目业务目录创建继承 `UIView` 的代码，沿用最近的命名、生命周期、事件解绑和数据刷新模式；不使用 `GameObject.Find`，不手工编辑生成的 C# / JSON。
-2. 通过 Unity Editor 或 Unity MCP 创建 Prefab、挂载脚本并绑定序列化引用；绝不手写 Prefab 或 Scene YAML。
+2. 通过 Unity Editor 或 Unity Editor 自动化通道 创建 Prefab、挂载脚本并绑定序列化引用；绝不手写 Prefab 或 Scene YAML。
 3. 仅在用户确认的 UI 注册源中登记 `Name`、`AssetLocation`、`UIGroupName`、`PauseCoveredUIView` 和 `InObjectPools` 等实际需要的字段。
 4. 仅通过第 4 步选定 UI 导出 Action 更新本次变更必需的生成物。导出失败立即停止；不要为保险执行全量 Excel 导出、Config 导出或 Build。
 5. 先收集编译证据，再在明确授权且可用的 Unity 环境中验证目标 UIGroup 的打开/关闭。若只完成代码与静态检查，返回 `partial`。

@@ -40,10 +40,43 @@ namespace NovaFramework.Editor
                 /// </returns>
                 public static ConfigRuntimeSO Export(ConfigMasterSO master, PlatformType platform, ChannelType channel, DevelopMode mode, string savePath)
                 {
+                    return Export(master, platform, channel, mode, savePath, System.DateTime.Now, false);
+                }
+
+                /// <summary>
+                /// 使用调用方冻结的占位符时间导出运行时配置。供需要 Plan/Execute 输入一致性的受控工具链使用。
+                /// </summary>
+                internal static ConfigRuntimeSO Export(
+                    ConfigMasterSO master,
+                    PlatformType platform,
+                    ChannelType channel,
+                    DevelopMode mode,
+                    string savePath,
+                    System.DateTime placeholderTime)
+                {
+                    return Export(master, platform, channel, mode, savePath, placeholderTime, false);
+                }
+
+                /// <summary>
+                /// 使用调用方冻结的占位符时间导出运行时配置，并允许受控 Action 仅保存、导入本次目标资产。
+                /// </summary>
+                internal static ConfigRuntimeSO Export(
+                    ConfigMasterSO master,
+                    PlatformType platform,
+                    ChannelType channel,
+                    DevelopMode mode,
+                    string savePath,
+                    System.DateTime placeholderTime,
+                    bool saveOnlyTouchedAssets)
+                {
                     if (master == null) return null;
                     if (!master.TryGetEntry(platform, channel, out var entry)) return null;
 
-                    WriteYooAssetSettings(master, platform, channel, mode);
+                    // 先校验两类业务 DLL 的职责边界，失败时不写 YooAssetSettings 或 Runtime 资产。
+                    DimensionalResolver.HybridCLRResult hybridCLR = DimensionalResolver.ResolveHybridCLR(master, platform, channel, mode);
+                    EditorUtil.HybridCLR.ValidateGameDllLists(hybridCLR.StartupGameDlls, hybridCLR.RunningGameDlls);
+
+                    WriteYooAssetSettings(master, platform, channel, mode, placeholderTime);
 
                     string dir = System.IO.Path.GetDirectoryName(savePath);
                     if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
@@ -53,9 +86,6 @@ namespace NovaFramework.Editor
 
                     ConfigRuntimeSO existing = AssetDatabase.LoadAssetAtPath<ConfigRuntimeSO>(savePath);
                     ConfigRuntimeSO target = existing != null ? existing : ScriptableObject.CreateInstance<ConfigRuntimeSO>();
-
-                    // D6.2：顶层类按当前坐标掩码裁剪取数，经 DimensionalResolver 解析后写入 Runtime SO
-                    DimensionalResolver.HybridCLRResult hybridCLR = DimensionalResolver.ResolveHybridCLR(master, platform, channel, mode);
 
                     target.DevelopMode = mode;
                     target.Namespace = DimensionalResolver.ResolveNamespace(master, platform, channel, mode);
@@ -69,7 +99,7 @@ namespace NovaFramework.Editor
                     {
                         GameEntranceProcedureName = hybridCLR.GameEntranceProcedureName,
                         AotMetadataDlls = hybridCLR.AotMetadataDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList(),
-                        GameDlls = hybridCLR.GameDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList(),
+                        StartupGameDlls = hybridCLR.StartupGameDlls.Select(e => new DllAssetEntry(e.AssetLocation)).ToList(),
                     };
                     target.Custom = CloneCustomConfigData(master.Custom);
 
@@ -82,8 +112,20 @@ namespace NovaFramework.Editor
                         EditorUtility.SetDirty(target);
                     }
 
-                    AssetDatabase.SaveAssets();
-                    AssetDatabase.Refresh();
+                    if (saveOnlyTouchedAssets)
+                    {
+                        AssetDatabase.SaveAssetIfDirty(target);
+                        AssetDatabase.ImportAsset(
+                            savePath,
+                            ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+                        target = AssetDatabase.LoadAssetAtPath<ConfigRuntimeSO>(savePath);
+                    }
+                    else
+                    {
+                        // 保留 ConfigWindow/Pipify 等既有 UI 调用的兼容语义；Agent Action 使用上面的窄保存路径。
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.Refresh();
+                    }
                     return target;
                 }
 
@@ -94,7 +136,8 @@ namespace NovaFramework.Editor
                     ConfigMasterSO master,
                     PlatformType platform,
                     ChannelType channel,
-                    DevelopMode mode)
+                    DevelopMode mode,
+                    System.DateTime placeholderTime)
                 {
                     DimensionalResolver.YooAssetResult config =
                         DimensionalResolver.ResolveYooAsset(master, platform, channel, mode);
@@ -117,7 +160,7 @@ namespace NovaFramework.Editor
                         channel,
                         EditorUtil.Placeholder.ResolveDefaultPackageName(),
                         Application.version,
-                        System.DateTime.Now);
+                        placeholderTime);
                     string yooFolderName = Util.Placeholder.Resolve(config.YooFolderName, context) ?? string.Empty;
                     string packageFilePrefix = Util.Placeholder.Resolve(config.PackageFilePrefix, context) ?? string.Empty;
                     if (PathUtility.ContainsInvalidFileNameChars(yooFolderName))

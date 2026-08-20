@@ -4,11 +4,6 @@
       "Name": "TGAServer",
       "Value": "https://report.lolipopmobi.com",
       "FallbackValue": "https://report.lolipopmobi.com"
-    },
-    {
-      "Name": "GameServer",
-      "Value": "https://t-solo-api-game.ahameet.com",
-      "FallbackValue": "https://t-solo-api-game.ahameet.com"
     }
   ]
 }

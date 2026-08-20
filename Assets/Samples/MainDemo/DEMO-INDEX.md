@@ -37,7 +37,7 @@
 | 编号 | 类名 | R/I | 演示 API | 资源依赖 |
 |---|---|---|---|---|
 | 2.1 | `DemoAppView` | I | `Nova.App.CheckAsync() / DownloadAsync() / OpenStoreAsync()` | 无 |
-| 2.2 | `DemoAssetView` | I | `Nova.Asset.LoadAsync<Sprite>(location, ct)` / `Nova.Asset.RefreshManifestAsync()` / `CreateDownloaderByTags(tags)` / `IAssetDownloader.RunAsync(ct)` / `CreateDownloaderByLocations(locations)` | sprite `icon_coin`（DemoAtlas） |
+| 2.2 | `DemoAssetView` | I | `Nova.Asset.LoadAsync<Sprite>(location, ct)` / `IAssetHandle.Release()` | sprite `icon_coin`（DemoAtlas） |
 | 2.3 | `DemoPrefabView` | I | `Nova.Prefab.InstantiateAsync(location) / Destroy(go)` | prefab `DemoPrefabBlock` |
 | 2.4 | `DemoConfigView` | I | `Nova.Config.AppConfigs / .Namespace / GetSDKPluginConfig<T>()`；`Nova.Config.RefreshAppConfigAsync()`；`Nova.Config.Custom.GetXxx(path)` | NetCmd `AppCustomConfig`（在线请求）+ ConfigRuntime 本地路径默认值 |
 | 2.5 | `DemoEventView` | I | `Nova.Event.Subscribe<T>(h) / Fire(sender, e) / Unsubscribe<T>(h)` | 无 |
@@ -56,25 +56,25 @@
 
 ---
 
-## 3. HybridCLR 运行时热更新（3 个，全 R 只读快照型）
+## 3. HybridCLR 热更新解决方案（4 个）
 
 | 编号 | 类名 | R/I | 演示 API | 资源依赖 |
 |---|---|---|---|---|
 | 3.1 | `DemoHybridClrAotMetadataView` | R | `Util.HybridCLR.LoadAotMetadataAsync(dlls)`（启动期已调，展示快照） | 无 |
-| 3.2 | `DemoHybridClrGameDllView` | R | `Util.HybridCLR.LoadGameAssemblyAsync(dlls)` | 无 |
+| 3.2 | `DemoHybridClrGameDllView` | R | `ProcedureLoadDll → Util.HybridCLR.LoadGameAssemblyAsync(location)`（启动期已调，展示配置快照） | 无 |
 | 3.3 | `DemoHybridClrProcedureRegisterView` | R | `ProcedureLoadDll → RegisterAdditionalProcedures(...)` | 无 |
+| 3.4 | `DemoHybridClrRuntimeUpdateView` | I | 固定启动 Manifest：`CreateDownloaderByTags → LoadGameAssemblyAsync → Entry → LoadSceneAsync(Additive)` | Running DLL + `DemoRuntimeHotUpdateContent` 场景（tag：`demo_runtime_hotupdate`） |
 
 ---
 
-## 4. Integration 跨模块联动（5 个）
+## 4. Integration 跨模块联动（4 个）
 
 | 编号 | 类名 | R/I | 演示 API | 资源依赖 |
 |---|---|---|---|---|
 | 4.1 | `DemoIntegrationUiLocalizationView` | I | `Nova.Localization.SetLanguageAsync + Nova.UI.OpenUIViewAsync<T>` | 复用 `Demo_Localization` |
 | 4.2 | `DemoIntegrationUiAssetView` | I | `Nova.Asset.LoadAsync<GameObject>(loc) → Nova.UI.OpenUIViewAsync<T>(go)` | prefab `DemoSubPanel` |
-| 4.3 | `DemoIntegrationProcedureAssetView` | R | `ProcedureCheckVersion → ProcedureHotfix → ProcedureLoadDll` | 无 |
-| 4.4 | `DemoIntegrationEventNetworkView` | I | `Nova.Network.OnWebSocketReceiveMessage += h → Nova.Event.Fire(this, e)` | 无（mock echo） |
-| 4.5 | `DemoIntegrationConfigHybridClrView` | R | `Nova.Config.ConfigManager.Namespace → Util.Assembly.GetAssembly(ns)` | 无 |
+| 4.3 | `DemoIntegrationEventNetworkView` | I | `Nova.Network.OnWebSocketReceiveMessage += h → Nova.Event.Fire(this, e)` | 无（mock echo） |
+| 4.4 | `DemoIntegrationConfigHybridClrView` | R | `Nova.Config.ConfigManager.Namespace → Util.Assembly.GetAssembly(ns)` | 无 |
 
 ---
 

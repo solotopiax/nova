@@ -2,7 +2,7 @@
 
 > 首次接入 Nova、接手陌生项目或开始场景/资源/构建任务，先读 [Nova Agent 快速入口](START_HERE.md)。
 >
-> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 16 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
+> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 29 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
 >
 > 架构总览、设计规范、陷阱说明见 [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -47,6 +47,7 @@
 | **HybridCLR 编辑期原子操作**（由 Pipify 编排流水线） | [EditorUtil.HybridCLR.md · link.xml/Generate/DLL 拷贝 API](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) |
 | **一键流水线 Step / 批处理配置**（Pipify 自动化） | [EditorUtil.Pipify.md · Registry+Runner+Reporters](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) → [PipifySteps.md · 全 Step 清单](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) → [PipifySteps.Export.Helpers.md · 定位辅助](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.Export.Helpers.md) |
 | **Pipify 导出新模块 Step（Table/UI/Localization/Network/Sound/Vibrate）** | [PipifySteps.md · 导出分组表](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) → 对应 EditorUtil.\*.Exporter.md |
+| **Nova Project Skill 的确定性 C# 单元操作** | [当前架构、实施路线图与原候选决策](Editor/EditorUtil/EditorUtil.AgentActions/NovaProjectActions-Overall-Design.md) → [EditorUtil.AgentActions.md · 当前 14 项实现事实](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) |
 | **新平台打包 / Build 封装** | [EditorUtil.Build.md · BuildPlayer 薄封装](Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) |
 | **Pipify 流水线配置窗口**（UI 入口） | [PipifyWindow.md · Batch 管理+参数编辑+运行](Editor/Windows/PipifyWindow.md) |
 | **Jenkins 自动化 / CLI 批处理** | [EditorUtil.Pipify.md · RunBatchForCliAsync+参数覆盖](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) |
@@ -221,14 +222,14 @@
 | [HybridEditorConfigsOverride.md](Editor/Config/Definitions/HybridEditorConfigsOverride.md) | HybridCLR Editor 维度 Override |
 | [YooAssetEditorConfigsOverride.md](Editor/Config/Definitions/YooAssetEditorConfigsOverride.md) | YooAsset Editor 维度 Override |
 | [ConfigRuntimeSO.md](Runtime/Modules/Config/ConfigRuntimeSO.md) | Runtime 快照：Platform / Channel / DevelopMode / AppConfigs / PrivacyConfigs / Namespace / HybridConfigs / Custom |
-| [Definitions/IKitConfig.md](Runtime/Modules/Config/Definitions/IKitConfig.md) | Kit 固有配置 marker 接口（DisplayName），全局单份，由 ConfigWindow「Kit 配置」管理 |
+| [Definitions/IKitConfig.md](Runtime/Modules/Config/Definitions/IKitConfig.md) | Kit 固有配置 marker 接口（DisplayName）；实例按 Platform×Channel×DevelopMode 存于 PlatformChannelEntry，EnabledKits 为白名单，导出为当前单格 ConfigRuntimeSO |
 | [Definitions/KitConfigMissingException.md](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) | Kit 配置缺失异常；fail-fast 暴露配置漏填 |
 | [AppConfigs.md](Runtime/Modules/Config/AppConfigs.md) | Runtime 应用配置（应用标识、AES、启动拉取 NetCmd 与配置项名称） |
 | [PrivacyConfigs.md](Runtime/Modules/Config/PrivacyConfigs.md) | Runtime 隐私配置（Util.Encrypt.AES 默认 Key/IV，与 AppConfigs 独立） |
 | [HybridConfigs.md](Runtime/Modules/Config/Definitions/HybridConfigs.md) | Runtime HybridCLR 配置（入口名与 DLL Asset 地址） |
 | [CustomConfigs.md](Runtime/Modules/Config/Definitions/CustomConfigs.md) | Custom 本地 JSONPath 默认值与云端完整 JSON 查询入口 |
 | [PlatformChannelEntry.md](Editor/Config/Definitions/PlatformChannelEntry.md) | Editor 三维配置矩阵行 |
-| [Definitions/DllAssetEntry.md](Runtime/Modules/Config/Definitions/DllAssetEntry.md) | DLL 运行期寻址条目（AssetLocation 单字段），供 ConfigRuntimeSO.HybridConfigs.AotMetadataDlls / GameDlls 持有 |
+| [Definitions/DllAssetEntry.md](Runtime/Modules/Config/Definitions/DllAssetEntry.md) | DLL 运行期寻址条目（AssetLocation 单字段），供 ConfigRuntimeSO.HybridConfigs.AotMetadataDlls / StartupGameDlls 持有 |
 | [DllMasterAssetEntry.md](Editor/Config/Definitions/DllMasterAssetEntry.md) | Editor DLL 构建三字段条目 |
 
 ### Table（表格数据）
@@ -527,6 +528,7 @@
 | [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate 系列封装、AOT/业务 DLL 拷贝；由 Pipify Steps 编排流水线） |
 | [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 依赖解析工具（反射调用 EDM4U PlayServicesResolver.ResolveSync，强制重建 Assets/GeneratedLocalRepo/**；配合 HybridCLR Generate All 前置使用） |
 | [EditorUtil.Pipify.md](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) | [PipifyStep] 反射注册 Step + Batch 可视化配置 + UI/CLI 双入口的自动化流水线 |
+| [EditorUtil.AgentActions.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) | Nova Project Skills 的受控 C# Action Registry、Plan/Execute/Verify/Recovery 调度层；当前注册 14 项，MCP 安全开放 8 项 |
 | [EditorUtil.Build.md](Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) | BuildPipeline.BuildPlayer 薄封装，统一异常与日志 |
 | [EditorUtil.CDN.md](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) | CDN 内容部署与缓存清理工具（阿里云 OSS 批量上传 + Cloudflare purge 分批清理；编排/传输适配器分层；无 public API，仅 internal，程序集外经 ConfigWindow「CDN 内容分发网络部署」面板触发） |
 | [EditorUtil.Asset.Operator.md](Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.md) | 通用 ScriptableObject 资产查找/创建/按路径加载（泛型 Find&lt;T&gt; / CreateAt&lt;T&gt; / LoadAt&lt;T&gt;） |

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova SDK / Kit 接入"
+  short_description: "编排已发布 SDK 或 Kit 的安装、三维配置、平台前置与本地验证"
+  default_prompt: "使用 $nova-project-onboard-sdk-kit 为当前 Nova 消费项目接入一个已发布且包内文档可发现的 SDK 或 Kit。"

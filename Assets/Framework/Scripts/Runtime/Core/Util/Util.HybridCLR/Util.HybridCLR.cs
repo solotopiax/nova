@@ -27,14 +27,24 @@ namespace NovaFramework.Runtime
         public static class HybridCLR
         {
             /// <summary>
-            /// 已加载 AOT 元数据程序集名称守卫集合，防止重复加载。
+            /// 已完成加载的 AOT 元数据程序集身份集合。
             /// </summary>
-            private static readonly HashSet<string> s_LoadedAOTMetadata = new HashSet<string>(StringComparer.Ordinal);
+            private static readonly HashSet<string> s_LoadedAOTMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             /// <summary>
-            /// 已加载业务程序集名称守卫集合，防止重复加载。
+            /// AOT 元数据加载中的共享完成源；同一程序集的并发调用等待同一份结果。
             /// </summary>
-            private static readonly HashSet<string> s_LoadedGameAssemblies = new HashSet<string>(StringComparer.Ordinal);
+            private static readonly Dictionary<string, UniTaskCompletionSource> s_LoadingAOTMetadata = new Dictionary<string, UniTaskCompletionSource>(StringComparer.OrdinalIgnoreCase);
+
+            /// <summary>
+            /// 已完成加载的业务程序集缓存。
+            /// </summary>
+            private static readonly Dictionary<string, System.Reflection.Assembly> s_LoadedGameAssemblies = new Dictionary<string, System.Reflection.Assembly>(StringComparer.OrdinalIgnoreCase);
+
+            /// <summary>
+            /// 业务程序集加载中的共享完成源；同一程序集的并发调用等待同一份结果。
+            /// </summary>
+            private static readonly Dictionary<string, UniTaskCompletionSource<System.Reflection.Assembly>> s_LoadingGameAssemblies = new Dictionary<string, UniTaskCompletionSource<System.Reflection.Assembly>>(StringComparer.OrdinalIgnoreCase);
 
             /// <summary>
             /// 从 Asset 异步加载 AOT 元数据 DLL 字节，
@@ -50,10 +60,20 @@ namespace NovaFramework.Runtime
                 Log.Debug(LogTag.Hotfix, "[Util.HybridCLR][Editor] 编辑器环境下跳过 LoadAotMetadata 元数据加载: {0}", location);
                 return;
 #else
-                if (!s_LoadedAOTMetadata.Add(location))
+                string assemblyIdentity = NormalizeAssemblyIdentity(location);
+                if (s_LoadedAOTMetadata.Contains(assemblyIdentity))
                 {
                     return;
                 }
+
+                if (s_LoadingAOTMetadata.TryGetValue(assemblyIdentity, out UniTaskCompletionSource loadingSource))
+                {
+                    await loadingSource.Task;
+                    return;
+                }
+
+                loadingSource = new UniTaskCompletionSource();
+                s_LoadingAOTMetadata.Add(assemblyIdentity, loadingSource);
 
                 Stopwatch swTotal = Stopwatch.StartNew();
                 try
@@ -76,12 +96,18 @@ namespace NovaFramework.Runtime
                     }
 
                     Log.Debug(LogTag.Hotfix, "[Util.HybridCLR] {0}: total={1}ms (LoadBytes={2}ms, LoadMetadata={3}ms, size={4}KB)", location, swTotal.ElapsedMilliseconds, swLoadBytes.ElapsedMilliseconds, swLoadMetadata.ElapsedMilliseconds, bytes.Length / 1024);
+                    s_LoadedAOTMetadata.Add(assemblyIdentity);
+                    loadingSource.TrySetResult();
                 }
-                catch
+                catch (Exception e)
                 {
-                    // 加载失败回滚守卫，允许后续重试
-                    s_LoadedAOTMetadata.Remove(location);
+                    // 失败同时通知所有并发等待者；finally 移除进行中状态，允许后续重新发起。
+                    loadingSource.TrySetException(e);
                     throw;
+                }
+                finally
+                {
+                    s_LoadingAOTMetadata.Remove(assemblyIdentity);
                 }
 #endif
             }
@@ -98,12 +124,21 @@ namespace NovaFramework.Runtime
             {
 #if UNITY_EDITOR
                 Log.Debug(LogTag.Hotfix, "[Util.HybridCLR][Editor] skip LoadGameAssembly: {0}", location);
-                return Util.Assembly.GetAssembly(location);
+                return GetLoadedGameAssembly(location);
 #else
-                if (!s_LoadedGameAssemblies.Add(location))
+                string assemblyIdentity = NormalizeAssemblyIdentity(location);
+                if (s_LoadedGameAssemblies.TryGetValue(assemblyIdentity, out System.Reflection.Assembly loadedAssembly))
                 {
-                    return Util.Assembly.GetAssembly(location);
+                    return loadedAssembly;
                 }
+
+                if (s_LoadingGameAssemblies.TryGetValue(assemblyIdentity, out UniTaskCompletionSource<System.Reflection.Assembly> loadingSource))
+                {
+                    return await loadingSource.Task;
+                }
+
+                loadingSource = new UniTaskCompletionSource<System.Reflection.Assembly>();
+                s_LoadingGameAssemblies.Add(assemblyIdentity, loadingSource);
 
                 Stopwatch swTotal = Stopwatch.StartNew();
                 try
@@ -122,15 +157,54 @@ namespace NovaFramework.Runtime
                     swTotal.Stop();
                     Util.Assembly.RefreshAssemblies();
                     Log.Debug(LogTag.Hotfix, "[Util.HybridCLR] GameAssembly {0}: total={1}ms (LoadBytes={2}ms, AsmLoad={3}ms, size={4}KB)", location, swTotal.ElapsedMilliseconds, swLoadBytes.ElapsedMilliseconds, swAsmLoad.ElapsedMilliseconds, bytes.Length / 1024);
+                    s_LoadedGameAssemblies[assemblyIdentity] = asm;
+                    loadingSource.TrySetResult(asm);
                     return asm;
                 }
-                catch
+                catch (Exception e)
                 {
-                    // 加载失败回滚守卫，允许后续重试
-                    s_LoadedGameAssemblies.Remove(location);
+                    // 失败同时通知所有并发等待者；finally 移除进行中状态，允许后续重新发起。
+                    loadingSource.TrySetException(e);
                     throw;
                 }
+                finally
+                {
+                    s_LoadingGameAssemblies.Remove(assemblyIdentity);
+                }
 #endif
+            }
+
+            /// <summary>
+            /// 按 DLL Asset 地址查找已加载程序集；地址允许带 .dll 后缀。
+            /// </summary>
+            /// <param name="location">DLL Asset 地址或程序集名称。</param>
+            /// <returns>已加载程序集；未找到时返回 null。</returns>
+            private static System.Reflection.Assembly GetLoadedGameAssembly(string location)
+            {
+                if (string.IsNullOrWhiteSpace(location))
+                {
+                    return null;
+                }
+
+                return Util.Assembly.GetAssembly(NormalizeAssemblyIdentity(location));
+            }
+
+            /// <summary>
+            /// 将 DLL 地址归一化为程序集身份，统一处理空白与可选的 .dll 后缀。
+            /// </summary>
+            /// <param name="location">DLL Asset 地址或程序集名称。</param>
+            /// <returns>不含 .dll 后缀的程序集身份。</returns>
+            private static string NormalizeAssemblyIdentity(string location)
+            {
+                if (string.IsNullOrWhiteSpace(location))
+                {
+                    throw new ArgumentException("DLL Asset 地址不能为空。", nameof(location));
+                }
+
+                string assemblyName = location.Trim();
+                return assemblyName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                    ? assemblyName.Substring(0, assemblyName.Length - ".dll".Length)
+                    : assemblyName;
             }
 
             /// <summary>

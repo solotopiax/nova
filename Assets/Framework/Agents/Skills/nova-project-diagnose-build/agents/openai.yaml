@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nova Player 构建诊断"
+  short_description: "只读定位 Player、Gradle、Xcode 与 WebGL 构建链的最早失败证据"
+  default_prompt: "使用 $nova-project-diagnose-build 只读定位当前 Nova 项目的 Player 构建或平台导出失败，不重打包、不改配置。"

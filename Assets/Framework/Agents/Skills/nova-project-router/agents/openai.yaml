@@ -1,4 +1,4 @@
 interface:
   display_name: "Nova 项目任务路由"
-  short_description: "根据当前项目事实识别并路由 Nova 项目组开发构建与排障任务"
+  short_description: "路由 Nova 项目接入、包管理、开发、构建与排障任务"
   default_prompt: "使用 $nova-project-router 分析当前 Nova 项目任务并选择安全的执行路径。"

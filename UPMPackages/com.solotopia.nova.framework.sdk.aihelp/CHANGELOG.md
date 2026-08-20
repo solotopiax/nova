@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-08-20
+
+### Changed
+
+- AIHelpDemo 移除重复场景监听，改由 Framework `0.6.16` 的统一 `SceneRoute` 接管；最低 Framework 依赖同步提升至 `0.6.16`。
+
 ## [0.0.8] - 2026-08-18
 
 ### Changed

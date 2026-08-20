@@ -240,6 +240,17 @@ namespace NovaFramework.Editor
                 /// <param name="master">要设置为激活的 ConfigMasterSO 实例。</param>
                 public static void Set(ConfigMasterSO master)
                 {
+                    SetInternal(master, true);
+                }
+
+                /// <summary>
+                /// 设置激活 ConfigMaster，并按调用来源决定是否记录显式设置日志。
+                /// 场景推断由 SceneRoute 在完成解析后统一输出路由摘要，避免同一次 sceneOpened 重复日志。
+                /// </summary>
+                /// <param name="master">要设置为激活的 ConfigMasterSO 实例。</param>
+                /// <param name="logActivation">是否输出显式设置日志。</param>
+                private static void SetInternal(ConfigMasterSO master, bool logActivation)
+                {
                     if (master == null) return;
 
                     string assetPath = AssetDatabase.GetAssetPath(master);
@@ -257,7 +268,10 @@ namespace NovaFramework.Editor
                     string projectRoot = GetProjectRoot();
                     string globalsPath = System.IO.Path.Combine(projectRoot, c_GlobalsRelPath);
                     WriteGlobals(globalsPath, globals);
-                    Log.Debug(LogTag.Editor, "[WorkspaceActive] 已设置激活 ConfigMaster：{0}（{1}）", assetPath, guid);
+                    if (logActivation)
+                    {
+                        Log.Debug(LogTag.Editor, "[WorkspaceActive] 已设置激活 ConfigMaster：{0}（{1}）", assetPath, guid);
+                    }
                 }
 
                 /// <summary>
@@ -281,8 +295,7 @@ namespace NovaFramework.Editor
                         ConfigMasterSO master = AssetDatabase.LoadAssetAtPath<ConfigMasterSO>(candidate);
                         if (master != null)
                         {
-                            Set(master);
-                            Log.Debug(LogTag.Editor, "[WorkspaceActive] 从活跃 scene 推断激活 ConfigMaster：{0}", candidate);
+                            SetInternal(master, false);
                             return master;
                         }
                         dir = System.IO.Path.GetDirectoryName(dir)?.Replace('\\', '/');

@@ -193,7 +193,7 @@ namespace NovaFramework.Editor
 
                 var hybrid = ResolveHybridCLRForCurrentCoord(master);
                 bool needsAot = NeedsCopy(hybrid.AotMetadataDlls);
-                bool needsGame = NeedsCopy(hybrid.GameDlls);
+                bool needsGame = NeedsCopy(hybrid.StartupGameDlls) || NeedsCopy(hybrid.RunningGameDlls);
                 if (!needsAot && !needsGame)
                 {
                     return;
@@ -208,7 +208,7 @@ namespace NovaFramework.Editor
 
                     if (needsGame)
                     {
-                        CopyDllEntries(hybrid.GameDlls, "业务 DLL");
+                        CopyGameDllEntries(hybrid);
                     }
 
                     Log.Debug(LogTag.Editor, "[HybridCLR AutoSync] 已补齐 sample DLL 副本：{0}", masterPath);
@@ -217,6 +217,114 @@ namespace NovaFramework.Editor
                 {
                     Log.Warning(LogTag.Editor, "[HybridCLR AutoSync] sample DLL 自动同步失败：{0}\n{1}", masterPath, e.Message);
                 }
+            }
+
+            /// <summary>
+            /// 校验并复制启动时与运行时业务 DLL；两份列表共享同一套 Editor 复制流程。
+            /// </summary>
+            /// <param name="hybrid">当前坐标解析出的 HybridCLR 编辑配置。</param>
+            private static void CopyGameDllEntries(Config.DimensionalResolver.HybridCLRResult hybrid)
+            {
+                ValidateGameDllLists(hybrid.StartupGameDlls, hybrid.RunningGameDlls);
+
+                var entries = new List<DllMasterAssetEntry>(hybrid.StartupGameDlls.Count + hybrid.RunningGameDlls.Count);
+                entries.AddRange(hybrid.StartupGameDlls);
+                entries.AddRange(hybrid.RunningGameDlls);
+                CopyDllEntries(entries, "业务 DLL");
+            }
+
+            /// <summary>
+            /// 校验同一业务 DLL 不会同时进入启动时与运行时列表，避免重复加载或目标文件互相覆盖。
+            /// </summary>
+            /// <param name="startupEntries">启动时业务 DLL 列表。</param>
+            /// <param name="runningEntries">运行时业务 DLL 列表。</param>
+            internal static void ValidateGameDllLists(
+                IReadOnlyList<DllMasterAssetEntry> startupEntries,
+                IReadOnlyList<DllMasterAssetEntry> runningEntries)
+            {
+                var startupAssetLocations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var startupTargetLocations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                CollectDllIdentity(startupEntries, startupAssetLocations, startupTargetLocations);
+                if (runningEntries == null)
+                {
+                    return;
+                }
+
+                foreach (DllMasterAssetEntry entry in runningEntries)
+                {
+                    string assetLocation = NormalizeDllAssetIdentity(entry.AssetLocation);
+                    if (!string.IsNullOrEmpty(assetLocation) && startupAssetLocations.Contains(assetLocation))
+                    {
+                        throw new InvalidOperationException(
+                            $"[HybridCLR] DLL '{entry.AssetLocation}' 同时配置在 StartupGameDlls 与 RunningGameDlls 中，请仅保留一处。");
+                    }
+
+                    string targetLocation = NormalizeDllTargetIdentity(entry.TargetLocation);
+                    if (!string.IsNullOrEmpty(targetLocation) && startupTargetLocations.Contains(targetLocation))
+                    {
+                        throw new InvalidOperationException(
+                            $"[HybridCLR] 目标文件 '{entry.TargetLocation}' 同时被 StartupGameDlls 与 RunningGameDlls 使用，请仅保留一处。");
+                    }
+                }
+            }
+
+            /// <summary>
+            /// 收集 DLL 的运行时地址与目标文件路径，供跨列表重复检查使用。
+            /// </summary>
+            /// <param name="entries">待收集的 DLL 条目。</param>
+            /// <param name="assetLocations">运行时地址集合。</param>
+            /// <param name="targetLocations">目标文件路径集合。</param>
+            private static void CollectDllIdentity(
+                IReadOnlyList<DllMasterAssetEntry> entries,
+                ISet<string> assetLocations,
+                ISet<string> targetLocations)
+            {
+                if (entries == null)
+                {
+                    return;
+                }
+
+                foreach (DllMasterAssetEntry entry in entries)
+                {
+                    string assetLocation = NormalizeDllAssetIdentity(entry.AssetLocation);
+                    if (!string.IsNullOrEmpty(assetLocation))
+                    {
+                        assetLocations.Add(assetLocation);
+                    }
+
+                    string targetLocation = NormalizeDllTargetIdentity(entry.TargetLocation);
+                    if (!string.IsNullOrEmpty(targetLocation))
+                    {
+                        targetLocations.Add(targetLocation);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// 将 DLL Asset 地址归一化为程序集身份，统一处理空白与可选的 .dll 后缀。
+            /// </summary>
+            /// <param name="value">DLL Asset 地址。</param>
+            /// <returns>归一化后的标识；空值返回空字符串。</returns>
+            private static string NormalizeDllAssetIdentity(string value)
+            {
+                return string.IsNullOrWhiteSpace(value) ? string.Empty : StripDllSuffix(value.Trim());
+            }
+
+            /// <summary>
+            /// 将目标位置解析占位符并转换为绝对规范路径，避免等价路径绕过跨列表覆盖检查。
+            /// </summary>
+            /// <param name="value">项目根相对目标文件路径。</param>
+            /// <returns>规范绝对路径；空值返回空字符串。</returns>
+            private static string NormalizeDllTargetIdentity(string value)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return string.Empty;
+                }
+
+                string resolved = ResolvePathPlaceholders(value.Trim());
+                return Path.GetFullPath(Path.Combine(SettingsUtil.ProjectDir, resolved)).Replace('\\', '/');
             }
 
             /// <summary>

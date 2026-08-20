@@ -59,12 +59,6 @@ namespace NovaBootstrap
 
         // ---- manifest 待补全的依赖项 ----
 
-        /// <summary>Unity MCP 包键。</summary>
-        private const string c_McpKey = "com.coplaydev.unity-mcp";
-
-        /// <summary>Unity MCP 包来源（git url，锁定 tag）。</summary>
-        private const string c_McpValue = "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.2";
-
         /// <summary>Nova BestHTTP 封装包键。</summary>
         private const string c_BestHttpKey = "com.solotopia.nova.framework.besthttp";
 
@@ -85,7 +79,7 @@ namespace NovaBootstrap
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.6.15";
+        private const string c_FrameworkValue = "0.6.16";
 
         /// <summary>PlugPals 配置文件相对工程根的路径。</summary>
         private const string c_PlugPalsRelativePath = "ProjectSettings/Nova/PlugPalsRegistries.json";
@@ -110,7 +104,11 @@ namespace NovaBootstrap
         {
             new RegistrySpec("Solotopia", "https://upm.solotopiax.com", new[] { "com.solotopia" }),
             new RegistrySpec("Solotopia Internal", "http://172.16.22.175:4874", new[] { "com.tivadar", "com.onevcat" }),
-            new RegistrySpec("package.openupm.com", "https://package.openupm.com", new[] { "com.google.external-dependency-manager" }),
+            new RegistrySpec("package.openupm.com", "https://package.openupm.com", new[]
+            {
+                "com.google.external-dependency-manager",
+                "com.coplaydev.unity-mcp",
+            }),
         };
 
         /// <summary>
@@ -273,7 +271,7 @@ namespace NovaBootstrap
         }
 
         /// <summary>检测当前 manifest 缺失了哪些必备项，返回可读的缺失清单。</summary>
-        /// <param name="alreadyInstalled">已装工程（framework 已在 dependencies）时，仅检测配置过时，跳过依赖缺失检测。</param>
+        /// <param name="alreadyInstalled">已装工程（framework 已在 dependencies）时，仍检查现有版本与 registry 配置。</param>
         private static List<string> Detect(JObj manifest, bool alreadyInstalled)
         {
             var missing = new List<string>();
@@ -281,8 +279,6 @@ namespace NovaBootstrap
             var deps = manifest.Get("dependencies") as JObj;
             if (!alreadyInstalled)
             {
-                if (deps == null || !deps.ContainsKey(c_McpKey))
-                    missing.Add($"依赖 {c_McpKey}");
                 if (deps == null || !deps.ContainsKey(c_FrameworkKey))
                     missing.Add($"依赖 {c_FrameworkKey}（Nova 框架主包）");
                 if (deps == null || !deps.ContainsKey(c_BestHttpKey))
@@ -360,9 +356,6 @@ namespace NovaBootstrap
                 deps = new JObj();
                 manifest.Set("dependencies", deps);
             }
-            // MCP 是 git url（用户可能改过 fork），保持"缺键才补"，不覆盖。
-            if (!deps.ContainsKey(c_McpKey))
-                deps.Set(c_McpKey, c_McpValue);
             // framework/besthttp/edm 是 semver 版本号，已装工程的旧版本可能公网已下架（如 framework 0.5.31）→
             // 强制对齐本版规格，避免 UPM 解析"cannot be found"。
             UpsertDepVersion(deps, c_FrameworkKey, c_FrameworkValue);

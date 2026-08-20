@@ -207,6 +207,16 @@
       },
       "hash": "fd8ff1fb700caf062eb5cce364c1d0a85f99ebe6"
     },
+    "com.coplaydev.coplay": {
+      "version": "https://github.com/CoplayDev/coplay-unity-plugin.git#beta",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.inputsystem": "1.1.1",
+        "com.unity.cloud.gltfast": "6.12.1"
+      },
+      "hash": "c9306ff83721fbb4141db8c9872bf2d61705a5dd"
+    },
     "com.coplaydev.unity-mcp": {
       "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.2",
       "depth": 0,
@@ -223,6 +233,23 @@
         "com.unity.test-framework": "1.1.31"
       },
       "hash": "4ce7dd3cc54e37e2ed6dc59cb5a047f3dccb3f50"
+    },
+    "com.da-assets.figma-converter": {
+      "version": "file:../../Nova-internal/UPMPackages/com.da-assets.figma-converter",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.unity.2d.sprite": "1.0.0",
+        "com.unity.collections": "6.4.0",
+        "com.unity.nuget.newtonsoft-json": "3.2.2",
+        "com.unity.test-framework": "1.6.0",
+        "com.unity.ugui": "2.0.0",
+        "com.unity.modules.imageconversion": "1.0.0",
+        "com.unity.modules.jsonserialize": "1.0.0",
+        "com.unity.modules.uielements": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0",
+        "com.unity.modules.unitywebrequesttexture": "1.0.0"
+      }
     },
     "com.google.external-dependency-manager": {
       "version": "1.2.188",
@@ -283,7 +310,8 @@
         "com.solotopia.excelio": "1.0.6",
         "com.solotopia.nicevibrations": "10.0.5",
         "com.solotopia.luban": "10.1.0",
-        "com.solotopia.yooasset": "1.1.0"
+        "com.solotopia.yooasset": "1.1.0",
+        "com.solotopia.nova.framework.mcp": "0.1.0"
       }
     },
     "com.solotopia.nova.framework.besthttp": {
@@ -303,7 +331,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.1.0",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
@@ -315,7 +343,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.1.0"
       }
@@ -325,10 +353,19 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.luban": "10.1.0",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
+      }
+    },
+    "com.solotopia.nova.framework.mcp": {
+      "version": "file:../UPMPackages/com.solotopia.nova.framework.mcp",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.coplaydev.unity-mcp": "10.1.2",
+        "com.unity.nuget.newtonsoft-json": "3.2.2"
       }
     },
     "com.solotopia.nova.framework.sdk.ad": {
@@ -336,7 +373,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15"
+        "com.solotopia.nova.framework": "0.6.16"
       }
     },
     "com.solotopia.nova.framework.sdk.aihelp": {
@@ -344,7 +381,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15"
+        "com.solotopia.nova.framework": "0.6.16"
       }
     },
     "com.solotopia.nova.framework.sdk.applesignin": {
@@ -352,7 +389,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
         "com.solotopia.nova.framework.kit.network.gamebind": "0.1.0"
       }
@@ -362,7 +399,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.google.external-dependency-manager": "1.2.186",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
       }
@@ -372,7 +409,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.unity.collections": "2.4.3",
         "com.starlus.sdk.datamaster": "1.0.1",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
@@ -383,7 +420,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.google.external-dependency-manager": "1.2.186",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
         "com.solotopia.nova.framework.kit.network.gamebind": "0.1.0"
@@ -394,7 +431,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.google.external-dependency-manager": "1.2.186",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
       }
@@ -404,7 +441,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.google.external-dependency-manager": "1.2.186",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8",
         "com.solotopia.nova.framework.kit.network.gamebind": "0.1.0"
@@ -415,7 +452,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.solotopia.unitask": "10.0.6",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
       }
@@ -494,7 +531,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.15",
+        "com.solotopia.nova.framework": "0.6.16",
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
       }
     },
@@ -680,12 +717,25 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.cinemachine": {
-      "version": "3.1.6",
+      "version": "3.1.7",
       "depth": 0,
       "source": "registry",
       "dependencies": {
         "com.unity.splines": "2.0.0",
         "com.unity.modules.imgui": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.cloud.gltfast": {
+      "version": "6.14.1",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.burst": "1.8.24",
+        "com.unity.collections": "1.2.4",
+        "com.unity.mathematics": "1.2.6",
+        "com.unity.modules.jsonserialize": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },
@@ -767,7 +817,7 @@
     },
     "com.unity.nuget.mono-cecil": {
       "version": "1.11.6",
-      "depth": 1,
+      "depth": 2,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -779,17 +829,15 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-    "com.unity.pipeline": {
-      "version": "0.3.1-exp.1",
+    "com.unity.probuilder": {
+      "version": "6.1.2",
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.test-framework": "1.1.33",
-        "com.unity.nuget.mono-cecil": "1.11.6",
-        "com.unity.modules.uielements": "1.0.0",
-        "com.unity.modules.jsonserialize": "1.0.0",
-        "com.unity.modules.screencapture": "1.0.0",
-        "com.unity.nuget.newtonsoft-json": "3.0.2"
+        "com.unity.shadergraph": "17.0.3",
+        "com.unity.modules.imgui": "1.0.0",
+        "com.unity.modules.physics": "1.0.0",
+        "com.unity.settings-manager": "1.0.3"
       },
       "url": "https://packages.unity.com"
     },
@@ -815,7 +863,7 @@
     },
     "com.unity.render-pipelines.core": {
       "version": "17.4.0",
-      "depth": 1,
+      "depth": 2,
       "source": "builtin",
       "dependencies": {
         "com.unity.burst": "1.8.14",
@@ -856,7 +904,7 @@
     },
     "com.unity.settings-manager": {
       "version": "2.1.1",
-      "depth": 2,
+      "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -928,15 +976,6 @@
       "dependencies": {
         "com.unity.modules.ui": "1.0.0",
         "com.unity.modules.imgui": "1.0.0"
-      }
-    },
-    "com.unity.visualeffectgraph": {
-      "version": "17.4.0",
-      "depth": 0,
-      "source": "builtin",
-      "dependencies": {
-        "com.unity.shadergraph": "17.4.0",
-        "com.unity.render-pipelines.core": "17.4.0"
       }
     },
     "com.unity.visualscripting": {

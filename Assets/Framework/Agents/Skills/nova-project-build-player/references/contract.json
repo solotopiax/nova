@@ -9,19 +9,9 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.Build.BuildPlayer(BuildTarget, string, bool, BuildMode)",
-      "when": "目标是已确认完整路径的一次本地 Player 构建"
-    },
-    {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.Build.BuildPackage(BuildTarget, string, bool, BuildMode, bool, bool, DevelopMode)",
-      "when": "需要输出文件夹自动命名或 Android AAB 与 Split 选项"
-    },
-    {
-      "kind": "pipify",
-      "entry": "build.package",
-      "when": "项目明确选择已有 Pipify Batch 作为本次本地 Player 构建入口"
+      "kind": "unity-editor-automation",
+      "entry": "registered action nova.project.player.build; nova_project_action exposure=blocked",
+      "when": "当前只能从 Framework 文档识别已实现 Action；MCP describe/plan/execute 均不可用，可信审批与 allowlist 完成前返回 blocked"
     }
   ],
   "inputs": [

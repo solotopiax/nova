@@ -80,7 +80,7 @@ namespace NovaFramework.Editor
             DrawReadonlyKeyValue("GameEntranceProcedureName", component.HybridConfigs?.GameEntranceProcedureName ?? string.Empty);
 
             DrawDllAssetEntryList("AOT 元数据 DLL", component.HybridConfigs?.AotMetadataDlls);
-            DrawDllAssetEntryList("业务 DLL", component.HybridConfigs?.GameDlls);
+            DrawDllAssetEntryList("启动时业务 DLL", component.HybridConfigs?.StartupGameDlls);
 
             EditorUtil.Draw.Label("已启用 SDK 配置", false);
 

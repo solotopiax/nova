@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-integrate-event",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.15",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-inspection",
+      "entry": "business asmdef and source ownership; existing Nova.Event facade and lifecycle call sites",
+      "when": "只读确认目标业务程序集、事件类型、发布者、订阅拥有者、注销点与既有 Event 门面，不修改 Framework"
+    },
+    {
+      "kind": "workspace-edit",
+      "entry": "confirmed business EventData source, publisher, subscriber, lifecycle unsubscription and local Play probe",
+      "when": "只修改已冻结的业务事件定义、发布/订阅链和探针，并保留 Clear、回池与生命周期边界"
+    },
+    {
+      "kind": "csharp-api",
+      "entry": "ReferencePool.Get<T> / Nova.Event.Subscribe<T> / Unsubscribe<T> / Fire / FireNow / EventData.Clone",
+      "when": "在已冻结的主线程、时序与异步持有策略下取得事件、订阅、注销、发布或深拷贝；不执行任意 C#"
+    },
+    {
+      "kind": "unity-editor-automation",
+      "entry": "Unity script refresh, compilation and Play Mode event timing inspection",
+      "when": "等待编译后验证所选 Fire 或 FireNow 路径、handler 效果、注销与回池边界；不改 Scene、Prefab 或 Event 配置"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "businessAssemblyNamespaceAndSourceOwnership",
+      "required": true
+    },
+    {
+      "name": "eventTypePayloadAndClearContract",
+      "required": true
+    },
+    {
+      "name": "publisherTriggerAndCallingThread",
+      "required": true
+    },
+    {
+      "name": "subscriberOwnersAndSubscribeUnsubscribeLifecycle",
+      "required": true
+    },
+    {
+      "name": "fireOrFireNowDispatchContract",
+      "required": true
+    },
+    {
+      "name": "asyncRetentionOrCloneStrategy",
+      "required": true
+    },
+    {
+      "name": "playDispatchLifecycleAndPoolBoundaryProbe",
+      "required": true
+    },
+    {
+      "name": "allowedWriteSet",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write"
+  ],
+  "writeScope": {
+    "allow": [
+      "confirmed business EventData C# source in the frozen business assembly and namespace",
+      "confirmed business publisher and subscriber C# source",
+      "confirmed lifecycle unsubscription source owned by the frozen subscriber",
+      "confirmed local C# Play probe used to observe dispatch, lifecycle and pool boundaries"
+    ],
+    "deny": [
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "Assets/Framework/Scripts/Runtime/Modules/Event/**",
+      "EventComponent, EventManager, EventPool configuration or default handler",
+      "Nova.prefab, Prefab, Scene or handwritten Unity YAML",
+      "business asmdef, namespace, global event registrar or unrelated event subscriptions",
+      "manual ReferencePool.Put for an event dispatched through Nova.Event",
+      "unconfirmed event payload, publisher, subscriber owner, dispatch model, lifecycle or Play probe",
+      "Bundle or Player output, device installation, external service or unrelated business code"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "script-compilation",
+    "business-event-type-source",
+    "business-event-publisher-source",
+    "business-event-subscriber-lifecycle",
+    "event-play-probe-session"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "ambiguous project root, event type, source file, assembly, namespace, payload, Clear contract, publisher, subscriber owner, lifecycle, calling thread, dispatch model, asynchronous retention strategy or Play probe",
+      "create or replace a business event type, publisher, subscriber, public payload contract, lifecycle behavior or local Play probe",
+      "change Fire to FireNow, use FireNow from an asynchronous or unverified thread, change an existing subscription owner, global event pool configuration or default handler",
+      "delete, build Bundle or Player, install to device, external write, credential use, Git commit or push"
+    ],
+    "rule": "确认唯一业务程序集、事件类型与载荷、Clear/深拷贝策略、发布点与线程、订阅拥有者与注销点、Fire 或 FireNow 语义、Play 探针和最小写入集；任一输入、线程或范围变化后旧确认失效。"
+  },
+  "minimumEvidence": "play",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "业务 asmdef/编译单元、命名空间、完整事件类型名、载荷和 Clear 约定的冻结记录",
+    "发布者、订阅拥有者、同一 handler 的成对 Subscribe/Unsubscribe 与异步持有策略的源码证据",
+    "Unity 编译无本次新增错误",
+    "Play Mode 中 Fire 的下一次 Event 更新分发证据，或 FireNow 的同步主线程分发证据；两者都在范围时分别具备",
+    "Play Mode 中 handler 效果、注销后不再接收，以及事件对象未跨 handler 生命周期持有的证据"
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-generate-hybridclr-artifacts",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.10",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "unity-editor-automation",
+      "entry": "registered action nova.project.hotfix.generate-artifacts; nova_project_action exposure=blocked",
+      "when": "当前只能从 Framework 文档识别已实现 Action；MCP describe/plan/execute 均不可用，可信审批与 allowlist 完成前返回 blocked"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "activeBuildTarget",
+      "required": true
+    },
+    {
+      "name": "developmentBuild",
+      "required": true
+    },
+    {
+      "name": "activeConfigMaster",
+      "required": true
+    },
+    {
+      "name": "platformChannelDevelopMode",
+      "required": true
+    },
+    {
+      "name": "enabledBuildSettingsScenes",
+      "required": true
+    },
+    {
+      "name": "resolvedGeneratedOutputs",
+      "required": true
+    },
+    {
+      "name": "executionEntry",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "current activeBuildTarget HybridCLR hot-update compile output and AssembliesPostIl2CppStrip output",
+      "HybridCLR GeneratedCpp outputs including MethodBridge.cpp, UnityVersion.h and AssemblyManifest.cpp",
+      "configured AOT generic reference output and the single normalized link.xml target shared by HybridCLR outputLinkFile and active ConfigMaster current coordinate",
+      "HybridCLRData/StrippedAOTDllsTempProj/<activeBuildTarget> and Unity temporary build workspace required by GenerateAll script-only stripping build",
+      "Library/Il2cppBuildCache invalidation performed by the current GenerateAll implementation",
+      "本次 generated-output、compile、坐标与恢复证据"
+    ],
+    "deny": [
+      "final Player, platform project, installer or store artifact",
+      "Bundle, CDN, remote deployment, runtime loading or device validation",
+      "CopyAotDlls, CopyGameDlls, hybridclr.copy_aot_dll and hybridclr.copy_game_dll",
+      "ConfigMaster, ConfigRuntime, HybridCLR settings, ASMDEF, Namespace, Procedure or package version changes",
+      "other BuildTarget or other Platform/Channel/DevelopMode coordinate outputs",
+      "Git commit or push, UPM publish and external writes"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "build-settings",
+    "active-config-master",
+    "hybridclr-generated-output",
+    "hybridclr-strip-output",
+    "link-xml-target"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "重建冻结 activeBuildTarget 与 DevelopmentBuild 的完整 HybridCLR GenerateAll 输出",
+      "覆盖 AOT generic、GeneratedCpp、当前 Target 热更编译/AOT 裁剪输出与最终 link.xml",
+      "删除并重建冻结 Target 的 StrippedAOTDllsTempProj 临时目录及使 Il2cppBuildCache 失效",
+      "临时改变 EditorUserBuildSettings.development 并在 finally 恢复",
+      "改变 Target、DevelopmentBuild、Master、坐标、场景闭包、输出集合、link.xml 路径或 executionEntry"
+    ],
+    "rule": "确认绑定 activeBuildTarget、DevelopmentBuild、activeConfigMaster、当前 Platform/Channel/DevelopMode、启用场景闭包、规范化后的唯一 link.xml、完整生成输出集合、临时裁剪目录、缓存失效范围与 executionEntry；任一值或范围变化后旧确认失效。"
+  },
+  "minimumEvidence": "compile",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "冻结及执行后复核的 activeBuildTarget、DevelopmentBuild、activeConfigMaster、Platform/Channel/DevelopMode、启用场景闭包与 executionEntry",
+    "当前 Target 热更 DLL 编译输出、AssembliesPostIl2CppStrip AOT DLL 与 StrippedAOTDllsTempProj 生成记录",
+    "MethodBridge.cpp、UnityVersion.h、AssemblyManifest.cpp、AOT generic reference 与最终 link.xml 路径及存在性",
+    "MethodBridge.cpp 规范 DEVELOPMENT 标记与冻结 DevelopmentBuild 一致",
+    "最终 link.xml 包含当前坐标每个 AOT metadata assembly 的无 .dll 后缀 assembly fullname 记录，且新补记录带 preserve=all",
+    "生成引发的 Unity 编译结束且无编译错误，以及所有临时构建设置和 DevelopmentBuild 恢复结果",
+    "未执行最终 Player、Bundle、CDN、CopyAotDlls/CopyGameDlls、运行时、设备、Git 与发布的边界说明"
+  ]
+}

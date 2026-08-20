@@ -63,42 +63,42 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 打开 IDE 工程菜单排序优先级。
         /// </summary>
-        private const int c_PriorityOpenIdeProject = 1010;
+        private const int c_PriorityOpenIdeProject = 1000;
 
         /// <summary>
         /// 打开 Data Path 文件夹菜单排序优先级。
         /// </summary>
-        private const int c_PriorityOpenFolderDataPath = 1021;
+        private const int c_PriorityOpenFolderDataPath = 1022;
 
         /// <summary>
         /// 打开 Persistent Data Path (Unity) 文件夹菜单排序优先级。
         /// </summary>
-        private const int c_PriorityOpenFolderPersistentDataPath = 1022;
+        private const int c_PriorityOpenFolderPersistentDataPath = 1023;
 
         /// <summary>
         /// 打开 Persistent Data Path (YooAsset) 文件夹菜单排序优先级。
         /// </summary>
-        private const int c_PriorityOpenFolderPersistentDataPathYooAsset = 1023;
+        private const int c_PriorityOpenFolderPersistentDataPathYooAsset = 1024;
 
         /// <summary>
         /// 打开 Bundle Generated Path 文件夹菜单排序优先级。
         /// </summary>
-        private const int c_PriorityOpenFolderBundleGeneratedPath = 1024;
+        private const int c_PriorityOpenFolderBundleGeneratedPath = 1025;
 
         /// <summary>
         /// 打开 Streaming Assets Path 文件夹菜单排序优先级。
         /// </summary>
-        private const int c_PriorityOpenFolderStreamingAssetsPath = 1025;
+        private const int c_PriorityOpenFolderStreamingAssetsPath = 1026;
 
         /// <summary>
         /// 打开 Caching Writing Path 文件夹菜单排序优先级。
         /// </summary>
-        private const int c_PriorityOpenFolderCachingWritingPath = 1026;
+        private const int c_PriorityOpenFolderCachingWritingPath = 1027;
 
         /// <summary>
         /// 打开 Temporary Cache Path 文件夹菜单排序优先级。
         /// </summary>
-        private const int c_PriorityOpenFolderTemporaryCachePath = 1027;
+        private const int c_PriorityOpenFolderTemporaryCachePath = 1028;
 
         /// <summary>
         /// Nova 框架根 Prefab 资源路径，用于读取 AssetComponent 上的默认包名。

@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-resolve-android-dependencies",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.15",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "unity-editor-automation",
+      "entry": "registered action nova.project.android.resolve-dependencies; nova_project_action exposure=blocked",
+      "when": "当前只能从 Framework 文档确认 Action 已注册；可信审批与 MCP allowlist 完成前不得 describe/plan/execute，执行请求返回 blocked"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "activeBuildTargetAndroid",
+      "required": true
+    },
+    {
+      "name": "edm4uDependencyGraphAndDigest",
+      "required": true
+    },
+    {
+      "name": "managedWriteSet",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "ProjectSettings/AndroidResolverDependencies.xml produced by the confirmed EDM4U Force Resolve",
+      "Assets/GeneratedLocalRepo/** produced and managed by EDM4U",
+      "Assets/Plugins/Android/** files and templates explicitly tracked by EDM4U resolution state"
+    ],
+    "deny": [
+      "Packages/manifest.json, Packages/packages-lock.json, registry or resolved package contents",
+      "manual deletion or editing outside the exact EDM4U-managed file set",
+      "private Maven repository URL, userinfo, query token, credential or raw secret in Plan, Receipt, log or report",
+      "business Gradle/Manifest customization not tracked by EDM4U, Config, Scene, Prefab or business source",
+      "HybridCLR generation, Bundle or Player build, device installation, vendor dashboard, external write, Git commit or push"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "android-dependency-graph",
+    "android-gradle-templates",
+    "generated-local-repo"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "the exact frozen EDM4U dependency graph digest and complete managed write set",
+      "Force Resolve deletion or replacement of existing EDM4U-managed files and GeneratedLocalRepo output",
+      "any changed activeBuildTarget, dependency graph, managed path or execution entry",
+      "UPM change, build, device installation, credential use, external write, delete outside managed outputs, Git commit or push"
+    ],
+    "rule": "确认只绑定当前 Android Target、完整依赖图摘要和 EDM4U 精确受管写入集；任何图、路径、平台或入口漂移后旧确认失效。当前 MCP caller-asserted token 不是可信审批，故 Action 保持 blocked。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "冻结及执行前复核的 activeBuildTarget=Android、非空 EDM4U 依赖图和 SHA-256",
+    "不含私有仓库原值的 repository SHA-256 摘要与精确受管写入集",
+    "ResolveSync 明确成功标记；异常、失败或 domain reload 后未自动重放",
+    "AndroidResolverDependencies.xml 的 package/files/settings 与冻结图一致",
+    "全部 EDM4U 受管文件、GeneratedLocalRepo 与 Artifact SHA-256 的 Verify 证据",
+    "未执行 UPM、Gradle/Player 构建、设备、厂商后台、凭据、外部发布或 Git 的边界说明"
+  ]
+}

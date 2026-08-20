@@ -2,7 +2,7 @@
 
 ## 1. 简介
 
-`SaveKitConfig` 是游戏存档 Kit 的固有配置类，实现 `IKitConfig` 接口，在 ConfigWindow「Kit 配置」面板中全局静态配置。`Save` 的所有接口方法在运行时通过 `Nova.Config.GetKitConfig<SaveKitConfig>()` 按需拉取指令名。
+`SaveKitConfig` 是游戏存档 Kit 的固有配置类，实现 `IKitConfig` 接口。实例在 ConfigWindow「Kit 配置」面板中按 Platform×Channel×DevelopMode 坐标写入 `PlatformChannelEntry.KitConfigsByMode`；`ConfigMasterSO.EnabledKits` 仅作类型白名单，Exporter 将当前格的已启用配置导出为单格 `ConfigRuntimeSO`。`Save` 的所有接口方法在运行时通过 `Nova.Config.GetKitConfig<SaveKitConfig>()` 按需拉取指令名。
 
 **所在文件：** `Nova/Scripts/Runtime/SaveKitConfig.cs`
 **命名空间：** `NovaFramework.Kit.Network.GameSave.Runtime`

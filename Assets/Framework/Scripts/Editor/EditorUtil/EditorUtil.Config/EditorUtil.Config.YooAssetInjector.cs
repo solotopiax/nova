@@ -11,8 +11,6 @@
 
 using NovaFramework.Runtime;
 using UnityEditor;
-using UnityEditor.SceneManagement;
-using UnityEngine.SceneManagement;
 using YooAsset;
 using YooAsset.Editor;
 
@@ -108,28 +106,15 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 域重载时挂载 sceneOpened 常驻订阅，并立即按当前激活 ConfigMaster 注入一次 YooAssetSettings；
-                /// 切换 sample 场景（Single 模式）时自动重新注入，不依赖 ConfigWindow 是否打开。
+                /// 域重载时延迟按当前激活 ConfigMaster 注入一次 YooAssetSettings。
+                /// Sample 场景切换的重新注入由 EditorUtil.SceneRoute 统一编排，避免多个监听器重复注入。
                 /// <para>解决场景：Editor 启动后从未打开 ConfigWindow 即触发构建/查询 YooAssetSettings 的流程，
                 /// 避免 YooAssetConfiguration.s_settings 仍为 null → 走 Resources.Load 全工程兜底导致命中错副本。</para>
                 /// </summary>
                 [InitializeOnLoadMethod]
-                private static void HookSceneOpenedAutoInject()
+                private static void InjectActiveSettingsOnEditorLoad()
                 {
-                    EditorSceneManager.sceneOpened -= OnSceneOpenedAutoInject;
-                    EditorSceneManager.sceneOpened += OnSceneOpenedAutoInject;
                     EditorApplication.delayCall += () => Inject(WorkspaceActive.Get());
-                }
-
-                /// <summary>
-                /// sceneOpened 回调：仅响应 Single 加载模式，按新场景对应的激活 ConfigMaster 重注入。
-                /// </summary>
-                /// <param name="scene">新打开的场景。</param>
-                /// <param name="mode">打开模式；Additive 等非 Single 模式不响应（不切换 active master）。</param>
-                private static void OnSceneOpenedAutoInject(Scene scene, OpenSceneMode mode)
-                {
-                    if (mode != OpenSceneMode.Single) return;
-                    Inject(WorkspaceActive.Get());
                 }
             }
         }

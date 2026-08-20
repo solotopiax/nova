@@ -394,9 +394,19 @@ namespace NovaFramework.Editor
                 public string source;
 
                 /// <summary>
+                /// registry 包的实际来源地址；非 registry 来源通常为空。
+                /// </summary>
+                public string url;
+
+                /// <summary>
                 /// 依赖层级（0 为直接依赖，>0 为传递依赖）。
                 /// </summary>
                 public int depth;
+
+                /// <summary>
+                /// 当前已解析包声明的直接依赖，用于卸载前检查仍在消费目标包的节点。
+                /// </summary>
+                public Dictionary<string, string> dependencies;
             }
         }
     }

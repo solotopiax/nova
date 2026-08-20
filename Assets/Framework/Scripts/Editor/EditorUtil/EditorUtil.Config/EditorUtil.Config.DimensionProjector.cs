@@ -59,7 +59,7 @@ namespace NovaFramework.Editor
                     /// </summary>
                     Namespace,
                     /// <summary>
-                    /// 顶层 HybridCLR 面板字段组（AotMetadataDlls / GameDlls / LinkXmlTargetPath / GameEntranceProcedureName），
+                    /// 顶层 HybridCLR 面板字段组（AotMetadataDlls / StartupGameDlls / RunningGameDlls / LinkXmlTargetPath / GameEntranceProcedureName），
                     /// 底座为 ConfigMasterSO.HybridEditorConfigsOverrides 列表 + 各顶层默认字段（仅 Editor 期消费）。
                     /// </summary>
                     HybridEditorConfigs,
@@ -953,7 +953,8 @@ namespace NovaFramework.Editor
                     {
                         // 全不勾（IsGlobal）：Override 列表已清空，将减维前当前坐标那份回写顶层默认字段
                         master.HybridEditorConfigs.AotMetadataDlls = DeepCloneDllList(snapshot.AotMetadataDlls);
-                        master.HybridEditorConfigs.GameDlls = DeepCloneDllList(snapshot.GameDlls);
+                        master.HybridEditorConfigs.StartupGameDlls = DeepCloneDllList(snapshot.StartupGameDlls);
+                        master.HybridEditorConfigs.RunningGameDlls = DeepCloneDllList(snapshot.RunningGameDlls);
                         master.HybridEditorConfigs.LinkXmlTargetPath = snapshot.LinkXmlTargetPath;
                         master.HybridEditorConfigs.GameEntranceProcedureName = snapshot.GameEntranceProcedureName;
                     }
@@ -1075,7 +1076,8 @@ namespace NovaFramework.Editor
                 private static void ApplyHybridCLRResult(HybridEditorConfigsOverride target, DimensionalResolver.HybridCLRResult result)
                 {
                     target.AotMetadataDlls = DeepCloneDllList(result.AotMetadataDlls);
-                    target.GameDlls = DeepCloneDllList(result.GameDlls);
+                    target.StartupGameDlls = DeepCloneDllList(result.StartupGameDlls);
+                    target.RunningGameDlls = DeepCloneDllList(result.RunningGameDlls);
                     target.LinkXmlTargetPath = result.LinkXmlTargetPath;
                     target.GameEntranceProcedureName = result.GameEntranceProcedureName;
                 }

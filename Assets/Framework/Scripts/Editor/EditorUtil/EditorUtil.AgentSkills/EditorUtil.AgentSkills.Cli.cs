@@ -22,7 +22,7 @@ namespace NovaFramework.Editor
         {
             /// <summary>
             /// 仅供 headless/CI 使用的全量 reconcile 入口。
-            /// 用法：unity -batchmode -executeMethod NovaFramework.Editor.EditorUtil+AgentSkills+Cli.Reconcile。
+            /// C# 调用可使用本嵌套类型；Unity batchmode 请使用 <see cref="NovaProjectSkillsCli"/> 顶层入口。
             /// </summary>
             public static class Cli
             {
@@ -72,6 +72,22 @@ namespace NovaFramework.Editor
                     return builder.ToString();
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// 提供 Unity <c>-executeMethod</c> 可解析的 Nova Project Skills 顶层 batchmode 入口。
+    /// </summary>
+    public static class NovaProjectSkillsCli
+    {
+        /// <summary>
+        /// 执行当前消费项目的 Framework Skills reconcile。
+        /// 此入口只转发给既有 CLI，实现统一的冲突日志与进程退出码语义。
+        /// 用法：<c>unity -batchmode -executeMethod NovaFramework.Editor.NovaProjectSkillsCli.Reconcile</c>。
+        /// </summary>
+        public static void Reconcile()
+        {
+            EditorUtil.AgentSkills.Cli.Reconcile();
         }
     }
 }
