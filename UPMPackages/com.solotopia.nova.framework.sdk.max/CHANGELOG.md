@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [0.1.7] - 2026-08-21
+
+### Added
+
+- MAX 初始化完成时缓存用户广告隐私授权状态，并通过广告聚合层的 `WaitForPrivacyFlowAsync()`、`IsUserConsentSet()` 与 `HasUserConsent()` 对外提供等待与组合查询。
 
 ## [0.1.6] - 2026-08-18
 

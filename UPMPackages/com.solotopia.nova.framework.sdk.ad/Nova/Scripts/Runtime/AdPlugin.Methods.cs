@@ -20,6 +20,42 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
     public sealed partial class AdPlugin
     {
         /// <summary>
+        /// 按渠道配置顺序读取第一个明确的广告隐私授权结果。
+        /// 单个渠道查询异常时记录警告并继续查询后续渠道。
+        /// </summary>
+        /// <param name="consented">找到明确决定时返回该渠道的授权结果；否则为 false。</param>
+        /// <returns>找到明确授权决定时返回 true，否则返回 false。</returns>
+        private bool TryGetUserConsent(out bool consented)
+        {
+            consented = false;
+            if (m_ChannelPlugins == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < m_ChannelPlugins.Count; i++)
+            {
+                IAdInternalPlugin channel = m_ChannelPlugins[i];
+                try
+                {
+                    if (!channel.IsUserConsentSet())
+                    {
+                        continue;
+                    }
+
+                    consented = channel.HasUserConsent();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(LogTag.AD, $"渠道广告隐私授权状态查询失败：{channel?.Channel}，{ex.Message}");
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 选出已就绪的渠道。
         /// 比价模式开启时选 Revenue 最高的渠道；关闭时按列表顺序取第一个就绪渠道。
         /// 是否支持由 IsReady 隐式覆盖：未注册槽位的渠道 IsReady 必为 false。

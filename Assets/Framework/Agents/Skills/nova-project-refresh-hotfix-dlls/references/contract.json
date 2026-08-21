@@ -9,8 +9,8 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.hotfix.refresh-game-dlls)",
+      "kind": "agent-action",
+      "entry": "nova.project.hotfix.refresh-game-dlls",
       "when": "确认完整 write set 后严格按 compile -> copy 闭环刷新当前 Target 与当前 ConfigMaster 坐标的完整 DLL 映射"
     }
   ],

@@ -2,19 +2,12 @@
 
 本文件记录 `com.solotopia.nova.framework.mcp` 的版本变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
-## [Unreleased]
+## [0.1.1] - 2026-08-21
 
 ### Added
 
-- 开放只读 `nova.project.build.inspect-readiness`，用于在构建前检查 Target、场景、Config、YooAsset Package 与 HybridCLR 前置；不执行构建或修复。
-- 新增中立 Project Action Provider SPI 与 Gateway，使 Framework 可以显性依赖本包，同时避免传输 Adapter 反向编译依赖 Framework。
-- 新增独立 `NovaFramework.Mcp.UnityMcp.Editor` 程序集，作为当前默认 Unity MCP 薄适配层。
-
-### Changed
-
-- UPM 安装链调整为 `Framework -> Nova MCP -> com.coplaydev.unity-mcp`；正式发布前必须先闭环默认 Provider 的可解析来源。
-- 默认 Provider 改由 NovaSpark 配置的 OpenUPM scoped registry 解析，不再要求消费工程写入 Unity MCP 顶层 Git 依赖。
-- Descriptor 增加 `requires_edit_mode`，用于在传输层展示 Action 的 Edit Mode 约束。
+- 向 MCP 开放表、网络、声音、振动与本地化五类受控导出 Action。
+- 更新包内 Action 索引与使用说明，使新增导出能力可从消费项目发现。
 
 ## [0.1.0] - 2026-08-20
 

@@ -9,7 +9,7 @@ description: Use when 项目组要在现有 Nova 项目中接入或修改一个�
 
 ## 渐进式披露
 
-再读取 `references/contract.json`。仅在当前决策分支读取下列页面：检查 HostKey、NetCmd 源和导出边界时读 `Docs/Editor/DataPipeline/Implements/Networks/NetworkExporter.md`；更新 Inspector 设置时读 `Docs/Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.md`；执行导出时读 `Docs/Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.HostKeyExporter.md`、`Docs/Editor/EditorUtil/EditorUtil.Network/EditorUtil.Network.NetCmdExporter.md` 与 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md`；运行时加载、路由和 HTTP 验证时读 `Docs/Runtime/Modules/Network/NetworkComponent.md` 与 `Docs/Runtime/Modules/Network/NetworkManager/NetworkManager.md`。不要递归加载全部 Network、Proto 或 Pipify 文档。
+再读取 `references/contract.json`。执行确定性导出时先通过 `nova_project_action` 对 `nova.project.network.export` 执行 `describe`；只有 Action 报告配置问题时才读取对应 Exporter 文档。仅在检查 HostKey、NetCmd 源和导出边界时读 `Docs/Editor/DataPipeline/Implements/Networks/NetworkExporter.md`；更新 Inspector 设置时读 `Docs/Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.md`；运行时加载、路由和 HTTP 验证时读 `Docs/Runtime/Modules/Network/NetworkComponent.md` 与 `Docs/Runtime/Modules/Network/NetworkManager/NetworkManager.md`。不要递归加载全部 Network、Proto 或 Pipify 文档。
 
 ## 冻结输入与阻断门
 
@@ -25,8 +25,7 @@ description: Use when 项目组要在现有 Nova 项目中接入或修改一个�
 | Input | 现有 Action Adapter | Artifact | Evidence |
 |---|---|---|---|
 | 已冻结的 HostKey / NetCmd 源、行与路径 | 项目已确认的源编辑入口；仅定向修改允许的行 | 指定的主备域名与指令路由 | 源、行、HTTP 方法、HostKey、Path 与确认记录一致 |
-| 已确认的 NetworkComponent、数据格式和导出范围 | Unity Editor / MCP 的 `NetworkComponentInspector`；`EditorUtil.Network.HostKeyExporter` / `NetCmdExporter` | 正式 HostKey / NetCmd 数据与需要时的类型产物 | 暂存发布成功，且 ConfigRuntime 的 DevelopMode 与导出事实一致 |
-| 已确认且范围为全部启用描述的 Batch | `export.network.hostkey.data` / `export.network.hostkey.code` / `export.network.netcmd.data` / `export.network.netcmd.code` / `export.network.proto`；仅有明确 Proto Schema 时才用 `export.network.proto` | 当前项目声明的网络生成物 | Pipify 成功且没有扩大到无关网络源 |
+| 已确认的 NetworkComponent、数据格式和导出范围 | `nova.project.network.export` | 正式 HostKey / NetCmd / Proto 数据与类型产物 | Action Verify 成功，且 ConfigRuntime 的 DevelopMode 与导出事实一致 |
 | 已确认协议与业务调用入口 | 已确认的公开项目 Service，或适用时 `Nova.Network.PostAsync` | 可调用的目标业务请求 | 业务代码不直接依赖内部 Network 实现 |
 | 已确认测试端点、账号与成功探针 | `Nova.Network.LoadAsync`、`GetNetCmdUrl()`、`ResolveNetCmdRow()` 与适用的请求 API | 运行时路由与目标响应 | Play Mode 中加载、路由、请求和响应符合冻结的成功定义 |
 
@@ -34,7 +33,7 @@ description: Use when 项目组要在现有 Nova 项目中接入或修改一个�
 
 1. 先检查 Config 和 Network 是否已可加载；HostKey、NetCmd、协议、认证、响应、重放语义、测试端点、账号或成功探针不唯一或缺失时停止并返回 `blocked`。
 2. 只修改冻结的源行和业务调用入口。NetworkComponent、配置资产、Prefab 与 Scene 引用只能经 Unity Editor / MCP 修改；禁止手写 YAML，禁止手改导出产物。
-3. 按需要定向导出 HostKey / NetCmd；当前 ConfigRuntime 不存在、导出失败或暂存产物校验失败时停止，不清理其他网络输出。
+3. 通过 `nova.project.network.export` 定向导出 HostKey / NetCmd / Proto；当前 ConfigRuntime 不存在、导出失败或产物校验失败时停止，不清理其他网络输出，也不退化为任意 C#、反射或临时 Pipify。
 4. 在 Play Mode 先完成 `Nova.Network.LoadAsync()`，再以冻结的表名与指令名验证 URL；最后向测试端点发起一次可审计请求，并按已确认的响应契约判断成功。
 5. 只有路由、请求与预期响应都成立才报告 `success`。无测试端点、账号或成功探针时返回 `blocked`；输入已确认且已执行允许步骤，但因当前运行环境无法完成 Play 证据（包括仅能取得导出或编译证据）时报告 `partial`；未执行允许步骤时不得报告 `partial`；协议或主备语义不明确时同样报告 `blocked`。
 

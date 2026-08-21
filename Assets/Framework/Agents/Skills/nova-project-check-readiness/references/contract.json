@@ -24,8 +24,8 @@
       "when": "已安装或本次范围点名 Nova SDK/Kit，且需要只读确认 package id、版本、source、实际根路径和包内文档入口时"
     },
     {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.config.inspect-plugin-types, request.kind=sdk|kit|all)",
+      "kind": "agent-action",
+      "entry": "nova.project.config.inspect-plugin-types",
       "when": "Unity 已就绪且用户允许收集已安装 SDK/Kit Config 类型的稳定只读元数据时；Tool 不可用则保留 partial"
     },
     {

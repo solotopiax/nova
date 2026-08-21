@@ -2,7 +2,7 @@
 
 > 包名：`com.solotopia.nova.framework.mcp`
 >
-> 当前版本：`0.1.0`
+> 当前版本：`0.1.1`
 >
 > 当前默认 Provider：`com.coplaydev.unity-mcp@10.1.2`
 
@@ -37,7 +37,7 @@ Nova Framework 的必需 Editor 配套包，将默认 Unity MCP Provider 的 `no
 
 ready Plan 会在项目 `Library/Nova/AgentActions/Operations/` 写最小恢复元数据；domain reload 后只允许 Verify，不恢复或重放 Execute。当前桥拒绝 `Delivery` 以及带 `Destructive`、`ExternalWrite` 或 `Credential` 的 Action，因为 `confirmation_token` 只能绑定计划，不能证明可信的人类审批。
 
-当前开放 UPM 安装/升级、Config Inspect/Ensure/Export、业务热更 DLL 刷新与只读构建前检共 8 个 Action。UPM direct dependency 卸载已拆为独立 `Destructive` Action，当前不开放。实际列表与 Schema 以运行中的 `describe` 为准。
+当前开放 UPM 安装/升级、Config Inspect/Ensure/Export、业务热更 DLL 刷新、只读构建前检，以及 Table、Network、Sound、Vibration、Localization 导出共 13 个 Action。UPM direct dependency 卸载已拆为独立 `Destructive` Action，当前不开放。实际列表与 Schema 以运行中的 `describe` 为准。
 
 完整协议、开放边界与排障入口见 [Nova/Docs/INDEX.md](./Nova/Docs/INDEX.md)。
 

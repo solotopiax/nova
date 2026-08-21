@@ -8,11 +8,11 @@ Nova Project Skill 负责理解项目组自然语言任务、冻结输入和组�
 
 当前基线：
 
-- 消费端 Skills 真源：`Assets/Framework/Agents/Skills/`，共 29 项，统一使用 `nova-project-*`。
+- 消费端 Skills 真源：`Assets/Framework/Agents/Skills/`，共 30 项，统一使用 `nova-project-*`。
 - Skill 发现 Catalog：`Assets/Framework/Agents/catalog.json`。它只路由 Skill，不复制 Action Descriptor。
 - Action 唯一执行真相：运行中的 C# Registry Descriptor；交互 Agent 只能对 MCP 已开放的 ID 通过 `describe` 渐进读取 Schema，未开放 Action 只从文档得知注册与阻断状态。
-- 已注册 Action：14 个。
-- 当前 MCP 明确开放：8 个。
+- 已注册 Action：19 个。
+- 当前 MCP 明确开放：13 个。
 - 已实现但因风险门未开放：6 个。
 - 原 47 项不是实施 KPI；经源码审计后分成“已实现、需前置能力、已合并、不产品化、封闭”五类。
 
@@ -157,7 +157,7 @@ UPMPackages/com.solotopia.nova.framework.mcp/
 
 正式消费链还要求每个依赖版本及其 registry scope 在安装 Framework 之前就可解析。当前默认依赖为 `com.coplaydev.unity-mcp@10.1.2`，由 NovaSpark 预先配置 OpenUPM 精确 scope 后按 Nova MCP 包的 semver 传递依赖解析；正式发布前必须用真实消费工程验证该来源。开发工程中另外安装的 Provider 只用于开发态验证，不改变对外包默认适配 Unity MCP 的事实。
 
-29 个 Skill 不会逐个注册成 MCP Tool。Skill 由 Agent 从 `.agents/skills/` 发现；当前默认 Adapter 只从 `tools/list` 暴露 `nova_project_action`，再由该 Tool 的 live `describe` 返回当前安全开放的 Action。
+30 个 Skill 不会逐个注册成 MCP Tool。Skill 由 Agent 从 `.agents/skills/` 发现；当前默认 Adapter 只从 `tools/list` 暴露 `nova_project_action`，再由该 Tool 的 live `describe` 返回当前安全开放的 Action。
 
 唯一 Tool：
 
@@ -178,7 +178,7 @@ nova_project_action
 - `Delivery`、`Destructive`、`ExternalWrite`、`Credential` 在可信审批通道完成前不开放；
 - 输出隐藏 CLR 类型、项目绝对根路径、凭据、URL query 和认证信息。
 
-## 8. 当前 14 个 Action
+## 8. 当前 19 个 Action
 
 | Action ID | 类型 | 核心闭环 | MCP | Skill |
 |---|---|---|---|---|
@@ -191,6 +191,11 @@ nova_project_action
 | `nova.project.config.export-runtime` | Generate | 冻结时间与坐标导出 ConfigRuntimeSO | 开放 | `nova-project-configure-runtime` |
 | `nova.project.hotfix.refresh-game-dlls` | Generate | Compile 当前 Target 后整批 Copy Game DLL | 开放 | `nova-project-refresh-hotfix-dlls` |
 | `nova.project.build.inspect-readiness` | Inspect | 只读冻结 Target、场景、Config、YooAsset Package 与 HybridCLR 构建前置 | 开放 | `nova-project-preflight-build` |
+| `nova.project.table.export` | Generate | 冻结活动场景 TableSettings 与 Project/Description，按 all/code/data 导出并核验目录摘要 | 开放 | `nova-project-integrate-table` |
+| `nova.project.network.export` | Generate | 冻结活动场景 NetworkSettings，按 HostKey/NetCmd/Proto 与 all/code/data 导出并核验产物 | 开放 | `nova-project-integrate-network-api` |
+| `nova.project.sound.export` | Generate | 冻结活动场景 SoundSettings 与 Unit，按 all/code/data 导出并核验产物 | 开放 | `nova-project-integrate-sound` |
+| `nova.project.vibration.export` | Generate | 冻结 Emphasis/Custom 区域与 Unit，按 all/code/data 导出并核验产物 | 开放 | `nova-project-integrate-vibration` |
+| `nova.project.localization.export` | Generate | 冻结 Text/Font/Languages 范围，按 all/code/data 导出并核验产物 | 开放 | `nova-project-update-localization` |
 | `nova.project.android.resolve-dependencies` | Generate | 冻结 EDM4U 图并重建、核验受管 Android 依赖输出 | 未开放：Destructive | `nova-project-resolve-android-dependencies` |
 | `nova.project.hotfix.generate-artifacts` | Generate | GenerateAll + ValidateLinkXml | 未开放：Destructive | `nova-project-generate-hybridclr-artifacts` |
 | `nova.project.bundle.build-asset` | Build | 构建 AssetBundle 与 artifact receipt | 未开放：Destructive | `nova-project-build-bundles` |
@@ -205,6 +210,8 @@ nova_project_action
 
 - 原 UPM、Config Export、Config Validate、Bundle Collector、RawFile、AssetBundle、Player 已实现。
 - Build Preflight 已抽取无 SessionState/保存/生成副作用的 pure probe，并实现只读 `build.inspect-readiness`。
+- Table Export 已补齐活动场景 Settings resolver、Project/Description 输出规划与 code/data 分证据，并实现 `table.export`。
+- Localization、Network、Sound、Vibration 已补齐稳定 resolver、精确范围、输出规划与 code/data 分证据，并分别实现受控导出 Action。
 - Android Resolver 已冻结完整 EDM4U 图、固定受管写入边界与跨 reload Receipt，并实现 `android.resolve-dependencies`；因 Force Resolve 属于 Destructive，MCP 仍保持关闭。
 - 原 SDK/Kit 类型扫描两项合并为 `config.inspect-plugin-types`。
 - 原 SDK/Kit 单格 Ensure 两项升格并合并为 `config.ensure-plugin-instances`，补齐启用名单、保存与矩阵语义。
@@ -216,10 +223,6 @@ nova_project_action
 |---|---|---|
 | ProjectGuard / Environment | 项目守卫、Luban、Python、HybridCLR 检查 | 抽取完全无 `SessionState` 写入的 pure probe，并修正 package resolved path |
 | UI | export all/code/data | 稳定 Settings resolver、精确输出规划、data/code 证据拆分 |
-| Table | validate/export | 把弱 DescriptionValidator 折入 Export Plan；补 resolver、精确覆盖集与 data/code 拆分 |
-| Localization | text/font/language export | Text、Font、SupportedLanguages 分 Action，再按 data/code 拆证据 |
-| Network | HostKey、NetCmd、Proto | HostKey 冻结 ConfigRuntime mode；HostKey/NetCmd 分 data/code；Proto 先严格校验并暂存原子发布 |
-| Sound / Vibration | export | 补稳定 resolver 与结果 DTO；Vibration 分 Emphasis/Custom，再分 data/code |
 | Config 高风险变更 | scene mode、grid、missing refs、migration、inject | 每项拆精确 write set、迁移/删除计划与资产级 Verify |
 | RuntimeProbe | UI、资源、声音、网络、设备 | 先建立隔离场景/探针、超时、清理和 Play/Device 证据契约 |
 
@@ -244,7 +247,8 @@ nova_project_action
 - 已部分迁移：`nova-project-configure-runtime` 的 Validate、Plugin Inspect/Ensure、Bundle Collector Inspect、Runtime Export；任意业务字段编辑仍是受确认 Unity 编辑。
 - Action 已实现并由 MCP 开放：`nova-project-preflight-build`。
 - Action 已实现但 Skill 只能报告阻断：`nova-project-resolve-android-dependencies`、`nova-project-generate-hybridclr-artifacts`、`nova-project-build-bundles`、`nova-project-build-player`。
-- 未达到 Action 准入门的 Table/UI/Localization/Network/Sound/Vibration Skill 保留现有受控工作流，不伪称已 C# Action 化。
+- 确定性导出已迁移：`nova-project-export-tables`、`nova-project-integrate-table`、`nova-project-integrate-network-api`、`nova-project-integrate-sound`、`nova-project-integrate-vibration`、`nova-project-update-localization`；各 Skill 中的源编辑、业务代码和运行时验证仍由对应受控入口完成。
+- 未达到 Action 准入门的 UI 开放式布局与业务编辑保留现有受控工作流，不伪称已 C# Action 化。
 
 ## 11. 每个 Action 的完成定义
 
@@ -261,10 +265,10 @@ nova_project_action
 
 ## 12. 后续实施顺序
 
-1. 完成当前 14 项的 Unity EditMode、live `describe`、安全 Plan、Console 与消费包验证。
+1. 完成当前 19 项的 Unity EditMode、live `describe`、安全 Plan、Console 与消费包验证。
 2. 建立可信审批通道，再按风险逐项开放 GenerateAll、Bundle、Player；不能仅删除 `Destructive` 标志。
 3. 优先补 Settings resolver、结果 DTO、输出规划和 pure probe，而不是继续堆 Action 数量。
-4. 先完成 Table/UI/Localization/Network/Sound/Vibration 的领域契约，再新增 Handler。
+4. 先完成 UI 的稳定设置与输出契约，再评估是否新增 Handler。
 5. 最后独立设计 RuntimeProbe 与 Delivery。
 
 ## 13. 明确不做

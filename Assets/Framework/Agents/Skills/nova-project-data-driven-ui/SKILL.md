@@ -7,7 +7,7 @@ description: Use when 项目组要把已接入或已明确表源的 Nova 数据�
 
 触发后先读取当前 Framework 的 `Docs/START_HERE.md`，作为所有 `nova-project-*` Skill 的共同底线。
 
-再读取 `references/contract.json`，并使用 `nova-project-integrate-table` 承担表接入/验证、`nova-project-ui-create-view` 承担创建/注册页面的闭环。该 Workflow 只编排已有消费端能力，不直接改 Nova Manager、UIManager、表生成物或 Framework 包。
+再读取 `references/contract.json`，并使用 `nova-project-integrate-table` 承担表接入/验证、`nova-project-ui-create-view` 承担创建/注册页面的闭环；其中确定性表导出直接调用 `nova.project.table.export`。该 Workflow 只编排已有消费端能力，不直接改 Nova Manager、UIManager、表生成物或 Framework 包。
 
 ## 渐进式披露
 

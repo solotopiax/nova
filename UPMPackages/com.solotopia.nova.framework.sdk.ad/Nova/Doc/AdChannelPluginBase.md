@@ -145,6 +145,15 @@ public virtual float GetMaxRevenue(AdFormat format);
 /// 获取当前渠道 SDK 返回的国家或地区代码；基类默认返回空字符串，渠道可按 SDK 能力覆盖。
 public virtual string GetCountryCode();
 
+/// 查询当前渠道是否已取得用户明确的广告隐私授权决定；基类默认返回 false。
+public virtual bool IsUserConsentSet();
+
+/// 查询当前渠道记录的用户广告隐私授权结果；基类默认返回 false，必须结合 IsUserConsentSet()。
+public virtual bool HasUserConsent();
+
+/// 等待当前渠道初始化期间的隐私授权流程结束；基类默认立即完成。
+public virtual UniTask WaitForPrivacyFlowAsync(CancellationToken ct = default);
+
 /// 执行渠道 SDK 的实际释放逻辑；基类返回 UniTask.CompletedTask。
 protected virtual UniTask DisposeChannelSDKAsync(CancellationToken ct);
 

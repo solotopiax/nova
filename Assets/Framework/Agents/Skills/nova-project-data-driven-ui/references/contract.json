@@ -22,14 +22,9 @@
       "when": "配置已确认的 Luban Project、导出描述和运行时加载描述时"
     },
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.Table.Exporter.ExportCode / ExportData / ExportAll",
-      "when": "导出已冻结的 ProjectId 和 DescriptionId 时"
-    },
-    {
-      "kind": "pipify",
-      "entry": "export.table.code / export.table.data",
-      "when": "复用已确认且范围为全部启用描述的 Table Batch 时"
+      "kind": "agent-action",
+      "entry": "nova.project.table.export",
+      "when": "导出已冻结的 ProjectId、DescriptionId 与 all/code/data 范围时"
     },
     {
       "kind": "csharp-api",

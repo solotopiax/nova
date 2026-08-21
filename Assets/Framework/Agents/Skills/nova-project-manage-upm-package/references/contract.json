@@ -9,23 +9,13 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(operation=plan, action_id=nova.project.upm.manage-latest, request=object)",
-      "when": "只读生成 install-latest 或 upgrade-latest 的一次性计划"
+      "kind": "agent-action",
+      "entry": "nova.project.upm.manage-latest",
+      "when": "通过 describe、plan、execute、verify 完成 install-latest 或 upgrade-latest；执行仍需一次性计划和用户确认"
     },
     {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(operation=execute, action_id=nova.project.upm.manage-latest, plan_id=string, confirmation_token=string)",
-      "when": "用户确认精确计划且 manifest、lock、registry 与远端版本均未漂移后提交一次写入与 Resolve"
-    },
-    {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(operation=verify, action_id=nova.project.upm.manage-latest, receipt=string)",
-      "when": "UPM 更新、编译和 domain reload 稳定后只读核验安装或升级结果，不自动重放"
-    },
-    {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(action_id=nova.project.upm.uninstall-direct, exposure=blocked)",
+      "kind": "agent-action-blocked",
+      "entry": "nova.project.upm.uninstall-direct",
       "when": "direct dependency 卸载已拆为含 Destructive 的独立 Action；当前 MCP 不开放，必须返回可信审批阻断"
     }
   ],

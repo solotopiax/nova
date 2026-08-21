@@ -22,7 +22,7 @@ description: Use when Nova 项目组要把当前 direct Nova Framework 从既有
 1. 只读冻结唯一项目根、当前 manifest direct entry、当前 lock 解析版本与来源、脱敏后的 registry 身份和可达性、`latest` 或精确目标版本、目标元数据，以及目标 Framework → Nova MCP 包 → 默认 Provider Adapter 的可解析闭包。当前版本已等于或高于目标为 `not_applicable`；任何来源、版本、依赖或宿主不唯一为 `blocked`。
 2. 展示唯一的 Framework 版本 diff、目标来源、预期 Resolve 影响、后续重载风险和验证清单。只有用户确认该冻结计划后，才调用外部宿主的一次升级；若宿主要求自己的确认，仍须按其精确 Schema 单独完成。
 3. 外部宿主提交 manifest 变更并触发 Resolve 后，连接中断、domain reload 或编译尚未稳定时只能返回 `partial`，保留已知的目标与宿主 receipt（如有）。不得自动重试、复用旧请求、清缓存、回滚或改写其它包。
-4. 重连到同一项目且 Unity 稳定后，先由包外宿主只读核验 direct manifest、packages-lock、目标 Framework 版本和同源解析。再从新解析的 Framework 读取其 `Agents/catalog.json`，以 Catalog 实际项数（当前为 29，未来以 N 为准）运行 `nova_skills.py doctor --project-root <projectRoot>`，确认投影没有 missing、modified、sourceChanged 或未完成事务。最后重新执行 MCP `tools/list`，确认 `nova_project_action` 已重新出现；仅检查可见性，不用它补做 Framework 升级。
+4. 重连到同一项目且 Unity 稳定后，先由包外宿主只读核验 direct manifest、packages-lock、目标 Framework 版本和同源解析。再从新解析的 Framework 读取其 `Agents/catalog.json`，以 Catalog 实际项数（当前为 30，未来以 N 为准）运行 `nova_skills.py doctor --project-root <projectRoot>`，确认投影没有 missing、modified、sourceChanged 或未完成事务。最后重新执行 MCP `tools/list`，确认 `nova_project_action` 已重新出现；仅检查可见性，不用它补做 Framework 升级。
 
 ## 结果与不可越界项
 

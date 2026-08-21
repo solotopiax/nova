@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-export-tables",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.17",
+    "unity": ">=6000.4"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.table.export",
+      "when": "导出当前有效 TableSettings 的全部或指定代码、数据描述"
+    }
+  ],
+  "inputs": [
+    {
+      "name": "projectRoot",
+      "required": true
+    },
+    {
+      "name": "scope",
+      "required": false
+    },
+    {
+      "name": "projectId",
+      "required": false
+    },
+    {
+      "name": "descriptionIds",
+      "required": false
+    }
+  ],
+  "effects": [
+    "workspace-write",
+    "unity-write",
+    "generated-output"
+  ],
+  "writeScope": {
+    "allow": [
+      "Table Action Plan 明确列出的代码与数据输出目录"
+    ],
+    "deny": [
+      "Table Schema、Excel 数据源和 TableSettings",
+      "Packages/com.solotopia.nova.framework/**",
+      "Library/PackageCache/**",
+      "计划外的生成目录与业务源码"
+    ]
+  },
+  "locks": [
+    "unity-editor",
+    "asset-database",
+    "table-export"
+  ],
+  "idempotency": "ensure-state",
+  "confirmation": {
+    "requiredFor": [
+      "执行 Plan 中列出的生成物覆盖",
+      "目标 Project、Description 或输出范围不明确"
+    ],
+    "rule": "只确认当前 Plan 的精确输出范围；范围变化后必须重新 Plan。"
+  },
+  "minimumEvidence": "compile",
+  "resultStates": [
+    "success",
+    "partial",
+    "blocked",
+    "not_applicable"
+  ],
+  "evidence": [
+    "Action Plan 中冻结的 Project、Description 与代码/数据输出目录",
+    "Verify 返回的输出文件数量与 SHA-256 摘要",
+    "包含代码导出时 Unity 无编译错误"
+  ]
+}

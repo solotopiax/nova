@@ -9,9 +9,9 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "unity-editor-automation",
-      "entry": "registered action nova.project.hotfix.generate-artifacts; nova_project_action exposure=blocked",
-      "when": "当前只能从 Framework 文档识别已实现 Action；MCP describe/plan/execute 均不可用，可信审批与 allowlist 完成前返回 blocked"
+      "kind": "agent-action-blocked",
+      "entry": "nova.project.hotfix.generate-artifacts",
+      "when": "已冻结 HybridCLR 生成输入；该 Action 当前未在 MCP ExposurePolicy 中，必须返回 blocked"
     }
   ],
   "inputs": [

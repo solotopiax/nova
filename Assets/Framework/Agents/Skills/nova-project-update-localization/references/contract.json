@@ -19,14 +19,9 @@
       "when": "更新已确认的本地化设置或既有 UI 绑定"
     },
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.Localization.TextExporter and FontExporter",
+      "kind": "agent-action",
+      "entry": "nova.project.localization.export",
       "when": "导出确认范围内的文本、字体、类型或支持语言产物"
-    },
-    {
-      "kind": "pipify",
-      "entry": "export.localization.text.* / export.localization.font.*",
-      "when": "复用已确认的本地化导出 Batch"
     },
     {
       "kind": "csharp-api",

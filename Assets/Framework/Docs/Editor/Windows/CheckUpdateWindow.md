@@ -36,7 +36,7 @@ UnityEditor.EditorWindow
 | `c_MinWidth` | `const float` | `520f` | 窗口最小宽度 |
 | `c_MinHeight` | `const float` | `320f` | 窗口最小高度 |
 | `c_RowSpacing` | `const float` | `4f` | 行间距（singleLineHeight + c_RowSpacing = 行高） |
-| `c_UpgradeVersionHueCyclesPerSecond` | `const float` | `0.12f` | 可升级版本号彩虹色的每秒色相循环次数 |
+| `c_UpgradeVersionHueCyclesPerSecond` | `const float` | `0.65f` | 可升级版本号彩虹色的每秒色相循环次数，与 PlugPals 保持一致 |
 | `c_ColPackageWidth` | `const float` | `240f` | Package 列宽 |
 | `c_ColVersionWidth` | `const float` | `110f` | Current / Latest 列宽（共用） |
 | `s_RowEvenColor` | `static readonly Color` | `new Color(0.22f, 0.22f, 0.22f, 0.4f)` | 斑马纹偶数行背景色（浅灰） |

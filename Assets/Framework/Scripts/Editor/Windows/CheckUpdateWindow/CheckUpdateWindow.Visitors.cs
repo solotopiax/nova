@@ -37,9 +37,9 @@ namespace NovaFramework.Editor
         private const float c_RowSpacing = 4f;
 
         /// <summary>
-        /// 可升级包最新版本彩虹色的每秒色相循环次数，保持缓慢连续变化而不闪烁。
+        /// 可升级包最新版本彩虹色的每秒色相循环次数，与 PlugPals 保持一致。
         /// </summary>
-        private const float c_UpgradeVersionHueCyclesPerSecond = 0.12f;
+        private const float c_UpgradeVersionHueCyclesPerSecond = 0.65f;
 
         /// <summary>
         /// Package 列宽。

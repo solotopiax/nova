@@ -21,6 +21,7 @@
     ],
     "data": [
       "nova-project-router",
+      "nova-project-export-tables",
       "nova-project-integrate-table",
       "nova-project-configure-runtime",
       "nova-project-update-localization",
@@ -215,6 +216,21 @@
       "effects": [
         "workspace-write",
         "unity-write"
+      ],
+      "minimumEvidence": "compile"
+    },
+    {
+      "id": "nova-project-export-tables",
+      "path": "Skills/nova-project-export-tables",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "data"
+      ],
+      "effects": [
+        "workspace-write",
+        "unity-write",
+        "generated-output"
       ],
       "minimumEvidence": "compile"
     },

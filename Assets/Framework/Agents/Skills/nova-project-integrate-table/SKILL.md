@@ -9,7 +9,7 @@ description: Use when 项目组要把已确认的 Luban 表源接入现有 Nova 
 
 ## 渐进式披露
 
-再读取 `references/contract.json`。仅在当前决策分支读取下列一页：确认 Project、导出描述或加载描述时读 `Docs/Runtime/Modules/Table/Definitions/TableSettings.md` 和 `Docs/Editor/Inspectors/TableComponentInspector/TableComponentInspector.md`；执行导出时读 `Docs/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md`；排查或验证运行时加载时读 `Docs/Runtime/Modules/Table/TableComponent.md` 与 `Docs/Runtime/Modules/Table/TableManager.md`；复用既有 Batch 时才读 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md`。不要递归加载 Table、Luban 或 Pipify 的全部文档。
+再读取 `references/contract.json`。仅在当前决策分支读取下列一页：确认 Project、导出描述或加载描述时读 `Docs/Runtime/Modules/Table/Definitions/TableSettings.md` 和 `Docs/Editor/Inspectors/TableComponentInspector/TableComponentInspector.md`；执行导出时直接调用 `nova.project.table.export`，只有 Action 报告配置问题时才读 `Docs/Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md`；排查或验证运行时加载时读 `Docs/Runtime/Modules/Table/TableComponent.md` 与 `Docs/Runtime/Modules/Table/TableManager.md`。不要递归加载 Table、Luban 或 Pipify 的全部文档。
 
 ## 冻结输入与决策门
 
@@ -25,10 +25,10 @@ description: Use when 项目组要把已确认的 Luban 表源接入现有 Nova 
 |---|---|---|---|
 | 已冻结的 Schema、Excel 与表范围 | 项目现有且已确认的 Luban 数据源编辑入口 | 指定表源与 Schema | 变更只覆盖确认的表、Sheet、字段与行范围 |
 | 已冻结的 Luban Project、描述和表源 | TableComponent Inspector 的 Luban Project / 导出描述 / 加载描述编辑入口 | `TableSettings` 中的 Project、导出描述、加载描述与显式 Asset 地址映射 | Unity 中目标设置与选定输入一致 |
-| 已冻结的 `ProjectId/DescriptionId` 与输出范围 | `EditorUtil.Table.Exporter.ExportCode`、`ExportData` 或 `ExportAll`；复用已确认 Batch 时才用 `export.table.code` / `export.table.data` | 该描述的代码和数据正式产物 | Exporter 成功，且只出现本次确认范围的产物变化 |
+| 已冻结的 `ProjectId/DescriptionId` 与输出范围 | `nova.project.table.export` | 该描述的代码和数据正式产物 | Action Verify 成功，且只出现 Plan 范围内的产物变化 |
 | 已冻结的加载时序、表类型和读取样例 | 既有启动链调用 `Nova.Table.LoadAsync()` 或 `LoadSync()`，再用 `HasTable<T>()` / `GetTable<T>()` | 可查询的目标表 | Play Mode 中加载成功、存在目标类型并读取到指定行/字段 |
 
-Pipify 的原子 Step 只处理所有已启用描述，不能代替精确 `ProjectId/DescriptionId` 选择；Batch 也是顺序执行，不能据此假定其他表链已经正确。
+只要求导出、不要求完整接入和 Play 验证时，直接转入 `nova-project-export-tables`，不要执行本 Skill 的完整接入流程。
 
 ## 执行与验证边界
 

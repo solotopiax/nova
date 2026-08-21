@@ -19,14 +19,9 @@
       "when": "更新已确认的组件、资源映射或序列化引用；不得手写 Unity YAML"
     },
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.Vibrate.ExportEmphasisData / ExportEmphasisCode / ExportEmphasisAll / ExportCustomData / ExportCustomCode / ExportCustomAll",
+      "kind": "agent-action",
+      "entry": "nova.project.vibration.export",
       "when": "按冻结范围导出单文件或已完整确认的 Emphasis 或 Custom 区域"
-    },
-    {
-      "kind": "pipify",
-      "entry": "export.vibrate.emphasis.data / export.vibrate.emphasis.code / export.vibrate.custom.data / export.vibrate.custom.code",
-      "when": "仅在当前活动场景的 Nova 与 VibrateComponent 存在且相应完整区域范围已确认时复用 Batch"
     },
     {
       "kind": "csharp-api",

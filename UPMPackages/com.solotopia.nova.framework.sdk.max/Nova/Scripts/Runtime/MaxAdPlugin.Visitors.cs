@@ -99,6 +99,21 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private string m_CountryCode;
 
         /// <summary>
+        /// MAX 初始化完成时缓存的用户是否已作出广告隐私授权决定。
+        /// </summary>
+        private bool m_IsUserConsentSet;
+
+        /// <summary>
+        /// MAX 初始化完成时缓存的用户广告隐私授权结果；仅在 m_IsUserConsentSet 为 true 时有明确语义。
+        /// </summary>
+        private bool m_HasUserConsent;
+
+        /// <summary>
+        /// MAX 初始化期间 Consent Flow 的业务等待信号；初始化完成、取消或失败时结束等待。
+        /// </summary>
+        private readonly UniTaskCompletionSource m_PrivacyFlowCompletionSource = new UniTaskCompletionSource();
+
+        /// <summary>
         /// 收益回调即时打点用的变现插件引用，初始化阶段在主线程缓存。
         /// </summary>
         private IMonetizeTrackPlugin m_RevenueMonetizeTracker;

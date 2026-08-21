@@ -90,6 +90,48 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public bool IsAdPlaying(AdFormat format) => false;
 
         /// <summary>
+        /// 查询是否有广告渠道已取得用户明确的广告隐私授权决定。
+        /// 多渠道场景按配置顺序查询，任一渠道已取得决定即返回 true。
+        /// </summary>
+        /// <returns>存在明确授权决定时返回 true；尚未设置或渠道均不支持查询时返回 false。</returns>
+        public bool IsUserConsentSet()
+        {
+            return TryGetUserConsent(out _);
+        }
+
+        /// <summary>
+        /// 查询用户是否同意广告隐私授权。
+        /// 多渠道场景采用配置顺序中第一个已取得明确决定的渠道结果。
+        /// </summary>
+        /// <returns>用户已明确同意时返回 true；拒绝、尚未设置或渠道均不支持查询时返回 false。</returns>
+        public bool HasUserConsent()
+        {
+            return TryGetUserConsent(out bool consented) && consented;
+        }
+
+        /// <summary>
+        /// 等待所有已启用广告渠道在初始化期间触发的隐私授权流程结束。
+        /// 不支持隐私流程的渠道会立即完成；调用前应先等待 Nova.SDK.InitializeTask，确保渠道列表已经创建。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>全部广告渠道隐私授权流程完成任务。</returns>
+        public async UniTask WaitForPrivacyFlowAsync(CancellationToken ct = default)
+        {
+            if (m_ChannelPlugins == null || m_ChannelPlugins.Count == 0)
+            {
+                return;
+            }
+
+            var tasks = new List<UniTask>(m_ChannelPlugins.Count);
+            for (int i = 0; i < m_ChannelPlugins.Count; i++)
+            {
+                tasks.Add(m_ChannelPlugins[i].WaitForPrivacyFlowAsync(ct));
+            }
+
+            await UniTask.WhenAll(tasks);
+        }
+
+        /// <summary>
         /// 异步获取广告 SDK 返回的有效国家或地区代码。
         /// 优先等待广告国家码数据槽位；等待超时后读取广告模块上次成功缓存，仍不可用时返回空字符串。
         /// </summary>

@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.6] - 2026-08-21
+
+### Added
+
+- `IAdPlugin` 新增广告隐私授权等待与状态查询；业务层可通过 `WaitForPrivacyFlowAsync()` 等待初始化期隐私流程结束，并通过 `IsUserConsentSet()` 与 `HasUserConsent()` 组合区分尚未设置、明确拒绝和明确同意。
 
 ## [1.1.5] - 2026-08-20
 

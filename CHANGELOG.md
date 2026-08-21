@@ -6,6 +6,24 @@
 
 ---
 
+## [0.6.17] - 2026-08-21
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.17]` 节。
+
+### Breaking
+
+- `IAdPlugin` 新增广告隐私授权状态查询与异步等待成员；仓外自定义实现需同步适配。
+
+### Added
+
+- 发布表、网络、声音、振动与本地化五类受控导出 Action，并通过 Nova MCP 向消费项目开放。
+
+### Changed
+
+- 发布 Framework `0.6.17`、Nova MCP `0.1.1`、SDK Ad `1.1.6` 与 SDK MAX `0.1.7`，依赖下界沿实际消费链同步提升。
+
+---
+
 ## [0.6.16] - 2026-08-20
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.16]` 节。

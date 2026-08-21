@@ -19,18 +19,28 @@
       "when": "编辑并保存已冻结三维坐标的 ConfigMasterSO"
     },
     {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.config.inspect-plugin-types|nova.project.config.ensure-plugin-instances)",
-      "when": "扫描已加载 SDK/Kit Config 类型，或在精确坐标/矩阵范围内确认后补齐插件实例"
+      "kind": "agent-action",
+      "entry": "nova.project.config.inspect-plugin-types",
+      "when": "扫描已加载 SDK/Kit Config 类型"
     },
     {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.config.validate-coordinate|nova.project.config.inspect-bundle-collector)",
-      "when": "只读校验精确 Config 坐标或定位其 Bundle Collector"
+      "kind": "agent-action",
+      "entry": "nova.project.config.ensure-plugin-instances",
+      "when": "在精确坐标/矩阵范围内确认后补齐插件实例"
     },
     {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.config.export-runtime)",
+      "kind": "agent-action",
+      "entry": "nova.project.config.validate-coordinate",
+      "when": "只读校验精确 Config 坐标"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.inspect-bundle-collector",
+      "when": "定位精确 Config 坐标对应的 Bundle Collector"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.export-runtime",
       "when": "确认精确 write set 后导出已冻结 Platform Channel DevelopMode 的 ConfigRuntimeSO"
     }
   ],

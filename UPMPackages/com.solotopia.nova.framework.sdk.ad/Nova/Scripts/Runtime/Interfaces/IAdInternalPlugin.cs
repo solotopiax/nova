@@ -52,6 +52,27 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         string GetCountryCode();
 
         /// <summary>
+        /// 查询当前渠道是否已取得用户明确的广告隐私授权决定。
+        /// </summary>
+        /// <returns>已明确授权或拒绝时返回 true；尚未设置或渠道不支持查询时返回 false。</returns>
+        bool IsUserConsentSet();
+
+        /// <summary>
+        /// 查询当前渠道记录的用户广告隐私授权结果。
+        /// 调用方必须结合 IsUserConsentSet() 区分“拒绝”和“尚未设置”。
+        /// </summary>
+        /// <returns>用户已明确同意时返回 true；拒绝、尚未设置或渠道不支持查询时返回 false。</returns>
+        bool HasUserConsent();
+
+        /// <summary>
+        /// 等待当前渠道初始化期间的隐私授权流程结束。
+        /// 不支持隐私流程的渠道应立即完成。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>隐私授权流程完成任务。</returns>
+        UniTask WaitForPrivacyFlowAsync(CancellationToken ct = default);
+
+        /// <summary>
         /// 广告收入业务事件，每次广告展示产生收入后由基类排入 Unity 主线程触发；收益打点可在 SDK 原始回调线程即时执行。
         /// AdPlugin 订阅此事件后聚合转发给业务层。
         /// </summary>

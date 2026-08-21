@@ -19,19 +19,9 @@
       "when": "需要更新已确认的 NetworkComponent、NetworkSettings 或序列化引用"
     },
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.Network.HostKeyExporter.ExportHostKeyData / ExportHostKeyCode",
-      "when": "导出已冻结 HostKey 数据或类型"
-    },
-    {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.Network.NetCmdExporter.ExportNetCmdData / ExportNetCmdCode",
-      "when": "导出已冻结 NetCmd 数据或类型"
-    },
-    {
-      "kind": "pipify",
-      "entry": "export.network.hostkey.data / export.network.hostkey.code / export.network.netcmd.data / export.network.netcmd.code / export.network.proto",
-      "when": "复用已确认的全启用描述 Batch；Proto 仅在 Schema 与生成范围明确时执行"
+      "kind": "agent-action",
+      "entry": "nova.project.network.export",
+      "when": "导出已冻结的 HostKey、NetCmd 或 Proto 代码和数据"
     },
     {
       "kind": "csharp-api",

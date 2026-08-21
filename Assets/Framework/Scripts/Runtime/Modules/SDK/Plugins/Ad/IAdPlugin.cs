@@ -32,6 +32,28 @@ namespace NovaFramework.Runtime
         bool IsAdPlaying(AdFormat format);
 
         /// <summary>
+        /// 查询用户是否已经对广告隐私授权作出明确决定。
+        /// 返回 false 时，HasUserConsent() 的 false 不能解释为用户拒绝授权。
+        /// </summary>
+        /// <returns>用户已明确授权或拒绝时返回 true；尚未设置或渠道不支持查询时返回 false。</returns>
+        bool IsUserConsentSet();
+
+        /// <summary>
+        /// 查询用户是否同意广告隐私授权。
+        /// 必须先结合 IsUserConsentSet() 判断用户是否已经作出决定。
+        /// </summary>
+        /// <returns>用户已明确同意时返回 true；拒绝、尚未设置或渠道不支持查询时返回 false。</returns>
+        bool HasUserConsent();
+
+        /// <summary>
+        /// 等待广告渠道初始化期间的隐私授权流程结束。
+        /// 未展示授权弹窗或渠道不支持隐私流程时正常完成；展示弹窗时在用户完成同意或拒绝后完成。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>隐私授权流程完成任务。</returns>
+        UniTask WaitForPrivacyFlowAsync(CancellationToken ct = default);
+
+        /// <summary>
         /// 异步获取广告 SDK 返回的有效国家或地区代码。
         /// 内部会等待广告渠道发布国家码；超时后读取广告模块上次成功缓存，仍不可用时返回空字符串。
         /// 空值和 IV 不会作为有效国家码返回。

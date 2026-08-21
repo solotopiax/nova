@@ -58,6 +58,15 @@ public bool IsReady(AdFormat format);
 /// 查询指定广告格式是否有任意渠道正在播放中；当前默认返回 false，业务层协调防重入。
 public bool IsAdPlaying(AdFormat format);
 
+/// 查询用户是否已经作出明确的广告隐私授权决定。
+public bool IsUserConsentSet();
+
+/// 查询用户是否明确同意；必须结合 IsUserConsentSet() 判断。
+public bool HasUserConsent();
+
+/// 等待所有已启用广告渠道初始化期间的隐私授权流程结束。
+public async UniTask WaitForPrivacyFlowAsync(CancellationToken ct = default);
+
 /// 异步获取广告 SDK 返回的有效国家或地区代码。
 /// 优先等待 SDKDataKeys.AdCountryCode；超时后读取广告模块上次成功缓存；拿到空值或 IV 时直接返回空字符串。
 public async UniTask<string> GetCountryCodeAsync(CancellationToken ct = default);
@@ -181,6 +190,12 @@ OnUserLogin(sender, e):
 
 消费方应通过 `IAdPlugin.GetCountryCodeAsync(ct)` 获取最终国家码，而不是直接等待数据槽位或轮询具体广告渠道。该方法会按 `AdPluginConfig.CountryCodeWaitTimeoutSeconds` 等待广告国家码；等待超时时读取广告模块上次成功缓存，拿到空值或 `IV` 时直接返回空字符串。
 
+## §9.1 广告隐私授权状态
+
+`AdPlugin` 按渠道配置顺序查询 `IAdInternalPlugin.IsUserConsentSet()`，采用第一个已经取得明确决定的渠道结果。业务侧必须组合判断：`IsUserConsentSet() == false` 表示尚未设置或渠道不支持查询；只有它为 `true` 时，`HasUserConsent() == false` 才表示明确拒绝。
+
+启动页如需防止 CMP 展示期间跳转，应在 `Nova.SDK.InitializeTask` 完成后通过 `IAdPlugin.WaitForPrivacyFlowAsync(ct)` 等待。该任务聚合所有启用渠道的隐私流程；不支持隐私流程的渠道立即完成。
+
 ---
 
 ## §10 常见误区
@@ -191,6 +206,8 @@ OnUserLogin(sender, e):
 - **误区：直接调 Banner 控制方法而不先 RequestAsync**：`m_ActiveBannerChannel` 在 `RequestAsync(Banner)` 成功后才会被赋值；未预加载时所有 Banner 控制方法为无操作。
 - **误区：调 `Supports(format)` 检查格式**：`Supports` 方法已全链路删除；直接 `RequestAsync`，未注册该格式的渠道 fail-soft 返回 `Success=false`，不抛异常。
 - **误区：从 `IAdPlugin` 同步查询国家码**：国家码只能通过 `GetCountryCodeAsync(ct)` 异步获取；等待、超时和缓存兜底均由广告模块内部负责。
+- **误区：只检查 `HasUserConsent()`**：明确拒绝、尚未设置和渠道不支持查询都会返回 `false`，必须结合 `IsUserConsentSet()`。
+- **误区：用 `IsUserConsentSet()` 轮询等待弹窗结束**：无须展示 CMP 时该值可能一直为 `false`；应等待 `WaitForPrivacyFlowAsync()`。
 
 ---
 

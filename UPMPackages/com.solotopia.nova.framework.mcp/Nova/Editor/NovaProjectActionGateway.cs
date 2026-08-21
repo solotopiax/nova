@@ -56,6 +56,11 @@ namespace NovaFramework.Mcp.Editor
             new ExposurePolicy("nova.project.config.export-runtime"),
             new ExposurePolicy("nova.project.hotfix.refresh-game-dlls"),
             new ExposurePolicy("nova.project.build.inspect-readiness"),
+            new ExposurePolicy("nova.project.table.export"),
+            new ExposurePolicy("nova.project.network.export"),
+            new ExposurePolicy("nova.project.sound.export"),
+            new ExposurePolicy("nova.project.vibration.export"),
+            new ExposurePolicy("nova.project.localization.export"),
         };
 
         private static readonly SemaphoreSlim s_Gate = new SemaphoreSlim(1, 1);

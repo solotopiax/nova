@@ -29,7 +29,7 @@
 
 ## 当前开放边界
 
-Adapter 目前显式允许以下 8 个 Action：
+Adapter 目前显式允许以下 13 个 Action：
 
 - `nova.project.upm.manage-latest`
 - `nova.project.config.validate-coordinate`
@@ -39,8 +39,13 @@ Adapter 目前显式允许以下 8 个 Action：
 - `nova.project.config.export-runtime`
 - `nova.project.hotfix.refresh-game-dlls`
 - `nova.project.build.inspect-readiness`
+- `nova.project.table.export`
+- `nova.project.network.export`
+- `nova.project.sound.export`
+- `nova.project.vibration.export`
+- `nova.project.localization.export`
 
-Nova Project Skills 与 MCP Tool 不是一张清单：29 个 `nova-project-*` 由 Agent 从项目 `.agents/skills/` 发现；当前默认 Adapter 只注册一个 `nova_project_action`，然后由 `describe` 返回上述当前开放 Action。
+Nova Project Skills 与 MCP Tool 不是一张清单：30 个 `nova-project-*` 由 Agent 从项目 `.agents/skills/` 发现；当前默认 Adapter 只注册一个 `nova_project_action`，然后由 `describe` 返回上述当前开放 Action。
 
 该清单用于说明当前包版本，不替代 live Registry。运行时必须先调用 `describe`；未注册、Registry 存在 issue、未进入 ExposurePolicy，或带 `Delivery`、`Destructive`、`ExternalWrite`、`Credential` 副作用的 Action 都会 fail-closed。
 

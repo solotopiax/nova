@@ -11,6 +11,10 @@ IAA 广告主接口。当前框架不再使用旧的 `Supports / LoadAsync / Hid
 public interface IAdPlugin : ISDKPlugin, IBannerControl
 {
     bool IsAdPlaying(AdFormat format);
+    bool IsUserConsentSet();
+    bool HasUserConsent();
+    UniTask WaitForPrivacyFlowAsync(CancellationToken ct = default);
+    UniTask<string> GetCountryCodeAsync(CancellationToken ct = default);
     UniTask<AdLoadResult> RequestAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default);
     bool IsReady(AdFormat format);
     UniTask ShowAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default);
@@ -23,6 +27,9 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
 - 返回值是统一的 `AdLoadResult`；`Success=true` 表示加载成功，`Success=false` 时可直接读取 `ErrorCode` 和 `ErrorMessage`。
 - `ShowAsync()` 只负责展示，展示前应先用 `IsReady()` 判断。
 - Banner 的显示、隐藏、销毁与位置更新不走 `ShowAsync()`，而是走 `IBannerControl`。
+- `IsUserConsentSet()` 表示用户是否已经作出广告隐私授权决定；只有它为 `true` 时，`HasUserConsent()` 的结果才表示明确同意或拒绝。
+- 尚未设置、没有支持查询的渠道以及明确拒绝时，`HasUserConsent()` 都返回 `false`。
+- `WaitForPrivacyFlowAsync()` 是业务启动页的隐私门禁：无弹窗时正常完成，出现弹窗时等待用户同意或拒绝后完成；调用前应先等待 `Nova.SDK.InitializeTask`。
 
 ## 关联文档
 

@@ -9,7 +9,7 @@ description: Use when 项目组要在现有 Nova 项目中加入或修改大厅 
 
 ## 渐进式披露
 
-再读取 `references/contract.json`。只在当前决策分支读取对应页面：确认 `SoundSettings`、数据格式、单元与组壳时读 `Docs/Runtime/Modules/Sound/SoundSettings.md`、`Docs/Runtime/Modules/Sound/SoundUnitSetting.md`、`Docs/Runtime/Modules/Sound/SoundGroupShell.md` 与 `Docs/Editor/Inspectors/SoundComponentInspector/SoundComponentInspector.md`；按 ConfigMaster 的有效 YooAsset 配置定位 Collector 时读 `Docs/Editor/Config/ConfigMasterSO.md`、`Docs/Editor/Config/Definitions/YooAssetEditorConfigsOverride.md` 与 `Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md`；导出已确认声音表时读 `Docs/Editor/EditorUtil/EditorUtil.Sound/EditorUtil.Sound.Exporter.md` 与 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md`；运行时加载、播放和生命周期验证时读 `Docs/Runtime/Modules/Sound/SoundComponent.md`、`Docs/Runtime/Modules/Sound/SoundManager.md`、`Docs/Runtime/Modules/Sound/ISoundRow.md`，仅在本次传入参数对象时再读 `Docs/Runtime/Modules/Sound/PlaySoundParams.md`。不要递归加载全部 Sound、Luban、YooAsset 或 UI 文档。
+再读取 `references/contract.json`。确定性导出先通过 `nova_project_action` 对 `nova.project.sound.export` 执行 `describe`；只有 Action 报告配置问题时才读 Exporter 文档。确认 `SoundSettings`、数据格式、单元与组壳时读 `Docs/Runtime/Modules/Sound/SoundSettings.md`、`Docs/Runtime/Modules/Sound/SoundUnitSetting.md`、`Docs/Runtime/Modules/Sound/SoundGroupShell.md` 与 `Docs/Editor/Inspectors/SoundComponentInspector/SoundComponentInspector.md`；按 ConfigMaster 的有效 YooAsset 配置定位 Collector 时读 `Docs/Editor/Config/ConfigMasterSO.md`、`Docs/Editor/Config/Definitions/YooAssetEditorConfigsOverride.md` 与 `Docs/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md`；运行时加载、播放和生命周期验证时读 `Docs/Runtime/Modules/Sound/SoundComponent.md`、`Docs/Runtime/Modules/Sound/SoundManager.md`、`Docs/Runtime/Modules/Sound/ISoundRow.md`，仅在本次传入参数对象时再读 `Docs/Runtime/Modules/Sound/PlaySoundParams.md`。不要递归加载全部 Sound、Luban、YooAsset 或 UI 文档。
 
 ## 冻结输入与阻断门
 
@@ -25,7 +25,7 @@ description: Use when 项目组要在现有 Nova 项目中加入或修改大厅 
 
 | Input | 现有 Action Adapter | Artifact | Evidence |
 |---|---|---|---|
-| 已冻结的声音源行、Unit 与导出范围 | 项目已确认的源编辑入口；`EditorUtil.Sound.Exporter.ExportData` / `ExportCode` / `ExportAll` | 指定的 Sound 数据、类型与映射产物 | 导出暂存发布成功，且变更仅位于冻结输出集 |
+| 已冻结的声音源行、Unit 与导出范围 | 项目已确认的源编辑入口；导出调用 `nova.project.sound.export` | 指定的 Sound 数据、类型与映射产物 | Action Verify 成功，且变更仅位于冻结输出集 |
 | 已确认真实 AudioClip、Collector、Package、地址与有效 ConfigMaster 坐标 | 先以 `EditorUtil.Config.DimensionalResolver.ResolveYooAsset` 解析有效 `BundleCollectorSettingPath`，再以 `YooAsset.Editor.SettingLoader.LoadSettingDataAtPath<BundleCollectorSetting>` 定位既有 Collector；Unity Editor / MCP 更新 AudioClip、Collector 和引用 | 可由当前项目加载的 AudioClip 地址 | 激活 Master、掩码、坐标、解析路径、Collector、Package、地址与目标表行一致 |
 | 已确认 `SoundComponent`、组壳和 Mixer | Unity Editor / MCP 的 `SoundComponentInspector` | 目标组壳、代理容量、静音 / 音量和可选 Mixer 路由 | 目标场景启动后 `Nova.Sound.HasSoundGroup(group)` 为真 |
 | 已确认的既有业务触发和生命周期 | 项目既有业务入口；`Nova.Sound.PlaySound` / `StopSound` / `ReleaseAssetBySerialID` | BGM 进入/退出或 SFX 单次触发链 | 绑定不重复，BGM 不叠播，停止 / 释放责任明确 |
@@ -34,7 +34,7 @@ description: Use when 项目组要在现有 Nova 项目中加入或修改大厅 
 ## 实施与验证边界
 
 1. 先确认当前场景已完成 `SoundComponent.Start()` 初始化；它不会自动加载声音表。没有真实 AudioClip、唯一地址、加载入口、组、触发点、停止生命周期或成功探针时返回 `blocked`，不先写占位配置或调用播放。
-2. 先在冻结的激活 Master 与 `Platform / Channel / DevelopMode` 上执行 `ResolveYooAsset`，确认有效 `BundleCollectorSettingPath` 加载出的 Collector 与已确认 Collector 完全一致，再更新冻结的源行、资源 / Collector、组壳和既有业务触发。表模式先验证跨 Unit 的 `Name` 唯一性、`AssetLocation` 和 `GroupName`，再按确认范围导出；不得手改生成物或清理无关输出。
+2. 先在冻结的激活 Master 与 `Platform / Channel / DevelopMode` 上执行 `ResolveYooAsset`，确认有效 `BundleCollectorSettingPath` 加载出的 Collector 与已确认 Collector 完全一致，再更新冻结的源行、资源 / Collector、组壳和既有业务触发。表模式先验证跨 Unit 的 `Name` 唯一性、`AssetLocation` 和 `GroupName`，再通过 `nova.project.sound.export` 按确认范围导出；不得手改生成物、清理无关输出或退化为任意 C#。
 3. BGM 必须冻结进入播放、退出停止和重入不叠播策略；按钮音效必须冻结已有 Button / View 的单次触发与解绑生命周期。若创建 `PlaySoundParams`，交给 `PlaySound` 后不再由调用方回收。
 4. Play Mode 中先 `await Nova.Sound.LoadAsync()`，再确认目标 `HasSoundGroup(group)`。`LoadAsync()==true 也不是播放成功证据`：空 Unit 也可能返回成功。`serialID 不是播放成功证据`：缺 Name、缺组或代理不足仍可能得到请求编号。
 5. 触发冻结的业务入口，等待异步 AudioClip 加载后检查实际 AudioSource 播放、可听确认或等价探针；随后验证 BGM 停止或本次 SFX 的停止 / 释放责任。只有导出、编译、返回 serialID 或静态绑定时不得报告 `success`。

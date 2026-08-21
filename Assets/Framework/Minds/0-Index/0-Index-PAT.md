@@ -150,6 +150,7 @@ auto_generated: true
 - [PAT-146 缓存 UniTask 完成结果保障启动重试](../2-Areas/Patterns/PAT-146-unitask-cached-completion-for-retry.md) — 缓存异步结果前先明确重复等待语义
 - [PAT-152 RuntimeInitialize 跨阶段启动 UniTask](../2-Areas/Patterns/PAT-152-runtime-initialize-unitask-cross-stage.md) — 同阶段回调无序时跨阶段启动 UniTask
 - [PAT-153 第三方回调响应必须在回调返回前物化](../2-Areas/Patterns/PAT-153-third-party-callback-response-materialization.md) — 回调拥有响应生命周期时须在返回前复制正文与字节
+- [PAT-166 Editor 重载期 ScriptableObject 配置惰性初始化](../2-Areas/Patterns/PAT-166-editor-reload-scriptableobject-lazy-initialization.md) — 重载期不预热全部配置，同步异步入口共用惰性初始化
 - [PAT-29 FrameworkComponentsGroup.GetComponent<T> 必须缓存到成员，禁止热路径反复调用](../2-Areas/Patterns/PAT-29-cache-component-lookup-on-init.md) — Component依赖在Init一次缓存禁运行查找
 - [PAT-67 全局禁 UnityEngine.UI.Text，UI 文字一律 TMP](../2-Areas/Patterns/PAT-67-no-ui-text-only-tmp.md) — UI 文字一律 TMP，禁 UGUI Text
 - [PAT-68 Reference 与 ObjectPool 辐射使用原则](../2-Areas/Patterns/PAT-68-pool-reference-spread.md) — 数据走 ReferencePool 组件走 ObjectPool
@@ -189,4 +190,4 @@ auto_generated: true
 
 
 ---
-_共 123 条，分布于 18 个 category。_
+_共 124 条，分布于 18 个 category。_

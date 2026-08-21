@@ -9,7 +9,7 @@ description: Use when 项目组要定向更新已有 Nova 本地化文本、字�
 
 ## 渐进式披露
 
-再读取 `references/contract.json`。仅在确认数据源、格式或导出位置时读 `Docs/Runtime/Modules/Localization/LocalizationSettings.md` 和 `Docs/Editor/Inspectors/LocalizationComponentInspector/LocalizationComponentInspector.md`；文本变更才读 `Docs/Editor/EditorUtil/EditorUtil.Localization/EditorUtil.Localization.TextExporter.md`；字体变更才读 `Docs/Editor/EditorUtil/EditorUtil.Localization/EditorUtil.Localization.FontExporter.md`；运行验证才读 `Docs/Runtime/Modules/Localization/LocalizationComponent.md`、`Docs/Runtime/Modules/Localization/LocalizationManager.md` 与 `Docs/Runtime/Modules/Localization/TextLocalizing.md`。不要递归加载全部 Localization、Luban 或 UI 文档。
+再读取 `references/contract.json`。确定性导出先通过 `nova_project_action` 对 `nova.project.localization.export` 执行 `describe`；只有 Action 报告配置问题时才读对应 Exporter 文档。仅在确认数据源、格式或导出位置时读 `Docs/Runtime/Modules/Localization/LocalizationSettings.md` 和 `Docs/Editor/Inspectors/LocalizationComponentInspector/LocalizationComponentInspector.md`；运行验证才读 `Docs/Runtime/Modules/Localization/LocalizationComponent.md`、`Docs/Runtime/Modules/Localization/LocalizationManager.md` 与 `Docs/Runtime/Modules/Localization/TextLocalizing.md`。不要递归加载全部 Localization、Luban 或 UI 文档。
 
 ## 冻结输入与决策门
 
@@ -24,10 +24,10 @@ description: Use when 项目组要定向更新已有 Nova 本地化文本、字�
 | Input | 现有 Action Adapter | Artifact | Evidence |
 |---|---|---|---|
 | 已冻结的文本、字体源与单元设置 | 项目现有的已确认数据源编辑入口；LocalizationComponent Inspector 用于设置与路径 | 指定源数据与 LocalizationSettings 配置 | 变更仅覆盖确认的 Key、语言、Font Mark 与路径 |
-| 文本、语言列表或字体的导出范围 | 文本使用 `EditorUtil.Localization.TextExporter.ExportTextData` / `ExportTextCode` / `ExportTextAll`；字体使用 `FontExporter.ExportFontData` / `ExportFontCode` / `ExportFontAll`；复用既有 Batch 时用对应 `export.localization.*` Step | 选定的文本、字体、类型和支持语言正式产物 | Exporter 的暂存发布成功；不手改生成物 |
+| 文本、语言列表或字体的导出范围 | `nova.project.localization.export` | 选定的文本、字体、类型和支持语言正式产物 | Action Verify 成功；不手改生成物 |
 | 已确认的既有 UI 绑定与验证语言 | Unity Editor 自动化通道 更新 `TextLocalizing`；运行时经 `Nova.Localization.SetLanguageSync()` 或 `SetLanguageAsync()` 切换 | 正确 Key / FontMark 绑定的 TMP 显示 | Unity 编译通过，Play Mode 下两种语言都显示目标文本；启用字体适配时字体也匹配 |
 
-文本仅改值且语言集合、类型和 Key 结构未变时，只导出所需数据；新增 Key、语言或类型输出变化时才调用对应完整导出。完整文本导出会同时处理支持语言列表；不要把单独的语言列表 Step 当成文本更新的默认替代。
+文本仅改值且语言集合、类型和 Key 结构未变时，只导出所需数据；新增 Key、语言或类型输出变化时才通过 `nova.project.localization.export` 选择对应完整导出。完整文本导出会同时处理支持语言列表；不要把单独的语言列表范围当成文本更新的默认替代，也不要退化为任意 C#、反射或临时 Pipify。
 
 ## 执行与验证边界
 

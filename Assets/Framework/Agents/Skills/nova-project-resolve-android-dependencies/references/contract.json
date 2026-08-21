@@ -9,9 +9,9 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "unity-editor-automation",
-      "entry": "registered action nova.project.android.resolve-dependencies; nova_project_action exposure=blocked",
-      "when": "当前只能从 Framework 文档确认 Action 已注册；可信审批与 MCP allowlist 完成前不得 describe/plan/execute，执行请求返回 blocked"
+      "kind": "agent-action-blocked",
+      "entry": "nova.project.android.resolve-dependencies",
+      "when": "该 Action 当前未在 MCP ExposurePolicy 中；可信审批与开放策略完成前必须返回 blocked"
     }
   ],
   "inputs": [

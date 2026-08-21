@@ -9,8 +9,8 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.build.inspect-readiness)",
+      "kind": "agent-action",
+      "entry": "nova.project.build.inspect-readiness",
       "when": "Unity 已连接且稳定，并已冻结唯一 BuildTarget 与可选 YooAsset Package；仅执行只读规则检查"
     },
     {

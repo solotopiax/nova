@@ -52,6 +52,7 @@ description: Use when 项目组以自然语言提出 Nova 项目接入、业务�
    - 一个已配置 registry 包的最新版本安装、同源最新版本升级或 direct dependency 安全卸载：`nova-project-manage-upm-package`；指定版本、降级、来源切换、批量升级、Framework 自身或发布不进入该 Operation。
    - 当前消费项目的 direct Nova Framework 需要从同一 registry 升级到最新或明确更高版本：`nova-project-upgrade-framework`；必须由跨 reload 独立的包外 UPM 宿主执行，Framework 内部 Action 不得自升级。
    - 一个已发布且包内文档可发现的 Nova SDK/Kit，需要组合最新包安装/升级、单一三维配置、平台前置与最小本地探针：`nova-project-onboard-sdk-kit`；开发新 Plugin、厂商后台、凭据和真实设备成功不进入该 Workflow。
+   - 只需导出当前 TableSettings 的代码或数据：`nova-project-export-tables`。
    - 已确认 Luban 表源、导出和运行时读取链：`nova-project-integrate-table`。
    - 已有文本、字体或 `TextLocalizing` 绑定：`nova-project-update-localization`。
    - 新建或注册业务 `UIView`：`nova-project-ui-create-view`。

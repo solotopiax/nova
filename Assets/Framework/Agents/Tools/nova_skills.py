@@ -50,6 +50,8 @@ BUILD_ARTIFACT_EVIDENCE_LEVELS = {"bundle-build", "player-build"}
 CONTRACT_IDEMPOTENCY = {"read-only", "ensure-state", "orchestrate"}
 CONTRACT_RESULT_STATES = {"success", "partial", "blocked", "not_applicable"}
 ACTION_ADAPTER_KINDS = {
+    "agent-action",
+    "agent-action-blocked",
     "csharp-api",
     "cli",
     "pipify",
@@ -59,6 +61,23 @@ ACTION_ADAPTER_KINDS = {
     "workspace-edit",
     "workspace-inspection",
 }
+# Action Adapter 的 entry 不是任意命令。只有这两类声明才表示 Framework 已注册的
+# Nova Project Action；blocked 仍保留真实 Action 身份，供路由明确返回 blocked。
+AGENT_ACTION_ADAPTER_KINDS = {"agent-action", "agent-action-blocked"}
+AGENT_ACTION_ID_PATTERN = re.compile(
+    r"^nova\.project\.[a-z0-9]+(?:-[a-z0-9]+)*\.[a-z0-9]+(?:-[a-z0-9]+)*$"
+)
+AGENT_ACTION_ATTRIBUTE_PATTERN = re.compile(
+    r'\[\s*AgentAction(?:Attribute)?\s*\(\s*"(?P<id>[^"]+)"', re.MULTILINE
+)
+EXPOSURE_POLICY_PATTERN = re.compile(
+    r'\bnew\s+ExposurePolicy\s*\(\s*"(?P<id>[^"]+)"', re.MULTILINE
+)
+AGENT_ACTION_HANDLERS_RELATIVE_PATH = Path(
+    "Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers"
+)
+MCP_PACKAGE_NAME = "com.solotopia.nova.framework.mcp"
+MCP_GATEWAY_RELATIVE_PATH = Path("Nova/Editor/NovaProjectActionGateway.cs")
 COMMON_BASELINE_SENTENCE = (
     "触发后先读取当前 Framework 的 `Docs/START_HERE.md`，"
     "作为所有 `nova-project-*` Skill 的共同底线。"
@@ -286,6 +305,7 @@ def _validate_contract_shape(skill_id: str, contract: dict[str, Any]) -> list[st
         errors.append(f"{skill_id} 的 contract.json actionAdapters 必须是非空数组")
     else:
         seen_adapters: set[tuple[str, str, str]] = set()
+        seen_agent_action_ids: set[str] = set()
         for adapter in action_adapters:
             if not isinstance(adapter, dict) or set(adapter) != {"kind", "entry", "when"}:
                 errors.append(
@@ -303,6 +323,23 @@ def _validate_contract_shape(skill_id: str, contract: dict[str, Any]) -> list[st
                 errors.append(f"{skill_id} 的 contract.json actionAdapters 不能重复")
                 continue
             seen_adapters.add(identity)
+            if kind in AGENT_ACTION_ADAPTER_KINDS:
+                if AGENT_ACTION_ID_PATTERN.fullmatch(entry) is None:
+                    errors.append(
+                        f"{skill_id} 的 {kind} entry 必须是精确 nova.project.<domain>.<verb> Action ID"
+                    )
+                elif entry in seen_agent_action_ids:
+                    errors.append(
+                        f"{skill_id} 的 contract.json 同一 Agent Action 只能声明一次：{entry}"
+                    )
+                else:
+                    seen_agent_action_ids.add(entry)
+            elif kind == "csharp-api" and (
+                "nova.project." in entry or "nova_project_action" in entry
+            ):
+                errors.append(
+                    f"{skill_id} 的 csharp-api 不是可调度 Action；请改用 agent-action 或 agent-action-blocked"
+                )
 
     inputs = contract.get("inputs")
     if not isinstance(inputs, list) or not inputs:
@@ -352,6 +389,106 @@ def _validate_contract_shape(skill_id: str, contract: dict[str, Any]) -> list[st
         not isinstance(item, str) or not item for item in evidence
     ):
         errors.append(f"{skill_id} 的 contract.json evidence 必须是非空字符串数组")
+    return errors
+
+
+def _find_mcp_gateway(framework_root: Path) -> Path:
+    """定位与 Framework 配套的 MCP 网关源码，拒绝猜测任意第三方目录。"""
+    candidates: list[Path] = []
+    for ancestor in (framework_root, *framework_root.parents):
+        candidates.append(
+            ancestor / "UPMPackages" / MCP_PACKAGE_NAME / MCP_GATEWAY_RELATIVE_PATH
+        )
+        candidates.append(
+            ancestor / "Packages" / MCP_PACKAGE_NAME / MCP_GATEWAY_RELATIVE_PATH
+        )
+
+    # PackageCache 中的 Framework 与 MCP 包通常是同级目录；只检查精确包名前缀。
+    package_cache_root = framework_root.parent
+    if package_cache_root.is_dir():
+        candidates.extend(
+            sorted(
+                package_root / MCP_GATEWAY_RELATIVE_PATH
+                for package_root in package_cache_root.glob(f"{MCP_PACKAGE_NAME}@*")
+                if package_root.is_dir()
+            )
+        )
+
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise NovaSkillsError(
+        "未找到 com.solotopia.nova.framework.mcp 的 NovaProjectActionGateway.cs，"
+        "无法校验 Agent Action 的 MCP ExposurePolicy"
+    )
+
+
+def _discover_registered_agent_actions(framework_root: Path) -> set[str]:
+    """从 Framework Handler 的 [AgentAction] 特性提取真实注册 ID。"""
+    handlers_root = framework_root / AGENT_ACTION_HANDLERS_RELATIVE_PATH
+    if not handlers_root.is_dir():
+        raise NovaSkillsError(
+            f"未找到 Framework AgentAction Handler 目录：{handlers_root}"
+        )
+    action_ids: set[str] = set()
+    for source_path in sorted(handlers_root.rglob("*.cs")):
+        content = source_path.read_text(encoding="utf-8")
+        for match in AGENT_ACTION_ATTRIBUTE_PATTERN.finditer(content):
+            action_id = match.group("id")
+            if AGENT_ACTION_ID_PATTERN.fullmatch(action_id) is not None:
+                action_ids.add(action_id)
+    if not action_ids:
+        raise NovaSkillsError(
+            f"Framework AgentAction Handler 未发现任何 [AgentAction] 注册：{handlers_root}"
+        )
+    return action_ids
+
+
+def _discover_exposed_agent_actions(framework_root: Path) -> set[str]:
+    """从 MCP 网关唯一 ExposurePolicy 提取当前可直接调度的 Action ID。"""
+    gateway_path = _find_mcp_gateway(framework_root)
+    content = gateway_path.read_text(encoding="utf-8")
+    return {
+        match.group("id")
+        for match in EXPOSURE_POLICY_PATTERN.finditer(content)
+        if AGENT_ACTION_ID_PATTERN.fullmatch(match.group("id")) is not None
+    }
+
+
+def _validate_agent_action_adapters(
+    skill_id: str,
+    contract: dict[str, Any],
+    registered_action_ids: set[str],
+    exposed_action_ids: set[str],
+) -> list[str]:
+    """校验 Skill 的可调度声明同时满足 Framework 注册与 MCP 开放边界。"""
+    errors: list[str] = []
+    action_adapters = contract.get("actionAdapters")
+    if not isinstance(action_adapters, list):
+        return errors
+    for adapter in action_adapters:
+        if not isinstance(adapter, dict):
+            continue
+        kind = adapter.get("kind")
+        entry = adapter.get("entry")
+        if kind not in AGENT_ACTION_ADAPTER_KINDS or not isinstance(entry, str):
+            continue
+        if AGENT_ACTION_ID_PATTERN.fullmatch(entry) is None:
+            # entry 形状问题已由 _validate_contract_shape 报出，避免重复噪声。
+            continue
+        if entry not in registered_action_ids:
+            errors.append(
+                f"{skill_id} 的 {kind} 未在 Framework AgentAction Handler 注册：{entry}"
+            )
+            continue
+        if kind == "agent-action" and entry not in exposed_action_ids:
+            errors.append(
+                f"{skill_id} 的 agent-action 未出现在 MCP ExposurePolicy：{entry}"
+            )
+        elif kind == "agent-action-blocked" and entry in exposed_action_ids:
+            errors.append(
+                f"{skill_id} 的 agent-action-blocked 已出现在 MCP ExposurePolicy：{entry}"
+            )
     return errors
 
 
@@ -658,6 +795,33 @@ def validate_agents_root(agents_root: Path) -> list[str]:
             errors.append(f"{skill_id} 的 contract.json 缺少有效 minimumEvidence")
         elif contract_evidence != minimum_evidence:
             errors.append(f"{skill_id} 与 contract.json minimumEvidence 不一致")
+
+    # 只有声明 Agent Action 的 Skill 才要求当前源码树同时提供 Handler 与 MCP 网关。
+    # 普通 C# API、Pipify 和 Unity 自动化仍是底层实现入口，不能被误判为可调度 Action。
+    has_agent_action_adapter = any(
+        isinstance(adapter, dict)
+        and adapter.get("kind") in AGENT_ACTION_ADAPTER_KINDS
+        for _, contract in contracts
+        if isinstance(contract.get("actionAdapters"), list)
+        for adapter in contract["actionAdapters"]
+    )
+    if has_agent_action_adapter:
+        try:
+            framework_root = agents_root.parent
+            registered_action_ids = _discover_registered_agent_actions(framework_root)
+            exposed_action_ids = _discover_exposed_agent_actions(framework_root)
+        except NovaSkillsError as exc:
+            errors.append(str(exc))
+        else:
+            for skill_id, contract in contracts:
+                errors.extend(
+                    _validate_agent_action_adapters(
+                        skill_id,
+                        contract,
+                        registered_action_ids,
+                        exposed_action_ids,
+                    )
+                )
 
     for skill_id, contract in contracts:
         requires = contract.get("requires")

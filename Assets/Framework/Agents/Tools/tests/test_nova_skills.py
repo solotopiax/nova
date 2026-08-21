@@ -242,11 +242,189 @@ class NovaSkillsToolTests(unittest.TestCase):
         contract["requires"] = requires
         contract_path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
 
+    def _set_action_adapters(self, skill_id: str, adapters: list[dict]) -> None:
+        """为指定临时 Skill 写入待验证的 Action Adapter 列表。"""
+        contract_path = (
+            self.agents_root / "Skills" / skill_id / "references" / "contract.json"
+        )
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        contract["actionAdapters"] = adapters
+        contract_path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
+
+    def _write_action_sources(
+        self, registered_action_ids: list[str], exposed_action_ids: list[str]
+    ) -> None:
+        """写入最小 Handler 与 MCP 策略源码，模拟 Framework 的静态事实。"""
+        handlers_root = (
+            self.agents_root.parent
+            / "Scripts/Editor/EditorUtil/EditorUtil.AgentActions/Handlers/Test"
+        )
+        handlers_root.mkdir(parents=True, exist_ok=True)
+        handler_lines = ["namespace NovaFramework.Editor\n{\n"]
+        for index, action_id in enumerate(registered_action_ids):
+            handler_lines.extend(
+                (
+                    "    [AgentAction(\n",
+                    f'        "{action_id}",\n',
+                    '        "测试",\n',
+                    '        "test",\n',
+                    "        AgentActionOperationType.Inspect)]\n",
+                    f"    internal sealed class TestAction{index} {{ }}\n",
+                )
+            )
+        handler_lines.append("}\n")
+        (handlers_root / "TestActions.cs").write_text(
+            "".join(handler_lines), encoding="utf-8"
+        )
+
+        gateway_path = (
+            self.root
+            / "UPMPackages"
+            / "com.solotopia.nova.framework.mcp"
+            / "Nova/Editor/NovaProjectActionGateway.cs"
+        )
+        gateway_path.parent.mkdir(parents=True, exist_ok=True)
+        policies = "\n".join(
+            f'            new ExposurePolicy("{action_id}"),'
+            for action_id in exposed_action_ids
+        )
+        gateway_path.write_text(
+            "namespace NovaFramework.Mcp.Editor\n{\n"
+            "    internal static class NovaProjectActionGateway\n"
+            "    {\n"
+            "        private static readonly ExposurePolicy[] s_ExposurePolicies =\n"
+            "        {\n"
+            f"{policies}\n"
+            "        };\n"
+            "    }\n"
+            "}\n",
+            encoding="utf-8",
+        )
+
     def test_validate_accepts_matching_catalog_skill_and_contract(self):
         """Catalog、SKILL.md 与 contract.json 一致时不应报告错误。"""
         tool = load_tool()
 
         self.assertEqual([], tool.validate_agents_root(self.agents_root))
+
+    def test_validate_accepts_exposed_and_blocked_agent_actions(self):
+        """可调度与已注册未开放的 Action 必须使用不同机器类型。"""
+        self._write_action_sources(
+            ["nova.project.test.run", "nova.project.test.blocked"],
+            ["nova.project.test.run"],
+        )
+        self._set_action_adapters(
+            "nova-project-router",
+            [
+                {
+                    "kind": "agent-action",
+                    "entry": "nova.project.test.run",
+                    "when": "测试可调度 Action",
+                },
+                {
+                    "kind": "agent-action-blocked",
+                    "entry": "nova.project.test.blocked",
+                    "when": "测试已注册但未开放的 Action",
+                },
+            ],
+        )
+
+        self.assertEqual([], load_tool().validate_agents_root(self.agents_root))
+
+    def test_validate_rejects_agent_action_with_non_exact_id(self):
+        """Action Adapter 不得把调用参数或多个 ID 混进 entry。"""
+        self._write_action_sources(
+            ["nova.project.test.run"], ["nova.project.test.run"]
+        )
+        self._set_action_adapters(
+            "nova-project-router",
+            [
+                {
+                    "kind": "agent-action",
+                    "entry": "nova_project_action(action_id=nova.project.test.run)",
+                    "when": "测试",
+                }
+            ],
+        )
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("精确 nova.project" in error for error in errors))
+
+    def test_validate_rejects_unregistered_agent_action(self):
+        """Skill 不能声明仅存在于文案而未注册到 Framework Handler 的 Action。"""
+        self._write_action_sources(
+            ["nova.project.other.run"], ["nova.project.other.run"]
+        )
+        self._set_action_adapters(
+            "nova-project-router",
+            [
+                {
+                    "kind": "agent-action",
+                    "entry": "nova.project.test.run",
+                    "when": "测试",
+                }
+            ],
+        )
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("未在 Framework AgentAction Handler 注册" in error for error in errors))
+
+    def test_validate_rejects_unexposed_agent_action(self):
+        """已注册但未列入 MCP 策略的 Action 不能标记为可调度。"""
+        self._write_action_sources(["nova.project.test.run"], [])
+        self._set_action_adapters(
+            "nova-project-router",
+            [
+                {
+                    "kind": "agent-action",
+                    "entry": "nova.project.test.run",
+                    "when": "测试",
+                }
+            ],
+        )
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("未出现在 MCP ExposurePolicy" in error for error in errors))
+
+    def test_validate_rejects_exposed_blocked_agent_action(self):
+        """已开放的 Action 不能同时标记为 blocked，避免误导路由。"""
+        self._write_action_sources(
+            ["nova.project.test.run"], ["nova.project.test.run"]
+        )
+        self._set_action_adapters(
+            "nova-project-router",
+            [
+                {
+                    "kind": "agent-action-blocked",
+                    "entry": "nova.project.test.run",
+                    "when": "测试",
+                }
+            ],
+        )
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("agent-action-blocked 已出现在 MCP ExposurePolicy" in error for error in errors))
+
+    def test_validate_rejects_csharp_api_as_dispatchable_action(self):
+        """普通 C# API 不能借用 Action ID 伪装成 MCP 可调度入口。"""
+        self._set_action_adapters(
+            "nova-project-router",
+            [
+                {
+                    "kind": "csharp-api",
+                    "entry": "nova.project.test.run",
+                    "when": "测试",
+                }
+            ],
+        )
+
+        errors = load_tool().validate_agents_root(self.agents_root)
+
+        self.assertTrue(any("csharp-api 不是可调度 Action" in error for error in errors))
 
     def test_validate_rejects_missing_shared_quick_start(self):
         """没有共同入口文档时不能发布无法按共同底线执行的 Skill 真源。"""
@@ -420,6 +598,7 @@ class NovaSkillsToolTests(unittest.TestCase):
             {
                 "nova-project-router",
                 "nova-project-check-readiness",
+                "nova-project-export-tables",
                 "nova-project-integrate-table",
                 "nova-project-configure-runtime",
                 "nova-project-diagnose-startup",
@@ -514,27 +693,16 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertNotIn("testEndpointAndSuccessProbe", input_names)
         self.assertTrue(input_requirements["authenticationContract"])
         self.assertTrue(input_requirements["testEndpointAccountAndSuccessProbe"])
-        self.assertTrue(
-            any("HostKeyExporter" in entry for entry in adapter_entries)
-        )
-        self.assertTrue(any("NetCmdExporter" in entry for entry in adapter_entries))
+        self.assertIn("nova.project.network.export", adapter_entries)
         self.assertTrue(any("Nova.Network.LoadAsync" in entry for entry in adapter_entries))
-        expected_network_pipify_steps = (
-            "export.network.hostkey.data / export.network.hostkey.code / "
-            "export.network.netcmd.data / export.network.netcmd.code / "
-            "export.network.proto"
-        )
-        self.assertIn(expected_network_pipify_steps, adapter_entries)
-        self.assertIn(
-            expected_network_pipify_steps,
-            skill_content.replace("`", ""),
-        )
+        self.assertIn("nova.project.network.export", skill_content)
+        self.assertNotIn("export.network.hostkey.data", adapter_entries)
         self.assertIn("不猜测协议", skill_content)
         self.assertIn("4xx / 5xx", skill_content)
         self.assertIn("内部 `NetService`", skill_content)
         self.assertIn("无测试端点、账号或成功探针时返回 `blocked`", skill_content)
         self.assertIn("输入已确认且已执行允许步骤", skill_content)
-        self.assertIn("当前 Catalog 共 29 项", agents_index)
+        self.assertIn("当前 Catalog 共 30 项", agents_index)
         self.assertNotIn("当前包含 13 个实验性 Skill", agents_index)
         self.assertIn("必填输入未确认按 Skill 返回 `blocked`", agents_index)
         self.assertIn(
@@ -609,7 +777,14 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertTrue(any("nova.project.build.inspect-readiness" in entry for entry in preflight_entries))
 
         android = contract("nova-project-resolve-android-dependencies")
-        self.assertTrue(any("exposure=blocked" in adapter["entry"] for adapter in android["actionAdapters"]))
+        self.assertEqual(
+            ["agent-action-blocked"],
+            [adapter["kind"] for adapter in android["actionAdapters"]],
+        )
+        self.assertEqual(
+            ["nova.project.android.resolve-dependencies"],
+            [adapter["entry"] for adapter in android["actionAdapters"]],
+        )
         self.assertIn("generated-output", android["effects"])
         self.assertIn(
             "nova-project-resolve-android-dependencies",
@@ -677,11 +852,8 @@ class NovaSkillsToolTests(unittest.TestCase):
             "EditorUtil.Config.YooAssetInjector.LoadBundleCollector",
             adapter_entries,
         )
-        self.assertIn(
-            "EditorUtil.Sound.Exporter.ExportData / ExportCode / ExportAll",
-            adapter_entries,
-        )
-        self.assertIn("export.sound.data / export.sound.code", adapter_entries)
+        self.assertIn("nova.project.sound.export", adapter_entries)
+        self.assertNotIn("export.sound.data / export.sound.code", adapter_entries)
         self.assertIn(
             "Nova.Sound.LoadAsync / HasSoundGroup / PlaySound / StopSound / ReleaseAssetBySerialID",
             adapter_entries,
@@ -701,9 +873,9 @@ class NovaSkillsToolTests(unittest.TestCase):
             }
             <= set(contract["locks"])
         )
-        self.assertIn("当前 Catalog 共 29 项", agents_index)
+        self.assertIn("当前 Catalog 共 30 项", agents_index)
         self.assertIn("nova-project-integrate-sound", agents_index)
-        self.assertIn("当前 29 项能力", docs_index)
+        self.assertIn("当前 30 项能力", docs_index)
         self.assertIn("大厅 BGM", quick_start)
         router_sound_ambiguity_line = next(
             line
@@ -744,7 +916,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         entries = {entry["id"]: entry for entry in catalog["skills"]}
         hotfix = entries["nova-project-refresh-hotfix-dlls"]
 
-        self.assertEqual(29, len(entries))
+        self.assertEqual(30, len(entries))
         self.assertEqual("operation", hotfix["kind"])
         self.assertEqual(["build", "hotfix"], hotfix["journeys"])
         self.assertEqual(
@@ -803,11 +975,11 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertNotIn("runtimeSmokeContext", input_requirements)
         self.assertEqual(
             {
-                "nova_project_action(describe/plan/execute/verify, action_id=nova.project.hotfix.refresh-game-dlls)",
+                "nova.project.hotfix.refresh-game-dlls",
             },
             adapter_entries,
         )
-        self.assertEqual("unity-editor-automation", contract["actionAdapters"][0]["kind"])
+        self.assertEqual("agent-action", contract["actionAdapters"][0]["kind"])
         self.assertIn("compile -> copy", contract["actionAdapters"][0]["when"])
         self.assertEqual(
             [
@@ -895,11 +1067,11 @@ class NovaSkillsToolTests(unittest.TestCase):
         )
         self.assertIn("compile -> copy", router_hotfix_route_line)
         self.assertIn("full AOT、Bundle、Player", router_hotfix_route_line)
-        self.assertIn("当前 Catalog 共 29 项", agents_index)
+        self.assertIn("当前 Catalog 共 30 项", agents_index)
         self.assertIn("仅刷新本地业务 DLL，不是发布", agents_index)
-        self.assertIn("当前 29 项能力", docs_index)
+        self.assertIn("当前 30 项能力", docs_index)
         self.assertIn("刷新 HybridCLR 业务热更 DLL", docs_index)
-        self.assertIn("当前 29 项", quick_start)
+        self.assertIn("当前 30 项", quick_start)
         self.assertIn("刷新 HybridCLR 业务热更 DLL", quick_start)
         self.assertIn("ConfigMasterSO.HybridEditorConfigs", hybridclr_docs)
         self.assertNotIn("ConfigMasterSO.AotMetadataDlls", hybridclr_docs)
@@ -937,7 +1109,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertTrue(child_allowed_scope <= workflow_allowed_scope)
         self.assertTrue(set(table["locks"]) <= set(workflow["locks"]))
         self.assertTrue(
-            {"workspace-edit", "unity-editor-api", "pipify", "unity-editor-automation", "unity-menu"}
+            {"workspace-edit", "unity-editor-api", "agent-action", "csharp-api", "unity-editor-automation", "unity-menu"}
             <= workflow_adapter_kinds
         )
         self.assertIn("ProjectId", workflow_confirmation)

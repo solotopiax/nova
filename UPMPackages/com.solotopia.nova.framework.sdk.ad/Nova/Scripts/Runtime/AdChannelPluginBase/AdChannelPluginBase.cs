@@ -103,6 +103,26 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public virtual string GetCountryCode() => string.Empty;
 
         /// <summary>
+        /// 查询当前渠道是否已取得用户明确的广告隐私授权决定；默认渠道不支持查询。
+        /// </summary>
+        /// <returns>已明确授权或拒绝时返回 true；默认返回 false。</returns>
+        public virtual bool IsUserConsentSet() => false;
+
+        /// <summary>
+        /// 查询当前渠道记录的用户广告隐私授权结果；默认渠道不支持查询。
+        /// 必须结合 IsUserConsentSet() 区分“拒绝”和“尚未设置”。
+        /// </summary>
+        /// <returns>用户已明确同意时返回 true；默认返回 false。</returns>
+        public virtual bool HasUserConsent() => false;
+
+        /// <summary>
+        /// 等待当前渠道初始化期间的隐私授权流程结束；默认渠道没有独立隐私流程，因此立即完成。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>隐私授权流程完成任务。</returns>
+        public virtual UniTask WaitForPrivacyFlowAsync(CancellationToken ct = default) => UniTask.CompletedTask;
+
+        /// <summary>
         /// 同步登录用户 userId 到本渠道 SDK，默认空实现。
         /// 渠道有原生 SetUserId（如 MaxSdk.SetUserId）时 override。
         /// </summary>

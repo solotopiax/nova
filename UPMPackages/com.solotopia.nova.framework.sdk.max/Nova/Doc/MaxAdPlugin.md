@@ -73,6 +73,8 @@ IAdChannelConfig  <── MaxAdChannelConfig  (配置值对象，非插件本体
 | `m_CreatedBannerPlacementIds` | `HashSet<string>` | 空集合 | 已创建 native Banner view 的广告位集合，用于避免重复 `CreateBanner` |
 | `m_BannerDesiredVisible` | `bool` | `false` | 业务是否期望 Banner 可见；加载恢复后据此决定是否重新显示 |
 | `m_CountryCode` | `string` | `null` | MAX SDK 初始化完成后由 `SdkConfiguration.CountryCode` 返回的国家代码；`GetCountryCode()` 对外返回该缓存值 |
+| `m_IsUserConsentSet` | `bool` | `false` | MAX SDK 初始化完成时缓存用户是否已明确作出广告隐私授权决定 |
+| `m_HasUserConsent` | `bool` | `false` | MAX SDK 初始化完成时缓存授权结果；仅在 `m_IsUserConsentSet` 为 `true` 时表示明确同意或拒绝 |
 | `m_RevenueMonetizeTracker` | `IMonetizeTrackPlugin` | `null` | 收益回调打点用的变现插件引用；初始化主线程缓存 |
 | `m_RevenueAttributionTracker` | `IAttributionPlugin` | `null` | 收益回调打点用的归因插件引用；初始化主线程缓存 |
 | `m_RevenueEventTracker` | `ITrackPlugin` | `null` | 收益回调打点用的通用埋点插件引用；初始化主线程缓存 |
@@ -110,6 +112,15 @@ AdChannelType Channel { get; }  // => AdChannelType.MAX
 
 // 返回 MAX SDK 初始化回调中的 SdkConfiguration.CountryCode；尚未初始化或未返回时为空字符串。
 public override string GetCountryCode()
+
+// 返回 MAX 初始化完成时缓存的用户是否已作出广告隐私授权决定。
+public override bool IsUserConsentSet()
+
+// 返回 MAX 初始化完成时缓存的授权结果；必须结合 IsUserConsentSet() 判断。
+public override bool HasUserConsent()
+
+// 等待 MAX 初始化期间的 Consent Flow 结束；无弹窗时随初始化完成。
+public override UniTask WaitForPrivacyFlowAsync(CancellationToken ct = default)
 ```
 
 ### 用户身份同步（override，来自 MaxAdPlugin.UserId.cs）
@@ -251,6 +262,8 @@ InitChannelSDKAsync(config, ct)
           ▼ （异步，MAX SDK 回调）
   OnSdkInitializedCallback(sdkConfig, cfg, initTcs)
   ├─ 缓存 m_CountryCode
+  ├─ 缓存 m_IsUserConsentSet 与 m_HasUserConsent
+  ├─ 完成 WaitForPrivacyFlowAsync 等待信号
   ├─ Log.Debug 打印国家代码
   ├─ SetCreativeDebuggerEnabled(cfg.CreativeDebuggerEnabled)
   ├─ RegisterCallbacks()

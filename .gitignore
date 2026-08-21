@@ -185,6 +185,7 @@ Assets/Resources.meta
 
 /graphify-out/
 .codex-tmp
+/CodexTemp/
 
 
 # PlugPals registry 地址：per-project 本地配置，跟人不跟版本

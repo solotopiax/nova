@@ -24,14 +24,9 @@
       "when": "冻结 active ConfigMaster、YooAssetEditorConfigsMask 与 target Platform/Channel/DevelopMode 后，按解析出的 BundleCollectorSettingPath 定位既有 Collector；解析为空、漂移或与确认 Collector 不一致时 blocked"
     },
     {
-      "kind": "csharp-api",
-      "entry": "EditorUtil.Sound.Exporter.ExportData / ExportCode / ExportAll",
+      "kind": "agent-action",
+      "entry": "nova.project.sound.export",
       "when": "导出已冻结 Sound Unit 的数据、类型或完整确认范围"
-    },
-    {
-      "kind": "pipify",
-      "entry": "export.sound.data / export.sound.code",
-      "when": "仅在全部 SoundUnitsSettings 的导出范围已确认时复用 Batch"
     },
     {
       "kind": "csharp-api",

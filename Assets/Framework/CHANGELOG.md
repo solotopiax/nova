@@ -1,5 +1,20 @@
 # Changelog — com.solotopia.nova.framework
 
+## [0.6.17] - 2026-08-21
+
+### Breaking
+
+- `IAdPlugin` 新增 `IsUserConsentSet()`、`HasUserConsent()` 与 `WaitForPrivacyFlowAsync()`；仓外自定义实现需要补齐成员。
+
+### Added
+
+- 新增表、网络、声音、振动与本地化五类受控导出 Action，并补齐对应 Nova Project Skills、契约与 MCP 暴露。
+
+### Changed
+
+- Framework 最低 MCP 依赖提升至 `0.1.1`，确保新增导出 Action 可由默认 Provider 调用。
+- CheckUpdateWindow 的升级版本提示色调循环速度与 PlugPals 保持一致。
+
 ## [0.6.16] - 2026-08-20
 
 ### Breaking

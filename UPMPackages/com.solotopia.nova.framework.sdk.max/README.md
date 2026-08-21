@@ -1,7 +1,7 @@
 # Nova Framework - SDK - MAX
 
 > 包名：`com.solotopia.nova.framework.sdk.max`
-> 当前版本：`0.1.6`
+> 当前版本：`0.1.7`
 
 MAX 广告聚合插件，提供广告展示服务。
 
@@ -13,7 +13,7 @@ MAX 广告聚合插件，提供广告展示服务。
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.max": "0.1.6"
+  "com.solotopia.nova.framework.sdk.max": "0.1.7"
 }
 ```
 
@@ -25,6 +25,7 @@ MAX 广告聚合插件，提供广告展示服务。
 - Banner native view 按广告位幂等创建；加载失败后若业务仍要求显示，后续加载成功会恢复展示。
 - 当前适配层不设置 `adaptive_banner`；开启自动刷新前会通过 `ad_refresh_seconds` extra parameter 写入面板配置的刷新间隔。
 - 当前源码也未设置禁用 MAX SDK 自动重试或禁用非 Banner B2B 广告位参数，这两项不属于现版本已接入能力。
+- MAX 初始化完成时缓存用户广告隐私授权状态，并通过广告公共接口 `WaitForPrivacyFlowAsync()`、`IsUserConsentSet()` 与 `HasUserConsent()` 暴露；等待接口会在初始化期 CMP 未展示或用户完成同意/拒绝后结束。
 
 ## 文档
 

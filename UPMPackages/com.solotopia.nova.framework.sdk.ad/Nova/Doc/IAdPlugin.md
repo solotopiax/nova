@@ -51,6 +51,17 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
     /// 异步获取广告 SDK 返回的有效国家或地区代码；超时后使用广告模块上次成功缓存，仍不可用时返回空字符串。
     UniTask<string> GetCountryCodeAsync(CancellationToken ct = default);
 
+    // === 广告隐私授权 ===
+
+    /// 查询用户是否已经作出明确的广告隐私授权决定。
+    bool IsUserConsentSet();
+
+    /// 查询用户是否明确同意；必须结合 IsUserConsentSet() 判断。
+    bool HasUserConsent();
+
+    /// 等待广告渠道初始化期间的隐私授权流程结束。
+    UniTask WaitForPrivacyFlowAsync(CancellationToken ct = default);
+
     // === 预加载 ===
 
     /// 向所有渠道并行发起预加载请求；未注册该格式的渠道 fail-soft 自动过滤。
@@ -84,6 +95,21 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
 
 国家码不通过 `IAdPlugin` 同步查询。`AdPlugin` 会在内部渠道返回有效国家码后发布 `SDKDataKeys.AdCountryCode` 并写入广告模块上次成功缓存；其他插件应通过 `GetCountryCodeAsync(ct)` 统一等待最终结果，不再直接等待数据槽位或自行做系统区域兜底。只有等待超时时会读取广告模块缓存，拿到空值或 `IV` 时直接返回空字符串。
 
+广告隐私授权状态是同步缓存值。多渠道场景按配置顺序采用第一个已经取得明确决定的渠道：`IsUserConsentSet()` 为 `false` 表示尚未设置或渠道不支持查询；只有它为 `true` 时，`HasUserConsent()` 的 `false` 才表示明确拒绝。
+
+业务启动页应先等待 `Nova.SDK.InitializeTask`，确保 `IAdPlugin` 与渠道列表已创建，再等待 `WaitForPrivacyFlowAsync(ct)`。没有展示隐私弹窗或渠道不支持隐私流程时该任务正常完成；展示弹窗时在用户同意或拒绝后完成。不要轮询 `IsUserConsentSet()` 作为启动门禁，否则未展示弹窗的用户可能永久等待。
+
+```csharp
+await Nova.SDK.InitializeTask;
+if (Nova.SDK.TryGet<IAdPlugin>(out IAdPlugin adPlugin))
+{
+    await adPlugin.WaitForPrivacyFlowAsync(ct);
+}
+
+// 游戏内容加载与隐私流程都完成后再进入业务场景。
+EnterGame();
+```
+
 ---
 
 ## §10 常见误区
@@ -93,6 +119,8 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
 - **误区：从 `ShowAsync` 读取 `AdResult`**：`ShowAsync` 返回 `UniTask`，只用于等待展示流程结束；展示成功、失败和关闭结果分别从 `Events.ShowCompleted`、`Events.ShowFailed`、`Events.AdClosed` 获取。激励奖励以 `AdClosed` 的 `UserCompleted == true` 为准。
 - **误区：Banner 用 ShowAsync**：Banner 走 `RequestAsync(AdFormat.Banner)` 预加载后用 `ShowBanner()` 展示，`ShowAsync` 不适用 Banner 格式。
 - **误区：通过广告公共接口同步查询国家码**：公共接口不暴露同步国家码查询；跨 SDK 消费用 `GetCountryCodeAsync(ct)`，等待、超时和缓存兜底均由广告模块负责。
+- **误区：只检查 `HasUserConsent()`**：该方法在明确拒绝、尚未设置或渠道不支持查询时都返回 `false`，必须先检查 `IsUserConsentSet()`。
+- **误区：循环等待 `IsUserConsentSet()`**：非适用地区或未展示弹窗时可能始终为 `false`；启动门禁应等待 `WaitForPrivacyFlowAsync()`。
 - **误区：业务层沿用旧 C# event 订阅方式**：`IAdPlugin` 不再暴露 `OnAdRevenuePaid / OnAdLoaded / OnAdLoadFailed` 等 C# event；业务层改为通过 `AdPlugin.Events.RevenuePaid.Subscribe()` 等方式订阅。
 
 ---

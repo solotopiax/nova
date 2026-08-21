@@ -6,7 +6,7 @@
 
 ## 当前能力
 
-Registry 当前注册 14 个 Action：
+Registry 当前注册 19 个 Action：
 
 | Action ID | Operation | RequiredEvidence | MCP |
 |---|---|---|---|
@@ -19,6 +19,11 @@ Registry 当前注册 14 个 Action：
 | `nova.project.config.export-runtime` | Generate | Static + Artifact | 开放 |
 | `nova.project.hotfix.refresh-game-dlls` | Generate | Compile + Artifact | 开放 |
 | `nova.project.build.inspect-readiness` | Inspect | Static | 开放 |
+| `nova.project.table.export` | Generate | Static + Artifact | 开放 |
+| `nova.project.network.export` | Generate | Static + Artifact | 开放 |
+| `nova.project.sound.export` | Generate | Static + Artifact | 开放 |
+| `nova.project.vibration.export` | Generate | Static + Artifact | 开放 |
+| `nova.project.localization.export` | Generate | Static + Artifact | 开放 |
 | `nova.project.android.resolve-dependencies` | Generate | PackageResolution + Artifact | 未开放：Destructive |
 | `nova.project.hotfix.generate-artifacts` | Generate | Compile + Artifact | 未开放：Destructive |
 | `nova.project.bundle.build-asset` | Build | Artifact | 未开放：Destructive |
@@ -198,11 +203,16 @@ nova.project.config.inspect-bundle-collector
 nova.project.config.export-runtime
 nova.project.hotfix.refresh-game-dlls
 nova.project.build.inspect-readiness
+nova.project.table.export
+nova.project.network.export
+nova.project.sound.export
+nova.project.vibration.export
+nova.project.localization.export
 ```
 
 Adapter 还会拒绝所有 `Delivery`，以及含 `Destructive / ExternalWrite / Credential` 的 Action。`confirmation_token` 是调用方声明的计划绑定，不是可信人类审批证明，因此不能用它开放上述高风险效果。
 
-Tool 只返回安全 DTO；项目根路径替换为 `<project-root>`，敏感字段打码，URL 去除认证、query 和 fragment。包依赖为 `Framework -> Nova MCP -> Unity MCP`；程序集依赖保持单向：`NovaFramework.Mcp.Editor` 只定义中立 SPI 和 Gateway，独立 `NovaFramework.Mcp.UnityMcp.Editor` 适配默认 Provider，Framework 在 domain load 注册唯一 Action Provider。29 个 Skill 不会逐个成为 MCP Tool；默认 Adapter 只注册 `nova_project_action`，再由 live `describe` 返回当前开放 Action。
+Tool 只返回安全 DTO；项目根路径替换为 `<project-root>`，敏感字段打码，URL 去除认证、query 和 fragment。包依赖为 `Framework -> Nova MCP -> Unity MCP`；程序集依赖保持单向：`NovaFramework.Mcp.Editor` 只定义中立 SPI 和 Gateway，独立 `NovaFramework.Mcp.UnityMcp.Editor` 适配默认 Provider，Framework 在 domain load 注册唯一 Action Provider。30 个 Skill 不会逐个成为 MCP Tool；默认 Adapter 只注册 `nova_project_action`，再由 live `describe` 返回当前开放 Action。
 
 ## 状态与证据
 
@@ -216,6 +226,6 @@ Tool 只返回安全 DTO；项目根路径替换为 `<project-root>`，敏感字
 
 ## 扩展要求
 
-新增 Action 前必须证明输入、写入集、稳定领域 API 和自动证据均已成立。Table/UI/Localization/Network/Sound/Vibration 需要先补稳定 Settings resolver、精确输出规划与 data/code 分证据；环境检查需要先抽取无 `SessionState` 写入的 pure probe；CDN Delivery 需要可信审批、凭据隔离与外部审计。
+新增 Action 前必须证明输入、写入集、稳定领域 API 和自动证据均已成立。Table、Localization、Network、Sound、Vibration 已补齐稳定 Settings resolver、精确输出规划与 data/code 分证据；UI 仍需先形成稳定设置与输出契约。环境检查需要先抽取无 `SessionState` 写入的 pure probe；CDN Delivery 需要可信审批、凭据隔离与外部审计。
 
 不得通过新增 Handler 绕过这些前置条件，也不得建立静态 Action Catalog 与 Registry 竞争真相。

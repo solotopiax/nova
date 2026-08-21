@@ -12,8 +12,8 @@
   ],
   "actionAdapters": [
     {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.upm.manage-latest)",
+      "kind": "agent-action",
+      "entry": "nova.project.upm.manage-latest",
       "when": "仅通过 nova-project-manage-upm-package 为一个精确的已配置 registry SDK/Kit 计划、确认并验证 install-latest 或 upgrade-latest 时"
     },
     {
@@ -22,9 +22,24 @@
       "when": "Resolve 稳定后确认精确包 id、版本、来源及其首个存在的包内文档入口；不能用主框架文档替代目标包文档"
     },
     {
-      "kind": "unity-editor-automation",
-      "entry": "nova_project_action(describe/plan/execute/verify, action_id=nova.project.config.inspect-plugin-types|nova.project.config.ensure-plugin-instances|nova.project.config.validate-coordinate|nova.project.config.export-runtime)",
-      "when": "只对目标包文档定义的 SDK/Kit Config 类型和已确认 Platform Channel DevelopMode 坐标执行受控配置、导出与验证，不接受任意字段 JSON patch"
+      "kind": "agent-action",
+      "entry": "nova.project.config.inspect-plugin-types",
+      "when": "只读识别目标包文档定义的 SDK/Kit Config 类型"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.ensure-plugin-instances",
+      "when": "只在已确认 Platform Channel DevelopMode 坐标和类型范围内补齐插件实例"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.validate-coordinate",
+      "when": "只读校验已确认的 Platform Channel DevelopMode 坐标"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.config.export-runtime",
+      "when": "只对已确认坐标导出 ConfigRuntimeSO，不接受任意字段 JSON patch"
     },
     {
       "kind": "unity-editor-api",
