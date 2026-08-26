@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.FirebasePlugin.Runtime
@@ -85,6 +86,12 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// Firebase push task 调度器，集中管理缓存、计时器和 flush 状态。
         /// </summary>
         private FirebasePushTaskDispatcher m_PushTaskDispatcher;
+
+        /// <summary>
+        /// FCM Token 就绪等待源。
+        /// iOS 首次安装时 APNs Token 与 FCM Token 可能晚于 Firebase 依赖初始化完成，Topic 订阅必须等待该源完成。
+        /// </summary>
+        private UniTaskCompletionSource<string> m_FcmTokenReadySource = new UniTaskCompletionSource<string>();
 
         /// <summary>
         /// 由 SDKManager 注入并在初始化期缓存的运行时配置；事件回调（如 OnUserLogin）需读取协议名等字段时使用。

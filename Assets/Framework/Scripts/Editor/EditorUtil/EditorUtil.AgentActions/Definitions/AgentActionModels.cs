@@ -41,6 +41,7 @@ namespace NovaFramework.Editor
         {
             Id = attribute.Id;
             DisplayName = attribute.DisplayName;
+            Description = attribute.Description;
             Domain = attribute.Domain;
             OperationType = attribute.OperationType;
             Effects = attribute.Effects;
@@ -60,6 +61,8 @@ namespace NovaFramework.Editor
         public string Id { get; }
 
         public string DisplayName { get; }
+
+        public string Description { get; }
 
         public string Domain { get; }
 

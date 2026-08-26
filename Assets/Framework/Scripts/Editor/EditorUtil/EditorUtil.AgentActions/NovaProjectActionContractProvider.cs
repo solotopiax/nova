@@ -102,6 +102,7 @@ namespace NovaFramework.Editor
             {
                 Id = descriptor.Id,
                 DisplayName = descriptor.DisplayName,
+                Description = descriptor.Description,
                 Domain = descriptor.Domain,
                 OperationType = ToKebabCase(descriptor.OperationType.ToString()),
                 Effects = (NovaProjectActionEffect)(int)descriptor.Effects,

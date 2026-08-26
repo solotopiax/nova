@@ -27,6 +27,7 @@ namespace NovaFramework.Editor
         "导出 Localization",
         "localization",
         AgentActionOperationType.Generate,
+        Description = "从当前有效 LocalizationSettings 导出本地化运行时数据，并核验生成结果。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead | AgentActionEffect.UnityWrite,
         RequiredEvidence = AgentActionEvidence.Static | AgentActionEvidence.Artifact,

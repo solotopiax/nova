@@ -1,6 +1,6 @@
 # ProjectGuardWindow
 
-窗口标题：`Nova · 项目检查`。菜单入口保持为：`Nova/Open ProjectGuard`。
+窗口标题：`Nova · 项目检查`。菜单入口保持为：`Nova/Open Project Guard`。
 
 首行左侧显示“项目检查”，右侧提供两个只读检查按钮：
 

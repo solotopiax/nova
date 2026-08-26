@@ -22,6 +22,7 @@ namespace NovaFramework.Editor
         "定位 Bundle Collector",
         "config",
         AgentActionOperationType.Inspect,
+        Description = "只读定位当前配置坐标对应的 YooAsset BundleCollectorSetting 与绑定状态。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.UnityRead,
         RequiredEvidence = AgentActionEvidence.Static,
         Idempotency = AgentActionIdempotency.ReadOnly,

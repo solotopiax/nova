@@ -29,6 +29,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="ct">取消令牌。</param>
         /// <returns>支付页流程结果。</returns>
         UniTask<ThirdPayOpenResult> OpenAsync(string paymentUrl, RectTransform requestedRect, string defaultPanelPath, CancellationToken ct);
+
+        /// <summary>
+        /// 设置 WebView 导航栏标题。
+        /// </summary>
+        /// <param name="titleText">标题文本。</param>
+        void SetTitleText(string titleText);
+
+        /// <summary>
+        /// 设置 WebView 导航栏关闭按钮文本。
+        /// </summary>
+        /// <param name="closeText">关闭文本。</param>
+        void SetCloseText(string closeText);
     }
 
     /// <summary>
@@ -38,6 +50,26 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     {
         private ThirdPayWebViewSession m_CurrentSession;
         private bool m_Disposed;
+        private string m_TitleText = string.Empty;
+        private string m_CloseText = "close";
+
+        /// <summary>
+        /// 设置 WebView 导航栏标题；空值时在打开页面时使用应用名称。
+        /// </summary>
+        /// <param name="titleText">标题文本。</param>
+        public void SetTitleText(string titleText)
+        {
+            m_TitleText = titleText ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 设置 WebView 导航栏关闭按钮文本；空值时恢复为 close。
+        /// </summary>
+        /// <param name="closeText">关闭文本。</param>
+        public void SetCloseText(string closeText)
+        {
+            m_CloseText = string.IsNullOrEmpty(closeText) ? "close" : closeText;
+        }
 
         /// <summary>
         /// 打开支付页并等待页面回调；同一服务实例不允许并发打开多个支付页。
@@ -69,7 +101,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_CurrentSession = session;
             try
             {
-                return await session.OpenAsync(paymentUrl, requestedRect, defaultPanelPath, ct);
+                return await session.OpenAsync(paymentUrl, requestedRect, defaultPanelPath, m_TitleText, m_CloseText, ct);
             }
             finally
             {
@@ -119,14 +151,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// <param name="defaultPanelPath">默认面板 Resources 路径。</param>
             /// <param name="ct">取消令牌。</param>
             /// <returns>支付页流程结果。</returns>
-            public UniTask<ThirdPayOpenResult> OpenAsync(string paymentUrl, RectTransform requestedRect, string defaultPanelPath, CancellationToken ct)
+            public UniTask<ThirdPayOpenResult> OpenAsync(
+                string paymentUrl, RectTransform requestedRect, string defaultPanelPath,
+                string titleText, string closeText, CancellationToken ct)
             {
                 RectTransform referenceRect = m_PanelPresenter.Resolve(requestedRect, defaultPanelPath);
                 m_CancellationRegistration = ct.Register(() => m_CompletionSource.TrySetCanceled(ct));
 #if UNITY_IOS && !UNITY_EDITOR
                 OpenSafeBrowsing(paymentUrl);
 #else
-                OpenEmbeddedWebView(paymentUrl, referenceRect);
+                OpenEmbeddedWebView(paymentUrl, referenceRect, titleText, closeText);
 #endif
                 return m_CompletionSource.Task;
             }
@@ -136,7 +170,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// </summary>
             /// <param name="paymentUrl">已完成加密的支付 URL。</param>
             /// <param name="referenceRect">UniWebView 使用的适配区域。</param>
-            private void OpenEmbeddedWebView(string paymentUrl, RectTransform referenceRect)
+            private void OpenEmbeddedWebView(string paymentUrl, RectTransform referenceRect, string titleText, string closeText)
             {
                 m_WebViewHost = new GameObject("ThirdPayWebView");
                 m_WebView = m_WebViewHost.AddComponent<UniWebView>();
@@ -144,8 +178,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 m_WebView.SetBackButtonEnabled(true);
                 m_WebView.SetOpenLinksInExternalBrowser(false);
                 m_WebView.EmbeddedToolbar.SetPosition(UniWebViewToolbarPosition.Top);
-                m_WebView.EmbeddedToolbar.SetDoneButtonText("关闭");
-                m_WebView.EmbeddedToolbar.SetTitleText(Application.productName);
+                m_WebView.EmbeddedToolbar.SetDoneButtonText(string.IsNullOrEmpty(closeText) ? "close" : closeText);
+                m_WebView.EmbeddedToolbar.SetTitleText(string.IsNullOrEmpty(titleText) ? Application.productName : titleText);
                 m_WebView.EmbeddedToolbar.HideNavigationButtons();
                 m_WebView.EmbeddedToolbar.Show();
 

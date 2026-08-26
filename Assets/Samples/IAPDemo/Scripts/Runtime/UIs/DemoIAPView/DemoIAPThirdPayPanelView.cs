@@ -47,6 +47,16 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         [SerializeField] private RectTransform m_ProductCardTemplate;
 
         /// <summary>
+        /// ThirdPay 调试国家选择下拉框；Auto 表示使用 Store 默认或运行时识别的国家。
+        /// </summary>
+        [SerializeField] private TMP_Dropdown m_DebugCountryDropdown;
+
+        /// <summary>
+        /// 是否跳过 Google 第三方支付信息页的调试开关。
+        /// </summary>
+        [SerializeField] private Toggle m_SkipPaymentInformationToggle;
+
+        /// <summary>
         /// 运行时创建的第三方商品卡。
         /// </summary>
         private readonly List<GameObject> m_RuntimeCards = new List<GameObject>();
@@ -77,23 +87,107 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         private Action m_RefreshRequested;
 
         /// <summary>
+        /// 调试国家变更回调。
+        /// </summary>
+        private Action<string> m_DebugCountryChanged;
+
+        /// <summary>
+        /// 跳过第三方支付信息页变更回调。
+        /// </summary>
+        private Action<bool> m_SkipPaymentInformationChanged;
+
+        private static readonly string[] s_DebugCountryCodes =
+        {
+            string.Empty,
+            "US",
+            "CN",
+            "JP",
+            "KR",
+            "GB",
+            "DE",
+            "FR",
+            "AU",
+            "RU",
+        };
+
+        private static readonly string[] s_DebugCountryLabels =
+        {
+            "自动（运行时）",
+            "美国",
+            "中国",
+            "日本",
+            "韩国",
+            "英国",
+            "德国",
+            "法国",
+            "澳大利亚",
+            "俄罗斯",
+        };
+
+        /// <summary>
         /// 接收 ThirdPay 可选模块提供的展示文本和业务回调。
         /// </summary>
         /// <param name="productTitleBuilder">商品标题构建回调。</param>
         /// <param name="payRequested">第三方支付回调。</param>
         /// <param name="refreshRequested">资格刷新回调。</param>
         internal void Configure(Func<long, string> productTitleBuilder, Action<long> payRequested,
-            Action refreshRequested)
+            Action refreshRequested, Action<string> debugCountryChanged,
+            Action<bool> skipPaymentInformationChanged)
         {
             m_ProductTitleBuilder = productTitleBuilder;
             m_PayRequested = payRequested;
             m_RefreshRequested = refreshRequested;
+            m_DebugCountryChanged = debugCountryChanged;
+            m_SkipPaymentInformationChanged = skipPaymentInformationChanged;
             DemoIAPView.BindButton(m_RefreshButton, "刷新资格", "RefreshThirdPayAsync",
                 () => m_RefreshRequested?.Invoke());
+            ConfigureDebugControls();
             if (m_ProductCardTemplate != null)
             {
                 m_ProductCardTemplate.gameObject.SetActive(false);
             }
+        }
+
+        /// <summary>
+        /// 初始化调试国家和 Google 信息页开关，并将控件事件绑定到 ThirdPay 模块回调。
+        /// </summary>
+        private void ConfigureDebugControls()
+        {
+            if (m_DebugCountryDropdown != null)
+            {
+                m_DebugCountryDropdown.onValueChanged.RemoveListener(OnDebugCountryChanged);
+                m_DebugCountryDropdown.ClearOptions();
+                m_DebugCountryDropdown.AddOptions(new List<string>(s_DebugCountryLabels));
+                m_DebugCountryDropdown.SetValueWithoutNotify(0);
+                m_DebugCountryDropdown.onValueChanged.AddListener(OnDebugCountryChanged);
+            }
+
+            if (m_SkipPaymentInformationToggle != null)
+            {
+                m_SkipPaymentInformationToggle.onValueChanged.RemoveListener(OnSkipPaymentInformationChanged);
+                m_SkipPaymentInformationToggle.onValueChanged.AddListener(OnSkipPaymentInformationChanged);
+            }
+        }
+
+        /// <summary>
+        /// 响应调试国家选择并转换为 ThirdPay 使用的 ISO 国家代码。
+        /// </summary>
+        /// <param name="index">调试国家选项索引。</param>
+        private void OnDebugCountryChanged(int index)
+        {
+            string countryCode = index >= 0 && index < s_DebugCountryCodes.Length
+                ? s_DebugCountryCodes[index]
+                : string.Empty;
+            m_DebugCountryChanged?.Invoke(countryCode);
+        }
+
+        /// <summary>
+        /// 响应跳过第三方支付信息页的调试开关。
+        /// </summary>
+        /// <param name="skip">是否跳过信息页。</param>
+        private void OnSkipPaymentInformationChanged(bool skip)
+        {
+            m_SkipPaymentInformationChanged?.Invoke(skip);
         }
 
         /// <summary>
@@ -125,6 +219,18 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
+        /// 将跳过第三方支付信息页的调试开关同步为 Store 当前值。
+        /// </summary>
+        /// <param name="skip">Store 当前是否跳过信息页。</param>
+        internal void SetSkipPaymentInformation(bool skip)
+        {
+            if (m_SkipPaymentInformationToggle != null)
+            {
+                m_SkipPaymentInformationToggle.SetIsOnWithoutNotify(skip);
+            }
+        }
+
+        /// <summary>
         /// 使用当前标题构建回调刷新全部已有第三方商品卡。
         /// </summary>
         internal void RefreshProductTitles()
@@ -149,6 +255,14 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             if (m_RefreshButton != null)
             {
                 m_RefreshButton.interactable = interactable;
+            }
+            if (m_DebugCountryDropdown != null)
+            {
+                m_DebugCountryDropdown.interactable = interactable;
+            }
+            if (m_SkipPaymentInformationToggle != null)
+            {
+                m_SkipPaymentInformationToggle.interactable = interactable;
             }
             for (int i = 0; i < m_PayButtons.Count; i++)
             {
@@ -179,6 +293,8 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// </summary>
         internal void ClearRuntimeContent()
         {
+            m_DebugCountryDropdown?.onValueChanged.RemoveListener(OnDebugCountryChanged);
+            m_SkipPaymentInformationToggle?.onValueChanged.RemoveListener(OnSkipPaymentInformationChanged);
             for (int i = 0; i < m_RuntimeCards.Count; i++)
             {
                 if (m_RuntimeCards[i] != null)
@@ -192,6 +308,8 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             m_ProductTitleBuilder = null;
             m_PayRequested = null;
             m_RefreshRequested = null;
+            m_DebugCountryChanged = null;
+            m_SkipPaymentInformationChanged = null;
         }
 
         /// <summary>

@@ -20,6 +20,7 @@ namespace NovaFramework.Editor
         "管理消费项目 UPM 包",
         "upm",
         AgentActionOperationType.Package,
+        Description = "为消费项目安装或升级已配置 Registry 中的 UPM 包，并核验最终解析版本。",
         Effects = AgentActionEffect.WorkspaceRead |
                   AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead |

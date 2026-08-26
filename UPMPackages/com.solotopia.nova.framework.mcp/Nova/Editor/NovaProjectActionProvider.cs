@@ -55,6 +55,21 @@ namespace NovaFramework.Mcp.Editor
     }
 
     /// <summary>
+    /// Nova MCP 当前 Action 开放策略的只读快照。
+    /// 只用于能力发现与诊断，不提供执行入口。
+    /// </summary>
+    public sealed class NovaProjectActionExposureSnapshot
+    {
+        public bool IsAvailable { get; set; }
+
+        public string[] PolicyActionIds { get; set; } = Array.Empty<string>();
+
+        public string[] ExposedActionIds { get; set; } = Array.Empty<string>();
+
+        public string ErrorMessage { get; set; }
+    }
+
+    /// <summary>
     /// 不包含 Framework CLR 类型信息的 Action 描述。
     /// </summary>
     public sealed class NovaProjectActionDescriptor
@@ -62,6 +77,8 @@ namespace NovaFramework.Mcp.Editor
         public string Id { get; set; }
 
         public string DisplayName { get; set; }
+
+        public string Description { get; set; }
 
         public string Domain { get; set; }
 

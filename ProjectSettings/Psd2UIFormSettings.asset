@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 974569662, guid: a6c1e4c70b6d4cf5b4c7b8f61a236f90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: cn.efunstudio.psd2ugui.dll::UGF.EditorTools.Psd2UGUI.Psd2UIFormSettings
+  UIImagesOutputDir: Assets/psd
+  UIFormOutputDir: Assets/psd
+  UseUIFormOutputDir: 1
+  CompressImage: 0
+  AutoCropMinimalNineSlice: 0
+  LastUIFormOutputDir: Assets

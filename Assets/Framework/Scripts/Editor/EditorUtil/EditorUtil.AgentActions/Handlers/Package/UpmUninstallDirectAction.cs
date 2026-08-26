@@ -18,6 +18,7 @@ namespace NovaFramework.Editor
         "卸载消费项目 direct UPM 依赖",
         "upm",
         AgentActionOperationType.Package,
+        Description = "从消费项目移除明确指定的 direct UPM 依赖，并核验依赖解析结果。",
         Effects = AgentActionEffect.WorkspaceRead |
                   AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead |

@@ -12,7 +12,6 @@ using System;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace NovaFramework.Editor
 {
@@ -23,66 +22,74 @@ namespace NovaFramework.Editor
     {
         private const string c_Title = "Nova · 项目检查";
         private const string c_DisplayName = "项目检查";
-        private const string c_MenuPath = "Nova/Open ProjectGuard";
-        private VisualElement m_Results;
+        private const string c_MenuPath = "Nova/Open Project Guard";
+        private EditorUtil.ProjectGuard.NovaGuardReport m_Report;
+        private string m_ScopeName;
+        private Vector2 m_ScrollPosition;
+        private GUIStyle m_MainTitleStyle;
 
-        [MenuItem(c_MenuPath)]
+        [MenuItem(c_MenuPath, false, 1000)]
         private static void Open()
         {
-            GetWindow<ProjectGuardWindow>(false, c_Title, true);
+            ProjectGuardWindow window = GetWindow<ProjectGuardWindow>(false, c_Title, true);
+            window.minSize = new Vector2(700f, 400f);
         }
 
         /// <summary>
-        /// 创建项目检查窗口，并默认展示当前场景的只读检查结果。
+        /// 窗口启用时默认读取当前场景的只读检查结果。
         /// </summary>
-        public void CreateGUI()
+        private void OnEnable()
         {
-            var toolbar = new VisualElement
-            {
-                name = "project-guard-toolbar",
-                style =
-                {
-                    flexDirection = FlexDirection.Row,
-                    paddingLeft = 6,
-                    paddingRight = 6,
-                    paddingTop = 6,
-                    paddingBottom = 6,
-                },
-            };
-            toolbar.Add(new Label(c_DisplayName)
-            {
-                style =
-                {
-                    unityTextAlign = TextAnchor.MiddleLeft,
-                },
-            });
-            var actions = new VisualElement
-            {
-                name = "project-guard-actions",
-                style =
-                {
-                    flexDirection = FlexDirection.Row,
-                    marginLeft = new StyleLength(StyleKeyword.Auto),
-                },
-            };
-            actions.Add(new Button(() => RunCheck(
-                EditorUtil.ProjectGuard.ValidateQuick(), "当前编辑场景及其所在目录下的资源"))
-            {
-                text = "检查当前场景",
-                tooltip = "检查当前正在编辑的场景，以及该场景所在目录下的资源。",
-            });
-            actions.Add(new Button(() => RunCheck(EditorUtil.ProjectGuard.ValidateBuild(
-                EditorUserBuildSettings.activeBuildTarget), "已启用构建场景及其所在目录下的资源"))
-            {
-                text = "检查构建场景",
-                tooltip = "检查 Build Settings 中已启用的场景，以及这些场景所在目录下的资源；不会实际构建项目。",
-            });
-            toolbar.Add(actions);
-            rootVisualElement.Add(toolbar);
-
-            m_Results = new ScrollView();
-            rootVisualElement.Add(m_Results);
             ShowReport(EditorUtil.ProjectGuard.ValidateQuick(), "当前编辑场景及其所在目录下的资源");
+        }
+
+        /// <summary>
+        /// 使用 Nova 统一 IMGUI 绘制，避免 UI Toolkit 长中文 HelpBox 随机缺字。
+        /// </summary>
+        private void OnGUI()
+        {
+            EnsureStyles();
+            DrawMainTitle();
+            DrawToolbar();
+            m_ScrollPosition = EditorGUILayout.BeginScrollView(m_ScrollPosition);
+            DrawReport();
+            EditorGUILayout.EndScrollView();
+        }
+
+        private void EnsureStyles()
+        {
+            if (m_MainTitleStyle != null)
+                return;
+
+            m_MainTitleStyle = new GUIStyle(EditorStyles.boldLabel)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 18,
+            };
+        }
+
+        private void DrawMainTitle()
+        {
+            EditorUtil.Draw.Space(8f);
+            EditorUtil.Draw.Label(c_DisplayName, m_MainTitleStyle, false, GUILayout.ExpandWidth(true));
+            EditorUtil.Draw.Space(8f);
+            EditorUtil.Draw.Line();
+        }
+
+        private void DrawToolbar()
+        {
+            EditorUtil.Draw.Space(6f);
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                GUILayout.FlexibleSpace();
+                EditorUtil.Draw.Button("检查当前场景", 140f, false, () => RunCheck(
+                    EditorUtil.ProjectGuard.ValidateQuick(), "当前编辑场景及其所在目录下的资源"));
+                EditorUtil.Draw.Button("检查构建场景", 140f, false, () => RunCheck(
+                    EditorUtil.ProjectGuard.ValidateBuild(EditorUserBuildSettings.activeBuildTarget),
+                    "已启用构建场景及其所在目录下的资源"));
+                EditorUtil.Draw.Space(8f);
+            });
+            EditorUtil.Draw.Space(6f);
         }
 
         /// <summary>
@@ -103,27 +110,33 @@ namespace NovaFramework.Editor
         /// <param name="scopeName">面板展示的检查范围名称。</param>
         private void ShowReport(EditorUtil.ProjectGuard.NovaGuardReport report, string scopeName)
         {
-            m_Results?.Clear();
-            if (m_Results == null)
-                return;
+            m_Report = report;
+            m_ScopeName = scopeName;
+            Repaint();
+        }
 
-            m_Results.Add(new HelpBox(
-                "(1) 检查 Nova 的启动配置、场景结构和 Resources 资源。\n" +
-                "(2) 此窗口只显示方便处理的摘要，不会修改项目。\n" +
-                "(3) 点击检查按钮后，完整技术诊断会输出到 Console / Editor.log。",
-                HelpBoxMessageType.Info));
-
-            if (report == null)
+        private void DrawReport()
+        {
+            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
             {
-                m_Results.Add(new HelpBox(
-                    "(1) 状态：检查未完成。\n(2) 请主动点击检查按钮后，查看 Console / Editor.log 获取完整技术诊断。",
-                    HelpBoxMessageType.Error));
+                "(1) 检查 Nova 的启动配置、场景结构和 Resources 资源。",
+                "(2) 此窗口只显示方便处理的摘要，不会修改项目。",
+                "(3) 点击检查按钮后，完整技术诊断会输出到 Console / Editor.log。",
+            }, false, GUILayout.ExpandWidth(true));
+
+            if (m_Report == null)
+            {
+                EditorUtil.Draw.HelpBox(MessageType.Error, new[]
+                {
+                    "(1) 状态：检查未完成。",
+                    "(2) 请主动点击检查按钮后，查看 Console / Editor.log 获取完整技术诊断。",
+                }, false, GUILayout.ExpandWidth(true));
                 return;
             }
 
             int errorCount = 0;
             int warningCount = 0;
-            foreach (EditorUtil.ProjectGuard.NovaGuardIssue issue in report.Issues)
+            foreach (EditorUtil.ProjectGuard.NovaGuardIssue issue in m_Report.Issues)
             {
                 switch (issue.Severity)
                 {
@@ -136,27 +149,36 @@ namespace NovaFramework.Editor
                 }
             }
 
-            if (report.Issues.Count == 0)
+            if (m_Report.Issues.Count == 0)
             {
-                m_Results.Add(new HelpBox($"(1) 检查范围：{scopeName}\n(2) 检查完成：未发现需要处理的问题。",
-                    HelpBoxMessageType.Info));
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    $"(1) 检查范围：{m_ScopeName}",
+                    "(2) 检查完成：未发现需要处理的问题。",
+                }, false, GUILayout.ExpandWidth(true));
                 return;
             }
 
-            HelpBoxMessageType summaryType = errorCount > 0
-                ? HelpBoxMessageType.Error
-                : warningCount > 0 ? HelpBoxMessageType.Warning : HelpBoxMessageType.Info;
-            m_Results.Add(new HelpBox($"(1) 检查范围：{scopeName}\n(2) {BuildReportSummary(errorCount, warningCount)}", summaryType));
-
-            foreach (EditorUtil.ProjectGuard.NovaGuardIssue issue in report.Issues)
+            MessageType summaryType = errorCount > 0
+                ? MessageType.Error
+                : warningCount > 0 ? MessageType.Warning : MessageType.Info;
+            EditorUtil.Draw.HelpBox(summaryType, new[]
             {
-                HelpBoxMessageType type = issue.Severity switch
+                $"(1) 检查范围：{m_ScopeName}",
+                $"(2) {BuildReportSummary(errorCount, warningCount)}",
+            }, false, GUILayout.ExpandWidth(true));
+
+            foreach (EditorUtil.ProjectGuard.NovaGuardIssue issue in m_Report.Issues)
+            {
+                MessageType type = issue.Severity switch
                 {
-                    EditorUtil.ProjectGuard.NovaGuardSeverity.Error => HelpBoxMessageType.Error,
-                    EditorUtil.ProjectGuard.NovaGuardSeverity.Warning => HelpBoxMessageType.Warning,
-                    _ => HelpBoxMessageType.Info,
+                    EditorUtil.ProjectGuard.NovaGuardSeverity.Error => MessageType.Error,
+                    EditorUtil.ProjectGuard.NovaGuardSeverity.Warning => MessageType.Warning,
+                    _ => MessageType.Info,
                 };
-                m_Results.Add(new HelpBox(BuildIssueDisplayMessage(issue), type));
+                EditorUtil.Draw.HelpBox(type, BuildIssueDisplayMessage(issue)
+                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries), false,
+                    GUILayout.ExpandWidth(true));
             }
         }
 

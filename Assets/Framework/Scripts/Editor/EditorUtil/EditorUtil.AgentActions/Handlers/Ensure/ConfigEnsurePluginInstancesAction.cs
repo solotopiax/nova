@@ -25,6 +25,7 @@ namespace NovaFramework.Editor
         "确保 Config 插件实例",
         "config",
         AgentActionOperationType.Ensure,
+        Description = "根据已确认的 Config 插件类型补齐 ConfigMaster 中缺失的插件实例，不替换已有配置。",
         Effects = AgentActionEffect.WorkspaceRead |
                   AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead |

@@ -45,7 +45,7 @@ namespace NovaBootstrap
         private const string c_SessionVersionWarnedKey = "NovaSpark.VersionWarned";
 
         /// <summary>PlugPals 窗口菜单路径。用 ExecuteMenuItem 字符串调用，避免对框架类型的编译期依赖。</summary>
-        private const string c_PlugPalsMenuPath = "Nova/Open PlugPals";
+        private const string c_PlugPalsMenuPath = "Nova/Open Plug Pals";
 
         /// <summary>
         /// 单轮域重载内"尝试打开 PlugPals 窗口"的最大轮询次数上限。
@@ -79,7 +79,7 @@ namespace NovaBootstrap
         private const string c_FrameworkKey = "com.solotopia.nova.framework";
 
         /// <summary>Nova 框架主包版本（经 Solotopia registry 解析，会传递安装一众 com.solotopia.* 核心子包）。</summary>
-        private const string c_FrameworkValue = "0.6.17";
+        private const string c_FrameworkValue = "0.6.18";
 
         /// <summary>PlugPals 配置文件相对工程根的路径。</summary>
         private const string c_PlugPalsRelativePath = "ProjectSettings/Nova/PlugPalsRegistries.json";
@@ -103,7 +103,7 @@ namespace NovaBootstrap
         private static readonly RegistrySpec[] s_Registries =
         {
             new RegistrySpec("Solotopia", "https://upm.solotopiax.com", new[] { "com.solotopia" }),
-            new RegistrySpec("Solotopia Internal", "http://172.16.22.175:4874", new[] { "com.tivadar", "com.onevcat" }),
+            new RegistrySpec("Solotopia Internal", "http://172.16.22.175:4874", new[] { "com.tivadar", "com.onevcat", "cn.efunstudio" }),
             new RegistrySpec("package.openupm.com", "https://package.openupm.com", new[]
             {
                 "com.google.external-dependency-manager",

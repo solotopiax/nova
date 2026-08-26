@@ -26,6 +26,7 @@ namespace NovaFramework.Editor
         "导出 Network",
         "network",
         AgentActionOperationType.Generate,
+        Description = "从当前有效 NetworkSettings 导出网络配置与协议相关生成物，并核验结果。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead | AgentActionEffect.UnityWrite,
         RequiredEvidence = AgentActionEvidence.Static | AgentActionEvidence.Artifact,

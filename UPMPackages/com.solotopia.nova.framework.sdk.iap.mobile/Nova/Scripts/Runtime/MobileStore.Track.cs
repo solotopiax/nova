@@ -8,6 +8,7 @@
  * descrip:   MobileStore 埋点转发
  ***************************************************************/
 
+using System.Collections.Generic;
 using System.Globalization;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.IAP.Runtime;
@@ -17,6 +18,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
     public sealed partial class MobileStore
     {
+        /// <summary>
+        /// 当前账号持久化的验单成功订单键最大数量，超过后淘汰最早记录。
+        /// </summary>
+        private const int c_MaxValidateSuccessOrderKeys = 300;
+
         /// <summary>
         /// 上报移动内购初始化成功。
         /// </summary>
@@ -122,13 +128,67 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="validateCount">验单尝试次数。</param>
         internal void TrackValidateSuccessInternal(MobileOrderRecord record, Product product, int validateCount, string orderId)
         {
-            if (record == null)
+            if (record == null || !TryMarkValidateSuccess(record))
             {
                 return;
             }
 
             string trackOrderId = !string.IsNullOrEmpty(orderId) ? orderId : record.TransactionId ?? string.Empty;
             TrackValidateSuccess(record.TableId, ResolveProductId(record.TableId, product), IsTrackDebugMode(), ResolvePrice(record.TableId), trackOrderId, record.IsReplenish, validateCount, record.CustomDataParam);
+        }
+
+        /// <summary>
+        /// 按平台注册订单键持久化验单成功打点去重，避免重启后 FetchPurchases 或补单再次上报同一订单。
+        /// </summary>
+        /// <param name="record">已完成服务端验单的订单记录。</param>
+        /// <returns>首次上报该订单时返回 true。</returns>
+        private bool TryMarkValidateSuccess(MobileOrderRecord record)
+        {
+            string trackKey = ResolveValidateSuccessTrackKey(record);
+            if (string.IsNullOrEmpty(trackKey))
+            {
+                return true;
+            }
+
+            if (m_PersistData != null && m_PersistData.ValidateSuccessOrderKeys.Contains(trackKey))
+            {
+                Log.Debug(LogTag.IAPMobile, $"订单已在历史运行期上报过验单成功事件，本次跳过重复打点，订单键={trackKey}");
+                return false;
+            }
+
+            if (m_RuntimeValidateSuccessOrderKeys.Contains(trackKey))
+            {
+                Log.Debug(LogTag.IAPMobile, $"订单已上报过验单成功事件，本次跳过重复打点，订单键={trackKey}");
+                return false;
+            }
+
+            m_RuntimeValidateSuccessOrderKeys.Add(trackKey);
+            TrimValidateSuccessOrderKeys(m_RuntimeValidateSuccessOrderKeys);
+            if (m_PersistData != null)
+            {
+                m_PersistData.ValidateSuccessOrderKeys.Add(trackKey);
+                TrimValidateSuccessOrderKeys(m_PersistData.ValidateSuccessOrderKeys);
+                SavePersistDataInternal();
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 将验单成功订单键集合限制在固定容量内，按插入顺序淘汰最老记录。
+        /// </summary>
+        /// <param name="orderKeys">按时间顺序保存的验单成功订单键。</param>
+        private static void TrimValidateSuccessOrderKeys(List<string> orderKeys)
+        {
+            if (orderKeys == null)
+            {
+                return;
+            }
+
+            while (orderKeys.Count > c_MaxValidateSuccessOrderKeys)
+            {
+                orderKeys.RemoveAt(0);
+            }
         }
 
         /// <summary>
@@ -154,6 +214,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal void ClearTrackRuntimeCacheInternal()
         {
             m_RuntimeHandledTransactionIds.Clear();
+            m_RuntimeValidateSuccessOrderKeys.Clear();
         }
 
         /// <summary>
@@ -194,6 +255,28 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             return record.GoogleToken ?? string.Empty;
 #else
             return !string.IsNullOrEmpty(record.TransactionId) ? record.TransactionId : record.GoogleToken ?? string.Empty;
+#endif
+        }
+
+        /// <summary>
+        /// 解析验单成功打点去重 key：Apple 使用 transaction id，Google 使用 purchase token。
+        /// </summary>
+        /// <param name="record">移动端订单记录。</param>
+        /// <returns>平台订单去重 key。</returns>
+        private static string ResolveValidateSuccessTrackKey(MobileOrderRecord record)
+        {
+            string platformOrderKey = ResolveLocalPaySuccessTrackKey(record);
+            if (string.IsNullOrEmpty(platformOrderKey))
+            {
+                return string.Empty;
+            }
+
+#if UNITY_ANDROID
+            return $"google:{platformOrderKey}";
+#elif UNITY_IOS
+            return $"ios:{platformOrderKey}";
+#else
+            return $"mobile:{platformOrderKey}";
 #endif
         }
 

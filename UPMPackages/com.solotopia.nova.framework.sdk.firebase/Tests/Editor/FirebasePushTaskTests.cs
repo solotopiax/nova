@@ -23,6 +23,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
     public sealed class FirebasePushTaskTests
     {
         private const string c_RuntimeFolder = "UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/";
+        private const string c_EditorFolder = "UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Editor/";
         private const string c_PushTasksFolder = c_RuntimeFolder + "PushTasks/";
         private const string c_ServicesFolder = c_RuntimeFolder + "Services/";
 
@@ -37,6 +38,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         private const string c_FirebasePushTaskRepositorySourcePath = c_PushTasksFolder + "FirebasePushTaskRepository.cs";
         private const string c_FirebasePushTaskNetServiceSourcePath = c_ServicesFolder + "FirebasePushTaskNetService.cs";
         private const string c_FirebasePluginPushTasksSourcePath = c_PushTasksFolder + "FirebasePlugin.PushTasks.cs";
+        private const string c_FirebaseEditorDestroyFixSourcePath = c_EditorFolder + "FirebaseEditorDestroyFix.cs";
 
         /// <summary>
         /// FCM notification click tracking should reuse the generic track plugin and keep the template id payload.
@@ -46,13 +48,19 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         {
             string methodsSource = File.ReadAllText(c_FirebasePluginMethodsSourcePath);
 
-            StringAssert.Contains("TryGetValue(\"TemplateID\"", methodsSource);
+            StringAssert.Contains("TryGetValue(\"push_task_id\"", methodsSource);
+            StringAssert.Contains("TryGetValue(\"task_key\"", methodsSource);
+            StringAssert.Contains("TryGetValue(\"template_id\"", methodsSource);
             StringAssert.Contains("TryGet<ITrackPlugin>", methodsSource);
             StringAssert.Contains("TrackEvent(\"nova_firebase_fcm_click\"", methodsSource);
-            StringAssert.Contains("nova_firebase_fcm_messengerid", methodsSource);
-            StringAssert.Contains("nova_firebase_fcm_template_id", methodsSource);
+            StringAssert.Contains("nova_firebase_fcm_message_id", methodsSource);
+            StringAssert.Contains("nova_firebase_push_task_id", methodsSource);
+            StringAssert.Contains("nova_firebase_push_task_key", methodsSource);
+            StringAssert.Contains("nova_firebase_template_id", methodsSource);
+            StringAssert.DoesNotContain("TryGetValue(\"TemplateID\"", methodsSource);
             StringAssert.DoesNotContain("nova_firebase_fcm_order_id", methodsSource);
             StringAssert.DoesNotContain("TryGetValue(\"OrderID\"", methodsSource);
+            StringAssert.DoesNotContain("nova_firebase_fcm_messengerid", methodsSource);
             StringAssert.DoesNotContain("GetAll<ITrackPlugin>", methodsSource);
             StringAssert.DoesNotContain("TGAHelper", methodsSource);
         }
@@ -67,12 +75,46 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
 
             Assert.AreEqual(100f, config.PushFlushIntervalSeconds);
             Assert.AreEqual(5, config.PushFlushBatchSize);
+            Assert.IsTrue(config.AutoRequestNotificationPermission);
 
             string source = File.ReadAllText(c_FirebasePluginConfigSourcePath);
             StringAssert.Contains("m_PushCmdName", source);
             StringAssert.Contains("m_PushFlushIntervalSeconds", source);
             StringAssert.Contains("m_PushFlushBatchSize", source);
+            StringAssert.Contains("m_AutoRequestNotificationPermission = true", source);
             StringAssert.Contains("Tooltip", source);
+        }
+
+        /// <summary>
+        /// 验证 Firebase 通知权限请求由配置开关控制，默认会在初始化成功后走 Native 门面请求。
+        /// </summary>
+        [Test]
+        public void FirebasePlugin_RequestsNotificationPermissionWhenConfigEnabled()
+        {
+            string methodsSource = File.ReadAllText(c_FirebasePluginMethodsSourcePath);
+
+            int initOverIndex = methodsSource.IndexOf("m_InitOver = true;", StringComparison.Ordinal);
+            int requestIndex = methodsSource.IndexOf("RequestDefaultNotificationPermissionIfEnabled().Forget();", initOverIndex, StringComparison.Ordinal);
+
+            Assert.GreaterOrEqual(initOverIndex, 0);
+            Assert.Greater(requestIndex, initOverIndex);
+            StringAssert.Contains("!m_RuntimeConfig.AutoRequestNotificationPermission", methodsSource);
+            StringAssert.Contains("AutoRequestNotificationPermission", methodsSource);
+            StringAssert.Contains("Nova.Native.RequestNotificationPermissionAsync()", methodsSource);
+        }
+
+        /// <summary>
+        /// Editor 退出播放模式清理必须在域重载后自动注册。
+        /// </summary>
+        [Test]
+        public void FirebaseEditorDestroyFix_RegistersOnEditorLoad()
+        {
+            string source = File.ReadAllText(c_FirebaseEditorDestroyFixSourcePath);
+
+            StringAssert.Contains("[InitializeOnLoad]", source);
+            StringAssert.Contains("EditorApplication.playModeStateChanged", source);
+            StringAssert.Contains("DestroyImmediate(handler)", source);
+            StringAssert.DoesNotContain("GetMethod(\"Destroy\"", source);
         }
 
         /// <summary>
@@ -244,9 +286,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         [Test]
         public void FirebasePushTaskNetService_OmitsScheduleFieldsWhenCanceling()
         {
-            MethodInfo buildMethod = typeof(FirebasePushTaskNetService).GetMethod(
-                "BuildPushTaskMessage",
-                BindingFlags.NonPublic | BindingFlags.Static);
+            MethodInfo buildMethod = typeof(FirebasePushTaskNetService).GetMethod("BuildPushTaskMessage", BindingFlags.NonPublic | BindingFlags.Static);
 
             Assert.IsNotNull(buildMethod, "FirebasePushTaskNetService 应提供底层 PbPushTask 构造方法。");
 

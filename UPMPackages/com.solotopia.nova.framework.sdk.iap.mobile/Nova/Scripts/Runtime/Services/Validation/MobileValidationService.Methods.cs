@@ -307,10 +307,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="ct">取消令牌。</param>
         private async UniTask StartCheckLocalOrdersAsync(CancellationToken ct)
         {
-            List<string> validationOrderKeys = m_LocalOrderScanner.CollectValidationOrderKeys(
-                m_OrderRecords,
-                CanEnqueueLocalRecord,
-                ShouldRemoveLocalRecordWithoutCredential);
+            List<string> validationOrderKeys = m_LocalOrderScanner.CollectValidationOrderKeys(m_OrderRecords, CanEnqueueLocalRecord, ShouldRemoveLocalRecordWithoutCredential);
             foreach (string orderKey in validationOrderKeys)
             {
                 m_ValidationQueueCoordinator.Enqueue(orderKey);
@@ -346,6 +343,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             foreach (string orderKey in orderKeys)
             {
                 if (!m_OrderRecords.TryGetValue(orderKey, out MobileOrderRecord record))
+                {
+                    continue;
+                }
+
+                if (!IsPaidUnvalidatedStatus(record.Status))
                 {
                     continue;
                 }

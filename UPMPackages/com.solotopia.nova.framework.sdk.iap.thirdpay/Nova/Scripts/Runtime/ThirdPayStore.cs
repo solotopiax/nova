@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
@@ -44,6 +45,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_WebViewService?.Dispose();
             m_WebViewService = new ThirdPayWebViewService();
             m_CountryCode = m_Config?.CountryCode ?? string.Empty;
+            m_SkipPaymentInformationScreen = m_Config?.SkipPaymentInformationScreen ?? false;
             ResetRepository((ThirdPayPersistData)CreateEmptyPersistData());
 
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -51,6 +53,27 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             {
                 double googleTimeout = m_Config?.GoogleApiTimeoutSeconds ?? 15d;
                 m_GooglePolicy = new ThirdPayGooglePolicyService(new ThirdPayGoogleExternalBillingClient(googleTimeout));
+            }
+
+            if (string.IsNullOrWhiteSpace(m_CountryCode) && m_GooglePolicy != null)
+            {
+                try
+                {
+                    string billingCountryCode = await m_GooglePolicy.GetBillingCountryCodeAsync(ct);
+                    if (!string.IsNullOrEmpty(billingCountryCode))
+                    {
+                        m_CountryCode = billingCountryCode;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    // 商店地区读取失败不应阻断 ThirdPay；服务端仍可按空地区码处理。
+                    LogWarning($"读取 Google Play Billing 商店地区失败，将使用配置中的地区码：{ex.Message}");
+                }
             }
 #endif
 
@@ -162,6 +185,20 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 设置是否跳过 Google 第三方支付信息页；默认值来自 ThirdPayStoreConfig。
+        /// </summary>
+        /// <param name="skip">是否跳过信息页。</param>
+        public void SetSkipPaymentInformationScreen(bool skip)
+        {
+            m_SkipPaymentInformationScreen = skip;
+        }
+
+        /// <summary>
+        /// 获取当前是否跳过 Google 第三方支付信息页。
+        /// </summary>
+        public bool IsPaymentInformationScreenSkipped => m_SkipPaymentInformationScreen;
+
+        /// <summary>
         /// 手动设置当前账号的第三方支付渠道参数。
         /// 非空值会阻止支付前再次向服务端拉取。
         /// </summary>
@@ -198,6 +235,47 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 获取最近一次成功拉取的全部第三方支付商品。
+        /// </summary>
+        /// <returns>商品列表；尚未拉取成功或列表为空时返回空列表。</returns>
+        public IReadOnlyList<PbNetThirdProductInfo> GetProductList()
+        {
+            if (m_ProductList == null)
+            {
+                return Array.Empty<PbNetThirdProductInfo>();
+            }
+
+            return m_ProductList.ProductList;
+        }
+
+        /// <summary>
+        /// 判断最近一次成功拉取的第三方支付商品列表是否有商品。
+        /// </summary>
+        /// <returns>有商品时返回 true。</returns>
+        public bool HasProducts()
+        {
+            return m_ProductList?.ProductList != null && m_ProductList.ProductList.Count > 0;
+        }
+
+        /// <summary>
+        /// 设置第三方支付 WebView 导航栏左上角的显示名称。
+        /// </summary>
+        /// <param name="titleText">标题文本；空值时恢复应用名称。</param>
+        public void SetThirdPayWebViewTitleText(string titleText)
+        {
+            m_WebViewService?.SetTitleText(titleText);
+        }
+
+        /// <summary>
+        /// 设置第三方支付 WebView 导航栏右上角的关闭文本。
+        /// </summary>
+        /// <param name="closeText">关闭文本；空值时恢复为 close。</param>
+        public void SetThirdPayWebViewCloseText(string closeText)
+        {
+            m_WebViewService?.SetCloseText(closeText);
+        }
+
+        /// <summary>
         /// 释放 Google 政策服务和当前账号运行状态。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
@@ -211,6 +289,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_OrderRepository = null;
             m_PersistData = null;
             m_ProductList = null;
+            m_SkipPaymentInformationScreen = false;
             m_ChannelParamsLoader = null;
             m_NetService = null;
             m_Config = null;

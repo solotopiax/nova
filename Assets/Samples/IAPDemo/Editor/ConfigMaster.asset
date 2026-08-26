@@ -139,7 +139,15 @@ MonoBehaviour:
     VersionCheckLocalFilePath: 
     VersionCheckRemoteFilePath: 
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+    AutoLinkLatestVersion: 1
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    AssetCheckWhitelistDeviceIDs: []
+    AssetCheckWhitelistRemoteFilePath: 
+    AutoLinkLatestAssetCheckVersionFiles: 1
+    AssetCheckManifestBytesLocalFilePath: 
+    AssetCheckManifestHashLocalFilePath: 
+    AssetCheckPackageVersionLocalFilePath: 
+    AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -192,24 +200,31 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.IAP.Voucher.Runtime.dll
       m_TargetLocation: Assets/Samples/IAPDemo/Dlls/AOTMetas/NovaFramework.SDK.IAP.Voucher.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.SDK.IAP.Voucher.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.IAP.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/IAPDemo/Dlls/GameDlls/NovaFramework.Sdk.IAP.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Sdk.IAP.Samples.Runtime.dll
+    RunningGameDlls: []
     LinkXmlTargetPath: Assets/Samples/IAPDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
   HybridEditorConfigsOverrides: []
   YooAssetEditorConfigs:
     YooAssetSettingsPath: Assets/Samples/IAPDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/IAPDemo/Editor/BundleCollectorSetting.asset
+    YooFolderName: yoo
+    PackageFilePrefix: 
   YooAssetEditorConfigsOverrides:
   - YooAssetSettingsPath: Assets/Samples/IAPDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/IAPDemo/Editor/BundleCollectorSetting.asset
+    YooFolderName: yoo
+    PackageFilePrefix: 
     Platform: 0
     Channel: 0
     DevelopMode: 1
   - YooAssetSettingsPath: Assets/Samples/IAPDemo/Editor/YooAssetSettings.asset
     BundleCollectorSettingPath: Assets/Samples/IAPDemo/Editor/BundleCollectorSetting.asset
+    YooFolderName: yoo
+    PackageFilePrefix: 
     Platform: 0
     Channel: 0
     DevelopMode: 0
@@ -237,7 +252,15 @@ MonoBehaviour:
     VersionCheckLocalFilePath: 
     VersionCheckRemoteFilePath: 
     LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+    AutoLinkLatestVersion: 1
     RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    AssetCheckWhitelistDeviceIDs: []
+    AssetCheckWhitelistRemoteFilePath: 
+    AutoLinkLatestAssetCheckVersionFiles: 1
+    AssetCheckManifestBytesLocalFilePath: 
+    AssetCheckManifestHashLocalFilePath: 
+    AssetCheckPackageVersionLocalFilePath: 
+    AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
@@ -290,7 +313,7 @@ MonoBehaviour:
       - rid: 2533177004360728913
       - rid: 1468000007792361472
       - rid: 2533177004360729497
-      - rid: 1467999992408441124
+      - rid: 1468000325417304597
       - rid: 791343881524347116
       - rid: 791343881524347186
       - rid: 791343881524347080
@@ -302,7 +325,7 @@ MonoBehaviour:
       - rid: 2533177004360728914
       - rid: 1468000007792361474
       - rid: 2533177004360729498
-      - rid: 1467999992408441127
+      - rid: 1468000325417304600
       - rid: 791343881524347117
       - rid: 791343881524347187
       - rid: 791343881524347081
@@ -363,7 +386,7 @@ MonoBehaviour:
       - rid: 2533177004360728915
       - rid: 1468000007792361476
       - rid: 2533177004360729500
-      - rid: 1467999992408441130
+      - rid: 1468000325417304603
       - rid: 791343881524347118
       - rid: 791343881524347188
       - rid: 791343881524347083
@@ -412,7 +435,7 @@ MonoBehaviour:
       - rid: 2533177004360728916
       - rid: 1468000007792361478
       - rid: 2533177004360729501
-      - rid: 1467999992408441133
+      - rid: 1468000325417304606
       - rid: 791343881524347119
       - rid: 791343881524347189
       - rid: 791343881524347084
@@ -424,7 +447,7 @@ MonoBehaviour:
       - rid: 2533177004360728917
       - rid: 1468000007792361480
       - rid: 2533177004360729502
-      - rid: 1467999992408441136
+      - rid: 1468000325417304609
       - rid: 791343881524347120
       - rid: 791343881524347190
       - rid: 791343881524347085
@@ -473,7 +496,7 @@ MonoBehaviour:
       - rid: 2533177004360728918
       - rid: 1468000007792361482
       - rid: 2533177004360729503
-      - rid: 1467999992408441139
+      - rid: 1468000325417304612
       - rid: 791343881524347121
       - rid: 791343881524347191
       - rid: 791343881524347086
@@ -485,7 +508,7 @@ MonoBehaviour:
       - rid: 2533177004360728919
       - rid: 1468000007792361484
       - rid: 2533177004360729504
-      - rid: 1467999992408441142
+      - rid: 1468000325417304615
       - rid: 791343881524347122
       - rid: 791343881524347192
       - rid: 791343881524347087
@@ -534,7 +557,7 @@ MonoBehaviour:
       - rid: 2533177004360728920
       - rid: 1468000007792361486
       - rid: 2533177004360729505
-      - rid: 1467999992408441145
+      - rid: 1468000325417304618
       - rid: 791343881524347123
       - rid: 791343881524347193
       - rid: 791343881524347088
@@ -546,7 +569,7 @@ MonoBehaviour:
       - rid: 2533177004360728921
       - rid: 1468000007792361488
       - rid: 2533177004360729506
-      - rid: 1467999992408441148
+      - rid: 1468000325417304621
       - rid: 791343881524347124
       - rid: 791343881524347194
       - rid: 791343881524347089
@@ -595,7 +618,7 @@ MonoBehaviour:
       - rid: 2533177004360728922
       - rid: 1468000007792361490
       - rid: 2533177004360729507
-      - rid: 1467999992408441151
+      - rid: 1468000325417304624
       - rid: 791343881524347125
       - rid: 791343881524347195
       - rid: 791343881524347090
@@ -607,7 +630,7 @@ MonoBehaviour:
       - rid: 2533177004360728923
       - rid: 1468000007792361492
       - rid: 2533177004360729508
-      - rid: 1467999992408441154
+      - rid: 1468000325417304627
       - rid: 791343881524347126
       - rid: 791343881524347196
       - rid: 791343881524347091
@@ -656,7 +679,7 @@ MonoBehaviour:
       - rid: 2533177004360728924
       - rid: 1468000007792361494
       - rid: 2533177004360729509
-      - rid: 1467999992408441157
+      - rid: 1468000325417304630
       - rid: 791343881524347127
       - rid: 791343881524347197
       - rid: 791343881524347092
@@ -668,7 +691,7 @@ MonoBehaviour:
       - rid: 2533177004360728925
       - rid: 1468000007792361496
       - rid: 2533177004360729510
-      - rid: 1467999992408441160
+      - rid: 1468000325417304633
       - rid: 791343881524347128
       - rid: 791343881524347198
       - rid: 791343881524347093
@@ -717,7 +740,7 @@ MonoBehaviour:
       - rid: 2533177004360728926
       - rid: 1468000007792361498
       - rid: 2533177004360729511
-      - rid: 1467999992408441163
+      - rid: 1468000325417304636
       - rid: 791343881524347129
       - rid: 791343881524347199
       - rid: 791343881524347094
@@ -729,7 +752,7 @@ MonoBehaviour:
       - rid: 2533177004360728927
       - rid: 1468000007792361500
       - rid: 2533177004360729512
-      - rid: 1467999992408441166
+      - rid: 1468000325417304639
       - rid: 791343881524347130
       - rid: 791343881524347200
       - rid: 791343881524347095
@@ -778,7 +801,7 @@ MonoBehaviour:
       - rid: 2533177004360728928
       - rid: 1468000007792361502
       - rid: 2533177004360729513
-      - rid: 1467999992408441169
+      - rid: 1468000325417304642
       - rid: 791343881524347131
       - rid: 791343881524347201
       - rid: 791343881524347096
@@ -790,7 +813,7 @@ MonoBehaviour:
       - rid: 2533177004360728929
       - rid: 1468000007792361504
       - rid: 2533177004360729514
-      - rid: 1467999992408441172
+      - rid: 1468000325417304645
       - rid: 791343881524347132
       - rid: 791343881524347202
       - rid: 791343881524347097
@@ -839,7 +862,7 @@ MonoBehaviour:
       - rid: 2533177004360728930
       - rid: 1468000007792361506
       - rid: 2533177004360729515
-      - rid: 1467999992408441175
+      - rid: 1468000325417304648
       - rid: 791343881524347133
       - rid: 791343881524347203
       - rid: 791343881524347098
@@ -851,7 +874,7 @@ MonoBehaviour:
       - rid: 2533177004360728931
       - rid: 1468000007792361508
       - rid: 2533177004360729516
-      - rid: 1467999992408441178
+      - rid: 1468000325417304651
       - rid: 791343881524347134
       - rid: 791343881524347204
       - rid: 791343881524347099
@@ -900,7 +923,7 @@ MonoBehaviour:
       - rid: 2533177004360728932
       - rid: 1468000007792361510
       - rid: 2533177004360729517
-      - rid: 1467999992408441181
+      - rid: 1468000325417304654
       - rid: 791343881524347135
       - rid: 791343881524347205
       - rid: 791343881524347100
@@ -912,7 +935,7 @@ MonoBehaviour:
       - rid: 2533177004360728933
       - rid: 1468000007792361512
       - rid: 2533177004360729518
-      - rid: 1467999992408441184
+      - rid: 1468000325417304657
       - rid: 791343881524347136
       - rid: 791343881524347206
       - rid: 791343881524347101
@@ -961,7 +984,7 @@ MonoBehaviour:
       - rid: 2533177004360728934
       - rid: 1468000007792361514
       - rid: 2533177004360729519
-      - rid: 1467999992408441187
+      - rid: 1468000325417304660
       - rid: 791343881524347137
       - rid: 791343881524347207
       - rid: 791343881524347102
@@ -973,7 +996,7 @@ MonoBehaviour:
       - rid: 2533177004360728935
       - rid: 1468000007792361516
       - rid: 2533177004360729520
-      - rid: 1467999992408441190
+      - rid: 1468000325417304663
       - rid: 791343881524347138
       - rid: 791343881524347208
       - rid: 791343881524347103
@@ -1022,7 +1045,7 @@ MonoBehaviour:
       - rid: 2533177004360728936
       - rid: 1468000007792361518
       - rid: 2533177004360729521
-      - rid: 1467999992408441193
+      - rid: 1468000325417304666
       - rid: 791343881524347139
       - rid: 791343881524347209
       - rid: 791343881524347104
@@ -1034,7 +1057,7 @@ MonoBehaviour:
       - rid: 2533177004360728937
       - rid: 1468000007792361520
       - rid: 2533177004360729522
-      - rid: 1467999992408441196
+      - rid: 1468000325417304669
       - rid: 791343881524347140
       - rid: 791343881524347210
       - rid: 791343881524347105
@@ -1083,7 +1106,7 @@ MonoBehaviour:
       - rid: 2533177004360728938
       - rid: 1468000007792361522
       - rid: 2533177004360729523
-      - rid: 1467999992408441199
+      - rid: 1468000325417304672
       - rid: 791343881524347141
       - rid: 791343881524347211
       - rid: 791343881524347106
@@ -1095,7 +1118,7 @@ MonoBehaviour:
       - rid: 2533177004360728939
       - rid: 1468000007792361524
       - rid: 2533177004360729524
-      - rid: 1467999992408441202
+      - rid: 1468000325417304675
       - rid: 791343881524347142
       - rid: 791343881524347212
       - rid: 791343881524347107
@@ -1144,7 +1167,7 @@ MonoBehaviour:
       - rid: 2533177004360728940
       - rid: 1468000007792361526
       - rid: 2533177004360729525
-      - rid: 1467999992408441205
+      - rid: 1468000325417304678
       - rid: 791343881524347143
       - rid: 791343881524347213
       - rid: 791343881524347108
@@ -1156,7 +1179,7 @@ MonoBehaviour:
       - rid: 2533177004360728941
       - rid: 1468000007792361528
       - rid: 2533177004360729526
-      - rid: 1467999992408441208
+      - rid: 1468000325417304681
       - rid: 791343881524347144
       - rid: 791343881524347214
       - rid: 791343881524347109
@@ -1205,7 +1228,7 @@ MonoBehaviour:
       - rid: 2533177004360728942
       - rid: 1468000007792361530
       - rid: 2533177004360729527
-      - rid: 1467999992408441211
+      - rid: 1468000325417304684
       - rid: 791343881524347145
       - rid: 791343881524347215
       - rid: 791343881524347110
@@ -1217,7 +1240,7 @@ MonoBehaviour:
       - rid: 2533177004360728943
       - rid: 1468000007792361532
       - rid: 2533177004360729528
-      - rid: 1467999992408441214
+      - rid: 1468000325417304687
       - rid: 791343881524347146
       - rid: 791343881524347216
       - rid: 791343881524347111
@@ -1266,7 +1289,7 @@ MonoBehaviour:
       - rid: 2533177004360728944
       - rid: 1468000007792361534
       - rid: 2533177004360729529
-      - rid: 1467999992408441217
+      - rid: 1468000325417304690
       - rid: 791343881524347147
       - rid: 791343881524347217
       - rid: 791343881524347112
@@ -1278,7 +1301,7 @@ MonoBehaviour:
       - rid: 2533177004360728945
       - rid: 1468000007792361536
       - rid: 2533177004360729530
-      - rid: 1467999992408441220
+      - rid: 1468000325417304693
       - rid: 791343881524347148
       - rid: 791343881524347218
       - rid: 791343881524347113
@@ -1327,7 +1350,7 @@ MonoBehaviour:
       - rid: 2533177004360728946
       - rid: 1468000007792361538
       - rid: 2533177004360729531
-      - rid: 1467999992408441223
+      - rid: 1468000325417304696
       - rid: 791343881524347149
       - rid: 791343881524347219
       - rid: 791343881524347114
@@ -1339,7 +1362,7 @@ MonoBehaviour:
       - rid: 2533177004360728947
       - rid: 1468000007792361540
       - rid: 2533177004360729532
-      - rid: 1467999992408441226
+      - rid: 1468000325417304699
       - rid: 791343881524347150
       - rid: 791343881524347220
       - rid: 791343881524347115
@@ -1368,6 +1391,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039396
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1375,6 +1399,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -2542,1196 +2567,7 @@ MonoBehaviour:
       data:
         m_Enabled: 1
         m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441124
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441125
-          - rid: 1467999992408441126
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441125
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441126
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441127
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441128
-          - rid: 1467999992408441129
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441128
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441129
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441130
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441131
-          - rid: 1467999992408441132
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441131
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441132
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441133
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441134
-          - rid: 1467999992408441135
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441134
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441135
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441136
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441137
-          - rid: 1467999992408441138
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441137
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441138
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441139
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441140
-          - rid: 1467999992408441141
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441140
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441141
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441142
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441143
-          - rid: 1467999992408441144
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441143
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441144
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441145
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441146
-          - rid: 1467999992408441147
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441146
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441147
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441148
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441149
-          - rid: 1467999992408441150
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441149
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441150
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441151
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441152
-          - rid: 1467999992408441153
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441152
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441153
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441154
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441155
-          - rid: 1467999992408441156
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441155
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441156
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441157
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441158
-          - rid: 1467999992408441159
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441158
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441159
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441160
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441161
-          - rid: 1467999992408441162
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441161
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441162
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441163
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441164
-          - rid: 1467999992408441165
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441164
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441165
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441166
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441167
-          - rid: 1467999992408441168
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441167
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441168
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441169
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441170
-          - rid: 1467999992408441171
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441170
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441171
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441172
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441173
-          - rid: 1467999992408441174
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441173
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441174
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441175
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441176
-          - rid: 1467999992408441177
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441176
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441177
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441178
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441179
-          - rid: 1467999992408441180
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441179
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441180
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441181
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441182
-          - rid: 1467999992408441183
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441182
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441183
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441184
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441185
-          - rid: 1467999992408441186
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441185
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441186
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441187
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441188
-          - rid: 1467999992408441189
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441188
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441189
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441190
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441191
-          - rid: 1467999992408441192
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441191
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441192
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441193
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441194
-          - rid: 1467999992408441195
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441194
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441195
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441196
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441197
-          - rid: 1467999992408441198
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441197
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441198
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441199
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441200
-          - rid: 1467999992408441201
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441200
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441201
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441202
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441203
-          - rid: 1467999992408441204
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441203
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441204
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441205
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441206
-          - rid: 1467999992408441207
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441206
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441207
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441208
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441209
-          - rid: 1467999992408441210
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441209
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441210
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441211
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441212
-          - rid: 1467999992408441213
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441212
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441213
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441214
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441215
-          - rid: 1467999992408441216
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441215
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441216
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441217
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441218
-          - rid: 1467999992408441219
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441218
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441219
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441220
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441221
-          - rid: 1467999992408441222
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441221
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441222
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441223
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441224
-          - rid: 1467999992408441225
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441224
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441225
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
-        m_GetProductListCmdName: ThirdGetProductList
-        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
-        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
-        m_VerifyIapCmdName: ThirdVerifyIap
-        m_GoogleApiTimeoutSeconds: 15
-    - rid: 1467999992408441226
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 1467999992408441227
-          - rid: 1467999992408441228
-        m_Products:
-          m_Items: []
-    - rid: 1467999992408441227
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
-      data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-    - rid: 1467999992408441228
-      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
-      data:
-        m_Enabled: 1
-        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
         m_GetProductListCmdName: ThirdGetProductList
         m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
         m_PayChannelParamsCmdName: ThirdGetPayChannelParams
@@ -3748,6 +2584,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361473
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3755,6 +2592,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3776,6 +2614,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361475
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3783,6 +2622,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3804,6 +2644,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361477
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3811,6 +2652,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3832,6 +2674,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361479
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3839,6 +2682,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3860,6 +2704,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361481
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3867,6 +2712,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3888,6 +2734,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361483
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3895,6 +2742,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3916,6 +2764,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361485
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3923,6 +2772,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3944,6 +2794,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361487
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3951,6 +2802,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -3972,6 +2824,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361489
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -3979,6 +2832,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4000,6 +2854,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361491
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4007,6 +2862,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4028,6 +2884,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361493
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4035,6 +2892,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4056,6 +2914,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361495
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4063,6 +2922,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4084,6 +2944,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361497
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4091,6 +2952,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4112,6 +2974,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361499
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4119,6 +2982,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4140,6 +3004,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361501
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4147,6 +3012,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4168,6 +3034,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361503
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4175,6 +3042,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4196,6 +3064,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361505
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4203,6 +3072,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4224,6 +3094,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361507
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4231,6 +3102,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4252,6 +3124,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361509
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4259,6 +3132,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4280,6 +3154,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361511
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4287,6 +3162,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4308,6 +3184,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361513
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4315,6 +3192,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4336,6 +3214,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361515
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4343,6 +3222,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4364,6 +3244,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361517
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4371,6 +3252,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4392,6 +3274,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361519
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4399,6 +3282,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4420,6 +3304,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361521
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4427,6 +3312,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4448,6 +3334,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361523
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4455,6 +3342,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4476,6 +3364,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361525
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4483,6 +3372,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4504,6 +3394,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361527
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4511,6 +3402,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4532,6 +3424,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361529
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4539,6 +3432,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4560,6 +3454,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361531
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4567,6 +3462,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4588,6 +3484,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361533
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4595,6 +3492,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4616,6 +3514,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361535
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4623,6 +3522,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4644,6 +3544,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361537
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4651,6 +3552,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4672,6 +3574,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361539
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4679,6 +3582,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4700,6 +3604,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 1468000007792361541
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -4707,6 +3612,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:
@@ -4717,6 +3623,1266 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
+    - rid: 1468000325417304597
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304598
+          - rid: 1468000325417304599
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304598
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304599
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304600
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304601
+          - rid: 1468000325417304602
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304601
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304602
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304603
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304604
+          - rid: 1468000325417304605
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304604
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304605
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304606
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304607
+          - rid: 1468000325417304608
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304607
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304608
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304609
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304610
+          - rid: 1468000325417304611
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304610
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304611
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304612
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304613
+          - rid: 1468000325417304614
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304613
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304614
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304615
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304616
+          - rid: 1468000325417304617
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304616
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304617
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304618
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304619
+          - rid: 1468000325417304620
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304619
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304620
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304621
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304622
+          - rid: 1468000325417304623
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304622
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304623
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304624
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304625
+          - rid: 1468000325417304626
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304625
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304626
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304627
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304628
+          - rid: 1468000325417304629
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304628
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304629
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304630
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304631
+          - rid: 1468000325417304632
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304631
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304632
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304633
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304634
+          - rid: 1468000325417304635
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304634
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304635
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304636
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304637
+          - rid: 1468000325417304638
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304637
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304638
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304639
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304640
+          - rid: 1468000325417304641
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304640
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304641
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304642
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304643
+          - rid: 1468000325417304644
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304643
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304644
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304645
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304646
+          - rid: 1468000325417304647
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304646
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304647
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304648
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304649
+          - rid: 1468000325417304650
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304649
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304650
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304651
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304652
+          - rid: 1468000325417304653
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304652
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304653
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304654
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304655
+          - rid: 1468000325417304656
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304655
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304656
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304657
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304658
+          - rid: 1468000325417304659
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304658
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304659
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304660
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304661
+          - rid: 1468000325417304662
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304661
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304662
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304663
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304664
+          - rid: 1468000325417304665
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304664
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304665
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304666
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304667
+          - rid: 1468000325417304668
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304667
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304668
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304669
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304670
+          - rid: 1468000325417304671
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304670
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304671
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304672
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304673
+          - rid: 1468000325417304674
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304673
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304674
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304675
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304676
+          - rid: 1468000325417304677
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304676
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304677
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304678
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304679
+          - rid: 1468000325417304680
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304679
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304680
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304681
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304682
+          - rid: 1468000325417304683
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304682
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304683
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304684
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304685
+          - rid: 1468000325417304686
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304685
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304686
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304687
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304688
+          - rid: 1468000325417304689
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304688
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304689
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304690
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304691
+          - rid: 1468000325417304692
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304691
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304692
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304693
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304694
+          - rid: 1468000325417304695
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304694
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304695
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304696
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304697
+          - rid: 1468000325417304698
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304697
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304698
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
+    - rid: 1468000325417304699
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1468000325417304700
+          - rid: 1468000325417304701
+        m_Products:
+          m_Items: []
+    - rid: 1468000325417304700
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1468000325417304701
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15
     - rid: 2238161573846188195
       type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
       data:
@@ -4916,465 +5082,680 @@ MonoBehaviour:
         m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
         m_AppleVerifyCmdName: IAPAppleVerify
         m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 2533177004360728913
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728914
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728915
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728916
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728917
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728918
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728919
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728920
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728921
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728922
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728923
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728924
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728925
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728926
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728927
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728928
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728929
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728930
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728931
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728932
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728933
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728934
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728935
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728936
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728937
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728938
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728939
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728940
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728941
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728942
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728943
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728944
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728945
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728946
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360728947
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 2533177004360729497
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729498
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729499
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729500
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729501
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729502
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729503
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729504
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729505
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729506
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729507
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729508
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729509
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729510
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729511
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729512
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729513
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729514
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729515
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729516
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729517
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729518
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729519
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729520
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729521
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729522
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729523
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729524
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729525
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729526
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729527
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729528
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729529
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729530
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729531
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729532
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 3589942986135568532
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
@@ -5390,10 +5771,12 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 3589943518543478928
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:

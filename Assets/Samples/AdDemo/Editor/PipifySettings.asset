@@ -60,9 +60,11 @@ MonoBehaviour:
     - m_StepId: bundlebuilder.build
       m_ParamsJson: '{"Target":9,"PackageName":"Default","BuildVersion":"","ClearBuildCache":true,"UseAssetDependencyDB":false,"BundleEncryptorClassName":"YooAsset.Editor.EncryptionNone","ManifestEncryptorClassName":"YooAsset.Editor.ManifestEncryptorNone","ManifestDecryptorClassName":"YooAsset.Editor.ManifestDecryptorNone","Compression":2,"FileNameStyle":2,"BundledCopyOption":1,"BundledCopyParams":""}'
     - m_StepId: build.package
-      m_ParamsJson: '{"Target":9,"BuildMode":0,"DevelopmentBuild":true,"BuildAppBundle":false,"SplitApplicationBinary":false,"UseAndroidKeystore":false,"OutputFolderPath":"Build/iOS"}'
+      m_ParamsJson: "{\n  \"Target\": 9,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
+        true,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
+        \"UseAndroidKeystore\": false,\n  \"OutputFolderPath\": \"Builds/iOS\"\n}"
     - m_StepId: shell.open_folder
-      m_ParamsJson: '{"Path":"Build/iOS"}'
+      m_ParamsJson: "{\n  \"Path\": \"Builds/iOS\"\n}"
   - m_Name: "Hybrid+YooAsset\u8054\u5408\u7F16\u8BD1"
     m_Description: "Hybrid\u4E0EYooAsset\u8054\u5408\u7F16\u8BD1"
     m_Items:

@@ -122,6 +122,11 @@ namespace NovaFramework.Editor
 
         public string DisplayName { get; }
 
+        /// <summary>
+        /// 面向项目成员和 Agent 的功能说明。
+        /// </summary>
+        public string Description { get; set; }
+
         public string Domain { get; }
 
         public AgentActionOperationType OperationType { get; }

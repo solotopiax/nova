@@ -181,6 +181,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
+            ClearTrackRuntimeCacheInternal();
             LoadPersistDataInternal();
         }
 

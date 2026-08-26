@@ -191,3 +191,18 @@ Android builds use `Assets/Framework/Scripts/Editor/BuildProcessor/Android/Unity
 `NovaBuildPreprocessor` normalizes the copied `Assets/Plugins/Android/AndroidManifest.xml` before SDK processors run. It reads `PlayerSettings.Android.applicationEntry`, keeps the matching Unity launcher activity, removes the other default launcher block, and records the selected activity as the build context default.
 
 SDK processors may still override `NovaBuildContext.ActivityName` through `RegisterActivityName`, for example Firebase FCM replacing the launcher activity class. Manifest rules that need to modify the launcher should use `UseMainActivity` instead of hardcoding `UnityPlayerActivity`, because the actual launcher may be Activity or GameActivity depending on Unity PlayerSettings.
+
+## BuildProcessor AfterNova Hooks
+
+`NovaSDKBuildProcessor` exposes platform-specific AfterNova hooks for SDK logic that must run after Nova has finished its own build-stage work:
+
+- `OnAfterNovaPreprocessBuildOnAndroid`
+- `OnAfterNovaPreprocessBuildOniOS`
+- `OnAfterNovaPreprocessBuildOnWebGL`
+- `OnAfterNovaPostprocessBuildOnAndroid`
+- `OnAfterNovaPostprocessBuildOniOS`
+- `OnAfterNovaPostprocessBuildOnWebGL`
+
+The normal platform hooks still run first by `PreprocessPriority` or `PostprocessPriority`. Nova then performs its own stage close-out, such as Android Manifest injection/rule application/save, ProGuard rebuild, or iOS Xcode/Plist/Entitlements write-back. After that, the matching AfterNova hooks run again in the same priority order.
+
+Use AfterNova hooks only for SDK official tools or supplemental work that depends on Nova-owned artifacts already being materialized on disk. For Android Manifest nodes, SDK processors should still prefer `NovaBuildContext.AddManifestRules`; AfterNova is intended for vendor generators that directly read or rewrite `Assets/Plugins/Android/AndroidManifest.xml`, such as a Facebook SDK manifest generator. SDK processors must not use AfterNova to register new Manifest rules that depend on the earlier unified rule-application phase, because that phase has already completed.

@@ -20,6 +20,7 @@ namespace NovaFramework.Editor
         "检查 Player 构建就绪状态",
         "build",
         AgentActionOperationType.Inspect,
+        Description = "只读检查目标平台、Build Settings、Config、YooAsset 与 HybridCLR 的构建前置状态。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.UnityRead,
         RequiredEvidence = AgentActionEvidence.Static,
         Idempotency = AgentActionIdempotency.ReadOnly,

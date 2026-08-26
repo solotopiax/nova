@@ -139,10 +139,11 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Runtime.dll
       m_TargetLocation: Assets/Samples/FirebaseDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameLogin.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Firebase.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/FirebaseDemo/Dlls/GameDlls/NovaFramework.Sdk.Firebase.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Sdk.Firebase.Samples.Runtime.dll
+    RunningGameDlls: []
     LinkXmlTargetPath: Assets/Samples/FirebaseDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
   HybridEditorConfigsOverrides: []

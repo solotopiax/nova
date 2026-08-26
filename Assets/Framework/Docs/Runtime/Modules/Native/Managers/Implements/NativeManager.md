@@ -7,7 +7,7 @@
 
 ## 初始化与关闭
 
-- `Initialize(NativeManagerConfig)` 记录配置、启用平台桥接，但不查询或请求通知权限。
+- `Initialize(NativeManagerConfig)` 记录配置、启用平台桥接，但 Native Manager 自身不查询或请求通知权限；上层 SDK 插件可在自身配置允许时通过 `NativeComponent` 门面显式调用请求接口。
 - `EnsureInitialized()` 会拒绝初始化前或 `Shutdown()` 后的公开调用。
 - `Shutdown()` 取消 in-flight 等待者、清空共享请求状态、关闭平台桥接并丢弃迟到回调。
 

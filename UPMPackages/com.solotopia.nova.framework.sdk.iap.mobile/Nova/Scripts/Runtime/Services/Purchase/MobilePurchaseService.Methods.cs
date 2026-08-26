@@ -279,10 +279,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             return m_PayTcs != null &&
                    tableId == InPayTableId &&
-                   string.Equals(
-                       MobileOrderKey.NormalizeReceiptParam(receiptParam),
-                       MobileOrderKey.NormalizeReceiptParam(m_CurrentReceiptParam),
-                       StringComparison.Ordinal);
+                   string.Equals(MobileOrderKey.NormalizeReceiptParam(receiptParam), MobileOrderKey.NormalizeReceiptParam(m_CurrentReceiptParam), StringComparison.Ordinal);
         }
 
         /// <summary>

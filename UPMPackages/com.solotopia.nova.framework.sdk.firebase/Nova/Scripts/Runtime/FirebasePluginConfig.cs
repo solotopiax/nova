@@ -49,6 +49,12 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         private int m_PushFlushBatchSize = 5;
 
         /// <summary>
+        /// 是否在 Firebase 依赖初始化成功后自动请求通知权限。
+        /// </summary>
+        [SerializeField, Tooltip("Firebase 初始化完成后是否自动请求通知权限。默认开启；如业务不希望 Firebase 初始化后触发，可在配置中关闭。")]
+        private bool m_AutoRequestNotificationPermission = true;
+
+        /// <summary>
         /// 上报 Firebase 标识协议 NetCmd 指令名。
         /// </summary>
         public string ReportCmdName => m_ReportCmdName;
@@ -67,6 +73,11 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// Firebase push task 批量发送数量阈值。
         /// </summary>
         public int PushFlushBatchSize => m_PushFlushBatchSize;
+
+        /// <summary>
+        /// 是否在 Firebase 依赖初始化成功后自动请求通知权限。
+        /// </summary>
+        public bool AutoRequestNotificationPermission => m_AutoRequestNotificationPermission;
 
         /// <summary>
         /// ConfigWindow 左树显示的中文名称。

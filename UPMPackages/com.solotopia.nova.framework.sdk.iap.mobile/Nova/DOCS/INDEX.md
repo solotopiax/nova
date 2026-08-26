@@ -43,6 +43,7 @@
 - 订阅商品在自身有效期内重复支付会本地返回 `IAPMobileErrorCode.SubscriptionIsReady`，不会再发起 Unity IAP 平台购买。
 - Google 验单与本地支付成功打点去重使用 `GoogleToken`，不是 `TransactionId`。
 - `nova_iap_local_pay_success.nova_order_id` 优先使用 Unity IAP receipt 解析出的平台 `OrderId`；缺失时回退当前运行期 `TransactionId`。
+- `nova_iap_validate_success` 按当前 UID 持久化平台注册订单键去重：Apple 使用 transaction id，Google 使用 purchase token；持久化和运行期兜底缓存最多保留 300 条，新键超限时淘汰最老记录。
 - `nova_iap_validate_success.nova_order_id` 优先使用服务端验单响应 `OrderId`；缺失时回退当前运行期 `TransactionId`。
 - `nova_iap_local_pay_fail` 覆盖所有 `MobileStore.PayAsync` 返回失败 `IAPResult` 的场景；Unity IAP `OnPurchaseFailed` 与 `OnPurchaseConfirmed(FailedOrder)` 也会直接上报本地支付失败点。失败打点不做运行期去重；`nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值，`PluginRouter` guard 失败会映射到 Mobile 错误码并在 `nova_reason_detail` 保留原始 `ErrorSource:ErrorCode`。
 - `nova_iap_validate_fail` / `nova_iap_validate_fail_finish` 的 `nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值；补充描述写入 `nova_reason_detail`。
@@ -57,6 +58,7 @@
 - 支付过程失败原因只有一套：`IAPMobileErrorCode`，其中 0-9 是业务返回粗粒度错误，1000-1010 是 Unity IAP 本地购买失败映射，2000+ 是验单打点细分原因；`PluginRouter` 层 guard 失败在 Mobile 本地支付失败打点中映射到该枚举域，原始来源保留在 `nova_reason_detail`。
 - 本地未完成订单仓库以 `tableId + ReceiptParam` 订单键合并订单；不传 `ReceiptParam` 时保持旧 tableId-only 语义。`TransactionId` 可承载平台订单号，但 Android 不持久化，iOS 随本地存档保留。
 - Google 使用 `GoogleToken` 作为验单凭据和本地支付成功打点去重 key；Apple 使用 `TransactionId`。
+- `nova_iap_validate_success` 的平台订单键去重按当前 UID 持久化，最多保存 300 条；新增第 301 条时删除最老记录，防止存档和运行期缓存无限增长。
 - `TrackChannel` 按平台输出 `google` / `ios` / `mobile`，TGA 侧可用该值区分 `solar_channel`。
 
 ## 相关

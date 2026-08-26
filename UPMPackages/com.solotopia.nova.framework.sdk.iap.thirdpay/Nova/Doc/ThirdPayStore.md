@@ -10,9 +10,15 @@
 if (iapPlugin.TryGetCapability<IIAPThirdPayCapable>(out var thirdPay))
 {
     thirdPay.SetCountryCode("US");
+    thirdPay.SetSkipPaymentInformationScreen(true);
+    thirdPay.SetThirdPayWebViewTitleText("Payment");
+    thirdPay.SetThirdPayWebViewCloseText("close");
     // 可选：业务已有 CID 时可手动注入；未设置时 Store 会在登录成功后按账号自动拉取一次。
     thirdPay.SetChannelParams(cid);
     await thirdPay.FetchProductListAsync(ct);
+
+    IReadOnlyList<PbNetThirdProductInfo> products = thirdPay.GetProductList();
+    bool hasProducts = thirdPay.HasProducts();
 }
 
 var request = new IAPThirdPayRequest
@@ -47,11 +53,16 @@ Android 与 Editor 中，`AdaptRectTransform` 非空时直接作为嵌入式 Uni
 
 Android 真机上使用 Unity Purchasing 5.3.1 的 `ExternalBillingProgramClient`：
 
-1. 连接 Billing Client。
-2. 检查 External Billing Program 可用性。
-3. 创建 reporting details 并取得 external transaction token。
-4. 用包含 token 的最终支付 URL 调用 `LaunchExternalLink`，模式为 `CALLER_WILL_LAUNCH_LINK`。
-5. Google 信息页成功后，由 ThirdPay 包内 UniWebView 服务打开应用内支付页。
+1. ThirdPay 优先从配置或业务侧使用 `CountryCode`；未提供时通过包内 Android Billing bridge 调用 `getBillingConfigAsync()` 读取 Google Play Billing 商店国家/地区代码。
+2. 连接 Billing Client。
+3. 检查 External Billing Program 可用性。
+4. External Billing Program 不可用时，跳过 Google 信息页并直接用空 Google token 进入 ThirdPay 包内 UniWebView，不返回 Google 政策错误码。
+5. External Billing Program 可用时，创建 reporting details 并取得 external transaction token。
+6. `SkipPaymentInformationScreen` 或 `SetSkipPaymentInformationScreen(true)` 生效时，保留 token 并跳过 Google 信息页，直接进入 ThirdPay 包内 UniWebView。
+7. 未跳过时，用包含 token 的最终支付 URL 调用 `LaunchExternalLink`，模式为 `CALLER_WILL_LAUNCH_LINK`。
+8. Google 信息页成功后，由 ThirdPay 包内 UniWebView 服务打开应用内支付页。
+
+渠道参数 `GetPayChannelParams` 失败（包括服务端错误码 `10707`）不会阻断支付；ThirdPay 会继续构造不含 `payment_customer_ids` 的支付 URL 并打开 UniWebView。商品列表、支付环境、URL 构造、WebView 打开和验单仍按各自错误语义处理。
 
 ## 本地订单与验单
 
@@ -79,6 +90,7 @@ InAppAuto 由客户端直接生成支付 URL，因此协议层不包含创建订
 | 3 | 支付成功，删除订单并广播可发货成功事件 |
 | 4 | 支付失败或过期，删除订单并广播失败事件 |
 | 5 | 已发货，删除订单但不再次广播发货成功事件 |
+| 6 | 订单不存在，删除本地订单并广播验单失败事件 |
 | 未知 / 网络失败 / 响应缺单 | 保留订单，等待下次检查 |
 
 支付页关闭或打开失败也保留订单，避免用户已付款但客户端误删。

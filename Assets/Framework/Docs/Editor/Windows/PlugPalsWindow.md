@@ -2,7 +2,7 @@
 
 **类签名**：`public sealed partial class PlugPalsWindow : EditorWindow`  
 **命名空间**：`NovaFramework.Editor`  
-**菜单入口**：`Nova/Open PlugPals`
+**菜单入口**：`Nova/Open Plug Pals`
 
 `PlugPalsWindow` 是 PlugPals 云插件服务中心窗口。窗口自身只负责 GUI 与交互；远程拉取、manifest 读写、安装卸载等业务逻辑委托给 `EditorUtil.PlugPals`。当前窗口同时承载两套仓库视图：
 
@@ -27,7 +27,7 @@
 ## 当前公开入口
 
 ```csharp
-[MenuItem("Nova/Open PlugPals")]
+[MenuItem("Nova/Open Plug Pals")]
 public static void Open();
 
 public static void Open(bool showInstalledOnly);

@@ -379,16 +379,7 @@ namespace NovaFramework.SDK.IAP.Editor
                 return;
             }
 
-            products.Add(new IAPProductExcelProduct(
-                tableId,
-                GetCell(row, columnOffset + 1),
-                GetCell(row, columnOffset + 2),
-                GetCell(row, columnOffset + 3),
-                productType,
-                subGroupId,
-                GetCell(row, columnOffset + 6),
-                GetCell(row, columnOffset + 7),
-                GetCell(row, columnOffset + 8)));
+            products.Add(new IAPProductExcelProduct(tableId, GetCell(row, columnOffset + 1), GetCell(row, columnOffset + 2), GetCell(row, columnOffset + 3), productType, subGroupId, GetCell(row, columnOffset + 6), GetCell(row, columnOffset + 7), GetCell(row, columnOffset + 8)));
         }
 
         /// <summary>

@@ -71,6 +71,12 @@ namespace NovaFramework.Editor
                 Log.Debug(LogTag.Editor, $"[NovaBuildPostprocessor] Android 后处理：{processor.GetType().Name}");
                 processor.OnPostprocessBuildOnAndroid(report, NovaBuildShared.Context);
             }
+
+            foreach (var processor in NovaBuildShared.Processors)
+            {
+                Log.Debug(LogTag.Editor, $"[NovaBuildPostprocessor] Android Nova 收口后后处理：{processor.GetType().Name}");
+                processor.OnAfterNovaPostprocessBuildOnAndroid(report, NovaBuildShared.Context);
+            }
         }
 
         /// <summary>
@@ -112,6 +118,12 @@ namespace NovaFramework.Editor
             ctx.XPlist.WriteToFile(plistPath);
             if (ctx.XEntitlements.root.values.Count > 0)
                 ctx.XEntitlements.WriteToFile(entitlementsFullPath);
+
+            foreach (var processor in NovaBuildShared.Processors)
+            {
+                Log.Debug(LogTag.Editor, $"[NovaBuildPostprocessor] iOS Nova 收口后后处理：{processor.GetType().Name}");
+                processor.OnAfterNovaPostprocessBuildOniOS(report, ctx);
+            }
 #endif
         }
 
@@ -126,6 +138,12 @@ namespace NovaFramework.Editor
             {
                 Log.Debug(LogTag.Editor, $"[NovaBuildPostprocessor] WebGL 后处理：{processor.GetType().Name}");
                 processor.OnPostprocessBuildOnWebGL(report, NovaBuildShared.Context);
+            }
+
+            foreach (var processor in NovaBuildShared.Processors)
+            {
+                Log.Debug(LogTag.Editor, $"[NovaBuildPostprocessor] WebGL Nova 收口后后处理：{processor.GetType().Name}");
+                processor.OnAfterNovaPostprocessBuildOnWebGL(report, NovaBuildShared.Context);
             }
         }
     }

@@ -4,6 +4,10 @@
 
 ### Changed
 
+- 支持第三方验单状态 `6`（订单不存在）：删除本地订单并广播验单失败结果，避免无效订单持续补单。
+- Google Play Billing 商店地区未配置时，通过 `getBillingConfigAsync()` 自动读取国家/地区代码；External Billing Program 因设备、账号或地区不可用时直接进入 ThirdPay WebView。
+- 新增第三方商品列表读取、商品存在性查询、WebView 导航栏文案设置和跳过 Google 信息页能力；信息页跳过默认读取 `ThirdPayStoreConfig`，运行时可由 `IIAPThirdPayCapable` 覆盖。
+- `ThirdGetPayChannelParams` 返回 `10707` 等渠道参数错误时不再阻断支付，继续使用不含渠道客户号的支付 URL。
 - ThirdPay 收敛为纯 C# 的 InAppAuto 单模式实现，移除 Browser、DeepLink 和等待器链路。
 - 使用 Unity Purchasing 5.3.1 公开的 `ExternalBillingProgramClient` 实现 Google 外链政策流程。
 - 支付 URL 恢复 Solar InAppAuto 的 `lang/params/app_id` 外层 Query 与完整商品、账号、平台、CID、Google token 内层 JSON 契约。

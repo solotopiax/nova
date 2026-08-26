@@ -1,5 +1,17 @@
 # Changelog — com.solotopia.nova.framework
 
+## [0.6.18] - 2026-08-26
+
+### Added
+
+- 新增 Agent Capabilities 只读总览，聚合 Nova Skills、Project Action Registry 与 MCP 暴露状态。
+- SDK 构建处理器新增 Android、iOS 与 WebGL 的 Nova 前后置完成钩子。
+
+### Changed
+
+- Nova 菜单中的组合词统一使用空格分隔，并将 Project Guard 窗口切换为统一 IMGUI 绘制。
+- Framework 最低 MCP 依赖提升至 `0.1.2`，确保能力总览可读取 MCP Action 暴露快照。
+
 ## [0.6.17] - 2026-08-21
 
 ### Breaking

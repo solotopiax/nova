@@ -2,6 +2,12 @@
 
 本文件记录 `com.solotopia.nova.framework.mcp` 的版本变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [0.1.2] - 2026-08-26
+
+### Added
+
+- 新增 Project Action 暴露快照接口，供 Framework 能力总览读取 MCP 策略与实际开放 Action。
+
 ## [0.1.1] - 2026-08-21
 
 ### Added

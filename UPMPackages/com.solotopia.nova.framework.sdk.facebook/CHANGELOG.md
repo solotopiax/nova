@@ -4,6 +4,13 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-08-26
+
+### Changed
+
+- Android 构建收尾改用 Framework `0.6.18` 的 Nova 前置完成钩子，确保 Facebook 官方 Manifest 生成发生在 Nova 自有处理之后。
+- 最低 Framework 依赖提升至 `0.6.18`。
+
 ## [0.1.7] - 2026-08-20
 
 ### Changed

@@ -24,6 +24,7 @@ namespace NovaFramework.Editor
         "构建 YooAsset RawFile Bundle",
         "bundle",
         AgentActionOperationType.Build,
+        Description = "按已冻结的 YooAsset Package、平台、版本与缓存参数构建 RawFile Bundle，并核验构建产物。",
         Effects = AgentActionEffect.WorkspaceRead |
                   AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead |

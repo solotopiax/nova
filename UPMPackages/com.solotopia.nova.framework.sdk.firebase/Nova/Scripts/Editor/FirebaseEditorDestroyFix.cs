@@ -8,23 +8,22 @@
  * descrip:   修复编辑器模式下如果firebase没有初始化会有报错问题
  ***************************************************************/
 
-using System;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace NovaFramework.SDK.FirebasePlugin.Editor
 {
+    /// <summary>
+    /// Firebase Editor 播放态残留对象清理。
+    /// 通过 InitializeOnLoad 在域重载后注册退出 Play Mode 回调，避免静态构造器无人引用时不生效。
+    /// </summary>
+    [InitializeOnLoad]
     public static class FirebaseEditorDestroyFix
     {
         static FirebaseEditorDestroyFix()
         {
-            // 劫持 Firebase 的销毁调用，自动替换为编辑模式安全方法
-            var method = typeof(UnityEngine.Object)
-                .GetMethod("Destroy", BindingFlags.Static | BindingFlags.Public, null, new[] { typeof(Object) }, null);
-
-            UnityEditor.EditorApplication.playModeStateChanged += (state) =>
+            EditorApplication.playModeStateChanged += (state) =>
             {
                 if (state == PlayModeStateChange.ExitingPlayMode)
                 {

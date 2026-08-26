@@ -154,6 +154,15 @@ namespace NovaFramework.Editor
                         return false;
                     }
 
+                    if (string.IsNullOrWhiteSpace(attribute.DisplayName) ||
+                        string.IsNullOrWhiteSpace(attribute.Description))
+                    {
+                        issue = new AgentActionRegistryIssue(
+                            "missing-description",
+                            $"{attribute.Id} 必须声明面向项目成员的名称与功能说明。");
+                        return false;
+                    }
+
                     if (attribute.ContractMajor < 1)
                     {
                         issue = new AgentActionRegistryIssue("invalid-contract", $"{attribute.Id} 的 ContractMajor 必须大于 0。");

@@ -27,6 +27,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         [SerializeField, Tooltip("ISO 3166-1 alpha-2 国家/地区代码")]
         private string m_CountryCode = string.Empty;
 
+        [SerializeField, Tooltip("是否跳过 Google 第三方支付信息页，直接进入 ThirdPay 支付页")]
+        private bool m_SkipPaymentInformationScreen = false;
+
         [SerializeField, Tooltip("拉取第三方商品列表的 NetCmd 名称")]
         private string m_GetProductListCmdName = "ThirdGetProductList";
 
@@ -58,6 +61,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 获取默认国家或地区代码。
         /// </summary>
         public string CountryCode => m_CountryCode;
+
+        /// <summary>
+        /// 获取是否默认跳过 Google 第三方支付信息页。
+        /// </summary>
+        public bool SkipPaymentInformationScreen => m_SkipPaymentInformationScreen;
 
         /// <summary>
         /// 获取第三方商品列表协议的 NetCmd 名称。

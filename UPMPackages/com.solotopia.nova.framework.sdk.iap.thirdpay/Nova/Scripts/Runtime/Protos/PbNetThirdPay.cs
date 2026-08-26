@@ -2616,7 +2616,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     public const int StatusFieldNumber = 2;
     private int status_;
     /// <summary>
-    /// 1=待支付 2=支付中 3=支付成功 4=支付失败/过期 5=已发货
+    /// 1=待支付 2=支付中 3=支付成功 4=支付失败/过期 5=已发货 6=订单不存在
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

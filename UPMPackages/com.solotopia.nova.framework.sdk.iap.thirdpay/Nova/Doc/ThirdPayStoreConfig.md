@@ -3,7 +3,8 @@
 | 字段 | 说明 |
 |---|---|
 | `Enabled` | 是否启用 ThirdPay Store |
-| `CountryCode` | 默认 ISO 3166-1 alpha-2 国家/地区代码 |
+| `CountryCode` | 默认 ISO 3166-1 alpha-2 国家/地区代码；Android 留空时自动读取 Google Play Billing 商店地区，业务侧 `SetCountryCode` 仍可覆盖 |
+| `SkipPaymentInformationScreen` | 是否默认跳过 Google 第三方支付信息页；默认 `false`，业务侧 `SetSkipPaymentInformationScreen` 可在运行时覆盖 |
 | `GetProductListCmdName` | 拉取第三方商品列表的 NetCmd 名称 |
 | `QueryPendingOrderCmdName` | 查询支付成功但客户端尚未校验订单的 NetCmd 名称 |
 | `PayChannelParamsCmdName` | 拉取当前账号第三方支付渠道参数的 NetCmd 名称 |

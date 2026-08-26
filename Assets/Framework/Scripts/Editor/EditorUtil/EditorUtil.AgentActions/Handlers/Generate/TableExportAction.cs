@@ -25,6 +25,7 @@ namespace NovaFramework.Editor
         "导出 Table",
         "table",
         AgentActionOperationType.Generate,
+        Description = "从当前有效 TableSettings 导出全部或指定的表代码与数据，并核验生成结果。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead | AgentActionEffect.UnityWrite,
         RequiredEvidence = AgentActionEvidence.Static | AgentActionEvidence.Artifact,

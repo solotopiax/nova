@@ -29,7 +29,7 @@ UniTask<bool> OpenNotificationSettingsAsync();
 
 ## 契约要求
 
-- `Initialize` 只完成桥接初始化，不能自动查询或请求通知权限。
+- `Initialize` 只完成 Native Manager 桥接初始化，不能自动查询或请求通知权限；上层 SDK 插件可在自身配置允许时通过 `NativeComponent` 门面显式调用请求接口。
 - 状态查询以操作系统当前状态为准；本地记录只能辅助判断 Android 首次请求状态，不能覆盖系统授权结果。
 - 相同选项的并发请求应共享底层系统请求；不同选项必须串行，不得丢弃后续参数。
 - 并发 `RequestInAppReviewAsync` 应共享同一次底层原生请求；调用方取消只影响自己的等待。

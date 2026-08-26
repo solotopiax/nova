@@ -4,12 +4,13 @@
 
 `FirebasePluginConfig` 是 Firebase 插件的运行时配置，实现 `ISDKPluginConfig`。
 
-和 TGA / AppsFlyer 不同，Firebase SDK 自身的大部分初始化信息并不从 Nova 配置系统注入；当前配置对象只承载框架侧需要的业务服务器协议名和 push task 批量发送策略。默认国家 topic 的国家码等待、超时和缓存兜底已经收口到 AD 模块的 `IAdPlugin.GetCountryCodeAsync(...)`。
+和 TGA / AppsFlyer 不同，Firebase SDK 自身的大部分初始化信息并不从 Nova 配置系统注入；当前配置对象承载框架侧需要的可选初始化行为、业务服务器协议名和 push task 批量发送策略。默认国家 topic 的国家码等待、超时和缓存兜底已经收口到 AD 模块的 `IAdPlugin.GetCountryCodeAsync(...)`。
 
 ## 2. 配置字段
 
 | 字段 | 说明 |
 |---|---|
+| `AutoRequestNotificationPermission` | Firebase 依赖初始化成功后是否自动通过 `Nova.Native.RequestNotificationPermissionAsync()` 请求 `Alert | Sound | Badge` 通知能力，默认 `true`；关闭后不自动请求，业务可自行在合适交互时机显式调用 Native 门面 |
 | `ReportCmdName` | 登录后向业务服务器上报 Firebase Push Token / Analytics Instance ID 时使用的 NetCmd 名称 |
 | `PushCmdName` | 批量创建或取消服务端 push task 时使用的 NetCmd 名称；为空时不会发送协议，本地缓存保留等待下次触发 |
 | `PushFlushIntervalSeconds` | push task 本地缓存后的批量发送间隔，默认 `100` 秒；小于等于 `0` 时写入后立即尝试发送 |
@@ -20,6 +21,7 @@
 
 - `SDKManager` 按 `ConfigType` 自动把本配置注入 `FirebasePlugin.OnInitializeAsync(...)`。
 - `FirebasePlugin` 会缓存该配置，并在用户登录后调用 `FirebaseReportNetService.Async(...)`。
+- `AutoRequestNotificationPermission` 默认为开启；会在 Firebase 依赖初始化成功后触发一次通知权限请求，不会阻塞 Firebase 初始化完成回调；关闭后由业务自行决定是否以及何时请求。
 - `FirebasePlugin` 会读取 `PushCmdName`、`PushFlushIntervalSeconds` 和 `PushFlushBatchSize` 控制 push task 缓存后的批量发送协议、时间阈值与数量阈值；应用从后台恢复前台也会主动请求发送缓存，但仍复用 Firebase 初始化和用户身份就绪门槛。
 - 默认国家 topic 和登录上报的国家码通过 `IAdPlugin.GetCountryCodeAsync(...)` 获取；最终国家码为空或为 `IV` 时不会订阅国家 topic，也不会覆盖旧国家 topic 存档。
 

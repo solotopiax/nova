@@ -172,6 +172,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         UniTask<ThirdPayGoogleResponse> CheckAvailabilityAsync(CancellationToken ct);
 
         /// <summary>
+        /// 读取 Google Play Billing 当前商店国家或地区代码。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>ISO 3166-1 alpha-2 代码；无法读取时返回空字符串。</returns>
+        UniTask<string> GetBillingCountryCodeAsync(CancellationToken ct);
+
+        /// <summary>
         /// 创建 Google 外部交易上报 token。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
@@ -207,12 +214,37 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 按需连接 Google Billing，并读取 Google Play Billing 商店国家或地区代码。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>商店国家或地区代码；无法读取时返回空字符串。</returns>
+        public async UniTask<string> GetBillingCountryCodeAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!m_Client.IsReady)
+            {
+                ThirdPayGoogleResponse connection = await m_Client.ConnectAsync(ct);
+                if (connection != ThirdPayGoogleResponse.Ok)
+                {
+                    return string.Empty;
+                }
+            }
+
+            string countryCode = await m_Client.GetBillingCountryCodeAsync(ct);
+            return string.IsNullOrWhiteSpace(countryCode)
+                ? string.Empty
+                : countryCode.Trim().ToUpperInvariant();
+        }
+
+        /// <summary>
         /// 完成外部结算连接、资格检查、token 创建和 Google 信息页展示。
         /// </summary>
         /// <param name="buildPaymentUrl">使用 Google token 构造最终支付 URL 的回调。</param>
+        /// <param name="skipInformationScreen">是否跳过 Google 信息页并直接进入 ThirdPay。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>政策授权结果。</returns>
-        public async UniTask<ThirdPayGoogleAuthorization> AuthorizeAsync(Func<string, string> buildPaymentUrl, CancellationToken ct)
+        public async UniTask<ThirdPayGoogleAuthorization> AuthorizeAsync(
+            Func<string, string> buildPaymentUrl, bool skipInformationScreen, CancellationToken ct)
         {
             if (buildPaymentUrl == null)
             {
@@ -223,6 +255,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             if (!m_Client.IsReady)
             {
                 ThirdPayGoogleResponse connection = await m_Client.ConnectAsync(ct);
+                if (connection == ThirdPayGoogleResponse.Unavailable)
+                {
+                    return BuildFallbackAuthorization(buildPaymentUrl);
+                }
+
                 if (connection != ThirdPayGoogleResponse.Ok)
                 {
                     return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.ConnectionFailed);
@@ -232,7 +269,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             ThirdPayGoogleResponse availability = await m_Client.CheckAvailabilityAsync(ct);
             if (availability == ThirdPayGoogleResponse.Unavailable)
             {
-                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.ProgramUnavailable);
+                return BuildFallbackAuthorization(buildPaymentUrl);
             }
 
             if (availability != ThirdPayGoogleResponse.Ok)
@@ -252,6 +289,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.UrlBuildFailed, tokenResult.Token);
             }
 
+            if (skipInformationScreen)
+            {
+                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, tokenResult.Token, paymentUrl);
+            }
+
             ThirdPayGoogleResponse launch = await m_Client.LaunchInformationScreenAsync(paymentUrl, ct);
             if (launch == ThirdPayGoogleResponse.UserCancelled)
             {
@@ -264,6 +306,24 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, tokenResult.Token, paymentUrl);
+        }
+
+        /// <summary>
+        /// Google 外链计划不可用时，跳过 Google 信息页并直接进入 ThirdPay WebView。
+        /// </summary>
+        /// <param name="buildPaymentUrl">使用空 Google token 构造支付 URL 的回调。</param>
+        /// <returns>可继续打开 WebView 的授权结果。</returns>
+        private static ThirdPayGoogleAuthorization BuildFallbackAuthorization(Func<string, string> buildPaymentUrl)
+        {
+            // 外链计划不可用只表示当前设备、账号或地区不满足政策条件；
+            // 第三方支付仍可通过应用内 WebView 继续，不应把该条件当成支付失败。
+            string fallbackPaymentUrl = buildPaymentUrl(string.Empty);
+            if (string.IsNullOrEmpty(fallbackPaymentUrl))
+            {
+                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.UrlBuildFailed);
+            }
+
+            return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, fallbackPaymentUrl);
         }
 
         /// <summary>

@@ -18,6 +18,7 @@ auto_generated: true
 
 - [RES-002-unity-addressables-tutorial Unity Addressables 教程](../3-Resources/Unity/RES-002-unity-addressables-tutorial.md) — Addressables 入门与 Nova 对照整理稿
 - [RES-003-unity-yooasset-tutorial Unity YooAsset 教程](../3-Resources/Unity/RES-003-unity-yooasset-tutorial.md) — YooAsset 3.0 热更与 HostPlayMode 学习整理
+- [RES-005-psd2ugui-internal-upm-migration PSD2UGUI 商业插件内部 UPM 改造与升级重放记录](../3-Resources/RES-005-psd2ugui-internal-upm-migration.md) — PSD2UGUI 内部 UPM 改造与升级重放依据
 
 ## network
 
@@ -25,4 +26,4 @@ auto_generated: true
 
 
 ---
-_共 4 条，分布于 3 个 category。_
+_共 5 条，分布于 3 个 category。_

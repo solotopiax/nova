@@ -254,7 +254,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             TrackBuyInternal(request);
-            await EnsureChannelParamsAsync(ct);
+            bool hasChannelParams = await EnsureChannelParamsAsync(ct);
+            if (!hasChannelParams)
+            {
+                // 渠道客户号创建失败（例如服务端 10707）不阻断第三方支付；
+                // URL 会省略 payment_customer_ids，继续进入应用内 WebView。
+                Log.Warning(LogTag.IAPThirdPay, "第三方支付渠道参数未就绪，将继续使用不含渠道客户号的支付 URL。");
+            }
 
             if (!await EnsureProductListAsync(ct))
             {
@@ -510,7 +516,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.ProgramUnavailable);
             }
 
-            return await m_GooglePolicy.AuthorizeAsync(token => BuildPaymentUrl(order, token), ct);
+            return await m_GooglePolicy.AuthorizeAsync(token => BuildPaymentUrl(order, token), m_SkipPaymentInformationScreen, ct);
 #else
             await UniTask.CompletedTask;
             return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, string.Empty));
@@ -719,8 +725,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     continue;
                 }
 
-                bool isFailed = resolution.Disposition == ThirdPayOrderDisposition.Failed;
-                string reason = isFailed ? $"第三方订单支付失败，状态={matched.Status}。" : $"第三方订单仍在处理中，状态={matched.Status}，订单已保留。";
+                bool isFailed = resolution.Disposition == ThirdPayOrderDisposition.Failed
+                    || resolution.Disposition == ThirdPayOrderDisposition.NotFound;
+                string reason = resolution.Disposition == ThirdPayOrderDisposition.NotFound
+                    ? "第三方订单不存在，已移除本地订单。"
+                    : isFailed
+                        ? $"第三方订单支付失败，状态={matched.Status}。"
+                        : $"第三方订单仍在处理中，状态={matched.Status}，订单已保留。";
                 var failure = new IAPResult(tableId, (int)(isFailed ? IAPThirdPayErrorCode.ServerValidationFailed : IAPThirdPayErrorCode.OrderPending), IAPErrorSource.ThirdPay, reason, order.CustomData, receiptParam);
                 if (isFailed)
                 {

@@ -168,6 +168,7 @@ StoreController 事件
 | `OrderRecords` | 旧版 tableId 字典迁移字段，仅用于读取旧存档后迁移到 `OrderRecordsByKey` |
 | `SubscriptionExpireMs` | 订阅到期 Unix 毫秒，key = tableId |
 | `NonConsumeOwnership` | 非消耗品持有标记，key = tableId |
+| `ValidateSuccessOrderKeys` | 当前账号已上报验单成功的平台注册订单键；Apple 使用 transaction id，Google 使用 purchase token；最多 300 条，新增超限时淘汰最老记录 |
 | `HasQueriedPendingFromServer` | 当前 UID 是否曾成功向服务端同步过未完成订单；仅作兼容和诊断标记，不阻止后续 QueryPendingOrder |
 
 UID 切换由 `MobileStore.SetUserId` 触发，重新加载整包存档。
@@ -196,7 +197,7 @@ Google 订单必须具备 purchase token 才会发送验单协议；本地 `Purc
 
 ## 10. 埋点边界
 
-移动端官方内购商店通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装，覆盖初始化、用户发起购买、平台本地支付成功/失败、服务端验单失败/最终失败/成功，以及当前主动支付订单的首次验单失败。`nova_iap_local_pay_success` 的运行期打点去重按平台订单 key 执行：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`；`nova_order_id` 优先使用 Unity IAP receipt 解析出的平台 `OrderId`，缺失时回退当前运行期 `TransactionId`。支付过程失败打点的 `nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值：本地支付失败使用 0-9 与 1000-1010 号段，验单失败使用 2000+ 细分号段，`nova_reason_detail` 记录网络错误、协议错误、订单状态或凭据缺失等可读描述。`MobileStore.PayAsync` 返回失败 `IAPResult` 时会在返回边界上报 `nova_iap_local_pay_fail`；Unity IAP `OnPurchaseFailed` 与 `OnPurchaseConfirmed(FailedOrder)` 也会直接上报本地支付失败点。失败打点不做运行期去重，同一次支付链路如果同时出现官方失败回调和 PayAsync 失败返回，两条失败点都会保留。`nova_iap_validate_success` 覆盖 `Verified`、`Delivered`、`Reissued` 三类服务端终态，其 `nova_order_id` 优先使用服务端验单响应 `OrderId`，缺失时回退当前运行期 `TransactionId`。
+移动端官方内购商店通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装，覆盖初始化、用户发起购买、平台本地支付成功/失败、服务端验单失败/最终失败/成功，以及当前主动支付订单的首次验单失败。`nova_iap_local_pay_success` 的运行期打点去重按平台订单 key 执行：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`；`nova_order_id` 优先使用 Unity IAP receipt 解析出的平台 `OrderId`，缺失时回退当前运行期 `TransactionId`。支付过程失败打点的 `nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值：本地支付失败使用 0-9 与 1000-1010 号段，验单失败使用 2000+ 细分号段，`nova_reason_detail` 记录网络错误、协议错误、订单状态或凭据缺失等可读描述。`MobileStore.PayAsync` 返回失败 `IAPResult` 时会在返回边界上报 `nova_iap_local_pay_fail`；Unity IAP `OnPurchaseFailed` 与 `OnPurchaseConfirmed(FailedOrder)` 也会直接上报本地支付失败点。失败打点不做运行期去重，同一次支付链路如果同时出现官方失败回调和 PayAsync 失败返回，两条失败点都会保留。`nova_iap_validate_success` 覆盖 `Verified`、`Delivered`、`Reissued` 三类服务端终态，并按当前 UID 持久化平台订单键去重：Apple 使用 transaction id，Google 使用 purchase token；持久化列表和运行期兜底缓存最多各保留 300 条，新增超限时淘汰最老记录。其 `nova_order_id` 优先使用服务端验单响应 `OrderId`，缺失时回退当前运行期 `TransactionId`。
 
 所有 Mobile IAP 打点的渠道字段 `nova_channel`（TGA 侧对应 `solar_channel`）按编译平台区分：Android 上报 `google`，iOS 上报 `ios`，其他平台或非移动环境兜底 `mobile`。
 

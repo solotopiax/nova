@@ -22,6 +22,7 @@ namespace NovaFramework.Editor
         "校验 Config 坐标",
         "config",
         AgentActionOperationType.Inspect,
+        Description = "只读校验 ConfigMaster 的 Platform、Channel、DevelopMode 坐标及运行时导出目标。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.UnityRead,
         RequiredEvidence = AgentActionEvidence.Static,
         Idempotency = AgentActionIdempotency.ReadOnly,

@@ -24,7 +24,7 @@ namespace NovaFramework.Editor
             /// <summary>
             /// 菜单路径。
             /// </summary>
-            private const string c_MenuPath = "Nova/Open CheckUpdate";
+            private const string c_MenuPath = "Nova/Open Check Update";
 
             /// <summary>
             /// 打开 CheckUpdateWindow 菜单入口。

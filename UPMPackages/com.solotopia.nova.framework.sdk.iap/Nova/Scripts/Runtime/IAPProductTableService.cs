@@ -51,12 +51,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         internal IAPProductTableService(IReadOnlyList<IAPProductEntry> products)
         {
             Products = products ?? Array.Empty<IAPProductEntry>();
-            BuildCache(
-                Products,
-                out m_TableIdCache,
-                out m_ProductIdCache,
-                out m_TypeCache,
-                out m_SubGroupCache);
+            BuildCache(Products, out m_TableIdCache, out m_ProductIdCache, out m_TypeCache, out m_SubGroupCache);
         }
 
         /// <summary>

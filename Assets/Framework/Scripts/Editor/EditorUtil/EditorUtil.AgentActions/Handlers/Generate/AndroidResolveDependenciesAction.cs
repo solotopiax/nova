@@ -28,6 +28,7 @@ namespace NovaFramework.Editor
         "解析 Android 原生依赖",
         "android",
         AgentActionOperationType.Generate,
+        Description = "冻结 EDM4U Android 依赖输入后执行受控 Resolve，并核验生成的原生依赖结果。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead | AgentActionEffect.UnityWrite |
                   AgentActionEffect.Destructive,

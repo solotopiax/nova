@@ -46,6 +46,12 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         public Dictionary<long, bool> NonConsumeOwnership;
 
         /// <summary>
+        /// 当前账号已经上报过验单成功的平台注册订单键，用于跨进程去重。
+        /// Apple 使用 transaction id，Google 使用 purchase token。
+        /// </summary>
+        public List<string> ValidateSuccessOrderKeys;
+
+        /// <summary>
         /// 当前账号是否已向服务端拉取过一次未发货补单列表。
         /// 首次登录拉取成功后置 true，切换 UID 时随整包存档重置。
         /// </summary>
@@ -71,6 +77,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             if (NonConsumeOwnership == null)
             {
                 NonConsumeOwnership = new Dictionary<long, bool>();
+            }
+
+            if (ValidateSuccessOrderKeys == null)
+            {
+                ValidateSuccessOrderKeys = new List<string>();
             }
         }
 

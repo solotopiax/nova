@@ -237,9 +237,7 @@ namespace NovaFramework.SDK.IAP.Editor
             lx += labelW;
 
             // toolbarSearchField 风格搜索框（Rect 版 EditorGUI.TextField，PropertyDrawer 中合规）
-            string newSearch = EditorGUI.TextField(
-                new Rect(lx, rect.y + 1f, fieldW, rect.height - 2f),
-                m_SearchText, EditorStyles.toolbarSearchField);
+            string newSearch = EditorGUI.TextField(new Rect(lx, rect.y + 1f, fieldW, rect.height - 2f), m_SearchText, EditorStyles.toolbarSearchField);
             if (newSearch.Trim() != m_SearchText)
             {
                 m_SearchText = newSearch.Trim();
@@ -489,8 +487,7 @@ namespace NovaFramework.SDK.IAP.Editor
             // 非搜索字段（type/price/currency/subGroup/note）：不需要额外追踪
             if (typeProp != null)
             {
-                IAPProductType newType = (IAPProductType)EditorGUI.EnumPopup(
-                    new Rect(x, y, s_ColWidths[4], h), (IAPProductType)typeProp.enumValueIndex);
+                IAPProductType newType = (IAPProductType)EditorGUI.EnumPopup(new Rect(x, y, s_ColWidths[4], h), (IAPProductType)typeProp.enumValueIndex);
                 typeProp.enumValueIndex = (int)newType;
             }
             x += s_ColWidths[4];
@@ -747,15 +744,9 @@ namespace NovaFramework.SDK.IAP.Editor
         /// </summary>
         private void ExportSkuTemplate()
         {
-            string initialDir = GetLastExistingDirectory(
-                EditorPrefs.GetString(c_LastExportDirPrefsKey, string.Empty),
-                EditorPrefs.GetString(c_LastImportPathPrefsKey, string.Empty));
+            string initialDir = GetLastExistingDirectory(EditorPrefs.GetString(c_LastExportDirPrefsKey, string.Empty), EditorPrefs.GetString(c_LastImportPathPrefsKey, string.Empty));
 
-            string destPath = EditorUtility.SaveFilePanel(
-                "导出 SKU 模板",
-                initialDir,
-                IAPProductExcelImporter.c_DefaultWorkbookName,
-                "xlsx");
+            string destPath = EditorUtility.SaveFilePanel("导出 SKU 模板", initialDir, IAPProductExcelImporter.c_DefaultWorkbookName, "xlsx");
             if (string.IsNullOrEmpty(destPath))
             {
                 return;
@@ -785,9 +776,7 @@ namespace NovaFramework.SDK.IAP.Editor
                 return;
             }
 
-            string initialDir = GetLastExistingDirectory(
-                EditorPrefs.GetString(c_LastImportPathPrefsKey, string.Empty),
-                EditorPrefs.GetString(c_LastExportDirPrefsKey, string.Empty));
+            string initialDir = GetLastExistingDirectory(EditorPrefs.GetString(c_LastImportPathPrefsKey, string.Empty), EditorPrefs.GetString(c_LastExportDirPrefsKey, string.Empty));
             string filePath = EditorUtility.OpenFilePanelWithFilters(
                 "导入 SKU Excel",
                 initialDir,
@@ -806,11 +795,7 @@ namespace NovaFramework.SDK.IAP.Editor
             }
 
             int currentCount = itemsProp.arraySize;
-            if (!EditorUtility.DisplayDialog(
-                    "确认导入 SKU Excel",
-                    $"即将使用 Excel 全量覆盖当前 SKU 配置，共导入 {result.Products.Count} 条，当前已有 {currentCount} 条。是否继续？",
-                    "确认导入",
-                    "取消"))
+            if (!EditorUtility.DisplayDialog("确认导入 SKU Excel", $"即将使用 Excel 全量覆盖当前 SKU 配置，共导入 {result.Products.Count} 条，当前已有 {currentCount} 条。是否继续？", "确认导入", "取消"))
             {
                 return;
             }

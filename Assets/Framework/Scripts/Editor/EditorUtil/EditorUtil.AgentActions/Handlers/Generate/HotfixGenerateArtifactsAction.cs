@@ -28,6 +28,7 @@ namespace NovaFramework.Editor
         "生成 HybridCLR 预构建产物",
         "hotfix",
         AgentActionOperationType.Generate,
+        Description = "为当前构建目标生成 HybridCLR bridge、AOT generic、Il2CppDef、link.xml 等预构建产物。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead | AgentActionEffect.UnityWrite |
                   AgentActionEffect.BuildArtifact | AgentActionEffect.Destructive,

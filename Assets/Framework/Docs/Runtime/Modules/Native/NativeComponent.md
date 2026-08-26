@@ -41,7 +41,7 @@ public UniTask<bool> OpenNotificationSettingsAsync();
 ```
 
 - `GetNotificationPermissionStatusAsync` 返回当前操作系统状态。
-- `RequestNotificationPermissionAsync` 只能由业务在合适的交互时机显式调用；框架初始化和场景启动不会自动弹窗。
+- `RequestNotificationPermissionAsync` 是 Native 模块提供的显式请求入口；Native 模块初始化和场景启动不会自动弹窗。其他 SDK 插件可按自身配置调用该门面，例如 Firebase 插件的 `AutoRequestNotificationPermission` 默认会在 Firebase 依赖初始化成功后请求一次通知权限。
 - `RequestInAppReviewAsync` 只能由业务在完成有价值流程后的合适时机显式调用；框架初始化、场景启动和方法所在页面打开时都不会自动请求。
 - `OpenAppSettingsAsync` 打开当前应用的系统设置根页。
 - `OpenNotificationSettingsAsync` 只打开当前应用的通知设置页；不支持或无法精准跳转时直接返回 `false`，绝不回退到应用设置页。
@@ -81,8 +81,8 @@ public UniTask<bool> OpenNotificationSettingsAsync();
 
 ## 生命周期与并发语义
 
-1. `Awake()` 通过 `Util.TypeCreator` 创建 `INativeManager`，但不查询、不请求权限也不发起应用内评价。
-2. `Start()` 调用 `Initialize(NativeManagerConfig)`；初始化同样不会发起系统提示。
+1. `Awake()` 通过 `Util.TypeCreator` 创建 `INativeManager`，但 Native 模块自身不查询、不请求权限也不发起应用内评价。
+2. `Start()` 调用 `Initialize(NativeManagerConfig)`；Native 初始化同样不会发起系统提示，上层 SDK 插件或业务仍可在之后显式调用通知权限请求门面。
 3. 相同 `NotificationAuthorizationOptions` 的并发请求共享同一次底层系统请求。
 4. 不同选项的请求会等待前一请求完成后再执行，后续参数不会被静默覆盖。
 5. 并发 `RequestInAppReviewAsync` 共享同一次底层系统请求；每个调用方仍可独立取消等待。
@@ -117,7 +117,7 @@ else if (status == NotificationPermissionStatus.Denied)
 }
 ```
 
-上例只演示业务主动触发的路径；是否请求、何时提示用户、拒绝后的产品策略均由业务决定。若业务希望打开应用设置根页而非通知页，应显式调用 `OpenAppSettingsAsync()`；不能把 `false` 自动改为调用后者。
+上例只演示业务主动触发的路径；是否关闭 SDK 插件的自动请求、何时由业务再次提示用户、拒绝后的产品策略均由业务决定。若业务希望打开应用设置根页而非通知页，应显式调用 `OpenAppSettingsAsync()`；不能把 `false` 自动改为调用后者。
 
 ## 应用内评价使用示例
 

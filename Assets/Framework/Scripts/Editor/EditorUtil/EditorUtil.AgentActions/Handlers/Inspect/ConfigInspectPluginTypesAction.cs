@@ -23,6 +23,7 @@ namespace NovaFramework.Editor
         "扫描 Config 插件类型",
         "config",
         AgentActionOperationType.Inspect,
+        Description = "只读扫描当前已加载程序集中的 Nova Config 插件类型与稳定类型身份。",
         Effects = AgentActionEffect.UnityRead,
         RequiredEvidence = AgentActionEvidence.Static,
         Idempotency = AgentActionIdempotency.ReadOnly,

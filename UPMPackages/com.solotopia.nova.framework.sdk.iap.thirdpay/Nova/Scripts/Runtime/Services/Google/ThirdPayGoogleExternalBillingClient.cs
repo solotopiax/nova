@@ -133,6 +133,37 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 读取 Google Play Billing 当前商店国家或地区代码。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>ISO 3166-1 alpha-2 代码；读取失败时返回空字符串。</returns>
+        public async UniTask<string> GetBillingCountryCodeAsync(CancellationToken ct)
+        {
+            ThrowIfDisposed();
+            ct.ThrowIfCancellationRequested();
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(m_TimeoutSeconds));
+            try
+            {
+                return await ThirdPayGoogleBillingConfigNativeBridge
+                    .GetBillingCountryCodeAsync(timeoutCts.Token)
+                    .AttachExternalCancellation(timeoutCts.Token);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (OperationCanceledException)
+            {
+                return string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// 创建 Google 外部交易上报 token。
         /// </summary>
         /// <param name="ct">取消令牌。</param>

@@ -21,6 +21,7 @@ using UnityEngine.SceneManagement;
 namespace NovaFramework.Editor
 {
     [AgentAction("nova.project.sound.export", "导出 Sound", "sound", AgentActionOperationType.Generate,
+        Description = "从当前有效 SoundSettings 导出声音运行时数据，并核验生成结果。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.WorkspaceWrite | AgentActionEffect.UnityRead | AgentActionEffect.UnityWrite,
         RequiredEvidence = AgentActionEvidence.Static | AgentActionEvidence.Artifact,
         Idempotency = AgentActionIdempotency.ReplaceGeneratedOutput, RequiresConfirmation = true, RequiresEditMode = true,

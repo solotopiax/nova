@@ -44,11 +44,27 @@ namespace NovaFramework.Editor
         public virtual void OnPreprocessBuildOnAndroid(BuildReport report, NovaBuildContext context) { }
 
         /// <summary>
+        /// Android 平台 Nova 预处理收口后的回调。
+        /// 仅用于依赖 Nova 已完成 Manifest、ProGuard 等框架产物写盘后的 SDK 官方工具或补充处理，普通 Manifest 节点修改仍应走 AddManifestRules。
+        /// </summary>
+        /// <param name="report">Unity 构建报告。</param>
+        /// <param name="context">Nova 构建上下文，包含 AndroidManifest 等共享资源。</param>
+        public virtual void OnAfterNovaPreprocessBuildOnAndroid(BuildReport report, NovaBuildContext context) { }
+
+        /// <summary>
         /// iOS 平台预处理回调，在 Unity 开始构建 iOS 包之前调用。
         /// </summary>
         /// <param name="report">Unity 构建报告。</param>
         /// <param name="context">Nova 构建上下文。</param>
         public virtual void OnPreprocessBuildOniOS(BuildReport report, NovaBuildContext context) { }
+
+        /// <summary>
+        /// iOS 平台 Nova 预处理收口后的回调。
+        /// 用于依赖所有普通 iOS 预处理器已经按优先级执行完毕后的 SDK 补充处理。
+        /// </summary>
+        /// <param name="report">Unity 构建报告。</param>
+        /// <param name="context">Nova 构建上下文。</param>
+        public virtual void OnAfterNovaPreprocessBuildOniOS(BuildReport report, NovaBuildContext context) { }
 
         /// <summary>
         /// WebGL 平台预处理回调，在 Unity 开始构建 WebGL 包之前调用。
@@ -58,6 +74,14 @@ namespace NovaFramework.Editor
         public virtual void OnPreprocessBuildOnWebGL(BuildReport report, NovaBuildContext context) { }
 
         /// <summary>
+        /// WebGL 平台 Nova 预处理收口后的回调。
+        /// 用于依赖所有普通 WebGL 预处理器已经按优先级执行完毕后的 SDK 补充处理。
+        /// </summary>
+        /// <param name="report">Unity 构建报告。</param>
+        /// <param name="context">Nova 构建上下文。</param>
+        public virtual void OnAfterNovaPreprocessBuildOnWebGL(BuildReport report, NovaBuildContext context) { }
+
+        /// <summary>
         /// Android 平台后处理回调，在 Unity 完成 Android 构建之后调用。
         /// </summary>
         /// <param name="report">Unity 构建报告。</param>
@@ -65,11 +89,35 @@ namespace NovaFramework.Editor
         public virtual void OnPostprocessBuildOnAndroid(BuildReport report, NovaBuildContext context) { }
 
         /// <summary>
+        /// Android 平台 Nova 后处理收口后的回调。
+        /// 用于依赖所有普通 Android 后处理器已经按优先级执行完毕后的 SDK 补充处理。
+        /// </summary>
+        /// <param name="report">Unity 构建报告。</param>
+        /// <param name="context">Nova 构建上下文。</param>
+        public virtual void OnAfterNovaPostprocessBuildOnAndroid(BuildReport report, NovaBuildContext context) { }
+
+        /// <summary>
         /// WebGL 平台后处理回调，在 Unity 完成 WebGL 构建之后调用。
         /// </summary>
         /// <param name="report">Unity 构建报告。</param>
         /// <param name="context">Nova 构建上下文。</param>
         public virtual void OnPostprocessBuildOnWebGL(BuildReport report, NovaBuildContext context) { }
+
+        /// <summary>
+        /// WebGL 平台 Nova 后处理收口后的回调。
+        /// 用于依赖所有普通 WebGL 后处理器已经按优先级执行完毕后的 SDK 补充处理。
+        /// </summary>
+        /// <param name="report">Unity 构建报告。</param>
+        /// <param name="context">Nova 构建上下文。</param>
+        public virtual void OnAfterNovaPostprocessBuildOnWebGL(BuildReport report, NovaBuildContext context) { }
+
+        /// <summary>
+        /// iOS 平台 Nova 后处理收口后的回调。
+        /// 用于依赖 Xcode 工程、Info.plist 或 Entitlements 已由 Nova 写回后的 SDK 补充处理。
+        /// </summary>
+        /// <param name="report">Unity 构建报告。</param>
+        /// <param name="context">Nova 构建上下文。</param>
+        public virtual void OnAfterNovaPostprocessBuildOniOS(BuildReport report, NovaBuildContext context) { }
 
         /// <summary>
         /// 通过 ConfigRuntimeSO.GetSDKPluginConfig<T>() 查找并返回指定类型的 SDK 配置实例。

@@ -1,5 +1,14 @@
 {
   "dependencies": {
+    "cn.efunstudio.psd2ugui": {
+      "version": "1.0.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.ugui": "2.0.0"
+      },
+      "url": "http://172.16.22.175:4874"
+    },
     "com.applovin.mediation.adapters.bidmachine.android": {
       "version": "3070000.0.0",
       "depth": 1,
@@ -207,16 +216,6 @@
       },
       "hash": "fd8ff1fb700caf062eb5cce364c1d0a85f99ebe6"
     },
-    "com.coplaydev.coplay": {
-      "version": "https://github.com/CoplayDev/coplay-unity-plugin.git#beta",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {
-        "com.unity.inputsystem": "1.1.1",
-        "com.unity.cloud.gltfast": "6.12.1"
-      },
-      "hash": "c9306ff83721fbb4141db8c9872bf2d61705a5dd"
-    },
     "com.coplaydev.unity-mcp": {
       "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.2",
       "depth": 0,
@@ -235,9 +234,9 @@
       "hash": "4ce7dd3cc54e37e2ed6dc59cb5a047f3dccb3f50"
     },
     "com.da-assets.figma-converter": {
-      "version": "file:../../Nova-internal/UPMPackages/com.da-assets.figma-converter",
+      "version": "1.0.4",
       "depth": 0,
-      "source": "local",
+      "source": "registry",
       "dependencies": {
         "com.unity.2d.sprite": "1.0.0",
         "com.unity.collections": "6.4.0",
@@ -249,7 +248,8 @@
         "com.unity.modules.uielements": "1.0.0",
         "com.unity.modules.unitywebrequest": "1.0.0",
         "com.unity.modules.unitywebrequesttexture": "1.0.0"
-      }
+      },
+      "url": "http://172.16.22.175:4874"
     },
     "com.google.external-dependency-manager": {
       "version": "1.2.188",
@@ -726,19 +726,6 @@
       },
       "url": "https://packages.unity.com"
     },
-    "com.unity.cloud.gltfast": {
-      "version": "6.14.1",
-      "depth": 1,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.burst": "1.8.24",
-        "com.unity.collections": "1.2.4",
-        "com.unity.mathematics": "1.2.6",
-        "com.unity.modules.jsonserialize": "1.0.0",
-        "com.unity.modules.unitywebrequest": "1.0.0"
-      },
-      "url": "https://packages.unity.com"
-    },
     "com.unity.collections": {
       "version": "6.4.0",
       "depth": 1,
@@ -783,7 +770,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.visualstudio": {
-      "version": "2.0.27",
+      "version": "2.0.28",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -958,7 +945,7 @@
       }
     },
     "com.unity.timeline": {
-      "version": "1.8.12",
+      "version": "1.8.13",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -979,11 +966,11 @@
       }
     },
     "com.unity.visualscripting": {
-      "version": "1.9.11",
+      "version": "1.9.12",
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.ugui": "1.0.0",
+        "com.unity.ugui": "2.0.0",
         "com.unity.modules.jsonserialize": "1.0.0"
       },
       "url": "https://packages.unity.com"

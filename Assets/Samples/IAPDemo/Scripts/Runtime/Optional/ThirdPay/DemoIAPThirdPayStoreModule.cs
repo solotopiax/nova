@@ -66,7 +66,8 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             }
 
             m_Panel.Configure(BuildProductTitle, tableId => PayAsync(tableId).Forget(),
-                () => RefreshAsync().Forget());
+                () => RefreshAsync().Forget(), HandleDebugCountryChanged,
+                HandleSkipPaymentInformationChanged);
         }
 
         /// <summary>
@@ -113,6 +114,10 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
 
             try
             {
+                m_Panel?.SetSkipPaymentInformation(capability.IsPaymentInformationScreenSkipped);
+                status.GooglePolicy = Application.platform == RuntimePlatform.Android
+                    ? (capability.IsPaymentInformationScreenSkipped ? "跳过信息页，直接进入 ThirdPay" : "不跳过，执行政策校验")
+                    : "跳过（非 Android）";
                 bool productReady = await capability.FetchProductListAsync(m_Bridge.CancellationToken);
                 status.Eligible = productReady;
                 if (productReady)
@@ -166,6 +171,54 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             m_AvailableStores = null;
             m_Panel = null;
             m_Bridge = null;
+        }
+
+        /// <summary>
+        /// 应用 Demo 调试国家选择；商品列表由底层 SetCountryCode 自动刷新。
+        /// </summary>
+        /// <param name="countryCode">ISO 3166-1 alpha-2 国家代码；空值表示恢复自动识别。</param>
+        private void HandleDebugCountryChanged(string countryCode)
+        {
+            if (!TryGetThirdPayCapability(out IIAPThirdPayCapable capability))
+            {
+                m_Bridge?.AppendFeedback("ThirdPay 能力不可用，无法设置调试国家。", FeedbackLevel.Warn);
+                return;
+            }
+
+            capability.SetCountryCode(countryCode);
+            m_Bridge.AppendFeedback(
+                "ThirdPay 调试国家已设置为：" + (string.IsNullOrEmpty(countryCode) ? "Auto" : countryCode),
+                FeedbackLevel.Info);
+        }
+
+        /// <summary>
+        /// 应用 Demo 调试开关，覆盖 ThirdPayStoreConfig 的默认信息页配置。
+        /// </summary>
+        /// <param name="skip">是否跳过信息页。</param>
+        private void HandleSkipPaymentInformationChanged(bool skip)
+        {
+            if (!TryGetThirdPayCapability(out IIAPThirdPayCapable capability))
+            {
+                m_Bridge?.AppendFeedback("ThirdPay 能力不可用，无法设置信息页跳过开关。", FeedbackLevel.Warn);
+                return;
+            }
+
+            capability.SetSkipPaymentInformationScreen(skip);
+            m_Bridge.AppendFeedback(
+                skip ? "ThirdPay 已设置为跳过信息页。" : "ThirdPay 已恢复信息页流程。",
+                FeedbackLevel.Info);
+        }
+
+        /// <summary>
+        /// 获取当前 ThirdPay 能力，集中处理 Demo 调试控件的运行时依赖检查。
+        /// </summary>
+        /// <param name="capability">当前 ThirdPay 能力。</param>
+        /// <returns>成功取得能力时返回 true。</returns>
+        private bool TryGetThirdPayCapability(out IIAPThirdPayCapable capability)
+        {
+            capability = null;
+            return m_Bridge != null && m_Bridge.TryInitialize()
+                   && m_Bridge.IAP.TryGetCapability(out capability);
         }
 
         /// <summary>

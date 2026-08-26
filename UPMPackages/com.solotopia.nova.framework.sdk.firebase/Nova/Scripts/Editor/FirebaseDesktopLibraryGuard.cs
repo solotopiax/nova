@@ -88,10 +88,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Editor
                 "     " + libDir;
 
             Debug.LogWarning("[Nova][Firebase] " + message);
-            EditorUtility.DisplayDialog(
-                "Firebase 桌面库缺失 / Firebase desktop library missing",
-                message,
-                "知道了 / OK");
+            EditorUtility.DisplayDialog("Firebase 桌面库缺失 / Firebase desktop library missing", message, "知道了 / OK");
         }
 
         /// <summary>通过本脚本的 MonoScript 资源路径反推包根目录（兼容 Packages/ 与 UPMPackages/ 两种位置）。</summary>

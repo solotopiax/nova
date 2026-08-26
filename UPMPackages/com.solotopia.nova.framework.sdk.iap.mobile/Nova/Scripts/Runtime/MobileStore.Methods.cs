@@ -42,6 +42,17 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal void LoadPersistDataInternal()
         {
             m_PersistData = LoadPersistData<MobileStorePersistData>();
+            if (m_PersistData?.ValidateSuccessOrderKeys == null)
+            {
+                return;
+            }
+
+            int originalCount = m_PersistData.ValidateSuccessOrderKeys.Count;
+            TrimValidateSuccessOrderKeys(m_PersistData.ValidateSuccessOrderKeys);
+            if (m_PersistData.ValidateSuccessOrderKeys.Count != originalCount)
+            {
+                SavePersistDataInternal();
+            }
         }
 
         /// <summary>
@@ -78,13 +89,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 ? $"{result.ErrorSource}:{result.ErrorCode}"
                 : $"{result.ErrorSource}:{result.ErrorCode} {result.ErrorDesc}";
             Product product = ResolveTrackProduct(result.TableId);
-            TrackLocalPayFail(tableId: result.TableId,
-                productId: ResolveProductId(result.TableId, product),
-                debug: IsTrackDebugMode(),
-                price: ResolvePrice(result.TableId),
-                reason: reason,
-                reasonDetail: reasonDetail,
-                customData: result.CustomData);
+            TrackLocalPayFail(tableId: result.TableId, productId: ResolveProductId(result.TableId, product), debug: IsTrackDebugMode(), price: ResolvePrice(result.TableId), reason: reason, reasonDetail: reasonDetail, customData: result.CustomData);
         }
 
         /// <summary>

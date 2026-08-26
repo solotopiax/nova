@@ -24,6 +24,7 @@ namespace NovaFramework.Editor
         "构建 Unity Player",
         "player",
         AgentActionOperationType.Build,
+        Description = "按目标平台、Build Settings 场景、开发模式与输出路径构建 Unity Player，并返回 BuildReport 证据。",
         Effects = AgentActionEffect.WorkspaceRead |
                   AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead |

@@ -28,6 +28,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
 
         private const string c_FirebaseDefaultTopicsSourcePath = "UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Topics/FirebasePlugin.DefaultTopics.cs";
 
+        private const string c_FirebasePluginMethodsSourcePath = "UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/FirebasePlugin.Methods.cs";
+
         private const string c_FirebasePluginConfigSourcePath = "UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/FirebasePluginConfig.cs";
 
         private const string c_FirebaseReportNetServiceSourcePath = "UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Services/FirebaseReportNetService.cs";
@@ -126,15 +128,33 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         }
 
         /// <summary>
+        /// Topic 操作必须等待 FCM Token，避免 iOS 首次安装时在 APNs Token 就绪前调用 Firebase。
+        /// </summary>
+        [Test]
+        public void TopicSubscription_WaitsForFcmTokenBeforeCallingFirebase()
+        {
+            string topicsSource = File.ReadAllText(c_FirebaseDefaultTopicsSourcePath);
+            string methodsSource = File.ReadAllText(c_FirebasePluginMethodsSourcePath);
+
+            int waitIndex = topicsSource.IndexOf("await WaitForFcmTokenAsync(ct);", StringComparison.Ordinal);
+            Assert.GreaterOrEqual(waitIndex, 0);
+
+            int subscribeIndex = topicsSource.IndexOf("await FirebaseMessaging.SubscribeAsync(topic);", waitIndex, StringComparison.Ordinal);
+            int unsubscribeIndex = topicsSource.IndexOf("await FirebaseMessaging.UnsubscribeAsync(topic);", waitIndex, StringComparison.Ordinal);
+
+            Assert.Greater(subscribeIndex, waitIndex);
+            Assert.Greater(unsubscribeIndex, waitIndex);
+            StringAssert.Contains("m_FcmTokenReadySource", methodsSource);
+            StringAssert.Contains("m_FcmTokenReadySource.TrySetResult(m_TokenReceived)", methodsSource);
+        }
+
+        /// <summary>
         /// 构建基础订阅状态时应包含 all、语言、平台和小写 utc 时区 Topic。
         /// </summary>
         [Test]
         public void BuildBaseState_UsesTopPrefixAndRequestedSegments()
         {
-            object state = InvokeBuildBaseState(
-                "zh-CN",
-                "Android",
-                TimeSpan.FromHours(8));
+            object state = InvokeBuildBaseState("zh-CN", "Android", TimeSpan.FromHours(8));
 
             Assert.AreEqual("zh-CN", GetStringProperty(state, "Language"));
             Assert.AreEqual("Android", GetStringProperty(state, "Platform"));
@@ -181,9 +201,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         {
             string source = File.ReadAllText(c_FirebaseReportNetServiceSourcePath);
 
-            StringAssert.Contains(
-                "Async(string cmdName, string firebasePushToken, string firebaseAnalyticsInstanceId, string country, string timezoneOffset)",
-                source);
+            StringAssert.Contains("Async(string cmdName, string firebasePushToken, string firebaseAnalyticsInstanceId, string country, string timezoneOffset)", source);
             StringAssert.Contains("Country = country ?? string.Empty", source);
             StringAssert.Contains("TimezoneOffset = timezoneOffset ?? string.Empty", source);
         }
@@ -333,9 +351,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
 
         private static Type GetBuilderType()
         {
-            Type type = typeof(FirebasePlugin).Assembly.GetType(
-                "NovaFramework.SDK.FirebasePlugin.Runtime.FirebaseDefaultTopicBuilder",
-                false);
+            Type type = typeof(FirebasePlugin).Assembly.GetType("NovaFramework.SDK.FirebasePlugin.Runtime.FirebaseDefaultTopicBuilder", false);
             Assert.IsNotNull(type, "FirebaseDefaultTopicBuilder should exist.");
             return type;
         }

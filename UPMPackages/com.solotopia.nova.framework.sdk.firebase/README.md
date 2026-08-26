@@ -1,7 +1,7 @@
 # Nova Framework - SDK - Firebase
 
 > 包名：`com.solotopia.nova.framework.sdk.firebase`
-> 当前版本：`0.1.5`
+> 当前版本：`0.1.7`
 > Firebase Unity SDK：`13.14.0`
 
 Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置，并提供 Nova 侧默认 Topic 同步与业务 push task 缓存发送能力。
@@ -12,7 +12,7 @@ Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.firebase": "0.1.5"
+  "com.solotopia.nova.framework.sdk.firebase": "0.1.7"
 }
 ```
 
@@ -20,7 +20,7 @@ Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置�
 
 - Analytics：`TrackEvent(...)`、`SetUserId(...)`、`SetUserProperty(...)`。
 - FCM：`GetTokenAsync(...)`、`OnTokenRefreshed`、`SetTopicSubscribed(...)`。
-- 默认 Topic：初始化后自动同步 `top_all`、语言、平台、时区和国家 Topic，并通过 `IFileFragmentManager` 记录订阅状态，变化时先退订旧 Topic 再订阅新 Topic。
+- 默认 Topic：初始化后等待 FCM Token 就绪，再同步 `top_all`、语言、平台、时区和国家 Topic，并通过 `IFileFragmentManager` 记录订阅状态，变化时先退订旧 Topic 再订阅新 Topic。
 - Push task：业务通过 `IFirebasePushTaskPlugin.QueuePushTaskAsync(...)` 写入本地缓存，按配置的时间阈值、数量阈值或应用恢复前台触发批量发送；发送成功后才删除缓存。
 - 登录上报：收到 `SDKEventData.UserLogin` 后，上报 Firebase Push Token、Analytics Instance ID、国家码和时区偏移。
 
@@ -32,8 +32,13 @@ Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置�
 - `PushCmdName`：批量创建或取消服务端 push task 使用的 NetCmd 名称；为空时保留本地缓存并等待下次发送。
 - `PushFlushIntervalSeconds`：push task 本地缓存后的时间阈值，默认 `100` 秒。
 - `PushFlushBatchSize`：push task 缓存数量阈值，默认 `5` 条。
+- `AutoRequestNotificationPermission`：是否在 Firebase 依赖初始化成功后自动请求通知权限，默认开启；如项目希望由业务自行选择交互时机，可关闭后显式调用 `Nova.Native.RequestNotificationPermissionAsync(...)`。
 
 国家码不在 Firebase 配置中单独设置；默认国家 Topic 和登录上报会通过 `IAdPlugin.GetCountryCodeAsync(...)` 获取，等待超时和上次成功缓存兜底由 AD 模块负责。
+
+## Sample 依赖
+
+`FirebaseDemo` 为演示登录联动会使用 `com.solotopia.nova.framework.kit.network.gamelogin`。当前包级依赖中保留 GameLogin，是为了保证导入示例后可直接编译；Firebase 运行时代码本身不直接引用 GameLogin 类型。
 
 ## Push Task 约束
 

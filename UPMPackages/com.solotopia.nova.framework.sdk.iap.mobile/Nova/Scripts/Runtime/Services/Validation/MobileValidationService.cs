@@ -187,14 +187,86 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             string orderKey = MobileOrderKey.Build(record);
             if (!IsUserReadyForValidation())
             {
+                if (m_PreLoginOrderRecords.TryGetValue(orderKey, out MobileOrderRecord existingPreLogin) &&
+                    CanMergeDuplicateOrder(existingPreLogin))
+                {
+                    MergeDuplicateOrderRecord(existingPreLogin, record);
+                    return;
+                }
+
                 m_PreLoginOrderRecords[orderKey] = record;
                 Log.Debug(LogTag.IAPMobile, $"账号未登录，仅暂存待验订单，{MobileOrderKey.Describe(record)}，订单号={record.TransactionId}");
+                return;
+            }
+
+            if (m_OrderRecords.TryGetValue(orderKey, out MobileOrderRecord existing) &&
+                CanMergeDuplicateOrder(existing))
+            {
+                MergeDuplicateOrderRecord(existing, record);
+                SaveOrderRecords();
+                if (existing.Status != MobileOrderStatus.AwaitingConfirm)
+                {
+                    EnqueueValidation(existing);
+                }
+
                 return;
             }
 
             m_OrderRecords[orderKey] = record;
             SaveOrderRecords();
             EnqueueValidation(record);
+        }
+
+        /// <summary>
+        /// 判断现有记录是否可以接收重复平台回调的数据更新。
+        /// Purchasing 记录需要由首个有效平台回调替换；失败清理记录不能重新打开。
+        /// </summary>
+        /// <param name="record">当前本地订单记录。</param>
+        /// <returns>可以合并重复回调时返回 true。</returns>
+        private static bool CanMergeDuplicateOrder(MobileOrderRecord record)
+        {
+            return record != null &&
+                   record.Status != MobileOrderStatus.Purchasing &&
+                   record.Status != MobileOrderStatus.LocalPayFailed;
+        }
+
+        /// <summary>
+        /// 将重复平台回调中的新凭据合并到原记录，保持正在验单的记录对象身份不变。
+        /// </summary>
+        /// <param name="existing">当前正在使用的订单记录。</param>
+        /// <param name="incoming">重复平台回调构造出的新订单记录。</param>
+        private static void MergeDuplicateOrderRecord(MobileOrderRecord existing, MobileOrderRecord incoming)
+        {
+            if (existing == null || incoming == null)
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(incoming.TransactionId))
+            {
+                existing.TransactionId = incoming.TransactionId;
+            }
+
+            if (!string.IsNullOrEmpty(incoming.GoogleToken))
+            {
+                existing.GoogleToken = incoming.GoogleToken;
+            }
+
+            if (string.IsNullOrEmpty(existing.CustomDataParam))
+            {
+                existing.CustomDataParam = incoming.CustomDataParam;
+            }
+
+            if (string.IsNullOrEmpty(existing.ReceiptParam))
+            {
+                existing.ReceiptParam = incoming.ReceiptParam;
+            }
+
+            existing.IsReplenish = existing.IsReplenish && incoming.IsReplenish;
+            if (existing.Status == MobileOrderStatus.ValidateFailed)
+            {
+                existing.Status = MobileOrderStatus.PendingValidate;
+            }
         }
 
         /// <summary>

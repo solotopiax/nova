@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-08-26
+
+### Changed
+
+- 默认 Topic 和显式 Topic 订阅在调用 Firebase 前等待 FCM Token 就绪，避免 iOS 首次安装时 APNs / FCM Token 尚未准备好就发起 Topic 操作。
+- `AutoRequestNotificationPermission` 继续保持默认开启，并补充 Native 模块自身不自动弹窗与 Firebase 插件配置自动请求之间的文档边界。
+- README 版本号对齐 `package.json` 的 `0.1.7`，并补充 FirebaseDemo 的 GameLogin 示例依赖说明。
+
+### Fixed
+
+- 修复 `FirebaseEditorDestroyFix` 未在域重载后自动注册，导致退出 Play Mode 清理钩子可能不生效的问题。
+- 修正 Firebase 推送点击埋点测试仍断言旧字段名的问题。
+
 ## [0.1.6] - 2026-08-20
 
 ### Changed

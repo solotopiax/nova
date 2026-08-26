@@ -40,7 +40,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 菜单路径。
         /// </summary>
-        private const string c_MenuPath = "Nova/Open PlugPals";
+        private const string c_MenuPath = "Nova/Open Plug Pals";
 
         /// <summary>
         /// 窗口标题。

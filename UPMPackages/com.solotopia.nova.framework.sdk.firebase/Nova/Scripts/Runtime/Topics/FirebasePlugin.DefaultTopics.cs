@@ -47,7 +47,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
         /// <summary>
         /// Firebase 初始化完成后启动默认 Topic 同步。
-        /// 基础非语言 Topic 立即同步；语言 Topic 等待 Localization 发布真实当前语言后再同步。
+        /// 基础 Topic 同步任务会等待 FCM Token 就绪；语言 Topic 还需等待 Localization 发布真实当前语言后再同步。
         /// 国家 Topic 通过 AdPlugin.GetCountryCodeAsync 读取最终国家码；广告模块负责等待、超时和上次成功缓存兜底。
         /// </summary>
         private void StartDefaultTopicSync()
@@ -153,9 +153,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                     c_BaseTopicStatePersistItem,
                     null);
                 FirebaseTopicSubscriptionState currentState = BuildCurrentBaseTopicState(oldState, preferredLanguage);
-                FirebaseTopicSubscriptionDiff diff = FirebaseDefaultTopicBuilder.BuildTopicDiff(
-                    oldState?.Topics,
-                    currentState.Topics);
+                FirebaseTopicSubscriptionDiff diff = FirebaseDefaultTopicBuilder.BuildTopicDiff(oldState?.Topics, currentState.Topics);
 
                 if (diff.IsEmpty)
                 {
@@ -453,6 +451,9 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             try
             {
                 ct.ThrowIfCancellationRequested();
+#if (UNITY_IOS || UNITY_ANDROID)
+                await WaitForFcmTokenAsync(ct);
+#endif
 #if (UNITY_IOS || UNITY_ANDROID)
                 if (subscribed)
                 {

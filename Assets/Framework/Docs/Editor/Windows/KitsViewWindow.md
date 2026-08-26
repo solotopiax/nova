@@ -2,7 +2,7 @@
 
 **类签名**：`internal sealed partial class KitsViewWindow : EditorWindow`  
 **命名空间**：`NovaFramework.Editor`  
-**菜单入口**：`Nova/Open KitsView`
+**菜单入口**：`Nova/Open Kits View`
 
 `KitsViewWindow` 用于浏览当前工程中已安装的 Kit 包。它会扫描 `Packages/packages-lock.json` 与 `Packages/manifest.json`，筛出 `com.solotopia.nova.framework.kit` 前缀的包，并展示包信息与 `Nova/Protos/*.proto` 内容。
 

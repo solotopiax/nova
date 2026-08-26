@@ -22,6 +22,7 @@ using IOPath = System.IO.Path;
 namespace NovaFramework.Editor
 {
     [AgentAction("nova.project.vibration.export", "导出 Vibration", "vibration", AgentActionOperationType.Generate,
+        Description = "从当前有效 VibrateSettings 导出振动运行时数据，并核验生成结果。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.WorkspaceWrite | AgentActionEffect.UnityRead | AgentActionEffect.UnityWrite,
         RequiredEvidence = AgentActionEvidence.Static | AgentActionEvidence.Artifact,
         Idempotency = AgentActionIdempotency.ReplaceGeneratedOutput, RequiresConfirmation = true, RequiresEditMode = true,

@@ -34,7 +34,9 @@
 
 - `OnInitializeAsync(...)` 会立即返回，但真正的可用时机取决于 `FirebaseApp.CheckAndFixDependenciesAsync()` 的异步回调。
 - 只有在依赖检查通过后，`m_InitOver` 才会置为 `true`。
+- 依赖检查通过后，若 `FirebasePluginConfig.AutoRequestNotificationPermission` 为 `true`（默认值），插件会通过 `Nova.Native.RequestNotificationPermissionAsync()` 请求 `Alert | Sound | Badge` 通知权限；该请求为异步 Fire-and-Forget，不阻塞 Firebase 初始化完成回调。若项目希望由业务自行选择交互时机，可在配置中关闭该开关。
 - 大多数公开方法都会在 `m_InitOver == false` 时直接静默返回。
+- 默认 Topic 和显式 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token 后再调用 Firebase；iOS 首次安装时不会在 APNs / FCM Token 就绪前强行订阅。
 - `GetTokenAsync(...)` 不依赖 `m_InitOver` 直接返回，而是等待 `m_TokenReceived` 非空。
 
 ## 4. 配置与上报
@@ -45,6 +47,7 @@
 - `PushCmdName`：批量创建或取消服务端 push task 时使用的 NetCmd 名称
 - `PushFlushIntervalSeconds`：push task 本地缓存后的时间发送阈值，默认 `100` 秒；小于等于 `0` 时写入后立即尝试发送
 - `PushFlushBatchSize`：push task 本地缓存达到数量阈值后立即发送，默认 `5` 条；小于 `1` 时运行时按 `1` 处理
+- `AutoRequestNotificationPermission`：Firebase 依赖初始化成功后是否自动请求 `Alert | Sound | Badge` 通知权限，默认开启；关闭后不会自动调用 Native 通知权限请求
 
 上报链路依赖 Firebase 自身发布的两个内部数据槽位：
 
@@ -87,7 +90,7 @@
 
 ## 6. 默认推送 Topic
 
-Firebase 依赖检查通过后，`FirebasePlugin` 会在 `m_InitOver = true` 后自动同步默认 FCM topic。同步只在 Android / iOS 编译平台执行，WebGL 不包含 Firebase Runtime。
+Firebase 依赖检查通过后，`FirebasePlugin` 会启动默认 FCM topic 同步，但实际 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token。同步只在 Android / iOS 编译平台执行，WebGL 不包含 Firebase Runtime。
 
 基础 topic 在 Firebase 初始化完成后开始同步：
 

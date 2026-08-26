@@ -34,7 +34,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 菜单路径。
         /// </summary>
-        private const string c_MenuPath = "Nova/Open KitsView";
+        private const string c_MenuPath = "Nova/Open Kits View";
 
         /// <summary>
         /// 窗口标题。

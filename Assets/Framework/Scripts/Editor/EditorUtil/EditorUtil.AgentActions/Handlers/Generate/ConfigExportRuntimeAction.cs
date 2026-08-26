@@ -25,6 +25,7 @@ namespace NovaFramework.Editor
         "导出运行时配置",
         "config",
         AgentActionOperationType.Generate,
+        Description = "按 Platform、Channel、DevelopMode 坐标导出 ConfigRuntimeSO，并核验目标资产。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead | AgentActionEffect.UnityWrite,
         RequiredEvidence = AgentActionEvidence.Static | AgentActionEvidence.Artifact,

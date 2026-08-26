@@ -66,6 +66,14 @@ Assets/Framework/Agents/
 
 三个版本字段彼此独立：`Agents/catalog.json.schemaVersion` 表示 Skill Catalog 文件格式，单 Skill `references/contract.json.schemaVersion` 表示 Skill 契约文件格式，`AgentActionDescriptor.ContractMajor` 表示 Action 与 Recovery Receipt 的兼容语义；数值不能横向比较，也不代表 Framework 包版本。
 
+## 4.1 Agent 能力总览窗口
+
+- 菜单入口：`Nova/Open Agent Capabilities View`，位于 `Nova/Open Project Guard` 下方。
+- 窗口只读展示当前 Framework Skills、项目投影状态、运行中的 Action Registry 与 Nova MCP 开放状态，不执行 Action，也不修改项目。
+- Skill 数据来自 `Agents/catalog.json`、`SKILL.md` 与 `references/contract.json`；Action 数据来自 live Registry；MCP 状态来自 Nova MCP 的显式开放策略，不维护第二份手工清单。
+- 窗口明确区分“Skill 可被 Agent 发现”“Action 已注册”“Action 已向 MCP 开放”和“契约或投影异常”，并展示 Skill 与 Action 的多对多关系。
+- 窗口代码只负责筛选、选择、刷新和绘制；扫描、解析与校验统一由 `EditorUtil.AgentCapabilities` 提供。
+
 ## 5. Action 内核
 
 ### 5.1 代码位置

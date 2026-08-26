@@ -12,6 +12,7 @@ using System;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
@@ -145,13 +146,17 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             parameters.Add("google_transaction_token", payload.GoogleToken ?? string.Empty);
-            string encrypted = m_Encrypt(parameters.ToString(Formatting.None));
+            string plaintext = parameters.ToString(Formatting.None);
+            string encrypted = m_Encrypt(plaintext);
             if (string.IsNullOrEmpty(encrypted))
             {
                 throw new InvalidOperationException("支付参数加密结果为空。");
             }
 
-            return $"{baseUrl.TrimEnd('/')}/?lang={Escape(language)}&params={Escape(encrypted)}&app_id={payload.AppId.ToString(CultureInfo.InvariantCulture)}";
+            string paymentUrl = $"{baseUrl.TrimEnd('/')}/?lang={Escape(language)}&params={Escape(encrypted)}&app_id={payload.AppId.ToString(CultureInfo.InvariantCulture)}";
+            // 支付调试日志用于核对跳转前的明文、密文和最终 URL。
+            Log.Debug(LogTag.IAPThirdPay, $"第三方支付跳转参数：加密前={plaintext}；加密后={encrypted}；URL={paymentUrl}");
+            return paymentUrl;
         }
 
         /// <summary>

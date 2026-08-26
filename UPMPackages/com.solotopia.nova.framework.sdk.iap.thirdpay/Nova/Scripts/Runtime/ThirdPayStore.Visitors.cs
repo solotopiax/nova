@@ -86,6 +86,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private string m_CountryCode = string.Empty;
 
         /// <summary>
+        /// 当前是否跳过 Google 第三方支付信息页。
+        /// </summary>
+        private bool m_SkipPaymentInformationScreen;
+
+        /// <summary>
         /// 必需的 Store 配置项是否齐备，决定 Store 是否就绪接受支付。
         /// </summary>
         private bool m_ConfigReady;

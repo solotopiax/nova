@@ -26,6 +26,7 @@ namespace NovaFramework.Editor
         "刷新业务热更 DLL",
         "hotfix",
         AgentActionOperationType.Generate,
+        Description = "编译并刷新当前构建目标对应的业务热更 DLL，核对映射与产物摘要。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.WorkspaceWrite |
                   AgentActionEffect.UnityRead | AgentActionEffect.UnityWrite | AgentActionEffect.BuildArtifact,
         RequiredEvidence = AgentActionEvidence.Compile | AgentActionEvidence.Artifact,

@@ -2,7 +2,7 @@
 
 **类签名**：`public sealed partial class CheckUpdateWindow : EditorWindow`
 **命名空间**：`NovaFramework.Editor`
-**菜单入口**：`Nova/Open CheckUpdate`
+**菜单入口**：`Nova/Open Check Update`
 
 Nova 包版本更新提示窗口，以表格形式展示所有已安装包中存在新版本的条目，支持启动自动弹出和手动打开两种入口。当前窗口会同时展示外网仓库与内部云仓库的更新项。
 
@@ -144,7 +144,7 @@ CheckUpdateWindow.Open(filteredExternalUpdates, filteredInternalUpdates);
 ### 手动打开（菜单或代码）
 
 ```csharp
-// 通过 Unity 菜单 Nova/Open CheckUpdate 触发
+// 通过 Unity 菜单 Nova/Open Check Update 触发
 // 或在编辑器代码中直接调用
 CheckUpdateWindow.Open();
 ```

@@ -6,6 +6,21 @@
 
 ---
 
+## [0.6.18] - 2026-08-26
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.18]` 节。
+
+### Added
+
+- 发布 Agent Capabilities 只读总览、MCP Action 暴露快照与 SDK 构建完成钩子。
+
+### Changed
+
+- 发布 Framework `0.6.18`、Nova MCP `0.1.2`、Facebook `0.1.8`、Firebase `0.1.7`、IAP `0.1.7` 与 IAP Mobile `0.1.10`。
+- Nova 菜单组合词统一使用空格分隔，并收录 Firebase、IAP 与移动内购稳定性修复。
+
+---
+
 ## [0.6.17] - 2026-08-21
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.17]` 节。

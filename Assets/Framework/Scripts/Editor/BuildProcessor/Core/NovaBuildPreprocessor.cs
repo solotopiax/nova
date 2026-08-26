@@ -91,6 +91,12 @@ namespace NovaFramework.Editor
 
             string proguardFullPath = Util.SysIO.Path.GetFullPath(NovaBuildShared.c_ProguardOutputPath);
             NovaProguardBootstrapper.Rebuild(proguardFullPath, ctx.ProguardRules);
+
+            foreach (var processor in NovaBuildShared.Processors)
+            {
+                Log.Debug(LogTag.Editor, $"[NovaBuildPreprocessor] Android Nova 收口后预处理：{processor.GetType().Name}");
+                processor.OnAfterNovaPreprocessBuildOnAndroid(report, ctx);
+            }
         }
 
         /// <summary>
@@ -105,6 +111,12 @@ namespace NovaFramework.Editor
                 Log.Debug(LogTag.Editor, $"[NovaBuildPreprocessor] iOS 预处理：{processor.GetType().Name}");
                 processor.OnPreprocessBuildOniOS(report, NovaBuildShared.Context);
             }
+
+            foreach (var processor in NovaBuildShared.Processors)
+            {
+                Log.Debug(LogTag.Editor, $"[NovaBuildPreprocessor] iOS Nova 收口后预处理：{processor.GetType().Name}");
+                processor.OnAfterNovaPreprocessBuildOniOS(report, NovaBuildShared.Context);
+            }
         }
 
         /// <summary>
@@ -118,6 +130,12 @@ namespace NovaFramework.Editor
             {
                 Log.Debug(LogTag.Editor, $"[NovaBuildPreprocessor] WebGL 预处理：{processor.GetType().Name}");
                 processor.OnPreprocessBuildOnWebGL(report, NovaBuildShared.Context);
+            }
+
+            foreach (var processor in NovaBuildShared.Processors)
+            {
+                Log.Debug(LogTag.Editor, $"[NovaBuildPreprocessor] WebGL Nova 收口后预处理：{processor.GetType().Name}");
+                processor.OnAfterNovaPreprocessBuildOnWebGL(report, NovaBuildShared.Context);
             }
         }
     }

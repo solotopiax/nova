@@ -27,15 +27,21 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// <summary>
         /// 异步初始化 Firebase SDK。
         /// 检查并修复 Firebase 依赖，注册 FCM Token 与消息回调，获取 Analytics 实例 ID。
-        /// config 与 ct 参数不使用：Firebase 通过 FirebaseApp.DefaultInstance 自主初始化，无需业务层注入配置。
+        /// Firebase 通过 FirebaseApp.DefaultInstance 自主初始化；config 仅提供初始化完成后的框架侧行为开关。
         /// </summary>
-        /// <param name="config">插件配置，Firebase 无需配置，此参数不使用。</param>
+        /// <param name="config">Firebase 插件运行时配置。</param>
         /// <param name="ct">取消令牌，Firebase 初始化链路不支持取消，此参数不使用。</param>
         /// <returns>初始化完成的异步任务。</returns>
         protected override UniTask OnInitializeAsync(ISDKPluginConfig config, CancellationToken ct)
         {
             try
             {
+                m_FcmTokenReadySource = new UniTaskCompletionSource<string>();
+                if (!string.IsNullOrEmpty(m_TokenReceived))
+                {
+                    m_FcmTokenReadySource.TrySetResult(m_TokenReceived);
+                }
+
                 m_ReportNetService = new FirebaseReportNetService();
                 m_RuntimeConfig = config as FirebasePluginConfig;
                 InitializePushTaskServices();
@@ -54,6 +60,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                         m_InitOver = true;
                         m_PushTaskDispatcher?.SetFirebaseReady(true);
                         ApplyPendingUserIdIfReady();
+                        RequestDefaultNotificationPermissionIfEnabled().Forget();
                         StartDefaultTopicSync();
 
                         Firebase.Analytics.FirebaseAnalytics.GetAnalyticsInstanceIdAsync().ContinueWithOnMainThread(idTask =>
@@ -82,6 +89,63 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             return UniTask.CompletedTask;
         }
 
+#if (UNITY_IOS || UNITY_ANDROID)
+        /// <summary>
+        /// 等待 FCM Token 就绪，避免 iOS 尚未收到 APNs Token 时提前触发 Firebase Topic 操作。
+        /// </summary>
+        /// <param name="ct">取消令牌；插件释放或调用方取消时结束等待。</param>
+        /// <returns>FCM Token 已就绪后完成的异步任务。</returns>
+        private async UniTask WaitForFcmTokenAsync(CancellationToken ct)
+        {
+            if (!string.IsNullOrEmpty(m_TokenReceived))
+            {
+                return;
+            }
+
+            Log.Debug(LogTag.Firebase, "FCM Token 尚未就绪，等待 TokenReceived 后再执行推送 Topic 操作。");
+            await m_FcmTokenReadySource.Task.AttachExternalCancellation(ct);
+        }
+
+        /// <summary>
+        /// 根据 Firebase 配置请求通知权限；默认开启，业务可在 ConfigMaster 关闭该行为。
+        /// 请求结果只记录系统权威状态，不阻塞 Firebase 初始化完成回调。
+        /// </summary>
+        private async UniTaskVoid RequestDefaultNotificationPermissionIfEnabled()
+        {
+            if (m_RuntimeConfig == null || !m_RuntimeConfig.AutoRequestNotificationPermission)
+            {
+                return;
+            }
+
+            if (Nova.Native == null)
+            {
+                Log.Warning(LogTag.Firebase, "Firebase 默认请求通知权限失败，Nova.Native 不可用。");
+                return;
+            }
+
+            try
+            {
+                NotificationPermissionResult result =
+                    await Nova.Native.RequestNotificationPermissionAsync();
+                if (result.IsOperationSuccessful)
+                {
+                    Log.Debug(LogTag.Firebase, $"Firebase 默认通知权限请求完成，系统状态：{result.Status}。");
+                }
+                else
+                {
+                    Log.Warning(LogTag.Firebase, $"Firebase 默认通知权限请求失败，系统状态：{result.Status}，错误：{result.ErrorMessage}。");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception e)
+            {
+                Log.Error(LogTag.Firebase, $"Firebase 默认请求通知权限异常：{e}");
+            }
+        }
+#endif
+
         /// <summary>
         /// 异步释放 Firebase SDK 资源。
         /// 反注册 FCM Token 与消息回调，防止释放后的悬挂引用。
@@ -92,6 +156,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         {
             CancelPushTaskFlush();
             CancelDefaultTopicSync();
+            m_FcmTokenReadySource.TrySetCanceled();
             if (m_EventManager != null)
             {
                 m_EventManager.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
@@ -115,6 +180,10 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             RunMainThread(() =>
             {
                 m_TokenReceived = token.Token;
+                if (!string.IsNullOrEmpty(m_TokenReceived))
+                {
+                    m_FcmTokenReadySource.TrySetResult(m_TokenReceived);
+                }
                 PublishData(SDKDataKeys.FirebasePushToken, m_TokenReceived);
                 Log.Debug(LogTag.Firebase, $"收到推送Token：{token.Token}。");
                 m_OnTokenRefreshed?.Invoke(new PushToken { Value = m_TokenReceived, Provider = "FCM" });
@@ -190,18 +259,33 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// <param name="callBack">任务完成后在主线程执行的回调。</param>
         private async void TaskContinueWithOnMainThread(Task task, Action<Task> callBack)
         {
-            await task;
-            if (task.IsCompletedSuccessfully)
+            try
             {
-                await UniTask.SwitchToMainThread();
-                try
-                {
-                    callBack(task);
-                }
-                catch (System.Exception e)
-                {
-                    Log.Error(LogTag.Firebase, $"TaskContinueWithOnMainThread 回调异常：{e}");
-                }
+                await task;
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception e)
+            {
+                Log.Error(LogTag.Firebase, $"TaskContinueWithOnMainThread 等待任务异常：{e}");
+                return;
+            }
+
+            if (!task.IsCompletedSuccessfully)
+            {
+                return;
+            }
+
+            await UniTask.SwitchToMainThread();
+            try
+            {
+                callBack(task);
+            }
+            catch (Exception e)
+            {
+                Log.Error(LogTag.Firebase, $"TaskContinueWithOnMainThread 回调异常：{e}");
             }
         }
 

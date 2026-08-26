@@ -32,6 +32,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         private readonly HashSet<string> m_QueuedOrderKeys = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
+        /// 当前批次正在处理的订单键集合，避免异步验单未结束时重复入队。
+        /// </summary>
+        private readonly HashSet<string> m_ProcessingOrderKeys = new HashSet<string>(StringComparer.Ordinal);
+
+        /// <summary>
         /// 验单队列是否正在处理中，防止并发重入。
         /// </summary>
         internal bool IsProcessing { get; private set; }
@@ -43,7 +48,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <returns>队列中已经存在该订单键时返回 true。</returns>
         internal bool Contains(string orderKey)
         {
-            return MobileOrderKey.IsValid(orderKey) && m_QueuedOrderKeys.Contains(orderKey);
+            return MobileOrderKey.IsValid(orderKey) &&
+                   (m_QueuedOrderKeys.Contains(orderKey) || m_ProcessingOrderKeys.Contains(orderKey));
         }
 
         /// <summary>
@@ -53,7 +59,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <returns>本次实际入队时返回 true。</returns>
         internal bool Enqueue(string orderKey)
         {
-            if (!MobileOrderKey.IsValid(orderKey) || m_QueuedOrderKeys.Contains(orderKey))
+            if (!MobileOrderKey.IsValid(orderKey) || Contains(orderKey))
             {
                 return false;
             }
@@ -87,7 +93,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 {
                     ct.ThrowIfCancellationRequested();
                     List<string> orderKeys = DrainQueuedOrderKeys();
-                    await processBatchAsync(orderKeys, ct);
+                    try
+                    {
+                        await processBatchAsync(orderKeys, ct);
+                    }
+                    finally
+                    {
+                        ReleaseProcessingOrderKeys(orderKeys);
+                    }
                 }
             }
             finally
@@ -103,6 +116,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             m_OrderKeyQueue.Clear();
             m_QueuedOrderKeys.Clear();
+            m_ProcessingOrderKeys.Clear();
             IsProcessing = false;
         }
 
@@ -117,10 +131,28 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             {
                 string orderKey = m_OrderKeyQueue.Dequeue();
                 m_QueuedOrderKeys.Remove(orderKey);
+                m_ProcessingOrderKeys.Add(orderKey);
                 orderKeys.Add(orderKey);
             }
 
             return orderKeys;
+        }
+
+        /// <summary>
+        /// 释放已完成批次的订单键，使后续新的验单请求可以再次入队。
+        /// </summary>
+        /// <param name="orderKeys">已完成处理的订单键列表。</param>
+        private void ReleaseProcessingOrderKeys(IReadOnlyList<string> orderKeys)
+        {
+            if (orderKeys == null)
+            {
+                return;
+            }
+
+            foreach (string orderKey in orderKeys)
+            {
+                m_ProcessingOrderKeys.Remove(orderKey);
+            }
         }
     }
 }

@@ -49,6 +49,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         private readonly HashSet<string> m_RuntimeHandledTransactionIds = new HashSet<string>();
 
         /// <summary>
+        /// 当前运行期已处理过的验单成功订单键；无持久化容器时作为兜底去重。
+        /// </summary>
+        private readonly List<string> m_RuntimeValidateSuccessOrderKeys = new List<string>();
+
+        /// <summary>
         /// 当前正在进行中的支付对应的配置表行 ID，供 MobilePurchaseService 读写；0 = 空闲。
         /// </summary>
         internal long InPayTableId { get => m_InPayTableId; set => m_InPayTableId = value; }

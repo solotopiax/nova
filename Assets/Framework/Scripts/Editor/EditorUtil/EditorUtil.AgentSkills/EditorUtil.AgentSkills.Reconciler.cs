@@ -170,6 +170,8 @@ namespace NovaFramework.Editor
             /// </summary>
             private static readonly HashSet<string> s_ActionAdapterKinds = new HashSet<string>(StringComparer.Ordinal)
             {
+                "agent-action",
+                "agent-action-blocked",
                 "csharp-api",
                 "cli",
                 "pipify",
@@ -1080,6 +1082,16 @@ namespace NovaFramework.Editor
 
                 ValidateCapabilityGroups(catalog, ids);
                 return result;
+            }
+
+            /// <summary>
+            /// 复用投影链的完整规则，只读校验当前 Agents Catalog 与全部 Skill 契约。
+            /// 能力浏览器仅在本入口通过后读取展示字段。
+            /// </summary>
+            internal static void ValidateCatalogForDiscovery(string agentsRoot)
+            {
+                string normalizedAgentsRoot = NormalizeDirectory(agentsRoot, "Agents 真源目录");
+                LoadAndValidateCatalog(normalizedAgentsRoot, out _, out _);
             }
 
             /// <summary>

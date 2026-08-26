@@ -39,6 +39,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 订单已经完成发货，不应重复发奖。
         /// </summary>
         AlreadyDelivered = 4,
+
+        /// <summary>
+        /// 服务端不存在该订单，属于终态失败。
+        /// </summary>
+        NotFound = 5,
     }
 
     /// <summary>
@@ -64,6 +69,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     return ThirdPayOrderDisposition.Failed;
                 case 5:
                     return ThirdPayOrderDisposition.AlreadyDelivered;
+                case 6:
+                    return ThirdPayOrderDisposition.NotFound;
                 default:
                     return ThirdPayOrderDisposition.Unknown;
             }
@@ -130,6 +137,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 case ThirdPayOrderDisposition.Deliverable:
                     return new ThirdPayOrderResolution(disposition, true, true, true, true);
                 case ThirdPayOrderDisposition.Failed:
+                    return new ThirdPayOrderResolution(disposition, true, false, false, true);
+                case ThirdPayOrderDisposition.NotFound:
                     return new ThirdPayOrderResolution(disposition, true, false, false, true);
                 case ThirdPayOrderDisposition.AlreadyDelivered:
                     return new ThirdPayOrderResolution(disposition, true, true, false, false);

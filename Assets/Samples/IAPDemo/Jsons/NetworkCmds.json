@@ -31,58 +31,10 @@
       "Path": "/v1/user/loginV1"
     },
     {
-      "Name": "ThirdGetProductList",
+      "Name": "AppCustomConfig",
       "Way": "HTTP_POST",
-      "HostKey": "ThirdServer",
-      "Path": "/en/third_pay/product_list"
-    },
-    {
-      "Name": "ThirdVerifyIap",
-      "Way": "HTTP_POST",
-      "HostKey": "ThirdServer",
-      "Path": "/en/third_pay/verify_iap"
-    },
-    {
-      "Name": "ThirdOpenURL",
-      "Way": "HTTP_URL",
-      "HostKey": "ThirdOpenServer",
-      "Path": "/taylor"
-    },
-    {
-      "Name": "ThirdQueryPendingOrder",
-      "Way": "HTTP_POST",
-      "HostKey": "ThirdServer",
-      "Path": "/en/third_pay/query_pending_order"
-    },
-    {
-      "Name": "ThirdGetPayChannelParams",
-      "Way": "HTTP_POST",
-      "HostKey": "ThirdServer",
-      "Path": "/en/third_pay/get_payment_customer_ids"
-    },
-    {
-      "Name": "ThirdGetVoucherInfo",
-      "Way": "HTTP_POST",
-      "HostKey": "ThirdServer",
-      "Path": "/en/game_recharge/gift_voucher/list"
-    },
-    {
-      "Name": "ThirdGiftVoucherDeduct",
-      "Way": "HTTP_POST",
-      "HostKey": "ThirdServer",
-      "Path": "/en/game_recharge/gift_voucher/deduct"
-    },
-    {
-      "Name": "ThirdGiftVoucherTestGrant",
-      "Way": "HTTP_POST",
-      "HostKey": "ThirdServer",
-      "Path": "/en/game_recharge/gift_voucher/test_grant"
-    },
-    {
-      "Name": "IAPGetPayDataStatistics",
-      "Way": "HTTP_POST",
-      "HostKey": "ThirdServer",
-      "Path": "/payment2/getPayData"
+      "HostKey": "GameServer",
+      "Path": "/v1/common/app-config"
     },
     {
       "Name": "IAPGoogleQueryPendingOrder",
@@ -121,10 +73,52 @@
       "Path": "/v1/mobile_pay/apple/verify_subscribe"
     },
     {
-      "Name": "AppCustomConfig",
+      "Name": "ThirdGetProductList",
       "Way": "HTTP_POST",
-      "HostKey": "GameServer",
-      "Path": "/v1/common/app-config"
+      "HostKey": "IAPServer",
+      "Path": "/v1/third_pay/product_list"
+    },
+    {
+      "Name": "ThirdVerifyIap",
+      "Way": "HTTP_POST",
+      "HostKey": "IAPServer",
+      "Path": "/v1/third_pay/verify_iap"
+    },
+    {
+      "Name": "ThirdQueryPendingOrder",
+      "Way": "HTTP_POST",
+      "HostKey": "IAPServer",
+      "Path": "/v1/third_pay/query_pending_order"
+    },
+    {
+      "Name": "ThirdGetPayChannelParams",
+      "Way": "HTTP_POST",
+      "HostKey": "IAPServer",
+      "Path": "/v1/third_pay/get_payment_customer_ids"
+    },
+    {
+      "Name": "ThirdOpenURL",
+      "Way": "HTTP_URL",
+      "HostKey": "ThirdOpenServer",
+      "Path": "/nova"
+    },
+    {
+      "Name": "ThirdGetVoucherInfo",
+      "Way": "HTTP_POST",
+      "HostKey": "IAPServer",
+      "Path": "/en/game_recharge/gift_voucher/list"
+    },
+    {
+      "Name": "ThirdGiftVoucherDeduct",
+      "Way": "HTTP_POST",
+      "HostKey": "IAPServer",
+      "Path": "/en/game_recharge/gift_voucher/deduct"
+    },
+    {
+      "Name": "ThirdGiftVoucherTestGrant",
+      "Way": "HTTP_POST",
+      "HostKey": "IAPServer",
+      "Path": "/en/game_recharge/gift_voucher/test_grant"
     }
   ]
 }
