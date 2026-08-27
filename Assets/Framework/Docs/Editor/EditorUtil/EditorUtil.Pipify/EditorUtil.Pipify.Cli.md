@@ -26,14 +26,17 @@
 | 方法 | 说明 |
 |---|---|
 | `private static string ReadArg(string name)` | 从 `Environment.GetCommandLineArgs()` 读取命名参数值；未命中返回 null |
-| `private static PipifySettingsSO FindSettings()` | `AssetDatabase.FindAssets` 查找 SO；多份时取首个并 Warning |
+| `private static PipifySettingsSO ResolveWorkspaceFromArgs()` | 成对解析显式 GUID；未提供时读取 Globals 当前工作区，不扫描首个资产 |
+| `private static T LoadAssetByGuid<T>(string guid, string label)` | 校验显式 GUID 可解析且资产类型正确 |
 | `private static IReadOnlyDictionary<string, string> ParseOverrides(string json)` | JSON 解析为覆盖字典（走 `Util.Json.Deserialize`）；json 为空则返回 null |
 
 ### 关键约束
 
 - `-executeMethod` 需要 `public static void`，`Cli` 必须为 `public static class`
 - JSON 解析**必须**走 `Util.Json.Deserialize<Dictionary<string, string>>`，禁 JsonUtility
-- `Log` 级别：Error（不可恢复）/ Warning（多份 SO 降级）/ Debug（正常流程）；禁 Log.Info
+- `-configMasterGuid` 与 `-pipifySettingsGuid` 必须成对提供；显式工作区一次原子写入 Globals
+- 未提供显式 GUID 时必须已有有效 Globals 工作区；缺失或漂移直接失败，不允许 `FindAssets()[0]` 降级
+- `Log` 级别：Error（不可恢复）/ Debug（正常流程）；禁 Log.Info
 - `c_LogPrefix` 复用 `EditorUtil.Pipify.Visitors.cs` 中的同名常量
 
 ## §11 使用示例
@@ -46,6 +49,8 @@ unity \
   -projectPath "$UNITY_PROJECT" \
   -executeMethod NovaFramework.Editor.EditorUtil+Pipify+Cli.Run \
   -batchName "Release_Android" \
+  -configMasterGuid "$CONFIG_MASTER_GUID" \
+  -pipifySettingsGuid "$PIPIFY_SETTINGS_GUID" \
   -params '{"ExportStep.OutputPath":"/build/android","ExportStep.BuildTarget":"Android"}'
 ```
 

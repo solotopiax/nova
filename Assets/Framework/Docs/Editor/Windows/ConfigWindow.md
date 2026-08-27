@@ -23,7 +23,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.HybridCLR.cs` | `ConfigWindow` | HybridCLR 面板：`DrawHybridCLRPanel`、`DrawHybridCLREntranceSection`、`DrawHybridCLRAotMetadataSection`、`DrawHybridCLRGameDllSection`；ReorderableList 辅助：`EnsureHybridCLRAotMetadataDllsList`、`EnsureHybridCLRGameDllsList`、`DrawHybridCLRDllEntryElementCore`（三字段：源位置 / 目标位置 / Asset 地址）、`OnAddHybridCLRAotMetadataDllEntry`、`OnAddHybridCLRGameDllEntry`、`OnAddHybridCLRDllEntry`；维度化接线：`ResolveHybridCLRDllListProp`（按当前坐标+HybridEditorConfigsMask 解析 Dll 列表 SerializedProperty，IsGlobal 回落顶层，mask 非全局时进入坐标即建份经 `EnsureHybridEditorConfigsOverrideIndexAtCoord` 含顶层快照，list 绑 Override 内嵌列表）、`CommitHybridCLRDllEntryField`（单字段写入经 Ensure 懒创建落 Override 份）、`OnPickFolderForRelativePathForDllEntry`（Dll 元素"选择"按钮，写回走 Commit）、`PickRelativeFolder`（弹面板+算相对路径共享逻辑）、`SyncFoldoutCapacity`（折叠状态容量同步）；两个 Dll 列表与字符串字段同等遵循平台/渠道/开发模式批量部署 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.CDN.cs` | `ConfigWindow` | CDN 面板包含“部署”“白名单部署”“Cloudflare 缓存清理”三个业务区；OSS 工具包缺失时显示安装引导并仅禁用前两项部署；白名单区直接编辑设备 ID 字符串数组、配置文件云端文件位置、三个 YooAsset 版本文件本地位置和版本文件云端目录，并通过独立按钮分别上传；所有字段沿用 `CDNEditorConfigsMask + CDNEditorConfigsOverrides` 维度快照、WorkingCopy 延迟保存与 `CreateCdnConfigSnapshot` 执行快照机制。 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.YooAsset.cs` | `ConfigWindow` | YooAsset 配置面板：`DrawRightPanelYooAsset`、`DrawYooAssetSettingsPathRow`、`DrawBundleCollectorSettingPathRow`、`BrowseYooAssetSettingsPath`、`BrowseBundleCollectorSettingPath`、`ToProjectRelativePath`（绝对路径 → 项目根相对）；内联标题行：`DrawYooAssetTitleWithMask`（标题+三 toggle 行委托 `DrawTitleWithMaskCore` 渲染，HelpBox 留本方法；toggle 回调作用于真实资产 m_Master，改完即时 SetDirty + SaveAssetIfDirty + `ReInjectYooAsset`）；`ReInjectYooAsset`（调 `DimensionalResolver.ResolveYooAsset` + `YooAssetInjector.InjectByPath`）；`SyncYooAssetDimensionToWorkingCopy`（维度 toggle 直写 m_Master 后将 YooAssetEditorConfigsMask/YooAssetEditorConfigsOverrides 补同步到 WorkingCopy） |
-| `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.BindGuide.cs` | `ConfigWindow` | 绑定引导面板（m_Master 为 null 时显示）：`DrawBindGuide`、`BrowseAndBindConfigMaster`、`CreateAndBindConfigMaster`、`BindMaster` |
+| `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.BindGuide.cs` | `ConfigWindow` | 绑定引导面板（m_Master 为 null 时显示）：`DrawBindGuide`、`BrowseAndBindConfigMaster`、`CreateAndBindConfigMaster`、`BindMaster`；绑定后重建 WorkingCopy，不直接将 SerializedObject 绑到真实资产 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Dialogs.cs` | `ConfigWindow` | 弹框：`ConfirmDiscardDirty`、`HasAnyError`、`ShowValidationDialog`、`ConfirmValidationWarnings`、`BuildValidationMessage`、`PromptMissingRefsIfAny`（启动时检测并可清理 SDK / Kit 的缺失 `SerializeReference`；清理后保存真实 Master 并重建 WorkingCopy） |
 
 ---
@@ -150,7 +150,8 @@ public static void OpenKitConfigSection(ConfigMasterSO master, PlatformType plat
 
 ```
 OnEnable()
-  ├─ EditorUtil.Config.WorkspaceActive.Get() → m_Master（四段回退；找不到则 null）
+  ├─ WorkspaceActive.ReconcileScene(activeScene.path) → 写入或恢复完整工作区
+  ├─ EditorUtil.Config.WorkspaceActive.Get() → m_Master（只读当前持久化绑定；找不到则 null）
   ├─ m_Master != null:
   │    ├─ new SerializedObject(m_Master) → m_MasterSO
   │    ├─ StructureGuard.SyncEnumGrid(m_Master)    补齐矩阵
@@ -167,9 +168,10 @@ OnDisable()
   └─ （无持久化操作；导出目标由 m_Master.ExportTarget 随 SO 保存持久化）
 
 OnSceneOpenedRefresh(scene, mode)   仅响应 Single 加载模式
+  ├─ WorkspaceActive.ReconcileScene(scene.path) → Sample 写入 / 业务恢复
   ├─ WorkspaceActive.Get() → fresh
   ├─ fresh == m_Master → return（无变化）
-  └─ fresh != m_Master → m_Master = fresh; new SerializedObject; YooAssetInjector.Inject; Repaint
+  └─ fresh != m_Master → 收敛旧 WorkingCopy 脏状态；重建新 WorkingCopy；Repaint
 
 OpenLubanSection(result)
   ├─ GetWindow<ConfigWindow>() → 打开或聚焦窗口

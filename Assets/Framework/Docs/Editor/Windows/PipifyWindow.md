@@ -56,7 +56,11 @@ public static void Open()
 | 保存按钮 (`OnClickSave`) | `EditorUtility.SetDirty` + `AssetDatabase.SaveAssets` + `m_IsDirty = false`；无脏数据时按钮禁用 |
 | 打开文件夹 (`OnClickRevealInFinder`) | `EditorUtility.RevealInFinder(AssetDatabase.GetAssetPath(m_Settings))`；未绑定时静默返回 |
 
-**存档绑定恢复：** `OnEnable` 调 `TryAutoBindSettings`，优先按当前 active scene 所属 sample 逐级向上推断配对的 `Editor/PipifySettings.asset`；命中则直接绑定该 sample 自身配置。仅当当前 scene 不在 sample 下或未找到配对文件时，才回退到 `AssetDatabase.FindAssets("t:PipifySettingsSO")` 扫全项目兜底。窗口同时监听 `sceneOpened`，`Single` 模式切 scene 后会自动重绑到新 sample 对应的配置；若存在未保存改动，则先走 `ConfirmDiscardDirty`。绑定状态完全由项目内资产自身承载，不依赖 EditorPrefs，UPM 全新安装/换项目场景仍可即开即用。
+**存档绑定恢复：** `OnEnable` 与 `Single sceneOpened` 都先调用 `WorkspaceActive.ReconcileScene`，随后只读取 Globals 中与当前 ConfigMaster 成对保存的 `PipifySettingsSO`。进入 Sample 会写入 Sample Pipify 并保存业务 Pipify，返回业务 Scene 后成对恢复。未绑定或旧工程存在多个候选时窗口保持空状态，不再通过 `FindAssets` 取第一份。
+
+Scene 已切换时若旧 Pipify 有未保存内容，窗口只允许“保存旧配置并切换”或“丢弃旧改动并切换”，不会继续保留与 Globals 不一致的旧绑定。手动选择 PipifySettings 会同步更新 Globals。
+
+CLI 可使用 `-configMasterGuid` 与 `-pipifySettingsGuid` 成对指定工作区；两者必须同时提供，并经过类型和 Sample 配对校验后一次原子写入。未提供时只使用 Globals 已绑定的配置，不进行全工程首项扫描。
 
 > **铁律：** 框架范围（`Assets/Framework/Scripts`）禁用 `EditorPrefs.*`。EditorPrefs 是 user-level 持久化，会跨项目串味且无法随包分发；存档/选择类状态一律通过项目内资产承载，临时态保留在内存即可。
 

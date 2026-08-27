@@ -24,7 +24,8 @@ namespace NovaFramework.Editor
         /// </summary>
         private void OnEnable()
         {
-            m_Master = EditorUtil.Config.WorkspaceActive.Get();
+            bool reconciled = EditorUtil.Config.WorkspaceActive.ReconcileScene(EditorSceneManager.GetActiveScene().path);
+            m_Master = reconciled ? EditorUtil.Config.WorkspaceActive.Get() : null;
             if (m_Master != null)
             {
                 RebuildWorkingCopy();
@@ -33,6 +34,7 @@ namespace NovaFramework.Editor
                 m_LastKnownChannel = m_Master.CurrentChannel;
                 EditorUtil.Config.YooAssetInjector.Inject(m_Master);
             }
+            EditorSceneManager.sceneOpened -= OnSceneOpenedRefresh;
             EditorSceneManager.sceneOpened += OnSceneOpenedRefresh;
             RunLubanCheck();
             RunPython3Check();
@@ -171,10 +173,10 @@ namespace NovaFramework.Editor
         private void OnSceneOpenedRefresh(Scene scene, OpenSceneMode mode)
         {
             if (mode != OpenSceneMode.Single) return;
+            if (!EditorUtil.Config.WorkspaceActive.ReconcileScene(scene.path)) return;
             ConfigMasterSO fresh = EditorUtil.Config.WorkspaceActive.Get();
             if (ReferenceEquals(fresh, m_Master)) return;
-            // 切换前检查脏数据；用户取消则中止场景切换（保留当前 Master 与 WorkingCopy）
-            if (!ConfirmDiscardDirty()) return;
+            ResolveDirtyForSceneChange();
             m_Master = fresh;
             DestroyWorkingCopy();
             if (m_Master != null)

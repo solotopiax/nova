@@ -202,7 +202,7 @@ namespace NovaFramework.Editor
             /// 获取工程相对路径。
             /// </summary>
             /// <param name="path">路径。</param>
-            /// <returns>工程相对路径。</returns>
+            /// <returns>工程内绝对路径对应的相对路径；其他输入保持原有路径语义并统一为正斜杠。</returns>
             public static string GetProjectRelativePath(string path)
             {
                 if (string.IsNullOrEmpty(path))
@@ -210,16 +210,82 @@ namespace NovaFramework.Editor
                     return string.Empty;
                 }
 
-                if (Util.SysIO.Path.IsPathRooted(path))
+                string normalizedPath = path.Replace('\\', '/');
+                if (!Util.SysIO.Path.IsPathRooted(path))
                 {
-                    string relativePath = UnityEditor.FileUtil.GetProjectRelativePath(path);
-                    if (!string.IsNullOrEmpty(relativePath))
-                    {
-                        return relativePath.Replace('\\', '/');
-                    }
+                    return normalizedPath;
                 }
 
-                return path.Replace('\\', '/');
+                // 保持既有兼容语义：只有工程内绝对路径转换为相对路径，工程根及工程外路径仍返回原值。
+                return TryGetProjectRelativePathWithinRoot(path, out string relativePath) && relativePath != "."
+                    ? relativePath
+                    : normalizedPath;
+            }
+
+            /// <summary>
+            /// 尝试把路径转换为 Assets 目录下可供 AssetDatabase 使用的工程相对路径。
+            /// </summary>
+            /// <param name="path">绝对路径或工程根相对路径。</param>
+            /// <param name="assetPath">成功时返回以 Assets/ 开头且使用正斜杠的路径。</param>
+            /// <returns>路径是否位于当前工程的 Assets 目录内。</returns>
+            internal static bool TryGetProjectAssetPath(string path, out string assetPath)
+            {
+                assetPath = string.Empty;
+                if (!TryGetProjectRelativePathWithinRoot(path, out string relativePath) ||
+                    !relativePath.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                assetPath = "Assets/" + relativePath.Substring("Assets/".Length);
+                return true;
+            }
+
+            /// <summary>
+            /// 尝试以当前 Unity 工程根为唯一基准计算相对路径，并拒绝工程外或异平台绝对路径。
+            /// </summary>
+            /// <param name="path">待转换路径。</param>
+            /// <param name="relativePath">成功时返回工程根相对路径。</param>
+            /// <returns>路径是否可安全表示为当前工程根相对路径。</returns>
+            private static bool TryGetProjectRelativePathWithinRoot(string path, out string relativePath)
+            {
+                relativePath = string.Empty;
+                if (string.IsNullOrEmpty(path))
+                {
+                    return false;
+                }
+
+                string normalizedPath = path.Replace('\\', '/');
+                bool hasWindowsDriveRoot = normalizedPath.Length >= 3 &&
+                                           char.IsLetter(normalizedPath[0]) &&
+                                           normalizedPath[1] == ':' &&
+                                           normalizedPath[2] == '/';
+                bool isNativeAbsolutePath = Util.SysIO.Path.IsPathRooted(path);
+                if (!isNativeAbsolutePath &&
+                    (hasWindowsDriveRoot || normalizedPath.StartsWith("//", StringComparison.Ordinal)))
+                {
+                    return false;
+                }
+
+                try
+                {
+                    string projectRoot = Util.SysIO.Path.GetFullPath(
+                        Util.SysIO.Path.Combine(Application.dataPath, ".."));
+                    string fullPath = isNativeAbsolutePath
+                        ? Util.SysIO.Path.GetFullPath(path)
+                        : Util.SysIO.Path.GetFullPath(Util.SysIO.Path.Combine(projectRoot, normalizedPath));
+                    relativePath = Util.SysIO.Path
+                        .GetRelativePath(projectRoot, fullPath)
+                        .Replace('\\', '/');
+                    return !Util.SysIO.Path.IsPathRooted(relativePath) &&
+                           relativePath != ".." &&
+                           !relativePath.StartsWith("../", StringComparison.Ordinal);
+                }
+                catch (Exception)
+                {
+                    relativePath = string.Empty;
+                    return false;
+                }
             }
 
             /// <summary>

@@ -24,8 +24,8 @@ namespace NovaFramework.Editor
     internal sealed partial class PipifyWindow : EditorWindow
     {
         /// <summary>
-        /// 窗口启用时：优先按当前 active scene 所属 sample 自动绑定配对的 PipifySettingsSO，
-        /// 再回退到全项目扫描兜底；同时订阅场景切换监听，避免多 sample 共存时切 scene 后串味。
+        /// 窗口启用时从 WorkspaceActive 读取当前 PipifySettingsSO，
+        /// 同时订阅场景切换监听，确保 Sample 与业务工作区成对切换。
         /// </summary>
         private void OnEnable()
         {
@@ -43,51 +43,32 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 自动绑定 PipifySettingsSO：
-        /// ① 当前 active scene 若位于 Assets/Samples/... 下，优先逐级向上推断配对的 Editor/PipifySettings.asset；
-        /// ② 推断失败时再全项目扫描兜底；
-        /// ③ 全项目多份时保留 Warning，提示用户可在顶栏手动切换。
+        /// 从 WorkspaceActive 自动绑定 PipifySettingsSO。
+        /// 未绑定或存在多个旧版迁移候选时保持空状态，不按 AssetDatabase 顺序猜测。
         /// </summary>
         private void TryAutoBindSettings()
         {
-            PipifySettingsSO sceneMatched = EditorUtil.Pipify.FindSettingsForActiveScene();
-            if (sceneMatched != null)
+            if (!EditorUtil.Config.WorkspaceActive.ReconcileScene(EditorSceneManager.GetActiveScene().path))
             {
-                BindSettingsSilently(sceneMatched);
+                BindSettingsSilently(null);
                 return;
             }
-
-            string[] guids = AssetDatabase.FindAssets("t:" + nameof(PipifySettingsSO));
-            if (guids == null || guids.Length == 0) return;
-            if (guids.Length > 1)
-            {
-                Log.Warning(LogTag.Editor, "{0} 项目内存在 {1} 份 PipifySettingsSO 资产；当前 scene 未匹配到 sample 内配对文件，已回退绑定首个。如需切换请使用顶部「编辑器存档文件」选择框。", c_LogTag, guids.Length);
-            }
-            for (int i = 0; i < guids.Length; i++)
-            {
-                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
-                if (string.IsNullOrEmpty(path)) continue;
-                PipifySettingsSO loaded = EditorUtil.Asset.Operator.LoadAt<PipifySettingsSO>(path);
-                if (loaded == null) continue;
-                BindSettingsSilently(loaded);
-                return;
-            }
+            BindSettingsSilently(EditorUtil.Config.WorkspaceActive.GetPipifySettings());
         }
 
         /// <summary>
-        /// scene 切换回调（仅响应 Single 模式）：
-        /// 切到新 sample 后重新按 active scene 绑定对应的 PipifySettingsSO，避免窗口常开时继续指向旧 sample。
+        /// Scene 切换回调（仅响应 Single 模式）：
+        /// 通过 WorkspaceActive 完成 Sample 激活或业务绑定恢复，不自行扫描资产。
         /// </summary>
         private void OnSceneOpenedRefresh(Scene scene, OpenSceneMode mode)
         {
             if (mode != OpenSceneMode.Single) return;
 
-            PipifySettingsSO fresh = EditorUtil.Pipify.FindSettingsForScene(scene.path);
-            if (fresh == null)
-                fresh = EditorUtil.Pipify.FindFirstSettings();
+            if (!EditorUtil.Config.WorkspaceActive.ReconcileScene(scene.path)) return;
+            PipifySettingsSO fresh = EditorUtil.Config.WorkspaceActive.GetPipifySettings();
 
             if (ReferenceEquals(fresh, m_Settings)) return;
-            if (!ConfirmDiscardDirty()) return;
+            ResolveDirtyForSceneChange();
 
             BindSettingsSilently(fresh);
             Repaint();
@@ -169,10 +150,12 @@ namespace NovaFramework.Editor
         private void RebindSettings(PipifySettingsSO newSettings)
         {
             if (!ConfirmDiscardDirty()) return;
-            m_Settings = newSettings;
-            m_SettingsSO = newSettings == null ? null : new SerializedObject(newSettings);
-            m_IsDirty = false;
-            m_SelectedBatchIndex = -1;
+            if (!EditorUtil.Config.WorkspaceActive.SetPipifySettings(newSettings))
+            {
+                EditorUtility.DisplayDialog("绑定失败", "无法写入 ProjectSettings/Nova/Globals.json，PipifySettings 未切换。", "知道了");
+                return;
+            }
+            BindSettingsSilently(newSettings);
         }
 
         /// <summary>
@@ -234,6 +217,30 @@ namespace NovaFramework.Editor
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Scene 已完成切换后收敛旧 PipifySettings 的脏数据。
+        /// 工作区不能继续绑定旧资产，因此只提供保存或丢弃两种结果，不允许取消后形成 UI/Globals 分叉。
+        /// </summary>
+        private void ResolveDirtyForSceneChange()
+        {
+            if (m_SettingsSO == null || !m_IsDirty) return;
+            bool save = EditorUtility.DisplayDialog(
+                "场景已切换",
+                "当前 PipifySettings 有未保存改动。工作区必须跟随新场景，请选择保存旧配置后切换，或丢弃旧改动后切换。",
+                "保存旧配置并切换",
+                "丢弃旧改动并切换");
+            if (save)
+            {
+                if (m_Settings != null) EditorUtility.SetDirty(m_Settings);
+                AssetDatabase.SaveAssets();
+            }
+            else
+            {
+                m_SettingsSO.Update();
+            }
+            m_IsDirty = false;
         }
 
         /// <summary>

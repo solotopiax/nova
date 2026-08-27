@@ -39,6 +39,7 @@ related:
 | YooAssetSettings 生命周期 | 发布产物只保留 `Editor/YooAssetSettings.asset` 权威源 | 发布产物只保留 `Editor/YooAssetSettings.asset` 权威源 | 两侧都禁止生成常驻 Resources 副本；消费工程正式 Player 构建时统一临时 staging |
 | ConfigRuntime 字段防呆 | （MainDemo 编辑期由 ConfigWindow 守门） | `_copy_sample_to_pkg` 内 Namespace + EntranceProcedure 校验 | 子包要有等价校验，主包靠 ConfigWindow 守门 |
 | Prefab override 注入 | `inject_overrides_into_maindemo`（NovaPrefab 业务字段脱敏 + 还原） | 子包按需复用同一函数族，禁自造分叉 | 同一字段集走同一注入函数 |
+| Sample 导入期重写器 | `MainDemo/Scripts/Editor/SamplePathRewriter.cs` | 各 SDK/Kit Demo 的同名独立副本 | 实现、注释与完成标记语义必须同版本演进 |
 
 实施 checklist：
 
@@ -46,6 +47,7 @@ related:
 2. 共享的常量（扫描扩展名、跳过目录）必须抽到模块顶层常量；子包代码引用同一常量，禁字面量再写一遍
 3. 新增字段到 manifest 时，主/子包扫描入口必须在同一个 PR 内同步改
 4. 改变 YooAssetSettings 等构建期资产的生命周期时，发布链主包与子包必须同步采用同一策略；当前统一遵循 [[ADR-060-yooasset-settings-global-resources-copy|ADR-060]] 的构建期 staging，不得在任一发布分支恢复永久复制
+5. 修改 Sample 内共享的 Editor 基础脚本时，必须先全量枚举同名副本，再同步修改并校验关键方法一致；不得只修 MainDemo 后便结束。
 
 ## 为什么这么做（Why）
 
@@ -62,6 +64,7 @@ related:
 - 写新主包专属逻辑时不在 module 顶部 TODO 标注"子包等价点"
 - 子包同款逻辑用字面量复读主包常量，导致只改一边
 - reviewer 只看主包改动，子包流水放过审
+- 修复 MainDemo 的 `SamplePathRewriter` 后没有检索各 SDK/Kit Demo 中的同名独立副本
 - 只从主框架或某个子包移除永久 YooAssetSettings 副本，另一条发布路径仍继续复制
 
 ## 跨项目复用提示

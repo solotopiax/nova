@@ -1,5 +1,15 @@
 # Changelog — com.solotopia.nova.framework
 
+## [Unreleased]
+
+## [0.6.19] - 2026-08-27
+
+### Fixed
+
+- Sample 覆盖导入会重新校验全部路径目标，等待尚未落盘的资产后再写完成标记；发版阶段拒绝生成空重写清单，避免升级后继续保留旧版本路径。
+- Sample 场景会把配对的 ConfigMaster 与 PipifySettings 原子写入 `Globals.json`，同时保存进入前的业务绑定；切回业务场景时成对恢复，Pipify Window/CLI 与构建只读入口不再按首个资产猜测。
+- ConfigWindow 在未绑定引导页选择或新建 ConfigMaster 后正确重建 WorkingCopy，后续编辑与保存不再失效。
+
 ## [0.6.18] - 2026-08-26
 
 ### Added

@@ -11,12 +11,11 @@
  *            开发工程旧路径。本脚本读取 SamplePathManifest，把所有列入
  *            清单的资产文件中的字符串前缀替换为 import 后的真实路径
  *            （形如 "Assets/Samples/Nova Framework/{version}/FirebaseDemo"）。
- *            通过写入标记文件防重入，保证整套 sample 仅重写一次。
+ *            通过完成标记减少重复扫描，并在包升级后重新校验待重写路径。
  ***************************************************************/
 
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEngine;
@@ -26,15 +25,17 @@ namespace NovaFramework.Sdk.Firebase.Samples.Editor
     /// <summary>
     /// Sample import 后路径自适应重写器。
     /// 域重载完成后延迟扫描自身所在 Sample 根目录，按 SamplePathManifest 描述的清单
-    /// 把所有目标资产中的开发工程路径前缀替换为 import 后的真实路径，写入标记防重入。
+    /// 把所有目标资产中的开发工程路径前缀替换为 import 后的真实路径，完成后写入标记。
     /// </summary>
     [InitializeOnLoad]
     internal static class SamplePathRewriter
     {
         /// <summary>
-        /// SamplePathManifest 资产名（不含扩展名）。发版脚本生成时使用同名。
+        /// 导入过程中文件尚未全部落盘时的最大延迟重试次数。
         /// </summary>
-        private const string c_ManifestAssetName = "SamplePathManifest";
+        private const int c_MaxDelayedRetries = 5;
+
+        private static int s_DelayedRetryCount;
 
         /// <summary>
         /// 静态构造，域重载完成后延迟执行重写检查。
@@ -45,51 +46,91 @@ namespace NovaFramework.Sdk.Firebase.Samples.Editor
         }
 
         /// <summary>
-        /// 主入口：定位 manifest，判断是否已重写，未重写则执行字符串前缀替换并落地标记。
+        /// 主入口：遍历当前工程中所有同类 manifest，分别重写其所属 Sample。
+        /// 旧 Sample 留存的 manifest 无效时只跳过该项，不能阻断新导入 Sample 的路径重写。
         /// </summary>
         private static void RunRewrite()
         {
-            SamplePathManifest manifest = LocateManifest();
-            if (manifest == null)
+            IReadOnlyList<SamplePathManifest> manifests = LocateManifests();
+            bool assetChanged = false;
+            bool retryRequired = false;
+            foreach (SamplePathManifest manifest in manifests)
             {
-                return;
+                string sampleRoot = LocateSampleRoot(manifest);
+                if (string.IsNullOrEmpty(sampleRoot) || sampleRoot == manifest.DevSampleRoot)
+                {
+                    continue;
+                }
+
+                if (manifest.RewriteTargets.Count == 0)
+                {
+                    Log.Warning(LogTag.Editor,
+                        $"[SamplePathRewriter] 重写清单为空，拒绝写入完成标记: {sampleRoot}");
+                    continue;
+                }
+
+                string markerPath = $"{sampleRoot}/{manifest.RewrittenMarker}";
+                bool hasPendingRewrite = ContainsDevSampleRoot(manifest, sampleRoot, out bool allTargetsAvailable);
+                if (File.Exists(markerPath) && !hasPendingRewrite && allTargetsAvailable)
+                {
+                    continue;
+                }
+
+                int rewrittenCount = RewriteAll(manifest, sampleRoot);
+                hasPendingRewrite = ContainsDevSampleRoot(manifest, sampleRoot, out allTargetsAvailable);
+                if (!allTargetsAvailable || hasPendingRewrite)
+                {
+                    retryRequired |= !allTargetsAvailable || hasPendingRewrite;
+                    if (allTargetsAvailable || s_DelayedRetryCount >= c_MaxDelayedRetries)
+                    {
+                        Log.Warning(LogTag.Editor,
+                            $"[SamplePathRewriter] Sample 路径尚未全部就绪，未写入完成标记: {sampleRoot}");
+                    }
+                    continue;
+                }
+
+                File.WriteAllText(markerPath, $"sampleRoot={sampleRoot}\nrewrittenCount={rewrittenCount}\n");
+                assetChanged |= rewrittenCount > 0;
+
+                Log.Debug(LogTag.Editor,
+                    $"[SamplePathRewriter] 已重写 {rewrittenCount} 个资产路径前缀: {manifest.DevSampleRoot} -> {sampleRoot}");
             }
 
-            string sampleRoot = LocateSampleRoot(manifest);
-            if (string.IsNullOrEmpty(sampleRoot))
+            if (assetChanged)
             {
-                return;
+                AssetDatabase.Refresh();
             }
 
-            if (sampleRoot == manifest.DevSampleRoot)
+            if (retryRequired && s_DelayedRetryCount < c_MaxDelayedRetries)
             {
-                return;
+                s_DelayedRetryCount++;
+                EditorApplication.delayCall += RunRewrite;
             }
-
-            string markerPath = $"{sampleRoot}/{manifest.RewrittenMarker}";
-            if (File.Exists(markerPath))
+            else
             {
-                return;
+                s_DelayedRetryCount = 0;
             }
-
-            int rewrittenCount = RewriteAll(manifest, sampleRoot);
-            File.WriteAllText(markerPath, $"sampleRoot={sampleRoot}\nrewrittenCount={rewrittenCount}\n");
-            AssetDatabase.Refresh();
-
-            Log.Debug(LogTag.Editor, $"[SamplePathRewriter] 已重写 {rewrittenCount} 个资产路径前缀: {manifest.DevSampleRoot} -> {sampleRoot}");
         }
 
         /// <summary>
-        /// 查找 SamplePathManifest 资产；通常每个 Sample 根目录下唯一一份。
+        /// 查找当前工程中所有 SamplePathManifest 资产。
         /// </summary>
-        /// <returns>找到的 manifest；找不到返回 null。</returns>
-        private static SamplePathManifest LocateManifest()
+        /// <returns>所有可加载的 manifest。</returns>
+        private static IReadOnlyList<SamplePathManifest> LocateManifests()
         {
             string[] guids = AssetDatabase.FindAssets($"t:{nameof(SamplePathManifest)}");
-            return guids
-                .Select(AssetDatabase.GUIDToAssetPath)
-                .Select(AssetDatabase.LoadAssetAtPath<SamplePathManifest>)
-                .FirstOrDefault(asset => asset != null);
+            List<SamplePathManifest> manifests = new List<SamplePathManifest>(guids.Length);
+            foreach (string guid in guids)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                SamplePathManifest manifest = AssetDatabase.LoadAssetAtPath<SamplePathManifest>(assetPath);
+                if (manifest != null)
+                {
+                    manifests.Add(manifest);
+                }
+            }
+
+            return manifests;
         }
 
         /// <summary>
@@ -118,6 +159,38 @@ namespace NovaFramework.Sdk.Firebase.Samples.Editor
             }
 
             return manifestPath.Substring(0, idx + 1 + System.IO.Path.GetFileName(devRoot).Length);
+        }
+
+        /// <summary>
+        /// 检查清单目标是否仍包含开发态 Sample 根路径，同时确认目标文件已全部导入。
+        /// </summary>
+        /// <param name="manifest">路径清单。</param>
+        /// <param name="sampleRoot">当前 Sample 的真实根目录。</param>
+        /// <param name="allTargetsAvailable">所有清单目标都已存在时为 true。</param>
+        /// <returns>任一目标仍包含开发态根路径时为 true。</returns>
+        private static bool ContainsDevSampleRoot(
+            SamplePathManifest manifest,
+            string sampleRoot,
+            out bool allTargetsAvailable)
+        {
+            allTargetsAvailable = true;
+            bool containsDevSampleRoot = false;
+            foreach (string relative in manifest.RewriteTargets)
+            {
+                string full = $"{sampleRoot}/{relative}";
+                if (!File.Exists(full))
+                {
+                    allTargetsAvailable = false;
+                    continue;
+                }
+
+                if (File.ReadAllText(full).Contains(manifest.DevSampleRoot))
+                {
+                    containsDevSampleRoot = true;
+                }
+            }
+
+            return containsDevSampleRoot;
         }
 
         /// <summary>

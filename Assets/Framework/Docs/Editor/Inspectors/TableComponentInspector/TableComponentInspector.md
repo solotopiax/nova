@@ -37,7 +37,7 @@ Luban 加载中的“工程”选择对应 Luban 工程，并继续选择导出�
 [1] [可编辑 Asset 地址]    →    Assets/.../实际导出文件
 ```
 
-右向箭头和右侧导出文件路径与左侧输入框保持同一行垂直居中。路径来自导出描述的“数据输出目录”：框架扫描磁盘中已经存在的实际导出文件，再转换为 Unity AssetPath。左侧 Asset 地址才会继续按 `AssetComponent` 的默认资源包执行 YooAsset 收集规则，通过实际 AssetPath 得到最终 Address。尚未生成实际文件时无法建立清单，也不会提前推测路径。数据导出成功或切换 Luban 工程、导出描述、运行时数据 Target 时自动刷新；用户手工修改后的地址会在后续批量导出刷新中保留。Inspector 不提供手动刷新按钮或 YooAsset Package 选择器。
+右向箭头和右侧导出文件路径与左侧输入框保持同一行垂直居中。路径来自导出描述的“数据输出目录”：框架扫描磁盘中已经存在的实际导出文件，再以工程根为唯一基准转换为 Unity AssetPath。Table 只保存以 `Assets/` 开头、使用正斜杠的工程相对路径，不会把 Windows 盘符路径写入 `AssetPath`。Binding 声明的每个 `DataFile` 始终保留一行；文件暂时缺失、位于工程外或转换失败时仅将该行 `AssetPath` 留空并显示“未解析”，不会删除配置项。Inspector 启用时会同步迁移旧配置：工程内绝对路径转为 `Assets/...`，其他无效路径清空，但同样不会删除对应数据项。左侧 Asset 地址才会继续按 `AssetComponent` 的默认资源包执行 YooAsset 收集规则，通过实际 AssetPath 得到最终 Address。数据导出成功或切换 Luban 工程、导出描述、运行时数据 Target 时自动刷新；用户手工修改后的地址会在后续批量导出刷新中保留。Inspector 不提供手动刷新按钮或 YooAsset Package 选择器。
 
 ## 批量导出
 

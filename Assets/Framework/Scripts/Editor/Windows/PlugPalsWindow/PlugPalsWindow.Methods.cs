@@ -438,7 +438,7 @@ namespace NovaFramework.Editor
         /// </summary>
         private void EnsureColumnBorders()
         {
-            if (m_ColBorders != null && m_ColBorders.Length == 5)
+            if (m_ColBorders != null && m_ColBorders.Length == 6)
             {
                 return;
             }
@@ -447,6 +447,7 @@ namespace NovaFramework.Editor
             m_ColBorders = new float[]
             {
                 w * 0.30f,
+                w - 490f,
                 w - 390f,
                 w - 290f,
                 w - 190f,
@@ -460,7 +461,7 @@ namespace NovaFramework.Editor
         private void DrawHeader()
         {
             EnsureColumnBorders();
-            m_ColBorders[4] = position.width;
+            m_ColBorders[5] = position.width;
 
             EditorUtil.Draw.Space(5);
             Rect row = GUILayoutUtility.GetRect(position.width, c_RowHeight + 4f);
@@ -474,14 +475,15 @@ namespace NovaFramework.Editor
             GUI.Label(new Rect(m_ColBorders[0] + 4f, y, m_ColBorders[1] - m_ColBorders[0] - 4f, h), "描述", EditorStyles.whiteLargeLabel);
             GUI.Label(new Rect(m_ColBorders[1], y, m_ColBorders[2] - m_ColBorders[1], h), "本地版本", m_VersionHeaderStyle);
             GUI.Label(new Rect(m_ColBorders[2], y, m_ColBorders[3] - m_ColBorders[2], h), "最新版本", m_VersionHeaderStyle);
-            GUI.Label(new Rect(m_ColBorders[3], y, m_ColBorders[4] - m_ColBorders[3], h), "版本操作", m_VersionHeaderStyle);
+            GUI.Label(new Rect(m_ColBorders[3], y, m_ColBorders[4] - m_ColBorders[3], h), "版本日志", m_VersionHeaderStyle);
+            GUI.Label(new Rect(m_ColBorders[4], y, m_ColBorders[5] - m_ColBorders[4], h), "版本操作", m_VersionHeaderStyle);
 
             DrawColumnSeparators(y, h);
             HandleColumnDrag(row);
         }
 
         /// <summary>
-        /// 在指定 Y 范围内绘制四条列分隔线，并注册拖拽光标。
+        /// 在指定 Y 范围内绘制五条列分隔线，并注册拖拽光标。
         /// </summary>
         /// <param name="y">行顶部 Y 坐标。</param>
         /// <param name="h">行高度。</param>
@@ -489,7 +491,7 @@ namespace NovaFramework.Editor
         {
             Color prevColor = GUI.color;
             GUI.color = s_SeparatorColor;
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 5; i++)
             {
                 GUI.DrawTexture(new Rect(m_ColBorders[i] - 0.5f, y, 1f, h), EditorGUIUtility.whiteTexture);
                 Rect handle = new Rect(m_ColBorders[i] - c_DragHandleHalfWidth, y, c_DragHandleHalfWidth * 2f, h);
@@ -508,7 +510,7 @@ namespace NovaFramework.Editor
 
             if (evt.type == EventType.MouseDown && evt.button == 0)
             {
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     Rect handle = new Rect(m_ColBorders[i] - c_DragHandleHalfWidth, headerRect.y, c_DragHandleHalfWidth * 2f, headerRect.height);
                     if (handle.Contains(evt.mousePosition))
@@ -587,7 +589,8 @@ namespace NovaFramework.Editor
                 GUI.contentColor = prevContent;
             }
 
-            DrawRowActionArea(entry, new Rect(m_ColBorders[3], y, m_ColBorders[4] - m_ColBorders[3], h));
+            DrawRowChangelogArea(entry, new Rect(m_ColBorders[3], y, m_ColBorders[4] - m_ColBorders[3], h));
+            DrawRowActionArea(entry, new Rect(m_ColBorders[4], y, m_ColBorders[5] - m_ColBorders[4], h));
 
             DrawColumnSeparators(y, h);
 
@@ -1026,7 +1029,11 @@ namespace NovaFramework.Editor
                         }
                     }
 
-                    EditorUtil.Draw.Button("查看日志", c_ColChangelogBtnWidth, false, () => OpenChangelogAsync(entry), GUILayout.Height(c_RowBtnHeight));
+                    EditorUtil.Draw.DisabledGroup(m_IsFetchingChangelog, () =>
+                    {
+                        string changelogLabel = IsFetchingChangelog(entry) ? "加载中..." : "查看日志";
+                        EditorUtil.Draw.Button(changelogLabel, c_ColChangelogBtnWidth, false, () => OpenChangelogAsync(entry), GUILayout.Height(c_RowBtnHeight));
+                    });
                 });
             });
         }
@@ -1041,9 +1048,11 @@ namespace NovaFramework.Editor
         {
             if (m_IsFetchingChangelog) return;
             m_IsFetchingChangelog = true;
+            m_FetchingChangelogKey = GetFoldoutKey(entry);
+            Repaint();
             try
             {
-                string version = !string.IsNullOrEmpty(entry.LocalVersion) ? entry.LocalVersion : entry.LatestVersion;
+                string version = !string.IsNullOrEmpty(entry.LatestVersion) ? entry.LatestVersion : entry.LocalVersion;
                 string path = await EditorUtil.PlugPals.FetchChangelogAsync(GetRegistryUrl(entry), entry.Name, version, CancellationToken.None);
                 if (path == null)
                 {
@@ -1055,6 +1064,39 @@ namespace NovaFramework.Editor
             finally
             {
                 m_IsFetchingChangelog = false;
+                m_FetchingChangelogKey = null;
+                Repaint();
+            }
+        }
+
+        /// <summary>
+        /// 判断指定条目是否正在加载更新日志。
+        /// </summary>
+        private bool IsFetchingChangelog(EditorUtil.PlugPals.PackageDisplayEntry entry)
+        {
+            return m_IsFetchingChangelog
+                   && string.Equals(m_FetchingChangelogKey, GetFoldoutKey(entry), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// 在折叠行的更新日志列绘制默认样式按钮。
+        /// </summary>
+        private void DrawRowChangelogArea(EditorUtil.PlugPals.PackageDisplayEntry entry, Rect area)
+        {
+            bool previousEnabled = GUI.enabled;
+            try
+            {
+                GUI.enabled = previousEnabled && !m_IsFetchingChangelog;
+                Rect buttonRect = new Rect(area.x + 4f, area.y + 1f, Mathf.Max(0f, area.width - 8f), area.height - 2f);
+                string label = IsFetchingChangelog(entry) ? "加载中..." : "查看日志";
+                if (GUI.Button(buttonRect, label))
+                {
+                    OpenChangelogAsync(entry);
+                }
+            }
+            finally
+            {
+                GUI.enabled = previousEnabled;
             }
         }
 

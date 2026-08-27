@@ -5,7 +5,7 @@
  * filename:  ConfigInspectBundleCollectorAction.cs
  * author:    taoye
  * created:   2026/8/20
- * descrip:   ConfigMaster 顶层 BundleCollectorSetting 定位与存在性检查 Action
+ * descrip:   ConfigMaster 当前坐标 BundleCollectorSetting 定位与存在性检查 Action
  ***************************************************************/
 
 using System;
@@ -42,6 +42,7 @@ namespace NovaFramework.Editor
             public string masterGuid;
             public string masterAssetPath;
             public string configuredPath;
+            public string resolvedPath;
             public bool pathConfigured;
             public bool assetExists;
             public bool collectorLoaded;
@@ -70,7 +71,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 只读定位 ConfigMaster 顶层显式路径，并报告资产存在性与最小身份摘要。
+        /// 只读定位 ConfigMaster 当前坐标路径，并报告资产存在性与最小身份摘要。
         /// </summary>
         public override Task<AgentActionHandlerPlan> PlanAsync(Request request, AgentActionExecutionContext context)
         {
@@ -86,7 +87,7 @@ namespace NovaFramework.Editor
                 DataJson = Util.Json.Serialize(view),
                 State = new State { PayloadJson = payload },
                 RecoveryPayloadJson = payload,
-                Evidence = new[] { "只陈述 ConfigMaster 顶层显式路径、资产存在性和加载身份；未验证 Collector 内容正确性。" },
+                Evidence = new[] { "只陈述 ConfigMaster 当前坐标的配置路径、解析路径、资产存在性和加载身份；未验证 Collector 内容正确性。" },
             });
         }
 
@@ -138,7 +139,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 读取顶层显式路径并复用 YooAssetInjector.LoadBundleCollector 判断目标类型能否加载。
+        /// 读取顶层原始路径与当前坐标解析路径，并复用 YooAssetInjector.LoadBundleCollector 判断目标类型能否加载。
         /// </summary>
         private static bool TryBuildView(Request request, out ResultView view, out string error)
         {
@@ -158,11 +159,15 @@ namespace NovaFramework.Editor
             }
 
             string configuredPath = master.YooAssetEditorConfigs?.BundleCollectorSettingPath ?? string.Empty;
-            UnityEngine.Object rawAsset = string.IsNullOrEmpty(configuredPath) ? null : AssetDatabase.LoadMainAssetAtPath(configuredPath);
+            EditorUtil.Config.DimensionalResolver.YooAssetResult resolved =
+                EditorUtil.Config.DimensionalResolver.ResolveYooAsset(
+                    master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode);
+            string resolvedPath = resolved.BundleCollectorSettingPath;
+            UnityEngine.Object rawAsset = string.IsNullOrEmpty(resolvedPath) ? null : AssetDatabase.LoadMainAssetAtPath(resolvedPath);
             BundleCollectorSetting collector = EditorUtil.Config.YooAssetInjector.LoadBundleCollector(master);
             string summary;
             if (string.IsNullOrEmpty(configuredPath)) summary = "ConfigMaster 顶层未配置 BundleCollectorSettingPath。";
-            else if (rawAsset == null) summary = "已配置 BundleCollectorSettingPath，但路径下不存在可加载资产。";
+            else if (rawAsset == null) summary = "已配置 BundleCollectorSettingPath，但解析后路径下不存在可加载资产。";
             else if (collector == null) summary = "路径下存在资产，但未能作为 BundleCollectorSetting 加载。";
             else summary = "已定位并加载 BundleCollectorSetting；尚未校验其内容正确性。";
 
@@ -171,6 +176,7 @@ namespace NovaFramework.Editor
                 masterGuid = request.masterGuid,
                 masterAssetPath = masterPath,
                 configuredPath = configuredPath,
+                resolvedPath = resolvedPath,
                 pathConfigured = !string.IsNullOrEmpty(configuredPath),
                 assetExists = rawAsset != null,
                 collectorLoaded = collector != null,

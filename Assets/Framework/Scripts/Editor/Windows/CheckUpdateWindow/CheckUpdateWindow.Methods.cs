@@ -169,6 +169,7 @@ namespace NovaFramework.Editor
                 if (GUILayout.Button(c_OpenPlugPalsLabel, m_OpenPlugPalsStyle, GUILayout.Width(c_OpenPlugPalsWidth)))
                 {
                     PlugPalsWindow.Open(showInstalledOnly: true);
+                    Close();
                     GUIUtility.ExitGUI();
                 }
             }

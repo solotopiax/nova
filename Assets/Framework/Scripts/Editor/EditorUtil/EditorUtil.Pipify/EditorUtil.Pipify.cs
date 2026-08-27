@@ -26,13 +26,12 @@ namespace NovaFramework.Editor
         public static partial class Pipify
         {
             /// <summary>
-            /// 记录指定 Sample 场景配对的 PipifySettings。
+            /// 记录当前工作区实际激活的 PipifySettings。
             /// 由 EditorUtil.SceneRoute 在 Single 场景打开后调用，避免自身重复订阅 sceneOpened。
             /// </summary>
-            /// <param name="scenePath">当前打开场景的项目相对路径。</param>
-            internal static void LogActiveSettingsForScene(string scenePath)
+            internal static void LogActiveSettings()
             {
-                PipifySettingsSO settings = FindSettingsForScene(scenePath);
+                PipifySettingsSO settings = Config.WorkspaceActive.GetPipifySettings();
                 if (settings == null) return;
 
                 string assetPath = AssetDatabase.GetAssetPath(settings);
@@ -74,25 +73,6 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 全项目扫描兜底：返回首个可加载的 PipifySettingsSO；未找到返回 null。
-            /// </summary>
-            internal static PipifySettingsSO FindFirstSettings()
-            {
-                string[] guids = AssetDatabase.FindAssets("t:" + nameof(PipifySettingsSO));
-                if (guids == null || guids.Length == 0) return null;
-
-                for (int i = 0; i < guids.Length; i++)
-                {
-                    string path = AssetDatabase.GUIDToAssetPath(guids[i]);
-                    if (string.IsNullOrEmpty(path)) continue;
-                    PipifySettingsSO loaded = AssetDatabase.LoadAssetAtPath<PipifySettingsSO>(path);
-                    if (loaded != null) return loaded;
-                }
-
-                return null;
-            }
-
-            /// <summary>
             /// 定位实际持有指定 Batch 实例的 PipifySettingsSO，供旧参数首次执行时精确保存原存档。
             /// </summary>
             /// <param name="batch">待定位归属的 Batch 实例。</param>
@@ -122,6 +102,7 @@ namespace NovaFramework.Editor
             /// <returns>UniTask 句柄。</returns>
             public static UniTask RunBatchAsync(Batch batch, EditorWindow host)
             {
+                ValidateBatchWorkspace(batch);
                 return Runner.RunBatchAsync(batch, new WindowReporter(host), null, CancellationToken.None);
             }
 
@@ -133,7 +114,38 @@ namespace NovaFramework.Editor
             /// <returns>UniTask 句柄。</returns>
             public static UniTask RunBatchForCliAsync(Batch batch, IReadOnlyDictionary<string, string> overrides)
             {
+                ValidateBatchWorkspace(batch);
                 return Runner.RunBatchAsync(batch, new CliReporter(), overrides, CancellationToken.None);
+            }
+
+            /// <summary>
+            /// 在执行前验证 Batch 所属 PipifySettings 与 Globals 当前工作区一致，且存在有效 ConfigMaster。
+            /// 该门禁阻止窗口、CLI 或旧调用方把某个 Sample 的 Batch 与另一套 Master 静默混用。
+            /// </summary>
+            /// <param name="batch">待执行的 Batch。</param>
+            private static void ValidateBatchWorkspace(Batch batch)
+            {
+                if (batch == null) throw new System.ArgumentNullException(nameof(batch));
+                PipifySettingsSO owner = FindSettingsContaining(batch);
+                if (owner == null)
+                {
+                    throw new System.InvalidOperationException($"{c_LogPrefix} 无法确定 Batch 所属 PipifySettingsSO。");
+                }
+
+                if (!Config.WorkspaceActive.TryGetPersistedPipifySettings(
+                        out PipifySettingsSO activeSettings, out _, out _, out string pipifyError))
+                {
+                    throw new System.InvalidOperationException($"{c_LogPrefix} {pipifyError}");
+                }
+                if (!ReferenceEquals(owner, activeSettings))
+                {
+                    throw new System.InvalidOperationException(
+                        $"{c_LogPrefix} Batch 所属 PipifySettings 与 Globals 当前绑定不一致，已拒绝执行。");
+                }
+                if (!Config.WorkspaceActive.TryGetPersistedConfigMaster(out _, out _, out _, out string masterError))
+                {
+                    throw new System.InvalidOperationException($"{c_LogPrefix} {masterError}");
+                }
             }
         }
     }

@@ -4,9 +4,11 @@
 **命名空间**：`NovaFramework.Editor`
 **全局访问**：`EditorUtil.Config.WorkspaceActive` / `EditorUtil.Config.Events`
 
-工程级激活 ConfigMaster 锚点；通过 `ProjectSettings/Nova/Globals.json` 持久化当前激活 ConfigMasterSO 的 GUID，根除多 Sample 共存时 `FindAssets` 玄学命中问题。
+工程级活动工作区锚点；通过 `ProjectSettings/Nova/Globals.json` 同时持久化当前 `ConfigMasterSO`、`PipifySettingsSO`，以及进入 Sample 前的业务绑定。
 
-> **第③段路径推断已升级为"逐级向上递归"**：从活跃 scene 所在目录起每层尝试 `Editor/ConfigMaster.asset`，第一个命中即返回，到 `Assets/Samples/` 边界停。一套逻辑同时覆盖：
+进入 Sample 时会把 Sample 的配置对写成当前值，保证编辑器构建、Build Action 和 CI 看到同一套配置；返回非 Sample Scene 时，再从 `project*` 备份恢复业务配置。切换不是“取工程第一份资产”，无法唯一判断时保持空值并让后续入口明确失败。
+
+> **Sample 路径推断使用"逐级向上递归"**：从活跃 Scene 所在目录起每层尝试 `Editor/ConfigMaster.asset`，第一个命中即返回，到 `Assets/Samples/` 边界停。一套逻辑同时覆盖：
 > - **开发态扁平结构** `Assets/Samples/{Demo}/{Scene}.unity`
 > - **UPM 导入态嵌套结构** `Assets/Samples/{PackageDisplayName}/{Version}/{SampleDisplayName}/{Scene}.unity`
 
@@ -23,14 +25,24 @@
 ## §5 完整公开 API
 
 ```csharp
-// 获取当前激活的 ConfigMasterSO；按五段回退策略返回，失败返回 null
-// ① 当前活跃 Scene 在 Assets/Samples/X/ 下，且与 Globals.json 缓存的 ConfigMaster 不属同一 sample 根
-//    → 强制按 scene 重新推断并覆盖 Globals.json（避免多 sample 切换串味）
-// ② Globals.json 存在 + GUID 加载成功 → 返回（pathHint 变化时自动回写）
-// ③ Globals.json 存在 + GUID 加载失败（资产被删）→ 返回 null
-// ④ Globals.json 不存在 + 当前活跃 Scene 在 Assets/Samples/ 下 → 从 scene 所在目录起向上递归找 Editor/ConfigMaster.asset 并写入返回
-// ⑤ Globals.json 不存在 + 不在 Sample Scene → 返回 null
+// 只读取 Globals 当前 ConfigMaster；失败返回 null，不根据 Scene 临时猜测
 public static ConfigMasterSO Get();
+
+// Single Scene 打开后协调完整工作区：
+// 业务 → Sample：备份业务 pair，写入 Sample pair 与 activeSampleRoot
+// Sample A → B：只替换当前 pair，不覆盖业务备份
+// Sample → 业务：恢复业务 pair 并清空 activeSampleRoot
+internal static bool ReconcileScene(string scenePath);
+
+// 读取/显式设置当前 PipifySettings；手动绑定会同步写入 Globals
+internal static PipifySettingsSO GetPipifySettings();
+internal static bool SetPipifySettings(PipifySettingsSO settings);
+
+// CLI/CI 成对设置 ConfigMaster + PipifySettings，一次原子写入
+internal static bool TrySetExplicitWorkspace(
+    ConfigMasterSO master,
+    PipifySettingsSO settings,
+    out string error);
 
 // 获取当前激活 ConfigMaster 所配对的 ConfigRuntimeSO。
 // 通过 Get() 锚定激活 master，首选 master.ExportTarget 序列化引用（导出时记录，GUID 追踪，资产可置于任意位置，不强制布局）；
@@ -42,10 +54,20 @@ public static ConfigMasterSO Get();
 //   ④ ExportTarget 为 null 且布局约定下 ConfigRuntime.asset 不存在（未导出）
 public static ConfigRuntimeSO GetActiveRuntime();
 
-// 显式设置激活 ConfigMasterSO；以 GUID + pathHint 原子写入 Globals.json
+// 显式设置激活 ConfigMasterSO；非 Sample 资产会同时更新业务备份
 // master 为 null 时静默返回
 public static void Set(ConfigMasterSO master);
 ```
+
+`Globals.json` v2 保留旧字段作为当前值，并新增：
+
+- `pipifySettingsGuid` / `pipifySettingsPathHint`
+- `projectConfigMasterGuid` / `projectConfigMasterPathHint`
+- `projectPipifySettingsGuid` / `projectPipifySettingsPathHint`
+- `activeSampleRoot`
+
+旧版只有 ConfigMaster 两字段时仍可读取。若旧值指向 Sample，只在工程内恰有一个非 Sample 候选时迁移；多个候选不会按 GUID 顺序猜测。
+高于当前支持版本的 `schemaVersion` 会拒绝读取和改写，避免旧框架覆盖未来字段。
 
 ### Events
 

@@ -34,13 +34,6 @@ namespace NovaFramework.Editor
             public int fileCount;
         }
 
-        [Serializable]
-        internal sealed class ActiveMasterFile
-        {
-            public string configMasterGuid;
-            public string configMasterPathHint;
-        }
-
         internal static string ProjectRoot =>
             Path.GetFullPath(Path.GetDirectoryName(Application.dataPath) ?? Application.dataPath)
                 .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
@@ -120,50 +113,27 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 只读核对 WorkspaceActive 文件。这里不调用 WorkspaceActive.Get()，避免 Plan 因 pathHint 修复或
-        /// sample scene 推断而产生写入。
+        /// 通过 WorkspaceActive 的唯一只读解析入口核对当前持久化 Master。
+        /// 不调用 WorkspaceActive.Get()，避免 Plan 阶段执行场景路由或写入。
         /// </summary>
         internal static bool TryValidateActiveMasterBinding(
             string masterGuid,
             string masterAssetPath,
             out string error)
         {
-            error = null;
-            string globalsPath = Path.Combine(ProjectRoot, "ProjectSettings/Nova/Globals.json");
-            if (!File.Exists(globalsPath))
+            if (!EditorUtil.Config.WorkspaceActive.TryGetPersistedConfigMaster(
+                    out _, out string activeGuid, out string activePath, out error))
             {
-                error = "ProjectSettings/Nova/Globals.json 不存在；无法只读证明请求的 ConfigMaster 是当前激活 Master。";
                 return false;
             }
-
-            ActiveMasterFile active;
-            try
+            if (!string.Equals(activeGuid, masterGuid, StringComparison.OrdinalIgnoreCase))
             {
-                active = JsonUtility.FromJson<ActiveMasterFile>(File.ReadAllText(globalsPath));
-            }
-            catch (Exception exception)
-            {
-                error = "Globals.json 无法解析：" + exception.Message;
+                error = $"请求 masterGuid={masterGuid} 与 Globals.json 激活 GUID={activeGuid} 不一致。";
                 return false;
             }
-
-            if (active == null || !string.Equals(active.configMasterGuid, masterGuid, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(NormalizeAssetPath(activePath), NormalizeAssetPath(masterAssetPath), StringComparison.Ordinal))
             {
-                error = $"请求 masterGuid={masterGuid} 与 Globals.json 激活 GUID={active?.configMasterGuid ?? "<empty>"} 不一致。";
-                return false;
-            }
-            if (!string.Equals(NormalizeAssetPath(active.configMasterPathHint), NormalizeAssetPath(masterAssetPath), StringComparison.Ordinal))
-            {
-                error = "Globals.json 的 ConfigMaster pathHint 已漂移；请先由 ConfigWindow/场景路由修复后重新计划。";
-                return false;
-            }
-
-            string scenePath = NormalizeAssetPath(UnityEngine.SceneManagement.SceneManager.GetActiveScene().path);
-            string sceneSample = GetSampleRoot(scenePath);
-            string masterSample = GetSampleRoot(NormalizeAssetPath(masterAssetPath));
-            if (!string.IsNullOrEmpty(sceneSample) && !string.Equals(sceneSample, masterSample, StringComparison.Ordinal))
-            {
-                error = "当前 Sample 场景与 Globals.json 指向不同 Sample；WorkspaceActive 会重推断并写回，Plan 因此拒绝。";
+                error = "请求的 ConfigMaster 路径与 Globals.json 当前绑定不一致。";
                 return false;
             }
             return true;

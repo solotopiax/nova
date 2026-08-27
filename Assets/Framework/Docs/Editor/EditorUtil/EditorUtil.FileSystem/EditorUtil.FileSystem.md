@@ -25,14 +25,17 @@ void EditorUtil.FileSystem.OpenFolder(string path)
 // 用系统默认程序打开文件
 void EditorUtil.FileSystem.OpenFile(string path)
 
-// SerializedProperty（存储绝对路径）→ 转为相对于 Assets/ 的路径
+// SerializedProperty 中的路径 → 转为相对于工程根的路径
 // 例：返回 "Assets/Tables/HeroData.xlsx"
 string EditorUtil.FileSystem.GetProjectRelativePath(SerializedProperty property)
 
-// 绝对路径 → 相对于 Assets/ 的路径
+// 工程内绝对路径 → 相对于工程根的路径；工程根、工程外及普通相对输入保持原有语义
 string EditorUtil.FileSystem.GetProjectRelativePath(string path)
 
-// 相对于 Assets/ 的路径 → 绝对路径
+// Editor 内部严格尝试转换为 Assets/...；工程外、Packages 或异平台绝对路径返回 false，不修改调用方数据
+bool EditorUtil.FileSystem.TryGetProjectAssetPath(string path, out string assetPath)
+
+// 相对于工程根的路径 → 绝对路径
 string EditorUtil.FileSystem.GetProjectFullPath(string path)
 
 // 获取目录下所有匹配文件路径（绝对路径数组）
@@ -76,7 +79,7 @@ IDisposable EditorUtil.FileSystem.AcquireWorkspace(string rootPath)
 |------|------|
 | `GetFiles` 排除 Excel 临时文件 | 传入 `excludePrefix: "~$"` 过滤 Excel 打开时生成的临时文件 |
 | `RefreshDelayed` vs 直接 `Refresh` | Inspector 绘制中不可调用 `AssetDatabase.Refresh()`（会触发重编译），用 `RefreshDelayed()` 推迟到下帧 |
-| 路径格式 | `GetProjectRelativePath` 返回值以 `"Assets/"` 开头，可直接传给 `AssetDatabase.*` 方法 |
+| 路径格式 | `GetProjectRelativePath` 保持兼容行为：工程内绝对路径转为工程根相对路径，工程根、工程外及普通相对输入保留原有路径语义并统一为正斜杠。必须得到 Unity `AssetPath` 时使用 `TryGetProjectAssetPath`；失败由调用方显式处理 |
 | `DeletePath` 删目录 | 仅删除目录内的**文件**，不递归删除子目录本身，目录结构保留 |
 | `OpenSQLiteStudio` 平台限制 | 仅 `UNITY_EDITOR_WIN` 下有效，其他平台输出 Warning 并静默跳过 |
 

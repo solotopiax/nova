@@ -79,13 +79,6 @@ namespace NovaFramework.Editor
                 public BuildReadinessRule[] rules = Array.Empty<BuildReadinessRule>();
             }
 
-            [Serializable]
-            private sealed class ActiveMasterFile
-            {
-                public string configMasterGuid;
-                public string configMasterPathHint;
-            }
-
             /// <summary>
             /// 读取当前构建输入并执行纯检查。该入口不调用 WorkspaceActive.Get、ValidateBuild、
             /// SessionState、保存 API 或任何构建/生成入口。
@@ -181,40 +174,20 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 直接读取 Globals.json 与资产引用，避免 WorkspaceActive.Get 的推断和 pathHint 修复写入。
+            /// 通过 WorkspaceActive 的唯一只读解析入口读取当前持久化 Master。
+            /// 不执行场景路由或 pathHint 修复。
             /// </summary>
             private static ConfigMasterSO InspectActiveConfig(BuildTarget target, BuildReadinessReport result,
                 ICollection<BuildReadinessRule> rules)
             {
-                string projectRoot = IOPath.GetFullPath(IOPath.GetDirectoryName(Application.dataPath) ?? Application.dataPath);
-                string globalsPath = IOPath.Combine(projectRoot, "ProjectSettings/Nova/Globals.json");
-                ActiveMasterFile active = null;
-                try
-                {
-                    if (File.Exists(globalsPath)) active = JsonUtility.FromJson<ActiveMasterFile>(File.ReadAllText(globalsPath));
-                }
-                catch (Exception exception)
-                {
-                    AddRule(rules, "NOVA-BUILD-004", "config", BuildReadinessRuleStatus.Error,
-                        "激活 ConfigMaster 记录无法解析。", exception.Message);
-                    return null;
-                }
-
-                result.masterGuid = active?.configMasterGuid;
-                string masterPath = string.IsNullOrWhiteSpace(active?.configMasterGuid)
-                    ? string.Empty
-                    : NormalizePath(AssetDatabase.GUIDToAssetPath(active.configMasterGuid));
+                bool bindingValid = EditorUtil.Config.WorkspaceActive.TryGetPersistedConfigMaster(
+                    out ConfigMasterSO master, out string masterGuid, out string masterPath, out string bindingError);
+                result.masterGuid = masterGuid;
                 result.masterAssetPath = masterPath;
-                ConfigMasterSO master = string.IsNullOrEmpty(masterPath)
-                    ? null
-                    : AssetDatabase.LoadAssetAtPath<ConfigMasterSO>(masterPath);
-                bool bindingValid = master != null &&
-                                    string.Equals(NormalizePath(active.configMasterPathHint), masterPath,
-                                        StringComparison.Ordinal);
                 AddRule(rules, "NOVA-BUILD-004", "config",
                     bindingValid ? BuildReadinessRuleStatus.Pass : BuildReadinessRuleStatus.Error,
                     bindingValid ? "Globals.json 已精确绑定可加载的 ConfigMaster。" : "激活 ConfigMaster 的 GUID、pathHint 或资产身份无效。",
-                    $"globals={ToProjectRelative(globalsPath, projectRoot)}; guid={active?.configMasterGuid ?? "<empty>"}; path={masterPath}");
+                    bindingValid ? $"guid={masterGuid}; path={masterPath}" : bindingError);
                 if (!bindingValid) return null;
 
                 result.platform = master.CurrentPlatform.ToString();

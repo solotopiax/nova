@@ -757,6 +757,64 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 修复旧配置中的 AssetPath：工程内路径统一为 Assets 相对路径，无效路径清空但不删除数据项。
+        /// </summary>
+        private void RepairSerializedAssetPaths()
+        {
+            if (m_LoadDescriptions == null)
+            {
+                return;
+            }
+
+            int repairedCount = 0;
+            int clearedCount = 0;
+            for (int loadIndex = 0; loadIndex < m_LoadDescriptions.arraySize; loadIndex++)
+            {
+                SerializedProperty assets = m_LoadDescriptions.GetArrayElementAtIndex(loadIndex)
+                    .FindPropertyRelative("Assets");
+                for (int assetIndex = 0; assetIndex < assets.arraySize; assetIndex++)
+                {
+                    SerializedProperty assetPathProperty = assets.GetArrayElementAtIndex(assetIndex)
+                        .FindPropertyRelative("AssetPath");
+                    string currentPath = assetPathProperty.stringValue;
+                    if (string.IsNullOrWhiteSpace(currentPath))
+                    {
+                        continue;
+                    }
+
+                    if (EditorUtil.FileSystem.TryGetProjectAssetPath(currentPath, out string relativePath))
+                    {
+                        if (!string.Equals(currentPath, relativePath, StringComparison.Ordinal))
+                        {
+                            assetPathProperty.stringValue = relativePath;
+                            repairedCount++;
+                        }
+                    }
+                    else
+                    {
+                        assetPathProperty.stringValue = string.Empty;
+                        clearedCount++;
+                    }
+                }
+            }
+
+            if (repairedCount == 0 && clearedCount == 0)
+            {
+                return;
+            }
+
+            serializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(target);
+            if (clearedCount > 0)
+            {
+                Log.Warning(LogTag.Editor,
+                    "Table 旧配置中存在 {0} 个无效 AssetPath，已清空但保留对应 DataFile 配置项。",
+                    clearedCount);
+            }
+            Log.Debug(LogTag.Editor, "Table AssetPath 迁移完成：转换 {0} 个，清空 {1} 个。", repairedCount, clearedCount);
+        }
+
+        /// <summary>
         /// 绘制加载描述关联的 Project、导出描述和运行时数据 Target。
         /// </summary>
         /// <param name="load">加载描述属性。</param>
@@ -1699,7 +1757,6 @@ namespace NovaFramework.Editor
             if (descriptionIndex < 0) return;
             SerializedProperty description = descriptions.GetArrayElementAtIndex(descriptionIndex);
             string outputDirectory = description.FindPropertyRelative("DataOutputPath").stringValue;
-            if (string.IsNullOrWhiteSpace(outputDirectory) || !Directory.Exists(outputDirectory)) return;
 
             SerializedProperty assets = load.FindPropertyRelative("Assets");
             var oldAddresses = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -1710,16 +1767,20 @@ namespace NovaFramework.Editor
                     item.FindPropertyRelative("AssetAddress").stringValue;
             }
 
-            string absoluteOutput = IOPath.GetFullPath(outputDirectory);
+            bool hasOutputDirectory = !string.IsNullOrWhiteSpace(outputDirectory) &&
+                                      Directory.Exists(outputDirectory);
+            string absoluteOutput = hasOutputDirectory ? IOPath.GetFullPath(outputDirectory) : string.Empty;
             string runtimeDataTarget = load.FindPropertyRelative("RuntimeDataTarget").stringValue;
             string expectedExtension = ResolveBuiltInDataExtension(runtimeDataTarget);
-            List<string> candidatePaths = Directory.GetFiles(absoluteOutput, "*", SearchOption.AllDirectories)
-                .Where(path => !path.EndsWith(".meta", StringComparison.OrdinalIgnoreCase))
-                .Where(path => string.IsNullOrEmpty(expectedExtension) ||
-                               string.Equals(IOPath.GetExtension(path), expectedExtension,
-                                   StringComparison.OrdinalIgnoreCase))
-                .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            List<string> candidatePaths = hasOutputDirectory
+                ? Directory.GetFiles(absoluteOutput, "*", SearchOption.AllDirectories)
+                    .Where(path => !path.EndsWith(".meta", StringComparison.OrdinalIgnoreCase))
+                    .Where(path => string.IsNullOrEmpty(expectedExtension) ||
+                                   string.Equals(IOPath.GetExtension(path), expectedExtension,
+                                       StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToList()
+                : new List<string>();
             Dictionary<string, string> pathByDataFile = candidatePaths
                 .GroupBy(path => NormalizePath(
                     IOPath.ChangeExtension(IOPath.GetRelativePath(absoluteOutput, path), null)),
@@ -1727,10 +1788,60 @@ namespace NovaFramework.Editor
                 .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
             List<string> bindingDataFiles = ResolveBindingDataFiles(
                 load.FindPropertyRelative("ResolvedBindingTypeName").stringValue);
-            List<string> filePaths = bindingDataFiles.Count == 0
-                ? candidatePaths
-                : bindingDataFiles.Where(pathByDataFile.ContainsKey).Select(dataFile => pathByDataFile[dataFile]).ToList();
-            List<string> assetPaths = filePaths.Select(EditorUtil.FileSystem.GetProjectRelativePath).ToList();
+            if (bindingDataFiles.Count == 0 && !hasOutputDirectory)
+            {
+                return;
+            }
+
+            List<string> dataFiles;
+            List<string> filePaths;
+            if (bindingDataFiles.Count == 0)
+            {
+                filePaths = candidatePaths;
+                dataFiles = candidatePaths
+                    .Select(path => NormalizePath(IOPath.ChangeExtension(
+                        IOPath.GetRelativePath(absoluteOutput, path), null)))
+                    .ToList();
+            }
+            else
+            {
+                // Binding 的 DataFiles 是运行时完整契约；即使文件暂时缺失，也必须保留对应配置行。
+                dataFiles = bindingDataFiles;
+                filePaths = bindingDataFiles
+                    .Select(dataFile => pathByDataFile.TryGetValue(dataFile, out string filePath)
+                        ? filePath
+                        : string.Empty)
+                    .ToList();
+            }
+
+            var assetPaths = new List<string>(dataFiles.Count);
+            int rejectedPathCount = 0;
+            foreach (string filePath in filePaths)
+            {
+                if (string.IsNullOrWhiteSpace(filePath))
+                {
+                    assetPaths.Add(string.Empty);
+                    rejectedPathCount++;
+                    continue;
+                }
+
+                if (!EditorUtil.FileSystem.TryGetProjectAssetPath(filePath, out string assetPath))
+                {
+                    assetPaths.Add(string.Empty);
+                    rejectedPathCount++;
+                    continue;
+                }
+
+                assetPaths.Add(assetPath);
+            }
+
+            if (rejectedPathCount > 0)
+            {
+                Log.Warning(LogTag.Editor,
+                    "Table 有 {0} 个 DataFile 暂未解析到 Assets 目录下的导出文件；配置项已保留，AssetPath 留空。",
+                    rejectedPathCount);
+            }
+
             AssetComponent assetComponent = ((TableComponent)target).transform.root.GetComponentInChildren<AssetComponent>(true);
             Dictionary<string, string> addresses;
             try
@@ -1744,10 +1855,9 @@ namespace NovaFramework.Editor
             }
 
             assets.ClearArray();
-            for (int i = 0; i < filePaths.Count; i++)
+            for (int i = 0; i < dataFiles.Count; i++)
             {
-                string relative = NormalizePath(IOPath.GetRelativePath(absoluteOutput, filePaths[i]));
-                string dataFile = NormalizePath(IOPath.ChangeExtension(relative, null));
+                string dataFile = dataFiles[i];
                 assets.InsertArrayElementAtIndex(i);
                 SerializedProperty item = assets.GetArrayElementAtIndex(i);
                 string assetPath = NormalizePath(assetPaths[i]);

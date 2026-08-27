@@ -23,6 +23,7 @@ namespace NovaFramework.Editor
             /// 命令行入口（Jenkins / CI）。
             /// 用法：unity -batchmode -executeMethod NovaFramework.Editor.EditorUtil+Pipify+Cli.Run
             ///       -batchName "xxx" [-params '{"step.字段":"值"}']
+            ///       [-configMasterGuid "..."] [-pipifySettingsGuid "..."]
             /// </summary>
             public static class Cli
             {
@@ -43,11 +44,7 @@ namespace NovaFramework.Editor
                         string paramsJson = ReadArg("-params");
                         IReadOnlyDictionary<string, string> overrides = ParseOverrides(paramsJson);
 
-                        PipifySettingsSO so = FindSettings();
-                        if (so == null)
-                        {
-                            throw new InvalidOperationException(string.Format("{0}[CLI] 工程中未找到 PipifySettingsSO", c_LogPrefix));
-                        }
+                        PipifySettingsSO so = ResolveWorkspaceFromArgs();
 
                         Batch batch = so.Batches.Find(b => b.Name == batchName);
                         if (batch == null)
@@ -81,19 +78,63 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 查找工程中的 PipifySettingsSO。存在多份时取首个并 Warning。
+                /// 解析 CLI 工作区。
+                /// 两个 GUID 参数必须成对出现；显式传入时先持久化该工作区，未传时只使用 Globals 当前绑定，
+                /// 不再扫描并选择第一份 PipifySettings。
                 /// </summary>
-                /// <returns>找到的 SO；未找到返回 null。</returns>
-                private static PipifySettingsSO FindSettings()
+                /// <returns>确定绑定的 PipifySettings。</returns>
+                private static PipifySettingsSO ResolveWorkspaceFromArgs()
                 {
-                    string[] guids = AssetDatabase.FindAssets("t:" + nameof(PipifySettingsSO));
-                    if (guids == null || guids.Length == 0) return null;
-                    if (guids.Length > 1)
+                    string masterGuid = ReadArg("-configMasterGuid");
+                    string pipifyGuid = ReadArg("-pipifySettingsGuid");
+                    bool hasMasterArg = !string.IsNullOrWhiteSpace(masterGuid);
+                    bool hasPipifyArg = !string.IsNullOrWhiteSpace(pipifyGuid);
+                    if (hasMasterArg != hasPipifyArg)
                     {
-                        Log.Warning(LogTag.Editor, "{0}[CLI] 工程中存在 {1} 份 PipifySettingsSO，取首个。", c_LogPrefix, guids.Length);
+                        throw new InvalidOperationException(
+                            string.Format("{0}[CLI] -configMasterGuid 与 -pipifySettingsGuid 必须成对提供。", c_LogPrefix));
                     }
-                    string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                    return AssetDatabase.LoadAssetAtPath<PipifySettingsSO>(path);
+
+                    if (hasMasterArg)
+                    {
+                        ConfigMasterSO master = LoadAssetByGuid<ConfigMasterSO>(masterGuid, "ConfigMaster");
+                        PipifySettingsSO settings = LoadAssetByGuid<PipifySettingsSO>(pipifyGuid, "PipifySettings");
+                        if (!Config.WorkspaceActive.TrySetExplicitWorkspace(master, settings, out string workspaceError))
+                        {
+                            throw new InvalidOperationException(
+                                string.Format("{0}[CLI] 显式工作区无效：{1}", c_LogPrefix, workspaceError));
+                        }
+                    }
+
+                    if (!Config.WorkspaceActive.TryGetPersistedConfigMaster(out _, out _, out _, out string masterError))
+                    {
+                        throw new InvalidOperationException(string.Format("{0}[CLI] {1}", c_LogPrefix, masterError));
+                    }
+                    if (!Config.WorkspaceActive.TryGetPersistedPipifySettings(
+                            out PipifySettingsSO activeSettings, out _, out _, out string pipifyError))
+                    {
+                        throw new InvalidOperationException(string.Format("{0}[CLI] {1}", c_LogPrefix, pipifyError));
+                    }
+                    return activeSettings;
+                }
+
+                /// <summary>
+                /// 按 GUID 加载 CLI 显式指定的资产，并验证类型。
+                /// </summary>
+                /// <typeparam name="T">目标 Unity 资产类型。</typeparam>
+                /// <param name="guid">命令行传入的资产 GUID。</param>
+                /// <param name="label">错误信息中的资产名称。</param>
+                /// <returns>加载成功的资产。</returns>
+                private static T LoadAssetByGuid<T>(string guid, string label) where T : UnityEngine.Object
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    T asset = string.IsNullOrEmpty(path) ? null : AssetDatabase.LoadAssetAtPath<T>(path);
+                    if (asset == null)
+                    {
+                        throw new InvalidOperationException(
+                            string.Format("{0}[CLI] {1} GUID 无效或类型不匹配：{2}", c_LogPrefix, label, guid));
+                    }
+                    return asset;
                 }
 
                 /// <summary>

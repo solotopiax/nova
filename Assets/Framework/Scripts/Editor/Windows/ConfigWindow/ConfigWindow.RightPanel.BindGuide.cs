@@ -64,7 +64,11 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            EditorUtil.Config.WorkspaceActive.Set(loaded);
+            if (!EditorUtil.Config.WorkspaceActive.TrySet(loaded))
+            {
+                EditorUtility.DisplayDialog("绑定失败", "无法写入 ProjectSettings/Nova/Globals.json，ConfigMaster 未切换。", "知道了");
+                return;
+            }
             BindMaster(loaded);
         }
 
@@ -93,19 +97,24 @@ namespace NovaFramework.Editor
                 return;
             }
 
-            EditorUtil.Config.WorkspaceActive.Set(loaded);
+            if (!EditorUtil.Config.WorkspaceActive.TrySet(loaded))
+            {
+                EditorUtility.DisplayDialog("绑定失败", "无法写入 ProjectSettings/Nova/Globals.json，ConfigMaster 未切换。", "知道了");
+                return;
+            }
             BindMaster(loaded);
         }
 
         /// <summary>
         /// 将指定 ConfigMasterSO 绑定到窗口内存状态：
-        /// 初始化 SerializedObject、同步 EnumGrid、刷新 Plugin 缓存、注入 YooAsset、触发重绘。
+        /// 重建 WorkingCopy 与 SerializedObject、同步 EnumGrid、刷新 Plugin 缓存、注入 YooAsset、触发重绘。
         /// </summary>
         /// <param name="master">已确认非 null 的 ConfigMasterSO 实例。</param>
         private void BindMaster(ConfigMasterSO master)
         {
             m_Master = master;
-            m_MasterSO = new SerializedObject(m_Master);
+            DestroyWorkingCopy();
+            RebuildWorkingCopy();
             EditorUtil.Config.StructureGuard.SyncEnumGrid(m_Master);
             RefreshPluginCache();
             m_LastKnownChannel = m_Master.CurrentChannel;

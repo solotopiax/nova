@@ -3,7 +3,7 @@
 **类签名**：`public static class DimensionalResolver`（嵌套于 `EditorUtil.Config`）
 **命名空间**：`NovaFramework.Editor`
 
-顶层类维度取数器；按当前 `Platform × Channel × DevelopMode` 坐标，从 `ConfigMasterSO` 的顶层掩码与 Override 列表中解析出最终生效值。本类纯只读，不修改任何数据，可同时服务于 ConfigWindow 绘制前取数与 Exporter 导出取数。
+顶层类维度取数器；按当前 `Platform × Channel × DevelopMode` 坐标，从 `ConfigMasterSO` 的顶层掩码与 Override 列表中解析出最终生效值。本类纯只读，不修改任何数据，可同时服务于 ConfigWindow 绘制前取数与 Exporter 导出取数。YooAsset 显式路径失效时，会只读检查 ConfigMaster 同目录的同名、同类型资产并返回其实际路径，兼容 UPM Sample 导入目录和业务整体迁移目录。
 
 覆盖范围：Namespace（单 string）、HybridCLR（四字段，Editor-only）、YooAsset（两路径，Editor-only）。矩阵类（Common / SDK / Kit）不经本类，走 `PlatformChannelEntry` 直接取数。
 
@@ -79,6 +79,7 @@ public static HybridCLRResult ResolveHybridCLR(
 // 解析 YooAsset 面板两路径及两个导出模板的最终生效值（仅 #if UNITY_EDITOR）
 // IsGlobal → 取顶层默认字段；否则遍历 YooAssetEditorConfigsOverrides 找首个匹配条目
 // 命中后使用整份 Override，空路径是有效值；无命中才回落顶层字段
+// 非空显式路径不可加载时，仅回退 ConfigMaster 同目录下同名、同类型的配置资产
 // master 为 null → 路径和前缀为空，YooFolderName 回退 yoo
 public static YooAssetResult ResolveYooAsset(
     ConfigMasterSO master,

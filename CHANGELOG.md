@@ -6,6 +6,17 @@
 
 ---
 
+## [0.6.19] - 2026-08-27
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.19]` 节。
+
+### Fixed
+
+- 修复 Sample 覆盖导入后的路径重写、ConfigMaster 与 PipifySettings 场景切换恢复，以及 ConfigWindow 首次绑定后的编辑保存流程。
+- 发布 Framework `0.6.19`，并同步发布包含新版 Sample 路径重写器的 Network Kit 与 SDK 包。
+
+---
+
 ## [0.6.18] - 2026-08-26
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.18]` 节。

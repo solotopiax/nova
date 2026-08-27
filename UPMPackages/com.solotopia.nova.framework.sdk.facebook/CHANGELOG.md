@@ -4,6 +4,12 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-08-27
+
+### Fixed
+
+- 修复 FacebookDemo 覆盖导入或包升级后路径重写遗漏的问题。
+
 ## [0.1.8] - 2026-08-26
 
 ### Changed

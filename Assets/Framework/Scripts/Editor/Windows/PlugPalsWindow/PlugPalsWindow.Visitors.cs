@@ -118,8 +118,8 @@ namespace NovaFramework.Editor
         private static readonly Color s_InternalPackageNameColor = new Color(1f, 0.82f, 0.62f);
 
         /// <summary>
-        /// 五条分隔线的 X 坐标（从左到右：描述左边缘、本地版本左边缘、最新版本左边缘、版本操作左边缘、窗口右边缘）。
-        /// 索引 0-3 可拖拽，索引 4 固定在窗口右边缘。
+        /// 六条分隔线的 X 坐标（从左到右：描述左边缘、本地版本左边缘、最新版本左边缘、更新日志左边缘、版本操作左边缘、窗口右边缘）。
+        /// 索引 0-4 可拖拽，索引 5 固定在窗口右边缘。
         /// </summary>
         private float[] m_ColBorders;
 
@@ -272,5 +272,10 @@ namespace NovaFramework.Editor
         /// 更新日志拉取互斥（防止快速双击并发下载同一 tarball）。
         /// </summary>
         private bool m_IsFetchingChangelog;
+
+        /// <summary>
+        /// 当前正在加载更新日志的包标识，用于只切换对应行的按钮文案。
+        /// </summary>
+        private string m_FetchingChangelogKey;
     }
 }

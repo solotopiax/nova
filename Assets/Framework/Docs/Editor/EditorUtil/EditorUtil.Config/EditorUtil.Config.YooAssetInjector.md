@@ -6,6 +6,8 @@
 
 Asset 模块编辑期注入层；按 ConfigMasterSO 中显式声明的路径字段注入 `YooAssetSettings` 与加载 `BundleCollectorSetting`，替代 `Resources.Load` / `AssetDatabase.FindAssets` 全工程扫描，根除多 Sample 共存时命中错副本问题。Sample 不再常驻 `Resources/YooAssetSettings.asset`；Editor Play Mode 会在 `BeforeSceneLoad` 按当前三维坐标重新注入，Player 构建则由构建期 staging 临时提供运行时副本。
 
+UPM Sample 导入到 `Assets/Samples/<Package>/<Version>/<Sample>/` 或业务方整体移动 Demo 后，ConfigMaster 内原有项目相对路径可能失效。维度解析器会在原路径不可加载时，仅回退到 ConfigMaster 同目录下同名且类型匹配的配置资产；该重定位只影响解析结果，不回写序列化资产。
+
 ---
 
 ## §2 文件表
@@ -20,9 +22,10 @@ Asset 模块编辑期注入层；按 ConfigMasterSO 中显式声明的路径字�
 ## §5 完整公开 API
 
 ```csharp
-// 按 ConfigMasterSO.YooAssetSettingsPath 注入 YooAssetSettings 到 YooAssetConfiguration 静态全局
-// 进入即调用 BundleCollectorSettingData.ResetCache() 作废 YooAsset 内部静态缓存
-// master 为 null 或 YooAssetSettingsPath 为空时静默返回
+// 按 ConfigMasterSO 当前三维坐标解析并注入 YooAssetSettings 到 YooAssetConfiguration 静态全局
+// 原路径失效但 ConfigMaster 同目录存在同名、同类型资产时，使用迁移后的实际路径
+// 进入即作废 BundleCollectorSetting 缓存并清空上一工作区注入的 YooAssetSettings
+// master 为 null 或 YooAssetSettingsPath 为空时保持未注入状态
 // 路径对应资产不存在时记 Log.Warning 并静默返回
 public static void Inject(ConfigMasterSO master);
 
@@ -30,7 +33,7 @@ public static void Inject(ConfigMasterSO master);
 // path 为空时静默返回；资产不存在时记录 Warning 并返回。
 public static void InjectByPath(string path);
 
-// 按 ConfigMasterSO.BundleCollectorSettingPath 加载 BundleCollectorSetting
+// 按 ConfigMasterSO 当前三维坐标解析并加载 BundleCollectorSetting
 // master 为 null 或 BundleCollectorSettingPath 为空时返回 null
 // 路径对应资产不存在时返回 null
 // <returns>BundleCollectorSetting 实例；未配置或不存在时返回 null</returns>

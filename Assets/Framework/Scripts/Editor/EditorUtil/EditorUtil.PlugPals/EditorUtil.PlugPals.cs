@@ -497,7 +497,7 @@ namespace NovaFramework.Editor
                 {
                     Util.SysIO.Directory.CreateIfNotExist(tarballsDir);
 
-                    HttpResponseMessage response = await s_HttpClient.GetAsync(tarballUrl, token);
+                    HttpResponseMessage response = await s_ChangelogHttpClient.GetAsync(tarballUrl, token);
                     if (!response.IsSuccessStatusCode)
                     {
                         Log.Warning(LogTag.Editor, "PlugPals.FetchChangelogAsync 下载 tarball 失败 [{0}]: {1}", (int)response.StatusCode, tarballUrl);

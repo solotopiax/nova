@@ -1,7 +1,7 @@
 # Nova Framework - SDK - Firebase
 
 > 包名：`com.solotopia.nova.framework.sdk.firebase`
-> 当前版本：`0.1.7`
+> 当前版本：`0.1.8`
 > Firebase Unity SDK：`13.14.0`
 
 Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置，并提供 Nova 侧默认 Topic 同步与业务 push task 缓存发送能力。
@@ -12,7 +12,7 @@ Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.firebase": "0.1.7"
+  "com.solotopia.nova.framework.sdk.firebase": "0.1.8"
 }
 ```
 

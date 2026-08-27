@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.applesignin",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "1.0.0",
   "displayName": "Nova Framework - SDK - Apple Sign-In",

@@ -11,6 +11,7 @@
 
 using NovaFramework.Runtime;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using YooAsset;
 using YooAsset.Editor;
 
@@ -28,20 +29,22 @@ namespace NovaFramework.Editor
             public static class YooAssetInjector
             {
                 /// <summary>
-                /// 按 ConfigMaster 中 YooAssetSettingsPath 字段注入 YooAssetSettings 到 YooAssetConfiguration。
-                /// <para>master 为 null 或路径为空时静默返回；路径资产不存在时静默返回。</para>
+                /// 按 ConfigMaster 当前三维坐标解析 YooAssetSettingsPath 并注入 YooAssetConfiguration。
+                /// <para>切换前先清除上一工作区的静态配置；master 为 null、路径为空或资产失效时保持未注入状态。</para>
                 /// </summary>
                 /// <param name="master">提供路径字段的 ConfigMasterSO 实例。</param>
                 public static void Inject(ConfigMasterSO master)
                 {
-                    if (master == null) return;
-
                     // 切换激活 ConfigMaster 时同步作废 YooAsset 内部静态缓存，
                     // 让 BundleCollectorWindow 等下次访问 Setting 时重新走显式路径 provider，
                     // 避免多 sample 共存时仍命中旧 sample 的 BundleCollectorSetting 引用。
                     BundleCollectorSettingData.ResetCache();
+                    YooAssetConfiguration.SetSettings(null);
+                    if (master == null) return;
 
-                    string path = master.YooAssetEditorConfigs.YooAssetSettingsPath;
+                    DimensionalResolver.YooAssetResult resolved = DimensionalResolver.ResolveYooAsset(
+                        master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode);
+                    string path = resolved.YooAssetSettingsPath;
                     if (string.IsNullOrEmpty(path)) return;
                     YooAssetSettings settings = AssetDatabase.LoadAssetAtPath<YooAssetSettings>(path);
                     if (settings == null)
@@ -61,8 +64,9 @@ namespace NovaFramework.Editor
                 /// <param name="path">YooAssetSettings.asset 项目根相对路径（以 Assets/ 开头）。</param>
                 public static void InjectByPath(string path)
                 {
-                    if (string.IsNullOrEmpty(path)) return;
                     BundleCollectorSettingData.ResetCache();
+                    YooAssetConfiguration.SetSettings(null);
+                    if (string.IsNullOrEmpty(path)) return;
                     YooAssetSettings settings = AssetDatabase.LoadAssetAtPath<YooAssetSettings>(path);
                     if (settings == null)
                     {
@@ -74,7 +78,7 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 按 ConfigMaster 中 BundleCollectorSettingPath 字段加载 BundleCollectorSetting。
+                /// 按 ConfigMaster 当前三维坐标解析 BundleCollectorSettingPath 并加载 BundleCollectorSetting。
                 /// <para>master 为 null 或路径为空时返回 null；路径资产不存在时返回 null。</para>
                 /// </summary>
                 /// <param name="master">提供路径字段的 ConfigMasterSO 实例。</param>
@@ -82,7 +86,9 @@ namespace NovaFramework.Editor
                 public static BundleCollectorSetting LoadBundleCollector(ConfigMasterSO master)
                 {
                     if (master == null) return null;
-                    string path = master.YooAssetEditorConfigs.BundleCollectorSettingPath;
+                    DimensionalResolver.YooAssetResult resolved = DimensionalResolver.ResolveYooAsset(
+                        master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode);
+                    string path = resolved.BundleCollectorSettingPath;
                     if (string.IsNullOrEmpty(path)) return null;
                     return SettingLoader.LoadSettingDataAtPath<BundleCollectorSetting>(path);
                 }
@@ -100,7 +106,12 @@ namespace NovaFramework.Editor
                     {
                         ConfigMasterSO master = WorkspaceActive.Get();
                         if (master == null) return null;
-                        if (type == typeof(BundleCollectorSetting)) return master.YooAssetEditorConfigs.BundleCollectorSettingPath;
+                        if (type == typeof(BundleCollectorSetting))
+                        {
+                            return DimensionalResolver.ResolveYooAsset(
+                                master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode)
+                                .BundleCollectorSettingPath;
+                        }
                         return null;
                     });
                 }
@@ -114,7 +125,15 @@ namespace NovaFramework.Editor
                 [InitializeOnLoadMethod]
                 private static void InjectActiveSettingsOnEditorLoad()
                 {
-                    EditorApplication.delayCall += () => Inject(WorkspaceActive.Get());
+                    EditorApplication.delayCall += () =>
+                    {
+                        if (!WorkspaceActive.ReconcileScene(EditorSceneManager.GetActiveScene().path))
+                        {
+                            Inject(null);
+                            return;
+                        }
+                        Inject(WorkspaceActive.Get());
+                    };
                 }
             }
         }

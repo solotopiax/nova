@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "cn.efunstudio.psd2ugui": "1.0.1",
+    "cn.efunstudio.psd2ugui": "1.0.3",
     "com.boxqkrtm.ide.cursor": "https://github.com/boxqkrtm/com.unity.ide.cursor.git",
     "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.1.2",
     "com.da-assets.figma-converter": "1.0.4",

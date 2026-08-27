@@ -45,10 +45,15 @@ namespace NovaFramework.Editor
                 if (mode != OpenSceneMode.Single) return;
 
                 Log.Debug(LogTag.Editor, "[SceneRoute] 已打开场景：{0}", scene.path);
+                if (!Config.WorkspaceActive.ReconcileScene(scene.path))
+                {
+                    Log.Warning(LogTag.Editor, "[SceneRoute] 工作区切换失败，已停止后续配置注入：{0}", scene.path);
+                    return;
+                }
                 ConfigMasterSO master = Config.WorkspaceActive.Get();
                 LogActiveConfigMaster(master);
                 Config.YooAssetInjector.Inject(master);
-                Pipify.LogActiveSettingsForScene(scene.path);
+                Pipify.LogActiveSettings();
             }
 
             /// <summary>

@@ -23,6 +23,11 @@ namespace NovaFramework.Editor
             private static readonly HttpClient s_HttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
             /// <summary>
+            /// 更新日志需要下载完整包体，使用独立的较长超时，避免大型包被误判为没有 CHANGELOG。
+            /// </summary>
+            private static readonly HttpClient s_ChangelogHttpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+
+            /// <summary>
             /// 是否已有待执行的 UPM Resolve 请求。
             /// </summary>
             private static bool s_IsResolvePackagesQueued;

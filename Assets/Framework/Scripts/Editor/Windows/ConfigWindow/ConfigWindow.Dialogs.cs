@@ -45,6 +45,28 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// Scene 已完成切换后收敛旧 Master 的脏 WorkingCopy。
+        /// 此时不能继续保留旧绑定，因此只提供“保存旧配置”或“丢弃旧配置”两种确定性结果。
+        /// </summary>
+        private void ResolveDirtyForSceneChange()
+        {
+            if (!m_IsDirty) return;
+            bool save = EditorUtility.DisplayDialog(
+                "场景已切换",
+                "当前 ConfigMaster 有未保存改动。工作区必须跟随新场景，请选择保存旧配置后切换，或丢弃旧改动后切换。",
+                "保存旧配置并切换",
+                "丢弃旧改动并切换");
+            if (save)
+            {
+                CommitWorkingCopyToAsset();
+                return;
+            }
+
+            DestroyWorkingCopy();
+            m_IsDirty = false;
+        }
+
+        /// <summary>
         /// 判断问题列表中是否存在 Error 级别。
         /// </summary>
         /// <param name="issues">校验问题列表。</param>

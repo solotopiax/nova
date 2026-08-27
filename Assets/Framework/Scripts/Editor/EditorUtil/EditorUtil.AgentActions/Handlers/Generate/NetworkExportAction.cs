@@ -560,28 +560,8 @@ namespace NovaFramework.Editor
             error = null;
             try
             {
-                string projectRoot = IOPath.GetFullPath(IOPath.GetDirectoryName(Application.dataPath) ?? Application.dataPath);
-                string globalsPath = IOPath.Combine(projectRoot, "ProjectSettings/Nova/Globals.json");
-                if (!File.Exists(globalsPath))
-                {
-                    error = "HostKey 导出需要已显式激活的 ConfigMaster；Globals.json 不存在。";
-                    return false;
-                }
-
-                GenerateActionCommon.ActiveMasterFile active =
-                    JsonUtility.FromJson<GenerateActionCommon.ActiveMasterFile>(File.ReadAllText(globalsPath));
-                if (active == null || string.IsNullOrWhiteSpace(active.configMasterGuid))
-                {
-                    error = "Globals.json 未声明激活 ConfigMaster GUID。";
-                    return false;
-                }
-                ConfigMasterSO master = GenerateActionCommon.ResolveMaster(active.configMasterGuid, out string masterPath);
-                if (master == null)
-                {
-                    error = "HostKey 导出需要 Globals.json 绑定可加载的 ConfigMaster。";
-                    return false;
-                }
-                if (!GenerateActionCommon.TryValidateActiveMasterBinding(active.configMasterGuid, masterPath, out error))
+                if (!EditorUtil.Config.WorkspaceActive.TryGetPersistedConfigMaster(
+                        out ConfigMasterSO master, out _, out string masterPath, out error))
                 {
                     return false;
                 }

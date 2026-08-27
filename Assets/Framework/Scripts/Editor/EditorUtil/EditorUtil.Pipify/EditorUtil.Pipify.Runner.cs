@@ -31,6 +31,11 @@ namespace NovaFramework.Editor
             internal static class Runner
             {
                 /// <summary>
+                /// 防止同一 Unity Editor 进程并发执行两个会共享全局工作区与 AssetDatabase 的 Batch。
+                /// </summary>
+                private static bool s_IsRunning;
+
+                /// <summary>
                 /// 执行 Batch。
                 /// </summary>
                 /// <param name="batch">待执行 Batch。</param>
@@ -41,10 +46,22 @@ namespace NovaFramework.Editor
                 {
                     if (batch == null) throw new ArgumentNullException(nameof(batch));
                     if (reporter == null) throw new ArgumentNullException(nameof(reporter));
+                    if (s_IsRunning) throw new InvalidOperationException($"{c_LogPrefix} 已有 Batch 正在执行，不能并发启动第二个 Batch。");
+                    if (!Config.WorkspaceActive.TryGetPersistedConfigMaster(
+                            out _, out string frozenMasterGuid, out _, out string masterError))
+                    {
+                        throw new InvalidOperationException($"{c_LogPrefix} {masterError}");
+                    }
+                    if (!Config.WorkspaceActive.TryGetPersistedPipifySettings(
+                            out PipifySettingsSO frozenSettings, out string frozenPipifyGuid, out _, out string pipifyError))
+                    {
+                        throw new InvalidOperationException($"{c_LogPrefix} {pipifyError}");
+                    }
 
                     Stopwatch total = Stopwatch.StartNew();
                     reporter.BeginBatch(batch.Name, batch.Items.Count);
                     bool success = false;
+                    s_IsRunning = true;
                     // 不冻结 Domain Reload 也不进入 Asset Editing：
                     // LockReloadAssemblies 期间 SBP BuildCache 看到的 .bytes contentHash 不会随 ImportAsset 同步刷新，
                     // 导致 bundlebuilder.build 命中陈旧 cache 复用上一轮 bundle 产物。
@@ -52,9 +69,14 @@ namespace NovaFramework.Editor
                     try
                     {
                         PipifySettingsSO settings = FindSettingsContaining(batch);
+                        if (!ReferenceEquals(settings, frozenSettings))
+                        {
+                            throw new InvalidOperationException($"{c_LogPrefix} Batch 所属 PipifySettings 与冻结工作区不一致。");
+                        }
                         for (int i = 0; i < batch.Items.Count; i++)
                         {
                             ct.ThrowIfCancellationRequested();
+                            ValidateFrozenWorkspace(frozenMasterGuid, frozenPipifyGuid);
                             BatchItem item = batch.Items[i];
                             PipifyStepInfo info = Registry.FindById(item.StepId);
                             if (info == null) throw new InvalidOperationException(string.Format("{0} 未注册的 StepId：{1}", c_LogPrefix, item.StepId));
@@ -97,6 +119,7 @@ namespace NovaFramework.Editor
                                     object[] args = info.ParamsType == null ? new object[] { ctx } : new object[] { ctx, paramsInstance };
                                     UniTask invoked = (UniTask)info.Method.Invoke(null, args);
                                     await invoked;
+                                    ValidateFrozenWorkspace(frozenMasterGuid, frozenPipifyGuid);
                                     sw.Stop();
                                     reporter.EndStep(i, true, sw.Elapsed, null);
                                 }
@@ -131,7 +154,34 @@ namespace NovaFramework.Editor
                         // 若 Console 勾选 "Clear on Recompile" 会把本批次所有日志一次性清空。
                         // 产物会在 Unity 下次获得焦点时由 AutoRefresh 自动扫描，用户可先看完日志再切焦点触发编译。
                         total.Stop();
+                        s_IsRunning = false;
                         reporter.EndBatch(success, total.Elapsed);
+                    }
+                }
+
+                /// <summary>
+                /// 验证 Batch 启动时冻结的 Master/Pipify GUID 在步骤前后均未变化。
+                /// 检测到场景切换或外部改写时立即中断，防止后续 Step 混用另一工作区。
+                /// </summary>
+                /// <param name="masterGuid">Batch 启动时的 Master GUID。</param>
+                /// <param name="pipifyGuid">Batch 启动时的 Pipify GUID。</param>
+                private static void ValidateFrozenWorkspace(string masterGuid, string pipifyGuid)
+                {
+                    if (!Config.WorkspaceActive.TryGetPersistedConfigMaster(
+                            out _, out string activeMasterGuid, out _, out string masterError))
+                    {
+                        throw new InvalidOperationException($"{c_LogPrefix} Batch 执行期间工作区失效：{masterError}");
+                    }
+                    if (!Config.WorkspaceActive.TryGetPersistedPipifySettings(
+                            out _, out string activePipifyGuid, out _, out string pipifyError))
+                    {
+                        throw new InvalidOperationException($"{c_LogPrefix} Batch 执行期间工作区失效：{pipifyError}");
+                    }
+                    if (!string.Equals(masterGuid, activeMasterGuid, StringComparison.OrdinalIgnoreCase) ||
+                        !string.Equals(pipifyGuid, activePipifyGuid, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException(
+                            $"{c_LogPrefix} Batch 执行期间活动工作区发生变化，已中断以避免跨工作区混合产物。");
                     }
                 }
 

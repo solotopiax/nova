@@ -9,7 +9,12 @@
  ***************************************************************/
 
 using System.Collections.Generic;
+using IOPath = System.IO.Path;
 using NovaFramework.Runtime;
+using UnityEditor;
+using UnityEngine;
+using YooAsset;
+using YooAsset.Editor;
 
 namespace NovaFramework.Editor
 {
@@ -160,6 +165,7 @@ namespace NovaFramework.Editor
                 /// 按当前坐标解析 YooAsset 面板两路径字段的最终生效值。
                 /// <para>全不勾（IsGlobal）→ 直接取顶层各默认字段；否则在 YooAssetEditorConfigsOverrides 中匹配首个符合条目，
                 /// 命中后使用整份 Override（空字符串为有效值），无命中回落顶层字段。</para>
+                /// <para>非空显式路径不可加载时，仅回退 ConfigMaster 同目录下同名、同类型的配置资产。</para>
                 /// </summary>
                 /// <param name="master">ConfigMasterSO 实例。</param>
                 /// <param name="curP">当前平台。</param>
@@ -181,22 +187,70 @@ namespace NovaFramework.Editor
                         foreach (YooAssetEditorConfigsOverride o in master.YooAssetEditorConfigsOverrides)
                         {
                             if (!MatchesMask(mask, o.Platform, o.Channel, o.DevelopMode, curP, curC, curM)) continue;
-                            return new YooAssetResult
+                            return ResolveRelocatedYooAssetPaths(master, new YooAssetResult
                             {
                                 YooAssetSettingsPath = o.YooAssetSettingsPath ?? string.Empty,
                                 BundleCollectorSettingPath = o.BundleCollectorSettingPath ?? string.Empty,
                                 YooFolderName = o.YooFolderName ?? string.Empty,
                                 PackageFilePrefix = o.PackageFilePrefix ?? string.Empty,
-                            };
+                            });
                         }
                     }
-                    return new YooAssetResult
+                    return ResolveRelocatedYooAssetPaths(master, new YooAssetResult
                     {
                         YooAssetSettingsPath = master.YooAssetEditorConfigs.YooAssetSettingsPath ?? string.Empty,
                         BundleCollectorSettingPath = master.YooAssetEditorConfigs.BundleCollectorSettingPath ?? string.Empty,
                         YooFolderName = master.YooAssetEditorConfigs.YooFolderName ?? string.Empty,
                         PackageFilePrefix = master.YooAssetEditorConfigs.PackageFilePrefix ?? string.Empty,
-                    };
+                    });
+                }
+
+                /// <summary>
+                /// 修正 UPM Sample 导入或业务目录迁移后失效的 YooAsset 配置路径。
+                /// <para>显式路径仍可加载时保持原值；仅在原路径失效且 ConfigMaster 同目录存在同名、同类型资产时回退到同目录。</para>
+                /// <para>该过程只返回当前有效路径，不修改 ConfigMaster 序列化数据，避免导入 Sample 后产生无意义的资产改动。</para>
+                /// </summary>
+                /// <param name="master">用于定位当前 Editor 配置目录的 ConfigMasterSO。</param>
+                /// <param name="result">当前坐标选出的 YooAsset 配置。</param>
+                /// <returns>路径已按实际资产位置校正的新结果。</returns>
+                private static YooAssetResult ResolveRelocatedYooAssetPaths(ConfigMasterSO master, YooAssetResult result)
+                {
+                    result.YooAssetSettingsPath = ResolveRelocatedAssetPath<YooAssetSettings>(
+                        master, result.YooAssetSettingsPath);
+                    result.BundleCollectorSettingPath = ResolveRelocatedAssetPath<BundleCollectorSetting>(
+                        master, result.BundleCollectorSettingPath);
+                    return result;
+                }
+
+                /// <summary>
+                /// 在配置路径失效时，按 ConfigMaster 所在目录查找同名且类型匹配的迁移后资产。
+                /// </summary>
+                /// <typeparam name="TAsset">期望的 Unity 资产类型。</typeparam>
+                /// <param name="master">用于定位迁移后目录的 ConfigMasterSO。</param>
+                /// <param name="configuredPath">ConfigMaster 中保存的原始项目相对路径。</param>
+                /// <returns>可加载的原路径、迁移后的同目录路径，或未命中时的原路径。</returns>
+                private static string ResolveRelocatedAssetPath<TAsset>(ConfigMasterSO master, string configuredPath)
+                    where TAsset : Object
+                {
+                    string normalizedPath = (configuredPath ?? string.Empty).Replace('\\', '/');
+                    if (string.IsNullOrEmpty(normalizedPath) ||
+                        AssetDatabase.LoadAssetAtPath<TAsset>(normalizedPath) != null)
+                    {
+                        return normalizedPath;
+                    }
+
+                    string masterPath = (AssetDatabase.GetAssetPath(master) ?? string.Empty).Replace('\\', '/');
+                    string masterDirectory = IOPath.GetDirectoryName(masterPath)?.Replace('\\', '/');
+                    string fileName = IOPath.GetFileName(normalizedPath);
+                    if (string.IsNullOrEmpty(masterDirectory) || string.IsNullOrEmpty(fileName))
+                    {
+                        return normalizedPath;
+                    }
+
+                    string relocatedPath = $"{masterDirectory}/{fileName}";
+                    return AssetDatabase.LoadAssetAtPath<TAsset>(relocatedPath) != null
+                        ? relocatedPath
+                        : normalizedPath;
                 }
 
                 /// <summary>

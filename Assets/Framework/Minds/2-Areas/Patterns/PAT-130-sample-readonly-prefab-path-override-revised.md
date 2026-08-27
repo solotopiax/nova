@@ -38,7 +38,8 @@ UPM 包内 prefab 含**指向 sample 内资源副本的路径字段**（如 `Sou
 1. **prefab 默认值指主 Demo 副本**：开发工程内 prefab 字段默认值 = `Assets/Samples/MainDemo/Excels|Protos/...`。MainDemo 场景的 PrefabInstance 不加路径 override，靠默认值生效——开发期打开 MainDemo 即可正常用工具链（dev 期导出读「当前场景 Nova 实例值」，链路 B）。
 2. **非主 Demo 用 scene override**：其他 Demo（如 LoginDemo）的 scene PrefabInstance.m_Modifications 注入路径字段，指向自己的副本。scene 在 sample 内可写，prefab 本体只读不动。
 3. **发版期自动扫描 + 注入 override**：扫 prefab 收集 `(fileID, propertyPath, value)` 三元组（`endswith("SourceDirPath")` 覆盖全部变体，不硬编码字段清单），把值前缀从 `Assets/Samples/MainDemo` 按当前 sample 名重写为 `Assets/Samples/<sampleName>`，幂等去重后追加进 sample scene。主/子包走同一注入函数（遵循 [[PAT-121-publish-sample-rewrite-symmetric|PAT-121]]）。
-4. **import 期 SamplePathRewriter 二次重写**：sample scene 此刻是开发工程逻辑路径 `Assets/Samples/<sampleName>/...`，由 `SamplePathRewriter` 在 `[InitializeOnLoad]` 把前缀替换为外部工程真实 sample 根。
+4. **import 期 SamplePathRewriter 二次重写**：sample scene 此刻是开发工程逻辑路径 `Assets/Samples/<sampleName>/...`，由 `SamplePathRewriter` 在 `[InitializeOnLoad]` 把前缀替换为外部工程真实 sample 根。重写器必须遍历同类的全部 `SamplePathManifest`，单个旧或无效 Manifest 只能影响自身，不得阻断新导入 Sample。
+5. **完成标记必须可校验**：`.nova-path-rewritten` 只是减少重复扫描的缓存，不是完成事实的唯一来源。包升级或覆盖导入后，仍需检查清单目标是否存在以及是否残留开发态前缀；只有目标齐全且无待重写路径时才可保留或写入标记。
 
 收敛为一条生命周期链：**prefab 默认值(MainDemo) → 发版注入 scene override(按 sample 前缀) → import 重写真实路径**。资源副本随 sample 整目录拷贝进包（`_copy_sample_to_pkg`），不再有独立的 Docs 搬运步骤。
 
@@ -57,6 +58,8 @@ UPM 包内 prefab 含**指向 sample 内资源副本的路径字段**（如 `Sou
 2. **rewriter 改 `Packages/<pkg>/Prefabs/Nova.prefab`**：Packages 下只读，写入被 Unity 拒绝；即便绕过也污染上游包。
 3. **硬编码 (fileID, propertyPath, value) 清单**：每次 prefab 增删字段都要同步 Python，迟早失守。
 4. **资源副本进 Assets 却被 BundleCollector 收录**：Excels/Protos 不应进 `BundleCollectorSetting` 的 CollectPaths，否则 .xlsx 被误打进 AB。
+5. **全工程只取第一份 Manifest**：手动升级时可能同时存在旧 Demo 和新 Sample，`FirstOrDefault` 命中旧 Manifest 后提前返回，会让新 Sample 整体失去重写机会。
+6. **看到旧 marker 就无条件返回**：覆盖导入新版本后路径内容可能已恢复为开发态，旧 marker 不能替代对当前目标的检查。
 
 > **PAT-63 原反模式 1（已推翻）**：旧 PAT-63 称「改 prefab 字面量为 `Assets/Samples/MainDemo/...` 是反模式」。在资源副本迁入各 Demo 后，prefab 字面量改指 Demo 副本路径反而是**正确做法**（字面量与物理位置吻合，开发期直接可用）。该禁令在「源数据仍在项目根 Docs/」的旧前提下成立，迁移后不再适用。
 
@@ -67,4 +70,3 @@ UPM 包内 prefab 含**指向 sample 内资源副本的路径字段**（如 `Sou
 - scene override 是唯一可写入口，非主 sample 靠 override 区分
 - override 值用 sample 内逻辑路径，import 期 rewriter 二次替换
 - 自动扫描 prefab 字段 > 硬编码清单
-

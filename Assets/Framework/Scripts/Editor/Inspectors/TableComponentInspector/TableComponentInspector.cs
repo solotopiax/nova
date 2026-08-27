@@ -35,6 +35,7 @@ namespace NovaFramework.Editor
             m_LoadDescriptions = runtime?.FindPropertyRelative("LoadDescriptions");
             m_ManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(ITableManager)));
             m_ProjectFileWatcherCallback = OnProjectFilesChanged;
+            RepairSerializedAssetPaths();
             RefreshProjectModels();
         }
 

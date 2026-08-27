@@ -128,12 +128,15 @@ namespace NovaFramework.Editor
         private void RebindMaster(ConfigMasterSO newMaster)
         {
             if (!ConfirmDiscardDirty()) return;
+            if (newMaster != null && !EditorUtil.Config.WorkspaceActive.TrySet(newMaster))
+            {
+                EditorUtility.DisplayDialog("绑定失败", "无法写入 ProjectSettings/Nova/Globals.json，ConfigMaster 未切换。", "知道了");
+                return;
+            }
             m_Master = newMaster;
             DestroyWorkingCopy();
             if (newMaster != null)
             {
-                // 持久化激活 master 到 Globals.json，使顶部 ObjectField 拖拽/创建/选择与 BindGuide 按钮行为一致（ADR-047 写入入口）
-                EditorUtil.Config.WorkspaceActive.Set(newMaster);
                 RebuildWorkingCopy();
                 EditorUtil.Config.StructureGuard.SyncEnumGrid(newMaster);
                 RefreshPluginCache();

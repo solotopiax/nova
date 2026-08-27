@@ -81,13 +81,6 @@ namespace NovaFramework.Editor
             public string bundleVersion;
         }
 
-        [Serializable]
-        private sealed class ActiveMasterFile
-        {
-            public string configMasterGuid;
-            public string configMasterPathHint;
-        }
-
         internal static string ProjectRoot =>
             Path.GetFullPath(Path.GetDirectoryName(Application.dataPath) ?? Application.dataPath);
 
@@ -209,39 +202,8 @@ namespace NovaFramework.Editor
         {
             snapshot = null;
             error = null;
-            string globalsPath = Path.Combine(ProjectRoot, "ProjectSettings/Nova/Globals.json");
-            if (!File.Exists(globalsPath))
-            {
-                error = "ProjectSettings/Nova/Globals.json 不存在，无法只读冻结激活 ConfigMaster。";
-                return false;
-            }
-
-            ActiveMasterFile active;
-            try
-            {
-                active = JsonUtility.FromJson<ActiveMasterFile>(File.ReadAllText(globalsPath));
-            }
-            catch (Exception exception)
-            {
-                error = "Globals.json 无法解析：" + exception.Message;
-                return false;
-            }
-            if (active == null || string.IsNullOrWhiteSpace(active.configMasterGuid))
-            {
-                error = "Globals.json 未绑定激活 ConfigMaster。";
-                return false;
-            }
-
-            string masterPath = AssetDatabase.GUIDToAssetPath(active.configMasterGuid);
-            ConfigMasterSO master = string.IsNullOrEmpty(masterPath)
-                ? null
-                : AssetDatabase.LoadAssetAtPath<ConfigMasterSO>(masterPath);
-            if (master == null || !string.Equals(NormalizeAssetPath(active.configMasterPathHint), masterPath, StringComparison.Ordinal))
-            {
-                error = "激活 ConfigMaster 的 GUID、pathHint 或资产身份已漂移。";
-                return false;
-            }
-            if (!GenerateActionCommon.TryValidateActiveMasterBinding(active.configMasterGuid, masterPath, out error))
+            if (!EditorUtil.Config.WorkspaceActive.TryGetPersistedConfigMaster(
+                    out ConfigMasterSO master, out string masterGuid, out string masterPath, out error))
             {
                 return false;
             }
@@ -284,7 +246,7 @@ namespace NovaFramework.Editor
 
             snapshot = new BundleInputSnapshot
             {
-                masterGuid = active.configMasterGuid,
+                masterGuid = masterGuid,
                 masterPath = masterPath,
                 masterHashSha256 = ComputeAssetHash(master, masterPath, cancellationToken),
                 platform = master.CurrentPlatform.ToString(),
