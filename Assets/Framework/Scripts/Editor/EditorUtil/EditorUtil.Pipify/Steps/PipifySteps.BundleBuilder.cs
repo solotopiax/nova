@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using Cysharp.Threading.Tasks;
+using UnityEditor;
 
 namespace NovaFramework.Editor
 {
@@ -29,6 +30,8 @@ namespace NovaFramework.Editor
         [PipifyStep("bundlebuilder.build", "Bundles", "构建资源", ParamsType = typeof(AssetBundleBuildArgs))]
         internal static UniTask RunBuildAssetBundle(PipifyContext ctx, AssetBundleBuildArgs p)
         {
+            EditorUtil.Config.ActivePlatform.RequireCurrent("[Pipify] Bundle 构建");
+            p.Target = EditorUserBuildSettings.activeBuildTarget;
             EditorUtil.BundleBuilder.BuildAssetBundle(p);
             return UniTask.CompletedTask;
         }
@@ -43,6 +46,8 @@ namespace NovaFramework.Editor
         [PipifyStep("bundlebuilder.build_raw_file", "Raw Files", "构建资源", ParamsType = typeof(RawFileBuildArgs))]
         internal static UniTask RunBuildRawFileBundle(PipifyContext ctx, RawFileBuildArgs p)
         {
+            EditorUtil.Config.ActivePlatform.RequireCurrent("[Pipify] RawFile 构建");
+            p.Target = EditorUserBuildSettings.activeBuildTarget;
             EditorUtil.BundleBuilder.BuildRawFileBundle(p);
             return UniTask.CompletedTask;
         }

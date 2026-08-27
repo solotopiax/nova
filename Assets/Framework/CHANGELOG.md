@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## [0.6.20] - 2026-08-27
+
+### Breaking
+
+- `ConfigMasterSO.CurrentPlatform` 从可写字段调整为只读属性，始终实时映射 Unity Active BuildTarget；旧资产通过 `FormerlySerializedAs` 兼容，但外部直接赋值代码需要改用 BuildTarget 切换流程。
+
+### Added
+
+- 本地化文本增加 Arabic、Persian、Hebrew RTL 方向识别，并通过 TMP `ITextPreprocessor` 接入 MIT 许可的 Arabic shaping 实现。
+- App 推荐更新增加用户放弃时间记录与远端提示间隔控制。
+- 新增统一的 Editor Active Platform 解析、校验与切换工具。
+
+### Changed
+
+- 启动期与运行时统一使用同一套语言解析策略，并修复异步切换语言及字体加载的竞态。
+- 所有随包发布的 Demo 将 Localization 初始化前移到 Network 之前。
+
+### Fixed
+
+- Table 的内置 Luban 导出描述与 canonical `Nova.prefab` 改用 Framework UPM 逻辑模板路径，Sample 导入消费工程后 Inspector 不再显示开发仓的 `Assets/Framework/Templates/Luban`；旧配置仍可正常导出。
+
 ## [0.6.19] - 2026-08-27
 
 ### Fixed

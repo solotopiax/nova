@@ -38,6 +38,8 @@ namespace NovaFramework.Runtime
         /// </summary>
         private void RefreshText()
         {
+            RefreshTextDirection();
+
             if (string.IsNullOrEmpty(m_LocalizingKeyName))
             {
                 return;
@@ -57,11 +59,34 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 根据当前语言更新 TMP 的书写方向和渲染预处理器。
+        /// </summary>
+        private void RefreshTextDirection()
+        {
+            if (m_TextMeshProUGUI == null || m_TextPreprocessor == null)
+            {
+                return;
+            }
+
+            Language language = m_LocalizationManager?.Language ?? Language.Unspecified;
+            bool languageChanged = m_TextPreprocessor.Language != language;
+            m_TextPreprocessor.Language = language;
+            m_TextMeshProUGUI.isRightToLeftText = LanguageMetadata.IsRightToLeft(language);
+            if (languageChanged)
+            {
+                m_TextMeshProUGUI.SetVerticesDirty();
+                m_TextMeshProUGUI.SetLayoutDirty();
+            }
+        }
+
+        /// <summary>
         /// 刷新字体。
         /// 根据当前语言和 FontMark 从字体配置中匹配字体并加载赋值。
         /// </summary>
         private void RefreshFont()
         {
+            int refreshVersion = ++m_FontRefreshVersion;
+
             if (m_LocalizationManager == null || !m_LocalizationManager.AutoFontAdapt)
             {
                 return;
@@ -94,14 +119,16 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            LoadAndApplyFont(targetFontData).Forget();
+            LoadAndApplyFont(targetFontData, refreshVersion, m_LocalizationManager.Language).Forget();
         }
 
         /// <summary>
         /// 加载并应用字体资源。
         /// </summary>
         /// <param name="fontData">目标字体配置数据。</param>
-        private async UniTaskVoid LoadAndApplyFont(ILocalizationFontRow fontData)
+        /// <param name="refreshVersion">发起加载时的字体刷新版本。</param>
+        /// <param name="language">发起加载时的语言。</param>
+        private async UniTaskVoid LoadAndApplyFont(ILocalizationFontRow fontData, int refreshVersion, Language language)
         {
             if (m_AssetManager == null)
             {
@@ -122,6 +149,13 @@ namespace NovaFramework.Runtime
                 fontHandle = await m_AssetManager.LoadAsync<UnityEngine.Object>(fontData.AssetLocation, ct);
                 ct.ThrowIfCancellationRequested();
 
+                if (!CanApplyFontRefresh(refreshVersion, language))
+                {
+                    fontHandle?.Release();
+                    fontHandle = null;
+                    return;
+                }
+
                 if (fontHandle.Asset == null)
                 {
                     fontHandle.Release();
@@ -133,7 +167,7 @@ namespace NovaFramework.Runtime
                 m_LoadedFontHandle?.Release();
                 m_LoadedFontHandle = fontHandle;
                 fontHandle = null;
-                ApplyFontAsset(m_LoadedFontHandle.Asset, fontData);
+                ApplyFontAsset(m_LoadedFontHandle.Asset, fontData, refreshVersion, language);
             }
             catch (OperationCanceledException)
             {
@@ -151,7 +185,13 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="fontAsset">加载到的字体资源。</param>
         /// <param name="fontData">字体配置数据。</param>
-        private void ApplyFontAsset(UnityEngine.Object fontAsset, ILocalizationFontRow fontData)
+        /// <param name="refreshVersion">发起加载时的字体刷新版本。</param>
+        /// <param name="language">发起加载时的语言。</param>
+        private void ApplyFontAsset(
+            UnityEngine.Object fontAsset,
+            ILocalizationFontRow fontData,
+            int refreshVersion,
+            Language language)
         {
             if (m_TextMeshProUGUI == null)
             {
@@ -163,7 +203,7 @@ namespace NovaFramework.Runtime
             {
                 m_TextMeshProUGUI.font = tmpFont;
                 ApplyFontSizeScale(fontData.FontSizeScaleRatio);
-                LoadAndApplyMaterial(fontData).Forget();
+                LoadAndApplyMaterial(fontData, refreshVersion, language).Forget();
             }
         }
 
@@ -171,7 +211,9 @@ namespace NovaFramework.Runtime
         /// 异步加载并应用自定义材质到文本组件。
         /// </summary>
         /// <param name="fontData">字体配置数据。</param>
-        private async UniTaskVoid LoadAndApplyMaterial(ILocalizationFontRow fontData)
+        /// <param name="refreshVersion">发起加载时的字体刷新版本。</param>
+        /// <param name="language">发起加载时的语言。</param>
+        private async UniTaskVoid LoadAndApplyMaterial(ILocalizationFontRow fontData, int refreshVersion, Language language)
         {
             if (string.IsNullOrEmpty(fontData.MaterialName))
             {
@@ -190,6 +232,13 @@ namespace NovaFramework.Runtime
                 CancellationToken ct = this.GetCancellationTokenOnDestroy();
                 matHandle = await m_AssetManager.LoadAsync<Material>(fontData.MaterialName, ct);
                 ct.ThrowIfCancellationRequested();
+
+                if (!CanApplyFontRefresh(refreshVersion, language))
+                {
+                    matHandle?.Release();
+                    matHandle = null;
+                    return;
+                }
 
                 if (matHandle.Asset == null)
                 {
@@ -216,6 +265,20 @@ namespace NovaFramework.Runtime
                 matHandle?.Release();
                 Log.Warning(LogTag.Localization, "字体材质加载异常，FontMark='{0}'，异常信息：{1}", fontData.Mark, ex.Message);
             }
+        }
+
+        /// <summary>
+        /// 检查异步字体请求是否仍属于当前启用状态和当前语言。
+        /// </summary>
+        /// <param name="refreshVersion">发起加载时的字体刷新版本。</param>
+        /// <param name="language">发起加载时的语言。</param>
+        /// <returns>仍可应用时返回 true，否则返回 false。</returns>
+        private bool CanApplyFontRefresh(int refreshVersion, Language language)
+        {
+            return isActiveAndEnabled &&
+                   refreshVersion == m_FontRefreshVersion &&
+                   m_LocalizationManager != null &&
+                   m_LocalizationManager.Language == language;
         }
 
         /// <summary>

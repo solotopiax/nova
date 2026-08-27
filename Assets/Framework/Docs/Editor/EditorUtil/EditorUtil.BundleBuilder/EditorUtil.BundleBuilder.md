@@ -55,7 +55,7 @@ public static string GetDefaultPackageVersion();
 
 | 字段 | 类型 | 默认值 | 说明 | 标记 |
 |---|---|---|---|---|
-| `Target` | `BuildTarget` | `NoTarget` | 目标平台；`NoTarget` 时使用 `EditorUserBuildSettings.activeBuildTarget` | — |
+| `Target` | `BuildTarget` | `NoTarget` | 直接 API 可显式指定目标；`NoTarget` 时使用 `EditorUserBuildSettings.activeBuildTarget`。Pipify 中始终同步当前 Active BuildTarget 且只读 | `[PipifyReadOnly]` |
 | `PackageName` | `string` | `"Default"` | 包裹名称（**必填**） | — |
 | `BuildVersion` | `string` | `""` | 包裹版本号；空字符串时按 `yyyy-MM-dd-totalMinutes` 自动生成 | `[PipifyDynamicDefault(typeof(EditorUtil.BundleBuilder), nameof(EditorUtil.BundleBuilder.GetDefaultPackageVersion))]` |
 | `ClearBuildCache` | `bool` | `true` | 是否清理构建缓存 | — |
@@ -72,7 +72,7 @@ public static string GetDefaultPackageVersion();
 
 | 字段 | 类型 | 默认值 | 说明 | 标记 |
 |---|---|---|---|---|
-| `Target` | `BuildTarget` | `NoTarget` | 目标平台；`NoTarget` 时使用 `EditorUserBuildSettings.activeBuildTarget` | — |
+| `Target` | `BuildTarget` | `NoTarget` | 直接 API 可显式指定目标；`NoTarget` 时使用 `EditorUserBuildSettings.activeBuildTarget`。Pipify 中始终同步当前 Active BuildTarget 且只读 | `[PipifyReadOnly]` |
 | `PackageName` | `string` | `"Default"` | 包裹名称（**必填**） | `[PipifyDynamicDropdown(typeof(AssetBundleBuildArgs), nameof(AssetBundleBuildArgs.GetPackageNameOptions))]` |
 | `BuildVersion` | `string` | `""` | 包裹版本号；空字符串时生成默认版本号 | `[PipifyDynamicDefault(typeof(EditorUtil.BundleBuilder), nameof(EditorUtil.BundleBuilder.GetDefaultPackageVersion))]` |
 | `ClearBuildCache` | `bool` | `true` | 是否清理构建缓存 | — |
@@ -88,6 +88,7 @@ public static string GetDefaultPackageVersion();
 Raw DTO 不包含 `Compression`、`BuiltinShadersBundleName` 等 ScriptableBuildPipeline 专属配置。
 
 **Pipify 渲染特性（PipifyWindow 解析，BundleBuilder 自身不依赖）：**
+- `PipifyReadOnly`：禁用该字段编辑。两个 `Target` 字段在 Pipify 中用它只读展示 Unity 当前 Active BuildTarget，执行期会再次同步。
 - `PipifyDropdown(InterfaceType)`：将 string 字段渲染为接口实现类下拉框，存储 `Type.FullName`，首项 `(未配置 → Default)` 表示空串。
 - `PipifyDynamicDefault(ProviderType, MethodName)`：值为空时调用指定无参 static 方法获取占位字符串显示，不写回字段值。
 - `PipifyVisibleWhen(DependsOn, params int[] AnyOf)`：依赖字段当前 `Convert.ToInt32` 值命中 AnyOf 时才显示。
@@ -117,6 +118,7 @@ Raw DTO 不包含 `Compression`、`BuiltinShadersBundleName` 等 ScriptableBuild
 ## §11 使用示例
 
 ```csharp
+// 以下都是直接 API 示例：可显式传 Target；Pipify Step 不接受手工 Target。
 // 最小调用：仅必填 PackageName，其他全部默认
 BuildResult result = EditorUtil.BundleBuilder.BuildAssetBundle(
     new AssetBundleBuildArgs { PackageName = "DefaultPackage" });

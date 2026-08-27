@@ -151,34 +151,21 @@ namespace NovaFramework.Runtime
         /// <returns>解析后的语言。</returns>
         public override Language ResolveLanguage()
         {
-            if (Application.isEditor)
-            {
-                Language editorLang = m_Config?.EditorLanguage ?? Language.Unspecified;
-                if (editorLang != Language.Unspecified && HasSupportedLanguage(editorLang))
-                {
-                    return editorLang;
-                }
+            LocalizationLanguagePolicy policy = new LocalizationLanguagePolicy(
+                m_Config?.EditorLanguage ?? Language.Unspecified,
+                m_Config?.RuntimeLanguagePrefer ?? true,
+                m_Config?.FallbackLanguage ?? Language.English);
+            Language firstSupportedLanguage = m_SupportedLanguages.Count > 0
+                ? m_SupportedLanguages[0]
+                : Language.Unspecified;
 
-                return ResolveByPersistThenSystem();
-            }
-
-            if (m_Config?.RuntimeLanguagePrefer == false)
-            {
-                Language fallback = m_Config.FallbackLanguage;
-                if (HasSupportedLanguage(fallback))
-                {
-                    return fallback;
-                }
-
-                if (m_SupportedLanguages.Count > 0)
-                {
-                    return m_SupportedLanguages[0];
-                }
-
-                return m_Config.FallbackLanguage;
-            }
-
-            return ResolveByPersistThenSystem();
+            return LocalizationLanguageResolver.Resolve(
+                policy,
+                ReadLanguageFromPersist(),
+                Application.systemLanguage,
+                HasSupportedLanguage,
+                firstSupportedLanguage,
+                Application.isEditor);
         }
 
         /// <summary>
@@ -217,7 +204,7 @@ namespace NovaFramework.Runtime
             m_LanguageSwitchVersion++;
             int currentVersion = m_LanguageSwitchVersion;
 
-            bool loaded = await TryLoadLanguageTextsAsync(language);
+            LubanDataCache loadedCache = await LoadLanguageTextCacheAsync(language);
 
             if (m_LanguageSwitchVersion != currentVersion)
             {
@@ -225,7 +212,7 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            if (!loaded)
+            if (loadedCache == null || !CommitLanguageTextCache(loadedCache))
             {
                 Log.Error(LogTag.Localization, "异步切换语言失败，语言 '{0}' 的文本数据加载后为空，当前语言 '{1}' 保持不变。", language, m_Language);
                 return;

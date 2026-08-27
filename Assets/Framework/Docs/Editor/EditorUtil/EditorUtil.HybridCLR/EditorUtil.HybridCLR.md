@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Editor`
 **全局访问**：`EditorUtil.HybridCLR`
 
-HybridCLR 原子操作合集：提供 link.xml 校验/补全、对齐 HybridCLR/Generate 子菜单的细粒度入口（`GenerateAll()` 一键及 5 个单项）、仅编译热更 DLL 的独立入口、AOT 元数据拷贝、业务 DLL 拷贝等独立方法。框架不再提供全流程封装，流水线编排统一交给 `EditorUtil.Pipify` 按需组装。配置先通过 `EditorUtil.Config.WorkspaceActive.Get()` 锚定当前激活 `ConfigMasterSO`，再按该 Master 当前 `Platform / Channel / DevelopMode` 三维坐标解析最终生效的 `HybridEditorConfigs`。
+HybridCLR 原子操作合集：提供 link.xml 校验/补全、对齐 HybridCLR/Generate 子菜单的细粒度入口（`GenerateAll()` 一键及 5 个单项）、仅编译热更 DLL 的独立入口、AOT 元数据拷贝、业务 DLL 拷贝等独立方法。框架不再提供全流程封装，流水线编排统一交给 `EditorUtil.Pipify` 按需组装。配置先通过 `EditorUtil.Config.WorkspaceActive.Get()` 锚定当前激活 `ConfigMasterSO`，再按该 Master 当前 `Platform / Channel / DevelopMode` 三维坐标解析最终生效的 `HybridEditorConfigs`；其中 ConfigMaster Platform 实时映射 Unity Active BuildTarget。
 
 ---
 
@@ -95,7 +95,7 @@ public static void CompileDllActiveBuildTarget()
 
 ### 激活 ConfigMaster 与当前三维坐标
 
-`ValidateLinkXml` / `CopyAotDlls` / `CopyGameDlls` 先通过 `Config.WorkspaceActive.Get()` 读取当前激活 `ConfigMasterSO`；未绑定时由 `ResolveActiveMasterOrThrow()` 抛 `InvalidOperationException`。随后 `ResolveHybridCLRForCurrentCoord()` 使用 `master.CurrentPlatform / CurrentChannel / CurrentDevelopMode` 调用 `Config.DimensionalResolver.ResolveHybridCLR(...)`，因此 AOT/Game DLL 列表和 link.xml 路径都来自当前激活 Master 的当前三维坐标，而不是全工程任意查找。
+`ValidateLinkXml` / `CopyAotDlls` / `CopyGameDlls` 先通过 `Config.WorkspaceActive.Get()` 读取当前激活 `ConfigMasterSO`；未绑定时由 `ResolveActiveMasterOrThrow()` 抛 `InvalidOperationException`。随后 `ResolveHybridCLRForCurrentCoord()` 使用 `master.CurrentPlatform / CurrentChannel / CurrentDevelopMode` 调用 `Config.DimensionalResolver.ResolveHybridCLR(...)`，因此 AOT/Game DLL 列表和 link.xml 路径都来自当前激活 Master 的当前三维坐标，而不是全工程任意查找。这里的 `CurrentPlatform` 与 Unity Active BuildTarget 实时对齐；`CompileDllActiveBuildTarget`、Generate 和 `{ActiveBuildTarget}` 路径解析本来就直接以 Unity BuildTarget 为真相，不改为读取 ConfigMaster。
 
 `CopyAotDlls` / `CopyGameDlls` 不调用全局 `AssetDatabase.Refresh()`。每个文件复制完成后，只有解析后的目标路径位于 `Assets/` 时才调用 `AssetDatabase.ImportAsset(assetRelative, ImportAssetOptions.ForceSynchronousImport)`；其他项目内目标只做文件复制。
 

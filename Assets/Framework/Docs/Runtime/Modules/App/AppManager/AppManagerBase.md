@@ -29,8 +29,11 @@
 - 初始化
 - Update / Shutdown
 - 版本检查
+- 推荐更新放弃时间记录
 - 下载 / 跳商店
 - 检查结果状态属性
+
+`AppManagerBase` 同时实现可选的 `IRecommendedDownloadDismissalRecorder`；该扩展没有并入 `IAppManager`，不会要求外部自定义 `IAppManager` 同步增加成员。
 
 真正的 HTTP 请求、JSON 解析和 URL 解析逻辑都在 [AppManager.md](AppManager.md)。
 

@@ -59,6 +59,14 @@ namespace NovaFramework.Runtime
             m_HasAssetPatch = procedureOwner.GetData<bool>(ProcedureDataKeys.HasAssetPatch);
             m_IsOperationInProgress = false;
 
+            if (m_AppResult != AppVersionResult.ForcedDownload
+                && m_AppResult != AppVersionResult.RecommendedDownload)
+            {
+                Log.Warning(LogTag.Procedure, Txt.Format("ProcedureAppDownload 收到无效结果，跳过下载提示。Result={0}", m_AppResult));
+                m_Complete = true;
+                return;
+            }
+
             Log.Debug(LogTag.Procedure, Txt.Format("ProcedureAppDownload — 显示大版本更新弹窗。Result={0} HasAssetPatch={1}", m_AppResult, m_HasAssetPatch));
             ShowDialog();
         }
@@ -128,6 +136,8 @@ namespace NovaFramework.Runtime
                 : () =>
                 {
                     LauncherUIController.DestroyDialog();
+                    AppComponent appComponent = FrameworkComponentsGroup.GetComponent<AppComponent>();
+                    appComponent.RecordRecommendedDownloadDismissed();
                     Log.Debug(LogTag.Procedure, "用户取消推荐更新，继续后续启动流程。");
                     m_Complete = true;
                 };

@@ -28,8 +28,11 @@ namespace NovaFramework.Editor
     public sealed class AssetBundleBuildArgs
     {
         /// <summary>
-        /// 目标构建平台；NoTarget 表示使用 EditorUserBuildSettings.activeBuildTarget。
+        /// 目标构建平台；Pipify 中实时同步并只读显示 Unity Active BuildTarget，直接 API 调用仍可显式传入。
         /// </summary>
+        [InspectorName("平台（Unity Active BuildTarget）")]
+        [PipifyReadOnly]
+        [PipifyHelpBox("Pipify 构建平台实时取自 Unity 当前 Active BuildTarget；如需切换平台，请先在 Unity 中切换 BuildTarget。")]
         public BuildTarget Target = BuildTarget.NoTarget;
 
         /// <summary>

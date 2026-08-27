@@ -55,7 +55,8 @@
     },
     {
       "name": "platformChannelDevelopMode",
-      "required": true
+      "required": true,
+      "constraint": "Platform must equal the current Unity Active BuildTarget mapping; supported mappings are Android, iOS, and WebGL"
     },
     {
       "name": "configChangeSet",

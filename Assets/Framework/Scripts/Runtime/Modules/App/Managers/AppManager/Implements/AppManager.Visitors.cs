@@ -16,6 +16,13 @@ namespace NovaFramework.Runtime
     internal sealed partial class AppManager : AppManagerBase
     {
         /// <summary>
+        /// 上次主动放弃推荐更新的 UTC Unix 秒时间戳键。
+        /// 该数据必须在 Persist 初始化前可读，因此直接使用启动期 PlatformPlayerPrefs 访问器。
+        /// </summary>
+        private const string c_RecommendedDownloadDismissedAtKey =
+            "Nova.App.RecommendedDownloadDismissedAtUnixSeconds";
+
+        /// <summary>
         /// HTTP 管理器，提供版本检查接口调用与 APK 文件下载能力。
         /// </summary>
         private IHttpManager m_HttpManager;

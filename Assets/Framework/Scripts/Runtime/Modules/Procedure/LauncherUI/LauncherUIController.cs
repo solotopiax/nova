@@ -18,7 +18,8 @@ namespace NovaFramework.Runtime
 {
     /// <summary>
     /// 启动阶段 UI 控制器。
-    /// 面板生命周期完全内聚，Procedure 只传数据；文本由各面板通过 LauncherLocalization 驱动（只走 Resources 通道，与 LocalizationManager 完全解耦）。
+    /// 面板生命周期完全内聚，Procedure 只传数据；文本由各面板通过 LauncherLocalization 驱动。
+    /// 启动文案只走 Resources 通道，语言选择则与正式 Localization 共用策略。
     /// </summary>
     public static class LauncherUIController
     {

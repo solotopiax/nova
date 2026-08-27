@@ -20,7 +20,7 @@ namespace NovaFramework.Editor
         public static partial class Pipify
         {
             /// <summary>
-            /// 创建 Step 的默认参数实例；Config 导出参数读取当前激活 ConfigMaster 的三维坐标。
+            /// 创建 Step 的默认参数实例；涉及平台的参数统一同步到 Unity 当前 Active BuildTarget。
             /// </summary>
             /// <param name="info">目标 Step 元信息。</param>
             /// <param name="configMaster">测试或迁移时显式提供的 ConfigMaster；为空时解析当前激活资产。</param>
@@ -33,7 +33,9 @@ namespace NovaFramework.Editor
                     ConfigMasterSO master = configMaster ?? PipifySteps.Helpers.ResolveConfigMaster();
                     return PipifySteps.CreateConfigExportParams(master);
                 }
-                return Activator.CreateInstance(info.ParamsType);
+                object parameters = Activator.CreateInstance(info.ParamsType);
+                PipifySteps.SynchronizeActivePlatform(parameters);
+                return parameters;
             }
 
             /// <summary>
@@ -74,12 +76,14 @@ namespace NovaFramework.Editor
                 }
 
                 ApplyOverridesForItem(info, itemIndex, paramsInstance, overrides);
+                // 平台由 Unity Active BuildTarget 唯一决定；旧 JSON 或 CLI override 不能改变本次实际平台。
+                PipifySteps.SynchronizeActivePlatform(paramsInstance);
                 return paramsInstance;
             }
 
             /// <summary>
-            /// 将 overrides 字典中匹配当前 (stepId, itemIndex) 的键值写回 paramsInstance。
-            /// 支持 key 形如 "stepId.字段名"（适配所有索引）或 "stepId[索引].字段名"（仅适配该索引）。
+            /// 将 overrides 字典中匹配当前 (stepId, itemIndex) 的可编辑字段写回 paramsInstance。
+            /// 标记 PipifyReadOnly 的字段直接忽略；支持 key 形如 "stepId.字段名"（适配所有索引）或 "stepId[索引].字段名"（仅适配该索引）。
             /// </summary>
             /// <param name="info">Step 元信息。</param>
             /// <param name="itemIndex">当前 Item 在 Batch 中的索引。</param>
@@ -110,6 +114,8 @@ namespace NovaFramework.Editor
                     {
                         throw new InvalidOperationException(string.Format("{0} 覆盖失败：{1} 不含字段 {2}", c_LogPrefix, info.ParamsType.Name, fieldName));
                     }
+                    // 运行环境提供的只读字段不接受 CLI 覆盖；跳过转换，旧脚本中的过期值也不会触发枚举解析错误。
+                    if (field.GetCustomAttribute<PipifyReadOnlyAttribute>() != null) continue;
                     object converted = ConvertOverrideValue(kv.Value, field.FieldType);
                     field.SetValue(paramsInstance, converted);
                 }

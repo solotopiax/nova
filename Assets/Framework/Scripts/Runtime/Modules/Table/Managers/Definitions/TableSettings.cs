@@ -184,8 +184,8 @@ namespace NovaFramework.Runtime
                 DataOutputPath = dataPath,
                 CustomTemplateDirs = new List<string>
                 {
-                    "Assets/Framework/Templates/Luban/default",
-                    "Assets/Framework/Templates/Luban/table",
+                    "Packages/com.solotopia.nova.framework/Templates/Luban/default",
+                    "Packages/com.solotopia.nova.framework/Templates/Luban/table",
                 },
             };
         }

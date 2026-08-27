@@ -403,7 +403,7 @@ MonoBehaviour:
   AotMetadataDlls: []
   GameDlls: []
   CurrentDevelopMode: 0
-  CurrentPlatform: 1
+  m_LegacyCurrentPlatform: 1
   CurrentChannel: 2
   ExportTarget: {fileID: 11400000, guid: 56ddd42abe7684994bf284d5404fde74, type: 2}
   m_Entries:
@@ -2919,6 +2919,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729498
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2926,6 +2927,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729499
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2933,6 +2935,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729500
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2940,6 +2943,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729501
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2947,6 +2951,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729502
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2954,6 +2959,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729503
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2961,6 +2967,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729504
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2968,6 +2975,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729505
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2975,6 +2983,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729506
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2982,6 +2991,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729507
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2989,6 +2999,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729508
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -2996,6 +3007,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729509
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3003,6 +3015,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729510
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3010,6 +3023,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729511
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3017,6 +3031,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729512
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3024,6 +3039,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729513
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3031,6 +3047,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729514
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3038,6 +3055,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729515
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3045,6 +3063,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729516
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3052,6 +3071,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729517
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3059,6 +3079,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729518
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3066,6 +3087,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729519
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3073,6 +3095,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729520
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3080,6 +3103,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729521
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3087,6 +3111,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729522
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3094,6 +3119,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729523
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3101,6 +3127,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729524
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3108,6 +3135,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729525
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3115,6 +3143,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729526
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3122,6 +3151,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729527
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3129,6 +3159,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729528
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3136,6 +3167,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729529
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3143,6 +3175,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729530
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3150,6 +3183,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729531
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3157,6 +3191,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729532
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
@@ -3164,6 +3199,7 @@ MonoBehaviour:
         m_PushCmdName: 
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177598672896521
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:

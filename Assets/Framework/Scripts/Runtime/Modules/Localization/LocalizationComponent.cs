@@ -22,11 +22,17 @@ namespace NovaFramework.Runtime
     public sealed partial class LocalizationComponent : FrameworkComponent
     {
         /// <summary>
-        /// 唤醒。
+        /// 唤醒：先发布启动期可读的语言策略，再创建正式本地化管理器。
+        /// Unity 会在任意 Start 前完成全部 Awake，因此 ProcedureSplash 可稳定读取该策略。
         /// </summary>
         protected override void Awake()
         {
             base.Awake();
+            LocalizationBootstrapLanguage.Configure(new LocalizationLanguagePolicy(
+                m_EditorLanguage,
+                m_RuntimeLanguagePrefer,
+                m_FallbackLanguage));
+
             m_LocalizationManager = Util.TypeCreator.Create<ILocalizationManager>(m_CurLocalizationManagerTypeName);
             if (m_LocalizationManager == null)
             {

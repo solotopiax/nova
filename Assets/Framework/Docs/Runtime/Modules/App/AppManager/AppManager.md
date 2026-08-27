@@ -39,10 +39,11 @@
 2. 主地址请求失败、body 为空、JSON 无法解析或版本规则无效时，请求备用地址
 3. 主备都不能得到有效规则时降级 `NoDownload`；有效规则再由 `ParseVersionResult(body)` 计算结果
 
-`ParseVersionResult(...)` 当前只读取两个规则阈值：
+`ParseVersionResult(...)` 当前读取两个版本阈值和一个推荐提示间隔：
 
 - `ForcedDownloadVersion`
 - `RecommendedDownloadVersion`
+- `RecommendedDownloadPromptIntervalSeconds`
 
 命中规则是：
 
@@ -51,7 +52,8 @@
   - 按 `DownloadRoute` 只解析当前需要的目标地址
   - 返回 `ForcedDownload`
 - `UseRecommendedDownloadRule == true` 且 `RecommendedDownloadVersion > Application.version`
-  - `m_MatchedRule = Recommended`
+  - 如果距离上次主动放弃推荐更新尚未达到有效提示间隔：返回 `NoDownload`
+  - 否则令 `m_MatchedRule = Recommended`
   - 按 `DownloadRoute` 只解析当前需要的目标地址
   - 返回 `RecommendedDownload`
 - 其他情况
@@ -60,6 +62,8 @@
 优先级固定为：
 
 - `ForcedDownload` > `RecommendedDownload`
+
+推荐更新提示间隔的状态使用启动期 `PlatformPlayerPrefs` 保存，原因是版本检查发生在业务 `Persist.LoadAsync()` 之前。只有用户在推荐更新弹窗中主动取消时才通过 `RecordRecommendedDownloadDismissed()` 写入 UTC Unix 秒并立即落盘；确认更新、强制更新和检查失败都不会写入。存储异常只记 warning，不得阻断当前启动；最坏结果是下次启动再次提示。
 
 地址解析规则是：
 
@@ -92,6 +96,7 @@
 - `MatchedRule / TargetStoreUrl / TargetDownloadUrl` 只在命中规则时更新；在 `NoDownload` 或异常降级路径里会被清空，避免残留旧值。
 - `DownloadRoute == Apk` 不代表一定可下载；当前下载实现还没打通。
 - 远端 JSON 版本号和 `Application.version` 都需要满足 `System.Version` 格式；非法格式会记 warning，并按“不命中更新”处理。
+- 推荐提示间隔缺失、为 `0` 或负数时保持原行为，每次命中推荐规则都提示；本地时间回拨时也会重新提示，避免形成无限期抑制。
 
 ## 继续阅读
 

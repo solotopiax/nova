@@ -66,6 +66,7 @@ namespace NovaFramework.Editor
                     "(1) 此处只读写 ConfigMaster，不会从 YooAssetSettings.asset 反向读取。",
                     "(2) 点击顶部「导出」时，才会把当前维度的值写入上方指定的 YooAssetSettings.asset。",
                     "(3) 支持 {Platform} / {Channel} / {Package} / {Version} / {Time} 占位符。",
+                    "(4) {Platform}=Unity 当前 Active BuildTarget 对应的 PlatformType；{Channel}=当前渠道；{Package}=YooAsset 包名；{Version}=Application.version；{Time}=导出时间。",
                 }, false, GUILayout.ExpandWidth(true));
                 EditorUtil.Draw.Space(16f);
             });
@@ -130,7 +131,7 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                     {
                         $"(1) 当前按【{activeAxes}】分别保存：勾选的每个维度，其每种取值各存一份，互不影响",
-                        $"(2) 正在编辑【{editingDesc}】这一份；要改其它份请先在顶部切换对应坐标，路径修改即时写盘",
+                        $"(2) 正在编辑【{editingDesc}】这一份；渠道/模式可在顶部切换，其它平台请先切换 Unity BuildTarget；路径修改即时写盘",
                         "(3) 未勾选的维度仍然共用同一份",
                         "(4) ⚠ 取消任一维度的勾选 = 把当前份合并到该维全部取值，其它份内容会被永久丢弃",
                     }, false, GUILayout.ExpandWidth(true));

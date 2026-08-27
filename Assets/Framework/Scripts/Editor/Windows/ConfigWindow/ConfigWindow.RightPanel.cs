@@ -189,7 +189,7 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                     {
                         $"(1) 当前按【{activeAxes}】分别保存，每种取值各存一份，互不影响",
-                        $"(2) 正在编辑【{editingDesc}】这一份；要改其它份请先在顶部切换对应坐标",
+                        $"(2) 正在编辑【{editingDesc}】这一份；渠道/模式可在顶部切换，其它平台请先切换 Unity BuildTarget",
                         "(3) 热更红线：Namespace 一旦上线永不改，业务程序集名以此匹配",
                         "(4) 旧客户端业务 dll 程序集名仍是旧值，热推新配置会触发 ProcedureLoadDll 报「业务程序集未加载」直接断更",
                         "(5) 改 Namespace 必须强制更新客户端，禁纯热更",
@@ -224,7 +224,7 @@ namespace NovaFramework.Editor
                 return EditorUtil.Draw.Panel.Confirm(
                     $"开启「按 {axisCN} 分别配置」？",
                     $"开启后，本面板的内容会按不同的 {axisCN} 各存一份，每份相互独立、互不影响。\n\n" +
-                    $"当前这份会被复制到每个 {axisCN} 作为初始内容，之后你可以在切换坐标后分别修改。\n\n" +
+                    $"当前这份会被复制到每个 {axisCN} 作为初始内容；渠道/模式可在顶部切换，其它平台需切换 Unity BuildTarget 后分别修改。\n\n" +
                     $"未勾选的其它维度仍然共用同一份，不受影响。",
                     "开启分别配置",
                     "取消");
@@ -233,7 +233,7 @@ namespace NovaFramework.Editor
                 $"⚠ 取消「按 {axisCN} 分别配置」？",
                 $"取消后，本面板将合并为所有 {axisCN} 共用一份；保留的就是你当前正在编辑的这一份。\n\n" +
                 $"⚠ 该维度下其它 {axisCN} 取值已经分别填过的内容会被永久丢弃，无法撤销。\n\n" +
-                $"如果你只是想查看其它取值，不要点这里——切换顶部坐标即可。",
+                $"如果你只是想查看其它取值，不要点这里——渠道/模式切换顶部坐标，其它平台切换 Unity BuildTarget。",
                 "合并并丢弃其余",
                 "返回");
         }
@@ -351,7 +351,7 @@ namespace NovaFramework.Editor
                     {
                         "(1) 当前是【全局共用一份】：本面板内容不区分平台 / 渠道 / 开发模式，整个工程共用同一份",
                         "(2) 勾选上方任一维度，可以让本面板按该维度的不同取值【分别保存】，每份独立编辑",
-                        "(3) 例：勾「平台类型」后，Android / iOS 各一份；切换顶部坐标可分别编辑",
+                        "(3) 例：勾「平台类型」后，Android / iOS 各一份；切换 Unity BuildTarget 后分别编辑",
                     }, false, GUILayout.ExpandWidth(true));
                 }
                 else
@@ -364,7 +364,7 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                     {
                         $"(1) 当前按【{activeAxes}】分别保存：勾选的每个维度，其每种取值各存一份，互不影响",
-                        $"(2) 正在编辑【{editingDesc}】这一份；要改其它份请先在顶部切换对应坐标",
+                        $"(2) 正在编辑【{editingDesc}】这一份；渠道/模式可在顶部切换，其它平台请先切换 Unity BuildTarget",
                         "(3) 未勾选的维度仍然共用同一份",
                         "(4) ⚠ 取消任一维度的勾选 = 把当前份合并到该维全部取值，其它份内容会被永久丢弃",
                     }, false, GUILayout.ExpandWidth(true));

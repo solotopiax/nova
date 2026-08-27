@@ -49,7 +49,8 @@ namespace NovaFramework.Editor
         protected const float c_DataItemIndent = 15f;
 
         /// <summary>
-        /// 为 Inspector 数据读取解析 AES 凭据：编辑态读取 WorkspaceActive 当前 ConfigMaster 坐标，播放态读取其 ConfigRuntime 导出物。
+        /// 为 Inspector 数据读取解析 AES 凭据：编辑态读取 WorkspaceActive 当前 ConfigMaster 坐标，
+        /// 其中 Platform 实时映射 Unity Active BuildTarget；播放态读取 ConfigRuntime 导出物。
         /// </summary>
         private void ResolveInspectorAESCredentials()
         {
@@ -82,7 +83,7 @@ namespace NovaFramework.Editor
                     !master.TryGetEntry(platform, channel, out _))
                 {
                     Log.Error(LogTag.Encrypt,
-                        "Persist Inspector 无法读取 AES 配置：ConfigMaster 当前坐标无效（Platform={0}, Channel={1}, DevelopMode={2}）。请在 Config 窗口选择合法坐标。",
+                        "Persist Inspector 无法读取 AES 配置：ConfigMaster 当前坐标无效（Platform={0}, Channel={1}, DevelopMode={2}）。请先切换到受支持的 Unity BuildTarget，并在 Config 窗口选择合法 Channel/DevelopMode。",
                         platform, channel, developMode);
                     return;
                 }

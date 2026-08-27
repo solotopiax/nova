@@ -42,7 +42,7 @@ namespace NovaFramework.Editor
 
                 if (m_Master == null) return;
 
-                // 第二行：平台/渠道/模式选择 + 导出区域整体靠右
+                // 第二行：只读平台 + 渠道/模式选择 + 导出区域整体靠右
                 EditorUtil.Draw.Layout.Horizontal(() =>
                 {
                     // 三组控件压缩 labelWidth，组间插 24f 间距
@@ -52,12 +52,16 @@ namespace NovaFramework.Editor
                         EditorGUIUtility.labelWidth = 80f;
 
                         EditorUtil.Draw.Label("平台类型：", false, GUILayout.Width(64f));
-                        PlatformType platform = EditorUtil.Draw.EnumPopup<PlatformType>(string.Empty, m_WorkingCopy != null ? m_WorkingCopy.CurrentPlatform : m_Master.CurrentPlatform, false, GUILayout.Width(120));
+                        PlatformType platform = m_Master.CurrentPlatform;
+                        EditorUtil.Draw.DisabledGroup(true, () =>
+                        {
+                            EditorUtil.Draw.EnumPopup<PlatformType>(string.Empty, platform, false, GUILayout.Width(120));
+                        });
                         EditorUtil.Draw.Space(24f);
 
                         EditorUtil.Draw.Label("渠道类型：", false, GUILayout.Width(64f));
                         ChannelType channel = EditorUtil.Draw.EnumPopup<ChannelType>(string.Empty, m_WorkingCopy != null ? m_WorkingCopy.CurrentChannel : m_Master.CurrentChannel, false, GUILayout.Width(120));
-                        TryApplyPlatformChannel(platform, channel);
+                        TryApplyChannel(channel);
                         EditorUtil.Draw.Space(24f);
 
                         EditorUtil.Draw.Label("开发模式：", false, GUILayout.Width(64f));
@@ -94,8 +98,21 @@ namespace NovaFramework.Editor
                     });
                 });
 
-                // 说明上一行三项选择的语义：它们是导出时的过滤条件，而非运行时环境的自动识别依据
-                EditorUtil.Draw.HintLabel("平台类型 / 渠道类型 / 开发模式 三项用于设定导出时筛选配置的目标组合，点击「导出」仅将与该组合匹配的那一份配置写入导出文件。此三项不用于运行时当前环境的自动识别，应用实际所处的平台与渠道由运行设备及打包参数决定，与此处的选择无关。");
+                EditorUtil.Draw.HintLabel(
+                    "平台类型实时取自 Unity 当前 Active BuildTarget，不可在此编辑；如需切换平台，请先切换 Unity BuildTarget。" +
+                    "渠道类型和开发模式用于选择本次导出的配置组合。Runtime 平台仍由 Player 实际构建目标决定。");
+                if (m_Master.CurrentPlatform == PlatformType.None)
+                {
+                    EditorUtil.Draw.HelpBox(
+                        MessageType.Error,
+                        new[]
+                        {
+                            $"Unity 当前 Active BuildTarget={EditorUserBuildSettings.activeBuildTarget} 没有对应的 Nova PlatformType。",
+                            "请先切换到 Android、iOS 或 WebGL。",
+                        },
+                        false,
+                        GUILayout.ExpandWidth(true));
+                }
             });
         }
 
@@ -182,21 +199,19 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 尝试应用 Platform/Channel 变更：值未改变时直接返回；
+        /// 尝试应用 Channel 变更；Platform 始终实时读取 Active BuildTarget，不在此方法中维护；值未改变时直接返回；
         /// 否则释放焦点后记录 pending 坐标，延迟一帧由 ApplyPendingCoordSwitch 写入 WorkingCopy，
         /// 确保当前编辑字段在旧坐标格子下完成失焦提交后再切坐标（PAT-22 升级）。
         /// </summary>
-        /// <param name="platform">目标平台类型。</param>
         /// <param name="channel">目标渠道类型。</param>
-        private void TryApplyPlatformChannel(PlatformType platform, ChannelType channel)
+        private void TryApplyChannel(ChannelType channel)
         {
             if (m_WorkingCopy == null) return;
-            if (platform == m_WorkingCopy.CurrentPlatform && channel == m_WorkingCopy.CurrentChannel) return;
+            if (channel == m_WorkingCopy.CurrentChannel) return;
             m_MasterSO?.ApplyModifiedProperties();
             GUI.FocusControl(null);
             EditorGUIUtility.editingTextField = false;
             // 延迟一帧切坐标：本帧不改坐标，待 DrawRightPanel 让当前编辑字段在旧坐标格子下完成失焦提交后，由 ApplyPendingCoordSwitch 应用（PAT-22 升级）
-            m_PendingPlatform = platform;
             m_PendingChannel = channel;
             m_PendingDevelopMode = m_WorkingCopy.CurrentDevelopMode;
             m_HasPendingCoordSwitch = true;
@@ -219,7 +234,6 @@ namespace NovaFramework.Editor
             GUI.FocusControl(null);
             EditorGUIUtility.editingTextField = false;
             // 延迟一帧切坐标：本帧不改坐标，待 DrawRightPanel 让当前编辑字段在旧坐标格子下完成失焦提交后，由 ApplyPendingCoordSwitch 应用（PAT-22 升级）
-            m_PendingPlatform = m_WorkingCopy.CurrentPlatform;
             m_PendingChannel = m_WorkingCopy.CurrentChannel;
             m_PendingDevelopMode = developMode;
             m_HasPendingCoordSwitch = true;
@@ -244,6 +258,15 @@ namespace NovaFramework.Editor
         /// </summary>
         private void OnClickExport()
         {
+            try
+            {
+                EditorUtil.Config.ActivePlatform.RequireCurrent("Config 导出");
+            }
+            catch (System.InvalidOperationException exception)
+            {
+                EditorUtility.DisplayDialog("导出失败", exception.Message, "知道了");
+                return;
+            }
             if (m_IsDirty)
             {
                 EditorUtility.DisplayDialog("请先保存", "检测到未保存的修改，导出前请先点击保存。导出源为已落盘的配置资产。", "知道了");

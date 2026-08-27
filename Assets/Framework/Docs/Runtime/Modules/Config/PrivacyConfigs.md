@@ -13,6 +13,6 @@ await Nova.Config.LoadAsync();
 await Nova.Persist.LoadAsync();
 ```
 
-Editor 下 Persist Inspector 通过 `WorkspaceActive` 定位 ConfigMaster，并按其当前合法坐标显式传入 Key/IV；不要求该 Platform 与 Unity `activeBuildTarget` 一致。
+Editor 下 Persist Inspector 通过 `WorkspaceActive` 定位 ConfigMaster，并按其当前合法坐标显式传入 Key/IV；其中 Platform 由 `CurrentPlatform` 实时映射 Unity `activeBuildTarget`，要查看或编辑另一平台份必须先切换 Unity BuildTarget。
 
 关联文档：[ConfigRuntimeSO.md](ConfigRuntimeSO.md)、[ConfigManager.md](ConfigManager.md)、[Util.Encrypt.md](../../Utils/Util.Encrypt.md)。

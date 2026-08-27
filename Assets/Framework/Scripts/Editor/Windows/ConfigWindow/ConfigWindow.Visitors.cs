@@ -252,11 +252,6 @@ namespace NovaFramework.Editor
         private bool m_HasPendingCoordSwitch;
 
         /// <summary>
-        /// 待应用的目标平台（延迟切坐标，见 m_HasPendingCoordSwitch）。
-        /// </summary>
-        private PlatformType m_PendingPlatform;
-
-        /// <summary>
         /// 待应用的目标渠道（延迟切坐标，见 m_HasPendingCoordSwitch）。
         /// </summary>
         private ChannelType m_PendingChannel;

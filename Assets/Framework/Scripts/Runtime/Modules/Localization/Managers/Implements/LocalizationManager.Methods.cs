@@ -28,39 +28,6 @@ namespace NovaFramework.Runtime
         private const string c_SupportedLanguagesTablesClassName = "LocalizationSupportedLanguagesTables";
 
         /// <summary>
-        /// 通用语言解析链：持久化 > 系统 > 回退。
-        /// 持久化和系统均不在支持列表时返回回退语言；回退语言也不在支持列表时返回列表首项；列表为空时直接返回回退语言。
-        /// </summary>
-        /// <returns>解析后的语言。</returns>
-        private Language ResolveByPersistThenSystem()
-        {
-            Language saved = ReadLanguageFromPersist();
-            if (saved != Language.Unspecified && HasSupportedLanguage(saved))
-            {
-                return saved;
-            }
-
-            Language system = MapUnitySystemLanguage(Application.systemLanguage);
-            if (HasSupportedLanguage(system))
-            {
-                return system;
-            }
-
-            Language fallback = m_Config?.FallbackLanguage ?? Language.English;
-            if (HasSupportedLanguage(fallback))
-            {
-                return fallback;
-            }
-
-            if (m_SupportedLanguages.Count > 0)
-            {
-                return m_SupportedLanguages[0];
-            }
-
-            return m_Config?.FallbackLanguage ?? Language.English;
-        }
-
-        /// <summary>
         /// 从持久化存储中读取保存的语言偏好。
         /// </summary>
         /// <returns>已保存的语言，不存在时返回 Unspecified。</returns>
@@ -99,16 +66,7 @@ namespace NovaFramework.Runtime
 
             m_PlayerPrefsManager.SetString(m_Config.PersistClassifyName, m_Config.PersistItemKey, language.ToString());
             m_PlayerPrefsManager.Save(m_Config.PersistClassifyName);
-        }
-
-        /// <summary>
-        /// 将 Unity 的 SystemLanguage 枚举映射为框架的 Language 枚举。
-        /// </summary>
-        /// <param name="systemLanguage">Unity 系统语言。</param>
-        /// <returns>映射后的 Language 值，无法映射时返回 Unspecified。</returns>
-        private Language MapUnitySystemLanguage(UnityEngine.SystemLanguage systemLanguage)
-        {
-            return s_SystemLanguageMap.TryGetValue(systemLanguage, out Language lang) ? lang : Language.Unspecified;
+            LocalizationBootstrapLanguage.SaveLanguage(language);
         }
 
         /// <summary>
@@ -682,11 +640,12 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 尝试异步加载指定语言的文本数据：清空缓存后重新加载并重建 Tb 对象和扁平字典。
+        /// 异步加载指定语言的文本数据到请求私有缓存。
+        /// 调用方完成版本校验后才能提交，避免过期请求覆盖当前语言缓存。
         /// </summary>
         /// <param name="language">目标语言。</param>
-        /// <returns>是否成功加载到有效文本数据。</returns>
-        private async UniTask<bool> TryLoadLanguageTextsAsync(Language language)
+        /// <returns>包含有效文本数据的请求私有缓存；加载失败时返回 null。</returns>
+        private async UniTask<LubanDataCache> LoadLanguageTextCacheAsync(Language language)
         {
             string languageName = language.ToString();
 
@@ -708,13 +667,13 @@ namespace NovaFramework.Runtime
 
             if (tasks.Count == 0)
             {
-                return false;
+                return null;
             }
 
             bool[] results = await UniTask.WhenAll(tasks);
             if (m_Config == null || m_AssetManager == null)
             {
-                return false;
+                return null;
             }
 
             for (int i = 0; i < results.Length; i++)
@@ -725,7 +684,7 @@ namespace NovaFramework.Runtime
                 }
             }
 
-            return CommitLanguageTextCache(tempCache);
+            return tempCache.DataMap.Count > 0 ? tempCache : null;
         }
 
         /// <summary>

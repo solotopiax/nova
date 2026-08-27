@@ -5,7 +5,7 @@
 
 BuildPipeline.BuildPlayer 薄封装，提供统一输入校验与日志。
 
-正式 Player 构建会由全局构建回调临时生成唯一的 `Resources/YooAssetSettings.asset`：源文件取当前 `ConfigMasterSO` 三维坐标解析出的 Editor 权威配置，构建结束、失败或取消后自动清理。该机制覆盖 Build Profiles、Pipify、Debug Inspector 与 CLI 等所有 `BuildPipeline.BuildPlayer` 入口；`EditorUtil.Build` 自有入口另有 `finally` 清理兜底。
+正式 Player 构建会由全局构建回调临时生成唯一的 `Resources/YooAssetSettings.asset`：源文件取当前 `ConfigMasterSO` 三维坐标解析出的 Editor 权威配置，其中 Platform 实时映射 Unity Active BuildTarget，构建结束、失败或取消后自动清理。该机制覆盖 Build Profiles、Pipify、Debug Inspector 与 CLI 等所有 `BuildPipeline.BuildPlayer` 入口；`EditorUtil.Build` 自有入口另有 `finally` 清理兜底。
 
 ---
 

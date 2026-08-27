@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Globalization;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
@@ -142,6 +143,23 @@ namespace NovaFramework.Runtime
 
                 if (m_Config.UseRecommendedDownloadRule && IsVersionGreater(resp.RecommendedDownloadVersion, localVersion))
                 {
+                    if (resp.RecommendedDownloadPromptIntervalSeconds < 0)
+                    {
+                        Log.Warning(
+                            LogTag.App,
+                            "RecommendedDownloadPromptIntervalSeconds 不能为负数，本次按 0 秒处理：{0}",
+                            resp.RecommendedDownloadPromptIntervalSeconds);
+                    }
+
+                    if (ShouldSuppressRecommendedDownloadPrompt(resp.RecommendedDownloadPromptIntervalSeconds))
+                    {
+                        Log.Debug(
+                            LogTag.App,
+                            "推荐更新规则已命中，但距离上次放弃更新尚未达到提示间隔，本次跳过提示。IntervalSeconds={0}",
+                            resp.RecommendedDownloadPromptIntervalSeconds);
+                        return true;
+                    }
+
                     ApplyMatchedRule(AppDownloadRule.Recommended);
                     result = AppVersionResult.RecommendedDownload;
                     return true;
@@ -154,6 +172,46 @@ namespace NovaFramework.Runtime
                 Log.Error(LogTag.App, "大版本检查 JSON 解析异常：{0}", ex.Message);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// 判断当前推荐更新提示是否仍处于用户放弃后的抑制间隔内。
+        /// 配置缺失、间隔非正数、记录无效、间隔已到或系统时钟回拨时均不抑制提示。
+        /// </summary>
+        /// <param name="intervalSeconds">远端配置的推荐更新提示间隔秒数。</param>
+        /// <returns>仍在有效间隔内时返回 true。</returns>
+        private static bool ShouldSuppressRecommendedDownloadPrompt(long intervalSeconds)
+        {
+            if (intervalSeconds <= 0)
+            {
+                return false;
+            }
+
+            string raw = PlatformPlayerPrefs.GetString(c_RecommendedDownloadDismissedAtKey, string.Empty);
+            if (!long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out long dismissedAt))
+            {
+                return false;
+            }
+
+            long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            return ShouldSuppressRecommendedDownloadPrompt(intervalSeconds, dismissedAt, now);
+        }
+
+        /// <summary>
+        /// 按给定时间判断推荐更新提示是否仍处于抑制间隔内，供时间边界逻辑复用与验证。
+        /// </summary>
+        /// <param name="intervalSeconds">最小提示间隔秒数。</param>
+        /// <param name="dismissedAt">上次放弃更新的 UTC Unix 秒。</param>
+        /// <param name="now">当前 UTC Unix 秒。</param>
+        /// <returns>当前时间有效且尚未达到间隔时返回 true。</returns>
+        private static bool ShouldSuppressRecommendedDownloadPrompt(long intervalSeconds, long dismissedAt, long now)
+        {
+            if (intervalSeconds <= 0 || dismissedAt <= 0 || now < dismissedAt)
+            {
+                return false;
+            }
+
+            return now - dismissedAt < intervalSeconds;
         }
 
         /// <summary>

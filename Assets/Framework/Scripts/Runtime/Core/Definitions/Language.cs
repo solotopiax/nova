@@ -399,5 +399,17 @@ namespace NovaFramework.Runtime
         {
             return s_LanguageInfos.TryGetValue(language, out LanguageInfo info) ? info.Flag : string.Empty;
         }
+
+        /// <summary>
+        /// 获取指定语言是否使用从右到左的书写方向。
+        /// </summary>
+        /// <param name="language">语言类型。</param>
+        /// <returns>使用从右到左书写方向时返回 true，否则返回 false。</returns>
+        public static bool IsRightToLeft(Language language)
+        {
+            return language == Language.Arabic ||
+                   language == Language.Persian ||
+                   language == Language.Hebrew;
+        }
     }
 }

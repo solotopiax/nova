@@ -22,6 +22,12 @@ namespace NovaFramework.Runtime
         public string RecommendedDownloadVersion;
 
         /// <summary>
+        /// 用户放弃推荐更新后，再次显示推荐更新提示的最小间隔秒数。
+        /// 缺失、为零或为负数时不启用间隔抑制。
+        /// </summary>
+        public long RecommendedDownloadPromptIntervalSeconds;
+
+        /// <summary>
         /// 强制更新规则的版本阈值。
         /// </summary>
         public string ForcedDownloadVersion;

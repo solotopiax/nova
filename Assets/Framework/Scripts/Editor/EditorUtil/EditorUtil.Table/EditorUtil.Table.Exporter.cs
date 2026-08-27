@@ -304,7 +304,8 @@ namespace NovaFramework.Editor
                         adapterDescription.DataTargets = new List<string>();
                         adapterDescription.CustomTemplateDirs = new List<string>(
                             description.CustomTemplateDirs ?? new List<string>());
-                        adapterDescription.CustomTemplateDirs.Add("Assets/Framework/Templates/Luban/table-protobuf");
+                        adapterDescription.CustomTemplateDirs.Add(
+                            "Packages/com.solotopia.nova.framework/Templates/Luban/table-protobuf");
                         if (!RunLuban(BuildInvocationForScope(
                                 project, adapterDescription, stagedAdapter, null, true, false)))
                         {

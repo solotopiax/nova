@@ -43,7 +43,7 @@ CDN 内容部署与缓存清理的编辑态配置 DTO。仅随 `ConfigMasterSO` 
 - 整个类包裹在 `#if UNITY_EDITOR` 内，运行时程序集中不存在此类型
 - `AccessKeySecret` / `Token` 在 `ConfigWindow` 界面上做遮罩显示，日志与 Console 输出做脱敏；**遮罩与脱敏 ≠ 存储加密**，`ConfigMasterSO` 资产文件仍以明文序列化保存，请避免将资产直接外发
 - `VersionCheckLocalFilePath` 与 `LocalDirectory` 为**项目根相对路径**（`PAT-36`），禁止写入绝对路径
-- `VersionCheckLocalFilePath` / `VersionCheckRemoteFilePath` / `LocalDirectory` / `RemotePathSuffix` 保存占位符原文；规则与 Asset 主机服务器 URL 一致
+- `VersionCheckLocalFilePath` / `VersionCheckRemoteFilePath` / `LocalDirectory` / `RemotePathSuffix` 保存占位符原文；此 Editor 部署链中 `{Platform}` 取 Unity 当前 Active BuildTarget 映射的 `PlatformType`，`{Channel}` 取 ConfigMaster 当前 Channel，`{Package}` / `{Version}` 分别取默认资源包名 / `Application.version`。这不改变 Runtime Asset 主机服务器 URL 由编译宏解析 `{Platform}` 的契约
 - `AutoLinkLatestVersion` 开启时，界面展示与实际部署都会重新解析最新有效版本目录；关闭后 `LocalDirectory` 必须手动指向待部署目录
 - `AutoLinkLatestAssetCheckVersionFiles` 开启时，界面和部署以已配置 `.bytes` 文件的父目录为锚点重新解析最新版本，并通过 YooAsset 当前 `PackageFilePrefix + PackageName + PackageVersion` 命名规则生成匹配的三个文件位置；关闭后恢复三项手工配置
 - 自动关联不比较目录名：YooAsset 的 `PackageVersion` 是任意字符串。候选目录必须同时包含匹配的 `.version`、`.bytes`、`.hash` 和 `.report`，且 report 引用的全部 bundle 文件存在；按 `.version` 的 `LastWriteTimeUtc` 选择最新，多个候选时间完全相同时明确报歧义
@@ -57,7 +57,8 @@ CDN 内容部署与缓存清理的编辑态配置 DTO。仅随 `ConfigMasterSO` 
 ## §11 使用示例
 
 ```csharp
-// EditorUtil.CDN 内部消费（internal，程序集外经 ConfigWindow CDN 面板触发）
+// EditorUtil.CDN 内部通用解析示例（internal，程序集外经 ConfigWindow CDN 面板触发）。
+// 这里显式传 Android 是底层 Resolver API 的用法；ConfigWindow / Pipify 的平台值实时来自 Unity Active BuildTarget。
 CDNEditorConfigs config = DimensionalResolver.ResolveCDNEditorConfigs(
     master,
     PlatformType.Android,

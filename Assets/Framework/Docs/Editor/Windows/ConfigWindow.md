@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Editor`
 **菜单路径**：`Nova/Open Config`（`[MenuItem("Nova/Open Config")]`）
 
-Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集中管理 ConfigMasterSO 的 Platform×Channel 矩阵编辑、SDK Plugin 配置、AppConfigs 与 Custom 参数填写、HybridCLR DLL 配置、CDN 内容部署及 Luban/Python3 环境检查。支持一键导出 ConfigRuntimeSO。
+Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集中管理 ConfigMasterSO 的 Platform×Channel 矩阵编辑、SDK Plugin 配置、AppConfigs 与 Custom 参数填写、HybridCLR DLL 配置、CDN 内容部署及 Luban/Python3 环境检查。Platform 实时取 Unity 当前 Active BuildTarget 并只读展示；Channel 与 DevelopMode 可在窗口内切换。支持一键导出 ConfigRuntimeSO。
 
 ---
 
@@ -13,9 +13,9 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | 文件 | 类 | 说明 |
 |------|----|------|
 | `Editor/Windows/ConfigWindow/ConfigWindow.cs` | `ConfigWindow` | public 开口：`Open`、`OpenLubanSection` 与四个 Guard 配置导航入口；Guard 可定位实际 ConfigMaster、导出坐标及应用、名字空间、SDK、Kit 面板 |
-| `Editor/Windows/ConfigWindow/ConfigWindow.Visitors.cs` | `ConfigWindow` | 字段：常量 + 运行时状态字段 + `LeftTreeGroup` + `LeftTreeItem` 枚举；新增延迟切坐标守卫字段：`m_HasPendingCoordSwitch`、`m_PendingPlatform`、`m_PendingChannel`、`m_PendingDevelopMode` |
+| `Editor/Windows/ConfigWindow/ConfigWindow.Visitors.cs` | `ConfigWindow` | 字段：常量 + 运行时状态字段 + `LeftTreeGroup` + `LeftTreeItem` 枚举；延迟切坐标守卫字段：`m_HasPendingCoordSwitch`、`m_PendingChannel`、`m_PendingDevelopMode` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs` | `ConfigWindow` | 总调度：`OnEnable`、`OnDisable`、`OnGUI`、`DrawBody`、`DrawMainTitle`、`ApplyPendingCoordSwitch`、`PollChannelChangeForRepaint`、`RefreshPluginCache`、`RunLubanCheck`、`RunPython3Check`、`CommitWorkingCopyToAsset`（保存后广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`）；`EnsureStyles`（GUIStyle 懒初始化） |
-| `Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs` | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyPlatformChannel`（延迟写坐标，见 PAT-22 升级）、`TryApplyDevelopMode`（延迟写坐标，见 PAT-22 升级）、`OnClickExport`（Error 阻断；纯 Warning 要求显式确认后可继续；导出成功后追加场景 `DevelopMode` 快照回写） |
+| `Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs` | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyChannel`（延迟写 Channel，见 PAT-22 升级）、`TryApplyDevelopMode`（延迟写 Mode，见 PAT-22 升级）、`OnClickExport`（先校验 Active BuildTarget 映射；Error 阻断；纯 Warning 要求显式确认后可继续；导出成功后追加场景 `DevelopMode` 快照回写） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.LeftTree.cs` | `ConfigWindow` | 左树：`DrawLeftTree`、`DrawLeftTreeItem`、`DrawSDKTreeItem`、`DrawKitGroupItems`、`DrawKitTreeItem`；SDK/Kit 勾选写 WorkingCopy（`workingSrc.EnabledSDKs/EnabledKits`）+ `m_IsDirty=true`，不直写 `m_Master`，延迟保存机制对齐；`TryChangeSelection` 清除键盘焦点（`GUI.FocusControl(null)` + `EditorGUIUtility.editingTextField=false`）后更新选中状态 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs` | `ConfigWindow` | 右面板：`DrawRightPanel`、`DrawVerticalSeparator`、`DrawNamespacePanel`、`DrawAppConfigsPanel`、`DrawCustomConfigRows`、`DrawSDKPanel`、`DrawKitPanel`；应用配置面板同时编辑 `CustomConfigCmdName / CustomName` 与直接展开的本地 JSONPath key-value 行；标题+掩码内联行由 `DrawPanelTitleWithMask` 统一绘制 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.Luban.cs` | `ConfigWindow` | Luban 面板：`DrawLubanSection`、`DrawLubanStatusAndButtons`、`DrawLubanWindowsExportWarning`、`DrawLubanInstallGuide`、`ResolveDotnetStatusText`、`ResolveLubanDllStatusText`、`IsDotnetReady`、`GetLubanWindowsExportWarningText` |
@@ -89,8 +89,7 @@ UnityEditor.EditorWindow
 | `m_CleanCdnWhitelistRemoteBeforeDeploy` | `bool` | `false` | 白名单部署前是否清理本次白名单文件与版本文件远端目录；仅窗口会话状态，不写 Config |
 | `m_IsCdnPurging` | `bool` | `false` | Cloudflare 缓存清理是否执行中；控制清缓存按钮禁用与重复点击保护 |
 | `m_LastKnownChannel` | `ChannelType` | `default` | 上次 Channel 值，用于 Repaint 轮询对比 |
-| `m_HasPendingCoordSwitch` | `bool` | `false` | 延迟切坐标标志；TryApply 置 true，ApplyPendingCoordSwitch 消费并置 false（PAT-22 升级）|
-| `m_PendingPlatform` | `PlatformType` | `default` | 待应用的目标平台（延迟切坐标） |
+| `m_HasPendingCoordSwitch` | `bool` | `false` | 延迟切换 Channel / DevelopMode 标志；TryApply 置 true，ApplyPendingCoordSwitch 消费并置 false（PAT-22 升级）|
 | `m_PendingChannel` | `ChannelType` | `default` | 待应用的目标渠道（延迟切坐标） |
 | `m_PendingDevelopMode` | `DevelopMode` | `default` | 待应用的目标开发模式（延迟切坐标） |
 
@@ -131,7 +130,7 @@ public static void Open();
 // Pipeline 调用入口：打开窗口并展开 Luban 面板
 public static void OpenLubanSection(EnvironmentCheckResult result);
 
-// Play Guard 配置异常导航入口：切换来源资产、导出坐标并打开对应面板
+// Play Guard 配置异常导航入口：校验平台后切换来源资产、Channel/DevelopMode 并打开对应面板
 public static void OpenAppConfigSection(ConfigMasterSO master, PlatformType platform,
     ChannelType channel, DevelopMode developMode);
 public static void OpenPrivacyConfigSection(ConfigMasterSO master, PlatformType platform,
@@ -143,6 +142,8 @@ public static void OpenSDKConfigSection(ConfigMasterSO master, PlatformType plat
 public static void OpenKitConfigSection(ConfigMasterSO master, PlatformType platform,
     ChannelType channel, DevelopMode developMode, Type configType);
 ```
+
+这些导航入口保留 `platform` 参数以表达启动 Guard 报告的来源坐标，但不会改写 ConfigMaster 平台。请求平台与 Unity 当前 Active BuildTarget 的映射不一致时，窗口明确提示先切换 Unity BuildTarget，并终止本次 Channel / DevelopMode 与目标面板导航，避免打开到错误坐标。
 
 ---
 
@@ -190,11 +191,11 @@ OnGUI()
      └─ DisabledScope(isPlayingOrWillChangePlaymode)
            └─ DrawBody()
                 ├─ DrawMainTitle()   居中粗体大标题行
-                ├─ DrawTopBar()      顶部工具栏（SO 选择 + Platform/Channel/DevelopMode + 导出）
+                ├─ DrawTopBar()      顶部工具栏（SO 选择 + 只读 Active BuildTarget Platform + Channel/DevelopMode + 导出）
                 ├─ HorizontalScope:
                 │    ├─ DrawLeftTree()   左树（三组：环境检测 / 通用配置 / SDK）
                 │    └─ DrawRightPanel() 右面板（分发到具体 Panel）
-                ├─ ApplyPendingCoordSwitch()   延迟切坐标：消费 TryApply 记录的 pending，让数字字段在旧坐标格子下完成失焦提交后再换坐标（PAT-22 升级）
+                ├─ ApplyPendingCoordSwitch()   延迟切换 Channel / DevelopMode：消费 TryApply 记录的 pending，让数字字段在旧坐标格子下完成失焦提交后再换坐标（PAT-22 升级）
                 └─ PollChannelChangeForRepaint()
 ```
 
@@ -208,7 +209,7 @@ OnGUI()
   + Button("打开文件夹", 90f)
 
 第二行（仅 m_Master != null 时，labelWidth=80f）：
-  Label("平台类型：", 64f) + EnumPopup<PlatformType>(120f) + Space(24f)
+  Label("平台类型：", 64f) + Disabled EnumPopup<PlatformType>(120f，实时映射 Active BuildTarget) + Space(24f)
   Label("渠道类型：", 64f) + EnumPopup<ChannelType>(120f) + Space(24f)
   Label("开发模式：", 64f) + EnumPopup<DevelopMode>(120f)
   FlexibleSpace →
@@ -216,6 +217,8 @@ OnGUI()
   SuccessButton("导出", 64f)
   DisabledScope(m_Master.ExportTarget==null) → Button("打开文件夹", 90f)
 ```
+
+平台下拉仅用于展示，不能手工编辑。`Android`、`iOS`、`WebGL` 分别映射为同名 Nova `PlatformType`；其他 Active BuildTarget 映射为 `None`，顶栏显示错误 HelpBox，导出被阻断。要编辑另一平台的矩阵份，先在 Unity 中切换 BuildTarget，再切换本窗口的 Channel / DevelopMode。
 
 
 ### 保存流（CommitWorkingCopyToAsset）
@@ -267,14 +270,14 @@ DrawRightPanel()
 
 ### CDN 内容分发网络部署
 
-- 维度化存储（ADR-055）：`ConfigMasterSO.CDNEditorConfigsMask` 为面板维度掩码，`ConfigMasterSO.CDNEditorConfigsOverrides` 为按坐标覆盖列表（两者均 `#if UNITY_EDITOR` 内，仅 Editor 期消费）；`CDNEditorConfigsOverride` 携带坐标三字段（Platform / Channel / DevelopMode，未勾选轴写 None 哨兵或维持默认值）+ 整套 `CDNEditorConfigs` 快照，切坐标即整套切换。
+- 维度化存储（ADR-055）：`ConfigMasterSO.CDNEditorConfigsMask` 为面板维度掩码，`ConfigMasterSO.CDNEditorConfigsOverrides` 为按坐标覆盖列表（两者均 `#if UNITY_EDITOR` 内，仅 Editor 期消费）；`CDNEditorConfigsOverride` 携带坐标三字段（Platform / Channel / DevelopMode，未勾选轴写 None 哨兵或维持默认值）+ 整套 `CDNEditorConfigs` 快照，切坐标即整套切换。这里的当前 Platform 始终来自 Unity Active BuildTarget，窗口不能单独切换它。
 - 显示与写入：整套配置快照经 `DimensionalResolver.ResolveCDNEditorConfigs` 按当前坐标解析（IsGlobal 直接顶层；非全局按 mask 勾选轴匹配首个 CDNEditorConfigsOverrides 条目，命中后整份快照独立生效且空字符串/空列表有效；无命中回落顶层；恒返回深拷贝，禁共享引用）；编辑经 `CommitCdnField` 或白名单数组专用提交入口双分支写入；点击保存后随 WorkingCopy 落入 ConfigMasterSO 资产；整套字段仅在 Editor 编译，不参与 ConfigRuntimeSO 导出。
 - 维度语义：对齐矩阵类面板走 WorkingCopy 延迟落盘（区别于 YooAsset 的 C1 即时落盘）；IsGlobal（三 toggle 全不勾）时全局一份；加维分裂（OnCdnEnabled 按新轴 upsert 坐标条目）/ 减维合并（OnCdnDisabled 裁剪坐标并清理或回填条目，全不勾时回写顶层）/ 广播（BroadcastCdn 将当前坐标快照覆写全组条目）由 DimensionProjector 处理；常规部署、白名单部署与清缓存均经 `CreateCdnConfigSnapshot` 取当前坐标生效份快照执行。
 - OSS 配置包含 `Endpoint`、`AccessKeyID`、`AccessKeySecret` 和 `PresetOSSPath`。Region 从标准地域 Endpoint 推导，`PresetOSSPath` 必须使用 `oss://bucket-name/fixed/prefix` 格式。OSS 是 `com.solotopia.alibabacloud.oss` 提供的可选 Editor 工具：缺包时面板给出安装引导并只禁用资源部署、白名单部署，Cloudflare 缓存清理保持可用。
 - “资源部署”区顶部以“版本检查-模板文件位置”只读展示 `AppDownloadRulesTemplate.json` 的工程相对位置并提供“打开文件夹”，随后提供“版本检查-本地文件位置”与“版本检查-云端文件位置”：本地位置保存项目根相对文件路径，支持选择、打开所在文件夹；实时校验文件非空、位于 Unity 项目根内、实际存在、不经过 symlink/junction 且扩展名为 `.json`，不合规时输入框标红并在下方显示包含实际路径的错误提示。“新建”会让用户选择项目内目录，将模板覆盖复制为固定文件名 `AppDownloadRules.json`，并把创建结果的工程相对路径回写到当前维度。云端位置以只读 `PresetOSSPath` 为前缀，只编辑文件后缀。紧随两项之后的 HelpBox 说明它们用于应用启动时拉取的大版本更新规则文件，与热更新版本检测无关，并列出四类占位符。两项参与 CDN 维度化保存；两项都非空时，“批量部署到 CDN”会把该单文件与热更资源目录合并上传。
-- “热更资源-本地目录位置”保存为 Unity 项目根相对路径。其“自动关联最新版本”开关独占上一行，文字使用与下方字段一致的标签列宽，勾选框对齐下方输入框的值列起点；开关下方 HelpBox 说明完整版本识别、`.version` 写入时间排序以及 ConfigMaster 当前维度取值规则。开关随 CDN 当前维度保存且默认开启。输入框只读显示自动解析结果，“选择”仍可选择包根或任一版本目录；文件命名所需 `PackageFilePrefix` 始终从当前 ConfigMaster 当前维度的 YooAsset 配置解析，不读取 `YooAssetSettings.asset` 的实际值。系统仅接受 `.version` 内容与目录名一致，对应 `.bytes`、`.hash`、`.report` 齐全，并且 report 引用的全部 bundle 文件均存在的完整版本目录，按 `.version` 文件 `LastWriteTimeUtc` 选最新。部署时只上传 `.version`、匹配版本的 `.hash/.bytes` 与 report 中 `BundleInfos` 引用的资源文件，不上传 manifest JSON、`.report`、`buildlogtep.json`、`link.xml` 或其他未引用的构建辅助文件；Bundle 文件扩展名不作假设。YooAsset 不定义 `PackageVersion` 大小关系，因此不按日期或 SemVer 解析目录名；多个候选时间完全相同时明确报歧义。找不到有效版本时输入框标红并提示检查当前目录，部署按钮也会阻止执行。关闭开关后恢复手工编辑，并实时校验目录非空、位于 Unity 项目根内、实际存在且不包含 symlink/junction；不合规时输入框标红并在下方显示包含实际路径的错误提示。`LocalDirectory` 支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，配置中保留模板原文。
-- “热更资源-云端目录位置”中的固定前缀只读显示，可编辑输入框只负责 `RemotePathSuffix`；后缀支持同样四项占位符，部署构建 Object Key 前解析。紧随两项之后的 HelpBox 说明热更资源部署作用及占位符。`{Platform}` = 当前 ConfigWindow 平台枚举名，`{Channel}` = `ConfigMasterSO.CurrentChannel`，`{Package}` = Nova.prefab 上 AssetComponent 的默认资源包名（空时回退包列表首项），`{Version}` = `Application.version`。目标 Object Key 为“固定前缀 + 已解析后缀 + 本地相对文件路径”。按钮上方“清理云端文件和目录”默认关闭；标签与同区字段标签列对齐，Toggle 位于值列，下方 HelpBox 与字段整行左边缘对齐并说明清理顺序、范围与失败停止行为。勾选后先删除本次版本检查文件的精确 Object Key，并清理带 `/` 目录边界的本次热更资源远端前缀，再上传。远端目录为空时拒绝清理，绝不会退化为清空整个 `PresetOSSPath`。
-- “白名单部署”位于资源部署与 Cloudflare 缓存清理之间。设备 ID 以可增删字符串数组编辑，部署时去空、Trim、按首次出现顺序去重并生成 JSON 根数组 `VersionsCheckWhiteList.json`。三个版本文件上方有独立的“自动关联最新版本”开关，文字使用与下方字段一致的标签列宽，勾选框对齐下方输入框的值列起点；开关下方 HelpBox 说明 `.bytes` 锚点、三文件自动刷新以及 ConfigMaster 当前维度取值规则。开关随 CDN 当前维度保存；开启时以已配置 `.bytes` 路径的父目录为锚点寻找最新完整版本，根据当前 ConfigMaster 当前维度 YooAsset 配置中的 `PackageFilePrefix`、默认包名和资源版本自动生成匹配的 `.bytes/.hash/.version` 路径，不读取 `YooAssetSettings.asset` 的实际值。三项只读展示且部署前重新解析；`.bytes` 的“选择”仍可改变锚点，`.hash/.version` 的“选择”禁用。关闭后恢复三项手工编辑与选择，并分别实时校验文件非空、位于 Unity 项目根内、实际存在、不经过 symlink/junction 且扩展名匹配；每项独立标红并在其下方显示包含实际路径的错误提示。配置文件使用完整的“`PresetOSSPath + 配置文件云端文件位置`”，三个版本文件上传到“`PresetOSSPath + 版本文件云端目录位置`”，各路径均支持四类占位符。配置文件位置为空、不是 `.json` 文件、使用绝对 URL、父级路径或含查询/片段时仅跳过配置文件，不回退到版本文件目录；三个版本文件仍按版本目录独立部署。该按钮使用独立上传计划，不会改变资源部署的文件集合。按钮上方同名清理 Toggle 默认关闭，按白名单字段标签列对齐，并在值列下方显示同口径 HelpBox；勾选后先删除本次白名单 JSON 的精确 Object Key，并清理本次版本文件远端目录，再上传。
+- “热更资源-本地目录位置”保存为 Unity 项目根相对路径。其“自动关联最新版本”开关独占上一行，文字使用与下方字段一致的标签列宽，勾选框对齐下方输入框的值列起点；开关下方 HelpBox 说明完整版本识别、`.version` 写入时间排序以及 ConfigMaster 当前维度取值规则。开关随 CDN 当前维度保存且默认开启。当前维度的 Platform 实时取 Unity Active BuildTarget；输入框只读显示自动解析结果，“选择”仍可选择包根或任一版本目录；文件命名所需 `PackageFilePrefix` 始终从当前 ConfigMaster 当前维度的 YooAsset 配置解析，不读取 `YooAssetSettings.asset` 的实际值。系统仅接受 `.version` 内容与目录名一致，对应 `.bytes`、`.hash`、`.report` 齐全，并且 report 引用的全部 bundle 文件均存在的完整版本目录，按 `.version` 文件 `LastWriteTimeUtc` 选最新。部署时只上传 `.version`、匹配版本的 `.hash/.bytes` 与 report 中 `BundleInfos` 引用的资源文件，不上传 manifest JSON、`.report`、`buildlogtep.json`、`link.xml` 或其他未引用的构建辅助文件；Bundle 文件扩展名不作假设。YooAsset 不定义 `PackageVersion` 大小关系，因此不按日期或 SemVer 解析目录名；多个候选时间完全相同时明确报歧义。找不到有效版本时输入框标红并提示检查当前目录，部署按钮也会阻止执行。关闭开关后恢复手工编辑，并实时校验目录非空、位于 Unity 项目根内、实际存在且不包含 symlink/junction；不合规时输入框标红并在下方显示包含实际路径的错误提示。`LocalDirectory` 支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，配置中保留模板原文。
+- “热更资源-云端目录位置”中的固定前缀只读显示，可编辑输入框只负责 `RemotePathSuffix`；后缀支持同样四项占位符，部署构建 Object Key 前解析。紧随两项之后的 HelpBox 说明热更资源部署作用及占位符。`{Platform}` = Unity 当前 Active BuildTarget 映射的 `PlatformType`，`{Channel}` = `ConfigMasterSO.CurrentChannel`，`{Package}` = Nova.prefab 上 AssetComponent 的默认资源包名（空时回退包列表首项），`{Version}` = `Application.version`。目标 Object Key 为“固定前缀 + 已解析后缀 + 本地相对文件路径”。按钮上方“清理云端文件和目录”默认关闭；标签与同区字段标签列对齐，Toggle 位于值列，下方 HelpBox 与字段整行左边缘对齐并说明清理顺序、范围与失败停止行为。勾选后先删除本次版本检查文件的精确 Object Key，并清理带 `/` 目录边界的本次热更资源远端前缀，再上传。远端目录为空时拒绝清理，绝不会退化为清空整个 `PresetOSSPath`。
+- “白名单部署”位于资源部署与 Cloudflare 缓存清理之间。设备 ID 以可增删字符串数组编辑，部署时去空、Trim、按首次出现顺序去重并生成 JSON 根数组 `VersionsCheckWhiteList.json`。三个版本文件上方有独立的“自动关联最新版本”开关，文字使用与下方字段一致的标签列宽，勾选框对齐下方输入框的值列起点；开关下方 HelpBox 说明 `.bytes` 锚点、三文件自动刷新以及 ConfigMaster 当前维度取值规则。开关随 CDN 当前维度保存；其 Platform 维度实时取 Unity Active BuildTarget。开启时以已配置 `.bytes` 路径的父目录为锚点寻找最新完整版本，根据当前 ConfigMaster 当前维度 YooAsset 配置中的 `PackageFilePrefix`、默认包名和资源版本自动生成匹配的 `.bytes/.hash/.version` 路径，不读取 `YooAssetSettings.asset` 的实际值。三项只读展示且部署前重新解析；`.bytes` 的“选择”仍可改变锚点，`.hash/.version` 的“选择”禁用。关闭后恢复三项手工编辑与选择，并分别实时校验文件非空、位于 Unity 项目根内、实际存在、不经过 symlink/junction 且扩展名匹配；每项独立标红并在其下方显示包含实际路径的错误提示。配置文件使用完整的“`PresetOSSPath + 配置文件云端文件位置`”，三个版本文件上传到“`PresetOSSPath + 版本文件云端目录位置`”，各路径均支持四类占位符。配置文件位置为空、不是 `.json` 文件、使用绝对 URL、父级路径或含查询/片段时仅跳过配置文件，不回退到版本文件目录；三个版本文件仍按版本目录独立部署。该按钮使用独立上传计划，不会改变资源部署的文件集合。按钮上方同名清理 Toggle 默认关闭，按白名单字段标签列对齐，并在值列下方显示同口径 HelpBox；勾选后先删除本次白名单 JSON 的精确 Object Key，并清理本次版本文件远端目录，再上传。
 - Cloudflare 页面配置 `ZoneID`、Bearer `API Token` 与缓存 URL 列表；字段下方、执行按钮上方的 HelpBox 说明清除缓存的用途、分隔与去重规则、每批最多 100 条的顺序发送和 Token 权限。请求地址内部固定构造为 `https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/purge_cache`。旧资产中的隐藏 `PurgeURL` 仅用于提取 Zone ID 兼容迁移。输入框提示多个路径使用英文逗号分隔，解析同时兼容英文逗号、英文分号和换行，按首次出现顺序去重，并按每 100 条顺序发送。API Token 需要 `Zone -> Cache Purge` 权限。
 - 三个按钮分别触发资源部署、白名单部署和缓存清理，首个失败即停止。本地文件或目录不存在、越界或为空时，对话框和日志会明确显示解析后的错误路径。启用部署前清理时，完整上传计划会先完成本地校验；列举或删除任一失败都会停止且不上传。Secret/Token 在界面中遮罩，错误信息进入日志或对话框前脱敏，但配置资产中的序列化值仍是明文。
 
@@ -342,15 +345,16 @@ DrawPython3StatusAndButtons():
 
 ```
 OnClickExport()
-  1. Validator.Validate(master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode)
-  2. HasAnyError(issues) → ShowValidationDialog → return（阻断）
-  3. 仅有 Warning → ConfirmValidationWarnings（继续导出 / 取消）
-  4. master.ExportTarget == null → SaveFilePanelInProject 选择新导出位置
-  5. 否则 assetPath = AssetDatabase.GetAssetPath(master.ExportTarget)
-  6. Exporter.Export(master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode, assetPath)
-  7. master.ExportTarget 原为空时用新建导出结果写回 Master 与 WorkingCopy
-  8. SceneDevelopModeWriter.WriteActiveScene(...) 回写场景启动快照
-  9. DisplayDialog("导出成功")
+  1. ActivePlatform.RequireCurrent("Config 导出")；未映射则显示错误并 return
+  2. Validator.Validate(master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode)
+  3. HasAnyError(issues) → ShowValidationDialog → return（阻断）
+  4. 仅有 Warning → ConfirmValidationWarnings（继续导出 / 取消）
+  5. master.ExportTarget == null → SaveFilePanelInProject 选择新导出位置
+  6. 否则 assetPath = AssetDatabase.GetAssetPath(master.ExportTarget)
+  7. Exporter.Export(master, master.CurrentPlatform, master.CurrentChannel, master.CurrentDevelopMode, assetPath)
+  8. master.ExportTarget 原为空时用新建导出结果写回 Master 与 WorkingCopy
+  9. SceneDevelopModeWriter.WriteActiveScene(...) 回写场景启动快照
+  10. DisplayDialog("导出成功")
 ```
 
 > **注意**：导出目标不再通过 `EditorPrefs` GUID 存储，改由 `ConfigMasterSO.ExportTarget`（`[SerializeField]`）直接持久化到 SO 资产中；`RestoreExportTargetFromPrefs` / `SaveExportTargetToPrefs` / `OnDisable` 中的 GUID 持久化链路已删除。
@@ -368,6 +372,7 @@ OnClickExport()
 | `m_SelectedItem` 默认值 | 默认为 `LeftTreeItem.LubanEnv`，不是 `Environment` |
 | "保存"按钮灰色点不了 | `m_IsDirty == false` 时 DisabledScope 禁用按钮；在右侧面板编辑任意字段后 ChangeCheck 自动置 `true` |
 | 切换导出目标后保存按钮仍然灰色 | 正常现象。切换导出目标（ObjectField 回调 / `OnClickSelectExportAsset`）不清零 `m_IsDirty`，也不置位；导出目标切换不影响 ConfigMasterSO 的脏状态 |
+| 在 ConfigWindow 顶栏手工改 Platform | 不支持。Platform 只读映射 Unity Active BuildTarget；先切换 Unity BuildTarget，再回到窗口编辑对应平台份。 |
 | 改完字段直接关窗口 | 右侧 ChangeCheck 只负责置位 `m_IsDirty`，实际持久化依赖"保存"按钮触发 `AssetDatabase.SaveAssets`；关窗口前须点保存 |
 
 ---

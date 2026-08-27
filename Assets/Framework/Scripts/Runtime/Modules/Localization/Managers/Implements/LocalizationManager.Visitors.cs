@@ -20,57 +20,6 @@ namespace NovaFramework.Runtime
     internal sealed partial class LocalizationManager : LocalizationManagerBase
     {
         /// <summary>
-        /// Unity SystemLanguage 到框架 Language 的映射表。
-        /// 注意：对于 SystemLanguage 中不存在的语言（如 Hindi、Malay、Filipino、PortugueseBrazil），
-        /// 待 SDK 模块 NativeHelper 就绪后可通过原生接口获取更精确的语言编码进行补充映射。
-        /// </summary>
-        private static readonly Dictionary<UnityEngine.SystemLanguage, Language> s_SystemLanguageMap = new Dictionary<UnityEngine.SystemLanguage, Language>
-        {
-            { UnityEngine.SystemLanguage.Afrikaans, Language.Afrikaans },
-            { UnityEngine.SystemLanguage.Arabic, Language.Arabic },
-            { UnityEngine.SystemLanguage.Basque, Language.Basque },
-            { UnityEngine.SystemLanguage.Belarusian, Language.Belarusian },
-            { UnityEngine.SystemLanguage.Bulgarian, Language.Bulgarian },
-            { UnityEngine.SystemLanguage.Catalan, Language.Catalan },
-            { UnityEngine.SystemLanguage.Chinese, Language.ChineseSimplified },
-            { UnityEngine.SystemLanguage.ChineseSimplified, Language.ChineseSimplified },
-            { UnityEngine.SystemLanguage.ChineseTraditional, Language.ChineseTraditional },
-            { UnityEngine.SystemLanguage.Czech, Language.Czech },
-            { UnityEngine.SystemLanguage.Danish, Language.Danish },
-            { UnityEngine.SystemLanguage.Dutch, Language.Dutch },
-            { UnityEngine.SystemLanguage.English, Language.English },
-            { UnityEngine.SystemLanguage.Estonian, Language.Estonian },
-            { UnityEngine.SystemLanguage.Faroese, Language.Faroese },
-            { UnityEngine.SystemLanguage.Finnish, Language.Finnish },
-            { UnityEngine.SystemLanguage.French, Language.French },
-            { UnityEngine.SystemLanguage.German, Language.German },
-            { UnityEngine.SystemLanguage.Greek, Language.Greek },
-            { UnityEngine.SystemLanguage.Hebrew, Language.Hebrew },
-            { UnityEngine.SystemLanguage.Hungarian, Language.Hungarian },
-            { UnityEngine.SystemLanguage.Icelandic, Language.Icelandic },
-            { UnityEngine.SystemLanguage.Indonesian, Language.Indonesian },
-            { UnityEngine.SystemLanguage.Italian, Language.Italian },
-            { UnityEngine.SystemLanguage.Japanese, Language.Japanese },
-            { UnityEngine.SystemLanguage.Korean, Language.Korean },
-            { UnityEngine.SystemLanguage.Latvian, Language.Latvian },
-            { UnityEngine.SystemLanguage.Lithuanian, Language.Lithuanian },
-            { UnityEngine.SystemLanguage.Norwegian, Language.Norwegian },
-            { UnityEngine.SystemLanguage.Polish, Language.Polish },
-            { UnityEngine.SystemLanguage.Portuguese, Language.PortuguesePortugal },
-            { UnityEngine.SystemLanguage.Romanian, Language.Romanian },
-            { UnityEngine.SystemLanguage.Russian, Language.Russian },
-            { UnityEngine.SystemLanguage.SerboCroatian, Language.SerboCroatian },
-            { UnityEngine.SystemLanguage.Slovak, Language.Slovak },
-            { UnityEngine.SystemLanguage.Slovenian, Language.Slovenian },
-            { UnityEngine.SystemLanguage.Spanish, Language.Spanish },
-            { UnityEngine.SystemLanguage.Swedish, Language.Swedish },
-            { UnityEngine.SystemLanguage.Thai, Language.Thai },
-            { UnityEngine.SystemLanguage.Turkish, Language.Turkish },
-            { UnityEngine.SystemLanguage.Ukrainian, Language.Ukrainian },
-            { UnityEngine.SystemLanguage.Vietnamese, Language.Vietnamese },
-        };
-
-        /// <summary>
         /// 已支持的语言列表。
         /// </summary>
         private readonly List<Language> m_SupportedLanguages = new List<Language>();
@@ -153,7 +102,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 获取系统语言（映射后的 Language 枚举值）。
         /// </summary>
-        public override Language SystemLanguage => MapUnitySystemLanguage(UnityEngine.Application.systemLanguage);
+        public override Language SystemLanguage => LocalizationLanguageResolver.MapSystemLanguage(UnityEngine.Application.systemLanguage);
 
         /// <summary>
         /// 获取是否启用字体自动适配。

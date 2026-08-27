@@ -71,7 +71,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 使用 Step 显式坐标导出 ConfigRuntime，不修改 ConfigMaster 当前选择。
+        /// 使用 Unity 当前 Active BuildTarget 与 Step 的渠道/模式导出 ConfigRuntime，不修改 ConfigMaster。
         /// </summary>
         /// <param name="master">只读的设计态配置来源。</param>
         /// <param name="parameters">本次 Step 已固化的三维坐标。</param>
@@ -84,6 +84,8 @@ namespace NovaFramework.Editor
         {
             if (master == null) throw new ArgumentNullException(nameof(master));
             if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+            SynchronizeActivePlatform(parameters);
+            EditorUtil.Config.ActivePlatform.RequireCurrent("[Pipify] Config 导出");
             if (parameters.Platform == PlatformType.None)
             {
                 throw new InvalidOperationException("[Pipify] Config 导出参数 Platform 不可为 None。");

@@ -32,7 +32,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 打开应用配置面板并切换到启动 Guard 报告的实际导出坐标。
+        /// 打开应用配置面板并切换到启动 Guard 报告的渠道与模式；平台必须匹配 Unity Active BuildTarget。
         /// </summary>
         /// <param name="master">当前 Demo 的设计态 ConfigMasterSO 来源。</param>
         /// <param name="platform">运行时导出的目标平台。</param>
@@ -45,7 +45,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 打开隐私配置面板并切换到指定导出坐标。
+        /// 打开隐私配置面板并切换到指定渠道与模式；平台必须匹配 Unity Active BuildTarget。
         /// </summary>
         /// <param name="master">设计态 ConfigMasterSO 来源。</param>
         /// <param name="platform">目标平台。</param>
@@ -58,7 +58,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 打开名字空间配置面板并切换到启动 Guard 报告的实际导出坐标。
+        /// 打开名字空间配置面板并切换到启动 Guard 报告的渠道与模式；平台必须匹配 Unity Active BuildTarget。
         /// </summary>
         public static void OpenNamespaceConfigSection(ConfigMasterSO master, PlatformType platform,
             ChannelType channel, DevelopMode developMode)
@@ -67,7 +67,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 打开指定 SDK 配置面板并切换到启动 Guard 报告的实际导出坐标。
+        /// 打开指定 SDK 配置面板并切换到启动 Guard 报告的渠道与模式；平台必须匹配 Unity Active BuildTarget。
         /// </summary>
         public static void OpenSDKConfigSection(ConfigMasterSO master, PlatformType platform,
             ChannelType channel, DevelopMode developMode, Type configType)
@@ -76,7 +76,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 打开指定 Kit 配置面板并切换到启动 Guard 报告的实际导出坐标。
+        /// 打开指定 Kit 配置面板并切换到启动 Guard 报告的渠道与模式；平台必须匹配 Unity Active BuildTarget。
         /// </summary>
         public static void OpenKitConfigSection(ConfigMasterSO master, PlatformType platform,
             ChannelType channel, DevelopMode developMode, Type configType)
@@ -85,11 +85,23 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 统一绑定 Guard 报告的设计态来源、导出坐标与左树目标。
+        /// 校验 Guard 报告的平台后，统一绑定设计态来源、渠道/模式与左树目标。
         /// </summary>
         private static void OpenConfigSection(ConfigMasterSO master, PlatformType platform,
             ChannelType channel, DevelopMode developMode, LeftTreeItem target, Type configType)
         {
+            PlatformType activePlatform = EditorUtil.Config.ActivePlatform.Current;
+            if (activePlatform == PlatformType.None || platform != activePlatform)
+            {
+                string message = activePlatform == PlatformType.None
+                    ? $"Unity 当前 Active BuildTarget={EditorUserBuildSettings.activeBuildTarget} 没有对应的 Nova PlatformType。" +
+                      "\n\n请先切换到 Android、iOS 或 WebGL。"
+                    : $"请求查看的平台 {platform} 与 Unity 当前 Active BuildTarget={EditorUserBuildSettings.activeBuildTarget} 对应平台 {activePlatform} 不一致。" +
+                      "\n\n请先切换 Unity BuildTarget；ConfigWindow 不再单独切换平台。";
+                EditorUtility.DisplayDialog("平台不一致", message, "知道了");
+                return;
+            }
+
             ConfigWindow window = GetWindow<ConfigWindow>(false, c_WindowTitle, true);
             window.minSize = new Vector2(c_WindowMinWidth, c_WindowMinHeight);
             if (master != null && !ReferenceEquals(window.m_Master, master))
@@ -99,7 +111,6 @@ namespace NovaFramework.Editor
 
             if (window.m_WorkingCopy != null)
             {
-                window.m_WorkingCopy.CurrentPlatform = platform;
                 window.m_WorkingCopy.CurrentChannel = channel;
                 window.m_WorkingCopy.CurrentDevelopMode = developMode;
                 window.m_LastKnownChannel = channel;

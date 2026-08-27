@@ -28,10 +28,10 @@
 | **复用 GameObject / 资源对象** | [ObjectPoolManager.md · ObjectBase + CreatePool](Runtime/Modules/ObjectPool/ObjectPoolManager.md) |
 | **加载 AB 包 / Prefab 实例化** | [AssetComponent.md](Runtime/Modules/Asset/AssetComponent.md)（所有 LoadXxx 返回 Handle，调用方负责 Release）|
 | **实例化 Prefab / 销毁 Prefab 实例** | [PrefabComponent.md](Runtime/Modules/Prefab/PrefabComponent.md) → [IPrefabManager.md · Instantiate/Destroy API](Runtime/Modules/Prefab/PrefabManager/IPrefabManager.md) |
-| **大版本检查 / APP 强更** | [AppComponent.md · CheckAsync+DownloadAsync+OpenStoreAsync](Runtime/Modules/App/AppComponent.md) → [AppManagerConfig.md · 超时+下载路由+规则](Runtime/Modules/App/Definitions/AppManagerConfig.md) |
+| **大版本检查 / APP 强更** | [AppComponent.md · CheckAsync+推荐放弃记录+DownloadAsync+OpenStoreAsync](Runtime/Modules/App/AppComponent.md) → [AppManagerConfig.md · 超时+下载路由+规则](Runtime/Modules/App/Definitions/AppManagerConfig.md) |
 | **加载运行时配置（AB 加载 ConfigRuntimeSO）** | [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) → [ConfigManager.md · AB加载+解析+PluginConfig索引](Runtime/Modules/Config/ConfigManager.md) |
 | **加载 Excel/CSV 表格数据（Luban Project）** | [TableManager.md · 多 Binding 加载](Runtime/Modules/Table/TableManager.md) → [TableComponentInspector.md · 多 Project 与导出描述](Editor/Inspectors/TableComponentInspector/TableComponentInspector.md) → [EditorUtil.Table.Exporter.md · 多导出描述透传](Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) |
-| **编辑 Config SO / 导出 ConfigRuntime**（ConfigWindow 流程） | [ConfigWindow.md · 三段式布局+三维导出](Editor/Windows/ConfigWindow.md) → [ConfigMasterSO.md · Editor 设计态数据](Editor/Config/ConfigMasterSO.md) → [SchemaMigration.md · 旧资产迁移](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md) → [ConfigRuntimeSO.md · Runtime 快照](Runtime/Modules/Config/ConfigRuntimeSO.md) → [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) → [EditorUtil.Config.WorkspaceActive.md · 激活 Master 锚点](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) → [EditorUtil.Config.YooAssetInjector.md · YooAsset 注入](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
+| **编辑 Config SO / 导出 ConfigRuntime**（ConfigWindow 流程） | [ConfigWindow.md · Active BuildTarget 平台只读+三维导出](Editor/Windows/ConfigWindow.md) → [ConfigMasterSO.md · Editor 设计态数据](Editor/Config/ConfigMasterSO.md) → [SchemaMigration.md · 旧资产迁移](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md) → [ConfigRuntimeSO.md · Runtime 快照](Runtime/Modules/Config/ConfigRuntimeSO.md) → [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) → [EditorUtil.Config.WorkspaceActive.md · 激活 Master 锚点](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) → [EditorUtil.Config.YooAssetInjector.md · YooAsset 注入](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
 | **Config 面板按平台/渠道/模式分别配置**（per-panel 可勾选维度） | [PanelDimensionMask.md · Editor 掩码三轴+IsGlobal](Editor/Config/Definitions/PanelDimensionMask.md) → [EditorUtil.Config.DimensionProjector.md · 三操作+双路径](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) → [EditorUtil.Config.DimensionalResolver.md · 只读取数+回落逻辑](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) |
 | **新增 SDK PluginConfig**（ISDKPluginConfig + 自动注入） | [PluginBase.md · PluginBase<TConfig>泛型基类+自动注入](Runtime/Modules/SDK/Definitions/PluginBase.md) → [ISDKPluginConfig.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) → [EditorUtil.Config.SDKPluginScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) → [PlatformChannelEntry.md · Editor 矩阵行结构](Editor/Config/Definitions/PlatformChannelEntry.md) |
 | **新增 Kit 配置（IKitConfig + ConfigWindow 配置）** | [IKitConfig.md · marker 接口](Runtime/Modules/Config/Definitions/IKitConfig.md) → [KitConfigMissingException.md · 缺失异常](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) → [EditorUtil.Config.KitConfigScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.md) → [ConfigWindow.md · Kit 配置一级组](Editor/Windows/ConfigWindow.md) |
@@ -77,7 +77,7 @@
 | [Definitions.md](Runtime/Core/Definitions/Definitions.md) | 框架级枚举（渠道/平台/模式/语言类型） |
 | [ChannelType.md](Runtime/Core/Definitions/ChannelType.md) | 游戏运营渠道类型枚举（None/Official/Google/Apple/WeChat/TikTok/Alipay） |
 | [DevelopMode.md](Runtime/Core/Definitions/DevelopMode.md) | 开发/发布模式枚举（Debug / Publish），Config 第三维度 |
-| [PlatformType.md](Runtime/Core/Definitions/PlatformType.md) | 运行平台类型枚举（None/Android/iOS/PC/WebGL/Mini） |
+| [PlatformType.md](Runtime/Core/Definitions/PlatformType.md) | 运行平台类型枚举（None/Android/iOS/WebGL） |
 | [Language.md](Runtime/Core/Definitions/Language.md) | 游戏语言枚举与 LanguageMetadata（GetDesc/GetFlag 字典查询） |
 | [LanguageSelectionWay.md](Runtime/Core/Definitions/LanguageSelectionWay.md) | 已移除，保留历史兼容说明页 |
 | [Extensions.md](Runtime/Core/Extensions/Extensions.md) | C# 和 Unity 扩展方法 |
@@ -181,13 +181,13 @@
 | 文档 | 说明 |
 |------|------|
 | [App.md](Runtime/Modules/App/App.md) | App 模块概览（L1 导航） |
-| [AppComponent.md](Runtime/Modules/App/AppComponent.md) | App Component（CheckAsync/DownloadAsync/OpenStoreAsync + 规则状态读取） |
+| [AppComponent.md](Runtime/Modules/App/AppComponent.md) | App Component（CheckAsync/推荐放弃记录/DownloadAsync/OpenStoreAsync + 规则状态读取） |
 | [IAppManager.md](Runtime/Modules/App/AppManager/IAppManager.md) | App Manager 接口 |
 | [AppManagerBase.md](Runtime/Modules/App/AppManager/AppManagerBase.md) | App Manager 抽象基类（Priority=11） |
 | [AppManager.md](Runtime/Modules/App/AppManager/AppManager.md) | App Manager 实现（HTTP 版本检查 + 规则匹配 + 下载/商店跳转，4 个 partial 文件） |
 | [AppManagerConfig.md](Runtime/Modules/App/Definitions/AppManagerConfig.md) | App Manager 配置类（超时/路由/规则） |
 | [AppVersionResult.md](Runtime/Modules/App/Definitions/AppVersionResult.md) | 版本检查结果枚举（NoDownload/RecommendedDownload/ForcedDownload） |
-| [AppVersionResponse.md](Runtime/Modules/App/Definitions/AppVersionResponse.md) | 服务端响应 DTO（internal，RecommendedDownloadVersion/ForcedDownloadVersion） |
+| [AppVersionResponse.md](Runtime/Modules/App/Definitions/AppVersionResponse.md) | 服务端响应 DTO（internal，推荐/强制版本阈值 + 推荐提示间隔秒数） |
 | [AppDownloadRoute.md](Runtime/Modules/App/Definitions/AppDownloadRoute.md) | APP 下载路由枚举（Store/Apk） |
 | [AppDownloadRule.md](Runtime/Modules/App/Definitions/AppDownloadRule.md) | APP 下载弹窗规则枚举（None/Recommended/Forced） |
 
@@ -537,6 +537,7 @@
 | [EditorUtil.Config.StructureGuard.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.StructureGuard.md) | Platform×Channel 枚举网格补齐与缺失引用清理 |
 | [EditorUtil.Config.SDKPluginScanner.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) | 全程序集扫描 ISDKPluginConfig 实现类型 + 实例补全/移除（EnsureInstance/RemoveInstance 按 DevelopMode 分组） |
 | [EditorUtil.Config.Validator.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.md) | AppConfigs/PluginConfig 必填字段校验（Severity 枚举 + ValidationIssue 结构体；支持三维 Platform×Channel×DevelopMode） |
+| [EditorUtil.Config.ActivePlatform.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.ActivePlatform.md) | Unity Active BuildTarget 到 Nova 编辑期 PlatformType 的实时唯一映射入口 |
 | [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) | 将 ConfigMasterSO 三维组合导出为 ConfigRuntimeSO.asset |
 | [EditorUtil.Config.SchemaMigration.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md) | 版本化迁移旧 ConfigMasterSO，并重导出关联 Runtime 快照 |
 | [EditorUtil.Config.RuntimeProvider.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.md) | 从 AssetDatabase 按三维（Platform×Channel×DevelopMode）读取 ConfigRuntimeSO（不缓存，替代已删除的 ConfigLookup）；GetChannel() 新增 |
@@ -565,7 +566,7 @@
 
 | 文档 | 说明 |
 |------|------|
-| [ConfigWindow.md](Editor/Windows/ConfigWindow.md) | Nova 全局配置窗口（三段式布局：顶栏 SO 选择+Platform/Channel/DevelopMode+导出 ObjectField、左树 LubanEnv/Python3Env/AppConfig/NamespaceConfig/HybridCLRConfig/SDK、右面板详情；支持三维导出 ConfigRuntimeSO；HybridCLR DLL 列表通过 HybridCLRConfig 面板编辑；导出目标 SO 通过 EditorPrefs GUID 持久化；partial 拆 10 文件） |
+| [ConfigWindow.md](Editor/Windows/ConfigWindow.md) | Nova 全局配置窗口（三段式布局：顶栏 SO 选择+由 Unity Active BuildTarget 映射的只读 Platform+可编辑 Channel/DevelopMode+导出 ObjectField、左树 LubanEnv/Python3Env/AppConfig/NamespaceConfig/HybridCLRConfig/SDK、右面板详情；支持三维导出 ConfigRuntimeSO；HybridCLR DLL 列表通过 HybridCLRConfig 面板编辑；导出目标 SO 由 ConfigMasterSO 持久化；partial 拆 10 文件） |
 | [CheckUpdateWindow.md](Editor/Windows/CheckUpdateWindow.md) | Nova 包版本更新提示窗口（表格展示 Package/Current/Latest，支持"跳过当前版本"持久化） |
 | [PipifyWindow.md](Editor/Windows/PipifyWindow.md) | Pipify 流水线配置与执行窗口（Nova/Open Pipify） |
 | [EnvironmentWindow.md](Editor/Windows/EnvironmentWindow.md) | 空壳说明页：`EnvironmentWindow` 类不存在、`Windows/EnvironmentWindow/` 目录为空；「环境检测」UI 实际内嵌在 ConfigWindow 左树「环境检测」组（Luban / Python3 / HybridCLR 三条目），检测引擎在 `EditorUtil.Environment` |

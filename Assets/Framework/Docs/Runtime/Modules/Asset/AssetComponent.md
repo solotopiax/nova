@@ -122,7 +122,7 @@
 - `EnableHotfix` 现在只控制资源热更检查 / 下载链路，不再决定 App 大版本检测是否执行。
 - 启动白名单还受 `EnableHotfix` 和有效 Host/Web 模式约束；默认关闭，当前 DevelopMode 没有可用白名单文件或元数据根 URL 时自动跳过。
 - 首次正常启动没有 DeviceID 缓存时不会请求白名单；SDK 初始化后写入 `persistentDataPath/Asset/asset-check-device-id.dat`，后续启动才参与当次判断。
-- URL 中若包含 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，仍由 Asset 模块在运行时替换；其中 `{Platform}` = `PlatformType` 枚举名，`{Channel}` = Config 导出时同步到 `AssetComponent` 的渠道快照，`{Package}` = 当前资源包名，`{Version}` = `Application.version`。
+- URL 中若包含 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，仍由 Asset 模块在运行时替换；其中 `{Platform}` = Player 编译宏对应的 `PlatformType` 枚举名（不读取 Editor Active BuildTarget 或 ConfigMaster），`{Channel}` = Config 导出时同步到 `AssetComponent` 的渠道快照，`{Package}` = 当前资源包名，`{Version}` = `Application.version`。
 - `{Channel}` 快照与同次导出的 `ConfigRuntimeSO.Channel` 同源，但在资源 Bootstrap 前即可读取，避免 Asset 反向依赖尚未加载的运行时配置。
 - `OnDestroy()` 这里只是把 `m_AssetManager` 置空，不是底层资源系统真正销毁点；真正销毁在 `AssetManager.Shutdown()`。
 - `AssetComponent` 只负责资源系统，不负责 Prefab / UI / Config 等上层消费模块。

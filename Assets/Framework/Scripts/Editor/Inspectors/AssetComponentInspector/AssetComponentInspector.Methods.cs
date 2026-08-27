@@ -136,7 +136,7 @@ namespace NovaFramework.Editor
                         {
                             "(1)运行时按当前节点上的 DevelopMode 选择 Debug 或 Release 这一组地址",
                             "(2)支持 {Platform}/{Channel}/{Package}/{Version} 占位符，框架会在运行时替换",
-                            "(3){Platform}=PlatformType 枚举名；{Channel}=Config 导出时选中的渠道；{Package}=YooAsset 当前资源包名；{Version}=Application.version",
+                            "(3){Platform}=Player 编译宏对应的 PlatformType，不读取 Editor Active BuildTarget 或 ConfigMaster；{Channel}=Config 导出时选中的渠道；{Package}=YooAsset 当前资源包名；{Version}=Application.version",
                             "(4)主地址失败后，同一资源包后续新下载改走备用地址；已开始的下载不受影响",
                             "(5)备用地址失败后不会自动绕回主地址"
                         }, false, GUILayout.ExpandWidth(true));
@@ -199,7 +199,7 @@ namespace NovaFramework.Editor
                                 "(5)运行时按 DevelopMode 选择 Debug 或 Release 主备地址",
                                 "(6)配置文件 VersionsCheckWhiteList.json 为 DeviceID JSON 字符串数组",
                                 "(7)命中后只切换 YooAsset 版本元数据，Bundle 仍走上方常规主机服务器",
-                                "(8)支持 {Platform}/{Channel}/{Package}/{Version}；这些地址沿用资源下载机制，不进入业务接口的 DoH 路由"
+                                "(8)支持 {Platform}/{Channel}/{Package}/{Version}；{Platform} 由 Player 编译宏决定，不读取 Editor Active BuildTarget 或 ConfigMaster；这些地址不进入业务接口的 DoH 路由"
                             }, false, GUILayout.ExpandWidth(true));
                         });
 

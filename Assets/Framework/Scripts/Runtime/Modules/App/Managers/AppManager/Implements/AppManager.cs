@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Globalization;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
@@ -107,6 +108,27 @@ namespace NovaFramework.Runtime
             {
                 Log.Warning(LogTag.App, "CheckAsync 网络异常，降级返回 NoDownload：{0}", ex.Message);
                 return AppVersionResult.NoDownload;
+            }
+        }
+
+        /// <summary>
+        /// 记录用户主动放弃推荐更新的 UTC Unix 秒时间戳并立即落盘。
+        /// </summary>
+        public override void RecordRecommendedDownloadDismissed()
+        {
+            try
+            {
+                long dismissedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                PlatformPlayerPrefs.SetString(
+                    c_RecommendedDownloadDismissedAtKey,
+                    dismissedAt.ToString(CultureInfo.InvariantCulture));
+                PlatformPlayerPrefs.Save();
+                Log.Debug(LogTag.App, "已记录用户放弃推荐更新的时间。DismissedAt={0}", dismissedAt);
+            }
+            catch (Exception ex)
+            {
+                // 记录失败只会导致下次启动再次提示，不能阻断当前启动流程。
+                Log.Warning(LogTag.App, "记录推荐更新放弃时间失败，将继续启动：{0}", ex.Message);
             }
         }
 

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.16] - 2026-08-27
+
+### Changed
+
+- AppleSigninDemo 在 Network 初始化前完成 Localization 加载与当前语言初始化。
+
 ## [0.0.15] - 2026-08-27
 
 ### Fixed

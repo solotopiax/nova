@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using NovaFramework.Runtime;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace NovaFramework.Editor
 {
@@ -208,9 +209,16 @@ namespace NovaFramework.Editor
         public DevelopMode CurrentDevelopMode = DevelopMode.Debug;
 
         /// <summary>
-        /// 当前编辑态选中的平台；Inspector 可通过该字段感知切换。
+        /// 旧版编辑态平台序列化值；仅用于无损读取升级前资产，不再参与平台选择或导出。
         /// </summary>
-        public PlatformType CurrentPlatform;
+        [FormerlySerializedAs("CurrentPlatform")]
+        [SerializeField, HideInInspector]
+        private PlatformType m_LegacyCurrentPlatform;
+
+        /// <summary>
+        /// 当前编辑期平台；每次访问都实时映射 Unity 的 Active BuildTarget，不受 ConfigMaster 资产内容影响。
+        /// </summary>
+        public PlatformType CurrentPlatform => EditorUtil.Config.ActivePlatform.Current;
 
         /// <summary>
         /// 当前编辑态选中的渠道；Inspector 可通过该字段感知切换。

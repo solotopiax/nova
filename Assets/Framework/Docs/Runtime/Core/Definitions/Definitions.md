@@ -8,7 +8,7 @@
 | `DevelopMode.cs` | `DevelopMode` | 开发/发布模式枚举（Debug / Publish），Config 第三维度 |
 | `Language.cs` | `Language`, `LanguageInfo`, `LanguageMetadata` | 游戏语言枚举及描述 / Flag 元数据 |
 | `LanguageSelectionWay.cs` | `LanguageSelectionWay` | 已移除，保留历史兼容说明页 |
-| `PlatformType.cs` | `PlatformType` | 目标平台类型（Android / iOS / PC / WebGL / Mini），Config 第一维度 |
+| `PlatformType.cs` | `PlatformType` | 目标平台类型（Android / iOS / WebGL），Config 第一维度 |
 
 `Language`、`LanguageInfo` 与 `LanguageMetadata` 一起定义在 `Runtime/Core/Definitions/`，因为根组件 `Nova.Visitors.cs` 直接持有 `Language` 类型字段（避免根组件依赖子模块产生逆向依赖）。
 

@@ -235,6 +235,8 @@ namespace NovaFramework.Editor
                 if (!IsFieldVisible(field, paramsInstance, info.ParamsType)) continue;
                 float fieldHeight = GetParamFieldHeight(field, field.GetValue(paramsInstance));
                 Rect fieldRect = new Rect(fieldX, fieldY, fieldW, fieldHeight);
+                bool readOnly = field.GetCustomAttribute<PipifyReadOnlyAttribute>() != null;
+                EditorGUI.BeginDisabledGroup(readOnly);
                 DrawParamField(
                     fieldRect,
                     field,
@@ -242,6 +244,7 @@ namespace NovaFramework.Editor
                     labelW,
                     resolvedDisplayPaths,
                     autoLinkError);
+                EditorGUI.EndDisabledGroup();
                 fieldY += fieldHeight + 2f;
 
                 float fieldHelpBoxHeight = GetParamFieldHelpBoxHeight(field);
@@ -378,7 +381,11 @@ namespace NovaFramework.Editor
         /// <returns>缓存的参数实例；ParamsType 为 null 时返回 null。</returns>
         private object EnsureParamsInstance(int index, BatchItem item, PipifyStepInfo info)
         {
-            if (m_ParamsCache.TryGetValue(index, out object cached) && cached != null) return cached;
+            if (m_ParamsCache.TryGetValue(index, out object cached) && cached != null)
+            {
+                PipifySteps.SynchronizeActivePlatform(cached);
+                return cached;
+            }
 
             object paramsInstance = BuildParamsInstance(item, info);
             m_ParamsCache[index] = paramsInstance;

@@ -104,14 +104,13 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 应用延迟的坐标切换：在 DrawRightPanel 绘制完成后调用，此时当前编辑的字段已在旧坐标格子下完成失焦提交，
-        /// 再写入新坐标，避免切坐标当帧编辑控件消失导致 IMGUI 数字字段的失焦提交过渡帧被跳过（编辑值丢失）。
+        /// 再写入新的渠道与模式；平台始终实时读取 Unity Active BuildTarget，不写入 WorkingCopy。
         /// </summary>
         private void ApplyPendingCoordSwitch()
         {
             if (!m_HasPendingCoordSwitch) return;
             m_HasPendingCoordSwitch = false;
             if (m_WorkingCopy == null) return;
-            m_WorkingCopy.CurrentPlatform = m_PendingPlatform;
             m_WorkingCopy.CurrentChannel = m_PendingChannel;
             m_WorkingCopy.CurrentDevelopMode = m_PendingDevelopMode;
             m_LastKnownChannel = m_PendingChannel;

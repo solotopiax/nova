@@ -201,8 +201,8 @@ MonoBehaviour:
         ExcludeTags: []
         FieldVariants: []
         CustomTemplateDirs:
-        - Assets/Framework/Templates/Luban/default
-        - Assets/Framework/Templates/Luban/table
+        - Packages/com.solotopia.nova.framework/Templates/Luban/default
+        - Packages/com.solotopia.nova.framework/Templates/Luban/table
         AdvancedArguments: []
       - Id: binary
         Name: Binary
@@ -221,8 +221,8 @@ MonoBehaviour:
         ExcludeTags: []
         FieldVariants: []
         CustomTemplateDirs:
-        - Assets/Framework/Templates/Luban/default
-        - Assets/Framework/Templates/Luban/table
+        - Packages/com.solotopia.nova.framework/Templates/Luban/default
+        - Packages/com.solotopia.nova.framework/Templates/Luban/table
         AdvancedArguments: []
       - Id: protobuf-binary
         Name: Protobuf Binary
@@ -242,8 +242,8 @@ MonoBehaviour:
         ExcludeTags: []
         FieldVariants: []
         CustomTemplateDirs:
-        - Assets/Framework/Templates/Luban/default
-        - Assets/Framework/Templates/Luban/table
+        - Packages/com.solotopia.nova.framework/Templates/Luban/default
+        - Packages/com.solotopia.nova.framework/Templates/Luban/table
         AdvancedArguments: []
       - Id: protobuf-json
         Name: Protobuf JSON
@@ -263,8 +263,8 @@ MonoBehaviour:
         ExcludeTags: []
         FieldVariants: []
         CustomTemplateDirs:
-        - Assets/Framework/Templates/Luban/default
-        - Assets/Framework/Templates/Luban/table
+        - Packages/com.solotopia.nova.framework/Templates/Luban/default
+        - Packages/com.solotopia.nova.framework/Templates/Luban/table
         AdvancedArguments: []
       - Id: msgpack
         Name: MsgPack
@@ -283,8 +283,8 @@ MonoBehaviour:
         ExcludeTags: []
         FieldVariants: []
         CustomTemplateDirs:
-        - Assets/Framework/Templates/Luban/default
-        - Assets/Framework/Templates/Luban/table
+        - Packages/com.solotopia.nova.framework/Templates/Luban/default
+        - Packages/com.solotopia.nova.framework/Templates/Luban/table
         AdvancedArguments: []
     Runtime:
       LoadDescriptions:

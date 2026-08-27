@@ -77,7 +77,7 @@ namespace NovaFramework.Editor
                         "(1)先按上方模板文件生成 JSON，并上传到 CDN；可通过「Config全局配置中心 - CDN 内容分发网络部署」或「Pipify 自动化管线编排中心 - 添加步骤」自动上传",
                         "(2)启动时先尝试当前 DevelopMode 对应的主地址，失败或空内容时自动切到备用地址",
                         "(3)URL 支持 {Platform} / {Channel} / {Package} / {Version}，语义与 Asset 主机服务器 URL 一致",
-                        "(4){Platform} 为运行平台，{Channel} 为导出渠道，{Package} 为默认资源包名，{Version} 为 Application.version",
+                        "(4){Platform} 由 Player 编译宏决定，不读取 Editor Active BuildTarget 或 ConfigMaster；{Channel} 为导出渠道，{Package} 为默认资源包名，{Version} 为 Application.version",
                         "(5)主备都不可用时本次大版本检查直接返回 NoDownload"
                         }, false, GUILayout.ExpandWidth(true));
                     });

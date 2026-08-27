@@ -12,24 +12,24 @@
 优先看这页的场景：
 
 - 你要排查启动期文案为什么没有命中。
-- 你要确认启动期为什么不依赖 `LocalizationManager` 也能显示文本。
+- 你要确认启动期为什么不等待 `LocalizationManager` 加载资源也能显示文本。
 - 你要看启动期语言是怎么决定的。
 
 ## 核心语义
 
-### 1. 完全走 `Resources`，不依赖资源系统
+### 1. 文案走 `Resources`，语言决策与正式本地化共用
 
 当前实现只用：
 
 - `Resources.Load<TextAsset>(path)`
 
-因此它和：
+因此启动文案不依赖：
 
-- `LocalizationManager`
 - `IAssetManager`
 - `EventManager`
 
-都是解耦的。
+语言选择则复用 `LocalizationLanguageResolver`，并由 `LocalizationComponent.Awake()` 提前提供
+`EditorLanguage`、`RuntimeLanguagePrefer` 和 `FallbackLanguage` 策略。
 
 ### 2. `Initialize()` 幂等
 
@@ -39,13 +39,19 @@
 
 ### 3. 语言解析优先级
 
-启动期语言解析顺序是：
+启动期语言解析遵循正式 Nova 策略：
 
-- 持久化语言偏好
+- Editor 下可用的 `EditorLanguage`
+- Runtime 且 `RuntimeLanguagePrefer == false` 时直接使用可用的 `FallbackLanguage`
+- 启动期明文语言镜像
 - 系统语言映射
-- `English`
+- `FallbackLanguage`
+- 可用的 `English` 启动文案
 
-这里不依赖正式本地化模块的完整支持语言列表。
+正式语言切换成功后会同时更新 AES 正式偏好和明文启动镜像。语言枚举不属于敏感信息，
+镜像只用于解决 Splash 早于 Config/Persist 初始化、无法解密正式偏好的时序问题。
+
+这里仍不依赖正式本地化模块的完整支持语言列表；对应精简 JSON 是否存在，就是 Launcher 阶段的可用性边界。
 
 ### 4. JSON 加载失败会回退到 English，再回退到空字典
 
@@ -67,9 +73,10 @@
 
 ## 风险点 / 易错点
 
-- 这套链路是“启动期专用”，不要把它和正式游戏内多语言系统混成同一条调试路径。
+- 这套文案加载链仍是“启动期专用”，但语言决策必须与正式游戏内多语言使用同一套策略。
 - `Initialize()` 幂等，不能靠重复调用来实现启动期手动切语言。
-- 系统语言映射只覆盖一组常见语言；未覆盖语言会退回 `English`。
+- 老用户首次升级时还没有启动镜像，当次启动会按系统语言与回退策略选择；正式语言初始化成功后会补写镜像，后续冷启动即可命中。
+- 启动镜像对应的精简 JSON 不存在时，该语言会被视为启动期不可用并继续回退。
 
 ## 继续阅读
 

@@ -3,7 +3,7 @@
 **类签名**：`public sealed class AssetRemoteService : IRemoteService`
 **命名空间**：`NovaFramework.Runtime`
 
-YooAsset 远端寻址服务。常规主备地址负责 Bundle 与默认元数据；白名单设备可额外注入版本元数据主备根地址。全部模板统一替换 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`。
+YooAsset 远端寻址服务。常规主备地址负责 Bundle 与默认元数据；白名单设备可额外注入版本元数据主备根地址。全部模板统一替换 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`；Runtime `{Platform}` 由 Player 编译宏决定，不读取 Editor Active BuildTarget 或 ConfigMaster。
 
 ---
 
@@ -22,7 +22,7 @@ YooAsset 远端寻址服务。常规主备地址负责 Bundle 与默认元数据
 | `m_HostServerUrl` | `string` | 主下载地址配置值 |
 | `m_HostServerUrlFallback` | `string` | 备用下载地址配置值 |
 | `m_MetadataRootUrl` / `m_MetadataRootUrlFallback` | `string` | 白名单设备的版本元数据主备根地址 |
-| `m_Platform` | `PlatformType` | 运行平台枚举，构造器内通过 `ResolvePlatform()` 缓存 |
+| `m_Platform` | `PlatformType` | Player 编译宏对应的运行平台枚举，构造器内通过 `ResolvePlatform()` 缓存 |
 | `m_Channel` | `ChannelType` | Config 导出时同步到场景的启动期渠道快照 |
 | `m_Package` | `string` | 包名，构造器缓存 |
 | `m_Version` | `string` | 应用版本号，构造器内读取 `Application.version` |

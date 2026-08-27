@@ -32,6 +32,8 @@ Registry 当前注册 19 个 Action：
 
 Action 的 Request Schema、effects、locks、contractMajor、idempotency 和 confirmation 以运行中的 Registry Descriptor 为准，不维护第二份静态 Action Catalog。
 
+`nova.project.config.export-runtime` 的请求仍显式携带 `platform / channel / developMode`，但 `platform` 必须等于 Plan 时 Unity 当前 Active BuildTarget 映射的 Nova `PlatformType`。未映射为 Android / iOS / WebGL、请求不一致，或 Execute 前 Active BuildTarget 漂移，都会以 `blocked` 收口并要求先切换 BuildTarget 后重新 Plan；该限制不改变底层 `EditorUtil.Config.Exporter.Export` 的显式平台 API。
+
 ## 代码组织
 
 ```text

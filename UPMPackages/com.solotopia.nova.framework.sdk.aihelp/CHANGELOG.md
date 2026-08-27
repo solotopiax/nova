@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [0.0.11] - 2026-08-27
+
+### Changed
+
+- AIHelpDemo 在 Network 初始化前完成 Localization 加载与当前语言初始化。
+
 ## [0.0.10] - 2026-08-27
 
 ### Fixed

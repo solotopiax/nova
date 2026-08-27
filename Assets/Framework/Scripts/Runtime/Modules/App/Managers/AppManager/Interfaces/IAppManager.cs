@@ -68,4 +68,16 @@ namespace NovaFramework.Runtime
         string TargetDownloadUrl { get; }
 
     }
+
+    /// <summary>
+    /// 推荐更新放弃状态记录能力。
+    /// 作为可选扩展接口，避免要求已有自定义 IAppManager 实现同步增加成员。
+    /// </summary>
+    public interface IRecommendedDownloadDismissalRecorder
+    {
+        /// <summary>
+        /// 记录用户本次主动放弃推荐更新，供后续启动按远端提示间隔决定是否再次提醒。
+        /// </summary>
+        void RecordRecommendedDownloadDismissed();
+    }
 }

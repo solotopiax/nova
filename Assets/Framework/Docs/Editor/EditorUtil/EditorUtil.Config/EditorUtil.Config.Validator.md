@@ -69,7 +69,10 @@ public static IReadOnlyList<ValidationIssue> Validate(
 // ConfigWindow.OnClickExport 中
 IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues =
     EditorUtil.Config.Validator.Validate(
-        m_Master, m_Master.CurrentPlatform, m_Master.CurrentChannel, m_Master.CurrentDevelopMode);
+        m_Master,
+        m_Master.CurrentPlatform, // 实时映射 Unity Active BuildTarget
+        m_Master.CurrentChannel,
+        m_Master.CurrentDevelopMode);
 
 if (HasAnyError(issues))
 {

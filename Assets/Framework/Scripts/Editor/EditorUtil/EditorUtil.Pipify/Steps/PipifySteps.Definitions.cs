@@ -29,8 +29,11 @@ namespace NovaFramework.Editor
         public sealed class PackageParams
         {
             /// <summary>
-            /// 目标构建平台（Android / iOS / StandaloneWindows64 等）。
+            /// Unity 当前活动构建平台；由 Pipify 实时同步，不允许手动编辑。
             /// </summary>
+            [InspectorName("平台（Unity Active BuildTarget）")]
+            [PipifyReadOnly]
+            [PipifyHelpBox("平台实时取自 Unity 当前 Active BuildTarget；如需切换平台，请先在 Unity 中切换 BuildTarget。")]
             public BuildTarget Target;
 
             /// <summary>
@@ -108,8 +111,11 @@ namespace NovaFramework.Editor
         public sealed class ConfigExportParams
         {
             /// <summary>
-            /// 本次导出的目标平台。
+            /// 本次导出的目标平台；由 Unity 当前 Active BuildTarget 实时同步，旧 ParamsJson 值仅用于兼容读取。
             /// </summary>
+            [InspectorName("平台（Unity Active BuildTarget）")]
+            [PipifyReadOnly]
+            [PipifyHelpBox("平台实时取自 Unity 当前 Active BuildTarget，不再读取或修改 ConfigMaster 中的旧平台值。")]
             public PlatformType Platform;
 
             /// <summary>
@@ -140,6 +146,34 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 将所有带平台含义的 Pipify 参数同步到 Unity 当前 Active BuildTarget。
+        /// 该兼容入口会覆盖旧 ParamsJson 与 CLI override 中的平台值，但保留其他参数不变。
+        /// </summary>
+        /// <param name="parameters">待同步的 Step 参数实例；不含平台字段或为空时不处理。</param>
+        internal static void SynchronizeActivePlatform(object parameters)
+        {
+            if (parameters == null) return;
+
+            BuildTarget activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
+            if (parameters is ConfigExportParams config)
+            {
+                config.Platform = EditorUtil.Config.ActivePlatform.Current;
+            }
+            else if (parameters is PackageParams package)
+            {
+                package.Target = activeBuildTarget;
+            }
+            else if (parameters is AssetBundleBuildArgs assetBundle)
+            {
+                assetBundle.Target = activeBuildTarget;
+            }
+            else if (parameters is RawFileBuildArgs rawFile)
+            {
+                rawFile.Target = activeBuildTarget;
+            }
+        }
+
+        /// <summary>
         /// Step 参数：打开文件夹所需配置。
         /// 字段全部 public，供 Util.Json 序列化 / 反序列化及 CLI 参数覆盖使用。
         /// </summary>
@@ -160,7 +194,7 @@ namespace NovaFramework.Editor
         [Serializable]
         [PipifyHelpBox(
             "文案支持标准占位符，发送前按当前 ConfigMaster 配置替换：",
-            "{Platform}=当前平台；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名",
+            "{Platform}=Unity 当前 Active BuildTarget 对应平台；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名",
             "{Version}=Application.version；{Time}=发送时间（yyyy-MM-dd-HH-mm-ss）",
             "示例：构建完成 {Platform}-{Channel}-{Version} {Time}")]
         public sealed class FeishuWebhookParams
@@ -206,7 +240,7 @@ namespace NovaFramework.Editor
             [InspectorName("自动关联最新版本")]
             [PipifyHelpBox(
                 "默认开启；执行时会从下方目录锚点关联最新完整的 YooAsset 版本目录。",
-                "版本识别规则与 Config 一致，文件名前缀取自当前 ConfigMaster 当前维度的 YooAsset 配置。")]
+                "版本识别规则与 Config 一致，文件名前缀取自 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应的 YooAsset 配置。")]
             public bool AutoLinkLatestVersion = true;
 
             /// <summary>
@@ -216,7 +250,7 @@ namespace NovaFramework.Editor
             public string LocalDirectory;
 
             /// <summary>
-            /// 当前 Config 的 PresetOSSPath 后缀，支持 Platform、Channel、Package、Version 占位符。
+            /// 当前 Config 的 PresetOSSPath 后缀，支持 Platform、Channel、Package、Version 占位符；Platform 取 Unity Active BuildTarget 映射值。
             /// </summary>
             [InspectorName("热更资源-云端目录位置")]
             [PipifyCdnRemotePath]
@@ -241,7 +275,7 @@ namespace NovaFramework.Editor
         [PipifyHelpBox(
             "设备 ID 每行填写一项；执行时会去除空项和首尾空白，并生成 VersionsCheckWhiteList.json 字符串数组。",
             "配置文件使用完整云端文件位置，三个版本文件使用云端目录；配置文件位置为空或非法时不上传配置文件。",
-            "本地文件位置和云端目录位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符。")]
+            "本地文件位置和云端目录位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符；{Platform}=Unity 当前 Active BuildTarget 对应的 PlatformType。")]
         public sealed class CdnWhitelistDeployParams
         {
             /// <summary>
@@ -264,7 +298,7 @@ namespace NovaFramework.Editor
             [InspectorName("自动关联最新版本")]
             [PipifyHelpBox(
                 "默认开启；执行时会从下方 .bytes 路径锚点关联最新完整版本的 .bytes/.hash/.version。",
-                "文件命名取自当前 ConfigMaster 当前维度的 YooAsset 配置，三个文件始终来自同一版本。")]
+                "文件命名取自 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应的 YooAsset 配置，三个文件始终来自同一版本。")]
             public bool AutoLinkLatestVersion = true;
 
             /// <summary>

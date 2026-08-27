@@ -91,12 +91,12 @@ namespace NovaFramework.Editor
         private string m_GlobalSearchText = string.Empty;
 
         /// <summary>
-        /// Inspector 编辑态从当前 ConfigMaster 坐标（播放态从 ConfigRuntime 导出物）解析的 AES Key。
+        /// Inspector 编辑态从当前 ConfigMaster 坐标（Platform 实时映射 Unity Active BuildTarget；播放态从 ConfigRuntime 导出物）解析的 AES Key。
         /// </summary>
         private string m_EditorAESKey;
 
         /// <summary>
-        /// Inspector 编辑态从当前 ConfigMaster 坐标（播放态从 ConfigRuntime 导出物）解析的 AES IV。
+        /// Inspector 编辑态从当前 ConfigMaster 坐标（Platform 实时映射 Unity Active BuildTarget；播放态从 ConfigRuntime 导出物）解析的 AES IV。
         /// </summary>
         private string m_EditorAESIV;
 

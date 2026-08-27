@@ -387,7 +387,7 @@ namespace NovaFramework.Editor
                     "(2) 本地文件会上传到「PresetOSSPath + 云端文件位置」",
                     "(3) 该配置文件与热更新版本检测无关，请勿混淆",
                     "(4) 本地文件位置和云端文件位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符",
-                    "(5) {Platform}=当前平台；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名；{Version}=Application.version",
+                    "(5) {Platform}=Unity 当前 Active BuildTarget 对应的 PlatformType；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名；{Version}=Application.version",
                 }, false, GUILayout.ExpandWidth(true));
                 EditorUtil.Draw.Space(16f);
             });
@@ -406,7 +406,7 @@ namespace NovaFramework.Editor
                 {
                     "(1) 用于批量部署热更新资源：本地目录下的文件会上传到「PresetOSSPath + 云端目录位置」",
                     "(2) 本地目录位置和云端目录位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符",
-                    "(3) {Platform}=当前平台；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名；{Version}=Application.version",
+                    "(3) {Platform}=Unity 当前 Active BuildTarget 对应的 PlatformType；{Channel}=当前渠道；{Package}=YooAsset 默认资源包名；{Version}=Application.version",
                 }, false, GUILayout.ExpandWidth(true));
                 EditorUtil.Draw.Space(16f);
             });
@@ -427,7 +427,7 @@ namespace NovaFramework.Editor
                     "(2) 设备 ID 将去除空项、首尾空白并去重，生成 VersionsCheckWhiteList.json 字符串数组",
                     "(3) 配置文件上传到「PresetOSSPath + 配置文件云端文件位置」；文件位置为空或非法时不上传配置文件",
                     "(4) .bytes/.hash/.version 文件上传到「PresetOSSPath + 版本文件云端目录位置」",
-                    "(5) 本地文件位置和云端目录位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符",
+                    "(5) 本地文件位置和云端目录位置支持 {Platform}/{Channel}/{Package}/{Version} 占位符；{Platform} 取 Unity 当前 Active BuildTarget 对应的 PlatformType",
                 }, false, GUILayout.ExpandWidth(true));
                 EditorUtil.Draw.Space(16f);
             });
@@ -584,7 +584,7 @@ namespace NovaFramework.Editor
                 {
                     "(1) 开启后会从当前目录或其上级包目录中，自动选择最后生成的完整 YooAsset 版本目录",
                     "(2) 最新版本按 .version 文件最后写入时间判断，不比较目录名、日期或语义版本号",
-                    "(3) 文件命名使用当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 YooAssetSettings.asset 的实际值",
+                    "(3) 文件命名使用 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应的 YooAsset 配置，不读取 YooAssetSettings.asset 的实际值",
                 });
         }
 
@@ -606,7 +606,7 @@ namespace NovaFramework.Editor
                 {
                     "(1) 开启后以版本文件(.bytes)的配置目录为锚点，自动关联匹配的 .bytes/.hash/.version",
                     "(2) 最新版本按 .version 文件最后写入时间判断，三个路径会自动刷新并设为只读",
-                    "(3) 文件命名使用当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 YooAssetSettings.asset 的实际值",
+                    "(3) 文件命名使用 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应的 YooAsset 配置，不读取 YooAssetSettings.asset 的实际值",
                 });
         }
 
@@ -727,7 +727,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 从当前 ConfigMaster 当前维度解析 YooAsset 文件前缀，不读取 YooAssetSettings.asset 实际值。
+        /// 从 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应维度解析 YooAsset 文件前缀，不读取 YooAssetSettings.asset 实际值。
         /// </summary>
         private static string ResolveCdnPackageFilePrefix(
             ConfigMasterSO workingSrc,
@@ -1457,6 +1457,7 @@ namespace NovaFramework.Editor
             m_IsCdnDeploying = true;
             try
             {
+                EditorUtil.Config.ActivePlatform.RequireCurrent("CDN 资源部署");
                 ConfigMasterSO source = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
                 if (source == null)
                     throw new InvalidOperationException("未找到 CDN 部署配置。");
@@ -1505,6 +1506,7 @@ namespace NovaFramework.Editor
             m_IsCdnWhitelistDeploying = true;
             try
             {
+                EditorUtil.Config.ActivePlatform.RequireCurrent("CDN 白名单部署");
                 ConfigMasterSO source = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
                 if (source == null)
                     throw new InvalidOperationException("未找到 CDN 白名单部署配置。");
@@ -1562,6 +1564,7 @@ namespace NovaFramework.Editor
             m_IsCdnPurging = true;
             try
             {
+                EditorUtil.Config.ActivePlatform.RequireCurrent("CDN 缓存清理");
                 CDNEditorConfigs config = CreateCdnConfigSnapshot();
                 int count = await EditorUtil.CDN.PurgeAsync(
                     config,

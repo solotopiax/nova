@@ -8,6 +8,8 @@
 - 能读取这次检查暴露出的命中规则和目标地址
 - 能触发商店跳转或 APK 下载入口
 
+内置 `AppManager` 还实现可选扩展接口 `IRecommendedDownloadDismissalRecorder`，用于记录用户主动放弃推荐更新。该能力不直接加入 `IAppManager`，避免破坏已有自定义实现。
+
 ## 契约定位
 
 直接依赖它的通常是：
@@ -49,6 +51,12 @@
 - `TargetDownloadUrl`
 
 这些状态是给流程层继续决策用的。
+
+### 5. 推荐更新放弃记录是可选扩展
+
+- `IRecommendedDownloadDismissalRecorder.RecordRecommendedDownloadDismissed()` 只记录用户主动取消推荐更新的时间。
+- `AppComponent.RecordRecommendedDownloadDismissed()` 会在当前 Manager 支持该接口时转发；不支持时保持兼容并输出 warning。
+- 推荐提示间隔的读取与判断仍由内置 `AppManager.CheckAsync()` 完成。
 
 ## 变更影响面
 

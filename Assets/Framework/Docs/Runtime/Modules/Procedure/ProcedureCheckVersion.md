@@ -62,6 +62,7 @@
 - 先完成资源补丁检查
 - 再进入 `ProcedureAppDownload`
 - 用户取消推荐更新后，会根据 `HasAssetPatch` 回到 `ProcedureHotfix` 或 `ProcedureLoadDll`
+- 如果推荐规则命中但仍处于上次放弃后的提示间隔内，`AppManager.CheckAsync()` 会返回 `NoDownload`，因此本次启动不会进入 `ProcedureAppDownload`，但资源补丁检查和后续启动链仍照常执行
 
 ### 4. 异常保护：检查失败时降级直入 LoadDll
 

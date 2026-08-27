@@ -4,6 +4,12 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-08-27
+
+### Changed
+
+- FacebookDemo 在 Network 初始化前完成 Localization 加载与当前语言初始化。
+
 ## [0.1.9] - 2026-08-27
 
 ### Fixed

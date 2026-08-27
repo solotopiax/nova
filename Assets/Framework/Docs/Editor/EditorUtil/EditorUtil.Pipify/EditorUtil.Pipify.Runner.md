@@ -28,7 +28,7 @@
 
 | 方法 | 说明 |
 |---|---|
-| `ApplyOverridesForItem(info, itemIndex, paramsInstance, overrides)` | 将 overrides 字典匹配当前 (stepId, itemIndex) 的键值写回 paramsInstance；支持精确索引格式与通配格式 |
+| `ApplyOverridesForItem(info, itemIndex, paramsInstance, overrides)` | 将 overrides 字典匹配当前 (stepId, itemIndex) 的键值写回 paramsInstance；支持精确索引格式与通配格式。随后统一同步平台字段到 Unity Active BuildTarget |
 | `ConvertOverrideValue(raw, targetType)` | string → string / enum / 数字 / bool 类型转换 |
 
 ## §9 关键算法
@@ -40,7 +40,7 @@
 3. 按索引遍历 `batch.Items`：
    - `ct.ThrowIfCancellationRequested()` 响应外部取消
    - `Registry.FindById` 查元信息，未命中抛 `InvalidOperationException`
-   - 有参 Step：ParamsJson 非空时 `Util.Json.Deserialize(json, type)` 反序列化，否则 `Activator.CreateInstance`；随后 `ApplyOverridesForItem` 覆盖 CLI 参数
+   - 有参 Step：ParamsJson 非空时 `Util.Json.Deserialize(json, type)` 反序列化，否则创建默认实例；随后 `ApplyOverridesForItem` 覆盖 CLI 参数，并以 Unity Active BuildTarget 覆盖所有平台字段
    - 构造 `PipifyContext` 并下发
    - `reporter.ReportStep` 返回 true 抛 `OperationCanceledException`
    - 反射调用 `info.Method.Invoke`，强转 `UniTask` 后 `await`
@@ -51,6 +51,8 @@
 ### ApplyOverridesForItem Key 匹配优先级
 
 精确格式 `stepId[itemIndex].fieldName` > 通配格式 `stepId.fieldName`（key 不含 `[`）。字段不存在抛 `InvalidOperationException`。
+
+`export.config.Platform`、`build.package.Target`、`bundlebuilder.build.Target`、`bundlebuilder.build_raw_file.Target` 属于只读同步字段：CLI 中即使保留这些旧 key 也会跳过值解析，并在参数解析的最后一步同步为 Unity 当前 Active BuildTarget。
 
 ### ConvertOverrideValue 类型转换顺序
 

@@ -47,10 +47,13 @@
 ### 运行期 API 都是薄透传
 
 - `CheckAsync(ct)`
+- `RecordRecommendedDownloadDismissed()`
 - `DownloadAsync(ct)`
 - `OpenStoreAsync(ct)`
 
 真正的行为语义都在 `AppManager`。
+
+其中 `RecordRecommendedDownloadDismissed()` 只由推荐更新弹窗的取消分支调用。内置 Manager 会保存当前 UTC Unix 秒；自定义 Manager 未实现 `IRecommendedDownloadDismissalRecorder` 时不会中断启动，只会保持原有每次提示行为。
 
 ## 高价值状态面
 

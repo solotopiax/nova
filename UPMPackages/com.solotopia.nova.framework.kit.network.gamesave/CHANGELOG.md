@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-08-27
+
+### Changed
+
+- GameSaveDemo 在 Network 初始化前完成 Localization 加载与当前语言初始化。
+
 ## [0.1.8] - 2026-08-27
 
 ### Fixed

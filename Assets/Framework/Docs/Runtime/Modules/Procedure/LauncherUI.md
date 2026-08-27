@@ -5,7 +5,7 @@
 
 启动阶段固化 UI：Splash / Progress / Dialog 三类 Prefab 放在 Resources 中，不参与热更新，保证热更前即可展示。`ProcedureSplash` 通过 `LauncherUIController.Initialize(Nova.Procedure.LauncherSettings)` 注入配置；之后各内置 Procedure 只调用 `LauncherUIController` 的静态 API，不直接 `Resources.Load`。
 
-文本内容由各面板的 `LauncherLocalizedText` / `LauncherDialogLocalizedText` 数组在 Inspector 中配置 Key 驱动，底层通过 `LauncherLocalization`（只走 Resources 通道）解析，与 LocalizationManager 完全解耦。
+文本内容由各面板的 `LauncherLocalizedText` / `LauncherDialogLocalizedText` 数组在 Inspector 中配置 Key 驱动，底层通过 `LauncherLocalization` 的 Resources 通道解析。启动文案资源保持独立精简，语言决策与正式 Localization 共用策略。
 
 ---
 
@@ -19,7 +19,7 @@
 | `LauncherUI/LauncherSplashPanel.cs` | `LauncherSplashPanel` | `public sealed` | 闪屏面板（Background + Logo） |
 | `LauncherUI/LauncherProgressPanel.cs` | `LauncherProgressPanel` | `public sealed` | 进度面板（Slider + ProgressText + 多语言文本数组） |
 | `LauncherUI/LauncherDialogPanel.cs` | `LauncherDialogPanel` | `public sealed` | 通用弹窗（Confirm/Cancel 按钮 + 多语言文本数组） |
-| `LauncherUI/LauncherLocalization.cs` | `LauncherLocalization` | `public static` | 启动期本地化解析器（Resources 通道，与 LocalizationManager 解耦） |
+| `LauncherUI/LauncherLocalization.cs` | `LauncherLocalization` | `public static` | 启动期本地化解析器（Resources 文案通道，共用正式语言决策） |
 | `LauncherUI/LauncherLocalizedText.cs` | `LauncherLocalizedText` | `public sealed` | 普通文本本地化绑定条目（TMP_Text + Key） |
 | `LauncherUI/LauncherDialogLocalizedText.cs` | `LauncherDialogLocalizedText` | `public sealed` | 弹窗文本本地化绑定条目（TMP_Text + Key + LauncherDialogType） |
 
@@ -111,10 +111,12 @@ void Hide()
 
 ## LauncherLocalization
 
-启动期本地化解析器，只走 `Resources.Load` 通道，不依赖 LocalizationManager / IAssetManager / EventManager。
+启动期本地化解析器只通过 `Resources.Load` 读取精简文案，不等待正式 Localization、IAssetManager 或 EventManager 的资源初始化。
 
 - JSON 根节点：`Launcher_Localization`
-- 语言优先级：持久化（IPlayerPrefsManager）> `Application.systemLanguage` 映射 > English 回退
+- 语言策略：与正式 Localization 共用 `EditorLanguage`、`RuntimeLanguagePrefer`、系统语言映射和 `FallbackLanguage`
+- 持久化来源：正式语言切换成功后写入的非敏感启动镜像，不读取尚未初始化的 AES 正式值
+- 启动期支持范围：以对应精简 Resources JSON 是否存在为准
 - `Initialize` 幂等；`GetText` miss 时返回 key 本身
 
 ---

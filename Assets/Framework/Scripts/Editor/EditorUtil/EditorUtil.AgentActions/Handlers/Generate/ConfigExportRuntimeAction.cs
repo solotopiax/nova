@@ -88,6 +88,15 @@ namespace NovaFramework.Editor
             GenerateActionCommon.TryParseCoordinate(
                 request.platform, request.channel, request.developMode,
                 out PlatformType platform, out ChannelType channel, out DevelopMode mode, out _);
+            PlatformType activePlatform = EditorUtil.Config.ActivePlatform.Current;
+            if (activePlatform == PlatformType.None)
+            {
+                return Blocked($"Unity 当前 Active BuildTarget={EditorUserBuildSettings.activeBuildTarget} 没有对应的 Nova PlatformType；请先切换到 Android、iOS 或 WebGL。");
+            }
+            if (platform != activePlatform)
+            {
+                return Blocked($"请求平台 {platform} 与 Unity 当前 Active BuildTarget={EditorUserBuildSettings.activeBuildTarget} 对应平台 {activePlatform} 不一致；请先切换 Unity BuildTarget。");
+            }
             if (!GenerateActionCommon.TryResolveAssetSavePath(request.savePath, out string savePath, out string saveAbsolute, out string pathError))
             {
                 return Blocked(pathError);
@@ -184,6 +193,14 @@ namespace NovaFramework.Editor
         public override Task<AgentActionResult> ExecuteAsync(object state, AgentActionExecutionContext context)
         {
             if (!(state is State frozen)) return Task.FromResult(AgentActionResult.Create(null, "blocked", "Config 导出冻结状态无效。"));
+            PlatformType activePlatform = EditorUtil.Config.ActivePlatform.Current;
+            if (activePlatform != frozen.Platform)
+            {
+                return Task.FromResult(AgentActionResult.Create(
+                    null,
+                    "blocked",
+                    $"Unity Active BuildTarget 已漂移：当前={EditorUserBuildSettings.activeBuildTarget}/{activePlatform}，冻结平台={frozen.Platform}。请重新 Plan。"));
+            }
             ConfigMasterSO master = GenerateActionCommon.ResolveMaster(frozen.Request.masterGuid, out string masterPath);
             if (master == null || masterPath != frozen.MasterPath ||
                 GenerateActionCommon.ComputeFileHash(Path.Combine(GenerateActionCommon.ProjectRoot, masterPath), context.CancellationToken) != frozen.MasterHash)

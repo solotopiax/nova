@@ -40,6 +40,16 @@ namespace NovaFramework.Runtime
         private TextMeshProUGUI m_TextMeshProUGUI;
 
         /// <summary>
+        /// TextLocalizing 接管前已存在的 TMP 文本预处理器。
+        /// </summary>
+        private ITextPreprocessor m_PreviousTextPreprocessor;
+
+        /// <summary>
+        /// 当前本地化文本渲染预处理器。
+        /// </summary>
+        private LocalizationTextPreprocessor m_TextPreprocessor;
+
+        /// <summary>
         /// 字体刷新前缓存的原始字号（用于 FontSizeScaleRatio 缩放）。
         /// </summary>
         private float m_OriginalFontSize = -1f;
@@ -48,6 +58,11 @@ namespace NovaFramework.Runtime
         /// 是否已订阅本地化刷新事件（用于安全取消订阅）。
         /// </summary>
         private bool m_IsSubscribed;
+
+        /// <summary>
+        /// 字体异步刷新版本号，用于阻止旧语言请求覆盖新语言字体。
+        /// </summary>
+        private int m_FontRefreshVersion;
 
         /// <summary>
         /// 事件管理器引用。

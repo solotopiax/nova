@@ -102,6 +102,21 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 记录用户主动放弃推荐更新。
+        /// 内置 AppManager 会持久化当前时间；未实现可选扩展接口的自定义 Manager 保持兼容并跳过记录。
+        /// </summary>
+        public void RecordRecommendedDownloadDismissed()
+        {
+            if (m_AppManager is IRecommendedDownloadDismissalRecorder recorder)
+            {
+                recorder.RecordRecommendedDownloadDismissed();
+                return;
+            }
+
+            Log.Warning(LogTag.App, "当前 IAppManager 未实现推荐更新放弃状态记录能力，后续启动仍会按原行为提示。");
+        }
+
+        /// <summary>
         /// 触发 APK 下载，转发至 IAppManager.DownloadAsync。
         /// </summary>
         /// <param name="ct">取消令牌。</param>

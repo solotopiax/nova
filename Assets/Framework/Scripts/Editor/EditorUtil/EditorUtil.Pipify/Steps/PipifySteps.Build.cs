@@ -33,6 +33,8 @@ namespace NovaFramework.Editor
         [PipifyStep("build.package", "安装包|工程", "构建打包", ParamsType = typeof(PackageParams))]
         internal static UniTask RunPackage(PipifyContext ctx, PackageParams p)
         {
+            EditorUtil.Config.ActivePlatform.RequireCurrent("[Pipify] Player 构建");
+            p.Target = EditorUserBuildSettings.activeBuildTarget;
             ConfigRuntimeSO runtime = EditorUtil.Config.RuntimeProvider.GetCurrent();
             DevelopMode developMode = runtime != null ? runtime.DevelopMode : DevelopMode.Debug;
             if (runtime == null)

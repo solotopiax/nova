@@ -18,7 +18,7 @@ namespace NovaFramework.Runtime
     /// 继承 FrameworkManager，声明全部 abstract 成员，不写业务逻辑。
     /// Priority = 11，在 HotfixManager（Priority=13）之前初始化，保证版本检查早于热更。
     /// </summary>
-    internal abstract class AppManagerBase : FrameworkManager, IAppManager
+    internal abstract class AppManagerBase : FrameworkManager, IAppManager, IRecommendedDownloadDismissalRecorder
     {
         /// <summary>
         /// 管理器优先级（值越小越先 Update、越后 Shutdown）。
@@ -47,6 +47,11 @@ namespace NovaFramework.Runtime
         /// <param name="ct">取消令牌。</param>
         /// <returns>App 版本检查结果枚举值。</returns>
         public abstract UniTask<AppVersionResult> CheckAsync(CancellationToken ct);
+
+        /// <summary>
+        /// 记录用户本次主动放弃推荐更新。
+        /// </summary>
+        public abstract void RecordRecommendedDownloadDismissed();
 
         /// <summary>
         /// 触发 App 下载（DownloadRoute=Apk 时）。

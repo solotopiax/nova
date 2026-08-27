@@ -1,4 +1,5 @@
 {
   "RecommendedDownloadVersion": "0.0.0",
+  "RecommendedDownloadPromptIntervalSeconds": 0,
   "ForcedDownloadVersion": "0.0.0"
 }

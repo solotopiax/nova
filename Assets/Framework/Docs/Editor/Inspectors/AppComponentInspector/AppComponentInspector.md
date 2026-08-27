@@ -116,7 +116,7 @@ App 模块的大版本检查依赖 CDN 上的一份 JSON 配置，整个链路�
 
 [3] 启动：运行时按当前 DevelopMode 选择对应组的主地址发起检查
     主备 URL 均支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`
-    四项语义与 Asset 主机服务器 URL 一致：运行平台 / Config 导出渠道 / 默认资源包名 / Application.version
+    四项语义与 Asset 主机服务器 URL 一致：Player 编译宏对应平台 / Config 导出渠道 / 默认资源包名 / Application.version；Runtime 不读取 Editor Active BuildTarget 或 ConfigMaster
     主地址失败或返回空内容时自动切到备用地址
     主备均不可用时本次大版本检查直接返回 NoDownload
 

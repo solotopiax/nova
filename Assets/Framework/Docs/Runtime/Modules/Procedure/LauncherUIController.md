@@ -50,7 +50,7 @@
 2. 缓存 `s_Settings`
 3. `LauncherLocalization.Initialize(settings?.LocalizationJsonPathTemplate)`
 
-所以启动期 UI 文本走的是 `LauncherLocalization`，与正式的 `LocalizationManager` 完全解耦。
+所以启动期 UI 文本仍由 `LauncherLocalization` 从精简 `Resources` JSON 独立加载；语言选择策略与正式 `LocalizationManager` 共用，并通过启动语言镜像跨冷启动保持一致。
 
 ### 2. 面板按需加载，并统一 `DontDestroyOnLoad`
 

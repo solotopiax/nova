@@ -18,7 +18,7 @@ using UnityEngine;
 namespace NovaFramework.Editor
 {
     /// <summary>
-    /// Pipify 内置 Step 合集（partial）：基于当前 Config 的 CDN 资源部署、白名单部署与缓存清理入口。
+    /// Pipify 内置 Step 合集（partial）：基于当前 Config 的 CDN 资源部署、白名单部署与缓存清理入口；Platform 统一取 Unity Active BuildTarget。
     /// </summary>
     internal static partial class PipifySteps
     {
@@ -27,7 +27,7 @@ namespace NovaFramework.Editor
         private const string c_CdnPurgeDisplayName = "批量清除 CDN 缓存";
 
         /// <summary>
-        /// 使用当前激活 Config 的 OSS 凭据与固定前缀部署 Step 指定目录。
+        /// 使用当前激活 Config 的 OSS 凭据、固定前缀和 Unity Active BuildTarget 平台部署 Step 指定目录。
         /// </summary>
         [PipifyStep("cdn.deploy", c_CdnDeployDisplayName, "CDN", ParamsType = typeof(CdnDeployParams))]
         internal static UniTask RunCdnDeploy(PipifyContext ctx, CdnDeployParams parameters)
@@ -37,6 +37,7 @@ namespace NovaFramework.Editor
             {
                 throw new InvalidOperationException("[Pipify] 未找到当前激活的 ConfigMasterSO，无法部署 CDN 资源。");
             }
+            EditorUtil.Config.ActivePlatform.RequireCurrent("[Pipify] CDN 资源部署");
             string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
                 ?? throw new InvalidOperationException("[Pipify] 无法解析 Unity 项目根目录。");
             CDNEditorConfigs config = CreateCdnDeploymentSnapshot(master, parameters);
@@ -60,7 +61,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// Resolve 当前维度 CDN 配置，并仅在独立快照中覆盖 Step 的四个路径配置。
+        /// 按 Active BuildTarget 平台及当前 Channel/DevelopMode Resolve CDN 配置，并仅在独立快照中覆盖 Step 的四个路径配置。
         /// </summary>
         internal static CDNEditorConfigs CreateCdnDeploymentSnapshot(
             ConfigMasterSO master,
@@ -83,7 +84,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 使用当前激活 Config 的 OSS 连接配置，部署白名单配置与三个 YooAsset 版本文件。
+        /// 使用当前激活 Config 的 OSS 连接配置及 Unity Active BuildTarget 平台，部署白名单配置与三个 YooAsset 版本文件。
         /// </summary>
         [PipifyStep(
             "cdn.whitelist.deploy",
@@ -97,6 +98,7 @@ namespace NovaFramework.Editor
             {
                 throw new InvalidOperationException("[Pipify] 未找到当前激活的 ConfigMasterSO，无法部署白名单版本文件。");
             }
+            EditorUtil.Config.ActivePlatform.RequireCurrent("[Pipify] CDN 白名单部署");
             string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
                 ?? throw new InvalidOperationException("[Pipify] 无法解析 Unity 项目根目录。");
             CDNEditorConfigs config = CreateCdnWhitelistDeploymentSnapshot(master, parameters);
@@ -119,7 +121,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// Resolve 当前维度 CDN 配置，并仅在独立快照中覆盖白名单设备 ID 与四个路径字段。
+        /// 按 Active BuildTarget 平台及当前 Channel/DevelopMode Resolve CDN 配置，并仅在独立快照中覆盖白名单设备 ID 与四个路径字段。
         /// </summary>
         internal static CDNEditorConfigs CreateCdnWhitelistDeploymentSnapshot(
             ConfigMasterSO master,
@@ -144,7 +146,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 从当前 ConfigMaster 当前维度解析 YooAsset 文件前缀，不读取 YooAssetSettings.asset 实际值。
+        /// 从 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应维度解析 YooAsset 文件前缀，不读取 YooAssetSettings.asset 实际值。
         /// </summary>
         private static string ResolveCdnPackageFilePrefix(ConfigMasterSO master)
         {
@@ -187,6 +189,7 @@ namespace NovaFramework.Editor
             {
                 throw new InvalidOperationException("[Pipify] 未找到当前激活的 ConfigMasterSO，无法清除 CDN 缓存。");
             }
+            EditorUtil.Config.ActivePlatform.RequireCurrent("[Pipify] CDN 缓存清理");
 
             CDNEditorConfigs config = CreateCdnPurgeSnapshot(master, parameters);
             await EditorUtil.CDN.PurgeAsync(

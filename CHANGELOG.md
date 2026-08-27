@@ -6,6 +6,24 @@
 
 ---
 
+## [0.6.20] - 2026-08-27
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.20]` 节。
+
+### Breaking
+
+- `ConfigMasterSO.CurrentPlatform` 改为只读并实时映射 Unity Active BuildTarget；外部直接赋值代码需要迁移。
+
+### Added
+
+- Framework 新增 Arabic RTL 文本整形、统一语言启动策略、推荐更新提示间隔和 Editor Active Platform 工具。
+
+### Changed
+
+- 发布 Framework `0.6.20`，并同步发布 13 个包含新版 Localization 预加载顺序的 Network Kit 与 SDK Sample。
+
+---
+
 ## [0.6.19] - 2026-08-27
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.19]` 节。

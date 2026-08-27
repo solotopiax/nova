@@ -3,7 +3,7 @@
 **类签名**：`public enum Language : byte` / `public static class LanguageMetadata` / `public struct LanguageInfo`
 **命名空间**：`NovaFramework.Runtime`
 
-游戏语言枚举及对应的中文名称（`LanguageMetadata.GetDesc`）与 locale 标识码（`LanguageMetadata.GetFlag`）查询工具。使用 `Dictionary<Language, LanguageInfo>` 代替旧数组，保证枚举增删时不会导致索引错位。
+游戏语言枚举及对应的中文名称（`LanguageMetadata.GetDesc`）、locale 标识码（`LanguageMetadata.GetFlag`）和书写方向（`LanguageMetadata.IsRightToLeft`）查询工具。使用 `Dictionary<Language, LanguageInfo>` 代替旧数组，保证枚举增删时不会导致索引错位。
 
 ## § 2 文件表
 
@@ -56,6 +56,9 @@ public static class LanguageMetadata
 
     // 获取 BCP 47 locale 标识码，未找到返回空字符串
     public static string GetFlag(Language language);
+
+    // Arabic、Persian、Hebrew 返回 true，其余语言返回 false
+    public static bool IsRightToLeft(Language language);
 }
 ```
 
@@ -65,6 +68,7 @@ public static class LanguageMetadata
 Language lang   = Nova.EditorLanguage;               // 从根组件读取
 string name     = LanguageMetadata.GetDesc(lang);    // "简体中文"
 string locale   = LanguageMetadata.GetFlag(lang);    // "zh-CN"
+bool isRtl      = LanguageMetadata.IsRightToLeft(lang);
 ```
 
 ## § 10 常见误区

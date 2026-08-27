@@ -80,12 +80,9 @@
 - 构建前统一刷新资源导出物
 - 只重导某一模块的数据或代码
 
-`export.config` 的参数区依次显示三个枚举下拉框：`Platform`、`Channel`、`DevelopMode`。新建条目时立即读取当前激活
-`ConfigMasterSO` 的三项当前值并写入 `ParamsJson`，因此参数不会为空。历史空参数条目在第一次执行前执行同样的初始化，
-并立即保存所属 `PipifySettingsSO`；后续执行只使用已经固化的值，不再跟随 ConfigMaster 当前选择变化。
+`export.config` 的参数区按 `Platform`、`Channel`、`DevelopMode` 顺序显示。`Platform` 是只读字段，每次显示和执行都同步为 Unity 当前 Active BuildTarget 映射的 `PlatformType`；新建条目与历史空参数条目的首次初始化会写入这一时刻的平台值以及当前激活 `ConfigMasterSO` 的 Channel / DevelopMode。历史 `ParamsJson` 中的平台值仍可读取以保持兼容，但不会成为执行真相。
 
-执行时 Step 将三项显式传给 `EditorUtil.Config.Exporter.Export`，只更新目标 `ConfigRuntimeSO`，不会修改、标脏或保存
-`ConfigMasterSO`。CLI 参数覆盖在历史条目固化之后应用，只对本次执行生效，不回写已经保存的 Step 参数。
+`Channel` 与 `DevelopMode` 仍可保存和按本次运行的 CLI 参数覆盖。`Platform` CLI override 会在覆盖完成后被 Active BuildTarget 再次同步而失效。执行时 Step 用“Active BuildTarget Platform + Step Channel + Step DevelopMode”显式调用 `EditorUtil.Config.Exporter.Export`，只更新目标 `ConfigRuntimeSO`，不会修改、标脏或保存 `ConfigMasterSO`；Unity 当前目标未映射为 Android / iOS / WebGL 时明确中断。
 
 ### 4. Bundle 构建
 
@@ -104,6 +101,8 @@
 
 两个 Step 是独立的可选构建入口，不要求在同一 Batch 中连续运行。
 
+两个 Step 的 `Target` 在 PipifyWindow 中均为只读字段，执行前强制同步 Unity 当前 `EditorUserBuildSettings.activeBuildTarget`；旧 `ParamsJson` 与 CLI 的 `Target` 值不生效。当前 BuildTarget 未映射为 Nova Android / iOS / WebGL 时，Step 会在构建前中断。`EditorUtil.BundleBuilder.BuildAssetBundle` / `BuildRawFileBundle` 的直接 API 仍允许调用方显式传 `Target`，该兼容语义不适用于 Pipify。
+
 ### 5. Player 打包
 
 目标：
@@ -117,6 +116,8 @@
 适合场景：
 
 - 资源导出与 Bundle 构建之后的最终打包
+
+`build.package.Target` 同样在 PipifyWindow 中只读展示并在执行前强制同步 Unity 当前 Active BuildTarget；旧 `ParamsJson` 或 CLI `Target` override 不会改变实际 Player 目标。当前 BuildTarget 未映射为 Nova PlatformType 时，在打包前中断。
 
 ### 6. 系统外壳辅助
 
@@ -161,8 +162,7 @@
 - `WebhookUrl`：窗口标签为 `Webhook URL`，使用密码框遮罩，但仍以明文保存在 PipifySettingsSO
 - `MessageText`：窗口标签为“文案”，使用 3–8 行自适应 TextArea，可直接输入并保留换行排版
 
-文案支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` / `{Time}`。发送前从当前激活的
-`ConfigMasterSO` 读取 Platform 与 Channel，从 canonical `Nova.prefab` 读取 YooAsset 默认资源包名，
+文案支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` / `{Time}`。发送前 `{Platform}` 取 Unity 当前 Active BuildTarget 映射的 `PlatformType`（即当前激活 `ConfigMasterSO.CurrentPlatform`），`{Channel}` 取当前激活 `ConfigMasterSO.CurrentChannel`，从 canonical `Nova.prefab` 读取 YooAsset 默认资源包名，
 Version 使用 `Application.version`，Time 使用实际发送时刻并格式化为 `yyyy-MM-dd-HH-mm-ss`。
 参数区 HelpBox 会直接展示这些规则；未知占位符保持原样。
 
@@ -188,9 +188,7 @@ Step：
 - `RemoteDirectory`：窗口标签为“热更资源-云端目录位置”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示
 - `CleanRemoteFilesAndDirectories`：窗口标签为“清理云端文件和目录”，默认 `false`；字段下方 HelpBox 与参数整行左边缘对齐，说明先清理再上传、清理范围和失败停止行为
 
-四个路径都支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`。执行时按当前
-`Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅在快照中覆盖这四个路径和自动关联开关，不回写
-`ConfigMasterSO`。自动关联的 `PackageFilePrefix` 取当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 `YooAssetSettings.asset`。开启清理时先删除本次版本检查文件并清理本次热更资源目录，再调用上传；清理失败时不上传并中断 Batch。
+四个路径都支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，其中 `{Platform}` 取 Unity 当前 Active BuildTarget 映射的 `PlatformType`。执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照；其中 Platform 始终来自同一 Active BuildTarget，仅在快照中覆盖这四个路径和自动关联开关，不回写 `ConfigMasterSO`。自动关联的 `PackageFilePrefix` 取当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 `YooAssetSettings.asset`。开启清理时先删除本次版本检查文件并清理本次热更资源目录，再调用上传；清理失败时不上传并中断 Batch。
 随后直接调用 `EditorUtil.CDN.DeployAsync`；配置、目录、清理或上传失败时抛错并中断 Batch。
 版本检查本地与云端文件位置都非空时，该单文件会与热更资源目录合并进入同一上传计划。
 参数区不提供独立部署按钮，部署只由 Pipify Runner 执行该 Step 时触发。
@@ -217,11 +215,9 @@ Step：
 - `RemoteDirectory`：窗口标签为“版本文件云端目录位置”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示
 - `CleanRemoteFilesAndDirectories`：窗口标签为“清理云端文件和目录”，默认 `false`；字段下方 HelpBox 与参数整行左边缘对齐，说明先清理再上传、清理范围和失败停止行为
 
-执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅覆盖上述七个内容参数并读取本次清理开关，不回写
-`ConfigMasterSO`。自动关联的三个文件名取当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 `YooAssetSettings.asset`。设备 ID 按行解析，生成 `VersionsCheckWhiteList.json` 时统一去空、Trim 和去重；配置文件上传到
+执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照，其中 Platform 实时映射 Unity Active BuildTarget；仅覆盖上述七个内容参数并读取本次清理开关，不回写 `ConfigMasterSO`。自动关联的三个文件名取当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 `YooAssetSettings.asset`。设备 ID 按行解析，生成 `VersionsCheckWhiteList.json` 时统一去空、Trim 和去重；配置文件上传到
 `WhitelistRemoteFilePath` 指定的完整对象位置，`.bytes/.hash/.version` 三个文件上传到 `RemoteDirectory`。配置文件位置为空或非法时仅跳过
-配置文件，不回退到版本文件目录。五个路径支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`
-占位符。开启清理时先删除本次白名单配置文件并清理版本文件远端目录；远端目录为空、清理失败或任一实际上传失败时抛错并中断 Batch。
+配置文件，不回退到版本文件目录。五个路径支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，其中 `{Platform}` 取同一 Active BuildTarget 映射值。开启清理时先删除本次白名单配置文件并清理版本文件远端目录；远端目录为空、清理失败或任一实际上传失败时抛错并中断 Batch。
 
 ### 11. CDN 缓存清理
 
@@ -240,7 +236,7 @@ Step：
 - `Token`：窗口标签为“API Token”，使用密码框遮罩，但仍以明文保存在 `PipifySettingsSO`
 - `CachePaths`：窗口标签为“缓存路径”，使用 3–8 行自适应 TextArea；支持英文逗号、英文分号或换行分隔
 
-执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照，仅覆盖上述三个 Cloudflare 字段，
+执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照，其中 Platform 实时映射 Unity Active BuildTarget；仅覆盖上述三个 Cloudflare 字段，
 随后调用 `EditorUtil.CDN.PurgeAsync`。URL 会去重并按每批最多 100 条顺序提交；参数非法、请求失败或
 Cloudflare 返回业务失败时抛错并中断 Batch。
 
@@ -293,7 +289,7 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 
 - 必须能通过 `EditorUtil.Config.WorkspaceActive` 定位当前激活 `ConfigMasterSO`
 - `ConfigMasterSO.ExportTarget` 不能为空
-- `Platform` / `Channel` 不可为 `None`，且 ConfigMaster 中必须存在对应矩阵配置
+- Unity 当前 Active BuildTarget 必须映射为 Android / iOS / WebGL 的 Nova `PlatformType`；该 Platform 为只读，且 ConfigMaster 中必须存在其与指定 Channel 对应的矩阵配置
 
 ### 组件型导出 Step
 
@@ -312,6 +308,7 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 ### Bundle / Build
 
 - 构建类 Batch 应先跑 `export.config`，再按目标资源选择 `bundlebuilder.build`（标准 AssetBundle）或 `bundlebuilder.build_raw_file`（`PackRawFile`）；需要 Player 产物时再运行 `build.package`
+- `bundlebuilder.build`、`bundlebuilder.build_raw_file` 与 `build.package` 的 `Target` 均只读并随 Unity Active BuildTarget 同步；切换目标必须在 Unity Build Settings 完成
 - 其他前置导出物必须已就绪
 - `build.package` 的产物命名还依赖当前激活 `ConfigRuntimeSO` 的 `DevelopMode`
 - `build.package` 的 `OutputFolderPath` 不做特殊字符清洗；相对路径基于项目根解析，绝对路径直接使用
@@ -322,7 +319,7 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 - UI Excel 校验、Luban 或暂存发布失败：`export.ui.data` / `export.ui.code` 会抛出异常并中断流水线，不再以完成任务返回。
 - Sound/Vibrate 数据或类型批次返回 `false`：对应 Step 立即抛出异常并中断流水线，不会继续执行后续 Step；每个 Sound 或 Vibrate 区域只建立一次发布事务。
 - `ConfigMasterSO.ExportTarget` 没配：`export.config` 会中断流水线。
-- `export.config` 参数为 `None` 或指定矩阵不存在：会携带 Platform / Channel / DevelopMode 坐标中断流水线。
+- Unity 当前 Active BuildTarget 没有 Nova PlatformType 映射、或其与指定 Channel 的矩阵不存在：`export.config` 会携带实际 Platform / Channel / DevelopMode 坐标中断流水线；旧 ParamsJson 或 CLI 不可借由覆盖 Platform 绕过该门。
 - HybridCLR 只跑了拷贝，没先生成 DLL：拷贝类 Step 会失去输入产物。
 - Android 没先 `edm4u.android_resolve`：后续构建链可能在依赖目录上失败。
 - 手动移除或跳过 `export.config` 后直接跑 `build.package`：文件名开发模式段会降级为 `Debug`，并输出 Warning。

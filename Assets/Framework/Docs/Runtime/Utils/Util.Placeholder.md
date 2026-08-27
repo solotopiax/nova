@@ -41,7 +41,7 @@ PlaceholderContext context = Util.Placeholder.FromRuntimeConfig(
 ```
 
 Editor 使用 `EditorUtil.Placeholder.FromConfigMaster` / `Resolve` 从当前 `ConfigMasterSO` 坐标取
-Platform 与 Channel。导出器应传入目标 Platform/Channel 的显式重载，只处理明确需要固化的字段，
+Platform 与 Channel；其中 `ConfigMasterSO.CurrentPlatform` 实时映射 Unity Active BuildTarget。导出器应传入目标 Platform/Channel 的显式重载，只处理明确需要固化的字段，
 不要遍历并改写全部字符串配置。启动早期尚未加载 `ConfigRuntimeSO` 的调用方，应直接构造
 `PlaceholderContext`，避免引入配置加载循环依赖。
 

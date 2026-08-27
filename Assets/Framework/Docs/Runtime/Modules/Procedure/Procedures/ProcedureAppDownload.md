@@ -32,6 +32,8 @@
 
 然后立刻调用 `ShowDialog()`。
 
+如果误收到 `NoDownload` 或未知枚举值，会 warning 后直接跳过下载提示，不会把异常输入当成推荐更新，也不会记录放弃时间。
+
 ### 2. Confirm：按路由执行跳商店或下载
 
 确认按钮回调 `OnConfirm()` 会读取 `AppComponent.DownloadRoute`：
@@ -44,7 +46,7 @@
 ### 3. Cancel：强制更新退出，推荐更新继续
 
 - `ForcedDownload`：调用 `Nova.Self.QuitApplication()`，运行时退出应用，Editor 下同时停止 PlayMode
-- `RecommendedDownload`：`m_Complete = true`
+- `RecommendedDownload`：先调用 `AppComponent.RecordRecommendedDownloadDismissed()` 持久化本次放弃时间，再令 `m_Complete = true`
 
 ### 4. OnUpdate：推荐更新取消后按补丁状态续行
 
@@ -57,6 +59,8 @@
 
 - 当前 `DownloadAsync()` 在 `AppManager.Download.cs` 里仍是待补实现；非商店路由链路目前并未真正打通。
 - 确认后的下载/跳商店操作不会自动让流程继续，而是重新显示弹窗，等待用户下一次操作。
+- 只有推荐更新取消分支会记录放弃时间；确认更新与强制更新取消均不会影响推荐提示间隔。
+- 放弃时间落盘失败只输出 warning，推荐取消分支仍必须继续后续启动流程。
 
 ## 继续阅读
 

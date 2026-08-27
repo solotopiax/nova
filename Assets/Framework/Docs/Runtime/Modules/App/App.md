@@ -35,6 +35,7 @@ Runtime/Modules/App/
 ## 当前公开入口
 
 - `Nova.App.CheckAsync()`：执行大版本检查。
+- `Nova.App.RecordRecommendedDownloadDismissed()`：记录用户本次主动放弃推荐更新。
 - `Nova.App.DownloadAsync()`：触发 APK 下载。
 - `Nova.App.OpenStoreAsync()`：跳转商店。
 

@@ -6,7 +6,7 @@
 
 Persist 组件的 Inspector 面板，分两区绘制：上方为三种存储实现（PlayerPrefs / FileFragment / SQLite）的管理器实现类选择器，下方为各存储实现的 AES 加密开关及 SQLite Cipher 密码配置。
 
-Editor 模式下，Inspector 通过 `EditorUtil.Config.WorkspaceActive.Get()` 定位当前 ConfigMaster，并按其 `CurrentPlatform / CurrentChannel / CurrentDevelopMode` 合法坐标读取 `PrivacyConfigs`，再将 Key/IV 显式传给 AES 接口；不与 Unity `activeBuildTarget` 强制一致。Play 模式下改读该 Master 的 `ExportTarget`（ConfigRuntimeSO）隐私快照。
+Editor 模式下，Inspector 通过 `EditorUtil.Config.WorkspaceActive.Get()` 定位当前 ConfigMaster，并按其 `CurrentPlatform / CurrentChannel / CurrentDevelopMode` 合法坐标读取 `PrivacyConfigs`，再将 Key/IV 显式传给 AES 接口。其中 `CurrentPlatform` 实时映射 Unity `activeBuildTarget`，因此 Inspector 不提供与当前 Unity 构建目标不同的平台坐标。Play 模式下改读该 Master 的 `ExportTarget`（ConfigRuntimeSO）隐私快照。
 
 ---
 

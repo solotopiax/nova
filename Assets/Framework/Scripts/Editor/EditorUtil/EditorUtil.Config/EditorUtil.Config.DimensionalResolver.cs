@@ -228,7 +228,7 @@ namespace NovaFramework.Editor
                 /// <typeparam name="TAsset">期望的 Unity 资产类型。</typeparam>
                 /// <param name="master">用于定位迁移后目录的 ConfigMasterSO。</param>
                 /// <param name="configuredPath">ConfigMaster 中保存的原始项目相对路径。</param>
-                /// <returns>可加载的原路径、迁移后的同目录路径，或未命中时的原路径。</returns>
+                /// <returns>可加载的原路径、迁移后的同目录路径，或 ConfigMaster 无持久化路径及未命中时的原路径。</returns>
                 private static string ResolveRelocatedAssetPath<TAsset>(ConfigMasterSO master, string configuredPath)
                     where TAsset : Object
                 {
@@ -240,6 +240,12 @@ namespace NovaFramework.Editor
                     }
 
                     string masterPath = (AssetDatabase.GetAssetPath(master) ?? string.Empty).Replace('\\', '/');
+                    if (string.IsNullOrEmpty(masterPath))
+                    {
+                        // ConfigWindow 使用非持久化 WorkingCopy；此时无法执行同目录迁移回落，应保留已配置路径。
+                        return normalizedPath;
+                    }
+
                     string masterDirectory = IOPath.GetDirectoryName(masterPath)?.Replace('\\', '/');
                     string fileName = IOPath.GetFileName(normalizedPath);
                     if (string.IsNullOrEmpty(masterDirectory) || string.IsNullOrEmpty(fileName))

@@ -601,7 +601,9 @@ namespace NovaFramework.Editor
             try
             {
                 object result = Util.Json.Deserialize(item.ParamsJson, paramsType);
-                return result ?? EditorUtil.Pipify.CreateDefaultParams(info);
+                result = result ?? EditorUtil.Pipify.CreateDefaultParams(info);
+                PipifySteps.SynchronizeActivePlatform(result);
+                return result;
             }
             catch (Exception ex)
             {

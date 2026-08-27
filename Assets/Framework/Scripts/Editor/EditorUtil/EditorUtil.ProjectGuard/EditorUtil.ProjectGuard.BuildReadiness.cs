@@ -362,21 +362,8 @@ namespace NovaFramework.Editor
             /// </summary>
             private static bool TryMapTargetPlatform(BuildTarget target, out PlatformType platform)
             {
-                switch (target)
-                {
-                    case BuildTarget.Android:
-                        platform = PlatformType.Android;
-                        return true;
-                    case BuildTarget.iOS:
-                        platform = PlatformType.iOS;
-                        return true;
-                    case BuildTarget.WebGL:
-                        platform = PlatformType.WebGL;
-                        return true;
-                    default:
-                        platform = PlatformType.None;
-                        return false;
-                }
+                platform = EditorUtil.Config.ActivePlatform.FromBuildTarget(target);
+                return platform != PlatformType.None;
             }
 
             /// <summary>

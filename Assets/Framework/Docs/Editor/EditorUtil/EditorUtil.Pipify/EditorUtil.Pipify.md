@@ -23,7 +23,7 @@
 | `EditorUtil.Pipify/Definitions/Batch.cs` | `Batch` | 批次数据 |
 | `EditorUtil.Pipify/Definitions/BatchItem.cs` | `BatchItem` | 批次条目 |
 | `EditorUtil.Pipify/Definitions/PipifySettingsSO.cs` | `PipifySettingsSO` | 持久化 SO 存档 |
-| `EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs` | `EditorUtil.Pipify` | 参数默认值、旧 Config 参数迁移、CLI 覆盖与类型转换工具方法 |
+| `EditorUtil.Pipify/EditorUtil.Pipify.Methods.cs` | `EditorUtil.Pipify` | 参数默认值、旧 Config 参数迁移、CLI 覆盖、Active BuildTarget 平台同步与类型转换工具方法 |
 | `EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs` | `EditorUtil.Pipify.Runner` | 纯执行引擎（internal static class） |
 | `EditorUtil.Pipify/EditorUtil.Pipify.AsyncJob.cs` | `EditorUtil.Pipify` | Editor 外部调用的异步任务启动、状态保存与查询 |
 | `EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs` | `EditorUtil.Pipify.WindowReporter` | Window 宿主进度 Reporter（EditorUtility 模态进度条） |
@@ -34,6 +34,7 @@
 | `EditorUtil.Pipify/Definitions/PipifyDynamicDropdownAttribute.cs` | `PipifyDynamicDropdownAttribute` | string 字段渲染特性：动态选项下拉框（每帧调用 Provider 取 string[]） |
 | `EditorUtil.Pipify/Definitions/PipifyDynamicDefaultAttribute.cs` | `PipifyDynamicDefaultAttribute` | string 字段渲染特性：值为空时显示动态默认值占位（不写回字段） |
 | `EditorUtil.Pipify/Definitions/PipifyPasswordAttribute.cs` | `PipifyPasswordAttribute` | string 字段渲染特性：PipifyWindow 使用 PasswordField，存储仍为普通字符串 |
+| `EditorUtil.Pipify/Definitions/PipifyReadOnlyAttribute.cs` | `PipifyReadOnlyAttribute` | 字段渲染特性：PipifyWindow 禁用该字段编辑；当前用于随 Unity Active BuildTarget 同步的平台字段 |
 | `EditorUtil.Pipify/Definitions/PipifyVisibleWhenAttribute.cs` | `PipifyVisibleWhenAttribute` | 字段显隐特性：依赖另一字段当前整型化值匹配 AnyOf 时才显示 |
 | `EditorUtil.Pipify/Steps/PipifySteps.Build.cs` | `PipifySteps` | 内置 Step：打包分组 1 个 Step |
 | `EditorUtil.Pipify/Steps/PipifySteps.Export.cs` | `PipifySteps` | 内置 Step：Config 导出 |
@@ -93,9 +94,9 @@
 3. 对每个 `BatchItem`：
    - `ct.ThrowIfCancellationRequested()` 响应外部取消
    - `Registry.FindById(stepId)` 查找元信息，未命中抛 `InvalidOperationException`
-   - 若为旧版空参数 `export.config`：从当前激活 ConfigMaster 复制 Platform / Channel / DevelopMode，先写入条目并保存所属 PipifySettingsSO
+   - 若为旧版空参数 `export.config`：从当前激活 ConfigMaster 初始化 Platform / Channel / DevelopMode，先写入条目并保存所属 PipifySettingsSO；Platform 只是兼容快照，执行期会再次同步 Active BuildTarget
    - 其他有参 Step：ParamsJson 非空则反序列化，否则创建默认参数实例
-   - 最后调用 `ApplyOverridesForItem` 应用仅本次执行有效的 CLI 参数；Config 首次固化值不会被 CLI override 回写
+   - 调用 `ApplyOverridesForItem` 应用仅本次执行有效的 CLI 参数；标记 `[PipifyReadOnly]` 的平台字段会直接跳过 CLI 值解析，随后统一同步到 Unity 当前 Active BuildTarget。故 `export.config.Platform`、`build.package.Target`、`bundlebuilder.build.Target`、`bundlebuilder.build_raw_file.Target` 的旧 ParamsJson 或 CLI override 不会改变实际平台；其他字段仍按既有规则覆盖且不回写
    - `hybridclr.*` Step 若后续存在 `build.package`：先按同一套参数解析规则（含 CLI override）取得该 Player 构建的 `DevelopmentBuild`，仅在该 HybridCLR Step 执行期间临时镜像到 `EditorUserBuildSettings.development`，并在成功、失败或取消后还原；没有后续 Player 构建的纯热更 Batch 不改全局设置
    - 构造 `PipifyContext` 并下发
    - `reporter.ReportStep(i, name, 0f)` 返回 true 时抛 `OperationCanceledException`（Window 取消按钮）
@@ -111,6 +112,8 @@ key 格式优先级（高 > 低）：
 - `stepId.fieldName`（不含 `[`）：匹配该 Step 所有 Item
 
 字段类型转换顺序：`string` → enum（`Enum.Parse` 大小写敏感）→ `Convert.ChangeType`（数字 / bool）。字段不存在时抛 `InvalidOperationException`。
+
+平台字段的 key 仍会按上述格式被解析，以兼容已有 CI 参数；但值在覆盖后由 `SynchronizeActivePlatform` 覆盖，不能用于跨平台执行同一 Unity Editor 会话。
 
 ### Editor 外部异步任务
 

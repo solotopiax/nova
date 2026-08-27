@@ -19,7 +19,7 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
     /// <summary>
     /// 预加载流程。
     /// 1. 显示进度面板（Preload 阶段）。
-    /// 2. 按步骤加载：Persist -> Network -> SDK -> 数据表 -> 业务资源（共 8 步）。
+    /// 2. 按步骤加载：Persist -> Localization -> Network -> SDK -> Table -> UI -> Sound -> Vibrate（共 8 步）。
     /// 3. 全部完成后跳转 ProcedurePlaying。
     /// </summary>
     public class ProcedurePreload : ProcedureBase
@@ -84,7 +84,7 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
         }
 
         /// <summary>
-        /// 按步骤顺序预加载：Persist -> Network -> SDK -> 数据表 -> 业务资源。
+        /// 按步骤顺序预加载：Persist -> Localization -> Network -> SDK -> Table -> UI -> Sound -> Vibrate。
         /// </summary>
         private async UniTaskVoid RunPreloadAsync()
         {
@@ -95,40 +95,40 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
                 CancellationToken.ThrowIfCancellationRequested();
                 OnStepComplete();
 
-                Log.Debug(LogTag.Procedure, "Preload Step 2/8 — 加载网络配置。");
+                Log.Debug(LogTag.Procedure, "Preload Step 2/8 — 加载本地化数据。");
+                await Nova.Localization.LoadAsync();
+                CancellationToken.ThrowIfCancellationRequested();
+                await Nova.Localization.InitCurrentLanguageAsync();
+                CancellationToken.ThrowIfCancellationRequested();
+                OnStepComplete();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 3/8 — 加载网络配置。");
                 await Nova.Network.LoadAsync();
                 CancellationToken.ThrowIfCancellationRequested();
                 OnStepComplete();
 
-                Log.Debug(LogTag.Procedure, "Preload Step 3/8 — 初始化 SDK。");
+                Log.Debug(LogTag.Procedure, "Preload Step 4/8 — 初始化 SDK。");
                 await Nova.SDK.InitializeTask;
                 CancellationToken.ThrowIfCancellationRequested();
                 OnStepComplete();
 
-                Log.Debug(LogTag.Procedure, "Preload Step 4/8 — 加载数据表。");
+                Log.Debug(LogTag.Procedure, "Preload Step 5/8 — 加载数据表。");
                 await Nova.Table.LoadAsync();
                 CancellationToken.ThrowIfCancellationRequested();
                 OnStepComplete();
 
-                Log.Debug(LogTag.Procedure, "Preload Step 5/8 — 加载UI配置。");
+                Log.Debug(LogTag.Procedure, "Preload Step 6/8 — 加载UI配置。");
                 await Nova.UI.LoadAsync();
                 CancellationToken.ThrowIfCancellationRequested();
                 OnStepComplete();
 
-                Log.Debug(LogTag.Procedure, "Preload Step 6/8 — 加载声音数据。");
+                Log.Debug(LogTag.Procedure, "Preload Step 7/8 — 加载声音数据。");
                 await Nova.Sound.LoadAsync();
                 CancellationToken.ThrowIfCancellationRequested();
                 OnStepComplete();
 
-                Log.Debug(LogTag.Procedure, "Preload Step 7/8 — 加载振动数据。");
+                Log.Debug(LogTag.Procedure, "Preload Step 8/8 — 加载振动数据。");
                 await Nova.Vibrate.LoadAsync();
-                CancellationToken.ThrowIfCancellationRequested();
-                OnStepComplete();
-
-                Log.Debug(LogTag.Procedure, "Preload Step 8/8 — 加载本地化数据。");
-                await Nova.Localization.LoadAsync();
-                CancellationToken.ThrowIfCancellationRequested();
-                await Nova.Localization.InitCurrentLanguageAsync();
                 CancellationToken.ThrowIfCancellationRequested();
                 OnStepComplete();
 

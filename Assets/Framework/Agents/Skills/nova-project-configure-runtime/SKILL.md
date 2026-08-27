@@ -13,9 +13,10 @@ description: Use when 项目组要在已确认的 Platform、Channel、DevelopMo
 
 ## 冻结输入与决策门
 
-冻结一个 `ConfigMasterSO`、一个非 `None` 的 `Platform × Channel × DevelopMode` 坐标、精确的字段变更集、目标 `ConfigRuntimeSO` 路径，以及是否明确要求写入活动场景的 DevelopMode / Channel 快照。不要把当前窗口选择、其他坐标、远端 JSON、CDN 凭据或 Sample 默认值当作本次输入。
+冻结一个 `ConfigMasterSO`、Unity 当前 Active BuildTarget 实时映射出的非 `None` Platform、一个 `Channel × DevelopMode` 坐标、精确的字段变更集、目标 `ConfigRuntimeSO` 路径，以及是否明确要求写入活动场景的 DevelopMode / Channel 快照。不要把旧 Config 资产中的平台值、其他坐标、远端 JSON、CDN 凭据或 Sample 默认值当作本次输入。
 
 - 没有确认的 Master、目标 Runtime 资产或对应坐标矩阵时保持 `blocked`；新建 Master 或 Runtime 资产必须先确认资产路径、坐标和写入范围。
+- Platform 必须等于 Unity 当前 Active BuildTarget 映射值；仅 Android、iOS、WebGL 可用。未映射或请求平台不一致时先要求项目组切换 Unity BuildTarget，不通过 ConfigWindow、Pipify 参数或 Action 自动切换平台。
 - 一次只编辑冻结坐标；跨平台、跨渠道、跨开发模式批量改动须作为新的确认，不从相邻格复制猜测。
 - 使用 ConfigWindow 的 `Nova/Open Config` 保存设计态；该窗口的“导出”成功后还会写活动场景快照。若未明确授权写场景，使用 `EditorUtil.Config.Exporter.Export(...)` 或参数已冻结的 Pipify `export.config`，并保持该额外副作用排除在外。
 

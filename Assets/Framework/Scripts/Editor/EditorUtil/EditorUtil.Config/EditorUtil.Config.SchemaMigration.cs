@@ -77,6 +77,12 @@ namespace NovaFramework.Editor
                     string exportPath = null;
                     if (master.ConfigSchemaVersion != ConfigMasterSO.CurrentConfigSchemaVersion && master.ExportTarget != null)
                     {
+                        if (master.CurrentPlatform == PlatformType.None)
+                        {
+                            error = $"Unity 当前 Active BuildTarget={UnityEditor.EditorUserBuildSettings.activeBuildTarget} 没有对应的 Nova PlatformType，无法在迁移后重导出 Runtime 快照。";
+                            return false;
+                        }
+
                         exportPath = UnityEditor.AssetDatabase.GetAssetPath(master.ExportTarget);
                         if (string.IsNullOrEmpty(exportPath))
                         {

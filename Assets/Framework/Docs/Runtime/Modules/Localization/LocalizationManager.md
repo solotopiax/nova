@@ -106,7 +106,7 @@
 2. 用临时缓存替换主缓存
 3. 重新构建 Luban 文本表
 4. 重新扁平化到 `m_LanguageTexts`
-5. `SaveLanguageToPersist(language)`
+5. `SaveLanguageToPersist(language)`，并同步写入供下次冷启动读取的非敏感语言镜像
 6. `FireRefreshEvent(oldLanguage, language)`
 
 其中刷新事件走的是 `m_EventManager.FireNow(...)`，是同步立即广播。
@@ -116,7 +116,9 @@
 `SetLanguageAsync()` 使用 `m_LanguageSwitchVersion` 做版本保护：
 
 - 每次切换先自增版本号
-- await 返回后如果版本已变化，旧请求直接终止
+- 每个请求把数据加载到自己的临时缓存
+- await 返回后如果版本已变化，旧请求直接终止，不提交临时缓存
+- 只有最新请求会把缓存原子替换为当前语言数据
 
 这保证了快速连续切语言时，只有最后一次请求生效。
 

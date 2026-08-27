@@ -3,7 +3,7 @@
 **类签名**：`public static class DimensionProjector`（嵌套于 `EditorUtil.Config`）
 **命名空间**：`NovaFramework.Editor`
 
-Config 面板维度投影器；按 `PanelDimensionMask` 在 `m_WorkingCopy` 上执行加维分裂 / 减维合并 / 广播三种投影操作，支持矩阵三类（Common / SDK / Kit）与顶层三类（Namespace / HybridCLR / YooAsset）共六种面板。全部操作作用于调用方传入的 `SerializedObject`（m_WorkingCopy），不落盘，不设脏标记，由 ConfigWindow 负责后续持久化。
+Config 面板维度投影器；按 `PanelDimensionMask` 在 `m_WorkingCopy` 上执行加维分裂 / 减维合并 / 广播三种投影操作，支持矩阵三类（Common / SDK / Kit）与顶层三类（Namespace / HybridCLR / YooAsset）共六种面板。全部操作作用于调用方传入的 `SerializedObject`（m_WorkingCopy），不落盘，不设脏标记，由 ConfigWindow 负责后续持久化。`Coord` 仍是通用显式三维值类型；仅 ConfigWindow 传入的 Platform 被固定为 Unity Active BuildTarget 的实时映射。
 
 ---
 
@@ -174,7 +174,7 @@ srcElemProp.boxedValue
 ## §11 使用示例
 
 ```csharp
-// ConfigWindow.RightPanel.cs 中勾选 ByPlatform 时触发
+// ConfigWindow.RightPanel.cs 中勾选 ByPlatform 时触发；CurrentPlatform 实时映射 Unity Active BuildTarget
 var curCoord = new DimensionProjector.Coord(
     m_Master.CurrentPlatform,
     m_Master.CurrentChannel,

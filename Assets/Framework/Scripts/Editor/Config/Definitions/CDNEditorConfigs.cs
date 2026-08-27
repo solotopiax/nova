@@ -42,17 +42,17 @@ namespace NovaFramework.Editor
         public string PresetOSSPath;
 
         /// <summary>
-        /// 项目根相对的版本检查本地文件位置；支持 {Platform}、{Channel}、{Package}、{Version} 占位符。
+        /// 项目根相对的版本检查本地文件位置；支持 {Platform}、{Channel}、{Package}、{Version} 占位符；Editor 部署时 Platform 取 Unity Active BuildTarget 映射值。
         /// </summary>
         public string VersionCheckLocalFilePath;
 
         /// <summary>
-        /// 拼接在固定 OSS 前缀后的版本检查云端文件位置；支持 {Platform}、{Channel}、{Package}、{Version} 占位符。
+        /// 拼接在固定 OSS 前缀后的版本检查云端文件位置；支持 {Platform}、{Channel}、{Package}、{Version} 占位符；Editor 部署时 Platform 取 Unity Active BuildTarget 映射值。
         /// </summary>
         public string VersionCheckRemoteFilePath;
 
         /// <summary>
-        /// 项目根相对的本地部署目录；支持 {Platform}、{Channel}、{Package}、{Version} 占位符。
+        /// 项目根相对的本地部署目录；支持 {Platform}、{Channel}、{Package}、{Version} 占位符；Editor 部署时 Platform 取 Unity Active BuildTarget 映射值。
         /// </summary>
         public string LocalDirectory;
 
@@ -62,7 +62,7 @@ namespace NovaFramework.Editor
         public bool AutoLinkLatestVersion = true;
 
         /// <summary>
-        /// 拼接在固定 OSS 前缀后的可编辑远端目录后缀；支持 {Platform}、{Channel}、{Package}、{Version} 占位符。
+        /// 拼接在固定 OSS 前缀后的可编辑远端目录后缀；支持 {Platform}、{Channel}、{Package}、{Version} 占位符；Editor 部署时 Platform 取 Unity Active BuildTarget 映射值。
         /// </summary>
         public string RemotePathSuffix;
 

@@ -1,6 +1,6 @@
 # ConfigMasterSO
 
-`ConfigMasterSO` 是 `NovaFramework.Editor` 下的设计态配置资产，只能由 Editor 程序集访问。ConfigWindow 编辑该资产，Exporter 将当前三维坐标裁剪为 `ConfigRuntimeSO`。
+`ConfigMasterSO` 是 `NovaFramework.Editor` 下的设计态配置资产，只能由 Editor 程序集访问。ConfigWindow 编辑该资产，Exporter 将当前三维坐标裁剪为 `ConfigRuntimeSO`。其中平台维度不是资产可编辑状态：`CurrentPlatform` 每次访问都实时映射 Unity 当前 `EditorUserBuildSettings.activeBuildTarget`；渠道与开发模式仍由资产保存和选择。
 
 ## Runtime 数据来源
 
@@ -16,9 +16,24 @@
 - `YooAssetEditorConfigs` 与 `YooAssetEditorConfigsOverrides`
 - `HybridEditorConfigs.RunningGameDlls`、`LinkXmlTargetPath`、DLL 源/目标路径及对应 Overrides
 - `CDNEditorConfigs` 与 `CDNEditorConfigsOverrides`
-- 各 Editor 面板维度掩码和当前编辑坐标
+- 各 Editor 面板维度掩码，以及当前编辑的 Channel / DevelopMode
 
 这些数据保存在 `ConfigMaster.asset`，不会写入 `ConfigRuntime.asset`。
+
+## Editor 平台真相源
+
+`CurrentPlatform` 是只读计算属性，不序列化，也不能由 ConfigWindow、Pipify 或旧配置资产手动改写。它统一使用 `EditorUtil.Config.ActivePlatform` 映射当前 Unity Active BuildTarget：
+
+| Unity `activeBuildTarget` | `CurrentPlatform` |
+|---|---|
+| `Android` | `PlatformType.Android` |
+| `iOS` | `PlatformType.iOS` |
+| `WebGL` | `PlatformType.WebGL` |
+| 其他目标 | `PlatformType.None` |
+
+映射为 `None` 时，ConfigWindow 导出、Pipify 的 Config / Bundle / Player 构建等生产入口会明确阻断，要求先切换到受支持的 Unity BuildTarget；不会静默回退到资产中的旧平台值。
+
+升级前序列化的 `CurrentPlatform` 通过隐藏字段 `m_LegacyCurrentPlatform`（`FormerlySerializedAs("CurrentPlatform")`）无损读入。该字段只承担旧资产兼容，绝不参与当前坐标、占位符解析或导出决策。
 
 ## 结构版本与旧资产迁移
 
@@ -30,4 +45,4 @@
 
 旧字段作为隐藏的序列化桥接输入仅存在于 Editor 层，并在迁移成功后清空。它们需保留到约定的兼容窗口结束；删除前必须确认所有项目已至少经过一次桥接版本迁移并保存资产。Runtime 不包含这些 Editor 迁移字段或迁移逻辑。
 
-关键源码：[ConfigMasterSO.cs](../../../Scripts/Editor/Config/ConfigMasterSO.cs)、[SchemaMigration.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md)、[ConfigWindow.md](../Windows/ConfigWindow.md)、[ConfigRuntimeSO.md](../../Runtime/Modules/Config/ConfigRuntimeSO.md)。
+关键源码：[ConfigMasterSO.cs](../../../Scripts/Editor/Config/ConfigMasterSO.cs)、[EditorUtil.Config.ActivePlatform.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.ActivePlatform.cs)、[SchemaMigration.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md)、[ConfigWindow.md](../Windows/ConfigWindow.md)、[ConfigRuntimeSO.md](../../Runtime/Modules/Config/ConfigRuntimeSO.md)。

@@ -49,9 +49,9 @@ Binding 类型不在 Inspector 暴露，资源包也不单独选择；默认资�
 
 ## 开发态与消费态路径
 
-Table 的工程配置、导出目录和加载描述中的 `AssetPath` 都保存项目根相对路径。Nova 发版时统一扫描 `Nova.prefab` 中所有以 `Assets/Samples/` 开头的字符串路径，并作为 Sample Scene Override 注入；Sample 导入消费工程后，`SamplePathRewriter` 会遍历当前工程中的同类 `SamplePathManifest`，分别把开发态 Sample 根替换为真实导入目录；旧 Demo 留存的无效 Manifest 不会阻断新 Demo。因此 `ConfigPath`、代码/数据输出目录、自定义模板目录和 `AssetPath` 共用同一条纠正链，不维护 Table 专属字段白名单。
+Table 的工程配置、导出目录和加载描述中的 `AssetPath` 都保存项目根相对路径。Nova 发版时统一扫描 `Nova.prefab` 中所有以 `Assets/Samples/` 开头的字符串路径，并作为 Sample Scene Override 注入；Sample 导入消费工程后，`SamplePathRewriter` 会遍历当前工程中的同类 `SamplePathManifest`，分别把开发态 Sample 根替换为真实导入目录；旧 Demo 留存的无效 Manifest 不会阻断新 Demo。因此 `ConfigPath`、代码/数据输出目录、位于 Sample 内的自定义模板目录和 `AssetPath` 共用同一条纠正链，不维护 Table 专属字段白名单。
 
-`Assets/Framework/Templates/Luban/...` 属于框架包模板，不参与 Sample 根替换。执行导出时会根据当前安装形态解析为开发态 `Assets/Framework` 或消费态 Package resolved path。`AssetAddress`、`DataFile` 和 Binding 类型不是文件路径，不参与自动纠正。
+`Packages/com.solotopia.nova.framework/Templates/Luban/...` 是框架模板的持久化逻辑路径，不参与 Sample 根替换。执行导出时会根据当前安装形态解析为开发态 `Assets/Framework` 或消费态 Package resolved path；旧资产中已有的 `Assets/Framework/Templates/Luban/...` 仍兼容解析。`AssetAddress`、`DataFile` 和 Binding 类型不是文件路径，不参与自动纠正。
 
 ## 多语言
 

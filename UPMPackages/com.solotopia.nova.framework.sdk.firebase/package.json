@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.firebase",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "13.14.0",
   "displayName": "Nova Framework - SDK - Firebase",

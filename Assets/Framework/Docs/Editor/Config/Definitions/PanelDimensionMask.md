@@ -3,7 +3,7 @@
 **类签名**：`[Serializable] public sealed class PanelDimensionMask`
 **命名空间**：`NovaFramework.Editor`
 
-ConfigWindow 单个配置面板的维度启用掩码；记录该面板是否按平台类型 / 渠道类型 / 开发模式分别配置。全部为 false 时表示全局唯一配置（`IsGlobal == true`）。
+ConfigWindow 单个配置面板的维度启用掩码；记录该面板是否按平台类型 / 渠道类型 / 开发模式分别配置。全部为 false 时表示全局唯一配置（`IsGlobal == true`）。掩码仍可按平台分份，但 ConfigWindow 的当前平台始终由 Unity Active BuildTarget 实时决定；要编辑另一平台份，先切换 Unity BuildTarget。
 
 ---
 

@@ -29,6 +29,9 @@ namespace NovaFramework.Runtime
         private void Awake()
         {
             m_TextMeshProUGUI = GetComponent<TextMeshProUGUI>();
+            m_PreviousTextPreprocessor = m_TextMeshProUGUI.textPreprocessor;
+            m_TextPreprocessor = new LocalizationTextPreprocessor(m_PreviousTextPreprocessor);
+            m_TextMeshProUGUI.textPreprocessor = m_TextPreprocessor;
             m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
             m_LocalizationManager = FrameworkManagersGroup.GetManager<ILocalizationManager>();
             m_AssetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
@@ -60,6 +63,8 @@ namespace NovaFramework.Runtime
         /// </summary>
         private void OnDisable()
         {
+            m_FontRefreshVersion++;
+
             if (m_IsSubscribed && m_EventManager != null)
             {
                 m_EventManager.Unsubscribe<LocalizationRefreshEventData>(OnLocalizationRefresh);
@@ -70,6 +75,17 @@ namespace NovaFramework.Runtime
             m_LoadedFontHandle = null;
             m_LoadedMaterialHandle?.Release();
             m_LoadedMaterialHandle = null;
+        }
+
+        /// <summary>
+        /// 销毁时恢复 TextLocalizing 接管前的 TMP 文本预处理器。
+        /// </summary>
+        private void OnDestroy()
+        {
+            if (m_TextMeshProUGUI != null && ReferenceEquals(m_TextMeshProUGUI.textPreprocessor, m_TextPreprocessor))
+            {
+                m_TextMeshProUGUI.textPreprocessor = m_PreviousTextPreprocessor;
+            }
         }
 
         /// <summary>

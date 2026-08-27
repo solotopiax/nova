@@ -90,6 +90,7 @@ auto_generated: true
 - [ADR-070 SDK 启用真相源归 ConfigMaster.EnabledSDKs，插件统一按启用配置实例化](../2-Areas/ADR/ADR-070-sdk-enable-via-configmaster-enabledsdks.md) — EnabledSDKs 唯一启用源，插件按配置统一实例化
 - [ADR-071 DataMaster 读参 topicId 实为 Params 字典 key（topic_name），非 experiment.topicId](../2-Areas/ADR/ADR-071-datamaster-topicid-is-params-key.md) — 读参 topicId 传 Params 字典 key，非实验字段
 - [ADR-079 业务 API 双域名与 DoH 指定连接 IP 采用传输能力门控](../2-Areas/ADR/ADR-079-business-dual-domain-doh-ip-routing.md) — 业务双域名按传输能力使用 DoH IP
+- [ADR-082 RTL 本地化转换固定在 TMP 渲染边界](../2-Areas/ADR/ADR-082-rtl-localization-render-boundary.md) — RTL 文本仅在 TMP 渲染前转换
 
 ## quality
 
@@ -109,4 +110,4 @@ auto_generated: true
 
 
 ---
-_共 67 条，分布于 10 个 category。_
+_共 68 条，分布于 10 个 category。_

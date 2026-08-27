@@ -6,7 +6,7 @@
  * author:    taoye
  * created:   2026/5/26
  * descrip:   启动期轻量本地化解析器
- *            只走 Resources 通道，与 LocalizationManager 完全解耦。
+ *            文案只走 Resources 通道，语言选择与 LocalizationManager 共用策略。
  *            在 AB / 资源系统就绪前的 Splash → CheckVersion → Hotfix →
  *            AppDownload → LoadDll 全链路上均可安全使用。
  ***************************************************************/
@@ -21,7 +21,8 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// 启动期轻量本地化解析器。
     /// 只走 Resources.Load 通道读取 BuiltIn/Jsons/LocalizationTexts_{language}.json，
-    /// 与 LocalizationManager / IAssetManager / EventManager 完全解耦，
+    /// 不依赖 LocalizationManager 的资源加载状态、IAssetManager 或 EventManager，
+    /// 但与正式本地化共用语言选择策略和系统语言映射，
     /// 可在 AB 资源系统就绪前的任意启动阶段安全调用。
     /// Initialize() 幂等；GetText() miss 时返回 key 本身。
     /// </summary>
@@ -103,7 +104,7 @@ namespace NovaFramework.Runtime
 
             s_JsonPathTemplate = string.IsNullOrEmpty(jsonPathTemplate) ? c_DefaultJsonPathTemplate : jsonPathTemplate;
             s_IsInitialized = true;
-            s_Language = ResolveStartupLanguage();
+            s_Language = LocalizationBootstrapLanguage.ResolveLanguage(HasLanguageJson, Language.English);
             s_TextMap = LoadJson(s_Language);
 
             if (s_TextMap == null && s_Language != Language.English)
@@ -142,67 +143,15 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 解析启动期应使用的语言。
-        /// 优先级：持久化（IPlayerPrefsManager）> Application.systemLanguage 映射 > English 回退。
+        /// 判断指定语言是否存在可供启动期直接读取的精简 JSON。
+        /// 该检查只约束 Launcher 自身资源，不要求正式本地化资源提前就绪。
         /// </summary>
-        /// <returns>解析出的语言枚举值。</returns>
-        private static Language ResolveStartupLanguage()
+        /// <param name="language">候选语言。</param>
+        /// <returns>对应启动 JSON 存在返回 true。</returns>
+        private static bool HasLanguageJson(Language language)
         {
-            try
-            {
-                IPlayerPrefsManager playerPrefsManager = FrameworkManagersGroup.GetManager<IPlayerPrefsManager>();
-                if (playerPrefsManager != null)
-                {
-                    string savedName = playerPrefsManager.GetString(LocalizationComponent.c_PersistClassifyName, LocalizationComponent.c_PersistItemKey, "");
-                    if (!string.IsNullOrEmpty(savedName) && Enum.TryParse<Language>(savedName, true, out Language saved))
-                    {
-                        return saved;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(LogTag.Procedure, Txt.Format("LauncherLocalization: 读取持久化语言失败（启动极早期正常），跳过持久化步骤。异常: {0}", ex.Message));
-            }
-
-            Language mapped = MapSystemLanguage(Application.systemLanguage);
-            if (mapped != Language.Unspecified)
-            {
-                return mapped;
-            }
-
-            return Language.English;
-        }
-
-        /// <summary>
-        /// 将 UnityEngine.SystemLanguage 映射到框架 Language 枚举。
-        /// 覆盖常见语言；不在覆盖范围内时返回 Language.Unspecified，上层走 English 回退。
-        /// </summary>
-        /// <param name="systemLanguage">Unity 系统语言枚举。</param>
-        /// <returns>对应的 Language 枚举值；不支持时返回 Language.Unspecified。</returns>
-        private static Language MapSystemLanguage(SystemLanguage systemLanguage)
-        {
-            switch (systemLanguage)
-            {
-                case SystemLanguage.ChineseSimplified: return Language.ChineseSimplified;
-                case SystemLanguage.ChineseTraditional: return Language.ChineseTraditional;
-                case SystemLanguage.Chinese: return Language.ChineseSimplified;
-                case SystemLanguage.English: return Language.English;
-                case SystemLanguage.Japanese: return Language.Japanese;
-                case SystemLanguage.Korean: return Language.Korean;
-                case SystemLanguage.French: return Language.French;
-                case SystemLanguage.German: return Language.German;
-                case SystemLanguage.Spanish: return Language.Spanish;
-                case SystemLanguage.Italian: return Language.Italian;
-                case SystemLanguage.Russian: return Language.Russian;
-                case SystemLanguage.Portuguese: return Language.PortuguesePortugal;
-                case SystemLanguage.Indonesian: return Language.Indonesian;
-                case SystemLanguage.Thai: return Language.Thai;
-                case SystemLanguage.Vietnamese: return Language.Vietnamese;
-                case SystemLanguage.Arabic: return Language.Arabic;
-                case SystemLanguage.Turkish: return Language.Turkish;
-                default: return Language.Unspecified;
-            }
+            string path = Txt.Format(s_JsonPathTemplate, language.ToString());
+            return Resources.Load<TextAsset>(path) != null;
         }
 
         /// <summary>
