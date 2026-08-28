@@ -40,7 +40,7 @@ public static ConfigRuntimeSO Export(
     ConfigMasterSO master, PlatformType platform, ChannelType channel, DevelopMode mode, string savePath);
 ```
 
-`Export` 保留显式 `platform` 参数，作为公共底层 API 可导出调用方明确传入的任意合法矩阵坐标，不在此层读取或改写 Unity BuildTarget。生产入口的约束在调用方执行：ConfigWindow、Pipify `export.config` 与 `nova.project.config.export-runtime` 只会传入 Unity 当前 Active BuildTarget 映射的平台，并在未映射或漂移时阻断。不要把这一层显式 API 的兼容语义误认为 ConfigWindow 可以手工切 Platform。
+`Export` 保留显式 `platform` 参数，作为公共底层 API 可导出调用方明确传入的任意合法矩阵坐标，不在此层读取或改写 Unity BuildTarget。生产入口的约束在调用方执行：ConfigWindow 可手工切换编辑平台，但只有编辑平台与 Unity 当前 Active BuildTarget 映射一致时才会调用导出；Pipify `export.config` 与 `nova.project.config.export-runtime` 同样在未映射或漂移时阻断。
 
 ---
 
@@ -101,11 +101,11 @@ private static List<IKitConfig> FilterEnabledKits(PlatformChannelEntry entry, De
 ## §11 使用示例
 
 ```csharp
-// ConfigWindow.OnClickExport 中（CurrentPlatform 实时映射 Unity Active BuildTarget；导出目标路径从 m_Master.ExportTarget 取得）
+// ConfigWindow.OnClickExport 中（m_EditingPlatform 已通过 Active BuildTarget 一致性门禁；导出目标路径从 m_Master.ExportTarget 取得）
 string assetPath = AssetDatabase.GetAssetPath(m_Master.ExportTarget);
 ConfigRuntimeSO runtime = EditorUtil.Config.Exporter.Export(
     m_Master,
-    m_Master.CurrentPlatform,
+    m_EditingPlatform,
     m_Master.CurrentChannel,
     m_Master.CurrentDevelopMode,
     assetPath);
@@ -124,7 +124,7 @@ ConfigRuntimeSO runtime = EditorUtil.Config.Exporter.Export(
 
 - 使用 `System.IO.Path.GetDirectoryName`（完全限定名），避免与 `NovaFramework.Runtime.Path` 类歧义
 - 覆盖写入策略（existing != null 时仅 SetDirty）能保留其他地方对此资产的已有引用；首次导出才 CreateAsset
-- 若业务代码直接调用 `Export` 并显式传入其他平台，调用方负责保证构建、YooAsset 与目标产物的一致性；UI / Pipify / Agent Action 已为日常生产路径收口到 Active BuildTarget。
+- 若业务代码直接调用 `Export` 并显式传入其他平台，调用方负责保证构建、YooAsset 与目标产物的一致性；ConfigWindow / Pipify / Agent Action 的日常生产路径均以 Active BuildTarget 做最终门禁。
 
 ---
 

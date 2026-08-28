@@ -68,11 +68,13 @@ public static List<PackageDisplayEntry> BuildDisplayEntries(VerdaccioPackageInfo
 
 ```csharp
 /// <summary>
-/// 从 packages-lock.json 读取所有已安装包的实际版本号（含直接和传递依赖）。
+/// 从 Unity 当前已注册包及其 resolvedPath/package.json 读取实际安装版本。
 /// </summary>
 /// <returns>包名到版本号的字典，读取失败返回 null。</returns>
 public static Dictionary<string, string> ReadInstalledVersions()
 ```
+
+`packages-lock.json` 只表示 UPM 期望解析图，不再作为“已安装”证据。PlugPals 会联合核对 `manifest.json`、lock、Unity Registered Packages、`resolvedPath` 与实际 `package.json`：声明或锁定版本未形成有效注册包、注册包带解析错误、路径或元数据缺失、实际版本与 lock 不一致时，条目标记为 `ResolutionFailed`，不会显示成“已安装”。开发仓通过 manifest 直接声明的 `file:` 包是明确例外：只有引用目录真实存在且 `package.json` 包名、版本有效时才视为已安装，以兼容 `file:../Assets/Framework` 这类源码开发形态。
 
 ### manifest 操作
 
@@ -188,7 +190,7 @@ public static async Task<string> FetchChangelogAsync(string registryUrl, string 
 2. **`com.unity.` 前缀**（`IsUnityPackageName`）：Unity 官方默认 registry 兜底，无需额外配置。
 3. **被包自带 `nova.scopedRegistries` scope 前缀覆盖**（`IsCoveredByDeclaredRegistries`）：依赖由包声明的私有仓库提供（如 MAX 包声明的 AppLovin 仓库），安装时写入该私有仓库的 scoped registry，但依赖本身保持为主包 `package.json` 的传递依赖，不展开写入项目顶层 `manifest.dependencies`。
 4. **被项目 `manifest.json` 已配 `scopedRegistries` scope 前缀覆盖**（`IsCoveredByProjectScopedRegistries`）：用户已为该依赖手工配置好私有仓库（典型场景：OpenUPM 提供 `com.google.external-dependency-manager`），不再误判缺库、也不再尝试自动配 scope，交由 UPM 解析拉取。
-5. **本地已安装**：`ReadInstalledVersions()` 中包含该依赖名。
+5. **本地已安装**：Unity Registered Packages 中存在该包，且 `resolvedPath/package.json` 可读取、包名与版本有效、注册信息不含解析错误。
 6. **命中内存 registry 包列表**：依赖名存在于已 fetch 的外网或内部云包列表中 → 记为「待自动配 scope 安装」（进 `ToAutoScope`），并记录来源（`RegistrySource`：外网/内部云）。
 
 以上均不命中 → 判为**缺失库**（进 `Missing`）。

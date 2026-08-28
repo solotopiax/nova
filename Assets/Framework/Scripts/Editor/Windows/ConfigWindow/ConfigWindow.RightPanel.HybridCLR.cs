@@ -78,7 +78,7 @@ namespace NovaFramework.Editor
             }
 
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
-            EditorUtil.Config.DimensionProjector.Coord curCoord = new(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
+            EditorUtil.Config.DimensionProjector.Coord curCoord = new(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
             // 按当前坐标通过 DimensionalResolver 取显示值（正确读取 Override 或顶层默认值）
             string committedEntrance = EditorUtil.Config.DimensionalResolver.ResolveHybridCLR(workingSrc, curCoord.Platform, curCoord.Channel, curCoord.Mode).GameEntranceProcedureName;
 
@@ -140,7 +140,7 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Space(4f);
 
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
-            EditorUtil.Config.DimensionProjector.Coord curCoord = new(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
+            EditorUtil.Config.DimensionProjector.Coord curCoord = new(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
             // 按当前坐标 + HybridEditorConfigsMask 解析目标 SerializedProperty：IsGlobal 回落顶层；mask 非全局时进入坐标即建份（含顶层快照），list 绑 Override 内嵌列表。
             SerializedProperty aotProp = ResolveHybridCLRDllListProp(workingSrc, curCoord, "AotMetadataDlls");
             if (aotProp == null)
@@ -200,7 +200,7 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Space(4f);
 
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
-            EditorUtil.Config.DimensionProjector.Coord curCoord = new(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
+            EditorUtil.Config.DimensionProjector.Coord curCoord = new(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
             // 按当前坐标 + HybridEditorConfigsMask 解析目标 SerializedProperty：IsGlobal 回落顶层；mask 非全局时进入坐标即建份（含顶层快照），list 绑 Override 内嵌列表。
             SerializedProperty gameProp = ResolveHybridCLRDllListProp(workingSrc, curCoord, "StartupGameDlls");
             if (gameProp == null)
@@ -257,7 +257,7 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Space(4f);
 
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
-            EditorUtil.Config.DimensionProjector.Coord curCoord = new(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
+            EditorUtil.Config.DimensionProjector.Coord curCoord = new(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
             SerializedProperty gameProp = ResolveHybridCLRDllListProp(workingSrc, curCoord, "RunningGameDlls");
             if (gameProp == null)
             {
@@ -323,7 +323,7 @@ namespace NovaFramework.Editor
             }
 
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
-            EditorUtil.Config.DimensionProjector.Coord curCoord = new(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
+            EditorUtil.Config.DimensionProjector.Coord curCoord = new(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
             // 按当前坐标通过 DimensionalResolver 取显示值（正确读取 Override 或顶层默认值）
             string committedLinkXml = EditorUtil.Config.DimensionalResolver.ResolveHybridCLR(workingSrc, curCoord.Platform, curCoord.Channel, curCoord.Mode).LinkXmlTargetPath;
 

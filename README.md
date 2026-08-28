@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.6.20-blue.svg)
+![release](https://img.shields.io/badge/release-v0.6.21-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -14,6 +14,7 @@
 ## 系统需求
 
 - Unity `6000.4.2f1` 或更高版本。
+- Built-in Render Pipeline、IL2CPP、.NET Standard 2.1、C# 9。
 - 可访问 Solotopia UPM Registry；EDM 与默认 Unity MCP Provider 通过 OpenUPM 解析。
 - Android / iOS 构建仍需安装相应平台模块、SDK 与签名环境。
 
@@ -32,6 +33,7 @@
 | com.solotopia.nicevibrations | 10.0.5 |
 | com.solotopia.luban | 10.1.0 |
 | com.solotopia.yooasset | 1.1.0 |
+| com.solotopia.nova.framework.mcp | 0.1.2 |
 
 ## 架构概览
 
@@ -66,9 +68,10 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 | 本地化 | `Nova.Localization` | 多语言运行时切换，文本键取值、缺失检测与字体适配，支持运行期切换语言而无需重启。 |
 | 音频 | `Nova.Sound` | 音频播放与声音组管理，按组独立调节音量与静音，区分 BGM、音效与 UI 音，支持播放暂停与释放。 |
 | 触觉 | `Nova.Vibrate` | 触觉振动反馈，封装 Nice Vibrations，提供预设振动模式与自定义波形，适配 iOS / Android 差异。 |
+| 原生能力 | `Nova.Native` | 查询与请求通知权限、跳转应用或通知设置，以及请求应用内评价；平台桥接、并发协调与回调清理由 Native Manager 统一处理。 |
 | 界面 | `Nova.UI` | 界面生命周期与栈式管理，支持异步 / 同步打开关闭、界面分组与层级控制，自动复用实例池，覆盖弹窗、主界面与多层叠加场景。 |
-| 网络 | `Nova.Network` | 网络通信层，封装 HTTP / WebSocket 请求与 DNS over HTTPS，支持连接复用、超时重试与统一错误处理，对接 BestHTTP 底层。 |
-| SDK 接入 | `Nova.SDK` | 第三方 SDK 装配与初始化，统一管理广告（AdMob / MAX）、登录（Facebook / Apple / Google）、支付（IAP）、统计（AppsFlyer / Firebase）等插件。 |
+| 网络 | `Nova.Network` | 网络通信层，封装 HTTP / WebSocket 请求与 DNS over HTTPS；HTTP 默认使用 UnityWebRequest，BestHTTP 适配由独立可选包提供。 |
+| SDK 接入 | `Nova.SDK` | 第三方 SDK 的统一装配与初始化入口；广告、登录、支付和统计等具体能力由对应的独立 SDK UPM 包按需安装。 |
 | 流程 | `Nova.Procedure` | 基于有限状态机的启动流程编排，串联闪屏、版本检查、强更 / 热更、业务 DLL 加载等节点，节点间切换受控且可观测。 |
 | 应用 | `Nova.App` | 应用入口，负责版本检查、强制更新与新安装包下载，协调各子系统按启动阶段顺序就绪，是运行期的顶层编排者。 |
 | 检查器 (Editor) | `Inspectors` | 各 Component 的自定义 Inspector，配置字段在 Unity 面板内可视化编辑与校验，配合 HelpBox 提示约束，降低误配风险。 |
@@ -82,11 +85,21 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 
 ## 安装
 
-下载火种脚本 [NovaSpark.cs](./NovaSpark.cs)，拖入 Unity 工程，等待编译结束即可。
+1. 下载火种脚本 [NovaSpark.cs](./NovaSpark.cs)，放入消费项目的 `Assets/Editor/`。
+2. Unity 编译完成后，在弹窗中确认“引入框架”。脚本会补齐 Framework、BestHTTP、EDM、所需 Registry、PlugPals 配置与 Android 发布设置，并触发 UPM Resolve。
+3. 等待包解析和编译完成；PlugPals 窗口成功打开后，火种脚本会自动删除自身。
+
+NovaSpark 会修改项目配置。已有 Nova 项目重复导入时，它会先列出待矫正项并等待确认；本仓这类使用本地 `file:` Framework 的源码工程会自动跳过。
 
 ---
 
 ## 快速开始
+
+### 先运行 MainDemo
+
+首次接触 Nova 时，建议先在 Unity Package Manager 中导入 `Nova Framework / MainDemo`，按提示确认旧 Sample 检测与启动场景设置，然后进入 Play Mode。MainDemo 是可运行参考，不是强制项目模板；详细步骤见 [MainDemo README](./Assets/Samples/MainDemo/README.md)。
+
+自建项目应先阅读 [Nova Agent 快速入口](./Assets/Framework/Docs/START_HERE.md)，根据项目现有拓扑接入完整的 canonical `Nova.prefab`，并完成所需配置、资源与数据初始化后再调用 `Nova.*` API。
 
 ```csharp
 using NovaFramework.Runtime;
@@ -110,7 +123,7 @@ Nova.Prefab.Destroy(instance);
 ### 打开 UI
 
 ```csharp
-await Nova.UI.OpenUIViewAsync<MyView>();
+var serialId = Nova.UI.OpenUIViewAsync<MyView>();
 ```
 
 ### 订阅与派发事件
@@ -163,12 +176,22 @@ Assets/Framework/
 - **Minds（知识层）回答"为何如此设计"** —— 调整 public API / 命名 / 架构边界时查阅。
 - **冲突时以 Docs + 源码为基线**；未命中时如实说明，禁止凭印象编造。
 
+常用入口：[Start Here](./Assets/Framework/Docs/START_HERE.md) · [Docs Index](./Assets/Framework/Docs/INDEX.md) · [Architecture](./Assets/Framework/Docs/ARCHITECTURE.md) · [Nova Project Skills](./Assets/Framework/Agents/INDEX.md)
+
 将两层文档提供给 AI Agent，助手即可同时具备"会用 API + 知晓边界 + 沿用既有模式 + 避开已知坑"——这是最快上手的路径，也是项目长期可持续维护的保障。
+
+---
+
+## 版本与参与
+
+- 版本变化与升级注意事项见 [CHANGELOG](./CHANGELOG.md)。
+- 贡献代码或提交问题前请阅读 [CONTRIBUTING](./CONTRIBUTING.md) 与 [Code of Conduct](./CODE_OF_CONDUCT.md)。
+- 安全漏洞请按 [SECURITY](./SECURITY.md) 提供的私密渠道报告，不要提交公开 Issue。
 
 ---
 
 ## 许可证
 
-本项目基于 [MIT License](https://opensource.org/licenses/MIT) 开源。
+本项目基于 [MIT License](./LICENSE) 开源。
 
 Copyright © 2026 Solotopia

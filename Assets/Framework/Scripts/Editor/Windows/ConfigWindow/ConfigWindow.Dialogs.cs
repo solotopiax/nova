@@ -111,7 +111,7 @@ namespace NovaFramework.Editor
         private string BuildValidationMessage(IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues)
         {
             StringBuilder sb = new();
-            sb.AppendLine($"发现以下问题（校验范围：平台 {m_Master.CurrentPlatform} / 渠道 {m_Master.CurrentChannel} / 模式 {m_Master.CurrentDevelopMode}），[Error] 项必须修复后再导出，[Warning] 项不阻断本次导出：");
+            sb.AppendLine($"发现以下问题（校验范围：平台 {m_EditingPlatform} / 渠道 {m_Master.CurrentChannel} / 模式 {m_Master.CurrentDevelopMode}），[Error] 项必须修复后再导出，[Warning] 项不阻断本次导出：");
             bool hasMissingRef = false;
             for (int i = 0; i < issues.Count; i++)
             {

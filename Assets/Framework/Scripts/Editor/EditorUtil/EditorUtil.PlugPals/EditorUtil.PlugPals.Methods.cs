@@ -22,6 +22,89 @@ namespace NovaFramework.Editor
         public static partial class PlugPals
         {
             /// <summary>
+            /// 把 manifest 中可验证的 file: 直连开发包补入实际安装版本。
+            /// Unity 不一定把位于 Assets 下的本地包返回给 GetAllRegisteredPackages，因此需独立校验其真实目录与 package.json。
+            /// </summary>
+            /// <param name="versions">待补充的实际安装版本字典。</param>
+            private static void AddManifestLocalPackageVersions(IDictionary<string, string> versions)
+            {
+                if (versions == null)
+                {
+                    return;
+                }
+
+                string packagesDirectory = Util.SysIO.Path.GetFullPath(
+                    Util.SysIO.Path.Combine(Application.dataPath, "../", "Packages"));
+                string manifestPath = Util.SysIO.Path.Combine(packagesDirectory, "manifest.json");
+                ManifestData manifest = ReadManifest(manifestPath);
+                if (manifest?.dependencies == null)
+                {
+                    return;
+                }
+
+                foreach (KeyValuePair<string, string> dependency in manifest.dependencies)
+                {
+                    if (string.IsNullOrEmpty(dependency.Value) ||
+                        !dependency.Value.StartsWith("file:", StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    string localReference = dependency.Value.Substring("file:".Length);
+                    string resolvedPath = Util.SysIO.Path.GetFullPath(
+                        Util.SysIO.Path.Combine(packagesDirectory, localReference));
+                    if (TryReadResolvedPackageVersion(dependency.Key, resolvedPath, out string version))
+                    {
+                        versions[dependency.Key] = version;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// 校验 Unity 注册包的 resolvedPath，并从实际 package.json 读取包名与版本。
+            /// 只有目录、元数据和包名全部匹配时才视为真实安装成功。
+            /// </summary>
+            /// <param name="expectedPackageName">Unity 注册表中的包名。</param>
+            /// <param name="resolvedPath">Unity 返回的包实际解析路径。</param>
+            /// <param name="version">成功时返回 package.json 中的实际版本。</param>
+            /// <returns>包实际落盘且元数据有效时返回 true。</returns>
+            private static bool TryReadResolvedPackageVersion(string expectedPackageName, string resolvedPath, out string version)
+            {
+                version = null;
+                if (string.IsNullOrEmpty(expectedPackageName) || string.IsNullOrEmpty(resolvedPath) ||
+                    !Util.SysIO.Directory.Exists(resolvedPath))
+                {
+                    return false;
+                }
+
+                string packageJsonPath = Util.SysIO.Path.Combine(resolvedPath, "package.json");
+                if (!Util.SysIO.File.Exists(packageJsonPath))
+                {
+                    return false;
+                }
+
+                try
+                {
+                    string json = Util.SysIO.File.ReadAllTextSync(packageJsonPath);
+                    PackageJsonData packageJson = Util.Json.Deserialize<PackageJsonData>(json);
+                    if (packageJson == null ||
+                        !string.Equals(packageJson.name, expectedPackageName, StringComparison.Ordinal) ||
+                        string.IsNullOrEmpty(packageJson.version))
+                    {
+                        return false;
+                    }
+
+                    version = packageJson.version;
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    Log.Warning(LogTag.Editor, "PlugPals.TryReadResolvedPackageVersion 读取包元数据失败 {0}: {1}", packageJsonPath, e.Message);
+                    return false;
+                }
+            }
+
+            /// <summary>
             /// 根据 packages-lock.json 条目的来源类型解析实际版本号。
             /// </summary>
             /// <param name="packageName">包名。</param>

@@ -1,7 +1,7 @@
 # Nova Framework
 
 > 包名：`com.solotopia.nova.framework`
-> 当前版本：`0.6.20`
+> 当前版本：`0.6.21`
 > Unity：`6000.4`
 
 Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、各业务 Component 入口与默认 MainDemo Sample。
@@ -12,7 +12,7 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework": "0.6.20"
+  "com.solotopia.nova.framework": "0.6.21"
 }
 ```
 
@@ -36,6 +36,7 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 | `Nova.Persist` | `PersistComponent` | PlayerPrefs / FileFragment / SQLite 三种存储实现 |
 | `Nova.Sound` | `SoundComponent` | 音频播放与音轨管理 |
 | `Nova.Vibrate` | `VibrateComponent` | NiceVibrations 接入 |
+| `Nova.Native` | `NativeComponent` | 通知权限、系统设置跳转与应用内评价 |
 | `Nova.SDK` | `SDKComponent` | 第三方 SDK 接入 |
 | `Nova.Debug` | `DebugComponent` | 运行时调试悬浮窗 |
 
@@ -58,6 +59,7 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 | com.solotopia.nicevibrations | 10.0.5 |
 | com.solotopia.luban | 10.1.0 |
 | com.solotopia.yooasset | 1.1.0 |
+| com.solotopia.nova.framework.mcp | 0.1.2 |
 
 ## 可选商业依赖
 

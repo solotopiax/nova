@@ -24,6 +24,7 @@ namespace NovaFramework.Editor
         /// </summary>
         private void OnEnable()
         {
+            EnsureEditingPlatform();
             bool reconciled = EditorUtil.Config.WorkspaceActive.ReconcileScene(EditorSceneManager.GetActiveScene().path);
             m_Master = reconciled ? EditorUtil.Config.WorkspaceActive.Get() : null;
             if (m_Master != null)
@@ -104,17 +105,48 @@ namespace NovaFramework.Editor
 
         /// <summary>
         /// 应用延迟的坐标切换：在 DrawRightPanel 绘制完成后调用，此时当前编辑的字段已在旧坐标格子下完成失焦提交，
-        /// 再写入新的渠道与模式；平台始终实时读取 Unity Active BuildTarget，不写入 WorkingCopy。
+        /// 再写入新的平台、渠道与模式；编辑平台仅保存在窗口状态中，不写入 WorkingCopy 或 ConfigMasterSO。
         /// </summary>
         private void ApplyPendingCoordSwitch()
         {
             if (!m_HasPendingCoordSwitch) return;
             m_HasPendingCoordSwitch = false;
             if (m_WorkingCopy == null) return;
+            m_EditingPlatform = m_PendingPlatform;
             m_WorkingCopy.CurrentChannel = m_PendingChannel;
             m_WorkingCopy.CurrentDevelopMode = m_PendingDevelopMode;
             m_LastKnownChannel = m_PendingChannel;
             Repaint();
+        }
+
+        /// <summary>
+        /// 确保窗口拥有有效的编辑平台；首次打开优先使用 Unity Active BuildTarget，未映射时回退 Android。
+        /// </summary>
+        private void EnsureEditingPlatform()
+        {
+            if (m_EditingPlatform != PlatformType.None) return;
+            PlatformType activePlatform = EditorUtil.Config.ActivePlatform.Current;
+            m_EditingPlatform = activePlatform != PlatformType.None ? activePlatform : PlatformType.Android;
+        }
+
+        /// <summary>
+        /// 判断当前编辑平台是否与 Unity Active BuildTarget 对应平台一致。
+        /// </summary>
+        /// <returns>两者均有效且一致时返回 true。</returns>
+        private bool IsEditingPlatformAligned()
+        {
+            return IsPlatformAligned(m_EditingPlatform, EditorUtil.Config.ActivePlatform.Current);
+        }
+
+        /// <summary>
+        /// 比较显式编辑平台与活动构建平台，用于统一导出和 YooAsset 生效门禁。
+        /// </summary>
+        /// <param name="editingPlatform">ConfigWindow 当前编辑平台。</param>
+        /// <param name="activePlatform">Unity Active BuildTarget 对应平台。</param>
+        /// <returns>两者均有效且一致时返回 true。</returns>
+        private static bool IsPlatformAligned(PlatformType editingPlatform, PlatformType activePlatform)
+        {
+            return editingPlatform != PlatformType.None && editingPlatform == activePlatform;
         }
 
         /// <summary>

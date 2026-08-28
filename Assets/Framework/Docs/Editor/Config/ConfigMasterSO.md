@@ -1,6 +1,6 @@
 # ConfigMasterSO
 
-`ConfigMasterSO` 是 `NovaFramework.Editor` 下的设计态配置资产，只能由 Editor 程序集访问。ConfigWindow 编辑该资产，Exporter 将当前三维坐标裁剪为 `ConfigRuntimeSO`。其中平台维度不是资产可编辑状态：`CurrentPlatform` 每次访问都实时映射 Unity 当前 `EditorUserBuildSettings.activeBuildTarget`；渠道与开发模式仍由资产保存和选择。
+`ConfigMasterSO` 是 `NovaFramework.Editor` 下的设计态配置资产，只能由 Editor 程序集访问。ConfigWindow 编辑该资产，Exporter 将当前三维坐标裁剪为 `ConfigRuntimeSO`。平台维度不是 ConfigMaster 资产状态：`CurrentPlatform` 每次访问都实时映射 Unity 当前 `EditorUserBuildSettings.activeBuildTarget`；ConfigWindow 另以不写入 ConfigMaster 的窗口状态选择编辑平台，渠道与开发模式仍由资产保存和选择。
 
 ## Runtime 数据来源
 
@@ -20,9 +20,9 @@
 
 这些数据保存在 `ConfigMaster.asset`，不会写入 `ConfigRuntime.asset`。
 
-## Editor 平台真相源
+## Active BuildTarget 平台真相源
 
-`CurrentPlatform` 是只读计算属性，不序列化，也不能由 ConfigWindow、Pipify 或旧配置资产手动改写。它统一使用 `EditorUtil.Config.ActivePlatform` 映射当前 Unity Active BuildTarget：
+`CurrentPlatform` 是只读计算属性，不序列化，也不能由 ConfigWindow、Pipify 或旧配置资产手动改写。它统一使用 `EditorUtil.Config.ActivePlatform` 映射当前 Unity Active BuildTarget。ConfigWindow 顶栏的编辑平台是独立窗口状态，仅用于选择要编辑的矩阵份，不改变本属性：
 
 | Unity `activeBuildTarget` | `CurrentPlatform` |
 |---|---|
@@ -31,7 +31,7 @@
 | `WebGL` | `PlatformType.WebGL` |
 | 其他目标 | `PlatformType.None` |
 
-映射为 `None` 时，ConfigWindow 导出、Pipify 的 Config / Bundle / Player 构建等生产入口会明确阻断，要求先切换到受支持的 Unity BuildTarget；不会静默回退到资产中的旧平台值。
+映射为 `None` 时，ConfigWindow 仍可选择平台编辑并保存，但 ConfigRuntime 导出和所选 YooAsset 配置生效会被阻断；Pipify 的 Config / Bundle / Player 构建等生产入口仍要求先切换到受支持的 Unity BuildTarget。ConfigWindow 的 CDN 部署与清理由自身明确选择的编辑平台解析配置和路径，不依赖 Active BuildTarget。
 
 升级前序列化的 `CurrentPlatform` 通过隐藏字段 `m_LegacyCurrentPlatform`（`FormerlySerializedAs("CurrentPlatform")`）无损读入。该字段只承担旧资产兼容，绝不参与当前坐标、占位符解析或导出决策。
 

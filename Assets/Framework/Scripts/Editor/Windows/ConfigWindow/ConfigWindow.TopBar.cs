@@ -42,7 +42,7 @@ namespace NovaFramework.Editor
 
                 if (m_Master == null) return;
 
-                // 第二行：只读平台 + 渠道/模式选择 + 导出区域整体靠右
+                // 第二行：编辑平台 + 渠道/模式选择 + 导出区域整体靠右
                 EditorUtil.Draw.Layout.Horizontal(() =>
                 {
                     // 三组控件压缩 labelWidth，组间插 24f 间距
@@ -52,11 +52,8 @@ namespace NovaFramework.Editor
                         EditorGUIUtility.labelWidth = 80f;
 
                         EditorUtil.Draw.Label("平台类型：", false, GUILayout.Width(64f));
-                        PlatformType platform = m_Master.CurrentPlatform;
-                        EditorUtil.Draw.DisabledGroup(true, () =>
-                        {
-                            EditorUtil.Draw.EnumPopup<PlatformType>(string.Empty, platform, false, GUILayout.Width(120));
-                        });
+                        PlatformType platform = EditorUtil.Draw.EnumPopup<PlatformType>(string.Empty, m_EditingPlatform, false, GUILayout.Width(120));
+                        TryApplyPlatform(platform);
                         EditorUtil.Draw.Space(24f);
 
                         EditorUtil.Draw.Label("渠道类型：", false, GUILayout.Width(64f));
@@ -86,7 +83,10 @@ namespace NovaFramework.Editor
                     }
 
                     EditorUtil.Draw.Button("选择", false, () => OnClickSelectExportAsset(), GUILayout.Width(64f));
-                    EditorUtil.Draw.SuccessButton("导出", false, () => OnClickExport(), GUILayout.Width(64f));
+                    EditorUtil.Draw.DisabledGroup(!IsEditingPlatformAligned(), () =>
+                    {
+                        EditorUtil.Draw.SuccessButton("导出", false, () => OnClickExport(), GUILayout.Width(64f));
+                    });
                     ConfigRuntimeSO exportTarget = m_WorkingCopy != null ? m_WorkingCopy.ExportTarget : null;
                     EditorUtil.Draw.DisabledGroup(exportTarget == null, () =>
                     {
@@ -98,22 +98,37 @@ namespace NovaFramework.Editor
                     });
                 });
 
-                EditorUtil.Draw.HintLabel(
-                    "平台类型实时取自 Unity 当前 Active BuildTarget，不可在此编辑；如需切换平台，请先切换 Unity BuildTarget。" +
-                    "渠道类型和开发模式用于选择本次导出的配置组合。Runtime 平台仍由 Player 实际构建目标决定。");
-                if (m_Master.CurrentPlatform == PlatformType.None)
+                if (!IsEditingPlatformAligned())
                 {
-                    EditorUtil.Draw.HelpBox(
-                        MessageType.Error,
-                        new[]
-                        {
-                            $"Unity 当前 Active BuildTarget={EditorUserBuildSettings.activeBuildTarget} 没有对应的 Nova PlatformType。",
-                            "请先切换到 Android、iOS 或 WebGL。",
-                        },
-                        false,
-                        GUILayout.ExpandWidth(true));
+                    EditorUtil.Draw.ColoredMiniLabel(
+                        "平台不一致：当前仅可编辑、保存配置，不可导出。",
+                        new Color(0.95f, 0.4f, 0.35f),
+                        false);
+                }
+                else
+                {
+                    EditorUtil.Draw.HintLabel(
+                        "平台类型用于选择当前编辑的配置；与 Unity Active BuildTarget 一致时才允许导出并使 YooAsset 配置生效。" +
+                        "渠道类型和开发模式用于选择当前配置组合。Runtime 平台仍由 Player 实际构建目标决定。");
                 }
             });
+        }
+
+        /// <summary>
+        /// 尝试应用编辑平台变更；先释放当前字段焦点，再延迟到右侧面板绘制完成后切换坐标。
+        /// </summary>
+        /// <param name="platform">目标编辑平台；None 为无效选择并被忽略。</param>
+        private void TryApplyPlatform(PlatformType platform)
+        {
+            if (m_WorkingCopy == null || platform == PlatformType.None || platform == m_EditingPlatform) return;
+            m_MasterSO?.ApplyModifiedProperties();
+            GUI.FocusControl(null);
+            EditorGUIUtility.editingTextField = false;
+            m_PendingPlatform = platform;
+            m_PendingChannel = m_WorkingCopy.CurrentChannel;
+            m_PendingDevelopMode = m_WorkingCopy.CurrentDevelopMode;
+            m_HasPendingCoordSwitch = true;
+            Repaint();
         }
 
         /// <summary>
@@ -199,7 +214,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 尝试应用 Channel 变更；Platform 始终实时读取 Active BuildTarget，不在此方法中维护；值未改变时直接返回；
+        /// 尝试应用 Channel 变更；值未改变时直接返回；
         /// 否则释放焦点后记录 pending 坐标，延迟一帧由 ApplyPendingCoordSwitch 写入 WorkingCopy，
         /// 确保当前编辑字段在旧坐标格子下完成失焦提交后再切坐标（PAT-22 升级）。
         /// </summary>
@@ -212,6 +227,7 @@ namespace NovaFramework.Editor
             GUI.FocusControl(null);
             EditorGUIUtility.editingTextField = false;
             // 延迟一帧切坐标：本帧不改坐标，待 DrawRightPanel 让当前编辑字段在旧坐标格子下完成失焦提交后，由 ApplyPendingCoordSwitch 应用（PAT-22 升级）
+            m_PendingPlatform = m_EditingPlatform;
             m_PendingChannel = channel;
             m_PendingDevelopMode = m_WorkingCopy.CurrentDevelopMode;
             m_HasPendingCoordSwitch = true;
@@ -234,6 +250,7 @@ namespace NovaFramework.Editor
             GUI.FocusControl(null);
             EditorGUIUtility.editingTextField = false;
             // 延迟一帧切坐标：本帧不改坐标，待 DrawRightPanel 让当前编辑字段在旧坐标格子下完成失焦提交后，由 ApplyPendingCoordSwitch 应用（PAT-22 升级）
+            m_PendingPlatform = m_EditingPlatform;
             m_PendingChannel = m_WorkingCopy.CurrentChannel;
             m_PendingDevelopMode = developMode;
             m_HasPendingCoordSwitch = true;
@@ -258,6 +275,14 @@ namespace NovaFramework.Editor
         /// </summary>
         private void OnClickExport()
         {
+            if (!IsEditingPlatformAligned())
+            {
+                EditorUtility.DisplayDialog(
+                    "导出失败",
+                    $"当前编辑平台 {m_EditingPlatform} 与 Unity Active BuildTarget={EditorUserBuildSettings.activeBuildTarget} 对应平台 {EditorUtil.Config.ActivePlatform.Current} 不一致。请先切换 Unity BuildTarget。",
+                    "知道了");
+                return;
+            }
             try
             {
                 EditorUtil.Config.ActivePlatform.RequireCurrent("Config 导出");
@@ -273,7 +298,7 @@ namespace NovaFramework.Editor
                 return;
             }
             IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues =
-                EditorUtil.Config.Validator.Validate(m_Master, m_Master.CurrentPlatform, m_Master.CurrentChannel, m_Master.CurrentDevelopMode);
+                EditorUtil.Config.Validator.Validate(m_Master, m_EditingPlatform, m_Master.CurrentChannel, m_Master.CurrentDevelopMode);
             if (HasAnyError(issues))
             {
                 ShowValidationDialog(issues);
@@ -297,7 +322,7 @@ namespace NovaFramework.Editor
             {
                 result = EditorUtil.Config.Exporter.Export(
                     m_Master,
-                    m_Master.CurrentPlatform,
+                    m_EditingPlatform,
                     m_Master.CurrentChannel,
                     m_Master.CurrentDevelopMode,
                     assetPath);
@@ -309,7 +334,7 @@ namespace NovaFramework.Editor
             }
             if (result == null)
             {
-                EditorUtility.DisplayDialog("导出失败", $"未找到 Platform={m_Master.CurrentPlatform} × Channel={m_Master.CurrentChannel} 的配置行，请检查 ConfigMasterSO。", "知道了");
+                EditorUtility.DisplayDialog("导出失败", $"未找到 Platform={m_EditingPlatform} × Channel={m_Master.CurrentChannel} 的配置行，请检查 ConfigMasterSO。", "知道了");
                 return;
             }
 

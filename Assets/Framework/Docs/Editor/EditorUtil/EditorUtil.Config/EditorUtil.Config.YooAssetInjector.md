@@ -49,6 +49,8 @@ public static BundleCollectorSetting LoadBundleCollector(ConfigMasterSO master);
 | `EditorUtil.SceneRoute` | `EditorSceneManager.sceneOpened` 的 `OpenSceneMode.Single` | 解析 active ConfigMaster 一次，依次输出 Scene / ConfigMaster / YooAssetSettings / PipifySettings 四条摘要，并调用 `YooAssetInjector.Inject`。Additive 打开不切换路由；相同场景重开仅重新确认和注入，不会为了日志额外写入 `Globals.json` |
 | `YooAssetRuntimeSettingsStaging.InjectForEditorPlayMode` | `BeforeSceneLoad` | YooAsset 在 `SubsystemRegistration` 清空静态 Settings 后，重新按当前 ConfigMaster 的 Platform（实时映射 Unity Active BuildTarget）/ Channel / DevelopMode 解析路径并调用 `InjectByPath`；不创建 Resources 副本 |
 
+ConfigWindow 的编辑平台可以独立于 Active BuildTarget。两者不一致时，YooAsset 面板仍允许编辑并保存路径和模板，但 `ReInjectYooAsset` 不改变当前 Unity 的 `YooAssetConfiguration`；重新对齐后会强制再次注入。ConfigRuntime 导出同样要求平台一致，成功导出时 `Exporter.WriteYooAssetSettings` 会把模板解析结果写入目标 `YooAssetSettings.asset`。
+
 ---
 
 ## §11 使用示例

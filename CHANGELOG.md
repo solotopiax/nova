@@ -6,6 +6,17 @@
 
 ---
 
+## [0.6.21] - 2026-08-28
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.21]` 节。
+
+### Changed
+
+- 发布 Framework `0.6.21`，完善 PlugPals 包解析状态识别，并允许 ConfigWindow 跨平台编辑和保存配置、仅在平台一致时导出。
+- README 补充系统要求、核心依赖和框架能力说明。
+
+---
+
 ## [0.6.20] - 2026-08-27
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.20]` 节。

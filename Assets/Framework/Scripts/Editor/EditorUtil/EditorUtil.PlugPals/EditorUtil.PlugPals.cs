@@ -52,12 +52,49 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 从 packages-lock.json 读取所有已安装包的实际版本号（含直接和传递依赖）。
-            /// 对于 file: 引用读取对应 package.json；对于 git 引用从 Library/PackageCache 中读取实际版本；
-            /// 对于 registry 引用直接使用 lock 文件中的版本号。
+            /// 从 Unity 当前已注册包及其 resolvedPath/package.json 读取实际安装版本。
+            /// lock 文件只描述期望解析图，不能作为安装成功证据。
             /// </summary>
-            /// <returns>包名到版本号的字典，读取失败返回 null。</returns>
+            /// <returns>包名到实际版本号的字典；Unity 注册状态不可用时返回 null。</returns>
             public static Dictionary<string, string> ReadInstalledVersions()
+            {
+                try
+                {
+                    UnityEditor.PackageManager.PackageInfo[] packages = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
+                    if (packages == null)
+                    {
+                        return null;
+                    }
+
+                    var versions = new Dictionary<string, string>(packages.Length, StringComparer.Ordinal);
+                    for (int i = 0; i < packages.Length; i++)
+                    {
+                        UnityEditor.PackageManager.PackageInfo package = packages[i];
+                        if (package == null || (package.errors != null && package.errors.Length > 0) ||
+                            !TryReadResolvedPackageVersion(package.name, package.resolvedPath, out string version))
+                        {
+                            continue;
+                        }
+
+                        versions[package.name] = version;
+                    }
+
+                    AddManifestLocalPackageVersions(versions);
+
+                    return versions;
+                }
+                catch (Exception e)
+                {
+                    Log.Warning(LogTag.Editor, "PlugPals.ReadInstalledVersions 读取 Unity 已注册包失败: {0}", e.Message);
+                    return null;
+                }
+            }
+
+            /// <summary>
+            /// 从 packages-lock.json 读取期望解析版本；该结果只用于识别解析图与实际注册状态不一致。
+            /// </summary>
+            /// <returns>包名到锁定版本的字典，读取失败返回 null。</returns>
+            private static Dictionary<string, string> ReadLockedVersions()
             {
                 string lockPath = Util.SysIO.Path.Combine(Application.dataPath, "../", "Packages/packages-lock.json");
                 string fullLockPath = Util.SysIO.Path.GetFullPath(lockPath);
@@ -75,7 +112,7 @@ namespace NovaFramework.Editor
                 }
                 catch (Exception e)
                 {
-                    Log.Warning(LogTag.Editor, "PlugPals.ReadInstalledVersions 读取 packages-lock.json 失败: {0}", e.Message);
+                    Log.Warning(LogTag.Editor, "PlugPals.ReadLockedVersions 读取 packages-lock.json 失败: {0}", e.Message);
                     return null;
                 }
 
@@ -113,7 +150,12 @@ namespace NovaFramework.Editor
             public static List<PackageDisplayEntry> BuildDisplayEntries(VerdaccioPackageInfo[] remotePackages, string registryUrl)
             {
                 Dictionary<string, string> installedVersions = ReadInstalledVersions();
+                Dictionary<string, string> lockedVersions = ReadLockedVersions();
                 ManifestData manifest = ReadManifest(Util.SysIO.Path.GetFullPath(Util.SysIO.Path.Combine(Application.dataPath, "../", c_ManifestRelativePath)));
+                if (installedVersions == null || lockedVersions == null || manifest == null)
+                {
+                    throw new InvalidOperationException("无法核验 Unity 已注册包、packages-lock.json 与 manifest.json 的一致性，请等待 Package Manager 就绪后刷新。");
+                }
 
                 var entries = new List<PackageDisplayEntry>(remotePackages.Length);
                 for (int i = 0; i < remotePackages.Length; i++)
@@ -125,9 +167,12 @@ namespace NovaFramework.Editor
                     }
 
                     string localVersion = null;
-                    installedVersions?.TryGetValue(remote.Name, out localVersion);
+                    installedVersions.TryGetValue(remote.Name, out localVersion);
+                    string lockedVersion = null;
+                    lockedVersions.TryGetValue(remote.Name, out lockedVersion);
+                    bool isDirectDependency = manifest.dependencies?.ContainsKey(remote.Name) == true;
                     bool isNonRegistry = IsNonRegistryReference(remote.Name, manifest);
-                    PackageStatus status = CompareVersions(localVersion, remote.Version, isNonRegistry);
+                    PackageStatus status = ResolvePackageStatus(localVersion, lockedVersion, isDirectDependency, remote.Version, isNonRegistry);
 
                     entries.Add(new PackageDisplayEntry
                     {
@@ -135,6 +180,9 @@ namespace NovaFramework.Editor
                         DisplayName = string.IsNullOrEmpty(remote.DisplayName) ? remote.Name : remote.DisplayName,
                         Description = remote.Description,
                         LocalVersion = localVersion,
+                        LockedVersion = lockedVersion,
+                        IsDirectDependency = isDirectDependency,
+                        IsNonRegistry = isNonRegistry,
                         LatestVersion = remote.Version,
                         Status = status,
                         Category = CategorizePackage(remote.Name),
@@ -146,6 +194,34 @@ namespace NovaFramework.Editor
 
                 entries.Sort((a, b) => string.Compare(a.DisplayName, b.DisplayName, StringComparison.OrdinalIgnoreCase));
                 return entries;
+            }
+
+            /// <summary>
+            /// 联合实际注册版本、锁定版本与 direct 声明判断展示状态。
+            /// 任何声明或锁定状态与实际注册状态不一致的包都必须显式标为解析失败。
+            /// </summary>
+            /// <param name="localVersion">Unity 已注册且 resolvedPath 可用的实际版本。</param>
+            /// <param name="lockedVersion">packages-lock.json 中的期望版本。</param>
+            /// <param name="isDirectDependency">是否由 manifest.json 直接声明。</param>
+            /// <param name="remoteVersion">仓库最新版本。</param>
+            /// <param name="isNonRegistry">是否为非 registry 来源。</param>
+            /// <returns>用于窗口展示与操作门禁的包状态。</returns>
+            internal static PackageStatus ResolvePackageStatus(
+                string localVersion,
+                string lockedVersion,
+                bool isDirectDependency,
+                string remoteVersion,
+                bool isNonRegistry)
+            {
+                bool expectedByProject = isDirectDependency || !string.IsNullOrEmpty(lockedVersion);
+                bool resolvedMatchesLock = string.IsNullOrEmpty(lockedVersion) ||
+                                           string.Equals(localVersion, lockedVersion, StringComparison.Ordinal);
+                if (expectedByProject && (string.IsNullOrEmpty(localVersion) || !resolvedMatchesLock))
+                {
+                    return PackageStatus.ResolutionFailed;
+                }
+
+                return CompareVersions(localVersion, remoteVersion, isNonRegistry);
             }
 
             /// <summary>
@@ -365,8 +441,9 @@ namespace NovaFramework.Editor
                 SaveManifest(manifestPath, manifest);
                 ResolvePackages();
 
-                entry.LocalVersion = entry.LatestVersion;
-                entry.Status = PackageStatus.Installed;
+                entry.LockedVersion = entry.LatestVersion;
+                entry.IsDirectDependency = true;
+                entry.Status = PackageStatus.ResolutionPending;
                 return true;
             }
 
@@ -429,8 +506,9 @@ namespace NovaFramework.Editor
                 SaveManifest(manifestPath, manifest);
                 ResolvePackages();
 
-                entry.LocalVersion = null;
-                entry.Status = PackageStatus.NotInstalled;
+                entry.LockedVersion = null;
+                entry.IsDirectDependency = false;
+                entry.Status = PackageStatus.ResolutionPending;
             }
 
             /// <summary>

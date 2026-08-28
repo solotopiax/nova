@@ -3,7 +3,7 @@
 **类签名**：`public static class EditorUtil.Config.ActivePlatform`
 **命名空间**：`NovaFramework.Editor`
 
-Nova 编辑期的平台真相入口。它实时读取 Unity `EditorUserBuildSettings.activeBuildTarget`，供 ConfigWindow、Pipify、ProjectGuard 与 Agent Action 使用；不读取或回写 ConfigMaster 中升级前遗留的平台序列化值。
+Nova 编辑期执行平台的真相入口。它实时读取 Unity `EditorUserBuildSettings.activeBuildTarget`，供 ConfigWindow 的导出/YooAsset 生效门禁、Pipify、ProjectGuard 与 Agent Action 使用；不读取或回写 ConfigMaster 中升级前遗留的平台序列化值。ConfigWindow 可另选仅用于编辑和 CDN 操作的平台坐标。
 
 ## 平台映射
 

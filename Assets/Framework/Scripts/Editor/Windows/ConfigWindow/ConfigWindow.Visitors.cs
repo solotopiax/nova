@@ -195,6 +195,12 @@ namespace NovaFramework.Editor
         private ConfigMasterSO m_WorkingCopy;
 
         /// <summary>
+        /// ConfigWindow 当前编辑的平台坐标；仅属于本地窗口状态，不写入 ConfigMasterSO 配置资产。
+        /// </summary>
+        [SerializeField]
+        private PlatformType m_EditingPlatform;
+
+        /// <summary>
         /// 与 m_WorkingCopy 绑定的 SerializedObject；面板绘制时通过此对象读写。
         /// </summary>
         private SerializedObject m_MasterSO;
@@ -250,6 +256,11 @@ namespace NovaFramework.Editor
         /// 待 DrawRightPanel 绘制完成（当前编辑字段在旧坐标格子下完成失焦提交）后再应用。
         /// </summary>
         private bool m_HasPendingCoordSwitch;
+
+        /// <summary>
+        /// 待应用的目标平台（延迟切坐标，见 m_HasPendingCoordSwitch）。
+        /// </summary>
+        private PlatformType m_PendingPlatform;
 
         /// <summary>
         /// 待应用的目标渠道（延迟切坐标，见 m_HasPendingCoordSwitch）。

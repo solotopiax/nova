@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.6.21] - 2026-08-28
+
+### Changed
+
+- PlugPals 改为以 Unity 实际注册包及 `resolvedPath/package.json` 判断安装状态，并为声明后等待解析与解析失败提供独立状态和操作门禁。
+- ConfigWindow 支持独立切换编辑平台；平台与 Unity Active BuildTarget 不一致时仍可编辑和保存，但禁止 ConfigRuntime 导出及 YooAsset 配置生效，CDN 操作明确使用当前编辑平台。
+- README 补充 Unity 版本、渲染管线、脚本后端与核心依赖等运行环境说明。
+
 ## [0.6.20] - 2026-08-27
 
 ### Breaking

@@ -138,6 +138,7 @@ namespace NovaFramework.Editor
             }
 
             DrawRepoWarnings();
+            DrawResolutionWarnings();
 
             if (m_FilteredPackages != null)
             {

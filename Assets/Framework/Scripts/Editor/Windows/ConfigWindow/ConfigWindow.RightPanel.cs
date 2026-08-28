@@ -144,7 +144,7 @@ namespace NovaFramework.Editor
             m_MasterSO.Update();
 
             // 按当前坐标通过 DimensionalResolver 取显示值（正确读取 Override 或顶层默认值）
-            EditorUtil.Config.DimensionProjector.Coord curCoord = new(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
+            EditorUtil.Config.DimensionProjector.Coord curCoord = new(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
             string committedNamespace = EditorUtil.Config.DimensionalResolver.ResolveNamespace(workingSrc, curCoord.Platform, curCoord.Channel, curCoord.Mode);
             PanelDimensionMask namespaceMask = workingSrc.NamespaceMask;
 
@@ -185,11 +185,11 @@ namespace NovaFramework.Editor
                     if (namespaceMask.ByPlatform) { if (activeAxes.Length > 0) activeAxes.Append(" / "); activeAxes.Append("平台类型"); }
                     if (namespaceMask.ByChannel) { if (activeAxes.Length > 0) activeAxes.Append(" / "); activeAxes.Append("渠道类型"); }
                     if (namespaceMask.ByDevelopMode) { if (activeAxes.Length > 0) activeAxes.Append(" / "); activeAxes.Append("开发模式"); }
-                    string editingDesc = $"平台={workingSrc.CurrentPlatform} 渠道={workingSrc.CurrentChannel} 模式={workingSrc.CurrentDevelopMode}";
+                    string editingDesc = $"平台={m_EditingPlatform} 渠道={workingSrc.CurrentChannel} 模式={workingSrc.CurrentDevelopMode}";
                     EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                     {
                         $"(1) 当前按【{activeAxes}】分别保存，每种取值各存一份，互不影响",
-                        $"(2) 正在编辑【{editingDesc}】这一份；渠道/模式可在顶部切换，其它平台请先切换 Unity BuildTarget",
+                        $"(2) 正在编辑【{editingDesc}】这一份；平台/渠道/模式均可在顶部切换",
                         "(3) 热更红线：Namespace 一旦上线永不改，业务程序集名以此匹配",
                         "(4) 旧客户端业务 dll 程序集名仍是旧值，热推新配置会触发 ProcedureLoadDll 报「业务程序集未加载」直接断更",
                         "(5) 改 Namespace 必须强制更新客户端，禁纯热更",
@@ -324,7 +324,7 @@ namespace NovaFramework.Editor
             }
 
             EditorUtil.Config.DimensionProjector.Coord curCoord = new(
-                workingSrc.CurrentPlatform,
+                m_EditingPlatform,
                 workingSrc.CurrentChannel,
                 workingSrc.CurrentDevelopMode);
 
@@ -351,7 +351,7 @@ namespace NovaFramework.Editor
                     {
                         "(1) 当前是【全局共用一份】：本面板内容不区分平台 / 渠道 / 开发模式，整个工程共用同一份",
                         "(2) 勾选上方任一维度，可以让本面板按该维度的不同取值【分别保存】，每份独立编辑",
-                        "(3) 例：勾「平台类型」后，Android / iOS 各一份；切换 Unity BuildTarget 后分别编辑",
+                        "(3) 例：勾「平台类型」后，Android / iOS 各一份；通过顶部平台下拉分别编辑",
                     }, false, GUILayout.ExpandWidth(true));
                 }
                 else
@@ -360,11 +360,11 @@ namespace NovaFramework.Editor
                     if (mask.ByPlatform) { if (activeAxes.Length > 0) activeAxes.Append(" / "); activeAxes.Append("平台类型"); }
                     if (mask.ByChannel) { if (activeAxes.Length > 0) activeAxes.Append(" / "); activeAxes.Append("渠道类型"); }
                     if (mask.ByDevelopMode) { if (activeAxes.Length > 0) activeAxes.Append(" / "); activeAxes.Append("开发模式"); }
-                    string editingDesc = $"平台={workingSrc.CurrentPlatform} 渠道={workingSrc.CurrentChannel} 模式={workingSrc.CurrentDevelopMode}";
+                    string editingDesc = $"平台={m_EditingPlatform} 渠道={workingSrc.CurrentChannel} 模式={workingSrc.CurrentDevelopMode}";
                     EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                     {
                         $"(1) 当前按【{activeAxes}】分别保存：勾选的每个维度，其每种取值各存一份，互不影响",
-                        $"(2) 正在编辑【{editingDesc}】这一份；渠道/模式可在顶部切换，其它平台请先切换 Unity BuildTarget",
+                        $"(2) 正在编辑【{editingDesc}】这一份；平台/渠道/模式均可在顶部切换",
                         "(3) 未勾选的维度仍然共用同一份",
                         "(4) ⚠ 取消任一维度的勾选 = 把当前份合并到该维全部取值，其它份内容会被永久丢弃",
                     }, false, GUILayout.ExpandWidth(true));
@@ -383,7 +383,7 @@ namespace NovaFramework.Editor
             // 面板标题行（内联维度掩码三 toggle）+ HelpBox
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
             DrawPanelTitleWithMask("应用配置", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs, null);
-            if (!workingSrc.TryGetEntry(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, out PlatformChannelEntry entry))
+            if (!workingSrc.TryGetEntry(m_EditingPlatform, workingSrc.CurrentChannel, out PlatformChannelEntry entry))
             {
                 EditorUtil.Draw.Layout.Horizontal(() =>
                 {
@@ -456,7 +456,7 @@ namespace NovaFramework.Editor
             DrawCustomConfigRows(m_MasterSO.FindProperty("Custom")?.FindPropertyRelative("Entries"));
             m_MasterSO.ApplyModifiedProperties();
             // 字段编辑完成后广播同组格，确保组内数据一致（ChangeCheck 覆盖后追加）
-            EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs, null, new EditorUtil.Config.DimensionProjector.Coord(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
+            EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs, null, new EditorUtil.Config.DimensionProjector.Coord(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
             EditorUtil.Draw.Space(16f);
         }
 
@@ -467,7 +467,7 @@ namespace NovaFramework.Editor
         {
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
             DrawPanelTitleWithMask("隐私配置", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.PrivacyConfigs, null);
-            if (!workingSrc.TryGetEntry(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, out PlatformChannelEntry entry))
+            if (!workingSrc.TryGetEntry(m_EditingPlatform, workingSrc.CurrentChannel, out PlatformChannelEntry entry))
             {
                 EditorUtil.Draw.HelpBox(MessageType.Warning, new[] { "未找到当前 Platform × Channel 对应的配置行。" }, false);
                 return;
@@ -529,7 +529,7 @@ namespace NovaFramework.Editor
                 EditorUtil.Config.DimensionProjector.PanelKind.PrivacyConfigs,
                 null,
                 new EditorUtil.Config.DimensionProjector.Coord(
-                    workingSrc.CurrentPlatform,
+                    m_EditingPlatform,
                     workingSrc.CurrentChannel,
                     workingSrc.CurrentDevelopMode));
             EditorUtil.Draw.Space(16f);
@@ -643,7 +643,7 @@ namespace NovaFramework.Editor
         private void DrawSDKPanel()
         {
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
-            if (!workingSrc.TryGetEntry(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, out PlatformChannelEntry entry))
+            if (!workingSrc.TryGetEntry(m_EditingPlatform, workingSrc.CurrentChannel, out PlatformChannelEntry entry))
             {
                 // 入口校验失败时仍需渲染占位标题，用类型名兜底
                 string fallbackName = m_SelectedPluginType != null ? m_SelectedPluginType.Name : "SDK Plugin";
@@ -799,7 +799,7 @@ namespace NovaFramework.Editor
             // 字段确实发生变化时才广播同组格，保证 ADR-055 同组一致性
             if (sdkFieldChanged)
             {
-                EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.SDK, sdkTypeName, new EditorUtil.Config.DimensionProjector.Coord(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
+                EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.SDK, sdkTypeName, new EditorUtil.Config.DimensionProjector.Coord(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
             }
             EditorUtil.Draw.Space(16f);
         }
@@ -811,7 +811,7 @@ namespace NovaFramework.Editor
         private void DrawKitPanel()
         {
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
-            if (!workingSrc.TryGetEntry(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, out PlatformChannelEntry entry))
+            if (!workingSrc.TryGetEntry(m_EditingPlatform, workingSrc.CurrentChannel, out PlatformChannelEntry entry))
             {
                 // 入口校验失败时仍需渲染占位标题，用类型名兜底
                 string fallbackName = m_SelectedPluginType != null ? m_SelectedPluginType.Name : "Kit Config";
@@ -968,7 +968,7 @@ namespace NovaFramework.Editor
             // 字段确实发生变化时才广播同组格，保证 ADR-055 同组一致性
             if (kitFieldChanged)
             {
-                EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.Kit, kitTypeName, new EditorUtil.Config.DimensionProjector.Coord(workingSrc.CurrentPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
+                EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.Kit, kitTypeName, new EditorUtil.Config.DimensionProjector.Coord(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
             }
             EditorUtil.Draw.Space(16f);
         }

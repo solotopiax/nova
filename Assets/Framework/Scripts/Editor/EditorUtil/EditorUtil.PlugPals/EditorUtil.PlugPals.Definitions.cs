@@ -72,6 +72,16 @@ namespace NovaFramework.Editor
                 /// 已安装但来源为非仓库引用（git/file:），仅可清除卸载。
                 /// </summary>
                 NonRegistry,
+
+                /// <summary>
+                /// manifest 或 lock 已声明，但 Unity 未注册到完整可用的本地包。
+                /// </summary>
+                ResolutionFailed,
+
+                /// <summary>
+                /// 已提交 manifest 变更，正在等待 Unity Package Manager 完成解析。
+                /// </summary>
+                ResolutionPending,
             }
 
             /// <summary>
@@ -152,6 +162,21 @@ namespace NovaFramework.Editor
                 /// 本地已安装版本（null 表示未安装）。
                 /// </summary>
                 public string LocalVersion;
+
+                /// <summary>
+                /// packages-lock.json 中记录的期望解析版本；它不代表包已成功安装。
+                /// </summary>
+                public string LockedVersion;
+
+                /// <summary>
+                /// 当前包是否由 manifest.json 直接声明。
+                /// </summary>
+                public bool IsDirectDependency;
+
+                /// <summary>
+                /// 当前条目是否使用 git/file/http 等非 registry 来源。
+                /// </summary>
+                public bool IsNonRegistry;
 
                 /// <summary>
                 /// 远程最新版本。

@@ -2,7 +2,7 @@
 
 **类签名**：`public sealed partial class PlugPalsWindow : EditorWindow`  
 **命名空间**：`NovaFramework.Editor`  
-**菜单入口**：`Nova/Open Plug Pals`
+**菜单入口**：`Nova/Open PlugPals`
 
 `PlugPalsWindow` 是 PlugPals 云插件服务中心窗口。窗口自身只负责 GUI 与交互；远程拉取、manifest 读写、安装卸载等业务逻辑委托给 `EditorUtil.PlugPals`。当前窗口同时承载两套仓库视图：
 
@@ -27,7 +27,7 @@
 ## 当前公开入口
 
 ```csharp
-[MenuItem("Nova/Open Plug Pals")]
+[MenuItem("Nova/Open PlugPals")]
 public static void Open();
 
 public static void Open(bool showInstalledOnly);
@@ -72,7 +72,11 @@ public static void OpenInternalRegistry();
 - 仅当 `remote > local` 且当前包是 Verdaccio 仓库安装态时，按钮才显示 `升级`。
 - `local == remote` 与 `local > remote` 都统一显示 `已安装`，不再因为版本字符串“不相等”误亮升级按钮。
 - `file:` / `git:` / `http` 这类非仓库引用统一视为 `NonRegistry`：窗口允许 `卸载` / `UPM`，但不提供一键切换到仓库版的 `安装/升级`。
-- 点击 `安装 / 升级 / 卸载` 后，窗口只委托 `EditorUtil.PlugPals` 写入 `manifest.json`；真正的 UPM Resolve 会排队到下一帧执行并合并重复请求，避免在 IMGUI 按钮同步栈内触发 Package Manager 解析和 domain reload。
+- lock 版本不等于安装成功。只有 Unity 已注册包、注册信息无错误、`resolvedPath/package.json` 有效且实际版本与 lock 一致时才显示 `已安装`。
+- manifest 直接声明的 `file:` 开发包会校验真实目录及其 `package.json`；通过后按本地开发源显示，避免 Nova 主仓的 `Assets/Framework` 被误报为解析失败。
+- manifest 或 lock 已记录目标包、但实际注册包缺失或版本不一致时显示红色 `解析失败`；registry 包提供 `重试`，且不进入一键升级集合。
+- 任一仓库列表存在解析失败条目时，列表顶部显示包含包名的错误提示，避免只看“一键升级”按钮时误判为全部完成。
+- 点击 `安装 / 升级 / 卸载` 后先显示 `解析中`；窗口只委托 `EditorUtil.PlugPals` 写入 `manifest.json`，真正的 UPM Resolve 会排队到下一帧执行并合并重复请求。只有后续刷新核验通过才转为 `已安装`。
 
 ## 关键边界
 

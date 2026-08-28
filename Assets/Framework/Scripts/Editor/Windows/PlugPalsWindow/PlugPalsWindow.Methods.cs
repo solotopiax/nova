@@ -294,6 +294,50 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 对 manifest/lock 与 Unity 实际注册状态不一致的包给出全局醒目提示。
+        /// 同名包可能同时来自两个仓库视图，提示时按包名去重。
+        /// </summary>
+        private void DrawResolutionWarnings()
+        {
+            var failedNames = new HashSet<string>(StringComparer.Ordinal);
+
+            void Collect(IReadOnlyList<EditorUtil.PlugPals.PackageDisplayEntry> entries)
+            {
+                if (entries == null)
+                {
+                    return;
+                }
+
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    EditorUtil.PlugPals.PackageDisplayEntry entry = entries[i];
+                    if (entry?.Status == EditorUtil.PlugPals.PackageStatus.ResolutionFailed)
+                    {
+                        failedNames.Add(string.IsNullOrEmpty(entry.DisplayName) ? entry.Name : entry.DisplayName);
+                    }
+                }
+            }
+
+            Collect(m_ExternalPackages);
+            Collect(m_InternalPackages);
+            if (failedNames.Count == 0)
+            {
+                return;
+            }
+
+            var orderedNames = new List<string>(failedNames);
+            orderedNames.Sort(StringComparer.OrdinalIgnoreCase);
+            EditorUtil.Draw.HelpBox(
+                MessageType.Error,
+                new[]
+                {
+                    $"检测到 {orderedNames.Count} 个包解析失败：{string.Join("、", orderedNames)}",
+                    "清单或锁文件已记录版本，但 Unity 未注册到完整可用的包。请点击对应条目的“重试”重新解析。",
+                },
+                false);
+        }
+
+        /// <summary>
         /// 包条目统一排序：按显示名、包名、最新版本升序。
         /// </summary>
         private static int ComparePackageEntries(
@@ -569,7 +613,17 @@ namespace NovaFramework.Editor
             m_FoldoutStates[foldoutKey] = foldout;
 
             GUI.Label(new Rect(m_ColBorders[0] + 4f, y, m_ColBorders[1] - m_ColBorders[0] - 4f, h), entry.Description ?? "", m_RowDescStyle);
-            GUI.Label(new Rect(m_ColBorders[1], y, m_ColBorders[2] - m_ColBorders[1], h), entry.LocalVersion ?? "-----", m_RowVersionStyle);
+            Color previousLocalVersionColor = GUI.contentColor;
+            if (entry.Status == EditorUtil.PlugPals.PackageStatus.ResolutionFailed)
+            {
+                GUI.contentColor = new Color(1f, 0.4f, 0.35f);
+            }
+            else if (entry.Status == EditorUtil.PlugPals.PackageStatus.ResolutionPending)
+            {
+                GUI.contentColor = new Color(1f, 0.75f, 0.25f);
+            }
+            GUI.Label(new Rect(m_ColBorders[1], y, m_ColBorders[2] - m_ColBorders[1], h), GetLocalVersionLabel(entry), m_RowVersionStyle);
+            GUI.contentColor = previousLocalVersionColor;
 
             bool highlightLatestVersion = ShouldHighlightLatestVersion(entry);
             bool animateLatestVersion = ShouldAnimateLatestVersion(entry);
@@ -606,7 +660,12 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.SetIndentLevel(1);
 
                     DrawInfoField("Name", entry.Name, false);
-                    DrawInfoField("Local Version", entry.LocalVersion ?? "-----", false);
+                    DrawInfoField("Local Version", GetLocalVersionLabel(entry), false);
+                    if (!string.IsNullOrEmpty(entry.LockedVersion) &&
+                        !string.Equals(entry.LocalVersion, entry.LockedVersion, StringComparison.Ordinal))
+                    {
+                        DrawInfoField("Locked Version", entry.LockedVersion, false);
+                    }
                     DrawInfoField("Latest Version", entry.LatestVersion, ShouldHighlightLatestVersion(entry), ShouldAnimateLatestVersion(entry));
                     if (!string.IsNullOrEmpty(entry.CoreVersion))
                     {
@@ -731,6 +790,31 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 返回本地版本列的可信状态文案，避免把 lock 中尚未落盘的版本显示为已安装。
+        /// </summary>
+        /// <param name="entry">包条目。</param>
+        /// <returns>实际版本、解析中或解析失败文案。</returns>
+        private static string GetLocalVersionLabel(EditorUtil.PlugPals.PackageDisplayEntry entry)
+        {
+            if (entry == null)
+            {
+                return "-----";
+            }
+
+            if (entry.Status == EditorUtil.PlugPals.PackageStatus.ResolutionFailed)
+            {
+                return "解析失败";
+            }
+
+            if (entry.Status == EditorUtil.PlugPals.PackageStatus.ResolutionPending)
+            {
+                return "解析中";
+            }
+
+            return entry.LocalVersion ?? "-----";
+        }
+
+        /// <summary>
         /// 判断远端版本是否严格高于本地版本，仅此时才视为真正可升级。
         /// </summary>
         /// <param name="entry">包条目。</param>
@@ -787,9 +871,15 @@ namespace NovaFramework.Editor
         /// <returns>允许点击安装/升级返回 true。</returns>
         private static bool CanInstallOrUpgrade(EditorUtil.PlugPals.PackageDisplayEntry entry)
         {
-            if (entry == null || entry.Status == EditorUtil.PlugPals.PackageStatus.NonRegistry)
+            if (entry == null || entry.Status == EditorUtil.PlugPals.PackageStatus.NonRegistry ||
+                entry.Status == EditorUtil.PlugPals.PackageStatus.ResolutionPending)
             {
                 return false;
+            }
+
+            if (entry.Status == EditorUtil.PlugPals.PackageStatus.ResolutionFailed)
+            {
+                return !entry.IsNonRegistry;
             }
 
             if (entry.Status == EditorUtil.PlugPals.PackageStatus.NotInstalled)
@@ -910,6 +1000,16 @@ namespace NovaFramework.Editor
                 return "安装";
             }
 
+            if (entry.Status == EditorUtil.PlugPals.PackageStatus.ResolutionFailed)
+            {
+                return entry.IsNonRegistry ? "解析失败" : "重试";
+            }
+
+            if (entry.Status == EditorUtil.PlugPals.PackageStatus.ResolutionPending)
+            {
+                return "解析中";
+            }
+
             return HasRemoteUpgrade(entry) && entry.Status != EditorUtil.PlugPals.PackageStatus.NonRegistry ? "升级" : "已安装";
         }
 
@@ -921,6 +1021,15 @@ namespace NovaFramework.Editor
         private bool ConfirmInstall(EditorUtil.PlugPals.PackageDisplayEntry entry)
         {
             string displayName = string.IsNullOrEmpty(entry.DisplayName) ? entry.Name : entry.DisplayName;
+            if (entry.Status == EditorUtil.PlugPals.PackageStatus.ResolutionFailed)
+            {
+                return EditorUtility.DisplayDialog(
+                    "确认重新解析",
+                    string.Format("{0} 的清单或锁文件已更新，但 Unity 未注册到完整可用的包。是否重新触发 Package Manager 解析？", displayName),
+                    "重新解析",
+                    "取消");
+            }
+
             bool isUpgrade = entry.Status == EditorUtil.PlugPals.PackageStatus.Upgradeable;
             string title = isUpgrade ? "确认升级" : "确认安装";
             string message = isUpgrade
@@ -964,7 +1073,7 @@ namespace NovaFramework.Editor
         private void DrawRowActionButtons(EditorUtil.PlugPals.PackageDisplayEntry entry)
         {
             bool canInstallOrUpgrade = CanInstallOrUpgrade(entry);
-            bool canUninstall = entry.Status != EditorUtil.PlugPals.PackageStatus.NotInstalled;
+            bool canUninstall = !string.IsNullOrEmpty(entry.LocalVersion);
             string installLabel = GetInstallActionLabel(entry);
             string registryUrl = GetRegistryUrl(entry);
             string registryName = GetRegistryName(entry);
@@ -1109,7 +1218,7 @@ namespace NovaFramework.Editor
         private void DrawRowActionArea(EditorUtil.PlugPals.PackageDisplayEntry entry, Rect area)
         {
             bool canInstallOrUpgrade = CanInstallOrUpgrade(entry);
-            bool canUninstall = entry.Status != EditorUtil.PlugPals.PackageStatus.NotInstalled;
+            bool canUninstall = !string.IsNullOrEmpty(entry.LocalVersion);
             string installLabel = GetInstallActionLabel(entry);
             string registryUrl = GetRegistryUrl(entry);
             string registryName = GetRegistryName(entry);
