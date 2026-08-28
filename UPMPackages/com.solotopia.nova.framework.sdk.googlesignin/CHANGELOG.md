@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.18] - 2026-08-28
+
+### Changed
+
+- GoogleSigninDemo 移除 Launcher Prefab 上重复的 `TextLocalizing` 组件，统一由 Framework Launcher UI 文本渲染链处理。
+
 ## [0.0.17] - 2026-08-27
 
 ### Changed

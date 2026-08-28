@@ -50,7 +50,7 @@
 2. 缓存 `s_Settings`
 3. `LauncherLocalization.Initialize(settings?.LocalizationJsonPathTemplate)`
 
-所以启动期 UI 文本仍由 `LauncherLocalization` 从精简 `Resources` JSON 独立加载；语言选择策略与正式 `LocalizationManager` 共用，并通过启动语言镜像跨冷启动保持一致。
+所以启动期 UI 文本仍由 `LauncherLocalization` 从精简 `Resources` JSON 独立加载；语言选择策略与正式 `LocalizationManager` 共用，并通过启动语言镜像跨冷启动保持一致。面板写入 TMP 时直接使用这份启动语言执行 RTL/LTR 渲染，不等待正式本地化初始化。
 
 ### 2. 面板按需加载，并统一 `DontDestroyOnLoad`
 
@@ -102,6 +102,7 @@ Prefab 自己的 Canvas 配置会被覆盖，最终显示层级不由美术侧�
 
 - `LauncherStage` 现在对 `ShowProgress(stage)` 主要是语义标签，不再负责文本映射。
 - 启动期 UI 文本不依赖 `LocalizationManager`，所以不要把两套链路混在一起排查。
+- 旧 Prefab 上即使残留空 Key `TextLocalizing`，实例化后也会由 Launcher 文本渲染入口禁用并接管，不要求消费项目执行资源迁移。
 - `ShowDialog()` 在面板缺失时会直接执行确认回调，这是一条有意的降级路径。
 - 启动期 UI 默认 `DontDestroyOnLoad`，如果业务入口不回收，会出现跨场景残留。
 

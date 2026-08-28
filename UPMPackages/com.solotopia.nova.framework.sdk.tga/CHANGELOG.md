@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-08-28
+
+### Changed
+
+- TGADemo 移除 Launcher Prefab 上重复的 `TextLocalizing` 组件，统一由 Framework Launcher UI 文本渲染链处理。
+
 ## [0.1.10] - 2026-08-27
 
 ### Changed

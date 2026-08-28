@@ -14,7 +14,7 @@
 
 - 启动层：`Initialize / BootstrapAsync / LoadManifestAsync / SaveAssetCheckDeviceId`
 - 版本层：`GetCurrentPackageVersion / RequestLatestPackageVersionAsync`
-- 补丁层：`HasPatchAsync / CreateDownloader*`
+- 补丁层：`HasPatchAsync / HasPatchByTagsAsync / CreateDownloader*`
 - 资源层：`Load* / Preload*`
 - 治理层：`CleanupAsync / RefreshManifestAsync / ClearUnusedCacheAsync`
 
@@ -56,7 +56,8 @@
 
 ### 3. 补丁检查与下载器是分开的
 
-- `HasPatchAsync()`：只回答“是否有补丁”
+- `HasPatchAsync()`：只回答整包范围“是否有补丁”
+- `HasPatchByTagsAsync(tags)`：只回答指定 Tag 范围“是否有补丁”；空 Tag 等价整包
 - `CreateDownloader*()`：只创建下载器
 
 真正下载发生在下载器自己的执行流程里，不在 `IAssetManager` 契约本身里。
@@ -75,7 +76,7 @@
 - 版本：`GetCurrentPackageVersion()` / `RequestLatestPackageVersionAsync()`
 - 启动白名单缓存：`SaveAssetCheckDeviceId()`
 - 可启动版本确认：`CommitBootableVersion()`
-- 补丁：`HasPatchAsync()` / `CreateDownloader()`
+- 补丁：`HasPatchAsync()` / `HasPatchByTagsAsync()` / `CreateDownloader*()`
 - 加载：`LoadAsync<T>()` / `LoadSync<T>()`
 - 场景：`LoadSceneAsync()`
 - 原始文件：`LoadRawAsync()`
@@ -97,6 +98,7 @@
 - Handle 是否仍由调用方显式释放
 - `BootstrapAsync` 与 `LoadManifestAsync` 的阶段边界
 - `HasPatchAsync()` 是否继续允许内部补前置清单加载
+- `HasPatchByTagsAsync()` 是否继续与 `CreateDownloaderByTags()` 使用相同 Tag 范围
 - `Load*` 是否仍以默认包为主
 
 ## 相关实现

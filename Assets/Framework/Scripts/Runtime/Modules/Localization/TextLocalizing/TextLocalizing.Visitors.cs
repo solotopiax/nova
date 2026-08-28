@@ -65,6 +65,11 @@ namespace NovaFramework.Runtime
         private int m_FontRefreshVersion;
 
         /// <summary>
+        /// 是否已将 TMP 渲染控制权交给独立语言上下文。
+        /// </summary>
+        private bool m_IsTextRenderingRelinquished;
+
+        /// <summary>
         /// 事件管理器引用。
         /// </summary>
         private IEventManager m_EventManager;

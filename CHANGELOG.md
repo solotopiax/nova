@@ -6,6 +6,20 @@
 
 ---
 
+## [0.6.22] - 2026-08-28
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.22]` 节。
+
+### Breaking
+
+- `IAssetManager` / `AssetManagerBase` 新增 `HasPatchByTagsAsync`；仓外自定义资源 Manager 实现需要补齐该成员。
+
+### Fixed
+
+- 启动期补丁检查与实际 Tag 下载范围保持一致，并统一 Launcher 文本渲染职责；同步发布 13 个带新版 Launcher Prefab 的 Network Kit 与 SDK Sample。
+
+---
+
 ## [0.6.21] - 2026-08-28
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.21]` 节。

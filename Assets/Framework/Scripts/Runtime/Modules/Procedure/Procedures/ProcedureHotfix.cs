@@ -94,7 +94,6 @@ namespace NovaFramework.Runtime
 
             procedureOwner.RemoveData(ProcedureDataKeys.AppVersionResult);
             procedureOwner.RemoveData(ProcedureDataKeys.HasAssetPatch);
-            LauncherUIController.ShowProgress(LauncherStage.Hotfix);
 
             Log.Debug(LogTag.Procedure, "触发资源热更新。");
             TryDownloadAsync(CancellationToken).Forget();
@@ -176,6 +175,8 @@ namespace NovaFramework.Runtime
                 m_Complete = true;
                 return;
             }
+
+            LauncherUIController.ShowProgress(LauncherStage.Hotfix);
 
             downloader.OnProgress += (finished, total, finishedBytes, totalBytes) =>
             {

@@ -24,6 +24,7 @@
 
 - `Text` 是目标 `TMP_Text`
 - `LocalizationKey` 是启动期轻量本地化 key
+- 刷新时以 `LauncherLocalization.Language` 为准应用 RTL/LTR、字形连接、混排和富文本处理
 
 ### 3. `ApplyByType(activeType, hasCancelAction)`
 
@@ -40,6 +41,7 @@
 
 - 文本显隐由 `ApplyByType()` 控制，取消按钮显隐则由 `LauncherDialogPanel` 自己控制，两者不是同一层逻辑。
 - 如果同一个 `DialogType` 配了多条文本，它们会一起激活，不会自动互斥。
+- 旧 Launcher Prefab 上残留的 `TextLocalizing` 会在运行时实例上被禁用并交还 TMP 预处理器，不会修改原 Prefab 资产。
 
 ## 继续阅读
 

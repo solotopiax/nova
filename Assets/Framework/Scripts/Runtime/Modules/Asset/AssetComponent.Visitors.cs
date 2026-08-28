@@ -162,8 +162,8 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 启动期热更按 tag 过滤的 tag 列表。
-        /// 非空时 ProcedureHotfix 使用 CreateDownloaderByTags 替代整包下载；
-        /// 空列表表示下载整包（行为与旧逻辑一致）。
+        /// 非空时 ProcedureCheckVersion 与 ProcedureHotfix 分别按 Tag 判断和下载；
+        /// 空列表表示检查并下载整包（行为与旧逻辑一致）。
         /// </summary>
         [SerializeField]
         private List<string> m_LaunchHotfixTags;

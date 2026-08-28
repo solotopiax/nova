@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 974569662, guid: a6c1e4c70b6d4cf5b4c7b8f61a236f90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: cn.efunstudio.psd2ugui.dll::UGF.EditorTools.Psd2UGUI.Psd2UIFormSettings
-  UIImagesOutputDir: Assets/psd
-  UIFormOutputDir: Assets/psd
+  UIImagesOutputDir: Assets/PSD
+  UIFormOutputDir: Assets/PSD
   UseUIFormOutputDir: 1
   CompressImage: 0
   AutoCropMinimalNineSlice: 0
   LastUIFormOutputDir: Assets
+  AiPromptsDirectory: Assets/PSD/AIPrompts

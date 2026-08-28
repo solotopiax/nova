@@ -10,6 +10,8 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using ProcedureOwner = NovaFramework.Runtime.IFsm<NovaFramework.Runtime.IProcedureManager>;
@@ -144,12 +146,24 @@ namespace NovaFramework.Runtime
                 await assetManager.BootstrapAsync(ct);
                 ct.ThrowIfCancellationRequested();
                 await assetManager.LoadManifestAsync(null, ct);
-                m_HasAssetPatch = await assetManager.HasPatchAsync(null, ct);
+                List<string> hotfixTags = assetComponent.LaunchHotfixTags;
+                string patchScope;
+                if (hotfixTags == null || hotfixTags.Count == 0)
+                {
+                    patchScope = "all";
+                    m_HasAssetPatch = await assetManager.HasPatchAsync(null, ct);
+                }
+                else
+                {
+                    string[] tags = hotfixTags.ToArray();
+                    patchScope = Txt.Format("tags:{0}", string.Join(',', tags));
+                    m_HasAssetPatch = await assetManager.HasPatchByTagsAsync(tags, null, ct);
+                }
                 if (!m_HasAssetPatch)
                 {
                     assetManager.CommitBootableVersion();
                 }
-                Log.Debug(LogTag.Procedure, Txt.Format("资源补丁检查: HasPatch={0}", m_HasAssetPatch));
+                Log.Debug(LogTag.Procedure, Txt.Format("资源补丁检查: Scope={0} HasPatch={1}", patchScope, m_HasAssetPatch));
             }
             catch (OperationCanceledException)
             {

@@ -59,7 +59,10 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            m_Text.text = LauncherLocalization.GetText(m_LocalizationKey);
+            LocalizationTextRenderer.ApplyIndependentText(
+                m_Text,
+                LauncherLocalization.Language,
+                LauncherLocalization.GetText(m_LocalizationKey));
         }
     }
 }

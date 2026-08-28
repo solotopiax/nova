@@ -73,6 +73,7 @@
 - `BootstrapAsync()`
 - `LoadManifestAsync()`
 - `HasPatchAsync()`
+- `HasPatchByTagsAsync()`
 - `CreateDownloader*()`
 - `Load*()`
 - `PreloadAsync()`

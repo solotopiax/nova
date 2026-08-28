@@ -40,7 +40,8 @@
    - `EnableHotfix == true`
      - `await assetManager.BootstrapAsync(ct)`
      - `await assetManager.LoadManifestAsync(null, ct)`
-     - `m_HasAssetPatch = await assetManager.HasPatchAsync(null, ct)`
+     - `LaunchHotfixTags` 为空时通过 `HasPatchAsync(null, ct)` 检查整包
+     - `LaunchHotfixTags` 非空时通过 `HasPatchByTagsAsync(tags, null, ct)` 检查启动 Tag 范围
      - 无补丁时调用 `CommitBootableVersion()`，确认当前启动范围可离线复用
 
 ### 3. OnUpdate：完成后写黑板并路由
@@ -77,6 +78,7 @@
 - `RecommendedDownload` 现在是框架内建弹窗分支，不再与 `NoDownload` 共享同一路由。
 - `EnableHotfix` 现在只影响资源热更检查，不影响 App 大版本检测是否执行。
 - `EnableAppUpdate` 只影响 App 大版本阶段；关闭后仍会继续按 `EnableHotfix` 判断资源热更阶段。
+- 补丁检查范围必须与 `ProcedureHotfix` 的实际下载范围一致；否则非启动 Tag 的差异会造成空下载流程和 0% 进度闪现。
 
 ## 继续阅读
 

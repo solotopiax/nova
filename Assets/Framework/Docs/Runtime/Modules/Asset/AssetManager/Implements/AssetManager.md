@@ -114,10 +114,14 @@ HostPlayMode 下如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAs
 
 **跨平台可达性**：该路径走 `Application.persistentDataPath`（iOS app 沙盒 / Android `files` 目录，各平台官方可写持久区），配 `System.IO.File/Directory` + 绝对路径（`NormalizeSeparator` 统一 `/`），iOS/Android 一致可读写；首次无目录时 `Directory.CreateDirectory` 递归创建。它与 YooAsset 自身沙盒缓存（`GetMobileCacheRoot()` 同样返回 `persistentDataPath`）属同一套读写机制——YooAsset 缓存能读写，本记录文件必然也能，且回退要命中的缓存清单本就在同一 persistentDataPath 根下。注意它**不在 StreamingAssets**（后者在 Android 打进 apk、不能 `File.ReadAllText` 直读，那是内置回退读首包版本时才会遇到的约束），故纯 File API 即可。
 
-### 4. HasPatchAsync：没加载过清单时会自动补前置步骤
+### 4. HasPatchAsync / HasPatchByTagsAsync：没加载过清单时会自动补前置步骤
 
-`HasPatchAsync()` 不要求上层先手动调用 `LoadManifestAsync()`。  
-如果目标包还没进 `m_ManifestLoadedPackages`，它会先内部加载清单，再创建下载器看 `TotalDownloadCount`。
+`HasPatchAsync()` 与 `HasPatchByTagsAsync()` 都不要求上层先手动调用 `LoadManifestAsync()`。
+如果目标包还没进 `m_ManifestLoadedPackages`，它们会先内部加载清单，再创建下载器看 `TotalDownloadCount`。
+
+- `HasPatchAsync()` 检查整包范围，保留既有调用语义。
+- `HasPatchByTagsAsync(tags)` 检查指定 Tag 范围；`tags` 为 null 或空数组时等价整包。
+- 启动链在 `LaunchHotfixTags` 非空时使用 Tag 范围判断，保证进入 `ProcedureHotfix` 的条件与实际下载范围一致。
 
 ### 5. Load / Preload / Cleanup：大多数资源操作默认只走默认包
 
@@ -172,6 +176,7 @@ WebPlayMode 使用 3.0.5 的 `WebNetworkFileSystemParameters`。该文件系统�
 ### 2. 补丁
 
 - `HasPatchAsync(package)`
+- `HasPatchByTagsAsync(tags, package)`
 - `CreateDownloader(...)`
 - `CreateDownloaderByTags(...)`
 - `CreateDownloaderByLocations(...)`

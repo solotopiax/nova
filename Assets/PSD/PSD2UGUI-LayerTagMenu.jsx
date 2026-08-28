@@ -258,12 +258,42 @@ var REUSE_DEFAULT_SETTINGS = {
     var previewParsed = layerInfos.length === 1 ? helpers.parseLayerName(layerInfos[0].name) : null;
     var reuseSettings = loadReuseSettings();
 
-    var w = new Window("dialog", "PSD2UGUI - 图层标签");
+    var w = new Window("dialog", "PSD2UGUI - 图层标签", undefined, { resizeable: true });
     w.alignChildren = "fill";
     w.spacing = 10;
     w.margins = 14;
 
-    var infoPanel = w.add("panel", undefined, "当前选择");
+    // 将较长的标签区域限制在可滚动视口内，避免小屏幕上底部操作被裁掉。
+    var scrollRow = w.add("group");
+    scrollRow.orientation = "row";
+    scrollRow.alignChildren = ["fill", "fill"];
+    scrollRow.alignment = ["fill", "fill"];
+    scrollRow.spacing = 6;
+    scrollRow.preferredSize = [504, 500];
+    scrollRow.minimumSize = [444, 280];
+    scrollRow.maximumSize = [10000, 10000];
+
+    var scrollViewport = scrollRow.add("panel", [0, 0, 480, 500], undefined, { borderStyle: "none" });
+    scrollViewport.orientation = "stack";
+    scrollViewport.alignChildren = ["fill", "top"];
+    scrollViewport.alignment = ["fill", "fill"];
+    scrollViewport.preferredSize = [480, 500];
+    scrollViewport.minimumSize = [420, 280];
+    scrollViewport.maximumSize = [10000, 10000];
+
+    var scrollContent = scrollViewport.add("group");
+    scrollContent.orientation = "column";
+    scrollContent.alignChildren = "fill";
+    scrollContent.spacing = 10;
+
+    // Scrollbar 的方向在创建时由 bounds 决定，必须以纵向尺寸创建。
+    var scrollBar = scrollRow.add("scrollbar", [0, 0, 18, 500], 0, 0, 1);
+    scrollBar.alignment = ["right", "fill"];
+    scrollBar.minimumSize = [18, 280];
+    scrollBar.maximumSize = [18, 10000];
+    scrollBar.minvalue = 0;
+
+    var infoPanel = scrollContent.add("panel", undefined, "当前选择");
     infoPanel.alignChildren = "fill";
     infoPanel.margins = 10;
 
@@ -280,12 +310,12 @@ var REUSE_DEFAULT_SETTINGS = {
 
     for (var familyIndex = 0; familyIndex < TAG_CONFIG.canonicalOrder.length; familyIndex++) {
         var familyKey = TAG_CONFIG.canonicalOrder[familyIndex];
-        buildFamilyPanel(w, helpers, familyKey, previewParsed, layerInfos, savedSelection);
+        buildFamilyPanel(scrollContent, helpers, familyKey, previewParsed, layerInfos, savedSelection);
     }
 
-    buildReusePanel(w, helpers, previewParsed, layerInfos, savedSelection, reuseSettings);
+    buildReusePanel(scrollContent, helpers, previewParsed, layerInfos, savedSelection, reuseSettings);
 
-    var actionPanel = w.add("panel", undefined, "移除");
+    var actionPanel = scrollContent.add("panel", undefined, "移除");
     actionPanel.alignChildren = "left";
     actionPanel.margins = 10;
 
@@ -314,6 +344,57 @@ var REUSE_DEFAULT_SETTINGS = {
     bottomGroup.alignment = "center";
     bottomGroup.add("button", undefined, "关闭(ECS)", { name: "cancel" });
 
+    var scrollContentHeight = 0;
+
+    function applyScrollPosition(value) {
+        scrollBar.value = Math.max(scrollBar.minvalue, Math.min(scrollBar.maxvalue, value));
+        var offset = Math.round(scrollBar.value);
+        scrollContent.bounds = [0, -offset, scrollViewport.size.width, scrollContentHeight - offset];
+    }
+
+    scrollBar.onChanging = scrollBar.onChange = function() {
+        applyScrollPosition(scrollBar.value);
+    };
+
+    // 第一次自然布局后测量完整内容高度，之后再限制视口高度。
+    function measureScrollContentHeight() {
+        var contentHeight = 0;
+        var summedHeight = 0;
+        for (var childIndex = 0; childIndex < scrollContent.children.length; childIndex++) {
+            var child = scrollContent.children[childIndex];
+            contentHeight = Math.max(contentHeight, child.location.y + child.size.height);
+            summedHeight += child.size.height;
+        }
+        if (scrollContent.children.length > 1) {
+            summedHeight += scrollContent.spacing * (scrollContent.children.length - 1);
+        }
+        contentHeight = Math.max(contentHeight, summedHeight);
+
+        return contentHeight;
+    }
+
+    function updateScrollRange() {
+        var maxScroll = Math.max(0, scrollContentHeight - scrollViewport.size.height);
+        scrollBar.maxvalue = maxScroll;
+        scrollBar.stepdelta = 48;
+        scrollBar.jumpdelta = Math.max(48, scrollViewport.size.height - 48);
+        scrollBar.enabled = maxScroll > 0;
+        if (scrollBar.value > maxScroll) {
+            scrollBar.value = maxScroll;
+        }
+        applyScrollPosition(scrollBar.value);
+    }
+
+    w.layout.layout(true);
+    scrollContentHeight = measureScrollContentHeight();
+    scrollContent.preferredSize.height = scrollContentHeight;
+    scrollRow.maximumSize = [10000, 500];
+    scrollViewport.maximumSize = [10000, 500];
+    scrollBar.maximumSize = [18, 500];
+    w.layout.layout(true);
+    w.minimumSize = [500, 420];
+    updateScrollRange();
+    applyScrollPosition(0);
     w.center();
     w.show();
 

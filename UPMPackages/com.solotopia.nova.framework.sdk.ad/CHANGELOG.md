@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.1.9] - 2026-08-28
+
+### Changed
+
+- AdDemo 移除 Launcher Prefab 上重复的 `TextLocalizing` 组件，统一由 Framework Launcher UI 文本渲染链处理。
+
 ## [1.1.8] - 2026-08-27
 
 ### Changed

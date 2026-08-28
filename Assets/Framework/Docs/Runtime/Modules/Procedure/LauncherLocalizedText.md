@@ -26,6 +26,8 @@
 
 - 如果 `Text` 或 `LocalizationKey` 为空，直接跳过
 - 否则把 `LauncherLocalization.GetText(LocalizationKey)` 写回到 `TMP_Text`
+- 写入时按 `LauncherLocalization.Language` 设置 TMP 的 RTL/LTR 方向，并在渲染前复用正式本地化的字形连接、混排与富文本处理
+- 如果旧 Launcher Prefab 的同节点仍挂有 `TextLocalizing`，运行时会禁用该组件，避免正式语言状态覆盖启动期语言状态
 
 也就是说，miss 时会回退成 key 本身，而不是空串。
 
@@ -33,6 +35,7 @@
 
 - 它依赖的是 `LauncherLocalization`，不是正式的 `LocalizationManager`。
 - 这是启动期静态刷新条目，不会像 `TextLocalizing` 那样监听语言切换事件。
+- 新版 Launcher Prefab 不需要挂 `TextLocalizing`；旧 Prefab 可以继续使用，组件会在运行时实例上被隔离，不会回写原资产。
 
 ## 继续阅读
 

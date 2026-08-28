@@ -36,7 +36,7 @@
 ## 风险点 / 易错点
 
 - 这里的本地化文本不是随运行时语言切换自动变化的。
-- 百分比文本由组件内部自己生成，不来自 `LauncherLocalization`。
+- 百分比文本由组件内部自己生成，不来自 `LauncherLocalization`，但会按 `LauncherLocalization.Language` 应用 RTL/LTR 渲染方向。
 - `ShowProgress(stage)` 里的 `stage` 不是直接传给这个组件做文本映射的键。
 
 ## 继续阅读

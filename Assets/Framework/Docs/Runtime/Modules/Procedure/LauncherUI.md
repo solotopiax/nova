@@ -5,7 +5,7 @@
 
 启动阶段固化 UI：Splash / Progress / Dialog 三类 Prefab 放在 Resources 中，不参与热更新，保证热更前即可展示。`ProcedureSplash` 通过 `LauncherUIController.Initialize(Nova.Procedure.LauncherSettings)` 注入配置；之后各内置 Procedure 只调用 `LauncherUIController` 的静态 API，不直接 `Resources.Load`。
 
-文本内容由各面板的 `LauncherLocalizedText` / `LauncherDialogLocalizedText` 数组在 Inspector 中配置 Key 驱动，底层通过 `LauncherLocalization` 的 Resources 通道解析。启动文案资源保持独立精简，语言决策与正式 Localization 共用策略。
+文本内容由各面板的 `LauncherLocalizedText` / `LauncherDialogLocalizedText` 数组在 Inspector 中配置 Key 驱动，底层通过 `LauncherLocalization` 的 Resources 通道解析。启动文案资源保持独立精简，语言决策与正式 Localization 共用策略；TMP 渲染则直接使用该启动语言完成 RTL/LTR、字形连接、英文数字混排与富文本处理，不等待正式 Localization 初始化。
 
 ---
 

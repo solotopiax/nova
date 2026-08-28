@@ -70,7 +70,10 @@ namespace NovaFramework.Runtime
 
             if (m_ProgressText != null)
             {
-                m_ProgressText.text = Txt.Format("{0}%", Mathf.RoundToInt(Mathf.Clamp01(progress) * 100f));
+                LocalizationTextRenderer.ApplyIndependentText(
+                    m_ProgressText,
+                    LauncherLocalization.Language,
+                    Txt.Format("{0}%", Mathf.RoundToInt(Mathf.Clamp01(progress) * 100f)));
             }
         }
 

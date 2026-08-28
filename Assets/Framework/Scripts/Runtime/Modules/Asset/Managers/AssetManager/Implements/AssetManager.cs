@@ -280,7 +280,32 @@ namespace NovaFramework.Runtime
         /// <param name="package">包名，null 走默认包。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>true 表示有补丁需要下载。</returns>
-        public override async UniTask<bool> HasPatchAsync(string package = null, CancellationToken ct = default)
+        public override UniTask<bool> HasPatchAsync(string package = null, CancellationToken ct = default)
+        {
+            return HasPatchInternalAsync(null, package, ct);
+        }
+
+        /// <summary>
+        /// 按 tag 列表检查指定包是否有补丁需要下载。
+        /// tags 为 null 或空数组时等价整包检查；未加载清单时内部先触发加载。
+        /// </summary>
+        /// <param name="tags">tag 列表；null 或空表示检查全部资源。</param>
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>true 表示指定 tag 范围有补丁需要下载。</returns>
+        public override UniTask<bool> HasPatchByTagsAsync(string[] tags, string package = null, CancellationToken ct = default)
+        {
+            return HasPatchInternalAsync(tags, package, ct);
+        }
+
+        /// <summary>
+        /// 按可选 Tag 范围检查指定包是否有补丁，统一清单加载、离线回退与取消语义。
+        /// </summary>
+        /// <param name="tags">tag 列表；null 或空表示检查全部资源。</param>
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>true 表示指定范围有补丁需要下载。</returns>
+        private async UniTask<bool> HasPatchInternalAsync(string[] tags, string package, CancellationToken ct)
         {
             string name = ResolvePackageName(package);
             if (!m_ManifestLoadedPackages.Contains(name))
@@ -294,7 +319,9 @@ namespace NovaFramework.Runtime
             }
 
             ResourcePackage pkg = GetPackage(name);
-            var downloader = pkg.CreateResourceDownloader(new ResourceDownloaderOptions(int.MaxValue, 0));
+            ResourceDownloaderOperation downloader = tags == null || tags.Length == 0
+                ? pkg.CreateResourceDownloader(new ResourceDownloaderOptions(int.MaxValue, 0))
+                : pkg.CreateResourceDownloader(new ResourceDownloaderOptions(tags, int.MaxValue, 0));
             await UniTask.Yield(ct);
             return downloader.TotalDownloadCount > 0;
         }

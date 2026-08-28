@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.6.22] - 2026-08-28
+
+### Breaking
+
+- `IAssetManager` / `AssetManagerBase` 新增 `HasPatchByTagsAsync`；仓外自定义资源 Manager 实现需要补齐该成员。
+
+### Fixed
+
+- 启动期补丁检查与 `LaunchHotfixTags` 实际下载范围保持一致；空下载器不再显示 0% 热更进度后跳入 `ProcedureLoadDll`。
+
 ## [0.6.21] - 2026-08-28
 
 ### Changed

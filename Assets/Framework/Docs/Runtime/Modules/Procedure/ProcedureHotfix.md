@@ -38,14 +38,13 @@
 
 ## 主链路
 
-### 1. OnEnter：重置状态，显示进度，启动下载
+### 1. OnEnter：重置状态并启动下载检查
 
 进入流程时会：
 
 - 重置完成态、成功态、用户重试计数和进度缓存
 - 清理 `ProcedureDataKeys.AppVersionResult`
 - 清理 `ProcedureDataKeys.HasAssetPatch`
-- `LauncherUIController.ShowProgress(LauncherStage.Hotfix)`
 - `TryDownloadAsync(CancellationToken).Forget()`
 
 也就是说，这一页开始后，版本检查结果就不再继续保留在流程黑板里。
@@ -60,9 +59,12 @@
 如果下载器 `IsEmpty`：
 
 - 调用 `CommitBootableVersion()` 记录当前启动范围已就绪的版本
+- 不创建进度面板，避免无下载内容时闪现 0%
 - 直接标记成功
 - 不弹框
 - 后续 `OnUpdate()` 会直接进入 `ProcedureLoadDll`
+
+只有下载器非空时才调用 `LauncherUIController.ShowProgress(LauncherStage.Hotfix)`，随后注册下载回调并开始下载。
 
 ### 3. 下载进度会持续写回 UI 和日志
 

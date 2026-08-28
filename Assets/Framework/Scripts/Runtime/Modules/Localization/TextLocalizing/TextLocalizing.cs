@@ -29,6 +29,11 @@ namespace NovaFramework.Runtime
         private void Awake()
         {
             m_TextMeshProUGUI = GetComponent<TextMeshProUGUI>();
+            if (m_IsTextRenderingRelinquished)
+            {
+                return;
+            }
+
             m_PreviousTextPreprocessor = m_TextMeshProUGUI.textPreprocessor;
             m_TextPreprocessor = new LocalizationTextPreprocessor(m_PreviousTextPreprocessor);
             m_TextMeshProUGUI.textPreprocessor = m_TextPreprocessor;
@@ -42,6 +47,11 @@ namespace NovaFramework.Runtime
         /// </summary>
         private void OnEnable()
         {
+            if (m_IsTextRenderingRelinquished)
+            {
+                return;
+            }
+
             if (m_TextMeshProUGUI == null)
             {
                 Log.Warning(LogTag.Localization, "TextLocalizing 所在节点 '{0}' 无有效的 TextMeshProUGUI 组件。", gameObject.name);
@@ -116,6 +126,29 @@ namespace NovaFramework.Runtime
 
             m_LocalizingFontMark = fontMark;
             RefreshFont();
+        }
+
+        /// <summary>
+        /// 停止正式本地化刷新并归还 TMP 渲染预处理器，供拥有独立语言上下文的启动文本接管。
+        /// 该实例被接管后不再恢复启用，避免正式语言状态覆盖启动期语言状态。
+        /// </summary>
+        internal void RelinquishTextRendering()
+        {
+            m_IsTextRenderingRelinquished = true;
+            enabled = false;
+
+            if (m_TextMeshProUGUI == null)
+            {
+                m_TextMeshProUGUI = GetComponent<TextMeshProUGUI>();
+            }
+
+            if (m_TextMeshProUGUI != null && ReferenceEquals(m_TextMeshProUGUI.textPreprocessor, m_TextPreprocessor))
+            {
+                m_TextMeshProUGUI.textPreprocessor = m_PreviousTextPreprocessor;
+            }
+
+            m_TextPreprocessor = null;
+            m_PreviousTextPreprocessor = null;
         }
     }
 }
