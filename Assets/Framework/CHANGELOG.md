@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.6.23] - 2026-08-29
+
+### Fixed
+
+- 启动白名单元数据路由按 Player 有效 `YooAssetSettings.PackageFilePrefix` 识别 `.version/.hash/.bytes`。
+
 ## [0.6.22] - 2026-08-28
 
 ### Breaking

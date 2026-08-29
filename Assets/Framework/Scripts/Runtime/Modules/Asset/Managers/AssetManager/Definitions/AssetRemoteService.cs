@@ -191,17 +191,26 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 判断 YooAsset 请求是否属于运行时版本元数据。
-        /// 仅识别 Package.version、Package_PackageVersion.hash 与 Package_PackageVersion.bytes。
+        /// 按当前 YooAssetSettings 的 PackageFilePrefix 识别 version、hash 与 bytes 文件。
         /// </summary>
         private bool IsVersionMetadataFile(string fileName)
         {
-            if (string.Equals(fileName, $"{m_Package}.version", StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return false;
+            }
+
+            string packageVersionFileName = YooAssetConfiguration.GetPackageVersionFileName(m_Package);
+            if (string.Equals(fileName, packageVersionFileName, StringComparison.Ordinal))
             {
                 return true;
             }
 
-            string prefix = $"{m_Package}_";
-            if (fileName == null || !fileName.StartsWith(prefix, StringComparison.Ordinal))
+            const string versionExtension = ".version";
+            string metadataPrefix = packageVersionFileName.Substring(
+                0,
+                packageVersionFileName.Length - versionExtension.Length) + "_";
+            if (!fileName.StartsWith(metadataPrefix, StringComparison.Ordinal))
             {
                 return false;
             }
@@ -211,7 +220,7 @@ namespace NovaFramework.Runtime
                 : fileName.EndsWith(".bytes", StringComparison.Ordinal)
                     ? ".bytes"
                     : null;
-            return extension != null && fileName.Length > prefix.Length + extension.Length;
+            return extension != null && fileName.Length > metadataPrefix.Length + extension.Length;
         }
 
         /// <summary>

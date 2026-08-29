@@ -6,6 +6,16 @@
 
 ---
 
+## [0.6.23] - 2026-08-29
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.23]` 节。
+
+### Fixed
+
+- 修复启动白名单在 `PackageFilePrefix` 非空时未将 YooAsset `.version/.hash/.bytes` 请求路由到白名单元数据地址的问题。
+
+---
+
 ## [0.6.22] - 2026-08-28
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.22]` 节。

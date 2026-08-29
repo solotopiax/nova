@@ -258,39 +258,39 @@ var REUSE_DEFAULT_SETTINGS = {
     var previewParsed = layerInfos.length === 1 ? helpers.parseLayerName(layerInfos[0].name) : null;
     var reuseSettings = loadReuseSettings();
 
-    var w = new Window("dialog", "PSD2UGUI - 图层标签", undefined, { resizeable: true });
-    w.alignChildren = "fill";
-    w.spacing = 10;
-    w.margins = 14;
+    var DEFAULT_WINDOW_WIDTH = 600;
+    var DEFAULT_WINDOW_HEIGHT = 500;
+    var MIN_WINDOW_WIDTH = 500;
+    var MIN_WINDOW_HEIGHT = 420;
+    var WINDOW_MARGIN = 14;
+    var SCROLLBAR_WIDTH = 18;
+    var SCROLLBAR_GAP = 6;
+    var FOOTER_GAP = 10;
+    var CLOSE_BUTTON_WIDTH = 100;
+    var CLOSE_BUTTON_HEIGHT = 28;
 
-    // 将较长的标签区域限制在可滚动视口内，避免小屏幕上底部操作被裁掉。
-    var scrollRow = w.add("group");
-    scrollRow.orientation = "row";
-    scrollRow.alignChildren = ["fill", "fill"];
-    scrollRow.alignment = ["fill", "fill"];
-    scrollRow.spacing = 6;
-    scrollRow.preferredSize = [504, 500];
-    scrollRow.minimumSize = [444, 280];
-    scrollRow.maximumSize = [10000, 10000];
+    // 外层全部使用绝对布局，避免 ScriptUI 自动布局根据放大后的子控件尺寸
+    // 反向抬高原生窗口的最小尺寸，导致窗口只能放大、不能缩小。
+    // 始终以默认尺寸构造原生窗口，确保关闭重开后仍可自由缩小。
+    var w = new Window("dialog", "PSD2UGUI - 图层标签", [0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT], { resizeable: true });
+    w.margins = 0;
+    w.spacing = 0;
+    w.minimumSize = [MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT];
 
-    var scrollViewport = scrollRow.add("panel", [0, 0, 480, 500], undefined, { borderStyle: "none" });
+    var initialViewportRight = DEFAULT_WINDOW_WIDTH - WINDOW_MARGIN - SCROLLBAR_WIDTH - SCROLLBAR_GAP;
+    var initialViewportBottom = DEFAULT_WINDOW_HEIGHT - WINDOW_MARGIN - CLOSE_BUTTON_HEIGHT - FOOTER_GAP;
+    var scrollViewport = w.add("panel", [WINDOW_MARGIN, WINDOW_MARGIN, initialViewportRight, initialViewportBottom], undefined, { borderStyle: "none" });
     scrollViewport.orientation = "stack";
     scrollViewport.alignChildren = ["fill", "top"];
-    scrollViewport.alignment = ["fill", "fill"];
-    scrollViewport.preferredSize = [480, 500];
-    scrollViewport.minimumSize = [420, 280];
-    scrollViewport.maximumSize = [10000, 10000];
 
     var scrollContent = scrollViewport.add("group");
     scrollContent.orientation = "column";
     scrollContent.alignChildren = "fill";
     scrollContent.spacing = 10;
 
-    // Scrollbar 的方向在创建时由 bounds 决定，必须以纵向尺寸创建。
-    var scrollBar = scrollRow.add("scrollbar", [0, 0, 18, 500], 0, 0, 1);
-    scrollBar.alignment = ["right", "fill"];
-    scrollBar.minimumSize = [18, 280];
-    scrollBar.maximumSize = [18, 10000];
+    // Slider 的轨道点击会直接定位，方向由创建时的纵向 bounds 决定。
+    var scrollBarLeft = DEFAULT_WINDOW_WIDTH - WINDOW_MARGIN - SCROLLBAR_WIDTH;
+    var scrollBar = w.add("slider", [scrollBarLeft, WINDOW_MARGIN, scrollBarLeft + SCROLLBAR_WIDTH, initialViewportBottom], 0, 0, 1);
     scrollBar.minvalue = 0;
 
     var infoPanel = scrollContent.add("panel", undefined, "当前选择");
@@ -340,9 +340,9 @@ var REUSE_DEFAULT_SETTINGS = {
         w.close();
     };
 
-    var bottomGroup = w.add("group");
-    bottomGroup.alignment = "center";
-    bottomGroup.add("button", undefined, "关闭(ECS)", { name: "cancel" });
+    var initialButtonLeft = Math.round((DEFAULT_WINDOW_WIDTH - CLOSE_BUTTON_WIDTH) / 2);
+    var initialButtonTop = DEFAULT_WINDOW_HEIGHT - WINDOW_MARGIN - CLOSE_BUTTON_HEIGHT;
+    var closeButton = w.add("button", [initialButtonLeft, initialButtonTop, initialButtonLeft + CLOSE_BUTTON_WIDTH, initialButtonTop + CLOSE_BUTTON_HEIGHT], "关闭(ECS)", { name: "cancel" });
 
     var scrollContentHeight = 0;
 
@@ -375,26 +375,52 @@ var REUSE_DEFAULT_SETTINGS = {
 
     function updateScrollRange() {
         var maxScroll = Math.max(0, scrollContentHeight - scrollViewport.size.height);
-        scrollBar.maxvalue = maxScroll;
-        scrollBar.stepdelta = 48;
-        scrollBar.jumpdelta = Math.max(48, scrollViewport.size.height - 48);
-        scrollBar.enabled = maxScroll > 0;
+        // Photoshop/macOS 不绘制 disabled Slider。始终保留至少 1 的范围，
+        // 避免窗口恢复或 resize 的中间布局把纵向滚动控件直接隐藏。
+        scrollBar.maxvalue = Math.max(1, maxScroll);
+        scrollBar.enabled = true;
+        scrollBar.visible = true;
         if (scrollBar.value > maxScroll) {
             scrollBar.value = maxScroll;
         }
         applyScrollPosition(scrollBar.value);
     }
 
-    w.layout.layout(true);
+    // 只让内容组进行一次自然布局；Window 外层不再调用自动布局。
+    scrollContent.layout.layout(true);
     scrollContentHeight = measureScrollContentHeight();
-    scrollContent.preferredSize.height = scrollContentHeight;
-    scrollRow.maximumSize = [10000, 500];
-    scrollViewport.maximumSize = [10000, 500];
-    scrollBar.maximumSize = [18, 500];
-    w.layout.layout(true);
-    w.minimumSize = [500, 420];
-    updateScrollRange();
-    applyScrollPosition(0);
+    var resizeLayoutInProgress = false;
+
+    function layoutWindowContents() {
+        if (resizeLayoutInProgress) {
+            return;
+        }
+        resizeLayoutInProgress = true;
+
+        var windowWidth = Math.max(MIN_WINDOW_WIDTH, w.size.width);
+        var windowHeight = Math.max(MIN_WINDOW_HEIGHT, w.size.height);
+        var viewportRight = windowWidth - WINDOW_MARGIN - SCROLLBAR_WIDTH - SCROLLBAR_GAP;
+        var buttonTop = windowHeight - WINDOW_MARGIN - CLOSE_BUTTON_HEIGHT;
+        var viewportBottom = buttonTop - FOOTER_GAP;
+        var currentScrollBarLeft = windowWidth - WINDOW_MARGIN - SCROLLBAR_WIDTH;
+        var buttonLeft = Math.round((windowWidth - CLOSE_BUTTON_WIDTH) / 2);
+
+        scrollViewport.bounds = [WINDOW_MARGIN, WINDOW_MARGIN, viewportRight, viewportBottom];
+        scrollBar.bounds = [currentScrollBarLeft, WINDOW_MARGIN, currentScrollBarLeft + SCROLLBAR_WIDTH, viewportBottom];
+        closeButton.bounds = [buttonLeft, buttonTop, buttonLeft + CLOSE_BUTTON_WIDTH, buttonTop + CLOSE_BUTTON_HEIGHT];
+
+        w.minimumSize = [MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT];
+        updateScrollRange();
+        resizeLayoutInProgress = false;
+    }
+
+    w.onShow = function() {
+        layoutWindowContents();
+        w.center();
+        applyScrollPosition(0);
+    };
+    w.onResizing = layoutWindowContents;
+    w.onResize = layoutWindowContents;
     w.center();
     w.show();
 
