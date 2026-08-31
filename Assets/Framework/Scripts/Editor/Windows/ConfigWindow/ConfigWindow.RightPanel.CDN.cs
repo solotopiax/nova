@@ -463,7 +463,7 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.Label("清理云端文件和目录", false, GUILayout.Width(labelWidth));
+                EditorUtil.Draw.Label("清理本次上传文件", false, GUILayout.Width(labelWidth));
                 newValue = EditorUtil.Draw.Toggle(value, GUILayout.Width(18f));
                 EditorUtil.Draw.FlexibleSpace();
                 EditorUtil.Draw.Space(16f);
@@ -476,7 +476,7 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                 {
                     "(1) 默认关闭；勾选后会在上传前清理本次部署目标",
-                    "(2) 只清理本次部署涉及的文件和目录，不会清空整个 PresetOSSPath",
+                    "(2) 只清理本次上传计划中的精确文件，不删除共享目录中的其他 prefix 分支",
                     "(3) 清理失败时立即停止，不继续上传",
                 }, false, GUILayout.ExpandWidth(true));
                 EditorUtil.Draw.Space(16f);
@@ -727,7 +727,8 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 从 ConfigWindow 当前编辑平台 + 当前 Channel/DevelopMode 对应维度解析 YooAsset 文件前缀，不读取 YooAssetSettings.asset 实际值。
+        /// 从 ConfigWindow 当前编辑平台 + 当前 Channel/DevelopMode 对应维度解析 YooAsset 文件前缀；
+        /// 包含 {Time} 时复用构建已写入 YooAssetSettings.asset 的实际值。
         /// </summary>
         private static string ResolveCdnPackageFilePrefix(
             ConfigMasterSO workingSrc,

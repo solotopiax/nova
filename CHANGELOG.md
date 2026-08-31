@@ -6,6 +6,17 @@
 
 ---
 
+## [0.6.24] - 2026-08-31
+
+汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.24]` 节。
+
+### Fixed
+
+- 修复 `PackageFilePrefix` 变化后的覆盖安装缓存兼容、白名单元数据重试、CDN 多分支清理和动态时间前缀部署问题。
+- 修复清单回退未复核启动资源完整性，以及内置回退后错误停留在 `OfflinePlayMode` 的问题。
+
+---
+
 ## [0.6.23] - 2026-08-29
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.23]` 节。

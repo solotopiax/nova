@@ -146,7 +146,8 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 从 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应维度解析 YooAsset 文件前缀，不读取 YooAssetSettings.asset 实际值。
+        /// 从 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应维度解析 YooAsset 文件前缀；
+        /// 包含 {Time} 时复用构建已写入 YooAssetSettings.asset 的实际值。
         /// </summary>
         private static string ResolveCdnPackageFilePrefix(ConfigMasterSO master)
         {

@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.6.24] - 2026-08-31
+
+### Fixed
+
+- 修复跨 App 版本覆盖安装后本地可启动 Manifest 因 `PackageFilePrefix` 变化无法命中，并兼容迁移旧版纯版本号记录。
+- 修复 `PackageFilePrefix` 非空时启动白名单元数据重试次数计算错误、可能漏掉常规 CDN 候选的问题。
+- 修复多个 prefix 分支共用远端目录时，部署前清理会误删其他 App 分支的问题；清理范围收紧为本次上传计划的精确对象。
+- 修复 `PackageFilePrefix` 使用 `{Time}` 时，CDN 部署按新时间重算前缀而找不到构建产物的问题。
+- 修复远端失败后仅凭 Manifest 有效便复用当前版本、未复核启动资源范围完整的问题。
+- 修复内置 Manifest 回退最终停留在 `OfflinePlayMode`、导致 Sandbox 资源失去归属的问题；回退完成后恢复 `HostPlayMode`。
+
 ## [0.6.23] - 2026-08-29
 
 ### Fixed

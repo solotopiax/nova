@@ -130,7 +130,8 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 从已校验的资源上传计划派生本次允许清理的精确对象与资源目录前缀。
+            /// 从已校验的资源上传计划派生本次允许清理的精确对象。
+            /// 不清理整个目录，避免同目录下其他 PackageFilePrefix 分支被误删。
             /// </summary>
             internal static OssCleanupPlan BuildCleanupPlan(
                 CDNEditorConfigs config,
@@ -142,16 +143,12 @@ namespace NovaFramework.Editor
             {
                 return BuildCleanupPlanCore(
                     config,
-                    uploadPlan,
-                    config?.RemotePathSuffix,
-                    platform,
-                    channel,
-                    package,
-                    version);
+                    uploadPlan);
             }
 
             /// <summary>
-            /// 从已校验的白名单上传计划派生本次允许清理的精确对象与版本文件目录前缀。
+            /// 从已校验的白名单上传计划派生本次允许清理的精确对象。
+            /// 不清理整个目录，避免同目录下其他 PackageFilePrefix 分支被误删。
             /// </summary>
             internal static OssCleanupPlan BuildAssetCheckWhitelistCleanupPlan(
                 CDNEditorConfigs config,
@@ -163,46 +160,16 @@ namespace NovaFramework.Editor
             {
                 return BuildCleanupPlanCore(
                     config,
-                    uploadPlan,
-                    config?.AssetCheckVersionRemoteDirectory,
-                    platform,
-                    channel,
-                    package,
-                    version);
+                    uploadPlan);
             }
 
             private static OssCleanupPlan BuildCleanupPlanCore(
                 CDNEditorConfigs config,
-                IReadOnlyList<OssUploadItem> uploadPlan,
-                string remoteDirectoryTemplate,
-                PlatformType platform,
-                ChannelType channel,
-                string package,
-                string version)
+                IReadOnlyList<OssUploadItem> uploadPlan)
             {
                 if (config == null) throw new ArgumentNullException(nameof(config));
                 if (uploadPlan == null) throw new ArgumentNullException(nameof(uploadPlan));
-
-                string remoteDirectory = NormalizeObjectKeyPart(ResolvePathPlaceholders(
-                    remoteDirectoryTemplate,
-                    platform,
-                    channel,
-                    package,
-                    version));
-                if (string.IsNullOrEmpty(remoteDirectory))
-                {
-                    throw new ArgumentException(
-                        "启用云端清理时，远端目录不能为空，避免清空整个 PresetOSSPath。",
-                        nameof(config));
-                }
-
-                OssLocation location = ParseOssLocation(config.PresetOSSPath);
-                string directoryPrefix = string.Join("/", new[]
-                    {
-                        NormalizeObjectKeyPart(location.Prefix),
-                        remoteDirectory,
-                    }
-                    .Where(part => !string.IsNullOrEmpty(part))) + "/";
+                ParseOssLocation(config.PresetOSSPath);
 
                 var exactObjectKeys = new List<string>();
                 var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -214,7 +181,7 @@ namespace NovaFramework.Editor
                     }
                 }
 
-                return new OssCleanupPlan(exactObjectKeys, new[] { directoryPrefix });
+                return new OssCleanupPlan(exactObjectKeys, Array.Empty<string>());
             }
 
             /// <summary>

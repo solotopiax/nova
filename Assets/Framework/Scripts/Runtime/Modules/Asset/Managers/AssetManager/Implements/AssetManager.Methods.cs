@@ -21,6 +21,14 @@ namespace NovaFramework.Runtime
 {
     internal sealed partial class AssetManager : AssetManagerBase
     {
+        [Serializable]
+        private sealed class LocalBootableManifestIdentity
+        {
+            public int SchemaVersion = 2;
+            public string PackageVersion;
+            public string PackageFilePrefix;
+        }
+
         /// <summary>
         /// 解析包名：null/empty 走默认包。
         /// </summary>
@@ -394,9 +402,13 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 获取一次白名单版本元数据请求应覆盖的候选地址数量。
         /// </summary>
+        /// <param name="remote">当前资源包的远端寻址服务。</param>
+        /// <param name="package">资源包名。</param>
+        /// <returns>真实版本文件名对应的候选地址数量，最少为 1。</returns>
         private static int GetMetadataRequestAttemptCount(AssetRemoteService remote, string package)
         {
-            return Math.Max(1, remote.GetRemoteUrls($"{package}.version").Count);
+            string versionFileName = YooAssetConfiguration.GetPackageVersionFileName(package);
+            return Math.Max(1, remote.GetRemoteUrls(versionFileName).Count);
         }
 
         /// <summary>
@@ -493,12 +505,14 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 记录指定包已满足启动下载范围的版本号，供下次启动远端不可达时离线回退。
+        /// 记录指定包已满足启动下载范围的清单身份，供下次启动远端不可达时离线回退。
+        /// 同时保存资源版本与文件名前缀，避免覆盖安装后使用新前缀查找旧清单。
         /// 写失败不抛异常，仅告警——记录失败不得中断启动流程。
         /// </summary>
         /// <param name="name">包名。</param>
         /// <param name="version">当前激活的包裹版本号。</param>
-        private static void SaveLocalBootableVersion(string name, string version)
+        /// <param name="packageFilePrefix">当前清单文件使用的前缀。</param>
+        private static void SaveLocalBootableVersion(string name, string version, string packageFilePrefix)
         {
             if (string.IsNullOrEmpty(version))
             {
@@ -512,7 +526,12 @@ namespace NovaFramework.Runtime
                 {
                     Directory.CreateDirectory(dir);
                 }
-                File.WriteAllText(filePath, version.Trim(), new UTF8Encoding(false));
+                var identity = new LocalBootableManifestIdentity
+                {
+                    PackageVersion = version.Trim(),
+                    PackageFilePrefix = packageFilePrefix ?? string.Empty,
+                };
+                File.WriteAllText(filePath, JsonUtility.ToJson(identity), new UTF8Encoding(false));
             }
             catch (Exception ex)
             {
@@ -521,14 +540,20 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 读取指定包的本地可启动版本记录。文件缺失、为空或读取异常均返回 false。
+        /// 读取指定包的本地可启动清单身份。
+        /// 兼容旧版纯版本号记录；旧记录的前缀返回 null，由 YooAsset 从缓存文件名中安全解析。
         /// </summary>
         /// <param name="name">包名。</param>
         /// <param name="version">输出读取到的版本号。</param>
+        /// <param name="packageFilePrefix">输出清单文件前缀；null 表示旧记录尚未保存前缀。</param>
         /// <returns>true 表示读到有效版本号。</returns>
-        private static bool TryLoadLocalBootableVersion(string name, out string version)
+        private static bool TryLoadLocalBootableVersion(
+            string name,
+            out string version,
+            out string packageFilePrefix)
         {
             version = null;
+            packageFilePrefix = null;
             try
             {
                 string filePath = GetLocalBootableVersionFilePath(name);
@@ -541,13 +566,249 @@ namespace NovaFramework.Runtime
                 {
                     return false;
                 }
-                version = content.Trim();
+                string normalized = content.Trim();
+                if (normalized.StartsWith("{", StringComparison.Ordinal))
+                {
+                    LocalBootableManifestIdentity identity = JsonUtility.FromJson<LocalBootableManifestIdentity>(normalized);
+                    if (identity == null
+                        || identity.SchemaVersion != 2
+                        || string.IsNullOrWhiteSpace(identity.PackageVersion))
+                    {
+                        return false;
+                    }
+
+                    version = identity.PackageVersion.Trim();
+                    packageFilePrefix = identity.PackageFilePrefix ?? string.Empty;
+                    return true;
+                }
+
+                version = normalized;
                 return true;
             }
             catch (Exception ex)
             {
                 Log.Warning(LogTag.Asset, Txt.Format("读取本地可启动版本记录失败。Package={0}, Error={1}", name, ex.Message));
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// 将已记录的历史前缀清单映射为当前前缀文件，使 YooAsset 无需修改即可加载覆盖安装前的缓存清单。
+        /// 旧版纯版本号记录会从 ManifestFiles 中查找唯一或内容一致的清单文件对。
+        /// </summary>
+        private static bool TryPrepareLocalBootableManifest(
+            string name,
+            string version,
+            string recordedPrefix,
+            out string error)
+        {
+            error = null;
+            try
+            {
+                string manifestRoot = GetYooAssetManifestFilesRoot(name);
+                string currentPrefix = GetCurrentPackageFilePrefix(name);
+                string currentHashPath = System.IO.Path.Combine(
+                    manifestRoot, BuildPackageMetadataFileName(currentPrefix, name, version, ".hash"));
+                string currentManifestPath = System.IO.Path.Combine(
+                    manifestRoot, BuildPackageMetadataFileName(currentPrefix, name, version, ".bytes"));
+
+                string sourcePrefix = recordedPrefix;
+                if (sourcePrefix == null
+                    && TryResolveLegacyManifestPrefix(manifestRoot, name, version, out sourcePrefix, out error) == false)
+                {
+                    return false;
+                }
+                if (sourcePrefix.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
+                {
+                    error = $"缓存清单前缀包含非法文件名字符：{sourcePrefix}";
+                    return false;
+                }
+
+                if (string.Equals(sourcePrefix, currentPrefix, StringComparison.Ordinal)
+                    && File.Exists(currentHashPath)
+                    && File.Exists(currentManifestPath))
+                {
+                    return true;
+                }
+
+                string sourceHashPath = System.IO.Path.Combine(
+                    manifestRoot, BuildPackageMetadataFileName(sourcePrefix, name, version, ".hash"));
+                string sourceManifestPath = System.IO.Path.Combine(
+                    manifestRoot, BuildPackageMetadataFileName(sourcePrefix, name, version, ".bytes"));
+                if (File.Exists(sourceHashPath) == false || File.Exists(sourceManifestPath) == false)
+                {
+                    error = $"缓存清单文件不完整。Prefix={sourcePrefix}, Version={version}";
+                    return false;
+                }
+
+                Directory.CreateDirectory(manifestRoot);
+                CopyFileAtomically(sourceHashPath, currentHashPath);
+                CopyFileAtomically(sourceManifestPath, currentManifestPath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 从旧缓存文件名中解析历史前缀；候选内容冲突时拒绝猜测。
+        /// </summary>
+        private static bool TryResolveLegacyManifestPrefix(
+            string manifestRoot,
+            string name,
+            string version,
+            out string packageFilePrefix,
+            out string error)
+        {
+            packageFilePrefix = null;
+            error = null;
+            if (Directory.Exists(manifestRoot) == false)
+            {
+                error = $"缓存清单目录不存在：{manifestRoot}";
+                return false;
+            }
+
+            string noPrefixStem = $"{name}_{version}";
+            string prefixedSuffix = $"_{noPrefixStem}";
+            var candidates = new List<string>();
+            foreach (string hashPath in Directory.GetFiles(manifestRoot, "*.hash"))
+            {
+                string stem = System.IO.Path.GetFileNameWithoutExtension(hashPath);
+                string prefix;
+                if (string.Equals(stem, noPrefixStem, StringComparison.Ordinal))
+                {
+                    prefix = string.Empty;
+                }
+                else if (stem.EndsWith(prefixedSuffix, StringComparison.Ordinal))
+                {
+                    prefix = stem.Substring(0, stem.Length - prefixedSuffix.Length);
+                }
+                else
+                {
+                    continue;
+                }
+
+                string manifestPath = System.IO.Path.Combine(
+                    manifestRoot, BuildPackageMetadataFileName(prefix, name, version, ".bytes"));
+                if (File.Exists(manifestPath))
+                {
+                    candidates.Add(prefix);
+                }
+            }
+
+            if (candidates.Count == 0)
+            {
+                error = $"未找到 Package={name}, Version={version} 对应的缓存清单文件对。";
+                return false;
+            }
+
+            string expectedHash = File.ReadAllText(System.IO.Path.Combine(
+                manifestRoot, BuildPackageMetadataFileName(candidates[0], name, version, ".hash"))).Trim();
+            for (int i = 1; i < candidates.Count; i++)
+            {
+                string candidateHash = File.ReadAllText(System.IO.Path.Combine(
+                    manifestRoot, BuildPackageMetadataFileName(candidates[i], name, version, ".hash"))).Trim();
+                if (string.Equals(expectedHash, candidateHash, StringComparison.Ordinal) == false)
+                {
+                    error = $"找到多个内容不同的历史缓存清单，无法安全判断应使用哪个前缀。Package={name}, Version={version}";
+                    return false;
+                }
+            }
+
+            string currentPrefix = GetCurrentPackageFilePrefix(name);
+            packageFilePrefix = candidates.Contains(currentPrefix) ? currentPrefix : candidates[0];
+            return true;
+        }
+
+        /// <summary>
+        /// 获取 YooAsset 默认沙盒中的 ManifestFiles 目录。
+        /// 路径规则与当前 YooAsset 1.1.0 本地包保持一致。
+        /// </summary>
+        private static string GetYooAssetManifestFilesRoot(string name)
+        {
+#if UNITY_EDITOR
+            string cacheRoot = System.IO.Path.Combine(
+                System.IO.Path.GetDirectoryName(Application.dataPath), "Library");
+#elif UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
+            string cacheRoot = Application.dataPath;
+#else
+            string cacheRoot = Application.persistentDataPath;
+#endif
+            string yooFolderName = YooAssetConfiguration.GetYooFolderName();
+            if (string.IsNullOrEmpty(yooFolderName) == false)
+            {
+                cacheRoot = System.IO.Path.Combine(cacheRoot, yooFolderName);
+            }
+            return System.IO.Path.Combine(cacheRoot, name, "ManifestFiles");
+        }
+
+        /// <summary>
+        /// 从 YooAsset 当前版本文件名反解当前 PackageFilePrefix。
+        /// </summary>
+        private static string GetCurrentPackageFilePrefix(string name)
+        {
+            string versionFileName = YooAssetConfiguration.GetPackageVersionFileName(name);
+            string noPrefixFileName = $"{name}.version";
+            if (string.Equals(versionFileName, noPrefixFileName, StringComparison.Ordinal))
+            {
+                return string.Empty;
+            }
+
+            string suffix = $"_{noPrefixFileName}";
+            if (versionFileName.EndsWith(suffix, StringComparison.Ordinal) == false)
+            {
+                throw new InvalidOperationException($"无法从 YooAsset 版本文件名解析 PackageFilePrefix：{versionFileName}");
+            }
+            return versionFileName.Substring(0, versionFileName.Length - suffix.Length);
+        }
+
+        /// <summary>
+        /// 按 YooAsset 当前命名规则构造带显式前缀的 hash 或 bytes 文件名。
+        /// </summary>
+        private static string BuildPackageMetadataFileName(
+            string packageFilePrefix,
+            string name,
+            string version,
+            string extension)
+        {
+            string stem = string.IsNullOrEmpty(packageFilePrefix)
+                ? $"{name}_{version}"
+                : $"{packageFilePrefix}_{name}_{version}";
+            return stem + extension;
+        }
+
+        /// <summary>
+        /// 通过同目录临时文件原子覆盖目标文件，避免留下半写入清单。
+        /// </summary>
+        private static void CopyFileAtomically(string sourcePath, string destinationPath)
+        {
+            if (string.Equals(sourcePath, destinationPath, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            string temporaryPath = destinationPath + ".nova.tmp";
+            try
+            {
+                File.Copy(sourcePath, temporaryPath, true);
+                if (File.Exists(destinationPath))
+                {
+                    File.Replace(temporaryPath, destinationPath, null);
+                }
+                else
+                {
+                    File.Move(temporaryPath, destinationPath);
+                }
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
+                }
             }
         }
 
@@ -631,12 +892,18 @@ namespace NovaFramework.Runtime
         /// 构造联机运行模式初始化参数，并向内置与缓存文件系统注入解密器。
         /// </summary>
         /// <param name="package">包名，用于构建远端 URL 模板。</param>
+        /// <param name="copyBuiltinManifest">是否把当前安装包清单复制到 Sandbox，供内置回退后保持 HostPlayMode。</param>
         /// <returns>HostPlayModeOptions 实例。</returns>
-        private InitializePackageOptions BuildHostOptions(string package)
+        private InitializePackageOptions BuildHostOptions(string package, bool copyBuiltinManifest = false)
         {
             AssetRemoteService remote = CreateRemoteService(package);
             var builtinParams = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
             var cacheParams = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remote);
+            if (copyBuiltinManifest)
+            {
+                // 内置清单回退仍保持 HostPlayMode；先把当前安装包清单复制进 Sandbox，供主文件系统本地激活。
+                builtinParams.AddParameter(EFileSystemParameter.CopyBuiltinPackageManifest, true);
+            }
             cacheParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
             cacheParams.AddParameter(EFileSystemParameter.DownloadWatchdogTimeout, m_Config.IdleTimeout);
             ApplyDecryptor(builtinParams, true);

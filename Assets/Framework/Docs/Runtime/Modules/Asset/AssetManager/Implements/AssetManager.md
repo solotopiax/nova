@@ -90,18 +90,20 @@
 
 HostPlayMode 下如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAsync(version, 60)` 因 DNS、弱网或服务器不可达失败，`AssetManager` 会按 `TryRecoverManifestAsync` 编排的**三级回退链**逐级尝试：
 
-1. **沿用当前已激活清单**：若包已加载过清单（`PackageValid`，如 `RefreshManifestAsync` 弱网场景），直接复用。
-2. **本地可启动版本离线加载**（`TryFallbackToLocalBootableManifestAsync`）：读回本地记录的版本号，在当前 Host 包上直接加载缓存 Manifest，再按当前 `LaunchHotfixTags` 重建启动下载范围；只有下载数为 0 才接受该版本。缓存被清理或 Tag 配置变化导致范围不完整时继续降级内置清单。
-3. **随包内置清单回退**（`TryFallbackToBuiltinManifestAsync`）：销毁 Host 包 → `OfflinePlayModeOptions` 重新初始化 → 从内置版本文件与内置 Manifest 加载（回退到首包版本，丢弃增量）。
+1. **沿用当前已激活清单**：若包已加载过清单（`PackageValid`，如 `RefreshManifestAsync` 弱网场景），并且按当前 `LaunchHotfixTags` 复核启动范围完整，才直接复用；不完整则继续降级。
+2. **本地可启动版本离线加载**（`TryFallbackToLocalBootableManifestAsync`）：读回本地记录的资源版本与 `PackageFilePrefix`。跨 App 版本覆盖安装时，先把旧前缀对应的缓存 Manifest/hash 原子映射为当前前缀文件，再由当前 Host 包加载并按 `LaunchHotfixTags` 复核启动范围。旧版纯版本号记录会扫描缓存中的同版本文件对；候选内容冲突时拒绝猜测并继续降级。
+3. **随包内置清单回退**（`TryFallbackToBuiltinManifestAsync`）：临时用 `OfflinePlayMode` 读取内置资源版本，然后恢复 `HostPlayMode`；恢复时把当前内置 Manifest/hash 复制到 Sandbox 并从 Sandbox 激活。最终运行态仍保留 Builtin + Sandbox，未随包资源不会失去文件系统归属。
 
 整体优先级是：远端最新清单 → 已激活清单 → 本地可启动版本清单 → 随包内置清单 → 抛出原始远端错误。
-全链路只使用 YooAsset 公开 API，不修改 YooAsset 源码，也不直接读取沙盒 Manifest 内部结构。本地可启动版本回退随 HostPlayMode 默认开启；本地无记录、缓存 Manifest 缺失或当前启动范围不完整时自动降级到内置回退。
+全链路不修改 YooAsset 源码；Nova 兼容层只在前缀迁移时定位并复制 Sandbox 中成对的 Manifest/hash 文件，其余加载与校验仍走 YooAsset API。本地可启动版本回退随 HostPlayMode 默认开启；本地无记录、缓存 Manifest 缺失或当前启动范围不完整时自动降级到内置回退。
 
 #### 本地可启动版本记录文件（LastBootableVersion）
 
 二级回退依赖一份 Nova 自管的版本记录文件，由 `SaveLocalBootableVersion` / `TryLoadLocalBootableVersion` / `GetLocalBootableVersionFilePath` 维护。
 
 **路径**：`persistentDataPath/Asset/{package}.version`，根路径仍由 Unity `Application.persistentDataPath` 决定。
+
+记录内容为带 schema 的 JSON，同时保存资源版本和当时的 `PackageFilePrefix`；仍兼容读取旧版纯版本号文本。旧记录首次成功恢复后会自动升级为新格式。
 
 **写入 / 覆盖时机**（`File.WriteAllText` 整体覆盖，非追加）：
 
@@ -210,7 +212,7 @@ WebPlayMode 使用 3.0.5 的 `WebNetworkFileSystemParameters`。该文件系统�
 
 - `Initialize()` 不等于 `BootstrapAsync()`；只注入配置，不做包注册。
 - `LoadManifestAsync()` 之前必须至少完成一次 `BootstrapAsync()`，否则包都还没注册。
-- HostPlayMode 远端版本或 Manifest 请求失败时走三级回退链（已激活清单 → 本地可启动版本 → 内置清单）。本地记录位于 `persistentDataPath/Asset/{package}.version`，并会按当前启动 Tag 范围复核；首次安装无记录时自动降级内置清单。
+- HostPlayMode 远端版本或 Manifest 请求失败时走三级回退链（已激活清单 → 本地可启动版本 → 内置清单）。本地记录位于 `persistentDataPath/Asset/{package}.version`，包含资源版本与文件名前缀，并会按当前启动 Tag 范围复核；首次安装无记录时自动降级内置清单，最终仍保持 HostPlayMode 的 Builtin + Sandbox 文件系统。
 - 大多数 `Load*` API 都默认走 `m_DefaultPackageName`；如果你以为它们支持多包透传，那是错的。
 - Raw 文件内容应通过 `IRawFileHandle.GetBytes()` 获取；`FilePath` 是底层 bundle 路径，不能假定为可直接读取的原始文件路径。
 - Editor 下用 Host/Offline/Web PlayMode 跑真实包时，TMP 或普通材质出现洋红色块，优先检查 shader bundle 与当前 Editor 渲染端是否跨平台；AssetManager 会对已加载资源做同名 shader 重绑，但这只服务编辑器预览，不代表 Player 会走同一套修复路径。

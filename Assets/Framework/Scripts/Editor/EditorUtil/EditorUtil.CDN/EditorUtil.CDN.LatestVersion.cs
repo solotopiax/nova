@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NovaFramework.Runtime;
+using UnityEditor;
+using YooAsset;
 using YooAsset.Editor;
 using IOPath = System.IO.Path;
 
@@ -37,6 +39,21 @@ namespace NovaFramework.Editor
                 if (master == null) throw new ArgumentNullException(nameof(master));
                 Config.DimensionalResolver.YooAssetResult yooAsset =
                     Config.DimensionalResolver.ResolveYooAsset(master, platform, channel, mode);
+                if (!string.IsNullOrEmpty(yooAsset.PackageFilePrefix)
+                    && yooAsset.PackageFilePrefix.Contains("{Time}", StringComparison.Ordinal))
+                {
+                    YooAssetSettings settings = AssetDatabase.LoadAssetAtPath<YooAssetSettings>(
+                        yooAsset.YooAssetSettingsPath);
+                    if (settings == null)
+                    {
+                        throw new InvalidOperationException(
+                            $"PackageFilePrefix 包含 {{Time}}，但无法读取构建时实际 YooAssetSettings：{yooAsset.YooAssetSettingsPath}");
+                    }
+
+                    // {Time} 在构建导出时已固化；部署必须复用实际产物前缀，不能按部署时间重新计算。
+                    return settings.PackageFilePrefix ?? string.Empty;
+                }
+
                 PlaceholderContext context = EditorUtil.Placeholder.FromConfigMaster(
                     master,
                     platform,

@@ -74,7 +74,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 一次部署允许清理的精确对象与目录前缀集合。
+            /// 一次部署允许清理的精确对象与可选目录前缀集合。
             /// </summary>
             internal sealed class OssCleanupPlan
             {

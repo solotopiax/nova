@@ -270,7 +270,10 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            SaveLocalBootableVersion(name, pkg.GetPackageVersion());
+            SaveLocalBootableVersion(
+                name,
+                pkg.GetPackageVersion(),
+                GetCurrentPackageFilePrefix(name));
         }
 
         /// <summary>
@@ -419,7 +422,7 @@ namespace NovaFramework.Runtime
         private async UniTask<bool> TryRecoverManifestAsync(string name, string remoteError, CancellationToken ct)
         {
             ResourcePackage pkg = GetPackage(name);
-            if (pkg.PackageValid)
+            if (pkg.PackageValid && IsLaunchScopeReady(pkg))
             {
                 Log.Warning(LogTag.Asset, Txt.Format("远端资源清单请求失败，继续使用当前已激活清单。Package={0}, Error={1}", name, remoteError));
                 m_ManifestLoadedPackages.Add(name);
@@ -449,7 +452,7 @@ namespace NovaFramework.Runtime
             {
                 return false;
             }
-            if (TryLoadLocalBootableVersion(name, out string localVersion) == false)
+            if (TryLoadLocalBootableVersion(name, out string localVersion, out string packageFilePrefix) == false)
             {
                 return false;
             }
@@ -457,6 +460,18 @@ namespace NovaFramework.Runtime
             Log.Warning(LogTag.Asset, Txt.Format("远端资源清单请求失败，尝试回退到本地可启动版本清单。Package={0}, LocalVersion={1}, Error={2}", name, localVersion, remoteError));
 
             ResourcePackage pkg = GetPackage(name);
+            if (TryPrepareLocalBootableManifest(
+                    name,
+                    localVersion,
+                    packageFilePrefix,
+                    out string prepareError) == false)
+            {
+                Log.Warning(LogTag.Asset, Txt.Format(
+                    "回退本地可启动版本清单失败：无法定位或迁移缓存清单。Package={0}, LocalVersion={1}, Error={2}",
+                    name, localVersion, prepareError));
+                return false;
+            }
+
             var manifestOp = pkg.LoadPackageManifestAsync(new LoadPackageManifestOptions(localVersion, 60));
             await UniTask.WaitUntil(() => manifestOp.IsDone, cancellationToken: ct);
             if (manifestOp.Status != EOperationStatus.Succeeded)
@@ -475,13 +490,15 @@ namespace NovaFramework.Runtime
 
             m_ManifestLoadedPackages.Add(name);
             m_OfflineRecoveredPackages.Add(name);
+            SaveLocalBootableVersion(name, localVersion, GetCurrentPackageFilePrefix(name));
             Log.Warning(LogTag.Asset, Txt.Format("已回退到本地可启动版本，启动流程将跳过本轮远端热更。Package={0}, Version={1}", name, localVersion));
             return true;
         }
 
         /// <summary>
         /// HostPlayMode 下远端版本或清单不可达时，回退到随包内置清单。
-        /// 用于启动期弱网 / DNS 异常时跳过热更检查，继续使用 Player 内置资源完成 Config 与 DLL 加载。
+        /// 临时进入 OfflinePlayMode 读取内置版本，再恢复 HostPlayMode 并从 Sandbox 激活已复制的内置清单，
+        /// 避免未随包 Bundle 因 Sandbox 文件系统被移除而失去归属。
         /// </summary>
         /// <param name="name">包名。</param>
         /// <param name="remoteError">远端版本或清单请求错误。</param>
@@ -499,43 +516,71 @@ namespace NovaFramework.Runtime
                 "远端资源清单请求失败，尝试回退到内置资源清单。Package={0}, Error={1}",
                 name, remoteError);
 
-            var destroyOp = pkg.DestroyPackageAsync();
-            await UniTask.WaitUntil(() => destroyOp.IsDone, cancellationToken: ct);
-            if (destroyOp.Status != EOperationStatus.Succeeded)
+            var destroyHostOp = pkg.DestroyPackageAsync();
+            await UniTask.WaitUntil(() => destroyHostOp.IsDone, cancellationToken: ct);
+            if (destroyHostOp.Status != EOperationStatus.Succeeded)
             {
                 Log.Warning(LogTag.Asset,
                     "回退内置资源清单失败：销毁当前资源包失败。Package={0}, Error={1}",
-                    name, destroyOp.Error);
+                    name, destroyHostOp.Error);
                 return false;
             }
 
-            var initOp = pkg.InitializePackageAsync(BuildOfflineOptions());
-            await UniTask.WaitUntil(() => initOp.IsDone, cancellationToken: ct);
-            if (initOp.Status != EOperationStatus.Succeeded)
+            InitializePackageOperation offlineInitOp = null;
+            RequestPackageVersionOperation builtinVersionOp = null;
+            string builtinVersion = null;
+            bool hostRestored = false;
+            try
             {
-                Log.Warning(LogTag.Asset,
-                    "回退内置资源清单失败：OfflinePlayMode 初始化失败。Package={0}, Error={1}",
-                    name, initOp.Error);
-                return false;
-            }
+                offlineInitOp = pkg.InitializePackageAsync(BuildOfflineOptions());
+                await UniTask.WaitUntil(() => offlineInitOp.IsDone, cancellationToken: ct);
+                if (offlineInitOp.Status != EOperationStatus.Succeeded)
+                {
+                    Log.Warning(LogTag.Asset,
+                        "回退内置资源清单失败：临时读取内置版本时初始化失败。Package={0}, Error={1}",
+                        name, offlineInitOp.Error);
+                    return false;
+                }
 
-            var builtinVersionOp = pkg.RequestPackageVersionAsync();
-            await UniTask.WaitUntil(() => builtinVersionOp.IsDone, cancellationToken: ct);
-            if (builtinVersionOp.Status != EOperationStatus.Succeeded)
+                builtinVersionOp = pkg.RequestPackageVersionAsync();
+                await UniTask.WaitUntil(() => builtinVersionOp.IsDone, cancellationToken: ct);
+                if (builtinVersionOp.Status != EOperationStatus.Succeeded)
+                {
+                    Log.Warning(LogTag.Asset,
+                        "回退内置资源清单失败：内置版本文件不可用。Package={0}, Error={1}",
+                        name, builtinVersionOp.Error);
+                    return false;
+                }
+
+                builtinVersion = builtinVersionOp.PackageVersion;
+            }
+            finally
             {
-                Log.Warning(LogTag.Asset,
-                    "回退内置资源清单失败：内置版本文件不可用。Package={0}, Error={1}",
-                    name, builtinVersionOp.Error);
+                // 临时 Offline 探测无论成功、失败还是取消，都必须恢复 Host，避免后续重试误留在离线模式。
+                if (offlineInitOp != null && !offlineInitOp.IsDone)
+                {
+                    await UniTask.WaitUntil(() => offlineInitOp.IsDone);
+                }
+                if (builtinVersionOp != null && !builtinVersionOp.IsDone)
+                {
+                    await UniTask.WaitUntil(() => builtinVersionOp.IsDone);
+                }
+                hostRestored = await TryRestoreHostPackageAfterBuiltinProbeAsync(pkg, name);
+            }
+
+            if (!hostRestored || string.IsNullOrEmpty(builtinVersion))
+            {
                 return false;
             }
 
-            var builtinManifestOp = pkg.LoadPackageManifestAsync(new LoadPackageManifestOptions(builtinVersionOp.PackageVersion, 60));
+            var builtinManifestOp = pkg.LoadPackageManifestAsync(
+                new LoadPackageManifestOptions(builtinVersion, 60));
             await UniTask.WaitUntil(() => builtinManifestOp.IsDone, cancellationToken: ct);
             if (builtinManifestOp.Status != EOperationStatus.Succeeded)
             {
                 Log.Warning(LogTag.Asset,
                     "回退内置资源清单失败：内置清单加载失败。Package={0}, Version={1}, Error={2}",
-                    name, builtinVersionOp.PackageVersion, builtinManifestOp.Error);
+                    name, builtinVersion, builtinManifestOp.Error);
                 return false;
             }
 
@@ -543,8 +588,51 @@ namespace NovaFramework.Runtime
             m_OfflineRecoveredPackages.Add(name);
             Log.Warning(LogTag.Asset,
                 "已回退到内置资源清单，启动流程将跳过本轮远端热更。Package={0}, Version={1}",
-                name, builtinVersionOp.PackageVersion);
+                name, builtinVersion);
             return true;
+        }
+
+        /// <summary>
+        /// 销毁临时 Offline 包并恢复 HostPlayMode；恢复过程不继承外部取消，确保失败或取消后不会遗留错误模式。
+        /// </summary>
+        /// <param name="package">需要恢复的 YooAsset 资源包。</param>
+        /// <param name="name">资源包名。</param>
+        /// <returns>true 表示 HostPlayMode 已恢复并完成内置清单复制。</returns>
+        private async UniTask<bool> TryRestoreHostPackageAfterBuiltinProbeAsync(
+            ResourcePackage package,
+            string name)
+        {
+            try
+            {
+                var destroyOfflineOp = package.DestroyPackageAsync();
+                await UniTask.WaitUntil(() => destroyOfflineOp.IsDone);
+                if (destroyOfflineOp.Status != EOperationStatus.Succeeded)
+                {
+                    Log.Warning(LogTag.Asset,
+                        "回退内置资源清单失败：恢复 HostPlayMode 前销毁临时资源包失败。Package={0}, Error={1}",
+                        name, destroyOfflineOp.Error);
+                    return false;
+                }
+
+                var hostInitOp = package.InitializePackageAsync(BuildHostOptions(name, true));
+                await UniTask.WaitUntil(() => hostInitOp.IsDone);
+                if (hostInitOp.Status != EOperationStatus.Succeeded)
+                {
+                    Log.Warning(LogTag.Asset,
+                        "回退内置资源清单失败：恢复 HostPlayMode 失败。Package={0}, Error={1}",
+                        name, hostInitOp.Error);
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Log.Warning(LogTag.Asset,
+                    "回退内置资源清单失败：恢复 HostPlayMode 时发生异常。Package={0}, Error={1}",
+                    name, exception.Message);
+                return false;
+            }
         }
 
         /// <summary>

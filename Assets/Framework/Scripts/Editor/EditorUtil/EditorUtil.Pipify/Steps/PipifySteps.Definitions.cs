@@ -240,7 +240,7 @@ namespace NovaFramework.Editor
             [InspectorName("自动关联最新版本")]
             [PipifyHelpBox(
                 "默认开启；执行时会从下方目录锚点关联最新完整的 YooAsset 版本目录。",
-                "版本识别规则与 Config 一致，文件名前缀取自 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应的 YooAsset 配置。")]
+                "版本识别规则与 Config 一致，文件名前缀取自 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应的 ConfigMaster YooAsset 配置。")]
             public bool AutoLinkLatestVersion = true;
 
             /// <summary>
@@ -257,12 +257,12 @@ namespace NovaFramework.Editor
             public string RemoteDirectory;
 
             /// <summary>
-            /// 上传前是否清理本次版本检查文件与热更资源远端目录。
+            /// 上传前是否清理本次上传计划中的精确文件。
             /// </summary>
-            [InspectorName("清理云端文件和目录")]
+            [InspectorName("清理本次上传文件")]
             [PipifyHelpBox(
                 "默认关闭；勾选后会在上传前清理本次部署目标。",
-                "只清理本次部署涉及的文件和目录，不会清空整个 PresetOSSPath。",
+                "只清理本次上传计划中的精确文件，不删除共享目录中的其他 prefix 分支。",
                 "清理失败时立即停止，不继续上传。")]
             public bool CleanRemoteFilesAndDirectories;
         }
@@ -298,7 +298,7 @@ namespace NovaFramework.Editor
             [InspectorName("自动关联最新版本")]
             [PipifyHelpBox(
                 "默认开启；执行时会从下方 .bytes 路径锚点关联最新完整版本的 .bytes/.hash/.version。",
-                "文件命名取自 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应的 YooAsset 配置，三个文件始终来自同一版本。")]
+                "文件命名取自 Unity 当前 Active BuildTarget + 当前 Channel/DevelopMode 对应的 ConfigMaster YooAsset 配置，三个文件始终来自同一版本。")]
             public bool AutoLinkLatestVersion = true;
 
             /// <summary>
@@ -327,12 +327,12 @@ namespace NovaFramework.Editor
             public string RemoteDirectory;
 
             /// <summary>
-            /// 上传前是否清理本次白名单文件与版本文件远端目录。
+            /// 上传前是否清理本次上传计划中的精确文件。
             /// </summary>
-            [InspectorName("清理云端文件和目录")]
+            [InspectorName("清理本次上传文件")]
             [PipifyHelpBox(
                 "默认关闭；勾选后会在上传前清理本次部署目标。",
-                "只清理本次部署涉及的文件和目录，不会清空整个 PresetOSSPath。",
+                "只清理本次上传计划中的精确文件，不删除共享目录中的其他 prefix 分支。",
                 "清理失败时立即停止，不继续上传。")]
             public bool CleanRemoteFilesAndDirectories;
         }
