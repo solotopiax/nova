@@ -20,7 +20,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 提供订阅到期时间戳的持久化读写，并在验单成功后启动倒计时，
     /// 到期时自动拉取平台已有购买并刷新订阅权益，不触发平台 RestoreTransactions。
     /// </summary>
-    internal sealed partial class MobileSubscriptionService
+    internal sealed partial class MobileSubscriptionService : MobileLogOwner
     {
         /// <summary>
         /// 构造 MobileSubscriptionService。

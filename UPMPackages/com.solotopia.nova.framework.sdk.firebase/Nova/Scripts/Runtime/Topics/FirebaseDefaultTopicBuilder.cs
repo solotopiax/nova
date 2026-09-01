@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.FirebasePlugin.Runtime
 {
@@ -22,9 +23,9 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
     internal static class FirebaseDefaultTopicBuilder
     {
         /// <summary>
-        /// 所有 Nova 默认 Firebase Topic 的统一前缀。
+        /// 所有 Nova 默认 Firebase Topic 的通用前缀根。
         /// </summary>
-        private const string c_TopicPrefix = "top_";
+        private const string c_TopicPrefixRoot = "top_";
 
         /// <summary>
         /// 广告 SDK 表示国家未知或无效时可能返回的占位值。
@@ -35,31 +36,32 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// 构建基础默认 Topic 订阅状态。
         /// 包含 all、语言、平台和时区四类 Topic，并对 Topic 做去重和安全字符清洗。
         /// </summary>
+        /// <param name="developMode">默认 Topic 使用的开发模式，用于区分 Debug / Release Topic 前缀。</param>
         /// <param name="language">语言标记，通常来自 LanguageMetadata.GetFlag。</param>
         /// <param name="platform">平台标记，例如 iOS 或 Android。</param>
         /// <param name="utcOffset">当前设备的 UTC 偏移。</param>
         /// <returns>基础默认 Topic 订阅状态。</returns>
-        public static FirebaseTopicSubscriptionState BuildBaseState(string language, string platform, TimeSpan utcOffset)
+        public static FirebaseTopicSubscriptionState BuildBaseState(DevelopMode developMode, string language, string platform, TimeSpan utcOffset)
         {
             string normalizedLanguage = SanitizeTopicSegment(language);
             string normalizedPlatform = SanitizeTopicSegment(platform);
             string timezone = FormatUtcOffset(utcOffset);
             List<string> topics = new List<string>
             {
-                BuildTopic("all"),
+                BuildTopic(developMode, "all"),
             };
 
             if (!string.IsNullOrEmpty(normalizedLanguage))
             {
-                topics.Add(BuildTopic("lang_" + normalizedLanguage));
+                topics.Add(BuildTopic(developMode, "lang_" + normalizedLanguage));
             }
 
             if (!string.IsNullOrEmpty(normalizedPlatform))
             {
-                topics.Add(BuildTopic("platform_" + normalizedPlatform));
+                topics.Add(BuildTopic(developMode, "platform_" + normalizedPlatform));
             }
 
-            topics.Add(BuildTopic("timezone_" + timezone));
+            topics.Add(BuildTopic(developMode, "timezone_" + timezone));
 
             return new FirebaseTopicSubscriptionState
             {
@@ -74,10 +76,11 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// 尝试构建国家默认 Topic 订阅状态。
         /// 空国家码和 IV 占位值会返回 false，不会生成可订阅状态。
         /// </summary>
+        /// <param name="developMode">默认 Topic 使用的开发模式，用于区分 Debug / Release Topic 前缀。</param>
         /// <param name="countryCode">广告 SDK 返回的国家或地区代码。</param>
         /// <param name="state">构建出的国家 Topic 状态。</param>
         /// <returns>国家码有效并成功构建返回 true，否则返回 false。</returns>
-        public static bool TryBuildCountryState(string countryCode, out FirebaseCountryTopicSubscriptionState state)
+        public static bool TryBuildCountryState(DevelopMode developMode, string countryCode, out FirebaseCountryTopicSubscriptionState state)
         {
             state = null;
             if (!TryNormalizeCountryCode(countryCode, out string normalizedCountryCode))
@@ -88,7 +91,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             state = new FirebaseCountryTopicSubscriptionState
             {
                 Country = normalizedCountryCode,
-                Topic = BuildTopic("country_" + normalizedCountryCode),
+                Topic = BuildTopic(developMode, "country_" + normalizedCountryCode),
             };
             return true;
         }
@@ -199,14 +202,28 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         }
 
         /// <summary>
-        /// 构建带 top_ 前缀的完整 Firebase Topic。
+        /// 构建带环境前缀的完整 Firebase Topic。
         /// 输入片段会先按 Firebase Topic 安全字符规则清洗。
         /// </summary>
-        /// <param name="topicSegment">不含 top_ 前缀的 Topic 片段。</param>
+        /// <param name="developMode">默认 Topic 使用的开发模式。</param>
+        /// <param name="topicSegment">不含环境前缀的 Topic 片段。</param>
         /// <returns>完整 Topic。</returns>
-        private static string BuildTopic(string topicSegment)
+        private static string BuildTopic(DevelopMode developMode, string topicSegment)
         {
-            return c_TopicPrefix + SanitizeTopicSegment(topicSegment);
+            return BuildTopicPrefix(developMode) + SanitizeTopicSegment(topicSegment);
+        }
+
+        /// <summary>
+        /// 按开发模式构建默认 Topic 前缀。
+        /// Debug 与未知值统一走调试分群，避免配置未加载时误进入正式分群。
+        /// </summary>
+        /// <param name="developMode">默认 Topic 使用的开发模式。</param>
+        /// <returns>完整 Topic 前缀。</returns>
+        private static string BuildTopicPrefix(DevelopMode developMode)
+        {
+            return developMode == DevelopMode.Release
+                ? c_TopicPrefixRoot + "release_"
+                : c_TopicPrefixRoot + "debug_";
         }
 
         /// <summary>

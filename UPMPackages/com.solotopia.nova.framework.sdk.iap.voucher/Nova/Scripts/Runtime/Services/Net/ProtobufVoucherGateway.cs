@@ -21,7 +21,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
     /// Voucher protobuf 网关。
     /// 负责构建公共协议头、发送请求并将协议结果转换为领域结果。
     /// </summary>
-    internal sealed partial class ProtobufVoucherGateway : IVoucherGateway
+    internal sealed partial class ProtobufVoucherGateway : VoucherLogOwner, IVoucherGateway
     {
         /// <summary>
         /// 创建 Voucher protobuf 网关。

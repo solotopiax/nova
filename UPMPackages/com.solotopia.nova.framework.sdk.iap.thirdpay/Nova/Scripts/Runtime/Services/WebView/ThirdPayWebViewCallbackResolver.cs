@@ -13,6 +13,27 @@ using System.Collections.Generic;
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
     /// <summary>
+    /// 支付页 pay_callback 返回的支付状态。
+    /// </summary>
+    internal enum ThirdPayWebViewCallbackStatus
+    {
+        /// <summary>
+        /// 支付成功。
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// 支付失败。
+        /// </summary>
+        Failed = 2,
+
+        /// <summary>
+        /// 支付成功但渠道信息还未同步成功。
+        /// </summary>
+        SuccessWithoutChannelSync = 3,
+    }
+
+    /// <summary>
     /// 将支付页 Scheme 回调解析为稳定的支付页结果。
     /// </summary>
     internal static class ThirdPayWebViewCallbackResolver
@@ -38,8 +59,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 return false;
             }
 
-            result = status == 2 ? ThirdPayOpenResult.Failed : ThirdPayOpenResult.Success;
-            return true;
+            switch ((ThirdPayWebViewCallbackStatus)status)
+            {
+                case ThirdPayWebViewCallbackStatus.Success:
+                case ThirdPayWebViewCallbackStatus.SuccessWithoutChannelSync:
+                    result = ThirdPayOpenResult.Success;
+                    return true;
+                case ThirdPayWebViewCallbackStatus.Failed:
+                    result = ThirdPayOpenResult.Failed;
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

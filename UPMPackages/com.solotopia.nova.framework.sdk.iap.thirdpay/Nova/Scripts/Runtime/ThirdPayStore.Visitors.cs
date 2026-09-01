@@ -8,7 +8,6 @@
  * descrip:   ThirdPayStore 常量、字段与属性
  ***************************************************************/
 
-using NovaFramework.Runtime;
 using NovaFramework.SDK.IAP.Runtime;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
@@ -26,14 +25,34 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private static readonly float[] s_ValidateRetryIntervals = { 0.2f, 0.5f, 1f, 2f, 4f };
 
         /// <summary>
+        /// 外部浏览器支付返回 App 后的默认自动验单延迟，单位为秒。
+        /// </summary>
+        private const float c_DefaultExternalBrowserReturnValidateDelaySeconds = 2.5f;
+
+        /// <summary>
+        /// 第三方支付国家码兜底值，和 Solar 保持一致。
+        /// </summary>
+        private const string c_DefaultCountryCode = "US";
+
+        /// <summary>
+        /// 广告或平台侧可能返回的无效国家码，ThirdPay 按 Solar 规则映射为 US。
+        /// </summary>
+        private const string c_InvalidCountryCode = "IV";
+
+        /// <summary>
+        /// iOS 原生层在无法识别商店国家码时返回的占位值。
+        /// </summary>
+        private const string c_UnknownCountryCode = "UNKNOWN";
+
+        /// <summary>
         /// 获取第三方支付打点使用的固定渠道标识。
         /// </summary>
         protected override string TrackChannel => IAPStoreType.ThirdPay.ToString().ToLowerInvariant();
 
         /// <summary>
-        /// 获取第三方支付日志标签。
+        /// 当前 Store 使用的 Nova 日志标签。
         /// </summary>
-        protected override string StoreLogTag => LogTag.IAPThirdPay;
+        protected override string LogTag => NovaFramework.Runtime.LogTag.IAPThirdPay;
 
         /// <summary>
         /// 获取当前 Store 是否已具备基础配置且必需配置项齐备。
@@ -76,14 +95,54 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private IThirdPayWebViewService m_WebViewService;
 
         /// <summary>
+        /// 系统外部浏览器打开服务。
+        /// </summary>
+        private IThirdPayExternalBrowserService m_ExternalBrowserService;
+
+        /// <summary>
+        /// 当前外部浏览器支付会话；为空表示没有浏览器支付等待返回验单。
+        /// </summary>
+        private ThirdPayExternalBrowserPaySession m_ExternalBrowserPaySession;
+
+        /// <summary>
         /// Android Google 外链政策处理服务。
         /// </summary>
         private ThirdPayGooglePolicyService m_GooglePolicy;
 
         /// <summary>
-        /// 当前支付国家或地区代码。
+        /// Debug 覆盖用国家或地区代码，优先级高于所有运行时自动解析来源。
         /// </summary>
-        private string m_CountryCode = string.Empty;
+        private string m_DebugCountryCode = string.Empty;
+
+        /// <summary>
+        /// 首次自动解析后锁定的国家码，避免同一运行期商品国家反复漂移。
+        /// </summary>
+        private string m_LockCountryCode = string.Empty;
+
+        /// <summary>
+        /// Google Play Billing 返回的商店国家码。
+        /// </summary>
+        private string m_BillingCountryCode = string.Empty;
+
+        /// <summary>
+        /// iOS StoreKit storefront 返回的商店国家码。
+        /// </summary>
+        private string m_NativeCountryCode = string.Empty;
+
+        /// <summary>
+        /// iOS StoreKit storefront 返回的商店区域标识。
+        /// </summary>
+        private string m_NativeStorefrontIdentifier = string.Empty;
+
+        /// <summary>
+        /// 广告模块返回或缓存的国家码，用作 Billing 与原生国家码之后的兜底来源。
+        /// </summary>
+        private string m_AdCountryCode = string.Empty;
+
+        /// <summary>
+        /// 商品列表请求版本号，用于忽略旧国家或旧账号返回的过期响应。
+        /// </summary>
+        private int m_ProductListRequestVersion;
 
         /// <summary>
         /// 当前是否跳过 Google 第三方支付信息页。

@@ -69,7 +69,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (!IsUserReadyForValidation())
             {
-                Log.Debug(LogTag.IAPMobile, $"账号未登录，保留登录前待验订单，数量={m_PreLoginOrderRecords.Count}");
+                LogDebug($"账号未登录，保留登录前待验订单，数量={m_PreLoginOrderRecords.Count}");
                 return;
             }
 
@@ -78,7 +78,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 m_OrderRecords[kv.Key] = kv.Value;
             }
 
-            Log.Debug(LogTag.IAPMobile, $"已合并登录前待验订单，数量={m_PreLoginOrderRecords.Count}");
+            LogDebug($"已合并登录前待验订单，数量={m_PreLoginOrderRecords.Count}");
             m_PreLoginOrderRecords.Clear();
             SaveOrderRecords();
         }
@@ -102,7 +102,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
                 if (!CanQueryPendingFromServer())
                 {
-                    Log.Warning(LogTag.IAPMobile, $"未完成订单查询跳过，网络或支付协议服务不可用，账号ID={m_Hub.Store?.GameUID}");
+                    LogWarning($"未完成订单查询跳过，网络或支付协议服务不可用，账号ID={m_Hub.Store?.GameUID}");
                     return;
                 }
 
@@ -114,7 +114,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 }
                 else
                 {
-                    Log.Warning(LogTag.IAPMobile, $"未完成订单查询网络失败，账号ID={m_Hub.Store?.GameUID}");
+                    LogWarning($"未完成订单查询网络失败，账号ID={m_Hub.Store?.GameUID}");
                 }
             }
             catch (OperationCanceledException)
@@ -124,7 +124,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
             catch (Exception ex)
             {
-                Log.Warning(LogTag.IAPMobile, $"未完成订单查询异常，账号ID={m_Hub.Store?.GameUID}，详情={ex.Message}");
+                LogWarning($"未完成订单查询异常，账号ID={m_Hub.Store?.GameUID}，详情={ex.Message}");
             }
             finally
             {
@@ -173,7 +173,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             return false;
 #else
-            Log.Warning(LogTag.IAPMobile, "当前平台不支持未完成订单查询。");
+            LogWarning("当前平台不支持未完成订单查询。");
             await UniTask.CompletedTask;
             return false;
 #endif
@@ -428,7 +428,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (HasDuplicateTableIds(contexts))
             {
-                Log.Debug(LogTag.IAPMobile, $"验单批次存在重复商品表ID，已拆成单笔请求避免同 SKU 多订单响应错配，数量={contexts.Count}");
+                LogDebug($"验单批次存在重复商品表ID，已拆成单笔请求避免同 SKU 多订单响应错配，数量={contexts.Count}");
                 foreach (VerifyOrderContext context in contexts)
                 {
                     await ValidateGroupWithServerAsync(new List<VerifyOrderContext> { context }, isSubscription, ct);
@@ -462,14 +462,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 }
                 catch (Exception ex)
                 {
-                    Log.Warning(LogTag.IAPMobile, $"批量验单请求异常，重试次数={attempt}，数量={pending.Count}，详情={ex.Message}");
+                    LogWarning($"批量验单请求异常，重试次数={attempt}，数量={pending.Count}，详情={ex.Message}");
                     TrackValidateFailBatch(pending, attempt + 1, true, 0, IAPMobileErrorCode.ValidateNetworkRequestFailed, ex.Message);
                     continue;
                 }
 
                 if (!resp.IsSuccess || resp.Data == null)
                 {
-                    Log.Warning(LogTag.IAPMobile, $"批量验单网络失败，重试次数={attempt}，数量={pending.Count}");
+                    LogWarning($"批量验单网络失败，重试次数={attempt}，数量={pending.Count}");
                     TrackValidateFailBatch(pending, attempt + 1, true, resp.ErrorCode, IAPMobileErrorCode.ValidateNetworkRequestFailed, resp.ErrorMessage);
                     continue;
                 }
@@ -481,7 +481,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                     PbNetMobileVerifyOrderResult orderResult = FindOrderResult(resp.Data, context, allowSingleFallback);
                     if (orderResult == null)
                     {
-                        Log.Warning(LogTag.IAPMobile, $"验单响应未找到对应订单，重试次数={attempt}，商品表ID={context.Record.TableId}，订单号={context.TransactionId}");
+                        LogWarning($"验单响应未找到对应订单，重试次数={attempt}，商品表ID={context.Record.TableId}，订单号={context.TransactionId}");
                         TrackValidateFail(context, attempt + 1, false, resp.ErrorCode, IAPMobileErrorCode.ValidateResponseMissing, "验单响应未找到对应订单。");
                         nextPending.Add(context);
                         continue;
@@ -622,7 +622,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return true;
             }
 
-            Log.Warning(LogTag.IAPMobile, $"Google 补单缺少 purchase token，跳过本轮验单，商品表ID={record.TableId}，状态={record.Status}");
+            IAPLog.Warning(NovaFramework.Runtime.LogTag.IAPMobile, $"Google 补单缺少 purchase token，跳过本轮验单，商品表ID={record.TableId}，状态={record.Status}");
             return false;
 #elif UNITY_IOS
             if (record == null)
@@ -635,7 +635,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return true;
             }
 
-            Log.Warning(LogTag.IAPMobile, $"Apple 补单缺少 order_id，删除本地待验记录，商品表ID={record.TableId}，状态={record.Status}");
+            IAPLog.Warning(NovaFramework.Runtime.LogTag.IAPMobile, $"Apple 补单缺少 order_id，删除本地待验记录，商品表ID={record.TableId}，状态={record.Status}");
             return false;
 #else
             return record != null;
@@ -662,7 +662,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return true;
             }
 
-            Log.Warning(LogTag.IAPMobile, $"Google 验单缺少 purchase token，保留订单等待补齐，商品表ID={record.TableId}，状态={record.Status}");
+            LogWarning($"Google 验单缺少 purchase token，保留订单等待补齐，商品表ID={record.TableId}，状态={record.Status}");
             TrackValidateFail(context, 1, false, 0, IAPMobileErrorCode.ValidateCredentialMissing, "Google 验单缺少 purchase token。");
             FailCurrentPayValidationIfNeeded(record, IAPMobileErrorCode.StoreNotAvailable, "Google 验单缺少 purchase token，订单已保留等待补单。");
             return false;
@@ -678,7 +678,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return true;
             }
 
-            Log.Warning(LogTag.IAPMobile, $"Apple 验单缺少 order_id，删除本地待验记录，商品表ID={record.TableId}，状态={record.Status}");
+            LogWarning($"Apple 验单缺少 order_id，删除本地待验记录，商品表ID={record.TableId}，状态={record.Status}");
             TrackValidateFail(context, 1, false, 0, IAPMobileErrorCode.ValidateCredentialMissing, "Apple 验单缺少 order_id。");
             FailCurrentPayValidationIfNeeded(record, IAPMobileErrorCode.StoreNotAvailable, "Apple 验单缺少 order_id，订单已删除。");
             RemoveLocalOrderRecord(record, "Apple 验单缺少 order_id，删除本地待验记录。");
@@ -717,7 +717,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (m_OrderRecords.Remove(orderKey))
             {
-                Log.Warning(LogTag.IAPMobile, $"{reason} {MobileOrderKey.Describe(record)}");
+                LogWarning($"{reason} {MobileOrderKey.Describe(record)}");
                 SaveOrderRecords();
             }
         }
@@ -762,7 +762,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 case PbNetMobileVerifyOrderStatus.Unspecified:
                 case PbNetMobileVerifyOrderStatus.PendingVerify:
                 default:
-                    Log.Warning(LogTag.IAPMobile, $"验单服务端未完成状态，状态={status}，商品表ID={context.Record.TableId}");
+                    LogWarning($"验单服务端未完成状态，状态={status}，商品表ID={context.Record.TableId}");
                     return false;
             }
         }
@@ -923,7 +923,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (HasDispatchedPaySuccess(record))
             {
-                Log.Debug(LogTag.IAPMobile, $"订单已派发过支付成功事件，本次只清理订单不重复通知，{MobileOrderKey.Describe(record)}，订单号={record.TransactionId}");
+                LogDebug($"订单已派发过支付成功事件，本次只清理订单不重复通知，{MobileOrderKey.Describe(record)}，订单号={record.TransactionId}");
                 return false;
             }
 
@@ -1077,7 +1077,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             NetResponse<PbNetMobileVerifyResp> resp = await m_Hub.PayService.VerifyAppleAsync(cmdName, items, isSubscription);
             return resp;
 #else
-            Log.Warning(LogTag.IAPMobile, $"不支持的平台，批量验单数量={contexts?.Count ?? 0}");
+            LogWarning($"不支持的平台，批量验单数量={contexts?.Count ?? 0}");
             return NetResponse<PbNetMobileVerifyResp>.Fail(0, "不支持的平台");
 #endif
         }

@@ -10,7 +10,6 @@
 
 using System.Collections.Generic;
 using NovaFramework.SDK.IAP.Runtime;
-using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.IAP.Mobile.Runtime
 {
@@ -34,9 +33,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
-        /// 日志标签字符串，固定为 IAPMobile。
+        /// 当前 Store 使用的 Nova 日志标签。
         /// </summary>
-        protected override string StoreLogTag => LogTag.IAPMobile;
+        protected override string LogTag => NovaFramework.Runtime.LogTag.IAPMobile;
 
         /// <summary>
         /// 当前登录用户 UID，供 Service 读取用于透传参数编码。

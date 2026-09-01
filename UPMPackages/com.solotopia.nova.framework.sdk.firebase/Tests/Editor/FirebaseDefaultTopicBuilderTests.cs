@@ -14,13 +14,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using NUnit.Framework;
+using NovaFramework.Runtime;
 using NovaFramework.SDK.FirebasePlugin.Runtime;
 
 namespace NovaFramework.SDK.FirebasePlugin.Tests
 {
     /// <summary>
     /// Firebase 默认推送 Topic 构建器测试。
-    /// 覆盖业务要求的 top_ 前缀、语言、平台、时区、国家和差异计算规则。
+    /// 覆盖业务要求的 top_debug_ / top_release_ 环境前缀、语言、平台、时区、国家和差异计算规则。
     /// </summary>
     public sealed class FirebaseDefaultTopicBuilderTests
     {
@@ -128,6 +129,22 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         }
 
         /// <summary>
+        /// 默认 Topic 分群前缀必须通过 IConfigManager 读取 DevelopMode，Config 未就绪时只允许落到 Debug。
+        /// </summary>
+        [Test]
+        public void DefaultTopicSync_UsesConfigManagerDevelopModeForTopicPrefix()
+        {
+            string source = File.ReadAllText(c_FirebaseDefaultTopicsSourcePath);
+
+            StringAssert.Contains("ResolveDefaultTopicDevelopMode()", source);
+            StringAssert.Contains("FrameworkManagersGroup.GetManager<IConfigManager>()", source);
+            StringAssert.Contains("configManager == null || !configManager.IsLoadOver", source);
+            StringAssert.Contains("configManager.DevelopMode", source);
+            StringAssert.Contains("DevelopMode.Debug", source);
+            StringAssert.DoesNotContain("Nova.Config.DevelopMode", source);
+        }
+
+        /// <summary>
         /// Topic 操作必须等待 FCM Token，避免 iOS 首次安装时在 APNs Token 就绪前调用 Firebase。
         /// </summary>
         [Test]
@@ -149,12 +166,12 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         }
 
         /// <summary>
-        /// 构建基础订阅状态时应包含 all、语言、平台和小写 utc 时区 Topic。
+        /// 构建 Debug 基础订阅状态时应包含 all、语言、平台和小写 utc 时区 Topic。
         /// </summary>
         [Test]
-        public void BuildBaseState_UsesTopPrefixAndRequestedSegments()
+        public void BuildBaseState_UsesDebugPrefixAndRequestedSegments()
         {
-            object state = InvokeBuildBaseState("zh-CN", "Android", TimeSpan.FromHours(8));
+            object state = InvokeBuildBaseState(DevelopMode.Debug, "zh-CN", "Android", TimeSpan.FromHours(8));
 
             Assert.AreEqual("zh-CN", GetStringProperty(state, "Language"));
             Assert.AreEqual("Android", GetStringProperty(state, "Platform"));
@@ -162,10 +179,29 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
             CollectionAssert.AreEqual(
                 new[]
                 {
-                    "top_all",
-                    "top_lang_zh-CN",
-                    "top_platform_Android",
-                    "top_timezone_utc_plus_08",
+                    "top_debug_all",
+                    "top_debug_lang_zh-CN",
+                    "top_debug_platform_Android",
+                    "top_debug_timezone_utc_plus_08",
+                },
+                GetStringListProperty(state, "Topics"));
+        }
+
+        /// <summary>
+        /// 构建 Release 基础订阅状态时应使用正式分群前缀。
+        /// </summary>
+        [Test]
+        public void BuildBaseState_UsesReleasePrefixAndRequestedSegments()
+        {
+            object state = InvokeBuildBaseState(DevelopMode.Release, "zh-CN", "Android", TimeSpan.FromHours(8));
+
+            CollectionAssert.AreEqual(
+                new[]
+                {
+                    "top_release_all",
+                    "top_release_lang_zh-CN",
+                    "top_release_platform_Android",
+                    "top_release_timezone_utc_plus_08",
                 },
                 GetStringListProperty(state, "Topics"));
         }
@@ -242,23 +278,36 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         [Test]
         public void TryBuildCountryState_SkipsEmptyAndIvCountry()
         {
-            Assert.IsFalse(InvokeTryBuildCountryState(null, out _));
-            Assert.IsFalse(InvokeTryBuildCountryState("", out _));
-            Assert.IsFalse(InvokeTryBuildCountryState(" IV ", out _));
-            Assert.IsFalse(InvokeTryBuildCountryState("iv", out _));
+            Assert.IsFalse(InvokeTryBuildCountryState(DevelopMode.Debug, null, out _));
+            Assert.IsFalse(InvokeTryBuildCountryState(DevelopMode.Debug, "", out _));
+            Assert.IsFalse(InvokeTryBuildCountryState(DevelopMode.Debug, " IV ", out _));
+            Assert.IsFalse(InvokeTryBuildCountryState(DevelopMode.Debug, "iv", out _));
         }
 
         /// <summary>
-        /// 国家 Topic 应统一保存大写国家码，并使用 top_country_ 前缀。
+        /// 国家 Topic 应统一保存大写国家码，并使用 Debug 环境前缀。
         /// </summary>
         [Test]
-        public void TryBuildCountryState_NormalizesCountryAndTopic()
+        public void TryBuildCountryState_NormalizesCountryAndDebugTopic()
         {
-            bool built = InvokeTryBuildCountryState(" us ", out object state);
+            bool built = InvokeTryBuildCountryState(DevelopMode.Debug, " cn ", out object state);
 
             Assert.IsTrue(built);
-            Assert.AreEqual("US", GetStringProperty(state, "Country"));
-            Assert.AreEqual("top_country_US", GetStringProperty(state, "Topic"));
+            Assert.AreEqual("CN", GetStringProperty(state, "Country"));
+            Assert.AreEqual("top_debug_country_CN", GetStringProperty(state, "Topic"));
+        }
+
+        /// <summary>
+        /// 国家 Topic 在 Release 模式下应使用正式分群前缀。
+        /// </summary>
+        [Test]
+        public void TryBuildCountryState_UsesReleaseTopicPrefix()
+        {
+            bool built = InvokeTryBuildCountryState(DevelopMode.Release, " cn ", out object state);
+
+            Assert.IsTrue(built);
+            Assert.AreEqual("CN", GetStringProperty(state, "Country"));
+            Assert.AreEqual("top_release_country_CN", GetStringProperty(state, "Topic"));
         }
 
         /// <summary>
@@ -270,21 +319,36 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
             object diff = InvokeBuildTopicDiff(
                 new[]
                 {
-                    "top_all",
-                    "top_lang_en-US",
-                    "top_platform_Android",
-                    "top_timezone_utc_plus_08",
+                    "top_debug_all",
+                    "top_debug_lang_en-US",
+                    "top_debug_platform_Android",
+                    "top_debug_timezone_utc_plus_08",
                 },
                 new[]
                 {
-                    "top_all",
-                    "top_lang_zh-CN",
-                    "top_platform_Android",
-                    "top_timezone_utc_plus_08",
+                    "top_debug_all",
+                    "top_debug_lang_zh-CN",
+                    "top_debug_platform_Android",
+                    "top_debug_timezone_utc_plus_08",
                 });
 
-            CollectionAssert.AreEqual(new[] { "top_lang_en-US" }, GetStringListProperty(diff, "UnsubscribeTopics"));
-            CollectionAssert.AreEqual(new[] { "top_lang_zh-CN" }, GetStringListProperty(diff, "SubscribeTopics"));
+            CollectionAssert.AreEqual(new[] { "top_debug_lang_en-US" }, GetStringListProperty(diff, "UnsubscribeTopics"));
+            CollectionAssert.AreEqual(new[] { "top_debug_lang_zh-CN" }, GetStringListProperty(diff, "SubscribeTopics"));
+            Assert.IsFalse(GetBoolProperty(diff, "IsEmpty"));
+        }
+
+        /// <summary>
+        /// 旧 top_ 存档和新环境前缀状态不一致时，应通过差异同步完成退订与订阅迁移。
+        /// </summary>
+        [Test]
+        public void BuildTopicDiff_MigratesLegacyTopPrefixTopics()
+        {
+            object diff = InvokeBuildTopicDiff(
+                new[] { "top_all", "top_lang_zh-CN" },
+                new[] { "top_debug_all", "top_debug_lang_zh-CN" });
+
+            CollectionAssert.AreEqual(new[] { "top_all", "top_lang_zh-CN" }, GetStringListProperty(diff, "UnsubscribeTopics"));
+            CollectionAssert.AreEqual(new[] { "top_debug_all", "top_debug_lang_zh-CN" }, GetStringListProperty(diff, "SubscribeTopics"));
             Assert.IsFalse(GetBoolProperty(diff, "IsEmpty"));
         }
 
@@ -295,17 +359,17 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         public void BuildTopicDiff_ReturnsEmptyWhenTopicsAreEqual()
         {
             object diff = InvokeBuildTopicDiff(
-                new[] { "top_all", "top_lang_zh-CN" },
-                new[] { "top_lang_zh-CN", "top_all" });
+                new[] { "top_debug_all", "top_debug_lang_zh-CN" },
+                new[] { "top_debug_lang_zh-CN", "top_debug_all" });
 
             Assert.IsTrue(GetBoolProperty(diff, "IsEmpty"));
             CollectionAssert.IsEmpty(GetStringListProperty(diff, "UnsubscribeTopics"));
             CollectionAssert.IsEmpty(GetStringListProperty(diff, "SubscribeTopics"));
         }
 
-        private static object InvokeBuildBaseState(string language, string platform, TimeSpan utcOffset)
+        private static object InvokeBuildBaseState(DevelopMode developMode, string language, string platform, TimeSpan utcOffset)
         {
-            return InvokeBuilderMethod("BuildBaseState", language, platform, utcOffset);
+            return InvokeBuilderMethod("BuildBaseState", developMode, language, platform, utcOffset);
         }
 
         private static string InvokeFormatUtcOffset(TimeSpan utcOffset)
@@ -323,10 +387,10 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
             return (string)InvokeBuilderMethod("NormalizeReportCountryCode", countryCode);
         }
 
-        private static bool InvokeTryBuildCountryState(string countryCode, out object state)
+        private static bool InvokeTryBuildCountryState(DevelopMode developMode, string countryCode, out object state)
         {
             MethodInfo method = GetBuilderMethod("TryBuildCountryState");
-            object[] args = { countryCode, null };
+            object[] args = { developMode, countryCode, null };
             bool result = (bool)method.Invoke(null, args);
             state = args[1];
             return result;

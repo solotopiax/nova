@@ -41,7 +41,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            Log.Debug(LogTag.IAPMobile, $"订阅倒计时到期，商品表ID={tableId}，触发平台购买拉取和权益刷新。");
+            LogDebug($"订阅倒计时到期，商品表ID={tableId}，触发平台购买拉取和权益刷新。");
             m_Hub.ExtendedService?.FetchPurchases();
             if (m_Hub.RestoreService != null)
             {

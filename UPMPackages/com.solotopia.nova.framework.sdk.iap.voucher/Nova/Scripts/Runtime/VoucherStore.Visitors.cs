@@ -8,7 +8,6 @@
  * descrip:   VoucherStore 字段与属性
  ***************************************************************/
 
-using NovaFramework.Runtime;
 using NovaFramework.SDK.IAP.Runtime;
 
 namespace NovaFramework.SDK.IAP.Voucher.Runtime
@@ -34,9 +33,9 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
         protected override string TrackChannel => "voucher";
 
         /// <summary>
-        /// Voucher Store 使用的日志标签。
+        /// 当前 Store 使用的 Nova 日志标签。
         /// </summary>
-        protected override string StoreLogTag => LogTag.IAPVoucher;
+        protected override string LogTag => NovaFramework.Runtime.LogTag.IAPVoucher;
 
         /// <summary>
         /// 当前 Voucher Store 配置。

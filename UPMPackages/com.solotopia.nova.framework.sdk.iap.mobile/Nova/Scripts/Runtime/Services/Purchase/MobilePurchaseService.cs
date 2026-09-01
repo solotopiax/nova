@@ -21,7 +21,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 负责购买发起、订阅升降级路由、UUID 透传参数编码；
     /// 通过 OnPurchasePending / OnPurchaseConfirmed / OnPurchaseFailed 处理平台回调。
     /// </summary>
-    internal sealed partial class MobilePurchaseService
+    internal sealed partial class MobilePurchaseService : MobileLogOwner
     {
         /// <summary>
         /// 服务容器，持有共享外部依赖与其他服务引用。
@@ -125,12 +125,12 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             Product product = m_Hub.ProductService.GetFirstProductInOrder(order);
             if (product == null)
             {
-                Log.Warning(LogTag.IAPMobile, "平台待确认购买回调中未找到商品。");
+                LogWarning("平台待确认购买回调中未找到商品。");
                 CompleteActivePayFailure(InPayTableId, IAPMobileErrorCode.ProductNotFound, "平台待确认回调中未找到商品。", m_CurrentCustomData, true);
                 return;
             }
 
-            Log.Debug(LogTag.IAPMobile, $"平台待确认购买回调：商品ID={product.definition.id}，等待服务端验单后确认订单。");
+            LogDebug($"平台待确认购买回调：商品ID={product.definition.id}，等待服务端验单后确认订单。");
             HandlePendingOrder(order, product);
         }
 
@@ -149,7 +149,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                     HandleConfirmFailed(failed);
                     break;
                 default:
-                    Log.Warning(LogTag.IAPMobile, "平台订单确认回调收到未知订单类型。");
+                    LogWarning("平台订单确认回调收到未知订单类型。");
                     HandleConfirmFailed(new FailedOrder(order, PurchaseFailureReason.Unknown, string.Empty));
                     break;
             }
@@ -171,7 +171,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal void OnPurchaseDeferred(DeferredOrder order)
         {
             Product product = m_Hub.ProductService.GetFirstProductInOrder(order);
-            Log.Debug(LogTag.IAPMobile, $"平台购买延期回调：商品ID={product?.definition.id}");
+            LogDebug($"平台购买延期回调：商品ID={product?.definition.id}");
         }
 
         /// <summary>

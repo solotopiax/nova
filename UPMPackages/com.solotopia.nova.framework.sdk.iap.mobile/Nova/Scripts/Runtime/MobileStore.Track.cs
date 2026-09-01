@@ -152,13 +152,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (m_PersistData != null && m_PersistData.ValidateSuccessOrderKeys.Contains(trackKey))
             {
-                Log.Debug(LogTag.IAPMobile, $"订单已在历史运行期上报过验单成功事件，本次跳过重复打点，订单键={trackKey}");
+                LogDebug($"订单已在历史运行期上报过验单成功事件，本次跳过重复打点，订单键={trackKey}");
                 return false;
             }
 
             if (m_RuntimeValidateSuccessOrderKeys.Contains(trackKey))
             {
-                Log.Debug(LogTag.IAPMobile, $"订单已上报过验单成功事件，本次跳过重复打点，订单键={trackKey}");
+                LogDebug($"订单已上报过验单成功事件，本次跳过重复打点，订单键={trackKey}");
                 return false;
             }
 

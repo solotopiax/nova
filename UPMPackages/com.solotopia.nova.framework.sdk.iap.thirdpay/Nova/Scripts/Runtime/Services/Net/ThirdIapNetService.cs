@@ -20,7 +20,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     /// 封装 third_pay 系列协议的请求构造与发送，通过 NetService.SendAsync 完成
     /// Protobuf 序列化、AES 加密、HTTP 请求及解析全流程。
     /// </summary>
-    public sealed class ThirdIapNetService
+    public sealed class ThirdIapNetService : ThirdPayLogOwner
     {
         /// <summary>
         /// 拉取指定国家或地区的第三方支付商品列表。
@@ -101,10 +101,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="protocol">协议职责名称。</param>
         /// <param name="cmdName">NetCmd 名称。</param>
         /// <param name="request">Protobuf 请求对象。</param>
-        private static void LogRequest<TReq>(string protocol, string cmdName, TReq request)
+        private void LogRequest<TReq>(string protocol, string cmdName, TReq request)
             where TReq : class, IMessage<TReq>
         {
-            Log.Debug(LogTag.IAPThirdPay, $"第三方支付协议请求：协议={protocol}，命令={cmdName}，请求={request}");
+            LogDebug($"第三方支付协议请求：协议={protocol}，命令={cmdName}，请求={request}");
         }
 
         /// <summary>
@@ -114,11 +114,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="protocol">协议职责名称。</param>
         /// <param name="cmdName">NetCmd 名称。</param>
         /// <param name="response">统一网络响应。</param>
-        private static void LogResponse<TResp>(string protocol, string cmdName, NetResponse<TResp> response)
+        private void LogResponse<TResp>(string protocol, string cmdName, NetResponse<TResp> response)
             where TResp : class, IMessage<TResp>
         {
             string data = response?.Data == null ? "null" : response.Data.ToString();
-            Log.Debug(LogTag.IAPThirdPay, $"第三方支付协议响应：协议={protocol}，命令={cmdName}，是否成功={response?.IsSuccess}，错误码={response?.ErrorCode}，错误信息={response?.ErrorMessage}，数据={data}");
+            LogDebug($"第三方支付协议响应：协议={protocol}，命令={cmdName}，是否成功={response?.IsSuccess}，错误码={response?.ErrorCode}，错误信息={response?.ErrorMessage}，数据={data}");
         }
     }
 }

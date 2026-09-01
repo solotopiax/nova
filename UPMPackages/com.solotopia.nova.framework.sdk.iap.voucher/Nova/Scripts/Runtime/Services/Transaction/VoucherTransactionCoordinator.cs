@@ -19,7 +19,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
     /// Voucher 可恢复交易协调器。
     /// 串行执行新支付、补单恢复、终态持久化和事件派发。
     /// </summary>
-    internal sealed partial class VoucherTransactionCoordinator
+    internal sealed partial class VoucherTransactionCoordinator : VoucherLogOwner
     {
         /// <summary>
         /// 创建 Voucher 交易协调器。

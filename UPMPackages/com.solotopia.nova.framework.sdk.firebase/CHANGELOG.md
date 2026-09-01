@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-09-01
+
+### Changed
+
+- Firebase 默认 FCM topic 前缀改为按 `IConfigManager.DevelopMode` 区分 Debug / Release：Debug 使用 `top_debug_*`，Release 使用 `top_release_*`，Config Manager 未就绪时只落 Debug，旧 `top_*` 存档会通过既有差异同步退订并迁移到当前环境分群。
+
 ## [0.1.10] - 2026-08-28
 
 ### Changed

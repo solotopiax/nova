@@ -58,7 +58,7 @@
 |---|---|
 | `StoreType` | 固定 `IAPStoreType.Mobile` |
 | `TrackChannel` | Android = `google`，iOS = `ios`，其他平台兜底 `mobile` |
-| `StoreLogTag` | 固定 `LogTag.IAPMobile` |
+| `LogTag` | 固定 `LogTag.IAPMobile` |
 | `GameUID` | 当前用户 UID，供内部服务读取 |
 | `InPayTableId` | 当前支付中的 tableId；0 表示空闲 |
 | `IsStoreReady` | `InitService.IsReady && ExtendedService.IsAttached` |

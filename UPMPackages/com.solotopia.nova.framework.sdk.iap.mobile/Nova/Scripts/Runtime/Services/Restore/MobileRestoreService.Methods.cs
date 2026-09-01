@@ -48,7 +48,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 {
                     // 平台已确认不可购买（拉取失败）的商品不会再进入 StoreController，
                     // 跳过且不置 skippedEligibleProductBecauseNotFetched，避免权益刷新被永久延后挂起。
-                    Log.Warning(LogTag.IAPMobile, $"跳过不可购买商品的权益检查，商品ID={entry.ProductID}");
+                    LogWarning($"跳过不可购买商品的权益检查，商品ID={entry.ProductID}");
                     continue;
                 }
 
@@ -77,11 +77,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 if (skippedEligibleProductBecauseNotFetched)
                 {
                     m_PendingEntitlementRefreshAfterProductsFetched = true;
-                    Log.Warning(LogTag.IAPMobile, "订阅或非消耗品尚未进入 StoreController，已延后权益刷新。");
+                    LogWarning("订阅或非消耗品尚未进入 StoreController，已延后权益刷新。");
                 }
                 else
                 {
-                    Log.Debug(LogTag.IAPMobile, "没有待查询的订阅或非消耗品。");
+                    LogDebug("没有待查询的订阅或非消耗品。");
                 }
                 ProcessAllEntitlementsCompleted();
             }
@@ -93,7 +93,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         private void ProcessAllEntitlementsCompleted()
         {
-            Log.Debug(LogTag.IAPMobile, "所有 CheckEntitlement 完成，分发 Restore 验单。");
+            LogDebug("所有 CheckEntitlement 完成，分发 Restore 验单。");
             List<long> subTableIds = m_Hub.ProductService.GetFullyEntitledSubscriptionTableIds();
             List<long> ncTableIds = m_Hub.ProductService.GetFullyEntitledNonConsumableTableIds();
             List<long> preparedSubTableIds = m_Hub.ValidationService.PrepareRestoreSubscriptions(subTableIds);

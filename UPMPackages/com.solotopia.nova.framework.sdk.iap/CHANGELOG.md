@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-09-01
+
+### Changed
+
+- IAP 日志统一收口到 `IAPLog`，由 `IAPPluginConfig.EnableIAPLog` 控制核心与各 Store 的 Debug、Warning、Error 输出，默认开启。
+- `IAPStoreBase` 的日志标签扩展点由 `StoreLogTag` 更名为 `LogTag`，自定义 Store 需同步更新 override。
+
 ## [0.1.10] - 2026-08-28
 
 ### Changed

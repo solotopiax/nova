@@ -55,7 +55,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            Log.Warning(LogTag.IAPMobile, $"Unity IAP 初始化失败，原因={reason}，详情={detail}");
+            LogWarning($"Unity IAP 初始化失败，原因={reason}，详情={detail}");
             IsReady = false;
             m_Hub.Store.TrackInitFailedInternal(reason);
             m_Hub.Context.EventBridge?.RaiseInitResult(IAPInitResult.Fail((int)reason, detail));

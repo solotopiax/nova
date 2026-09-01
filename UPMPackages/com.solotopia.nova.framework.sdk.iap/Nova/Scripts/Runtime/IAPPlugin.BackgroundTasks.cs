@@ -39,13 +39,13 @@ namespace NovaFramework.SDK.IAP.Runtime
         {
             if (taskFactory == null)
             {
-                Log.Warning(LogTag.IAPPlugin, $"后台任务启动失败，任务名={taskName}，原因=任务工厂为空。");
+                LogWarning($"后台任务启动失败，任务名={taskName}，原因=任务工厂为空。");
                 return;
             }
 
             if (m_RuntimeTaskCts == null || m_RuntimeTaskCts.IsCancellationRequested)
             {
-                Log.Debug(LogTag.IAPPlugin, $"后台任务已跳过，IAPPlugin 正在释放或未初始化，任务名={taskName}。");
+                LogDebug($"后台任务已跳过，IAPPlugin 正在释放或未初始化，任务名={taskName}。");
                 return;
             }
 
@@ -66,11 +66,11 @@ namespace NovaFramework.SDK.IAP.Runtime
             }
             catch (OperationCanceledException)
             {
-                Log.Debug(LogTag.IAPPlugin, $"后台任务已取消，任务名={taskName}。");
+                LogDebug($"后台任务已取消，任务名={taskName}。");
             }
             catch (Exception e)
             {
-                Log.Warning(LogTag.IAPPlugin, $"后台任务执行异常，任务名={taskName}，详情={e.Message}");
+                LogWarning($"后台任务执行异常，任务名={taskName}，详情={e.Message}");
             }
         }
 

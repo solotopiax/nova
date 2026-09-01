@@ -36,7 +36,7 @@ SDKComponent
 | 字段 / 属性 | 说明 |
 |---|---|
 | `EnableAlwaysPaySucceed` | Editor 调试开关；仅 Editor 编译态允许 Store 读取 `Context.EnableAlwaysPaySucceed` 跳过真实平台支付，非 Editor 编译态强制为 false |
-| `EnableIAPLog` | IAP 详细日志开关 |
+| `EnableIAPLog` | IAP 详细日志开关，默认开启；初始化时写入 `IAPLog.SetEnabled` |
 | `RetryValidateMaxNum` | 首次验单失败后的最大重试次数，默认 3 |
 | `SkipLoadingForReplenish` | 启动补单是否跳过 Loading |
 | `LoadingPanelPrefab` | 支付期 Loading 面板 Resources 路径，默认 `IAP/IAPLoadingPanel` |
@@ -71,6 +71,7 @@ SDKComponent
 - `SetUserId` 账号 UID 写入
 - `LoadPersistData<T>` / `SavePersistData<T>` 按 `iap_{storeType}` + `data_{uid}` 读写
 - `IAPLoadingGuard` 和默认 Loading 面板绑定
+- `IAPLogOwner` 日志收口；Store 和 Service 只声明固定 `LogTag`，日志底层不依赖 `IAPStoreType`
 - `AddUnavailableSku` / `IsUnavailableSku`
 - `InSubscriptionPeriod` 订阅有效期判断扩展
 - `Track*` 系列支付打点方法；子 Store 可通过内部转发方法在自身服务层接入，Mobile 官方内购已接入初始化、购买、平台支付、验单相关事件。`Track*Fail` 的 reason 参数统一为 `Enum`，父包转成 `int` 写入 `nova_reason`，失败描述写入 `nova_reason_detail`。
@@ -95,6 +96,7 @@ SDKComponent
 SDKManager.InitializePlugin(IAPPlugin)
   └── IAPPlugin.OnInitializeAsync(config, ct)
         ├── 校验 IAPPluginConfig
+        ├── 应用 EnableIAPLog 到 IAPLog.SetEnabled
         ├── 商品表为空则跳过 Store 创建
         ├── BuildStoreContext(config)
         ├── BuildStoreConfigMap(config)

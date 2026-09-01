@@ -115,7 +115,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             if (retryDelaysMs == null || retryDelaysMs.Length == 0)
             {
-                Log.Warning(LogTag.IAPMobile, "商品拉取重试延迟配置为空，已回落到默认 2s/5s/10s。");
+                IAPLog.Warning(NovaFramework.Runtime.LogTag.IAPMobile, "商品拉取重试延迟配置为空，已回落到默认 2s/5s/10s。");
                 return s_DefaultProductFetchRetryDelaysMs;
             }
 
@@ -123,7 +123,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             {
                 if (retryDelaysMs[i] <= 0)
                 {
-                    Log.Warning(LogTag.IAPMobile, $"商品拉取重试延迟配置包含非法值，索引={i}，值={retryDelaysMs[i]}，已回落到默认 2s/5s/10s。");
+                    IAPLog.Warning(NovaFramework.Runtime.LogTag.IAPMobile, $"商品拉取重试延迟配置包含非法值，索引={i}，值={retryDelaysMs[i]}，已回落到默认 2s/5s/10s。");
                     return s_DefaultProductFetchRetryDelaysMs;
                 }
             }

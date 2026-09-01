@@ -21,10 +21,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     public interface IIAPThirdPayCapable : IIAPCapable
     {
         /// <summary>
-        /// 覆盖当前支付国家或地区代码。
+        /// 设置 Debug 覆盖用支付国家或地区代码；生产环境通常留空，由 Store 自动解析。
         /// </summary>
-        /// <param name="countryCode">ISO 3166-1 alpha-2 国家或地区代码。</param>
-        void SetCountryCode(string countryCode);
+        /// <param name="countryCode">ISO 3166-1 alpha-2 国家或地区代码；空值表示取消 Debug 覆盖。</param>
+        void SetDebugCountryCode(string countryCode);
+
+        /// <summary>
+        /// 获取 ThirdPay 当前实际使用的国家或地区代码。
+        /// </summary>
+        /// <returns>规范化后的 ISO 3166-1 alpha-2 国家或地区代码。</returns>
+        string GetCountryCode();
 
         /// <summary>
         /// 设置是否跳过 Google 第三方支付信息页，启用后直接进入 ThirdPay 支付页。

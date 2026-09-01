@@ -21,7 +21,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
     /// Voucher 钱包会话。
     /// 维护账号 generation、取消令牌和不可变钱包版本。
     /// </summary>
-    internal sealed partial class VoucherWalletSession : IDisposable
+    internal sealed partial class VoucherWalletSession : VoucherLogOwner, IDisposable
     {
         /// <summary>
         /// 切换账号，并在取消旧账号请求后同步清空可见钱包。

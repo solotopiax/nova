@@ -132,24 +132,6 @@ namespace NovaFramework.SDK.IAP.Runtime
         }
 
         /// <summary>
-        /// 输出 Debug 级别日志，自动附带子类声明的 StoreLogTag。
-        /// </summary>
-        /// <param name="msg">日志内容。</param>
-        protected void LogDebug(string msg) => Log.Debug(StoreLogTag, msg);
-
-        /// <summary>
-        /// 输出 Warning 级别日志，自动附带子类声明的 StoreLogTag。
-        /// </summary>
-        /// <param name="msg">日志内容。</param>
-        protected void LogWarning(string msg) => Log.Warning(StoreLogTag, msg);
-
-        /// <summary>
-        /// 输出 Error 级别日志，自动附带子类声明的 StoreLogTag。
-        /// </summary>
-        /// <param name="msg">日志内容。</param>
-        protected void LogError(string msg) => Log.Error(StoreLogTag, msg);
-
-        /// <summary>
         /// 订阅倒计时扩展点。
         /// 子类按需覆写以接入具体计时器（如 DOTween / UniTask），到期后触发 Restore。
         /// 基类默认空实现，不引入额外依赖。

@@ -1,7 +1,7 @@
 ﻿# Nova Framework - SDK - IAP
 
 > 包名：`com.solotopia.nova.framework.sdk.iap`
-> 当前版本：`0.1.5`
+> 当前版本：`0.1.11`
 
 Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运行期查询、SKU Excel 导入/模板导出、支付事件桥接、Loading 防重入与通用持久化模板。具体渠道能力由子包提供，例如 `com.solotopia.nova.framework.sdk.iap.mobile`。
 
@@ -11,7 +11,7 @@ Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.iap": "0.1.5"
+  "com.solotopia.nova.framework.sdk.iap": "0.1.11"
 }
 ```
 
@@ -22,8 +22,11 @@ Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运�
 - `IAP Products Excel`：Inspector 支持导出模板并导入工作簿；校验通过后全量覆盖 `IAPPluginConfig.Products`，不接入 Luban。
 - `IIAPProductTable`：运行期商品表查询接口，由 `IAPProductTableService` 基于配置数据构建。
 - `IAPStoreBase`：各渠道 Store 的公共抽象基类。
+- `IAPLog` / `IAPLogOwner`：统一日志网关与 Store/Service 日志基类；`IAPStoreBase` 子类通过 protected `LogTag` 指定日志标签。
 - `IAPRequest` / `IAPResult`：统一支付请求与结果；`ReceiptParam` 可随平台票据在支付、补单与恢复流程中往返。
 - `IAPInitResult`：统一初始化结果；错误码均为 `int`，核心层和各 Store 分别定义自己的错误码枚举。
+
+`IAPPluginConfig.EnableIAPLog` 默认开启；插件初始化时会把该值应用到统一日志网关，同时控制核心与各渠道 Store 的 Debug、Warning、Error 输出。
 
 ## 文档
 

@@ -16,7 +16,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
     /// <summary>
     /// 只负责解析 NetCmd 并发送已构造 protobuf 消息的内部网络适配器。
     /// </summary>
-    internal sealed class VoucherIapNetService
+    internal sealed class VoucherIapNetService : VoucherLogOwner
     {
         /// <summary>
         /// 发送钱包列表请求。

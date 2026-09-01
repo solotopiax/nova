@@ -56,7 +56,7 @@ namespace ThinkingData.Analytics.Utils
                 }
                 if (!(kv.Value is string || kv.Value is DateTime || kv.Value is bool || IsNumeric(kv.Value) || IsList(kv.Value) || IsDictionary(kv.Value)))
                 {
-                    if(TDLog.GetEnable()) TDLog.w("Incorrect property - property values must be one of: String, Numberic, Boolean, DateTime, Array, Row");
+                    if(TDLog.GetEnable()) TDLog.w($"Key = {kv.Key}, Value= {kv.Value} ,Incorrect property - property values must be one of: String, Numberic, Boolean, DateTime, Array, Row");
                     ret = false;
                 }
                 if (IsString(kv.Value) && !CheckProperties(kv.Value as string)) 

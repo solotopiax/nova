@@ -15,10 +15,14 @@ keywords:
   - FirebaseDefaultTopics
   - Firebase Topic
   - FCM Topic
-  - top_all
-  - top_lang
-  - top_timezone
-  - top_country
+  - top_debug_all
+  - top_release_all
+  - top_debug_lang
+  - top_release_lang
+  - top_debug_timezone
+  - top_release_timezone
+  - top_debug_country
+  - top_release_country
 tags:
   - pattern
   - nova
@@ -42,7 +46,7 @@ related:
 
 ## 核心做法
 
-1. 默认 Topic 使用统一业务前缀，例如 Firebase 当前使用 `top_`。
+1. 默认 Topic 使用统一业务前缀根和环境分群前缀，例如 Firebase 当前按 `IConfigManager.DevelopMode` 使用 `top_debug_` 或 `top_release_`；Config Manager 不存在或未加载完成时只按 Debug 处理，避免误订阅正式分群。
 2. Topic 按数据源就绪语义拆分同步链路，而不是塞进一个一次性初始化函数：
    - 基础状态：全量、语言、平台、时区。
    - 国家状态：广告模块异步返回的最终国家码。
@@ -76,7 +80,7 @@ related:
 - 当前实现：`UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Topics/FirebaseDefaultTopicBuilder.cs` 负责 Topic 构建、安全字符清洗、国家码规范化和订阅差异计算。
 - 当前实现：`UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Topics/FirebasePlugin.DefaultTopics.cs` 负责初始化后启动、监听 `LocalizationRefreshEventData`、通过 AD 模块获取最终国家码、持久化状态并应用差异。
 - 当前文档：`UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Doc/FirebasePlugin.md` 已记录默认 Topic 类型、示例、语言等待、国家码获取和存档语义。
-- 当前测试：`UPMPackages/com.solotopia.nova.framework.sdk.firebase/Tests/Editor/FirebaseDefaultTopicBuilderTests.cs` 覆盖 `top_` 前缀、`utc_plus_05_30` / `utc_minus_03_30` 非整点时区、`IV` 国家跳过和差异计算。
+- 当前测试：`UPMPackages/com.solotopia.nova.framework.sdk.firebase/Tests/Editor/FirebaseDefaultTopicBuilderTests.cs` 覆盖 `top_debug_` / `top_release_` 环境前缀、旧 `top_` 存档迁移、`utc_plus_05_30` / `utc_minus_03_30` 非整点时区、`IV` 国家跳过和差异计算。
 
 ## 关联
 

@@ -23,6 +23,33 @@ namespace NovaFramework.SDK.IAP.Runtime
     public sealed partial class IAPPlugin
     {
         /// <summary>
+        /// 输出 IAPPlugin Debug 日志。
+        /// </summary>
+        /// <param name="message">日志内容。</param>
+        private static void LogDebug(string message)
+        {
+            IAPLog.Debug(NovaFramework.Runtime.LogTag.IAPPlugin, message);
+        }
+
+        /// <summary>
+        /// 输出 IAPPlugin Warning 日志。
+        /// </summary>
+        /// <param name="message">日志内容。</param>
+        private static void LogWarning(string message)
+        {
+            IAPLog.Warning(NovaFramework.Runtime.LogTag.IAPPlugin, message);
+        }
+
+        /// <summary>
+        /// 输出 IAPPlugin Error 日志。
+        /// </summary>
+        /// <param name="message">日志内容。</param>
+        private static void LogError(string message)
+        {
+            IAPLog.Error(NovaFramework.Runtime.LogTag.IAPPlugin, message);
+        }
+
+        /// <summary>
         /// 扫描当前 AppDomain 下所有程序集，挑出标注 IAPStoreAttribute 且实现 IIAPInternalStore 的具体类型，
         /// 逐个委派 TryInitializeStoreAsync 完成实例化与初始化。
         /// </summary>
@@ -68,7 +95,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             }
             catch (ReflectionTypeLoadException ex)
             {
-                Log.Warning(LogTag.IAPPlugin, $"扫描程序集 {assembly.GetName().Name} 时发生 ReflectionTypeLoadException，跳过。异常：{ex.Message}");
+                LogWarning($"扫描程序集 {assembly.GetName().Name} 时发生 ReflectionTypeLoadException，跳过。异常：{ex.Message}");
                 return null;
             }
         }
@@ -107,7 +134,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <returns>该 store 初始化完成或被跳过的异步任务。</returns>
         private async UniTask TryInitializeStoreAsync(Type t, CancellationToken ct)
         {
-            Log.Debug(LogTag.IAPPlugin, $"发现 IAPStore 实现：{t.FullName}，开始实例化。");
+            LogDebug($"发现 IAPStore 实现：{t.FullName}，开始实例化。");
 
             IIAPInternalStore store;
             try
@@ -116,13 +143,13 @@ namespace NovaFramework.SDK.IAP.Runtime
             }
             catch (Exception ex)
             {
-                Log.Warning(LogTag.IAPPlugin, $"实例化 {t.FullName} 失败，跳过该 store。异常：{ex.Message}");
+                LogWarning($"实例化 {t.FullName} 失败，跳过该 store。异常：{ex.Message}");
                 return;
             }
 
             if (store == null)
             {
-                Log.Warning(LogTag.IAPPlugin, $"{t.FullName} 实例化结果无法转换为 IIAPInternalStore，跳过。");
+                LogWarning($"{t.FullName} 实例化结果无法转换为 IIAPInternalStore，跳过。");
                 return;
             }
 
@@ -136,7 +163,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             {
                 // 发现了可选 Store 程序集，但当前 IAPPluginConfig 未声明对应 StoreConfig。
                 // 这种情况表示该渠道未配置，不应把 null config 传给 Store 初始化。
-                Log.Debug(LogTag.IAPPlugin, $"IAPStore {t.FullName} 未配置 StoreConfig，跳过初始化。");
+                LogDebug($"IAPStore {t.FullName} 未配置 StoreConfig，跳过初始化。");
                 return;
             }
 
@@ -145,7 +172,7 @@ namespace NovaFramework.SDK.IAP.Runtime
                 // 配置禁用时保留实例但跳过 InitializeAsync，后续 SetStoreEnabled 可懒初始化。
                 store.SetEnabled(false);
                 m_Stores.Add(store);
-                Log.Debug(LogTag.IAPPlugin, $"IAPStore {t.FullName} 已禁用，跳过初始化（懒初始化）。");
+                LogDebug($"IAPStore {t.FullName} 已禁用，跳过初始化（懒初始化）。");
                 return;
             }
 
@@ -153,7 +180,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             {
                 await store.InitializeAsync(m_PurchasesTable, storeConfig, m_StoreContext, ct);
                 m_Stores.Add(store);
-                Log.Debug(LogTag.IAPPlugin, $"IAPStore {t.FullName} 初始化完成。");
+                LogDebug($"IAPStore {t.FullName} 初始化完成。");
             }
             catch (OperationCanceledException)
             {
@@ -161,7 +188,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             }
             catch (Exception ex)
             {
-                Log.Warning(LogTag.IAPPlugin, $"IAPStore {t.FullName} InitializeAsync 失败，跳过该 store。异常：{ex.Message}");
+                LogWarning($"IAPStore {t.FullName} InitializeAsync 失败，跳过该 store。异常：{ex.Message}");
             }
         }
 
@@ -239,14 +266,14 @@ namespace NovaFramework.SDK.IAP.Runtime
 
                 if (cfg.StoreType == IAPStoreType.None)
                 {
-                    Log.Warning(LogTag.IAPPlugin, $"忽略 StoreType=None 的配置：{cfg.GetType().FullName}");
+                    LogWarning($"忽略 StoreType=None 的配置：{cfg.GetType().FullName}");
                     continue;
                 }
 
                 if (map.ContainsKey(cfg.StoreType))
                 {
                     // 同渠道重复配置会导致路由歧义，因此保留首条并显式告警。
-                    Log.Warning(LogTag.IAPPlugin, $"渠道 {cfg.StoreType} 配置重复，保留首条，丢弃 {cfg.GetType().FullName}");
+                    LogWarning($"渠道 {cfg.StoreType} 配置重复，保留首条，丢弃 {cfg.GetType().FullName}");
                     continue;
                 }
 

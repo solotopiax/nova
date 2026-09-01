@@ -5,10 +5,8 @@
  * filename:  IAPThirdPayRequest.cs
  * author:    yingzheng
  * created:   2026/5/20
- * descrip:   第三方支付渠道请求（含 WebView 适配区域）
+ * descrip:   第三方支付渠道请求
  ***************************************************************/
-
-using UnityEngine;
 
 namespace NovaFramework.SDK.IAP.Runtime
 {
@@ -23,11 +21,5 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// 当前请求对应的渠道类型，固定为 ThirdPay。
         /// </summary>
         public override IAPStoreType StoreType => IAPStoreType.ThirdPay;
-
-        /// <summary>
-        /// WebView 适配锚点，WebView 将根据此 RectTransform 确定弹出区域。
-        /// 为 null 时 store 使用默认全屏布局。
-        /// </summary>
-        public RectTransform AdaptRectTransform;
     }
 }

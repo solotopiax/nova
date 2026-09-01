@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-09-01
+
+### Changed
+
+- Mobile Store 与内部服务统一通过 IAP 日志网关输出日志，并适配 `IAPStoreBase.LogTag` 扩展契约。
+
 ## [0.1.10] - 2026-08-26
 
 ### Fixed

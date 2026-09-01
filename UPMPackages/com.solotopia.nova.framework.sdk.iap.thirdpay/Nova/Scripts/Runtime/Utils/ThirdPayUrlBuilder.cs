@@ -8,11 +8,10 @@
  * descrip:   第三方支付 URL 构造工具
  ***************************************************************/
 
-using System;
 using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NovaFramework.Runtime;
+using System;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
@@ -85,12 +84,17 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 随第三方支付票据往返的业务透传参数。
         /// </summary>
         public string ReceiptParam = string.Empty;
+
+        /// <summary>
+        /// 最终 ThirdPay 支付页是否由系统外部浏览器打开。
+        /// </summary>
+        public bool IsExternalBrowser;
     }
 
     /// <summary>
     /// 按 Solar InAppAuto 契约构造明文 JSON，交由调用方加密后生成支付 URL。
     /// </summary>
-    internal sealed class ThirdPayUrlBuilder
+    internal sealed class ThirdPayUrlBuilder : ThirdPayLogOwner
     {
         /// <summary>
         /// 业务参数加密函数。
@@ -137,7 +141,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 { "country", payload.CountryCode ?? string.Empty },
                 { "order_id", payload.ClientOrderId ?? string.Empty },
                 { "platform", payload.Platform ?? string.Empty },
-                { "is_external_browser", false },
+                { "is_external_browser", payload.IsExternalBrowser },
                 { "custom_param", customParam },
             };
             if (!string.IsNullOrEmpty(payload.ChannelParams))
@@ -154,8 +158,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             string paymentUrl = $"{baseUrl.TrimEnd('/')}/?lang={Escape(language)}&params={Escape(encrypted)}&app_id={payload.AppId.ToString(CultureInfo.InvariantCulture)}";
-            // 支付调试日志用于核对跳转前的明文、密文和最终 URL。
-            Log.Debug(LogTag.IAPThirdPay, $"第三方支付跳转参数：加密前={plaintext}；加密后={encrypted}；URL={paymentUrl}");
+            // 支付审计日志用于核对跳转前的明文、密文和最终 URL。
+            LogDebug($"第三方支付跳转参数：加密前={plaintext}；加密后={encrypted}；URL={paymentUrl}");
             return paymentUrl;
         }
 

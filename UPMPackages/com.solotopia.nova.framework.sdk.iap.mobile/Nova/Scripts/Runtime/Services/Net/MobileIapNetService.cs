@@ -20,7 +20,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 封装 mobile_pay 系列协议的发送逻辑，通过 NetService.SendAsync 完成
     /// Protobuf 序列化、AES 加密、HTTP 请求及解析全流程。
     /// </summary>
-    public sealed class MobileIapNetService
+    public sealed class MobileIapNetService : MobileLogOwner
     {
         /// <summary>
         /// 查询谷歌平台未完成订单列表。
@@ -175,9 +175,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="platform">当前平台标识。</param>
         /// <param name="cmdName">NetCmd 协议名。</param>
         /// <param name="req">协议请求体。</param>
-        private static void LogRequest<TReq>(string protocol, string platform, string cmdName, TReq req) where TReq : class, IMessage<TReq>
+        private void LogRequest<TReq>(string protocol, string platform, string cmdName, TReq req) where TReq : class, IMessage<TReq>
         {
-            Log.Debug(LogTag.IAPMobile, $"支付协议请求数据：协议={protocol}，平台={platform}，命令={cmdName}，请求={req}");
+            LogDebug($"支付协议请求数据：协议={protocol}，平台={platform}，命令={cmdName}，请求={req}");
         }
 
         /// <summary>
@@ -188,10 +188,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="platform">当前平台标识。</param>
         /// <param name="cmdName">NetCmd 协议名。</param>
         /// <param name="resp">网络层返回的响应包装。</param>
-        private static void LogResponse<TResp>(string protocol, string platform, string cmdName, NetResponse<TResp> resp) where TResp : class, IMessage<TResp>
+        private void LogResponse<TResp>(string protocol, string platform, string cmdName, NetResponse<TResp> resp) where TResp : class, IMessage<TResp>
         {
             string data = resp == null || resp.Data == null ? "null" : resp.Data.ToString();
-            Log.Debug(LogTag.IAPMobile, $"支付协议响应数据：协议={protocol}，平台={platform}，命令={cmdName}，是否成功={resp?.IsSuccess}，错误码={resp?.ErrorCode}，错误信息={resp?.ErrorMessage}，数据={data}");
+            LogDebug($"支付协议响应数据：协议={protocol}，平台={platform}，命令={cmdName}，是否成功={resp?.IsSuccess}，错误码={resp?.ErrorCode}，错误信息={resp?.ErrorMessage}，数据={data}");
         }
     }
 }

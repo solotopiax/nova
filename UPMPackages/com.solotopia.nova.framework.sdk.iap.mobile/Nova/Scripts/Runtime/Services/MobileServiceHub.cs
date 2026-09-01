@@ -22,7 +22,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 服务在 MobileStore.InitializeAsync 中按序创建并写入对应属性；
     /// 各服务在运行时（非构造期）通过服务容器属性互相访问，天然解决循环依赖。
     /// </summary>
-    internal sealed class MobileServiceHub
+    internal sealed class MobileServiceHub : MobileLogOwner
     {
         /// <summary>
         /// 移动端官方内购商店运行期后台任务取消源；商店释放时统一取消所有经服务容器启动的后台任务。
@@ -128,13 +128,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             if (taskFactory == null)
             {
-                Log.Warning(LogTag.IAPMobile, $"后台任务启动失败，任务名={taskName}，原因=任务工厂为空。");
+                LogWarning($"后台任务启动失败，任务名={taskName}，原因=任务工厂为空。");
                 return;
             }
 
             if (m_IsRuntimeTaskCtsDisposed || m_RuntimeTaskCts.IsCancellationRequested)
             {
-                Log.Debug(LogTag.IAPMobile, $"后台任务已跳过，移动端官方内购商店正在释放或已释放，任务名={taskName}。");
+                LogDebug($"后台任务已跳过，移动端官方内购商店正在释放或已释放，任务名={taskName}。");
                 return;
             }
 
@@ -155,11 +155,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
             catch (OperationCanceledException)
             {
-                Log.Debug(LogTag.IAPMobile, $"后台任务已取消，任务名={taskName}。");
+                LogDebug($"后台任务已取消，任务名={taskName}。");
             }
             catch (Exception e)
             {
-                Log.Warning(LogTag.IAPMobile, $"后台任务执行异常，任务名={taskName}，详情={e.Message}");
+                LogWarning($"后台任务执行异常，任务名={taskName}，详情={e.Message}");
             }
         }
 

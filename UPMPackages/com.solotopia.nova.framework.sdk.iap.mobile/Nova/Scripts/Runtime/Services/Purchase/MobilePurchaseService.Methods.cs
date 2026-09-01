@@ -97,7 +97,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
             catch (Exception ex)
             {
-                Log.Warning(LogTag.IAPMobile, $"平台发起订阅升降级购买异常，商品表ID={request.TableId}，详情={ex.Message}");
+                LogWarning($"平台发起订阅升降级购买异常，商品表ID={request.TableId}，详情={ex.Message}");
                 return CompleteActivePayFailure(request.TableId, IAPMobileErrorCode.StoreNotAvailable, $"平台发起购买异常：{ex.Message}", request.CustomData, true)
                        ?? new IAPResult(request.TableId, (int)IAPMobileErrorCode.StoreNotAvailable, IAPErrorSource.Mobile, $"平台发起购买异常：{ex.Message}", request.CustomData, request.ReceiptParam);
             }
@@ -139,7 +139,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
             catch (Exception ex)
             {
-                Log.Warning(LogTag.IAPMobile, $"平台发起购买异常，商品表ID={request.TableId}，详情={ex.Message}");
+                LogWarning($"平台发起购买异常，商品表ID={request.TableId}，详情={ex.Message}");
                 return CompleteActivePayFailure(request.TableId, IAPMobileErrorCode.StoreNotAvailable, $"平台发起购买异常：{ex.Message}", request.CustomData, true)
                        ?? new IAPResult(request.TableId, (int)IAPMobileErrorCode.StoreNotAvailable, IAPErrorSource.Mobile, $"平台发起购买异常：{ex.Message}", request.CustomData, request.ReceiptParam);
             }
@@ -292,7 +292,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             Product product = m_Hub.ProductService.GetFirstProductInOrder(order);
             if (product == null)
             {
-                Log.Warning(LogTag.IAPMobile, "平台订单确认回调中未找到商品。");
+                LogWarning("平台订单确认回调中未找到商品。");
                 CompleteActivePayFailure(InPayTableId, IAPMobileErrorCode.ProductNotFound, "平台确认回调中未找到商品。", m_CurrentCustomData, true);
                 return;
             }
@@ -307,7 +307,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 tableId = ResolveTableIdFromTable(product.definition.id);
                 if (tableId == 0L)
                 {
-                    Log.Warning(LogTag.IAPMobile, $"平台订单确认回调无法解析商品表ID，商品ID={product.definition.id}");
+                    LogWarning($"平台订单确认回调无法解析商品表ID，商品ID={product.definition.id}");
                     CompleteActivePayFailure(InPayTableId, IAPMobileErrorCode.ProductNotFound, $"平台确认回调无法解析 tableId，productId={product.definition.id}", m_CurrentCustomData, true);
                     return;
                 }
@@ -315,13 +315,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (m_Hub.ValidationService.TryCompleteAwaitingConfirm(tableId, receiptParam))
             {
-                Log.Debug(LogTag.IAPMobile, $"平台确认 ack 到达，补单确认完成并清理记录，商品表ID={tableId}，商品ID={product.definition.id}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}");
+                LogDebug($"平台确认 ack 到达，补单确认完成并清理记录，商品表ID={tableId}，商品ID={product.definition.id}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}");
                 return;
             }
 
             if (m_PayTcs == null && !m_Hub.ValidationService.HasOrderRecord(tableId, receiptParam))
             {
-                Log.Debug(LogTag.IAPMobile, $"平台订单确认完成，商品表ID={tableId}，商品ID={product.definition.id}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}");
+                LogDebug($"平台订单确认完成，商品表ID={tableId}，商品ID={product.definition.id}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}");
                 return;
             }
 
@@ -339,7 +339,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             m_Hub.ProductService.GetReceiptInfo(product.definition.id, out string orderId, out string googleToken);
-            Log.Debug(LogTag.IAPMobile, $"平台订单确认回调：商品表ID={tableId}，商品ID={product.definition.id}，订单号={orderId}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}，透传UUID={encodedUuid}，是否补单={isRecovered}");
+            LogDebug($"平台订单确认回调：商品表ID={tableId}，商品ID={product.definition.id}，订单号={orderId}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}，透传UUID={encodedUuid}，是否补单={isRecovered}");
 
             var record = new MobileOrderRecord
             {
@@ -385,7 +385,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 tableId = ResolveTableIdFromTable(product.definition.id);
                 if (tableId == 0L)
                 {
-                    Log.Warning(LogTag.IAPMobile, $"平台待确认购买回调无法解析商品表ID，商品ID={product.definition.id}");
+                    LogWarning($"平台待确认购买回调无法解析商品表ID，商品ID={product.definition.id}");
                     CompleteActivePayFailure(InPayTableId, IAPMobileErrorCode.ProductNotFound, $"平台待确认回调无法解析 tableId，productId={product.definition.id}", m_CurrentCustomData, true);
                     return;
                 }
@@ -394,7 +394,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             if (m_Hub.ValidationService.TryReconfirmAwaitingOrder(tableId, receiptParam, order))
             {
                 // 已验单发货但上次平台确认失败的订单：直接重试确认，跳过重复验单。
-                Log.Debug(LogTag.IAPMobile, $"检测到待确认补单记录，直接重试平台确认并跳过重复验单，商品表ID={tableId}，商品ID={product.definition.id}");
+                LogDebug($"检测到待确认补单记录，直接重试平台确认并跳过重复验单，商品表ID={tableId}，商品ID={product.definition.id}");
                 return;
             }
 
@@ -411,7 +411,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             m_Hub.ProductService.GetReceiptInfo(product.definition.id, out string orderId, out string googleToken);
-            Log.Debug(LogTag.IAPMobile, $"平台待确认购买回调：商品表ID={tableId}，商品ID={product.definition.id}，订单号={orderId}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}，透传UUID={encodedUuid}，是否补单={isRecovered}");
+            LogDebug($"平台待确认购买回调：商品表ID={tableId}，商品ID={product.definition.id}，订单号={orderId}，平台交易ID={order.Info.TransactionID}，AppleOriginalTransactionID={order.Info.Apple?.OriginalTransactionID}，AppAccountToken={order.Info.Apple?.AppAccountToken}，透传UUID={encodedUuid}，是否补单={isRecovered}");
 
             var record = new MobileOrderRecord
             {
@@ -456,13 +456,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             bool hasLocalOrder = tableId > 0L && m_Hub.ValidationService.HasOrderRecord(tableId, receiptParam);
             if (!hasActivePay && !hasLocalOrder)
             {
-                Log.Debug(LogTag.IAPMobile, $"平台订单确认失败但本地订单已终结，忽略回调，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
+                LogDebug($"平台订单确认失败但本地订单已终结，忽略回调，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
                 return;
             }
 
             // order.Details 是 Unity IAP 附带的具体失败说明（如 "Order info is null" / "Transaction ID is null or empty"
             // / "Received invalid order type after confirmation" / 异常 message），是定位 Unknown 失败根因的关键信息，必须打出来。
-            Log.Warning(LogTag.IAPMobile, $"平台确认失败，保留 AwaitingConfirm 记录，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
+            LogWarning($"平台确认失败，保留 AwaitingConfirm 记录，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
             IAPMobileErrorCode code = MapPurchaseFailureReason(order.FailureReason);
             string errorDesc = $"平台确认失败：{order.FailureReason}，详情={order.Details}";
             m_Hub.Store.TrackLocalPayFailInternal(tableId, product, code, errorDesc, hasActivePay ? m_CurrentCustomData : null);
@@ -481,7 +481,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (m_PayTcs == null && InPayTableId == 0 && !m_Hub.ValidationService.HasOrderRecord(tableId, receiptParam))
             {
-                Log.Warning(LogTag.IAPMobile, $"平台购买失败但本地验单流程已结束，忽略回调，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
+                LogWarning($"平台购买失败但本地验单流程已结束，忽略回调，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
                 return;
             }
 
@@ -496,7 +496,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             var payTcs = m_PayTcs;
             m_PayTcs = null;
 
-            Log.Warning(LogTag.IAPMobile, $"平台购买失败，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
+            LogWarning($"平台购买失败，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
             string errorDesc = $"平台购买失败：{order.FailureReason}";
             m_Hub.Store.TrackLocalPayFailInternal(tableId, product, code, errorDesc, customData);
             var failResult = new IAPResult(tableId, (int)code, IAPErrorSource.Mobile, errorDesc, customData, receiptParam);

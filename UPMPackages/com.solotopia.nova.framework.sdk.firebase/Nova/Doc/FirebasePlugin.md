@@ -59,7 +59,7 @@
 - `country`：通过 `IAdPlugin.GetCountryCodeAsync(...)` 获取；广告模块负责等待、超时和上次成功缓存兜底，最终为空或 `IV` 时按空字符串上报
 - `timezone_offset`：当前设备 UTC 偏移，使用服务端可读格式，例如 `+08:00`、`+05:30`、`-03:30`
 
-`timezone_offset` 的协议格式包含 `+` 和 `:`，不能直接用于 Firebase Topic。默认时区 topic 仍使用 Firebase 安全格式，例如 `top_timezone_utc_plus_08`。
+`timezone_offset` 的协议格式包含 `+` 和 `:`，不能直接用于 Firebase Topic。默认时区 topic 仍使用 Firebase 安全格式，例如 `top_debug_timezone_utc_plus_08` 或 `top_release_timezone_utc_plus_08`。
 
 ## 5. Push Task 缓存与发送
 
@@ -92,16 +92,18 @@
 
 Firebase 依赖检查通过后，`FirebasePlugin` 会启动默认 FCM topic 同步，但实际 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token。同步只在 Android / iOS 编译平台执行，WebGL 不包含 Firebase Runtime。
 
+默认 Topic 前缀来自 `IConfigManager.DevelopMode`：`Debug` 使用 `top_debug_`，`Release` 使用 `top_release_`。如果 Config Manager 不存在或尚未完成加载，则按 `Debug` 处理，避免误订阅正式分群。
+
 基础 topic 在 Firebase 初始化完成后开始同步：
 
 | 维度 | Topic 示例 | 来源 |
 |---|---|---|
-| 全量 | `top_all` | 固定值 |
-| 语言 | `top_lang_en` / `top_lang_zh-CN` | `LocalizationRefreshEventData.NewLanguage` 或已初始化的 `Nova.Localization.Language` |
-| 平台 | `top_platform_iOS` / `top_platform_Android` | 编译平台 |
-| 时区 | `top_timezone_utc_plus_08` / `top_timezone_utc_plus_05_30` | `TimeZoneInfo.Local.GetUtcOffset(DateTime.Now)` |
+| 全量 | `top_debug_all` / `top_release_all` | 固定值 + `IConfigManager.DevelopMode` |
+| 语言 | `top_debug_lang_en` / `top_release_lang_zh-CN` | `LocalizationRefreshEventData.NewLanguage` 或已初始化的 `Nova.Localization.Language` |
+| 平台 | `top_debug_platform_iOS` / `top_release_platform_Android` | 编译平台 |
+| 时区 | `top_debug_timezone_utc_plus_08` / `top_release_timezone_utc_plus_05_30` | `TimeZoneInfo.Local.GetUtcOffset(DateTime.Now)` |
 
-`Nova.Localization.LoadAsync()` 只准备支持语言和字体数据，不代表当前语言已初始化。Firebase 因此不会在 `Nova.Localization.Language == Language.Unspecified` 时生成新的语言 topic；全量、平台和时区 topic 仍会先同步。等 `LocalizationRefreshEventData` 发布真实 `NewLanguage` 后，Firebase 再同步 `top_lang_*`，并通过存档差异退订旧语言 topic、订阅新语言 topic。若语言未就绪但旧存档里已有有效语言 topic，本轮基础同步会暂时保留旧语言 topic，避免启动早期误退订。
+`Nova.Localization.LoadAsync()` 只准备支持语言和字体数据，不代表当前语言已初始化。Firebase 因此不会在 `Nova.Localization.Language == Language.Unspecified` 时生成新的语言 topic；全量、平台和时区 topic 仍会先同步。等 `LocalizationRefreshEventData` 发布真实 `NewLanguage` 后，Firebase 再同步 `top_debug_lang_*` 或 `top_release_lang_*`，并通过存档差异退订旧语言 topic、订阅新语言 topic。若语言未就绪但旧存档里已有有效语言 topic，本轮基础同步会暂时保留旧语言 topic，避免启动早期误退订。
 
 国家 topic 独立同步：
 
@@ -109,9 +111,11 @@ Firebase 依赖检查通过后，`FirebasePlugin` 会启动默认 FCM topic 同�
 - 等待上限：`AdPluginConfig.CountryCodeWaitTimeoutSeconds`
 - 兜底来源：广告模块上次成功缓存；缓存不存在时返回空字符串
 - 有效值：非空且不等于 `IV`
-- Topic 示例：`top_country_US`
+- Topic 示例：`top_debug_country_US` / `top_release_country_US`
 
-所有默认 topic 都带 `top_` 前缀。时区中的 `utc` 固定小写；非整点时区会保留分钟字段，例如 `utc_plus_05_30`。
+Android、`zh-CN`、UTC+08、国家码 `CN` 的 Debug 分群会同步 `top_debug_all`、`top_debug_lang_zh-CN`、`top_debug_platform_Android`、`top_debug_timezone_utc_plus_08`、`top_debug_country_CN`；Release 分群对应 `top_release_all`、`top_release_lang_zh-CN`、`top_release_platform_Android`、`top_release_timezone_utc_plus_08`、`top_release_country_CN`。
+
+所有默认 topic 都带 `top_debug_` 或 `top_release_` 前缀。时区中的 `utc` 固定小写；非整点时区会保留分钟字段，例如 `utc_plus_05_30`。旧版本保存的 `top_*` Topic 会在下一次同步时通过差异机制先退订，再订阅当前 DevelopMode 对应的新 Topic。
 
 ## 7. 默认 Topic 存档
 

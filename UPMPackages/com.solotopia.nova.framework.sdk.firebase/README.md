@@ -1,7 +1,7 @@
 # Nova Framework - SDK - Firebase
 
 > 包名：`com.solotopia.nova.framework.sdk.firebase`
-> 当前版本：`0.1.8`
+> 当前版本：`0.1.11`
 > Firebase Unity SDK：`13.14.0`
 
 Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置，并提供 Nova 侧默认 Topic 同步与业务 push task 缓存发送能力。
@@ -12,7 +12,7 @@ Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.firebase": "0.1.8"
+  "com.solotopia.nova.framework.sdk.firebase": "0.1.11"
 }
 ```
 
@@ -20,7 +20,7 @@ Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置�
 
 - Analytics：`TrackEvent(...)`、`SetUserId(...)`、`SetUserProperty(...)`。
 - FCM：`GetTokenAsync(...)`、`OnTokenRefreshed`、`SetTopicSubscribed(...)`。
-- 默认 Topic：初始化后等待 FCM Token 就绪，再同步 `top_all`、语言、平台、时区和国家 Topic，并通过 `IFileFragmentManager` 记录订阅状态，变化时先退订旧 Topic 再订阅新 Topic。
+- 默认 Topic：初始化后等待 FCM Token 就绪，再按 `IConfigManager.DevelopMode` 同步 `top_debug_*` 或 `top_release_*` 的全量、语言、平台、时区和国家 Topic；Config Manager 不存在或未加载完成时只使用 Debug 分群，并通过 `IFileFragmentManager` 记录订阅状态，变化时先退订旧 Topic 再订阅新 Topic。
 - Push task：业务通过 `IFirebasePushTaskPlugin.QueuePushTaskAsync(...)` 写入本地缓存，按配置的时间阈值、数量阈值或应用恢复前台触发批量发送；发送成功后才删除缓存。
 - 登录上报：收到 `SDKEventData.UserLogin` 后，上报 Firebase Push Token、Analytics Instance ID、国家码和时区偏移。
 

@@ -18,7 +18,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
     /// Voucher 交易日志。
     /// 封装按订单号读写、幂等冲突检查和状态持久化。
     /// </summary>
-    internal sealed partial class VoucherTransactionJournal
+    internal sealed partial class VoucherTransactionJournal : VoucherLogOwner
     {
         /// <summary>
         /// 创建 Voucher 交易日志，并确保持久化容器完成初始化。

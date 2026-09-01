@@ -20,7 +20,7 @@ namespace NovaFramework.SDK.IAP.Runtime
     /// 封装各渠道共用能力：Context 注入、防重复支付、无效 SKU 过滤、账号 UID 切换、
     /// 埋点上报、订阅有效期判断、订阅倒计时扩展点。
     /// </summary>
-    public abstract partial class IAPStoreBase : IIAPInternalStore
+    public abstract partial class IAPStoreBase : IAPLogOwner, IIAPInternalStore
     {
         /// <summary>
         /// 当前 store 的渠道类型，由子类返回固定枚举值。

@@ -8,7 +8,6 @@
  * descrip:   IAP 支付 Loading 面板默认呈现器，按 Resources 路径懒加载并显隐预制体
  ***************************************************************/
 
-using NovaFramework.Runtime;
 using UnityEngine;
 
 namespace NovaFramework.SDK.IAP.Runtime
@@ -48,7 +47,7 @@ namespace NovaFramework.SDK.IAP.Runtime
                 GameObject prefab = Resources.Load<GameObject>(m_PrefabPath);
                 if (prefab == null)
                 {
-                    Log.Warning(LogTag.IAPPlugin, $"IAP Loading 预制体加载失败，路径：{m_PrefabPath}");
+                    IAPLog.Warning(NovaFramework.Runtime.LogTag.IAPPlugin, $"IAP Loading 预制体加载失败，路径：{m_PrefabPath}");
                     return;
                 }
 

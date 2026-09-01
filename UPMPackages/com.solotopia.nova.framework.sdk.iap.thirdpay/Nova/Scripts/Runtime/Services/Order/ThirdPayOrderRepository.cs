@@ -50,6 +50,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 按客户端订单号读取待处理本地订单。
+        /// </summary>
+        /// <param name="clientOrderId">客户端订单号。</param>
+        /// <param name="order">匹配到的订单记录。</param>
+        /// <returns>订单存在时返回 true。</returns>
+        public bool TryGet(string clientOrderId, out ThirdPayOrderRecord order)
+        {
+            order = null;
+            return !string.IsNullOrEmpty(clientOrderId) && m_Data.Orders.TryGetValue(clientOrderId, out order);
+        }
+
+        /// <summary>
         /// 新增或覆盖客户端订单号相同的待处理订单，并立即保存账号存档。
         /// </summary>
         /// <param name="order">待保存订单。</param>

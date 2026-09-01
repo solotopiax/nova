@@ -23,7 +23,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 手动 Restore 会先调用 Controller.RestoreTransactions；启动期和补单期只执行 CheckEntitlement 权益刷新。
     /// OnCheckEntitlement 收集全部结果后，批量触发订阅验单和非消耗品验单。
     /// </summary>
-    internal sealed partial class MobileRestoreService
+    internal sealed partial class MobileRestoreService : MobileLogOwner
     {
         /// <summary>
         /// 服务容器，持有共享外部依赖与其他服务引用。
@@ -53,13 +53,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (string.IsNullOrEmpty(m_Hub.Store?.GameUID))
             {
-                Log.Debug(LogTag.IAPMobile, "账号未登录，跳过恢复流程。");
+                LogDebug("账号未登录，跳过恢复流程。");
                 return new List<IAPResult>();
             }
 
             if (m_IsInRestore)
             {
-                Log.Warning(LogTag.IAPMobile, "恢复流程正在进行中，拒绝重复发起。");
+                LogWarning("恢复流程正在进行中，拒绝重复发起。");
                 return new List<IAPResult>();
             }
 
@@ -84,7 +84,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 // 避免网络抖动导致整个 Restore 流程中断
                 if (!success)
                 {
-                    Log.Warning(LogTag.IAPMobile, $"平台恢复交易返回失败，详情={errorInfo}");
+                    LogWarning($"平台恢复交易返回失败，详情={errorInfo}");
                 }
 
                 StartCheckEntitlements();
@@ -126,7 +126,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (string.IsNullOrEmpty(m_Hub.Store?.GameUID))
             {
-                Log.Debug(LogTag.IAPMobile, "账号未登录，跳过权益刷新。");
+                LogDebug("账号未登录，跳过权益刷新。");
                 return new List<IAPResult>();
             }
 
@@ -134,13 +134,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             if (productFetchState != MobileProductFetchState.Succeeded)
             {
                 m_PendingEntitlementRefreshAfterProductsFetched = true;
-                Log.Warning(LogTag.IAPMobile, $"商品信息尚未就绪，延后权益刷新。状态={productFetchState}");
+                LogWarning($"商品信息尚未就绪，延后权益刷新。状态={productFetchState}");
                 return new List<IAPResult>();
             }
 
             if (m_IsInRestore)
             {
-                Log.Warning(LogTag.IAPMobile, "恢复流程正在进行中，拒绝重复刷新权益。");
+                LogWarning("恢复流程正在进行中，拒绝重复刷新权益。");
                 return new List<IAPResult>();
             }
 
@@ -181,14 +181,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 TryGetSubscriptionExpireDate(entitlement.Product, entitlement, out DateTime expireDate))
             {
                 bool isExpired = expireDate <= DateTime.UtcNow;
-                Log.Debug(LogTag.IAPMobile, $"权益查询回调订阅信息：商品ID={productId}，到期时间={expireDate:O}，是否已过期={isExpired}");
+                LogDebug($"权益查询回调订阅信息：商品ID={productId}，到期时间={expireDate:O}，是否已过期={isExpired}");
                 if (isExpired)
                 {
                     status = EntitlementStatus.NotEntitled;
                 }
             }
 
-            Log.Debug(LogTag.IAPMobile, $"权益查询回调：商品ID={productId}，状态={status}");
+            LogDebug($"权益查询回调：商品ID={productId}，状态={status}");
 
             if (m_Hub.ProductService.m_CheckEntitlements.TryGetValue(productId, out MobileCheckEntitlementInfo info))
             {
@@ -352,11 +352,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 Product product = m_Hub.ProductService.GetFirstProductInOrder(order);
                 if (product == null)
                 {
-                    Log.Warning(LogTag.IAPMobile, $"平台已有购买拉取完成：待确认订单中未找到商品，订单号={order.Info.TransactionID}");
+                    LogWarning($"平台已有购买拉取完成：待确认订单中未找到商品，订单号={order.Info.TransactionID}");
                     continue;
                 }
 
-                Log.Debug(LogTag.IAPMobile, $"平台已有购买拉取完成：待确认商品={product.definition.id}，等待服务端验单后确认。");
+                LogDebug($"平台已有购买拉取完成：待确认商品={product.definition.id}，等待服务端验单后确认。");
                 // 待确认订单必须走购买服务，先解析票据并完成服务端验单，再确认平台订单。
                 m_Hub.PurchaseService.OnPurchasePending(order);
             }
@@ -373,7 +373,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="failure">失败描述。</param>
         internal void OnExistingPurchasesFetchFailed(PurchasesFetchFailureDescription failure)
         {
-            Log.Warning(LogTag.IAPMobile, $"平台已有购买拉取失败，原因={failure.FailureReason}，详情={failure.Message}");
+            LogWarning($"平台已有购买拉取失败，原因={failure.FailureReason}，详情={failure.Message}");
         }
 
         /// <summary>

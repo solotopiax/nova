@@ -24,7 +24,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 提供按 Order 取第一个 Product 的统一入口；
     /// 持有 CheckEntitlement 状态字典，供 Restore 流程追踪每个商品的权益检查结果。
     /// </summary>
-    internal sealed partial class MobileProductService
+    internal sealed partial class MobileProductService : MobileLogOwner
     {
         /// <summary>
         /// 服务容器，持有共享外部依赖与其他服务引用。
@@ -156,7 +156,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                     if (m_Hub.Store.IsUnavailableSkuInternal(id))
                     {
                         // 拉取失败的商品不会进入 StoreController，提前跳过，避免无谓的查询。
-                        Log.Warning(LogTag.IAPMobile, $"跳过不可购买商品的信息查询，商品ID={id}");
+                        LogWarning($"跳过不可购买商品的信息查询，商品ID={id}");
                         continue;
                     }
 

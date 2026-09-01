@@ -463,7 +463,7 @@
       "source": "local",
       "dependencies": {
         "com.solotopia.nova.framework": "0.6.15",
-        "com.solotopia.nova.framework.sdk.iap": "0.1.5",
+        "com.solotopia.nova.framework.sdk.iap": "0.1.11",
         "com.solotopia.unitask": "10.0.6",
         "com.unity.purchasing": "5.3.1"
       }
@@ -475,7 +475,7 @@
       "dependencies": {
         "com.onevcat.uniwebview": "5.11.1",
         "com.solotopia.nova.framework": "0.6.0",
-        "com.solotopia.nova.framework.sdk.iap": "0.1.0",
+        "com.solotopia.nova.framework.sdk.iap": "0.1.11",
         "com.solotopia.unitask": "10.0.6",
         "com.unity.purchasing": "5.3.1"
       }
@@ -486,7 +486,7 @@
       "source": "local",
       "dependencies": {
         "com.solotopia.nova.framework": "0.6.0",
-        "com.solotopia.nova.framework.sdk.iap": "0.1.1",
+        "com.solotopia.nova.framework.sdk.iap": "0.1.11",
         "com.solotopia.unitask": "10.0.6"
       }
     },

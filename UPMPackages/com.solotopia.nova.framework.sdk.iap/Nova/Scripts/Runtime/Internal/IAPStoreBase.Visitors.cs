@@ -35,10 +35,9 @@ namespace NovaFramework.SDK.IAP.Runtime
         protected virtual bool IsStoreReady => true;
 
         /// <summary>
-        /// 当前 store 使用的日志标签字符串，由子类返回对应渠道的 LogTag 常量。
-        /// 供 LogDebug / LogWarning / LogError 方法内部使用，调用方无需每次指定标签。
+        /// 当前日志持有者使用的 Nova 日志标签，由具体 Store 明确提供。
         /// </summary>
-        protected abstract string StoreLogTag { get; }
+        protected abstract override string LogTag { get; }
 
         /// <summary>
         /// 当前登录用户的唯一标识，用于存档 UID 分区及订单参数透传。

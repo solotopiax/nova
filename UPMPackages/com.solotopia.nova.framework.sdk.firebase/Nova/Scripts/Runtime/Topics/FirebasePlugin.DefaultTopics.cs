@@ -240,7 +240,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// <returns>异步任务。</returns>
         private async UniTask SyncDefaultCountryTopicAsync(string countryCode, CancellationToken ct)
         {
-            if (!FirebaseDefaultTopicBuilder.TryBuildCountryState(countryCode, out FirebaseCountryTopicSubscriptionState currentState))
+            DevelopMode developMode = ResolveDefaultTopicDevelopMode();
+            if (!FirebaseDefaultTopicBuilder.TryBuildCountryState(developMode, countryCode, out FirebaseCountryTopicSubscriptionState currentState))
             {
                 Log.Debug(LogTag.Firebase, $"国家码无效，跳过国家推送 Topic 同步：{countryCode}。");
                 return;
@@ -292,8 +293,9 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 ? resolvedLanguage
                 : persistedLanguage;
             string platform = ResolveTopicPlatform();
+            DevelopMode developMode = ResolveDefaultTopicDevelopMode();
             TimeSpan utcOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
-            return FirebaseDefaultTopicBuilder.BuildBaseState(language, platform, utcOffset);
+            return FirebaseDefaultTopicBuilder.BuildBaseState(developMode, language, platform, utcOffset);
         }
 
         /// <summary>
@@ -340,6 +342,22 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 #else
             return string.Empty;
 #endif
+        }
+
+        /// <summary>
+        /// 解析默认 Topic 使用的开发模式。
+        /// 开发模式来源于 Config Manager；Config 未加载完成时按 Debug 处理，避免误订阅正式分群。
+        /// </summary>
+        /// <returns>默认 Topic 使用的开发模式。</returns>
+        private static DevelopMode ResolveDefaultTopicDevelopMode()
+        {
+            IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
+            if (configManager == null || !configManager.IsLoadOver)
+            {
+                return DevelopMode.Debug;
+            }
+
+            return configManager.DevelopMode;
         }
 
         /// <summary>

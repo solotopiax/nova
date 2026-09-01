@@ -1,15 +1,19 @@
 # ThirdPayStore
 
-`ThirdPayStore` 负责客户端造单、支付 URL、Google 外链政策、UniWebView 支付页、验单与本地补单。
+`ThirdPayStore` 负责客户端造单、支付 URL、Google 外链政策、应用内 UniWebView 或系统外部浏览器支付页、验单与本地补单。
 
 账号 UID 真正变化并切换到对应存档后，Store 会自动预取一次当前国家或地区的商品。每次 `FetchProductListAsync` 调用都会独立请求，失败时由 Store 内部最多自动尝试三次；以后进入 ThirdPay Tab 或手动刷新仍会发起新请求，业务层无需维护请求状态。旧账号或旧国家请求完成时不会覆盖当前 Store 的商品快照。
+
+国家码解析规则与 Solar 保持一致：`ThirdPayStoreConfig.CountryCode` 和 `IIAPThirdPayCapable.SetDebugCountryCode` 都是 Debug 覆盖源，优先级最高；有效国家码按 `Debug > Lock > Billing > Native > AD > US` 解析。运行时在各赋值入口执行 `Trim + ToUpperInvariant`，并将 `IV` 映射为 `US`。iOS 会在 ThirdPay 初始化时通过包内 StoreKit storefront bridge 读取 Native 国家码，Android 会通过包内 Billing bridge 读取 Google Play Billing 国家码。商品列表请求会记录请求版本、账号和请求国家码；旧账号或旧国家响应不会覆盖当前商品快照。
 
 ## 接入
 
 ```csharp
 if (iapPlugin.TryGetCapability<IIAPThirdPayCapable>(out var thirdPay))
 {
-    thirdPay.SetCountryCode("US");
+    // 可选：仅在调试或灰度固定国家时设置；生产通常留空。
+    // thirdPay.SetDebugCountryCode("US");
+    string countryCode = thirdPay.GetCountryCode();
     thirdPay.SetSkipPaymentInformationScreen(true);
     thirdPay.SetThirdPayWebViewTitleText("Payment");
     thirdPay.SetThirdPayWebViewCloseText("close");
@@ -26,13 +30,12 @@ var request = new IAPThirdPayRequest
     TableId = 1001,
     CustomData = "business-data",
     ReceiptParam = "first-pay",
-    AdaptRectTransform = webViewRect,
 };
 
 IAPResult result = await iapPlugin.PayAsync<IAPResult>(request, ct);
 ```
 
-Android 与 Editor 中，`AdaptRectTransform` 非空时直接作为嵌入式 UniWebView 区域；为空时框架从 iap 模块 `IAPPluginConfig.LoadingPanelPrefab`（经 `IAPStoreContext.LoadingPanelPrefab` 注入，默认 `IAP/IAPLoadingPanel`）加载默认全屏面板。iOS 真机使用全屏 `UniWebViewSafeBrowsing`，适配区域仅作为框架面板生命周期锚点。支付成功、取消、加载失败或 Store 释放时，框架都会关闭原生支付页并销毁临时面板。
+Android 与 Editor 中，未命中外部浏览器国家时，ThirdPay 使用嵌入式 UniWebView 默认全屏显示，不再接收业务侧适配区域，也不复用 `IAPPluginConfig.LoadingPanelPrefab` 作为 WebView 承载面板。iOS 真机使用全屏 `UniWebViewSafeBrowsing`。点击支付后的渠道参数拉取、商品兜底拉取、本地建单和支付 URL 构建阶段会显示 IAP Loading；打开 WebView 或系统外部浏览器前释放，支付页返回后的验单阶段会再次显示 Loading。支付成功、取消、加载失败或 Store 释放时，框架都会关闭原生支付页。
 
 ## 支付 URL
 
@@ -44,25 +47,36 @@ Android 与 Editor 中，`AdaptRectTransform` 非空时直接作为嵌入式 Uni
 
 `id/uid/table_id/currency/price/product_name/country/order_id/platform/is_external_browser/custom_param/payment_customer_ids/google_transaction_token`
 
-其中 `is_external_browser` 固定为 `false`；`custom_param` 是 JSON 字符串，固定封装为 `{"receipt_param":"<IAPRequest.ReceiptParam>"}`，字符串长度不由客户端限制；`payment_customer_ids` 为空时省略；非 Android 或无需 Google token 时 `google_transaction_token` 为空字符串。`CustomData` 只保存在本地订单与支付结果中，不写入支付 URL。
+其中 `is_external_browser` 由 `ThirdPayStoreConfig.ExternalBrowserCountryCodes` 命中结果决定；未命中国家继续写入 `false` 并使用应用内支付页，命中国家写入 `true` 并使用系统外部浏览器打开支付页。`custom_param` 是 JSON 字符串，固定封装为 `{"receipt_param":"<IAPRequest.ReceiptParam>"}`，字符串长度不由客户端限制；`payment_customer_ids` 为空时省略；非 Android 或无需 Google token 时 `google_transaction_token` 为空字符串。`CustomData` 只保存在本地订单与支付结果中，不写入支付 URL。
+
+## 外部浏览器支付
+
+`ExternalBrowserCountryCodes` 使用 ISO 3166-1 alpha-2 国家/地区码，运行时会按 `Trim + ToUpperInvariant` 归一化比较。命中后，ThirdPay 仍然先创建并保存本地订单，再构造支付 URL，只是支付页打开方式从应用内 WebView 切换为系统外部浏览器。浏览器打开成功只表示跳转请求已提交，`PayAsync` 会返回 `OrderPending`，不会立即广播支付失败事件。
+
+浏览器支付返回 App 后，ThirdPay 子包内部的隐藏生命周期代理会接收 `OnApplicationPause` / `OnApplicationFocus`。ThirdPay 仅在存在外部浏览器支付 session 时响应这些事件：离开 App 时取消旧倒计时；回到前台时重启 `ExternalBrowserReturnValidateDelaySeconds` 秒倒计时；若用户在倒计时内反复切前后台，旧倒计时会因版本号失效，只保留最后一次稳定回前台后的验单。
+
+生命周期代理在 `ThirdPayStore.InitializeAsync` 中注册一次，内部 GameObject 使用 `DontDestroyOnLoad`，因此同一次 App 启动内跨场景持续有效；`ThirdPayStore.DisposeAsync` 会注销回调，之后不再响应前后台事件。若该隐藏 GameObject 被外部逻辑误销毁，代理会在 `OnDestroy` 清空静态实例和事件链，但不会自动重新注册；这种情况下仅失去“返回 App 后自动加速验单”，本地订单仍保留，后续补单链路继续兜底。
+
+浏览器返回验单只做一次加速确认。若验单成功或服务端返回终态失败，按现有成功/失败事件处理并清理 session；若返回处理中、网络失败或响应未包含订单，则清理 session 但保留本地订单，后续由 `IAPPlugin.CheckLocalOrdersAsync` / `ThirdPayStore.CheckLocalOrdersAsync` 的补单链路继续兜底。session 清理后，后续普通前后台切换不会再触发这笔浏览器订单验单。
+
 支付 URL 基址通过 NetCmd `ThirdOpenURL` 解析，`app_id` 使用公共请求头中的全局应用 ID。
 
-包固定依赖 UniWebView 5.11.1。Android 使用嵌入式 `UniWebView` 处理 `pay_callback`、`close_callback`、工具栏关闭、返回键、加载错误和内容进程终止；AlipayConnect Scheme 会保留原 Query 并重写为兼容 HTTPS 地址。iOS 使用 `UniWebViewSafeBrowsing`，通过 `Application.deepLinkActivated` 解析支付回调，并在收到终态、用户关闭、取消令牌或 Store 释放时注销回调和关闭浏览器。
+包固定依赖 UniWebView 5.11.1。Android 使用嵌入式 `UniWebView` 处理 `pay_callback`、`close_callback`、工具栏关闭、返回键、加载错误和内容进程终止；AlipayConnect Scheme 会保留原 Query 并重写为兼容 HTTPS 地址。iOS 使用 `UniWebViewSafeBrowsing`，通过 `Application.deepLinkActivated` 解析支付回调，并在收到终态、用户关闭、取消令牌或 Store 释放时注销回调和关闭浏览器。应用内 WebView 的用户关闭会保留本地订单并立即进入一次直接验单，不再直接按取消失败返回；加载失败和内容进程终止仍返回支付页失败，并保留订单等待后续补单。
 
 ## Android Google Policy
 
 Android 真机上使用 Unity Purchasing 5.3.1 的 `ExternalBillingProgramClient`：
 
-1. ThirdPay 优先从配置或业务侧使用 `CountryCode`；未提供时通过包内 Android Billing bridge 调用 `getBillingConfigAsync()` 读取 Google Play Billing 商店国家/地区代码。
+1. ThirdPay 按 `Debug > Lock > Billing > Native > AD > US` 解析有效国家码；`CountryCode` / `SetDebugCountryCode` 只作为 Debug 覆盖，留空时通过包内 Android Billing bridge 调用 `getBillingConfigAsync()` 读取 Google Play Billing 商店国家/地区代码，并在 iOS 初始化时通过包内 StoreKit storefront bridge 读取 App Store 国家/地区代码。
 2. 连接 Billing Client。
 3. 检查 External Billing Program 可用性。
 4. External Billing Program 不可用时，跳过 Google 信息页并直接用空 Google token 进入 ThirdPay 包内 UniWebView，不返回 Google 政策错误码。
 5. External Billing Program 可用时，创建 reporting details 并取得 external transaction token。
 6. `SkipPaymentInformationScreen` 或 `SetSkipPaymentInformationScreen(true)` 生效时，保留 token 并跳过 Google 信息页，直接进入 ThirdPay 包内 UniWebView。
 7. 未跳过时，用包含 token 的最终支付 URL 调用 `LaunchExternalLink`，模式为 `CALLER_WILL_LAUNCH_LINK`。
-8. Google 信息页成功后，由 ThirdPay 包内 UniWebView 服务打开应用内支付页。
+8. Google 信息页成功后，ThirdPay 按国家配置决定用包内 UniWebView 打开应用内支付页，或用系统外部浏览器打开支付页。
 
-渠道参数 `GetPayChannelParams` 失败（包括服务端错误码 `10707`）不会阻断支付；ThirdPay 会继续构造不含 `payment_customer_ids` 的支付 URL 并打开 UniWebView。商品列表、支付环境、URL 构造、WebView 打开和验单仍按各自错误语义处理。
+渠道参数 `GetPayChannelParams` 失败（包括服务端错误码 `10707`）不会阻断支付；ThirdPay 会继续构造不含 `payment_customer_ids` 的支付 URL 并按当前国家配置打开支付页。商品列表、支付环境、URL 构造、支付页打开和验单仍按各自错误语义处理。
 
 ## 本地订单与验单
 
@@ -93,4 +107,4 @@ InAppAuto 由客户端直接生成支付 URL，因此协议层不包含创建订
 | 6 | 订单不存在，删除本地订单并广播验单失败事件 |
 | 未知 / 网络失败 / 响应缺单 | 保留订单，等待下次检查 |
 
-支付页关闭或打开失败也保留订单，避免用户已付款但客户端误删。
+支付页关闭或打开失败也保留订单，避免用户已付款但客户端误删；应用内 WebView 用户关闭会额外触发一次即时验单。

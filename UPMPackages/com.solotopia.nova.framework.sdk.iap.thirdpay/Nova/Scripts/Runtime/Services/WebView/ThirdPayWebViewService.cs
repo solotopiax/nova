@@ -9,6 +9,8 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -24,11 +26,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 打开支付页并等待成功、取消或失败终态。
         /// </summary>
         /// <param name="paymentUrl">已完成加密的支付 URL。</param>
-        /// <param name="requestedRect">调用方指定的适配区域。</param>
-        /// <param name="defaultPanelPath">默认面板 Resources 路径。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>支付页流程结果。</returns>
-        UniTask<ThirdPayOpenResult> OpenAsync(string paymentUrl, RectTransform requestedRect, string defaultPanelPath, CancellationToken ct);
+        UniTask<ThirdPayOpenResult> OpenAsync(string paymentUrl, CancellationToken ct);
 
         /// <summary>
         /// 设置 WebView 导航栏标题。
@@ -44,14 +44,21 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     }
 
     /// <summary>
-    /// 使用 UniWebView 展示第三方支付页面，并对称管理临时 UI 与原生 WebView 资源。
+    /// 使用 UniWebView 全屏展示第三方支付页面，并对称管理原生 WebView 资源。
     /// </summary>
-    internal sealed class ThirdPayWebViewService : IThirdPayWebViewService
+    internal sealed class ThirdPayWebViewService : ThirdPayLogOwner, IThirdPayWebViewService
     {
         private ThirdPayWebViewSession m_CurrentSession;
         private bool m_Disposed;
         private string m_TitleText = string.Empty;
         private string m_CloseText = "close";
+
+        /// <summary>
+        /// 初始化 ThirdPay WebView 服务。
+        /// </summary>
+        public ThirdPayWebViewService()
+        {
+        }
 
         /// <summary>
         /// 设置 WebView 导航栏标题；空值时在打开页面时使用应用名称。
@@ -75,11 +82,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 打开支付页并等待页面回调；同一服务实例不允许并发打开多个支付页。
         /// </summary>
         /// <param name="paymentUrl">已完成加密的支付 URL。</param>
-        /// <param name="requestedRect">调用方指定的适配区域。</param>
-        /// <param name="defaultPanelPath">默认面板 Resources 路径。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>支付页流程结果。</returns>
-        public async UniTask<ThirdPayOpenResult> OpenAsync(string paymentUrl, RectTransform requestedRect, string defaultPanelPath, CancellationToken ct)
+        public async UniTask<ThirdPayOpenResult> OpenAsync(string paymentUrl, CancellationToken ct)
         {
             if (m_Disposed)
             {
@@ -101,7 +106,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_CurrentSession = session;
             try
             {
-                return await session.OpenAsync(paymentUrl, requestedRect, defaultPanelPath, m_TitleText, m_CloseText, ct);
+                return await session.OpenAsync(paymentUrl, m_TitleText, m_CloseText, ct);
             }
             finally
             {
@@ -133,10 +138,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <summary>
         /// 封装单次支付页的回调、完成源和 Unity 对象生命周期。
         /// </summary>
-        private sealed class ThirdPayWebViewSession : IDisposable
+        private sealed class ThirdPayWebViewSession : ThirdPayLogOwner, IDisposable
         {
             private readonly UniTaskCompletionSource<ThirdPayOpenResult> m_CompletionSource = new();
-            private readonly ThirdPayPanelPresenter m_PanelPresenter = new();
             private CancellationTokenRegistration m_CancellationRegistration;
             private GameObject m_WebViewHost;
             private UniWebView m_WebView;
@@ -147,20 +151,15 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// 创建并展示单次 UniWebView 支付页。
             /// </summary>
             /// <param name="paymentUrl">已完成加密的支付 URL。</param>
-            /// <param name="requestedRect">调用方指定的适配区域。</param>
-            /// <param name="defaultPanelPath">默认面板 Resources 路径。</param>
             /// <param name="ct">取消令牌。</param>
             /// <returns>支付页流程结果。</returns>
-            public UniTask<ThirdPayOpenResult> OpenAsync(
-                string paymentUrl, RectTransform requestedRect, string defaultPanelPath,
-                string titleText, string closeText, CancellationToken ct)
+            public UniTask<ThirdPayOpenResult> OpenAsync(string paymentUrl, string titleText, string closeText, CancellationToken ct)
             {
-                RectTransform referenceRect = m_PanelPresenter.Resolve(requestedRect, defaultPanelPath);
                 m_CancellationRegistration = ct.Register(() => m_CompletionSource.TrySetCanceled(ct));
 #if UNITY_IOS && !UNITY_EDITOR
                 OpenSafeBrowsing(paymentUrl);
 #else
-                OpenEmbeddedWebView(paymentUrl, referenceRect, titleText, closeText);
+                OpenEmbeddedWebView(paymentUrl, titleText, closeText);
 #endif
                 return m_CompletionSource.Task;
             }
@@ -169,12 +168,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// 创建 Android 与 Editor 使用的嵌入式 UniWebView，并接入页面回调和 URL 重写。
             /// </summary>
             /// <param name="paymentUrl">已完成加密的支付 URL。</param>
-            /// <param name="referenceRect">UniWebView 使用的适配区域。</param>
-            private void OpenEmbeddedWebView(string paymentUrl, RectTransform referenceRect, string titleText, string closeText)
+            private void OpenEmbeddedWebView(string paymentUrl, string titleText, string closeText)
             {
                 m_WebViewHost = new GameObject("ThirdPayWebView");
                 m_WebView = m_WebViewHost.AddComponent<UniWebView>();
-                m_WebView.ReferenceRectTransform = referenceRect;
                 m_WebView.SetBackButtonEnabled(true);
                 m_WebView.SetOpenLinksInExternalBrowser(false);
                 m_WebView.EmbeddedToolbar.SetPosition(UniWebViewToolbarPosition.Top);
@@ -195,7 +192,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 m_WebView.Load(paymentUrl);
                 if (!m_WebView.Show())
                 {
+                    LogWarning("第三方支付 WebView failed 返回：来源=ShowFailed");
                     Complete(ThirdPayOpenResult.Failed);
+                }
+                else
+                {
+                    LogDebug("第三方支付 WebView 已显示：Mode=Embedded");
                 }
             }
 
@@ -207,6 +209,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             {
                 if (!UniWebViewSafeBrowsing.IsSafeBrowsingSupported)
                 {
+                    LogWarning("第三方支付 WebView failed 返回：来源=SafeBrowsingUnsupported");
                     Complete(ThirdPayOpenResult.Failed);
                     return;
                 }
@@ -215,6 +218,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 m_SafeBrowsing = UniWebViewSafeBrowsing.Create(paymentUrl);
                 m_SafeBrowsing.OnSafeBrowsingFinished += OnSafeBrowsingFinished;
                 m_SafeBrowsing.Show();
+                LogDebug("第三方支付 SafeBrowsing 已显示");
             }
 
             /// <summary>
@@ -223,7 +227,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// <param name="result">支付页终态。</param>
             public void Complete(ThirdPayOpenResult result)
             {
-                m_CompletionSource.TrySetResult(result);
+                if (m_CompletionSource.TrySetResult(result))
+                {
+                    LogDebug($"第三方支付 WebView 完成：Result={result}");
+                }
+                else
+                {
+                    LogDebug($"第三方支付 WebView 重复完成已忽略：Result={result}");
+                }
             }
 
             /// <summary>
@@ -233,15 +244,22 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// <param name="message">UniWebView 消息。</param>
             private void OnMessageReceived(UniWebView webView, UniWebViewMessage message)
             {
+                LogDebug($"第三方支付 WebView 收到 message：Raw={message.RawMessage}，Path={message.Path}，Args={FormatArgs(message.Args)}");
                 if (ThirdPayUrlRewriteRules.TryRewrite(message.RawMessage, out string rewrittenUrl))
                 {
+                    LogDebug($"第三方支付 WebView URL 重写：Raw={message.RawMessage}，Rewrite={rewrittenUrl}");
                     webView.Load(rewrittenUrl);
                     return;
                 }
 
                 if (ThirdPayWebViewCallbackResolver.TryResolve(message.Path, message.Args, out ThirdPayOpenResult result))
                 {
+                    LogDebug($"第三方支付 WebView message 返回：Path={message.Path}，Args={FormatArgs(message.Args)}，Result={result}");
                     Complete(result);
+                }
+                else
+                {
+                    LogDebug($"第三方支付 WebView 未识别 message，继续等待：Path={message.Path}，Args={FormatArgs(message.Args)}");
                 }
             }
 
@@ -253,15 +271,19 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             {
                 if (string.IsNullOrEmpty(url))
                 {
+                    LogDebug("第三方支付 SafeBrowsing 收到空 DeepLink，继续等待。");
                     return;
                 }
 
+                LogDebug($"第三方支付 SafeBrowsing 收到 DeepLink：URL={url}");
                 var message = new UniWebViewMessage(url);
                 if (!ThirdPayWebViewCallbackResolver.TryResolve(message.Path, message.Args, out ThirdPayOpenResult result))
                 {
+                    LogDebug($"第三方支付 SafeBrowsing 未识别 DeepLink，继续等待：Path={message.Path}，Args={FormatArgs(message.Args)}");
                     return;
                 }
 
+                LogDebug($"第三方支付 SafeBrowsing message 返回：Path={message.Path}，Args={FormatArgs(message.Args)}，Result={result}");
                 DismissSafeBrowsing();
                 Complete(result);
             }
@@ -279,6 +301,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     m_SafeBrowsing = null;
                 }
 
+                LogDebug("第三方支付 SafeBrowsing 关闭返回：Result=Cancel");
                 Complete(ThirdPayOpenResult.Cancel);
             }
 
@@ -306,6 +329,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// <returns>固定返回 false，避免 UniWebView 与会话重复销毁同一对象。</returns>
             private bool OnShouldClose(UniWebView webView)
             {
+                LogDebug("第三方支付 WebView 关闭返回：来源=OnShouldClose，Result=Cancel");
                 Complete(ThirdPayOpenResult.Cancel);
                 return false;
             }
@@ -319,6 +343,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// <param name="payload">UniWebView 原生错误载荷。</param>
             private void OnLoadingErrorReceived(UniWebView webView, int errorCode, string errorMessage, UniWebViewNativeResultPayload payload)
             {
+                LogWarning($"第三方支付 WebView failed 返回：来源=LoadingError，ErrorCode={errorCode}，Error={errorMessage}，Payload={payload}");
                 Complete(ThirdPayOpenResult.Failed);
             }
 
@@ -328,11 +353,22 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// <param name="webView">内容进程终止的 WebView。</param>
             private void OnWebContentProcessTerminated(UniWebView webView)
             {
+                LogWarning("第三方支付 WebView failed 返回：来源=WebContentProcessTerminated");
                 Complete(ThirdPayOpenResult.Failed);
             }
 
             /// <summary>
-            /// 注销回调并销毁 UniWebView 宿主与框架临时面板。
+            /// 格式化 UniWebView 回调参数，便于支付链路日志定位。
+            /// </summary>
+            /// <param name="args">UniWebView message 参数。</param>
+            /// <returns>稳定的 key=value 参数描述。</returns>
+            private static string FormatArgs(IReadOnlyDictionary<string, string> args)
+            {
+                return args == null || args.Count == 0 ? "{}" : "{" + string.Join(", ", args.Select(pair => $"{pair.Key}={pair.Value}")) + "}";
+            }
+
+            /// <summary>
+            /// 注销回调并销毁 UniWebView 宿主。
             /// </summary>
             public void Dispose()
             {
@@ -360,7 +396,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
                 m_WebView = null;
                 m_WebViewHost = null;
-                m_PanelPresenter.Dispose();
             }
         }
     }

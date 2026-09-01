@@ -5,6 +5,7 @@
 ### Changed
 
 - 支持第三方验单状态 `6`（订单不存在）：删除本地订单并广播验单失败结果，避免无效订单持续补单。
+- ThirdPay 国家码规则对齐 Solar：`CountryCode` / `SetDebugCountryCode` 作为 Debug 覆盖源，有效国家码按 `Debug > Lock > Billing > Native > AD > US` 解析，`IV` 归一化为 `US`，iOS 初始化时读取 StoreKit storefront，商品列表按请求版本忽略旧国家响应；IAPDemo 默认不再写死 `US`。
 - Google Play Billing 商店地区未配置时，通过 `getBillingConfigAsync()` 自动读取国家/地区代码；External Billing Program 因设备、账号或地区不可用时直接进入 ThirdPay WebView。
 - 新增第三方商品列表读取、商品存在性查询、WebView 导航栏文案设置和跳过 Google 信息页能力；信息页跳过默认读取 `ThirdPayStoreConfig`，运行时可由 `IIAPThirdPayCapable` 覆盖。
 - `ThirdGetPayChannelParams` 返回 `10707` 等渠道参数错误时不再阻断支付，继续使用不含渠道客户号的支付 URL。
@@ -12,6 +13,8 @@
 - 使用 Unity Purchasing 5.3.1 公开的 `ExternalBillingProgramClient` 实现 Google 外链政策流程。
 - 支付 URL 恢复 Solar InAppAuto 的 `lang/params/app_id` 外层 Query 与完整商品、账号、平台、CID、Google token 内层 JSON 契约。
 - 支付页改为由包内 UniWebView 5.11.1 统一管理：Android 使用嵌入式 WebView，iOS 使用 Safe Browsing 与 Deep Link 回调；请求未提供适配区域时自动加载包内默认面板。
+- 应用内 WebView 用户关闭支付页时不再直接返回取消失败，改为保留订单并立即进入一次验单；支付 URL、WebView 打开、message、关闭和 failed 终态补充 Info/Warning 日志；WebView 固定使用 UniWebView 默认全屏显示，不再暴露 `AdaptRectTransform` 或复用 `LoadingPanelPrefab` 承载面板。
+- 点击第三方支付后的渠道参数拉取、商品兜底拉取、本地建单与支付 URL 构建阶段会显示 IAP Loading，并在打开 WebView 或系统外部浏览器前释放。
 - 支付回调、关闭、加载失败、内容进程终止和 AlipayConnect URL 重写统一收口到框架层。
 - 本地订单改为按 `clientOrderId` 保存，并自动迁移旧版按 `tableId` 保存的数据。
 - 商品映射改为使用 `IAPProductEntry.ThirdProductID`。

@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
+using NovaFramework.SDK.IAP.Runtime;
 using UnityEngine.Purchasing;
 
 namespace NovaFramework.SDK.IAP.Mobile.Runtime
@@ -22,7 +23,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 移动端官方内购商品拉取状态机。
     /// 负责 FetchProducts 幂等、自动重试、部分成功判定、迟到失败短路和不可用 SKU 校正。
     /// </summary>
-    internal sealed class MobileProductFetchCoordinator
+    internal sealed class MobileProductFetchCoordinator : MobileLogOwner
     {
         /// <summary>
         /// 默认商品拉取重试延迟表，单位毫秒。
@@ -132,14 +133,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             if (State is MobileProductFetchState.Fetching or MobileProductFetchState.Succeeded)
             {
-                Log.Debug(LogTag.IAPMobile, $"商品拉取请求已跳过，当前状态={State}。");
+                LogDebug($"商品拉取请求已跳过，当前状态={State}。");
                 return;
             }
 
             State = MobileProductFetchState.Fetching;
             m_ProductFetchTcs = new UniTaskCompletionSource<MobileProductFetchState>();
             IReadOnlyList<ProductDefinition> productDefs = m_GetProductDefinitions() ?? Array.Empty<ProductDefinition>();
-            Log.Debug(LogTag.IAPMobile, $"Unity IAP 商品定义数量={productDefs.Count}。");
+            LogDebug($"Unity IAP 商品定义数量={productDefs.Count}。");
             m_ClearUnavailableSkus();
             m_FetchProducts(productDefs);
         }
@@ -155,7 +156,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            Log.Debug(LogTag.IAPMobile, $"商品拉取成功，数量={fetchedCount}。");
+            LogDebug($"商品拉取成功，数量={fetchedCount}。");
             CancelRetry();
             m_ClearUnavailableSkus();
             AddUnavailableSkusForMissingPendingProducts();
@@ -170,7 +171,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         internal void OnProductsFetchFailed(IReadOnlyList<ProductDefinition> failedProducts, string failureReason)
         {
             int failedCount = failedProducts?.Count ?? 0;
-            Log.Warning(LogTag.IAPMobile, $"商品拉取失败，数量={failedCount}，原因={failureReason}。");
+            LogWarning($"商品拉取失败，数量={failedCount}，原因={failureReason}。");
             AddUnavailableSkusForMissingProducts(failedProducts);
 
             if (State == MobileProductFetchState.Succeeded)
@@ -181,7 +182,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (HasFetchedAnyProduct(failedProducts))
             {
-                Log.Warning(LogTag.IAPMobile, "商品拉取存在失败 SKU，但至少已有一个商品可用，本轮按商品拉取完成处理。");
+                LogWarning("商品拉取存在失败 SKU，但至少已有一个商品可用，本轮按商品拉取完成处理。");
                 CancelRetry();
                 State = MobileProductFetchState.Succeeded;
                 CompleteProductFetchWaiters(State);
@@ -267,7 +268,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             if (retryDelaysMs == null || retryDelaysMs.Count == 0)
             {
-                Log.Warning(LogTag.IAPMobile, "商品拉取重试延迟配置为空或包含非法值，已回落到默认 2s/5s/10s。");
+                IAPLog.Warning(NovaFramework.Runtime.LogTag.IAPMobile, "商品拉取重试延迟配置为空或包含非法值，已回落到默认 2s/5s/10s。");
                 return s_DefaultRetryDelaysMs;
             }
 
@@ -275,7 +276,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             {
                 if (retryDelaysMs[i] <= 0)
                 {
-                    Log.Warning(LogTag.IAPMobile, $"商品拉取重试延迟配置为空或包含非法值，索引={i}，值={retryDelaysMs[i]}，已回落到默认 2s/5s/10s。");
+                    IAPLog.Warning(NovaFramework.Runtime.LogTag.IAPMobile, $"商品拉取重试延迟配置为空或包含非法值，索引={i}，值={retryDelaysMs[i]}，已回落到默认 2s/5s/10s。");
                     return s_DefaultRetryDelaysMs;
                 }
             }
@@ -300,13 +301,13 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (RetryIndex >= m_RetryDelaysMs.Count)
             {
-                Log.Warning(LogTag.IAPMobile, $"商品拉取重试已达到最大次数={m_RetryDelaysMs.Count}，停止重试。");
+                LogWarning($"商品拉取重试已达到最大次数={m_RetryDelaysMs.Count}，停止重试。");
                 return;
             }
 
             int delayMs = m_RetryDelaysMs[RetryIndex++];
             m_ProductFetchRetryCts = new CancellationTokenSource();
-            Log.Warning(LogTag.IAPMobile, $"商品拉取将在 {delayMs}ms 后重试，重试进度={RetryIndex}/{m_RetryDelaysMs.Count}。");
+            LogWarning($"商品拉取将在 {delayMs}ms 后重试，重试进度={RetryIndex}/{m_RetryDelaysMs.Count}。");
             RunRetryAsync(delayMs, m_ProductFetchRetryCts.Token).Forget();
         }
 
@@ -335,7 +336,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
             catch (Exception e)
             {
-                Log.Warning(LogTag.IAPMobile, $"商品拉取重试执行异常，详情={e.Message}");
+                LogWarning($"商品拉取重试执行异常，详情={e.Message}");
                 m_ProductFetchRetryCts?.Dispose();
                 m_ProductFetchRetryCts = null;
             }

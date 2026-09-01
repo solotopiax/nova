@@ -174,7 +174,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 应用 Demo 调试国家选择；商品列表由底层 SetCountryCode 自动刷新。
+        /// 应用 Demo 调试国家选择；商品列表由底层 SetDebugCountryCode 自动刷新。
         /// </summary>
         /// <param name="countryCode">ISO 3166-1 alpha-2 国家代码；空值表示恢复自动识别。</param>
         private void HandleDebugCountryChanged(string countryCode)
@@ -185,7 +185,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 return;
             }
 
-            capability.SetCountryCode(countryCode);
+            capability.SetDebugCountryCode(countryCode);
             m_Bridge.AppendFeedback(
                 "ThirdPay 调试国家已设置为：" + (string.IsNullOrEmpty(countryCode) ? "Auto" : countryCode),
                 FeedbackLevel.Info);

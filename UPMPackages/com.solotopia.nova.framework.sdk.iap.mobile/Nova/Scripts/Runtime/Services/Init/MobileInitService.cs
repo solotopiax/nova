@@ -24,7 +24,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 通过 ExtendedService 完成三步初始化：SetController → RegisterStoreCallbacks → Connect；
     /// 不直接持有或注册 Controller 事件——所有回调由 MobileStoreService 路由过来。
     /// </summary>
-    internal sealed partial class MobileInitService
+    internal sealed partial class MobileInitService : MobileLogOwner
     {
         /// <summary>
         /// 构造 MobileInitService。
@@ -91,7 +91,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
             catch (Exception e)
             {
-                Log.Warning(LogTag.IAPMobile, $"Unity IAP 商店连接异常，详情={e.Message}");
+                LogWarning($"Unity IAP 商店连接异常，详情={e.Message}");
                 FailInitialization(MobileStoreInitFailureReason.StoreConnectException, e.Message);
                 return false;
             }
@@ -116,7 +116,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            Log.Debug(LogTag.IAPMobile, "商店连接成功，商品信息将在后台拉取。");
+            LogDebug("商店连接成功，商品信息将在后台拉取。");
             m_RuntimeContext.MarkConnected();
             if (m_RuntimeContext.IsInitializing)
             {
@@ -141,7 +141,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            Log.Debug(LogTag.IAPMobile, $"商店连接断开，详情={description.message}");
+            LogDebug($"商店连接断开，详情={description.message}");
             m_RuntimeContext.MarkDisconnected();
             if (m_RuntimeContext.IsInitializing)
             {
@@ -219,7 +219,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 string productId = entry.ProductID?.Trim();
                 if (string.IsNullOrEmpty(productId))
                 {
-                    Log.Warning(LogTag.IAPMobile, $"IAP 商品配置缺少平台商品ID，已跳过注册，tableId={entry.TableId}。");
+                    IAPLog.Warning(NovaFramework.Runtime.LogTag.IAPMobile, $"IAP 商品配置缺少平台商品ID，已跳过注册，tableId={entry.TableId}。");
                     continue;
                 }
 

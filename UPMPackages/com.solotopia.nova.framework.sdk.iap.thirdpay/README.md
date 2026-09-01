@@ -19,8 +19,9 @@ Nova 的应用内第三方支付 Store。客户端生成订单号与兼容 Solar
 
 - 仅支持 InAppAuto，不对业务暴露系统浏览器或 DeepLink 模式；iOS 内部通过 Safe Browsing 与 Deep Link 完成支付回调。
 - Android 通过包内 `Nova/Plugins/Android/NovaThirdPayBillingBridge.java` 读取 Google Play Billing 商店地区代码；Google 外链政策仍使用 Unity Purchasing 的 `ExternalBillingProgramClient`。该裸 Java 插件依赖 Unity Purchasing 5.3.1 注入的 `com.android.billingclient:billing:8.3.0`，不需要额外的 `.androidlib`。
-- Android 使用嵌入式 UniWebView，iOS 使用 UniWebView Safe Browsing；回调、关闭和异常清理由包内服务统一处理。
-- 请求未提供 `AdaptRectTransform` 时加载 iap 模块 `IAPPluginConfig.LoadingPanelPrefab`（经 `IAPStoreContext.LoadingPanelPrefab` 注入，默认 `IAP/IAPLoadingPanel`）作为默认面板，不再单独配置。
+- 国家码解析与 Solar 保持一致：`ThirdPayStoreConfig.CountryCode` 和 `IIAPThirdPayCapable.SetDebugCountryCode` 只作为 Debug 覆盖；有效国家码按 `Debug > Lock > Billing > Native > AD > US` 解析，执行 `Trim + ToUpperInvariant`，并将 `IV` 映射为 `US`；iOS 初始化时通过 StoreKit storefront 读取 Native 国家码。
+- Android 使用嵌入式 UniWebView 全屏显示，iOS 使用 UniWebView Safe Browsing；回调、关闭和异常清理由包内服务统一处理。
+- 应用内 WebView 不再接收业务侧适配区域，也不复用 `IAPPluginConfig.LoadingPanelPrefab` 作为承载面板；该配置用于点击支付后的准备阶段和验单等待期的 IAP Loading。
 - 本地订单以 `clientOrderId` 为键，同一商品可保留多笔待处理订单。
 - 商品列表通过 `IAPProductEntry.ThirdProductID` 与服务端 `product_id` 匹配。
 - `IAPThirdPayRequest.ReceiptParam` 不限客户端长度；发起支付时封装到 URL 内层 `custom_param` 的 `receipt_param` 字段，验单后由服务端 `receipt_param` 回填 `IAPResult.ReceiptParam`。

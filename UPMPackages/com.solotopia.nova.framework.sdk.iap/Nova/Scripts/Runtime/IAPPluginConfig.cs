@@ -66,7 +66,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// 开启后将输出 IAP 模块中的详细日志信息，上线前请关闭。
         /// </summary>
         [SerializeField, Tooltip("是否开启 IAP 模块详细日志，上线前请关闭。")]
-        private bool m_EnableIAPLog;
+        private bool m_EnableIAPLog = true;
 
         /// <summary>
         /// 是否开启 IAP 日志输出的当前值。

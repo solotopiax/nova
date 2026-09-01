@@ -36,17 +36,19 @@ namespace NovaFramework.SDK.IAP.Runtime
         protected override async UniTask OnInitializeAsync(ISDKPluginConfig config, CancellationToken ct)
         {
             ResetRuntimeTaskCancellation();
-
+    
             IAPPluginConfig iapConfig = config as IAPPluginConfig;
             if (iapConfig == null)
             {
-                Log.Warning(LogTag.IAPPlugin, "IAPPlugin 初始化失败：config 为 null 或类型不匹配，期望 IAPPluginConfig。");
+                LogWarning("IAPPlugin 初始化失败：config 为 null 或类型不匹配，期望 IAPPluginConfig。");
                 return;
             }
 
+            IAPLog.SetEnabled(iapConfig.EnableIAPLog);
+
             if (iapConfig.Products == null || iapConfig.Products.Count == 0)
             {
-                Log.Warning(LogTag.IAPPlugin, "IAPPlugin 初始化跳过：商品表为空，不创建任何商店。");
+                LogWarning("IAPPlugin 初始化跳过：商品表为空，不创建任何商店。");
                 return;
             }
 
@@ -106,7 +108,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         {
             if (string.IsNullOrEmpty(uid))
             {
-                Log.Warning(LogTag.IAPPlugin, "SetUserId：uid 为空，忽略本次账号同步。");
+                LogWarning("SetUserId：uid 为空，忽略本次账号同步。");
                 return;
             }
 
@@ -139,7 +141,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         {
             if (request == null)
             {
-                Log.Warning(LogTag.IAPPlugin, "IAPPlugin.PayAsync：request 为 null，拒绝处理。");
+                LogWarning("IAPPlugin.PayAsync：request 为 null，拒绝处理。");
                 var result = new IAPResult(0, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, "request 为 null。", null);
                 TrackRouterPayFail(result, null);
                 return result as T;
@@ -148,7 +150,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             IIAPInternalStore store = FindStore(iapRequest);
             if (store == null)
             {
-                Log.Warning(LogTag.IAPPlugin, "IAPPlugin.PayAsync：未找到能处理请求的商店，tableId={0}。", request.TableId);
+                LogWarning($"IAPPlugin.PayAsync：未找到能处理请求的商店，tableId={request.TableId}。");
                 var result = new IAPResult(request.TableId, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, "未找到匹配的支付渠道。", iapRequest?.CustomData, iapRequest?.ReceiptParam);
                 TrackRouterPayFail(result, iapRequest);
                 return result as T;
@@ -249,14 +251,14 @@ namespace NovaFramework.SDK.IAP.Runtime
             if (string.IsNullOrEmpty(m_CurrentUserId))
             {
                 m_HasDeferredCheckLocalOrders = true;
-                Log.Debug(LogTag.IAPPlugin, "账号未登录，已缓存补单扫描请求，等待 SetUserId 后自动执行。");
+                LogDebug("账号未登录，已缓存补单扫描请求，等待 SetUserId 后自动执行。");
                 return;
             }
 
             if (m_IsCheckingLocalOrders)
             {
                 m_PendingCheckLocalOrders = true;
-                Log.Debug(LogTag.IAPPlugin, "补单扫描正在执行，已标记当前轮结束后补跑一次。");
+                LogDebug("补单扫描正在执行，已标记当前轮结束后补跑一次。");
                 return;
             }
 
@@ -319,7 +321,7 @@ namespace NovaFramework.SDK.IAP.Runtime
                 }
                 return;
             }
-            Log.Warning(LogTag.IAPPlugin, "SetStoreEnabled：未找到 StoreType={0} 对应的商店实例。", storeType);
+            LogWarning($"SetStoreEnabled：未找到 StoreType={storeType} 对应的商店实例。");
         }
 
         /// <summary>

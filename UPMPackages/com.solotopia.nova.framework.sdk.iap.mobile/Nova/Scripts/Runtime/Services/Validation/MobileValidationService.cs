@@ -21,7 +21,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 订单状态机服务。
     /// 管理内存订单字典（与持久化同步）、验单队列、服务端重试、启动时补单扫描。
     /// </summary>
-    internal sealed partial class MobileValidationService
+    internal sealed partial class MobileValidationService : MobileLogOwner
     {
         /// <summary>
         /// 服务容器，持有共享外部依赖与其他服务引用。
@@ -48,7 +48,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             if (m_IsCheckingLocalOrders)
             {
                 m_PendingCheckLocalOrders = true;
-                Log.Debug(LogTag.IAPMobile, "补单扫描正在执行，已标记当前轮结束后补跑一次。");
+                LogDebug("补单扫描正在执行，已标记当前轮结束后补跑一次。");
                 return;
             }
 
@@ -62,7 +62,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                     EnsurePersistDataLoaded();
                     if (!IsUserReadyForValidation())
                     {
-                        Log.Debug(LogTag.IAPMobile, "账号未登录，跳过补单扫描和订阅查询。");
+                        LogDebug("账号未登录，跳过补单扫描和订阅查询。");
                         return;
                     }
 
@@ -164,7 +164,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             if (!IsUserReadyForValidation())
             {
-                Log.Debug(LogTag.IAPMobile, $"账号未登录，暂不启动验单队列，{MobileOrderKey.Describe(record)}");
+                LogDebug($"账号未登录，暂不启动验单队列，{MobileOrderKey.Describe(record)}");
                 return;
             }
 
@@ -195,7 +195,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 }
 
                 m_PreLoginOrderRecords[orderKey] = record;
-                Log.Debug(LogTag.IAPMobile, $"账号未登录，仅暂存待验订单，{MobileOrderKey.Describe(record)}，订单号={record.TransactionId}");
+                LogDebug($"账号未登录，仅暂存待验订单，{MobileOrderKey.Describe(record)}，订单号={record.TransactionId}");
                 return;
             }
 

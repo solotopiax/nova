@@ -25,6 +25,7 @@
 | `Runtime/Internal/IAPStoreBase.Methods.cs` | `IAPStoreBase` partial | Store 基类 protected/private 模板方法和辅助方法，包括 `PayGuardAsync` |
 | `Runtime/Internal/IAPStoreBase.Track.cs` | `IAPStoreBase` partial | Store 基类打点封装 |
 | `Runtime/Internal/IAPStoreBase.Net.cs` | `IAPStoreBase` partial | Store 基类通用网络请求能力 |
+| `Runtime/Internal/IAPLog.cs` / `Runtime/Internal/IAPLogOwner.cs` | `IAPLog` / `IAPLogOwner` | IAP 日志统一网关和日志持有者基类；底层只接收 `LogTag + message` |
 | `Runtime/Interfaces/*.cs` | `IIAPInternalStore` 等 | Store、配置、上下文、能力接口 |
 | `Runtime/Results/*.cs` | `IAPResult`、`IAPInitResult`、`IAPPluginErrorCode`、`ProductInfo` | 结果与错误码模型 |
 
@@ -36,7 +37,7 @@
 |---|---|
 | `DisplayName` | 固定为 `IAP 支付` |
 | `EnableAlwaysPaySucceed` | Editor 调试开关；为 true 时 Editor 下 Store 可直接返回成功，非 Editor 编译态强制关闭 |
-| `EnableIAPLog` | 详细日志开关 |
+| `EnableIAPLog` | 详细日志开关，默认开启；初始化时会传入 `IAPLog.SetEnabled` 控制 IAP 日志统一网关 |
 | `RetryValidateMaxNum` | 首次验单重试次数，默认 3 |
 | `SkipLoadingForReplenish` | 补单是否跳过 Loading |
 | `LoadingPanelPrefab` | 支付期 Loading 面板 Resources 路径，默认 `IAP/IAPLoadingPanel` |
@@ -109,6 +110,7 @@ public readonly ReplayEvent<IReadOnlyList<IAPResult>> NonConsumeRestored
 OnInitializeAsync(config, ct)
   ├── 重建 IAPPlugin 运行期后台任务取消源
   ├── config as IAPPluginConfig，失败则 Warning 后返回
+  ├── 应用 EnableIAPLog 到 IAPLog.SetEnabled
   ├── Products 为空则 Warning 后返回，不创建 Store
   ├── BuildStoreContext(config)
   ├── BuildStoreConfigMap(config)
