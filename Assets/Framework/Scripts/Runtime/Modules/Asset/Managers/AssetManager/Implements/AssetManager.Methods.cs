@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -27,6 +28,22 @@ namespace NovaFramework.Runtime
             public int SchemaVersion = 2;
             public string PackageVersion;
             public string PackageFilePrefix;
+        }
+
+        private readonly struct StartupWhitelistDownloadResult
+        {
+            public StartupWhitelistDownloadResult(bool succeeded, string body, int statusCode, string error)
+            {
+                Succeeded = succeeded;
+                Body = body;
+                StatusCode = statusCode;
+                Error = error;
+            }
+
+            public bool Succeeded { get; }
+            public string Body { get; }
+            public int StatusCode { get; }
+            public string Error { get; }
         }
 
         /// <summary>
@@ -140,32 +157,96 @@ namespace NovaFramework.Runtime
                     return;
                 }
 
-                string body = await TryDownloadStartupWhitelistAsync(primaryUrl, "主", ct);
-                if (string.IsNullOrWhiteSpace(body)
-                    && !string.Equals(fallbackUrl, primaryUrl, StringComparison.OrdinalIgnoreCase))
+                HttpFallbackExecutionPlan fallbackPlan = BuildStartupWhitelistPlan(
+                    package, primaryUrl, fallbackUrl);
+                HttpFallbackExecutionCursor cursor = fallbackPlan.CreateCursor();
+                bool shouldTrack = m_Config.EnableUWRTracks && m_HttpManager is IPhysicalHttpManager;
+                string chainId = UwrNetworkTelemetry.CreateChainId();
+                string downloadOperationId = UwrNetworkTelemetry.CreateChainId();
+                Stopwatch chainStopwatch = Stopwatch.StartNew();
+                var firstStep = new HttpFallbackStep(
+                    fallbackPlan.Candidates[0], 0, 0, 0, fallbackPlan.CandidateCount, 0L);
+                UwrNetworkTelemetry.TrackAssetStart(
+                    shouldTrack, chainId, firstStep.Candidate.Url, m_Config.CheckTimeout,
+                    fallbackPlan, firstStep, downloadOperationId, package, "startup_whitelist");
+                List<string> whitelist = null;
+                bool hasValidWhitelist = false;
+                int attemptsStarted = 0;
+                while (cursor.TryBeginNext(out HttpFallbackStep step))
                 {
-                    body = await TryDownloadStartupWhitelistAsync(fallbackUrl, "备用", ct);
+                    string url = step.Candidate.Url;
+                    string sourceLabel = string.Equals(url, primaryUrl, StringComparison.OrdinalIgnoreCase)
+                        ? "主"
+                        : "备用";
+                    Stopwatch sendStopwatch = Stopwatch.StartNew();
+                    attemptsStarted++;
+                    StartupWhitelistDownloadResult result;
+                    try
+                    {
+                        result = await TryDownloadStartupWhitelistAsync(url, sourceLabel, ct);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        cursor.Cancel();
+                        UwrNetworkTelemetry.TrackAssetError(
+                            shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                            sendStopwatch.ElapsedMilliseconds, 0L, "Cancelled", "request_aborted_by_client",
+                            downloadOperationId, package, "startup_whitelist");
+                        UwrNetworkTelemetry.TrackAssetEnd(
+                            shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                            attemptsStarted, sendStopwatch.ElapsedMilliseconds, chainStopwatch.ElapsedMilliseconds,
+                            false, 0L, "Cancelled", "request_aborted_by_client",
+                            downloadOperationId, package, "startup_whitelist");
+                        throw;
+                    }
+                    if (result.Succeeded && TryParseStartupWhitelist(result.Body, out whitelist))
+                    {
+                        hasValidWhitelist = true;
+                        cursor.CompleteCurrent();
+                        m_StartupWhitelistPreferenceStore.MarkSuccess(
+                            GetStartupWhitelistPreferenceScope(package),
+                            step.Candidate.EndpointId);
+                        UwrNetworkTelemetry.TrackAssetEnd(
+                            shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                            attemptsStarted, sendStopwatch.ElapsedMilliseconds, chainStopwatch.ElapsedMilliseconds,
+                            true, result.StatusCode, null, null,
+                            downloadOperationId, package, "startup_whitelist");
+                        break;
+                    }
+                    string leafErrorCode = result.Succeeded
+                        ? "content_verification_failed"
+                        : null;
+                    UwrNetworkTelemetry.TrackAssetError(
+                        shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                        sendStopwatch.ElapsedMilliseconds, result.StatusCode, result.Error, leafErrorCode,
+                        downloadOperationId, package, "startup_whitelist");
+                    if (!result.Succeeded
+                        && !AssetDownloadUrlPolicy.IsRetryableAssetError(url, result.StatusCode))
+                    {
+                        cursor.CompleteCurrent();
+                        UwrNetworkTelemetry.TrackAssetEnd(
+                            shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                            attemptsStarted, sendStopwatch.ElapsedMilliseconds, chainStopwatch.ElapsedMilliseconds,
+                            false, result.StatusCode, result.Error, leafErrorCode,
+                            downloadOperationId, package, "startup_whitelist");
+                        Log.Warning(LogTag.Asset,
+                            "启动白名单收到不可重试响应，停止主备链。Package={0}, URL={1}, HttpCode={2}, Error={3}",
+                            package, url, result.StatusCode, result.Error);
+                        break;
+                    }
+                    cursor.RejectCurrent();
+                    if (cursor.State == HttpFallbackExecutionState.Exhausted)
+                    {
+                        UwrNetworkTelemetry.TrackAssetEnd(
+                            shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                            attemptsStarted, sendStopwatch.ElapsedMilliseconds, chainStopwatch.ElapsedMilliseconds,
+                            false, result.StatusCode, result.Error, leafErrorCode,
+                            downloadOperationId, package, "startup_whitelist");
+                    }
                 }
-                if (string.IsNullOrWhiteSpace(body))
+                if (!hasValidWhitelist)
                 {
-                    Log.Debug(LogTag.Asset, "启动白名单文件拉取失败：Source=全部候选, Package={0}", package);
-                    return;
-                }
-
-                List<string> whitelist;
-                try
-                {
-                    whitelist = Util.Json.Deserialize<List<string>>(body);
-                }
-                catch (Exception exception)
-                {
-                    Log.Error(LogTag.Asset, "启动白名单 JSON 解析失败，按未命中继续启动。Error={0}", exception.Message);
-                    return;
-                }
-
-                if (whitelist == null)
-                {
-                    Log.Error(LogTag.Asset, "启动白名单 JSON 解析结果为 null，按未命中继续启动。");
+                    Log.Debug(LogTag.Asset, "启动白名单文件拉取或内容校验失败：Source=全部候选, Package={0}", package);
                     return;
                 }
 
@@ -188,6 +269,35 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 校验并解析启动白名单内容；传输成功但内容无效时允许调用方继续尝试备用地址。
+        /// </summary>
+        private static bool TryParseStartupWhitelist(string body, out List<string> whitelist)
+        {
+            whitelist = null;
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                return false;
+            }
+
+            try
+            {
+                whitelist = Util.Json.Deserialize<List<string>>(body);
+                if (whitelist != null)
+                {
+                    return true;
+                }
+
+                Log.Error(LogTag.Asset, "启动白名单 JSON 解析结果为 null，准备尝试备用地址。");
+            }
+            catch (Exception exception)
+            {
+                Log.Error(LogTag.Asset, "启动白名单 JSON 解析失败，准备尝试备用地址。Error={0}", exception.Message);
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 判断当前配置是否允许执行启动白名单检查。
         /// </summary>
         private bool CanCheckStartupWhitelist()
@@ -204,42 +314,47 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 下载一个白名单文件地址；失败、空地址或超时返回 null，真实外部取消继续向上传播。
+        /// 下载一个白名单文件地址；失败、空地址或超时返回失败结果，真实外部取消继续向上传播。
         /// </summary>
-        private async UniTask<string> TryDownloadStartupWhitelistAsync(string url, string sourceLabel, CancellationToken ct)
+        private async UniTask<StartupWhitelistDownloadResult> TryDownloadStartupWhitelistAsync(
+            string url, string sourceLabel, CancellationToken ct)
         {
             if (string.IsNullOrEmpty(url))
             {
                 Log.Debug(LogTag.Asset, "启动白名单文件拉取失败：Source={0}, URL=<empty>, Error=URL 未配置或无效", sourceLabel);
-                return null;
+                return new StartupWhitelistDownloadResult(false, null, 0, "URL 未配置或无效");
             }
             if (m_HttpManager == null)
             {
                 Log.Debug(LogTag.Asset, "启动白名单文件拉取失败：Source={0}, URL={1}, Error=IHttpManager 不可用", sourceLabel, url);
-                return null;
+                return new StartupWhitelistDownloadResult(false, null, 0, "IHttpManager 不可用");
             }
 
             HttpResponse response = null;
             try
             {
-                response = await m_HttpManager.DownloadTextAsync(url, m_Config.CheckTimeout, null, ct);
+                response = m_HttpManager is IPhysicalHttpManager physicalHttpManager
+                    ? await physicalHttpManager.GetPhysicalAsync(url, m_Config.CheckTimeout, null, ct)
+                    : await m_HttpManager.DownloadTextAsync(url, m_Config.CheckTimeout, null, ct);
                 if (response == null || !response.IsSuccess || string.IsNullOrWhiteSpace(response.Body))
                 {
+                    int statusCode = response?.StatusCode ?? 0;
+                    string error = response?.Error ?? "Empty response";
                     Log.Debug(LogTag.Asset, "启动白名单文件拉取失败：Source={0}, URL={1}, Error={2}",
-                        sourceLabel, url, response?.Error ?? "Empty response");
+                        sourceLabel, url, error);
                     Log.Warning(LogTag.Asset, "{0}启动白名单文件请求失败，准备按未命中或备用地址继续。URL={1}, Error={2}",
-                        sourceLabel, url, response?.Error ?? "Empty response");
-                    return null;
+                        sourceLabel, url, error);
+                    return new StartupWhitelistDownloadResult(false, null, statusCode, error);
                 }
 
                 Log.Debug(LogTag.Asset, "启动白名单文件拉取成功：Source={0}, URL={1}", sourceLabel, url);
-                return response.Body;
+                return new StartupWhitelistDownloadResult(true, response.Body, response.StatusCode, null);
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
                 Log.Debug(LogTag.Asset, "启动白名单文件拉取失败：Source={0}, URL={1}, Error=Timeout", sourceLabel, url);
                 Log.Warning(LogTag.Asset, "{0}启动白名单文件请求超时，准备尝试备用地址。URL={1}", sourceLabel, url);
-                return null;
+                return new StartupWhitelistDownloadResult(false, null, 0, "Timeout");
             }
             catch (OperationCanceledException)
             {
@@ -251,7 +366,7 @@ namespace NovaFramework.Runtime
                     sourceLabel, url, exception.Message);
                 Log.Warning(LogTag.Asset, "{0}启动白名单文件请求异常，准备按未命中或备用地址继续。URL={1}, Error={2}",
                     sourceLabel, url, exception.Message);
-                return null;
+                return new StartupWhitelistDownloadResult(false, null, 0, exception.Message);
             }
             finally
             {
@@ -260,6 +375,52 @@ namespace NovaFramework.Runtime
                     ReferencePool.Put(response);
                 }
             }
+        }
+
+        /// <summary>
+        /// 按 Asset 配置构造启动白名单的完整主备、轮次与重试执行计划。
+        /// </summary>
+        private HttpFallbackExecutionPlan BuildStartupWhitelistPlan(
+            string package, string primaryUrl, string fallbackUrl)
+        {
+            string scope = GetStartupWhitelistPreferenceScope(package);
+            HttpFallbackPreferenceSnapshot preference = m_StartupWhitelistPreferenceStore.Capture(scope);
+            var policy = new HttpFallbackPolicy(
+                Math.Max(1, m_Config.FallbackRoundCount),
+                Math.Max(0, m_Config.RetryDownloadCount),
+                m_Config.PreferLastSuccessfulHost);
+            HttpFallbackExecutionPlan plan = HttpFallbackPlanner.Build(
+                new[] { primaryUrl, fallbackUrl }, policy, preference);
+            if (preference.HasValue && !PlanContainsEndpoint(plan, preference.EndpointId))
+            {
+                m_StartupWhitelistPreferenceStore.ClearIfUnchanged(preference);
+                plan = HttpFallbackPlanner.Build(new[] { primaryUrl, fallbackUrl }, policy);
+            }
+            return plan;
+        }
+
+        /// <summary>
+        /// 判断执行计划是否仍包含最近成功记录指向的候选端点。
+        /// </summary>
+        private static bool PlanContainsEndpoint(HttpFallbackExecutionPlan plan, string endpointId)
+        {
+            for (int i = 0; i < plan.CandidateCount; i++)
+            {
+                if (string.Equals(plan.Candidates[i].EndpointId, endpointId,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 生成启动白名单最近成功域名的包级隔离键。
+        /// </summary>
+        private static string GetStartupWhitelistPreferenceScope(string package)
+        {
+            return $"asset:whitelist:{package}";
         }
 
         /// <summary>
@@ -405,10 +566,28 @@ namespace NovaFramework.Runtime
         /// <param name="remote">当前资源包的远端寻址服务。</param>
         /// <param name="package">资源包名。</param>
         /// <returns>真实版本文件名对应的候选地址数量，最少为 1。</returns>
-        private static int GetMetadataRequestAttemptCount(AssetRemoteService remote, string package)
+        private int GetMetadataRequestAttemptCount(AssetRemoteService remote, string package)
         {
             string versionFileName = YooAssetConfiguration.GetPackageVersionFileName(package);
-            return Math.Max(1, remote.GetRemoteUrls(versionFileName).Count);
+            int candidateCount = Math.Max(1, remote.GetRemoteUrls(versionFileName).Count);
+            int physicalRetryCount = AssetDownloadUrlPolicy.CalculatePhysicalRetryCount(
+                candidateCount,
+                m_Config.FallbackRoundCount,
+                m_Config.RetryDownloadCount);
+            return physicalRetryCount == int.MaxValue ? int.MaxValue : physicalRetryCount + 1;
+        }
+
+        /// <summary>
+        /// 把指定包的逻辑重试次数换算成 YooAsset Bundle 下载器使用的物理重试次数。
+        /// </summary>
+        private int GetBundlePhysicalRetryCount(string package, int logicalRetryCount)
+        {
+            AssetRemoteService remote = CreateRemoteService(package);
+            int candidateCount = Math.Max(1, remote.GetRemoteUrls("__nova_bundle_retry_probe__.bundle").Count);
+            return AssetDownloadUrlPolicy.CalculatePhysicalRetryCount(
+                candidateCount,
+                m_Config.FallbackRoundCount,
+                logicalRetryCount);
         }
 
         /// <summary>
@@ -418,7 +597,15 @@ namespace NovaFramework.Runtime
         {
             if (!m_DownloadUrlPolicies.TryGetValue(package, out AssetDownloadUrlPolicy policy))
             {
-                policy = new AssetDownloadUrlPolicy(m_StartupWhitelistMatchedPackages.Contains(package));
+                policy = new AssetDownloadUrlPolicy(
+                    m_StartupWhitelistMatchedPackages.Contains(package),
+                    m_Config.FallbackRoundCount,
+                    m_Config.RetryDownloadCount,
+                    m_Config.PreferLastSuccessfulHost,
+                    m_Config.EnableUWRTracks,
+                    package,
+                    m_Config.CheckTimeout,
+                    m_Config.IdleTimeout);
                 m_DownloadUrlPolicies.Add(package, policy);
             }
             return policy;
@@ -905,6 +1092,7 @@ namespace NovaFramework.Runtime
                 builtinParams.AddParameter(EFileSystemParameter.CopyBuiltinPackageManifest, true);
             }
             cacheParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
+            cacheParams.AddParameter(EFileSystemParameter.DownloadRetryPolicy, GetOrCreateDownloadUrlPolicy(package));
             cacheParams.AddParameter(EFileSystemParameter.DownloadWatchdogTimeout, m_Config.IdleTimeout);
             ApplyDecryptor(builtinParams, true);
             ApplyDecryptor(cacheParams, true);
@@ -926,6 +1114,7 @@ namespace NovaFramework.Runtime
             var serverParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
             var remoteParams = FileSystemParameters.CreateDefaultWebNetworkFileSystemParameters(remote);
             remoteParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
+            remoteParams.AddParameter(EFileSystemParameter.DownloadRetryPolicy, GetOrCreateDownloadUrlPolicy(package));
             // WebNetworkFileSystem 不支持 Sandbox 的下载 watchdog 参数，WebGL 仅保留自身支持的远端寻址策略。
             ApplyDecryptor(serverParams, false);
             ApplyDecryptor(remoteParams, false);

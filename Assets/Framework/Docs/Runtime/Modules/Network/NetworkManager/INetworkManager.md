@@ -1,85 +1,60 @@
 # INetworkManager
 
-**类签名**：`public interface INetworkManager`
-**命名空间**：`NovaFramework.Runtime`
+类签名： public interface INetworkManager  
+命名空间： NovaFramework.Runtime
 
-Network 管理器公开契约接口，定义 NetCmd URL 路由、Luban 表查询、网络状态检测与服务器时间获取的全部方法。
+Network 路由管理器公开契约，负责加载 HostKey / NetCmd 表、解析 URL、提供网络工具与服务器时间能力。
 
----
+## 继承关系
 
-## § 2 文件表
+~~~text
+INetworkManager
+  └── NetworkManagerBase
+        └── NetworkManager
+~~~
 
-| 文件 | 类 | 说明 |
-|---|---|---|
-| `INetworkManager.cs` | `INetworkManager` | 接口定义 |
+## 公开 API
 
----
+~~~csharp
+void Initialize(NetworkManagerConfig config);
 
-## § 3 继承关系
+UniTask<bool> LoadNetCmdsAsync();
+bool LoadNetCmdsSync();
 
-```
-INetworkManager（public interface）
-  └── NetworkManagerBase (abstract) : FrameworkManager, INetworkManager
-        └── NetworkManager (sealed partial)
-```
+string GetNetCmdUrl(string tbName, string dtName);
+string GetNetCmdUrl<T>(string dtName) where T : class, ITable;
+string ResolveNetCmdUrl(INetworkCmdRow cmdRow);
+IReadOnlyList<string> ResolveNetCmdUrls(INetworkCmdRow cmdRow);
+INetworkCmdRow ResolveNetCmdRow(string cmdName);
 
----
+T GetNetCmd<T>() where T : class, ITable;
+ITable GetNetCmd(string tbName);
 
-## § 5 完整公开 API
+bool CheckNetworkActive();
+string UrlEncode(string str);
+UniTask<string> QueryPublicIPAddressAsync();
+string QueryLocalIPAddress();
 
-```csharp
-// --- 初始化 ---
-void Initialize(NetworkManagerConfig config)
+void SetServerTimeFetcher(Func<UniTask<long>> fetcher);
+UniTask FetchServerTimeAsync();
+long ServerTime { get; }
+~~~
 
-// --- 数据加载 ---
-UniTask<bool> LoadNetCmdsAsync()              // 两阶段 Luban 加载：并行 AB → BuildTablesFromCache
-bool LoadNetCmdsSync()                        // 两阶段 Luban 加载：串行 AB → BuildTablesFromCache
+ResolveNetCmdUrl 保留单地址兼容入口，返回主地址或唯一有效地址。ResolveNetCmdUrls 返回业务协议使用的零到两个完整 URL：有效主地址在前、有效备用地址在后；无效值和重复地址会被过滤。框架内部的 NetService 使用后者执行主备请求。
 
-// --- NetCmd 路由 ---
-string GetNetCmdUrl(string tbName, string dtName)              // HostKey URL + Path，不存在返回 null
-string GetNetCmdUrl<T>(string dtName) where T : class, ITable  // 泛型版本，提供编译期类型约束
-string ResolveNetCmdUrl(INetworkCmdRow cmdRow)              // 由指令行解析完整 URL，HostKey 缺失返回 null
-INetworkCmdRow ResolveNetCmdRow(string cmdName)             // 按 INetworkCmdRow.Name 检索指令行，未找到返回 null
-IEnumerable<string> GetAllNetCmdUrls()        // 所有 HTTP 类型 NetCmd 完整 URL（去重）
-IEnumerable<string> GetAllHostKeyUrls()       // 全部 HostKey URL（过滤空值并去重），供启动 DoH 预热
+## 使用示例
 
-// --- Luban 表查询 ---
-T GetNetCmd<T>() where T : class, ITable     // 按类型查找 Luban 表实例，不存在返回 null
-ITable GetNetCmd(string tbName)              // 按表类型名查找 Luban 表实例，不存在返回 null
+~~~csharp
+INetworkCmdRow row = Nova.Network.ResolveNetCmdRow("Login");
+string primaryUrl = Nova.Network.ResolveNetCmdUrl(row);
 
-// --- 网络工具 ---
-bool CheckNetworkActive()
-string UrlEncode(string str)
-UniTask<string> QueryPublicIPAddressAsync()
-string QueryLocalIPAddress()
+// Framework 内部业务协议会取得主备 URL 并完成切换。
+// 业务层通常通过对应 Kit Service 发起请求。
+~~~
 
-// --- 服务器时间 ---
-void SetServerTimeFetcher(Func<UniTask<long>> fetcher)   // 注入服务器时间获取委托，由业务层提供实现
-UniTask FetchServerTimeAsync()                           // 调用已注入委托获取 UTC0 时间戳，写入 ServerTime
-
-// --- 状态属性 ---
-long ServerTime { get; }                      // UTC0 毫秒时间戳
-```
-
----
-
-## § 11 使用示例
-
-```csharp
-// 路由查询（LoadNetCmdsAsync 完成后才可调用）
-string url = Nova.Network.GetNetCmdUrl("TbNetCmd", "user.login");
-
-// 按泛型类型查询 Luban 表实例
-var table = Nova.Network.GetNetCmd<TbNetCmd>();
-
-// 按表类型名查询 Luban 表实例（动态场景，类型名来自配置或反射）
-ITable table2 = Nova.Network.GetNetCmd("TbNetCmd");
-```
-
----
-
-## § 13 关联文档
+## 关联文档
 
 - [NetworkManager.md](NetworkManager.md)
-- [NetworkManagerBase.md](NetworkManagerBase.md)
-- [NetworkManagerConfig.md](Definitions/NetworkManagerConfig.md)
+- [NetworkComponent.md](../NetworkComponent.md)
+- [INetworkHostKeyRow.md](Definitions/INetworkHostKeyRow.md)
+- [INetworkCmdRow.md](Definitions/INetworkCmdRow.md)

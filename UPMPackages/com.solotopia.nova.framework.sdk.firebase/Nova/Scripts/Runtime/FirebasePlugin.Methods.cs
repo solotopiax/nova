@@ -8,6 +8,7 @@
  * descrip:   FirebasePlugin私有方法
  ***************************************************************/
 
+#if !UNITY_WEBGL
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -16,9 +17,7 @@ using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 using Firebase.Extensions;
 
-#if !UNITY_WEBGL
 using Firebase.Messaging;
-#endif
 
 namespace NovaFramework.SDK.FirebasePlugin.Runtime
 {
@@ -383,3 +382,4 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 #endif
     }
 }
+#endif

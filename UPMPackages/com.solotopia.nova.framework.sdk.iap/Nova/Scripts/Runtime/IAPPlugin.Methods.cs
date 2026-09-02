@@ -134,7 +134,27 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <returns>该 store 初始化完成或被跳过的异步任务。</returns>
         private async UniTask TryInitializeStoreAsync(Type t, CancellationToken ct)
         {
-            LogDebug($"发现 IAPStore 实现：{t.FullName}，开始实例化。");
+            IAPStoreAttribute storeAttribute = (IAPStoreAttribute)Attribute.GetCustomAttribute(t, typeof(IAPStoreAttribute), inherit: false);
+            if (storeAttribute == null || storeAttribute.StoreType == IAPStoreType.None)
+            {
+                LogWarning($"IAPStore {t.FullName} 缺少有效 StoreType 元数据，已跳过且不会构造。");
+                return;
+            }
+
+            IIAPStoreConfig storeConfig = null;
+            if (m_StoreConfigMap != null)
+            {
+                m_StoreConfigMap.TryGetValue(storeAttribute.StoreType, out storeConfig);
+            }
+
+            if (storeConfig == null)
+            {
+                // 已安装但未配置的可选 Store 不得执行构造函数或字段初始化。
+                LogDebug($"IAPStore {t.FullName} 未配置 StoreConfig，跳过构造与初始化。");
+                return;
+            }
+
+            LogDebug($"发现已配置 IAPStore 实现：{t.FullName}，开始实例化。");
 
             IIAPInternalStore store;
             try
@@ -153,17 +173,9 @@ namespace NovaFramework.SDK.IAP.Runtime
                 return;
             }
 
-            IIAPStoreConfig storeConfig = null;
-            if (m_StoreConfigMap != null)
+            if (store.StoreType != storeAttribute.StoreType)
             {
-                m_StoreConfigMap.TryGetValue(store.StoreType, out storeConfig);
-            }
-
-            if (storeConfig == null)
-            {
-                // 发现了可选 Store 程序集，但当前 IAPPluginConfig 未声明对应 StoreConfig。
-                // 这种情况表示该渠道未配置，不应把 null config 传给 Store 初始化。
-                LogDebug($"IAPStore {t.FullName} 未配置 StoreConfig，跳过初始化。");
+                LogWarning($"IAPStore {t.FullName} 的静态 StoreType={storeAttribute.StoreType} 与实例 StoreType={store.StoreType} 不一致，已跳过。");
                 return;
             }
 

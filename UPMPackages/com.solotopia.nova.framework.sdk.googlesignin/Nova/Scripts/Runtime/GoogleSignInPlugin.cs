@@ -18,6 +18,7 @@ namespace NovaFramework.SDK.GoogleSignIn
     /// <summary>
     /// Google 登录 SDK 插件。
     /// </summary>
+    [SDKPluginConfigType(typeof(GoogleSignInPluginConfig))]
     public sealed partial class GoogleSignInPlugin : SDKPluginBase, IAuthPlugin
     {
         /// <summary>

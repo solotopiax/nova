@@ -34,6 +34,8 @@ Action 的 Request Schema、effects、locks、contractMajor、idempotency 和 co
 
 `nova.project.config.export-runtime` 的请求仍显式携带 `platform / channel / developMode`，但 `platform` 必须等于 Plan 时 Unity 当前 Active BuildTarget 映射的 Nova `PlatformType`。未映射为 Android / iOS / WebGL、请求不一致，或 Execute 前 Active BuildTarget 漂移，都会以 `blocked` 收口并要求先切换 BuildTarget 后重新 Plan；该限制不改变底层 `EditorUtil.Config.Exporter.Export` 的显式平台 API。
 
+`channel` 接受 `ChannelType` 的全部声明名称，包含 `None`；`None` 表示无特定运营渠道，不会被 Config 校验、导出、插件补齐或构建预检拦截。`PlatformType.None` 仍被拒绝。
+
 ## 代码组织
 
 ```text

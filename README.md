@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.6.24-blue.svg)
+![release](https://img.shields.io/badge/release-v0.6.25-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -70,7 +70,7 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 | 触觉 | `Nova.Vibrate` | 触觉振动反馈，封装 Nice Vibrations，提供预设振动模式与自定义波形，适配 iOS / Android 差异。 |
 | 原生能力 | `Nova.Native` | 查询与请求通知权限、跳转应用或通知设置，以及请求应用内评价；平台桥接、并发协调与回调清理由 Native Manager 统一处理。 |
 | 界面 | `Nova.UI` | 界面生命周期与栈式管理，支持异步 / 同步打开关闭、界面分组与层级控制，自动复用实例池，覆盖弹窗、主界面与多层叠加场景。 |
-| 网络 | `Nova.Network` | 网络通信层，封装 HTTP / WebSocket 请求与 DNS over HTTPS；HTTP 默认使用 UnityWebRequest，BestHTTP 适配由独立可选包提供。 |
+| 网络 | `Nova.Network` | 网络通信层，封装 HTTP / WebSocket 请求；HTTP 固定使用 UnityWebRequest 与系统 DNS，HostKey + NetCmd 业务请求支持主备域名切换。 |
 | SDK 接入 | `Nova.SDK` | 第三方 SDK 的统一装配与初始化入口；广告、登录、支付和统计等具体能力由对应的独立 SDK UPM 包按需安装。 |
 | 流程 | `Nova.Procedure` | 基于有限状态机的启动流程编排，串联闪屏、版本检查、强更 / 热更、业务 DLL 加载等节点，节点间切换受控且可观测。 |
 | 应用 | `Nova.App` | 应用入口，负责版本检查、强制更新与新安装包下载，协调各子系统按启动阶段顺序就绪，是运行期的顶层编排者。 |
@@ -86,7 +86,7 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 ## 安装
 
 1. 下载火种脚本 [NovaSpark.cs](./NovaSpark.cs)，放入消费项目的 `Assets/Editor/`。
-2. Unity 编译完成后，在弹窗中确认“引入框架”。脚本会补齐 Framework、BestHTTP、EDM、所需 Registry、PlugPals 配置与 Android 发布设置，并触发 UPM Resolve。
+2. Unity 编译完成后，在弹窗中确认“引入框架”。脚本会补齐 Framework、EDM、所需 Registry、PlugPals 配置与 Android 发布设置，并触发 UPM Resolve。
 3. 等待包解析和编译完成；PlugPals 窗口成功打开后，火种脚本会自动删除自身。
 
 NovaSpark 会修改项目配置。已有 Nova 项目重复导入时，它会先列出待矫正项并等待确认；本仓这类使用本地 `file:` Framework 的源码工程会自动跳过。

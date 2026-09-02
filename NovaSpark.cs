@@ -59,12 +59,6 @@ namespace NovaBootstrap
 
         // ---- manifest 待补全的依赖项 ----
 
-        /// <summary>Nova BestHTTP 封装包键。</summary>
-        private const string c_BestHttpKey = "com.solotopia.nova.framework.besthttp";
-
-        /// <summary>Nova BestHTTP 封装包版本。</summary>
-        private const string c_BestHttpValue = "0.1.8";
-
         /// <summary>External Dependency Manager(EDM) 包键。Firebase/AppsFlyer/MAX 等的公共依赖，按策略由工程 manifest 显式固定，不靠各包传递。</summary>
         private const string c_EdmKey = "com.google.external-dependency-manager";
 
@@ -103,7 +97,7 @@ namespace NovaBootstrap
         private static readonly RegistrySpec[] s_Registries =
         {
             new RegistrySpec("Solotopia", "https://upm.solotopiax.com", new[] { "com.solotopia" }),
-            new RegistrySpec("Solotopia Internal", "http://172.16.22.175:4874", new[] { "com.tivadar", "com.onevcat", "cn.efunstudio" }),
+            new RegistrySpec("Solotopia Internal", "http://172.16.22.175:4874", new[] { "com.onevcat", "cn.efunstudio" }),
             new RegistrySpec("package.openupm.com", "https://package.openupm.com", new[]
             {
                 "com.google.external-dependency-manager",
@@ -281,8 +275,6 @@ namespace NovaBootstrap
             {
                 if (deps == null || !deps.ContainsKey(c_FrameworkKey))
                     missing.Add($"依赖 {c_FrameworkKey}（Nova 框架主包）");
-                if (deps == null || !deps.ContainsKey(c_BestHttpKey))
-                    missing.Add($"依赖 {c_BestHttpKey}");
                 if (deps == null || !deps.ContainsKey(c_EdmKey))
                     missing.Add($"依赖 {c_EdmKey}");
             }
@@ -293,8 +285,6 @@ namespace NovaBootstrap
                 {
                     if (deps.ContainsKey(c_FrameworkKey) && (deps.Get(c_FrameworkKey) as string) != c_FrameworkValue)
                         missing.Add($"依赖 {c_FrameworkKey} 版本过时，需矫正为 {c_FrameworkValue}");
-                    if (deps.ContainsKey(c_BestHttpKey) && (deps.Get(c_BestHttpKey) as string) != c_BestHttpValue)
-                        missing.Add($"依赖 {c_BestHttpKey} 版本过时，需矫正为 {c_BestHttpValue}");
                     if (deps.ContainsKey(c_EdmKey) && (deps.Get(c_EdmKey) as string) != c_EdmValue)
                         missing.Add($"依赖 {c_EdmKey} 版本过时，需矫正为 {c_EdmValue}");
                 }
@@ -356,10 +346,9 @@ namespace NovaBootstrap
                 deps = new JObj();
                 manifest.Set("dependencies", deps);
             }
-            // framework/besthttp/edm 是 semver 版本号，已装工程的旧版本可能公网已下架（如 framework 0.5.31）→
+            // framework/edm 是 semver 版本号，已装工程的旧版本可能公网已下架（如 framework 0.5.31）→
             // 强制对齐本版规格，避免 UPM 解析"cannot be found"。
             UpsertDepVersion(deps, c_FrameworkKey, c_FrameworkValue);
-            UpsertDepVersion(deps, c_BestHttpKey, c_BestHttpValue);
             UpsertDepVersion(deps, c_EdmKey, c_EdmValue);
 
             // 2) scopedRegistries：按 name 找，命中则强制覆盖 url（矫正旧版过时地址）+ 补齐 scope；

@@ -24,7 +24,23 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// Nova 版本号。
         /// </summary>
-        public const string Version = "0.6.24";
+        public const string Version = "0.6.25";
+
+        /// <summary>
+        /// 框架首次启动时记录的 UTC Unix 毫秒时间戳。
+        /// 该值是跨平台安装时间的统一近似值，由启动期 PlayerPrefs 持久化并保持为 13 位。
+        /// </summary>
+        public static long InstallTimeMs => GetOrCreateInstallTimeMs();
+
+        /// <summary>
+        /// 框架通用安装时间的原始持久化键。
+        /// </summary>
+        private const string c_InstallTimeMsPersistKey = "Nova.InstallTimeMs";
+
+        /// <summary>
+        /// 当前进程缓存的框架通用安装时间。
+        /// </summary>
+        private static long s_InstallTimeMs;
 
         /// <summary>
         /// Nova 自身引用。
@@ -122,6 +138,7 @@ namespace NovaFramework.Runtime
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
+            s_InstallTimeMs = 0;
             ClearStaticReferences();
         }
 

@@ -1,7 +1,7 @@
 ---
 id: ADR-080
-title: 资源下载按包粘滞切换备用地址且禁止候选回绕
-summary: 主地址失败后同包后续下载粘在备用，并发失败只切一次
+title: 资源下载按文件独立执行完整主备轮次与重试
+summary: 每个 Asset 文件独立冻结候选计划并按 C×R×(K+1) 执行
 category: hotfix
 status: accepted
 date: 2026-08-14
@@ -10,66 +10,112 @@ aliases:
 keywords:
   - 资源下载主备切换
   - AssetDownloadUrlPolicy
-  - package sticky fallback
-  - 并发下载失败
+  - per-file fallback
+  - 完整轮次
+  - RetryDownloadCount
+  - 最近成功域名
 tags: [adr, nova, asset, hotfix, yooasset, cdn]
 supersedes: []
 superseded-by: []
 related:
   - "[[ADR-076-startup-whitelist-metadata-routing|ADR-076]]"
+  - "[[ADR-083-uwr-primary-fallback-network|ADR-083]]"
   - "[[PAT-37-no-yooasset-outside-asset-module|PAT-37]]"
   - "[[MOC-Asset]]"
 ---
 
-# ADR-080：资源下载按包粘滞切换备用地址且禁止候选回绕
+# ADR-080：资源下载按文件独立执行完整主备轮次与重试
 
 ## 背景（Context）
 
-YooAsset 可同时下载同一资源包内的多个 Bundle。旧策略用一个共享整数游标取模选择候选地址，每个失败都会让游标加一，因此两个仍在飞的主地址请求同时失败时，可能连续推进两次并重新绕回主地址。这样既重复访问已知异常的地址，也让后续资源的实际下载域名不可预测。
+旧方案让同一 YooAsset Package 内的并发 Bundle 共享粘滞游标：某个文件切到备用地址后，后续新文件只能从备用地址开始；备用失败也不会回到主地址。这能抑制并发失败造成的游标抖动，但会让文件失去完整尝试主备域名的机会，也无法准确表达“全部候选走完算一轮、全部轮次走完才消耗一次重试”的产品语义。
+
+App、Asset 与业务协议现在需要共享同一种候选规划机制，同时仍保留各模块自己的地址来源、错误分类和配置。
 
 ## 决策（Decision）
 
-1. `AssetManager` 继续为每个 YooAsset package 独立持有一份 `AssetDownloadUrlPolicy`。
-2. 主地址失败后，同一 package 后续尚未开始的资源选择备用地址；已经在飞的请求不改写 URL。
-3. 每次选址记录其候选位置。同一候选位置上的并发失败只允许第一次推进，晚到的相同位置失败不得再次跳过候选。
-4. 候选选择使用边界粘滞，不使用取模。到达当前候选列表末项后，即使末项失败也保持在末项，不重新绕回已失败的首项。
-5. 两候选 Bundle 链在备用地址失败后保持备用；该失败不能暗中推进更长的元数据候选链。
-6. `.version`、`.hash`、`.bytes` 仍遵循 [[ADR-076-startup-whitelist-metadata-routing|ADR-076]] 的候选顺序；Bundle 仍只使用常规 CDN 主备地址。
-7. 策略继续由 Nova Asset 模块实现，并通过 YooAsset `IDownloadUrlPolicy` 接入，不修改 YooAsset 下载器源码。
+### 1. 每个文件独立冻结执行计划
+
+- `AssetManager` 仍为每个 YooAsset Package 持有一个 `AssetDownloadUrlPolicy`，但每个文件拥有独立的 `HttpFallbackExecutionPlan` 与 `HttpFallbackExecutionCursor`。
+- A/B/C 等并发 Bundle 互不推进游标；某个文件失败不会替另一个文件消耗候选、轮次或重试。
+- 新文件会读取当前最近成功域名并调整单轮起点，但它的计划仍包含全部候选，不会失去尝试另一域名的机会。
+
+### 2. 轮次与重试语义统一
+
+去重后的候选数为 `C`，每个重试周期内的完整轮数为 `R`，下载重试次数为 `K`：
+
+```text
+最大物理尝试数 = C × R × (K + 1)
+```
+
+- 主、备候选全部走一遍才算一轮。
+- 所有轮次全部失败后才消耗一次 `RetryDownloadCount`。
+- `RetryDownloadCount=3` 表示首次完整执行后，最多再执行 3 次相同的完整轮次组合。
+- 后续轮次和重试允许回到计划首候选，确保主备在每个完整执行周期中都有机会。
+
+### 3. Asset 自己裁决失败是否继续
+
+- 无 HTTP 响应、内容校验失败、HTTP `404`、`408`、`416`、`429` 与 `5xx`：继续计划中的下一候选。
+- HTTP `401`、`403` 及其他 `4xx`：立即终止该文件请求链。
+- 调用方取消：中止当前请求并停止整条候选链。
+- 每次物理请求独立使用自己的超时；不存在整条链路总超时。
+
+### 4. 最近成功域名按 Package 和请求类型隔离
+
+- Bundle 与版本元数据分别维护最近成功域名，避免不同地址族相互污染。
+- 启动白名单文件按 Package 单独维护偏好。
+- 完整失败不清除已有偏好；配置候选不再包含旧域名或 Manager 关闭时才失效。
+
+### 5. 保持 YooAsset 边界
+
+- 不修改 YooAsset 源码，不关闭其按需下载。
+- Nova 同时实现 YooAsset 的 `IDownloadUrlPolicy` 与 `IDownloadRetryPolicy`，把逻辑轮次和重试数换算为 YooAsset 所需的物理重试数。
+- 显式 `ResourceDownloaderOperation` 通过 `AssetDownloader` 登记当前下载操作和逻辑重试配置；普通异步按需加载使用 Asset Inspector 的默认配置。
+- 同步加载行为保持不变；未缓存资源能否同步取得继续遵循 YooAsset 原有机制。
+
+### 6. 超时与埋点
+
+- 启动白名单和 `.version` 使用 `CheckTimeout`。
+- `.hash/.bytes` Manifest 保持固定 60 秒。
+- Bundle 保持 `IdleTimeout`（Inspector 中文名称仍为“单文件字节流入超时”）。
+- 开启 `EnableUWRTracks` 后，每个文件按 `1 uwr_request_start → 0～N uwr_request_error → 1 uwr_request_end` 上报；显式下载器内多个文件通过 `uwr_download_operation_id` 聚合。
+- HostPlayMode 缓存下载可在文件校验完成后闭环；WebPlayMode 内存 Bundle 可能在内容校验前收到成功回调，校验重试会在同一 download operation 下产生新的 UWR chain。
 
 ## 后果（Consequences）
 
 ### 正面
 
-- 主地址已经异常时，后续 Bundle 不再逐个重复命中主地址。
-- 并发失败不会把 package 状态从备用地址推回主地址。
-- 元数据四级候选与 Bundle 两级候选共用状态时，不会因短链末项反复失败而跳过长链候选。
-- YooAsset 仍负责实际下载、重试和回调，Nova 只维护候选选择规则。
+- 每个文件都能按配置完整尝试主备域名，不再受其他并发下载的失败顺序影响。
+- App、Asset、业务协议共享同一套候选、轮次、重试和最近成功算法，配置与失败规则仍各自独立。
+- YooAsset 显式下载和普通异步按需下载均受 Nova 策略约束，无需维护第三方 fork。
 
-### 负面
+### 代价与限制
 
-- 当前 Editor 生命周期内不会自动探测主地址是否恢复；恢复主地址需要重新建立 package 策略。
-- 已经开始的并发请求不会被中途迁移，切换只影响之后创建的请求。
+- 已知主域名故障时，不同文件仍可能各自命中该域名；最近成功优先用于降低重复失败，但不会删除另一候选。
+- `C × R × (K + 1)` 会线性放大最坏请求耗时，配置时必须结合每次物理请求超时评估。
+- WebPlayMode 无法可靠把底层 HTTP 成功与最终内容校验合并成唯一 UWR chain，只能使用 download operation 关联。
 
 ## 被排除的方案（Alternatives）
 
 | 方案 | 否决理由 |
 |---|---|
-| 每个资源独立从主地址开始 | 已知主地址异常时，每个 Bundle 都会额外失败一次，放大启动耗时和错误量 |
-| 每个失败都推进共享取模游标 | 并发失败会连续推进并绕回主地址，实际路由不可预测 |
-| 修改 YooAsset 下载器实现主备 | 扩大第三方 fork 影响面；现有 `IDownloadUrlPolicy` 已能承载 Nova 策略 |
-| 失败时改写已在飞请求 | YooAsset 请求已经创建，强行替换会引入取消、进度与文件写入一致性风险 |
+| Package 共享粘滞游标并禁止回绕 | 新文件会失去完整尝试主备的机会，并发文件会互相影响请求计划 |
+| 每个失败都推进共享取模游标 | 并发失败顺序会改变其他文件的候选，行为不可预测 |
+| 仅重试最后失败域名 | 不符合“每次重试重新执行全部轮次组合”的定义 |
+| 修改 YooAsset 下载器源码 | 扩大第三方 fork 影响面；现有 URL 与 Retry Policy 已能承载 Nova 规则 |
+| 关闭 YooAsset 按需下载 | 会改变普通异步加载的既有使用方式，无必要 |
 
 ## 验证依据（Verification）
 
-- 实现：`AssetDownloadUrlPolicy.SelectUrl`、`OnRequestFailed`、`AdvanceAfterOperationFailure`。
-- 接入：`AssetManager.GetOrCreateDownloadUrlPolicy`、`BuildHostOptions`、`BuildWebOptions`。
-- 契约测试：`AssetStartupWhitelistTests.PackageDownloadFallback_ConcurrentFailuresSwitchOnceAndNeverWrapToPrimary`。
-- 回归测试：`AssetStartupWhitelistTests` 13/13、`AssetManagerManifestFallbackRegressionTests` 3/3。
-- Inspector：热更地址 HelpBox 明确包级切换、在飞请求和禁止回绕语义。
+- 实现：`HttpFallbackPlanner`、`HttpFallbackExecutionPlan`、`HttpFallbackExecutionCursor`、`HttpFallbackPreferenceStore`。
+- Asset 适配：`AssetDownloadUrlPolicy.SelectUrl`、`OnRequestFailed`、`IsRetryableError`、`CompleteMetadataRequest`。
+- 显式下载：`AssetManager.CreateDownloader*` 与 `AssetDownloader.RegisterDownloaderFile`。
+- 真实 UWR loopback 覆盖断连重放、HTTP 503 止链和取消止链；相关 7 个 EditMode 测试类最终通过 `121/121`。
+- Unity 6000.4.2f1、Android active target 下刷新编译完成，Console 编译错误为 0。
 
 ## 关联
 
 - 白名单元数据边界：[[ADR-076-startup-whitelist-metadata-routing|ADR-076]]
+- 统一 UWR 主备机制：[[ADR-083-uwr-primary-fallback-network|ADR-083]]
 - YooAsset 模块边界：[[PAT-37-no-yooasset-outside-asset-module|PAT-37]]
 - Asset 模块入口：[[MOC-Asset]]

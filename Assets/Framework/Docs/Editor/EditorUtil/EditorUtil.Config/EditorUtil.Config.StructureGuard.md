@@ -40,7 +40,7 @@ EditorUtil (public static partial class)
 ## §5 完整公开 API
 
 ```csharp
-// 同步 ConfigMasterSO 矩阵与当前枚举成员：新增补空行，废弃移除；忽略 None；完成后 SetDirty
+// 同步 ConfigMasterSO 矩阵与当前枚举成员：新增补空行，废弃移除；仅忽略 PlatformType.None；完成后 SetDirty
 // master 为 null 时直接返回
 public static void SyncEnumGrid(ConfigMasterSO master);
 
@@ -61,7 +61,7 @@ public static void CleanMissingPluginRefs(ConfigMasterSO master);
 
 ```
 SyncEnumGrid(master):
-  1. wanted = PlatformType × ChannelType 所有非 None 组合的 HashSet
+  1. wanted = 所有非 `None` PlatformType × 全部 ChannelType（包含 `ChannelType.None`）组合的 HashSet
   2. 从末尾向前遍历 master.EditorEntries：
      - key 不在 wanted 中 → EditorRemoveEntryAt(i)（废弃成员）
      - key 已在 present 中 → EditorRemoveEntryAt(i)（重复行）

@@ -37,7 +37,7 @@ Nova 需要让少量测试设备在正式用户之前验证一套候选 YooAsset
 - 白名单判断发生在包初始化和版本请求之前，不能依赖 `ProcedurePreload` 才加载完成的 `Nova.Persist`。
 - 灰度验证只应改变候选 Manifest，不应为同一批 Bundle 再维护一套下载域名和缓存体系。
 - 白名单服务属于启动期可选远端检查；关闭、未配置、弱网或响应损坏都不能阻断常规热更新。
-- Debug 与 Release 环境必须分别配置主备地址，并继续遵守既有 URL 模板和 DoH 规则。
+- Debug 与 Release 环境必须分别配置主备地址，并继续遵守既有 URL 模板、UWR 与系统 DNS 规则。
 
 ## 决策（Decision）
 
@@ -51,7 +51,7 @@ Nova 需要让少量测试设备在正式用户之前验证一套候选 YooAsset
 4. 当前 `DevelopMode` 对应的白名单配置文件和版本元数据根地址至少各有一个有效 URL。
 5. 本地已有稳定 DeviceID 缓存。
 
-`DevelopMode.Debug` 选择 Debug 主备配置，`DevelopMode.Release` 选择 Release 主备配置。所有地址支持既有 `{Platform}`、`{Channel}`、`{Package}`、`{Version}` 占位符，并进入 Asset 模块现有 DoH detect-only 与原域名回退链路。
+`DevelopMode.Debug` 选择 Debug 主备配置，`DevelopMode.Release` 选择 Release 主备配置。所有地址支持既有 `{Platform}`、`{Channel}`、`{Package}`、`{Version}` 占位符。白名单配置文件由 `IHttpManager` 按主、备候选顺序通过 UWR 请求；版本元数据与 Bundle URL 由 Asset 候选策略推进。各候选始终保留原始域名并使用系统 DNS，不注入解析 IP。
 
 ### 2. DeviceID 在 SDK 初始化后直写启动专用文件
 

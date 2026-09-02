@@ -90,10 +90,6 @@ namespace NovaFramework.Editor
             {
                 throw new InvalidOperationException("[Pipify] Config 导出参数 Platform 不可为 None。");
             }
-            if (parameters.Channel == ChannelType.None)
-            {
-                throw new InvalidOperationException("[Pipify] Config 导出参数 Channel 不可为 None。");
-            }
             if (!Enum.IsDefined(typeof(DevelopMode), parameters.DevelopMode))
             {
                 throw new InvalidOperationException($"[Pipify] Config 导出参数 DevelopMode 非法：{parameters.DevelopMode}。");

@@ -24,6 +24,7 @@ namespace NovaFramework.SDK.AIHelp.Runtime
     /// 初始化 vendor SDK、自动订阅登录事件同步用户，并对业务暴露拉起客服 / 帮助中心、
     /// 用户信息同步、语言切换、未读数查询、推送 token 设置等能力。
     /// </summary>
+    [SDKPluginConfigType(typeof(AIHelpPluginConfig))]
     public sealed partial class AIHelpPlugin : SDKPluginBase
     {
         /// <summary>

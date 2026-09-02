@@ -1,144 +1,69 @@
 # NetworkManager
 
-**类签名**：`internal sealed partial class NetworkManager : NetworkManagerBase`  
-**命名空间**：`NovaFramework.Runtime`  
-**对外入口**：`NetworkComponent` / `Nova.Network`
+类签名： internal sealed partial class NetworkManager : NetworkManagerBase  
+命名空间： NovaFramework.Runtime  
+对外入口： NetworkComponent / Nova.Network
 
-网络路由管理器。它把 HostKey 与 NetCmd 两套 Luban 表加载到本地缓存，再提供 URL 解析、表查询、网络可用性检测与服务器时间获取能力。
+Network 路由管理器加载 HostKey 与 NetCmd 两套 Luban 表，构建运行时缓存，并提供 URL 解析、网络状态和服务器时间能力。
 
 ## 文件组成
 
 | 文件 | 作用 |
 |---|---|
-| `NetworkManager.cs` | 初始化、同步/异步加载、URL 与工具 API |
-| `NetworkManager.Visitors.cs` | 缓存字段与 `CmdCacheEntry` |
-| `NetworkManager.Methods.cs` | 从 `LubanDataCache` 构造 Host/指令缓存 |
-| `NetworkManagerBase.cs` | 抽象基类，`Priority = 10` |
+| NetworkManager.cs | 初始化、同步/异步加载、URL 与网络工具 API |
+| NetworkManager.Visitors.cs | 缓存字段与 CmdCacheEntry |
+| NetworkManager.Methods.cs | 从 LubanDataCache 构建 HostKey / NetCmd 缓存 |
+| NetworkManagerBase.cs | 抽象基类，Priority = 10 |
 
-## 关键字段
+## 路由数据
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `m_AssetManager` | `IAssetManager` | 资源管理器，负责加载 HostKey/NetCmd 数据资源 |
-| `m_HttpManager` | `IHttpManager` | 供公网 IP 查询等网络工具使用 |
-| `m_HostKeyUnitSettings` | `List<HostKeyUnitSetting>` | HostKey 数据单元列表 |
-| `m_NetCmdUnitSettings` | `List<NetCmdUnitSetting>` | NetCmd 数据单元列表 |
-| `m_NetworkDatas` | `Dictionary<string, ITable>` | 已构造的 Luban 表实例，键为表类型名 |
-| `m_HostKeyCache` | `Dictionary<string, HostKeyCacheEntry>` | HostKey 名称到主、备基础地址的映射 |
-| `m_CmdCache` | `Dictionary<string, CmdCacheEntry>` | 复合键到网络指令缓存项的映射 |
-| `m_CmdRowIndex` | `Dictionary<string, INetworkCmdRow>` | 按 `row.Name` 建的快速索引 |
-| `m_ServerTimeFetcher` | `Func<UniTask<long>>` | 业务层注入的取时委托 |
+| 缓存 | 作用 |
+|---|---|
+| m_HostKeyCache | HostKey 名称到主、备基础地址的映射 |
+| m_CmdCache | 表类型名 + 指令行名到 HostKey、Path 的映射 |
+| m_CmdRowIndex | 指令行 Name 到 INetworkCmdRow 的索引 |
 
-## 公开 API
+HostKey 的 Value 是主域名，FallbackValue 是备用域名。非空地址必须是 HTTP(S) 基础地址，首尾不能有空格，末尾不能带 /；两个地址都有效时必须使用相同协议。NetCmd.Path 可为空，非空时必须以 / 开头。
 
-```csharp
-public override void Initialize(NetworkManagerConfig config)
-public override void Update()
-public override void Shutdown()
+## URL 解析
 
-public override UniTask<bool> LoadNetCmdsAsync()
-public override bool LoadNetCmdsSync()
+~~~text
+ResolveNetCmdUrls(cmdRow)
+  ├─ 主地址 + Path
+  └─ 备用地址 + Path
+~~~
 
-public override string GetNetCmdUrl(string tbName, string dtName)
-public override string GetNetCmdUrl<T>(string dtName) where T : class, ITable
-public override string ResolveNetCmdUrl(INetworkCmdRow cmdRow)
-public override IReadOnlyList<string> ResolveNetCmdUrls(INetworkCmdRow cmdRow)
-public override INetworkCmdRow ResolveNetCmdRow(string cmdName)
-public override IEnumerable<string> GetAllNetCmdUrls()
-public override IEnumerable<string> GetAllHostKeyUrls()
+运行时按顺序保留有效地址：主地址无效时备用地址成为唯一候选；备用地址无效时忽略；主备相同时去重。ResolveNetCmdUrl 只返回列表中的首项，以保持已有单 URL 调用方式。
 
-public override T GetNetCmd<T>() where T : class, ITable
-public override ITable GetNetCmd(string tbName)
-
-public override bool CheckNetworkActive()
-public override string UrlEncode(string str)
-public override UniTask<string> QueryPublicIPAddressAsync()
-public override string QueryLocalIPAddress()
-
-public override void SetServerTimeFetcher(Func<UniTask<long>> fetcher)
-public override UniTask FetchServerTimeAsync()
-public override long ServerTime { get; }
-```
+NetService 使用 ResolveNetCmdUrls 的完整顺序发送业务请求。每次请求仍由 HTTP 管理器用系统 DNS 解析，服务器给出任意正式 HTTP 响应后不再切换备用域名。
 
 ## 加载流程
 
-### Phase 1：读资源，写缓存
-
-1. 通过 `m_AssetManager` 组装 `LoadAssetAsyncFunc` / `LoadAssetSyncFunc`
-2. 为每个有效的 `HostKeyUnitSetting` 创建 `LubanDataReceiver`
-3. 为每个有效的 `NetCmdUnitSetting` 创建 `LubanDataReceiver`
-4. 所有数据统一写入局部 `LubanDataCache`
-
-### Phase 2：构造表与运行时索引
-
-`BuildTablesFromCache` 会：
-
-1. 用 `IConfigManager.Namespace` 构造 `HostKeyTables`
-2. 把表实例存入 `m_NetworkDatas`
-3. 从实现了 `ITable<INetworkHostKeyRow>` 的表里提取主、备域名到 `m_HostKeyCache`，过滤非法或重复地址
-4. 用同样方式构造 `NetworkTables`
-5. 从实现了 `ITable<INetworkCmdRow>` 的表里提取指令缓存到 `m_CmdCache`
-
-## 路由规则
-
-### HostKey / NetCmd 输入约束
-
-- HostKey 的 `Value` 是主域名，`FallbackValue` 是备用域名。非空值必须是 HTTP(S) 基础地址，首尾不能有空格，末尾不能有 `/`；两个地址同时存在时必须使用相同协议。
-- NetCmd 的 `Path` 可以为空；非空时必须以 `/` 开头。
-- 运行时会忽略无效备用域名；主域名无效而备用域名有效时，备用域名会作为唯一可用地址。
-
-### 复合键
-
-`m_CmdCache` 的键不是单纯 `row.Name`，而是：
-
-```csharp
-string compositeKey = tableTypeName + "." + row.Name;
-```
-
-也就是：
-
-```csharp
-GetNetCmdUrl("TbUserCmd", "Login")
-```
-
-会先命中 `TbUserCmd.Login`，再用缓存项里的 `HostKey + Path` 拼完整 URL。
-
-### 单键索引
-
-`ResolveNetCmdRow(string cmdName)` 走的是 `m_CmdRowIndex`。  
-这里按 `row.Name` 单键索引，同名后写会覆盖前写，因此它适合“全局唯一命令名”的业务约束场景，不适合跨表同名精确寻址。
+1. 对所有有效 HostKeyUnitSetting 与 NetCmdUnitSetting 加载 Luban 数据资源。
+2. 先在局部 LubanDataCache 中汇总读取结果。
+3. 构造 HostKey 表、NetCmd 表与三份运行时索引。
+4. 构造成功后标记 Network Ready。
 
 ## 使用示例
 
-```csharp
-bool success = await Nova.Network.LoadAsync();
-if (!success)
+~~~csharp
+if (!await Nova.Network.LoadAsync())
 {
     return;
 }
 
-string loginUrl = Nova.Network.GetNetCmdUrl("TbUserCmd", "Login");
-string loginUrl2 = Nova.Network.GetNetCmdUrl<TbUserCmd>("Login");
-
+string url = Nova.Network.GetNetCmdUrl("TbUserCmd", "Login");
 INetworkCmdRow row = Nova.Network.ResolveNetCmdRow("Login");
-string fullUrl = Nova.Network.ResolveNetCmdUrl(row);
-
-TbHostKey hostTable = Nova.Network.GetNetCmd<TbHostKey>();
-```
+~~~
 
 ## 注意事项
 
-- 当前实现统一通过 `IAssetManager` 读取 HostKey / NetCmd 数据资源。
-- 业务侧通常通过 `Nova.Network` / `NetworkComponent` 使用这些能力，而不是直接接触 `internal` 的 `NetworkManager` 实现。
-- `GetNetCmdUrl` 的真实键规则是“表类型名 + 行名”，不是仅靠行名。
-- `GetAllNetCmdUrls` 只收集 `HTTP_GET`、`HTTP_POST`、`HTTP_URL` 三类指令。
-- `GetAllHostKeyUrls` 直接遍历全部 HostKey 缓存，过滤空值并去重；启动 DoH 预热使用该集合，不要求 HostKey 被 NetCmd 引用。
-- `ResolveNetCmdUrl` 保留原有单地址兼容行为；内部业务链使用 `ResolveNetCmdUrls` 同时取得主、备完整 URL。
-- 主域名无效时由备用域名顶替；备用域名无效时忽略；主备相同则运行时去重。
+- GetNetCmdUrl 的复合键是 表类型名 + "." + 指令行名，不是单独的行名。
+- ResolveNetCmdRow 按行名建立单键索引；跨表同名时后写入项覆盖先写入项。
+- QueryPublicIPAddressAsync 使用 HTTP 管理器；业务代码通常通过 Nova.Network 使用公开能力，不直接依赖此 internal 实现。
 
 ## 关联文档
 
-- [NetworkComponent.md](../NetworkComponent.md)
 - [INetworkManager.md](INetworkManager.md)
-- [LubanDataReceiver.md](../../../Core/Table/LubanDataReceiver.md)
-- [LubanTablesLoader.md](../../../Core/Table/LubanTablesLoader.md)
+- [NetworkComponent.md](../NetworkComponent.md)
+- [NetworkManagerConfig.md](Definitions/NetworkManagerConfig.md)

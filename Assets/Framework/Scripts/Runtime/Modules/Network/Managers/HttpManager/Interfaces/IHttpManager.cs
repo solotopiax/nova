@@ -10,6 +10,7 @@
 
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace NovaFramework.Runtime
 {
@@ -31,10 +32,9 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="url">请求 URL。</param>
         /// <param name="requestTimeout">请求超时时间（秒），传 -1 使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒），传 -1 使用默认值。</param>
         /// <param name="headerInfos">请求头内容（JSON 键值对格式），传 null 表示无额外请求头。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        UniTask<HttpResponse> GetAsync(string url, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null);
+        UniTask<HttpResponse> GetAsync(string url, float requestTimeout = -1f, string headerInfos = null);
 
         /// <summary>
         /// 异步发送 POST 请求（字符串 body）。
@@ -42,10 +42,9 @@ namespace NovaFramework.Runtime
         /// <param name="url">请求 URL。</param>
         /// <param name="contentString">请求体字符串。</param>
         /// <param name="requestTimeout">请求超时时间（秒），传 -1 使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒），传 -1 使用默认值。</param>
         /// <param name="headerInfos">请求头内容（JSON 键值对格式），传 null 表示无额外请求头。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null);
+        UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout = -1f, string headerInfos = null);
 
         /// <summary>
         /// 异步发送 POST 请求（字节流 body，明文）。
@@ -53,10 +52,9 @@ namespace NovaFramework.Runtime
         /// <param name="url">请求 URL。</param>
         /// <param name="contentBytes">请求体字节数组。</param>
         /// <param name="requestTimeout">请求超时时间（秒），传 -1 使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒），传 -1 使用默认值。</param>
         /// <param name="headerInfos">请求头内容（JSON 键值对格式），传 null 表示无额外请求头。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null);
+        UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout = -1f, string headerInfos = null);
 
         /// <summary>
         /// 异步发送 POST 请求（multipart 文件上传）。
@@ -66,10 +64,9 @@ namespace NovaFramework.Runtime
         /// <param name="fileBytes">文件字节数组。</param>
         /// <param name="fileName">文件名。</param>
         /// <param name="requestTimeout">请求超时时间（秒），传 -1 使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒），传 -1 使用默认值。</param>
         /// <param name="headerInfos">请求头内容（JSON 键值对格式），传 null 表示无额外请求头。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null);
+        UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, string headerInfos = null);
 
     }
 
@@ -79,21 +76,38 @@ namespace NovaFramework.Runtime
     internal interface IBusinessHttpManager
     {
         /// <summary>
-        /// 使用同一份请求数据按主备域名与 DoH IP 候选发送原始字节 POST。
+        /// 使用同一份请求数据按主备域名顺序发送原始字节 POST。
         /// </summary>
         /// <param name="routeUrls">主域名、备用域名完整 URL，已按顺序去重。</param>
+        /// <param name="routeKey">主备偏好隔离键，通常为 HostKey。</param>
+        /// <param name="operationName">稳定业务操作名，通常为 NetCmd 名称。</param>
         /// <param name="contentBytes">整条尝试链复用的原始请求字节。</param>
         /// <param name="requestTimeout">每次尝试独享的请求超时。</param>
-        /// <param name="connectTimeout">每次尝试独享的连接超时。</param>
         /// <param name="headerInfos">整条尝试链复用的请求头 JSON。</param>
-        /// <param name="operationName">不含请求参数的业务指令名，仅用于可选传输遥测关联。</param>
+        /// <param name="cancellationToken">取消令牌；取消后立即终止当前请求且不再切换候选。</param>
         UniTask<HttpResponse> PostBusinessRawDataAsync(
             IReadOnlyList<string> routeUrls,
+            string routeKey,
+            string operationName,
             byte[] contentBytes,
             float requestTimeout,
-            float connectTimeout,
             string headerInfos,
-            string operationName
+            CancellationToken cancellationToken
         );
+    }
+
+    /// <summary>
+    /// 模块内部使用的单次物理 HTTP 入口；不自动创建独立埋点链，供上层自行编排主备链。
+    /// </summary>
+    internal interface IPhysicalHttpManager
+    {
+        /// <summary>
+        /// 发送一次可取消 GET，并原样返回该次物理请求结果。
+        /// </summary>
+        UniTask<HttpResponse> GetPhysicalAsync(
+            string url,
+            float requestTimeout,
+            string headerInfos,
+            CancellationToken cancellationToken);
     }
 }

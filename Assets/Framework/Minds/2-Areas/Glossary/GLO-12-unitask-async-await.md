@@ -22,7 +22,7 @@ related:
 
 ## 定义
 
-UniTask（Cysharp）是 Nova 的零分配 async/await 异步库，以本地 UPM 包 `com.solotopia.unitask`（`Packages/manifest.json` 中 `file:../UPMPackages/com.solotopia.unitask`）引入。Framework Runtime 的异步 API 统一返回 `UniTask` / `UniTask<T>`，例如 `IAssetManager.LoadAsync<T>`、`BootstrapAsync`、网络层 DoH/DNS 查询等。
+UniTask（Cysharp）是 Nova 的零分配 async/await 异步库，以本地 UPM 包 `com.solotopia.unitask`（`Packages/manifest.json` 中 `file:../UPMPackages/com.solotopia.unitask`）引入。Framework Runtime 的异步 API 统一返回 `UniTask` / `UniTask<T>`，例如 `IAssetManager.LoadAsync<T>`、`IHttpManager.GetAsync` 与 `NetService.SendAsync`。
 
 ## 边界
 
@@ -47,5 +47,6 @@ UniTask<IAssetHandle<T>> LoadAsync<T>(string location, CancellationToken ct = de
 
 - `Packages/manifest.json`：`com.solotopia.unitask` 本地 UPM 包引入。
 - `Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Interfaces/IAssetManager.cs`：UniTask 返回签名。
-- `Assets/Framework/Scripts/Runtime/Modules/Network/NetworkComponent.DoH.cs`：`UniTask DNSQuery(...)` 等调用点。
+- `Assets/Framework/Scripts/Runtime/Modules/Network/Managers/HttpManager/Interfaces/IHttpManager.cs`：HTTP 异步接口签名。
+- `Assets/Framework/Scripts/Runtime/Modules/Network/Kit/NetService.cs`：业务协议 `SendAsync` 调用链。
 - PAT-146：完成结果缓存与重试语义。

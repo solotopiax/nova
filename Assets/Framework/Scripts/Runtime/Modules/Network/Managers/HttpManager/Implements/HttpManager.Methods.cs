@@ -10,7 +10,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
+using System.Diagnostics;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace NovaFramework.Runtime
@@ -21,170 +22,189 @@ namespace NovaFramework.Runtime
     internal sealed partial class HttpManager : HttpManagerBase
     {
         /// <summary>
-        /// 按当前传输能力决定 DoH 是否能在本进程安全启用，并输出一次明确的中文原因。
+        /// 使用冻结的请求数据按主域名、备用域名顺序执行业务 POST。
+        /// 每个候选均使用 UnityWebRequest 和系统 DNS；获得任何正式 HTTP 响应后立即结束。
         /// </summary>
-        private void ConfigureDoHTransportCapability()
-        {
-            if (m_DoHManager == null || !m_DoHManager.IsEnabled)
-            {
-                return;
-            }
-
-#if UNITY_WEBGL
-            DisableDoHWithWarning(
-                "DoH 已配置为启用，但当前运行平台为 WebGL，WebGL 不支持指定连接 IP，运行时已自动禁用 DoH 并改用系统 DNS。");
-#else
-            m_IPAddressTransport = m_Transport as IHttpIPAddressTransport;
-            if (m_IPAddressTransport == null)
-            {
-                DisableDoHWithWarning(
-                    "DoH 已配置为启用，但当前未安装 BestHTTP，所以回退为 UnityWebRequest 方案，但因 UnityWebRequest 原生不支持指定连接 IP，故运行时已自动禁用 DoH 并改用系统 DNS。");
-                return;
-            }
-
-            if (!m_IPAddressTransport.IsIPAddressRoutingAvailable)
-            {
-                DisableDoHWithWarning(m_IPAddressTransport.IPAddressRoutingUnavailableReason);
-            }
-#endif
-        }
-
-        /// <summary>
-        /// 禁用当前进程的 DoH，并输出一条 Nova Warning 日志。
-        /// </summary>
-        /// <param name="message">明确说明禁用原因的中文文案。</param>
-        private void DisableDoHWithWarning(string message)
-        {
-            m_DoHManager?.DisableForRuntime();
-            m_IPAddressTransport = null;
-            Log.Warning(LogTag.Http, string.IsNullOrWhiteSpace(message)
-                ? "DoH 已配置为启用，但当前网络传输无法指定连接 IP，运行时已自动禁用 DoH 并改用系统 DNS。"
-                : message);
-        }
-
-        /// <summary>
-        /// 使用冻结的请求数据按主备域名执行业务 POST；DoH 可用时先交错尝试各域名 IP，最后再按主备域名走系统 DNS。
-        /// </summary>
-        /// <param name="routeUrls">主域名、备用域名完整 URL，已按顺序去重。</param>
-        /// <param name="contentBytes">整条重试链复用的原始请求字节。</param>
-        /// <param name="requestTimeout">每次尝试独享的请求超时。</param>
-        /// <param name="connectTimeout">每次尝试独享的连接超时。</param>
-        /// <param name="headerInfos">整条重试链复用的请求头。</param>
-        /// <param name="operationName">不含请求参数的业务指令名，仅用于可选传输遥测关联。</param>
-        /// <returns>服务器正式响应，或全部网络尝试结束后的最后一份失败响应。</returns>
+        /// <param name="routeUrls">NetworkManager 解析出的主备完整 URL。</param>
+        /// <param name="routeKey">最近成功偏好的隔离键，通常为 HostKey。</param>
+        /// <param name="operationName">稳定业务操作名，通常为 NetCmd 名称。</param>
+        /// <param name="contentBytes">整条请求链复用的冻结请求体。</param>
+        /// <param name="requestTimeout">单次发送超时；负数使用默认值。</param>
+        /// <param name="headerInfos">整条请求链复用的请求头 JSON。</param>
+        /// <param name="cancellationToken">取消令牌；取消后立即停止且不切换候选。</param>
+        /// <returns>正式 HTTP 响应或整条候选链的最终失败响应。</returns>
         public async UniTask<HttpResponse> PostBusinessRawDataAsync(
             IReadOnlyList<string> routeUrls,
+            string routeKey,
+            string operationName,
             byte[] contentBytes,
             float requestTimeout,
-            float connectTimeout,
             string headerInfos,
-            string operationName)
+            CancellationToken cancellationToken)
         {
             if (routeUrls == null || routeUrls.Count == 0)
             {
                 Log.Error(LogTag.Http, "【通信失败】所有请求均未到达服务器，本次请求已结束。");
                 return HttpResponse.Create(
-                    0,
-                    null,
-                    null,
-                    null,
-                    "没有可用的主域名或备用域名。",
-                    false,
-                    0,
-                    -1L,
+                    0, null, null, null, "没有可用的主域名或备用域名。", false, 0, -1L,
                     HttpDeliveryState.NotReachedServer);
             }
 
-            IBusinessHttpTelemetryTransport telemetryTransport = m_Transport as IBusinessHttpTelemetryTransport;
-            using (IBusinessHttpTelemetryScope telemetryScope = TryBeginBusinessTelemetry(telemetryTransport, operationName))
+            string effectiveRouteKey = string.IsNullOrWhiteSpace(routeKey)
+                ? BuildBusinessRouteKey(routeUrls)
+                : routeKey;
+            HttpFallbackPreferenceSnapshot preference = m_PreferLastSuccessfulHost
+                ? m_BusinessRoutePreferenceStore.Capture(effectiveRouteKey)
+                : default;
+            var policy = new HttpFallbackPolicy(
+                m_BusinessFallbackRoundCount,
+                m_RetryRequestCount,
+                m_PreferLastSuccessfulHost);
+            HttpFallbackExecutionPlan routePlan = HttpFallbackPlanner.Build(routeUrls, policy, preference);
+            if (preference.HasValue && !PlanContainsEndpoint(routePlan, preference.EndpointId))
             {
-                List<BusinessRequestCandidate> candidates = await BuildBusinessCandidatesAsync(routeUrls);
-                HttpResponse lastFailedResponse = null;
-                bool mayHaveReachedServer = false;
+                // 配置候选已变化时旧域名偏好失效；普通整链失败仍保留最近成功偏好。
+                m_BusinessRoutePreferenceStore.ClearIfUnchanged(preference);
+            }
 
-                for (int i = 0; i < candidates.Count; i++)
+            float effectiveRequestTimeout = requestTimeout < 0f ? m_RequestTimeout : requestTimeout;
+            Stopwatch chainStopwatch = Stopwatch.StartNew();
+            string chainId = UwrNetworkTelemetry.CreateChainId();
+            string firstUrl = routePlan.CandidateCount > 0 ? routePlan.Candidates[0].Url : routeUrls[0];
+            UwrNetworkTelemetry.TrackStart(
+                m_EnableUWRTracks,
+                chainId,
+                operationName,
+                "POST",
+                firstUrl,
+                ResolveBusinessRouteRole(firstUrl, routeUrls),
+                0,
+                effectiveRequestTimeout,
+                routePlan,
+                null,
+                "network");
+            HttpResponse lastFailedResponse = null;
+            bool mayHaveReachedServer = false;
+            string lastAttemptUrl = firstUrl;
+            int lastSendIndex = 0;
+            long lastSendElapsedMs = 0;
+            Exception lastException = null;
+            int attemptsStarted = 0;
+            HttpFallbackStep lastStep = default;
+            HttpFallbackExecutionCursor cursor = routePlan.CreateCursor();
+
+            while (cursor.TryBeginNext(out HttpFallbackStep step))
+            {
+                string url = step.Candidate.Url;
+                lastStep = step;
+                lastAttemptUrl = url;
+                lastSendIndex = ToTelemetrySendIndex(step.PhysicalSendIndex);
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    BusinessRequestCandidate candidate = candidates[i];
-                    HttpResponse response;
-                    try
+                    cursor.Cancel();
+                    if (lastFailedResponse != null)
                     {
-                        if (telemetryScope != null)
-                        {
-                            response = await telemetryTransport.PostBusinessRawDataAsync(
-                                telemetryScope,
-                                candidate.Url,
-                                candidate.ConnectIPAddress,
-                                contentBytes,
-                                requestTimeout,
-                                connectTimeout,
-                                headerInfos);
-                        }
-                        else if (candidate.ConnectIPAddress != null &&
-                                 m_IPAddressTransport != null &&
-                                 m_IPAddressTransport.IsIPAddressRoutingAvailable)
-                        {
-                            response = await m_IPAddressTransport.PostRawDataAsync(
-                                candidate.Url,
-                                candidate.ConnectIPAddress,
-                                contentBytes,
-                                requestTimeout,
-                                connectTimeout,
-                                headerInfos);
-                        }
-                        else if (candidate.ConnectIPAddress != null)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            response = await m_Transport.PostRawDataAsync(
-                                candidate.Url,
-                                contentBytes,
-                                requestTimeout,
-                                connectTimeout,
-                                headerInfos,
-                                null);
-                        }
-
-                        if (candidate.ConnectIPAddress != null &&
-                            m_IPAddressTransport != null &&
-                            !m_IPAddressTransport.IsIPAddressRoutingAvailable)
-                        {
-                            DisableDoHWithWarning(m_IPAddressTransport.IPAddressRoutingUnavailableReason);
-                        }
-                    }
-                    catch (Exception exception)
-                    {
-                        response = HttpResponse.Create(
-                            0,
-                            null,
-                            null,
-                            null,
-                            exception.GetBaseException().Message,
-                            false,
-                            0,
-                            -1L,
-                            DetermineExceptionDeliveryState(exception));
+                        ReferencePool.Put(lastFailedResponse);
                     }
 
-                    if (response != null && response.HasServerResponse)
-                    {
-                        if (lastFailedResponse != null)
-                        {
-                            ReferencePool.Put(lastFailedResponse);
-                        }
+                    HttpResponse cancelledResponse = CreateCancelledResponse();
+                    UwrNetworkTelemetry.TrackEnd(
+                        m_EnableUWRTracks,
+                        chainId,
+                        operationName,
+                        "POST",
+                        url,
+                        ResolveBusinessRouteRole(url, routeUrls),
+                        lastSendIndex,
+                        effectiveRequestTimeout,
+                        0,
+                        chainStopwatch.ElapsedMilliseconds,
+                        cancelledResponse,
+                        null,
+                        true,
+                        routePlan,
+                        step,
+                        attemptsStarted,
+                        "network");
+                    return cancelledResponse;
+                }
 
-                        return response;
+                HttpResponse response;
+                Exception attemptException = null;
+                Stopwatch sendStopwatch = Stopwatch.StartNew();
+                attemptsStarted++;
+                try
+                {
+                    response = await m_Transport.PostRawDataAsync(
+                        url,
+                        contentBytes,
+                        effectiveRequestTimeout,
+                        headerInfos,
+                        cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    attemptException = exception;
+                    response = HttpResponse.Create(
+                        0, null, null, null, exception.GetBaseException().Message, false, 0, -1L,
+                        DetermineExceptionDeliveryState(exception));
+                }
+                lastSendElapsedMs = sendStopwatch.ElapsedMilliseconds;
+                lastException = attemptException;
+
+                if (cancellationToken.IsCancellationRequested &&
+                    (response == null || !response.HasServerResponse))
+                {
+                    cursor.Cancel();
+                    if (lastFailedResponse != null)
+                    {
+                        ReferencePool.Put(lastFailedResponse);
                     }
 
-                    mayHaveReachedServer |= response == null || response.DeliveryState != HttpDeliveryState.NotReachedServer;
-                    if (HasRemainingUsableCandidate(candidates, i + 1))
+                    HttpResponse cancelledResponse = response ?? CreateCancelledResponse();
+                    UwrNetworkTelemetry.TrackError(
+                        m_EnableUWRTracks,
+                        chainId,
+                        operationName,
+                        "POST",
+                        url,
+                        ResolveBusinessRouteRole(url, routeUrls),
+                        lastSendIndex,
+                        effectiveRequestTimeout,
+                        lastSendElapsedMs,
+                        cancelledResponse,
+                        attemptException,
+                        true,
+                        routePlan,
+                        step,
+                        "network");
+                    UwrNetworkTelemetry.TrackEnd(
+                        m_EnableUWRTracks,
+                        chainId,
+                        operationName,
+                        "POST",
+                        url,
+                        ResolveBusinessRouteRole(url, routeUrls),
+                        lastSendIndex,
+                        effectiveRequestTimeout,
+                        lastSendElapsedMs,
+                        chainStopwatch.ElapsedMilliseconds,
+                        cancelledResponse,
+                        attemptException,
+                        true,
+                        routePlan,
+                        step,
+                        attemptsStarted,
+                        "network");
+                    return cancelledResponse;
+                }
+
+                if (response != null && response.HasServerResponse)
+                {
+                    cursor.CompleteCurrent();
+                    if (response.IsSuccess)
                     {
-                        Log.Warning(
-                            LogTag.Http,
-                            "【继续重试】{0}，正在尝试下一个地址。当前地址：{1}。",
-                            DescribeFailure(response),
-                            candidate.DisplayName);
+                        m_BusinessRoutePreferenceStore.MarkSuccess(effectiveRouteKey, step.Candidate.EndpointId);
                     }
 
                     if (lastFailedResponse != null)
@@ -192,134 +212,209 @@ namespace NovaFramework.Runtime
                         ReferencePool.Put(lastFailedResponse);
                     }
 
-                    lastFailedResponse = response;
-                }
-
-                if (mayHaveReachedServer)
-                {
-                    Log.Error(LogTag.Http, "【结果未确认】请求可能已到达服务器，但未获得可确认的响应，本次请求已结束。");
-                }
-                else
-                {
-                    Log.Error(LogTag.Http, "【通信失败】所有请求均未到达服务器，本次请求已结束。");
-                }
-
-                HttpDeliveryState finalDeliveryState = mayHaveReachedServer
-                    ? HttpDeliveryState.Unknown
-                    : HttpDeliveryState.NotReachedServer;
-                if (lastFailedResponse == null)
-                {
-                    return HttpResponse.Create(
-                        0,
-                        null,
-                        null,
-                        null,
-                        mayHaveReachedServer ? "请求结果未确认。" : "网络通信失败。",
-                        false,
-                        0,
-                        -1L,
-                        finalDeliveryState);
-                }
-
-                HttpResponse finalResponse = HttpResponse.Create(
-                    lastFailedResponse.StatusCode,
-                    lastFailedResponse.Body,
-                    lastFailedResponse.RawData,
-                    lastFailedResponse.Headers,
-                    lastFailedResponse.Error,
-                    lastFailedResponse.IsSuccess,
-                    lastFailedResponse.DownloadedBytes,
-                    lastFailedResponse.TotalBytes,
-                    finalDeliveryState);
-                ReferencePool.Put(lastFailedResponse);
-                return finalResponse;
-            }
-        }
-
-        /// <summary>
-        /// 创建可选业务整链遥测作用域；遥测能力异常必须静默降级，不能中断业务网络请求。
-        /// </summary>
-        /// <param name="telemetryTransport">当前传输实现的可选遥测扩展点。</param>
-        /// <param name="operationName">不含参数的业务操作名。</param>
-        /// <returns>可用作用域；不支持或创建异常时返回 null。</returns>
-        private static IBusinessHttpTelemetryScope TryBeginBusinessTelemetry(
-            IBusinessHttpTelemetryTransport telemetryTransport,
-            string operationName)
-        {
-            if (telemetryTransport == null)
-            {
-                return null;
-            }
-
-            try
-            {
-                return telemetryTransport.BeginBusinessHttpTelemetry(operationName);
-            }
-            catch (Exception exception)
-            {
-                Log.Warning(LogTag.Http, "创建 BestHTTP 业务整链埋点失败，已跳过本次埋点：{0}。", exception.Message);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// 并行解析主备域名，并生成 P1、B1、P2、B2、主域名系统 DNS、备用域名系统 DNS 的候选顺序。
-        /// </summary>
-        private async UniTask<List<BusinessRequestCandidate>> BuildBusinessCandidatesAsync(
-            IReadOnlyList<string> routeUrls)
-        {
-            var result = new List<BusinessRequestCandidate>();
-            bool canUseDoH = m_DoHManager != null &&
-                             m_DoHManager.IsEnabled &&
-                             m_IPAddressTransport != null &&
-                             m_IPAddressTransport.IsIPAddressRoutingAvailable;
-            var ipLists = new List<IPAddress[]>(routeUrls.Count);
-
-            if (canUseDoH)
-            {
-                await m_DoHManager.CollectAllIPAddresses(routeUrls);
-            }
-
-            int maxIPCount = 0;
-            for (int routeIndex = 0; routeIndex < routeUrls.Count; routeIndex++)
-            {
-                IPAddress[] addresses = canUseDoH &&
-                                        Uri.TryCreate(routeUrls[routeIndex], UriKind.Absolute, out Uri uri)
-                    ? m_DoHManager.GetIPAddresses(uri.Host) ?? Array.Empty<IPAddress>()
-                    : Array.Empty<IPAddress>();
-                ipLists.Add(addresses);
-                maxIPCount = Math.Max(maxIPCount, addresses.Length);
-            }
-
-            for (int ipIndex = 0; ipIndex < maxIPCount; ipIndex++)
-            {
-                for (int routeIndex = 0; routeIndex < routeUrls.Count; routeIndex++)
-                {
-                    IPAddress[] addresses = ipLists[routeIndex];
-                    if (ipIndex < addresses.Length)
+                    if (UwrNetworkTelemetry.ShouldTrackError(response, attemptException, false))
                     {
-                        result.Add(new BusinessRequestCandidate(routeUrls[routeIndex], addresses[ipIndex], routeIndex));
+                        UwrNetworkTelemetry.TrackError(
+                            m_EnableUWRTracks,
+                            chainId,
+                            operationName,
+                            "POST",
+                            url,
+                            ResolveBusinessRouteRole(url, routeUrls),
+                            lastSendIndex,
+                            effectiveRequestTimeout,
+                            lastSendElapsedMs,
+                            response,
+                            attemptException,
+                            false,
+                            routePlan,
+                            step,
+                            "network");
                     }
+                    UwrNetworkTelemetry.TrackEnd(
+                        m_EnableUWRTracks,
+                        chainId,
+                        operationName,
+                        "POST",
+                        url,
+                        ResolveBusinessRouteRole(url, routeUrls),
+                        lastSendIndex,
+                        effectiveRequestTimeout,
+                        lastSendElapsedMs,
+                        chainStopwatch.ElapsedMilliseconds,
+                        response,
+                        attemptException,
+                        false,
+                        routePlan,
+                        step,
+                        attemptsStarted,
+                        "network");
+                    return response;
                 }
+
+                UwrNetworkTelemetry.TrackError(
+                    m_EnableUWRTracks,
+                    chainId,
+                    operationName,
+                    "POST",
+                    url,
+                    ResolveBusinessRouteRole(url, routeUrls),
+                    lastSendIndex,
+                    effectiveRequestTimeout,
+                    lastSendElapsedMs,
+                    response,
+                    attemptException,
+                    false,
+                    routePlan,
+                    step,
+                    "network");
+                mayHaveReachedServer |= response == null || response.DeliveryState != HttpDeliveryState.NotReachedServer;
+                cursor.RejectCurrent();
+                if (cursor.State != HttpFallbackExecutionState.Exhausted)
+                {
+                    Log.Warning(
+                        LogTag.Http,
+                        "【继续重试】{0}，正在尝试下一个域名。当前地址：{1}。",
+                        DescribeFailure(response),
+                        url);
+                }
+
+                if (lastFailedResponse != null)
+                {
+                    ReferencePool.Put(lastFailedResponse);
+                }
+
+                lastFailedResponse = response;
             }
 
-            for (int routeIndex = 0; routeIndex < routeUrls.Count; routeIndex++)
+            if (mayHaveReachedServer)
             {
-                result.Add(new BusinessRequestCandidate(routeUrls[routeIndex], null, routeIndex));
+                Log.Error(LogTag.Http, "【结果未确认】请求可能已到达服务器，但未获得可确认的响应，本次请求已结束。");
+            }
+            else
+            {
+                Log.Error(LogTag.Http, "【通信失败】所有请求均未到达服务器，本次请求已结束。");
             }
 
-            return result;
+            HttpDeliveryState finalDeliveryState = mayHaveReachedServer
+                ? HttpDeliveryState.Unknown
+                : HttpDeliveryState.NotReachedServer;
+            if (lastFailedResponse == null)
+            {
+                HttpResponse emptyFailureResponse = HttpResponse.Create(
+                    0, null, null, null,
+                    mayHaveReachedServer ? "请求结果未确认。" : "网络通信失败。",
+                    false, 0, -1L, finalDeliveryState);
+                UwrNetworkTelemetry.TrackEnd(
+                    m_EnableUWRTracks,
+                    chainId,
+                    operationName,
+                    "POST",
+                    lastAttemptUrl,
+                    ResolveBusinessRouteRole(lastAttemptUrl, routeUrls),
+                    lastSendIndex,
+                    effectiveRequestTimeout,
+                    lastSendElapsedMs,
+                    chainStopwatch.ElapsedMilliseconds,
+                    emptyFailureResponse,
+                    lastException,
+                    false,
+                    routePlan,
+                    lastStep,
+                    attemptsStarted,
+                    "network");
+                return emptyFailureResponse;
+            }
+
+            HttpResponse finalResponse = HttpResponse.Create(
+                lastFailedResponse.StatusCode,
+                lastFailedResponse.Body,
+                lastFailedResponse.RawData,
+                lastFailedResponse.Headers,
+                lastFailedResponse.Error,
+                lastFailedResponse.IsSuccess,
+                lastFailedResponse.DownloadedBytes,
+                lastFailedResponse.TotalBytes,
+                finalDeliveryState,
+                lastFailedResponse.TransportState,
+                lastFailedResponse.UploadedBytes,
+                lastFailedResponse.TotalBytesIsKnown);
+            UwrNetworkTelemetry.TrackEnd(
+                m_EnableUWRTracks,
+                chainId,
+                operationName,
+                "POST",
+                lastAttemptUrl,
+                ResolveBusinessRouteRole(lastAttemptUrl, routeUrls),
+                lastSendIndex,
+                effectiveRequestTimeout,
+                lastSendElapsedMs,
+                chainStopwatch.ElapsedMilliseconds,
+                finalResponse,
+                lastException,
+                false,
+                routePlan,
+                lastStep,
+                attemptsStarted,
+                "network");
+            ReferencePool.Put(lastFailedResponse);
+            return finalResponse;
         }
 
         /// <summary>
-        /// 判断后续是否还有当前运行能力可以执行的候选，避免在即将跳过的 IP 候选前误打印重试日志。
+        /// 清理全部业务最近成功偏好；网络环境变化、初始化关闭与 Shutdown 共用。
         /// </summary>
-        private bool HasRemainingUsableCandidate(IReadOnlyList<BusinessRequestCandidate> candidates, int startIndex)
+        private void ClearAllBusinessRoutePreferences()
         {
-            for (int i = startIndex; i < candidates.Count; i++)
+            m_BusinessRoutePreferenceStore.ClearAll();
+        }
+
+        /// <summary>
+        /// 构造调用方主动取消时的响应，供业务链终止后统一释放。
+        /// </summary>
+        /// <returns>取消状态的池化响应。</returns>
+        private static HttpResponse CreateCancelledResponse()
+        {
+            return HttpResponse.Create(
+                0,
+                null,
+                null,
+                null,
+                "Request cancelled.",
+                false,
+                0,
+                -1L,
+                HttpDeliveryState.Unknown);
+        }
+
+        /// <summary>
+        /// 使用所有候选基础地址构造没有显式 HostKey 时的隔离键。
+        /// </summary>
+        /// <param name="routeUrls">主备完整 URL。</param>
+        /// <returns>稳定的候选基础地址组合。</returns>
+        private static string BuildBusinessRouteKey(IReadOnlyList<string> routeUrls)
+        {
+            var parts = new List<string>(routeUrls.Count);
+            for (int i = 0; i < routeUrls.Count; i++)
             {
-                if (candidates[i].ConnectIPAddress == null ||
-                    (m_IPAddressTransport != null && m_IPAddressTransport.IsIPAddressRoutingAvailable))
+                string endpointId = HttpFallbackPlanner.GetEndpointId(routeUrls[i]);
+                if (!string.IsNullOrEmpty(endpointId))
+                {
+                    parts.Add(endpointId);
+                }
+            }
+
+            return string.Join("|", parts);
+        }
+
+        /// <summary>
+        /// 判断计划是否仍包含偏好快照指向的域名。
+        /// </summary>
+        private static bool PlanContainsEndpoint(HttpFallbackExecutionPlan plan, string endpointId)
+        {
+            for (int i = 0; i < plan.CandidateCount; i++)
+            {
+                if (string.Equals(plan.Candidates[i].EndpointId, endpointId, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -329,8 +424,13 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 把底层错误转换为聚焦的中文日志说明，不改变原始响应内容。
+        /// 将 long 物理发送索引安全压缩到既有埋点 int 字段。
         /// </summary>
+        private static int ToTelemetrySendIndex(long physicalSendIndex)
+        {
+            return physicalSendIndex > int.MaxValue ? int.MaxValue : (int)physicalSendIndex;
+        }
+
         private static string DescribeFailure(HttpResponse response)
         {
             if (response == null)
@@ -347,9 +447,6 @@ namespace NovaFramework.Runtime
             return string.IsNullOrWhiteSpace(error) ? "网络通信失败" : "网络通信失败：" + error;
         }
 
-        /// <summary>
-        /// 忽略大小写判断文本是否包含任一关键词。
-        /// </summary>
         private static bool ContainsAny(string value, params string[] keywords)
         {
             for (int i = 0; i < keywords.Length; i++)
@@ -363,9 +460,6 @@ namespace NovaFramework.Runtime
             return false;
         }
 
-        /// <summary>
-        /// 只将异常中明确属于 DNS、证书、TLS 或 TCP 建连阶段的错误判定为未到达服务器。
-        /// </summary>
         private static HttpDeliveryState DetermineExceptionDeliveryState(Exception exception)
         {
             string message = exception?.GetBaseException().Message ?? string.Empty;
@@ -385,39 +479,6 @@ namespace NovaFramework.Runtime
                 "no route to host")
                 ? HttpDeliveryState.NotReachedServer
                 : HttpDeliveryState.Unknown;
-        }
-
-        /// <summary>
-        /// 单个业务请求候选；URL 始终保留域名，ConnectIPAddress 仅决定 TCP 连接目标。
-        /// </summary>
-        private readonly struct BusinessRequestCandidate
-        {
-            /// <summary>
-            /// 初始化候选。
-            /// </summary>
-            internal BusinessRequestCandidate(string url, IPAddress connectIPAddress, int routeIndex)
-            {
-                Url = url;
-                ConnectIPAddress = connectIPAddress;
-                RouteIndex = routeIndex;
-            }
-
-            /// <summary>保留原域名的业务 URL。</summary>
-            internal string Url { get; }
-
-            /// <summary>指定的 TCP IPv4；null 表示使用系统 DNS。</summary>
-            internal IPAddress ConnectIPAddress { get; }
-
-            /// <summary>候选所属逻辑路线；0 为主路线，1 为备用路线。</summary>
-            internal int RouteIndex { get; }
-
-            /// <summary>供中文日志使用的主备路线名称。</summary>
-            internal string RouteName => RouteIndex == 0 ? "主路线" : "备用路线";
-
-            /// <summary>供日志显示的候选地址。</summary>
-            internal string DisplayName => RouteName + "：" + (ConnectIPAddress == null
-                ? Url + "（系统 DNS）"
-                : Url + "（连接 IP：" + ConnectIPAddress + "）");
         }
     }
 }

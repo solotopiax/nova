@@ -63,11 +63,6 @@ namespace NovaFramework.Runtime
         public ICoroutineRunner CoroutineRunner;
 
         /// <summary>
-        /// DoH 管理器接口，保留配置注入兼容性；当前 WebSocket 不参与业务 DoH IP 路由。
-        /// </summary>
-        public IDoHManager DoHManager;
-
-        /// <summary>
         /// 特殊消息创建委托（心跳 / 认证消息），游戏层注入协议相关逻辑。
         /// 参数：(NetChannelType channelType, string messageCategory)，
         /// messageCategory 值为 "heartbeat" 或 "authenticate"。

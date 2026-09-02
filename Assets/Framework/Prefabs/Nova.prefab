@@ -372,7 +372,10 @@ MonoBehaviour:
   m_AutoHotfix: 1
   m_QuitOnFailedOrCancel: 0
   m_MaxDownloadConcurrency: 5
+  m_FallbackRoundCount: 1
   m_RetryDownloadCount: 3
+  m_PreferLastSuccessfulHost: 1
+  m_EnableUWRTracks: 1
   m_LaunchHotfixTags: []
   m_AutoClearUnusedCacheOnHotfix: 0
   m_CheckTimeout: 5
@@ -683,7 +686,6 @@ MonoBehaviour:
   m_DevelopMode: 0
   m_CurNetworkManagerTypeName: NovaFramework.Runtime.NetworkManager
   m_CurHttpManagerTypeName: NovaFramework.Runtime.HttpManager
-  m_CurDoHManagerTypeName: NovaFramework.Runtime.DoHManager
   m_CurWebSocketManagerTypeName: NovaFramework.Runtime.WebSocketManager
   m_Settings:
     DataFormat: 0
@@ -706,13 +708,11 @@ MonoBehaviour:
         ClassesExportPath: Assets/Samples/MainDemo/Scripts/Runtime/DataTypes/Networks/Cmds
         AssetLocation: NetworkCmds
   m_HttpSettings:
-    EnableBestHttpTelemetry: 1
-    ConnectTimeout: 20
+    EnableUWRTracks: 1
+    PreferLastSuccessfulHost: 1
+    BusinessFallbackRoundCount: 1
+    RetryRequestCount: 1
     RequestTimeout: 60
-  m_DoHSettings:
-    UseDoH: 0
-    DnsTimeoutSeconds: 5
-    MaxIPAddressesPerHost: 2
   m_WebSocketSettings:
     ConnectTimeout: 10
     AuthenticateTimeout: 10
@@ -1242,6 +1242,10 @@ MonoBehaviour:
   m_Channel: 2
   m_DefaultPackageName: Default
   m_TimeoutSeconds: 5
+  m_VersionCheckFallbackRoundCount: 1
+  m_RetryRequestCount: 1
+  m_PreferLastSuccessfulHost: 1
+  m_EnableUWRTracks: 1
   m_DownloadRoute: 0
   m_AndroidStoreUrl: https://www.google.com.hk
   m_AppStoreUrl: https://www.apple.com

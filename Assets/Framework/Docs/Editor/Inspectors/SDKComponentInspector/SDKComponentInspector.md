@@ -56,7 +56,7 @@ OnInspectorGUI
 
 - Manager 下拉仍扫描所有 `ISDKManager` 实现。
 - Plugin 分组只显示当前 active `ConfigMaster.EnabledSDKs` 映射出的 Plugin。
-- `EnabledSDKs` 存的是 `ISDKPluginConfig` 类型 FullName，Drawer 通过 `SDKPluginBase.RequiredConfigType` 映射到 Plugin 类型。
+- `EnabledSDKs` 存的是 `ISDKPluginConfig` 类型 FullName，Drawer 通过泛型基类或 `SDKPluginConfigTypeAttribute` 静态映射到 Plugin 类型，不构造候选 Plugin。
 - ConfigMaster 中未启用的旧 `m_PluginEntries` 条目会保留，但不参与显示、默认启用判断或单选写回。
 - Missing 区域只显示类型已经无法解析的 Entry，不显示 inactive Entry。
 - 底部打点工具只负责生成并打开本地汇总表，不修改 `SDKComponent` 的序列化字段。

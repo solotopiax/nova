@@ -24,6 +24,8 @@ protected abstract UniTask OnInitializeAsync(TConfig config, CancellationToken c
 
 - 插件需要某个确定的配置类型时，优先继承 `PluginBase<TConfig>`。
 - 插件不需要配置时，直接继承 `SDKPluginBase` 更合适。
+- `PluginBase<TConfig>` 的泛型参数也是构造前启用过滤所需的静态元数据；Manager 和 Inspector 无需创建候选实例。
+- 旧插件暂时无法迁移到泛型基类时，可在具体类型上标注 `[SDKPluginConfigType(typeof(TConfig))]`。
 
 ## 使用示例
 

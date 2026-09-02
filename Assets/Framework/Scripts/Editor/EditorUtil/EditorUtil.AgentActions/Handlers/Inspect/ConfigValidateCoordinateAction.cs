@@ -256,9 +256,9 @@ namespace NovaFramework.Editor
                 return false;
             }
             if (!Enum.TryParse(request.channel, false, out channel) || !Enum.IsDefined(typeof(ChannelType), channel) ||
-                channel == ChannelType.None || request.channel != channel.ToString())
+                request.channel != channel.ToString())
             {
-                error = "channel 必须是有效且非 None 的 ChannelType 名称。";
+                error = "channel 必须是有效的 ChannelType 名称。";
                 return false;
             }
             if (!Enum.TryParse(request.developMode, false, out mode) || !Enum.IsDefined(typeof(DevelopMode), mode) ||

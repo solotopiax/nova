@@ -34,7 +34,6 @@ MonoBehaviour:
     m_Name: Solotopia Internal
     m_Url: http://172.16.22.175:4874
     m_Scopes:
-    - com.tivadar
     - com.onevcat
     - com.starlus
     - com.da-assets

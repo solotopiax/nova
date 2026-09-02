@@ -44,6 +44,9 @@ namespace NovaFramework.Runtime
             base.Awake();
             Self = this;
 
+            // 在框架最早启动阶段建立全局安装时间，供后续 SDK 和业务统一读取。
+            _ = InstallTimeMs;
+
             // Txt 助手。
             try
             {

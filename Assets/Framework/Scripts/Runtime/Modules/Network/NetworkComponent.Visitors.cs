@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -38,14 +37,6 @@ namespace NovaFramework.Runtime
         public string CurHttpManagerTypeName => m_CurHttpManagerTypeName;
 
         /// <summary>
-        /// 当前 DoH 管理器类型名称（Inspector 下拉选择）。
-        /// </summary>
-        [Tooltip("DoH 管理器实现类全名")]
-        [SerializeField]
-        private string m_CurDoHManagerTypeName = "NovaFramework.Runtime.DoHManager";
-        public string CurDoHManagerTypeName => m_CurDoHManagerTypeName;
-
-        /// <summary>
         /// 当前 WebSocket 管理器类型名称（Inspector 下拉选择）。
         /// </summary>
         [Tooltip("WebSocket 管理器实现类全名")]
@@ -69,16 +60,9 @@ namespace NovaFramework.Runtime
         private HttpSettings m_HttpSettings;
 
         /// <summary>
-        /// 获取 HTTP 管理器参数配置；BestHTTP 适配包使用其中的网络埋点开关。
+        /// 获取 HTTP 管理器参数配置。
         /// </summary>
         public HttpSettings HttpSettings => m_HttpSettings;
-
-        /// <summary>
-        /// DoH 管理器参数配置。
-        /// </summary>
-        [Tooltip("DoH (DNS over HTTPS) 管理器参数配置")]
-        [SerializeField]
-        private DoHSettings m_DoHSettings;
 
         /// <summary>
         /// WebSocket 管理器参数配置。
@@ -123,12 +107,6 @@ namespace NovaFramework.Runtime
         public IHttpManager HttpManager => m_HttpManager;
 
         /// <summary>
-        /// DoH 管理器实例。
-        /// </summary>
-        private IDoHManager m_DoHManager;
-        public IDoHManager DoHManager => m_DoHManager;
-
-        /// <summary>
         /// WebSocket 管理器实例。
         /// </summary>
         private IWebSocketManager m_WebSocketManager;
@@ -138,16 +116,6 @@ namespace NovaFramework.Runtime
         /// 服务器时间戳（UTC0，毫秒），由 FetchServerTimeAsync 写入。
         /// </summary>
         public long ServerTime => m_NetworkManager.ServerTime;
-
-        /// <summary>
-        /// 所有已收集的 IP 地址，<原始 URL, 替换 IP 后的 URL 列表>。
-        /// </summary>
-        public IReadOnlyDictionary<string, List<string>> AllCollectedIPAddresses => m_DoHManager.AllCollectedIPAddresses;
-
-        /// <summary>
-        /// 所有域名对应的 IP 地址，<主机名, IPAddress 列表>。
-        /// </summary>
-        public IReadOnlyDictionary<string, List<IPAddress>> AllDomainIPAddresses => m_DoHManager.AllDomainIPAddresses;
 
         /// <summary>
         /// 所有 WebSocket 通信通道实例（只读），供运行时状态监控使用。

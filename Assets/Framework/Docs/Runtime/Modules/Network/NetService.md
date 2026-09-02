@@ -4,7 +4,7 @@
 
 `NetService` 是网络请求静态编排器，封装固定的 Protobuf + AES-128-CBC 请求全流程（URL 解析 → 序列化 → 使用 `Nova.Config.AppConfigs.AppAesKey/AppAesIV` 加密 → HTTP POST → 使用同一配置解密 → BaseResponse 解析 → 业务 Proto 解析），并持有全局 UID、OpenID。
 
-发送时会一次性冻结请求字节与请求头，底层自动完成主备域名和 DoH IP 候选切换；业务 Service 不需要感知或决定重试策略。
+发送时会一次性冻结请求字节与请求头，底层使用 UnityWebRequest 与系统 DNS 按主域名、备用域名顺序请求；业务 Service 不需要感知或决定切换策略。
 
 **所在文件：** `Assets/Framework/Scripts/Runtime/Modules/Network/Kit/NetService.cs`
 **命名空间：** `NovaFramework.Runtime`
@@ -72,7 +72,7 @@ var resp = await NetService.SendAsync(
 - **配置分域**：Network 只使用 `AppConfigs.AppAesKey / AppAesIV` 作为应用协议凭据，绝不回退到隐私配置的默认 AES Key/IV。
 - **`AppID` 解析**：`Nova.Config.AppConfigs.AppID` 必须可解析为 `int32`，解析失败时 `Log.Warning` + 回退 0。
 - **`HttpResponse` 池化**：`SendAsync` 内部使用 `ReferencePool.Put(httpResponse)` 在 `finally` 块归还，调用方无需手动释放。
-- **通信层终止条件**：服务器返回任意正式 HTTP 响应后立即结束候选链，业务成功和业务失败都不再触发主备切换；只有通信失败才继续尝试。
+- **通信层终止条件**：服务器返回任意正式 HTTP 响应（包括 4xx/5xx）后立即结束候选链，业务成功和业务失败都不再触发主备切换；只有未获得正式 HTTP 响应的传输失败才继续尝试。
 
 ---
 

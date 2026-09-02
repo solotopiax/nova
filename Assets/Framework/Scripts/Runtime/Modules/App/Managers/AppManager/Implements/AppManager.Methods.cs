@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -21,74 +22,315 @@ namespace NovaFramework.Runtime
     internal sealed partial class AppManager : AppManagerBase
     {
         /// <summary>
-        /// 执行版本检查核心逻辑：HTTP GET 拉取 CDN 版本配置 JSON → 解析推荐 / 强制两个规则阈值 → 写入结果字段。
-        /// 主地址请求失败、内容为空或版本规则无效时继续尝试备用地址；两者都不可用时降级返回 NoDownload。
+        /// 执行版本检查核心逻辑：按共享主备计划发送 HTTP GET，解析 CDN 版本规则并写入结果字段。
+        /// 传输失败、可重试 HTTP 状态、空内容或无效规则会推进候选；合法规则结束整条链。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         /// <returns>App 版本检查结果枚举值。</returns>
         private async UniTask<AppVersionResult> InnerCheckVersionAsync(CancellationToken ct)
         {
-            string body = await TryGetVersionResponseBodyAsync(m_Config.AppDownloadCheckUrl, "主", ct);
-            if (TryParseVersionResult(body, out AppVersionResult result))
+            ct.ThrowIfCancellationRequested();
+
+            HttpFallbackExecutionPlan plan = CreateVersionCheckFallbackPlan();
+            if (plan.CandidateCount == 0)
             {
-                return result;
+                return AppVersionResult.NoDownload;
             }
 
-            body = await TryGetVersionResponseBodyAsync(m_Config.AppDownloadCheckUrlFallback, "备用", ct);
-            if (TryParseVersionResult(body, out result))
+            IPhysicalHttpManager physicalHttpManager = m_HttpManager as IPhysicalHttpManager;
+            bool shouldTrack = physicalHttpManager != null && m_Config.EnableUWRTracks;
+            string chainId = UwrNetworkTelemetry.CreateChainId();
+            Stopwatch chainStopwatch = Stopwatch.StartNew();
+            TrackVersionCheckStart(shouldTrack, chainId, plan);
+
+            HttpFallbackExecutionCursor cursor = plan.CreateCursor();
+            int attemptsStarted = 0;
+            while (cursor.TryBeginNext(out HttpFallbackStep step))
             {
-                return result;
+                HttpResponse response = null;
+                Exception requestException = null;
+                Stopwatch requestStopwatch = Stopwatch.StartNew();
+                try
+                {
+                    ct.ThrowIfCancellationRequested();
+                    attemptsStarted++;
+                    response = await GetVersionCheckResponseAsync(
+                        physicalHttpManager,
+                        step.Candidate.Url,
+                        ct);
+                    ct.ThrowIfCancellationRequested();
+
+                    long requestElapsedMs = requestStopwatch.ElapsedMilliseconds;
+                    if (response == null)
+                    {
+                        Log.Warning(LogTag.App, "{0}版本检查接口未返回响应，准备尝试下一个候选。",
+                            DescribeVersionCheckCandidate(step));
+                        RejectVersionCheckAttempt(
+                            cursor, shouldTrack, chainId, plan, step, attemptsStarted, requestElapsedMs,
+                            chainStopwatch.ElapsedMilliseconds, response, null, null, null);
+                        continue;
+                    }
+
+                    if (!response.IsSuccess)
+                    {
+                        if (!ShouldRetryVersionCheckResponse(response))
+                        {
+                            Log.Warning(
+                                LogTag.App,
+                                "{0}版本检查接口返回不可重试 HTTP 状态码，停止主备链。StatusCode={1}",
+                                DescribeVersionCheckCandidate(step),
+                                response.StatusCode);
+                            cursor.CompleteCurrent();
+                            TrackVersionCheckEnd(
+                                shouldTrack, chainId, plan, step, attemptsStarted, requestElapsedMs,
+                                chainStopwatch.ElapsedMilliseconds, response, null, false, null, null);
+                            return AppVersionResult.NoDownload;
+                        }
+
+                        Log.Warning(
+                            LogTag.App,
+                            "{0}版本检查接口请求失败，准备尝试下一个候选。StatusCode={1} Error={2}",
+                            DescribeVersionCheckCandidate(step),
+                            response.StatusCode,
+                            response.Error);
+                        RejectVersionCheckAttempt(
+                            cursor, shouldTrack, chainId, plan, step, attemptsStarted, requestElapsedMs,
+                            chainStopwatch.ElapsedMilliseconds, response, null, null, null);
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(response.Body))
+                    {
+                        Log.Warning(LogTag.App, "{0}版本检查接口返回内容为空，准备尝试下一个候选。",
+                            DescribeVersionCheckCandidate(step));
+                        RejectVersionCheckAttempt(
+                            cursor, shouldTrack, chainId, plan, step, attemptsStarted, requestElapsedMs,
+                            chainStopwatch.ElapsedMilliseconds, response, null,
+                            c_InvalidVersionResponseResult,
+                            c_EmptyVersionResponseLeafErrorCode);
+                        continue;
+                    }
+
+                    if (TryParseVersionResult(response.Body, out AppVersionResult result))
+                    {
+                        cursor.CompleteCurrent();
+                        if (m_Config.PreferLastSuccessfulHost)
+                        {
+                            m_VersionCheckFallbackPreferences.MarkSuccess(
+                                c_VersionCheckFallbackScopeKey,
+                                step.Candidate.EndpointId);
+                        }
+
+                        TrackVersionCheckEnd(
+                            shouldTrack, chainId, plan, step, attemptsStarted, requestElapsedMs,
+                            chainStopwatch.ElapsedMilliseconds, response, null, false, null, null);
+                        return result;
+                    }
+
+                    Log.Warning(LogTag.App, "{0}版本检查接口返回无效规则，准备尝试下一个候选。",
+                        DescribeVersionCheckCandidate(step));
+                    RejectVersionCheckAttempt(
+                        cursor, shouldTrack, chainId, plan, step, attemptsStarted, requestElapsedMs,
+                        chainStopwatch.ElapsedMilliseconds, response, null,
+                        c_InvalidVersionResponseResult,
+                        c_InvalidVersionResponseLeafErrorCode);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    cursor.Cancel();
+                    long requestElapsedMs = requestStopwatch.ElapsedMilliseconds;
+                    TrackVersionCheckAttemptFailure(
+                        shouldTrack, chainId, plan, step, requestElapsedMs, response, null, true, null);
+                    TrackVersionCheckEnd(
+                        shouldTrack, chainId, plan, step, attemptsStarted, requestElapsedMs,
+                        chainStopwatch.ElapsedMilliseconds, response, null, true, null, null);
+                    throw;
+                }
+                catch (OperationCanceledException ex)
+                {
+                    requestException = ex;
+                    Log.Warning(LogTag.App, "{0}版本检查接口请求超时，准备尝试下一个候选。",
+                        DescribeVersionCheckCandidate(step));
+                    RejectVersionCheckAttempt(
+                        cursor, shouldTrack, chainId, plan, step, attemptsStarted,
+                        requestStopwatch.ElapsedMilliseconds, chainStopwatch.ElapsedMilliseconds,
+                        response, requestException, null, null);
+                }
+                catch (Exception ex)
+                {
+                    requestException = ex;
+                    Log.Warning(LogTag.App, "{0}版本检查接口请求异常，准备尝试下一个候选：{1}",
+                        DescribeVersionCheckCandidate(step),
+                        ex.Message);
+                    RejectVersionCheckAttempt(
+                        cursor, shouldTrack, chainId, plan, step, attemptsStarted,
+                        requestStopwatch.ElapsedMilliseconds, chainStopwatch.ElapsedMilliseconds,
+                        response, requestException, null, null);
+                }
+                finally
+                {
+                    if (response != null)
+                    {
+                        ReferencePool.Put(response);
+                    }
+                }
             }
 
             return AppVersionResult.NoDownload;
         }
 
         /// <summary>
-        /// 读取单个版本检查地址的响应内容；地址为空、请求失败、超时或返回空内容时均返回 null。
+        /// 构建 App 版本检查的共享主备执行计划，并在配置候选不再包含旧偏好时清理该偏好。
         /// </summary>
-        private async UniTask<string> TryGetVersionResponseBodyAsync(string url, string sourceLabel, CancellationToken ct)
+        /// <returns>当前配置、轮数和重试次数对应的不可变执行计划。</returns>
+        private HttpFallbackExecutionPlan CreateVersionCheckFallbackPlan()
         {
-            if (!IsValidUrl(url))
+            var policy = new HttpFallbackPolicy(
+                Math.Max(1, m_Config.VersionCheckFallbackRoundCount),
+                Math.Max(0, m_Config.RetryRequestCount),
+                m_Config.PreferLastSuccessfulHost);
+            HttpFallbackPreferenceSnapshot preference = m_Config.PreferLastSuccessfulHost
+                ? m_VersionCheckFallbackPreferences.Capture(c_VersionCheckFallbackScopeKey)
+                : default;
+            HttpFallbackExecutionPlan plan = HttpFallbackPlanner.Build(
+                new[] { m_Config.AppDownloadCheckUrl, m_Config.AppDownloadCheckUrlFallback },
+                policy,
+                preference);
+
+            if (preference.HasValue && !PlanContainsEndpoint(plan, preference.EndpointId))
             {
-                Log.Warning(LogTag.App, "{0}版本检查地址未配置，跳过。", sourceLabel);
-                return null;
+                m_VersionCheckFallbackPreferences.ClearIfUnchanged(preference);
             }
 
-            HttpResponse response = null;
-            try
-            {
-                response = await m_HttpManager.GetAsync(url, m_Config.TimeoutSeconds);
-                if (response == null || !response.IsSuccess)
-                {
-                    Log.Warning(LogTag.App, "{0}版本检查接口请求失败：{1}", sourceLabel, response?.Error);
-                    return null;
-                }
+            return plan;
+        }
 
-                if (string.IsNullOrWhiteSpace(response.Body))
-                {
-                    Log.Warning(LogTag.App, "{0}版本检查接口返回内容为空。", sourceLabel);
-                    return null;
-                }
+        /// <summary>
+        /// 判断当前候选计划是否仍包含指定的最近成功域名，用于识别配置已经切换的旧偏好。
+        /// </summary>
+        /// <param name="plan">当前版本检查候选计划。</param>
+        /// <param name="endpointId">待匹配的规范化域名标识。</param>
+        /// <returns>计划中包含该域名时返回 true。</returns>
+        private static bool PlanContainsEndpoint(HttpFallbackExecutionPlan plan, string endpointId)
+        {
+            if (plan == null || string.IsNullOrEmpty(endpointId))
+            {
+                return false;
+            }
 
-                return response.Body;
-            }
-            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            for (int i = 0; i < plan.Candidates.Count; i++)
             {
-                Log.Warning(LogTag.App, "{0}版本检查接口请求超时，准备尝试下一个地址。", sourceLabel);
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(LogTag.App, "{0}版本检查接口请求异常，准备尝试下一个地址：{1}", sourceLabel, ex.Message);
-                return null;
-            }
-            finally
-            {
-                if (response != null)
+                if (string.Equals(
+                        plan.Candidates[i].EndpointId,
+                        endpointId,
+                        StringComparison.OrdinalIgnoreCase))
                 {
-                    ReferencePool.Put(response);
+                    return true;
                 }
             }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 使用支持物理取消的 HTTP 入口发送一次版本检查请求；旧自定义 IHttpManager 保持兼容回退。
+        /// </summary>
+        /// <param name="physicalHttpManager">内置 HTTP 管理器提供的可取消物理发送能力，可为 null。</param>
+        /// <param name="url">本次候选完整 URL。</param>
+        /// <param name="ct">调用方取消令牌。</param>
+        /// <returns>本次物理请求的池化响应。</returns>
+        private UniTask<HttpResponse> GetVersionCheckResponseAsync(
+            IPhysicalHttpManager physicalHttpManager,
+            string url,
+            CancellationToken ct)
+        {
+            if (physicalHttpManager != null)
+            {
+                return physicalHttpManager.GetPhysicalAsync(url, m_Config.TimeoutSeconds, null, ct);
+            }
+
+            ct.ThrowIfCancellationRequested();
+            return m_HttpManager.GetAsync(url, m_Config.TimeoutSeconds);
+        }
+
+        /// <summary>
+        /// 判断 HTTP 失败是否允许继续主备候选。
+        /// 传输失败、客户端数据处理失败、404、408、429 与 5xx 可继续，其他正式 HTTP 状态停止整链。
+        /// </summary>
+        /// <param name="response">本次失败响应。</param>
+        /// <returns>允许继续下一个候选时返回 true。</returns>
+        private static bool ShouldRetryVersionCheckResponse(HttpResponse response)
+        {
+            if (response == null || !response.HasServerResponse || response.StatusCode <= 0)
+            {
+                return true;
+            }
+
+            if (string.Equals(response.TransportState, "DataProcessingError", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return response.StatusCode == 404 ||
+                   response.StatusCode == 408 ||
+                   response.StatusCode == 429 ||
+                   response.StatusCode >= 500;
+        }
+
+        /// <summary>
+        /// 将当前候选标记为可继续失败，并在计划耗尽时输出该条链的唯一终态埋点。
+        /// </summary>
+        /// <param name="cursor">本次版本检查独占的共享候选游标。</param>
+        /// <param name="shouldTrack">是否由 App 链路负责统一 UWR 埋点。</param>
+        /// <param name="chainId">逻辑请求链关联 ID。</param>
+        /// <param name="plan">本次共享候选执行计划。</param>
+        /// <param name="step">当前物理发送坐标。</param>
+        /// <param name="attemptsStarted">已经开始的物理发送次数。</param>
+        /// <param name="requestElapsedMs">本次物理发送耗时。</param>
+        /// <param name="totalElapsedMs">整条链当前累计耗时。</param>
+        /// <param name="response">当前池化响应，可为 null。</param>
+        /// <param name="exception">当前请求异常，可为 null。</param>
+        /// <param name="resultOverride">终态埋点覆盖结果，可为 null。</param>
+        /// <param name="leafErrorCodeOverride">业务校验失败的稳定叶子错误码，可为 null。</param>
+        private void RejectVersionCheckAttempt(
+            HttpFallbackExecutionCursor cursor,
+            bool shouldTrack,
+            string chainId,
+            HttpFallbackExecutionPlan plan,
+            HttpFallbackStep step,
+            int attemptsStarted,
+            long requestElapsedMs,
+            long totalElapsedMs,
+            HttpResponse response,
+            Exception exception,
+            string resultOverride,
+            string leafErrorCodeOverride)
+        {
+            cursor.RejectCurrent();
+            TrackVersionCheckAttemptFailure(
+                shouldTrack, chainId, plan, step, requestElapsedMs, response, exception, false,
+                leafErrorCodeOverride);
+            if (cursor.State == HttpFallbackExecutionState.Exhausted)
+            {
+                TrackVersionCheckEnd(
+                    shouldTrack, chainId, plan, step, attemptsStarted, requestElapsedMs, totalElapsedMs,
+                    response, exception, false, resultOverride, leafErrorCodeOverride);
+            }
+        }
+
+        /// <summary>
+        /// 生成供日志与埋点使用的主备候选说明，不暴露完整 URL 以避免重复日志携带路径参数。
+        /// </summary>
+        /// <param name="step">当前物理发送坐标。</param>
+        /// <returns>稳定的候选角色和物理发送序号说明。</returns>
+        private static string DescribeVersionCheckCandidate(HttpFallbackStep step)
+        {
+            return Txt.Format(
+                "{0}候选（轮次={1} 重试周期={2} 发送序号={3}）",
+                step.Candidate.RouteRole,
+                step.RoundIndex + 1,
+                step.RetryCycleIndex,
+                step.PhysicalSendIndex + 1);
         }
 
         /// <summary>

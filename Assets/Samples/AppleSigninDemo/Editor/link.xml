@@ -14,7 +14,6 @@
   <assembly fullname="NovaFramework.SDK.AdPlugin.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.MaxAdPlugin.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.Kit.Network.GameSave.Runtime" preserve="all" />
-  <assembly fullname="NovaFramework.BestHTTP.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.AppleSignIn.Runtime" preserve="all" />
   <assembly fullname="AppleAuth" preserve="all" />
   <assembly fullname="NovaFramework.Kit.Network.GameBind.Runtime" preserve="all" />

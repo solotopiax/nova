@@ -68,7 +68,7 @@
 - `Priority => 10`，作为当前 SDK 初始化链的首个分桶，先于依赖 TGA 标识数据的插件初始化
 
 - `OnInitializeAsync(...)` 会读取 `TGAPluginConfig`
-- `Mode` 与 `TimeZone` 会直接使用 `TDMode` / `TDTimeZone` 配置值写入 `TDConfig`
+- `Mode` 与 `TimeZone` 使用包内枚举保存，初始化时转换为 `TDMode` / `TDTimeZone` 后写入 `TDConfig`
 - `AppID` 为空或 `ServerCmdName` 无法解析为上报地址时，插件会跳过初始化
 - 初始化成功后会：
   - 按配置将 `DeviceId` 同步到 `DistinctId`

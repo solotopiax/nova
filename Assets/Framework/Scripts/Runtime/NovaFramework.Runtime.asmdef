@@ -30,6 +30,11 @@
             "name": "com.solotopia.simplediskutils",
             "expression": "1.0.7",
             "define": "NOVA_SIMPLEDISKUTILS"
+        },
+        {
+            "name": "com.solotopia.nova.framework.besthttp",
+            "expression": "0.0.0",
+            "define": "NOVA_LEGACY_BESTHTTP_MIGRATION"
         }
     ],
     "noEngineReferences": false

@@ -78,7 +78,7 @@ namespace NovaFramework.Editor
                         "(2)启动时先尝试当前 DevelopMode 对应的主地址，失败或空内容时自动切到备用地址",
                         "(3)URL 支持 {Platform} / {Channel} / {Package} / {Version}，语义与 Asset 主机服务器 URL 一致",
                         "(4){Platform} 由 Player 编译宏决定，不读取 Editor Active BuildTarget 或 ConfigMaster；{Channel} 为导出渠道，{Package} 为默认资源包名，{Version} 为 Application.version",
-                        "(5)主备都不可用时本次大版本检查直接返回 NoDownload"
+                        "(5)全部候选轮次耗尽时本次大版本检查直接返回 NoDownload"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
@@ -92,9 +92,74 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                        "(1)版本检查请求的超时时长",
+                        "(1)每个主备候选的单次物理请求都完整使用该超时，不是整条链的总超时",
                         "(2)数值过短易在弱网环境下误判失败",
                         "(3)推荐默认值 5"
+                        }, false, GUILayout.ExpandWidth(true));
+                    });
+
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.Property("主备完整轮数：", m_VersionCheckFallbackRoundCount, true, GUILayout.Width(180f));
+                    });
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        {
+                        "(1)一轮会依次尝试当前有效且去重后的所有主备地址",
+                        "(2)主、备均配置时，轮数 1 表示主→备；轮数 2 表示主→备→主→备",
+                        "(3)轮数增大会增加弱网下的最长等待时间"
+                        }, false, GUILayout.ExpandWidth(true));
+                    });
+
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.Property("请求重试次数：", m_RetryRequestCount, true, GUILayout.Width(180f));
+                    });
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        {
+                        "(1)首次完整执行不计入重试次数；每增加 1 次都会重新执行全部主备轮次",
+                        "(2)候选数 C、轮数 R、重试次数 K 的最大物理请求数为 C × R × (K + 1)",
+                        "(3)404/408/429、5xx、无响应或无效内容继续；其他 4xx 停止并按 NoDownload 降级",
+                        "(4)调用方取消时立即停止，不再重试或切换候选"
+                        }, false, GUILayout.ExpandWidth(true));
+                    });
+
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.Property("最近成功域名优先：", m_PreferLastSuccessfulHost, true, GUILayout.Width(180f));
+                    });
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        {
+                        "(1)开启后，下一次版本检查优先尝试当前进程内最近取得有效规则的域名",
+                        "(2)只调整新请求链的候选顺序，其他域名仍会在后续候选中被尝试",
+                        "(3)该偏好不写入本地存储；候选全部失败不会清除，配置候选变更或 Manager 重置时才失效"
+                        }, false, GUILayout.ExpandWidth(true));
+                    });
+
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.Property("启用 UWR 埋点：", m_EnableUWRTracks, true, GUILayout.Width(180f));
+                    });
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        {
+                        "(1)控制 App 版本检查主备链路的 UnityWebRequest 埋点",
+                        "(2)只控制埋点上报，不会禁止或改变版本检查请求",
+                        "(3)同一次物理请求只记录一次，避免与底层传输埋点重复"
                         }, false, GUILayout.ExpandWidth(true));
                     });
                 }

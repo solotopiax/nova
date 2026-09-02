@@ -7,7 +7,7 @@
 **命名空间**：`NovaFramework.SDK.IAP.Runtime`
 **获取方式**：通过 `SDKComponent.TryGet<IAPPlugin>(out var iap)` 获取；没有独立 `Nova.IAP` 静态门面。
 
-`IAPPlugin` 是 IAP 核心调度插件。它不直接实现某个支付渠道，而是在初始化时反射发现 `[IAPStore]` Store，并把支付、Restore、补单扫描路由给对应 Store。
+`IAPPlugin` 是 IAP 核心调度插件。它不直接实现某个支付渠道，而是在初始化时反射发现 `[IAPStore(IAPStoreType.Xxx)]` Store，并把支付、Restore、补单扫描路由给对应 Store。StoreType 元数据会在构造前匹配配置，未配置的可选 Store 不会被构造。
 
 ## 1. 文件表
 

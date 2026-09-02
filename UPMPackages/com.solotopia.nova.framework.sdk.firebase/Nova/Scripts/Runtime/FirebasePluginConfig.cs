@@ -9,7 +9,6 @@
  *            其他 Firebase 运行期配置由 Firebase SDK 自身托管，无需在此暴露。
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using System;
 using NovaFramework.Runtime;
 using UnityEngine;
@@ -90,4 +89,3 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         public FirebasePluginConfig() { }
     }
 }
-#endif

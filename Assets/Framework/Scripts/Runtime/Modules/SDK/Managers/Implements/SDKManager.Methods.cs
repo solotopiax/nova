@@ -138,7 +138,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 依据 ConfigMaster.EnabledSDKs 唯一实例化已启用 SDK 插件。
-        /// RequiredConfigType 为 null（无需配置）的插件不走此路径，避免误启用。
+        /// 构造前通过泛型基类或配置类型特性读取元数据；无静态元数据的插件不走此路径，避免误启用和构造副作用。
         /// 多个插件声明同一 ConfigType 时，只注册第一个命中的插件并记录后续冲突。
         /// </summary>
         private void InstantiateEnabledPluginsFromConfig()
@@ -173,6 +173,23 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
+                if (!SDKPluginBase.TryGetRequiredConfigType(pluginType, out Type configType))
+                {
+                    Log.Warning(LogTag.SDK, Txt.Format("SDK 插件未通过 PluginBase<TConfig> 或 SDKPluginConfigTypeAttribute 静态声明配置类型，已跳过且不会构造：{0}", pluginType.FullName));
+                    continue;
+                }
+
+                if (!enabledConfigTypes.Contains(configType))
+                {
+                    continue;
+                }
+
+                if (coveredConfigTypes.Contains(configType))
+                {
+                    Log.Warning(LogTag.SDK, Txt.Format("SDK 插件配置类型重复，已跳过后续插件：Config={0}, Plugin={1}", configType.FullName, pluginType.FullName));
+                    continue;
+                }
+
                 ISDKPlugin plugin;
                 try
                 {
@@ -184,15 +201,14 @@ namespace NovaFramework.Runtime
                     continue;
                 }
 
-                Type configType = (plugin as SDKPluginBase)?.RequiredConfigType;
-                if (configType == null || !enabledConfigTypes.Contains(configType))
+                Type instanceConfigType = (plugin as SDKPluginBase)?.RequiredConfigType;
+                if (instanceConfigType != configType)
                 {
-                    continue;
-                }
-
-                if (coveredConfigTypes.Contains(configType))
-                {
-                    Log.Warning(LogTag.SDK, Txt.Format("SDK 插件配置类型重复，已跳过后续插件：Config={0}, Plugin={1}", configType.FullName, pluginType.FullName));
+                    Log.Error(LogTag.SDK, Txt.Format(
+                        "SDK 插件静态配置声明与实例声明不一致，已跳过：Plugin={0}, Static={1}, Instance={2}",
+                        pluginType.FullName,
+                        configType.FullName,
+                        instanceConfigType?.FullName ?? "<null>"));
                     continue;
                 }
 

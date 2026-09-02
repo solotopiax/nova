@@ -9,12 +9,16 @@
         "GUID:306c6673169be4aa7bb5589c84e53cf1"
     ],
     "includePlatforms": [],
-    "excludePlatforms": [],
+    "excludePlatforms": [
+        "WebGL"
+    ],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": false,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "!UNITY_WEBGL"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

@@ -137,8 +137,8 @@ namespace NovaFramework.Editor
                             "(1)运行时按当前节点上的 DevelopMode 选择 Debug 或 Release 这一组地址",
                             "(2)支持 {Platform}/{Channel}/{Package}/{Version} 占位符，框架会在运行时替换",
                             "(3){Platform}=Player 编译宏对应的 PlatformType，不读取 Editor Active BuildTarget 或 ConfigMaster；{Channel}=Config 导出时选中的渠道；{Package}=YooAsset 当前资源包名；{Version}=Application.version",
-                            "(4)主地址失败后，同一资源包后续新下载改走备用地址；已开始的下载不受影响",
-                            "(5)备用地址失败后不会自动绕回主地址"
+                            "(4)每个文件独立按主备候选顺序重试，不会被同包其他并发文件推进",
+                            "(5)一轮会完整尝试主备；后续轮次按配置绕回，且新文件可优先最近成功域名"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
@@ -199,7 +199,7 @@ namespace NovaFramework.Editor
                                 "(5)运行时按 DevelopMode 选择 Debug 或 Release 主备地址",
                                 "(6)配置文件 VersionsCheckWhiteList.json 为 DeviceID JSON 字符串数组",
                                 "(7)命中后只切换 YooAsset 版本元数据，Bundle 仍走上方常规主机服务器",
-                                "(8)支持 {Platform}/{Channel}/{Package}/{Version}；{Platform} 由 Player 编译宏决定，不读取 Editor Active BuildTarget 或 ConfigMaster；这些地址不进入业务接口的 DoH 路由"
+                                "(8)支持 {Platform}/{Channel}/{Package}/{Version}；{Platform} 由 Player 编译宏决定，不读取 Editor Active BuildTarget 或 ConfigMaster；资源下载使用 YooAsset 的 UnityWebRequest 后端"
                             }, false, GUILayout.ExpandWidth(true));
                         });
 
@@ -331,7 +331,7 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)单文件失败后，先按「下载失败重试次数」自动重试",
+                            "(1)单文件失败后先走完全部主备轮次；每次重试都会重新执行该完整组合",
                             "(2)任一文件耗尽重试后，整批停止并显示失败弹窗",
                             "(3)点击「重试」重新下载整批文件，次数不限",
                             "(4)点击「取消」：勾选则退出应用；未勾选则跳过热更进入游戏"
@@ -354,19 +354,47 @@ namespace NovaFramework.Editor
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 5. 下载失败重试次数 —— 容错策略
+                    // 5. 主备完整轮数与完整组合重试 —— 容错策略
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("下载失败重试次数：", m_RetryDownloadCount, true, GUILayout.Width(180f));
+                        EditorUtil.Draw.Property("主备完整轮数：", m_FallbackRoundCount, true, GUILayout.Width(180f));
+                    });
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.Property("下载重试次数：", m_RetryDownloadCount, true, GUILayout.Width(180f));
                     });
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)每个文件下载失败后的自动重试次数",
-                            "(2)0 表示不自动重试；首次失败即终止整批下载"
+                            "(1)候选数 C、完整轮数 R、重试次数 K 的最大物理尝试数为 C × R × (K + 1)",
+                            "(2)首次完整执行不计入 K；默认 R=1、K=3 时主备各有 4 次机会",
+                            "(3)每个文件独立冻结执行计划；并发文件的失败不会互相推进候选",
+                            "(4)404/408/416/429、5xx、无响应与内容校验失败继续；401/403 及其他 4xx 停止"
+                        }, false, GUILayout.ExpandWidth(true));
+                    });
+
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.Property("最近成功域名优先：", m_PreferLastSuccessfulHost, true, GUILayout.Width(180f));
+                    });
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.Property("启用 UWR 埋点：", m_EnableUWRTracks, true, GUILayout.Width(180f));
+                    });
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        {
+                            "(1)最近成功偏好只存在当前进程，仅在新文件建立计划时调整候选顺序",
+                            "(2)优先域名失败后仍会按计划尝试其他域名",
+                            "(3)UWR 埋点开关只控制 Asset 下载链路上报，不影响下载"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
@@ -398,8 +426,10 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)单次远端版本文件请求的总时长上限",
-                            "(2)超时后按备用地址和本地版本回退策略继续"
+                            "(1)启动白名单与 .version 单次物理请求的总时长上限",
+                            "(2)每个主备候选独立使用该超时，不是整条主备链的总超时",
+                            "(3).hash/.bytes Manifest 仍使用现有 60 秒超时，不受此字段影响",
+                            "(4)超时后按备用地址和本地版本回退策略继续"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
@@ -416,7 +446,7 @@ namespace NovaFramework.Editor
                         {
                             "(1)单个文件连续无新字节流入的时长上限",
                             "(2)收到任意新字节后重新计时",
-                            "(3)超时后按「下载失败重试次数」自动重试"
+                            "(3)超时后按主备完整轮次与下载重试次数配置继续"
                         }, false, GUILayout.ExpandWidth(true));
                     });
                 }

@@ -117,7 +117,7 @@ namespace NovaFramework.Editor
 
             /// <summary>
             /// 按当前 active ConfigMaster.EnabledSDKs 刷新可见 SDK Plugin 类型。
-            /// EnabledSDKs 存储的是 ISDKPluginConfig 类型全名，因此需要通过 SDKPluginBase.RequiredConfigType 映射到 Plugin 类型。
+            /// EnabledSDKs 存储的是 ISDKPluginConfig 类型全名，因此通过泛型基类或配置类型特性映射到 Plugin 类型。
             /// </summary>
             private void RefreshScannedTypes()
             {
@@ -148,7 +148,7 @@ namespace NovaFramework.Editor
                         continue;
                     }
 
-                    if (!TryGetRequiredConfigType(t, out Type requiredConfigType) || requiredConfigType == null)
+                    if (!SDKPluginBase.TryGetRequiredConfigType(t, out Type requiredConfigType))
                     {
                         continue;
                     }
@@ -184,32 +184,6 @@ namespace NovaFramework.Editor
                 List<string> enabled = new List<string>(master.EnabledSDKs);
                 enabled.Sort(StringComparer.Ordinal);
                 return string.Join("|", enabled);
-            }
-
-            /// <summary>
-            /// 尝试读取 SDKPluginBase 插件声明的 RequiredConfigType。
-            /// </summary>
-            /// <param name="pluginType">候选 Plugin 类型。</param>
-            /// <param name="requiredConfigType">命中的配置类型。</param>
-            /// <returns>成功读取返回 true。</returns>
-            private static bool TryGetRequiredConfigType(Type pluginType, out Type requiredConfigType)
-            {
-                requiredConfigType = null;
-                if (!typeof(SDKPluginBase).IsAssignableFrom(pluginType))
-                {
-                    return false;
-                }
-
-                try
-                {
-                    SDKPluginBase plugin = (SDKPluginBase)Activator.CreateInstance(pluginType);
-                    requiredConfigType = plugin.RequiredConfigType;
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
             }
 
             /// <summary>

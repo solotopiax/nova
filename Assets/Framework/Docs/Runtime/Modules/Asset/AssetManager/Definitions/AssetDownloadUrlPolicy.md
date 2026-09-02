@@ -1,12 +1,15 @@
 # AssetDownloadUrlPolicy
 
-`AssetDownloadUrlPolicy` 是 AssetManager 为每个 YooAsset 包独立持有的候选 URL 轮换策略。
+`AssetDownloadUrlPolicy` 是 AssetManager 为每个 YooAsset 包独立持有的候选 URL 与失败重试策略，同时实现 `IDownloadUrlPolicy` 和 `IDownloadRetryPolicy`。
 
-- `SelectUrl` 按当前状态选择候选地址；成功后保持在当前可用地址。
-- 主地址失败后，同一 YooAsset 包后续尚未开始的资源改走备用地址；已经在飞的请求不改写。
-- 同一主地址上的多个并发失败只触发一次切换，不会连续跳过候选。
-- 到达最后一个候选后保持粘滞；备用地址失败不会通过取模重新绕回已经失败的主地址。
-- `FailureGeneration` 记录已处理的传输/内容失败次数；版本或 Manifest 操作开始前保存该值。
-- `AdvanceAfterOperationFailure(startGeneration)` 仅在操作期间没有发生传输失败时补推进一次，覆盖 HTTP 200 但 `.version` / `.hash` / `.bytes` 内容非法、损坏或反序列化失败的情况，同时避免一次失败跳过备用地址。
+候选去重、最近成功优先排序、不可变计划、执行游标和偏好存储均复用 Core 的 `HttpFallbackPlanner`、`HttpFallbackExecutionPlan`、`HttpFallbackExecutionCursor` 与 `HttpFallbackPreferenceStore`；本类只适配 YooAsset 的 URL/失败回调和 Asset 专属错误码规则。
 
-白名单命中时，候选顺序由 `AssetRemoteService` 提供：白名单元数据主、白名单元数据备用、常规主、常规备用。全部候选失败后才进入 AssetManager 既有离线回退。
+- 每个文件按 URL 路径拥有独立计划；A/B/C 并发失败不会互相推进候选。
+- 候选先去重，再按 `C × R × (K + 1)` 计算最大物理尝试数；传给 YooAsset 的额外物理重试数为该值减一。
+- `FallbackRoundCount` 的一轮会完整尝试全部候选；`RetryDownloadCount` 是下载重试次数，每次重试重新执行完整轮次组合。
+- 404/408/416/429、5xx、无响应可继续；401/403 和其他 4xx 立即停止。
+- 传输成功后的内容校验失败会继续使用该文件已冻结计划中的下一候选。
+- 成功会更新同类请求的最近成功域名，新文件可从该域名开始；完整失败不会清除此偏好，候选配置变化且旧域名已不存在时才清除。
+- URL 查询串和 fragment 不参与文件身份匹配，因此带时间戳的 `.version` 回调仍可正确收口。
+
+白名单命中时，候选顺序由 `AssetRemoteService` 提供：白名单元数据主、白名单元数据备用、常规主、常规备用。全部逻辑组合失败后才进入 AssetManager 既有离线回退。同步加载行为不变；WebGL 仍受 YooAsset 异步加载边界约束。

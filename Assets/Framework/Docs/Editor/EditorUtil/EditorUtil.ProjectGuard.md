@@ -51,4 +51,6 @@ Scene 检查使用已加载 Scene 或只读 Preview Scene，不保存、不修�
 
 ProjectGuard 不注册全局 Build preprocessor。Unity Build、显式 `BuildPlayerOptions.scenes` 和项目自定义 BuildPipeline 均保持原行为；若项目希望发布门禁，应在自己的流水线中显式调用并解释报告。
 
+构建就绪检查只拒绝 `PlatformType.None` 或缺失的矩阵行；`ChannelType.None` 是合法的无特定运营渠道，不会单独导致预检失败。
+
 相关阅读：[验证与构建](../../Onboarding/VALIDATION.md)、[资源工作流](../../Onboarding/RESOURCE_WORKFLOW.md)。

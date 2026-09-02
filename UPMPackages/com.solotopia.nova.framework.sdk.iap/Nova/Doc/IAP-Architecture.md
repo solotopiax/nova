@@ -25,9 +25,9 @@ SDKComponent
 - `public class`
 - 非抽象
 - 实现 `IIAPInternalStore`
-- 标注 `[IAPStore]`
+- 标注 `[IAPStore(IAPStoreType.Xxx)]`，静态声明对应 StoreType
 
-单个 Store 实例化或初始化失败只记录 Warning 并跳过，不阻断其他 Store。
+扫描阶段先按 Attribute 中的 StoreType 查询 `IAPPluginConfig.StoreConfigs`；未配置的可选 Store 不执行构造函数或字段初始化。已配置但 `Enabled=false` 的 Store 仍会构造并保留，以维持 `SetStoreEnabled(...)` 的运行时懒启用语义。单个 Store 实例化或初始化失败只记录 Warning 并跳过，不阻断其他 Store。
 
 ## 2. 配置模型
 
@@ -162,7 +162,7 @@ SDKEventData.UserLogin → IAPPlugin.SetUserId(uid) → 广播给所有 Store
 ## 7. 扩展 Store 的最低要求
 
 1. 定义请求类型，继承 `IAPRequest`。
-2. 定义 Store 类型，`public`、非抽象、实现 `IIAPInternalStore`，并标注 `[IAPStore]`。
+2. 定义 Store 类型，`public`、非抽象、实现 `IIAPInternalStore`，并标注 `[IAPStore(IAPStoreType.Xxx)]`。
 3. 如需公共模板，继承 `IAPStoreBase`。
 4. 定义配置类型，实现 `IIAPStoreConfig`。
 5. 在 `IAPStoreType` 增加渠道枚举值。

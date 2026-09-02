@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-09-02
+
+### Changed
+
+- GameLoginDemo 移除已废弃的 BestHTTP 热更程序集引用，并同步当前 Framework 配置快照。
+
 ## [0.1.12] - 2026-08-28
 
 ### Changed

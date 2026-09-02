@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.1.8] - 2026-09-02
+
+### Changed
+
+- MAX Runtime 与 Editor 程序集在 WebGL 下停止编译，避免引入不可用的原生广告 SDK。
+
 ## [0.1.7] - 2026-08-21
 
 ### Added

@@ -32,19 +32,27 @@ related:
 
 截至当前代码，Priority 如下：
 
-| Manager | Priority | Manager | Priority |
-|---|---|---|---|
-| Debug | 0 | HttpManager | 8 |
-| Persist | 0 | WebSocketManager | 9 |
-| Event | 1 | Config | 10 |
-| ObjectPool | 2 | NetworkManager | 10 |
-| Asset | 4 | PrefabManager | 10 |
-| Localization | 6 | AppManager | 11 |
-| Procedure | 6 | DoHManager | 11 |
-| UI | 7 | Table | 14 |
-|  |  | SDK | 16 |
-|  |  | Vibrate | 18 |
-|  |  | Sound | 19 |
+| Manager | Priority |
+|---|---|
+| Debug | 0 |
+| Persist | 0 |
+| Event | 1 |
+| ObjectPool | 2 |
+| Asset | 4 |
+| Localization | 6 |
+| Procedure | 6 |
+| UI | 7 |
+| HttpManager | 8 |
+| WebSocketManager | 9 |
+| Config | 10 |
+| NetworkManager | 10 |
+| PrefabManager | 10 |
+| AppManager | 11 |
+| Table | 14 |
+| Native | 15 |
+| SDK | 16 |
+| Vibrate | 18 |
+| Sound | 19 |
 
 补充约束：
 

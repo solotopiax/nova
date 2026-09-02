@@ -67,7 +67,7 @@ SyncEntries(entriesProp, so)
   │    ├─ EditorUtil.Config.WorkspaceActive.Get() 获取 active ConfigMaster
   │    ├─ 读取 master.EnabledSDKs（存的是 ISDKPluginConfig 类型 FullName）
   │    ├─ TypeCache.GetTypesDerivedFrom<ISDKPlugin>() 扫描候选 Plugin
-  │    └─ 仅保留继承 SDKPluginBase 且 RequiredConfigType.FullName 命中 EnabledSDKs 的 Plugin
+  │    └─ 从泛型基类或 SDKPluginConfigTypeAttribute 静态读取配置类型，仅保留命中 EnabledSDKs 的 Plugin
   ├─ AppendMissingTypes(entriesProp) → dirty
   │    ├─ 只统计当前可见 Entry 是否已有对应族条目
   │    └─ 只为当前可见 Plugin append 新 Entry；旧的 inactive Entry 保留但不参与显示和默认启用判断
@@ -75,7 +75,7 @@ SyncEntries(entriesProp, so)
        └─ TypeName 存在但 Type.GetType(TypeName) 失败时标记 IsMissing
 ```
 
-`ConfigMaster.EnabledSDKs` 的条目是 SDK Plugin Config 类型全名，不是 Plugin 类型名。Inspector 通过实例化 `SDKPluginBase` 读取 `RequiredConfigType` 完成 Config → Plugin 映射。
+`ConfigMaster.EnabledSDKs` 的条目是 SDK Plugin Config 类型全名，不是 Plugin 类型名。Inspector 通过 `PluginBase<TConfig>` 或 `SDKPluginConfigTypeAttribute` 的类型元数据完成 Config → Plugin 映射，不会为了刷新面板构造候选 Plugin。
 
 ### active ConfigMaster 过滤语义
 
@@ -136,7 +136,7 @@ inactive Entry 不属于 Missing。只有插件类型真的无法解析时才进
 ## §10 常见误区
 
 **误区 1：认为 EnabledSDKs 存的是 Plugin 类型名**
-`EnabledSDKs` 存的是 `ISDKPluginConfig` 类型 FullName。SDKComponent Inspector 必须通过 `SDKPluginBase.RequiredConfigType` 映射到 Plugin 类型。
+`EnabledSDKs` 存的是 `ISDKPluginConfig` 类型 FullName。SDKComponent Inspector 必须通过插件的静态配置类型元数据映射到 Plugin 类型。
 
 **误区 2：ConfigMaster 取消勾选后要删除 m_PluginEntries 旧条目**
 不删除。取消勾选只影响当前可见列表，旧 Entry 保留，避免用户在不同 ConfigMaster 或不同 SDK 组合之间切换时丢失 Inspector 选型数据。

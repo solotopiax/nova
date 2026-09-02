@@ -62,14 +62,6 @@ MonoBehaviour:
         FilterRuleName: CollectAll
         AssetTags: 
         UserData: 
-      - CollectPath: Assets/Samples/MainDemo/Dlls/RunningGameDlls
-        CollectorGUID: e7b0218395f1049e8a5be17250b2865c
-        CollectorType: 0
-        AddressRuleName: AddressByFileName
-        PackRuleName: PackSeparately
-        FilterRuleName: CollectAll
-        AssetTags: demo_runtime_hotupdate
-        UserData: 
       - CollectPath: Assets/Samples/MainDemo/Prefabs/UIs
         CollectorGUID: 61ac0eee7a3cb4b789c406e0dabda371
         CollectorType: 0

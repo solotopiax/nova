@@ -207,9 +207,9 @@ namespace NovaFramework.Editor
             {
                 return false;
             }
-            if (master.CurrentPlatform == PlatformType.None || master.CurrentChannel == ChannelType.None)
+            if (master.CurrentPlatform == PlatformType.None)
             {
-                error = "激活 ConfigMaster 当前 Platform/Channel 不能为 None。";
+                error = "激活 ConfigMaster 当前 Platform 不能为 None。";
                 return false;
             }
 

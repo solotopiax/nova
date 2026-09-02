@@ -167,9 +167,6 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-      m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     GameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/GameDlls/NovaFramework.Kit.Network.GameBind.Samples.Runtime.dll.bytes
@@ -202,9 +199,6 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-      m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     GameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/GameDlls/NovaFramework.Kit.Network.GameBind.Samples.Runtime.dll.bytes
@@ -239,9 +233,6 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-      m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     GameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/GameDlls/NovaFramework.Kit.Network.GameBind.Samples.Runtime.dll.bytes
@@ -276,9 +267,6 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-      m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     GameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/GameBindDemo/Dlls/GameDlls/NovaFramework.Kit.Network.GameBind.Samples.Runtime.dll.bytes

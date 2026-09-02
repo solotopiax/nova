@@ -34,6 +34,10 @@ namespace NovaFramework.Editor
             m_AppDownloadCheckUrlRelease = serializedObject.FindProperty("m_AppDownloadCheckUrlRelease");
             m_AppDownloadCheckUrlFallbackRelease = serializedObject.FindProperty("m_AppDownloadCheckUrlFallbackRelease");
             m_TimeoutSeconds = serializedObject.FindProperty("m_TimeoutSeconds");
+            m_VersionCheckFallbackRoundCount = serializedObject.FindProperty("m_VersionCheckFallbackRoundCount");
+            m_RetryRequestCount = serializedObject.FindProperty("m_RetryRequestCount");
+            m_PreferLastSuccessfulHost = serializedObject.FindProperty("m_PreferLastSuccessfulHost");
+            m_EnableUWRTracks = serializedObject.FindProperty("m_EnableUWRTracks");
             m_DownloadRoute = serializedObject.FindProperty("m_DownloadRoute");
             m_AndroidStoreUrl = serializedObject.FindProperty("m_AndroidStoreUrl");
             m_AppStoreUrl = serializedObject.FindProperty("m_AppStoreUrl");

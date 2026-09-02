@@ -85,6 +85,24 @@ SQLite 还多一个数据库级 `CipherPassword`。
 - `FileFragment`：按 `classify` 切成多个 `.dat` 文件，适合按业务分片存档。
 - `SQLite`：按 `classify` 映射成表，适合更强查询和更大体量数据，但有平台与插件前提。
 
+## 框架内建的跨启动状态
+
+`Nova.Persist` 是业务通用存储容器，但并非所有框架启动状态都经由它。必须在 `Persist.LoadAsync()` 之前读取的少量引导数据使用内部 `PlatformPlayerPrefs`；模块文件缓存则使用 `persistentDataPath`。
+
+| 状态 | 存储 | 用途 / 边界 |
+|---|---|---|
+| `Nova.InstallTimeMs` | `PlatformPlayerPrefs` 原始键 `Nova.InstallTimeMs` | Nova 首次启动记录的 13 位 UTC Unix 毫秒时间戳；公开只读入口 |
+| 推荐更新放弃时间 | `PlatformPlayerPrefs` 原始键 `Nova.App.RecommendedDownloadDismissedAtUnixSeconds` | App 模块内部的 UTC Unix 秒级冷却记录 |
+| 当前语言 | `Nova.Persist.PlayerPrefs` 的 `LocalizationCommon::LocalizationLanguage` | 正式语言偏好；切换成功后立即保存 |
+| 启动期语言镜像 | `PlatformPlayerPrefs` 原始键 `Nova.Localization.BootstrapLanguage.v1` | Persist 就绪前供 Launcher 解析语言 |
+| Android 通知权限已请求标记 | Unity `PlayerPrefs` 键 `Nova.Native.NotificationPermissionRequested` | Android 13+ 区分未请求与已拒绝；Native 模块内部 |
+| Asset 启动白名单设备 ID | `persistentDataPath/Asset/asset-check-device-id.dat` | Asset 启动白名单路由依据 |
+| Asset 本地可启动清单身份 | `persistentDataPath/Asset/{package}.version` | 记录 `PackageVersion` 与 `PackageFilePrefix`，供远端不可达时回退 |
+| 远程应用配置快照 | `persistentDataPath/Config/app-custom-config.json` | Config 模块的已校验 Custom 配置缓存 |
+| Runtime Debugger 最近邮箱 | Unity `PlayerPrefs` 键 `RUNTIME_DEBUGGER_BUG_REPORT_LAST_EMAIL` | 仅属于调试表单便利状态，不是框架通用 API |
+
+`PlatformPlayerPrefs` 不参与 Persist 的分类索引和 AES 处理，只用于必须在 Persist 初始化前可用的引导级轻量状态，不应扩展为普通业务存档入口。
+
 ## 风险点 / 易错点
 
 - 只创建不初始化：在预加载流程完成前就读写存储实现，等于绕过就绪保证。

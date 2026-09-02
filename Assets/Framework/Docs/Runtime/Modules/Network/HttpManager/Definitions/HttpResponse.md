@@ -79,7 +79,7 @@ HttpResponse binResponse = await Nova.Network.DownloadBinaryAsync(
     progressCallback: (progress) =>
     {
         Debug.Log($"已下载：{progress.DownloadedBytes}/{progress.TotalBytes} bytes，进度 {progress.DownloadProgress * 100f:F1}%");
-        ReferencePool.Put(progress);
+        // progress 仅在本次回调期间有效，由框架在回调结束后自动归还引用池。
     });
 try
 {

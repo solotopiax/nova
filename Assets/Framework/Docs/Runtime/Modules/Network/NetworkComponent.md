@@ -1,263 +1,95 @@
 # NetworkComponent
 
-**类签名**：`[DisallowMultipleComponent] public sealed partial class NetworkComponent : FrameworkComponent, ICoroutineRunner`
-**命名空间**：`NovaFramework.Runtime`
-**全局访问**：`Nova.Network`
+类签名： [DisallowMultipleComponent] public sealed partial class NetworkComponent : FrameworkComponent, ICoroutineRunner  
+命名空间： NovaFramework.Runtime  
+全局访问： Nova.Network
 
-网络系统对外入口，持有并初始化四个并列管理器（DoH / Http / Network / WebSocket），通过 `ICoroutineRunner` 为 WebSocketManager 提供协程运行环境。
+网络系统对外入口，创建并初始化 NetworkManager、HttpManager 与 WebSocketManager 三个管理器，并为 WebSocket 提供协程运行环境。
 
----
+## 文件表
 
-## § 2 文件表
+| 文件 | 说明 |
+|---|---|
+| NetworkComponent.cs | 创建和初始化三个管理器，加载 HostKey / NetCmd 数据 |
+| NetworkComponent.Visitors.cs | 序列化配置、管理器实例与状态属性 |
+| NetworkComponent.Network.cs | NetCmd 路由、网络状态与服务器时间代理 |
+| NetworkComponent.Http.cs | HTTP 短连接代理 |
+| NetworkComponent.WebSocket.cs | WebSocket 连接、消息与事件代理 |
+| NetworkComponent.Kit.cs | Kit Service 惰性单例容器 |
 
-| 文件 | 类 | 说明 |
-|---|---|---|
-| `NetworkComponent.cs` | `sealed partial NetworkComponent` | 主体：Awake（TypeCreator 创建四个 Manager）、Start（Initialize 四个 Manager）、LoadAsync / LoadSync（成功后后台触发一轮 DoH 预热）、OnDestroy、GetCurrentSettings |
-| `NetworkComponent.Visitors.cs` | `partial NetworkComponent` | `[SerializeField]` 配置字段、Manager 实例属性、状态属性 |
-| `NetworkComponent.Network.cs` | `partial NetworkComponent` | NetworkManager 接口透传：GetNetCmd<T> / GetNetCmd(tbName) / GetNetCmdUrl(tbName, dtName) / ResolveNetCmdUrl / ResolveNetCmdRow / CheckNetworkActive / UrlEncode / QueryLocalIPAddress / SetServerTimeFetcher / FetchServerTimeAsync |
-| `NetworkComponent.Http.cs` | `partial NetworkComponent` | HTTP 短连接 API 透传：GetAsync/PostAsync/PostRawDataAsync/PostFileAsync |
-| `NetworkComponent.DoH.cs` | `partial NetworkComponent` | DoH DNS 解析 API 透传：CollectAllIPAddresses / DNSQuery / GetHostName / GetIPAddresses / ClearDoH |
-| `NetworkComponent.WebSocket.cs` | `partial NetworkComponent` | WebSocket 长连接 API 透传：事件转发、ConnectServer / DisconnectServer / SendMessage 等 |
-| `NetworkComponent.Kit.cs` | `partial NetworkComponent` | Kit Service 惰性单例容器：`Kit<T>()` |
+## 管理器关系
 
----
+~~~text
+NetworkComponent
+  ├── IHttpManager      → HttpManager       Priority = 8
+  ├── IWebSocketManager → WebSocketManager  Priority = 9
+  └── INetworkManager   → NetworkManager    Priority = 10
+~~~
 
-## § 3 继承关系
+Awake 按 HTTP、Network、WebSocket 的顺序创建管理器；Start 使用 Inspector 配置初始化它们。LoadAsync / LoadSync 只负责加载 HostKey 与 NetCmd 路由数据，成功后将 IsLoadOver 置为 true。
 
-```
-FrameworkComponent
-  └── NetworkComponent (sealed partial) : ICoroutineRunner
-        ├── 持有 IDoHManager       → DoHManager (sealed)
-        ├── 持有 IHttpManager      → HttpManager (sealed)
-        ├── 持有 INetworkManager   → NetworkManager (sealed)
-        └── 持有 IWebSocketManager → WebSocketManager (sealed)
-```
-
----
-
-## § 4 关键字段表
-
-**网络配置（`[SerializeField]`）**
-
-| 字段 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `m_Settings` | `NetworkSettings` | `null` | 单套网络设置（HostKeySettings + NetCmdSettings），不再按地域分组 |
-
-**管理器类型名（`[SerializeField]`，Inspector 下拉）**
+## 序列化配置
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `m_CurDoHManagerTypeName` | `string` | DoHManager 实现类全名 |
-| `m_CurHttpManagerTypeName` | `string` | HttpManager 实现类全名 |
-| `m_CurNetworkManagerTypeName` | `string` | NetworkManager 实现类全名 |
-| `m_CurWebSocketManagerTypeName` | `string` | WebSocketManager 实现类全名 |
+| m_CurNetworkManagerTypeName | string | INetworkManager 实现类名 |
+| m_CurHttpManagerTypeName | string | IHttpManager 实现类名 |
+| m_CurWebSocketManagerTypeName | string | IWebSocketManager 实现类名 |
+| m_Settings | NetworkSettings | HostKey 与 NetCmd 数据单元 |
+| m_HttpSettings | HttpSettings | UWR 埋点、HostKey + NetCmd 最近成功优先、完整轮数、重试次数与单次请求超时 |
+| m_WebSocketSettings | WebSocketSettings | WebSocket 连接、认证、心跳和重连设置 |
+| m_ProtoSettings | ProtoSettings | 仅 Editor 的协议导出设置 |
 
-**管理器配置对象（`[SerializeField]`）**
+## 公开 API 摘要
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `m_DoHSettings` | `DoHSettings` | DoH 管理器参数（UseDoH / DnsTimeoutSeconds / MaxIPAddressesPerHost） |
-| `m_HttpSettings` | `HttpSettings` | HTTP 管理器参数（BestHTTP 埋点开关 / ConnectTimeout / RequestTimeout） |
-| `m_WebSocketSettings` | `WebSocketSettings` | WebSocket 管理器参数（ConnectTimeout 等 7 项） |
+~~~csharp
+UniTask<bool> LoadAsync();
+bool LoadSync();
+NetworkSettings GetCurrentSettings();
+T Kit<T>() where T : class, new();
 
-**编辑器设置（`[SerializeField]`，`#if UNITY_EDITOR`）**
+T GetNetCmd<T>() where T : class, ITable;
+ITable GetNetCmd(string tbName);
+string GetNetCmdUrl(string tbName, string dtName);
+string GetNetCmdUrl<T>(string dtName) where T : class, ITable;
+string ResolveNetCmdUrl(INetworkCmdRow cmdRow);
+INetworkCmdRow ResolveNetCmdRow(string cmdName);
+bool CheckNetworkActive();
+string UrlEncode(string str);
+string QueryLocalIPAddress();
+void SetServerTimeFetcher(Func<UniTask<long>> fetcher);
+UniTask FetchServerTimeAsync();
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `m_ProtoSettings` | `ProtoSettings` | Protobuf 编辑器设置（全局唯一；.proto 文件路径与 protoc 编译配置） |
+UniTask<HttpResponse> GetAsync(
+    string url, float requestTimeout = -1f, string headerInfos = null);
+UniTask<HttpResponse> PostAsync(
+    string url, string contentString, float requestTimeout = -1f, string headerInfos = null);
+UniTask<HttpResponse> PostRawDataAsync(
+    string url, byte[] contentBytes, float requestTimeout = -1f, string headerInfos = null);
+UniTask<HttpResponse> PostFileAsync(
+    string url, string bodyJsonData, byte[] fileBytes, string fileName,
+    float requestTimeout = -1f, string headerInfos = null);
+~~~
 
-**加载状态**
+公开 HTTP API 只使用调用方给出的 URL。HostKey + NetCmd 业务协议的主备 URL 解析由内部 ResolveNetCmdUrls 与 NetService 协作完成，HttpManager 再按 Inspector 配置执行最近成功优先、完整候选轮与重试；业务 Service 不需要自行挑选域名。
 
-| 字段 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `m_LoadTcs` | `UniTaskCompletionSource<bool>` | `null` | 防止并发重入的 Task 完成源，LoadAsync 进行中时非 null |
-| `IsLoadOver` | `bool` (property) | `false` | NetCmd 数据已加载完成后置 true，LoadAsync 幂等保障；DoH 自动预热不改变其“仅表示路由已加载”的语义 |
+WebSocketNetChannels、连接、断开、发送消息与事件代理见 [WebSocketManager.md](WebSocketManager/WebSocketManager.md)。
 
-**管理器实例（Awake 后有效）**
+## 使用示例
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `m_DoHManager` | `IDoHManager` | DoH 管理器实例 |
-| `m_HttpManager` | `IHttpManager` | HTTP 管理器实例 |
-| `m_NetworkManager` | `INetworkManager` | Network 管理器实例 |
-| `m_WebSocketManager` | `IWebSocketManager` | WebSocket 管理器实例 |
-
-**Kit Service 容器**
-
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `m_KitInstances` | `Dictionary<Type, object>` | Kit Service 惰性单例缓存（`Type → 实例`），由 `Kit<T>()` 管理生命周期 |
-
----
-
-## § 5 完整公开 API
-
-```csharp
-// --- 生命周期 ---
-protected override void Awake()
-
-// --- ICoroutineRunner 实现 ---
-Coroutine ICoroutineRunner.StartCoroutine(IEnumerator coroutine)
-void ICoroutineRunner.StopCoroutine(Coroutine coroutine)
-
-// --- NetCmd 数据加载 ---
-UniTask<bool> LoadAsync()            // 幂等；并发调用时等待同一 TCS；成功后 IsLoadOver = true，并后台触发 DoH 预热（不等待完成）
-bool LoadSync()                      // 同步加载，阻塞当前线程直至完成（无重入保护）；成功后同样后台触发 DoH 预热
-NetworkSettings GetCurrentSettings() // 返回 m_Settings
-T Kit<T>() where T : class, new()   // 获取或惰性创建 Kit Service 单例；子包 Service 通过此方法访问（不引 Kit asmdef）
-
-// --- NetworkManager 透传 (NetworkComponent.Network.cs) ---
-T GetNetCmd<T>() where T : class, ITable    // 获取 Luban 表实例，不存在返回 null
-ITable GetNetCmd(string tbName)              // 按表类型名获取 Luban 表实例
-string GetNetCmdUrl(string tbName, string dtName)             // HostKey URL + Path，不存在返回 null
-string ResolveNetCmdUrl(INetworkCmdRow cmdRow)              // 由指令行解析完整 URL
-INetworkCmdRow ResolveNetCmdRow(string cmdName)             // 按 INetworkCmdRow.Name 检索指令行
-bool CheckNetworkActive()
-string UrlEncode(string str)
-string QueryLocalIPAddress()
-void SetServerTimeFetcher(Func<UniTask<long>> fetcher)   // 注入服务器时间获取委托，由业务层提供实现
-UniTask FetchServerTimeAsync()                           // 调用已注入委托获取服务器 UTC0 时间戳，结果写入 ServerTime
-
-// --- 状态属性 ---
-bool IsLoadOver { get; }
-long ServerTime { get; }
-IReadOnlyDictionary<string, List<string>> AllCollectedIPAddresses { get; }
-IReadOnlyDictionary<string, List<IPAddress>> AllDomainIPAddresses { get; }
-IReadOnlyList<WebSocketScope.NetChannelBase> WebSocketNetChannels { get; }
-
-// --- 管理器实例属性 ---
-INetworkManager NetworkManager { get; }
-IHttpManager HttpManager { get; }
-IDoHManager DoHManager { get; }
-IWebSocketManager WebSocketManager { get; }
-
-// --- HTTP 短连接 (NetworkComponent.Http.cs) ---
-UniTask<HttpResponse> GetAsync(string url, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
-UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
-UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
-UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
-
-// --- DoH DNS 解析 (NetworkComponent.DoH.cs) ---
-UniTask CollectAllIPAddresses()
-UniTask DNSQuery(string url)
-string GetHostName(string url)
-IPAddress[] GetIPAddresses(string hostName)
-void ClearDoH()
-
-// --- WebSocket 长连接 (NetworkComponent.WebSocket.cs) ---
-void ConnectServer(WebSocketScope.NetChannelType channelType, string serverAddress, bool autoReconnect = true)
-void ReconnectServer(WebSocketScope.NetChannelType channelType, string serverAddress)
-void DisconnectServer(WebSocketScope.NetChannelType channelType, string serverAddress)
-void TestDisconnectServerAbnormally(WebSocketScope.NetChannelType channelType, string serverAddress)
-bool IsWebSocketConnected(WebSocketScope.NetChannelType channelType, string serverAddress)
-bool IsWebSocketAuthenticatedSuccess(WebSocketScope.NetChannelType channelType, string serverAddress)
-WebSocketScope.NetMessageBase CreateMessage(WebSocketScope.NetChannelType channelType)
-void RecycleMessage(WebSocketScope.NetMessageBase message)
-bool SendMessage(WebSocketScope.NetChannelType channelType, string serverAddress, WebSocketScope.NetMessageBase message)
-
-// --- WebSocket 事件 ---
-event Action<int, string> OnWebSocketBeginConnect
-event Action<int, string> OnWebSocketConnectSuccess
-event Action<int, string> OnWebSocketConnectFail
-event Action<int, string> OnWebSocketDisconnect
-event Action<int, string> OnWebSocketReconnectFailed
-event Action<int, string> OnWebSocketAuthenticateSuccess
-event Action<int, string> OnWebSocketAuthenticateFail
-event Action<WebSocketScope.NetChannelBase, WebSocketScope.NetMessageBase> OnWebSocketReceiveMessage
-event Action<WebSocketScope.NetChannelBase, WebSocketScope.NetMessageBase> OnWebSocketSendMessage
-```
-
----
-
-## § 8 初始化时序
-
-```
-NetworkComponent.Awake()
-  ├─ base.Awake()
-  ├─ 1. TypeCreator.Create<IDoHManager>       → DoHManager
-  ├─ 2. TypeCreator.Create<IHttpManager>      → HttpManager
-  ├─ 3. TypeCreator.Create<INetworkManager>   → NetworkManager
-  └─ 4. TypeCreator.Create<IWebSocketManager> → WebSocketManager
-
-NetworkComponent.Start()
-  ├─ 校验 m_Settings 非 null（null 抛出 InvalidOperationException）
-  ├─ DoHManager.Initialize(DoHManagerConfig { UseDoH, DnsTimeoutSeconds, MaxIPAddressesPerHost })
-  ├─ HttpManager.Initialize(HttpManagerConfig { ConnectTimeout, RequestTimeout, DoHManager })
-  ├─ NetworkManager.Initialize(NetworkManagerConfig {
-  │       HostKeyUnitSettings ← m_Settings.HostKeySettings.HostKeyUnits
-  │       NetCmdUnitSettings  ← m_Settings.NetCmdSettings.NetCmdUnits })
-  └─ WebSocketManager.Initialize(WebSocketManagerConfig { ConnectTimeout, AuthenticateTimeout,
-           HeartBeatTimeInterval, HeartBeatTimeout, AutoReconnectMaxCounter,
-           AutoReconnectTimeInterval, EnableAutoReconnect,
-           AutoReconnectFailedUIAssetLocation, CoroutineRunner })
-
-依赖顺序约束：
-  DoHManager → HttpManager（HttpManager 注入 IDoHManager）
-  NetworkComponent : ICoroutineRunner → WebSocketManager（注入 ICoroutineRunner）
-```
-
----
-
-## § 11 使用示例
-
-```csharp
-// 1. Inspector 中选择四个管理器实现类，填写 HostKey / NetCmd / HTTP / DoH / WebSocket 配置
-
-// 2. 等待 HostKey / NetCmd 数据加载（成功后会自动后台预热全部 HostKey）
-bool success = await Nova.Network.LoadAsync();
-
-// 2.1 如需立刻强制重跑预热，可手动再次调用
-await Nova.Network.CollectAllIPAddresses();
-
-// 3. URL 路由查询
-string url = Nova.Network.GetNetCmdUrl("TbNetCmd", "user.login");
-
-// 4. Luban 表查询
-var table = Nova.Network.GetNetCmd<TbNetCmd>();
-
-// 5. 服务器时间（业务层注入具体实现后调用）
-Nova.Network.SetServerTimeFetcher(async () =>
+~~~csharp
+if (!await Nova.Network.LoadAsync())
 {
-    var response = await Nova.Network.PostAsync(url, body);
-    try
-    {
-        return ParseTimestampFromResponse(response);
-    }
-    finally
-    {
-        ReferencePool.Put(response);
-    }
-});
-await Nova.Network.FetchServerTimeAsync();
-long ts = Nova.Network.ServerTime;
+    return;
+}
 
-// 6. WebSocket 连接与消息收发
-Nova.Network.OnWebSocketConnectSuccess += (idx, addr) => Debug.Log($"Channel {idx} connected");
-Nova.Network.ConnectServer(WebSocketScope.NetChannelType.TcpPb, "ws://game.server.com:8080/ws");
-var msg = Nova.Network.CreateMessage(WebSocketScope.NetChannelType.TcpPb);
-Nova.Network.SendMessage(WebSocketScope.NetChannelType.TcpPb, "ws://game.server.com:8080/ws", msg);
-```
+// 读取主地址兼容 URL；业务 Kit 的 SendAsync 会使用内部主备链。
+string url = Nova.Network.GetNetCmdUrl("TbUserCmd", "Login");
+~~~
 
----
+## 关联文档
 
-## § 13 关联文档
-
-- [Runtime.md](../../Runtime.md)
+- [NetworkManager.md](NetworkManager/NetworkManager.md)
+- [HttpManager.md](HttpManager/HttpManager.md)
+- [WebSocketManager.md](WebSocketManager/WebSocketManager.md)
 - [NetworkComponentInspector.md](../../../Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.md)
-- [INetworkManager.md](NetworkManager/INetworkManager.md)
-- [NetworkSettings.md](Definitions/NetworkSettings.md)
-- [IHttpManager.md](HttpManager/IHttpManager.md)
-- [IDoHManager.md](DoHManager/IDoHManager.md)
-- [IWebSocketManager.md](WebSocketManager/IWebSocketManager.md)
-- [IDeviceIdProvider.md](../SDK/Plugins/Device/IDeviceIdProvider.md) — Kit<T>() 访问的 SDK 插件之一；NetService 通过此接口读取设备 ID
-- [NetService.md](NetService.md)
-- [NetBuilder.md](NetBuilder.md)
-
----
-
-## Sample 演示位置
-
-- 演示 view：`Samples/MainDemo/Scripts/Runtime/UIs/DemoNetworkView/`
-- prefab：`Samples/MainDemo/Prefabs/UIs/DemoNetworkView/`（Prefab 期落地）
-- 演示 API：`Nova.Network.GetAsync(url)` / `Nova.Network.PostAsync(url, body)` / `Nova.Network.ConnectServer(...)`（详见 [DESIGN.md § 3.2.9](../../../../../Samples/MainDemo/DESIGN.md)）
-- 覆盖维度：生命周期（C）/ 重载族（C）/ 异步（F）/ 配置驱动（C）/ 事件回调（F）/ 错误边界（C）

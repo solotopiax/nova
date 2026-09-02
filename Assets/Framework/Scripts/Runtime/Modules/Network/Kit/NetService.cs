@@ -162,14 +162,37 @@ namespace NovaFramework.Runtime
         /// <param name="parser">响应 Proto 消息解析器（通常为 TResp.Parser）。</param>
         /// <returns>包含业务响应数据或错误信息的 NetResponse。</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static async UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(
+        public static UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(
             INetworkCmdRow cmdRow,
             TReq request,
             MessageParser<TResp> parser)
             where TReq : IMessage<TReq>
             where TResp : IMessage<TResp>
         {
+            return SendAsync(cmdRow, request, parser, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// 发送支持主动取消的 Protobuf 请求；取消会中止当前 UWR，且不会继续备用候选。
+        /// </summary>
+        /// <typeparam name="TReq">请求 Proto 消息类型。</typeparam>
+        /// <typeparam name="TResp">响应 Proto 消息类型。</typeparam>
+        /// <param name="cmdRow">NetCmd 指令行数据。</param>
+        /// <param name="request">直接传入的业务 Proto Body。</param>
+        /// <param name="parser">响应 Proto 消息解析器。</param>
+        /// <param name="cancellationToken">取消令牌。</param>
+        /// <returns>包含业务响应数据或错误信息的 NetResponse。</returns>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static async UniTask<NetResponse<TResp>> SendAsync<TReq, TResp>(
+            INetworkCmdRow cmdRow,
+            TReq request,
+            MessageParser<TResp> parser,
+            CancellationToken cancellationToken)
+            where TReq : IMessage<TReq>
+            where TResp : IMessage<TResp>
+        {
             string netCmdName = cmdRow?.Name ?? "unknown";
+            cancellationToken.ThrowIfCancellationRequested();
 
             IReadOnlyList<string> routeUrls = Nova.Network.ResolveNetCmdUrls(cmdRow);
             string url = routeUrls.Count > 0 ? routeUrls[0] : null;
@@ -225,11 +248,12 @@ namespace NovaFramework.Runtime
                 {
                     httpResponse = await Nova.Network.PostBusinessRawDataAsync(
                         routeUrls,
+                        cmdRow?.HostKey,
+                        netCmdName,
                         bodyBytes,
                         -1f,
-                        -1f,
                         headerInfos,
-                        netCmdName
+                        cancellationToken
                     );
                 }
                 catch (Exception e)

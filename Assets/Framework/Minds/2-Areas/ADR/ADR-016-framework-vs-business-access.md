@@ -66,7 +66,7 @@ Nova Framework 同时存在三套访问 Manager 的入口：
 
 | 方案 | 否决理由 |
 |---|---|
-| 框架内允许使用 `Nova.XXX` 聚合器 | 反向依赖；聚合器初始化时序耦合；DoHManager 等模块踩过坑 |
+| 框架内允许使用 `Nova.XXX` 聚合器 | 反向依赖；聚合器初始化时序耦合；内部 Manager 曾因误用业务聚合器产生同类问题 |
 | Component 暴露 `public IXxxManager` 公开属性 | 业务层穿透 Component 拿接口再点字段，分层封装形同虚设 |
 | 业务层走 `FrameworkManagersGroup.GetManager<I...>()` | 业务层引用 `IXxxManager` 内部契约，框架内部重构会炸业务代码 |
 | 不分层，统一 `Nova.XXX` 一套 | 无法做框架内 Manager 间高频互访的优化，且无法剥离业务聚合器 |
@@ -75,7 +75,7 @@ Nova Framework 同时存在三套访问 Manager 的入口：
 
 - grep 关键词（应零命中）：框架层路径下出现 `Nova\.(Config|UI|Event|Asset|...)`
 - grep 关键词（应零命中）：业务层路径下出现 `IXxxManager` 或 `FrameworkManagersGroup`
-- 历史踩坑：DoHManager 用 `Nova.Config?.ConfigManager?.DevelopMode` 把业务聚合器吸进框架层
+- 历史踩坑：内部 Manager 通过 `Nova.Config` 读取配置，把业务聚合器反向吸进框架层
 - 待修缺口：`Assets/Framework/Scripts/Runtime/Modules/UI/Managers/UIViewManager/Definitions/UIView.Methods.cs:95` 仍存 `Nova.UI.CloseUIView(this)`，需改为 `FrameworkManagersGroup.GetManager<IUIManager>()?.CloseUIView(this)`
 
 ## 关联

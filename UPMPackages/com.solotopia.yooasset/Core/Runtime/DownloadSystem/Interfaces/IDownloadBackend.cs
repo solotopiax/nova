@@ -6,7 +6,7 @@ namespace YooAsset
     /// 下载后台接口
     /// </summary>
     /// <remarks>
-    /// <para>不同网络库（UnityWebRequest / BestHTTP / 自研）实现该接口，用于创建具体下载请求。</para>
+    /// <para>不同网络库（UnityWebRequest / 自研）实现该接口，用于创建具体下载请求。</para>
     /// <para>每个后台实例是独立的，不共享全局状态。</para>
     /// </remarks>
     internal interface IDownloadBackend : IDisposable

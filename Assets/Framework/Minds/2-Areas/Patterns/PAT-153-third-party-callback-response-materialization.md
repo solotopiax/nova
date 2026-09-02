@@ -11,9 +11,9 @@ aliases:
   - 第三方响应回调生命周期
 keywords:
   - PAT-153
-  - BestHTTP
-  - HTTPResponse
-  - Empty response
+  - 第三方网络回调
+  - 响应对象所有权
+  - 空响应
   - 回调响应释放
   - 响应体物化
   - DownloadTextAsync
@@ -23,9 +23,7 @@ tags:
   - network
   - async
   - lifecycle
-  - besthttp
 related:
-  - "[[ADR-076-startup-whitelist-metadata-routing|ADR-076]]"
   - "[[PAT-03-runtime-verify-three-step|PAT-03]]"
   - "[[PAT-146-unitask-cached-completion-for-retry|PAT-146]]"
 ---
@@ -61,7 +59,7 @@ related:
 - 响应头；
 - 错误与下载进度。
 
-回调对外完成的是已经独立持有数据的框架 `HttpResponse`，不能先把第三方 `HTTPResponse` 放进异步任务，再由 continuation 或下一帧读取。
+回调对外完成的是已经独立持有数据的框架 `HttpResponse`，不能先把第三方响应对象放进异步任务，再由 continuation 或下一帧读取。
 
 ### 3. 用原子完成权处理回调、取消和超时竞态
 
@@ -75,13 +73,13 @@ related:
 
 ## 为什么这么做（Why）
 
-BestHTTP 3.0.18 的请求事件实现会先调用 `source.Callback(source, source.Response)`，随后在 callback 非空时执行 `source.Dispose()`。Nova 旧实现把 `Task<HTTPResponse>` 转为 `UniTask`，在异步恢复后才调用 `BuildHttpResponse`；此时第三方响应已被释放，因此出现 HTTP 200、`IsSuccess=true`，但 `Body` 与 `RawData` 为空。
+某些第三方网络库只保证响应对象在完成回调执行期间有效，并会在回调返回后立即释放请求、响应或其内部缓冲区。若适配层先把第三方响应对象交给异步源，等 await 恢复后再复制数据，就可能出现 HTTP 状态成功但 `Body` 与 `RawData` 已为空的假成功。
 
-把复制动作放回 BestHTTP callback 内后，框架响应不再依赖第三方对象的后续生命周期。原子完成权同时避免取消或超时先返回后，迟到回调再次完成任务或遗留池化对象。
+把复制动作放在第三方完成回调内，框架响应便不再依赖第三方对象的后续生命周期。原子完成权同时避免取消或超时先返回后，迟到回调再次完成任务或遗留池化对象。
 
 ## 反模式（Anti-patterns）
 
-- 看到 `Task<HTTPResponse>` 就默认响应在 await 后仍然有效。
+- 看到 `Task<TResponse>` 就默认响应在 await 后仍然有效。
 - 使用 `ContinueWith(... ExecuteSynchronously)` 作为生命周期保证；调度器内联是执行策略，不是第三方响应所有权契约。
 - 只检查 HTTP 状态码，不断言正文和原始字节，导致“200 空响应”漏过测试。
 - 修正文成功路径，却不处理取消、idle timeout 与迟到回调之间的完成竞态。
@@ -89,14 +87,12 @@ BestHTTP 3.0.18 的请求事件实现会先调用 `source.Callback(source, sourc
 
 ## 验证依据（Verification）
 
-- 第三方源码：BestHTTP 3.0.18 `RequestEvents.cs` 在 callback 返回后调用 `source.Dispose()`。
-- Nova 实现：`UPMPackages/com.solotopia.nova.framework.besthttp/Nova/Runtime/BestHttpTransport.Methods.cs` 在 `HTTPRequest.Callback` 内构建框架响应。
-- 红灯复现：本地 HTTP 200 返回 `["device-id"]`，旧实现得到空 `Body`。
-- 绿灯回归：`BestHttpTransportDownloadTests.DownloadTextAsync_PreservesSuccessfulResponseBody` 断言 `Body` 与 `RawData`，EditMode 1/1 通过。
-- 真实流程：MainDemo HostPlayMode 成功打印“启动白名单文件拉取成功”与“启动白名单命中”，不再出现 `Empty response`。
+- 源码或官方契约：确认第三方请求、响应及内部缓冲区的释放点位于完成回调返回之后。
+- 红灯复现：本地 HTTP 200 返回非空文本和字节，故意在 await 后读取第三方响应时得到空数据。
+- 绿灯回归：在回调内物化框架响应后，同时断言状态码、`Body`、`RawData` 与响应头；再覆盖取消、超时和迟到回调竞态。
+- 真实流程：在实际调用链验证非空正文可被后续解析，并确认池化响应只由最终持有者归还一次。
 
 ## 关联
 
-- 白名单业务契约：[[ADR-076-startup-whitelist-metadata-routing|ADR-076]]
 - 运行时验证方法：[[PAT-03-runtime-verify-three-step|PAT-03]]
 - UniTask 生命周期边界：[[PAT-146-unitask-cached-completion-for-retry|PAT-146]]

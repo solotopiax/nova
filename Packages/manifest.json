@@ -12,7 +12,6 @@
     "com.solotopia.luban": "file:../UPMPackages/com.solotopia.luban",
     "com.solotopia.nicevibrations": "file:../UPMPackages/com.solotopia.nicevibrations",
     "com.solotopia.nova.framework": "file:../Assets/Framework",
-    "com.solotopia.nova.framework.besthttp": "file:../UPMPackages/com.solotopia.nova.framework.besthttp",
     "com.solotopia.nova.framework.kit.network.gamebind": "file:../UPMPackages/com.solotopia.nova.framework.kit.network.gamebind",
     "com.solotopia.nova.framework.kit.network.gamelogin": "file:../UPMPackages/com.solotopia.nova.framework.kit.network.gamelogin",
     "com.solotopia.nova.framework.kit.network.gamesave": "file:../UPMPackages/com.solotopia.nova.framework.kit.network.gamesave",
@@ -37,8 +36,6 @@
     "com.solotopia.webglsupport": "file:../UPMPackages/com.solotopia.webglsupport",
     "com.solotopia.yooasset": "file:../UPMPackages/com.solotopia.yooasset",
     "com.starlus.sdk.datamaster": "1.0.1",
-    "com.tivadar.best.http": "3.0.20",
-    "com.tivadar.best.tlssecurity": "3.0.5",
     "com.unity.cinemachine": "3.1.7",
     "com.unity.feature.2d": "2.0.2",
     "com.unity.ide.rider": "3.0.40",
@@ -88,15 +85,11 @@
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
   },
-  "testables": [
-    "com.solotopia.nova.framework.besthttp"
-  ],
   "scopedRegistries": [
     {
       "name": "Solotopia Internal",
       "url": "http://172.16.22.175:4874",
       "scopes": [
-        "com.tivadar",
         "com.onevcat",
         "com.starlus",
         "com.da-assets",

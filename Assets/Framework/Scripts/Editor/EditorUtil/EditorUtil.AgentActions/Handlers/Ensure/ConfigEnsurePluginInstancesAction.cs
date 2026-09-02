@@ -660,7 +660,6 @@ namespace NovaFramework.Editor
             return (from PlatformType platform in Enum.GetValues(typeof(PlatformType))
                     where platform != PlatformType.None
                     from ChannelType channel in Enum.GetValues(typeof(ChannelType))
-                    where channel != ChannelType.None
                     from DevelopMode mode in Enum.GetValues(typeof(DevelopMode))
                     orderby platform, channel, mode
                     select new TargetCell { Platform = platform, Channel = channel, Mode = mode }).ToArray();
@@ -704,7 +703,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 严格按枚举名称解析三维坐标，拒绝 None 与数字字符串。
+        /// 严格按枚举名称解析三维坐标：Platform 拒绝 None，Channel 允许 None，并拒绝数字字符串。
         /// </summary>
         private static bool TryParseCoordinate(
             Coordinate coordinate,
@@ -730,9 +729,9 @@ namespace NovaFramework.Editor
                 error = "coordinate.platform 必须是有效且非 None 的 PlatformType 名称。";
                 return false;
             }
-            if (!Enum.TryParse(channelText, false, out channel) || !Enum.IsDefined(typeof(ChannelType), channel) || channel == ChannelType.None || channelText != channel.ToString())
+            if (!Enum.TryParse(channelText, false, out channel) || !Enum.IsDefined(typeof(ChannelType), channel) || channelText != channel.ToString())
             {
-                error = "coordinate.channel 必须是有效且非 None 的 ChannelType 名称。";
+                error = "coordinate.channel 必须是有效的 ChannelType 名称。";
                 return false;
             }
             if (!Enum.TryParse(modeText, false, out mode) || !Enum.IsDefined(typeof(DevelopMode), mode) || modeText != mode.ToString())

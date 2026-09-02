@@ -13,7 +13,7 @@
 | 文件 | 说明 |
 |------|------|
 | `Nova.cs` | 主体：`Awake`（单例保护 + 异常隔离注入助手）、`Start`（聚合组件）、`Update`（驱动 ManagersGroup）、`OnDestroy`（清理 + 静态引用置空）、游戏控制方法 |
-| `Nova.Visitors.cs` | 所有静态 Component 属性 + `ResetStatics`（Domain Reload 安全）+ `ClearStaticReferences` + 运行时配置 `[SerializeField]` 字段 |
+| `Nova.Visitors.cs` | 所有静态 Component 属性 + `InstallTimeMs` + `ResetStatics`（Domain Reload 安全）+ `ClearStaticReferences` + 运行时配置 `[SerializeField]` 字段 |
 | `Nova.Methods.cs` | `SetCultureInfo` / `IsStrictCheck` / `OnLowMemory` / `ValidateComponent` 等私有辅助方法 |
 
 ---
@@ -46,6 +46,17 @@ private static void ResetStatics()
 ## 单例保护
 
 `Awake()` 中检测 `Self != null && Self != this`，若已存在实例则销毁自身并 `return`，避免多实例并存导致的状态混乱。
+
+---
+
+## 框架通用安装时间
+
+`Nova.InstallTimeMs` 公开框架统一的安装时间近似值：
+
+- 值为 `long` 类型的 13 位 UTC Unix 毫秒时间戳。
+- `Nova.Awake()` 在框架最早启动阶段确保该值已生成并落盘；访问属性本身也具备懒初始化保护。
+- 底层使用跨平台启动期 PlayerPrefs，不依赖 `Nova.Persist.LoadAsync()`。
+- Unity 没有跨平台真实首次安装时间 API，因此该值语义是“Nova 框架首次启动记录时间”。清除应用数据后会重新生成。
 
 ---
 
@@ -132,12 +143,13 @@ Nova 使用 `[DefaultExecutionOrder(-1000)]` 确保其 `Awake()` 和 `Start()` �
 1. **单例保护**：若 `Self` 已存在且不等于 `this`，销毁自身并提前返回（在 `base.Awake()` 之前，避免重复注册）
 2. `base.Awake()` → `FrameworkComponentsGroup.RegisterComponent(this)`
 3. `Self = this`
-4. `Util.TypeCreator.Create<ITxtHelper>()` → `Txt.SetHelper()`（独立 try-catch）
-5. `Util.TypeCreator.Create<ILogHelper>()` → `Log.SetHelper()`（独立 try-catch）
-6. `Util.TypeCreator.Create<IReferenceHelper>()` → `ReferencePool.SetHelper()`（独立 try-catch）
-7. `SetCultureInfo(CultureInfo.InvariantCulture)` — 消除地区格式化差异
-8. 设置 `Application.targetFrameRate / Time.timeScale / runInBackground / sleepTimeout`
-9. 注册 `Application.lowMemory += OnLowMemory`
+4. 读取或生成 `InstallTimeMs` 并立即落盘
+5. `Util.TypeCreator.Create<ITxtHelper>()` → `Txt.SetHelper()`（独立 try-catch）
+6. `Util.TypeCreator.Create<ILogHelper>()` → `Log.SetHelper()`（独立 try-catch）
+7. `Util.TypeCreator.Create<IReferenceHelper>()` → `ReferencePool.SetHelper()`（独立 try-catch）
+8. `SetCultureInfo(CultureInfo.InvariantCulture)` — 消除地区格式化差异
+9. 设置 `Application.targetFrameRate / Time.timeScale / runInBackground / sleepTimeout`
+10. 注册 `Application.lowMemory += OnLowMemory`
 
 ### Start()
 1. 从 `FrameworkComponentsGroup` 查找并赋值 App / Asset / Config / Prefab / Native / Event / Table / Localization / UI / Network / Procedure / ObjectPool / Persist / Sound / Vibrate / SDK / Debug

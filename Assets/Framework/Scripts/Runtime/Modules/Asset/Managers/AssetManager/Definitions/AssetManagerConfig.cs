@@ -94,12 +94,28 @@ namespace NovaFramework.Runtime
         public int MaxDownloadConcurrency = 5;
 
         /// <summary>
-        /// 单文件下载失败自动重试次数，0 表示不重试。
+        /// 每个文件的单个逻辑执行周期内，完整遍历全部有效且去重主备候选的轮数，最小为 1。
+        /// </summary>
+        public int FallbackRoundCount = 1;
+
+        /// <summary>
+        /// 单文件下载重试次数；首次执行不计入该值，每次重试重新执行全部主备轮次，0 表示只执行首次组合。
         /// </summary>
         public int RetryDownloadCount = 3;
 
         /// <summary>
-        /// 单次远端版本文件请求的总超时秒数。
+        /// 新文件建立独立下载计划时，是否优先使用当前进程内最近成功的 Asset 域名；不会删除其他候选。
+        /// </summary>
+        public bool PreferLastSuccessfulHost = true;
+
+        /// <summary>
+        /// 是否启用 Asset UnityWebRequest 链路埋点；仅控制上报，不影响下载执行。
+        /// </summary>
+        public bool EnableUWRTracks = true;
+
+        /// <summary>
+        /// 启动白名单与 .version 的单次物理请求超时秒数；每个主备候选独立使用。
+        /// .hash/.bytes Manifest 仍使用现有 60 秒超时，不受此字段影响。
         /// </summary>
         public int CheckTimeout = 5;
 

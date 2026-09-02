@@ -33,7 +33,6 @@
 | `Debug` | `[Debug]` | Debug 模块 |
 | `Http` | `[Network][Http]` | HTTP 网络子模块 |
 | `WebSocket` | `[Network][WebSocket]` | WebSocket 子模块 |
-| `DoH` | `[Network][DoH]` | DoH 子模块 |
 | `Network` | `[Network]` | 网络模块 |
 | `SDK` | `[SDK]` | SDK 模块 |
 | `Table` | `[Table]` | 表格模块 |
@@ -60,4 +59,3 @@ Log.Error(LogTag.NetworkHttp, "接口请求失败。");
 ## § 13 关联文档
 
 - [Log.md](Log.md)
-

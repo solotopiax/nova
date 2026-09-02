@@ -23,7 +23,7 @@
 | Table | [TableComponent.md](Table/TableComponent.md) | 表格系统 |
 | Localization | [LocalizationComponent.md](Localization/LocalizationComponent.md) | 文本与字体本地化 |
 | UI | [UIComponent.md](UI/UIComponent.md) | UI 打开、关闭与分组管理 |
-| Network | [NetworkComponent.md](Network/NetworkComponent.md) | DoH / HTTP / Net / WebSocket |
+| Network | [NetworkComponent.md](Network/NetworkComponent.md) | HTTP / Net / WebSocket |
 | Procedure | [ProcedureComponent.md](Procedure/ProcedureComponent.md) | 启动流程与状态切换 |
 | ObjectPool | [ObjectPoolComponent.md](ObjectPool/ObjectPoolComponent.md) | 对象池 |
 | Persist | [PersistComponent.md](Persist/PersistComponent.md) | 持久化能力 |

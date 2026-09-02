@@ -39,6 +39,10 @@ UnityEditor.Editor
 | `m_AppDownloadCheckUrlRelease` | `SerializedProperty` | Release 主版本检查地址 |
 | `m_AppDownloadCheckUrlFallbackRelease` | `SerializedProperty` | Release 备用版本检查地址 |
 | `m_TimeoutSeconds` | `SerializedProperty` | 超时秒数（默认 5） |
+| `m_VersionCheckFallbackRoundCount` | `SerializedProperty` | 一个执行周期内的完整主备轮数（默认 1） |
+| `m_RetryRequestCount` | `SerializedProperty` | 首个周期耗尽后的额外完整执行周期次数（默认 1） |
+| `m_PreferLastSuccessfulHost` | `SerializedProperty` | 是否优先当前进程内最近成功域名（默认开启） |
+| `m_EnableUWRTracks` | `SerializedProperty` | 是否上报 App 版本检查统一 UWR 链路（默认开启） |
 | `m_DownloadRoute` | `SerializedProperty` | 更新下载路由（Store/Apk） |
 | `m_AndroidStoreUrl` | `SerializedProperty` | Android 商店地址 |
 | `m_AppStoreUrl` | `SerializedProperty` | iOS 商店地址 |
@@ -80,10 +84,14 @@ public override void OnInspectorGUI()
   ├── 版本检查URL-Debug（备用）
   ├── 版本检查URL-Release
   ├── 版本检查URL-Release（备用）
-  └── HelpBox：按模板生成 JSON 并上传 CDN；DevelopMode 决定用哪一组；支持四项 URL 占位符；主备都不可用时返回 NoDownload
+  └── HelpBox：按模板生成 JSON 并上传 CDN；DevelopMode 决定用哪一组；支持四项 URL 占位符；候选耗尽时返回 NoDownload
 
   ├── 版本检查超时（秒）（Property，缩进 16f）
   └── HelpBox：弱网说明 + 推荐值 5
+  ├── 主备完整轮数（Property，最小 1）
+  ├── 额外请求重试次数（Property，最小 0）
+  ├── 最近成功域名优先（Property）
+  └── 启用 UWR 埋点（Property）
 
 ───────────────────────────────────────────────────────────
   Foldout "更新规则"（SessionState key: AppUpdateRuleGroup）
@@ -114,26 +122,34 @@ App 模块的大版本检查依赖 CDN 上的一份 JSON 配置，整个链路�
 [2] 上传：将生成的 JSON 上传到 CDN，分别得到 Debug / Release 两组可访问 URL；可通过「Config全局配置中心 - CDN 内容分发网络部署」或「Pipify 自动化管线编排中心 - 添加步骤」自动上传
     填入 m_AppDownloadCheckUrl{Debug,Release}（主）与 m_AppDownloadCheckUrlFallback{Debug,Release}（备）
 
-[3] 启动：运行时按当前 DevelopMode 选择对应组的主地址发起检查
+[3] 启动：运行时按当前 DevelopMode 选择对应组的主、备地址并构造共享候选计划
     主备 URL 均支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`
     四项语义与 Asset 主机服务器 URL 一致：Player 编译宏对应平台 / Config 导出渠道 / 默认资源包名 / Application.version；Runtime 不读取 Editor Active BuildTarget 或 ConfigMaster
-    主地址失败或返回空内容时自动切到备用地址
-    主备均不可用时本次大版本检查直接返回 NoDownload
+    设去重候选数为 C、完整轮数为 R、重试次数为 K，最多发送 C × R × (K + 1) 次
+    顺序为“首次执行/重试 → 完整轮次 → 当前候选”；主备齐全且 R=1、K=1 时为 主→备→主→备
+    传输/客户端数据处理失败、404/408/429/5xx、空正文、无效 JSON/版本规则会推进；其他正式 HTTP 状态（如 401）停止
+    合法 JSON（包括 NoDownload）停止；调用方取消会中止当前内置 UWR 且不再进入下一候选
+    候选耗尽时本次大版本检查返回 NoDownload
 
 [4] 超时：m_TimeoutSeconds（秒）作用于版本检查请求
-    推荐值 5；过短易在弱网环境下误判失败
+    每次物理请求独享该超时；推荐值 5，过短易在弱网环境下误判失败
 
-[5] 规则命中：比对本地版本号与 CDN JSON 中的推荐 / 强制版本号
+[5] 偏好与埋点：m_PreferLastSuccessfulHost 仅在当前进程内把最近有效规则域名排到下一条链的首位
+    候选全部失败不会清空偏好；配置候选变更或 Manager 重置时才失效
+    m_EnableUWRTracks 只控制 App 版本检查统一链路埋点，同一次物理发送不会与底层重复上报
+
+[6] 规则命中：比对本地版本号与 CDN JSON 中的推荐 / 强制版本号
     启用推荐更新规则（m_UseRecommendedDownloadRule）
       本地版本号 < CDN 推荐版本号 → 弹推荐更新提示，用户取消后继续热更检查与后续启动
     启用强制更新规则（m_UseForcedDownloadRule）
       本地版本号 < CDN 强制版本号 → 弹强制更新提示，用户操作被锁定无法跳过
     两规则可任意组合启用，同时命中时优先级：强制 > 推荐
 
-[6] 下载：命中任一规则后统一走 m_DownloadRoute 指定的下载方式
+[7] 下载：命中任一规则后统一走 m_DownloadRoute 指定的下载方式
     Store：跳转应用商店（m_AndroidStoreUrl / m_AppStoreUrl，仅当前平台对应字段必填）
     Apk：App 内下载 APK 文件（m_PrimaryDownloadUrl 启动期必填，m_FallbackDownloadUrl 可选）
     Apk 模式下版本检查命中规则时会校验 m_PrimaryDownloadUrl 非空
+    上述版本规则候选轮次不会改写 APK 下载主/备地址或现有 APK 下载骨架
 ```
 
 ---

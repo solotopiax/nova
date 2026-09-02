@@ -23,9 +23,22 @@ namespace NovaFramework.Runtime
             "Nova.App.RecommendedDownloadDismissedAtUnixSeconds";
 
         /// <summary>
+        /// App 版本检查在当前进程内复用最近成功域名时使用的隔离键。
+        /// 该偏好只属于 App 版本规则请求，不能与业务协议或资源下载共用。
+        /// </summary>
+        private const string c_VersionCheckFallbackScopeKey = "app.version_check";
+
+        /// <summary>
         /// HTTP 管理器，提供版本检查接口调用与 APK 文件下载能力。
         /// </summary>
         private IHttpManager m_HttpManager;
+
+        /// <summary>
+        /// App 版本检查最近成功域名的进程内存储。
+        /// 整链失败不会清除该偏好，只有新成功、配置不匹配或 Manager 关闭才会改变它。
+        /// </summary>
+        private readonly HttpFallbackPreferenceStore m_VersionCheckFallbackPreferences =
+            new HttpFallbackPreferenceStore();
 
         /// <summary>
         /// 初始化时注入的配置。

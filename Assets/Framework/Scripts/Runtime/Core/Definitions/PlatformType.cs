@@ -36,6 +36,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// WebGL 平台。
         /// </summary>
+        [UnityEngine.InspectorName("WebGL")]
         WebGL = 3
     }
 }

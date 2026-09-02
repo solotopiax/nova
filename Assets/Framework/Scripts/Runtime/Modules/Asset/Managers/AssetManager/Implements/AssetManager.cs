@@ -106,6 +106,7 @@ namespace NovaFramework.Runtime
             m_OfflineRecoveredPackages.Clear();
             m_StartupWhitelistCheckedPackages.Clear();
             m_StartupWhitelistMatchedPackages.Clear();
+            m_StartupWhitelistPreferenceStore.ClearAll();
             m_DownloadUrlPolicies.Clear();
             m_PackageMetadataGates.Clear();
             m_Packages.Clear();
@@ -340,8 +341,15 @@ namespace NovaFramework.Runtime
         {
             string name = ResolvePackageName(package);
             ResourcePackage pkg = GetPackage(name);
-            var options = new ResourceDownloaderOptions(concurrency, retry);
-            return new AssetDownloader(pkg.CreateResourceDownloader(options), "all");
+            int logicalRetryCount = Math.Max(0, retry);
+            var options = new ResourceDownloaderOptions(
+                concurrency,
+                GetBundlePhysicalRetryCount(name, logicalRetryCount));
+            return new AssetDownloader(
+                pkg.CreateResourceDownloader(options),
+                "all",
+                GetOrCreateDownloadUrlPolicy(name),
+                logicalRetryCount);
         }
 
         /// <summary>
@@ -359,11 +367,26 @@ namespace NovaFramework.Runtime
             ResourcePackage pkg = GetPackage(name);
             if (tags == null || tags.Length == 0)
             {
-                var options = new ResourceDownloaderOptions(concurrency, retry);
-                return new AssetDownloader(pkg.CreateResourceDownloader(options), "all");
+                int logicalRetryCount = Math.Max(0, retry);
+                var options = new ResourceDownloaderOptions(
+                    concurrency,
+                    GetBundlePhysicalRetryCount(name, logicalRetryCount));
+                return new AssetDownloader(
+                    pkg.CreateResourceDownloader(options),
+                    "all",
+                    GetOrCreateDownloadUrlPolicy(name),
+                    logicalRetryCount);
             }
-            var tagOptions = new ResourceDownloaderOptions(tags, concurrency, retry);
-            return new AssetDownloader(pkg.CreateResourceDownloader(tagOptions), $"tags:{string.Join(',', tags)}");
+            int tagLogicalRetryCount = Math.Max(0, retry);
+            var tagOptions = new ResourceDownloaderOptions(
+                tags,
+                concurrency,
+                GetBundlePhysicalRetryCount(name, tagLogicalRetryCount));
+            return new AssetDownloader(
+                pkg.CreateResourceDownloader(tagOptions),
+                $"tags:{string.Join(',', tags)}",
+                GetOrCreateDownloadUrlPolicy(name),
+                tagLogicalRetryCount);
         }
 
         /// <summary>
@@ -394,8 +417,17 @@ namespace NovaFramework.Runtime
                 }
                 validInfos.Add(info);
             }
-            var options = new BundleDownloaderOptions(validInfos.ToArray(), true, concurrency, retry);
-            return new AssetDownloader(pkg.CreateResourceDownloader(options), $"locations:{validInfos.Count}");
+            int logicalRetryCount = Math.Max(0, retry);
+            var options = new BundleDownloaderOptions(
+                validInfos.ToArray(),
+                true,
+                concurrency,
+                GetBundlePhysicalRetryCount(name, logicalRetryCount));
+            return new AssetDownloader(
+                pkg.CreateResourceDownloader(options),
+                $"locations:{validInfos.Count}",
+                GetOrCreateDownloadUrlPolicy(name),
+                logicalRetryCount);
         }
 
         /// <summary>

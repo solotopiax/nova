@@ -188,17 +188,6 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 向无序集合追加基础地址与 Path 的拼接结果，并忽略空值。
-        /// </summary>
-        private static void AddUniqueUrl(HashSet<string> urls, string baseUrl, string path)
-        {
-            if (!string.IsNullOrEmpty(baseUrl))
-            {
-                urls.Add(baseUrl + (path ?? string.Empty));
-            }
-        }
-
-        /// <summary>
         /// 从单个 ITable 中通过 ITable<INetworkCmdRow> 协变提取指令数据到 m_CmdCache。
         /// 缓存键使用 "表类型名.行Name" 复合格式，避免不同表中同名行互相覆盖。
         /// </summary>

@@ -23,6 +23,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
     /// AppsFlyer SDK插件，继承SDKPluginBase，实现IAttributionPlugin归因打点契约。
     /// 负责SDK初始化、归因事件上报、归因数据接收及深度链接处理。
     /// </summary>
+    [SDKPluginConfigType(typeof(AppsFlyerPluginConfig))]
     public sealed partial class AppsFlyerPlugin : SDKPluginBase, IAttributionPlugin
     {
       

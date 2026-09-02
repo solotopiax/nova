@@ -19,20 +19,18 @@ namespace NovaFramework.Editor
     internal sealed partial class NetworkComponentInspector : BaseComponentInspector
     {
         /// <summary>
-        /// 绘制四个管理器实现类类型选择器，及说明 HelpBox 与分隔线。
+        /// 绘制三个管理器实现类类型选择器，及说明 HelpBox 与分隔线。
         /// </summary>
         private void DrawManagerSelectors()
         {
             EditorUtil.Draw.TypesSelector("Network 管理器", m_NetworkManagerTypeNames, m_CurNetworkManagerTypeName, true, null, GUILayout.Width(175));
             EditorUtil.Draw.TypesSelector("HTTP 管理器", m_HttpManagerTypeNames, m_CurHttpManagerTypeName, true, null, GUILayout.Width(175));
-            EditorUtil.Draw.TypesSelector("DoH 管理器", m_DoHManagerTypeNames, m_CurDoHManagerTypeName, true, null, GUILayout.Width(175));
             EditorUtil.Draw.TypesSelector("WebSocket 管理器", m_WebSocketManagerTypeNames, m_CurWebSocketManagerTypeName, true, null, GUILayout.Width(175));
             EditorUtil.Draw.HelpBox(MessageType.Info, new[]
             {
                 "(1)实现 INetworkManager 接口的自定义类型将出现在 Network 管理器列表",
                 "(2)实现 IHttpManager 接口的自定义类型将出现在 HTTP 管理器列表",
-                "(3)实现 IDoHManager 接口的自定义类型将出现在 DoH 管理器列表",
-                "(4)实现 IWebSocketManager 接口的自定义类型将出现在 WebSocket 管理器列表"
+                "(3)实现 IWebSocketManager 接口的自定义类型将出现在 WebSocket 管理器列表"
             });
             EditorUtil.Draw.Line();
         }
@@ -406,49 +404,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制 DoH 管理折叠区（UseDoH 开关 / 单域名 DoH 解析链超时 / 候选地址说明 / 运行时域名 IP 列表），并加分隔线。
-        /// </summary>
-        private void DrawDoHSettings()
-        {
-            if (!EditorUtil.Draw.Foldout("DoH 管理", "NetworkDoHSettings", true))
-            {
-                EditorUtil.Draw.Line();
-                return;
-            }
-
-            EditorUtil.Draw.IncreaseIndentLevel();
-            EditorUtil.Draw.Toggle("启用 DoH (DNS-over-HTTPS)", m_DoHSettings.FindPropertyRelative("UseDoH"), true, null, null, GUILayout.Width(185));
-            EditorUtil.Draw.Layout.Horizontal(() =>
-            {
-                EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
-                {
-                    "DoH 用于更安全地查询域名对应的访问地址，减少本地 DNS 异常或劫持对网络访问的影响。"
-                }, false, GUILayout.ExpandWidth(true));
-            });
-            EditorUtil.Draw.Property("单域名 DoH 解析链超时时间（秒）", m_DoHSettings.FindPropertyRelative("DnsTimeoutSeconds"), true, GUILayout.Width(225));
-            EditorUtil.Draw.Property("单域名最多使用 IP 数量", m_DoHSettings.FindPropertyRelative("MaxIPAddressesPerHost"), true, GUILayout.Width(225));
-            EditorUtil.Draw.Layout.Horizontal(() =>
-            {
-                EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
-                {
-                    "(1) 每个域名的查询都会单独计时，默认最多等待 5 秒。",
-                    "(2) 填写小于等于 0 的数字时不限制等待时间；如需停用 DoH，请关闭上方开关。",
-                    "(3) 每个域名默认最多使用前 3 个查询结果；填写小于等于 0 的整数时使用全部结果，尝试越多，最终等待时间可能越长。",
-                    "(4) 系统会自动按顺序尝试以下查询服务，整个过程共用上面设置的等待时间：",
-                    "      https://1.1.1.1/dns-query",
-                    "      https://1.0.0.1/dns-query",
-                    "      https://cloudflare-dns.com/dns-query"
-                }, false, GUILayout.ExpandWidth(true));
-            });
-            DrawRuntimeDoHAddresses((NetworkComponent)target);
-            EditorUtil.Draw.DecreaseIndentLevel();
-            EditorUtil.Draw.Line();
-        }
-
-        /// <summary>
-        /// 绘制 Http 管理折叠区（连接 / 请求超时 + 默认值提示），并加分隔线。
+        /// 绘制 Http 管理折叠区（UWR 埋点、业务主备策略与请求超时），并加分隔线。
         /// </summary>
         private void DrawHttpSettings()
         {
@@ -459,53 +415,28 @@ namespace NovaFramework.Editor
             }
 
             EditorUtil.Draw.IncreaseIndentLevel();
-            bool bestHttpTelemetryAvailable = IsBestHttpTelemetryAvailable(System.Type.GetType);
-            using (new EditorGUI.DisabledScope(!bestHttpTelemetryAvailable))
-            {
-                EditorUtil.Draw.Toggle(
-                    "启用 BestHTTP 网络埋点",
-                    m_EnableBestHttpTelemetry,
-                    true,
-                    null,
-                    null,
-                    GUILayout.Width(185));
-            }
-            EditorUtil.Draw.Property("HTTP 连接超时时间 (秒)", m_HttpSettings.FindPropertyRelative("ConnectTimeout"), true, GUILayout.Width(175));
+            EditorUtil.Draw.Toggle("启用 UWR 网络埋点", m_HttpSettings.FindPropertyRelative("EnableUWRTracks"), true, null, null, GUILayout.Width(175));
+            EditorUtil.Draw.Toggle("业务请求优先最近成功域名", m_HttpSettings.FindPropertyRelative("PreferLastSuccessfulHost"), true, null, null, GUILayout.Width(175));
+            EditorUtil.Draw.Property("业务主备候选轮数", m_HttpSettings.FindPropertyRelative("BusinessFallbackRoundCount"), true, GUILayout.Width(175));
+            EditorUtil.Draw.Property("业务请求重试次数", m_HttpSettings.FindPropertyRelative("RetryRequestCount"), true, GUILayout.Width(175));
             EditorUtil.Draw.Property("HTTP 请求超时时间 (秒)", m_HttpSettings.FindPropertyRelative("RequestTimeout"), true, GUILayout.Width(175));
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
                 EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                 {
-                    bestHttpTelemetryAvailable
-                        ? "(1)BestHTTP 网络埋点会转发到所有可用的 ITrackPlugin"
-                        : "(1)未检测到支持网络埋点的 BestHTTP 商业库，开关不可用",
-                    "(2)ConnectTimeout 默认 20 秒",
-                    "(3)RequestTimeout 默认 60 秒",
-                    "(4)各 API 的 timeout 参数传 -1 时使用此处的默认值"
+                    "(1)HTTP 固定使用 UnityWebRequest 与系统 DNS",
+                    "(2)最近成功偏好按 HostKey 隔离且只存在当前进程；仅调整新链的候选顺序",
+                    "(3)仅未取得正式 HTTP 响应时继续；任意 4xx/5xx 响应都结束候选链并交给业务解析",
+                    "(4)一轮会依次尝试当前有效且去重后的全部主备候选",
+                    "(5)首次完整执行不计入重试次数；每次重试都会重新执行全部主备轮次",
+                    "(6)候选数 C、轮数 R、重试次数 K 的最大物理请求数为 C × R × (K + 1)",
+                    "(7)RequestTimeout 由每次物理请求完整使用，不设置整条候选链总超时",
+                    "(8)UWR 埋点开关只控制上报，不会禁止或改变请求"
                 }, false, GUILayout.ExpandWidth(true));
             });
             EditorUtil.Draw.DecreaseIndentLevel();
             EditorUtil.Draw.Line();
-        }
-
-        /// <summary>
-        /// 检测当前工程是否安装了包含标准遥测委托的 Best HTTP 内部版。
-        /// </summary>
-        /// <param name="typeResolver">按程序集限定名解析类型的入口，测试中可替换。</param>
-        /// <returns>标准遥测委托存在且签名匹配时返回 true。</returns>
-        private static bool IsBestHttpTelemetryAvailable(System.Func<string, System.Type> typeResolver)
-        {
-            System.Type telemetryType = typeResolver?.Invoke(
-                "Best.HTTP.Telemetry.BestHttpTelemetry, com.Tivadar.Best.HTTP");
-            System.Reflection.PropertyInfo eventHandlerProperty = telemetryType?.GetProperty(
-                "EventHandler",
-                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-            return eventHandlerProperty != null &&
-                   eventHandlerProperty.SetMethod?.IsPublic == true &&
-                   eventHandlerProperty.PropertyType == typeof(System.Action<
-                       string,
-                       System.Collections.Generic.IReadOnlyDictionary<string, object>>);
         }
 
         /// <summary>
@@ -604,107 +535,6 @@ namespace NovaFramework.Editor
                     }
                 }
             });
-        }
-
-        /// <summary>
-        /// 绘制 DoH 解析诊断树运行时状态（仅 UseDoH 开启时显示）。
-        /// </summary>
-        /// <param name="t">目标 NetworkComponent。</param>
-        private void DrawRuntimeDoHAddresses(NetworkComponent t)
-        {
-            if (!EditorApplication.isPlaying)
-            {
-                return;
-            }
-
-            if (!m_DoHSettings.FindPropertyRelative("UseDoH").boolValue)
-            {
-                return;
-            }
-
-            if (t.DoHManager == null)
-            {
-                return;
-            }
-
-            IReadOnlyDictionary<string, DoHResolutionNode> roots = t.DoHManager.ResolutionRoots;
-            if (!EditorUtil.Draw.Foldout($"DoH 解析列表 ({roots?.Count ?? 0})", "NetworkDoHList"))
-            {
-                return;
-            }
-
-            EditorUtil.Draw.Layout.Vertical("box", () =>
-            {
-                if (roots == null || roots.Count == 0)
-                {
-                    return;
-                }
-
-                DrawDoHResolutionGroup(roots, DoHResolutionSource.HostKeyPrewarm, "HostKey 预热", "HostKey");
-                DrawDoHResolutionGroup(roots, DoHResolutionSource.RuntimeDiscovered, "手动 DNS 查询", "Runtime");
-            });
-        }
-
-        /// <summary>
-        /// 按查询来源绘制一组 DoH 根节点。
-        /// </summary>
-        private void DrawDoHResolutionGroup(
-            IReadOnlyDictionary<string, DoHResolutionNode> roots,
-            DoHResolutionSource source,
-            string title,
-            string key)
-        {
-            List<DoHResolutionNode> groupRoots = roots.Values
-                .Where(node => node.Source == source)
-                .OrderBy(node => node.HostName)
-                .ToList();
-
-            if (!EditorUtil.Draw.Foldout($"{title} ({groupRoots.Count})", $"NetworkDoHGroup_{key}", true))
-            {
-                return;
-            }
-
-            EditorUtil.Draw.IncreaseIndentLevel();
-            for (int i = 0; i < groupRoots.Count; i++)
-            {
-                DoHResolutionNode root = groupRoots[i];
-                DrawDoHResolutionNode(root, $"NetworkDoHNode_{key}_{root.HostName}");
-            }
-            EditorUtil.Draw.DecreaseIndentLevel();
-        }
-
-        /// <summary>
-        /// 递归绘制域名、其直接 IP 以及 CNAME 子节点；未获得 IP 的节点使用红色标注。
-        /// </summary>
-        private void DrawDoHResolutionNode(DoHResolutionNode node, string key)
-        {
-            bool failed = !node.IsResolved;
-            string title = failed ? $"{node.HostName}  [未获取 IP]" : node.HostName;
-            Color previousColor = GUI.color;
-            if (failed)
-            {
-                GUI.color = Color.red;
-            }
-
-            bool expanded = EditorUtil.Draw.Foldout(title, key);
-            GUI.color = previousColor;
-            if (!expanded)
-            {
-                return;
-            }
-
-            EditorUtil.Draw.IncreaseIndentLevel();
-            for (int i = 0; i < node.Addresses.Count; i++)
-            {
-                EditorUtil.Draw.Label(node.Addresses[i].ToString(), false);
-            }
-
-            for (int i = 0; i < node.Children.Count; i++)
-            {
-                DoHResolutionNode child = node.Children[i];
-                DrawDoHResolutionNode(child, $"{key}_{child.HostName}");
-            }
-            EditorUtil.Draw.DecreaseIndentLevel();
         }
 
         /// <summary>

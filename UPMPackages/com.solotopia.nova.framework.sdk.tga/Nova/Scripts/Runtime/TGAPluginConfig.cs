@@ -8,14 +8,36 @@
  *            TGAPlugin.OnInitializeAsync。
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using System;
 using NovaFramework.Runtime;
-using ThinkingData.Analytics;
 using UnityEngine;
 
 namespace NovaFramework.SDK.TGAPlugin.Runtime
 {
+    /// <summary>
+    /// TGA 数据上报模式。数值与厂商 TDMode 保持一致，配置层不直接依赖厂商 API。
+    /// </summary>
+    public enum TGAReportMode
+    {
+        Normal = 0,
+        Debug = 1,
+        DebugOnly = 2,
+    }
+
+    /// <summary>
+    /// TGA 数据时区。数值与厂商 TDTimeZone 保持一致，配置层不直接依赖厂商 API。
+    /// </summary>
+    public enum TGATimeZone
+    {
+        Local = 0,
+        UTC = 1,
+        Asia_Shanghai = 2,
+        Asia_Tokyo = 3,
+        America_Los_Angeles = 4,
+        America_New_York = 5,
+        Other = 100,
+    }
+
     /// <summary>
     /// TGA 插件初始化所需数据。
     /// 标注 [Serializable] 以便被 ConfigWindow SDKPluginScanner 扫描到，并可作为
@@ -35,13 +57,13 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         /// TGA SDK 上报模式。
         /// </summary>
         [SerializeField, Tooltip("TGA 数据上报模式。调试阶段可用 Debug 或 DebugOnly，正式环境建议使用 Normal。")]
-        private TDMode m_Mode = TDMode.Normal;
+        private TGAReportMode m_Mode = TGAReportMode.Normal;
 
         /// <summary>
         /// TGA SDK 时区。
         /// </summary>
         [SerializeField, Tooltip("TGA SDK 时区。默认使用本地时区 Local。")]
-        private TDTimeZone m_TimeZone = TDTimeZone.Local;
+        private TGATimeZone m_TimeZone = TGATimeZone.Local;
 
         /// <summary>
         /// 是否开启 SDK 日志序列化字段。
@@ -81,12 +103,12 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         /// <summary>
         /// TGA SDK 上报模式。
         /// </summary>
-        public TDMode Mode => m_Mode;
+        public TGAReportMode Mode => m_Mode;
 
         /// <summary>
         /// TGA SDK 时区。
         /// </summary>
-        public TDTimeZone TimeZone => m_TimeZone;
+        public TGATimeZone TimeZone => m_TimeZone;
 
         /// <summary>
         /// 是否开启 SDK 日志。
@@ -133,7 +155,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         /// <param name="isTestUser">测试用户标识，对应 TGA 字段 nova_test。</param>
         /// <param name="assignDeviceIdToDistinctId">是否在 TGA 初始化后将 DeviceId 设置为 DistinctId。</param>
         /// <param name="timeZone">TGA SDK 时区。</param>
-        public TGAPluginConfig(string appID, TDMode mode = TDMode.Normal, bool logEnable = false, string serverCmdName = "", bool isTestUser = true, bool assignDeviceIdToDistinctId = false, TDTimeZone timeZone = TDTimeZone.Local)
+        public TGAPluginConfig(string appID, TGAReportMode mode = TGAReportMode.Normal, bool logEnable = false, string serverCmdName = "", bool isTestUser = true, bool assignDeviceIdToDistinctId = false, TGATimeZone timeZone = TGATimeZone.Local)
         {
             m_AppID = appID;
             m_Mode = mode;
@@ -145,4 +167,3 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         }
     }
 }
-#endif

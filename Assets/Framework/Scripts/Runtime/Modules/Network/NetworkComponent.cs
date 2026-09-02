@@ -16,24 +16,18 @@ using UnityEngine;
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// Network 组件，负责创建并初始化 Network / Http / DoH / WebSocket 四个并列管理器。
+    /// Network 组件，负责创建并初始化 Network / Http / WebSocket 三个并列管理器。
     /// 实现 ICoroutineRunner，为需要协程支持的管理器提供运行环境。
     /// </summary>
     [DisallowMultipleComponent]
     public sealed partial class NetworkComponent : FrameworkComponent, ICoroutineRunner
     {
         /// <summary>
-        /// 唤醒，按依赖顺序创建四个管理器。
+        /// 唤醒，按依赖顺序创建三个管理器。
         /// </summary>
         protected override void Awake()
         {
             base.Awake();
-
-            m_DoHManager = Util.TypeCreator.Create<IDoHManager>(m_CurDoHManagerTypeName);
-            if (m_DoHManager == null)
-            {
-                throw new InvalidOperationException("DoHManager 无效。");
-            }
 
             m_HttpManager = Util.TypeCreator.Create<IHttpManager>(m_CurHttpManagerTypeName);
             if (m_HttpManager == null)
@@ -55,7 +49,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 开始，按依赖顺序初始化四个管理器。
+        /// 开始，按依赖顺序初始化三个管理器。
         /// </summary>
         private void Start()
         {
@@ -64,18 +58,13 @@ namespace NovaFramework.Runtime
                 throw new InvalidOperationException("NetworkSettings 无效，请检查 NetworkComponent 配置。");
             }
 
-            m_DoHManager.Initialize(new DoHManagerConfig
-            {
-                UseDoH = m_DoHSettings.UseDoH,
-                DnsTimeoutSeconds = m_DoHSettings.DnsTimeoutSeconds,
-                MaxIPAddressesPerHost = m_DoHSettings.MaxIPAddressesPerHost
-            });
-
             m_HttpManager.Initialize(new HttpManagerConfig
             {
-                ConnectTimeout = m_HttpSettings.ConnectTimeout,
-                RequestTimeout = m_HttpSettings.RequestTimeout,
-                DoHManager = m_DoHManager
+                EnableUWRTracks = m_HttpSettings.EnableUWRTracks,
+                PreferLastSuccessfulHost = m_HttpSettings.PreferLastSuccessfulHost,
+                BusinessFallbackRoundCount = m_HttpSettings.BusinessFallbackRoundCount,
+                RetryRequestCount = m_HttpSettings.RetryRequestCount,
+                RequestTimeout = m_HttpSettings.RequestTimeout
             });
 
             m_NetworkManager.Initialize(new NetworkManagerConfig
@@ -95,8 +84,7 @@ namespace NovaFramework.Runtime
                 AutoReconnectTimeInterval = m_WebSocketSettings.AutoReconnectTimeInterval,
                 EnableAutoReconnect = m_WebSocketSettings.EnableAutoReconnect,
                 AutoReconnectFailedUIAssetLocation = m_WebSocketSettings.AutoReconnectFailedUIAssetLocation,
-                CoroutineRunner = this,
-                DoHManager = m_DoHManager
+                CoroutineRunner = this
             });
         }
 
@@ -134,11 +122,6 @@ namespace NovaFramework.Runtime
             IsLoadOver = success;
             tcs.TrySetResult(success);
 
-            if (success)
-            {
-                BeginAutoCollectAllIPAddresses();
-            }
-
             // 仅失败时清除 m_LoadTcs 允许重试，成功时保留防止后续并发重复加载。
             if (!success)
             {
@@ -171,11 +154,6 @@ namespace NovaFramework.Runtime
             }
 
             IsLoadOver = success;
-            if (success)
-            {
-                BeginAutoCollectAllIPAddresses();
-            }
-
             return success;
         }
 
@@ -187,29 +165,6 @@ namespace NovaFramework.Runtime
             m_LoadTcs = null;
             IsLoadOver = false;
             m_KitInstances.Clear();
-        }
-
-        /// <summary>
-        /// NetCmd / HostKey 加载成功后立即启动一轮后台 DoH 预热，不阻塞 LoadAsync / LoadSync 的既有语义。
-        /// </summary>
-        private void BeginAutoCollectAllIPAddresses()
-        {
-            AutoCollectAllIPAddressesAsync().Forget();
-        }
-
-        /// <summary>
-        /// 后台执行 DoH 预热，异常仅记录日志，不影响既有网络加载结果。
-        /// </summary>
-        private async UniTaskVoid AutoCollectAllIPAddressesAsync()
-        {
-            try
-            {
-                await m_DoHManager.CollectAllIPAddresses(m_NetworkManager.GetAllHostKeyUrls());
-            }
-            catch (Exception e)
-            {
-                Log.Warning(LogTag.Network, "NetworkComponent 自动 DoH 预热异常：{0}。", e);
-            }
         }
 
         /// <summary>

@@ -81,18 +81,6 @@ namespace NovaFramework.Runtime
         public abstract INetworkCmdRow ResolveNetCmdRow(string cmdName);
 
         /// <summary>
-        /// 获取所有 HTTP 类型 NetCmd 的完整 URL 集合。
-        /// </summary>
-        /// <returns>去重后的完整 URL 枚举。</returns>
-        public abstract IEnumerable<string> GetAllNetCmdUrls();
-
-        /// <summary>
-        /// 获取全部 HostKey URL 集合。
-        /// </summary>
-        /// <returns>过滤空值并去重后的 HostKey URL 枚举。</returns>
-        public abstract IEnumerable<string> GetAllHostKeyUrls();
-
-        /// <summary>
         /// 获取指定类型的 Luban 表实例。
         /// </summary>
         /// <typeparam name="T">Luban 表类型。</typeparam>

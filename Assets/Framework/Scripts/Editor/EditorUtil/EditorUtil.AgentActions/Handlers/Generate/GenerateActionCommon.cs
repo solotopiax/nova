@@ -75,9 +75,9 @@ namespace NovaFramework.Editor
             }
             if (!IsExactEnumName(typeof(ChannelType), channelValue) ||
                 !Enum.TryParse(channelValue, false, out channel) ||
-                !Enum.IsDefined(typeof(ChannelType), channel) || channel == ChannelType.None)
+                !Enum.IsDefined(typeof(ChannelType), channel))
             {
-                error = "channel 必须是非 None 的 ChannelType 精确枚举名。";
+                error = "channel 必须是 ChannelType 精确枚举名。";
                 return false;
             }
             if (!IsExactEnumName(typeof(DevelopMode), modeValue) ||

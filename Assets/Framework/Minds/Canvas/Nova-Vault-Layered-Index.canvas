@@ -28,7 +28,7 @@
 		{"id":"m231000000000003","type":"text","text":"**MOC-Localization**\nLocalizationComponent / TextLocalizing","x":-380,"y":340,"width":380,"height":80,"color":"6"},
 		{"id":"m231000000000004","type":"text","text":"**MOC-Vibrate**\nVibrateType / VibrateComponent","x":20,"y":340,"width":380,"height":80,"color":"6"},
 		{"id":"m240000000000001","type":"text","text":"### 通讯 & 集成（4）","x":-1180,"y":440,"width":2360,"height":40,"color":"6"},
-		{"id":"m241000000000001","type":"text","text":"**MOC-Network**\nHTTP + WebSocket + DoH","x":-1180,"y":490,"width":380,"height":80,"color":"6"},
+		{"id":"m241000000000001","type":"text","text":"**MOC-Network**\nHTTP + NetCmd 主备路由 + WebSocket","x":-1180,"y":490,"width":380,"height":80,"color":"6"},
 		{"id":"m241000000000002","type":"text","text":"**MOC-SDK**\nISDKPlugin + SetConfig 物料注入","x":-780,"y":490,"width":380,"height":80,"color":"6"},
 		{"id":"m241000000000003","type":"text","text":"**MOC-Event**\nEventManager / EventPool / EventData","x":-380,"y":490,"width":380,"height":80,"color":"6"},
 		{"id":"m241000000000004","type":"text","text":"**MOC-Debug**\nDebugComponent / RuntimeDebugger / DiskChecking","x":20,"y":490,"width":380,"height":80,"color":"6"},

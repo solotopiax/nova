@@ -37,6 +37,7 @@
 | **新增 Kit 配置（IKitConfig + ConfigWindow 配置）** | [IKitConfig.md · marker 接口](Runtime/Modules/Config/Definitions/IKitConfig.md) → [KitConfigMissingException.md · 缺失异常](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) → [EditorUtil.Config.KitConfigScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.md) → [ConfigWindow.md · Kit 配置一级组](Editor/Windows/ConfigWindow.md) |
 | **构建 AssetBundle / RawFile (CI/编辑器菜单)** | [EditorUtil.BundleBuilder.md · YooAsset Scriptable/RawFile 构建封装](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) → [PipifySteps.md · `bundlebuilder.build` / `bundlebuilder.build_raw_file` Step](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) |
 | **管理私有 UPM 包（安装/升级/卸载/搜索/UPM 联动）** | [PlugPalsWindow.md · Verdaccio 包管理窗口](Editor/Windows/PlugPalsWindow.md) → [EditorUtil.PlugPals.md · 工具层能力](Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md) |
+| **升级后清理旧 BestHTTP / DoH 依赖** | [LegacyNetworkPackageMigration.md · 自动移除旧包、宏与生成配置](Editor/Migrations/LegacyNetworkPackageMigration.md) |
 | **检查 UPM 包是否有新版本（启动弹窗 / 手动打开）** | [EditorUtil.CheckUpdate.md · 版本检查工具](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) → [CheckUpdateWindow.md · 更新提示窗口](Editor/Windows/CheckUpdateWindow.md) |
 | **Inspector GUI 绘制工具** | [EditorUtil.Draw.md · 全方法签名](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.md) |
 | **持久化存储（读写数据）** | [PersistComponent.md · 直接访问属性](Runtime/Modules/Persist/PersistComponent.md) → [PlayerPrefsManager.md](Runtime/Modules/Persist/PlayerPrefsManager.md) / [FileFragmentManager.md](Runtime/Modules/Persist/FileFragmentManager.md) / [SQLiteManager.md](Runtime/Modules/Persist/SQLiteManager.md) |
@@ -54,12 +55,11 @@
 | **热更新业务脚本挂载**（HybridCLR 原生 MB + Prefab 直挂） | 业务 UIView / 业务逻辑类直接继承 `MonoBehaviour`，Prefab 预挂后由 HybridCLR dll 加载时 Unity 反序列化自动恢复。旧 NovaBehaviour/IBaseLife 桥接已废止（2026-05-21）。 |
 | **多语言本地化**（显示文本/切换语言/字体适配） | [LocalizationComponent.md · 初始化时序+GetText](Runtime/Modules/Localization/LocalizationComponent.md) → [LocalizationManager.md · ResolveLanguage+状态机](Runtime/Modules/Localization/LocalizationManager.md) → [LocalizationSettings.md · 文本Map+字体List双组设置](Runtime/Modules/Localization/LocalizationSettings.md) → [TextLocalizing.md · TMP专用+字体刷新链](Runtime/Modules/Localization/TextLocalizing.md) |
 | **理解 FSM 工具** | [FsmState.md · 状态基类](Runtime/Core/Fsm/FsmState.md) → [Fsm.md · FSM 实现+接口](Runtime/Core/Fsm/Fsm.md) |
-| **HTTP 请求（AES 加密 / UniTask 异步）** | [NetworkComponent.md · GetAsync/PostAsync](Runtime/Modules/Network/NetworkComponent.md) → [HttpManager.md · Transport SPI + 业务主备候选链](Runtime/Modules/Network/HttpManager/HttpManager.md) → [IDownloadService.md · 下载接口](Runtime/Modules/Network/HttpManager/IDownloadService.md) → [HttpResponse.md · 响应与进度数据](Runtime/Modules/Network/HttpManager/Definitions/HttpResponse.md) |
+| **HTTP 请求（AES 加密 / UniTask 异步）** | [NetworkComponent.md · GetAsync/PostAsync](Runtime/Modules/Network/NetworkComponent.md) → [HttpManager.md · UnityWebRequest + 业务主备候选链](Runtime/Modules/Network/HttpManager/HttpManager.md) → [IDownloadService.md · 下载接口](Runtime/Modules/Network/HttpManager/IDownloadService.md) → [HttpResponse.md · 响应与进度数据](Runtime/Modules/Network/HttpManager/Definitions/HttpResponse.md) |
 | **Alibaba Cloud OSS Runtime 上传/下载** | [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
 | **编辑器 CDN 部署与缓存清理** | [ConfigWindow.md · CDN 内容分发网络部署](Editor/Windows/ConfigWindow.md) → [EditorUtil.CDN.md · OSS 上传+Cloudflare 清理传输引擎](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) → [ConfigMasterSO.md · Editor-only 配置](Editor/Config/ConfigMasterSO.md) → [CDNEditorConfigs.md · 12 字段定义](Editor/Config/Definitions/CDNEditorConfigs.md) → [Alibaba Cloud OSS C# SDK v2 包文档](../../../UPMPackages/com.solotopia.alibabacloud.oss/Nova/Docs/INDEX.md) |
 | **WebSocket 长连接（认证/心跳/重连）** | [NetworkComponent.md · ConnectServer/SendMessage](Runtime/Modules/Network/NetworkComponent.md) → [WebSocketManager.md · 状态机+协程链](Runtime/Modules/Network/WebSocketManager/WebSocketManager.md) |
 | **NetCmd URL 路由配置（Host+Path）** | [NetworkManager.md · Luban 加载+URL 路由算法](Runtime/Modules/Network/NetworkManager/NetworkManager.md) → [NetworkSettings.md · HostKeySettings/NetCmdSettings](Runtime/Modules/Network/Definitions/NetworkSettings.md) |
-| **DNS-over-HTTPS IP 收集** | [DoHManager.md · CollectAllIPAddresses 算法](Runtime/Modules/Network/DoHManager/DoHManager.md) |
 | **新增 SDK 插件**（UPM 拔插式） | [SDK/INDEX.md · 模块入口与目录导航](Runtime/Modules/SDK/INDEX.md) → [ARCHITECTURE.md · 当前结构与分层](Runtime/Modules/SDK/ARCHITECTURE.md) → [Definitions/SDKPluginBase.md · 纯C#抽象基类+模板方法](Runtime/Modules/SDK/Definitions/SDKPluginBase.md) → [SDKComponent.md · InitializeAsync+使用示例](Runtime/Modules/SDK/SDKComponent.md) → [Definitions/ISDKPlugin.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPlugin.md) |
 | **触觉振动反馈**（NiceVibrations） | [VibrateComponent.md · Play/StopAll/LoadAsync](Runtime/Modules/Vibrate/VibrateComponent.md) → [VibrateManager.md · 链式播放+CTS](Runtime/Modules/Vibrate/VibrateManager.md) |
 | **播放声音 / 管理声音组**（Sound） | [SoundComponent.md · PlaySound+LoadAsync](Runtime/Modules/Sound/SoundComponent.md) → [SoundManager.md · 优先级抢占+按name查表算法](Runtime/Modules/Sound/SoundManager.md) → [PlaySoundParams.md · 参数池化](Runtime/Modules/Sound/PlaySoundParams.md) |
@@ -300,12 +300,10 @@
 
 | 文档 | 说明 |
 |------|------|
-| [NetworkComponent.md](Runtime/Modules/Network/NetworkComponent.md) | 网络 Component（DoH/Http/Network/WebSocket 四管理器入口） |
+| [NetworkComponent.md](Runtime/Modules/Network/NetworkComponent.md) | 网络 Component（Http / Network / WebSocket 三管理器入口） |
 | [NetworkSettings.md](Runtime/Modules/Network/Definitions/NetworkSettings.md) | 网络设置：HostKeySettings（HostKeyUnits 单套列表）/ NetCmdSettings（NetCmdUnits 单套列表），实现 IDataTableSettings |
 | [ProtoSettings.md](Runtime/Modules/Network/Definitions/ProtoSettings.md) | Protobuf 编辑器设置：ProtoSourceDirPath + ProtoUnits 列表（SourcePath / CSharpExportPath），仅 Editor 工具链使用 |
-| [DoHSettings.md](Runtime/Modules/Network/Definitions/DoHSettings.md) | DoH 管理器配置 |
 | [HttpSettings.md](Runtime/Modules/Network/Definitions/HttpSettings.md) | HTTP 管理器配置 |
-| [BestHTTP 网络埋点文档](../../../UPMPackages/com.solotopia.nova.framework.besthttp/Nova/Docs/INDEX.md) | BestHTTP 三类网络事件、字段、叶子错误码、Nova 自动注册与 Network 面板开关 |
 | [WebSocketSettings.md](Runtime/Modules/Network/Definitions/WebSocketSettings.md) | WebSocket 管理器配置（7 项参数） |
 | [NetworkManager.md](Runtime/Modules/Network/NetworkManager/NetworkManager.md) | NetCmd URL 路由（两阶段 Luban 加载：HostKey + NetCmd）/ 网络状态检测 / 服务器时间 Manager |
 | [NetworkManagerBase.md](Runtime/Modules/Network/NetworkManager/NetworkManagerBase.md) | Network Manager 抽象基类（Priority = 10） |
@@ -313,22 +311,12 @@
 | [NetworkManagerConfig.md](Runtime/Modules/Network/NetworkManager/Definitions/NetworkManagerConfig.md) | Network Manager 配置类（HostKeyUnitSettings / NetCmdUnitSettings） |
 | [INetworkHostKeyRow.md](Runtime/Modules/Network/NetworkManager/Definitions/INetworkHostKeyRow.md) | 域名数据行接口（Luban bean 实现契约） |
 | [INetworkCmdRow.md](Runtime/Modules/Network/NetworkManager/Definitions/INetworkCmdRow.md) | 网络指令数据行接口（Luban bean 实现契约） |
-| [HttpManager.md](Runtime/Modules/Network/HttpManager/HttpManager.md) | HTTP 短连接 / Transport SPI / DoH 候选链 / 文件上传 / 二进制下载 Manager |
-| [HttpManagerBase.md](Runtime/Modules/Network/HttpManager/HttpManagerBase.md) | HTTP Manager 抽象基类（8 个 abstract 声明，Priority=10） |
+| [HttpManager.md](Runtime/Modules/Network/HttpManager/HttpManager.md) | 固定 UnityWebRequest + 系统 DNS 的 HTTP 短连接 / HostKey + NetCmd 主备候选链 / 上传 / 下载 Manager |
+| [HttpManagerBase.md](Runtime/Modules/Network/HttpManager/HttpManagerBase.md) | HTTP Manager 抽象基类（Priority=8） |
 | [IHttpManager.md](Runtime/Modules/Network/HttpManager/IHttpManager.md) | HTTP Manager 接口（继承 IDownloadService） |
 | [IDownloadService.md](Runtime/Modules/Network/HttpManager/IDownloadService.md) | 下载服务接口（DownloadBinaryAsync / DownloadTextAsync） |
 | [HttpManagerConfig.md](Runtime/Modules/Network/HttpManager/Definitions/HttpManagerConfig.md) | HTTP Manager 配置类 |
 | [HttpResponse.md](Runtime/Modules/Network/HttpManager/Definitions/HttpResponse.md) | HTTP 响应数据（IReference 池化，StatusCode / Body / RawData / Headers / Error / IsSuccess / DownloadedBytes / TotalBytes / DownloadProgress） |
-| [DoHManager.md](Runtime/Modules/Network/DoHManager/DoHManager.md) | DNS-over-HTTPS 查询 / 域名 IP 收集 Manager |
-| [DoHManagerBase.md](Runtime/Modules/Network/DoHManager/DoHManagerBase.md) | DoH Manager 抽象基类 |
-| [IDoHManager.md](Runtime/Modules/Network/DoHManager/IDoHManager.md) | DoH Manager 接口 |
-| [DoHManagerConfig.md](Runtime/Modules/Network/DoHManager/Definitions/DoHManagerConfig.md) | DoH Manager 配置类 |
-| [DNSAddress.md](Runtime/Modules/Network/DoHManager/DoH/DNSAddress.md) | DNS 地址静态常量 |
-| [DNSAnswer.md](Runtime/Modules/Network/DoHManager/DoH/DNSAnswer.md) | DNS 应答数据 |
-| [DNSCacheEntry.md](Runtime/Modules/Network/DoHManager/DoH/DNSCacheEntry.md) | DNS 缓存条目 |
-| [DoHClient.md](Runtime/Modules/Network/DoHManager/DoH/DoHClient.md) | DoH 客户端（IDisposable） |
-| [DoHData.md](Runtime/Modules/Network/DoHManager/DoH/DoHData.md) | 已移除，保留历史兼容说明页 |
-| [ResourceRecordType.md](Runtime/Modules/Network/DoHManager/DoH/ResourceRecordType.md) | DNS 资源记录类型枚举 |
 | [WebSocketManager.md](Runtime/Modules/Network/WebSocketManager/WebSocketManager.md) | WebSocket 长连接 / 认证心跳重连 / 跨线程消息分发 Manager |
 | [WebSocketManagerBase.md](Runtime/Modules/Network/WebSocketManager/WebSocketManagerBase.md) | WebSocket Manager 抽象基类 |
 | [IWebSocketManager.md](Runtime/Modules/Network/WebSocketManager/IWebSocketManager.md) | WebSocket Manager 接口 |

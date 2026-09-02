@@ -149,7 +149,9 @@ namespace NovaFramework.Runtime
             IAssetManager assetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
 
             int concurrency = assetComponent.MaxDownloadConcurrency;
-            int retry = assetComponent.RetryDownloadCount;
+            // retry 表示下载重试次数；每次重试都会重新走完主备候选与配置轮数，
+            // AssetManager 会在创建 YooAsset 下载器时换算为物理重试次数。
+            int logicalRetryCount = assetComponent.RetryDownloadCount;
 
             List<string> hotfixTags = assetComponent.LaunchHotfixTags;
             IAssetDownloader downloader;
@@ -157,12 +159,12 @@ namespace NovaFramework.Runtime
             if (hotfixTags == null || hotfixTags.Count == 0)
             {
                 Log.Debug(LogTag.Procedure, "LaunchHotfixTags 为空，执行整包下载。");
-                downloader = assetManager.CreateDownloader(package: null, concurrency: concurrency, retry: retry);
+                downloader = assetManager.CreateDownloader(package: null, concurrency: concurrency, retry: logicalRetryCount);
             }
             else
             {
                 Log.Debug(LogTag.Procedure, Txt.Format("LaunchHotfixTags 非空（{0} 个 Tag），执行切片下载。", hotfixTags.Count));
-                downloader = assetManager.CreateDownloaderByTags(hotfixTags.ToArray(), package: null, concurrency: concurrency, retry: retry);
+                downloader = assetManager.CreateDownloaderByTags(hotfixTags.ToArray(), package: null, concurrency: concurrency, retry: logicalRetryCount);
             }
 
             Log.Debug(LogTag.Procedure, Txt.Format("开始热更新 文件数={0} 总字节={1}", downloader.TotalCount, downloader.TotalBytes));

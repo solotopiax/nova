@@ -152,6 +152,21 @@ namespace NovaFramework.Editor
                 /// <returns>协调成功返回 true；Globals 无法解析或写入失败返回 false。</returns>
                 internal static bool ReconcileScene(string scenePath)
                 {
+                    return ReconcileScene(scenePath, BuildPipeline.isBuildingPlayer);
+                }
+
+                /// <summary>
+                /// 根据已保存的 Single Scene 路径协调工作区，并在 Player 构建期间忽略 Unity 内部场景加载。
+                /// </summary>
+                /// <param name="scenePath">已打开 Scene 的项目相对路径。</param>
+                /// <param name="isBuildingPlayer">当前是否正在执行 Player 构建。</param>
+                /// <returns>无需协调或协调成功返回 true；Globals 无法解析或写入失败返回 false。</returns>
+                internal static bool ReconcileScene(string scenePath, bool isBuildingPlayer)
+                {
+                    // HybridCLR Generate All 会启动临时 BuildPlayer。构建内部场景加载不是用户切换工作区，
+                    // 不得据此覆盖 Pipify Runner 已冻结的 ConfigMaster/PipifySettings。
+                    if (isBuildingPlayer) return true;
+
                     if (!TryLoadGlobals(out GlobalsJson globals, out string globalsPath)) return false;
                     bool changed = RouteForScene(globals, scenePath);
                     return !changed || WriteGlobals(globalsPath, globals);

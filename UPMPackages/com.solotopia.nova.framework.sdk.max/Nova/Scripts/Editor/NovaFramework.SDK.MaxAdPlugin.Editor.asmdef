@@ -16,7 +16,9 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "!UNITY_WEBGL"
+    ],
     "versionDefines": [
         {
             "name": "com.applovin.mediation.ads",

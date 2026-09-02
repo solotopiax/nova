@@ -84,7 +84,11 @@
 
 启动白名单默认关闭，并同时要求 `EnableHotfix=true`、有效模式为 Host/Web、白名单文件 URL 与元数据根 URL 至少各有一个有效地址。本地 DeviceID 来自 `persistentDataPath/Asset/asset-check-device-id.dat`；首次没有缓存时直接跳过，SDK 插件完成初始化后通过 `SaveAssetCheckDeviceId` 原子写入 UTF-8 明文，供后续启动使用。
 
-白名单文件通过 `IHttpManager.DownloadTextAsync` 按主备顺序请求，但资源下载/CDN 与热更新保持原有系统 DNS 机制，不进入业务 DoH 路由。文件必须是 DeviceID JSON 字符串数组；网络失败、空响应或非法 JSON 均按未命中继续。`.version` / `.hash` / `.bytes` 版本元数据无论是否命中白名单，都会按候选顺序处理传输失败及 HTTP 200 但内容非法/损坏的失败：未命中时是常规主备，命中时是白名单主备后再到常规主备；全部候选失败后才进入现有离线回退。Bundle 始终走常规主机地址。
+内置 `HttpManager` 下，白名单文件通过不创建 Network 逻辑链的物理 UWR 入口请求，由 Asset 统一管理主备、轮次、重试和 `uwr_*` 链路埋点；兼容自定义 `IHttpManager` 时回退到 `DownloadTextAsync`。资源下载、CDN 与热更新由 YooAsset 的 UnityWebRequest 后端和 `AssetDownloadUrlPolicy` 独立路由。三条链统一按候选数 `C`、完整轮数 `R`、重试次数 `K` 形成 `C × R × (K + 1)` 次物理尝试；每次重试都会重新执行全部轮次。404/408/416/429、5xx、无响应及内容校验失败继续下一个候选；401/403 和其他 4xx 立即停止。`.version` / `.hash` / `.bytes` 未命中白名单时使用常规主备，命中时使用白名单主备后再到常规主备；全部尝试失败后才进入现有离线回退。Bundle 始终走常规主机地址。
+
+`EnableUWRTracks` 开启时，YooAsset URL/重试适配层按文件上报统一的 `uwr_request_start/error/end`，并附带 `uwr_download_operation_id`、`uwr_package` 与 `uwr_file_type`。HostPlayMode 的缓存下载成功回调发生在文件校验完成后；WebPlayMode 的内存 Bundle 路径由 YooAsset 在内容校验前回调 HTTP 成功，因此发生校验重试时会以同一 download operation 下的新 UWR 链继续，不能伪造为已经取得最终内容校验成功。
+
+每个文件冻结自己的候选计划，并发下载互不推进。成功域名会作为后续新文件的优先起点；完整失败保留已有成功偏好，只有候选配置已不再包含该域名或 Manager 关闭时清除。普通按需加载仍保持开启；同步加载行为不变。
 
 启动诊断统一使用 `Log.Debug`：输出功能门控状态、白名单文件主备请求结果、命中/未命中结果，以及命中后 `.version` / `.hash` / `.bytes` 的实际请求成功或失败（包含文件名和完整 URL）。命中日志会输出完整 DeviceID，便于现场核对白名单内容；Bundle 请求不会进入这组元数据日志。
 

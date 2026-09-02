@@ -11,12 +11,16 @@
         "NovaFramework.SDK.GoogleSignIn.Runtime"
     ],
     "includePlatforms": [],
-    "excludePlatforms": [],
+    "excludePlatforms": [
+        "WebGL"
+    ],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": false,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "!UNITY_WEBGL"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

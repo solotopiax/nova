@@ -79,7 +79,7 @@ namespace NovaFramework.Editor
                 PlatformType platform = master.CurrentPlatform;
                 ChannelType channel = master.CurrentChannel;
                 DevelopMode developMode = master.CurrentDevelopMode;
-                if (platform == PlatformType.None || channel == ChannelType.None ||
+                if (platform == PlatformType.None ||
                     !master.TryGetEntry(platform, channel, out _))
                 {
                     Log.Error(LogTag.Encrypt,

@@ -20,7 +20,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
     /// Voucher IAP Store。
     /// 负责 IAP 生命周期接入与公开能力转发，内部业务由钱包、报价和交易服务完成。
     /// </summary>
-    [IAPStore]
+    [IAPStore(IAPStoreType.Voucher)]
     public sealed partial class VoucherStore : IAPStoreBase, IIAPVoucherCapable, IIAPVoucherTestCapable, IVoucherResultDispatcher
     {
         /// <summary>

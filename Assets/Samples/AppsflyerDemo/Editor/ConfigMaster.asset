@@ -108,9 +108,6 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/AppsflyerDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-      m_TargetLocation: Assets/Samples/AppsflyerDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.TGAPlugin.Runtime.dll
       m_TargetLocation: Assets/Samples/AppsflyerDemo/Dlls/AOTMetas/NovaFramework.SDK.TGAPlugin.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll

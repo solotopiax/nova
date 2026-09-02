@@ -29,7 +29,7 @@ namespace NovaFramework.Editor
             {
                 /// <summary>
                 /// 同步 ConfigMasterSO 矩阵与当前枚举成员：新增成员补空行，已废弃成员移除行；完成后 SetDirty。
-                /// <para>忽略 PlatformType.None 与 ChannelType.None；重复组合只保留第一条。</para>
+                /// <para>忽略 PlatformType.None；ChannelType.None 是合法渠道坐标；重复组合只保留第一条。</para>
                 /// </summary>
                 /// <param name="master">待同步的 ConfigMasterSO 实例。</param>
                 public static void SyncEnumGrid(ConfigMasterSO master)
@@ -45,7 +45,6 @@ namespace NovaFramework.Editor
                         if (platforms[p] == PlatformType.None) continue;
                         for (int c = 0; c < channels.Length; c++)
                         {
-                            if (channels[c] == ChannelType.None) continue;
                             wanted.Add((platforms[p], channels[c]));
                         }
                     }
@@ -79,7 +78,7 @@ namespace NovaFramework.Editor
                         var allEntries = master.EditorEntries;
                         for (int i = 0; i < allEntries.Count; i++)
                         {
-                            if (allEntries[i].Platform == PlatformType.None || allEntries[i].Channel == ChannelType.None) continue;
+                            if (allEntries[i].Platform == PlatformType.None) continue;
                             AppConfigs cd = allEntries[i].GetAppConfigs(DevelopMode.Debug);
                             AppConfigs cr = allEntries[i].GetAppConfigs(DevelopMode.Release);
                             // 取第一个非空字段格作为种子（AppID 非空说明该格已编辑过）
@@ -94,7 +93,7 @@ namespace NovaFramework.Editor
                         {
                             for (int i = 0; i < allEntries.Count; i++)
                             {
-                                if (allEntries[i].Platform == PlatformType.None || allEntries[i].Channel == ChannelType.None) continue;
+                                if (allEntries[i].Platform == PlatformType.None) continue;
                                 if (present.Contains((allEntries[i].Platform, allEntries[i].Channel))) continue; // 跳过原有格，只处理新增格
                                 AppConfigs dst = allEntries[i].GetAppConfigs(DevelopMode.Debug);
                                 if (dst != null && string.IsNullOrEmpty(dst.AppID))
@@ -126,7 +125,7 @@ namespace NovaFramework.Editor
                         var allEntries = master.EditorEntries;
                         for (int i = 0; i < allEntries.Count; i++)
                         {
-                            if (allEntries[i].Platform == PlatformType.None || allEntries[i].Channel == ChannelType.None) continue;
+                            if (allEntries[i].Platform == PlatformType.None) continue;
                             PrivacyConfigs candidate = allEntries[i].GetPrivacyConfigs(DevelopMode.Debug);
                             if (!string.IsNullOrEmpty(candidate?.AESKey) || !string.IsNullOrEmpty(candidate?.AESIV))
                             {

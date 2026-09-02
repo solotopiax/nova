@@ -56,6 +56,26 @@ namespace NovaFramework.Editor
         private SerializedProperty m_TimeoutSeconds;
 
         /// <summary>
+        /// 版本检查主备候选完整执行轮数。
+        /// </summary>
+        private SerializedProperty m_VersionCheckFallbackRoundCount;
+
+        /// <summary>
+        /// 请求重试次数；每次重试重新执行全部主备轮次。
+        /// </summary>
+        private SerializedProperty m_RetryRequestCount;
+
+        /// <summary>
+        /// 是否优先使用最近一次成功域名。
+        /// </summary>
+        private SerializedProperty m_PreferLastSuccessfulHost;
+
+        /// <summary>
+        /// 是否启用 App 版本检查 UWR 链路埋点。
+        /// </summary>
+        private SerializedProperty m_EnableUWRTracks;
+
+        /// <summary>
         /// 大版本更新路由方式（跳转商店 / 内部下载 APK）。
         /// </summary>
         private SerializedProperty m_DownloadRoute;

@@ -10,7 +10,6 @@
  *            AppsFlyerPlugin.OnInitializeAsync。
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using System;
 using NovaFramework.Runtime;
 using UnityEngine;
@@ -133,4 +132,3 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         }
     }
 }
-#endif

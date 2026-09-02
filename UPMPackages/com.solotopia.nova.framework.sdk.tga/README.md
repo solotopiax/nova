@@ -1,7 +1,7 @@
 # Nova Framework - SDK - TGA
 
 > 包名：`com.solotopia.nova.framework.sdk.tga`
-> 当前版本：`0.1.12`
+> 当前版本：`0.1.13`
 
 TGA 数据埋点插件，提供事件追踪服务
 
@@ -10,7 +10,7 @@ TGA 数据埋点插件，提供事件追踪服务
 - 封装 ThinkingAnalytics Unity SDK `3.4.6`。
 - 提供 `ITrackPlugin` 事件上报能力。
 - 提供 `IDeviceIdProvider` 设备标识能力。
-- 支持通过 `TGAPluginConfig` 配置 `TDMode`、`TDTimeZone`、日志开关、上报指令名、测试用户标识。
+- 支持通过 `TGAPluginConfig` 配置包内 `TGAReportMode`、`TGATimeZone`、日志开关、上报指令名、测试用户标识；配置 DTO 不直接依赖厂商 API。
 - 支持在初始化后将 TGA `DeviceId` 同步为 `DistinctId`，用于让访客 ID 与设备 ID 保持一致。
 
 ## 安装
@@ -19,7 +19,7 @@ TGA 数据埋点插件，提供事件追踪服务
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.tga": "0.1.12"
+  "com.solotopia.nova.framework.sdk.tga": "0.1.13"
 }
 ```
 
@@ -30,8 +30,8 @@ TGA 运行时配置由 `TGAPluginConfig` 承载，并由 `SDKManager` 注入到 
 | 字段 | 默认值 | 说明 |
 |---|---|---|
 | `AppID` | 空 | ThinkingAnalytics 后台分配的应用 ID。为空时跳过 TGA 初始化。 |
-| `Mode` | `TDMode.Normal` | TGA SDK 上报模式，直接写入 `TDConfig.mode`。 |
-| `TimeZone` | `TDTimeZone.Local` | TGA SDK 时区，直接写入 `TDConfig.timeZone`。 |
+| `Mode` | `TGAReportMode.Normal` | 包内上报模式，初始化时转换后写入 `TDConfig.mode`。 |
+| `TimeZone` | `TGATimeZone.Local` | 包内时区，初始化时转换后写入 `TDConfig.timeZone`。 |
 | `LogEnable` | `false` | 是否开启 TGA SDK 调试日志。 |
 | `ServerCmdName` | 空 | 解析埋点上报 URL 的 `NetworkCmds` 指令名。为空或无法解析时跳过 TGA 初始化。 |
 | `ReportCmdName` | 空 | 登录后向业务服务器上报 TGA 标识时使用的 NetCmd 名称。 |

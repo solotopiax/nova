@@ -23,6 +23,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
     /// 负责 SDK 初始化、事件上报、用户属性管理及公共属性管理。
     /// 通过独立的 TGADynamicSuperPropertyListener 监听器接收 TDA SDK 的动态公共属性回调。
     /// </summary>
+    [SDKPluginConfigType(typeof(TGAPluginConfig))]
     public sealed partial class TGAPlugin : SDKPluginBase, ITrackPlugin, IDeviceIdProvider
     {
     
@@ -43,8 +44,8 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
                 m_ReportNetService = new TGAReportNetService();
                 m_RuntimeConfig = config as TGAPluginConfig;
                 string appId = m_RuntimeConfig?.AppID ?? string.Empty;
-                TDMode mode = m_RuntimeConfig?.Mode ?? TDMode.Normal;
-                TDTimeZone timeZone = m_RuntimeConfig?.TimeZone ?? TDTimeZone.Local;
+                TDMode mode = (TDMode)(int)(m_RuntimeConfig?.Mode ?? TGAReportMode.Normal);
+                TDTimeZone timeZone = (TDTimeZone)(int)(m_RuntimeConfig?.TimeZone ?? TGATimeZone.Local);
                 bool logEnable = m_RuntimeConfig?.LogEnable ?? false;
                 string serverCmdName = m_RuntimeConfig?.ServerCmdName ?? string.Empty;
                 bool isTestUser = m_RuntimeConfig?.IsTestUser ?? true;

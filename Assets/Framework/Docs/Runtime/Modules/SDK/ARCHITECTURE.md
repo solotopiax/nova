@@ -23,7 +23,7 @@
 
 职责：
 
-- 在 `InitializeAsync` 中按 `ConfigMaster.EnabledSDKs` 反射实例化启用的插件。
+- 在 `InitializeAsync` 中先用静态配置元数据匹配 `ConfigMaster.EnabledSDKs`，再反射实例化命中的插件。
 - 按 `ISDKPlugin.Priority` 升序分桶初始化，同桶并行。
 - 通过 `IConfigManager.GetSDKPluginConfig(requiredConfigType)` 给需要配置的插件注入配置。
 - 统一处理可用性、失败隔离、生命周期广播与登录事件转发。
@@ -73,7 +73,7 @@
 1. `SDKComponent.Awake()` 创建 `ISDKManager`。
 2. `SDKComponent.Start()` 调用 `Initialize(new SDKManagerConfig { PluginEntries = m_PluginEntries })`，只同步 Manager 依赖。
 3. 首次访问 `InitializeTask` 时，`SDKComponent` 调用 `InitializeAsync(ct)`。
-4. `SDKManager` 读取每个插件的 `RequiredConfigType`，再从 `IConfigManager` 拉取配置并注入。
+4. `SDKManager` 从 `PluginBase<TConfig>` 或 `SDKPluginConfigTypeAttribute` 静态读取配置类型，仅构造已启用插件，再从 `IConfigManager` 拉取配置并注入。
 5. 初始化完成后，业务层通过 `Nova.SDK.Get<T>()` / `TryGet<T>()` / `GetAll<T>()` 访问能力。
 
 ## 关键边界

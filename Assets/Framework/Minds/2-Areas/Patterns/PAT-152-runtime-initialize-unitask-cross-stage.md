@@ -40,15 +40,15 @@ related:
 3. 较晚阶段先检查同步入口、取消源和当前就绪状态；依赖已经就绪时直接执行快速路径，否则才启动按帧等待。
 4. 两个阶段之间产生的数据进入同步阶段建立的缓存，待依赖就绪后按既有顺序派发。
 
-当前 BestHTTP 遥测适配采用：
+需要在启动期同步接收数据、异步等待依赖就绪时，采用以下阶段拆分：
 
 ```text
 AfterAssembliesLoaded
-  -> 安装 sink 与启动缓存
+  -> 同步注册入口并建立启动缓存
 
 BeforeSceneLoad
-  -> SDK 已就绪：直接 flush
-  -> SDK 未就绪：启动 UniTask watcher
+  -> 依赖已就绪：直接 flush
+  -> 依赖未就绪：启动 UniTask watcher
 ```
 
 ## 为什么这么做
@@ -79,9 +79,8 @@ Unity 不保证同一 `RuntimeInitializeLoadType` 内不同 `[RuntimeInitializeO
 ## 来源与验证依据
 
 - UniTask 初始化：`UPMPackages/com.solotopia.unitask/Core/Runtime/PlayerLoopHelper.cs`，`Init` 使用 `AfterAssembliesLoaded`，`Initialize` 创建 `runners`，`AddAction` 直接索引该数组。
-- 问题现场：iOS A14 真机、Unity `6000.4.2f1`、IL2CPP 启动堆栈在 `BestHttpTelemetryRegistration.WaitForSdkReadyAsync -> UniTask.Yield -> PlayerLoopHelper.AddAction` 抛出空引用。
-- 当前实现：`UPMPackages/com.solotopia.nova.framework.besthttp/Nova/Runtime/BestHttpTelemetryRegistration.cs`。
-- 回归测试：`NovaFramework.BestHTTP.Tests.NovaBestHttpTelemetrySinkTests.Registration_SeparatesSinkInstallationFromUniTaskReadinessWatch` 修复前 1/1 失败，修复后 1/1 通过；BestHTTP Editor 测试程序集 10/10 通过，Unity Console 0 error。
+- 问题类型：iOS IL2CPP 启动期在 `UniTask.Yield -> PlayerLoopHelper.AddAction` 进入尚未建立的 runner，可表现为空引用；Editor 提前初始化不能作为 Player 安全证据。
+- 实施验证：反射确认同步注册与 watcher 分属严格递增的初始化阶段，并在受影响的 IL2CPP 真机启动路径复测；仅有 Editor 编译或测试结果不足以关闭设备侧风险。
 
 ## 关联
 

@@ -58,7 +58,7 @@ public IReadOnlyList<string> GetRemoteUrls(string fileName)
 
 `ApplyTemplate(template)`：依次替换 `{Platform}`、`{Channel}`、`{Package}`、`{Version}`。
 
-`BaseUrls`：返回常规与白名单元数据基地址的去重合集。资源下载/CDN 与热更新保持 YooAsset 原有寻址和系统 DNS 机制，不进入业务 DoH 路由。
+`BaseUrls`：返回常规与白名单元数据基地址的去重合集。资源下载、CDN 与热更新由 Asset 模块通过 YooAsset 的 UnityWebRequest 后端和 AssetDownloadUrlPolicy 独立路由，不进入 HostKey + NetCmd 业务请求链。
 
 ---
 

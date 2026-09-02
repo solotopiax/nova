@@ -22,6 +22,7 @@ namespace NovaFramework.SDK.IAP.Runtime
     /// 核心支付入口固定为 PayAsync / RestorePurchasesAsync；商店特有能力通过 TryGetCapability 按功能接口取用，
     /// 避免随商店增多在此类上堆积转发方法。
     /// </summary>
+    [SDKPluginConfigType(typeof(IAPPluginConfig))]
     public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin
     {
 

@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.aihelp",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "6.0.+",
   "displayName": "Nova Framework - SDK - AIHelp",
@@ -11,6 +11,6 @@
   "author": { "name": "Solotopia" },
   "assemblies": ["NovaFramework.SDK.AIHelp.Runtime"],
   "dependencies": {
-    "com.solotopia.nova.framework": "0.6.16"
+    "com.solotopia.nova.framework": "0.6.25"
   }
 }

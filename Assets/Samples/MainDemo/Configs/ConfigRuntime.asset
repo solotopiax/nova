@@ -23,8 +23,8 @@ MonoBehaviour:
   PrivacyConfigs:
     AESKey: YOUR_PRIVACY_AES_KEY
     AESIV: YOUR_PRIVACY_AES_IV
-  Platform: 1
-  Channel: 2
+  Platform: 3
+  Channel: 0
   EnabledSDKConfigs: []
   EnabledKitConfigs: []
   HybridConfigs:
@@ -38,7 +38,6 @@ MonoBehaviour:
     - m_AssetLocation: UnityEngine.CoreModule.dll
     - m_AssetLocation: Unity.TextMeshPro.dll
     - m_AssetLocation: NovaFramework.Runtime.dll
-    - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     StartupGameDlls:
     - m_AssetLocation: NovaFramework.Samples.Runtime.dll
   Custom:

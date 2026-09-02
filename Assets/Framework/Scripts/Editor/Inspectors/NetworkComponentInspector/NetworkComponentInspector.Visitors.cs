@@ -62,16 +62,6 @@ namespace NovaFramework.Editor
         private List<string> m_HttpManagerTypeNames;
 
         /// <summary>
-        /// DoH 管理器实现类名属性。
-        /// </summary>
-        private SerializedProperty m_CurDoHManagerTypeName;
-
-        /// <summary>
-        /// DoH 管理器所有实现类名列表。
-        /// </summary>
-        private List<string> m_DoHManagerTypeNames;
-
-        /// <summary>
         /// WebSocket 管理器实现类名属性。
         /// </summary>
         private SerializedProperty m_CurWebSocketManagerTypeName;
@@ -142,19 +132,9 @@ namespace NovaFramework.Editor
         private string m_WatchedNetCmdConfigDirPath;
 
         /// <summary>
-        /// DoH 管理器配置对象属性。
-        /// </summary>
-        private SerializedProperty m_DoHSettings;
-
-        /// <summary>
         /// HTTP 管理器配置对象属性。
         /// </summary>
         private SerializedProperty m_HttpSettings;
-
-        /// <summary>
-        /// Best HTTP 网络遥测转发开关属性。
-        /// </summary>
-        private SerializedProperty m_EnableBestHttpTelemetry;
 
         /// <summary>
         /// WebSocket 管理器配置对象属性。

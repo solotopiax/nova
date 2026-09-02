@@ -36,7 +36,8 @@
 
 ### InitializeAsync
 
-- 先按 `ConfigMaster.EnabledSDKs` 实例化插件，再按`ISDKPlugin.Priority` 分桶
+- 先通过 `PluginBase<TConfig>` 或 `SDKPluginConfigTypeAttribute` 静态读取配置类型，仅构造 `ConfigMaster.EnabledSDKs` 命中的插件，再按 `ISDKPlugin.Priority` 分桶
+- 未启用插件不会执行构造函数或字段初始化；缺少静态配置元数据的旧式插件会记录诊断并跳过
 - 再按桶顺序执行 `UniTask.WhenAll`
 - 单插件初始化失败只记日志，不中断其他插件
 - 所有 Priority 桶完成后，若存在可用 `IDeviceIdProvider`，将非空 `GetDeviceID()` 通过 `IAssetManager.SaveAssetCheckDeviceId` 写入启动白名单缓存；失败不影响初始化
@@ -44,7 +45,7 @@
 
 ### InitializePluginAsync
 
-- 读取 `(plugin as SDKPluginBase)?.RequiredConfigType`
+- 对已准入并构造的插件读取 `RequiredConfigType`
 - 若插件需要配置，则通过 `m_ConfigManager.GetSDKPluginConfig(requiredConfigType)` 获取
 - 未取到配置时记警告并跳过该插件初始化
 - 成功后调用 `plugin.InitializeAsync(config, ct)`

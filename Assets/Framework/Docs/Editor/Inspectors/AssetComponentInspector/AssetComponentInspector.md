@@ -63,7 +63,10 @@
 | `m_AutoHotfix` | `SerializedProperty` | 绑定 `AssetComponent.m_AutoHotfix` |
 | `m_QuitOnFailedOrCancel` | `SerializedProperty` | 绑定 `AssetComponent.m_QuitOnFailedOrCancel` |
 | `m_MaxDownloadConcurrency` | `SerializedProperty` | 绑定 `AssetComponent.m_MaxDownloadConcurrency` |
-| `m_RetryDownloadCount` | `SerializedProperty` | 绑定 `AssetComponent.m_RetryDownloadCount` |
+| `m_FallbackRoundCount` | `SerializedProperty` | 绑定主备候选完整轮数 |
+| `m_RetryDownloadCount` | `SerializedProperty` | 绑定下载重试次数；每次重试重新执行完整轮次组合 |
+| `m_PreferLastSuccessfulHost` | `SerializedProperty` | 绑定最近成功域名优先开关 |
+| `m_EnableUWRTracks` | `SerializedProperty` | 绑定 Asset UWR 埋点开关 |
 | `m_CheckTimeout` | `SerializedProperty` | 绑定 `AssetComponent.m_CheckTimeout` |
 | `m_IdleTimeout` | `SerializedProperty` | 绑定 `AssetComponent.m_IdleTimeout` |
 | `m_LaunchHotfixTags` | `SerializedProperty` | 绑定 `AssetComponent.m_LaunchHotfixTags`（启动期切片下载 tag 列表） |
@@ -100,7 +103,10 @@
       - AutoHotfix — 补丁就绪后是否自动开始下载
       - QuitOnFailedOrCancel — 下载失败或取消时是否强制退出
       - MaxDownloadConcurrency — 最大并发数（推荐 3-8）
-      - RetryDownloadCount — 单文件重试次数
+      - FallbackRoundCount — 每个逻辑周期的主备完整轮数
+      - RetryDownloadCount — 下载重试次数；每次重试重新执行完整轮次组合
+      - PreferLastSuccessfulHost — 后续新文件优先最近成功域名
+      - EnableUWRTracks — Asset UWR 链路埋点开关
       - AutoClearUnusedCacheOnHotfix — 热更完成后是否自动清理旧缓存
       - CheckTimeout — 版本检查超时（秒）
       - IdleTimeout — 文件下载空闲超时（秒）
@@ -108,8 +114,8 @@
 
 所有 Foldout 内条目通过 `EditorUtil.Draw.Space(16f)` 缩进，形成父子层级视觉。
 四个 HostServerUrl 字段之间不再插入额外横线，保持同组平铺；实际生效组由节点上的 `DevelopMode` 决定。
-地址说明 HelpBox 同时明确包级切换规则：主地址失败后，同一资源包后续新下载改走备用地址；已开始的下载不受影响；备用地址失败后不会自动绕回主地址。
-启动白名单及其 URL 位于 `AutoHotfix` 上方；全部新增 URL 支持既有占位符并进入现有 DoH 逻辑。关闭白名单、未配置当前 DevelopMode 地址或首次没有 DeviceID 缓存时自动跳过。
+地址说明 HelpBox 明确每文件独立计划：一轮完整尝试主备，后续轮次允许绕回；新文件可优先最近成功域名。最大物理尝试数为 `C × R × (K + 1)`。
+启动白名单及其 URL 位于 `AutoHotfix` 上方；全部新增 URL 支持既有占位符，白名单检查与 YooAsset 热更新均走各自的 UnityWebRequest 主备路径。关闭白名单、未配置当前 DevelopMode 地址或首次没有 DeviceID 缓存时自动跳过。
 缓存清理按钮位于 LaunchHotfixTags 的 HelpBox 下方，复用 `EditorUtil.Asset.Cache`，不直接在 Inspector 中拼接或删除路径。
 
 ---

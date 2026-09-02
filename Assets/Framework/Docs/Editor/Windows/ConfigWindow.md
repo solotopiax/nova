@@ -221,6 +221,8 @@ OnGUI()
 
 平台下拉用于选择当前编辑的矩阵份，状态只保存在 ConfigWindow，不写入 ConfigMasterSO。首次打开优先选中 Active BuildTarget 映射的平台；未映射时回退 Android。编辑平台与 Active BuildTarget 不一致时，顶栏显示红色错误文字，配置仍可编辑和保存，但导出按钮禁用、`OnClickExport` 再次防御性阻断，YooAsset 面板也不注入所选平台配置；重新对齐后自动恢复。CDN 部署与清理使用明确的编辑平台解析配置和路径，不受该门禁限制。
 
+`ChannelType.None` 表示无特定运营渠道，在所有有效平台下都是可编辑、可保存和可导出的合法坐标；`PlatformType.None` 仍不可用于导出。
+
 
 ### 保存流（CommitWorkingCopyToAsset）
 

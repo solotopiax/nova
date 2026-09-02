@@ -28,6 +28,7 @@ auto_generated: true
 - [ADR-075 启动应用配置由 Config 非阻塞等待 Network Ready 后单次刷新](../2-Areas/ADR/ADR-075-config-startup-remote-refresh-after-network-ready.md) — Config 后台等待网络路由就绪并单次刷新磁盘快照
 - [ADR-077 Mobile IAP 未完成订单身份采用 tableId+ReceiptParam](../2-Areas/ADR/ADR-077-mobile-iap-order-key-tableid-receiptparam.md) — Mobile订单键含ReceiptParam
 - [ADR-078 隐私 AES 默认密钥与应用协议 AES 密钥分域](../2-Areas/ADR/ADR-078-privacy-aes-and-app-aes-separation.md) — 隐私默认 AES 与应用协议 AES 分域
+- [ADR-084 Persist 就绪前的框架启动状态使用受限 PlatformPlayerPrefs](../2-Areas/ADR/ADR-084-bootstrap-state-before-persist.md) — Persist 前启动状态使用受限 PlayerPrefs
 
 ## asset
 
@@ -63,7 +64,7 @@ auto_generated: true
 - [ADR-051 启动期资源切片策略 A/B 二选一，框架 API 不绑产品决策](../2-Areas/ADR/ADR-051-launch-asset-slice-strategy.md) — 整包差异 XOR 切片增量二选一，框架透传不选策略
 - [ADR-065 启动期清单三级离线回退仅接受本地可启动版本](../2-Areas/ADR/ADR-065-asset-manifest-three-tier-offline-fallback.md) — 远端失败优先复用启动范围完整的本地版本
 - [ADR-076 启动设备白名单仅切换版本元数据路由，失败不阻断常规热更新](../2-Areas/ADR/ADR-076-startup-whitelist-metadata-routing.md) — 白名单命中仅切换元数据地址，Bundle 仍走常规 CDN
-- [ADR-080 资源下载按包粘滞切换备用地址且禁止候选回绕](../2-Areas/ADR/ADR-080-asset-package-sticky-fallback-routing.md) — 主地址失败后同包后续下载粘在备用，并发失败只切一次
+- [ADR-080 资源下载按文件独立执行完整主备轮次与重试](../2-Areas/ADR/ADR-080-asset-package-sticky-fallback-routing.md) — 每个 Asset 文件独立冻结候选计划并按 C×R×(K+1) 执行
 
 ## inspector
 
@@ -89,8 +90,8 @@ auto_generated: true
 - [ADR-069 云存档支持按 target_uid 跨用户查询](../2-Areas/ADR/ADR-069-gamesave-cross-user-query.md) — target_uid 空查自身、非空查指定，鉴权归服务端
 - [ADR-070 SDK 启用真相源归 ConfigMaster.EnabledSDKs，插件统一按启用配置实例化](../2-Areas/ADR/ADR-070-sdk-enable-via-configmaster-enabledsdks.md) — EnabledSDKs 唯一启用源，插件按配置统一实例化
 - [ADR-071 DataMaster 读参 topicId 实为 Params 字典 key（topic_name），非 experiment.topicId](../2-Areas/ADR/ADR-071-datamaster-topicid-is-params-key.md) — 读参 topicId 传 Params 字典 key，非实验字段
-- [ADR-079 业务 API 双域名与 DoH 指定连接 IP 采用传输能力门控](../2-Areas/ADR/ADR-079-business-dual-domain-doh-ip-routing.md) — 业务双域名按传输能力使用 DoH IP
 - [ADR-082 RTL 本地化转换固定在 TMP 渲染边界](../2-Areas/ADR/ADR-082-rtl-localization-render-boundary.md) — RTL 文本仅在 TMP 渲染前转换
+- [ADR-083 Nova 网络统一采用 UnityWebRequest 与共享主备执行机制](../2-Areas/ADR/ADR-083-uwr-primary-fallback-network.md) — UWR 系统 DNS 承载三模块共享主备执行机制
 
 ## quality
 
@@ -110,4 +111,4 @@ auto_generated: true
 
 
 ---
-_共 68 条，分布于 10 个 category。_
+_共 69 条，分布于 10 个 category。_

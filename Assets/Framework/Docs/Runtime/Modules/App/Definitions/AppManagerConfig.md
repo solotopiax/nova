@@ -17,14 +17,32 @@
 - `AppDownloadCheckUrl`
 - `AppDownloadCheckUrlFallback`
 - `TimeoutSeconds`
+- `VersionCheckFallbackRoundCount`
+- `RetryRequestCount`
+- `PreferLastSuccessfulHost`
+- `EnableUWRTracks`
 
 含义：
 
 - `AppDownloadCheckUrl` 指向当前 DevelopMode 选中的主规则 JSON 地址
 - `AppDownloadCheckUrlFallback` 指向当前 DevelopMode 选中的备用规则 JSON 地址
-- `TimeoutSeconds` 是 GET 请求超时时长，当前默认值为 `5`
-- 版本检查固定先尝试主地址；主地址为空、请求失败、超时、返回空内容、JSON 无法解析或版本规则无效时切到备用地址
-- 主备都不可用时，本轮 App 大版本检查直接降级为 `NoDownload`，继续后续启动流程
+- `TimeoutSeconds` 是**每次物理 GET**独享的超时时长，当前默认值为 `5`
+- `VersionCheckFallbackRoundCount` 是一个执行周期内的完整候选轮数，最小为 `1`，默认 `1`
+- `RetryRequestCount` 是首个周期耗尽后的额外完整执行周期数，最小为 `0`，默认 `1`
+- `PreferLastSuccessfulHost` 默认 `true`：当前进程内最近返回有效版本规则的域名会排到下一条检查链每轮首位
+- `EnableUWRTracks` 默认 `true`：控制 App 版本检查逻辑链的统一 UWR 埋点，不影响其他模块
+
+设去重后候选数为 `C`、完整轮数为 `R`、重试次数为 `K`，最大物理请求数为：
+
+```text
+C × R × (K + 1)
+```
+
+顺序固定为“首次执行/重试 → 完整轮次 → 当前候选”。主、备齐全时，`R=1, K=1` 的顺序是 `主 → 备 → 主 → 备`；这保证主备每次完整执行都有机会，避免把“重试 1 次”误解成仅重发一个域名。
+
+候选推进规则：传输/客户端数据处理失败、`404`、`408`、`429`、`5xx`、空正文、无效 JSON 或无效版本规则会继续；其他正式 HTTP 状态（例如 `401`）停止整链。合法 JSON 即使计算结果为 `NoDownload` 也会停止整链。调用方取消时，内置 UWR 会中止当前物理请求且不再推进候选。
+
+最近成功偏好不落盘。整链失败不会清除它；只有新有效规则成功、配置候选不再包含旧域名，或 AppManager 初始化/关闭时才失效。
 
 ### 3. 更新下载输入
 
@@ -58,6 +76,7 @@
 
 - 这份配置只决定大版本检查与下载提示，不负责资源补丁检查。
 - `AppDownloadCheckUrl` / `AppDownloadCheckUrlFallback` 已经是 `AppComponent.Start()` 选好的“当前模式生效值”，不是四组原始 Inspector 字段本身。
+- 这些轮次、重试、偏好和埋点字段只作用于 App 版本规则 GET；`PrimaryDownloadUrl` / `FallbackDownloadUrl` 的 APK 下载行为保持不变。
 
 ## 继续阅读
 

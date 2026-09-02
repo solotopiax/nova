@@ -10,12 +10,16 @@
     "UniTask"
   ],
   "includePlatforms": [],
-  "excludePlatforms": [],
+  "excludePlatforms": [
+    "WebGL"
+  ],
   "allowUnsafeCode": false,
   "overrideReferences": false,
   "precompiledReferences": [],
   "autoReferenced": true,
-  "defineConstraints": [],
+  "defineConstraints": [
+    "!UNITY_WEBGL"
+  ],
   "versionDefines": [],
   "noEngineReferences": false
 }

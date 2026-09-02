@@ -132,7 +132,7 @@ else (Common / SDK / Kit) → 矩阵类路径（m_Entries 遍历）
 - 掩码勾选的轴：只允许与 `coord` 同值的格
 - 掩码未勾选的轴：允许所有取值（等价于该轴维度无区别）
 
-跳过 `Platform == None` 或 `Channel == None` 的占位行。
+仅跳过 `Platform == None` 的占位行；`Channel == None` 是合法的无特定运营渠道坐标，会正常参与分组与广播。
 
 ### DeepCloneManagedRef — SerializeReference 跨格深拷贝（内存态独立）
 

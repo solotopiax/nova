@@ -151,14 +151,44 @@ namespace NovaFramework.Runtime
         public int MaxDownloadConcurrency => m_MaxDownloadConcurrency;
 
         /// <summary>
-        /// 单文件下载失败自动重试次数，0 表示不重试；默认 3。
+        /// 每个文件的单个逻辑执行周期内，完整遍历全部有效且去重主备候选的轮数；默认 1。
         /// </summary>
-        [SerializeField]
+        [SerializeField, Min(1)]
+        private int m_FallbackRoundCount = 1;
+        /// <summary>
+        /// Asset 主备候选完整轮数。
+        /// </summary>
+        public int FallbackRoundCount => Mathf.Max(1, m_FallbackRoundCount);
+
+        /// <summary>
+        /// 单文件下载重试次数；首次执行不计入该值，每次重试重新执行全部主备轮次，默认 3。
+        /// </summary>
+        [SerializeField, Min(0)]
         private int m_RetryDownloadCount = 3;
         /// <summary>
-        /// 单文件下载失败自动重试次数对外只读属性。
+        /// 单文件下载重试次数。
         /// </summary>
-        public int RetryDownloadCount => m_RetryDownloadCount;
+        public int RetryDownloadCount => Mathf.Max(0, m_RetryDownloadCount);
+
+        /// <summary>
+        /// 新文件建立独立下载计划时，是否优先使用当前进程内最近成功的 Asset 域名；不会删除其他候选。
+        /// </summary>
+        [SerializeField]
+        private bool m_PreferLastSuccessfulHost = true;
+        /// <summary>
+        /// 获取最近成功域名优先开关。
+        /// </summary>
+        public bool PreferLastSuccessfulHost => m_PreferLastSuccessfulHost;
+
+        /// <summary>
+        /// 是否启用 Asset UnityWebRequest 链路埋点；仅控制上报，不影响下载执行。
+        /// </summary>
+        [SerializeField]
+        private bool m_EnableUWRTracks = true;
+        /// <summary>
+        /// 获取 Asset UnityWebRequest 链路埋点开关。
+        /// </summary>
+        public bool EnableUWRTracks => m_EnableUWRTracks;
 
         /// <summary>
         /// 启动期热更按 tag 过滤的 tag 列表。
@@ -183,7 +213,8 @@ namespace NovaFramework.Runtime
         public bool AutoClearUnusedCacheOnHotfix => m_AutoClearUnusedCacheOnHotfix;
 
         /// <summary>
-        /// 单次远端版本文件请求的总超时秒数；默认 5。
+        /// 启动白名单与 .version 的单次物理请求超时秒数；每个主备候选独立使用，默认 5。
+        /// .hash/.bytes Manifest 仍使用现有 60 秒超时，不受此字段影响。
         /// </summary>
         [SerializeField]
         private int m_CheckTimeout = 5;

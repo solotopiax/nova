@@ -4,6 +4,12 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-09-02
+
+### Changed
+
+- 为 Facebook 插件补充静态配置类型元数据，使 Framework 可在构造插件前完成启用过滤。
+
 ## [0.1.11] - 2026-08-28
 
 ### Changed

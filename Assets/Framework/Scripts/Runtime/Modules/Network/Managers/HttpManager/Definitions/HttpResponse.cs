@@ -55,7 +55,11 @@ namespace NovaFramework.Runtime
         /// <param name="downloadedBytes">已下载的字节数。</param>
         /// <param name="totalBytes">总字节数，未知时为 -1。</param>
         /// <returns>初始化完成的 HttpResponse 实例。</returns>
+#if NOVA_LEGACY_BESTHTTP_MIGRATION
         public static HttpResponse Create(
+#else
+        internal static HttpResponse Create(
+#endif
             int statusCode,
             string body,
             byte[] rawData,
@@ -64,7 +68,10 @@ namespace NovaFramework.Runtime
             bool isSuccess,
             long downloadedBytes,
             long totalBytes,
-            HttpDeliveryState deliveryState = HttpDeliveryState.Unknown)
+            HttpDeliveryState deliveryState = HttpDeliveryState.Unknown,
+            string transportState = null,
+            long uploadedBytes = 0,
+            bool totalBytesIsKnown = false)
         {
             HttpResponse resp = ReferencePool.Get<HttpResponse>();
             resp.StatusCode = statusCode;
@@ -76,6 +83,9 @@ namespace NovaFramework.Runtime
             resp.DownloadedBytes = downloadedBytes;
             resp.TotalBytes = totalBytes;
             resp.DeliveryState = statusCode > 0 ? HttpDeliveryState.ServerResponded : deliveryState;
+            resp.TransportState = transportState;
+            resp.UploadedBytes = uploadedBytes;
+            resp.TotalBytesIsKnown = totalBytesIsKnown;
             return resp;
         }
 
@@ -130,6 +140,21 @@ namespace NovaFramework.Runtime
         public long TotalBytes { get; private set; }
 
         /// <summary>
+        /// 底层 UnityWebRequest 结果名称，仅供框架内部诊断与埋点使用。
+        /// </summary>
+        internal string TransportState { get; private set; }
+
+        /// <summary>
+        /// 底层已上传字节数，仅供框架内部诊断与埋点使用。
+        /// </summary>
+        internal long UploadedBytes { get; private set; }
+
+        /// <summary>
+        /// 总字节数是否来自 Content-Length 等明确来源，而非完成字节数回退值。
+        /// </summary>
+        internal bool TotalBytesIsKnown { get; private set; }
+
+        /// <summary>
         /// 下载进度比例，范围 0 到 1，总字节数未知或为零时返回 0。
         /// </summary>
         public float DownloadProgress => TotalBytes > 0 ? Math.Max(0f, Math.Min(1f, (float)DownloadedBytes / TotalBytes)) : 0f;
@@ -148,6 +173,9 @@ namespace NovaFramework.Runtime
             DownloadedBytes = 0;
             TotalBytes = -1;
             DeliveryState = HttpDeliveryState.Unknown;
+            TransportState = null;
+            UploadedBytes = 0;
+            TotalBytesIsKnown = false;
         }
     }
 }

@@ -2,7 +2,7 @@
 
 JSON 序列化 / 反序列化封装。
 
-当前实现直接依赖 Unity 官方包 `com.unity.nuget.newtonsoft-json` 提供的 `Newtonsoft.Json`，不再依赖 BestHTTP/LitJson。
+当前实现直接依赖 Unity 官方包 `com.unity.nuget.newtonsoft-json` 提供的 `Newtonsoft.Json`。
 
 ## 文件
 

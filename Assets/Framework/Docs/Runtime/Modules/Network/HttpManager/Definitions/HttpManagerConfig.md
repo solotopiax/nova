@@ -1,49 +1,43 @@
 # HttpManagerConfig
 
-**类签名**：`public class HttpManagerConfig`
-**命名空间**：`NovaFramework.Runtime`
+类签名： public class HttpManagerConfig  
+命名空间： NovaFramework.Runtime
 
-HTTP 管理器初始化配置；控制连接/请求超时时间及 DoH 管理器引用注入。
+HTTP 管理器初始化配置。由 NetworkComponent 将 Inspector 中的 UWR 埋点、业务主备策略与默认请求超时注入 HttpManager。
 
----
-
-## §2 文件表
+## 文件表
 
 | 文件 | 类 | 说明 |
 |---|---|---|
-| `Managers/HttpManager/Definitions/HttpManagerConfig.cs` | `HttpManagerConfig` | 纯数据类定义 |
+| Managers/HttpManager/Definitions/HttpManagerConfig.cs | HttpManagerConfig | HTTP 初始化数据类 |
 
----
+## 公开 API
 
-## §5 完整公开 API
-
-```csharp
+~~~csharp
 public class HttpManagerConfig
 {
-    public float      ConnectTimeout = 20f;   // 默认网络连接超时时间（秒）
-    public float      RequestTimeout = 60f;   // 默认网络请求超时时间（秒）
-    public IDoHManager DoHManager;            // DoH 管理器接口引用，由 NetworkComponent 注入
+    public bool EnableUWRTracks = true;
+    public bool PreferLastSuccessfulHost = true;
+    public int BusinessFallbackRoundCount = 1;
+    public int RetryRequestCount = 1;
+    public float RequestTimeout = 60f;
 }
-```
+~~~
 
----
+## 使用位置
 
-## §11 使用示例
-
-```csharp
-// NetworkComponent.Start() 中构造并传入
+~~~csharp
 m_HttpManager.Initialize(new HttpManagerConfig
 {
-    ConnectTimeout = m_HttpSettings.ConnectTimeout,
+    EnableUWRTracks = m_HttpSettings.EnableUWRTracks,
+    PreferLastSuccessfulHost = m_HttpSettings.PreferLastSuccessfulHost,
+    BusinessFallbackRoundCount = m_HttpSettings.BusinessFallbackRoundCount,
+    RetryRequestCount = m_HttpSettings.RetryRequestCount,
     RequestTimeout = m_HttpSettings.RequestTimeout,
-    DoHManager     = m_DoHManager,
 });
-```
+~~~
 
----
-
-## §13 关联文档
+## 关联文档
 
 - [HttpManager.md](../HttpManager.md)
-- [IDoHManager.md](../../DoHManager/IDoHManager.md)
 - [NetworkComponent.md](../../NetworkComponent.md)

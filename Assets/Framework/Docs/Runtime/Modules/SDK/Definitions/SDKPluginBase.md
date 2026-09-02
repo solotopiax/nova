@@ -12,6 +12,7 @@ public bool IsAvailable { get; }
 public abstract string Name { get; }
 public virtual int Priority => 100;
 public Type RequiredConfigType => ConfigType;
+public static bool TryGetRequiredConfigType(Type pluginType, out Type requiredConfigType);
 
 public UniTask InitializeAsync(ISDKPluginConfig config, CancellationToken ct);
 public UniTask DisposeAsync(CancellationToken ct);
@@ -27,7 +28,10 @@ protected void PublishData(string key, object value);
 
 - `InitializeAsync(...)` 成功后由基类把 `IsAvailable` 置为 `true`。
 - `DisposeAsync(...)` 无论是否异常，都会把 `IsAvailable` 置为 `false`，并取消所有等待中的数据槽位。
-- `ConfigType` 返回插件需要的配置类型；`RequiredConfigType` 只是对外公开这一结果。
+- `ConfigType` 返回已构造插件需要的配置类型；`RequiredConfigType` 只是对外公开这一结果。
+- Manager 与 Inspector 不会构造候选插件来读取 `RequiredConfigType`，而是通过 `TryGetRequiredConfigType(...)` 读取静态类型元数据。
+- 需要配置的新插件优先继承 `PluginBase<TConfig>`；无法迁移基类的兼容插件必须标注 `[SDKPluginConfigType(typeof(MyConfig))]`。
+- 未声明上述任一静态元数据的插件会被诊断并跳过，避免未启用 SDK 的构造函数或字段初始化触发原生副作用。
 - `FetchDataAsync` / `PublishData` 用于插件之间的 key-value 异步通信。
 
 ## 数据槽位模型
@@ -47,6 +51,7 @@ protected void PublishData(string key, object value);
 ## 使用示例
 
 ```csharp
+[SDKPluginConfigType(typeof(ExampleDeviceConfig))]
 public sealed class ExampleDeviceIdPlugin : SDKPluginBase, IDeviceIdProvider
 {
     public override string Name => "ExampleDevice";

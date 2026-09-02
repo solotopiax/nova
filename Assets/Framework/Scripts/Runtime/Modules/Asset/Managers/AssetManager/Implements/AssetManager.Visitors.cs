@@ -43,6 +43,11 @@ namespace NovaFramework.Runtime
         private readonly HashSet<string> m_StartupWhitelistMatchedPackages = new();
 
         /// <summary>
+        /// 每个包最近一次成功返回有效内容的启动白名单域名；整条失败链不会清除。
+        /// </summary>
+        private readonly HttpFallbackPreferenceStore m_StartupWhitelistPreferenceStore = new();
+
+        /// <summary>
         /// 每个包独立持有的远端 URL 轮换策略。
         /// </summary>
         private readonly Dictionary<string, AssetDownloadUrlPolicy> m_DownloadUrlPolicies = new();
@@ -73,7 +78,7 @@ namespace NovaFramework.Runtime
         private CancellationTokenSource m_Cts;
 
         /// <summary>
-        /// HTTP 管理器，用于下载启动白名单文件；该请求保持资源下载原有机制，不进入业务 DoH 路由。
+        /// HTTP 管理器，用于通过 UnityWebRequest 下载启动白名单文件。
         /// </summary>
         private IHttpManager m_HttpManager;
     }

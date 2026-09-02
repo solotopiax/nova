@@ -31,9 +31,31 @@ namespace NovaFramework.Runtime
         public string AppDownloadCheckUrlFallback;
 
         /// <summary>
-        /// 版本检查超时秒数，默认 5。
+        /// 版本检查每次物理请求的超时秒数，默认 5；不是整条主备链的总超时。
         /// </summary>
         public int TimeoutSeconds = 5;
+
+        /// <summary>
+        /// 版本检查主备候选的完整执行轮数，默认 1。
+        /// 一轮会依次尝试当前有效且去重后的全部候选地址。
+        /// </summary>
+        public int VersionCheckFallbackRoundCount = 1;
+
+        /// <summary>
+        /// 请求重试次数，默认 1；首次执行不计入该值，每次重试重新执行全部主备轮次。
+        /// 去重候选数为 C、轮数为 R、重试次数为 K 时，最大物理请求数为 C × R × (K + 1)。
+        /// </summary>
+        public int RetryRequestCount = 1;
+
+        /// <summary>
+        /// 是否在新版本检查链建立计划时，优先使用当前进程内最近一次取得有效版本规则的域名；不会删除其他候选。
+        /// </summary>
+        public bool PreferLastSuccessfulHost = true;
+
+        /// <summary>
+        /// 是否启用 App 版本检查 UnityWebRequest 链路埋点；仅控制上报，不影响请求执行。
+        /// </summary>
+        public bool EnableUWRTracks = true;
 
         /// <summary>
         /// 大版本更新路由方式（跳转商店 / 内部下载 APK）。

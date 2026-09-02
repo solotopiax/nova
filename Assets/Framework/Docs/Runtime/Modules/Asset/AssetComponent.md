@@ -103,7 +103,10 @@
 - `m_AutoHotfix`
 - `QuitOnFailedOrCancel`
 - `MaxDownloadConcurrency`
+- `FallbackRoundCount`
 - `RetryDownloadCount`
+- `PreferLastSuccessfulHost`
+- `EnableUWRTracks`
 - `LaunchHotfixTags`
 - `AutoClearUnusedCacheOnHotfix`
 
@@ -127,6 +130,8 @@
 - `{Channel}` 快照与同次导出的 `ConfigRuntimeSO.Channel` 同源，但在资源 Bootstrap 前即可读取，避免 Asset 反向依赖尚未加载的运行时配置。
 - `OnDestroy()` 这里只是把 `m_AssetManager` 置空，不是底层资源系统真正销毁点；真正销毁在 `AssetManager.Shutdown()`。
 - `AssetComponent` 只负责资源系统，不负责 Prefab / UI / Config 等上层消费模块。
+- `RetryDownloadCount` 是完整走完所有候选和 `FallbackRoundCount` 后的下载重试次数；每次重试重新执行全部轮次，最大物理尝试数为 `C × R × (K + 1)`，不是每个域名单独只试 K 次。
+- 每个文件独立冻结候选计划；最近成功域名只调整后续新文件的起点，整条失败链不会清除已有偏好。
 
 ## 继续阅读
 

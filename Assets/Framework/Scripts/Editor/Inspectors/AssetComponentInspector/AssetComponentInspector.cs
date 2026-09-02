@@ -61,7 +61,10 @@ namespace NovaFramework.Editor
             m_AutoHotfix = serializedObject.FindProperty("m_AutoHotfix");
             m_QuitOnFailedOrCancel = serializedObject.FindProperty("m_QuitOnFailedOrCancel");
             m_MaxDownloadConcurrency = serializedObject.FindProperty("m_MaxDownloadConcurrency");
+            m_FallbackRoundCount = serializedObject.FindProperty("m_FallbackRoundCount");
             m_RetryDownloadCount = serializedObject.FindProperty("m_RetryDownloadCount");
+            m_PreferLastSuccessfulHost = serializedObject.FindProperty("m_PreferLastSuccessfulHost");
+            m_EnableUWRTracks = serializedObject.FindProperty("m_EnableUWRTracks");
             m_CheckTimeout = serializedObject.FindProperty("m_CheckTimeout");
             m_IdleTimeout = serializedObject.FindProperty("m_IdleTimeout");
             m_LaunchHotfixTags = serializedObject.FindProperty("m_LaunchHotfixTags");

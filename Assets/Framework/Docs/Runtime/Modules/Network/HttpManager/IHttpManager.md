@@ -1,126 +1,87 @@
 # IHttpManager
 
-**类签名**：`public interface IHttpManager : IDownloadService`
-**命名空间**：`NovaFramework.Runtime`
+类签名： public interface IHttpManager : IDownloadService  
+命名空间： NovaFramework.Runtime
 
-HTTP 管理器公开接口，继承 `IDownloadService`，定义 HTTP 短连接请求（GET / POST / RawData / File）的全部契约。
+HTTP 管理器公开契约。HTTP 固定使用 UnityWebRequest 和系统 DNS；返回的 HttpResponse 是引用池对象，调用方使用完毕必须 ReferencePool.Put。
 
----
+## 继承关系
 
-## § 2 文件表
+~~~text
+IDownloadService
+  └── IHttpManager
+        └── HttpManagerBase
+              └── HttpManager
+~~~
 
-| 文件 | 类 | 说明 |
-|---|---|---|
-| `IHttpManager.cs` | `interface IHttpManager` | HTTP 管理器接口定义，继承 IDownloadService |
+## 公开 API
 
----
+~~~csharp
+void Initialize(HttpManagerConfig config);
 
-## § 3 继承关系
+UniTask<HttpResponse> GetAsync(
+    string url,
+    float requestTimeout = -1f,
+    string headerInfos = null);
 
-```
-IDownloadService (public interface)
-  └── IHttpManager : IDownloadService
-        └── HttpManagerBase (abstract) : IHttpManager
-              └── HttpManager (sealed partial)
-```
+UniTask<HttpResponse> PostAsync(
+    string url,
+    string contentString,
+    float requestTimeout = -1f,
+    string headerInfos = null);
 
----
+UniTask<HttpResponse> PostRawDataAsync(
+    string url,
+    byte[] contentBytes,
+    float requestTimeout = -1f,
+    string headerInfos = null);
 
-## § 4 关键字段表
+UniTask<HttpResponse> PostFileAsync(
+    string url,
+    string bodyJsonData,
+    byte[] fileBytes,
+    string fileName,
+    float requestTimeout = -1f,
+    string headerInfos = null);
 
-接口无字段。
+UniTask<HttpResponse> DownloadBinaryAsync(
+    string url,
+    int idleTimeout = -1,
+    Action<HttpResponse> progressCallback = null,
+    CancellationToken cancellationToken = default);
 
----
+UniTask<HttpResponse> DownloadTextAsync(
+    string url,
+    int idleTimeout = -1,
+    Action<HttpResponse> progressCallback = null,
+    CancellationToken cancellationToken = default);
+~~~
 
-## § 5 完整公开 API
+requestTimeout = -1 使用 HttpSettings.RequestTimeout（默认 60 秒）。headerInfos 必须是 JSON 对象字符串；GetAsync 会附加 Cache-Control: no-cache，除非调用方已经提供该请求头。
 
-```csharp
-// --- 生命周期 ---
-void Initialize(HttpManagerConfig config)
+普通 HTTP API 只请求调用方传入的一个 URL，不会自动推断或补充备用地址。框架内部的 HostKey + NetCmd 业务协议另行取得主、备 URL，并复用同一份请求体与请求头完成切换。
 
-// --- 异步 HTTP 接口（来自 IHttpManager）---
+## 使用示例
 
-// GET 请求；requestTimeout/connectTimeout 传 -1 使用默认值；headerInfos 为 JSON 键值对格式；默认禁用本地 HTTP 缓存
-UniTask<HttpResponse> GetAsync(string url, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
-
-// POST 请求（字符串 body）
-UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
-
-// POST 请求（字节流 body，明文）
-UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
-
-// POST 请求（multipart 文件上传）
-UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
-
-// --- 继承自 IDownloadService ---
-
-// 异步下载二进制数据（空闲超时 + 进度回调）
-// progressCallback 参数为包含已下载字节数与总字节数的 HttpResponse（中间态，IsSuccess 为 false）
-UniTask<HttpResponse> DownloadBinaryAsync(string url, int idleTimeout = -1, Action<HttpResponse> progressCallback = null, CancellationToken cancellationToken = default)
-
-// 异步下载文本内容（返回 HttpResponse，文本在 Body 字段中）
-UniTask<HttpResponse> DownloadTextAsync(string url, int idleTimeout = -1, Action<HttpResponse> progressCallback = null, CancellationToken cancellationToken = default)
-```
-
----
-
-## § 11 使用示例
-
-```csharp
-// --- UniTask 异步 GET ---
-HttpResponse response = await Nova.Network.GetAsync("https://api.example.com/config");
+~~~csharp
+HttpResponse response = await Nova.Network.GetAsync(
+    "https://api.example.com/config");
 try
 {
     if (response.IsSuccess)
+    {
         Debug.Log(response.Body);
+    }
 }
 finally
 {
     ReferencePool.Put(response);
 }
+~~~
 
-// --- UniTask 异步 POST（字符串 body）---
-HttpResponse postResp = await Nova.Network.PostAsync(
-    "https://api.example.com/submit", "{\"key\":\"value\"}");
-try
-{
-    // 处理响应
-}
-finally
-{
-    ReferencePool.Put(postResp);
-}
+## 关联文档
 
-// --- 下载二进制（继承自 IDownloadService）---
-HttpResponse bin = await Nova.Network.DownloadBinaryAsync(
-    "https://cdn.example.com/patch.zip", idleTimeout: 30,
-    progressCallback: (progress) =>
-    {
-        try
-        {
-            Debug.Log($"已下载 {progress.DownloadedBytes} bytes，进度 {progress.DownloadProgress * 100f:F1}%");
-        }
-        finally
-        {
-            ReferencePool.Put(progress);
-        }
-    });
-try
-{
-    // 处理下载结果
-}
-finally
-{
-    ReferencePool.Put(bin);
-}
-```
-
----
-
-## § 13 关联文档
-
-- [IDownloadService.md](IDownloadService.md)
-- [HttpResponse.md](Definitions/HttpResponse.md)
 - [HttpManager.md](HttpManager.md)
 - [HttpManagerBase.md](HttpManagerBase.md)
-- [HttpManagerConfig.md](Definitions/HttpManagerConfig.md)
+- [IDownloadService.md](IDownloadService.md)
+- [HttpResponse.md](Definitions/HttpResponse.md)

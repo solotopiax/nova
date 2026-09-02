@@ -36,10 +36,9 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="url">请求 URL。</param>
         /// <param name="requestTimeout">请求超时时间（秒）。</param>
-        /// <param name="connectTimeout">连接超时时间（秒）。</param>
         /// <param name="headerInfos">请求头（JSON 键值对格式）。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        public abstract UniTask<HttpResponse> GetAsync(string url, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null);
+        public abstract UniTask<HttpResponse> GetAsync(string url, float requestTimeout = -1f, string headerInfos = null);
 
         /// <summary>
         /// 异步发送 POST 请求（字符串 body）。
@@ -47,10 +46,9 @@ namespace NovaFramework.Runtime
         /// <param name="url">请求 URL。</param>
         /// <param name="contentString">请求体字符串。</param>
         /// <param name="requestTimeout">请求超时时间（秒）。</param>
-        /// <param name="connectTimeout">连接超时时间（秒）。</param>
         /// <param name="headerInfos">请求头（JSON 键值对格式）。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        public abstract UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null);
+        public abstract UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout = -1f, string headerInfos = null);
 
         /// <summary>
         /// 异步发送 POST 请求（字节流 body）。
@@ -58,10 +56,9 @@ namespace NovaFramework.Runtime
         /// <param name="url">请求 URL。</param>
         /// <param name="contentBytes">请求体字节数组。</param>
         /// <param name="requestTimeout">请求超时时间（秒）。</param>
-        /// <param name="connectTimeout">连接超时时间（秒）。</param>
         /// <param name="headerInfos">请求头（JSON 键值对格式）。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        public abstract UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null);
+        public abstract UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout = -1f, string headerInfos = null);
 
         /// <summary>
         /// 异步发送 POST 请求（multipart 文件上传）。
@@ -71,10 +68,9 @@ namespace NovaFramework.Runtime
         /// <param name="fileBytes">文件字节数组。</param>
         /// <param name="fileName">文件名。</param>
         /// <param name="requestTimeout">请求超时时间（秒）。</param>
-        /// <param name="connectTimeout">连接超时时间（秒）。</param>
         /// <param name="headerInfos">请求头（JSON 键值对格式）。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        public abstract UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null);
+        public abstract UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, string headerInfos = null);
 
         /// <summary>
         /// 异步下载二进制数据。

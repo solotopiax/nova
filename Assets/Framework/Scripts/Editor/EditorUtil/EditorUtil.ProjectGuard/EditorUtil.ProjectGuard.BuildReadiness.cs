@@ -193,7 +193,7 @@ namespace NovaFramework.Editor
                 result.platform = master.CurrentPlatform.ToString();
                 result.channel = master.CurrentChannel.ToString();
                 result.developMode = master.CurrentDevelopMode.ToString();
-                bool coordinateValid = master.CurrentPlatform != PlatformType.None && master.CurrentChannel != ChannelType.None &&
+                bool coordinateValid = master.CurrentPlatform != PlatformType.None &&
                                        master.TryGetEntry(master.CurrentPlatform, master.CurrentChannel, out _);
                 AddRule(rules, "NOVA-BUILD-005", "config",
                     coordinateValid ? BuildReadinessRuleStatus.Pass : BuildReadinessRuleStatus.Error,

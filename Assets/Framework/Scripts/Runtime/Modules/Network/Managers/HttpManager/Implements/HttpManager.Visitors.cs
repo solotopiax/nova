@@ -16,29 +16,44 @@ namespace NovaFramework.Runtime
     internal sealed partial class HttpManager : HttpManagerBase
     {
         /// <summary>
-        /// DoH 管理器接口，由初始化配置注入，用于 IP 解析。
+        /// HTTP 传输实现，固定使用 UnityWebRequest。
         /// </summary>
-        private IDoHManager m_DoHManager;
-
-        /// <summary>
-        /// HTTP 传输实现，由传输注册表创建。
-        /// </summary>
-        private IHttpTransport m_Transport;
-
-        /// <summary>
-        /// 可选的指定连接 IP 传输能力；官方 BestHTTP 或 UnityWebRequest 不具备时为 null。
-        /// </summary>
-        private IHttpIPAddressTransport m_IPAddressTransport;
-
-        /// <summary>
-        /// 默认网络连接超时时间（秒）。
-        /// </summary>
-        private float m_ConnectTimeout = 20f;
+        private IUwrHttpTransport m_Transport;
 
         /// <summary>
         /// 默认网络请求超时时间（秒）。
         /// </summary>
         private float m_RequestTimeout = 60f;
 
+        /// <summary>
+        /// 是否启用 UWR 网络链路埋点。
+        /// </summary>
+        private bool m_EnableUWRTracks = true;
+
+        /// <summary>
+        /// 业务请求是否优先使用当前进程内最近成功的域名。
+        /// </summary>
+        private bool m_PreferLastSuccessfulHost = true;
+
+        /// <summary>
+        /// 业务主备候选执行轮数，运行时始终钳制为至少一轮。
+        /// </summary>
+        private int m_BusinessFallbackRoundCount = 1;
+
+        /// <summary>
+        /// 业务请求重试次数；每次重试重新执行全部主备轮次。
+        /// </summary>
+        private int m_RetryRequestCount = 1;
+
+        /// <summary>
+        /// 按 HostKey 隔离且具备并发版本保护的最近成功域名存储。
+        /// </summary>
+        private readonly HttpFallbackPreferenceStore m_BusinessRoutePreferenceStore =
+            new HttpFallbackPreferenceStore();
+
+        /// <summary>
+        /// 最近一次观察到的 Unity 网络可达性，用于网络环境切换时清理旧域名偏好。
+        /// </summary>
+        private UnityEngine.NetworkReachability m_LastNetworkReachability;
     }
 }

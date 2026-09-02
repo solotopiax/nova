@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [1.1.1] - 2026-09-02
+
+### Changed
+
+- 更新下载后端接口注释，移除已废弃 BestHTTP 实现的说明并补齐文件末尾换行。
+
 ## [1.1.0] - 2026-08-18
 
 ### Changed (local fork)

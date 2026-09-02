@@ -211,9 +211,6 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
@@ -247,9 +244,6 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
@@ -285,15 +279,12 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Samples.Runtime.dll
     RunningGameDlls: []
-    LinkXmlTargetPath: Assets/Samples/MainDemo/Editor/link.xml
+    LinkXmlTargetPath: Assets/HybridCLRGenerate/link.xml
     GameEntranceProcedureName: ProcedurePreload
     Platform: 3
     Channel: 0
@@ -323,9 +314,6 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.BestHTTP.Runtime.dll
-      m_TargetLocation: Assets/Samples/MainDemo/Dlls/AOTMetas/NovaFramework.BestHTTP.Runtime.dll.bytes
-      m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/MainDemo/Dlls/GameDlls/NovaFramework.Samples.Runtime.dll.bytes
@@ -441,9 +429,7 @@ MonoBehaviour:
       - rid: 2533177004360728913
       - rid: 2533177004360728671
       - rid: 2533177004360729497
-      - rid: 2533177598672896521
       - rid: 2533177598672896557
-      - rid: 2533177598672896593
       - rid: 2533177598672896629
     - Mode: 1
       SDKConfigs:
@@ -451,9 +437,7 @@ MonoBehaviour:
       - rid: 2533177004360728914
       - rid: 2533177004360728673
       - rid: 2533177004360729498
-      - rid: 2533177598672896522
       - rid: 2533177598672896558
-      - rid: 2533177598672896594
       - rid: 2533177598672896630
     KitConfigsByMode:
     - Mode: 0
@@ -498,9 +482,7 @@ MonoBehaviour:
       - rid: 3589942986135568568
       - rid: 209362707701039362
       - rid: 2533177004360729499
-      - rid: 2533177598672896523
       - rid: 2533177598672896559
-      - rid: 2533177598672896595
       - rid: 2533177598672896631
     - Mode: 1
       SDKConfigs:
@@ -508,9 +490,7 @@ MonoBehaviour:
       - rid: 2533177004360728915
       - rid: 2533177004360728675
       - rid: 2533177004360729500
-      - rid: 2533177598672896524
       - rid: 2533177598672896560
-      - rid: 2533177598672896596
       - rid: 2533177598672896632
     KitConfigsByMode:
     - Mode: 0
@@ -555,9 +535,7 @@ MonoBehaviour:
       - rid: 2533177004360728916
       - rid: 2533177004360728677
       - rid: 2533177004360729501
-      - rid: 2533177598672896525
       - rid: 2533177598672896561
-      - rid: 2533177598672896597
       - rid: 2533177598672896633
     - Mode: 1
       SDKConfigs:
@@ -565,9 +543,7 @@ MonoBehaviour:
       - rid: 2533177004360728917
       - rid: 2533177004360728679
       - rid: 2533177004360729502
-      - rid: 2533177598672896526
       - rid: 2533177598672896562
-      - rid: 2533177598672896598
       - rid: 2533177598672896634
     KitConfigsByMode:
     - Mode: 0
@@ -612,9 +588,7 @@ MonoBehaviour:
       - rid: 2533177004360728918
       - rid: 2533177004360728681
       - rid: 2533177004360729503
-      - rid: 2533177598672896527
       - rid: 2533177598672896563
-      - rid: 2533177598672896599
       - rid: 2533177598672896635
     - Mode: 1
       SDKConfigs:
@@ -622,9 +596,7 @@ MonoBehaviour:
       - rid: 2533177004360728919
       - rid: 2533177004360728683
       - rid: 2533177004360729504
-      - rid: 2533177598672896528
       - rid: 2533177598672896564
-      - rid: 2533177598672896600
       - rid: 2533177598672896636
     KitConfigsByMode:
     - Mode: 0
@@ -669,9 +641,7 @@ MonoBehaviour:
       - rid: 2533177004360728920
       - rid: 2533177004360728685
       - rid: 2533177004360729505
-      - rid: 2533177598672896529
       - rid: 2533177598672896565
-      - rid: 2533177598672896601
       - rid: 2533177598672896637
     - Mode: 1
       SDKConfigs:
@@ -679,9 +649,7 @@ MonoBehaviour:
       - rid: 2533177004360728921
       - rid: 2533177004360728687
       - rid: 2533177004360729506
-      - rid: 2533177598672896530
       - rid: 2533177598672896566
-      - rid: 2533177598672896602
       - rid: 2533177598672896638
     KitConfigsByMode:
     - Mode: 0
@@ -726,9 +694,7 @@ MonoBehaviour:
       - rid: 2533177004360728922
       - rid: 2533177004360728689
       - rid: 2533177004360729507
-      - rid: 2533177598672896531
       - rid: 2533177598672896567
-      - rid: 2533177598672896603
       - rid: 2533177598672896639
     - Mode: 1
       SDKConfigs:
@@ -736,9 +702,7 @@ MonoBehaviour:
       - rid: 2533177004360728923
       - rid: 2533177004360728691
       - rid: 2533177004360729508
-      - rid: 2533177598672896532
       - rid: 2533177598672896568
-      - rid: 2533177598672896604
       - rid: 2533177598672896640
     KitConfigsByMode:
     - Mode: 0
@@ -783,9 +747,7 @@ MonoBehaviour:
       - rid: 2533177004360728924
       - rid: 2533177004360728693
       - rid: 2533177004360729509
-      - rid: 2533177598672896533
       - rid: 2533177598672896569
-      - rid: 2533177598672896605
       - rid: 2533177598672896641
     - Mode: 1
       SDKConfigs:
@@ -793,9 +755,7 @@ MonoBehaviour:
       - rid: 2533177004360728925
       - rid: 2533177004360728695
       - rid: 2533177004360729510
-      - rid: 2533177598672896534
       - rid: 2533177598672896570
-      - rid: 2533177598672896606
       - rid: 2533177598672896642
     KitConfigsByMode:
     - Mode: 0
@@ -840,9 +800,7 @@ MonoBehaviour:
       - rid: 2533177004360728926
       - rid: 2533177004360728697
       - rid: 2533177004360729511
-      - rid: 2533177598672896535
       - rid: 2533177598672896571
-      - rid: 2533177598672896607
       - rid: 2533177598672896643
     - Mode: 1
       SDKConfigs:
@@ -850,9 +808,7 @@ MonoBehaviour:
       - rid: 2533177004360728927
       - rid: 2533177004360728699
       - rid: 2533177004360729512
-      - rid: 2533177598672896536
       - rid: 2533177598672896572
-      - rid: 2533177598672896608
       - rid: 2533177598672896644
     KitConfigsByMode:
     - Mode: 0
@@ -897,9 +853,7 @@ MonoBehaviour:
       - rid: 2533177004360728928
       - rid: 2533177004360728701
       - rid: 2533177004360729513
-      - rid: 2533177598672896537
       - rid: 2533177598672896573
-      - rid: 2533177598672896609
       - rid: 2533177598672896645
     - Mode: 1
       SDKConfigs:
@@ -907,9 +861,7 @@ MonoBehaviour:
       - rid: 2533177004360728929
       - rid: 2533177004360728703
       - rid: 2533177004360729514
-      - rid: 2533177598672896538
       - rid: 2533177598672896574
-      - rid: 2533177598672896610
       - rid: 2533177598672896646
     KitConfigsByMode:
     - Mode: 0
@@ -954,9 +906,7 @@ MonoBehaviour:
       - rid: 2533177004360728930
       - rid: 2533177004360728705
       - rid: 2533177004360729515
-      - rid: 2533177598672896539
       - rid: 2533177598672896575
-      - rid: 2533177598672896611
       - rid: 2533177598672896647
     - Mode: 1
       SDKConfigs:
@@ -964,9 +914,7 @@ MonoBehaviour:
       - rid: 2533177004360728931
       - rid: 2533177004360728707
       - rid: 2533177004360729516
-      - rid: 2533177598672896540
       - rid: 2533177598672896576
-      - rid: 2533177598672896612
       - rid: 2533177598672896648
     KitConfigsByMode:
     - Mode: 0
@@ -1011,9 +959,7 @@ MonoBehaviour:
       - rid: 2533177004360728932
       - rid: 2533177004360728709
       - rid: 2533177004360729517
-      - rid: 2533177598672896541
       - rid: 2533177598672896577
-      - rid: 2533177598672896613
       - rid: 2533177598672896649
     - Mode: 1
       SDKConfigs:
@@ -1021,9 +967,7 @@ MonoBehaviour:
       - rid: 2533177004360728933
       - rid: 2533177004360728711
       - rid: 2533177004360729518
-      - rid: 2533177598672896542
       - rid: 2533177598672896578
-      - rid: 2533177598672896614
       - rid: 2533177598672896650
     KitConfigsByMode:
     - Mode: 0
@@ -1068,9 +1012,7 @@ MonoBehaviour:
       - rid: 2533177004360728934
       - rid: 2533177004360728713
       - rid: 2533177004360729519
-      - rid: 2533177598672896543
       - rid: 2533177598672896579
-      - rid: 2533177598672896615
       - rid: 2533177598672896651
     - Mode: 1
       SDKConfigs:
@@ -1078,9 +1020,7 @@ MonoBehaviour:
       - rid: 2533177004360728935
       - rid: 2533177004360728715
       - rid: 2533177004360729520
-      - rid: 2533177598672896544
       - rid: 2533177598672896580
-      - rid: 2533177598672896616
       - rid: 2533177598672896652
     KitConfigsByMode:
     - Mode: 0
@@ -1125,9 +1065,7 @@ MonoBehaviour:
       - rid: 2533177004360728936
       - rid: 2533177004360728717
       - rid: 2533177004360729521
-      - rid: 2533177598672896545
       - rid: 2533177598672896581
-      - rid: 2533177598672896617
       - rid: 2533177598672896653
     - Mode: 1
       SDKConfigs:
@@ -1135,9 +1073,7 @@ MonoBehaviour:
       - rid: 2533177004360728937
       - rid: 2533177004360728719
       - rid: 2533177004360729522
-      - rid: 2533177598672896546
       - rid: 2533177598672896582
-      - rid: 2533177598672896618
       - rid: 2533177598672896654
     KitConfigsByMode:
     - Mode: 0
@@ -1182,9 +1118,7 @@ MonoBehaviour:
       - rid: 2533177004360728938
       - rid: 2533177004360728721
       - rid: 2533177004360729523
-      - rid: 2533177598672896547
       - rid: 2533177598672896583
-      - rid: 2533177598672896619
       - rid: 2533177598672896655
     - Mode: 1
       SDKConfigs:
@@ -1192,9 +1126,7 @@ MonoBehaviour:
       - rid: 2533177004360728939
       - rid: 2533177004360728723
       - rid: 2533177004360729524
-      - rid: 2533177598672896548
       - rid: 2533177598672896584
-      - rid: 2533177598672896620
       - rid: 2533177598672896656
     KitConfigsByMode:
     - Mode: 0
@@ -1239,9 +1171,7 @@ MonoBehaviour:
       - rid: 2533177004360728940
       - rid: 2533177004360728725
       - rid: 2533177004360729525
-      - rid: 2533177598672896549
       - rid: 2533177598672896585
-      - rid: 2533177598672896621
       - rid: 2533177598672896657
     - Mode: 1
       SDKConfigs:
@@ -1249,9 +1179,7 @@ MonoBehaviour:
       - rid: 2533177004360728941
       - rid: 2533177004360728727
       - rid: 2533177004360729526
-      - rid: 2533177598672896550
       - rid: 2533177598672896586
-      - rid: 2533177598672896622
       - rid: 2533177598672896658
     KitConfigsByMode:
     - Mode: 0
@@ -1296,9 +1224,7 @@ MonoBehaviour:
       - rid: 2533177004360728942
       - rid: 2533177004360728729
       - rid: 2533177004360729527
-      - rid: 2533177598672896551
       - rid: 2533177598672896587
-      - rid: 2533177598672896623
       - rid: 2533177598672896659
     - Mode: 1
       SDKConfigs:
@@ -1306,9 +1232,7 @@ MonoBehaviour:
       - rid: 2533177004360728943
       - rid: 2533177004360728731
       - rid: 2533177004360729528
-      - rid: 2533177598672896552
       - rid: 2533177598672896588
-      - rid: 2533177598672896624
       - rid: 2533177598672896660
     KitConfigsByMode:
     - Mode: 0
@@ -1353,9 +1277,7 @@ MonoBehaviour:
       - rid: 2533177004360728944
       - rid: 2533177004360728733
       - rid: 2533177004360729529
-      - rid: 2533177598672896553
       - rid: 2533177598672896589
-      - rid: 2533177598672896625
       - rid: 2533177598672896661
     - Mode: 1
       SDKConfigs:
@@ -1363,9 +1285,7 @@ MonoBehaviour:
       - rid: 2533177004360728945
       - rid: 2533177004360728735
       - rid: 2533177004360729530
-      - rid: 2533177598672896554
       - rid: 2533177598672896590
-      - rid: 2533177598672896626
       - rid: 2533177598672896662
     KitConfigsByMode:
     - Mode: 0
@@ -1410,9 +1330,7 @@ MonoBehaviour:
       - rid: 2533177004360728946
       - rid: 2533177004360728737
       - rid: 2533177004360729531
-      - rid: 2533177598672896555
       - rid: 2533177598672896591
-      - rid: 2533177598672896627
       - rid: 2533177598672896663
     - Mode: 1
       SDKConfigs:
@@ -1420,9 +1338,7 @@ MonoBehaviour:
       - rid: 2533177004360728947
       - rid: 2533177004360728739
       - rid: 2533177004360729532
-      - rid: 2533177598672896556
       - rid: 2533177598672896592
-      - rid: 2533177598672896628
       - rid: 2533177598672896664
     KitConfigsByMode:
     - Mode: 0
@@ -1433,6 +1349,117 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 3589943518543478964
+  - Platform: 1
+    Channel: 0
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    CommonByMode: []
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 2
+    Channel: 0
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    CommonByMode: []
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
+  - Platform: 3
+    Channel: 0
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    CommonByMode: []
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs: []
+    - Mode: 1
+      SDKConfigs: []
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs: []
+    - Mode: 1
+      KitConfigs: []
   references:
     version: 2
     RefIds:
@@ -3200,294 +3227,6 @@ MonoBehaviour:
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
         m_AutoRequestNotificationPermission: 1
-    - rid: 2533177598672896521
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896522
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896523
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896524
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896525
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896526
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896527
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896528
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896529
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896530
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896531
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896532
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896533
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896534
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896535
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896536
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896537
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896538
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896539
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896540
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896541
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896542
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896543
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896544
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896545
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896546
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896547
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896548
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896549
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896550
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896551
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896552
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896553
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896554
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896555
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
-    - rid: 2533177598672896556
-      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
-      data:
-        m_ClientId: 
-        m_RequestEmail: 1
-        m_FilterByAuthorizedAccounts: 1
-        m_AutoSelectEnabled: 1
-        m_AutoRestoreOnInitialize: 0
     - rid: 2533177598672896557
       type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
       data:
@@ -3740,150 +3479,6 @@ MonoBehaviour:
         m_FacebookClientToken: 
         m_AutoDownloadAvatarOnLogin: 1
         m_AvatarSize: 100
-    - rid: 2533177598672896593
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896594
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896595
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896596
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896597
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896598
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896599
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896600
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896601
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896602
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896603
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896604
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896605
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896606
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896607
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896608
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896609
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896610
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896611
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896612
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896613
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896614
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896615
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896616
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896617
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896618
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896619
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896620
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896621
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896622
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896623
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896624
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896625
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896626
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896627
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
-    - rid: 2533177598672896628
-      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
-      data:
-        m_RequestFullName: 1
     - rid: 2533177598672896629
       type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
       data:

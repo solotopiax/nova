@@ -6,6 +6,22 @@
 
 ---
 
+## [Unreleased]
+
+## [0.6.25] - 2026-09-02
+
+### Breaking
+
+- Framework 网络移除 DoH、IP 注入和可选 HTTP 后端，统一使用 UnityWebRequest 与系统 DNS。
+
+### Removed
+
+- 删除 Nova HTTP 适配子包及对应第三方 HTTP/TLS 包；App、Asset 与 HostKey + NetCmd 业务请求分别保留明确的主备域名策略。
+
+### Changed
+
+- App、Asset 与 `HostKey + NetCmd` 统一复用 UWR 主备规划器：全部候选走完算一轮，每次重试重新执行全部轮次，并支持最近成功域名优先与 `uwr_request_start/error/end` 链路埋点。
+
 ## [0.6.24] - 2026-08-31
 
 汇总：见 [Assets/Framework/CHANGELOG.md](Assets/Framework/CHANGELOG.md) `[0.6.24]` 节。

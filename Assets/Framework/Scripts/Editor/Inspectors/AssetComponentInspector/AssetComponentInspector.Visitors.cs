@@ -149,9 +149,24 @@ namespace NovaFramework.Editor
         private SerializedProperty m_MaxDownloadConcurrency;
 
         /// <summary>
-        /// 下载失败重试次数。
+        /// 主备候选完整轮数。
+        /// </summary>
+        private SerializedProperty m_FallbackRoundCount;
+
+        /// <summary>
+        /// 完整轮次组合失败后的逻辑重试次数。
         /// </summary>
         private SerializedProperty m_RetryDownloadCount;
+
+        /// <summary>
+        /// 是否优先最近成功域名。
+        /// </summary>
+        private SerializedProperty m_PreferLastSuccessfulHost;
+
+        /// <summary>
+        /// 是否启用 Asset UnityWebRequest 埋点。
+        /// </summary>
+        private SerializedProperty m_EnableUWRTracks;
 
         /// <summary>
         /// 版本检查超时（秒）。

@@ -355,7 +355,7 @@ namespace NovaFramework.Editor
                     for (int i = 0; i < entries.Count; i++)
                     {
                         PlatformChannelEntry entry = entries[i];
-                        if (entry.Platform == PlatformType.None || entry.Channel == ChannelType.None) continue;
+                        if (entry.Platform == PlatformType.None) continue;
                         if (mask.ByPlatform && entry.Platform != coord.Platform) continue;
                         if (mask.ByChannel && entry.Channel != coord.Channel) continue;
                         foreach (DevelopMode mode in modes)
@@ -389,7 +389,7 @@ namespace NovaFramework.Editor
                         case DimensionAxis.Channel:
                             foreach (ChannelType c in Enum.GetValues(typeof(ChannelType)))
                             {
-                                if (c != ChannelType.None) yield return new Coord(baseCoord.Platform, c, baseCoord.Mode);
+                                yield return new Coord(baseCoord.Platform, c, baseCoord.Mode);
                             }
                             break;
                         case DimensionAxis.DevelopMode:

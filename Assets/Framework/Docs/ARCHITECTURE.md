@@ -26,7 +26,7 @@ Nova 当前是“`Nova` 根组件 + 多个 `FrameworkComponent` 子模块 + 多�
 | `Nova.Table` | `TableComponent` | 表格系统 |
 | `Nova.Localization` | `LocalizationComponent` | 多语言与字体适配 |
 | `Nova.UI` | `UIComponent` | UI 打开、关闭、分组管理 |
-| `Nova.Network` | `NetworkComponent` | DoH / HTTP / Net / WebSocket |
+| `Nova.Network` | `NetworkComponent` | HTTP / Net / WebSocket |
 | `Nova.Procedure` | `ProcedureComponent` | 流程系统 |
 | `Nova.ObjectPool` | `ObjectPoolComponent` | 对象池 |
 | `Nova.Persist` | `PersistComponent` | PlayerPrefs / SQLite / FileFragment |
@@ -54,7 +54,7 @@ Nova 当前是“`Nova` 根组件 + 多个 `FrameworkComponent` 子模块 + 多�
 ### SDK 走插件列表装配
 
 - `SDKComponent` 持有 `SDKPluginEntry` 列表。
-- `SDKManager` 根据启用项、优先级和配置类型初始化插件。
+- `SDKManager` 先通过泛型基类或 `SDKPluginConfigTypeAttribute` 静态匹配启用配置，再构造并按优先级初始化插件；未启用插件不会因扫描而执行构造逻辑。
 - SDK 配置来自 `ConfigManager` / `ConfigRuntimeSO`，不是手写字典。
 
 ### Native 桥接系统通知授权与应用内评价请求
@@ -84,7 +84,6 @@ Nova 当前是“`Nova` 根组件 + 多个 `FrameworkComponent` 子模块 + 多�
 | Network | 10 |
 | Prefab | 10 |
 | App | 11 |
-| DoH | 11 |
 | Table | 14 |
 | Native | 15 |
 | SDK | 16 |
@@ -94,7 +93,7 @@ Nova 当前是“`Nova` 根组件 + 多个 `FrameworkComponent` 子模块 + 多�
 说明：
 
 - 同优先级模块的相对顺序不应在文档里假定，除非代码明确约束。
-- `NetworkComponent` 内部有 `DoHManager`、`HttpManager`、`NetworkManager`、`WebSocketManager` 四条子链路。
+- `NetworkComponent` 内部有 `HttpManager`、`NetworkManager`、`WebSocketManager` 三条子链路。
 
 ## Editor 侧扩展模型
 

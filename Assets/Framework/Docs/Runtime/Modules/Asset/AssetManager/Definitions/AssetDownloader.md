@@ -21,6 +21,9 @@
 |------|------|------|
 | `m_Operation` | `ResourceDownloaderOperation` | 被包装的 YooAsset 下载操作实例（readonly） |
 | `m_Scope` | `string` | 切片来源描述（readonly），构造时传入 |
+| `m_DownloadPolicy` | `AssetDownloadUrlPolicy` | 当前包共享的 URL/重试策略 |
+| `m_LogicalRetryCount` | `int` | 当前显式下载器的下载重试次数；每次重试重新执行完整轮次组合 |
+| `m_RegisteredFiles` | `HashSet<string>` | 已向策略登记的文件，避免重试重复计数 |
 | `m_LastSampleTime` | `float` | 上次速率采样时刻（Time.realtimeSinceStartup） |
 | `m_LastSampleBytes` | `long` | 上次采样时已完成字节数，差分计算速率用 |
 | `m_DownloadSpeed` | `long` | 当前速率缓存（bytes/s），OnProgress 内约 500ms 刷新一次 |
@@ -32,7 +35,8 @@
 
 ```csharp
 // scope 可选，默认 "all"；按 tag 传 "tags:..."；按 Asset 地址传 "locations:N"
-public AssetDownloader(ResourceDownloaderOperation operation, string scope = "all")
+public AssetDownloader(ResourceDownloaderOperation operation, string scope = "all",
+    AssetDownloadUrlPolicy downloadPolicy = null, int logicalRetryCount = 3)
 
 // IAssetDownloader 实现
 int TotalCount { get; }        // → m_Operation.TotalDownloadCount
@@ -56,11 +60,11 @@ void Cancel()
 ## 关键算法
 
 **RunAsync**：
-1. IsEmpty 时直接返回 `true`
-2. `m_Operation.StartDownload()` 触发底层下载
+1. IsEmpty 时清理订阅并返回 `true`
+2. `m_Operation.StartDownload()` 触发底层下载；每个首次开始的文件向策略登记逻辑重试次数
 3. `UniTask.WaitUntil(() => m_Operation.IsDone, cancellationToken: ct)`
 4. ct 取消时调 `Cancel()` 停底层操作并重抛 `OperationCanceledException`
-5. 完成后取消订阅 OnProgress，返回 `m_Operation.Status == EOperationStatus.Succeeded`
+5. 成功、失败或取消都会幂等取消订阅、注销文件策略状态并清零速率
 
 ---
 

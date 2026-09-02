@@ -33,7 +33,6 @@ namespace NovaFramework.Editor
             // 管理器类型名
             m_CurNetworkManagerTypeName = serializedObject.FindProperty("m_CurNetworkManagerTypeName");
             m_CurHttpManagerTypeName = serializedObject.FindProperty("m_CurHttpManagerTypeName");
-            m_CurDoHManagerTypeName = serializedObject.FindProperty("m_CurDoHManagerTypeName");
             m_CurWebSocketManagerTypeName = serializedObject.FindProperty("m_CurWebSocketManagerTypeName");
 
             // 业务上下文
@@ -77,15 +76,12 @@ namespace NovaFramework.Editor
             }
 
             // 管理器配置对象
-            m_DoHSettings = serializedObject.FindProperty("m_DoHSettings");
             m_HttpSettings = serializedObject.FindProperty("m_HttpSettings");
-            m_EnableBestHttpTelemetry = m_HttpSettings?.FindPropertyRelative("EnableBestHttpTelemetry");
             m_WebSocketSettings = serializedObject.FindProperty("m_WebSocketSettings");
 
             // 实现类列表 — 运行时管理器
             m_NetworkManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(INetworkManager)));
             m_HttpManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(IHttpManager)));
-            m_DoHManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(IDoHManager)));
             m_WebSocketManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(IWebSocketManager)));
 
             // Proto 设置
@@ -120,7 +116,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制 Inspector：依次绘制管理器选择、域名表导出、指令表导出、Proto 管理、HTTP/DoH/WebSocket 设置，并执行最终刷新。
+        /// 绘制 Inspector：依次绘制管理器选择、域名表导出、指令表导出、Proto 管理、HTTP/WebSocket 设置，并执行最终刷新。
         /// </summary>
         public override void OnInspectorGUI()
         {
@@ -131,7 +127,6 @@ namespace NovaFramework.Editor
             DrawNetCmdExport();
             DrawProtoManagement();
             DrawHttpSettings();
-            DrawDoHSettings();
             DrawWebSocketSettings();
             FinalRefreshInspectorGUI();
         }

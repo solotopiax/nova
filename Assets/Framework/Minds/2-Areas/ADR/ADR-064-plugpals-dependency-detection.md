@@ -23,14 +23,14 @@ related:
 
 ## 背景（Context）
 
-PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必须的商业可选库」——典型如 BestHTTP / TLS Security，这类库本地未必安装，且需购买或到内部云仓库自取。
+PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必须的商业可选库」。这类库本地未必安装，且可能需要购买或到内部云仓库自取。
 
 早期实现把这类库放在包 `package.json` 的 `nova.requiredLibraries`（而非 `dependencies`），并由 PlugPals 负责注入宏（`requiredLibraries.defineSymbols`）+ 维护 `PlugPalsInjectedDefines.json` 账本 + domain-reload 后台审计弹窗。该路线有结构性缺陷：
 
 - 依赖不在 `dependencies` → UPM 解析层面「看不见」它们，既不会自动安装，缺库检测（曾基于 dependencies / scope 已注册判据）也对它们沉默；
 - PlugPals 自己注入宏，与 Unity 原生 `versionDefines`（包存在即自动定义宏）职责重复，且账本维护成本高、宏来源与依赖来源脱节。
 
-触发点：在消费端工程 `MyTest` 实测发现，安装 `com.solotopia.nova.framework.besthttp` 时，其依赖的 best/tls 既不被自动安装、也不被缺库检测提示——因为它们被声明在 `requiredLibraries` 而非 `dependencies`。
+触发点：消费端实测发现，当必须依赖仅声明在 `requiredLibraries` 而未进入 `dependencies` 时，该依赖既不会由 UPM 自动安装，也不会被缺库检测可靠识别。
 
 不做此决策：缺库检测与自动安装无可靠数据源，可选商业库始终处于「UPM 不装、工具不报」的三不管地带。
 
@@ -54,7 +54,7 @@ PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必�
 
 **移除**：PlugPals 宏注入链（`SyncRequiredLibraryDefineSymbols` 等）、`PlugPalsInjectedDefines.json` 账本、后台审计（`RunRequiredLibraryAudit` / `[InitializeOnLoad]`）、会话级抑制、「scope 已注册」判据。
 
-**适用范围**：`NovaFramework.Editor` 的 PlugPals 工具 + 各 UPM 包的 `package.json`/asmdef 契约；`com.solotopia.nova.framework.besthttp` 为首个落地样板。
+**适用范围**：`NovaFramework.Editor` 的 PlugPals 工具 + 各 UPM 包的 `package.json`/asmdef 契约。
 
 ## 后果（Consequences）
 
@@ -82,10 +82,9 @@ PlugPals（消费端 UPM 包管理 Editor 工具）安装包时需处理「必�
 
 ## 验证依据（Verification）
 
-- 文件：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RequiredLibraries.cs`（`CheckDependencies`）、`EditorUtil.PlugPals.cs`（`InstallPackage`）、`PlugPalsWindow/PlugPalsWindow.Methods.cs`（`BuildKnownRegistryPackages`）、`UPMPackages/com.solotopia.nova.framework.besthttp/package.json` 与 `Nova/Runtime/NovaFramework.BestHTTP.Runtime.asmdef`。
+- 文件：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.RequiredLibraries.cs`（`CheckDependencies`）、`EditorUtil.PlugPals.cs`（`InstallPackage`）、`PlugPalsWindow/PlugPalsWindow.Methods.cs`（`BuildKnownRegistryPackages`）。
 - grep 自查：`CheckDependencies` / `RegistrySource` 存在；全仓 `defineSymbols` / `PlugPalsInjectedDefines` / `RunRequiredLibraryAudit` 应零残留。
-- 测试：`PlugPalsRequiredLibraryTests`（`CheckDependencies_*`，含 `CheckDependencies_CoveredByProjectScopedRegistries_PassesThrough_20260630` 等项目 scope 放行三测）+ `BestHttpOptionalDependencyTests`，EditMode 全绿。
-- 设计/计划：`docs/superpowers/specs/2026-06-15-plugpals-missing-required-libraries-design.md`（v2）、`docs/superpowers/plans/2026-06-15-plugpals-missing-required-libraries.md`（v2）。
+- 测试：`PlugPalsRequiredLibraryTests`（`CheckDependencies_*`，含 `CheckDependencies_CoveredByProjectScopedRegistries_PassesThrough_20260630` 等项目 scope 放行三测）。
 
 ## 关联
 

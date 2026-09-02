@@ -12,13 +12,14 @@ using System;
 using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace NovaFramework.Runtime
 {
     /// <summary>
     /// HTTP 管理器，负责 HTTP 短连接请求发送、AES 加解密与 GZip 压缩处理。
     /// </summary>
-    internal sealed partial class HttpManager : HttpManagerBase, IBusinessHttpManager
+    internal sealed partial class HttpManager : HttpManagerBase, IBusinessHttpManager, IPhysicalHttpManager
     {
         /// <summary>
         /// 初始化 HttpManager 的新实例。
@@ -33,12 +34,15 @@ namespace NovaFramework.Runtime
         /// <param name="config">配置信息。</param>
         public override void Initialize(HttpManagerConfig config)
         {
-            m_DoHManager = config.DoHManager;
+            ClearAllBusinessRoutePreferences();
+            m_EnableUWRTracks = config.EnableUWRTracks;
+            m_PreferLastSuccessfulHost = config.PreferLastSuccessfulHost;
+            m_BusinessFallbackRoundCount = Math.Max(1, config.BusinessFallbackRoundCount);
+            m_RetryRequestCount = Math.Max(0, config.RetryRequestCount);
             m_RequestTimeout = config.RequestTimeout;
-            m_ConnectTimeout = config.ConnectTimeout;
-            m_Transport = HttpTransportRegistry.Create();
-            m_Transport.Initialize(m_RequestTimeout, m_ConnectTimeout);
-            ConfigureDoHTransportCapability();
+            m_LastNetworkReachability = Application.internetReachability;
+            m_Transport = new UnityWebRequestTransport();
+            m_Transport.Initialize(m_RequestTimeout);
         }
 
         /// <summary>
@@ -46,12 +50,28 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="url">请求 URL。</param>
         /// <param name="requestTimeout">请求超时时间（秒），-1 使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒），-1 使用默认值。</param>
         /// <param name="headerInfos">请求头 JSON 键值对，null 表示无额外头。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        public override UniTask<HttpResponse> GetAsync(string url, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
+        public override UniTask<HttpResponse> GetAsync(string url, float requestTimeout = -1f, string headerInfos = null)
         {
-            return m_Transport.GetAsync(url, requestTimeout, connectTimeout, headerInfos, null);
+            return ExecuteTrackedSingleRequestAsync(
+                "http_get",
+                "GET",
+                url,
+                requestTimeout,
+                () => m_Transport.GetAsync(url, requestTimeout, headerInfos));
+        }
+
+        /// <summary>
+        /// 发送一次不自动创建埋点链的可取消 GET，供 App 等模块自行包装完整主备链。
+        /// </summary>
+        public UniTask<HttpResponse> GetPhysicalAsync(
+            string url,
+            float requestTimeout,
+            string headerInfos,
+            CancellationToken cancellationToken)
+        {
+            return m_Transport.GetAsync(url, requestTimeout, headerInfos, cancellationToken);
         }
 
         /// <summary>
@@ -60,13 +80,17 @@ namespace NovaFramework.Runtime
         /// <param name="url">请求 URL。</param>
         /// <param name="contentString">请求体字符串。</param>
         /// <param name="requestTimeout">请求超时时间（秒），-1 使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒），-1 使用默认值。</param>
         /// <param name="headerInfos">请求头 JSON 键值对，null 表示无额外头。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        public override UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
+        public override UniTask<HttpResponse> PostAsync(string url, string contentString, float requestTimeout = -1f, string headerInfos = null)
         {
             byte[] bodyBytes = Encoding.UTF8.GetBytes(contentString ?? string.Empty);
-            return m_Transport.PostAsync(url, bodyBytes, requestTimeout, connectTimeout, headerInfos, null);
+            return ExecuteTrackedSingleRequestAsync(
+                "http_post",
+                "POST",
+                url,
+                requestTimeout,
+                () => m_Transport.PostAsync(url, bodyBytes, requestTimeout, headerInfos));
         }
 
         /// <summary>
@@ -75,12 +99,21 @@ namespace NovaFramework.Runtime
         /// <param name="url">请求 URL。</param>
         /// <param name="contentBytes">请求体字节数组。</param>
         /// <param name="requestTimeout">请求超时时间（秒），-1 使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒），-1 使用默认值。</param>
         /// <param name="headerInfos">请求头 JSON 键值对，null 表示无额外头。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        public override UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
+        public override UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout = -1f, string headerInfos = null)
         {
-            return m_Transport.PostRawDataAsync(url, contentBytes, requestTimeout, connectTimeout, headerInfos, null);
+            return ExecuteTrackedSingleRequestAsync(
+                "http_post_raw",
+                "POST",
+                url,
+                requestTimeout,
+                () => m_Transport.PostRawDataAsync(
+                    url,
+                    contentBytes,
+                    requestTimeout,
+                    headerInfos,
+                    CancellationToken.None));
         }
 
         /// <summary>
@@ -91,12 +124,22 @@ namespace NovaFramework.Runtime
         /// <param name="fileBytes">文件字节数组。</param>
         /// <param name="fileName">文件名。</param>
         /// <param name="requestTimeout">请求超时时间（秒），-1 使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒），-1 使用默认值。</param>
         /// <param name="headerInfos">请求头 JSON 键值对，null 表示无额外头。</param>
         /// <returns>包含响应数据的 HttpResponse。</returns>
-        public override UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, float connectTimeout = -1f, string headerInfos = null)
+        public override UniTask<HttpResponse> PostFileAsync(string url, string bodyJsonData, byte[] fileBytes, string fileName, float requestTimeout = -1f, string headerInfos = null)
         {
-            return m_Transport.PostFileAsync(url, bodyJsonData, fileBytes, fileName, requestTimeout, connectTimeout, headerInfos, null);
+            return ExecuteTrackedSingleRequestAsync(
+                "http_post_file",
+                "POST",
+                url,
+                requestTimeout,
+                () => m_Transport.PostFileAsync(
+                    url,
+                    bodyJsonData,
+                    fileBytes,
+                    fileName,
+                    requestTimeout,
+                    headerInfos));
         }
 
         /// <summary>
@@ -109,7 +152,13 @@ namespace NovaFramework.Runtime
         /// <returns>包含下载结果的 HttpResponse。</returns>
         public override UniTask<HttpResponse> DownloadBinaryAsync(string url, int idleTimeout = -1, Action<HttpResponse> progressCallback = null, CancellationToken cancellationToken = default)
         {
-            return m_Transport.DownloadBinaryAsync(url, idleTimeout, progressCallback, cancellationToken, null);
+            return ExecuteTrackedSingleRequestAsync(
+                "http_download_binary",
+                "GET",
+                url,
+                idleTimeout,
+                () => m_Transport.DownloadBinaryAsync(url, idleTimeout, progressCallback, cancellationToken),
+                cancellationToken);
         }
 
         /// <summary>
@@ -122,7 +171,13 @@ namespace NovaFramework.Runtime
         /// <returns>包含下载结果的 HttpResponse，文本内容存储在 Body 字段中。</returns>
         public override UniTask<HttpResponse> DownloadTextAsync(string url, int idleTimeout = -1, Action<HttpResponse> progressCallback = null, CancellationToken cancellationToken = default)
         {
-            return m_Transport.DownloadTextAsync(url, idleTimeout, progressCallback, cancellationToken, null);
+            return ExecuteTrackedSingleRequestAsync(
+                "http_download_text",
+                "GET",
+                url,
+                idleTimeout,
+                () => m_Transport.DownloadTextAsync(url, idleTimeout, progressCallback, cancellationToken),
+                cancellationToken);
         }
 
         /// <summary>
@@ -130,6 +185,14 @@ namespace NovaFramework.Runtime
         /// </summary>
         public override void Update()
         {
+            NetworkReachability currentReachability = Application.internetReachability;
+            if (currentReachability == m_LastNetworkReachability)
+            {
+                return;
+            }
+
+            m_LastNetworkReachability = currentReachability;
+            ClearAllBusinessRoutePreferences();
         }
 
         /// <summary>
@@ -139,7 +202,7 @@ namespace NovaFramework.Runtime
         {
             m_Transport?.Shutdown();
             m_Transport = null;
-            m_IPAddressTransport = null;
+            ClearAllBusinessRoutePreferences();
         }
     }
 }

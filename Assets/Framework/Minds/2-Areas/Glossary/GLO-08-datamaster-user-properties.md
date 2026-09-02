@@ -14,7 +14,8 @@ keywords:
   - app_version
   - install_time
 tags: [glossary, module, sdk, datamaster, abtest]
-related: []
+related:
+  - "[[ADR-084-bootstrap-state-before-persist|ADR-084]]"
 ---
 
 # GLO-08：DataMaster 分流用户属性口径（app_version / install_time 必传）
@@ -23,12 +24,12 @@ DataMaster 拉取配置（`RefreshFromServer` 的 `userProperties`）用于服�
 
 ## 必传字段（红线）
 
-`app_version` 与 `install_time` 是**必传字段**，缺失会影响服务端分流命中。业务在触发拉取（登录）前经 `SetUserProperty` 设置。
+`app_version` 与 `install_time` 是**必传字段**，缺失会影响服务端分流命中。DataMaster 在每次服务端刷新前由框架自动注入这两个字段；业务只需通过 `SetUserProperty` 补充 `country_code` 等自定义属性。
 
 | 属性 | 类型 | 口径 |
 |---|---|---|
 | `app_version` | number（int） | 整数版本号，见下方合成算法 |
-| `install_time` | number（long） | 首次安装毫秒时间戳（13 位 = ms，非 s） |
+| `install_time` | number（long） | `Nova.InstallTimeMs`，框架首次启动近似值（13 位 UTC Unix ms，非 s） |
 | `country_code` | string | 国家码，如 `US`（示例分流条件，非必传） |
 
 ## app_version 合成算法（全平台通用）
@@ -49,7 +50,7 @@ code = major * 1_000_000 + minor * 1_000 + patch
 
 ## install_time 单位判定
 
-时间戳位数区分单位：秒级 10 位、毫秒级 13 位。`1780078403000` 为 13 位 = 毫秒。取值用 `DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()`。
+时间戳位数区分单位：秒级 10 位、毫秒级 13 位。`1780078403000` 为 13 位 = 毫秒。DataMaster 的 `GetInstallTimeMs()` 与刷新属性统一读取 `Nova.InstallTimeMs`，不再维护独立安装时间，也不迁移旧键 `Nova_DataMaster_InstallTimeMs`。该值由 Nova 首次启动时以 `DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()` 建立；设计边界见 [[ADR-084-bootstrap-state-before-persist|ADR-084]]。
 
 ## 来源（Origin）
 - 会话日期：2026-07-07
@@ -61,3 +62,4 @@ code = major * 1_000_000 + minor * 1_000 + patch
 
 ## 关联
 - 相关 ADR：[[ADR-071-datamaster-topicid-is-params-key|ADR-071]]
+- 启动期持久化边界：[[ADR-084-bootstrap-state-before-persist|ADR-084]]

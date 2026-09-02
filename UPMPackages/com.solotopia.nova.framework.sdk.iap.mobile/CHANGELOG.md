@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-09-02
+
+### Changed
+
+- Mobile Store 显式声明 `IAPStoreType.Mobile`，并在 WebGL 下排除移动商店程序集。
+
 ## [0.1.11] - 2026-09-01
 
 ### Changed

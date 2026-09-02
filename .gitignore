@@ -93,9 +93,6 @@ out/
 
 UserSettings/
 
-com.Tivadar.Best.HTTP.xml
-com.Tivadar.Best.TLSSecurity.xml
-
 HybridCLRData/*
 .claude/settings.local.json
 

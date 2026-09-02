@@ -290,6 +290,7 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 - 必须能通过 `EditorUtil.Config.WorkspaceActive` 定位当前激活 `ConfigMasterSO`
 - `ConfigMasterSO.ExportTarget` 不能为空
 - Unity 当前 Active BuildTarget 必须映射为 Android / iOS / WebGL 的 Nova `PlatformType`；该 Platform 为只读，且 ConfigMaster 中必须存在其与指定 Channel 对应的矩阵配置
+- `ChannelType.None` 是合法的无特定运营渠道，`export.config` 不会因 Channel 为 `None` 拦截；但对应的 Platform × None 矩阵行仍必须存在
 
 ### 组件型导出 Step
 

@@ -70,11 +70,39 @@ namespace NovaFramework.Runtime
         private string m_DefaultPackageName = "Default";
 
         /// <summary>
-        /// 版本检查超时秒数，默认 5。
+        /// 版本检查每次物理请求的超时秒数，默认 5；不是整条主备链的总超时。
         /// </summary>
         [SerializeField]
         private int m_TimeoutSeconds = 5;
         public int TimeoutSeconds => m_TimeoutSeconds;
+
+        /// <summary>
+        /// 版本检查主备候选的完整执行轮数；一轮会依次尝试当前有效且去重后的全部候选地址。
+        /// </summary>
+        [SerializeField, Min(1)]
+        private int m_VersionCheckFallbackRoundCount = 1;
+        public int VersionCheckFallbackRoundCount => m_VersionCheckFallbackRoundCount;
+
+        /// <summary>
+        /// 请求重试次数；首次执行不计入该值，每次重试都会重新执行全部主备轮次。
+        /// </summary>
+        [SerializeField, Min(0)]
+        private int m_RetryRequestCount = 1;
+        public int RetryRequestCount => m_RetryRequestCount;
+
+        /// <summary>
+        /// 是否在新版本检查链建立计划时，优先使用当前进程内最近一次取得有效版本规则的域名；不会删除其他候选。
+        /// </summary>
+        [SerializeField]
+        private bool m_PreferLastSuccessfulHost = true;
+        public bool PreferLastSuccessfulHost => m_PreferLastSuccessfulHost;
+
+        /// <summary>
+        /// 是否启用 App 版本检查 UnityWebRequest 链路埋点；仅控制上报，不影响请求执行。
+        /// </summary>
+        [SerializeField]
+        private bool m_EnableUWRTracks = true;
+        public bool EnableUWRTracks => m_EnableUWRTracks;
 
         /// <summary>
         /// 大版本更新路由方式（跳转商店 / 内部下载 APK）。

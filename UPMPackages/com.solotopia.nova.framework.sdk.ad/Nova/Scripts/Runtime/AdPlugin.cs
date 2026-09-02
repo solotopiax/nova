@@ -25,6 +25,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
     /// 渠道事件统一桥接到 Events（AdPluginEvents）容器，支持 Sticky/Replay 补发模式。
     /// 业务层通过 Nova.SDK.Get<IAdPlugin>() 取得此实例，不感知具体渠道。
     /// </summary>
+    [SDKPluginConfigType(typeof(AdPluginConfig))]
     public sealed partial class AdPlugin : SDKPluginBase, IAdPlugin
     {
         /// <summary>

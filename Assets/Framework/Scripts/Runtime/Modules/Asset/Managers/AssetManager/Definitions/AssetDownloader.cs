@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -35,6 +36,28 @@ namespace NovaFramework.Runtime
         /// 切片来源描述，仅用于日志与 UI 展示。
         /// </summary>
         private readonly string m_Scope;
+
+        /// <summary>
+        /// 当前包共享的 URL 与重试策略；用于给显式下载器的文件登记调用方重试配置。
+        /// </summary>
+        private readonly AssetDownloadUrlPolicy m_DownloadPolicy;
+
+        /// <summary>
+        /// 调用方传入的逻辑重试次数（完整走完全部候选与轮数后再重试的次数）。
+        /// </summary>
+        private readonly int m_LogicalRetryCount;
+
+        /// <summary>
+        /// 一次显式 YooAsset Downloader 的关联 ID，供其下多个 Bundle 请求聚合。
+        /// </summary>
+        private readonly string m_DownloadOperationId = Guid.NewGuid().ToString("N");
+
+        /// <summary>
+        /// 本下载器已经登记过的文件名，避免同一文件重试时重复增加引用计数。
+        /// </summary>
+        private readonly HashSet<string> m_RegisteredFiles = new(StringComparer.Ordinal);
+
+        private bool m_CleanedUp;
 
         /// <summary>
         /// 上次速率采样时刻（Time.realtimeSinceStartup）。
@@ -108,10 +131,13 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="operation">YooAsset 下载操作实例。</param>
         /// <param name="scope">切片来源描述；整包传 "all"，按 tag 传 "tags:..."，按 Asset 地址传 "locations:N"。</param>
-        public AssetDownloader(ResourceDownloaderOperation operation, string scope = "all")
+        public AssetDownloader(ResourceDownloaderOperation operation, string scope = "all",
+            AssetDownloadUrlPolicy downloadPolicy = null, int logicalRetryCount = 3)
         {
             m_Operation = operation;
             m_Scope = scope;
+            m_DownloadPolicy = downloadPolicy;
+            m_LogicalRetryCount = Math.Max(0, logicalRetryCount);
             m_Operation.DownloadProgressChanged += OnDownloadProgressChanged;
             m_Operation.DownloadFileStarted += OnDownloadFileStarted;
         }
@@ -128,6 +154,7 @@ namespace NovaFramework.Runtime
         {
             if (IsEmpty)
             {
+                Cleanup();
                 return true;
             }
 
@@ -143,8 +170,11 @@ namespace NovaFramework.Runtime
                 Cancel();
                 throw;
             }
+            finally
+            {
+                Cleanup();
+            }
 
-            UnsubscribeOperationEvents();
             return m_Operation.Status == EOperationStatus.Succeeded;
         }
 
@@ -153,7 +183,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         public void Cancel()
         {
-            UnsubscribeOperationEvents();
+            Cleanup();
             m_Operation.CancelDownload();
         }
 
@@ -182,16 +212,36 @@ namespace NovaFramework.Runtime
         /// <param name="data">YooAsset 单文件开始事件参数。</param>
         private void OnDownloadFileStarted(DownloadFileStartedEventArgs data)
         {
+            if (m_DownloadPolicy != null && m_RegisteredFiles.Add(data.FileName))
+            {
+                m_DownloadPolicy.RegisterDownloaderFile(
+                    data.FileName,
+                    m_LogicalRetryCount,
+                    m_DownloadOperationId);
+            }
             OnFileStarted?.Invoke(data.BundleName, data.FileName, data.FileSize);
         }
 
         /// <summary>
         /// 取消订阅所有 YooAsset 下载事件，并将速率缓存归零。
         /// </summary>
-        private void UnsubscribeOperationEvents()
+        private void Cleanup()
         {
+            if (m_CleanedUp)
+            {
+                return;
+            }
+            m_CleanedUp = true;
             m_Operation.DownloadProgressChanged -= OnDownloadProgressChanged;
             m_Operation.DownloadFileStarted -= OnDownloadFileStarted;
+            if (m_DownloadPolicy != null)
+            {
+                foreach (string fileName in m_RegisteredFiles)
+                {
+                    m_DownloadPolicy.UnregisterDownloaderFile(fileName);
+                }
+                m_RegisteredFiles.Clear();
+            }
             m_DownloadSpeed = 0L;
         }
     }

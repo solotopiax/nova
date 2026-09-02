@@ -17,7 +17,6 @@
   <assembly fullname="NovaFramework.Kit.Network.GameLogin.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.IAP.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.IAP.Mobile.Runtime" preserve="all" />
-  <assembly fullname="NovaFramework.BestHTTP.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.IAP.ThirdPay.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.IAP.Voucher.Runtime" preserve="all" />
 </linker>

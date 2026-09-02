@@ -18,6 +18,7 @@ namespace NovaFramework.SDK.AppleSignIn
     /// <summary>
     /// Apple 登录 SDK 插件。
     /// </summary>
+    [SDKPluginConfigType(typeof(AppleSignInPluginConfig))]
     public sealed partial class AppleSignInPlugin : SDKPluginBase, IAuthPlugin
     {
         /// <summary>

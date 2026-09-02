@@ -20,7 +20,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     /// 应用内第三方支付 Store。
     /// 仅支持 InAppAuto，由 Store 负责支付页、政策校验、验单、补单与订单持久化。
     /// </summary>
-    [IAPStore]
+    [IAPStore(IAPStoreType.ThirdPay)]
     public sealed partial class ThirdPayStore : IAPStoreBase, IIAPThirdPayCapable
     {
         /// <summary>

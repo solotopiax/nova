@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-09-02
+
+### Changed
+
+- 为 IAP 插件补充静态配置类型元数据；Store 通过 `IAPStoreAttribute` 声明类型，未配置的可选 Store 在构造前即被跳过。
+
 ## [0.1.11] - 2026-09-01
 
 ### Changed

@@ -17,7 +17,7 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// SDK 插件强类型泛型基类。
     /// 继承此类的插件将 ConfigType 固化为 TConfig，SDKManager 在初始化时自动从
-    /// IConfigManager 按 RequiredConfigType 拉取配置并注入；若未取到则跳过该插件。
+    /// IConfigManager 按 RequiredConfigType 拉取配置并注入；泛型参数也供 Manager 在构造前过滤未启用插件。
     /// 派生类只需实现 OnInitializeAsync(TConfig, CancellationToken) 强类型版本，
     /// 无需关心 ISDKPluginConfig 到 TConfig 的转换细节。
     /// </summary>

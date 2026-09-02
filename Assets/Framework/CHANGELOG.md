@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## [0.6.25] - 2026-09-02
+
+### Added
+
+- 新增框架级 `Nova.InstallTimeMs`，在首次启动时持久化 13 位 UTC Unix 毫秒时间戳。
+- 新增最小化 Editor 升级迁移器：消费项目升级 Framework 后自动从 manifest 移除当前及历史 BestHTTP/TLS 包与 testables，并触发 UPM Resolve；TGA 上游 DoH 不受影响。
+
+### Breaking
+
+- 删除 DoH Manager、配置、Inspector 与公共接口；Framework HTTP 固定使用 UnityWebRequest 和系统 DNS。
+- 删除可替换 HTTP transport SPI、独立连接超时参数及相关网络遥测扩展点；仓外自定义实现需要迁移到现行 HTTP 契约。
+
+### Changed
+
+- App 版本检查、Asset 热更新与 `HostKey + NetCmd` 业务协议分别使用各自的 UnityWebRequest 主备地址链；业务链仅在未取得正式 HTTP 响应时切换备用域名。
+- 三条链统一复用主备候选规划、轮次/重试坐标与最近成功域名偏好；最大物理发送数为 `C × R × (K + 1)`，每个物理请求使用完整的模块超时，并统一上报 schema 1 的 `uwr_request_start/error/end`。
+
+### Removed
+
+- 删除 Nova HTTP 适配子包及其第三方 HTTP/TLS 依赖、Samples AOT/link 配置、Player define 和安装入口注入逻辑。
+
 ## [0.6.24] - 2026-08-31
 
 ### Fixed

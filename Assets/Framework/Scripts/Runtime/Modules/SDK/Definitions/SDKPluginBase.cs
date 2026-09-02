@@ -16,8 +16,31 @@ using Cysharp.Threading.Tasks;
 namespace NovaFramework.Runtime
 {
     /// <summary>
+    /// 为直接继承 SDKPluginBase 的插件声明配置类型，使 Manager 与 Inspector 无需构造实例即可完成启用过滤。
+    /// 新插件优先继承 PluginBase&lt;TConfig&gt;；仅在无法迁移基类时使用此兼容声明。
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public sealed class SDKPluginConfigTypeAttribute : Attribute
+    {
+        /// <summary>
+        /// 创建插件配置类型声明。
+        /// </summary>
+        /// <param name="configType">实现 ISDKPluginConfig 的具体配置类型。</param>
+        public SDKPluginConfigTypeAttribute(Type configType)
+        {
+            ConfigType = configType;
+        }
+
+        /// <summary>
+        /// 插件所需的配置类型。
+        /// </summary>
+        public Type ConfigType { get; }
+    }
+
+    /// <summary>
     /// SDK 插件通用抽象基类（纯 C#，非 MonoBehaviour）。
     /// 派生类只需重写 OnInitializeAsync / OnDisposeAsync，以及 Name / Priority 属性。
+    /// 需要配置的插件必须继承 PluginBase&lt;TConfig&gt;，或在具体类型上声明 SDKPluginConfigTypeAttribute。
     /// IsAvailable 由基类管理：OnInitializeAsync 成功后置 true，抛出异常后保持 false。
     /// </summary>
     public abstract class SDKPluginBase : ISDKPlugin
@@ -61,7 +84,8 @@ namespace NovaFramework.Runtime
         /// 声明本插件所需的配置类型。
         /// 若派生类需要配置，返回具体 ISDKPluginConfig 子类型；
         /// 返回 null 表示无需配置（InitializeAsync 时 config 参数可为 null）。
-        /// SDKManager 按此类型从 IConfigManager.GetSDKPluginConfig 自动拉取配置注入；取不到则跳过该插件初始化。
+        /// 构造后的 SDKManager 按此类型从 IConfigManager.GetSDKPluginConfig 自动拉取配置注入；取不到则跳过该插件初始化。
+        /// 构造前准入使用 PluginBase&lt;TConfig&gt; 或 SDKPluginConfigTypeAttribute 的静态类型元数据。
         /// </summary>
         protected virtual Type ConfigType => null;
 
@@ -70,6 +94,57 @@ namespace NovaFramework.Runtime
         /// 主线程只读。
         /// </summary>
         public Type RequiredConfigType => ConfigType;
+
+        /// <summary>
+        /// 在不创建插件实例的前提下，从 SDKPluginConfigTypeAttribute 或 PluginBase&lt;TConfig&gt; 继承链解析配置类型。
+        /// 仅使用类型元数据，避免未启用插件的构造函数或字段初始化产生原生 SDK 副作用。
+        /// </summary>
+        /// <param name="pluginType">待检查的插件具体类型。</param>
+        /// <param name="requiredConfigType">解析出的 ISDKPluginConfig 类型；无法解析时为 null。</param>
+        /// <returns>类型继承链声明了有效 TConfig 时返回 true。</returns>
+        public static bool TryGetRequiredConfigType(Type pluginType, out Type requiredConfigType)
+        {
+            requiredConfigType = null;
+            if (pluginType == null || !typeof(SDKPluginBase).IsAssignableFrom(pluginType))
+            {
+                return false;
+            }
+
+            Type currentType = pluginType;
+            while (currentType != null && currentType != typeof(object))
+            {
+                if (currentType.IsGenericType && currentType.GetGenericTypeDefinition() == typeof(PluginBase<>))
+                {
+                    Type configType = currentType.GetGenericArguments()[0];
+                    if (!typeof(ISDKPluginConfig).IsAssignableFrom(configType))
+                    {
+                        return false;
+                    }
+
+                    requiredConfigType = configType;
+                    return true;
+                }
+
+                currentType = currentType.BaseType;
+            }
+
+            SDKPluginConfigTypeAttribute attribute = (SDKPluginConfigTypeAttribute)Attribute.GetCustomAttribute(
+                pluginType,
+                typeof(SDKPluginConfigTypeAttribute),
+                false);
+            if (attribute != null)
+            {
+                if (attribute.ConfigType == null || !typeof(ISDKPluginConfig).IsAssignableFrom(attribute.ConfigType))
+                {
+                    return false;
+                }
+
+                requiredConfigType = attribute.ConfigType;
+                return true;
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// 异步初始化入口（模板方法）。

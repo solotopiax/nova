@@ -26,6 +26,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
     /// Firebase SDK 插件，继承 SDKPluginBase，实现 Analytics 埋点（IMonetizeTrackPlugin）与 FCM 推送（IPushPlugin）契约。
     /// 负责 Firebase 初始化、Analytics 事件上报、FCM Token 接收及推送主题订阅管理。
     /// </summary>
+    [SDKPluginConfigType(typeof(FirebasePluginConfig))]
     public sealed partial class FirebasePlugin : SDKPluginBase, IMonetizeTrackPlugin, IPushPlugin, IFirebasePushTaskPlugin, ISDKPauseListener
     {
         /// <summary>

@@ -47,6 +47,7 @@ namespace NovaFramework.Runtime
             }
 
             m_Config = config;
+            m_VersionCheckFallbackPreferences.ClearAll();
         }
 
         /// <summary>
@@ -63,6 +64,7 @@ namespace NovaFramework.Runtime
         {
             m_HttpManager = null;
             m_Config = null;
+            m_VersionCheckFallbackPreferences.ClearAll();
             ResetMatchedRuleState();
         }
 

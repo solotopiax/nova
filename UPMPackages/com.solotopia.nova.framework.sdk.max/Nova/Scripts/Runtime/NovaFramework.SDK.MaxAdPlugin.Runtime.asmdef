@@ -8,12 +8,16 @@
         "GUID:a4cfc1a18fa3a469b96d885db522f42e"
     ],
     "includePlatforms": [],
-    "excludePlatforms": [],
+    "excludePlatforms": [
+        "WebGL"
+    ],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "!UNITY_WEBGL"
+    ],
     "versionDefines": [
         {
             "name": "com.applovin.mediation.ads",

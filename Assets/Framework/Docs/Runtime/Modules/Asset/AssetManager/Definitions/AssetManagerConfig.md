@@ -37,8 +37,11 @@ AssetManager 启动配置，由 `AssetComponent.Start()` 现场 `new AssetManage
 | `AutoHotfix` | `bool` | `true` | 启动期资源补丁就绪后是否自动开始下载 |
 | `QuitOnFailedOrCancel` | `bool` | `false` | 下载失败或取消时是否强制退出应用 |
 | `MaxDownloadConcurrency` | `int` | `5` | 资源补丁下载最大并发数（推荐 3-8） |
-| `RetryDownloadCount` | `int` | `3` | 单文件下载失败自动重试次数，0 表示不重试 |
-| `CheckTimeout` | `int` | `5` | 版本检查空闲超时秒数（连续无新字节流入时中止请求） |
+| `FallbackRoundCount` | `int` | `1` | 每个逻辑周期完整遍历全部主备候选的轮数，最小为 1 |
+| `RetryDownloadCount` | `int` | `3` | 下载重试次数；每次重试重新执行完整轮次组合，0 表示只执行首次完整组合 |
+| `PreferLastSuccessfulHost` | `bool` | `true` | 后续新文件是否优先使用当前进程内最近成功的 Asset 域名 |
+| `EnableUWRTracks` | `bool` | `true` | 是否启用 Asset UnityWebRequest 链路埋点 |
+| `CheckTimeout` | `int` | `5` | 启动白名单与 `.version` 单次请求超时秒数；`.hash/.bytes` 仍使用现有固定 60 秒 |
 | `IdleTimeout` | `int` | `20` | 文件下载空闲超时秒数（连续无新字节流入时中止下载） |
 | `HostServerUrl` | `string` | `null` | 当前节点 `DevelopMode` 已选定的主下载地址 URL；默认直接填写完整 URL 模板 |
 | `HostServerUrlFallback` | `string` | `null` | 当前节点 `DevelopMode` 已选定的备用下载地址 URL |
@@ -69,7 +72,10 @@ m_AssetManager.Initialize(new AssetManagerConfig
     AutoHotfix = m_AutoHotfix,
     QuitOnFailedOrCancel = m_QuitOnFailedOrCancel,
     MaxDownloadConcurrency = m_MaxDownloadConcurrency,
+    FallbackRoundCount = m_FallbackRoundCount,
     RetryDownloadCount = m_RetryDownloadCount,
+    PreferLastSuccessfulHost = m_PreferLastSuccessfulHost,
+    EnableUWRTracks = m_EnableUWRTracks,
     CheckTimeout = m_CheckTimeout,
     IdleTimeout = m_IdleTimeout,
     HostServerUrl = ResolveHostServerUrl(),

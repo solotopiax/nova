@@ -178,12 +178,6 @@ namespace NovaFramework.Runtime
         public const string Network = "[Network]";
 
         /// <summary>
-        /// DoH 模块日志标签。
-        /// </summary>
-        [LogTagDescription("DoH 模块")]
-        public const string DoH = "[Network][DoH]";
-
-        /// <summary>
         /// HTTP 模块日志标签。
         /// </summary>
         [LogTagDescription("网络短连接模块")]

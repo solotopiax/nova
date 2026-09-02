@@ -9,13 +9,16 @@
         "UniTask"
     ],
     "includePlatforms": [],
-    "excludePlatforms": [],
+    "excludePlatforms": [
+        "WebGL"
+    ],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "NOVA_IAP_MOBILE"
+        "NOVA_IAP_MOBILE",
+        "!UNITY_WEBGL"
     ],
     "versionDefines": [
         {

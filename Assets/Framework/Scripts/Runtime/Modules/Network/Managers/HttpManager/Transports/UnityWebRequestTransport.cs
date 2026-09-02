@@ -19,32 +19,21 @@ using UnityEngine.Networking;
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// 基于 UnityWebRequest 的内置 HTTP 传输，在没有更高优先级可选后端时提供默认网络能力。
+    /// 基于 UnityWebRequest 的内置且唯一 HTTP 传输。
     /// </summary>
-    internal sealed class UnityWebRequestTransport : IHttpTransport
+    internal sealed class UnityWebRequestTransport : IUwrHttpTransport
     {
         private const string c_BinaryContentType = "application/octet-stream";
 
         private float m_RequestTimeout = 60f;
 
         /// <summary>
-        /// 初始化默认请求超时。UnityWebRequest 不支持独立连接超时，因此连接阶段受总请求超时约束。
+        /// 初始化默认请求超时。
         /// </summary>
         /// <param name="requestTimeout">默认请求总超时时间（秒）。</param>
-        /// <param name="connectTimeout">默认连接超时时间（秒）；UnityWebRequest 无独立映射能力。</param>
-        public void Initialize(float requestTimeout, float connectTimeout)
+        public void Initialize(float requestTimeout)
         {
             m_RequestTimeout = requestTimeout;
-        }
-
-        /// <summary>
-        /// UnityWebRequest 不声明 IP 候选能力，避免 HTTPS Host、SNI 与证书校验语义被破坏。
-        /// </summary>
-        /// <param name="uri">原始请求 URI。</param>
-        /// <returns>始终返回 false。</returns>
-        public bool CanUseIpCandidate(Uri uri)
-        {
-            return false;
         }
 
         /// <summary>
@@ -52,20 +41,22 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="url">请求 URL。</param>
         /// <param name="requestTimeout">请求总超时时间（秒），负数使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒）；UnityWebRequest 无独立映射能力。</param>
         /// <param name="headerInfos">请求头 JSON 键值对。</param>
-        /// <param name="hostHeader">IP 候选使用的 Host；当前后端不会请求 IP 候选。</param>
         /// <returns>HTTP 响应。</returns>
-        public async UniTask<HttpResponse> GetAsync(string url, float requestTimeout, float connectTimeout, string headerInfos, string hostHeader)
+        public async UniTask<HttpResponse> GetAsync(
+            string url,
+            float requestTimeout,
+            string headerInfos,
+            CancellationToken cancellationToken = default)
         {
             using UnityWebRequest request = UnityWebRequest.Get(url);
-            ApplyHeaderInfos(request, headerInfos, hostHeader);
+            ApplyHeaderInfos(request, headerInfos);
             if (string.IsNullOrEmpty(request.GetRequestHeader("Cache-Control")))
             {
                 request.SetRequestHeader("Cache-Control", "no-cache");
             }
 
-            return await ExecuteRequestAsync(request, ResolveRequestTimeout(requestTimeout), "GET");
+            return await ExecuteRequestAsync(request, ResolveRequestTimeout(requestTimeout), "GET", cancellationToken);
         }
 
         /// <summary>
@@ -74,13 +65,11 @@ namespace NovaFramework.Runtime
         /// <param name="url">请求 URL。</param>
         /// <param name="bodyBytes">请求体字节。</param>
         /// <param name="requestTimeout">请求总超时时间（秒），负数使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒）；UnityWebRequest 无独立映射能力。</param>
         /// <param name="headerInfos">请求头 JSON 键值对。</param>
-        /// <param name="hostHeader">IP 候选使用的 Host；当前后端不会请求 IP 候选。</param>
         /// <returns>HTTP 响应。</returns>
-        public UniTask<HttpResponse> PostAsync(string url, byte[] bodyBytes, float requestTimeout, float connectTimeout, string headerInfos, string hostHeader)
+        public UniTask<HttpResponse> PostAsync(string url, byte[] bodyBytes, float requestTimeout, string headerInfos)
         {
-            return PostBytesAsync(url, bodyBytes, requestTimeout, headerInfos, hostHeader, "POST");
+            return PostBytesAsync(url, bodyBytes, requestTimeout, headerInfos, "POST", CancellationToken.None);
         }
 
         /// <summary>
@@ -89,13 +78,16 @@ namespace NovaFramework.Runtime
         /// <param name="url">请求 URL。</param>
         /// <param name="contentBytes">原始请求体字节。</param>
         /// <param name="requestTimeout">请求总超时时间（秒），负数使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒）；UnityWebRequest 无独立映射能力。</param>
         /// <param name="headerInfos">请求头 JSON 键值对。</param>
-        /// <param name="hostHeader">IP 候选使用的 Host；当前后端不会请求 IP 候选。</param>
         /// <returns>HTTP 响应。</returns>
-        public UniTask<HttpResponse> PostRawDataAsync(string url, byte[] contentBytes, float requestTimeout, float connectTimeout, string headerInfos, string hostHeader)
+        public UniTask<HttpResponse> PostRawDataAsync(
+            string url,
+            byte[] contentBytes,
+            float requestTimeout,
+            string headerInfos,
+            CancellationToken cancellationToken = default)
         {
-            return PostBytesAsync(url, contentBytes, requestTimeout, headerInfos, hostHeader, "POST RawData");
+            return PostBytesAsync(url, contentBytes, requestTimeout, headerInfos, "POST RawData", cancellationToken);
         }
 
         /// <summary>
@@ -106,9 +98,7 @@ namespace NovaFramework.Runtime
         /// <param name="fileBytes">文件字节。</param>
         /// <param name="fileName">文件名。</param>
         /// <param name="requestTimeout">请求总超时时间（秒），负数使用默认值。</param>
-        /// <param name="connectTimeout">连接超时时间（秒）；UnityWebRequest 无独立映射能力。</param>
         /// <param name="headerInfos">请求头 JSON 键值对。</param>
-        /// <param name="hostHeader">IP 候选使用的 Host；当前后端不会请求 IP 候选。</param>
         /// <returns>HTTP 响应。</returns>
         public async UniTask<HttpResponse> PostFileAsync(
             string url,
@@ -116,9 +106,7 @@ namespace NovaFramework.Runtime
             byte[] fileBytes,
             string fileName,
             float requestTimeout,
-            float connectTimeout,
-            string headerInfos,
-            string hostHeader)
+            string headerInfos)
         {
             var sections = new List<IMultipartFormSection>();
             if (!string.IsNullOrEmpty(bodyJsonData))
@@ -137,8 +125,8 @@ namespace NovaFramework.Runtime
                 c_BinaryContentType));
 
             using UnityWebRequest request = UnityWebRequest.Post(url, sections);
-            ApplyHeaderInfos(request, headerInfos, hostHeader);
-            return await ExecuteRequestAsync(request, ResolveRequestTimeout(requestTimeout), "POST File");
+            ApplyHeaderInfos(request, headerInfos);
+            return await ExecuteRequestAsync(request, ResolveRequestTimeout(requestTimeout), "POST File", CancellationToken.None);
         }
 
         /// <summary>
@@ -148,16 +136,14 @@ namespace NovaFramework.Runtime
         /// <param name="idleTimeout">连续无新增字节的超时时间（秒），负数使用默认请求超时。</param>
         /// <param name="progressCallback">下载进度回调。</param>
         /// <param name="cancellationToken">取消令牌。</param>
-        /// <param name="hostHeader">IP 候选使用的 Host；当前后端不会请求 IP 候选。</param>
         /// <returns>HTTP 响应。</returns>
         public UniTask<HttpResponse> DownloadBinaryAsync(
             string url,
             int idleTimeout,
             Action<HttpResponse> progressCallback,
-            CancellationToken cancellationToken,
-            string hostHeader)
+            CancellationToken cancellationToken)
         {
-            return DownloadAsync(url, idleTimeout, progressCallback, cancellationToken, hostHeader);
+            return DownloadAsync(url, idleTimeout, progressCallback, cancellationToken);
         }
 
         /// <summary>
@@ -167,16 +153,14 @@ namespace NovaFramework.Runtime
         /// <param name="idleTimeout">连续无新增字节的超时时间（秒），负数使用默认请求超时。</param>
         /// <param name="progressCallback">下载进度回调。</param>
         /// <param name="cancellationToken">取消令牌。</param>
-        /// <param name="hostHeader">IP 候选使用的 Host；当前后端不会请求 IP 候选。</param>
         /// <returns>HTTP 响应。</returns>
         public UniTask<HttpResponse> DownloadTextAsync(
             string url,
             int idleTimeout,
             Action<HttpResponse> progressCallback,
-            CancellationToken cancellationToken,
-            string hostHeader)
+            CancellationToken cancellationToken)
         {
-            return DownloadAsync(url, idleTimeout, progressCallback, cancellationToken, hostHeader);
+            return DownloadAsync(url, idleTimeout, progressCallback, cancellationToken);
         }
 
         /// <summary>
@@ -193,7 +177,6 @@ namespace NovaFramework.Runtime
         /// <param name="bodyBytes">请求体字节。</param>
         /// <param name="requestTimeout">请求总超时时间（秒）。</param>
         /// <param name="headerInfos">请求头 JSON 键值对。</param>
-        /// <param name="hostHeader">IP 候选使用的 Host。</param>
         /// <param name="requestTag">日志使用的请求标签。</param>
         /// <returns>HTTP 响应。</returns>
         private async UniTask<HttpResponse> PostBytesAsync(
@@ -201,8 +184,8 @@ namespace NovaFramework.Runtime
             byte[] bodyBytes,
             float requestTimeout,
             string headerInfos,
-            string hostHeader,
-            string requestTag)
+            string requestTag,
+            CancellationToken cancellationToken)
         {
             using var request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST)
             {
@@ -210,8 +193,12 @@ namespace NovaFramework.Runtime
                 downloadHandler = new DownloadHandlerBuffer()
             };
             request.SetRequestHeader("Content-Type", c_BinaryContentType);
-            ApplyHeaderInfos(request, headerInfos, hostHeader);
-            return await ExecuteRequestAsync(request, ResolveRequestTimeout(requestTimeout), requestTag);
+            ApplyHeaderInfos(request, headerInfos);
+            return await ExecuteRequestAsync(
+                request,
+                ResolveRequestTimeout(requestTimeout),
+                requestTag,
+                cancellationToken);
         }
 
         /// <summary>
@@ -221,7 +208,11 @@ namespace NovaFramework.Runtime
         /// <param name="timeoutSeconds">请求总超时时间（秒）。</param>
         /// <param name="requestTag">日志使用的请求标签。</param>
         /// <returns>HTTP 响应。</returns>
-        private static async UniTask<HttpResponse> ExecuteRequestAsync(UnityWebRequest request, float timeoutSeconds, string requestTag)
+        private static async UniTask<HttpResponse> ExecuteRequestAsync(
+            UnityWebRequest request,
+            float timeoutSeconds,
+            string requestTag,
+            CancellationToken cancellationToken)
         {
             float startTime = Time.realtimeSinceStartup;
             if (timeoutSeconds > 0f)
@@ -234,6 +225,15 @@ namespace NovaFramework.Runtime
                 UnityWebRequestAsyncOperation operation = request.SendWebRequest();
                 while (!operation.isDone)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        request.Abort();
+                        return CreateFailureResponse(
+                            request,
+                            Txt.Format("{0} 请求已取消。", requestTag),
+                            ToLong(request.downloadedBytes));
+                    }
+
                     if (timeoutSeconds <= 0f || Time.realtimeSinceStartup - startTime >= timeoutSeconds)
                     {
                         request.Abort();
@@ -263,22 +263,21 @@ namespace NovaFramework.Runtime
         /// <param name="idleTimeout">空闲超时时间（秒）。</param>
         /// <param name="progressCallback">下载进度回调。</param>
         /// <param name="cancellationToken">取消令牌。</param>
-        /// <param name="hostHeader">IP 候选使用的 Host。</param>
         /// <returns>HTTP 响应。</returns>
         private async UniTask<HttpResponse> DownloadAsync(
             string url,
             int idleTimeout,
             Action<HttpResponse> progressCallback,
-            CancellationToken cancellationToken,
-            string hostHeader)
+            CancellationToken cancellationToken)
         {
             int effectiveIdleTimeout = idleTimeout < 0 ? Mathf.CeilToInt(m_RequestTimeout) : idleTimeout;
             using UnityWebRequest request = UnityWebRequest.Get(url);
-            ApplyHeaderInfos(request, null, hostHeader);
+            ApplyHeaderInfos(request, null);
             request.SetRequestHeader("Cache-Control", "no-cache");
 
             long lastDownloadedBytes = 0;
             float lastProgressTime = Time.realtimeSinceStartup;
+            bool progressCallbackEnabled = progressCallback != null;
             try
             {
                 UnityWebRequestAsyncOperation operation = request.SendWebRequest();
@@ -295,7 +294,10 @@ namespace NovaFramework.Runtime
                     {
                         lastDownloadedBytes = downloadedBytes;
                         lastProgressTime = Time.realtimeSinceStartup;
-                        ReportProgress(request, progressCallback, downloadedBytes);
+                        progressCallbackEnabled = ReportProgress(
+                            request,
+                            progressCallbackEnabled ? progressCallback : null,
+                            downloadedBytes);
                     }
 
                     if (effectiveIdleTimeout <= 0 || Time.realtimeSinceStartup - lastProgressTime > effectiveIdleTimeout)
@@ -313,7 +315,10 @@ namespace NovaFramework.Runtime
                 long completedBytes = ToLong(request.downloadedBytes);
                 if (completedBytes != lastDownloadedBytes)
                 {
-                    ReportProgress(request, progressCallback, completedBytes);
+                    ReportProgress(
+                        request,
+                        progressCallbackEnabled ? progressCallback : null,
+                        completedBytes);
                 }
 
                 return BuildHttpResponse(request);
@@ -327,31 +332,19 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 应用 JSON 请求头，并在调用方未显式提供 Host 时补充候选 Host。
+        /// 应用 JSON 请求头。
         /// </summary>
         /// <param name="request">目标请求。</param>
         /// <param name="headerInfos">请求头 JSON 键值对。</param>
-        /// <param name="hostHeader">候选 Host。</param>
-        private static void ApplyHeaderInfos(UnityWebRequest request, string headerInfos, string hostHeader)
+        private static void ApplyHeaderInfos(UnityWebRequest request, string headerInfos)
         {
-            bool hasHostHeader = false;
             if (!string.IsNullOrEmpty(headerInfos))
             {
                 JObject headerJson = JObject.Parse(headerInfos);
                 foreach (KeyValuePair<string, JToken> header in headerJson)
                 {
-                    if (string.Equals(header.Key, "Host", StringComparison.OrdinalIgnoreCase))
-                    {
-                        hasHostHeader = true;
-                    }
-
                     request.SetRequestHeader(header.Key, header.Value?.ToString() ?? string.Empty);
                 }
-            }
-
-            if (!hasHostHeader && !string.IsNullOrEmpty(hostHeader))
-            {
-                request.SetRequestHeader("Host", hostHeader);
             }
         }
 
@@ -367,7 +360,11 @@ namespace NovaFramework.Runtime
             bool isSuccess = request.result == UnityWebRequest.Result.Success;
             Dictionary<string, string> headers = CopyResponseHeaders(request.GetResponseHeaders());
             long downloadedBytes = rawData?.LongLength ?? ToLong(request.downloadedBytes);
-            long totalBytes = ReadTotalBytes(headers, downloadedBytes);
+            bool totalBytesIsKnown = TryReadTotalBytes(headers, out long totalBytes);
+            if (!totalBytesIsKnown)
+            {
+                totalBytes = downloadedBytes;
+            }
             return HttpResponse.Create(
                 ToStatusCode(request.responseCode),
                 body,
@@ -377,7 +374,10 @@ namespace NovaFramework.Runtime
                 isSuccess,
                 downloadedBytes,
                 totalBytes,
-                DetermineDeliveryState(request, request.error));
+                DetermineDeliveryState(request, request.error),
+                request.result.ToString(),
+                ToLong(request.uploadedBytes),
+                totalBytesIsKnown);
         }
 
         /// <summary>
@@ -391,6 +391,11 @@ namespace NovaFramework.Runtime
         {
             byte[] rawData = request.downloadHandler?.data;
             Dictionary<string, string> headers = CopyResponseHeaders(request.GetResponseHeaders());
+            bool totalBytesIsKnown = TryReadTotalBytes(headers, out long totalBytes);
+            if (!totalBytesIsKnown)
+            {
+                totalBytes = rawData?.LongLength ?? -1L;
+            }
             return HttpResponse.Create(
                 ToStatusCode(request.responseCode),
                 request.downloadHandler?.text,
@@ -399,8 +404,11 @@ namespace NovaFramework.Runtime
                 error,
                 false,
                 downloadedBytes,
-                ReadTotalBytes(headers, rawData?.LongLength ?? -1L),
-                DetermineDeliveryState(request, error));
+                totalBytes,
+                DetermineDeliveryState(request, error),
+                request.result.ToString(),
+                ToLong(request.uploadedBytes),
+                totalBytesIsKnown);
         }
 
         /// <summary>
@@ -460,11 +468,11 @@ namespace NovaFramework.Runtime
         /// <param name="request">当前下载请求。</param>
         /// <param name="progressCallback">下载进度回调。</param>
         /// <param name="downloadedBytes">已下载字节数。</param>
-        private static void ReportProgress(UnityWebRequest request, Action<HttpResponse> progressCallback, long downloadedBytes)
+        private static bool ReportProgress(UnityWebRequest request, Action<HttpResponse> progressCallback, long downloadedBytes)
         {
             if (progressCallback == null)
             {
-                return;
+                return false;
             }
 
             Dictionary<string, string> headers = CopyResponseHeaders(request.GetResponseHeaders());
@@ -481,10 +489,20 @@ namespace NovaFramework.Runtime
             {
                 progressCallback(progress);
             }
+            catch (Exception exception)
+            {
+                Log.Warning(
+                    LogTag.Http,
+                    "下载进度回调发生异常，已停止后续进度回调且继续下载：{0}。",
+                    exception.Message);
+                return false;
+            }
             finally
             {
                 ReferencePool.Put(progress);
             }
+
+            return true;
         }
 
         /// <summary>
@@ -524,6 +542,18 @@ namespace NovaFramework.Runtime
             }
 
             return fallback;
+        }
+
+        /// <summary>
+        /// 尝试从响应头读取可信的 Content-Length。
+        /// </summary>
+        private static bool TryReadTotalBytes(Dictionary<string, string> headers, out long totalBytes)
+        {
+            totalBytes = -1L;
+            return headers != null &&
+                   headers.TryGetValue("Content-Length", out string contentLength) &&
+                   long.TryParse(contentLength, out totalBytes) &&
+                   totalBytes >= 0L;
         }
 
         /// <summary>

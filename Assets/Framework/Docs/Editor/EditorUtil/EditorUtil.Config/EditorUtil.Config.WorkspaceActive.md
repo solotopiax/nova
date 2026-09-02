@@ -59,6 +59,9 @@ public static ConfigRuntimeSO GetActiveRuntime();
 public static void Set(ConfigMasterSO master);
 ```
 
+`ReconcileScene` 会忽略 `BuildPipeline.isBuildingPlayer` 期间由 Unity 构建流程产生的内部场景加载，
+避免 HybridCLR 临时 BuildPlayer 或正式 Player 构建覆盖已经冻结的 ConfigMaster/PipifySettings。
+
 `Globals.json` v2 保留旧字段作为当前值，并新增：
 
 - `pipifySettingsGuid` / `pipifySettingsPathHint`

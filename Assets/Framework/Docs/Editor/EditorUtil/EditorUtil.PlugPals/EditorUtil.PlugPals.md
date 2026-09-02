@@ -201,13 +201,6 @@ public static async Task<string> FetchChangelogAsync(string registryUrl, string 
 
 宏机制说明：PlugPals **不再注入或管理任何宏**。旧的 `requiredLibraries.defineSymbols` 注入、`PlugPalsInjectedDefines.json` 账本、后台审计弹窗、会话级抑制、以及「scope 已注册」判据均已移除。可选库的宏改由各 asmdef 的 `versionDefines` / `defineConstraints`（Unity 原生「某包存在→自动定义某宏」机制）自行处理。
 
-BestHTTP 后端的依赖约定：
-
-1. BestHTTP 后端由独立包 `com.solotopia.nova.framework.besthttp` 提供，主框架包不再携带 BestHTTP 适配程序集。
-2. `NovaFramework.BestHTTP.Runtime` 不再使用宏开关；安装适配包且原厂程序集存在时直接编译。
-3. `com.solotopia.nova.framework.besthttp` 的 `nova.requiredLibraries` 声明 `com.tivadar.best.http` 与 `com.tivadar.best.tlssecurity`，用于消费端缺库提示与内部云仓库引导。
-4. TLS 包依赖 `com.tivadar.best.http`；`requiredLibraries` 同时列出两者，确保缺少任一原厂包时都能弹出引导。
-
 ### CHANGELOG 缓存与下载策略（FetchChangelogAsync）
 
 1. 计算缓存路径 `Library/Nova/Changelog/<packageName>/<version>.md`，命中直接返回绝对路径（永久缓存，不校验内容）。

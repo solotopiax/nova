@@ -41,7 +41,6 @@ MonoBehaviour:
     - m_AssetLocation: UnityEngine.CoreModule.dll
     - m_AssetLocation: Unity.TextMeshPro.dll
     - m_AssetLocation: NovaFramework.Runtime.dll
-    - m_AssetLocation: NovaFramework.BestHTTP.Runtime.dll
     - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
     - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
     - m_AssetLocation: NovaFramework.Kit.Network.GameSave.Runtime.dll

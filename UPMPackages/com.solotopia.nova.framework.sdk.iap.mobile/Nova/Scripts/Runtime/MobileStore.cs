@@ -23,7 +23,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
     /// 职责收窄为对外接口实现；StoreController 事件由 StoreService 统一路由给各内部服务；
     /// 核心业务逻辑分布在 8 个内部服务中（Extended/Store/Init/Purchase/Validation/Product/Restore/Subscription）。
     /// </summary>
-    [IAPStore]
+    [IAPStore(IAPStoreType.Mobile)]
     public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable
     {
         /// <summary>

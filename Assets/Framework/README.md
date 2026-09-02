@@ -1,7 +1,7 @@
 # Nova Framework
 
 > 包名：`com.solotopia.nova.framework`
-> 当前版本：`0.6.24`
+> 当前版本：`0.6.25`
 > Unity：`6000.4`
 
 Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、各业务 Component 入口与默认 MainDemo Sample。
@@ -12,11 +12,9 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework": "0.6.24"
+  "com.solotopia.nova.framework": "0.6.25"
 }
 ```
-
-> 商业 / 第三方原厂包不随主框架分发；可选商业依赖的接入方式见下文“可选商业依赖”。
 
 ## 静态访问器（Nova.*）
 
@@ -30,7 +28,7 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 | `Nova.Table` | `TableComponent` | Luban 配置表加载与查询 |
 | `Nova.Localization` | `LocalizationComponent` | 多语言文本与字体表 |
 | `Nova.UI` | `UIComponent` | UIView 生命周期、分组、对象池、分辨率适配 |
-| `Nova.Network` | `NetworkComponent` | HTTP / WebSocket / DoH，AES 加密与重连 |
+| `Nova.Network` | `NetworkComponent` | 固定 UnityWebRequest + 系统 DNS 的 HTTP、WebSocket、AES 加密与重连 |
 | `Nova.Procedure` | `ProcedureComponent` | 有限状态机驱动的流程编排 |
 | `Nova.ObjectPool` | `ObjectPoolComponent` | 通用对象池 |
 | `Nova.Persist` | `PersistComponent` | PlayerPrefs / FileFragment / SQLite 三种存储实现 |
@@ -60,14 +58,6 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 | com.solotopia.luban | 10.1.0 |
 | com.solotopia.yooasset | 1.1.0 |
 | com.solotopia.nova.framework.mcp | 0.1.2 |
-
-## 可选商业依赖
-
-HTTP 可选 BestHTTP 后端已拆分为独立包 `com.solotopia.nova.framework.besthttp`。主框架只提供 HTTP Transport SPI 和缺省失败后端，不直接包含 BestHTTP 适配代码。
-
-`com.solotopia.nova.framework.besthttp` 依赖原厂包 `com.tivadar.best.http` 与 `com.tivadar.best.tlssecurity`。使用者需自行购买原厂包，并通过其官方或自有 registry 安装（可在 PlugPalsWindow 工具栏填入 registry 地址，保存到 `ProjectSettings/Nova/PlugPalsRegistries.json`，该文件不入库）；TLS 包会依赖 HTTP 包。
-
-外部使用者可自行购买并导入原厂包；若程序集名匹配 `com.Tivadar.Best.HTTP` / `com.Tivadar.Best.TLSSecurity`，独立适配包内的 `NovaFramework.BestHTTP.Runtime` 会直接编译启用。
 
 ## Samples
 

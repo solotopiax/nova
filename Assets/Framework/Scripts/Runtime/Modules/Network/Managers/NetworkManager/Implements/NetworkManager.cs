@@ -265,49 +265,6 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 获取所有 HTTP 类型 NetCmd 的完整 URL 集合（去重）。
-        /// </summary>
-        /// <returns>完整 URL 枚举。</returns>
-        public override IEnumerable<string> GetAllNetCmdUrls()
-        {
-            var urls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var kvp in m_CmdCache)
-            {
-                CmdCacheEntry data = kvp.Value;
-                if (!data.Way.Equals("HTTP_GET", StringComparison.OrdinalIgnoreCase) && !data.Way.Equals("HTTP_POST", StringComparison.OrdinalIgnoreCase) && !data.Way.Equals("HTTP_URL", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                if (!m_HostKeyCache.TryGetValue(data.HostKey, out HostKeyCacheEntry host))
-                {
-                    continue;
-                }
-
-                AddUniqueUrl(urls, host.Primary, data.Path);
-                AddUniqueUrl(urls, host.Fallback, data.Path);
-            }
-
-            return urls;
-        }
-
-        /// <summary>
-        /// 获取全部 HostKey URL 集合（过滤空值并去重），供启动 DoH 预热使用。
-        /// </summary>
-        /// <returns>HostKey URL 枚举。</returns>
-        public override IEnumerable<string> GetAllHostKeyUrls()
-        {
-            HashSet<string> urls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (HostKeyCacheEntry host in m_HostKeyCache.Values)
-            {
-                AddUniqueUrl(urls, host.Primary, string.Empty);
-                AddUniqueUrl(urls, host.Fallback, string.Empty);
-            }
-
-            return urls;
-        }
-
-        /// <summary>
         /// 获取指定类型的 Luban 表实例。
         /// </summary>
         /// <typeparam name="T">Luban 表类型。</typeparam>
