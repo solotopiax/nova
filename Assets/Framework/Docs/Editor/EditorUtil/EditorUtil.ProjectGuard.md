@@ -40,7 +40,7 @@ Scene 检查使用已加载 Scene 或只读 Preview Scene，不保存、不修�
 
 `Resources/BuiltIn/**` 合法；UPM 与识别为第三方插件所有的 Resources 被忽略。资源归属不能确定时只给 Warning，不阻断 Play 或 Unity Build。
 
-进入 Play Mode 前若存在 Error，Play gate 会取消启动并弹出“Nova 启动配置未就绪”。弹窗只用普通项目成员可理解的语言说明“哪一类配置尚未同步”和下一步操作；规则号、字段名、类型全名、来源资产、导出物和坐标只保留在 Console / Editor.log。选择“打开配置”后，窗口会切换到报告对应的 ConfigMaster、Platform、Channel/DevelopMode，并定位首个错误所属的应用配置、隐私配置、名字空间、SDK 或 Kit 面板；编辑平台与 Unity 当前 Active BuildTarget 不一致时仍可编辑和保存，但需先切换 BuildTarget 才能导出。修正后依次点击“保存”和“导出”，再进入 Play。
+进入 Play Mode 前若存在 Error，Play gate 会取消启动并弹出“Nova 启动配置未就绪”。弹窗只用普通项目成员可理解的语言说明“哪一类配置尚未同步”和下一步操作；同一类别即使涉及多个导出坐标也只展示一次，并只描述当前失败状态，不推断用户是否做过修改。规则号、字段名、类型全名、来源资产、导出物和坐标只保留在 Console / Editor.log。选择“打开配置”后，窗口会切换到报告对应的 ConfigMaster、Platform、Channel/DevelopMode，并定位首个错误所属的应用配置、隐私配置、名字空间、SDK 或 Kit 面板；编辑平台与 Unity 当前 Active BuildTarget 不一致时仍可编辑和保存，但需先切换 BuildTarget 才能导出。修正后依次点击“保存”和“导出”，再进入 Play。
 
 ## 集中位置
 

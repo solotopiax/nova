@@ -295,6 +295,16 @@ namespace NovaFramework.Editor
                         return FrameworkPropertyCellStyle(rowIndex);
                     }
 
+                    if (sheet.IsFrameworkSheet && !IsFrameworkDescriptionSheet(sheet.Name))
+                    {
+                        if (rowIndex == 0)
+                        {
+                            return 11;
+                        }
+
+                        return row.Count > 0 && !string.IsNullOrEmpty(row[0]) ? 3 : 0;
+                    }
+
                     if (sheet.IsFrameworkSheet && rowIndex == 0 && columnIndex == 0)
                     {
                         return 5;
@@ -479,6 +489,14 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
+                /// 判断 Framework Sheet 是否为带标题行和二级表头的说明页。
+                /// </summary>
+                private static bool IsFrameworkDescriptionSheet(string sheetName)
+                {
+                    return !string.IsNullOrEmpty(sheetName) && sheetName[0] == '$';
+                }
+
+                /// <summary>
                 /// 计算所有行中的最大列数。
                 /// </summary>
                 /// <param name="rows">Sheet 行数据。</param>
@@ -571,10 +589,11 @@ namespace NovaFramework.Editor
                 {
                     return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                            "<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">" +
-                           "<fonts count=\"3\">" +
+                           "<fonts count=\"4\">" +
                            "<font><sz val=\"11\"/><color theme=\"1\"/><name val=\"Calibri\"/><family val=\"2\"/></font>" +
                            "<font><b/><sz val=\"13\"/><color rgb=\"FFFFFFFF\"/><name val=\"Calibri\"/><family val=\"2\"/></font>" +
                            "<font><b/><sz val=\"11\"/><color rgb=\"FF17324D\"/><name val=\"Calibri\"/><family val=\"2\"/></font>" +
+                           "<font><b/><sz val=\"11\"/><color rgb=\"FFFFFFFF\"/><name val=\"Calibri\"/><family val=\"2\"/></font>" +
                            "</fonts>" +
                            "<fills count=\"6\">" +
                            "<fill><patternFill patternType=\"none\"/></fill>" +
@@ -589,7 +608,7 @@ namespace NovaFramework.Editor
                            "<border><left style=\"thin\"><color rgb=\"FFB7C7D6\"/></left><right style=\"thin\"><color rgb=\"FFB7C7D6\"/></right><top style=\"thin\"><color rgb=\"FFB7C7D6\"/></top><bottom style=\"thin\"><color rgb=\"FFB7C7D6\"/></bottom><diagonal/></border>" +
                            "</borders>" +
                            "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>" +
-                           "<cellXfs count=\"11\">" +
+                           "<cellXfs count=\"12\">" +
                            "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"1\" xfId=\"0\" applyBorder=\"1\" applyAlignment=\"1\"><alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\"/></xf>" +
                            "<xf numFmtId=\"0\" fontId=\"1\" fillId=\"2\" borderId=\"1\" xfId=\"0\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\"/></xf>" +
                            "<xf numFmtId=\"0\" fontId=\"2\" fillId=\"3\" borderId=\"1\" xfId=\"0\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\"/></xf>" +
@@ -601,6 +620,7 @@ namespace NovaFramework.Editor
                            "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"5\" borderId=\"1\" xfId=\"0\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\"/></xf>" +
                            "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"5\" borderId=\"1\" xfId=\"0\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\"/></xf>" +
                            "<xf numFmtId=\"0\" fontId=\"2\" fillId=\"3\" borderId=\"1\" xfId=\"0\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><alignment horizontal=\"left\" vertical=\"center\" wrapText=\"1\"/></xf>" +
+                           "<xf numFmtId=\"0\" fontId=\"3\" fillId=\"2\" borderId=\"1\" xfId=\"0\" applyFont=\"1\" applyFill=\"1\" applyBorder=\"1\" applyAlignment=\"1\"><alignment horizontal=\"center\" vertical=\"center\" wrapText=\"1\"/></xf>" +
                            "</cellXfs>" +
                            "<cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles>" +
                            "<dxfs count=\"0\"/><tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium2\" defaultPivotStyle=\"TableStyleLight16\"/>" +

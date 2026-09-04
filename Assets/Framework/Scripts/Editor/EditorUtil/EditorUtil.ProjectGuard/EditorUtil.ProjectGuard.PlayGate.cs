@@ -91,10 +91,11 @@ namespace NovaFramework.Editor
                 var builder = new StringBuilder(hasConfigErrors
                     ? "游戏暂时无法启动，因为配置还没有准备好。\n\n需要处理：\n"
                     : "游戏暂时无法启动，因为启动检查发现以下问题：\n\n");
-                foreach (NovaGuardIssue issue in report?.Issues.Where(item =>
+                foreach (var category in (report?.Issues.Where(item =>
                              item.Severity == NovaGuardSeverity.Error) ?? Enumerable.Empty<NovaGuardIssue>())
+                         .GroupBy(BuildUserFacingIssueCategory, System.StringComparer.Ordinal))
                 {
-                    builder.Append("• ").Append(BuildUserFacingIssueSummary(issue)).Append('\n');
+                    builder.Append("• ").Append(BuildUserFacingCategorySummary(category)).Append('\n');
                 }
                 if (hasConfigErrors)
                     builder.Append("\n点击“打开配置”，确认对应页面后依次点击“保存”和“导出”，再重新启动游戏。");
@@ -119,9 +120,9 @@ namespace NovaFramework.Editor
                 if (message.Contains("EnabledKitConfigs"))
                     return "已启用的功能配置还没有同步到游戏。";
                 if (message.Contains("PrivacyConfigs"))
-                    return "隐私配置已修改，但还没有同步到游戏。";
+                    return "隐私配置与游戏当前使用的配置不一致。";
                 if (message.Contains("AppConfigs"))
-                    return "应用配置已修改，但还没有同步到游戏。";
+                    return "应用配置与游戏当前使用的配置不一致。";
                 if (message.Contains("Namespace"))
                     return "代码命名空间配置不完整或尚未同步。";
 
@@ -130,6 +131,55 @@ namespace NovaFramework.Editor
                     ? "存在一项尚未完成的启动配置。"
                     : firstLine.Replace("启动配置未准备好：", string.Empty)
                         .Replace("配置异常：", string.Empty);
+            }
+
+            /// <summary>
+            /// 将同类技术错误合并为一条用户提示，避免多个导出坐标产生重复文案。
+            /// </summary>
+            private static string BuildUserFacingIssueCategory(NovaGuardIssue issue)
+            {
+                string message = issue?.Message ?? string.Empty;
+                if (message.Contains("EnabledSDKConfigs")) return "config-sdk";
+                if (message.Contains("EnabledKitConfigs")) return "config-kit";
+                if (message.Contains("PrivacyConfigs")) return "config-privacy";
+                if (message.Contains("AppConfigs")) return "config-app";
+                if (message.Contains("Namespace")) return "config-namespace";
+
+                // 未知规则只合并完全相同的外部摘要，避免吞掉彼此不同的问题。
+                return $"summary:{BuildUserFacingIssueSummary(issue)}";
+            }
+
+            /// <summary>
+            /// 按类别汇总真实失败原因，不把升级或导出差异误写成用户主动修改。
+            /// </summary>
+            private static string BuildUserFacingCategorySummary(
+                System.Collections.Generic.IEnumerable<NovaGuardIssue> issues)
+            {
+                NovaGuardIssue first = issues.First();
+                string category = BuildUserFacingIssueCategory(first);
+                string combinedMessages = string.Join("\n", issues.Select(issue => issue?.Message ?? string.Empty));
+                if (category == "config-app")
+                    return BuildConfigCategorySummary("应用配置", combinedMessages);
+                if (category == "config-privacy")
+                    return BuildConfigCategorySummary("隐私配置", combinedMessages);
+                return BuildUserFacingIssueSummary(first);
+            }
+
+            private static string BuildConfigCategorySummary(string displayName, string messages)
+            {
+                bool hasPlaceholder = messages.Contains("占位符");
+                bool hasInvalidFormat = messages.Contains("必须为") || messages.Contains("为空") ||
+                                        messages.Contains("格式不正确");
+                bool requires16Bytes = messages.Contains("必须为 16 字节");
+                if (displayName == "隐私配置" && hasPlaceholder && requires16Bytes)
+                    return "隐私配置仍包含示例值，且密钥长度需为 16 字节。";
+                if (hasPlaceholder && hasInvalidFormat)
+                    return $"{displayName}仍包含示例值，且部分参数格式不符合要求。";
+                if (hasPlaceholder)
+                    return $"{displayName}仍包含示例值，请填写项目真实参数。";
+                if (hasInvalidFormat)
+                    return $"{displayName}有必填参数未填写或格式不符合要求。";
+                return $"{displayName}与游戏当前使用的配置不一致。";
             }
 
             /// <summary>

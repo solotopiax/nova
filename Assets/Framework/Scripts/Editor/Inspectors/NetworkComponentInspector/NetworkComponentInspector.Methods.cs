@@ -439,11 +439,11 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Space(16f);
                 EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "全部轮次失败后的重试次数；每次重试重新执行全部轮次。" }, false, GUILayout.ExpandWidth(true));
             });
-            EditorUtil.Draw.Property("HTTP 请求超时时间 (秒)", m_HttpSettings.FindPropertyRelative("RequestTimeout"), true, GUILayout.Width(175));
+            EditorUtil.Draw.Property("业务请求超时时间（秒）", m_HttpSettings.FindPropertyRelative("RequestTimeout"), true, GUILayout.Width(175));
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "单次 HTTP 请求的超时时间；主备请求分别计时。" }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "单次业务请求的超时时间；主备请求分别计时。" }, false, GUILayout.ExpandWidth(true));
             });
             EditorUtil.Draw.DecreaseIndentLevel();
             EditorUtil.Draw.Line();
