@@ -8,6 +8,7 @@
  * descrip:   UI 管理器基类
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -19,6 +20,11 @@ namespace NovaFramework.Runtime
     /// </summary>
     internal abstract class UIManagerBase : FrameworkManager, IUIManager
     {
+        /// <summary>
+        /// 异步打开视图失败事件，参数依次为视图序列编号、资源地址和错误信息。
+        /// </summary>
+        public abstract event Action<int, string, string> OnOpenUIViewFail;
+
         /// <summary>
         /// 管理器优先级（值越小越先 Update、越后 Shutdown）。
         /// </summary>

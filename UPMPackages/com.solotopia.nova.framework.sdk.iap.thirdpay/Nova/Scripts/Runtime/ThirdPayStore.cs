@@ -94,7 +94,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_ConfigReady = ValidateConfig();
             if (!EnsurePayEnvironment())
             {
-                LogWarning("第三方支付环境（AES 配置或支付页基址）在初始化时尚未就绪，将在首次支付时重试解析。");
+                LogWarning("第三方支付环境（支付页基址）在初始化时尚未就绪，将在首次支付时重试解析。");
             }
         }
 
@@ -347,8 +347,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_NetService = null;
             m_Config = null;
             m_ConfigReady = false;
-            m_AesKey = null;
-            m_AesIv = null;
             m_PayUrlBase = null;
             await base.DisposeAsync(ct);
         }

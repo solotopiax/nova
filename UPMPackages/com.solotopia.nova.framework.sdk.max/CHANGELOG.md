@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-09-04
+
+### Fixed
+
+- Android consumer ProGuard 增加 MAX/Adjust 相关类型的保留规则，避免开启 R8 后启动阶段被错误裁剪。
+
 ## [0.1.8] - 2026-09-02
 
 ### Changed

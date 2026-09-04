@@ -12,10 +12,10 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 
 | 文件 | 类 | 说明 |
 |------|----|------|
-| `Editor/Windows/ConfigWindow/ConfigWindow.cs` | `ConfigWindow` | public 开口：`Open`、`OpenLubanSection` 与四个 Guard 配置导航入口；Guard 可定位实际 ConfigMaster、导出坐标及应用、名字空间、SDK、Kit 面板 |
+| `Editor/Windows/ConfigWindow/ConfigWindow.cs` | `ConfigWindow` | public 开口：`Open`、`OpenLubanSection` 与五个 Guard 配置导航入口；Guard 可定位实际 ConfigMaster、导出坐标及应用、隐私、名字空间、SDK、Kit 面板 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Visitors.cs` | `ConfigWindow` | 字段：常量 + 运行时状态字段 + `LeftTreeGroup` + `LeftTreeItem` 枚举；窗口本地编辑平台 `m_EditingPlatform`；延迟切坐标守卫字段：`m_HasPendingCoordSwitch`、`m_PendingPlatform`、`m_PendingChannel`、`m_PendingDevelopMode` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Methods.cs` | `ConfigWindow` | 总调度：`OnEnable`、`OnDisable`、`OnGUI`、`DrawBody`、`DrawMainTitle`、`ApplyPendingCoordSwitch`、`PollChannelChangeForRepaint`、`RefreshPluginCache`、`RunLubanCheck`、`RunPython3Check`、`CommitWorkingCopyToAsset`（保存后广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`）；`EnsureStyles`（GUIStyle 懒初始化） |
-| `Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs` | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyPlatform` / `TryApplyChannel` / `TryApplyDevelopMode`（延迟切换坐标，见 PAT-22 升级）、`OnClickExport`（先校验编辑平台与 Active BuildTarget 一致；Error 阻断；纯 Warning 要求显式确认后可继续；导出成功后追加场景 `DevelopMode` 快照回写） |
+| `Editor/Windows/ConfigWindow/ConfigWindow.TopBar.cs` | `ConfigWindow` | 顶栏：`DrawTopBar`、`OnClickSelectExportAsset`、`OnClickSave`、`RebindMaster`、`CreateMasterInteractive`、`PickMasterInteractive`、`RevealMasterInFinder`、`TryApplyPlatform` / `TryApplyChannel` / `TryApplyDevelopMode`（延迟切换坐标，见 PAT-22 升级）、`OnClickExport` / `TryExport`（先校验编辑平台与 Active BuildTarget 一致；Error 阻断；纯 Warning 要求显式确认后可继续；导出成功后清除待导出状态并追加场景 `DevelopMode` 快照回写） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.LeftTree.cs` | `ConfigWindow` | 左树：`DrawLeftTree`、`DrawLeftTreeItem`、`DrawSDKTreeItem`、`DrawKitGroupItems`、`DrawKitTreeItem`；SDK/Kit 勾选写 WorkingCopy（`workingSrc.EnabledSDKs/EnabledKits`）+ `m_IsDirty=true`，不直写 `m_Master`，延迟保存机制对齐；`TryChangeSelection` 清除键盘焦点（`GUI.FocusControl(null)` + `EditorGUIUtility.editingTextField=false`）后更新选中状态 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.cs` | `ConfigWindow` | 右面板：`DrawRightPanel`、`DrawVerticalSeparator`、`DrawNamespacePanel`、`DrawAppConfigsPanel`、`DrawCustomConfigRows`、`DrawSDKPanel`、`DrawKitPanel`；应用配置面板同时编辑 `CustomConfigCmdName / CustomName` 与直接展开的本地 JSONPath key-value 行；标题+掩码内联行由 `DrawPanelTitleWithMask` 统一绘制 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.Luban.cs` | `ConfigWindow` | Luban 面板：`DrawLubanSection`、`DrawLubanStatusAndButtons`、`DrawLubanWindowsExportWarning`、`DrawLubanInstallGuide`、`ResolveDotnetStatusText`、`ResolveLubanDllStatusText`、`IsDotnetReady`、`GetLubanWindowsExportWarningText` |
@@ -24,7 +24,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.CDN.cs` | `ConfigWindow` | CDN 面板包含“部署”“白名单部署”“Cloudflare 缓存清理”三个业务区；OSS 工具包缺失时显示安装引导并仅禁用前两项部署；白名单区直接编辑设备 ID 字符串数组、配置文件云端文件位置、三个 YooAsset 版本文件本地位置和版本文件云端目录，并通过独立按钮分别上传；所有字段沿用 `CDNEditorConfigsMask + CDNEditorConfigsOverrides` 维度快照、WorkingCopy 延迟保存与 `CreateCdnConfigSnapshot` 执行快照机制。 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.YooAsset.cs` | `ConfigWindow` | YooAsset 配置面板：`DrawRightPanelYooAsset`、`DrawYooAssetSettingsPathRow`、`DrawBundleCollectorSettingPathRow`、`BrowseYooAssetSettingsPath`、`BrowseBundleCollectorSettingPath`、`ToProjectRelativePath`（绝对路径 → 项目根相对）；内联标题行：`DrawYooAssetTitleWithMask`（标题+三 toggle 行委托 `DrawTitleWithMaskCore` 渲染，HelpBox 留本方法；toggle 回调作用于真实资产 m_Master，改完即时 SetDirty + SaveAssetIfDirty + `ReInjectYooAsset`）；`ReInjectYooAsset`（调 `DimensionalResolver.ResolveYooAsset` + `YooAssetInjector.InjectByPath`）；`SyncYooAssetDimensionToWorkingCopy`（维度 toggle 直写 m_Master 后将 YooAssetEditorConfigsMask/YooAssetEditorConfigsOverrides 补同步到 WorkingCopy） |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.BindGuide.cs` | `ConfigWindow` | 绑定引导面板（m_Master 为 null 时显示）：`DrawBindGuide`、`BrowseAndBindConfigMaster`、`CreateAndBindConfigMaster`、`BindMaster`；绑定后重建 WorkingCopy，不直接将 SerializedObject 绑到真实资产 |
-| `Editor/Windows/ConfigWindow/ConfigWindow.Dialogs.cs` | `ConfigWindow` | 弹框：`ConfirmDiscardDirty`、`HasAnyError`、`ShowValidationDialog`、`ConfirmValidationWarnings`、`BuildValidationMessage`、`PromptMissingRefsIfAny`（启动时检测并可清理 SDK / Kit 的缺失 `SerializeReference`；清理后保存真实 Master 并重建 WorkingCopy） |
+| `Editor/Windows/ConfigWindow/ConfigWindow.Dialogs.cs` | `ConfigWindow` | 弹框：`HandleCloseReminder`（关窗保存/导出单次提醒）、`ConfirmDiscardDirty`、`HasAnyError`、`ShowValidationDialog`、`ConfirmValidationWarnings`、`BuildValidationMessage`、`PromptMissingRefsIfAny`（启动时检测并可清理 SDK / Kit 的缺失 `SerializeReference`；清理后保存真实 Master 并重建 WorkingCopy） |
 
 ---
 
@@ -64,6 +64,7 @@ UnityEditor.EditorWindow
 | `m_GroupExpandedEnvironment` | `bool` | `true` | 左侧一级组"环境检测"折叠状态 |
 | `m_GroupExpandedCommon` | `bool` | `true` | 左侧一级组"通用配置"折叠状态 |
 | `m_IsDirty` | `bool` | `false` | 右侧配置面板是否有未保存改动；`DrawRightPanel` 的 `EditorGUI.ChangeCheck` 置 `true`；以下 2 处重置为 `false`：`OnClickSave`、`RebindMaster`；保存成功后会广播 `EditorUtil.Config.Events.ActiveConfigMasterSaved`；**切换导出目标（ObjectField 变更回调 / `OnClickSelectExportAsset`）不清零** |
+| `m_HasSavedChangesPendingExport` | `bool` | `false` | 当前窗口会话中是否存在“已保存到 ConfigMaster、尚未成功导出到 ConfigRuntime”的修改；`[SerializeField]` 使打开窗口时的程序集重载不丢状态，保存成功置 `true`，导出成功置 `false`，用于关窗提醒 |
 | `m_GroupExpandedSDK` | `bool` | `true` | 左侧一级组"SDK 配置"折叠状态 |
 | `m_GroupExpandedKit` | `bool` | `true` | 左侧一级组"Kit 配置"折叠状态 |
 | `m_LubanCheckResult` | `EnvironmentCheckResult` | `default` | Luban 环境检查结果缓存 |
@@ -166,8 +167,10 @@ OnEnable()
   └─ PromptMissingRefsIfAny()   检测并弹框处理 SDK / Kit 配置里的 null 占位；确认清理后保存 Master 并重建 WorkingCopy
 
 OnDisable()
-  ├─ EditorSceneManager.sceneOpened -= OnSceneOpenedRefresh
-  └─ （无持久化操作；导出目标由 m_Master.ExportTarget 随 SO 保存持久化）
+  ├─ 正常关窗：HandleCloseReminder() → 按未保存 / 已保存未导出状态提醒
+  ├─ Editor 退出 / 程序集重载 / 资源刷新：跳过交互与写入
+  ├─ DestroyWorkingCopy()
+  └─ EditorSceneManager.sceneOpened -= OnSceneOpenedRefresh
 
 OnSceneOpenedRefresh(scene, mode)   仅响应 Single 加载模式
   ├─ WorkspaceActive.ReconcileScene(scene.path) → Sample 写入 / 业务恢复
@@ -233,7 +236,8 @@ CommitWorkingCopyToAsset()
   ├─ EditorUtility.SetDirty(m_Master)
   ├─ AssetDatabase.SaveAssets()
   ├─ m_IsDirty = false
-  ├─ RebuildWorkingCopy()
+  ├─ m_HasSavedChangesPendingExport = true
+  ├─ RebuildWorkingCopy()（关窗保存时跳过）
   └─ EditorUtil.Config.Events.NotifyActiveConfigMasterSaved(m_Master)
 ```
 
@@ -344,7 +348,7 @@ DrawPython3StatusAndButtons():
   Space(2f)
 ```
 
-### 导出流（OnClickExport）
+### 导出流（OnClickExport / TryExport）
 
 ```
 OnClickExport()
@@ -357,8 +361,16 @@ OnClickExport()
   7. Exporter.Export(master, m_EditingPlatform, master.CurrentChannel, master.CurrentDevelopMode, assetPath)
   8. master.ExportTarget 原为空时用新建导出结果写回 Master 与 WorkingCopy
   9. SceneDevelopModeWriter.WriteActiveScene(...) 回写场景启动快照
-  10. DisplayDialog("导出成功")
+  10. m_HasSavedChangesPendingExport = false
+  11. 顶栏手动导出时 DisplayDialog("导出成功")；关窗联动导出不重复弹成功提示
 ```
+
+### 关窗提醒流
+
+- 有未保存修改：只弹一次，提供“仅保存”和“保存并导出”。选择“仅保存”后直接结束，不再出现第二次导出询问。
+- 已手动保存、但本次修改尚未成功导出：询问“导出 / 暂不导出”。
+- 关窗联动导出校验失败、导出失败或取消选择导出文件：下一帧恢复原 Master、编辑坐标和面板，并继续保留待导出状态。
+- 已成功导出或本次没有修改：直接关闭。
 
 > **注意**：导出目标不再通过 `EditorPrefs` GUID 存储，改由 `ConfigMasterSO.ExportTarget`（`[SerializeField]`）直接持久化到 SO 资产中；`RestoreExportTargetFromPrefs` / `SaveExportTargetToPrefs` / `OnDisable` 中的 GUID 持久化链路已删除。
 
@@ -376,7 +388,8 @@ OnClickExport()
 | "保存"按钮灰色点不了 | `m_IsDirty == false` 时 DisabledScope 禁用按钮；在右侧面板编辑任意字段后 ChangeCheck 自动置 `true` |
 | 切换导出目标后保存按钮仍然灰色 | 正常现象。切换导出目标（ObjectField 回调 / `OnClickSelectExportAsset`）不清零 `m_IsDirty`，也不置位；导出目标切换不影响 ConfigMasterSO 的脏状态 |
 | 编辑其他平台必须切换 Unity BuildTarget | 不需要。顶栏可直接切换编辑平台并保存；只有导出和 YooAsset 生效要求编辑平台与 Active BuildTarget 一致。 |
-| 改完字段直接关窗口 | 右侧 ChangeCheck 只负责置位 `m_IsDirty`，实际持久化依赖"保存"按钮触发 `AssetDatabase.SaveAssets`；关窗口前须点保存 |
+| 改完字段直接关窗口 | 关闭时会一次性询问“仅保存 / 保存并导出”；选择“仅保存”不会再追问导出 |
+| 手动保存后忘记导出 | 当前窗口会话记录“已保存但未导出”状态，关闭时询问是否导出；成功导出后不再提示 |
 
 ---
 

@@ -32,7 +32,7 @@
 
 Skill 仍负责自然语言路由、冻结业务输入和开放式决策；Action 负责确定性执行。业务代码设计、Prefab/Scene 结构设计、协议语义和真机体感不能被“万能反射 Action”替代。完整执行协议见 [EditorUtil.AgentActions](../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md)。
 
-当前 Registry 已实现 19 个 Action，MCP 显式开放其中 13 个。`Destructive`、`ExternalWrite`、`Credential` 与 `Delivery` 在可信审批通道完成前不开放；Skill 遇到这些已实现但未开放的 Action 时必须报告 `blocked`，不能退化到 `execute_code`、反射或临时 C#。
+当前 Registry 已实现的 Project Action 全部进入 MCP 显式白名单。`Destructive`、`ExternalWrite`、`Credential` 与 `Delivery` 不再作为隐藏 Action 的理由，但仍必须经过强类型 Schema、只读 Plan、一次性确认、资源锁、Receipt 与 Verify；Registry 与白名单不一致时 Gateway 整体 fail-closed，不能退化到 `execute_code`、反射或临时 C#。
 
 ## 目录、真源与自动发现
 
@@ -84,9 +84,9 @@ Skill 仍负责自然语言路由、冻结业务输入和开放式决策；Actio
 | `nova-project-onboard-sdk-kit` | Workflow | 编排已发布 SDK/Kit 的安装/升级、三维配置、平台前置与最小本地探针 | Play |
 | `nova-project-diagnose-device-runtime` | Operation | 在冻结设备、Bundle ID、时间窗与脱敏规则下只读诊断真机日志 | 静态定位 |
 | `nova-project-preflight-build` | Operation | 构建前只读检查 Target、场景、Config、YooAsset Package 与 HybridCLR 前置 | 静态规则 |
-| `nova-project-resolve-android-dependencies` | Operation | 冻结 EDM4U 图并受控重建、核验 Android 依赖输出；MCP 当前因 Destructive 保持关闭 | 解析状态与产物摘要 |
+| `nova-project-resolve-android-dependencies` | Operation | 冻结 EDM4U 图并受控重建、核验 Android 依赖输出 | 解析状态与产物摘要 |
 
-当前 Catalog 共 30 项。Table 单次导出由 `nova-project-export-tables` 直接调用受控 Action；完整表接入仍由 `nova-project-integrate-table` 负责。Framework 自升级独立为 `nova-project-upgrade-framework`，由包外 UPM 宿主跨 reload 执行；其余包继续走通用包管理 Skill。Build Preflight 使用已开放的只读 Action；Android Resolve 虽已注册稳定 Action，但因 Force Resolve 会替换 EDM4U 受管输出，仍等待可信审批通道后才向 MCP 开放。HybridCLR 两项继续严格分工：`refresh-hotfix-dlls` 只做当前坐标的业务 DLL compile -> copy/import，`generate-hybridclr-artifacts` 只做 Generate All 与 link.xml 验证；最终 Player 后的 `CopyAotDlls` 不归入二者。CDN 与本地 RC Workflow 仍等待发布顺序和独立 Operation 在真实项目中稳定后再组合。
+当前 Catalog 共 30 项。Table 单次导出由 `nova-project-export-tables` 直接调用受控 Action；完整表接入仍由 `nova-project-integrate-table` 负责。Framework 自升级独立为 `nova-project-upgrade-framework`，由包外 UPM 宿主跨 reload 执行；其余包继续走通用包管理 Skill。Build Preflight 与 Android Resolve 均使用已开放 Action，后者仍需精确确认其 Force Resolve 写入集。HybridCLR 两项继续严格分工：`refresh-hotfix-dlls` 只做当前坐标的业务 DLL compile -> copy/import，`generate-hybridclr-artifacts` 只做 Generate All 与 link.xml 验证；最终 Player 后的 `CopyAotDlls` 不归入二者。CDN 与本地 RC Workflow 仍等待发布顺序和独立 Operation 在真实项目中稳定后再组合。
 
 ## 当前限制
 

@@ -62,12 +62,12 @@ namespace NovaFramework.Samples.Runtime
         /// <summary>
         /// 默认 GET 演示地址。
         /// </summary>
-        private const string c_DefaultGetUrl = "https://postman-echo.com/get?message=hello";
+        private const string c_DefaultGetUrl = "https://httpbin.org/get?message=hello";
 
         /// <summary>
         /// 固定 POST 演示地址。
         /// </summary>
-        private const string c_DefaultPostUrl = "https://postman-echo.com/post";
+        private const string c_DefaultPostUrl = "https://httpbin.org/post";
 
         /// <summary>
         /// 固定 WebSocket 连接演示地址。

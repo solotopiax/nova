@@ -153,5 +153,11 @@ namespace NovaFramework.Editor
             AgentActionReloadSemantics.PlanInvalidatedVerifyOnly;
 
         public string[] Locks { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Verify 阶段使用的只读资源锁；未声明时沿用 Locks。
+        /// 显式空数组表示 Verify 可在 Execute 的后台任务持锁期间并发查询只读状态。
+        /// </summary>
+        public string[] VerifyLocks { get; set; }
     }
 }

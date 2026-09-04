@@ -245,7 +245,7 @@ public enum FeedbackLevel { Info, Success, Warn, Error }
 #### 2.9 DemoNetworkView ｜ I
 - API 副标题：`Nova.Network.GetAsync / PostAsync / ConnectServer`
 - 主题：HTTP GET/POST + WebSocket 连接占位
-- InteractionArea：1 GET URL 输入（默认 `https://postman-echo.com/get?message=hello`）+ Get/Post/Connect 3 按钮；POST 固定请求 `https://postman-echo.com/post` 并发送 `{"message":"hello"}`，Connect 使用 `wss://ws.postman-echo.com/raw`，响应展示在预览卡片
+- InteractionArea：1 GET URL 输入（默认 `https://httpbin.org/get?message=hello`）+ Get/Post/Connect 3 按钮；POST 固定请求 `https://httpbin.org/post` 并发送 `{"message":"hello"}`，Connect 使用 `wss://ws.postman-echo.com/raw`，响应展示在预览卡片
 - 反馈样例：`> Nova.Network.GetAsync("...") → 200 OK len=312`
 - 资源：无（在线请求）
 

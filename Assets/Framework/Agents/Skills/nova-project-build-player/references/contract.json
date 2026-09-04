@@ -9,9 +9,14 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "agent-action-blocked",
+      "kind": "agent-action",
       "entry": "nova.project.player.build",
-      "when": "已冻结 Player 构建输入；该 Action 当前未在 MCP ExposurePolicy 中，必须返回 blocked"
+      "when": "已冻结 Player 构建输入并需要生成本地 Player 或平台工程时"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.pipify.run-batch",
+      "when": "用户明确选择项目中已有的 Pipify Batch 执行完整构建流水线时"
     }
   ],
   "inputs": [

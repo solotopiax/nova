@@ -21,6 +21,8 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
     /// </summary>
     public class ProcedurePlaying : ProcedureBase
     {
+        private int m_DemoAdViewSerialID = -1;
+
         /// <summary>
         /// 进入流程时调用。
         /// </summary>
@@ -31,11 +33,23 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
 
             Log.Debug(LogTag.Procedure, "ProcedurePlaying — 进入游戏主循环。");
 
-            int serialID = Nova.UI.OpenUIViewSync<DemoAdView>();
-            if (serialID < 0)
+            Nova.UI.OnOpenUIViewFail += OnOpenUIViewFail;
+            m_DemoAdViewSerialID = Nova.UI.OpenUIViewAsync<DemoAdView>();
+            if (m_DemoAdViewSerialID < 0)
             {
-                Log.Error(LogTag.UI, "ProcedurePlaying — DemoAdView 打开失败。");
+                Log.Error(LogTag.UI, "ProcedurePlaying — DemoAdView 打开请求失败。");
             }
+        }
+
+        private void OnOpenUIViewFail(int serialID, string assetLocation, string errorMessage)
+        {
+            if (serialID != m_DemoAdViewSerialID)
+            {
+                return;
+            }
+
+            m_DemoAdViewSerialID = -1;
+            Log.Error(LogTag.UI, "ProcedurePlaying — DemoAdView 异步打开失败。Asset 地址 '{0}'：{1}", assetLocation, errorMessage);
         }
 
         /// <summary>
@@ -54,6 +68,13 @@ namespace NovaFramework.Sdk.Ad.Samples.Runtime
         /// <param name="isShutdown">是否因流程管理器关闭而离开。</param>
         protected override void OnLeave(ProcedureOwner procedureOwner, bool isShutdown)
         {
+            Nova.UI.OnOpenUIViewFail -= OnOpenUIViewFail;
+            if (m_DemoAdViewSerialID >= 0 && Nova.UI.IsLoadingUIView(m_DemoAdViewSerialID))
+            {
+                Nova.UI.CloseUIView(m_DemoAdViewSerialID);
+            }
+
+            m_DemoAdViewSerialID = -1;
             base.OnLeave(procedureOwner, isShutdown);
         }
     }

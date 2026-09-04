@@ -1,7 +1,7 @@
 # Nova Framework - Kit - Network - GameBind
 
 > 包名：`com.solotopia.nova.framework.kit.network.gamebind`
-> 当前版本：`0.1.5`
+> 当前版本：`0.1.6`
 
 账号绑定业务网络模块，封装绑定状态查询、绑定、冲突查询与裁决协议及类型。
 
@@ -17,7 +17,7 @@
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.kit.network.gamebind": "0.1.5"
+  "com.solotopia.nova.framework.kit.network.gamebind": "0.1.6"
 }
 ```
 

@@ -105,6 +105,11 @@ namespace NovaFramework.Mcp.Editor
 
         public string[] Locks { get; set; } = Array.Empty<string>();
 
+        /// <summary>
+        /// Verify 阶段使用的只读资源锁；可与 Plan、Execute 的锁不同。
+        /// </summary>
+        public string[] VerifyLocks { get; set; } = Array.Empty<string>();
+
         public string RequestSchemaJson { get; set; }
     }
 
@@ -164,6 +169,12 @@ namespace NovaFramework.Mcp.Editor
     public interface INovaProjectActionProvider
     {
         IReadOnlyList<NovaProjectActionProviderIssue> GetIssues();
+
+        /// <summary>
+        /// 返回当前 Registry 中全部已注册 Action 的描述快照。
+        /// Gateway 使用它校验显式白名单没有遗漏任何项目组 Action。
+        /// </summary>
+        IReadOnlyList<NovaProjectActionDescriptor> GetAll();
 
         NovaProjectActionDescriptor Describe(string actionId);
 

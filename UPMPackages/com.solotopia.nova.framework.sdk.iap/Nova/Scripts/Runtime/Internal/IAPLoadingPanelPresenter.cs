@@ -57,6 +57,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             }
 
             m_Instance.SetActive(true);
+            IAPLog.Debug(NovaFramework.Runtime.LogTag.IAPPlugin, $"IAP Loading 已显示，路径：{m_PrefabPath}");
         }
 
         /// <summary>
@@ -67,6 +68,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             if (m_Instance != null)
             {
                 m_Instance.SetActive(false);
+                IAPLog.Debug(NovaFramework.Runtime.LogTag.IAPPlugin, $"IAP Loading 已隐藏，路径：{m_PrefabPath}");
             }
         }
 

@@ -133,7 +133,7 @@ namespace NovaFramework.Runtime
                 }
 
                 // 1. 启动 Asset 模块并加载清单。
-                // BootstrapAsync 注册包/创建解密器/初始化底层资源系统；
+                // BootstrapAsync 注册包并初始化底层资源系统；
                 // LoadManifestAsync 拉版本号并加载清单，幂等——ProcedureCheckVersion 已加载时直接返回。
                 Log.Debug(LogTag.Procedure, "[ProcedureLoadDll] BootstrapAsync + LoadManifestAsync。");
                 IAssetManager assetManager = FrameworkManagersGroup.GetManager<IAssetManager>();

@@ -35,7 +35,7 @@ var request = new IAPThirdPayRequest
 IAPResult result = await iapPlugin.PayAsync<IAPResult>(request, ct);
 ```
 
-Android 与 Editor 中，未命中外部浏览器国家时，ThirdPay 使用嵌入式 UniWebView 默认全屏显示，不再接收业务侧适配区域，也不复用 `IAPPluginConfig.LoadingPanelPrefab` 作为 WebView 承载面板。iOS 真机使用全屏 `UniWebViewSafeBrowsing`。点击支付后的渠道参数拉取、商品兜底拉取、本地建单和支付 URL 构建阶段会显示 IAP Loading；打开 WebView 或系统外部浏览器前释放，支付页返回后的验单阶段会再次显示 Loading。支付成功、取消、加载失败或 Store 释放时，框架都会关闭原生支付页。
+Android 真机默认使用外部浏览器支付页，打开前先执行 Google 外链信息页流程；当前系统不支持该信息页时继续进入浏览器打开规则。iOS 真机使用全屏 `UniWebViewSafeBrowsing`，Editor 使用嵌入式 UniWebView 默认全屏显示，不再接收业务侧适配区域，也不复用 `IAPPluginConfig.LoadingPanelPrefab` 作为 WebView 承载面板。点击支付后的渠道参数拉取、商品兜底拉取、本地建单和支付 URL 构建阶段会显示 IAP Loading；打开 WebView 或系统外部浏览器前释放，支付页返回后的验单阶段会再次显示 Loading。支付成功、取消、加载失败或 Store 释放时，框架都会关闭原生支付页。
 
 ## 支付 URL
 
@@ -43,15 +43,17 @@ Android 与 Editor 中，未命中外部浏览器国家时，ThirdPay 使用嵌�
 
 `lang/params/app_id`
 
-`params` 是以下 JSON 经项目 `AppAesKey/AppAesIV` 加密后的字符串：
+`params` 是以下 JSON 经 ThirdPay 动态 AES 加密后的字符串：每次构造支付 URL 时生成 16 字节 Key 和 16 字节 IV，调用 `Util.Encrypt.AES.EncryptBytes(Encoding.UTF8.GetBytes(value), key, iv)` 得到密文，再按 `key + iv + cipher` 拼接字节并整体 Base64。Key/IV 已包含在 Base64 解码后的前 32 字节中，不依赖 Store 配置、`AppConfigs.AppAesKey/AppAesIV` 或隐私配置默认 AES。
 
-`id/uid/table_id/currency/price/product_name/country/order_id/platform/is_external_browser/custom_param/payment_customer_ids/google_transaction_token`
+`id/uid/table_id/currency/price/product_name/country/order_id/platform/is_external_browser/show_back_button/custom_param/payment_customer_ids/google_transaction_token`
 
-其中 `is_external_browser` 由 `ThirdPayStoreConfig.ExternalBrowserCountryCodes` 命中结果决定；未命中国家继续写入 `false` 并使用应用内支付页，命中国家写入 `true` 并使用系统外部浏览器打开支付页。`custom_param` 是 JSON 字符串，固定封装为 `{"receipt_param":"<IAPRequest.ReceiptParam>"}`，字符串长度不由客户端限制；`payment_customer_ids` 为空时省略；非 Android 或无需 Google token 时 `google_transaction_token` 为空字符串。`CustomData` 只保存在本地订单与支付结果中，不写入支付 URL。
+其中 `is_external_browser` 由平台固定策略决定：Android 真机写入 `true` 并使用外部支付页打开方式，iOS 与 Editor 写入 `false` 并使用包内 WebView 服务。`show_back_button` 仅在 Android Auth Tab / Custom Tabs 均不可用并最终回退 `Application.OpenURL` 时写入 `true`，其他支付页 URL 均写入 `false`。`custom_param` 是 JSON 字符串，固定封装为 `{"receipt_param":"<IAPRequest.ReceiptParam>"}`，字符串长度不由客户端限制；`payment_customer_ids` 为空时省略；非 Android 或无需 Google token 时 `google_transaction_token` 为空字符串。`CustomData` 只保存在本地订单与支付结果中，不写入支付 URL。
 
 ## 外部浏览器支付
 
-`ExternalBrowserCountryCodes` 使用 ISO 3166-1 alpha-2 国家/地区码，运行时会按 `Trim + ToUpperInvariant` 归一化比较。命中后，ThirdPay 仍然先创建并保存本地订单，再构造支付 URL，只是支付页打开方式从应用内 WebView 切换为系统外部浏览器。浏览器打开成功只表示跳转请求已提交，`PayAsync` 会返回 `OrderPending`，不会立即广播支付失败事件。
+Android 真机固定使用外部支付页，ThirdPay 仍然先创建并保存本地订单，再构造支付 URL，然后按 Auth Tab、Custom Tabs、`Application.OpenURL` 的顺序提交打开请求。浏览器打开成功只表示跳转请求已提交，`PayAsync` 会返回 `OrderPending`，不会立即广播支付失败事件。
+
+Android 外部支付页会先查询 Custom Tabs provider，再用 `CustomTabsClient.isAuthTabSupported` 判断是否支持 Auth Tab。支持时通过包内 `ThirdPayAuthTab.androidlib` 的透明 Activity 启动 `AuthTabIntent`；不支持或启动失败时回退为 AndroidX Browser `1.10.0` 的 Custom Tabs，并关闭标题、分享、书签、下载、关闭按钮和“在浏览器中打开”入口；当前设备没有 Custom Tabs provider 或 AndroidX 打开链路失败时，由 C# 层调用 Unity `Application.OpenURL` 回退系统浏览器。非 Android 平台也继续使用 Unity `Application.OpenURL` 提交外部浏览器打开请求。
 
 浏览器支付返回 App 后，ThirdPay 子包内部的隐藏生命周期代理会接收 `OnApplicationPause` / `OnApplicationFocus`。ThirdPay 仅在存在外部浏览器支付 session 时响应这些事件：离开 App 时取消旧倒计时；回到前台时重启 `ExternalBrowserReturnValidateDelaySeconds` 秒倒计时；若用户在倒计时内反复切前后台，旧倒计时会因版本号失效，只保留最后一次稳定回前台后的验单。
 
@@ -61,7 +63,7 @@ Android 与 Editor 中，未命中外部浏览器国家时，ThirdPay 使用嵌�
 
 支付 URL 基址通过 NetCmd `ThirdOpenURL` 解析，`app_id` 使用公共请求头中的全局应用 ID。
 
-包固定依赖 UniWebView 5.11.1。Android 使用嵌入式 `UniWebView` 处理 `pay_callback`、`close_callback`、工具栏关闭、返回键、加载错误和内容进程终止；AlipayConnect Scheme 会保留原 Query 并重写为兼容 HTTPS 地址。iOS 使用 `UniWebViewSafeBrowsing`，通过 `Application.deepLinkActivated` 解析支付回调，并在收到终态、用户关闭、取消令牌或 Store 释放时注销回调和关闭浏览器。应用内 WebView 的用户关闭会保留本地订单并立即进入一次直接验单，不再直接按取消失败返回；加载失败和内容进程终止仍返回支付页失败，并保留订单等待后续补单。
+包内 WebView 服务固定依赖 UniWebView 5.11.1。Editor 使用嵌入式 `UniWebView` 处理 `pay_callback`、`close_callback`、工具栏关闭、返回键、加载错误和内容进程终止；AlipayConnect Scheme 会保留原 Query 并重写为兼容 HTTPS 地址。iOS 使用 `UniWebViewSafeBrowsing`，通过 `Application.deepLinkActivated` 解析支付回调，并在收到终态、用户关闭、取消令牌或 Store 释放时注销回调和关闭浏览器。应用内 WebView 的用户关闭会保留本地订单并立即进入一次直接验单，不再直接按取消失败返回；加载失败和内容进程终止仍返回支付页失败，并保留订单等待后续补单。
 
 ## Android Google Policy
 
@@ -70,13 +72,13 @@ Android 真机上使用 Unity Purchasing 5.3.1 的 `ExternalBillingProgramClient
 1. ThirdPay 按 `Debug > Lock > Billing > Native > AD > US` 解析有效国家码；`CountryCode` / `SetDebugCountryCode` 只作为 Debug 覆盖，留空时通过包内 Android Billing bridge 调用 `getBillingConfigAsync()` 读取 Google Play Billing 商店国家/地区代码，并在 iOS 初始化时通过包内 StoreKit storefront bridge 读取 App Store 国家/地区代码。
 2. 连接 Billing Client。
 3. 检查 External Billing Program 可用性。
-4. External Billing Program 不可用时，跳过 Google 信息页并直接用空 Google token 进入 ThirdPay 包内 UniWebView，不返回 Google 政策错误码。
+4. External Billing Program 不可用时，跳过 Google 信息页并直接用空 Google token 进入 Android 浏览器打开规则，不返回 Google 政策错误码。
 5. External Billing Program 可用时，创建 reporting details 并取得 external transaction token。
-6. `SkipPaymentInformationScreen` 或 `SetSkipPaymentInformationScreen(true)` 生效时，保留 token 并跳过 Google 信息页，直接进入 ThirdPay 包内 UniWebView。
+6. `SkipPaymentInformationScreen` 或 `SetSkipPaymentInformationScreen(true)` 生效时，保留 token 并跳过 Google 信息页，直接进入 Android 浏览器打开规则。
 7. 未跳过时，用包含 token 的最终支付 URL 调用 `LaunchExternalLink`，模式为 `CALLER_WILL_LAUNCH_LINK`。
-8. Google 信息页成功后，ThirdPay 按国家配置决定用包内 UniWebView 打开应用内支付页，或用系统外部浏览器打开支付页。
+8. Google 信息页成功、不可用或打开失败后，ThirdPay 都进入 Android 浏览器打开规则；用户取消仍返回取消。
 
-渠道参数 `GetPayChannelParams` 失败（包括服务端错误码 `10707`）不会阻断支付；ThirdPay 会继续构造不含 `payment_customer_ids` 的支付 URL 并按当前国家配置打开支付页。商品列表、支付环境、URL 构造、支付页打开和验单仍按各自错误语义处理。
+渠道参数 `GetPayChannelParams` 失败（包括服务端错误码 `10707`）不会阻断支付；ThirdPay 会继续构造不含 `payment_customer_ids` 的支付 URL 并按平台默认策略打开支付页。商品列表、支付环境、URL 构造、支付页打开和验单仍按各自错误语义处理。
 
 ## 本地订单与验单
 

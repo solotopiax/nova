@@ -19,6 +19,46 @@ namespace NovaFramework.Editor
     internal sealed partial class ConfigWindow : EditorWindow
     {
         /// <summary>
+        /// Unity Editor 是否正在退出。
+        /// </summary>
+        private static bool s_IsEditorQuitting;
+
+        /// <summary>
+        /// 程序集是否即将重载。
+        /// </summary>
+        private static bool s_IsDomainReloading;
+
+        /// <summary>
+        /// 注册 Editor 退出与程序集重载标记，避免在非用户关窗期间弹出保存/导出提醒。
+        /// </summary>
+        [InitializeOnLoadMethod]
+        private static void RegisterEditorQuitState()
+        {
+            s_IsEditorQuitting = false;
+            s_IsDomainReloading = false;
+            EditorApplication.quitting -= MarkEditorQuitting;
+            EditorApplication.quitting += MarkEditorQuitting;
+            AssemblyReloadEvents.beforeAssemblyReload -= MarkDomainReloading;
+            AssemblyReloadEvents.beforeAssemblyReload += MarkDomainReloading;
+        }
+
+        /// <summary>
+        /// 标记 Unity Editor 正在退出。
+        /// </summary>
+        private static void MarkEditorQuitting()
+        {
+            s_IsEditorQuitting = true;
+        }
+
+        /// <summary>
+        /// 标记程序集即将重载。
+        /// </summary>
+        private static void MarkDomainReloading()
+        {
+            s_IsDomainReloading = true;
+        }
+
+        /// <summary>
         /// 窗口启用时的初始化：从 WorkspaceActive 读取激活 Master、克隆 WorkingCopy、绑 SerializedObject、
         /// 补 Entry 格子、扫 Plugin 类型、注入 YooAsset 配置、订阅场景切换事件、跑 Luban 检测、弹缺失引用清理对话。
         /// </summary>
@@ -44,23 +84,25 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 窗口关闭时：销毁 WorkingCopy 防域重载泄漏，注销场景切换监听。
+        /// 窗口停用时：正常关窗先收敛保存/导出提醒，再销毁 WorkingCopy；
+        /// Editor 退出、程序集重载与资源刷新期间只清理，不弹窗或写资产。
         /// </summary>
         private void OnDisable()
         {
+            if (!s_IsEditorQuitting && !s_IsDomainReloading &&
+                !EditorApplication.isCompiling && !EditorApplication.isUpdating)
+                HandleCloseReminder();
             DestroyWorkingCopy();
             EditorSceneManager.sceneOpened -= OnSceneOpenedRefresh;
         }
 
         /// <summary>
         /// 绘制窗口界面；Play Mode 下整体禁用并在顶部提示。
-        /// 每帧同步 hasUnsavedChanges / saveChangesMessage，使关窗弹框随脏状态正确响应。
+        /// 关窗提醒由 OnDisable 统一处理，以便提供“仅保存 / 保存并导出”的明确选择。
         /// </summary>
         private void OnGUI()
         {
-            // hasUnsavedChanges / saveChangesMessage 是 EditorWindow 可写普通属性，每帧同步以驱动关窗弹框
-            hasUnsavedChanges = m_IsDirty;
-            saveChangesMessage = "配置存在未保存的修改，是否保存？";
+            hasUnsavedChanges = false;
             EnsureStyles();
             EditorUtil.Draw.DisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode, DrawBody);
             if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -217,6 +259,7 @@ namespace NovaFramework.Editor
                 EditorUtil.Config.StructureGuard.SyncEnumGrid(m_Master);
             }
             m_IsDirty = false;
+            m_HasSavedChangesPendingExport = false;
             Repaint();
         }
 
@@ -261,7 +304,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 将 WorkingCopy 写回真实资产并落盘；保存后重建 WorkingCopy 保持后续编辑隔离。
         /// </summary>
-        private void CommitWorkingCopyToAsset()
+        private void CommitWorkingCopyToAsset(bool rebuildWorkingCopy = true)
         {
             if (m_Master == null || m_WorkingCopy == null) return;
             EditorUtility.CopySerialized(m_WorkingCopy, m_Master);
@@ -272,8 +315,9 @@ namespace NovaFramework.Editor
             EditorUtility.SetDirty(m_Master);
             AssetDatabase.SaveAssets();
             m_IsDirty = false;
+            m_HasSavedChangesPendingExport = true;
             // 保存后重建 WorkingCopy，保持后续编辑基于最新已落盘状态
-            RebuildWorkingCopy();
+            if (rebuildWorkingCopy) RebuildWorkingCopy();
             EditorUtil.Config.Events.NotifyActiveConfigMasterSaved(m_Master);
         }
 

@@ -22,13 +22,17 @@ related:
 
 # ADR-014：AssetPlayMode 拆分为 EditorPlayMode + RuntimePlayMode（删 LaunchConfig.DefaultPlayMode）
 
+## 修订注记（2026-09-03）
+
+`WebPlayMode` 已从 Nova 的 `AssetPlayMode` 删除。Offline/Host 表达资源策略，WebGL 表达平台能力：WebGL Offline 使用 WebServer 文件系统，WebGL Host 使用 WebServer + WebNetwork 文件系统。YooAsset 内部 Web 类型继续保留，但不再暴露为 Nova 配置选项。
+
 ## 背景（Context）
 
 EnableHotfix 总开关落地后，YooAsset `AssetPlayMode` 在 Editor / Player 两个环境下的语义需求不一致：
 
-- **Editor**：开发期希望随意切换 `EditorSimulateMode`（直接读 Editor 资源，零网络）/ `OfflinePlayMode` / `HostPlayMode` / `WebPlayMode`，4 选 1
-- **Player（终端发布）**：`EditorSimulateMode` 在 Player 下根本无法工作（依赖 AssetDatabase），必须**禁选**；只允许 `OfflinePlayMode` / `HostPlayMode` / `WebPlayMode`，3 选 1
-- **联动语义**：EnableHotfix=false 时终端必须走 `OfflinePlayMode`（不连服）；EnableHotfix=true 时终端必须走 `HostPlayMode` 或 `WebPlayMode`（联机热更）
+- **Editor**：开发期可以切换 `EditorSimulateMode`（直接读 Editor 资源，零网络）/ `OfflinePlayMode` / `HostPlayMode`，3 选 1
+- **Player（终端发布）**：`EditorSimulateMode` 在 Player 下根本无法工作（依赖 AssetDatabase），必须**禁选**；只允许 `OfflinePlayMode` / `HostPlayMode`，2 选 1
+- **联动语义**：EnableHotfix=false 时终端必须走 `OfflinePlayMode`（不连服）；EnableHotfix=true 时终端必须走 `HostPlayMode`（联机热更）
 
 旧设计：`LaunchConfig.DefaultPlayMode`（单字段）+ `AssetManager.BuildPlayModeOptions` 内**运行时强制覆盖**。
 
@@ -81,7 +85,7 @@ AssetPlayMode effectiveMode = Application.isEditor
 | `EnableHotfix` | `false` | `RuntimePlayMode` → `OfflinePlayMode` |
 | `EnableHotfix` | `true` | 若 `RuntimePlayMode==OfflinePlayMode` → `HostPlayMode`，否则保持 |
 | `RuntimePlayMode` | `OfflinePlayMode` | `EnableHotfix` → `false` |
-| `RuntimePlayMode` | `HostPlayMode/WebPlayMode` | `EnableHotfix` → `true` |
+| `RuntimePlayMode` | `HostPlayMode` | `EnableHotfix` → `true` |
 
 落地见 `AssetComponentInspector.Methods.cs::DrawConfigs` + `DrawRuntimePlayModePopup`，详细范式见 [[PAT-09-inspector-config-i18n|PAT-09]] §九。
 

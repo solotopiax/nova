@@ -43,6 +43,8 @@ Pipify 是顺序 Batch 与 UI/CLI 流水线，不提供每个业务单元统一�
 8. Action 调度锁只做进程内资源互斥，不使用 `LockReloadAssemblies`、`StartAssetEditing` 等 Unity 引用计数批锁，也不跨 domain reload 持锁。
 9. Skill 与 Action 不是一对一关系。一个 Action 可以被多个 Skill 复用；只有输入可类型化、写入集可说明、成功可自动验证且跨项目语义稳定的操作才升级为 Action。
 10. 传输桥与执行内核分离。Framework 显式依赖 Nova 自有的 `com.solotopia.nova.framework.mcp`，但 Framework Action 内核和 `NovaFramework.Mcp.Editor` 中立契约程序集不硬依赖任何第三方 MCP Provider。Nova MCP UPM 包可以随当前产品选型携带一个默认 Provider Adapter，但必须使用独立程序集单向调用中立契约，切换 Provider 不得修改 Framework Action 或中立协议。Adapter 只能暴露 `describe / plan / execute / verify` 和已注册 Action ID，不得把任意 C# 执行包装成正式协议。
+11. 所有已注册的 `nova.project.*` Action 默认进入 MCP 显式白名单。Gateway 必须校验 Registry 与白名单集合完全一致；新增 Handler 未同步白名单或白名单残留失效 ID 时整体 fail-closed。`Destructive`、`ExternalWrite`、`Credential` 与 `Delivery` 仍是必须准确声明和确认的风险，不再作为隐藏已注册 Action 的理由。
+12. 项目已保存的 Pipify Batch 可通过 `nova.project.pipify.run-batch` 执行，但不能传任意代码或临时 Step。Plan 冻结活动 Settings、Batch、参数与 BuildTarget；异步 Job 在真实运行期持有资源锁并持久化状态，domain reload 后只标记中断，绝不恢复或重放。
 
 ## 后果（Consequences）
 
@@ -51,12 +53,13 @@ Pipify 是顺序 Batch 与 UI/CLI 流水线，不提供每个业务单元统一�
 - Agent 不再为相同底层操作重复推导调用链，Skill 可复用稳定 Action ID。
 - 分类、确认、锁、幂等性、证据与结果状态可以统一治理并自动测试。
 - 领域实现仍集中在既有 `EditorUtil.*`，Action 扩容不会形成第二套业务逻辑。
-- 高风险 Delivery 能力可以晚于本地生成和构建能力独立开放。
+- 项目组不再因 Action 的副作用分类而遇到“已注册但 MCP 不可调用”的能力断层。
 
 ### 代价与限制
 
 - 每个 Action 需要专用请求 DTO、计划状态、Receipt 和验证器，不能把现有方法机械批量注册。
 - 进程内计划不跨 domain reload；跨 reload 只保留 Receipt，执行前需要重新计划。
+- 全量开放扩大了可调用范围，因此高风险 Action 的目标冻结、确认、锁、凭据脱敏与 Verify 不能降级；开放不代表自动执行。
 - Nova MCP 包安装成功不等于 Agent 已可直连；包内默认 Provider Adapter 仍需在实际 Editor 连接上验证 Tool 发现与调用。
 - Procedure、页面布局、Prefab 结构、协议语义和真机体感等开放问题仍需要 Agent、Unity MCP 或人工判断。
 
@@ -66,7 +69,7 @@ Pipify 是顺序 Batch 与 UI/CLI 流水线，不提供每个业务单元统一�
 |---|---|
 | 一个巨型 `AgentEditor` 按字符串反射任意方法 | 无法审计参数、写入集和证据，消费项目也可能注入任意执行入口 |
 | 每个 Skill 各复制一套 C# 调用步骤 | 相同操作会漂移，升级成本随 Skill 数量重复增长 |
-| 把全部 Pipify Step 一比一变成 Action | Pipify 是顺序 Batch，不是每个业务单元的计划与验证协议 |
+| 把全部 Pipify Step 一比一变成 Action | 保留一个只运行已保存 Batch 的受控入口；Step 仍由 Pipify Registry 与 Runner 统一执行，不复制成 Action |
 | 直接以第三方 MCP Provider 的任意代码执行能力作为正式桥 | 任意 C# 执行面过大，违背只允许稳定 Action ID 的受控边界 |
 | 把所有编辑任务都 C# 化 | 开放式业务设计无法由固定 Action 安全替代，会隐藏决策风险 |
 
@@ -74,6 +77,7 @@ Pipify 是顺序 Batch 与 UI/CLI 流水线，不提供每个业务单元统一�
 
 - 首个 Handler `nova.project.upm.manage-latest` 复用 `EditorUtil.PlugPals` 的计划、执行和验证实现。
 - `AgentActionRegistryTests` 覆盖 Framework-only 注册、稳定描述、非法请求、确认快速路径、未知计划和 Receipt 契约拒绝。
+- Gateway 契约测试要求 live Registry 与显式 ExposurePolicy 的 Action ID 集合完全一致。
 - `NovaFramework.Editor.csproj --no-restore` 编译通过，Action 相关代码无编译错误。
 - Nova Project Skills 校验通过，工具测试 97/97 通过。
 

@@ -108,6 +108,11 @@
 - `OpenUIViewAsync<T>()`
 - `OpenUIViewSync(assetLocation, uiGroupName, ...)`
 - `OpenUIViewAsync(assetLocation, uiGroupName, ...)`
+- `OnOpenUIViewFail`
+
+`OpenUIViewAsync(...)` 返回的 `serialID` 只表示打开请求已创建；后续资源加载或实例化失败时，
+通过 `OnOpenUIViewFail(serialID, assetLocation, errorMessage)` 通知业务层。业务订阅者应按
+自己保存的 `serialID` 过滤事件，并在生命周期结束时注销。
 
 语义：
 
@@ -169,6 +174,7 @@
 ## 风险点 / 易错点
 
 - `LoadAsync()` 成功前，不要假设泛型打开和基于注册表的查询一定可用。
+- 泛型异步打开返回 `-1` 表示注册表查找等立即失败；请求创建后的异步失败通过 `OnOpenUIViewFail` 通知。
 - `UIComponent` 的很多 public API 只是门面；如果要排查打开失败、排序异常、实例回收异常，直接看 `UIManager`。
 - `CreateInstancePool()` 被放在 `Start()` 末尾，不要把对象池相关假设提前到 `Awake()`。
 - `m_InstanceRoot` 为空时会自动创建根节点；如果你依赖自定义层级或现成 Canvas，需要确认 Inspector 配置是否覆盖了默认行为。

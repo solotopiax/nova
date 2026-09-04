@@ -35,7 +35,7 @@ related:
 
 ## 适用场景
 
-- HostPlayMode、WebPlayMode 或 Editor 资源联调受到历史 Bundle、Manifest 或本地可启动版本记录影响。
+- HostPlayMode 或 Editor 资源联调受到历史 Bundle、Manifest 或本地可启动版本记录影响。
 - 需要给开发者提供“一键回到无热更缓存状态”的 Inspector 或菜单入口。
 - 清理操作同时涉及 YooAsset 自有沙盒和 Nova 框架自主保存的文件，必须明确两者所有权。
 

@@ -53,6 +53,11 @@ namespace NovaFramework.Runtime
         private readonly Dictionary<string, AssetDownloadUrlPolicy> m_DownloadUrlPolicies = new();
 
         /// <summary>
+        /// 每个 Host 包实际注入 YooAsset 的远端寻址实例，供 WebGL 首包元数据回退临时切换路由。
+        /// </summary>
+        private readonly Dictionary<string, AssetRemoteService> m_RemoteServices = new();
+
+        /// <summary>
         /// 每个包的版本元数据编排互斥门，避免初始化、版本请求与清单加载并发修改同一 YooAsset 包状态。
         /// </summary>
         private readonly Dictionary<string, SemaphoreSlim> m_PackageMetadataGates = new();
@@ -66,11 +71,6 @@ namespace NovaFramework.Runtime
         /// 默认包名；从 Config.DefaultPackageName 或 Config.Packages[0] 取，BootstrapAsync 阶段写入。
         /// </summary>
         private string m_DefaultPackageName;
-
-        /// <summary>
-        /// AB 解密器实例；按 Config.DecryptorType 在 BootstrapAsync 阶段创建一次。
-        /// </summary>
-        private object m_Decryptor;
 
         /// <summary>
         /// Manager 生命周期取消源；Shutdown 时 Cancel，使所有进行中的异步操作尽快退出。

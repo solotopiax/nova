@@ -166,6 +166,7 @@ namespace NovaFramework.Editor
                 return;
             }
             m_Master = newMaster;
+            m_HasSavedChangesPendingExport = false;
             DestroyWorkingCopy();
             if (newMaster != null)
             {
@@ -275,13 +276,23 @@ namespace NovaFramework.Editor
         /// </summary>
         private void OnClickExport()
         {
+            TryExport(true);
+        }
+
+        /// <summary>
+        /// 执行当前坐标的 ConfigRuntime 导出。
+        /// </summary>
+        /// <param name="showSuccessDialog">成功时是否显示结果弹窗。</param>
+        /// <returns>成功完成导出时返回 true。</returns>
+        private bool TryExport(bool showSuccessDialog)
+        {
             if (!IsEditingPlatformAligned())
             {
                 EditorUtility.DisplayDialog(
                     "导出失败",
                     $"当前编辑平台 {m_EditingPlatform} 与 Unity Active BuildTarget={EditorUserBuildSettings.activeBuildTarget} 对应平台 {EditorUtil.Config.ActivePlatform.Current} 不一致。请先切换 Unity BuildTarget。",
                     "知道了");
-                return;
+                return false;
             }
             try
             {
@@ -290,27 +301,27 @@ namespace NovaFramework.Editor
             catch (System.InvalidOperationException exception)
             {
                 EditorUtility.DisplayDialog("导出失败", exception.Message, "知道了");
-                return;
+                return false;
             }
             if (m_IsDirty)
             {
                 EditorUtility.DisplayDialog("请先保存", "检测到未保存的修改，导出前请先点击保存。导出源为已落盘的配置资产。", "知道了");
-                return;
+                return false;
             }
             IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues =
                 EditorUtil.Config.Validator.Validate(m_Master, m_EditingPlatform, m_Master.CurrentChannel, m_Master.CurrentDevelopMode);
             if (HasAnyError(issues))
             {
                 ShowValidationDialog(issues);
-                return;
+                return false;
             }
-            if (issues.Count > 0 && !ConfirmValidationWarnings(issues)) return;
+            if (issues.Count > 0 && !ConfirmValidationWarnings(issues)) return false;
 
             string assetPath;
             if (m_Master.ExportTarget == null)
             {
                 assetPath = EditorUtility.SaveFilePanelInProject("导出 ConfigRuntime", "ConfigRuntime", "asset", "选择导出位置");
-                if (string.IsNullOrEmpty(assetPath)) return;
+                if (string.IsNullOrEmpty(assetPath)) return false;
             }
             else
             {
@@ -330,12 +341,12 @@ namespace NovaFramework.Editor
             catch (System.InvalidOperationException exception)
             {
                 EditorUtility.DisplayDialog("导出失败", exception.Message, "知道了");
-                return;
+                return false;
             }
             if (result == null)
             {
                 EditorUtility.DisplayDialog("导出失败", $"未找到 Platform={m_EditingPlatform} × Channel={m_Master.CurrentChannel} 的配置行，请检查 ConfigMasterSO。", "知道了");
-                return;
+                return false;
             }
 
             if (m_Master.ExportTarget == null)
@@ -352,7 +363,10 @@ namespace NovaFramework.Editor
             EditorUtil.Config.SceneDevelopModeWriter.WriteActiveScene(
                 m_Master.CurrentDevelopMode,
                 m_Master.CurrentChannel);
-            EditorUtility.DisplayDialog("导出成功", $"已成功导出到：\n{assetPath}", "知道了");
+            m_HasSavedChangesPendingExport = false;
+            if (showSuccessDialog)
+                EditorUtility.DisplayDialog("导出成功", $"已成功导出到：\n{assetPath}", "知道了");
+            return true;
         }
     }
 }

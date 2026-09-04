@@ -16,7 +16,7 @@ description: Use when Nova 项目组要在实际构建 Player 前，只读检查
 这是严格只读的构建前检查，不执行 Player、Bundle、HybridCLR Generate、Android Resolve、平台切换、Config 导出或任何修复。先冻结唯一项目根、目标 `BuildTarget`、可选的目标 YooAsset Package，以及本次只检查哪个构建目标。目标平台或 Package 不唯一时返回 `blocked`。
 
 - 目标必须与 Unity 当前 `activeBuildTarget` 一致；本 Skill 不自动切换平台。
-- 检查读取启用的 Build Settings 场景、项目 Build Support、`ProjectSettings/Nova/Globals.json` 的精确 ConfigMaster 绑定、当前 Platform/Channel/DevelopMode 与 ConfigRuntimeSO 坐标、YooAsset Settings/Collector/Package 结构，以及启用时的 HybridCLR 安装与 link.xml 路径一致性。
+- 检查读取启用的 Build Settings 场景、项目 Build Support、`ProjectSettings/Nova/Globals.json` 的精确 ConfigMaster 绑定、当前 Platform/Channel/DevelopMode 与 ConfigRuntimeSO 坐标、场景 Asset/App 渠道快照、YooAsset Settings/Collector/Package 结构，以及启用时的 HybridCLR 安装与 link.xml 路径一致性。
 - 规则检查完成不等于可以构建。Action 返回 `success` 只说明只读检查执行完成；本 Skill 必须继续读取 `data.ready`、`errorCount`、`warningCount` 和逐条规则。
 - 不用旧 BuildReport、旧 APK/AAB、旧 Xcode/WebGL 工程或“上次能打”替代当前工程快照。
 

@@ -36,6 +36,16 @@ namespace NovaFramework.SDK.Facebook.Editor
         /// </summary>
         public override int PostprocessPriority => 600;
 
+        /// <summary>
+        /// Facebook Unity SDK 会通过 Unity AndroidJavaObject 反射调用 Java 桥接方法。
+        /// Android 开启 minify 时必须保留这些入口。
+        /// </summary>
+        private const string c_AndroidProguardRules =
+            "-keep class com.facebook.** { *; }\n" +
+            "-keepattributes Signature\n" +
+            "-keepattributes *Annotation*\n" +
+            "-dontwarn com.facebook.**";
+
 #if UNITY_IOS
         /// <summary>
         /// iOS 动态库。
@@ -58,6 +68,7 @@ namespace NovaFramework.SDK.Facebook.Editor
         /// <param name="context">Nova 构建上下文。</param>
         public override void OnPreprocessBuildOnAndroid(BuildReport report, NovaBuildContext context)
         {
+            context.AddProguardRules("FacebookPlugin", c_AndroidProguardRules);
             m_AndroidSettingsApplied = ApplyFacebookSettings("Android");
         }
 

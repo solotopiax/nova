@@ -172,6 +172,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             {
                 m_WebViewHost = new GameObject("ThirdPayWebView");
                 m_WebView = m_WebViewHost.AddComponent<UniWebView>();
+                // 不依赖业务侧 RectTransform，显式按当前屏幕铺满支付页。
+                m_WebView.Frame = new Rect(0f, 0f, Screen.width, Screen.height);
                 m_WebView.SetBackButtonEnabled(true);
                 m_WebView.SetOpenLinksInExternalBrowser(false);
                 m_WebView.EmbeddedToolbar.SetPosition(UniWebViewToolbarPosition.Top);

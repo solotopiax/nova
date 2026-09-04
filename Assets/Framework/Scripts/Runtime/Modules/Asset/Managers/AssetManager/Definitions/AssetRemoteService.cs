@@ -75,6 +75,11 @@ namespace NovaFramework.Runtime
         private readonly string[] m_AllBaseUrls;
 
         /// <summary>
+        /// WebGL 远端元数据计划耗尽后临时使用的首包根地址；仅影响 version/hash/bytes。
+        /// </summary>
+        private string m_WebGLBuiltinMetadataRootUrl;
+
+        /// <summary>
         /// 已完成平台、包名与版本占位符替换的远端基地址。
         /// </summary>
         public IReadOnlyList<string> BaseUrls => m_AllBaseUrls;
@@ -144,10 +149,31 @@ namespace NovaFramework.Runtime
             List<string> urls = new List<string>(4);
             if (IsVersionMetadataFile(fileName))
             {
+                if (!string.IsNullOrEmpty(m_WebGLBuiltinMetadataRootUrl))
+                {
+                    AppendFileUrls(urls, new[] { m_WebGLBuiltinMetadataRootUrl }, fileName);
+                    return urls;
+                }
                 AppendFileUrls(urls, m_MetadataBaseUrls, fileName);
             }
             AppendFileUrls(urls, m_RemoteBaseUrls, fileName);
             return urls;
+        }
+
+        /// <summary>
+        /// 临时把版本元数据请求切换到 WebGL 首包根地址；Bundle 地址保持不变。
+        /// </summary>
+        internal void BeginWebGLBuiltinMetadataFallback(string builtinPackageRootUrl)
+        {
+            m_WebGLBuiltinMetadataRootUrl = NormalizeBaseUrl(builtinPackageRootUrl);
+        }
+
+        /// <summary>
+        /// 结束 WebGL 首包元数据回退，恢复常规远端候选。
+        /// </summary>
+        internal void EndWebGLBuiltinMetadataFallback()
+        {
+            m_WebGLBuiltinMetadataRootUrl = null;
         }
 
         /// <summary>

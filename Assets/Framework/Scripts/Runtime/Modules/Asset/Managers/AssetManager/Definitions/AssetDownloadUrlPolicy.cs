@@ -30,15 +30,15 @@ namespace NovaFramework.Runtime
         private readonly bool m_EnableUwrTracks;
         private readonly string m_PackageName;
         private readonly float m_CheckTimeout;
-        private readonly float m_IdleTimeout;
+        private readonly float m_ManifestRequestTimeout;
+        private readonly float m_BundleRequestTimeout;
         private readonly HttpFallbackPreferenceStore m_PreferenceStore = new();
         private readonly Dictionary<string, RequestState> m_RequestStates = new(StringComparer.Ordinal);
         private readonly Dictionary<string, Queue<CandidateSelection>> m_PendingSelections = new(StringComparer.Ordinal);
         private readonly Dictionary<string, CandidateSelection> m_LastFailures = new(StringComparer.Ordinal);
         private readonly Dictionary<string, RetryOverride> m_RetryOverrides = new(StringComparer.Ordinal);
         private readonly List<CandidateSelection> m_ActiveMetadataSelections = new();
-        private readonly HashSet<string> m_TransportFailedMetadataSelections = new(StringComparer.Ordinal);
-        private long m_FailureGeneration;
+        private readonly Dictionary<string, MetadataTransportFailure> m_TransportFailedMetadataSelections = new(StringComparer.Ordinal);
 
         private enum CandidateFamily
         {
@@ -93,6 +93,18 @@ namespace NovaFramework.Runtime
             public string Token => $"{RequestKey}#{AttemptIndex}";
         }
 
+        private readonly struct MetadataTransportFailure
+        {
+            public MetadataTransportFailure(long httpCode, string httpError)
+            {
+                HttpCode = httpCode;
+                HttpError = httpError;
+            }
+
+            public long HttpCode { get; }
+            public string HttpError { get; }
+        }
+
         /// <summary>
         /// 使用默认的一轮主备与三次逻辑重试创建策略，供兼容调用和测试使用。
         /// </summary>
@@ -114,7 +126,7 @@ namespace NovaFramework.Runtime
         internal AssetDownloadUrlPolicy(bool enableWhitelistMetadataDebugLog, int fallbackRoundCount,
             int logicalRetryCount, bool preferLastSuccessfulHost)
             : this(enableWhitelistMetadataDebugLog, fallbackRoundCount, logicalRetryCount,
-                preferLastSuccessfulHost, false, null, 60f, 0f)
+                preferLastSuccessfulHost, false, null, 60f, 0f, 60f)
         {
         }
 
@@ -123,7 +135,7 @@ namespace NovaFramework.Runtime
         /// </summary>
         internal AssetDownloadUrlPolicy(bool enableWhitelistMetadataDebugLog, int fallbackRoundCount,
             int logicalRetryCount, bool preferLastSuccessfulHost, bool enableUwrTracks,
-            string packageName, float checkTimeout, float idleTimeout)
+            string packageName, float checkTimeout, float bundleRequestTimeout, float manifestRequestTimeout = 60f)
         {
             m_EnableWhitelistMetadataDebugLog = enableWhitelistMetadataDebugLog;
             m_DefaultLogicalRetryCount = Math.Max(0, logicalRetryCount);
@@ -131,17 +143,13 @@ namespace NovaFramework.Runtime
             m_EnableUwrTracks = enableUwrTracks;
             m_PackageName = packageName ?? string.Empty;
             m_CheckTimeout = checkTimeout;
-            m_IdleTimeout = idleTimeout;
+            m_BundleRequestTimeout = bundleRequestTimeout;
+            m_ManifestRequestTimeout = manifestRequestTimeout;
             m_FallbackPolicy = new HttpFallbackPolicy(
                 Math.Max(1, fallbackRoundCount),
                 m_DefaultLogicalRetryCount,
                 preferLastSuccessfulHost);
         }
-
-        /// <summary>
-        /// 已处理失败次数；供元数据操作和兼容测试观察失败推进。
-        /// </summary>
-        public long FailureGeneration => m_FailureGeneration;
 
         /// <summary>
         /// 把逻辑轮次与逻辑重试换算成 YooAsset 所需的额外物理重试次数。
@@ -243,37 +251,44 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 根据 YooAsset 元数据操作结果收口本次选择记录。
         /// </summary>
-        public void CompleteMetadataRequest(bool succeeded, string operationError)
+        public bool CompleteMetadataRequest(bool succeeded, string operationError)
         {
             int contentFailureIndex = !succeeded && m_TransportFailedMetadataSelections.Count == 0
                 ? m_ActiveMetadataSelections.Count - 1
                 : -1;
+            bool shouldRetry = false;
 
             for (int i = 0; i < m_ActiveMetadataSelections.Count; i++)
             {
                 CandidateSelection selection = m_ActiveMetadataSelections[i];
-                if (m_TransportFailedMetadataSelections.Contains(selection.Token))
+                if (m_TransportFailedMetadataSelections.TryGetValue(
+                        selection.Token, out MetadataTransportFailure transportFailure))
                 {
                     m_LastFailures.Remove(NormalizeUrl(selection.SelectedUrl));
-                    RejectSelectionIfInFlight(selection);
-                    if (selection.AttemptIndex + 1 >= selection.MaxAttempts)
+                    bool retryable = IsRetryableAssetError(selection.SelectedUrl, transportFailure.HttpCode)
+                                     && RejectSelectionIfInFlight(selection);
+                    if (!retryable)
                     {
+                        CompleteSelectionIfInFlight(selection);
+                        TrackSelectionEnd(selection, false, transportFailure.HttpCode,
+                            transportFailure.HttpError, null);
                         m_RequestStates.Remove(selection.RequestKey);
                     }
+                    shouldRetry |= retryable;
                     continue;
                 }
 
                 RemovePendingSelection(selection);
                 if (i == contentFailureIndex)
                 {
-                    IncrementFailureGeneration();
                     TrackSelectionError(selection, 0L, operationError, "content_verification_failed");
-                    RejectSelectionIfInFlight(selection);
-                    if (selection.AttemptIndex + 1 >= selection.MaxAttempts)
+                    bool retryable = RejectSelectionIfInFlight(selection);
+                    if (!retryable)
                     {
                         TrackSelectionEnd(selection, false, 0L, operationError, "content_verification_failed");
                         m_RequestStates.Remove(selection.RequestKey);
                     }
+                    shouldRetry |= retryable;
                     if (m_EnableWhitelistMetadataDebugLog)
                     {
                         LogMetadataFailure(selection.SelectedUrl, 0L, operationError ?? "Operation failed");
@@ -286,6 +301,7 @@ namespace NovaFramework.Runtime
             }
 
             BeginMetadataRequest();
+            return shouldRetry;
         }
 
         /// <summary>
@@ -320,23 +336,24 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            IncrementFailureGeneration();
             m_LastFailures[normalizedUrl] = selection;
             TrackSelectionError(selection, httpCode, httpError, null);
+            if (selection.Family == CandidateFamily.Metadata)
+            {
+                m_TransportFailedMetadataSelections[selection.Token] =
+                    new MetadataTransportFailure(httpCode, httpError);
+                if (m_EnableWhitelistMetadataDebugLog)
+                {
+                    LogMetadataFailure(selection.FileName, url, httpCode, httpError);
+                }
+                return;
+            }
             if (selection.AttemptIndex + 1 >= selection.MaxAttempts)
             {
                 RejectSelectionIfInFlight(selection);
                 TrackSelectionEnd(selection, false, httpCode, httpError, null);
                 m_LastFailures.Remove(normalizedUrl);
                 m_RequestStates.Remove(selection.RequestKey);
-            }
-            if (selection.Family == CandidateFamily.Metadata)
-            {
-                m_TransportFailedMetadataSelections.Add(selection.Token);
-                if (m_EnableWhitelistMetadataDebugLog)
-                {
-                    LogMetadataFailure(selection.FileName, url, httpCode, httpError);
-                }
             }
         }
 
@@ -428,13 +445,6 @@ namespace NovaFramework.Runtime
             RemoveFileState(fileName);
         }
 
-        /// <summary>
-        /// 兼容旧元数据编排入口；新策略在 SelectUrl 时已推进文件自己的 attempt。
-        /// </summary>
-        public void AdvanceAfterOperationFailure(long failureGenerationAtStart)
-        {
-        }
-
         private RequestState CreateRequestState(string requestKey, IReadOnlyList<string> candidateUrls,
             CandidateFamily family, string candidateSignature)
         {
@@ -506,7 +516,7 @@ namespace NovaFramework.Runtime
 
         private void CompleteSelectionSucceeded(CandidateSelection selection)
         {
-            // WebPlayMode 的内存 Bundle 可能在 YooAsset 内容校验前收到成功回调；常规资源此处不能结束游标，
+            // WebNetworkFileSystem 的内存 Bundle 可能在 YooAsset 内容校验前收到成功回调；常规资源此处不能结束游标，
             // 否则后续校验失败再次 SelectUrl 时会错误地从首候选重新开始。HostPlayMode 通常在缓存校验后回调。
             // 元数据的最终内容结果由 AssetManager.CompleteMetadataRequest 收口，可立即结束。
             if (m_RequestStates.TryGetValue(selection.RequestKey, out RequestState state)
@@ -538,12 +548,23 @@ namespace NovaFramework.Runtime
             }
         }
 
-        private void RejectSelectionIfInFlight(CandidateSelection selection)
+        private bool RejectSelectionIfInFlight(CandidateSelection selection)
         {
             if (m_RequestStates.TryGetValue(selection.RequestKey, out RequestState state)
                 && state.Cursor.State == HttpFallbackExecutionState.CandidateInFlight)
             {
                 state.Cursor.RejectCurrent();
+                return state.Cursor.State != HttpFallbackExecutionState.Exhausted;
+            }
+            return false;
+        }
+
+        private void CompleteSelectionIfInFlight(CandidateSelection selection)
+        {
+            if (m_RequestStates.TryGetValue(selection.RequestKey, out RequestState state)
+                && state.Cursor.State == HttpFallbackExecutionState.CandidateInFlight)
+            {
+                state.Cursor.CompleteCurrent();
             }
         }
 
@@ -608,12 +629,12 @@ namespace NovaFramework.Runtime
         {
             if (family == CandidateFamily.Regular)
             {
-                return m_IdleTimeout;
+                return m_BundleRequestTimeout;
             }
             string extension = System.IO.Path.GetExtension(fileName);
             return string.Equals(extension, ".version", StringComparison.OrdinalIgnoreCase)
                 ? m_CheckTimeout
-                : 60f;
+                : m_ManifestRequestTimeout;
         }
 
         private static string GetFileType(string fileName)
@@ -804,14 +825,6 @@ namespace NovaFramework.Runtime
             return fileName.EndsWith(".version", StringComparison.OrdinalIgnoreCase)
                    || fileName.EndsWith(".hash", StringComparison.OrdinalIgnoreCase)
                    || fileName.EndsWith(".bytes", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private void IncrementFailureGeneration()
-        {
-            unchecked
-            {
-                m_FailureGeneration++;
-            }
         }
 
         private static void LogMetadataFailure(string url, long httpCode, string error)

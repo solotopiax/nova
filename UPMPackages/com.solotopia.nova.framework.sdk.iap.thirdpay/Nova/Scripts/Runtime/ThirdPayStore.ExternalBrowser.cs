@@ -53,13 +53,15 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         /// <param name="request">ThirdPay 支付请求。</param>
         /// <param name="order">已保存的本地订单。</param>
+        /// <param name="googleToken">Google 外部结算上报 token。</param>
         /// <param name="paymentUrl">最终支付 URL。</param>
         /// <param name="ct">Cancellation token.</param>
         /// <returns>浏览器打开请求提交后的待确认结果。</returns>
-        private async UniTask<IAPResult> OpenExternalBrowserPaymentAsync(IAPThirdPayRequest request, ThirdPayOrderRecord order, string paymentUrl, CancellationToken ct)
+        private async UniTask<IAPResult> OpenExternalBrowserPaymentAsync(IAPThirdPayRequest request, ThirdPayOrderRecord order, string googleToken, string paymentUrl, CancellationToken ct)
         {
             if (m_ExternalBrowserService == null)
             {
+                LogWarning($"第三方支付外部浏览器服务未初始化：OrderId={order?.ClientOrderId}");
                 return Fail(request, IAPThirdPayErrorCode.StoreInitFailed, "第三方外部浏览器支付服务尚未初始化。");
             }
 
@@ -67,7 +69,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             ThirdPayOpenResult openResult;
             try
             {
-                openResult = await m_ExternalBrowserService.OpenAsync(paymentUrl, ct);
+                LogDebug($"第三方支付准备打开外部支付页：OrderId={order.ClientOrderId}");
+                openResult = await m_ExternalBrowserService.OpenAsync(paymentUrl, () => BuildPaymentUrl(order, googleToken, true, true), ct);
+                LogDebug($"第三方支付外部支付页打开返回：OrderId={order.ClientOrderId}，Result={openResult}");
             }
             catch (OperationCanceledException)
             {
@@ -76,6 +80,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
             catch (Exception ex)
             {
+                LogWarning($"第三方支付外部支付页打开异常：OrderId={order.ClientOrderId}，Error={ex.Message}");
                 ClearExternalBrowserPaySession();
                 TrackLocalPayFailInternal(request, IAPThirdPayErrorCode.WebViewClosed, ex.Message);
                 return Fail(request, IAPThirdPayErrorCode.WebViewClosed, $"打开外部浏览器支付页异常：{ex.Message}");
@@ -83,6 +88,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             if (openResult == ThirdPayOpenResult.Failed)
             {
+                LogWarning($"第三方支付外部支付页打开失败：OrderId={order.ClientOrderId}");
                 ClearExternalBrowserPaySession();
                 TrackLocalPayFailInternal(request, IAPThirdPayErrorCode.WebViewClosed, "外部浏览器支付页打开失败。");
                 return Fail(request, IAPThirdPayErrorCode.WebViewClosed, "外部浏览器支付页打开失败，订单保留等待后续验单。");

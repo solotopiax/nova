@@ -8,6 +8,7 @@
  * descrip:   UI 组件 - 字段与属性访问器
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -19,6 +20,15 @@ namespace NovaFramework.Runtime
     /// </summary>
     public sealed partial class UIComponent : FrameworkComponent
     {
+        /// <summary>
+        /// 异步打开视图失败事件，参数依次为视图序列编号、资源地址和错误信息。
+        /// </summary>
+        public event Action<int, string, string> OnOpenUIViewFail
+        {
+            add => m_UIManager.OnOpenUIViewFail += value;
+            remove => m_UIManager.OnOpenUIViewFail -= value;
+        }
+
         /// <summary>
         /// 当前 UI 管理器类型名称。
         /// </summary>

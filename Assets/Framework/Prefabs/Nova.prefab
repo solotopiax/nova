@@ -369,6 +369,11 @@ MonoBehaviour:
   m_StartupWhitelistMetadataRootUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/WhiteListVersions
   m_StartupWhitelistMetadataRootUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/WhiteListVersions
   m_StartupWhitelistMetadataRootUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/WhiteListVersions
+  m_StartupWhitelistFallbackRoundCount: 1
+  m_StartupWhitelistRetryRequestCount: 1
+  m_StartupWhitelistPreferLastSuccessfulHost: 1
+  m_StartupWhitelistEnableUWRTracks: 1
+  m_StartupWhitelistCheckTimeout: 5
   m_AutoHotfix: 1
   m_QuitOnFailedOrCancel: 0
   m_MaxDownloadConcurrency: 5
@@ -379,13 +384,14 @@ MonoBehaviour:
   m_LaunchHotfixTags: []
   m_AutoClearUnusedCacheOnHotfix: 0
   m_CheckTimeout: 5
+  m_ManifestRequestTimeout: 60
+  m_WebGLBundleRequestTimeout: 300
   m_IdleTimeout: 20
   m_HostServerUrlDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/Versions
   m_HostServerUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/Versions
   m_HostServerUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/Versions
   m_HostServerUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/Versions
-  m_Channel: 2
-  m_DecryptorType: 0
+  m_Channel: 0
 --- !u!1 &3308748334323488271
 GameObject:
   m_ObjectHideFlags: 0
@@ -1239,7 +1245,7 @@ MonoBehaviour:
   m_AppDownloadCheckUrlFallbackDebug: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/AppDownloadRules.json
   m_AppDownloadCheckUrlRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/AppDownloadRules.json
   m_AppDownloadCheckUrlFallbackRelease: https://mergewonder-test.oss-cn-beijing.aliyuncs.com/Nova/{Platform}/{Package}/AppDownloadRules.json
-  m_Channel: 2
+  m_Channel: 0
   m_DefaultPackageName: Default
   m_TimeoutSeconds: 5
   m_VersionCheckFallbackRoundCount: 1

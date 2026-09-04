@@ -155,16 +155,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private bool m_ConfigReady;
 
         /// <summary>
-        /// 支付参数加密使用的 AES 密钥，初始化或首次支付时解析并缓存。
-        /// </summary>
-        private string m_AesKey;
-
-        /// <summary>
-        /// 支付参数加密使用的 AES 向量，初始化或首次支付时解析并缓存。
-        /// </summary>
-        private string m_AesIv;
-
-        /// <summary>
         /// 第三方支付页 URL 基址，初始化或首次支付时解析并缓存。
         /// </summary>
         private string m_PayUrlBase;

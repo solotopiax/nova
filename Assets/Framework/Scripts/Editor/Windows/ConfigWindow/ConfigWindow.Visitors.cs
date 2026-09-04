@@ -93,9 +93,15 @@ namespace NovaFramework.Editor
         private bool m_GroupExpandedCommon = true;
 
         /// <summary>
-        /// 应用配置面板是否有未保存的改动（窗口关闭即丢弃，不持久化）。
+        /// 配置面板是否有尚未写回 ConfigMaster 的改动；正常关窗时进入保存选择。
         /// </summary>
         private bool m_IsDirty;
+
+        /// <summary>
+        /// 当前窗口会话中是否已有保存到 ConfigMaster、但尚未成功导出到 ConfigRuntime 的修改。
+        /// </summary>
+        [SerializeField]
+        private bool m_HasSavedChangesPendingExport;
 
         /// <summary>
         /// OSS 目录部署是否正在执行；用于阻止部署按钮重复触发。

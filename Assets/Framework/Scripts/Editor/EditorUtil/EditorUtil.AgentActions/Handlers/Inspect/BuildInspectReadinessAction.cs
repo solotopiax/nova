@@ -20,7 +20,7 @@ namespace NovaFramework.Editor
         "检查 Player 构建就绪状态",
         "build",
         AgentActionOperationType.Inspect,
-        Description = "只读检查目标平台、Build Settings、Config、YooAsset 与 HybridCLR 的构建前置状态。",
+        Description = "只读检查目标平台、Build Settings、Config、场景渠道快照、YooAsset 与 HybridCLR 的构建前置状态。",
         Effects = AgentActionEffect.WorkspaceRead | AgentActionEffect.UnityRead,
         RequiredEvidence = AgentActionEvidence.Static,
         Idempotency = AgentActionIdempotency.ReadOnly,
@@ -71,7 +71,7 @@ namespace NovaFramework.Editor
                 RecoveryPayloadJson = payload,
                 Evidence = new[]
                 {
-                    "只读冻结 Target、启用场景、Config 坐标、YooAsset Package、HybridCLR 与平台前置；未调用构建、生成、保存或自动修复。",
+                    "只读冻结 Target、启用场景、Config 坐标、场景渠道快照、YooAsset Package、HybridCLR 与平台前置；未调用构建、生成、保存或自动修复。",
                     "Inspect 执行成功只表示规则已完成；是否可构建由 DataJson.ready 与 rules 判断。",
                 },
             });

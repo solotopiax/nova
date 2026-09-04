@@ -8,6 +8,7 @@
  * descrip:   UI 管理器接口
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
@@ -18,6 +19,11 @@ namespace NovaFramework.Runtime
     /// </summary>
     public interface IUIManager
     {
+        /// <summary>
+        /// 异步打开视图失败事件，参数依次为视图序列编号、资源地址和错误信息。
+        /// </summary>
+        event Action<int, string, string> OnOpenUIViewFail;
+
         /// <summary>
         /// 获取视图分组数量。
         /// </summary>

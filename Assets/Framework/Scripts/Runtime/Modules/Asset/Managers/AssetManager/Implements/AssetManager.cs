@@ -45,8 +45,8 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 启动资源框架：注册包、创建解密器、初始化底层资源系统。
-        /// 由 Procedure 编排时调用；包名、URL 模板、解密器类型均已由 Initialize 注入的 AssetManagerConfig 提供。
+        /// 启动资源框架：注册包并初始化底层资源系统。
+        /// 由 Procedure 编排时调用；包名与 URL 模板均已由 Initialize 注入的 AssetManagerConfig 提供。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         public override async UniTask BootstrapAsync(CancellationToken ct = default)
@@ -59,8 +59,6 @@ namespace NovaFramework.Runtime
             m_DefaultPackageName = string.IsNullOrEmpty(m_Config.DefaultPackageName)
                 ? m_Config.Packages[0]
                 : m_Config.DefaultPackageName;
-            m_Decryptor = CreateDecryptor(m_Config.DecryptorType);
-
             if (YooAssets.IsInitialized == false)
             {
                 YooAssets.Initialize();
@@ -108,9 +106,9 @@ namespace NovaFramework.Runtime
             m_StartupWhitelistMatchedPackages.Clear();
             m_StartupWhitelistPreferenceStore.ClearAll();
             m_DownloadUrlPolicies.Clear();
+            m_RemoteServices.Clear();
             m_PackageMetadataGates.Clear();
             m_Packages.Clear();
-            m_Decryptor = null;
             m_Config = null;
             m_HttpManager = null;
         }
@@ -444,8 +442,8 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 远端版本或清单不可达时的统一恢复编排：① 沿用当前已激活清单 → ② 本地可启动版本离线加载 → ③ 内置首包清单回退。
-        /// 任一级成功即返回 true。
+        /// 远端版本或清单不可达时的统一恢复编排。
+        /// WebGL 直接尝试首包元数据；其他平台依次尝试当前清单、本地可启动版本与内置首包。
         /// </summary>
         /// <param name="name">包名。</param>
         /// <param name="remoteError">远端请求错误。</param>
@@ -453,6 +451,10 @@ namespace NovaFramework.Runtime
         /// <returns>true 表示某一级恢复成功。</returns>
         private async UniTask<bool> TryRecoverManifestAsync(string name, string remoteError, CancellationToken ct)
         {
+#if UNITY_WEBGL
+            // WebNetwork 的 IsDownloadRequired 固定为 false，不能据此证明当前 Manifest 的启动资源已就绪。
+            return await TryFallbackToWebGLBuiltinManifestAsync(name, remoteError, ct);
+#else
             ResourcePackage pkg = GetPackage(name);
             if (pkg.PackageValid && IsLaunchScopeReady(pkg))
             {
@@ -468,6 +470,72 @@ namespace NovaFramework.Runtime
             }
 
             return await TryFallbackToBuiltinManifestAsync(name, remoteError, ct);
+#endif
+        }
+
+        /// <summary>
+        /// WebGL 远端元数据计划耗尽后，保持 Host 文件系统拓扑并从随 Player 发布的首包加载 Manifest。
+        /// 首包清单激活后，内置 Bundle 仍由 WebServer 提供，未内置 Bundle 在网络恢复后仍可按需走 WebNetwork。
+        /// </summary>
+        private async UniTask<bool> TryFallbackToWebGLBuiltinManifestAsync(
+            string name,
+            string remoteError,
+            CancellationToken ct)
+        {
+#if UNITY_WEBGL
+            AssetPlayMode effectiveMode = Application.isEditor
+                ? m_Config.EditorPlayMode
+                : m_Config.RuntimePlayMode;
+            if (effectiveMode != AssetPlayMode.HostPlayMode
+                || !m_RemoteServices.TryGetValue(name, out AssetRemoteService remoteService))
+            {
+                return false;
+            }
+
+            string builtinPackageRoot = $"{Application.streamingAssetsPath.TrimEnd('/')}/{YooAssetConfiguration.GetYooFolderName()}/{name}";
+            Log.Warning(LogTag.Asset,
+                "远端资源清单请求失败，尝试回退到 WebGL 首包清单。Package={0}, Error={1}",
+                name, remoteError);
+
+            remoteService.BeginWebGLBuiltinMetadataFallback(builtinPackageRoot);
+            try
+            {
+                ResourcePackage pkg = GetPackage(name);
+                RequestPackageVersionOperation versionOp = await RequestPackageVersionWithFallbackAsync(
+                    pkg, name, ct);
+                if (versionOp.Status != EOperationStatus.Succeeded)
+                {
+                    Log.Warning(LogTag.Asset,
+                        "WebGL 首包清单回退失败：首包版本文件不可用。Package={0}, Error={1}",
+                        name, versionOp.Error);
+                    return false;
+                }
+
+                LoadPackageManifestOperation manifestOp = await LoadPackageManifestWithFallbackAsync(
+                    pkg, name, versionOp.PackageVersion, ct);
+                if (manifestOp.Status != EOperationStatus.Succeeded)
+                {
+                    Log.Warning(LogTag.Asset,
+                        "WebGL 首包清单回退失败：首包 Manifest 不可用。Package={0}, Version={1}, Error={2}",
+                        name, versionOp.PackageVersion, manifestOp.Error);
+                    return false;
+                }
+
+                m_ManifestLoadedPackages.Add(name);
+                m_OfflineRecoveredPackages.Add(name);
+                Log.Warning(LogTag.Asset,
+                    "已回退到 WebGL 首包清单，本次启动跳过远端热更。Package={0}, Version={1}",
+                    name, versionOp.PackageVersion);
+                return true;
+            }
+            finally
+            {
+                remoteService.EndWebGLBuiltinMetadataFallback();
+            }
+#else
+            await UniTask.CompletedTask;
+            return false;
+#endif
         }
 
         /// <summary>
@@ -504,7 +572,8 @@ namespace NovaFramework.Runtime
                 return false;
             }
 
-            var manifestOp = pkg.LoadPackageManifestAsync(new LoadPackageManifestOptions(localVersion, 60));
+            var manifestOp = pkg.LoadPackageManifestAsync(
+                new LoadPackageManifestOptions(localVersion, m_Config.ManifestRequestTimeout));
             await UniTask.WaitUntil(() => manifestOp.IsDone, cancellationToken: ct);
             if (manifestOp.Status != EOperationStatus.Succeeded)
             {
@@ -606,7 +675,7 @@ namespace NovaFramework.Runtime
             }
 
             var builtinManifestOp = pkg.LoadPackageManifestAsync(
-                new LoadPackageManifestOptions(builtinVersion, 60));
+                new LoadPackageManifestOptions(builtinVersion, m_Config.ManifestRequestTimeout));
             await UniTask.WaitUntil(() => builtinManifestOp.IsDone, cancellationToken: ct);
             if (builtinManifestOp.Status != EOperationStatus.Succeeded)
             {
@@ -668,15 +737,19 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 当前只允许 HostPlayMode 在远端不可达时回退到内置资源。
+        /// 当前只允许非 WebGL 平台的 HostPlayMode 在远端不可达时回退到内置资源。
         /// </summary>
         /// <returns>true 表示可以尝试内置清单回退。</returns>
         private bool CanFallbackToBuiltinManifest()
         {
+#if UNITY_WEBGL
+            return false;
+#else
             AssetPlayMode effectiveMode = Application.isEditor
                 ? m_Config.EditorPlayMode
                 : m_Config.RuntimePlayMode;
             return effectiveMode == AssetPlayMode.HostPlayMode;
+#endif
         }
 
     }

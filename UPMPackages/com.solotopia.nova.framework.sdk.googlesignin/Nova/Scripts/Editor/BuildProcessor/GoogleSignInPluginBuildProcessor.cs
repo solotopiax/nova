@@ -20,8 +20,20 @@ namespace NovaFramework.SDK.GoogleSignIn.Editor
 
         public override int PostprocessPriority => 620;
 
+        /// <summary>
+        /// Google Sign-In 通过 Unity AndroidJavaClass 反射调用自定义 Java 桥接层。
+        /// Android 开启 minify 时必须保留这些入口。
+        /// </summary>
+        private const string c_AndroidProguardRules =
+            "-keep class com.solotopia.nova.googlesignin.** { *; }\n" +
+            "-keepattributes Signature\n" +
+            "-keepattributes *Annotation*\n" +
+            "-dontwarn com.solotopia.nova.googlesignin.**";
+
         public override void OnPreprocessBuildOnAndroid(BuildReport report, NovaBuildContext context)
         {
+            context.AddProguardRules("GoogleSignInPlugin", c_AndroidProguardRules);
+
             GoogleSignInPluginConfig config = GetSDKConfig<GoogleSignInPluginConfig>();
             if (config == null) return;
 

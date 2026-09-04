@@ -13,7 +13,7 @@
 
 - 你要排查 `BootstrapAsync` / `LoadManifestAsync` 的真实时序。
 - 你要看为什么 `HasPatchAsync()` 在没加载清单时也能工作。
-- 你要确认默认包名、热更地址 URL、解密器到底在哪里生效。
+- 你要确认默认包名、热更地址 URL 到底在哪里生效。
 - 你要区分哪些 API 支持显式 `package`，哪些永远走默认包。
 
 ## 依赖与边界
@@ -60,9 +60,8 @@
 
 1. 校验 `Packages` 非空
 2. 解析 `m_DefaultPackageName`
-3. 按 `DecryptorType` 创建 `m_Decryptor`
-4. 在需要时 `YooAssets.Initialize()`
-5. 遍历 `m_Config.Packages`，逐个 `CreatePackage` 或 `GetPackage`
+3. 在需要时 `YooAssets.Initialize()`
+4. 遍历 `m_Config.Packages`，逐个 `CreatePackage` 或 `GetPackage`
 
 这一层完成后，包才算注册完成。
 
@@ -75,24 +74,28 @@
 3. 如果包尚未成功初始化，先按配置尝试启动白名单检查
 4. 调用 `InitializePackageAsync(options)`
 5. 再 `RequestPackageVersionAsync()`
-6. 再 `LoadPackageManifestAsync(version, 60)`
+6. 再按 `ManifestRequestTimeout` 执行 `LoadPackageManifestAsync`
 7. 成功后只把包名记入 `m_ManifestLoadedPackages`；Manifest 激活本身不再推进本地可启动版本
 
 这一步既做“包初始化”，也做“版本 + 清单拉取”，而且是按包幂等的。只有当前启动下载策略确认就绪后，`ProcedureCheckVersion` / `ProcedureHotfix` 才通过 `CommitBootableVersion` 推进本地可启动版本。
 
 #### 启动设备白名单
 
-启动白名单默认关闭，并同时要求 `EnableHotfix=true`、有效模式为 Host/Web、白名单文件 URL 与元数据根 URL 至少各有一个有效地址。本地 DeviceID 来自 `persistentDataPath/Asset/asset-check-device-id.dat`；首次没有缓存时直接跳过，SDK 插件完成初始化后通过 `SaveAssetCheckDeviceId` 原子写入 UTF-8 明文，供后续启动使用。
+启动白名单默认关闭，并同时要求 `EnableHotfix=true`、有效模式为 HostPlayMode、白名单文件 URL 与元数据根 URL 至少各有一个有效地址。本地 DeviceID 来自 `persistentDataPath/Asset/asset-check-device-id.dat`；首次没有缓存时直接跳过，SDK 插件完成初始化后通过 `SaveAssetCheckDeviceId` 原子写入 UTF-8 明文，供后续启动使用。
+
+`VersionsCheckWhiteList.json` 使用独立的 `StartupWhitelistFallbackRoundCount`、`StartupWhitelistRetryRequestCount`、`StartupWhitelistPreferLastSuccessfulHost`、`StartupWhitelistEnableUWRTracks` 与 `StartupWhitelistCheckTimeout`；默认分别为 `1`、`1`、`true`、`true`、`5`。这些配置不影响白名单命中后的版本元数据请求或 Bundle 下载。
 
 内置 `HttpManager` 下，白名单文件通过不创建 Network 逻辑链的物理 UWR 入口请求，由 Asset 统一管理主备、轮次、重试和 `uwr_*` 链路埋点；兼容自定义 `IHttpManager` 时回退到 `DownloadTextAsync`。资源下载、CDN 与热更新由 YooAsset 的 UnityWebRequest 后端和 `AssetDownloadUrlPolicy` 独立路由。三条链统一按候选数 `C`、完整轮数 `R`、重试次数 `K` 形成 `C × R × (K + 1)` 次物理尝试；每次重试都会重新执行全部轮次。404/408/416/429、5xx、无响应及内容校验失败继续下一个候选；401/403 和其他 4xx 立即停止。`.version` / `.hash` / `.bytes` 未命中白名单时使用常规主备，命中时使用白名单主备后再到常规主备；全部尝试失败后才进入现有离线回退。Bundle 始终走常规主机地址。
 
-`EnableUWRTracks` 开启时，YooAsset URL/重试适配层按文件上报统一的 `uwr_request_start/error/end`，并附带 `uwr_download_operation_id`、`uwr_package` 与 `uwr_file_type`。HostPlayMode 的缓存下载成功回调发生在文件校验完成后；WebPlayMode 的内存 Bundle 路径由 YooAsset 在内容校验前回调 HTTP 成功，因此发生校验重试时会以同一 download operation 下的新 UWR 链继续，不能伪造为已经取得最终内容校验成功。
+`EnableUWRTracks` 开启时，YooAsset URL/重试适配层按文件上报统一的 `uwr_request_start/error/end`，并附带 `uwr_download_operation_id`、`uwr_package` 与 `uwr_file_type`。非 WebGL HostPlayMode 的缓存下载成功回调发生在文件校验完成后；WebGL HostPlayMode 的 WebNetwork 内存 Bundle 路径由 YooAsset 在内容校验前回调 HTTP 成功，因此发生校验重试时会以同一 download operation 下的新 UWR 链继续，不能伪造为已经取得最终内容校验成功。
 
 每个文件冻结自己的候选计划，并发下载互不推进。成功域名会作为后续新文件的优先起点；完整失败保留已有成功偏好，只有候选配置已不再包含该域名或 Manager 关闭时清除。普通按需加载仍保持开启；同步加载行为不变。
 
 启动诊断统一使用 `Log.Debug`：输出功能门控状态、白名单文件主备请求结果、命中/未命中结果，以及命中后 `.version` / `.hash` / `.bytes` 的实际请求成功或失败（包含文件名和完整 URL）。命中日志会输出完整 DeviceID，便于现场核对白名单内容；Bundle 请求不会进入这组元数据日志。
 
-HostPlayMode 下如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAsync(version, 60)` 因 DNS、弱网或服务器不可达失败，`AssetManager` 会按 `TryRecoverManifestAsync` 编排的**三级回退链**逐级尝试：
+HostPlayMode 下，如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAsync` 因 DNS、弱网或服务器不可达失败，`AssetManager` 会按平台执行对应回退。`.version` 使用 `CheckTimeout`，`.hash/.bytes` 使用 `ManifestRequestTimeout`；三类元数据共用 Asset 主备轮次、下载重试次数、最近成功域名优先和 UWR 埋点策略。
+
+非 WebGL 平台按 `TryRecoverManifestAsync` 编排的**三级回退链**逐级尝试：
 
 1. **沿用当前已激活清单**：若包已加载过清单（`PackageValid`，如 `RefreshManifestAsync` 弱网场景），并且按当前 `LaunchHotfixTags` 复核启动范围完整，才直接复用；不完整则继续降级。
 2. **本地可启动版本离线加载**（`TryFallbackToLocalBootableManifestAsync`）：读回本地记录的资源版本与 `PackageFilePrefix`。跨 App 版本覆盖安装时，先把旧前缀对应的缓存 Manifest/hash 原子映射为当前前缀文件，再由当前 Host 包加载并按 `LaunchHotfixTags` 复核启动范围。旧版纯版本号记录会扫描缓存中的同版本文件对；候选内容冲突时拒绝猜测并继续降级。
@@ -100,6 +103,10 @@ HostPlayMode 下如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAs
 
 整体优先级是：远端最新清单 → 已激活清单 → 本地可启动版本清单 → 随包内置清单 → 抛出原始远端错误。
 全链路不修改 YooAsset 源码；Nova 兼容层只在前缀迁移时定位并复制 Sandbox 中成对的 Manifest/hash 文件，其余加载与校验仍走 YooAsset API。本地可启动版本回退随 HostPlayMode 默认开启；本地无记录、缓存 Manifest 缺失或当前启动范围不完整时自动降级到内置回退。
+
+WebGL HostPlayMode 保持 `WebServer + WebNetwork` 文件系统拓扑，不使用 Sandbox 或 `System.IO` 回退，也不使用 WebNetwork 的下载判断来证明旧 Manifest 已具备完整启动资源。远端元数据候选耗尽后，Nova 临时把 `.version/.hash/.bytes` 路由到 `StreamingAssets/{YooFolder}/{Package}`，加载随 Player 发布的首包 Manifest，并在成功或失败后立即恢复远端元数据路由。Bundle 地址始终保持常规远端主备；首包内置 Bundle 由 WebServer 命中，未内置 Bundle 可在网络恢复后继续由 WebNetwork 按需加载。回退成功的包本次启动跳过远端热更；`LaunchHotfixTags` 必须覆盖启动必须资源并与首包按 Tag 内置配置一致。
+
+WebGL Bundle 不使用 `IdleTimeout` 字节流入看门狗，而是为每个 WebNetwork Bundle 物理请求应用 `WebGLBundleRequestTimeout` 总超时，默认 300 秒。每个主备候选独立计时，超时后仍按现有候选轮次与重试策略推进；该值不影响 `.version/.hash/.bytes` 的独立超时。
 
 #### 本地可启动版本记录文件（LastBootableVersion）
 
@@ -147,7 +154,7 @@ HostPlayMode 下如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifestAs
 
 `LoadRawSync/Async` 的 Nova 公共签名与调用方式不变，但路径行为不是完全兼容。YooAsset 3.0.5 下内部改为 `AssetHandle + RawFileObject`：`GetBytes()` 从 `RawFileObject` 可靠返回原始内容副本；异步路径尽力从 `EnsureBundleFileAsync` 获取底层 bundle 文件路径，失败不影响字节加载。同步操作无法等待 Ensure，Web/内存文件系统也可能不支持本地路径，所以 `FilePath` 可以为 null。同步、异步、异常与取消路径都由 AssetManager/Adapter 成对释放 `AssetHandle`。仓库检索未发现框架内部的 `IRawFileHandle.FilePath` 消费方；外部消费方需要按新语义复核。
 
-WebPlayMode 使用 3.0.5 的 `WebNetworkFileSystemParameters`。该文件系统不接受 Sandbox 专用的 `DownloadWatchdogTimeout`；HostPlayMode 的 Sandbox 文件系统仍保留 watchdog 配置。
+WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使用 WebServer + WebNetwork 文件系统。WebNetwork 不接受 Sandbox 专用的 `DownloadWatchdogTimeout`，因此使用 `WebGLBundleRequestTimeout` 控制 Bundle 单次请求总时长；非 WebGL HostPlayMode 的 Sandbox 文件系统仍保留 watchdog 配置。
 
 在 Unity Editor 下，如果 `EditorPlayMode` 不是 `EditorSimulateMode`，这些真实 AssetBundle 加载 API 会在资源出句柄前执行一次 **Editor-only shader 重绑**：
 
@@ -156,7 +163,7 @@ WebPlayMode 使用 3.0.5 的 `WebNetworkFileSystemParameters`。该文件系统�
 - `LoadAllSync/Async`
 
 它只把 bundle 反序列化出的 `Material.shader` 按同名 shader 重新绑定到当前 Editor 进程可用的 shader。  
-这个逻辑用于 Host/Offline/Web PlayMode 在 Editor 里预览真实包，避免跨平台 bundle 中的 shader 对象在 Editor 渲染端显示为洋红色块；Player 运行时和 `EditorSimulateMode` 不执行这一步。
+这个逻辑用于 Host/Offline PlayMode 在 Editor 里预览真实包，避免跨平台 bundle 中的 shader 对象在 Editor 渲染端显示为洋红色块；Player 运行时和 `EditorSimulateMode` 不执行这一步。
 
 ### 6. Shutdown：底层资源系统真正的清理点
 
@@ -166,7 +173,7 @@ WebPlayMode 使用 3.0.5 的 `WebNetworkFileSystemParameters`。该文件系统�
 2. `YooAssets.Destroy()`
 3. 清空已加载 Manifest 包集合
 4. 清空已注册包字典
-5. 清空解密器和配置引用
+5. 清空配置引用
 
 这一步之后再调用加载 API，不再成立。
 
@@ -209,7 +216,6 @@ WebPlayMode 使用 3.0.5 的 `WebNetworkFileSystemParameters`。该文件系统�
 - `m_Packages`：已注册的 YooAsset 包
 - `m_ManifestLoadedPackages`：清单幂等集合
 - `m_StartupWhitelistCheckedPackages / m_StartupWhitelistMatchedPackages`：本次进程的白名单检查与命中状态
-- `m_Decryptor`：沙盒文件系统解密器实例
 - `m_Cts`：Manager 生命周期取消源
 
 ## 风险点 / 易错点
@@ -219,7 +225,7 @@ WebPlayMode 使用 3.0.5 的 `WebNetworkFileSystemParameters`。该文件系统�
 - HostPlayMode 远端版本或 Manifest 请求失败时走三级回退链（已激活清单 → 本地可启动版本 → 内置清单）。本地记录位于 `persistentDataPath/Asset/{package}.version`，包含资源版本与文件名前缀，并会按当前启动 Tag 范围复核；首次安装无记录时自动降级内置清单，最终仍保持 HostPlayMode 的 Builtin + Sandbox 文件系统。
 - 大多数 `Load*` API 都默认走 `m_DefaultPackageName`；如果你以为它们支持多包透传，那是错的。
 - Raw 文件内容应通过 `IRawFileHandle.GetBytes()` 获取；`FilePath` 是底层 bundle 路径，不能假定为可直接读取的原始文件路径。
-- Editor 下用 Host/Offline/Web PlayMode 跑真实包时，TMP 或普通材质出现洋红色块，优先检查 shader bundle 与当前 Editor 渲染端是否跨平台；AssetManager 会对已加载资源做同名 shader 重绑，但这只服务编辑器预览，不代表 Player 会走同一套修复路径。
+- Editor 下用 Host/Offline PlayMode 跑真实包时，TMP 或普通材质出现洋红色块，优先检查 shader bundle 与当前 Editor 渲染端是否跨平台；AssetManager 会对已加载资源做同名 shader 重绑，但这只服务编辑器预览，不代表 Player 会走同一套修复路径。
 - `CreateDownloaderByLocations()` 对空数组会直接抛异常；“整包下载”应该用 `CreateDownloader()`。
 - `CreateDownloaderByLocations()` 遇到无效 location 会跳过并记 warning，不会整体失败。
 - `ClearUnusedCacheAsync()` 需要当前 Manifest 已可用，否则“未使用”没有判定基准。

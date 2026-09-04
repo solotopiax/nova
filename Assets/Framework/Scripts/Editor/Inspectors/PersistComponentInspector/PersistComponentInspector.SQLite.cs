@@ -518,6 +518,17 @@ namespace NovaFramework.Editor
                 }
             });
         }
+#else
+        /// <summary>
+        /// WebGL 下保留 SQLite Editor 数据区的可见位置，但不提供本地数据库连接与编辑。
+        /// </summary>
+        private void DrawEditorSQLite()
+        {
+            EditorUtil.Draw.DisabledGroup(true, () =>
+            {
+                DrawClassifyFoldout("SQL_section", "SQLite（Editor）（WebGL 暂不支持）");
+            });
+        }
 #endif
 
         /// <summary>

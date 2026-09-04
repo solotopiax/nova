@@ -14,9 +14,9 @@
       "when": "通过 describe、plan、execute、verify 完成 install-latest 或 upgrade-latest；执行仍需一次性计划和用户确认"
     },
     {
-      "kind": "agent-action-blocked",
+      "kind": "agent-action",
       "entry": "nova.project.upm.uninstall-direct",
-      "when": "direct dependency 卸载已拆为含 Destructive 的独立 Action；当前 MCP 不开放，必须返回可信审批阻断"
+      "when": "需要按确认计划卸载当前 direct dependency 并核验 Resolve 结果时"
     }
   ],
   "inputs": [

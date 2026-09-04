@@ -24,7 +24,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// Nova 版本号。
         /// </summary>
-        public const string Version = "0.6.25";
+        public const string Version = "0.6.26";
 
         /// <summary>
         /// 框架首次启动时记录的 UTC Unix 毫秒时间戳。

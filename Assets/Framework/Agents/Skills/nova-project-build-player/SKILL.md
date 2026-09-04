@@ -21,9 +21,9 @@ Android 还要冻结 APK/AAB/导出工程、SplitApplicationBinary 与签名策�
 
 ## 已有 Action Adapter
 
-Framework 已注册 `nova.project.player.build`，但它同时声明 `Destructive` 与 `ExternalWrite`；当前 MCP 的确认来源仍是 caller-asserted，因此尚未开放。不得伪称可经 `nova_project_action` 调用，也不得用任意 C# 执行绕过。现有 C#/Pipify 入口只作为人工或既有流水线兼容路径；待可信审批通道落地后，本 Skill 再切换到正式 Action。
+Framework 已注册并开放 `nova.project.player.build`。先用 `describe` 读取当前 Schema，再以冻结的 Target、Scene、模式和输出路径执行 `plan -> execute -> verify`；含覆盖或外部路径写入时仍必须使用当前一次性 PlanId 确认。不得退化到 `execute_code`、反射或临时 C#。
 
-当前 MCP 连 `describe` 都只返回已开放 Action，因此这里的 ID 只能从当前 Framework 文档确认，不能从 Tool 读取 Schema，也不能 Plan/Execute。请求真正构建时返回 `blocked` 并明确缺口是“可信审批 + MCP allowlist”，不要退化到 `execute_code`、反射或临时 Pipify。人工或既有 CI 使用底层 C#/Pipify 不属于本 Skill 已完成的 Agent 执行证据。
+用户明确选择项目中已有的完整 Pipify Batch 时，改用已开放的 `nova.project.pipify.run-batch`，传入当前活动 `PipifySettings` GUID 与精确 Batch 名称。Plan 必须展示设置文件 Hash、活动 BuildTarget 和有序 Step/参数快照；Execute 只登记一次异步任务，随后用 recovery token 轮询 Verify。任务失败、断线或 domain reload 后不得自动重放。
 
 ## Artifact → Evidence
 

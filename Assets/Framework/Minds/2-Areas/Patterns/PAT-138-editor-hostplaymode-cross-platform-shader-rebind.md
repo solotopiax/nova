@@ -28,7 +28,7 @@ related:
 
 ## 适用场景（When）
 
-- Unity Editor 中把 `AssetComponent.EditorPlayMode` 手动切到 `HostPlayMode` / `OfflinePlayMode` / `WebPlayMode`，用真实 AssetBundle 预览。
+- Unity Editor 中把 `AssetComponent.EditorPlayMode` 手动切到 `HostPlayMode` / `OfflinePlayMode`，用真实 AssetBundle 预览。
 - 同一界面在 `EditorSimulateMode` 正常，但真实包模式下 TMP 文字或普通材质显示为洋红色块 / 大色块。
 - 正在排查 TMP Dynamic 字体、YooAsset 真实包、内置 shader bundle、平台包之间的交叉问题。
 

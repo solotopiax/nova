@@ -101,6 +101,10 @@ public static BuildReport BuildPackage(BuildTarget target, string outputFolder, 
 - `EditorUserBuildSettings.buildAppBundle`
 - `PlayerSettings.Android.splitApplicationBinary`（核实 API：unity_reflect 确认，非 obsolete 的 `useAPKExpansionFiles`）
 
+**Android Minify / ProGuard 说明：**
+
+启用 Android Minify 时，项目必须同时启用 Unity 的 Custom Proguard File，使 `Assets/Plugins/Android/proguard-user.txt` 被 `mainTemplate.gradle` 的 `**USER_PROGUARD**` 接入构建。Nova 构建预处理会创建或重建该文件，并内置保留 AndroidX Startup、WorkManager 与 Room 生成实现类的启动期反射规则，避免 `InitializationProvider` 在进程绑定阶段初始化 WorkManager 时因 R8 裁剪或改写 Room 实现类而崩溃。
+
 **HybridCLR Development ABI 校验：**
 
 当 HybridCLR 已启用时，`BuildPlayer` 会在调用 `BuildPipeline.BuildPlayer` 前临时将显式参数 `developmentBuild` 镜像到 `EditorUserBuildSettings.development`，再严格校验生成的 `MethodBridge.cpp` 中 `// DEVELOPMENT=0|1` 标记；构建完成、失败或取消后恢复原全局值。

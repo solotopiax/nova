@@ -34,7 +34,7 @@
 
 The default login request asks only for `public_profile`. `email` is not requested by default. Friend lists require an additional `user_friends` request through `EnsureFriendsPermissionAsync`.
 
-Before Android or iOS builds, `FacebookPluginBuildProcessor` copies `FacebookAppId` and `FacebookClientToken` into the Facebook SDK's `FacebookSettings`. Android builds run the Facebook SDK's official `ManifestMod.GenerateManifest()` during Nova's AfterNova preprocess phase, after Nova has materialized its own AndroidManifest.xml changes on disk.
+Before Android or iOS builds, `FacebookPluginBuildProcessor` copies `FacebookAppId` and `FacebookClientToken` into the Facebook SDK's `FacebookSettings`. Android preprocessing also registers Facebook ProGuard rules through `NovaBuildContext` so the Unity Java bridge survives R8/minify. Android builds run the Facebook SDK's official `ManifestMod.GenerateManifest()` during Nova's AfterNova preprocess phase, after Nova has materialized its own AndroidManifest.xml changes on disk.
 
 ## Login Result And Current User
 

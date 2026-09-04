@@ -20,9 +20,20 @@ namespace NovaFramework.Runtime
         public static class Cache
         {
             /// <summary>
-            /// 当前写入缓存目录的绝对路径（每次访问从 Unity Caching API 实时获取）。
+            /// 当前写入缓存目录的绝对路径。
+            /// WebGL 不提供 Unity Caching API，回退到 Unity 的临时缓存目录。
             /// </summary>
-            public static string FolderFullPath => NormalizeSeparator(UnityEngine.Caching.currentCacheForWriting.path);
+            public static string FolderFullPath
+            {
+                get
+                {
+#if UNITY_WEBGL
+                    return NormalizeSeparator(Application.temporaryCachePath);
+#else
+                    return NormalizeSeparator(Caching.currentCacheForWriting.path);
+#endif
+                }
+            }
 
             /// <summary>
             /// 获取缓存目录下指定相对路径的绝对路径。

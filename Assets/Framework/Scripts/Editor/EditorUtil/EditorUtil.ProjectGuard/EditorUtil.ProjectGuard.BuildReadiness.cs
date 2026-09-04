@@ -16,7 +16,9 @@ using HybridCLR.Editor;
 using HybridCLR.Editor.Installer;
 using NovaFramework.Runtime;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using YooAsset;
 using YooAsset.Editor;
 using IOPath = System.IO.Path;
@@ -98,6 +100,7 @@ namespace NovaFramework.Editor
                 ConfigMasterSO master = InspectActiveConfig(target, result, rules);
                 if (master != null)
                 {
+                    InspectSceneChannels(result.enabledScenes, master.ExportTarget, rules);
                     InspectBundle(master, requestedPackageName, result, rules);
                     InspectHybridClr(master, result, rules);
                 }
@@ -224,6 +227,110 @@ namespace NovaFramework.Editor
                     runtimeMatched ? "ConfigRuntimeSO 与当前 ConfigMaster 坐标一致。" : "ConfigRuntimeSO 缺失或导出坐标已漂移。",
                     $"runtime={result.runtimeConfigPath}; coordinate={runtime?.Platform}/{runtime?.Channel}/{runtime?.DevelopMode}");
                 return master;
+            }
+
+            /// <summary>
+            /// 检查已保存场景中的 Asset/App 渠道快照是否与本次导出的 ConfigRuntime 一致。
+            /// </summary>
+            private static void InspectSceneChannels(string[] scenePaths, ConfigRuntimeSO runtime,
+                ICollection<BuildReadinessRule> rules)
+            {
+                if (runtime == null)
+                {
+                    AddRule(rules, "NOVA-BUILD-012", "config", BuildReadinessRuleStatus.Error,
+                        "无法检查场景渠道快照，请先重新导出 ConfigRuntimeSO。",
+                        "ConfigRuntimeSO=null");
+                    return;
+                }
+
+                rules.Add(InspectSceneChannelsForDiagnostics(scenePaths, runtime.Channel));
+            }
+
+            /// <summary>
+            /// 只读打开指定场景并生成渠道快照一致性规则，供构建检查与回归测试共用。
+            /// </summary>
+            internal static BuildReadinessRule InspectSceneChannelsForDiagnostics(
+                string[] scenePaths, ChannelType runtimeChannel)
+            {
+                var evidence = new List<string>();
+                int componentCount = 0;
+                int mismatchCount = 0;
+
+                foreach (string rawPath in scenePaths ?? Array.Empty<string>())
+                {
+                    string path = NormalizePath(rawPath);
+                    if (string.IsNullOrWhiteSpace(path))
+                        continue;
+
+                    Scene scene = default;
+                    try
+                    {
+                        scene = EditorSceneManager.OpenPreviewScene(path);
+                        foreach (GameObject root in scene.GetRootGameObjects())
+                        {
+                            foreach (AssetComponent component in root.GetComponentsInChildren<AssetComponent>(true))
+                            {
+                                InspectComponentChannel(component, path, runtimeChannel,
+                                    evidence, ref componentCount, ref mismatchCount);
+                            }
+                            foreach (AppComponent component in root.GetComponentsInChildren<AppComponent>(true))
+                            {
+                                InspectComponentChannel(component, path, runtimeChannel,
+                                    evidence, ref componentCount, ref mismatchCount);
+                            }
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        mismatchCount++;
+                        evidence.Add($"scene={path}; error={exception.Message}");
+                    }
+                    finally
+                    {
+                        if (scene.IsValid())
+                            EditorSceneManager.ClosePreviewScene(scene);
+                    }
+                }
+
+                if (componentCount == 0 && mismatchCount == 0)
+                {
+                    return CreateRule("NOVA-BUILD-012", "config", BuildReadinessRuleStatus.NotApplicable,
+                        "启用场景中没有可检查的 Asset/App 渠道快照。",
+                        $"runtimeChannel={runtimeChannel}; components=0");
+                }
+
+                bool matched = mismatchCount == 0;
+                return CreateRule("NOVA-BUILD-012", "config",
+                    matched ? BuildReadinessRuleStatus.Pass : BuildReadinessRuleStatus.Error,
+                    matched
+                        ? "场景中的 Asset/App 渠道快照与 ConfigRuntimeSO 一致。"
+                        : "场景渠道快照与 ConfigRuntimeSO 不一致，请在 Nova/Open Config 重新导出并保存场景后再构建。",
+                    $"runtimeChannel={runtimeChannel}; components={componentCount}; mismatches={mismatchCount}; " +
+                    string.Join("; ", evidence));
+            }
+
+            /// <summary>
+            /// 读取单个 Asset/App 组件的隐藏渠道快照并累计一致性证据。
+            /// </summary>
+            private static void InspectComponentChannel(Component component, string scenePath,
+                ChannelType runtimeChannel, ICollection<string> evidence,
+                ref int componentCount, ref int mismatchCount)
+            {
+                componentCount++;
+                var serializedComponent = new SerializedObject(component);
+                SerializedProperty channelProperty = serializedComponent.FindProperty("m_Channel");
+                string componentPath = AnimationUtility.CalculateTransformPath(component.transform, null);
+                if (channelProperty == null)
+                {
+                    mismatchCount++;
+                    evidence.Add($"scene={scenePath}; component={component.GetType().Name}; object={componentPath}; channel=<missing>");
+                    return;
+                }
+
+                var sceneChannel = (ChannelType)channelProperty.enumValueIndex;
+                if (sceneChannel != runtimeChannel)
+                    mismatchCount++;
+                evidence.Add($"scene={scenePath}; component={component.GetType().Name}; object={componentPath}; channel={sceneChannel}");
             }
 
             /// <summary>
@@ -384,14 +491,23 @@ namespace NovaFramework.Editor
             private static void AddRule(ICollection<BuildReadinessRule> rules, string id, string area,
                 BuildReadinessRuleStatus status, string message, string evidence)
             {
-                rules.Add(new BuildReadinessRule
+                rules.Add(CreateRule(id, area, status, message, evidence));
+            }
+
+            /// <summary>
+            /// 创建一条完整、稳定且不含敏感配置值的规则。
+            /// </summary>
+            private static BuildReadinessRule CreateRule(string id, string area,
+                BuildReadinessRuleStatus status, string message, string evidence)
+            {
+                return new BuildReadinessRule
                 {
                     id = id,
                     area = area,
                     status = status.ToString(),
                     message = message ?? string.Empty,
                     evidence = evidence ?? string.Empty,
-                });
+                };
             }
 
             /// <summary>

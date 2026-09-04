@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.Runtime`
 **全局访问**：`Path.Cache`
 
-Unity Caching API 缓存目录路径容器。
+Unity 缓存目录路径容器。WebGL 不提供 `UnityEngine.Caching` API，因此使用 `Application.temporaryCachePath`。
 
 ## § 2 文件表
 
@@ -19,7 +19,7 @@ public static string FolderFullPath { get; }
 public static string GetFileFullPath(string relativePath);
 ```
 
-`FolderFullPath` 为属性（非字段），每次访问从 `UnityEngine.Caching.currentCacheForWriting.path` 实时获取。
+`FolderFullPath` 为属性（非字段）。WebGL 返回 `Application.temporaryCachePath`；其他平台每次访问均从 `UnityEngine.Caching.currentCacheForWriting.path` 实时获取。
 
 ## § 11 使用示例
 

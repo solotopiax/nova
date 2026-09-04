@@ -54,6 +54,7 @@ namespace NovaFramework.Editor
             Availability = AgentActionAvailability.Available;
             ReloadSemantics = attribute.ReloadSemantics;
             Locks = Array.AsReadOnly(attribute.Locks ?? Array.Empty<string>());
+            VerifyLocks = Array.AsReadOnly(attribute.VerifyLocks ?? attribute.Locks ?? Array.Empty<string>());
             RequestType = requestType;
             RequestSchemaJson = requestSchemaJson;
         }
@@ -90,6 +91,11 @@ namespace NovaFramework.Editor
         public AgentActionReloadSemantics ReloadSemantics { get; }
 
         public IReadOnlyList<string> Locks { get; }
+
+        /// <summary>
+        /// Verify 阶段需要取得的资源锁；默认与 Plan、Execute 的 Locks 一致。
+        /// </summary>
+        public IReadOnlyList<string> VerifyLocks { get; }
 
         public string RequestSchemaJson { get; }
 

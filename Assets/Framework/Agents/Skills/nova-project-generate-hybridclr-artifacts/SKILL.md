@@ -29,9 +29,7 @@ description: Use when 已配置 HybridCLR 的 Nova 消费项目需要按明确 a
 
 ## 执行入口
 
-Framework 已注册 `nova.project.hotfix.generate-artifacts`，但该操作会清理/重建 HybridCLR 生成目录与缓存，带 `Destructive` 副作用；当前 MCP 的确认来源仍是 caller-asserted，因此尚未开放。不得伪称可经 `nova_project_action` 调用，也不得用任意 C# 执行绕过。以下直接 C#/既有 Batch 仅保留为人工或既有流水线兼容入口；待可信审批通道落地后再迁移为正式 Action 调用。
-
-当前 MCP 连 `describe` 都只返回已开放 Action，因此这里的 ID 只能从当前 Framework 文档确认，不能从 Tool 读取 Schema，也不能 Plan/Execute。请求真正生成时返回 `blocked` 并明确缺口是“可信审批 + MCP allowlist”，不要退化到 `execute_code`、反射或临时 Pipify。Action 内部已固定 `GenerateAll -> ValidateLinkXml`、锁、漂移检查和恢复验证；人工或既有 CI 运行底层入口不属于本 Skill 已完成的 Agent 执行证据。
+Framework 已注册并开放 `nova.project.hotfix.generate-artifacts`。先用 `describe` 读取当前 Schema，再按冻结的 Target、DevelopmentBuild 与 Config 坐标执行 `plan -> execute -> verify`；清理或重建生成目录仍必须使用当前一次性 PlanId 确认。Action 内部固定 `GenerateAll -> ValidateLinkXml`、锁、漂移检查和恢复验证，不得退化到 `execute_code`、反射或临时 C#。
 
 ## 生成后验证
 

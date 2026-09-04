@@ -1,7 +1,7 @@
 ﻿# Nova Framework - SDK - IAP
 
 > 包名：`com.solotopia.nova.framework.sdk.iap`
-> 当前版本：`0.1.12`
+> 当前版本：`0.1.13`
 
 Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运行期查询、SKU Excel 导入/模板导出、支付事件桥接、Loading 防重入与通用持久化模板。具体渠道能力由子包提供，例如 `com.solotopia.nova.framework.sdk.iap.mobile`。
 
@@ -11,7 +11,7 @@ Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.iap": "0.1.12"
+  "com.solotopia.nova.framework.sdk.iap": "0.1.13"
 }
 ```
 

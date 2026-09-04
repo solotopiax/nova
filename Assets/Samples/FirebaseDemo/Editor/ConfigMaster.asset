@@ -197,7 +197,7 @@ MonoBehaviour:
   AotMetadataDlls: []
   GameDlls: []
   CurrentDevelopMode: 0
-  CurrentPlatform: 1
+  m_LegacyCurrentPlatform: 1
   CurrentChannel: 2
   ExportTarget: {fileID: 11400000, guid: c8164398995c4aa2a40c29c31bfd6bb7, type: 2}
   m_Entries:

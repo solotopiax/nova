@@ -8,10 +8,13 @@
  * descrip:   第三方支付 URL 构造工具
  ***************************************************************/
 
+using System;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
+using NovaFramework.Runtime;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
@@ -89,6 +92,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 最终 ThirdPay 支付页是否由系统外部浏览器打开。
         /// </summary>
         public bool IsExternalBrowser;
+
+        /// <summary>
+        /// 支付页是否显示返回键。
+        /// </summary>
+        public bool ShowBackButton;
     }
 
     /// <summary>
@@ -142,6 +150,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 { "order_id", payload.ClientOrderId ?? string.Empty },
                 { "platform", payload.Platform ?? string.Empty },
                 { "is_external_browser", payload.IsExternalBrowser },
+                { "show_back_button", payload.ShowBackButton },
                 { "custom_param", customParam },
             };
             if (!string.IsNullOrEmpty(payload.ChannelParams))
@@ -159,7 +168,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             string paymentUrl = $"{baseUrl.TrimEnd('/')}/?lang={Escape(language)}&params={Escape(encrypted)}&app_id={payload.AppId.ToString(CultureInfo.InvariantCulture)}";
             // 支付审计日志用于核对跳转前的明文、密文和最终 URL。
-            LogDebug($"第三方支付跳转参数：加密前={plaintext}；加密后={encrypted}；URL={paymentUrl}");
+            LogDebug($"第三方支付跳转参数：加密前={plaintext}");
+            LogDebug($"第三方支付跳转参数：加密后={encrypted}");
+            LogDebug($"第三方支付跳转参数：URL={paymentUrl}");
             return paymentUrl;
         }
 
@@ -171,6 +182,81 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private static string Escape(string value)
         {
             return Uri.EscapeDataString(value ?? string.Empty);
+        }
+    }
+
+    /// <summary>
+    /// ThirdPay 支付 URL 参数动态 AES 加密工具。
+    /// </summary>
+    internal static class ThirdPayDynamicAesEncryptor
+    {
+        /// <summary>
+        /// AES Key / IV 固定长度：16 字节。
+        /// </summary>
+        private const int c_SecretBytesLength = 16;
+
+        /// <summary>
+        /// 生成可作为 UTF-8 单字节字符传给 Util.Encrypt.AES 的随机范围。
+        /// </summary>
+        private const int c_RandomAsciiMin = 33;
+
+        /// <summary>
+        /// 生成可作为 UTF-8 单字节字符传给 Util.Encrypt.AES 的随机范围。
+        /// </summary>
+        private const int c_RandomAsciiMaxExclusive = 127;
+
+        /// <summary>
+        /// 将 ThirdPay 支付参数 AES 加密为 Base64 文本。
+        /// </summary>
+        /// <param name="content">明文字符串。</param>
+        /// <returns>key + iv + cipher 的整体 Base64。</returns>
+        public static string EncodeToBase64(string content)
+        {
+            byte[] keyArray = GetRandomSecretBytes();
+            byte[] ivArray = GetRandomSecretBytes();
+            string key = Encoding.ASCII.GetString(keyArray);
+            string iv = Encoding.ASCII.GetString(ivArray);
+            byte[] resultArray = Util.Encrypt.AES.EncryptBytes(Encoding.UTF8.GetBytes(content ?? string.Empty), key, iv);
+
+            int prefixLength = c_SecretBytesLength * 2;
+            byte[] output = new byte[prefixLength + resultArray.Length];
+            int offset = 0;
+            Buffer.BlockCopy(keyArray, 0, output, offset, keyArray.Length);
+            offset += keyArray.Length;
+            Buffer.BlockCopy(ivArray, 0, output, offset, ivArray.Length);
+            offset += ivArray.Length;
+            Buffer.BlockCopy(resultArray, 0, output, offset, resultArray.Length);
+            return Convert.ToBase64String(output);
+        }
+
+        /// <summary>
+        /// 获取随机密钥 16 字节。
+        /// </summary>
+        /// <returns>随机 Key 或 IV 字节数组。</returns>
+        public static byte[] GetRandomSecretBytes()
+        {
+            byte[] bytes = new byte[c_SecretBytesLength];
+            byte[] randomBytes = new byte[c_SecretBytesLength];
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomBytes);
+            }
+
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = (byte)(c_RandomAsciiMin + randomBytes[i] % (c_RandomAsciiMaxExclusive - c_RandomAsciiMin));
+            }
+
+            return bytes;
+        }
+
+        /// <summary>
+        /// 获取随机密钥 16 字符。
+        /// </summary>
+        /// <returns>随机 Key 或 IV 字符串。</returns>
+        public static string GetRandomSecretString()
+        {
+            return Encoding.ASCII.GetString(GetRandomSecretBytes());
         }
     }
 }

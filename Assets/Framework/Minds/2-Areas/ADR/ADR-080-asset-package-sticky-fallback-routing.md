@@ -63,7 +63,7 @@ App、Asset 与业务协议现在需要共享同一种候选规划机制，同�
 ### 4. 最近成功域名按 Package 和请求类型隔离
 
 - Bundle 与版本元数据分别维护最近成功域名，避免不同地址族相互污染。
-- 启动白名单文件按 Package 单独维护偏好。
+- 启动白名单文件按 Package 单独维护偏好，并使用白名单专属的轮数、重试、最近成功、埋点与超时配置。
 - 完整失败不清除已有偏好；配置候选不再包含旧域名或 Manager 关闭时才失效。
 
 ### 5. 保持 YooAsset 边界
@@ -75,11 +75,11 @@ App、Asset 与业务协议现在需要共享同一种候选规划机制，同�
 
 ### 6. 超时与埋点
 
-- 启动白名单和 `.version` 使用 `CheckTimeout`。
-- `.hash/.bytes` Manifest 保持固定 60 秒。
-- Bundle 保持 `IdleTimeout`（Inspector 中文名称仍为“单文件字节流入超时”）。
+- 启动白名单使用独立的 `StartupWhitelistCheckTimeout`；`.version` 使用普通 Asset `CheckTimeout`。
+- `.hash/.bytes` Manifest 使用独立的 `ManifestRequestTimeout`，默认 60 秒。
+- 非 WebGL Bundle 使用 `IdleTimeout`（Inspector 中文名称为“单文件字节流入超时”）；WebGL WebNetwork 无可靠字节流入看门狗，改用独立的 `WebGLBundleRequestTimeout` 单次物理请求总超时，默认 300 秒。Inspector 按当前 BuildTarget 互斥启用两项配置。
 - 开启 `EnableUWRTracks` 后，每个文件按 `1 uwr_request_start → 0～N uwr_request_error → 1 uwr_request_end` 上报；显式下载器内多个文件通过 `uwr_download_operation_id` 聚合。
-- HostPlayMode 缓存下载可在文件校验完成后闭环；WebPlayMode 内存 Bundle 可能在内容校验前收到成功回调，校验重试会在同一 download operation 下产生新的 UWR chain。
+- 非 WebGL HostPlayMode 的缓存下载可在文件校验完成后闭环；WebGL HostPlayMode 的 WebNetwork 内存 Bundle 可能在内容校验前收到成功回调，校验重试会在同一 download operation 下产生新的 UWR chain。
 
 ## 后果（Consequences）
 
@@ -93,7 +93,7 @@ App、Asset 与业务协议现在需要共享同一种候选规划机制，同�
 
 - 已知主域名故障时，不同文件仍可能各自命中该域名；最近成功优先用于降低重复失败，但不会删除另一候选。
 - `C × R × (K + 1)` 会线性放大最坏请求耗时，配置时必须结合每次物理请求超时评估。
-- WebPlayMode 无法可靠把底层 HTTP 成功与最终内容校验合并成唯一 UWR chain，只能使用 download operation 关联。
+- WebGL HostPlayMode 的 WebNetwork 路径无法可靠把底层 HTTP 成功与最终内容校验合并成唯一 UWR chain，只能使用 download operation 关联。
 
 ## 被排除的方案（Alternatives）
 

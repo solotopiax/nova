@@ -19,19 +19,17 @@ description: Use when Nova 项目组在接入或升级 Android SDK/Kit 后，需
 
 固定写入边界仅包括 EDM4U 状态文件、`Assets/GeneratedLocalRepo/**`、`Assets/Plugins/Android/**` 中 EDM4U 管理的依赖文件与 Gradle/Manifest 模板。仓库 URL 只进入 SHA-256 摘要，不能把私有 Maven 地址、userinfo、query Token 或凭据写入 Plan、Receipt、日志或报告。
 
-## 执行入口与当前阻断
+## 执行入口
 
-Framework 已注册 `nova.project.android.resolve-dependencies`，类型为 `Generate`。它会通过 EDM4U Force Resolve 删除或替换既有受管输出，因此声明 `Destructive` 与精确确认门；当前 MCP 可信审批通道尚未完成，`nova_project_action` 不开放该 ID。
+Framework 已注册并开放 `nova.project.android.resolve-dependencies`，类型为 `Generate`。它会通过 EDM4U Force Resolve 删除或替换既有受管输出，因此仍声明 `Destructive` 与精确确认门；不得退化为 `execute_code`、反射、菜单模拟、临时 C# 或直接删除 `GeneratedLocalRepo`。
 
-交互 Agent 不能通过 MCP `describe / plan / execute` 调用本 Action，也不能退化为 `execute_code`、反射、菜单模拟、临时 C# 或直接删除 `GeneratedLocalRepo`。用户真正要求执行时，当前结果必须为 `blocked`，并明确缺口是“可信审批通道 + MCP allowlist”。底层 C# 或既有 Pipify 入口仅供 Framework、人工或已授权 CI 使用，不构成本 Skill 的 Agent 执行证据。
-
-待可信审批开放后，正式流程必须保持：
+正式流程必须保持：
 
 1. `describe` 当前 Schema，按冻结的 Android Target 建立只读 Plan；Plan 冻结依赖图摘要和精确写入集。
 2. 用户确认绑定该 Plan 后只执行一次 Force Resolve。依赖图漂移、返回失败、异常或 domain reload 都不得自动重放。
 3. 正常 Execute Receipt 再进入 Verify，核对当前依赖图、`AndroidResolverDependencies.xml`、全部受管文件和 `GeneratedLocalRepo` SHA-256。
 4. domain reload 后只有缺少成功标记的 Recovery Receipt 时最高为 `partial`；不能凭目录存在推断成功。
 
-只有依赖图、解析状态、完整受管文件集合和 Artifact 摘要全部一致，且 Action Verify 返回完整证据时才报告 `success`。当前 MCP 未开放时返回 `blocked`；人工或 CI 已经执行但只有部分可信证据时为 `partial`。需要安装 SDK/Kit 时先走 `nova-project-onboard-sdk-kit`；已经失败的 Player/Gradle 构建诊断走 `nova-project-diagnose-build`。
+只有依赖图、解析状态、完整受管文件集合和 Artifact 摘要全部一致，且 Action Verify 返回完整证据时才报告 `success`。Tool 缺失、Action 未注册或输入不完整时返回 `blocked`；人工或 CI 已经执行但只有部分可信证据时为 `partial`。需要安装 SDK/Kit 时先走 `nova-project-onboard-sdk-kit`；已经失败的 Player/Gradle 构建诊断走 `nova-project-diagnose-build`。
 
 不默认修改 UPM、Config、业务源码、Gradle 业务自定义、Manifest 业务节点、HybridCLR、Bundle/Player、设备、厂商后台、凭据、外部系统或 Git。

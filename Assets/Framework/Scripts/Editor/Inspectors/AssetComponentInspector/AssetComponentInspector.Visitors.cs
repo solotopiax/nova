@@ -52,11 +52,6 @@ namespace NovaFramework.Editor
         private SerializedProperty m_DefaultPackageName;
 
         /// <summary>
-        /// 资源解密器类型。
-        /// </summary>
-        private SerializedProperty m_DecryptorType;
-
-        /// <summary>
         /// 场景卸载时是否自动清理。
         /// </summary>
         private SerializedProperty m_AutoCleanupOnSceneUnload;
@@ -112,6 +107,31 @@ namespace NovaFramework.Editor
         /// Release 白名单版本元数据备用根 URL。
         /// </summary>
         private SerializedProperty m_StartupWhitelistMetadataRootUrlFallbackRelease;
+
+        /// <summary>
+        /// 启动白名单主备完整轮数。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistFallbackRoundCount;
+
+        /// <summary>
+        /// 启动白名单请求重试次数。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistRetryRequestCount;
+
+        /// <summary>
+        /// 启动白名单是否优先最近成功域名。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistPreferLastSuccessfulHost;
+
+        /// <summary>
+        /// 是否启用启动白名单 UWR 埋点。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistEnableUWRTracks;
+
+        /// <summary>
+        /// 启动白名单请求超时（秒）。
+        /// </summary>
+        private SerializedProperty m_StartupWhitelistCheckTimeout;
 
         /// <summary>
         /// Debug 主机服务器地址 URL。
@@ -172,6 +192,16 @@ namespace NovaFramework.Editor
         /// 版本检查超时（秒）。
         /// </summary>
         private SerializedProperty m_CheckTimeout;
+
+        /// <summary>
+        /// Manifest 请求总超时（秒）。
+        /// </summary>
+        private SerializedProperty m_ManifestRequestTimeout;
+
+        /// <summary>
+        /// WebGL Bundle 请求超时（秒）。
+        /// </summary>
+        private SerializedProperty m_WebGLBundleRequestTimeout;
 
         /// <summary>
         /// 单文件字节流入超时（秒）。

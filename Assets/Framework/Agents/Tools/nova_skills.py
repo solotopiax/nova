@@ -61,8 +61,8 @@ ACTION_ADAPTER_KINDS = {
     "workspace-edit",
     "workspace-inspection",
 }
-# Action Adapter 的 entry 不是任意命令。只有这两类声明才表示 Framework 已注册的
-# Nova Project Action；blocked 仍保留真实 Action 身份，供路由明确返回 blocked。
+# Action Adapter 的 entry 不是任意命令。只有这两类声明才表示 Framework Project Action；
+# 已注册 Action 默认必须使用 agent-action 并进入 MCP 显式白名单。
 AGENT_ACTION_ADAPTER_KINDS = {"agent-action", "agent-action-blocked"}
 AGENT_ACTION_ID_PATTERN = re.compile(
     r"^nova\.project\.[a-z0-9]+(?:-[a-z0-9]+)*\.[a-z0-9]+(?:-[a-z0-9]+)*$"
@@ -813,6 +813,18 @@ def validate_agents_root(agents_root: Path) -> list[str]:
         except NovaSkillsError as exc:
             errors.append(str(exc))
         else:
+            missing_exposure = sorted(registered_action_ids - exposed_action_ids)
+            stale_exposure = sorted(exposed_action_ids - registered_action_ids)
+            if missing_exposure:
+                errors.append(
+                    "Framework 已注册 Project Action 未完整进入 MCP ExposurePolicy："
+                    + ", ".join(missing_exposure)
+                )
+            if stale_exposure:
+                errors.append(
+                    "MCP ExposurePolicy 包含未注册 Project Action："
+                    + ", ".join(stale_exposure)
+                )
             for skill_id, contract in contracts:
                 errors.extend(
                     _validate_agent_action_adapters(

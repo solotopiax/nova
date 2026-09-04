@@ -8,12 +8,18 @@
  * descrip:   UI 管理器 - 成员变量（字段、属性）
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 
 namespace NovaFramework.Runtime
 {
     internal sealed partial class UIManager : UIManagerBase
     {
+        /// <summary>
+        /// 异步打开视图失败事件，参数依次为视图序列编号、资源地址和错误信息。
+        /// </summary>
+        public override event Action<int, string, string> OnOpenUIViewFail;
+
         /// <summary>
         /// 安全区域数据提供者，由 Initialize 从 config 读取，为 null 时使用默认实现。
         /// </summary>

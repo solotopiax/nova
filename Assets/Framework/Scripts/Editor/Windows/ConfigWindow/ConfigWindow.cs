@@ -87,7 +87,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 按 Guard 报告的坐标统一绑定设计态来源、编辑平台、渠道/模式与左树目标。
         /// </summary>
-        private static void OpenConfigSection(ConfigMasterSO master, PlatformType platform,
+        private static ConfigWindow OpenConfigSection(ConfigMasterSO master, PlatformType platform,
             ChannelType channel, DevelopMode developMode, LeftTreeItem target, Type configType)
         {
             ConfigWindow window = GetWindow<ConfigWindow>(false, c_WindowTitle, true);
@@ -114,6 +114,7 @@ namespace NovaFramework.Editor
             window.m_SelectedPluginType = configType;
             window.Focus();
             window.Repaint();
+            return window;
         }
 
         /// <summary>
@@ -128,26 +129,5 @@ namespace NovaFramework.Editor
             window.m_SelectedItem = LeftTreeItem.LubanEnv;
         }
 
-        /// <summary>
-        /// EditorWindow 原生关窗"保存"回调（hasUnsavedChanges 为 true 时触发）：
-        /// 将 WorkingCopy 通过 CopySerialized 写回真实资产后调基类完成流程。
-        /// hasUnsavedChanges / saveChangesMessage 是 EditorWindow 可写普通属性，在 OnGUI 每帧同步写入。
-        /// </summary>
-        public override void SaveChanges()
-        {
-            CommitWorkingCopyToAsset();
-            base.SaveChanges();
-        }
-
-        /// <summary>
-        /// EditorWindow 原生关窗"不保存"回调：销毁 WorkingCopy、清除脏标记后调基类。
-        /// OnDisable 紧随其后销毁窗口，无需重建副本（P4 清理：移除多余的 RebuildWorkingCopy）。
-        /// </summary>
-        public override void DiscardChanges()
-        {
-            DestroyWorkingCopy();
-            m_IsDirty = false;
-            base.DiscardChanges();
-        }
     }
 }

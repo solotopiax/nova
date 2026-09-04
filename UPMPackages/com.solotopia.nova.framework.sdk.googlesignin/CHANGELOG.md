@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.0.20] - 2026-09-04
+
+### Changed
+
+- GoogleSigninDemo 适配 Framework `0.6.26` 的 `IUIManager.OnOpenUIViewFail` 事件；最低 Framework 依赖同步提升至 `0.6.26`。
+- Android consumer ProGuard 补充 Google Sign-In 相关类型的保留规则。
+
 ## [0.0.19] - 2026-09-02
 
 ### Changed

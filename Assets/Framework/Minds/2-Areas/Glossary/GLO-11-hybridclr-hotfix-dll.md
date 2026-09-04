@@ -29,7 +29,7 @@ HybridCLR 是 Nova 的热更运行时方案，用于在 IL2CPP 下运行时加�
 ## 边界
 
 - 启动必经 `ProcedureSplash -> ProcedureCheckVersion`；版本检查随后按结果进入 `ProcedureAppDownload`、`ProcedureHotfix` 或直接进入 `ProcedureLoadDll`，检查异常时也降级进入 `ProcedureLoadDll`。`ProcedureLoadDll` 是业务 DLL 加载的唯一入口。
-- `EnableHotfix` 位于 `AssetComponent / AssetManagerConfig`，是热更主开关（ADR-013）：false ⇔ `OfflinePlayMode`，true ⇔ Host/WebPlayMode。
+- `EnableHotfix` 位于 `AssetComponent / AssetManagerConfig`，是热更主开关（ADR-013）：false ⇔ `OfflinePlayMode`，true ⇔ `HostPlayMode`；WebGL 由平台适配层选择 Web 文件系统。
 - `Util.HybridCLR` 是运行时加载工具；`EditorUtil.HybridCLR` 是编辑器复制与校验工具，两者职责不混用。
 - AOT metadata 的复制发生在 BuildPlayer 之后（ADR-028）；热更程序集命名空间遵循单一写入路径（ADR-005）。
 

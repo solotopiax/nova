@@ -118,9 +118,19 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            m_UIViewsBeingLoaded.Remove(openUIViewInfo.SerialID);
+            int serialID = openUIViewInfo.SerialID;
+            m_UIViewsBeingLoaded.Remove(serialID);
             ReferencePool.Put(openUIViewInfo);
             Log.Error(LogTag.UI, "加载视图失败，Asset 地址 '{0}'：{1}", assetLocation, errorMessage);
+
+            try
+            {
+                OnOpenUIViewFail?.Invoke(serialID, assetLocation, errorMessage);
+            }
+            catch (Exception exception)
+            {
+                Log.Error(LogTag.UI, "处理异步打开视图失败事件时发生异常，序列编号 '{0}'：{1}", serialID, exception);
+            }
         }
 
         /// <summary>

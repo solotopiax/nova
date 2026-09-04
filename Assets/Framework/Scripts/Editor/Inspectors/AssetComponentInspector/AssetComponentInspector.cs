@@ -40,7 +40,6 @@ namespace NovaFramework.Editor
             // 仅首次选中时默认展开列表，之后尊重用户的折叠操作（不在 OnInspectorGUI 内每帧强制，否则折叠箭头点击无效）
             m_Packages.isExpanded = true;
             m_DefaultPackageName = serializedObject.FindProperty("m_DefaultPackageName");
-            m_DecryptorType = serializedObject.FindProperty("m_DecryptorType");
             m_AutoCleanupOnSceneUnload = serializedObject.FindProperty("m_AutoCleanupOnSceneUnload");
 
             // ④ 热更配置（开关 + 服务器分发 + 下载行为）
@@ -54,6 +53,11 @@ namespace NovaFramework.Editor
             m_StartupWhitelistMetadataRootUrlFallbackDebug = serializedObject.FindProperty("m_StartupWhitelistMetadataRootUrlFallbackDebug");
             m_StartupWhitelistMetadataRootUrlRelease = serializedObject.FindProperty("m_StartupWhitelistMetadataRootUrlRelease");
             m_StartupWhitelistMetadataRootUrlFallbackRelease = serializedObject.FindProperty("m_StartupWhitelistMetadataRootUrlFallbackRelease");
+            m_StartupWhitelistFallbackRoundCount = serializedObject.FindProperty("m_StartupWhitelistFallbackRoundCount");
+            m_StartupWhitelistRetryRequestCount = serializedObject.FindProperty("m_StartupWhitelistRetryRequestCount");
+            m_StartupWhitelistPreferLastSuccessfulHost = serializedObject.FindProperty("m_StartupWhitelistPreferLastSuccessfulHost");
+            m_StartupWhitelistEnableUWRTracks = serializedObject.FindProperty("m_StartupWhitelistEnableUWRTracks");
+            m_StartupWhitelistCheckTimeout = serializedObject.FindProperty("m_StartupWhitelistCheckTimeout");
             m_HostServerUrlDebug = serializedObject.FindProperty("m_HostServerUrlDebug");
             m_HostServerUrlFallbackDebug = serializedObject.FindProperty("m_HostServerUrlFallbackDebug");
             m_HostServerUrlRelease = serializedObject.FindProperty("m_HostServerUrlRelease");
@@ -66,6 +70,8 @@ namespace NovaFramework.Editor
             m_PreferLastSuccessfulHost = serializedObject.FindProperty("m_PreferLastSuccessfulHost");
             m_EnableUWRTracks = serializedObject.FindProperty("m_EnableUWRTracks");
             m_CheckTimeout = serializedObject.FindProperty("m_CheckTimeout");
+            m_ManifestRequestTimeout = serializedObject.FindProperty("m_ManifestRequestTimeout");
+            m_WebGLBundleRequestTimeout = serializedObject.FindProperty("m_WebGLBundleRequestTimeout");
             m_IdleTimeout = serializedObject.FindProperty("m_IdleTimeout");
             m_LaunchHotfixTags = serializedObject.FindProperty("m_LaunchHotfixTags");
             m_AutoClearUnusedCacheOnHotfix = serializedObject.FindProperty("m_AutoClearUnusedCacheOnHotfix");

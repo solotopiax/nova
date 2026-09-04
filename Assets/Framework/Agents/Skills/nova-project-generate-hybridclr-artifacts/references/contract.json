@@ -9,9 +9,9 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "agent-action-blocked",
+      "kind": "agent-action",
       "entry": "nova.project.hotfix.generate-artifacts",
-      "when": "已冻结 HybridCLR 生成输入；该 Action 当前未在 MCP ExposurePolicy 中，必须返回 blocked"
+      "when": "已冻结 HybridCLR 生成输入并需要生成及核验预构建产物时"
     }
   ],
   "inputs": [

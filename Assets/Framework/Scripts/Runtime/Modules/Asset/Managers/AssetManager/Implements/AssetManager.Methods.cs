@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 using YooAsset;
 
 namespace NovaFramework.Runtime
@@ -72,7 +73,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 判断当前模式是否允许请求远端资源版本。
-        /// Host/Web 模式允许；Offline/EditorSimulate 直接返回 null。
+        /// Host 模式允许；Offline/EditorSimulate 直接返回 null。
         /// </summary>
         private bool CanRequestLatestPackageVersion(string package)
         {
@@ -84,7 +85,7 @@ namespace NovaFramework.Runtime
             AssetPlayMode effectiveMode = Application.isEditor
                 ? m_Config.EditorPlayMode
                 : m_Config.RuntimePlayMode;
-            return effectiveMode == AssetPlayMode.HostPlayMode || effectiveMode == AssetPlayMode.WebPlayMode;
+            return effectiveMode == AssetPlayMode.HostPlayMode;
         }
 
         /// <summary>
@@ -160,14 +161,15 @@ namespace NovaFramework.Runtime
                 HttpFallbackExecutionPlan fallbackPlan = BuildStartupWhitelistPlan(
                     package, primaryUrl, fallbackUrl);
                 HttpFallbackExecutionCursor cursor = fallbackPlan.CreateCursor();
-                bool shouldTrack = m_Config.EnableUWRTracks && m_HttpManager is IPhysicalHttpManager;
+                bool shouldTrack = m_Config.StartupWhitelistEnableUWRTracks
+                                   && m_HttpManager is IPhysicalHttpManager;
                 string chainId = UwrNetworkTelemetry.CreateChainId();
                 string downloadOperationId = UwrNetworkTelemetry.CreateChainId();
                 Stopwatch chainStopwatch = Stopwatch.StartNew();
                 var firstStep = new HttpFallbackStep(
                     fallbackPlan.Candidates[0], 0, 0, 0, fallbackPlan.CandidateCount, 0L);
                 UwrNetworkTelemetry.TrackAssetStart(
-                    shouldTrack, chainId, firstStep.Candidate.Url, m_Config.CheckTimeout,
+                    shouldTrack, chainId, firstStep.Candidate.Url, m_Config.StartupWhitelistCheckTimeout,
                     fallbackPlan, firstStep, downloadOperationId, package, "startup_whitelist");
                 List<string> whitelist = null;
                 bool hasValidWhitelist = false;
@@ -189,11 +191,11 @@ namespace NovaFramework.Runtime
                     {
                         cursor.Cancel();
                         UwrNetworkTelemetry.TrackAssetError(
-                            shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                            shouldTrack, chainId, url, m_Config.StartupWhitelistCheckTimeout, fallbackPlan, step,
                             sendStopwatch.ElapsedMilliseconds, 0L, "Cancelled", "request_aborted_by_client",
                             downloadOperationId, package, "startup_whitelist");
                         UwrNetworkTelemetry.TrackAssetEnd(
-                            shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                            shouldTrack, chainId, url, m_Config.StartupWhitelistCheckTimeout, fallbackPlan, step,
                             attemptsStarted, sendStopwatch.ElapsedMilliseconds, chainStopwatch.ElapsedMilliseconds,
                             false, 0L, "Cancelled", "request_aborted_by_client",
                             downloadOperationId, package, "startup_whitelist");
@@ -207,7 +209,7 @@ namespace NovaFramework.Runtime
                             GetStartupWhitelistPreferenceScope(package),
                             step.Candidate.EndpointId);
                         UwrNetworkTelemetry.TrackAssetEnd(
-                            shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                            shouldTrack, chainId, url, m_Config.StartupWhitelistCheckTimeout, fallbackPlan, step,
                             attemptsStarted, sendStopwatch.ElapsedMilliseconds, chainStopwatch.ElapsedMilliseconds,
                             true, result.StatusCode, null, null,
                             downloadOperationId, package, "startup_whitelist");
@@ -217,7 +219,7 @@ namespace NovaFramework.Runtime
                         ? "content_verification_failed"
                         : null;
                     UwrNetworkTelemetry.TrackAssetError(
-                        shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                        shouldTrack, chainId, url, m_Config.StartupWhitelistCheckTimeout, fallbackPlan, step,
                         sendStopwatch.ElapsedMilliseconds, result.StatusCode, result.Error, leafErrorCode,
                         downloadOperationId, package, "startup_whitelist");
                     if (!result.Succeeded
@@ -225,7 +227,7 @@ namespace NovaFramework.Runtime
                     {
                         cursor.CompleteCurrent();
                         UwrNetworkTelemetry.TrackAssetEnd(
-                            shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                            shouldTrack, chainId, url, m_Config.StartupWhitelistCheckTimeout, fallbackPlan, step,
                             attemptsStarted, sendStopwatch.ElapsedMilliseconds, chainStopwatch.ElapsedMilliseconds,
                             false, result.StatusCode, result.Error, leafErrorCode,
                             downloadOperationId, package, "startup_whitelist");
@@ -238,7 +240,7 @@ namespace NovaFramework.Runtime
                     if (cursor.State == HttpFallbackExecutionState.Exhausted)
                     {
                         UwrNetworkTelemetry.TrackAssetEnd(
-                            shouldTrack, chainId, url, m_Config.CheckTimeout, fallbackPlan, step,
+                            shouldTrack, chainId, url, m_Config.StartupWhitelistCheckTimeout, fallbackPlan, step,
                             attemptsStarted, sendStopwatch.ElapsedMilliseconds, chainStopwatch.ElapsedMilliseconds,
                             false, result.StatusCode, result.Error, leafErrorCode,
                             downloadOperationId, package, "startup_whitelist");
@@ -310,7 +312,7 @@ namespace NovaFramework.Runtime
             AssetPlayMode effectiveMode = Application.isEditor
                 ? m_Config.EditorPlayMode
                 : m_Config.RuntimePlayMode;
-            return effectiveMode == AssetPlayMode.HostPlayMode || effectiveMode == AssetPlayMode.WebPlayMode;
+            return effectiveMode == AssetPlayMode.HostPlayMode;
         }
 
         /// <summary>
@@ -334,8 +336,8 @@ namespace NovaFramework.Runtime
             try
             {
                 response = m_HttpManager is IPhysicalHttpManager physicalHttpManager
-                    ? await physicalHttpManager.GetPhysicalAsync(url, m_Config.CheckTimeout, null, ct)
-                    : await m_HttpManager.DownloadTextAsync(url, m_Config.CheckTimeout, null, ct);
+                    ? await physicalHttpManager.GetPhysicalAsync(url, m_Config.StartupWhitelistCheckTimeout, null, ct)
+                    : await m_HttpManager.DownloadTextAsync(url, m_Config.StartupWhitelistCheckTimeout, null, ct);
                 if (response == null || !response.IsSuccess || string.IsNullOrWhiteSpace(response.Body))
                 {
                     int statusCode = response?.StatusCode ?? 0;
@@ -386,9 +388,9 @@ namespace NovaFramework.Runtime
             string scope = GetStartupWhitelistPreferenceScope(package);
             HttpFallbackPreferenceSnapshot preference = m_StartupWhitelistPreferenceStore.Capture(scope);
             var policy = new HttpFallbackPolicy(
-                Math.Max(1, m_Config.FallbackRoundCount),
-                Math.Max(0, m_Config.RetryDownloadCount),
-                m_Config.PreferLastSuccessfulHost);
+                Math.Max(1, m_Config.StartupWhitelistFallbackRoundCount),
+                Math.Max(0, m_Config.StartupWhitelistRetryRequestCount),
+                m_Config.StartupWhitelistPreferLastSuccessfulHost);
             HttpFallbackExecutionPlan plan = HttpFallbackPlanner.Build(
                 new[] { primaryUrl, fallbackUrl }, policy, preference);
             if (preference.HasValue && !PlanContainsEndpoint(plan, preference.EndpointId))
@@ -561,23 +563,6 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 获取一次白名单版本元数据请求应覆盖的候选地址数量。
-        /// </summary>
-        /// <param name="remote">当前资源包的远端寻址服务。</param>
-        /// <param name="package">资源包名。</param>
-        /// <returns>真实版本文件名对应的候选地址数量，最少为 1。</returns>
-        private int GetMetadataRequestAttemptCount(AssetRemoteService remote, string package)
-        {
-            string versionFileName = YooAssetConfiguration.GetPackageVersionFileName(package);
-            int candidateCount = Math.Max(1, remote.GetRemoteUrls(versionFileName).Count);
-            int physicalRetryCount = AssetDownloadUrlPolicy.CalculatePhysicalRetryCount(
-                candidateCount,
-                m_Config.FallbackRoundCount,
-                m_Config.RetryDownloadCount);
-            return physicalRetryCount == int.MaxValue ? int.MaxValue : physicalRetryCount + 1;
-        }
-
-        /// <summary>
         /// 把指定包的逻辑重试次数换算成 YooAsset Bundle 下载器使用的物理重试次数。
         /// </summary>
         private int GetBundlePhysicalRetryCount(string package, int logicalRetryCount)
@@ -605,7 +590,8 @@ namespace NovaFramework.Runtime
                     m_Config.EnableUWRTracks,
                     package,
                     m_Config.CheckTimeout,
-                    m_Config.IdleTimeout);
+                    GetBundleRequestTimeout(),
+                    m_Config.ManifestRequestTimeout);
                 m_DownloadUrlPolicies.Add(package, policy);
             }
             return policy;
@@ -619,24 +605,21 @@ namespace NovaFramework.Runtime
             string packageName,
             CancellationToken ct)
         {
-            int attempts = GetMetadataRequestAttemptCount(CreateRemoteService(packageName), packageName);
             RequestPackageVersionOperation operation = null;
-            for (int i = 0; i < attempts; i++)
+            while (true)
             {
                 AssetDownloadUrlPolicy policy = GetOrCreateDownloadUrlPolicy(packageName);
-                long failureGeneration = policy.FailureGeneration;
                 policy.BeginMetadataRequest();
                 operation = package.RequestPackageVersionAsync(
                     new RequestPackageVersionOptions(true, m_Config.CheckTimeout));
                 await UniTask.WaitUntil(() => operation.IsDone, cancellationToken: ct);
-                policy.CompleteMetadataRequest(operation.Status == EOperationStatus.Succeeded, operation.Error);
-                if (operation.Status == EOperationStatus.Succeeded)
+                bool shouldRetry = policy.CompleteMetadataRequest(
+                    operation.Status == EOperationStatus.Succeeded, operation.Error);
+                if (operation.Status == EOperationStatus.Succeeded || !shouldRetry)
                 {
                     return operation;
                 }
-                policy.AdvanceAfterOperationFailure(failureGeneration);
             }
-            return operation;
         }
 
         /// <summary>
@@ -648,23 +631,21 @@ namespace NovaFramework.Runtime
             string packageVersion,
             CancellationToken ct)
         {
-            int attempts = GetMetadataRequestAttemptCount(CreateRemoteService(packageName), packageName);
             LoadPackageManifestOperation operation = null;
-            for (int i = 0; i < attempts; i++)
+            while (true)
             {
                 AssetDownloadUrlPolicy policy = GetOrCreateDownloadUrlPolicy(packageName);
-                long failureGeneration = policy.FailureGeneration;
                 policy.BeginMetadataRequest();
-                operation = package.LoadPackageManifestAsync(new LoadPackageManifestOptions(packageVersion, 60));
+                operation = package.LoadPackageManifestAsync(
+                    new LoadPackageManifestOptions(packageVersion, m_Config.ManifestRequestTimeout));
                 await UniTask.WaitUntil(() => operation.IsDone, cancellationToken: ct);
-                policy.CompleteMetadataRequest(operation.Status == EOperationStatus.Succeeded, operation.Error);
-                if (operation.Status == EOperationStatus.Succeeded)
+                bool shouldRetry = policy.CompleteMetadataRequest(
+                    operation.Status == EOperationStatus.Succeeded, operation.Error);
+                if (operation.Status == EOperationStatus.Succeeded || !shouldRetry)
                 {
                     return operation;
                 }
-                policy.AdvanceAfterOperationFailure(failureGeneration);
             }
-            return operation;
         }
 
         /// <summary>
@@ -1016,7 +997,7 @@ namespace NovaFramework.Runtime
         /// 按 Inspector 配置的 EditorPlayMode / RuntimePlayMode 构造 YooAsset 初始化参数。
         /// 编辑器下使用 EditorPlayMode，非编辑器下使用 RuntimePlayMode，运行时不再二次覆盖。
         /// </summary>
-        /// <param name="package">包名，用于 Host/Web 模式构建远端寻址服务。</param>
+        /// <param name="package">包名，用于 Host 模式构建远端寻址服务。</param>
         /// <returns>对应运行模式的 InitializePackageOptions 实例。</returns>
         private InitializePackageOptions BuildPlayModeOptions(string package)
         {
@@ -1032,8 +1013,6 @@ namespace NovaFramework.Runtime
                     return BuildOfflineOptions();
                 case AssetPlayMode.HostPlayMode:
                     return BuildHostOptions(package);
-                case AssetPlayMode.WebPlayMode:
-                    return BuildWebOptions(package);
                 default:
                     throw new InvalidOperationException($"Unsupported play mode: {effectiveMode}");
             }
@@ -1062,21 +1041,29 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 构造离线运行模式初始化参数，并向内置文件系统注入解密器。
+        /// 构造离线运行模式初始化参数；WebGL 使用网页服务器文件系统，其他平台使用内置文件系统。
         /// </summary>
         /// <returns>OfflinePlayModeOptions 实例。</returns>
         private InitializePackageOptions BuildOfflineOptions()
         {
+#if UNITY_WEBGL
+            var serverParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+            // YooAsset 的 Offline 参数槽接受通用 FileSystemParameters，WebGL 用 WebServer 替代不受支持的 Builtin。
+            return new OfflinePlayModeOptions
+            {
+                BuiltinFileSystemParameters = serverParams,
+            };
+#else
             var builtinParams = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
-            ApplyDecryptor(builtinParams, true);
             return new OfflinePlayModeOptions
             {
                 BuiltinFileSystemParameters = builtinParams,
             };
+#endif
         }
 
         /// <summary>
-        /// 构造联机运行模式初始化参数，并向内置与缓存文件系统注入解密器。
+        /// 构造联机运行模式初始化参数；WebGL 使用网页服务器与网络文件系统，其他平台使用内置与缓存文件系统。
         /// </summary>
         /// <param name="package">包名，用于构建远端 URL 模板。</param>
         /// <param name="copyBuiltinManifest">是否把当前安装包清单复制到 Sandbox，供内置回退后保持 HostPlayMode。</param>
@@ -1084,6 +1071,23 @@ namespace NovaFramework.Runtime
         private InitializePackageOptions BuildHostOptions(string package, bool copyBuiltinManifest = false)
         {
             AssetRemoteService remote = CreateRemoteService(package);
+            m_RemoteServices[package] = remote;
+#if UNITY_WEBGL
+            var serverParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+            var remoteParams = FileSystemParameters.CreateDefaultWebNetworkFileSystemParameters(remote);
+            remoteParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
+            remoteParams.AddParameter(EFileSystemParameter.DownloadRetryPolicy, GetOrCreateDownloadUrlPolicy(package));
+            remoteParams.AddParameter(
+                EFileSystemParameter.UnityWebRequestCreator,
+                (UnityWebRequestCreator)CreateWebGLUnityWebRequest);
+            // Web 文件系统不支持 Sandbox 的下载 watchdog，Bundle 改用单次请求总超时。
+            // YooAsset 的 Host 两个参数槽接受通用 FileSystemParameters，顺序保持首包优先、网络兜底。
+            return new HostPlayModeOptions
+            {
+                BuiltinFileSystemParameters = serverParams,
+                CacheFileSystemParameters = remoteParams,
+            };
+#else
             var builtinParams = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
             var cacheParams = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remote);
             if (copyBuiltinManifest)
@@ -1094,82 +1098,35 @@ namespace NovaFramework.Runtime
             cacheParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
             cacheParams.AddParameter(EFileSystemParameter.DownloadRetryPolicy, GetOrCreateDownloadUrlPolicy(package));
             cacheParams.AddParameter(EFileSystemParameter.DownloadWatchdogTimeout, m_Config.IdleTimeout);
-            ApplyDecryptor(builtinParams, true);
-            ApplyDecryptor(cacheParams, true);
             return new HostPlayModeOptions
             {
                 BuiltinFileSystemParameters = builtinParams,
                 CacheFileSystemParameters = cacheParams,
             };
+#endif
         }
 
         /// <summary>
-        /// 构造 WebGL 运行模式初始化参数，并向服务器与网络文件系统注入标准解密器。
+        /// 返回当前平台实际用于 Bundle 请求埋点的超时值。
         /// </summary>
-        /// <param name="package">包名，用于构建远端 URL 模板。</param>
-        /// <returns>WebPlayModeOptions 实例。</returns>
-        private InitializePackageOptions BuildWebOptions(string package)
+        private int GetBundleRequestTimeout()
         {
-            AssetRemoteService remote = CreateRemoteService(package);
-            var serverParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
-            var remoteParams = FileSystemParameters.CreateDefaultWebNetworkFileSystemParameters(remote);
-            remoteParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
-            remoteParams.AddParameter(EFileSystemParameter.DownloadRetryPolicy, GetOrCreateDownloadUrlPolicy(package));
-            // WebNetworkFileSystem 不支持 Sandbox 的下载 watchdog 参数，WebGL 仅保留自身支持的远端寻址策略。
-            ApplyDecryptor(serverParams, false);
-            ApplyDecryptor(remoteParams, false);
-            return new WebPlayModeOptions
-            {
-                WebServerFileSystemParameters = serverParams,
-                WebNetworkFileSystemParameters = remoteParams,
-            };
+#if UNITY_WEBGL
+            return Math.Max(1, m_Config.WebGLBundleRequestTimeout);
+#else
+            return m_Config.IdleTimeout;
+#endif
         }
 
         /// <summary>
-        /// 按解密器类型构造解密器实例。
+        /// 为 WebGL WebNetwork 请求创建带 Bundle 总超时默认值的 UnityWebRequest。
+        /// 元数据请求随后会用 CheckTimeout 或 ManifestRequestTimeout 覆盖该默认值。
         /// </summary>
-        /// <param name="type">配置指定的解密器类型枚举。</param>
-        /// <returns>解密器实例；None 时返回 null。</returns>
-        private object CreateDecryptor(AssetDecryptorType type)
+        private UnityWebRequest CreateWebGLUnityWebRequest(string url, string method)
         {
-            switch (type)
-            {
-                case AssetDecryptorType.None:
-                    return null;
-                case AssetDecryptorType.OffsetBundleDecryptor:
-                    return new OffsetBundleDecryptor();
-                default:
-                    throw new InvalidOperationException($"Unsupported decryptor type: {type}");
-            }
-        }
-
-        /// <summary>
-        /// 把解密器注入文件系统参数。
-        /// IBundleMemoryDecryptor 仅在文件系统支持时走 AssetBundle 备用解密通道；
-        /// 其他 IBundleDecryptor（如 OffsetBundleDecryptor）覆盖 Asset、Raw、Archive 三类标准通道。
-        /// </summary>
-        /// <param name="parameters">文件系统参数，将被就地修改。</param>
-        /// <param name="supportsMemoryFallback">当前文件系统是否支持 AssetBundle 备用内存解密参数。</param>
-        private void ApplyDecryptor(FileSystemParameters parameters, bool supportsMemoryFallback)
-        {
-            if (m_Decryptor == null)
-            {
-                return;
-            }
-            if (m_Decryptor is IBundleMemoryDecryptor)
-            {
-                if (supportsMemoryFallback)
-                {
-                    parameters.AddParameter(EFileSystemParameter.AssetBundleFallbackDecryptor, m_Decryptor);
-                }
-                return;
-            }
-            else if (m_Decryptor is IBundleDecryptor)
-            {
-                parameters.AddParameter(EFileSystemParameter.AssetBundleDecryptor, m_Decryptor);
-                parameters.AddParameter(EFileSystemParameter.RawBundleDecryptor, m_Decryptor);
-                parameters.AddParameter(EFileSystemParameter.ArchiveBundleDecryptor, m_Decryptor);
-            }
+            var request = new UnityWebRequest(url, method);
+            request.timeout = Math.Max(1, m_Config.WebGLBundleRequestTimeout);
+            return request;
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ Nova 运行时路径工具的根入口。当前实现是一个 `partial` 静态�
 | `Path.cs` | 根定义，提供 `PlatformName` 与 `NormalizeSeparator` |
 | `Path.Streaming.cs` | `StreamingAssets` 只读路径 |
 | `Path.Persistent.cs` | `persistentDataPath` 可写路径 |
-| `Path.Cache.cs` | Unity `Caching.currentCacheForWriting.path` |
+| `Path.Cache.cs` | Unity 缓存路径；WebGL 使用 `Application.temporaryCachePath`，其他平台使用 `Caching.currentCacheForWriting.path` |
 | `Path.Hotfix.cs` | 热更新相关本地路径，当前只保留 APK 下载落点 |
 | `Path.Persist.cs` | Nova 持久化子目录（`FileFragment` / `SQLite`） |
 

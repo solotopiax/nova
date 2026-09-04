@@ -105,6 +105,7 @@ namespace NovaFramework.Editor
                     AssetDatabase.SaveAssetIfDirty(m_Master);
                     ReInjectYooAsset();
                     SyncYooAssetDimensionToWorkingCopy();
+                    m_IsDirty = true;
                     Repaint();
                 });
 

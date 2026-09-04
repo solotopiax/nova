@@ -140,14 +140,20 @@ namespace NovaFramework.Editor
         {
             EditorUtil.Draw.TypesSelector("PlayerPrefs 管理器", m_PlayerPrefsManagerTypeNames, m_CurPlayerPrefsManagerTypeName, true, null, GUILayout.Width(175));
             EditorUtil.Draw.TypesSelector("FileFragment 管理器", m_FileFragmentManagerTypeNames, m_CurFileFragmentManagerTypeName, true, null, GUILayout.Width(175));
+#if UNITY_WEBGL
+            EditorUtil.Draw.DisabledGroup(true, () =>
+            {
+                EditorUtil.Draw.TypesSelector("SQLite 管理器", m_SQLiteManagerTypeNames, m_CurSQLiteManagerTypeName, true, null, GUILayout.Width(175));
+            });
+#else
             EditorUtil.Draw.TypesSelector("SQLite 管理器", m_SQLiteManagerTypeNames, m_CurSQLiteManagerTypeName, true, null, GUILayout.Width(175));
+#endif
             EditorUtil.Draw.HelpBox(MessageType.Info, new[]
             {
                 "(1)实现 IPlayerPrefsManager 接口的自定义类型将出现在 PlayerPrefs 管理器列表",
                 "(2)实现 IFileFragmentManager 接口的自定义类型将出现在 FileFragment 管理器列表",
                 "(3)实现 ISQLiteManager 接口的自定义类型将出现在 SQLite 管理器列表",
-                "(4)SQLite 在 WebGL 平台以静默空操作运行",
-                "(5)WebGL 下 Initialize 输出警告，Get 返回默认值，Set 被忽略"
+                "(4)WebGL 暂不支持 SQLite，相关配置仅展示不可编辑"
             });
             EditorUtil.Draw.Line();
         }
@@ -161,7 +167,18 @@ namespace NovaFramework.Editor
                 () => MigratePlayerPrefsAES(m_UseAESForPlayerPrefs.boolValue), GUILayout.Width(175));
             EditorUtil.Draw.Toggle("FileFragment 启用 AES 加密", m_UseAESForFileFragment, true, null,
                 () => MigrateFileFragmentAES(m_UseAESForFileFragment.boolValue), GUILayout.Width(175));
-#if !UNITY_WEBGL
+#if UNITY_WEBGL
+            EditorUtil.Draw.DisabledGroup(true, () =>
+            {
+                EditorUtil.Draw.Toggle("SQLite 启用 AES 加密", m_UseAESForSQLite, true, null, null, GUILayout.Width(175));
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    EditorUtil.Draw.Label("SQLite Cipher 密码", true, GUILayout.Width(175));
+                    m_TmpSQLiteCipherPassword = EditorUtil.Draw.TextField(m_TmpSQLiteCipherPassword, true);
+                    EditorUtil.Draw.Button("存档转换", true, null, GUILayout.Width(80));
+                });
+            });
+#else
             EditorUtil.Draw.Toggle("SQLite 启用 AES 加密", m_UseAESForSQLite, true, null,
                 () => MigrateSQLiteAES(m_UseAESForSQLite.boolValue), GUILayout.Width(175));
             EditorUtil.Draw.Layout.Horizontal(() =>
@@ -194,7 +211,14 @@ namespace NovaFramework.Editor
         {
             EditorUtil.Draw.Property("PlayerPrefs 自动保存间隔(秒)", m_AutoSaveIntervalPlayerPrefs, true, GUILayout.Width(175));
             EditorUtil.Draw.Property("FileFragment 自动保存间隔(秒)", m_AutoSaveIntervalFileFragment, true, GUILayout.Width(175));
+#if UNITY_WEBGL
+            EditorUtil.Draw.DisabledGroup(true, () =>
+            {
+                EditorUtil.Draw.Property("SQLite 自动保存间隔(秒)", m_AutoSaveIntervalSQLite, true, GUILayout.Width(175));
+            });
+#else
             EditorUtil.Draw.Property("SQLite 自动保存间隔(秒)", m_AutoSaveIntervalSQLite, true, GUILayout.Width(175));
+#endif
             EditorUtil.Draw.HelpBox(MessageType.Info, new[]
             {
                 "(1)自动保存间隔设定每隔多少秒将脏数据落盘",
@@ -310,7 +334,11 @@ namespace NovaFramework.Editor
             var comp = (PersistComponent)target;
             DrawRuntimePlayerPrefs(comp.PlayerPrefs);
             DrawRuntimeFileFragment(comp.FileFragment);
+#if UNITY_WEBGL
+            EditorUtil.Draw.DisabledGroup(true, () => DrawRuntimeSQLite(comp.SQLite));
+#else
             DrawRuntimeSQLite(comp.SQLite);
+#endif
             EditorUtil.Draw.Line();
         }
 
@@ -337,9 +365,7 @@ namespace NovaFramework.Editor
             });
             DrawEditorPlayerPrefs();
             DrawEditorFileFragment();
-#if !UNITY_WEBGL
             DrawEditorSQLite();
-#endif
         }
 
         /// <summary>

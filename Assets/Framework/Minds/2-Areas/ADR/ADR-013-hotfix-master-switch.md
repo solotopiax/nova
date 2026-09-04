@@ -57,7 +57,7 @@ ProcedureLaunch → ProcedureSplash → ProcedureCheckVersion
 
 - **不破坏既有项目**：升级框架后默认行为不变
 - **远端不可覆盖本地**：`LaunchConfig` 走 persistentDataPath 可远端下发，但"是否启用热更"是项目级编译期决策，远端不能改
-- **AssetManager YooAsset PlayMode 与开关强耦合**：`HostPlayMode` / `WebPlayMode` 必须有远端清单，没热更就拿不到清单——逻辑上 `EnableHotfix=false ⇒ PlayMode ∈ {EditorSimulate, Offline}` 是硬数学约束
+- **AssetManager YooAsset PlayMode 与开关强耦合**：`HostPlayMode` 必须有远端清单，没热更就拿不到清单——逻辑上 `EnableHotfix=false ⇒ PlayMode ∈ {EditorSimulate, Offline}` 是硬数学约束；WebGL 由平台适配层选择 Web 文件系统
 
 ## 决策（Decision）
 

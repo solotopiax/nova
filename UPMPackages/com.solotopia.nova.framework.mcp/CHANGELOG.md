@@ -2,6 +2,16 @@
 
 本文件记录 `com.solotopia.nova.framework.mcp` 的版本变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/)，版本号遵循语义化版本。
 
+## [Unreleased]
+
+## [0.1.3] - 2026-09-04
+
+### Changed
+
+- 默认 Unity MCP Provider 依赖从 `10.1.2` 升级到 `10.2.0`。
+- 所有已注册 `nova.project.*` Action 默认进入显式 MCP 白名单；Registry 与白名单不完全一致时 Gateway 整体 fail-closed。
+- 新增 `nova.project.pipify.run-batch` 传输支持，异步 Batch 通过 recovery token 轮询结果。
+
 ## [0.1.2] - 2026-08-26
 
 ### Added

@@ -17,16 +17,16 @@ namespace NovaFramework.Runtime
     {
         /// <summary>
         /// 编辑器下资源加载模式。
-        /// 仅在 Application.isEditor 时生效；4 个枚举值均允许选择。
+        /// 仅在 Application.isEditor 时生效；3 个枚举值均允许选择。
         /// 默认 EditorSimulateMode（直接读 Editor 资源，零网络开销）。
         /// </summary>
         public AssetPlayMode EditorPlayMode = AssetPlayMode.EditorSimulateMode;
 
         /// <summary>
         /// 终端下资源加载模式。
-        /// 在 Player（非 Editor）时生效；不允许 EditorSimulateMode（仅限 OfflinePlayMode/HostPlayMode/WebPlayMode）。
+        /// 在 Player（非 Editor）时生效；不允许 EditorSimulateMode（仅限 OfflinePlayMode/HostPlayMode）。
         /// 默认 HostPlayMode（联机热更模式）。
-        /// 与 EnableHotfix 双向联动：EnableHotfix=false ⇔ RuntimePlayMode=OfflinePlayMode；EnableHotfix=true ⇔ RuntimePlayMode∈{HostPlayMode, WebPlayMode}。
+        /// 与 EnableHotfix 双向联动：EnableHotfix=false ⇔ RuntimePlayMode=OfflinePlayMode；EnableHotfix=true ⇔ RuntimePlayMode=HostPlayMode。
         /// </summary>
         public AssetPlayMode RuntimePlayMode = AssetPlayMode.HostPlayMode;
 
@@ -49,7 +49,7 @@ namespace NovaFramework.Runtime
         /// 热更新功能总开关。
         /// 默认 true，关闭时启动直跳 ProcedureLoadDll，跳过 CheckVersion / Hotfix / AppDownload 三个 Procedure；
         /// 与 RuntimePlayMode 在 Inspector 编辑期双向联动：关闭时 RuntimePlayMode 强制为 OfflinePlayMode；
-        /// 开启时 RuntimePlayMode 限制为 HostPlayMode/WebPlayMode（详见 AssetComponentInspector 联动逻辑）。
+        /// 开启时 RuntimePlayMode 限制为 HostPlayMode（详见 AssetComponentInspector 联动逻辑）。
         /// </summary>
         public bool EnableHotfix = true;
 
@@ -77,6 +77,31 @@ namespace NovaFramework.Runtime
         /// 当前 DevelopMode 对应的白名单版本元数据根备用 URL。
         /// </summary>
         public string StartupWhitelistMetadataRootUrlFallback;
+
+        /// <summary>
+        /// 启动白名单文件请求每个重试周期内的主备完整轮数，最小为 1。
+        /// </summary>
+        public int StartupWhitelistFallbackRoundCount = 1;
+
+        /// <summary>
+        /// 启动白名单文件全部轮次失败后的重试次数；首次执行不计入该值。
+        /// </summary>
+        public int StartupWhitelistRetryRequestCount = 1;
+
+        /// <summary>
+        /// 启动白名单文件的新请求是否优先使用当前进程内最近成功的域名。
+        /// </summary>
+        public bool StartupWhitelistPreferLastSuccessfulHost = true;
+
+        /// <summary>
+        /// 是否启用启动白名单文件 UWR 请求链埋点；仅控制上报。
+        /// </summary>
+        public bool StartupWhitelistEnableUWRTracks = true;
+
+        /// <summary>
+        /// 启动白名单文件单次物理请求超时秒数；主备候选分别计时。
+        /// </summary>
+        public int StartupWhitelistCheckTimeout = 5;
 
         /// <summary>
         /// 启动期资源补丁就绪后是否自动开始下载。
@@ -114,13 +139,24 @@ namespace NovaFramework.Runtime
         public bool EnableUWRTracks = true;
 
         /// <summary>
-        /// 启动白名单与 .version 的单次物理请求超时秒数；每个主备候选独立使用。
-        /// .hash/.bytes Manifest 仍使用现有 60 秒超时，不受此字段影响。
+        /// .version 的单次物理请求超时秒数；每个主备候选独立使用。
+        /// 主备轮次、下载重试次数、最近成功域名优先和 UWR 埋点仍使用 Asset 公共配置。
         /// </summary>
         public int CheckTimeout = 5;
 
         /// <summary>
-        /// 单文件字节流入超时秒数（连续无新字节流入时中止下载）。
+        /// .hash/.bytes Manifest 的单次物理请求总超时秒数；每个主备候选独立使用。
+        /// 主备轮次、下载重试次数、最近成功域名优先和 UWR 埋点仍使用 Asset 公共配置。
+        /// </summary>
+        public int ManifestRequestTimeout = 60;
+
+        /// <summary>
+        /// WebGL 远端 Bundle 单次物理请求的总超时秒数；非 WebGL 平台不使用。
+        /// </summary>
+        public int WebGLBundleRequestTimeout = 300;
+
+        /// <summary>
+        /// 非 WebGL 单文件字节流入超时秒数（连续无新字节流入时中止下载）。
         /// </summary>
         public int IdleTimeout = 20;
 
@@ -138,11 +174,6 @@ namespace NovaFramework.Runtime
         /// Config 导出时同步的渠道快照，用于启动期 URL 占位符解析。
         /// </summary>
         public ChannelType Channel;
-
-        /// <summary>
-        /// AssetBundle 解密器类型（Inspector 下沉字段）。
-        /// </summary>
-        public AssetDecryptorType DecryptorType;
 
         /// <summary>
         /// 启动期热更按 tag 过滤的 tag 列表。

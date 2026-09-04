@@ -11,10 +11,10 @@
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// YooAsset 资源运行模式。
+    /// Nova 资源加载策略。
     /// </summary>
     /// <remarks>
-    /// 与 YooAsset 的初始化参数派生类型一一对应。
+    /// 资源策略与平台能力解耦；底层文件系统由 AssetManager 按当前平台选择。
     /// </remarks>
     public enum AssetPlayMode : byte
     {
@@ -32,10 +32,5 @@ namespace NovaFramework.Runtime
         /// 联机运行模式。
         /// </summary>
         HostPlayMode = 2,
-
-        /// <summary>
-        /// WebGL 运行模式。
-        /// </summary>
-        WebPlayMode = 3,
     }
 }

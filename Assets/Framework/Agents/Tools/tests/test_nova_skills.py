@@ -307,11 +307,11 @@ class NovaSkillsToolTests(unittest.TestCase):
 
         self.assertEqual([], tool.validate_agents_root(self.agents_root))
 
-    def test_validate_accepts_exposed_and_blocked_agent_actions(self):
-        """可调度与已注册未开放的 Action 必须使用不同机器类型。"""
+    def test_validate_accepts_all_registered_agent_actions_exposed(self):
+        """全部已注册 Project Action 均进入显式白名单时应通过。"""
         self._write_action_sources(
-            ["nova.project.test.run", "nova.project.test.blocked"],
-            ["nova.project.test.run"],
+            ["nova.project.test.run", "nova.project.test.second"],
+            ["nova.project.test.run", "nova.project.test.second"],
         )
         self._set_action_adapters(
             "nova-project-router",
@@ -322,9 +322,9 @@ class NovaSkillsToolTests(unittest.TestCase):
                     "when": "测试可调度 Action",
                 },
                 {
-                    "kind": "agent-action-blocked",
-                    "entry": "nova.project.test.blocked",
-                    "when": "测试已注册但未开放的 Action",
+                    "kind": "agent-action",
+                    "entry": "nova.project.test.second",
+                    "when": "测试第二个可调度 Action",
                 },
             ],
         )
@@ -388,6 +388,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         errors = load_tool().validate_agents_root(self.agents_root)
 
         self.assertTrue(any("未出现在 MCP ExposurePolicy" in error for error in errors))
+        self.assertTrue(any("未完整进入 MCP ExposurePolicy" in error for error in errors))
 
     def test_validate_rejects_exposed_blocked_agent_action(self):
         """已开放的 Action 不能同时标记为 blocked，避免误导路由。"""
@@ -778,7 +779,7 @@ class NovaSkillsToolTests(unittest.TestCase):
 
         android = contract("nova-project-resolve-android-dependencies")
         self.assertEqual(
-            ["agent-action-blocked"],
+            ["agent-action"],
             [adapter["kind"] for adapter in android["actionAdapters"]],
         )
         self.assertEqual(

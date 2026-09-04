@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.SDK.MaxAdPlugin.Editor`
 **全局访问**：由 `NovaBuildProcessor` 反射自动发现并按优先级回调，无需业务层显式调用。
 
-构建预处理器：从 `ConfigRuntimeSO → AdPluginConfig → MaxAdChannelConfig` 读取 `AppKey` 与 `AdMobAppIdAndroid/IOS`，在 Android/iOS 构建预处理回调中写入官方 AppLovin UPM 包提供的 `AppLovinSettings.asset`；iOS 后处理由基类 `NovaSDKBuildProcessor` 通过 `GetEmbedXcframeworkNames` 名单托管，自动 Embed MAX 依赖的 6 个 xcframework。
+构建预处理器：从 `ConfigRuntimeSO → AdPluginConfig → MaxAdChannelConfig` 读取 `AppKey` 与 `AdMobAppIdAndroid/IOS`，在 Android/iOS 构建预处理回调中写入官方 AppLovin UPM 包提供的 `AppLovinSettings.asset`；Android 预处理会向 `NovaBuildContext` 注册 MAX 相关 ProGuard 规则，保护 AndroidX Startup / WorkManager / Room 在开启 Minify 时的启动期反射入口；iOS 后处理由基类 `NovaSDKBuildProcessor` 通过 `GetEmbedXcframeworkNames` 名单托管，自动 Embed MAX 依赖的 6 个 xcframework。
 
 ---
 
@@ -27,7 +27,7 @@ public sealed class MaxAdPluginBuildProcessor : NovaSDKBuildProcessor
     /// 后处理回调优先级，固定 600。
     public override int PostprocessPriority { get; }
 
-    /// Android 预处理：从 MaxAdChannelConfig 读取 SdkKey + AdMobAppIdAndroid 写入 AppLovinSettings.asset。
+    /// Android 预处理：注册 MAX 相关 ProGuard 规则，并从 MaxAdChannelConfig 读取 SdkKey + AdMobAppIdAndroid 写入 AppLovinSettings.asset。
     public override void OnPreprocessBuildOnAndroid(BuildReport report, NovaBuildContext context);
 
     /// iOS 预处理：从 MaxAdChannelConfig 读取 SdkKey + AdMobAppIdIOS 写入 AppLovinSettings.asset。
@@ -65,6 +65,16 @@ public sealed class MaxAdPluginBuildProcessor : NovaSDKBuildProcessor
 
 ```
 [MaxAdPluginBuildProcessor] Android AppLovinSettings 已注入：SdkKey 与 AdMob AppId 已写入 AppLovinSettings.asset。
+```
+
+Android 构建预处理还会注册以下 ProGuard 规则，最终由 Nova 构建链写入 `Assets/Plugins/Android/proguard-user.txt`：
+
+```proguard
+-keep class androidx.startup.** { *; }
+-keep class androidx.work.** { *; }
+-keep class * extends androidx.room.RoomDatabase { *; }
+-keep class **_Impl { *; }
+-dontwarn androidx.room.paging.**
 ```
 
 iOS 构建完成后，6 个 xcframework 会被自动 Embed 到 Xcode 工程 Unity-iPhone target，无需手动操作。

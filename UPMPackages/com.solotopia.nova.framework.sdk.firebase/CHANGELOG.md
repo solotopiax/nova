@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-09-04
+
+### Changed
+
+- FirebaseDemo 适配 Framework `0.6.26` 的 `IUIManager.OnOpenUIViewFail` 事件；最低 Framework 依赖同步提升至 `0.6.26`。
+
 ## [0.1.12] - 2026-09-02
 
 ### Changed

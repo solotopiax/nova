@@ -8,6 +8,24 @@
 
 ## [Unreleased]
 
+## [0.6.26] - 2026-09-04
+
+### Breaking
+
+- 删除未投入使用的 AssetBundle 解密占位契约与 `AssetPlayMode.WebPlayMode`；WebGL 统一使用 `HostPlayMode`。
+- `IUIManager` 新增 `OnOpenUIViewFail` 事件，仓外自定义实现需补齐该成员。
+
+### Added
+
+- WebGL HostPlayMode 增加 Bundle 单次物理请求总超时，并支持远端 Manifest 候选耗尽后回退首包元数据。
+- BuildReadiness 增加 Asset/App 场景渠道与 ConfigRuntime 导出渠道一致性校验，不一致时阻断 Player 构建。
+
+### Changed
+
+- 默认 Unity MCP Provider 从 `10.1.2` 升级到 `10.2.0`。
+- 所有已注册 Nova Project Action 默认进入 MCP 显式白名单，并新增可执行既有 Pipify Batch 的异步 Action；高风险操作仍保留计划、确认、锁与 Verify。
+- 发布 Framework `0.6.26`、Nova MCP `0.1.3`，并同步发布 13 个适配 `IUIManager.OnOpenUIViewFail` 的 Network Kit / SDK Sample 包及包含 Android ProGuard 更新的 MAX `0.1.9`。
+
 ## [0.6.25] - 2026-09-02
 
 ### Breaking

@@ -416,24 +416,34 @@ namespace NovaFramework.Editor
 
             EditorUtil.Draw.IncreaseIndentLevel();
             EditorUtil.Draw.Toggle("启用 UWR 网络埋点", m_HttpSettings.FindPropertyRelative("EnableUWRTracks"), true, null, null, GUILayout.Width(175));
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "仅控制 UWR 请求链埋点，不影响请求。" }, false, GUILayout.ExpandWidth(true));
+            });
             EditorUtil.Draw.Toggle("业务请求优先最近成功域名", m_HttpSettings.FindPropertyRelative("PreferLastSuccessfulHost"), true, null, null, GUILayout.Width(175));
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "新业务请求优先使用同 HostKey 最近成功的域名；失败后仍会尝试其他地址。" }, false, GUILayout.ExpandWidth(true));
+            });
             EditorUtil.Draw.Property("业务主备候选轮数", m_HttpSettings.FindPropertyRelative("BusinessFallbackRoundCount"), true, GUILayout.Width(175));
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "每轮依次尝试当前业务配置中全部有效的主备地址。" }, false, GUILayout.ExpandWidth(true));
+            });
             EditorUtil.Draw.Property("业务请求重试次数", m_HttpSettings.FindPropertyRelative("RetryRequestCount"), true, GUILayout.Width(175));
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Space(16f);
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "全部轮次失败后的重试次数；每次重试重新执行全部轮次。" }, false, GUILayout.ExpandWidth(true));
+            });
             EditorUtil.Draw.Property("HTTP 请求超时时间 (秒)", m_HttpSettings.FindPropertyRelative("RequestTimeout"), true, GUILayout.Width(175));
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
-                {
-                    "(1)HTTP 固定使用 UnityWebRequest 与系统 DNS",
-                    "(2)最近成功偏好按 HostKey 隔离且只存在当前进程；仅调整新链的候选顺序",
-                    "(3)仅未取得正式 HTTP 响应时继续；任意 4xx/5xx 响应都结束候选链并交给业务解析",
-                    "(4)一轮会依次尝试当前有效且去重后的全部主备候选",
-                    "(5)首次完整执行不计入重试次数；每次重试都会重新执行全部主备轮次",
-                    "(6)候选数 C、轮数 R、重试次数 K 的最大物理请求数为 C × R × (K + 1)",
-                    "(7)RequestTimeout 由每次物理请求完整使用，不设置整条候选链总超时",
-                    "(8)UWR 埋点开关只控制上报，不会禁止或改变请求"
-                }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "单次 HTTP 请求的超时时间；主备请求分别计时。" }, false, GUILayout.ExpandWidth(true));
             });
             EditorUtil.Draw.DecreaseIndentLevel();
             EditorUtil.Draw.Line();

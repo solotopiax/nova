@@ -40,7 +40,7 @@ Scene 检查使用已加载 Scene 或只读 Preview Scene，不保存、不修�
 
 `Resources/BuiltIn/**` 合法；UPM 与识别为第三方插件所有的 Resources 被忽略。资源归属不能确定时只给 Warning，不阻断 Play 或 Unity Build。
 
-进入 Play Mode 前若存在 Error，Play gate 会取消启动并弹出“Nova 启动配置未就绪”；弹窗仅显示每项错误的异常摘要与配置入口，完整的来源、导出物和坐标见 Console / Editor.log。选择“打开 Config”时，报告平台必须匹配 Unity 当前 Active BuildTarget；匹配后窗口会切换到报告对应的 ConfigMaster、Channel/DevelopMode，并定位首个错误所属的应用配置、名字空间、SDK 或 Kit 面板。不匹配时先切换 Unity BuildTarget。修正后需保存并重新导出，再次进入 Play。
+进入 Play Mode 前若存在 Error，Play gate 会取消启动并弹出“Nova 启动配置未就绪”。弹窗只用普通项目成员可理解的语言说明“哪一类配置尚未同步”和下一步操作；规则号、字段名、类型全名、来源资产、导出物和坐标只保留在 Console / Editor.log。选择“打开配置”后，窗口会切换到报告对应的 ConfigMaster、Platform、Channel/DevelopMode，并定位首个错误所属的应用配置、隐私配置、名字空间、SDK 或 Kit 面板；编辑平台与 Unity 当前 Active BuildTarget 不一致时仍可编辑和保存，但需先切换 BuildTarget 才能导出。修正后依次点击“保存”和“导出”，再进入 Play。
 
 ## 集中位置
 
@@ -52,5 +52,7 @@ Scene 检查使用已加载 Scene 或只读 Preview Scene，不保存、不修�
 ProjectGuard 不注册全局 Build preprocessor。Unity Build、显式 `BuildPlayerOptions.scenes` 和项目自定义 BuildPipeline 均保持原行为；若项目希望发布门禁，应在自己的流水线中显式调用并解释报告。
 
 构建就绪检查只拒绝 `PlatformType.None` 或缺失的矩阵行；`ChannelType.None` 是合法的无特定运营渠道，不会单独导致预检失败。
+
+构建就绪检查还会以 `ConfigMasterSO.ExportTarget` 指向的 `ConfigRuntimeSO.Channel` 为准，只读检查 Build Settings 全部启用场景内的 `AssetComponent` 与 `AppComponent` 渠道快照。任一快照不一致时，`NOVA-BUILD-012` 返回 Error 并令报告 `ready=false`；需要在 `Nova/Open Config` 重新导出后保存场景，再重新执行构建前检查。没有 Asset/App 组件的自定义 Bootstrap 或纯 Content 场景不单独触发该错误。
 
 相关阅读：[验证与构建](../../Onboarding/VALIDATION.md)、[资源工作流](../../Onboarding/RESOURCE_WORKFLOW.md)。

@@ -69,6 +69,7 @@
 - 初始化：`Initialize(...)` / `CreateInstancePool()`
 - 注册表：`LoadSync()` / `LoadAsync()`
 - 打开：`OpenUIViewSync<T>()` / `OpenUIViewAsync<T>()`
+- 异步打开失败：`OnOpenUIViewFail(serialID, assetLocation, errorMessage)`
 - 关闭：`CloseUIView(...)` / `CloseAllLoadedUIViews(...)` / `CloseAllLoadingUIViews()`
 - 查询：`GetUIView(...)` / `HasUIView(...)` / `IsLoadingUIView(...)`
 - 分组：`AddUIGroup(...)` / `GetUIGroup(...)`
@@ -88,6 +89,9 @@
 - “关闭加载中视图”与“关闭已加载视图”的边界是否变化
 - 分组必须先注册的前置条件是否变化
 - 对象池参数是否还是运行时可调
+
+`OpenUIViewAsync(...)` 的非负返回值表示请求已创建，不等于视图已经打开。注册表查找等立即失败仍返回 `-1`；
+请求创建后的资源加载或实例化失败由 `OnOpenUIViewFail` 报告。主动关闭仍在加载的视图属于取消，不触发失败事件。
 
 ## 相关实现
 

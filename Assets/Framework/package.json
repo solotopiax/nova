@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework",
-  "version": "0.6.25",
+  "version": "0.6.26",
   "license": "MIT",
   "displayName": "Nova Framework",
   "description": "基于 Unity 引擎深度定制的游戏客户端通用解决方案",
@@ -17,7 +17,7 @@
     "com.solotopia.nicevibrations": "10.0.5",
     "com.solotopia.luban": "10.1.0",
     "com.solotopia.yooasset": "1.1.0",
-    "com.solotopia.nova.framework.mcp": "0.1.2"
+    "com.solotopia.nova.framework.mcp": "0.1.3"
   },
   "samples": [
     {

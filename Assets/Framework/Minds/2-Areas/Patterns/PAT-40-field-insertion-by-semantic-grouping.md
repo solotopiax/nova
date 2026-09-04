@@ -31,10 +31,10 @@ related:
 
 ## 核心做法（What & How）
 
-1. **先识别语义段**：把现有字段按语义聚类（例如 AssetComponent 划分六段：Manager 选择 / 加载模式 / 资源包配置 / 热更开关与下载行为 / 服务器分发与解密 / 运行时实例）。
-2. **新增字段按归属插入**：而不是简单追加到文件末尾。例如 `m_Packages` 应进入"资源包配置"段，`m_HostServerTemplate` / `m_FallbackHostTemplate` / `m_DecryptorType` 应进入"服务器分发与解密"段。
+1. **先识别语义段**：把现有字段按语义聚类（例如 AssetComponent 划分六段：Manager 选择 / 加载模式 / 资源包配置 / 热更开关与下载行为 / 服务器分发 / 运行时实例）。
+2. **新增字段按归属插入**：而不是简单追加到文件末尾。例如 `m_Packages` 应进入"资源包配置"段，`m_HostServerUrlDebug` / `m_HostServerUrlRelease` 应进入"服务器分发"段。
 3. **联动文件 1:1 同顺序**：Runtime 的 `Visitors.cs` 字段定义、Config DTO 公有字段、`Start()` 透传赋值顺序、Inspector 三文件（Visitors 声明 / OnEnable 绑定 / Methods 绘制）必须严格对齐，无错位。
-4. **Foldout 命名跟随语义段**：例如服务器 Foldout 命名为"服务器分发与解密"，仅包含该段三项字段。
+4. **Foldout 命名跟随语义段**：例如服务器 Foldout 命名为"服务器分发"，仅包含该段对应字段。
 5. **核验手段**：六段顺序在所有联动文件中完全一致后，方可视为完成。
 
 ## 反模式（Anti-patterns）
@@ -57,5 +57,5 @@ related:
 
 ## 关联
 
-- 触发案例：2026-05-19 AssetComponent 六段语义重排（`m_Packages` / `m_HostServerTemplate` / `m_FallbackHostTemplate` / `m_DecryptorType` 按段归位），核验六文件（AssetComponent.Visitors.cs / AssetManagerConfig.cs / AssetComponent.cs Start() / Inspector 三文件）顺序完全一致
+- 触发案例：2026-05-19 AssetComponent 六段语义重排（`m_Packages` / Host 主备地址字段按段归位），核验六文件（AssetComponent.Visitors.cs / AssetManagerConfig.cs / AssetComponent.cs Start() / Inspector 三文件）顺序完全一致
 - 相关 Pattern：[[PAT-27-config-no-serialize|PAT-27]]（ManagerConfig 散字段透传，本 Pattern 是其顺序约定）、[[PAT-31-inspector-sop|PAT-31]]（Inspector SOP，本 Pattern 是其字段插入细则）

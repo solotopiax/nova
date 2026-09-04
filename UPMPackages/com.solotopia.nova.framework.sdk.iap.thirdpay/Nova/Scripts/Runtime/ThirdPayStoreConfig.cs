@@ -9,7 +9,6 @@
  ***************************************************************/
 
 using System;
-using System.Collections.Generic;
 using NovaFramework.SDK.IAP.Runtime;
 using UnityEngine;
 
@@ -29,9 +28,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
         [SerializeField, Tooltip("是否跳过 Google 第三方支付信息页，直接进入 ThirdPay 支付页")]
         private bool m_SkipPaymentInformationScreen = false;
-
-        [SerializeField, Tooltip("命中后使用系统外部浏览器支付的 ISO 3166-1 alpha-2 国家/地区代码")]
-        private List<string> m_ExternalBrowserCountryCodes = new List<string>();
 
         [SerializeField, Tooltip("外部浏览器支付返回 App 后自动验单前的等待秒数")]
         private float m_ExternalBrowserReturnValidateDelaySeconds = 2.5f;
@@ -70,11 +66,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 获取是否默认跳过 Google 第三方支付信息页。
         /// </summary>
         public bool SkipPaymentInformationScreen => m_SkipPaymentInformationScreen;
-
-        /// <summary>
-        /// 获取需要使用系统外部浏览器打开 ThirdPay 支付页的国家或地区代码。
-        /// </summary>
-        public IReadOnlyList<string> ExternalBrowserCountryCodes => m_ExternalBrowserCountryCodes;
 
         /// <summary>
         /// 获取外部浏览器支付返回后的自动验单延迟秒数。

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.1.11] - 2026-09-04
+
+### Changed
+
+- AdDemo 适配 Framework `0.6.26` 的 `IUIManager.OnOpenUIViewFail` 事件；最低 Framework 依赖同步提升至 `0.6.26`。
+
 ## [1.1.10] - 2026-09-02
 
 ### Changed

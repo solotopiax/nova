@@ -66,7 +66,9 @@ persistentDataPath/Asset/{package}.version
 
 记录使用整体覆盖写入，`version` 为空或写入失败时仅跳过或告警，不阻断启动。
 
-### 3. 三级回退链统一验证可启动性
+### 3. 非 WebGL 三级回退链统一验证可启动性
+
+该回退链依赖 Builtin/Sandbox 文件系统及本地文件 IO，仅适用于非 WebGL 平台。WebGL 不进入本地可启动版本或 Sandbox 回退，使用下节的首包元数据回退。
 
 远端版本请求或 Manifest 加载失败后，`TryRecoverManifestAsync` 按以下顺序处理：
 
@@ -80,7 +82,19 @@ persistentDataPath/Asset/{package}.version
 
 本地记录只是候选索引，不是无条件信任凭证。即使文件存在，也必须重新加载缓存 Manifest 并验证当前启动范围；缓存被清理、Tag 配置变化或 Manifest 损坏都会使该级失败并继续回退。
 
-### 4. 启动 Tag 是完整性边界，不是业务层硬编码补丁
+### 4. WebGL 保持 Host 拓扑并临时回退首包元数据
+
+WebGL Host 使用 `WebServer + WebNetwork` 文件系统。远端元数据候选全部失败后，Nova 不销毁 Host 包，也不切换到依赖本地文件 IO 的 Offline/Sandbox 链，而是临时把 `.version/.hash/.bytes` 路由到 `StreamingAssets/{YooFolder}/{Package}`：
+
+- 首包元数据仍通过 YooAsset 与 UnityWebRequest 加载，不使用 `System.IO`。
+- 临时路由只影响版本元数据；Bundle 始终保持常规远端主备地址。
+- 首包内已有的 Bundle 由 WebServer 命中；未内置 Bundle 在网络恢复后仍可由 WebNetwork 按需加载。
+- 无论回退成功或失败，元数据路由都在 `finally` 中恢复为远端候选。
+- 回退成功的包加入本次启动离线恢复集合，跳过本轮远端热更；它不推进 `LastBootableVersion`。
+
+因此 WebGL 的优先级是：远端最新清单 → 首包清单 → 抛出原始远端错误。WebNetwork 的 `IsDownloadRequired()` 固定返回 false，不能用它证明已有 Manifest 的启动范围完整，所以 WebGL 不复用非 WebGL 的“当前已激活清单”分支。首包按 Tag 构建时，`LaunchHotfixTags` 必须覆盖启动必须资源；该能力不等价于浏览器冷离线启动，HTML/WASM/StreamingAssets 仍需由站点或 Service Worker 提供。
+
+### 5. 启动 Tag 是完整性边界，不是业务层硬编码补丁
 
 Nova 不要求“全量 Bundle 都缓存”才记录版本，而是以框架已有 `LaunchHotfixTags` 定义启动可用范围：
 
@@ -89,7 +103,7 @@ Nova 不要求“全量 Bundle 都缓存”才记录版本，而是以框架已�
 
 这样既避免切片项目永远无法晋升版本，也不额外引入“启动必须 Tag”之类偏业务的新概念。
 
-### 5. 白名单路由不绕过可启动版本门
+### 6. 白名单路由不绕过可启动版本门
 
 启动白名单命中只切换版本元数据候选地址，不直接写本地版本。无论 Manifest 来自常规还是白名单元数据根，都必须经过同一 Downloader 完整性检查与 `CommitBootableVersion` 门，详见 [[ADR-076-startup-whitelist-metadata-routing|ADR-076]]。
 
@@ -102,6 +116,7 @@ Nova 不要求“全量 Bundle 都缓存”才记录版本，而是以框架已�
 - 不读取 YooAsset 内部沙盒结构，不侵入第三方源码。
 - 本地缓存清理或 Tag 配置变化会在回退时再次校验并安全降级。
 - 白名单灰度版本与常规版本遵守同一完整性门。
+- WebGL 首包清单回退不改变 Bundle 远端地址，网络恢复后仍保留按需加载能力。
 
 ### 负面
 
@@ -109,6 +124,7 @@ Nova 不要求“全量 Bundle 都缓存”才记录版本，而是以框架已�
 - 旧 CachedVersion 不迁移，升级后的第一次离线启动可能直接回退内置版本；需先完成一次正常在线启动才能生成新记录。
 - `LaunchHotfixTags` 发生变化后，旧记录可能因新启动范围不完整而失效。
 - 版本文件存在不代表一定回退成功，缓存 Manifest 与对应启动 Bundle 仍可能被系统或清理逻辑移除。
+- WebGL 首包按 Tag 内置只能保证该 Tag 范围；若配置遗漏启动资源，Manifest 回退成功后仍可能加载失败。
 
 ## 被排除的方案（Alternatives）
 
@@ -124,10 +140,10 @@ Nova 不要求“全量 Bundle 都缓存”才记录版本，而是以框架已�
 
 ## 验证依据（Verification）
 
-- Runtime：`AssetManager.CommitBootableVersion`、`IsLaunchScopeReady`、`TryFallbackToLocalBootableManifestAsync`、`TryRecoverManifestAsync`。
+- Runtime：`AssetManager.CommitBootableVersion`、`IsLaunchScopeReady`、`TryFallbackToLocalBootableManifestAsync`、`TryFallbackToWebGLBuiltinManifestAsync`、`TryRecoverManifestAsync`。
 - Procedure：`ProcedureCheckVersion` 在无补丁时提交；`ProcedureHotfix` 在无差异或下载成功后提交。
 - 存储 helper：`GetLocalBootableVersionFilePath`、`SaveLocalBootableVersion`、`TryLoadLocalBootableVersion`。
-- 契约测试：`AssetLocalBootableVersionTests`、`AssetManagerManifestFallbackRegressionTests`、`AssetStartupWhitelistTests`。
+- 契约测试：`AssetLocalBootableVersionTests`、`AssetManagerManifestFallbackRegressionTests`、`AssetStartupWhitelistTests`、`YooAsset305UpgradeContractTests`。
 - 当前实现与文档提交：`e03e08d8e`。
 
 ## 关联

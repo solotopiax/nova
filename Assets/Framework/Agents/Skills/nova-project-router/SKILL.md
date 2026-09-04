@@ -70,7 +70,7 @@ description: Use when 项目组以自然语言提出 Nova 项目接入、业务�
    - 已纳入当前 Nova 资源配置的 Content 场景，且 Package/default-Package、location、LoadSceneMode、唯一 ISceneHandle owner 与卸载时机明确：`nova-project-integrate-content-scene`；入口场景仍走 `nova-project-setup-entry-scene`。
    - 实际构建前只读检查 Target、场景、Config、YooAsset Package 与 HybridCLR 前置：`nova-project-preflight-build`；它不执行构建或修复。
    - 已有 Player、Gradle、Xcode 或 WebGL 构建失败证据，需要定位最早失败阶段：`nova-project-diagnose-build`；不得借诊断重跑构建、Resolve 或清理。
-   - Android SDK/Kit 变更后需要 EDM4U Force Resolve：`nova-project-resolve-android-dependencies`；当前 Action 含 Destructive 且 MCP 未开放时必须报告可信审批阻断，不能退化为任意 C# 或删目录。
+   - Android SDK/Kit 变更后需要 EDM4U Force Resolve：`nova-project-resolve-android-dependencies`；该 Action 含 Destructive，必须绑定精确计划确认，不能退化为任意 C# 或删目录。
    - 已冻结 Android/iOS 设备、Bundle ID、时间窗、日志源与脱敏规则的真机日志诊断：`nova-project-diagnose-device-runtime`；不安装、不清数据、不启动应用、不修复工程。
    - 本地 YooAsset Package 产物：`nova-project-build-bundles`；本地安装包或平台工程：`nova-project-build-player`。
    - 单一确定的 Operation 不强制经过 Workflow；多个写入操作仅在读写集无冲突时并行。

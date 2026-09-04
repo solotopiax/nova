@@ -29,6 +29,7 @@ YooAsset 远端寻址服务。常规主备地址负责 Bundle 与默认元数据
 | `m_RemoteBaseUrls` | `string[]` | 常规主备 URL 前缀缓存 |
 | `m_MetadataBaseUrls` | `string[]` | 白名单版本元数据 URL 前缀缓存 |
 | `m_AllBaseUrls` | `string[]` | 两组地址去重合集，供 `BaseUrls` 返回 |
+| `m_WebGLBuiltinMetadataRootUrl` | `string` | WebGL 远端计划耗尽后临时使用的首包元数据根地址；不影响 Bundle |
 
 ---
 
@@ -41,6 +42,8 @@ public AssetRemoteService(string hostServerUrl, string hostServerUrlFallback, st
 public IReadOnlyList<string> BaseUrls { get; }
 public IReadOnlyList<string> GetRemoteUrls(string fileName)
 ```
+
+`BeginWebGLBuiltinMetadataFallback` / `EndWebGLBuiltinMetadataFallback` 是 AssetManager 使用的内部作用域开关。开启期间只有 `.version/.hash/.bytes` 指向首包根地址，结束后立即恢复常规远端候选。
 
 ---
 
@@ -55,6 +58,7 @@ public IReadOnlyList<string> GetRemoteUrls(string fileName)
 
 - `<PackageFilePrefix_?><Package>.version`、`<PackageFilePrefix_?><Package>_<PackageVersion>.hash`、`<PackageFilePrefix_?><Package>_<PackageVersion>.bytes`（`PackageVersion` 非空）：按当前 Player 有效 `YooAssetSettings.PackageFilePrefix` 识别；白名单命中时按“白名单主备 → 常规主备”排序，未命中时使用“常规主备”。AssetManager 会在本次启动内按候选顺序处理传输失败与内容校验失败。
 - Bundle、`.json`、`.report` 及其他文件：只使用常规主备地址。
+- WebGL 首包回退期间：版本元数据只返回首包同源地址；Bundle 仍只使用常规主备地址。
 
 `ApplyTemplate(template)`：依次替换 `{Platform}`、`{Channel}`、`{Package}`、`{Version}`。
 

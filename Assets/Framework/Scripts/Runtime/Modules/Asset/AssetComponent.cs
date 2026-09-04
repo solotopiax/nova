@@ -53,6 +53,11 @@ namespace NovaFramework.Runtime
                 StartupWhitelistUrlFallback = ResolveStartupWhitelistUrlFallback(),
                 StartupWhitelistMetadataRootUrl = ResolveStartupWhitelistMetadataRootUrl(),
                 StartupWhitelistMetadataRootUrlFallback = ResolveStartupWhitelistMetadataRootUrlFallback(),
+                StartupWhitelistFallbackRoundCount = m_StartupWhitelistFallbackRoundCount,
+                StartupWhitelistRetryRequestCount = m_StartupWhitelistRetryRequestCount,
+                StartupWhitelistPreferLastSuccessfulHost = m_StartupWhitelistPreferLastSuccessfulHost,
+                StartupWhitelistEnableUWRTracks = m_StartupWhitelistEnableUWRTracks,
+                StartupWhitelistCheckTimeout = m_StartupWhitelistCheckTimeout,
                 AutoHotfix = m_AutoHotfix,
                 QuitOnFailedOrCancel = m_QuitOnFailedOrCancel,
                 MaxDownloadConcurrency = m_MaxDownloadConcurrency,
@@ -61,11 +66,12 @@ namespace NovaFramework.Runtime
                 PreferLastSuccessfulHost = m_PreferLastSuccessfulHost,
                 EnableUWRTracks = m_EnableUWRTracks,
                 CheckTimeout = m_CheckTimeout,
+                ManifestRequestTimeout = m_ManifestRequestTimeout,
+                WebGLBundleRequestTimeout = m_WebGLBundleRequestTimeout,
                 IdleTimeout = m_IdleTimeout,
                 HostServerUrl = ResolveHostServerUrl(),
                 HostServerUrlFallback = ResolveHostServerUrlFallback(),
                 Channel = m_Channel,
-                DecryptorType = m_DecryptorType,
                 LaunchHotfixTags = m_LaunchHotfixTags,
                 AutoClearUnusedCacheOnHotfix = m_AutoClearUnusedCacheOnHotfix,
             });
@@ -140,8 +146,8 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 启动资源框架：注册包、创建解密器、初始化底层资源系统。
-        /// 由 Procedure 编排时调用；包名、URL 模板、解密器类型均已由 Inspector 字段通过 AssetManagerConfig 注入。
+        /// 启动资源框架：注册包并初始化底层资源系统。
+        /// 由 Procedure 编排时调用；包名与 URL 模板均已由 Inspector 字段通过 AssetManagerConfig 注入。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         public UniTask BootstrapAsync(CancellationToken ct = default)
@@ -170,7 +176,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 仅在 Host/Web 模式请求指定包远端 .version 文件中的最新资源版本，不加载或切换 Manifest。
+        /// 仅在 HostPlayMode 请求指定包远端 .version 文件中的最新资源版本，不加载或切换 Manifest。
         /// Offline/EditorSimulate 模式及已离线回退的包返回 null。
         /// </summary>
         /// <param name="package">包名，null 走默认包。</param>

@@ -25,7 +25,7 @@ description: Use when Nova 项目组要安装某个已配置 registry 包的最�
 
 1. 确认 Unity 不在编译、更新包或 Play Mode。安装/升级向 `nova.project.upm.manage-latest` 传入 action 和 packageName；卸载向 `nova.project.upm.uninstall-direct` 仅传 packageName。Plan 必须只读。
 2. 展示精确动作、包名、当前/目标版本、registry、缺失依赖、卸载消费者和清理边界。`blocked` / `not_applicable` 不得绕过。
-3. 安装/升级 Action 当前可通过 MCP 执行。卸载 Action 含 `Destructive`，尚未进入 MCP ExposurePolicy：Tool 拒绝时返回 `blocked` 并说明需要可信审批通道，不得改用任意 C#、反射、手写 manifest 或旧 Action 绕过。
+3. 安装、升级与卸载 Action 均可通过 MCP 执行；卸载仍含 `Destructive`，必须绑定当前一次性 PlanId 确认。Tool 缺失或 Action 未注册时返回 `blocked`，不得改用任意 C#、反射、手写 manifest 或旧 Action 绕过。
 4. 只有用户确认精确计划后，才使用同一 action_id 调用 execute，并把当前 planId 作为 confirmation_token。任一状态漂移后必须重新计划，不得自动重放。
 5. Execute 提交 Resolve 后只能报告 `partial`。Unity 稳定后用同一 action_id 验证；安装/升级必须精确命中目标 registry 版本，卸载必须同时从 direct manifest 和解析图消失。
 

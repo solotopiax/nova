@@ -73,6 +73,8 @@ Core 提供 `HttpFallbackPlanner`、`HttpFallbackExecutionPlan`、`HttpFallbackE
 | Asset 热更新 | `FallbackRoundCount` | `RetryDownloadCount` | `1 / 3` | 默认开启 | `EnableUWRTracks`，默认开启 |
 | HostKey + NetCmd | `BusinessFallbackRoundCount` | `RetryRequestCount` | `1 / 1` | 默认开启 | `EnableUWRTracks`，默认开启 |
 
+Asset 的 `VersionsCheckWhiteList.json` 请求不复用普通热更新配置，单独使用 `StartupWhitelistFallbackRoundCount`、`StartupWhitelistRetryRequestCount`、`StartupWhitelistPreferLastSuccessfulHost`、`StartupWhitelistEnableUWRTracks` 与 `StartupWhitelistCheckTimeout`，默认值为 `1 / 1 / true / true / 5`。
+
 普通单 URL `Nova.Network.GetAsync/PostAsync`、上传与调用方自行提供的单 URL 下载保持单 URL 语义，不猜测备用地址。
 
 App、Asset 与 Network Inspector 必须就这些配置直接说明：一轮会走完全部有效且去重后的候选；重试次数不包含首次执行；超时属于每次物理请求，不是整链总超时；最近成功偏好只在当前进程内调整新计划的候选顺序，不会删除其他候选；`EnableUWRTracks` 仅控制埋点上报，不影响请求或下载。HTTP 状态是否继续下一候选仍按本 ADR 中三个模块各自的规则说明，不写成一套模糊的全局规则。
@@ -103,7 +105,7 @@ App、Asset 与 Network Inspector 必须就这些配置直接说明：一轮会�
 - 事件固定为 `uwr_request_start`、`uwr_request_error`、`uwr_request_end`，schema 固定为 `1`。
 - 一条可完整观测的逻辑链遵守 `1 start → 0～N error → 1 end`；主备、轮次和重试都在同一个 `uwr_chain_id` 下。
 - 字段只保留 UWR 能稳定提供或框架能确定计算的值，完整 29 项定义以 `Assets/Framework/Tracks/Tracks.xlsx` 为准。
-- Asset 额外使用 `uwr_download_operation_id`、`uwr_package`、`uwr_file_type` 聚合下载；WebPlayMode 内容校验重试可能在同一 download operation 下产生新的 UWR chain。
+- Asset 额外使用 `uwr_download_operation_id`、`uwr_package`、`uwr_file_type` 聚合下载；WebGL HostPlayMode 的 WebNetwork 内容校验重试可能在同一 download operation 下产生新的 UWR chain。
 - SDK 尚未就绪时采用有界内存队列，SDK 就绪后按顺序派发；单个 `ITrackPlugin` 异常不得阻断其他插件和网络请求。
 
 ### 8. TGA 上游 DoH 边界

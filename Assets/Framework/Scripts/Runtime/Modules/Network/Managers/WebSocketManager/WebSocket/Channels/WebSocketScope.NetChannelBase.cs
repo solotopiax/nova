@@ -693,12 +693,12 @@ namespace NovaFramework.Runtime
                     if (IsAuthenticateMessageSuccess(message))
                     {
                         WaitingAuthenticate = false;
-                        Log.Debug(LogTag.NetworkWebSocket, "{0} 身份认证成功。", this);
+                        Log.Debug(LogTag.WebSocket, "{0} 身份认证成功。", this);
                     }
                     else
                     {
                         m_CoroutineRunner.StartCoroutine(CloseSocket(true));
-                        Log.Debug(LogTag.NetworkWebSocket, "{0} 身份认证失败，断开连接。", this);
+                        Log.Debug(LogTag.WebSocket, "{0} 身份认证失败，断开连接。", this);
                     }
                 }
 
@@ -713,7 +713,7 @@ namespace NovaFramework.Runtime
             private void OnWebGLError(int instanceId, string errorMsg)
             {
                 if (instanceId != WebSocketInstanceID) return;
-                Log.Error(LogTag.NetworkWebSocket, "{0} WebGL 原生层异常：{1}，等待断线重连。", this, errorMsg);
+                Log.Error(LogTag.WebSocket, "{0} WebGL 原生层异常：{1}，等待断线重连。", this, errorMsg);
                 NeedAuthenticateRightNow = false;
                 m_IsDisconnectedSubjectively = false;
                 m_IsWebSocketErrorOnWebGL = true;

@@ -1,7 +1,7 @@
 ---
 id: RES-003
 title: Unity YooAsset 教程
-summary: YooAsset 3.0 热更与 HostPlayMode 学习整理
+summary: YooAsset 3.0.5 热更与 Host 模式指南
 category: external
 status: active
 aliases:
@@ -26,10 +26,13 @@ keywords:
 
 > 本文档整合一轮**经过源码核验**的 YooAsset 3.0 热更知识，不保留已被推翻的猜测结论。
 >
-> 源码版本：`Assets/YooAsset/` 内 YooAsset 3.0.0-beta
+> 源码版本：`UPMPackages/com.solotopia.yooasset` 1.1.1，Core 3.0.5
 > 参考环境：Unity 6000.4.2f1 + Built-in + UniTask + IL2CPP + HybridCLR（Nova Framework）
 >
-> `PackageFilePrefix` 与清单 CRC32 部分已按 Nova 当前本地包 `UPMPackages/com.solotopia.yooasset` 1.0.6 复核；当前事实以该源码为准。
+> `PackageFilePrefix`、清单 CRC32 与运行模式部分已按上述当前本地包复核；当前事实以该源码为准。
+
+> [!important] YooAsset 原生模式与 Nova 配置的边界
+> 本文中的 `WebPlayMode` / `WebPlayModeOptions` 是 YooAsset 3.0.5 仍然保留的原生概念。Nova 当前不再对外暴露 `AssetPlayMode.WebPlayMode`：Nova 只配置 `OfflinePlayMode` / `HostPlayMode`，并在 `UNITY_WEBGL` 下分别自动映射为 WebServer、WebServer + WebNetwork 文件系统。不要把本文的 YooAsset 原生枚举直接等同于 Nova Inspector 选项。
 
 ---
 
@@ -64,9 +67,9 @@ keywords:
 
 ---
 
-### 1.2 运行模式与对应 Options 类
+### 1.2 YooAsset 原生运行模式与对应 Options 类
 
-`InitializePackageAsync(options)` 的 `options` **必须**是下面 4 种之一：
+YooAsset 原生 `InitializePackageAsync(options)` 的 `options` **必须**是下面 4 种之一：
 
 | 运行模式 | 要 new 的 Options 类 |
 |---|---|
@@ -74,6 +77,8 @@ keywords:
 | OfflinePlayMode（纯本地包，不热更） | `OfflinePlayModeOptions` |
 | **HostPlayMode（标准联网热更，主线教程用这个）** | **`HostPlayModeOptions`** |
 | WebPlayMode（WebGL / 小游戏） | `WebPlayModeOptions` |
+
+Nova 不直接暴露上述 WebPlayMode。Nova 的 Offline/Host 是资源策略，WebGL 是平台维度，具体映射见文首说明。
 
 ---
 
@@ -333,7 +338,7 @@ var handle = YooAssets.GetPackage("DefaultPackage").LoadAssetAsync<GameObject>("
 
 ---
 
-### 1.7 4 种模式 Options 对比表
+### 1.7 YooAsset 原生 4 种模式 Options 对比表
 
 | 模式 | Options | 最少配置 |
 |---|---|---|
@@ -342,7 +347,7 @@ var handle = YooAssets.GetPackage("DefaultPackage").LoadAssetAsync<GameObject>("
 | HostPlayMode | `HostPlayModeOptions` | Builtin + Cache（+ IRemoteService） |
 | WebPlayMode | `WebPlayModeOptions` | `WebServerFileSystemParameters = FileSystemParameters.CreateDefaultWebServerFileSystemParameters()` |
 
-**Editor 模式的 `packageRoot`** 是构建产物目录，样例用 `EditorSimulateBuildInvoker.Build(packageName, (int)EBundleType.VirtualBundle).PackageRootDirectory` 动态算，你也可以硬写 `Bundles/StandaloneOSX/DefaultPackage/` 之类的路径。
+**Editor 模式的 `packageRoot`** 是构建产物目录，样例用 `EditorSimulateBuildInvoker.Build(packageName, (int)EBundleType.VirtualAssetBundle).PackageRootDirectory` 动态算，你也可以硬写 `Bundles/StandaloneOSX/DefaultPackage/` 之类的路径。
 
 **Editor 模式可附加的模拟参数：** `EditorSimulateModeOptions` 还可通过 `AddParameter` 附加 `VirtualWebglMode`、`VirtualDownloadMode` 等模拟开关——在编辑器里模拟 WebGL 行为或模拟联网下载延时，仅在 EditorSimulate 下生效。
 
@@ -1425,14 +1430,14 @@ if (!YooAssets.TryGetPackage(packageName, out var package))
     package = YooAssets.CreatePackage(packageName);
 ```
 
-**4 种模式的关键差异**（源码 L37-93）：
+**YooAsset 原生 4 种模式的关键差异**（源码 L37-93）：
 
 | 模式 | 挂的 FileSystem | 关键点 |
 |---|---|---|
 | **EditorSimulateMode** | `EditorFileSystem`（指向 `EditorSimulateBuildInvoker.Build()` 产出目录） | 绕开打包，直接读 AssetDatabase；附加 `VirtualWebglMode` / `VirtualDownloadMode` 等模拟参数 |
 | **OfflinePlayMode** | 仅 `BuiltinFileSystem` | 只挂内置（StreamingAssets），没缓存也没远端 |
 | **HostPlayMode** | `BuiltinFileSystem` + `CacheFileSystem`（带 `IRemoteService`） | 3 样齐全：内置、缓存、远端回退；开启 `CopyBuiltinPackageManifest` |
-| **WebPlayMode** | `WebServerFileSystem`（或微信 WASM 特化） | WebGL 专用，浏览器直接从 HTTP 拿 |
+| **WebPlayMode** | `WebServerFileSystem`（或微信 WASM 特化） | YooAsset 原生 WebGL 模式，浏览器直接从 HTTP 获取；Nova 不直接暴露该模式 |
 
 **`IRemoteService`：** CDN 多域名回退接口，样例内嵌实现（L142-159）返回 `[default, fallback]` 两条 URL，YooAsset 下载器会按顺序尝试。
 

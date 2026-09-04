@@ -88,6 +88,10 @@ Android builds need a valid `ClientId`. Before release, recheck the current
 Google Play, Google Identity Services, Credential Manager, privacy disclosure,
 and login text or button requirements.
 
+Android preprocessing registers ProGuard rules through `NovaBuildContext` to
+keep the package's custom `com.solotopia.nova.googlesignin` Java bridge when
+R8/minify is enabled.
+
 ## Data Handling Expectations
 
 - Treat `CurrentUserData` as the package's current login-state payload.

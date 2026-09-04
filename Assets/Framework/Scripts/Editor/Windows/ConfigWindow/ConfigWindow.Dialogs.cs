@@ -10,12 +10,63 @@
 
 using System.Collections.Generic;
 using System.Text;
+using NovaFramework.Runtime;
 using UnityEditor;
 
 namespace NovaFramework.Editor
 {
     internal sealed partial class ConfigWindow : EditorWindow
     {
+        /// <summary>
+        /// 窗口关闭时提醒保存或导出的统一入口。
+        /// 未保存时只弹一次“仅保存 / 保存并导出”；选择“仅保存”后本次关闭不再追问导出。
+        /// 已手动保存但尚未导出时，仅询问是否立即导出。
+        /// </summary>
+        private void HandleCloseReminder()
+        {
+            if (m_Master == null) return;
+            if (m_IsDirty)
+            {
+                bool saveAndExport = EditorUtility.DisplayDialog(
+                    "配置修改尚未完成",
+                    "你修改了配置，但还没有保存。\n\n" +
+                    "仅保存：保存本次修改，暂不更新游戏运行配置。\n" +
+                    "保存并导出：保存修改，并立即更新游戏运行配置。",
+                    "保存并导出",
+                    "仅保存");
+                CommitWorkingCopyToAsset(false);
+                if (saveAndExport && !TryExport(false)) ReopenAfterFailedCloseExport();
+                return;
+            }
+
+            if (!m_HasSavedChangesPendingExport) return;
+            bool export = EditorUtility.DisplayDialog(
+                "配置尚未导出",
+                "修改已经保存，但还没有更新到游戏运行配置。是否现在导出？",
+                "导出",
+                "暂不导出");
+            if (export && !TryExport(false)) ReopenAfterFailedCloseExport();
+        }
+
+        /// <summary>
+        /// 关窗联动导出未完成时，在销毁流程结束后的下一次 Editor 更新重新打开配置窗口，保留修正入口。
+        /// </summary>
+        private void ReopenAfterFailedCloseExport()
+        {
+            ConfigMasterSO master = m_Master;
+            PlatformType platform = m_EditingPlatform;
+            ChannelType channel = m_Master.CurrentChannel;
+            DevelopMode developMode = m_Master.CurrentDevelopMode;
+            LeftTreeItem selectedItem = m_SelectedItem;
+            System.Type selectedPluginType = m_SelectedPluginType;
+            EditorApplication.delayCall += () =>
+            {
+                ConfigWindow window = OpenConfigSection(
+                    master, platform, channel, developMode, selectedItem, selectedPluginType);
+                window.m_HasSavedChangesPendingExport = true;
+            };
+        }
+
         /// <summary>
         /// Master 切换 / 场景切换换 Master 前的脏数据确认：有未保存改动时弹三选一对话框（保存/取消/丢弃）。
         /// 统一使用 m_IsDirty 作为脏判定口径，不再依赖 m_MasterSO.hasModifiedProperties。

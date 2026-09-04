@@ -21,6 +21,8 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
     /// </summary>
     public class ProcedurePlaying : ProcedureBase
     {
+        private int m_DemoGoogleSigninViewSerialID = -1;
+
         /// <summary>
         /// 进入流程时调用。
         /// </summary>
@@ -31,11 +33,23 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
 
             Log.Debug(LogTag.Procedure, "ProcedurePlaying — 进入游戏主循环。");
 
-            int serialID = Nova.UI.OpenUIViewAsync<DemoGoogleSigninView>();
-            if (serialID < 0)
+            Nova.UI.OnOpenUIViewFail += OnOpenUIViewFail;
+            m_DemoGoogleSigninViewSerialID = Nova.UI.OpenUIViewAsync<DemoGoogleSigninView>();
+            if (m_DemoGoogleSigninViewSerialID < 0)
             {
-                Log.Error(LogTag.UI, "ProcedurePlaying — DemoGoogleSigninView 打开失败。");
+                Log.Error(LogTag.UI, "ProcedurePlaying — DemoGoogleSigninView 打开请求失败。");
             }
+        }
+
+        private void OnOpenUIViewFail(int serialID, string assetLocation, string errorMessage)
+        {
+            if (serialID != m_DemoGoogleSigninViewSerialID)
+            {
+                return;
+            }
+
+            m_DemoGoogleSigninViewSerialID = -1;
+            Log.Error(LogTag.UI, "ProcedurePlaying — DemoGoogleSigninView 异步打开失败。Asset 地址 '{0}'：{1}", assetLocation, errorMessage);
         }
 
         /// <summary>
@@ -54,6 +68,13 @@ namespace NovaFramework.Sdk.Googlesignin.Samples.Runtime
         /// <param name="isShutdown">是否因流程管理器关闭而离开。</param>
         protected override void OnLeave(ProcedureOwner procedureOwner, bool isShutdown)
         {
+            Nova.UI.OnOpenUIViewFail -= OnOpenUIViewFail;
+            if (m_DemoGoogleSigninViewSerialID >= 0 && Nova.UI.IsLoadingUIView(m_DemoGoogleSigninViewSerialID))
+            {
+                Nova.UI.CloseUIView(m_DemoGoogleSigninViewSerialID);
+            }
+
+            m_DemoGoogleSigninViewSerialID = -1;
             base.OnLeave(procedureOwner, isShutdown);
         }
     }

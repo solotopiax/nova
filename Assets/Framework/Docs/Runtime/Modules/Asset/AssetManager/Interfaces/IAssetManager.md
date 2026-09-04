@@ -34,7 +34,7 @@
 - `BootstrapAsync()`：注册包、准备底层资源系统
 - `LoadManifestAsync(package)`：初始化包并加载版本 / 清单
 - `GetCurrentPackageVersion(package)`：读取当前已激活 Manifest 的版本；清单尚未加载时返回 `null`
-- `RequestLatestPackageVersionAsync(package)`：仅在 Host/Web 模式请求远端 `.version` 文件，返回服务器声明的版本；会完成包初始化，但不会加载或切换 Manifest。Offline/EditorSimulate 模式及已离线回退的包返回 `null`；请求失败仍会推进该包共享的主备故障切换状态。
+- `RequestLatestPackageVersionAsync(package)`：仅在 HostPlayMode 请求远端 `.version` 文件，返回服务器声明的版本；会完成包初始化，但不会加载或切换 Manifest。Offline/EditorSimulate 模式及已离线回退的包返回 `null`；请求失败仍会推进该包共享的主备故障切换状态。
 - `SaveAssetCheckDeviceId(deviceId)`：SDK 初始化后向 Asset 模块窄接口回写稳定设备 ID；空值或写入失败不阻断调用方
 
 不要把这三步当成一个动作。

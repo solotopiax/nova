@@ -518,7 +518,7 @@ namespace NovaFramework.Editor
             else if (fieldType.IsEnum)
             {
                 Enum v = currentValue as Enum ?? (Enum)Enum.GetValues(fieldType).GetValue(0);
-                Enum newV = EditorGUI.EnumPopup(valueRect, v);
+                Enum newV = DrawEnumPopup(valueRect, fieldType, v);
                 field.SetValue(paramsInstance, newV);
             }
             else
@@ -526,6 +526,47 @@ namespace NovaFramework.Editor
                 // 不支持的类型（列表 / 复杂对象等）：仅绘制只读占位，Warning 由调用方在缓存构建时输出，此处不重复打印以避免每帧日志垃圾
                 GUI.Label(valueRect, $"(不支持: {fieldType.Name})", EditorStyles.miniLabel);
             }
+        }
+
+        /// <summary>
+        /// 绘制 Pipify 枚举参数，并保留 WebGL 等标准技术名词的大小写格式。
+        /// </summary>
+        private static Enum DrawEnumPopup(Rect position, Type enumType, Enum currentValue)
+        {
+            Array values = Enum.GetValues(enumType);
+            string[] displayNames = new string[values.Length];
+            int selectedIndex = 0;
+            for (int i = 0; i < values.Length; i++)
+            {
+                Enum value = (Enum)values.GetValue(i);
+                displayNames[i] = GetEnumDisplayName(value);
+                if (value.Equals(currentValue))
+                {
+                    selectedIndex = i;
+                }
+            }
+
+            int newIndex = Mathf.Clamp(EditorGUI.Popup(position, selectedIndex, displayNames), 0, values.Length - 1);
+            return (Enum)values.GetValue(newIndex);
+        }
+
+        /// <summary>
+        /// 获取枚举值在 Pipify 中的显示名；优先使用 InspectorName，并修正 Unity 对 WebGL 的自动拆词。
+        /// </summary>
+        internal static string GetEnumDisplayName(Enum value)
+        {
+            if (value == null) return string.Empty;
+
+            Type enumType = value.GetType();
+            string memberName = Enum.GetName(enumType, value) ?? value.ToString();
+            FieldInfo member = enumType.GetField(memberName, BindingFlags.Public | BindingFlags.Static);
+            InspectorNameAttribute inspectorName = member?.GetCustomAttribute<InspectorNameAttribute>();
+            if (inspectorName != null && !string.IsNullOrEmpty(inspectorName.displayName))
+            {
+                return inspectorName.displayName;
+            }
+
+            return ObjectNames.NicifyVariableName(memberName).Replace("Web GL", "WebGL");
         }
 
         /// <summary>

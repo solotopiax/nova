@@ -47,11 +47,11 @@ Nova 需要让少量测试设备在正式用户之前验证一套候选 YooAsset
 
 1. `EnableHotfix=true`。
 2. `EnableStartupWhitelist=true`。
-3. 当前有效模式为 `HostPlayMode` 或 `WebPlayMode`。
+3. 当前有效模式为 `HostPlayMode`；WebGL 平台由 AssetManager 自动选择 Web 文件系统。
 4. 当前 `DevelopMode` 对应的白名单配置文件和版本元数据根地址至少各有一个有效 URL。
 5. 本地已有稳定 DeviceID 缓存。
 
-`DevelopMode.Debug` 选择 Debug 主备配置，`DevelopMode.Release` 选择 Release 主备配置。所有地址支持既有 `{Platform}`、`{Channel}`、`{Package}`、`{Version}` 占位符。白名单配置文件由 `IHttpManager` 按主、备候选顺序通过 UWR 请求；版本元数据与 Bundle URL 由 Asset 候选策略推进。各候选始终保留原始域名并使用系统 DNS，不注入解析 IP。
+`DevelopMode.Debug` 选择 Debug 主备配置，`DevelopMode.Release` 选择 Release 主备配置。所有地址支持既有 `{Platform}`、`{Channel}`、`{Package}`、`{Version}` 占位符。白名单配置文件由 `IHttpManager` 通过 UWR 请求，并独立配置完整轮数、请求重试次数、最近成功域名、UWR 埋点与单次请求超时；默认分别为 `1`、`1`、`true`、`true`、`5`。版本元数据与 Bundle URL 继续由普通 Asset 候选策略推进。各候选始终保留原始域名并使用系统 DNS，不注入解析 IP。
 
 ### 2. DeviceID 在 SDK 初始化后直写启动专用文件
 
@@ -65,7 +65,7 @@ persistentDataPath/Asset/asset-check-device-id.dat
 
 ### 3. 白名单文件是 DeviceID JSON 字符串数组
 
-云端文件名固定为 `VersionsCheckWhiteList.json`，根结构为 JSON 字符串数组。客户端按主地址、备用地址顺序下载并做精确字符串匹配；空响应、请求失败、超时、非法 JSON、空数组或未命中都继续使用常规资源路由。
+云端文件名固定为 `VersionsCheckWhiteList.json`，根结构为 JSON 字符串数组。客户端按白名单专属配置执行主备、轮次与重试，并做精确字符串匹配；空响应、请求失败、超时、非法 JSON、空数组或未命中都继续使用常规资源路由。
 
 真实的外部取消仍向上传播，避免把用户或生命周期取消误判为普通弱网。
 
@@ -77,7 +77,7 @@ persistentDataPath/Asset/asset-check-device-id.dat
 - `{package}.hash`
 - `{package}.bytes`
 
-请求顺序为白名单主备候选优先、常规主备候选随后。传输失败以及 HTTP 成功但内容非法或损坏都会推进到下一候选；全部失败后进入既有三级离线回退。
+请求顺序为白名单主备候选优先、常规主备候选随后。传输失败以及 HTTP 成功但内容非法或损坏都会推进到下一候选；全部失败后进入平台对应的 Manifest 回退：非 WebGL 使用既有三级离线回退，WebGL 临时路由到随 Player 发布的首包元数据。
 
 Bundle 下载始终使用常规 Host/Web 主备地址，不因白名单命中切换。这样候选 Manifest 可以引用常规 CDN 中已部署的 Bundle，并继续复用 YooAsset 的 bundle hash 缓存。
 
@@ -117,7 +117,7 @@ Config 的“白名单部署”和 Pipify Step `cdn.whitelist.deploy` 使用同�
 - 测试设备必须先正常启动一次，白名单无法覆盖首次安装的第一次启动。
 - DeviceID 以明文保存在应用持久化目录，只适合作为灰度路由标识，不应当作鉴权凭证或秘密。
 - 运维必须保证候选 Manifest 引用的 Bundle 已存在于常规 CDN，否则命中设备仍会在资源下载阶段失败。
-- 白名单主备、常规主备和三级离线回退形成多级候选链，日志必须保留候选推进原因以便排障。
+- 白名单主备、常规主备和平台对应的 Manifest 回退形成多级候选链，日志必须保留候选推进原因以便排障。
 - 启动白名单诊断使用 `Log.Debug` 输出门控状态、配置文件主备拉取结果、命中结果，以及 `.version` / `.hash` / `.bytes` 的实际请求结果；命中时明确打印完整 DeviceID，Bundle 不进入这组元数据日志。
 
 ## 被排除的方案（Alternatives）

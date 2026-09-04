@@ -144,11 +144,14 @@ UI 视图如果要走对象池，前提是这一步已经完成。
 - `OpenUIViewAsync<T>()`
 - `OpenUIViewSync(assetLocation, uiGroupName, ...)`
 - `OpenUIViewAsync(assetLocation, uiGroupName, ...)`
+- `OnOpenUIViewFail(serialID, assetLocation, errorMessage)`
 
 语义差异：
 
 - 泛型入口依赖 `m_UIViewRegistry`
 - 字符串入口直接显式指定资源与分组
+- 异步打开的非负 `serialID` 只表示请求已创建；资源加载或实例化失败通过 `OnOpenUIViewFail` 通知
+- 关闭仍在加载的请求属于主动取消，不触发 `OnOpenUIViewFail`
 
 ### 3. 关闭与清理
 

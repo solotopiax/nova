@@ -9,9 +9,9 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "agent-action-blocked",
+      "kind": "agent-action",
       "entry": "nova.project.android.resolve-dependencies",
-      "when": "该 Action 当前未在 MCP ExposurePolicy 中；可信审批与开放策略完成前必须返回 blocked"
+      "when": "需要按冻结的 Android 依赖图执行 EDM4U Force Resolve 并核验受管输出时"
     }
   ],
   "inputs": [
@@ -66,7 +66,7 @@
       "any changed activeBuildTarget, dependency graph, managed path or execution entry",
       "UPM change, build, device installation, credential use, external write, delete outside managed outputs, Git commit or push"
     ],
-    "rule": "确认只绑定当前 Android Target、完整依赖图摘要和 EDM4U 精确受管写入集；任何图、路径、平台或入口漂移后旧确认失效。当前 MCP caller-asserted token 不是可信审批，故 Action 保持 blocked。"
+    "rule": "确认只绑定当前 Android Target、完整依赖图摘要和 EDM4U 精确受管写入集；任何图、路径、平台或入口漂移后旧确认失效。"
   },
   "minimumEvidence": "static",
   "resultStates": [

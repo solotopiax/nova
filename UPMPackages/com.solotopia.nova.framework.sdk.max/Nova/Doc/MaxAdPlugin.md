@@ -26,7 +26,7 @@ AppLovin MAX 广告渠道插件，负责 MAX SDK 初始化、激励视频/插屏
 | `MaxAdPlugin.UserId.cs` | `MaxAdPlugin` | 用户身份同步：override `SetUserId` 调用 `MaxSdk.SetUserId(userId)` |
 | `MaxAdChannelConfig.cs` | `MaxAdChannelConfig` | 渠道配置数据对象，实现 `IAdChannelConfig` |
 | `FacebookAdSetting.cs` | `FacebookAdSetting` | Facebook 广告 SDK 隐私设置内部工具类 |
-| `Editor/BuildProcessor/MaxAdPluginBuildProcessor.cs` | `MaxAdPluginBuildProcessor` | 构建预处理：把 MaxAdChannelConfig 的 SdkKey / AdMob AppId 写入 AppLovinSettings.asset |
+| `Editor/BuildProcessor/MaxAdPluginBuildProcessor.cs` | `MaxAdPluginBuildProcessor` | 构建预处理：写入 AppLovinSettings.asset，并为 Android 注册 MAX 相关 ProGuard 规则 |
 | `Editor/NovaFramework.SDK.MaxAdPlugin.Editor.asmdef` | — | Editor 程序集定义，仅 Editor 平台启用 |
 
 ---

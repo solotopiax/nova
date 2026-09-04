@@ -36,12 +36,24 @@ namespace NovaFramework.SDK.MaxAdPlugin.Editor
         public override int PostprocessPriority => 600;
 
         /// <summary>
-        /// Android 平台预处理：写入 SdkKey 与 AdMobAndroidAppId。
+        /// MAX Android 聚合适配器可能会将 AndroidX Startup / WorkManager / Room 带入构建。
+        /// Android 开启 minify 时必须保留这些启动期反射入口。
+        /// </summary>
+        private const string c_AndroidProguardRules =
+            "-keep class androidx.startup.** { *; }\n" +
+            "-keep class androidx.work.** { *; }\n" +
+            "-keep class * extends androidx.room.RoomDatabase { *; }\n" +
+            "-keep class **_Impl { *; }\n" +
+            "-dontwarn androidx.room.paging.**";
+
+        /// <summary>
+        /// Android 平台预处理：注册 MAX ProGuard 规则，并写入 SdkKey 与 AdMobAndroidAppId。
         /// </summary>
         /// <param name="report">Unity 构建报告。</param>
         /// <param name="context">Nova 构建上下文。</param>
         public override void OnPreprocessBuildOnAndroid(BuildReport report, NovaBuildContext context)
         {
+            context.AddProguardRules("MaxAdPlugin", c_AndroidProguardRules);
             ApplyMaxSettings(isAndroid: true);
         }
 

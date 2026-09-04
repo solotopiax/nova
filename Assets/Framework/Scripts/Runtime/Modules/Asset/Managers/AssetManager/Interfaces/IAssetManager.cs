@@ -28,8 +28,8 @@ namespace NovaFramework.Runtime
         void Initialize(AssetManagerConfig config);
 
         /// <summary>
-        /// 启动资源框架：注册包、创建解密器、初始化底层资源系统。
-        /// 由 Procedure 编排时调用；包名、URL 模板、解密器类型均已由 Initialize 注入的 AssetManagerConfig 提供。
+        /// 启动资源框架：注册包并初始化底层资源系统。
+        /// 由 Procedure 编排时调用；包名与 URL 模板均已由 Initialize 注入的 AssetManagerConfig 提供。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         UniTask BootstrapAsync(CancellationToken ct = default);
@@ -50,7 +50,7 @@ namespace NovaFramework.Runtime
         string GetCurrentPackageVersion(string package = null);
 
         /// <summary>
-        /// 仅在 Host/Web 模式请求指定包远端 .version 文件中的最新资源版本，不加载或切换 Manifest。
+        /// 仅在 HostPlayMode 请求指定包远端 .version 文件中的最新资源版本，不加载或切换 Manifest。
         /// Offline/EditorSimulate 模式及已离线回退的包返回 null。
         /// </summary>
         /// <param name="package">包名，null 走默认包。</param>

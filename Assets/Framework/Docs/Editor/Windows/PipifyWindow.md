@@ -79,7 +79,7 @@ CLI 可使用 `-configMasterGuid` 与 `-pipifySettingsGuid` 成对指定工作�
 | 删除按钮 | 通过 `EditorApplication.delayCall` 延迟移除，防止 Layout/Repaint 阶段直接修改集合导致崩溃；同时清空 `m_ExpandedItemIndices` / `m_ParamsCache` 并设 `m_ItemsListBoundBatchIndex = -1` 强制重建 ReorderableList，避免 key 移位错位 |
 | `onAddDropdownCallback` | 按 Category 分组弹 GenericMenu，选中后调用 `AddBatchItemFromStep(info)` |
 | `onReorderCallback` | 拖拽排序后清空 `m_ExpandedItemIndices` 和 `m_ParamsCache` 并 `MarkDirty()` |
-| 参数内联 Drawer | 参数类型标注 `PipifyHelpBoxAttribute` 时先绘制通用说明框；随后反射遍历 `ParamsType.GetFields(Public | Instance)` 按类型分发：普通 `string`→TextField；标注 `TextAreaAttribute` 的 `string`→按 3–8 行等声明范围自适应高度的 TextArea；`bool`→Toggle；`int`→IntField；`float`→FloatField；`Enum`→EnumPopup；标注 `PipifyReadOnlyAttribute` 的字段以 DisabledGroup 绘制；其他复杂类型→Log.Warning 跳过。`export.config.Platform`、`build.package.Target`、`bundlebuilder.build.Target`、`bundlebuilder.build_raw_file.Target` 均只读展示 Unity 当前 Active BuildTarget 的实时值。`build.package` 首次进入 Android `DevelopmentBuild + BuildAppBundle` 风险组合时立即 Warning + 弹窗，取消会恢复编辑前快照 |
+| 参数内联 Drawer | 参数类型标注 `PipifyHelpBoxAttribute` 时先绘制通用说明框；随后反射遍历 `ParamsType.GetFields(Public | Instance)` 按类型分发：普通 `string`→TextField；标注 `TextAreaAttribute` 的 `string`→按 3–8 行等声明范围自适应高度的 TextArea；`bool`→Toggle；`int`→IntField；`float`→FloatField；`Enum`→Popup（优先采用 `InspectorName`，并保持 `WebGL` 连写）；标注 `PipifyReadOnlyAttribute` 的字段以 DisabledGroup 绘制；其他复杂类型→Log.Warning 跳过。`export.config.Platform`、`build.package.Target`、`bundlebuilder.build.Target`、`bundlebuilder.build_raw_file.Target` 均只读展示 Unity 当前 Active BuildTarget 的实时值。`build.package` 首次进入 Android `DevelopmentBuild + BuildAppBundle` 风险组合时立即 Warning + 弹窗，取消会恢复编辑前快照 |
 | 参数持久化 | `EditorGUI.BeginChangeCheck/EndChangeCheck` 包住字段组；普通变化或用户确认风险组合后，`Util.Json.Serialize(paramsInstance)` 写回 `item.ParamsJson` + `MarkDirty()`；用户取消风险弹窗时不持久化，也不置脏 |
 | `DrawExecute()` | 顶部 `EditorUtil.Draw.Line()` 分割线 + 右对齐 `SuccessButton("▶ 运行")`；禁用条件：`batch.Items.Count == 0 \|\| m_IsDirty`；点击后 fire-and-forget 调用 `EditorUtil.Pipify.RunBatchAsync(batch, this)`，Runner 内部通过 WindowReporter 以模态进度条呈现执行进度，结束后通过宿主窗口 `ShowNotification` 弹右下角结果浮窗 |
 
@@ -149,7 +149,7 @@ DrawBody()
 | `bool` | `EditorGUI.Toggle` |
 | `int` | `EditorGUI.IntField` |
 | `float` | `EditorGUI.FloatField` |
-| `Enum` 子类 | `EditorGUI.EnumPopup` |
+| `Enum` 子类 | `EditorGUI.Popup`；显示名优先使用 `InspectorName`，`WebGL` 保持标准连写 |
 | 其他 | 只读占位 + `Log.Warning` 跳过 |
 
 整个字段组用 `EditorGUI.BeginChangeCheck / EndChangeCheck` 包裹，有变化则回写 `item.ParamsJson = Util.Json.Serialize(paramsInstance)`。平台同步本身只更新当前参数实例的展示与执行值，不把历史 ParamsJson 中的平台值当作可编辑真相。

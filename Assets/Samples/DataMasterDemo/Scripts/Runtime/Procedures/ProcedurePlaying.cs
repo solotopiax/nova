@@ -21,6 +21,8 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
     /// </summary>
     public class ProcedurePlaying : ProcedureBase
     {
+        private int m_DemoDataMasterViewSerialID = -1;
+
         /// <summary>
         /// 进入流程时调用。
         /// </summary>
@@ -35,11 +37,23 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
             // 登录成功拿到真实 uid 后再 Nova.SDK.Login(uid)，DataMaster 据此携带该 uid 向服务端拉取。
             // 此处不再用假 uid 预登录，避免以无效 uid 发起拉取。
 
-            int serialID = Nova.UI.OpenUIViewAsync<DemoDataMasterView>();
-            if (serialID < 0)
+            Nova.UI.OnOpenUIViewFail += OnOpenUIViewFail;
+            m_DemoDataMasterViewSerialID = Nova.UI.OpenUIViewAsync<DemoDataMasterView>();
+            if (m_DemoDataMasterViewSerialID < 0)
             {
-                Log.Error(LogTag.UI, "ProcedurePlaying — DemoDataMasterView 打开失败。");
+                Log.Error(LogTag.UI, "ProcedurePlaying — DemoDataMasterView 打开请求失败。");
             }
+        }
+
+        private void OnOpenUIViewFail(int serialID, string assetLocation, string errorMessage)
+        {
+            if (serialID != m_DemoDataMasterViewSerialID)
+            {
+                return;
+            }
+
+            m_DemoDataMasterViewSerialID = -1;
+            Log.Error(LogTag.UI, "ProcedurePlaying — DemoDataMasterView 异步打开失败。Asset 地址 '{0}'：{1}", assetLocation, errorMessage);
         }
 
         /// <summary>
@@ -58,6 +72,13 @@ namespace NovaFramework.Sdk.Datamaster.Samples.Runtime
         /// <param name="isShutdown">是否因流程管理器关闭而离开。</param>
         protected override void OnLeave(ProcedureOwner procedureOwner, bool isShutdown)
         {
+            Nova.UI.OnOpenUIViewFail -= OnOpenUIViewFail;
+            if (m_DemoDataMasterViewSerialID >= 0 && Nova.UI.IsLoadingUIView(m_DemoDataMasterViewSerialID))
+            {
+                Nova.UI.CloseUIView(m_DemoDataMasterViewSerialID);
+            }
+
+            m_DemoDataMasterViewSerialID = -1;
             base.OnLeave(procedureOwner, isShutdown);
         }
     }

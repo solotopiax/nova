@@ -35,7 +35,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 终端下资源加载模式。
         /// 在 Player（非 Editor）时生效；不允许 EditorSimulateMode。默认 HostPlayMode（联机热更模式）。
-        /// 与 EnableHotfix 双向联动：EnableHotfix=false ⇔ RuntimePlayMode=OfflinePlayMode；EnableHotfix=true ⇔ RuntimePlayMode∈{HostPlayMode, WebPlayMode}。
+        /// 与 EnableHotfix 双向联动：EnableHotfix=false ⇔ RuntimePlayMode=OfflinePlayMode；EnableHotfix=true ⇔ RuntimePlayMode=HostPlayMode。
         /// </summary>
         [SerializeField]
         private AssetPlayMode m_RuntimePlayMode = AssetPlayMode.HostPlayMode;
@@ -71,7 +71,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 是否启用启动设备白名单；默认关闭。
-        /// 仅在 EnableHotfix=true 且有效资源模式为 HostPlayMode/WebPlayMode 时生效。
+        /// 仅在 EnableHotfix=true 且有效资源模式为 HostPlayMode 时生效。
         /// </summary>
         [SerializeField]
         private bool m_EnableStartupWhitelist;
@@ -123,6 +123,36 @@ namespace NovaFramework.Runtime
         /// </summary>
         [SerializeField]
         private string m_StartupWhitelistMetadataRootUrlFallbackRelease;
+
+        /// <summary>
+        /// 启动白名单文件请求每个重试周期内的主备完整轮数；默认 1。
+        /// </summary>
+        [SerializeField, Min(1)]
+        private int m_StartupWhitelistFallbackRoundCount = 1;
+
+        /// <summary>
+        /// 启动白名单文件全部轮次失败后的重试次数；默认 1。
+        /// </summary>
+        [SerializeField, Min(0)]
+        private int m_StartupWhitelistRetryRequestCount = 1;
+
+        /// <summary>
+        /// 启动白名单文件的新请求是否优先使用当前进程内最近成功的域名；默认开启。
+        /// </summary>
+        [SerializeField]
+        private bool m_StartupWhitelistPreferLastSuccessfulHost = true;
+
+        /// <summary>
+        /// 是否启用启动白名单文件 UWR 请求链埋点；默认开启，仅控制上报。
+        /// </summary>
+        [SerializeField]
+        private bool m_StartupWhitelistEnableUWRTracks = true;
+
+        /// <summary>
+        /// 启动白名单文件单次物理请求超时秒数；主备候选分别计时，默认 5。
+        /// </summary>
+        [SerializeField]
+        private int m_StartupWhitelistCheckTimeout = 5;
 
         /// <summary>
         /// 启动期资源补丁就绪后是否自动开始下载；默认 true。
@@ -213,14 +243,29 @@ namespace NovaFramework.Runtime
         public bool AutoClearUnusedCacheOnHotfix => m_AutoClearUnusedCacheOnHotfix;
 
         /// <summary>
-        /// 启动白名单与 .version 的单次物理请求超时秒数；每个主备候选独立使用，默认 5。
-        /// .hash/.bytes Manifest 仍使用现有 60 秒超时，不受此字段影响。
+        /// .version 的单次物理请求超时秒数；每个主备候选独立使用，默认 5。
+        /// 主备轮次、下载重试次数、最近成功域名优先和 UWR 埋点仍使用 Asset 公共配置。
         /// </summary>
         [SerializeField]
         private int m_CheckTimeout = 5;
 
         /// <summary>
+        /// .hash/.bytes Manifest 的单次物理请求总超时秒数；每个主备候选独立使用，默认 60。
+        /// 主备轮次、下载重试次数、最近成功域名优先和 UWR 埋点仍使用 Asset 公共配置。
+        /// </summary>
+        [SerializeField]
+        private int m_ManifestRequestTimeout = 60;
+
+        /// <summary>
+        /// WebGL 远端 Bundle 单次物理请求的总超时秒数；默认 300。
+        /// 非 WebGL 平台不使用该字段。
+        /// </summary>
+        [SerializeField]
+        private int m_WebGLBundleRequestTimeout = 300;
+
+        /// <summary>
         /// 单文件字节流入超时秒数（连续无新字节流入时中止下载）；默认 20。
+        /// WebGL 不支持可靠的字节流入看门狗，不使用该字段。
         /// </summary>
         [SerializeField]
         private int m_IdleTimeout = 20;
@@ -254,12 +299,6 @@ namespace NovaFramework.Runtime
         /// </summary>
         [SerializeField, HideInInspector]
         private ChannelType m_Channel;
-
-        /// <summary>
-        /// AssetBundle 解密器类型；默认 None。
-        /// </summary>
-        [SerializeField]
-        private AssetDecryptorType m_DecryptorType = AssetDecryptorType.None;
 
         /// <summary>
         /// AssetManager 实例。

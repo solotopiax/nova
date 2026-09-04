@@ -364,7 +364,7 @@ namespace NovaFramework.Editor
                     return AgentActionResult.Create(actionId, "partial", "Unity 仍在编译或更新，暂不能完成验证。");
                 }
 
-                if (!AgentActionLockManager.TryAcquire(action.Descriptor.Locks, out IDisposable lease))
+                if (!AgentActionLockManager.TryAcquire(action.Descriptor.VerifyLocks, out IDisposable lease))
                 {
                     return AgentActionResult.Create(actionId, "partial", "Action 所需资源当前正被使用，尚未完成验证。");
                 }

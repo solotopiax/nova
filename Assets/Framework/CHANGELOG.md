@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.6.26] - 2026-09-04
+
+### Breaking
+
+- 删除未投入使用的 AssetBundle 解密占位契约：`AssetDecryptorType`、`OffsetBundleDecryptor`、`AssetManagerConfig.DecryptorType` 与 `AssetComponent.m_DecryptorType`。
+- 删除 `AssetPlayMode.WebPlayMode`；WebGL 继续使用 `HostPlayMode`，底层文件系统由框架按平台自动选择。
+- `IUIManager` 新增 `OnOpenUIViewFail` 事件；仓外自定义实现需要补齐该成员。
+
+### Added
+
+- WebGL HostPlayMode 增加远端 Bundle 单次物理请求总超时，并在远端 Manifest 候选耗尽后回退随 Player 发布的首包元数据；Bundle 仍保持常规远端按需加载。
+- BuildReadiness 增加场景渠道快照校验；Asset/App 渠道与已导出的 ConfigRuntime 不一致时阻断 Nova Player 构建流程，并提示重新导出和保存场景。
+
+### Changed
+
+- Asset Inspector 按平台互斥编辑 WebGL Bundle 总超时与非 WebGL 单文件字节流入超时，并补充启动必须资源与首包 Tag 一致性的提示。
+
 ## [0.6.25] - 2026-09-02
 
 ### Added

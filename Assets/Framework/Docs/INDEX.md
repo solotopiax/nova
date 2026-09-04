@@ -172,9 +172,7 @@
 | [YooAssetAllAssetsHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetAllAssetsHandleAdapter.md) | IAllAssetsHandle 到 YooAsset.AllAssetsHandle 的 ReferencePool 适配器 |
 | [YooAssetRawFileHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetRawFileHandleAdapter.md) | IRawFileHandle 到 YooAsset AssetHandle + RawFileObject 的 ReferencePool 适配器（FilePath 为尽力提供的 bundle 路径） |
 | [YooAssetSceneHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetSceneHandleAdapter.md) | ISceneHandle 到 YooAsset.SceneHandle 的 ReferencePool 适配器 |
-| [AssetPlayMode.md](Runtime/Modules/Asset/Definitions/AssetPlayMode.md) | 资源运行模式枚举（EditorSimulate/Offline/Host/Web） |
-| [AssetDecryptorType.md](Runtime/Modules/Asset/Definitions/AssetDecryptorType.md) | AB 解密器类型枚举 |
-| [OffsetBundleDecryptor.md](Runtime/Modules/Asset/Definitions/Decryptors/OffsetBundleDecryptor.md) | 偏移解密器骨架实现（Wave 5 待补） |
+| [AssetPlayMode.md](Runtime/Modules/Asset/Definitions/AssetPlayMode.md) | 资源策略枚举（EditorSimulate/Offline/Host，WebGL 由平台自动适配） |
 
 ### App（大版本检查）
 
@@ -516,7 +514,7 @@
 | [EditorUtil.HybridCLR.md](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) | HybridCLR 原子操作合集（link.xml 校验/补全、Generate 系列封装、AOT/业务 DLL 拷贝；由 Pipify Steps 编排流水线） |
 | [EditorUtil.AndroidResolver.md](Editor/EditorUtil/EditorUtil.AndroidResolver/EditorUtil.AndroidResolver.md) | Android 依赖解析工具（反射调用 EDM4U PlayServicesResolver.ResolveSync，强制重建 Assets/GeneratedLocalRepo/**；配合 HybridCLR Generate All 前置使用） |
 | [EditorUtil.Pipify.md](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) | [PipifyStep] 反射注册 Step + Batch 可视化配置 + UI/CLI 双入口的自动化流水线 |
-| [EditorUtil.AgentActions.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) | Nova Project Skills 的受控 C# Action Registry、Plan/Execute/Verify/Recovery 调度层；当前注册 19 项，MCP 安全开放 13 项 |
+| [EditorUtil.AgentActions.md](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) | Nova Project Skills 的受控 C# Action Registry、Plan/Execute/Verify/Recovery 调度层；当前注册并显式开放 20 项 |
 | [EditorUtil.Build.md](Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) | BuildPipeline.BuildPlayer 薄封装，统一异常与日志 |
 | [EditorUtil.CDN.md](Editor/EditorUtil/EditorUtil.CDN/EditorUtil.CDN.md) | CDN 内容部署与缓存清理工具（阿里云 OSS 批量上传 + Cloudflare purge 分批清理；编排/传输适配器分层；无 public API，仅 internal，程序集外经 ConfigWindow「CDN 内容分发网络部署」面板触发） |
 | [EditorUtil.Asset.Operator.md](Editor/EditorUtil/EditorUtil.Asset/EditorUtil.Asset.Operator.md) | 通用 ScriptableObject 资产查找/创建/按路径加载（泛型 Find&lt;T&gt; / CreateAt&lt;T&gt; / LoadAt&lt;T&gt;） |

@@ -4,6 +4,13 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-09-04
+
+### Changed
+
+- FacebookDemo 适配 Framework `0.6.26` 的 `IUIManager.OnOpenUIViewFail` 事件；最低 Framework 依赖同步提升至 `0.6.26`。
+- Android consumer ProGuard 补充 Facebook 登录相关类型的保留规则。
+
 ## [0.1.12] - 2026-09-02
 
 ### Changed

@@ -12,7 +12,7 @@
 
 ## 安装前置
 
-当前完整安装入口是 NovaSpark。它先向消费工程 `Packages/manifest.json` 写入 OpenUPM registry 与精确 scope `com.coplaydev.unity-mcp`，再安装 Framework；UPM 依赖链随后自动解析 `Framework -> 本包 -> com.coplaydev.unity-mcp@10.1.2`。Unity MCP 不需要成为项目顶层 Git 依赖；绕过 NovaSpark 直接安装 Framework 时，工程必须已经配置可解析该包的 registry。Nova 开发工程可另外安装其他 Provider 用于开发态验证，不改变对外包的默认选型。
+当前完整安装入口是 NovaSpark。它先向消费工程 `Packages/manifest.json` 写入 OpenUPM registry 与精确 scope `com.coplaydev.unity-mcp`，再安装 Framework；UPM 依赖链随后自动解析 `Framework -> 本包 -> com.coplaydev.unity-mcp@10.2.0`。Unity MCP 不需要成为项目顶层 Git 依赖；绕过 NovaSpark 直接安装 Framework 时，工程必须已经配置可解析该包的 registry。Nova 开发工程可另外安装其他 Provider 用于开发态验证，不改变对外包的默认选型。
 
 安装完成不等于外部 Agent 已经连接：本包不自动启动 Server、不占端口、不修改外部 Agent 配置。首次连接或升级后，已有会话若未刷新 Tool 列表，需要重连 MCP 或开启新会话。
 
@@ -25,29 +25,38 @@
 | `execute` | `action_id`、`plan_id` | 原子消费一次性 Plan；确认型 Action 还需绑定令牌 | 取决于 Action |
 | `verify` | `action_id`、`receipt` | 只读核验当前领域状态，不重放 Execute | 否；可更新 `Library` 审计元数据 |
 
-`confirmation_token=plan_id` 只证明调用绑定到同一份 Plan，不证明 MCP 已经验证真人审批。任何需要可信审批而当前通道无法证明的 Action 都必须保持关闭。
+`confirmation_token=plan_id` 把调用绑定到同一份一次性 Plan。所有已注册 Project Action 默认开放，但该开放不取消精确目标确认、资源锁、Receipt、脱敏或 Verify。
 
 ## 当前开放边界
 
-Adapter 目前显式允许以下 13 个 Action：
+Adapter 目前显式允许 Registry 中全部 20 个 Action：
 
 - `nova.project.upm.manage-latest`
+- `nova.project.upm.uninstall-direct`
 - `nova.project.config.validate-coordinate`
 - `nova.project.config.inspect-plugin-types`
 - `nova.project.config.ensure-plugin-instances`
 - `nova.project.config.inspect-bundle-collector`
 - `nova.project.config.export-runtime`
 - `nova.project.hotfix.refresh-game-dlls`
+- `nova.project.hotfix.generate-artifacts`
 - `nova.project.build.inspect-readiness`
+- `nova.project.bundle.build-asset`
+- `nova.project.bundle.build-raw-file`
+- `nova.project.player.build`
+- `nova.project.android.resolve-dependencies`
 - `nova.project.table.export`
 - `nova.project.network.export`
 - `nova.project.sound.export`
 - `nova.project.vibration.export`
 - `nova.project.localization.export`
+- `nova.project.pipify.run-batch`
 
 Nova Project Skills 与 MCP Tool 不是一张清单：30 个 `nova-project-*` 由 Agent 从项目 `.agents/skills/` 发现；当前默认 Adapter 只注册一个 `nova_project_action`，然后由 `describe` 返回上述当前开放 Action。
 
-该清单用于说明当前包版本，不替代 live Registry。运行时必须先调用 `describe`；未注册、Registry 存在 issue、未进入 ExposurePolicy，或带 `Delivery`、`Destructive`、`ExternalWrite`、`Credential` 副作用的 Action 都会 fail-closed。
+该清单用于说明当前包版本，不替代 live Registry。运行时必须先调用 `describe`；未注册、Registry 存在 issue、Schema 无效，或 Registry 与 ExposurePolicy 不完全一致时整个 Action 面都会 fail-closed。高风险副作用不会隐藏 Action，但仍必须由 Descriptor 准确声明并经过完整执行协议。
+
+`nova.project.pipify.run-batch` 的 Execute 只登记异步任务并返回 recovery token；Verify 轮询持久化 Job 状态。Job 在真实运行期间持有资源锁，状态写入 `Library/Nova/Pipify/Jobs/`；domain reload 前未结束的任务标记为 `Interrupted`，绝不自动恢复或重放。
 
 ## 恢复与证据
 
@@ -66,4 +75,4 @@ Nova Project Skills 与 MCP Tool 不是一张清单：30 个 `nova-project-*` �
 
 ## 扩展约束
 
-新增 MCP Action 暴露必须同时完成：Core Registry 注册、专用 DTO 与证据契约、Adapter `ExposurePolicy` 审核、包内文档更新及定向安全测试。仅在 Core 注册 Handler 不代表 MCP 自动开放。
+新增 Project Action 必须同时完成：Core Registry 注册、专用 DTO 与证据契约、Adapter 显式 `ExposurePolicy`、包内文档更新及定向安全测试。Registry 与白名单集合必须完全一致，任一侧遗漏都会整体 fail-closed。

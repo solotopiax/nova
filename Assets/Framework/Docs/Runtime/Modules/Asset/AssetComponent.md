@@ -61,7 +61,6 @@
 - Packages / DefaultPackageName
 - 热更总开关、启动白名单与下载参数
 - 当前节点 `DevelopMode` 对应的 Host / Fallback URL 模板
-- 解密器类型
 - 启动期 tag 下载配置
 
 也就是说，`Start()` 只是“配置注入”，不是“资源系统启动”。
@@ -100,6 +99,11 @@
 - `m_StartupWhitelistUrlRelease` / `m_StartupWhitelistUrlFallbackRelease`
 - `m_StartupWhitelistMetadataRootUrlDebug` / `m_StartupWhitelistMetadataRootUrlFallbackDebug`
 - `m_StartupWhitelistMetadataRootUrlRelease` / `m_StartupWhitelistMetadataRootUrlFallbackRelease`
+- `m_StartupWhitelistFallbackRoundCount`
+- `m_StartupWhitelistRetryRequestCount`
+- `m_StartupWhitelistPreferLastSuccessfulHost`
+- `m_StartupWhitelistEnableUWRTracks`
+- `m_StartupWhitelistCheckTimeout`
 - `m_AutoHotfix`
 - `QuitOnFailedOrCancel`
 - `MaxDownloadConcurrency`
@@ -107,16 +111,19 @@
 - `RetryDownloadCount`
 - `PreferLastSuccessfulHost`
 - `EnableUWRTracks`
+- `m_CheckTimeout`
+- `m_ManifestRequestTimeout`
+- `m_WebGLBundleRequestTimeout`
+- `m_IdleTimeout`
 - `LaunchHotfixTags`
 - `AutoClearUnusedCacheOnHotfix`
 
-### 3. 远端与解密
+### 3. 远端地址
 
 - `m_HostServerUrlDebug`
 - `m_HostServerUrlFallbackDebug`
 - `m_HostServerUrlRelease`
 - `m_HostServerUrlFallbackRelease`
-- `m_DecryptorType`
 
 ## 风险点 / 易错点
 
@@ -124,7 +131,8 @@
 - 所有 `Load*` 方法返回的 Handle 都需要调用方显式释放；这不是组件层自动兜底的事。
 - `EnableHotfix`、`RuntimePlayMode`、热更地址 URL 这些配置不会在运行时二次推导；进入 `AssetManagerConfig` 的就是当前节点 `DevelopMode` 已选定的那一组事实。
 - `EnableHotfix` 现在只控制资源热更检查 / 下载链路，不再决定 App 大版本检测是否执行。
-- 启动白名单还受 `EnableHotfix` 和有效 Host/Web 模式约束；默认关闭，当前 DevelopMode 没有可用白名单文件或元数据根 URL 时自动跳过。
+- 启动白名单还受 `EnableHotfix` 和有效 `HostPlayMode` 约束；默认关闭，当前 DevelopMode 没有可用白名单文件或元数据根 URL 时自动跳过。
+- 下载启动白名单文件时使用独立的主备完整轮数、请求重试次数、最近成功域名优先、UWR 埋点和请求超时配置；这些选项位于“启用白名单”折叠区的 URL 配置之后，不复用普通 Asset 下载的对应字段。
 - 首次正常启动没有 DeviceID 缓存时不会请求白名单；SDK 初始化后写入 `persistentDataPath/Asset/asset-check-device-id.dat`，后续启动才参与当次判断。
 - URL 中若包含 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，仍由 Asset 模块在运行时替换；其中 `{Platform}` = Player 编译宏对应的 `PlatformType` 枚举名（不读取 Editor Active BuildTarget 或 ConfigMaster），`{Channel}` = Config 导出时同步到 `AssetComponent` 的渠道快照，`{Package}` = 当前资源包名，`{Version}` = `Application.version`。
 - `{Channel}` 快照与同次导出的 `ConfigRuntimeSO.Channel` 同源，但在资源 Bootstrap 前即可读取，避免 Asset 反向依赖尚未加载的运行时配置。

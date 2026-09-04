@@ -23,8 +23,8 @@ MonoBehaviour:
   PrivacyConfigs:
     AESKey: YOUR_PRIVACY_AES_KEY
     AESIV: YOUR_PRIVACY_AES_IV
-  Platform: 3
-  Channel: 0
+  Platform: 1
+  Channel: 2
   EnabledSDKConfigs: []
   EnabledKitConfigs: []
   HybridConfigs:

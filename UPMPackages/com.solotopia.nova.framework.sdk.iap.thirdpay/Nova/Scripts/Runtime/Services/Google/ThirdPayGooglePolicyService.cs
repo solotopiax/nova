@@ -83,34 +83,24 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         Authorized = 0,
 
         /// <summary>
-        /// 当前环境不支持外部结算计划。
-        /// </summary>
-        ProgramUnavailable = 1,
-
-        /// <summary>
         /// 无法连接 Google 结算服务。
         /// </summary>
-        ConnectionFailed = 2,
+        ConnectionFailed = 1,
 
         /// <summary>
         /// 无法创建外部交易上报 token。
         /// </summary>
-        TokenCreationFailed = 3,
-
-        /// <summary>
-        /// Google 信息页打开失败。
-        /// </summary>
-        LaunchFailed = 4,
+        TokenCreationFailed = 2,
 
         /// <summary>
         /// 用户取消 Google 信息页。
         /// </summary>
-        UserCancelled = 5,
+        UserCancelled = 3,
 
         /// <summary>
         /// 已取得 token 但构造最终支付 URL 失败。
         /// </summary>
-        UrlBuildFailed = 6,
+        UrlBuildFailed = 4,
     }
 
     /// <summary>
@@ -197,7 +187,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     /// <summary>
     /// Google 外部结算政策流程：连接、资格检查、生成上报 token，再展示 Google 信息页。
     /// </summary>
-    internal sealed class ThirdPayGooglePolicyService : IDisposable
+    internal sealed class ThirdPayGooglePolicyService : ThirdPayLogOwner, IDisposable
     {
         /// <summary>
         /// Google 外部结算客户端。
@@ -221,9 +211,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public async UniTask<string> GetBillingCountryCodeAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
+            LogDebug($"Google Billing 国家码读取开始：ClientReady={m_Client.IsReady}");
             if (!m_Client.IsReady)
             {
+                LogDebug("Google Billing 国家码读取：开始连接 Billing 服务。");
                 ThirdPayGoogleResponse connection = await m_Client.ConnectAsync(ct);
+                LogDebug($"Google Billing 国家码读取：连接结果={connection}");
                 if (connection != ThirdPayGoogleResponse.Ok)
                 {
                     return string.Empty;
@@ -231,6 +224,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             string countryCode = await m_Client.GetBillingCountryCodeAsync(ct);
+            LogDebug($"Google Billing 国家码读取结束：Country={countryCode}");
             return string.IsNullOrWhiteSpace(countryCode)
                 ? string.Empty
                 : countryCode.Trim().ToUpperInvariant();
@@ -252,71 +246,89 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             ct.ThrowIfCancellationRequested();
+            LogDebug($"Google 外链授权开始：ClientReady={m_Client.IsReady}，SkipInfo={skipInformationScreen}");
             if (!m_Client.IsReady)
             {
+                LogDebug("Google 外链授权：开始连接 Billing 服务。");
                 ThirdPayGoogleResponse connection = await m_Client.ConnectAsync(ct);
+                LogDebug($"Google 外链授权：连接结果={connection}");
                 if (connection == ThirdPayGoogleResponse.Unavailable)
                 {
+                    LogWarning("Google 外链授权：Billing 服务不可用，使用无 Google token 支付 URL 兜底。");
                     return BuildFallbackAuthorization(buildPaymentUrl);
                 }
 
                 if (connection != ThirdPayGoogleResponse.Ok)
                 {
+                    LogWarning($"Google 外链授权：Billing 服务连接失败，Response={connection}");
                     return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.ConnectionFailed);
                 }
             }
 
+            LogDebug("Google 外链授权：开始检查外部结算计划可用性。");
             ThirdPayGoogleResponse availability = await m_Client.CheckAvailabilityAsync(ct);
+            LogDebug($"Google 外链授权：外部结算计划可用性结果={availability}");
             if (availability == ThirdPayGoogleResponse.Unavailable)
             {
+                LogWarning("Google 外链授权：外部结算计划不可用，使用无 Google token 支付 URL 兜底。");
                 return BuildFallbackAuthorization(buildPaymentUrl);
             }
 
             if (availability != ThirdPayGoogleResponse.Ok)
             {
+                LogWarning($"Google 外链授权：外部结算计划检查失败，Response={availability}");
                 return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.ConnectionFailed);
             }
 
+            LogDebug("Google 外链授权：开始创建外部交易 token。");
             ThirdPayGoogleTokenResult tokenResult = await m_Client.CreateTokenAsync(ct);
+            LogDebug($"Google 外链授权：token 创建结果={tokenResult.Response}，TokenLength={tokenResult.Token.Length}");
             if (tokenResult.Response != ThirdPayGoogleResponse.Ok || string.IsNullOrEmpty(tokenResult.Token))
             {
+                LogWarning($"Google 外链授权：token 创建失败，Response={tokenResult.Response}，TokenLength={tokenResult.Token.Length}");
                 return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.TokenCreationFailed);
             }
 
             string paymentUrl = buildPaymentUrl(tokenResult.Token);
             if (string.IsNullOrEmpty(paymentUrl))
             {
+                LogWarning("Google 外链授权：支付 URL 构建结果为空。");
                 return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.UrlBuildFailed, tokenResult.Token);
             }
 
             if (skipInformationScreen)
             {
+                LogDebug("Google 外链授权：已跳过 Google 信息页，直接进入 ThirdPay 支付页。");
                 return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, tokenResult.Token, paymentUrl);
             }
 
+            LogDebug("Google 外链授权：开始打开 Google 信息页。");
             ThirdPayGoogleResponse launch = await m_Client.LaunchInformationScreenAsync(paymentUrl, ct);
+            LogDebug($"Google 外链授权：Google 信息页返回={launch}");
             if (launch == ThirdPayGoogleResponse.UserCancelled)
             {
+                LogWarning("Google 外链授权：用户取消 Google 信息页。");
                 return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.UserCancelled, tokenResult.Token, paymentUrl);
             }
 
             if (launch != ThirdPayGoogleResponse.Ok)
             {
-                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.LaunchFailed, tokenResult.Token, paymentUrl);
+                LogWarning($"Google 外链授权：Google 信息页不可用或打开失败，Response={launch}，继续打开 ThirdPay 支付页。");
+                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, tokenResult.Token, paymentUrl);
             }
 
             return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, tokenResult.Token, paymentUrl);
         }
 
         /// <summary>
-        /// Google 外链计划不可用时，跳过 Google 信息页并直接进入 ThirdPay WebView。
+        /// Google 外链计划不可用时，跳过 Google 信息页并直接进入 ThirdPay 支付页。
         /// </summary>
         /// <param name="buildPaymentUrl">使用空 Google token 构造支付 URL 的回调。</param>
-        /// <returns>可继续打开 WebView 的授权结果。</returns>
+        /// <returns>可继续打开支付页的授权结果。</returns>
         private static ThirdPayGoogleAuthorization BuildFallbackAuthorization(Func<string, string> buildPaymentUrl)
         {
             // 外链计划不可用只表示当前设备、账号或地区不满足政策条件；
-            // 第三方支付仍可通过应用内 WebView 继续，不应把该条件当成支付失败。
+            // 第三方支付仍可通过平台默认支付页继续，不应把该条件当成支付失败。
             string fallbackPaymentUrl = buildPaymentUrl(string.Empty);
             if (string.IsNullOrEmpty(fallbackPaymentUrl))
             {

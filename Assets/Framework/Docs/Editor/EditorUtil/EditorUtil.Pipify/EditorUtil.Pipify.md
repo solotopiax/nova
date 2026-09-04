@@ -51,7 +51,7 @@
 | `RunBatchAsync` | `static UniTask RunBatchAsync(Batch, EditorWindow host)` | UI 宿主入口：使用模态进度条 WindowReporter 执行 Batch；host 用于 Batch 末尾 `ShowNotification` 弹结果浮窗，传 null 时只写日志 |
 | `RunBatchForCliAsync` | `static UniTask RunBatchForCliAsync(Batch, IReadOnlyDictionary<string, string>)` | CLI 宿主入口：使用纯日志 CliReporter 执行 Batch，支持参数覆盖；overrides 为 null 表示不覆盖 |
 | `StartBatchJob` | `static string StartBatchJob(Batch, IReadOnlyDictionary<string, string>)` | Editor 外部调用入口：只登记任务并立即返回任务编号，下一次 Editor update 才开始执行 Batch；同一时间只允许一条等待或运行中的任务 |
-| `GetBatchJob` | `static BatchJobSnapshot GetBatchJob(string)` | 按任务编号查询状态；不存在时返回 null。`StateName` 为 Waiting / Running / Succeeded / Failed，失败详情见 `Error` |
+| `GetBatchJob` | `static BatchJobSnapshot GetBatchJob(string)` | 按任务编号查询状态；不存在时返回 null。`StateName` 为 Waiting / Running / Succeeded / Failed / Interrupted，失败或中断详情见 `Error`；内存状态丢失后会从 `Library/Nova/Pipify/Jobs` 读取持久化快照，未完成任务在 domain reload 后标记为 Interrupted |
 | `Registry` | — | Step 元信息注册表（嵌套静态类） |
 
 ### EditorUtil.Pipify.Registry（注册表）

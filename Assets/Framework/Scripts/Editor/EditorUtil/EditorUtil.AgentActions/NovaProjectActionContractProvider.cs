@@ -45,6 +45,14 @@ namespace NovaFramework.Editor
                 .ToArray();
         }
 
+        /// <summary>
+        /// 将 Framework Registry 的全部 Action 映射为传输中立描述，供 Gateway 核对全量显式开放策略。
+        /// </summary>
+        public IReadOnlyList<NovaProjectActionDescriptor> GetAll()
+        {
+            return EditorUtil.AgentActions.Registry.GetAll().Select(Map).ToArray();
+        }
+
         public NovaProjectActionDescriptor Describe(string actionId)
         {
             return Map(EditorUtil.AgentActions.Registry.Describe(actionId));
@@ -114,6 +122,7 @@ namespace NovaFramework.Editor
                 RequiresEditMode = descriptor.RequiresEditMode,
                 IsAvailable = descriptor.Availability == AgentActionAvailability.Available,
                 Locks = descriptor.Locks?.ToArray() ?? Array.Empty<string>(),
+                VerifyLocks = descriptor.VerifyLocks?.ToArray() ?? Array.Empty<string>(),
                 RequestSchemaJson = descriptor.RequestSchemaJson,
             };
         }

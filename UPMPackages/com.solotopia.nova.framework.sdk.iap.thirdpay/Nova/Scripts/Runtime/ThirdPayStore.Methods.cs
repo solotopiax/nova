@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
@@ -39,7 +38,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
         /// <summary>
         /// 校验第三方支付必需的 Store 配置项是否齐备；缺失时记录错误并判定 Store 未就绪。
-        /// 仅校验初始化时刻即可确定的纯配置项，环境依赖（AES/支付页基址）由 EnsurePayEnvironment 兜底。
+        /// 仅校验初始化时刻即可确定的纯配置项，支付页基址由 EnsurePayEnvironment 兜底。
         /// </summary>
         /// <returns>拉取商品列表与验单协议名均已配置时返回 true。</returns>
         private bool ValidateConfig()
@@ -76,13 +75,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 解析并缓存支付 URL 构造所需的 AES 配置与支付页基址；已缓存时直接复用。
-        /// 初始化时可能因依赖子系统尚未就绪而失败，此时保持未缓存，待首次支付时重试解析。
+        /// 解析并缓存支付 URL 构造所需的支付页基址；已缓存时直接复用。
+        /// 支付参数加密由 ThirdPay 动态 AES 在每次 URL 构造时生成随机 Key/IV。
         /// </summary>
-        /// <returns>AES 密钥、向量与支付页基址均已就绪时返回 true。</returns>
+        /// <returns>Config 已加载且支付页基址已就绪时返回 true。</returns>
         private bool EnsurePayEnvironment()
         {
-            if (IsValidAppAesSecret(m_AesKey) && IsValidAppAesSecret(m_AesIv) && !string.IsNullOrEmpty(m_PayUrlBase))
+            if (!string.IsNullOrEmpty(m_PayUrlBase))
             {
                 return true;
             }
@@ -90,38 +89,19 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             IConfigManager configManager = FrameworkManagersGroup.GetManager<IConfigManager>();
             if (configManager == null || !configManager.IsLoadOver)
             {
-                LogError("ThirdPayStore 应用业务 AES 配置未就绪：请先完成 await Nova.Config.LoadAsync()；然后在 Nova/Open Config → 通用配置 → 应用配置中，为当前 Platform × Channel × DevelopMode 配置 AppAesKey / AppAesIV（UTF-8 各 16 字节），保存后重新导出 ConfigRuntimeSO。");
+                LogError("ThirdPayStore 支付环境未就绪：请先完成 await Nova.Config.LoadAsync()，确保支付页基址可解析。");
                 return false;
             }
 
-            string aesKey = configManager?.AppConfigs?.AppAesKey;
-            string aesIv = configManager?.AppConfigs?.AppAesIV;
             INetworkCmdRow openUrlCmd = Nova.Network?.ResolveNetCmdRow(c_OpenUrlCmdName);
             string payUrlBase = Nova.Network?.ResolveNetCmdUrl(openUrlCmd);
-            if (!IsValidAppAesSecret(aesKey) || !IsValidAppAesSecret(aesIv))
-            {
-                LogError("ThirdPayStore 应用业务 AES 配置无效：请在 Nova/Open Config → 通用配置 → 应用配置中，为当前 Platform × Channel × DevelopMode 配置 AppAesKey / AppAesIV（UTF-8 各 16 字节），保存后重新导出 ConfigRuntimeSO。");
-                return false;
-            }
             if (string.IsNullOrEmpty(payUrlBase))
             {
                 return false;
             }
 
-            m_AesKey = aesKey;
-            m_AesIv = aesIv;
             m_PayUrlBase = payUrlBase;
             return true;
-        }
-
-        /// <summary>
-        /// 校验应用协议 AES 单个凭据是否为可传入支付 URL 加密器的 UTF-8 16 字节字符串。
-        /// </summary>
-        /// <param name="value">待校验的 AppConfigs AES Key 或 IV。</param>
-        /// <returns>非空且 UTF-8 编码长度为 16 字节时返回 true。</returns>
-        private static bool IsValidAppAesSecret(string value)
-        {
-            return !string.IsNullOrEmpty(value) && Encoding.UTF8.GetByteCount(value) == 16;
         }
 
         /// <summary>
@@ -337,26 +317,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 判断当前国家或地区是否需要使用外部浏览器支付。
+        /// 按平台固定 ThirdPay 支付页打开方式。
+        /// Android 真机始终使用外部浏览器链路；其他平台使用包内 WebView 服务，iOS 真机由 WebView 服务切到 Safe Browsing。
         /// </summary>
-        private bool ShouldUseExternalBrowserPayment()
+        private static bool ShouldOpenPaymentPageExternally()
         {
-            string currentCountry = GetCountryCode();
-            IReadOnlyList<string> browserCountries = m_Config?.ExternalBrowserCountryCodes;
-            if (string.IsNullOrEmpty(currentCountry) || browserCountries == null || browserCountries.Count == 0)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < browserCountries.Count; i++)
-            {
-                if (string.Equals(currentCountry, NormalizeCountryCode(browserCountries[i]), StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-
+#if UNITY_ANDROID && !UNITY_EDITOR
+            return true;
+#else
             return false;
+#endif
         }
 
         /// <summary>
@@ -402,10 +372,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             ThirdPayOrderRecord order = null;
             string paymentUrl = string.Empty;
+            string googleToken = string.Empty;
             AddWaitingRef();
             try
             {
+                LogDebug($"第三方支付开始：TableId={request.TableId}，UserId={m_GameUID}，Country={GetCountryCode()}");
                 TrackBuyInternal(request);
+                LogDebug($"第三方支付准备阶段：开始拉取渠道参数，TableId={request.TableId}");
                 bool hasChannelParams = await EnsureChannelParamsAsync(ct);
                 if (!hasChannelParams)
                 {
@@ -414,6 +387,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     LogWarning("第三方支付渠道参数未就绪，将继续使用不含渠道客户号的支付 URL。");
                 }
 
+                LogDebug($"第三方支付准备阶段：开始确认商品列表，TableId={request.TableId}");
                 if (!await EnsureProductListAsync(ct))
                 {
                     const string productListReason = "第三方支付商品列表尚未就绪。";
@@ -421,7 +395,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     return Fail(request, IAPThirdPayErrorCode.StoreNotAvailable, productListReason);
                 }
 
-                useExternalBrowser = ShouldUseExternalBrowserPayment();
+                useExternalBrowser = ShouldOpenPaymentPageExternally();
+                LogDebug($"第三方支付准备阶段：支付页模式已确定，TableId={request.TableId}，ExternalBrowser={useExternalBrowser}，Country={GetCountryCode()}");
                 if (!useExternalBrowser && m_WebViewService == null)
                 {
                     return Fail(request, IAPThirdPayErrorCode.StoreInitFailed, "第三方应用内 WebView 支付服务尚未初始化。");
@@ -437,11 +412,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
                 m_OrderRepository.Upsert(order);
                 TrackCreateOrderSuccessInternal(order);
+                LogDebug($"第三方支付本地订单已创建：OrderId={order.ClientOrderId}，TableId={order.TableId}，ExternalBrowser={useExternalBrowser}");
 
                 ThirdPayGoogleAuthorization authorization;
                 try
                 {
+                    LogDebug($"第三方支付授权和 URL 构建开始：OrderId={order.ClientOrderId}");
                     authorization = await AuthorizeAndBuildUrlAsync(order, useExternalBrowser, ct);
+                    LogDebug($"第三方支付授权和 URL 构建结束：OrderId={order.ClientOrderId}，Status={authorization.Status}，HasUrl={!string.IsNullOrEmpty(authorization.PaymentUrl)}，GoogleTokenLength={authorization.GoogleToken.Length}");
                 }
                 catch (OperationCanceledException)
                 {
@@ -449,6 +427,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 }
                 catch (Exception ex)
                 {
+                    LogWarning($"第三方支付授权或 URL 构建异常：OrderId={clientOrderId}，Error={ex.Message}");
                     m_OrderRepository.Remove(clientOrderId);
                     TrackCreateOrderFailInternal(request, ex.Message);
                     return Fail(request, IAPThirdPayErrorCode.StoreInitFailed, $"构造支付 URL 失败：{ex.Message}");
@@ -457,12 +436,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 if (authorization.Status != ThirdPayGoogleAuthorizationStatus.Authorized || string.IsNullOrEmpty(authorization.PaymentUrl))
                 {
                     (IAPThirdPayErrorCode code, string reason) = MapGoogleAuthorizationFailure(authorization.Status);
+                    LogWarning($"第三方支付授权未通过：OrderId={clientOrderId}，Status={authorization.Status}，HasUrl={!string.IsNullOrEmpty(authorization.PaymentUrl)}，Reason={reason}");
                     m_OrderRepository.Remove(clientOrderId);
                     TrackCreateOrderFailInternal(request, reason);
                     return Fail(request, code, reason);
                 }
 
                 paymentUrl = authorization.PaymentUrl;
+                googleToken = authorization.GoogleToken;
                 LogDebug($"第三方支付支付页已构建：OrderId={order.ClientOrderId}，TableId={order.TableId}，ExternalBrowser={useExternalBrowser}");
             }
             finally
@@ -472,12 +453,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             if (useExternalBrowser)
             {
-                return await OpenExternalBrowserPaymentAsync(request, order, paymentUrl, ct);
+                return await OpenExternalBrowserPaymentAsync(request, order, googleToken, paymentUrl, ct);
             }
 
             ThirdPayOpenResult openResult;
             try
             {
+                LogDebug($"第三方支付准备打开 WebView：OrderId={order.ClientOrderId}");
                 openResult = await m_WebViewService.OpenAsync(paymentUrl, ct);
                 LogDebug($"第三方支付 WebView 返回：OrderId={order.ClientOrderId}，Result={openResult}");
             }
@@ -691,13 +673,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private async UniTask<ThirdPayGoogleAuthorization> AuthorizeAndBuildUrlAsync(ThirdPayOrderRecord order, bool isExternalBrowser, CancellationToken ct)
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
+            LogDebug($"第三方支付 Android Google 授权开始：OrderId={order.ClientOrderId}，ExternalBrowser={isExternalBrowser}，HasGooglePolicy={m_GooglePolicy != null}，SkipInfo={m_SkipPaymentInformationScreen}");
             if (m_GooglePolicy == null)
             {
-                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.ProgramUnavailable);
+                LogWarning($"第三方支付 Android Google 授权服务为空，使用无 Google token 支付 URL 兜底：OrderId={order.ClientOrderId}");
+                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, string.Empty, isExternalBrowser));
             }
 
-            return await m_GooglePolicy.AuthorizeAsync(token => BuildPaymentUrl(order, token, isExternalBrowser), m_SkipPaymentInformationScreen, ct);
+            ThirdPayGoogleAuthorization authorization = await m_GooglePolicy.AuthorizeAsync(token => BuildPaymentUrl(order, token, isExternalBrowser), m_SkipPaymentInformationScreen, ct);
+            LogDebug($"第三方支付 Android Google 授权结果：OrderId={order.ClientOrderId}，Status={authorization.Status}，HasUrl={!string.IsNullOrEmpty(authorization.PaymentUrl)}");
+            return authorization;
 #else
+            LogDebug($"第三方支付非 Android 环境直接构建 URL：OrderId={order.ClientOrderId}，ExternalBrowser={isExternalBrowser}");
             await UniTask.CompletedTask;
             return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, string.Empty, isExternalBrowser));
 #endif
@@ -712,16 +699,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         {
             switch (status)
             {
-                case ThirdPayGoogleAuthorizationStatus.ProgramUnavailable:
-                    return (IAPThirdPayErrorCode.StoreNotAvailable, "当前设备或地区不支持 Google 外链结算计划。");
                 case ThirdPayGoogleAuthorizationStatus.ConnectionFailed:
                     return (IAPThirdPayErrorCode.BillingNotReady, "无法连接 Google 外链结算服务。");
                 case ThirdPayGoogleAuthorizationStatus.TokenCreationFailed:
                     return (IAPThirdPayErrorCode.BillingNotReady, "创建 Google 外链上报 token 失败。");
                 case ThirdPayGoogleAuthorizationStatus.UrlBuildFailed:
                     return (IAPThirdPayErrorCode.StoreInitFailed, "构造第三方支付 URL 失败。");
-                case ThirdPayGoogleAuthorizationStatus.LaunchFailed:
-                    return (IAPThirdPayErrorCode.BillingNotReady, "打开 Google 外链信息页失败。");
                 case ThirdPayGoogleAuthorizationStatus.UserCancelled:
                     return (IAPThirdPayErrorCode.UserCancelled, "用户在 Google 外链信息页取消支付。");
                 default:
@@ -730,13 +713,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 使用应用 AES 配置加密固定字段并构造第三方支付 URL。
+        /// 使用 ThirdPay 动态 AES 加密固定字段并构造第三方支付 URL。
         /// </summary>
         /// <param name="order">本地订单上下文。</param>
         /// <param name="googleToken">Google 外部结算上报 token。</param>
         /// <param name="isExternalBrowser">是否使用外部浏览器支付页。</param>
+        /// <param name="showBackButton">支付页是否显示返回键。</param>
         /// <returns>加密后的第三方支付 URL。</returns>
-        private string BuildPaymentUrl(ThirdPayOrderRecord order, string googleToken, bool isExternalBrowser)
+        private string BuildPaymentUrl(ThirdPayOrderRecord order, string googleToken, bool isExternalBrowser, bool showBackButton = false)
         {
             IAPProductEntry productEntry = Table?.FindByTableId(order.TableId);
             if (productEntry == null)
@@ -757,10 +741,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             if (!EnsurePayEnvironment())
             {
-                throw new InvalidOperationException("第三方支付环境未就绪：AES 配置或支付页基址无法解析。");
+                throw new InvalidOperationException("第三方支付环境未就绪：支付页基址无法解析。");
             }
 
-            var builder = new ThirdPayUrlBuilder(value => Util.Encrypt.AES.EncryptString(value, m_AesKey, m_AesIv));
+            var builder = new ThirdPayUrlBuilder(ThirdPayDynamicAesEncryptor.EncodeToBase64);
             PbNetReqHeader header = NetBuilder.BuildHeader();
             if (header.Appid <= 0)
             {
@@ -783,6 +767,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 GoogleToken = googleToken,
                 ReceiptParam = order.ReceiptParam,
                 IsExternalBrowser = isExternalBrowser,
+                ShowBackButton = showBackButton,
             });
         }
 

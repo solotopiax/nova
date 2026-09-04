@@ -318,12 +318,41 @@ namespace NovaFramework.Editor
 
                 string reason =
                     $"设计态启用列表与运行时导出不一致。缺失=[{string.Join(", ", missing)}]，多余=[{string.Join(", ", unexpected)}]。请检查启用项及对应配置并重新导出。";
+                string[] affectedNames = missing.Concat(unexpected)
+                    .Select(ResolveConfigDisplayName)
+                    .Distinct(System.StringComparer.Ordinal)
+                    .ToArray();
+                string userSummary = groupName == "SDK"
+                    ? $"以下 SDK 配置还没有同步到游戏：{string.Join("、", affectedNames)}。"
+                    : $"以下功能配置还没有同步到游戏：{string.Join("、", affectedNames)}。";
                 Type configType = ResolveLoadedType(missing.FirstOrDefault() ?? unexpected.FirstOrDefault());
                 ConfigNavigationSection? section = configType == null
                     ? null
                     : groupName == "SDK" ? ConfigNavigationSection.SDK : ConfigNavigationSection.Kit;
                 AddConfigIssue(report, "NOVA-CONFIG-004", runtime, runtimePath, masterPath,
-                    fieldPath, reason, $"Nova/Open Config → {groupName} 配置", section, configType);
+                    fieldPath, reason, $"Nova/Open Config → {groupName} 配置", section, configType, userSummary);
+            }
+
+            /// <summary>
+            /// 将配置类型全名转换为 ConfigWindow 中使用的 DisplayName，失败时回退为简短类型名。
+            /// </summary>
+            private static string ResolveConfigDisplayName(string typeName)
+            {
+                Type type = ResolveLoadedType(typeName);
+                if (type == null) return typeName?.Split('.').LastOrDefault() ?? "未知配置";
+                try
+                {
+                    object instance = Activator.CreateInstance(type);
+                    if (instance is ISDKPluginConfig sdk && !string.IsNullOrWhiteSpace(sdk.DisplayName))
+                        return sdk.DisplayName;
+                    if (instance is IKitConfig kit && !string.IsNullOrWhiteSpace(kit.DisplayName))
+                        return kit.DisplayName;
+                }
+                catch (Exception)
+                {
+                    // 与扫描器一致：构造失败不阻断 Guard，回退类型名。
+                }
+                return type.Name;
             }
 
             /// <summary>
@@ -514,12 +543,15 @@ namespace NovaFramework.Editor
             /// </summary>
             private static void AddConfigIssue(NovaGuardReport report, string ruleId, ConfigRuntimeSO runtime,
                 string runtimePath, string masterPath, string fieldPath, string reason, string configEntry,
-                ConfigNavigationSection? section = null, Type configType = null)
+                ConfigNavigationSection? section = null, Type configType = null, string userSummary = null)
             {
                 RememberConfigNavigation(runtime, fieldPath, section, configType);
                 string message =
                     $"配置异常：{fieldPath}，{reason}\n" +
-                    $"配置入口：{configEntry}\n" +
+                    $"配置入口：{configEntry}\n";
+                if (!string.IsNullOrWhiteSpace(userSummary))
+                    message += $"用户提示：{userSummary}\n";
+                message +=
                     $"设计态来源：{DisplayPath(masterPath)}\n" +
                     $"运行时导出：{DisplayPath(runtimePath)}\n" +
                     $"当前导出坐标：Platform={runtime.Platform}, Channel={runtime.Channel}, DevelopMode={runtime.DevelopMode}";

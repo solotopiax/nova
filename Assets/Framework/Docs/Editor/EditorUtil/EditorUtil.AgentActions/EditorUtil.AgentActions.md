@@ -6,12 +6,12 @@
 
 ## 当前能力
 
-Registry 当前注册 19 个 Action：
+Registry 当前注册 20 个 Action，全部进入 MCP 显式白名单：
 
 | Action ID | Operation | RequiredEvidence | MCP |
 |---|---|---|---|
 | `nova.project.upm.manage-latest` | Package | PackageResolution | 开放 |
-| `nova.project.upm.uninstall-direct` | Package | PackageResolution | 未开放：Destructive |
+| `nova.project.upm.uninstall-direct` | Package | PackageResolution | 开放 |
 | `nova.project.config.validate-coordinate` | Inspect | Static | 开放 |
 | `nova.project.config.inspect-plugin-types` | Inspect | Static | 开放 |
 | `nova.project.config.ensure-plugin-instances` | Ensure | Static | 开放 |
@@ -24,11 +24,12 @@ Registry 当前注册 19 个 Action：
 | `nova.project.sound.export` | Generate | Static + Artifact | 开放 |
 | `nova.project.vibration.export` | Generate | Static + Artifact | 开放 |
 | `nova.project.localization.export` | Generate | Static + Artifact | 开放 |
-| `nova.project.android.resolve-dependencies` | Generate | PackageResolution + Artifact | 未开放：Destructive |
-| `nova.project.hotfix.generate-artifacts` | Generate | Compile + Artifact | 未开放：Destructive |
-| `nova.project.bundle.build-asset` | Build | Artifact | 未开放：Destructive |
-| `nova.project.bundle.build-raw-file` | Build | Artifact | 未开放：Destructive |
-| `nova.project.player.build` | Build | Artifact | 未开放：Destructive + ExternalWrite |
+| `nova.project.android.resolve-dependencies` | Generate | PackageResolution + Artifact | 开放 |
+| `nova.project.hotfix.generate-artifacts` | Generate | Compile + Artifact | 开放 |
+| `nova.project.bundle.build-asset` | Build | Artifact | 开放 |
+| `nova.project.bundle.build-raw-file` | Build | Artifact | 开放 |
+| `nova.project.player.build` | Build | Artifact | 开放 |
+| `nova.project.pipify.run-batch` | Build | Static（Runner 终态） | 开放 |
 
 Action 的 Request Schema、effects、locks、contractMajor、idempotency 和 confirmation 以运行中的 Registry Descriptor 为准，不维护第二份静态 Action Catalog。
 
@@ -122,7 +123,7 @@ Task<AgentActionResult> RunAsync(
     CancellationToken cancellationToken)
 ```
 
-MCP 必须使用含 `expectedActionId` 的 Execute 重载。Core 原子消费 Plan 后、任何领域写入前核对 Action ID，避免从其他入口产生的未开放计划绕过 MCP allowlist。三参数 Execute 保留给同程序集/受信直接调用；`RunAsync` 只允许无需确认的 Action，MCP 不暴露它。
+MCP 必须使用含 `expectedActionId` 的 Execute 重载。Core 原子消费 Plan 后、任何领域写入前核对 Action ID，避免从其他入口产生的错误计划跨 Action 执行。三参数 Execute 保留给同程序集/受信直接调用；`RunAsync` 只允许无需确认的 Action，MCP 不暴露它。
 
 ## PlanStore
 
@@ -200,21 +201,30 @@ nova_project_action
 
 ```text
 nova.project.upm.manage-latest
+nova.project.upm.uninstall-direct
 nova.project.config.validate-coordinate
 nova.project.config.inspect-plugin-types
 nova.project.config.ensure-plugin-instances
 nova.project.config.inspect-bundle-collector
 nova.project.config.export-runtime
 nova.project.hotfix.refresh-game-dlls
+nova.project.hotfix.generate-artifacts
 nova.project.build.inspect-readiness
+nova.project.bundle.build-asset
+nova.project.bundle.build-raw-file
+nova.project.player.build
+nova.project.android.resolve-dependencies
 nova.project.table.export
 nova.project.network.export
 nova.project.sound.export
 nova.project.vibration.export
 nova.project.localization.export
+nova.project.pipify.run-batch
 ```
 
-Adapter 还会拒绝所有 `Delivery`，以及含 `Destructive / ExternalWrite / Credential` 的 Action。`confirmation_token` 是调用方声明的计划绑定，不是可信人类审批证明，因此不能用它开放上述高风险效果。
+Gateway 要求 Registry 的全部 Action 与显式 `ExposurePolicy` 集合完全一致；任一遗漏、陈旧 ID、非法 Schema 或 Registry issue 都会使 Action 面整体 fail-closed。`Destructive / ExternalWrite / Credential / Delivery` 不再作为隐藏已注册 Action 的条件，但仍必须准确声明，并继续受一次性确认、资源锁、Receipt、脱敏和 Verify 约束。
+
+`nova.project.pipify.run-batch` 只接受当前活动 `PipifySettings` 的 GUID 与精确 Batch 名称。Plan 冻结设置文件 SHA-256、活动 BuildTarget 和有序 Step/参数；Execute 登记异步任务并在真实运行期重新持有资源锁；Job 状态原子写入 `Library/Nova/Pipify/Jobs/`。domain reload 前未结束的 Job 只会变为 `Interrupted`，不会恢复或重放。其 `success` 仅证明 Runner 顺序完成且无异常，不替代具体 Player、Bundle、CDN、浏览器或设备证据。
 
 Tool 只返回安全 DTO；项目根路径替换为 `<project-root>`，敏感字段打码，URL 去除认证、query 和 fragment。包依赖为 `Framework -> Nova MCP -> Unity MCP`；程序集依赖保持单向：`NovaFramework.Mcp.Editor` 只定义中立 SPI 和 Gateway，独立 `NovaFramework.Mcp.UnityMcp.Editor` 适配默认 Provider，Framework 在 domain load 注册唯一 Action Provider。30 个 Skill 不会逐个成为 MCP Tool；默认 Adapter 只注册 `nova_project_action`，再由 live `describe` 返回当前开放 Action。
 

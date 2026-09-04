@@ -9,14 +9,14 @@
   "requires": [],
   "actionAdapters": [
     {
-      "kind": "agent-action-blocked",
+      "kind": "agent-action",
       "entry": "nova.project.bundle.build-asset",
-      "when": "已冻结 AssetBundle 构建输入；该 Action 当前未在 MCP ExposurePolicy 中，必须返回 blocked"
+      "when": "已冻结 AssetBundle 构建输入并需要生成本地 Bundle 产物时"
     },
     {
-      "kind": "agent-action-blocked",
+      "kind": "agent-action",
       "entry": "nova.project.bundle.build-raw-file",
-      "when": "已冻结 RawFile Bundle 构建输入；该 Action 当前未在 MCP ExposurePolicy 中，必须返回 blocked"
+      "when": "已冻结 RawFile Bundle 构建输入并需要生成本地 Bundle 产物时"
     }
   ],
   "inputs": [

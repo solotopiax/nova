@@ -72,7 +72,7 @@ namespace NovaFramework.Editor
                 bool openConfig = EditorUtility.DisplayDialog(
                     "Nova 启动配置未就绪",
                     BuildPlayBlockedDialogMessage(report),
-                    "打开 Config",
+                    "打开配置",
                     "取消启动");
                 if (openConfig)
                 {
@@ -81,20 +81,55 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 构建 Play 阻断弹窗文本，仅保留字段异常和配置入口；完整诊断由 Console 与 Editor.log 输出。
+            /// 构建面向普通项目成员的 Play 阻断提示；字段名、类型全名与资产路径只保留在 Console。
             /// </summary>
             private static string BuildPlayBlockedDialogMessage(NovaGuardReport report)
             {
-                var builder = new StringBuilder("已阻止进入 Play Mode。请修正以下错误并重新导出后再启动：\n");
+                bool hasConfigErrors = report?.Issues.Any(item =>
+                    item.Severity == NovaGuardSeverity.Error &&
+                    item.RuleId.StartsWith("NOVA-CONFIG", System.StringComparison.Ordinal)) == true;
+                var builder = new StringBuilder(hasConfigErrors
+                    ? "游戏暂时无法启动，因为配置还没有准备好。\n\n需要处理：\n"
+                    : "游戏暂时无法启动，因为启动检查发现以下问题：\n\n");
                 foreach (NovaGuardIssue issue in report?.Issues.Where(item =>
                              item.Severity == NovaGuardSeverity.Error) ?? Enumerable.Empty<NovaGuardIssue>())
                 {
-                    string summary = string.Join("\n", issue.Message.Split('\n').Take(2));
-                    builder.Append("\n[").Append(issue.RuleId).Append("] ")
-                        .Append(summary)
-                        .Append('\n');
+                    builder.Append("• ").Append(BuildUserFacingIssueSummary(issue)).Append('\n');
                 }
+                if (hasConfigErrors)
+                    builder.Append("\n点击“打开配置”，确认对应页面后依次点击“保存”和“导出”，再重新启动游戏。");
+                else
+                    builder.Append("\n请修正以上问题后重新启动游戏。");
+                builder.Append("\n如需查看技术详情，请打开 Console。");
                 return builder.ToString();
+            }
+
+            /// <summary>
+            /// 把 Guard 技术诊断收敛为用户可执行的问题摘要。
+            /// </summary>
+            private static string BuildUserFacingIssueSummary(NovaGuardIssue issue)
+            {
+                string message = issue?.Message ?? string.Empty;
+                string explicitSummary = message.Split('\n')
+                    .FirstOrDefault(line => line.StartsWith("用户提示：", System.StringComparison.Ordinal));
+                if (!string.IsNullOrEmpty(explicitSummary))
+                    return explicitSummary.Substring("用户提示：".Length);
+                if (message.Contains("EnabledSDKConfigs"))
+                    return "已启用的 SDK 配置还没有同步到游戏。";
+                if (message.Contains("EnabledKitConfigs"))
+                    return "已启用的功能配置还没有同步到游戏。";
+                if (message.Contains("PrivacyConfigs"))
+                    return "隐私配置已修改，但还没有同步到游戏。";
+                if (message.Contains("AppConfigs"))
+                    return "应用配置已修改，但还没有同步到游戏。";
+                if (message.Contains("Namespace"))
+                    return "代码命名空间配置不完整或尚未同步。";
+
+                string firstLine = message.Split('\n').FirstOrDefault();
+                return string.IsNullOrWhiteSpace(firstLine)
+                    ? "存在一项尚未完成的启动配置。"
+                    : firstLine.Replace("启动配置未准备好：", string.Empty)
+                        .Replace("配置异常：", string.Empty);
             }
 
             /// <summary>

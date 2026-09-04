@@ -3,7 +3,7 @@
 **类签名**：`public enum AssetPlayMode : byte`
 **命名空间**：`NovaFramework.Runtime`
 
-YooAsset 资源运行模式枚举，与 YooAsset 初始化参数派生类型一一对应。
+Nova 资源策略枚举。资源策略与运行平台解耦，底层文件系统由 `AssetManager` 根据当前平台选择。
 
 ---
 
@@ -22,7 +22,8 @@ YooAsset 资源运行模式枚举，与 YooAsset 初始化参数派生类型一�
 | `EditorSimulateMode` | `0` | 编辑器模拟模式 |
 | `OfflinePlayMode` | `1` | 离线运行模式 |
 | `HostPlayMode` | `2` | 联机运行模式（需远端 URL） |
-| `WebPlayMode` | `3` | WebGL 运行模式 |
+
+WebGL 不是独立资源策略：`OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使用 WebServer + WebNetwork 文件系统。
 
 ---
 
@@ -30,8 +31,9 @@ YooAsset 资源运行模式枚举，与 YooAsset 初始化参数派生类型一�
 
 ```csharp
 // AssetManagerConfig 持有，Inspector 配置；BuildPlayModeOptions 内部按运行环境二选一
-// Application.isEditor  → m_Config.EditorPlayMode  决定 YooAsset 初始化参数类型
-// !Application.isEditor → m_Config.RuntimePlayMode 决定 YooAsset 初始化参数类型
+// Application.isEditor  → m_Config.EditorPlayMode  决定资源策略
+// !Application.isEditor → m_Config.RuntimePlayMode 决定资源策略
+// UNITY_WEBGL            → AssetManager 为该策略选择 Web 文件系统
 ```
 
 ---

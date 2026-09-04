@@ -43,24 +43,31 @@ namespace NovaFramework.Mcp.Editor
         };
 
         /// <summary>
-        /// 网关的唯一显式暴露策略。新增 Action 必须在此处逐项审查；仅登记不代表可调用，
-        /// 仍须通过 Registry、Schema 与副作用的 fail-closed 校验。
+        /// 网关的唯一显式暴露策略。所有已注册 Project Action 必须逐项列入；
+        /// Gateway 仍会校验 Registry、Schema 与全量覆盖，避免注册和开放状态静默漂移。
         /// </summary>
         private static readonly ExposurePolicy[] s_ExposurePolicies =
         {
             new ExposurePolicy("nova.project.upm.manage-latest"),
+            new ExposurePolicy("nova.project.upm.uninstall-direct"),
             new ExposurePolicy("nova.project.config.validate-coordinate"),
             new ExposurePolicy("nova.project.config.inspect-plugin-types"),
             new ExposurePolicy("nova.project.config.ensure-plugin-instances"),
             new ExposurePolicy("nova.project.config.inspect-bundle-collector"),
             new ExposurePolicy("nova.project.config.export-runtime"),
             new ExposurePolicy("nova.project.hotfix.refresh-game-dlls"),
+            new ExposurePolicy("nova.project.hotfix.generate-artifacts"),
             new ExposurePolicy("nova.project.build.inspect-readiness"),
+            new ExposurePolicy("nova.project.bundle.build-asset"),
+            new ExposurePolicy("nova.project.bundle.build-raw-file"),
+            new ExposurePolicy("nova.project.player.build"),
+            new ExposurePolicy("nova.project.android.resolve-dependencies"),
             new ExposurePolicy("nova.project.table.export"),
             new ExposurePolicy("nova.project.network.export"),
             new ExposurePolicy("nova.project.sound.export"),
             new ExposurePolicy("nova.project.vibration.export"),
             new ExposurePolicy("nova.project.localization.export"),
+            new ExposurePolicy("nova.project.pipify.run-batch"),
         };
 
         private static readonly SemaphoreSlim s_Gate = new SemaphoreSlim(1, 1);
@@ -528,7 +535,7 @@ namespace NovaFramework.Mcp.Editor
         }
 
         /// <summary>
-        /// 验证 Registry、显式策略、Schema 与副作用门，构建当前可向 MCP 开放的 Action 映射。
+        /// 验证 Registry、全量显式策略与 Schema，构建当前可向 MCP 开放的 Action 映射。
         /// </summary>
         /// <param name="provider">成功时返回当前唯一 Provider。</param>
         /// <param name="exposedActions">成功时返回按 Action ID 索引的开放映射。</param>
@@ -577,9 +584,9 @@ namespace NovaFramework.Mcp.Editor
                     return false;
                 }
 
-                if (!IsSafeToExpose(descriptor))
+                if (!descriptor.IsAvailable)
                 {
-                    error = "MCP 暴露策略包含不允许的副作用或 Delivery Action。";
+                    error = "MCP 暴露策略包含当前不可用的 Nova Project Action。";
                     return false;
                 }
 
@@ -589,6 +596,23 @@ namespace NovaFramework.Mcp.Editor
                 }
 
                 result.Add(policy.ActionId, descriptor);
+            }
+
+            IReadOnlyList<NovaProjectActionDescriptor> registered = provider.GetAll();
+            if (registered == null || registered.Any(item => item == null || string.IsNullOrWhiteSpace(item.Id)))
+            {
+                error = "Nova Project Action Registry 返回了无效描述，MCP 已安全关闭。";
+                return false;
+            }
+
+            string[] registeredIds = registered.Select(item => item.Id)
+                .OrderBy(item => item, StringComparer.Ordinal)
+                .ToArray();
+            string[] policyIds = result.Keys.OrderBy(item => item, StringComparer.Ordinal).ToArray();
+            if (!registeredIds.SequenceEqual(policyIds, StringComparer.Ordinal))
+            {
+                error = "Nova Project Action MCP 显式白名单未完整覆盖当前 Registry，MCP 已安全关闭。";
+                return false;
             }
 
             exposedActions = result;
@@ -630,25 +654,6 @@ namespace NovaFramework.Mcp.Editor
                 error = "MCP 暴露的 Action 请求 Schema 无法解析。";
                 return false;
             }
-        }
-
-        /// <summary>
-        /// 判断 Action 是否满足 MCP 当前安全边界，不开放 Delivery 或高风险副作用。
-        /// </summary>
-        /// <param name="descriptor">待审查的 Action 描述。</param>
-        /// <returns>可安全加入 ExposurePolicy 时返回 true。</returns>
-        private static bool IsSafeToExpose(NovaProjectActionDescriptor descriptor)
-        {
-            if (descriptor == null || !descriptor.IsAvailable ||
-                string.Equals(descriptor.OperationType, "delivery", StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            const NovaProjectActionEffect forbidden = NovaProjectActionEffect.Destructive |
-                                                      NovaProjectActionEffect.ExternalWrite |
-                                                      NovaProjectActionEffect.Credential;
-            return (descriptor.Effects & forbidden) == 0;
         }
 
         /// <summary>
@@ -736,6 +741,7 @@ namespace NovaFramework.Mcp.Editor
                 requires_stable_editor = descriptor.RequiresStableEditor,
                 requires_edit_mode = descriptor.RequiresEditMode,
                 locks = descriptor.Locks ?? Array.Empty<string>(),
+                verify_locks = descriptor.VerifyLocks ?? Array.Empty<string>(),
                 request_schema = ParseAndSanitizeJson(descriptor.RequestSchemaJson),
             };
         }
@@ -1014,6 +1020,7 @@ namespace NovaFramework.Mcp.Editor
             public bool requires_stable_editor;
             public bool requires_edit_mode;
             public string[] locks;
+            public string[] verify_locks;
             public object request_schema;
         }
 
