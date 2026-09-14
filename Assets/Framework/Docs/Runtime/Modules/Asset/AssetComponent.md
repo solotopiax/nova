@@ -71,6 +71,7 @@
 
 - `BootstrapAsync()`
 - `LoadManifestAsync()`
+- `TryIsDeviceInStartupWhitelist()`
 - `HasPatchAsync()`
 - `HasPatchByTagsAsync()`
 - `CreateDownloader*()`
@@ -132,6 +133,7 @@
 - `EnableHotfix`、`RuntimePlayMode`、热更地址 URL 这些配置不会在运行时二次推导；进入 `AssetManagerConfig` 的就是当前节点 `DevelopMode` 已选定的那一组事实。
 - `EnableHotfix` 现在只控制资源热更检查 / 下载链路，不再决定 App 大版本检测是否执行。
 - 启动白名单还受 `EnableHotfix` 和有效 `HostPlayMode` 约束；默认关闭，当前 DevelopMode 没有可用白名单文件或元数据根 URL 时自动跳过。
+- `TryIsDeviceInStartupWhitelist(deviceId, out matched)` 只同步查询本次启动已成功拉取并解析的默认包白名单，不发起网络请求。返回 `false` 表示白名单尚不可用、DeviceID 无效或自定义 AssetManager 不支持该能力；返回 `true` 时通过 `matched` 区分命中与未命中。
 - 下载启动白名单文件时使用独立的主备完整轮数、请求重试次数、最近成功域名优先、UWR 埋点和请求超时配置；这些选项位于“启用白名单”折叠区的 URL 配置之后，不复用普通 Asset 下载的对应字段。
 - 首次正常启动没有 DeviceID 缓存时不会请求白名单；SDK 初始化后写入 `persistentDataPath/Asset/asset-check-device-id.dat`，后续启动才参与当次判断。
 - URL 中若包含 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，仍由 Asset 模块在运行时替换；其中 `{Platform}` = Player 编译宏对应的 `PlatformType` 枚举名（不读取 Editor Active BuildTarget 或 ConfigMaster），`{Channel}` = Config 导出时同步到 `AssetComponent` 的渠道快照，`{Package}` = 当前资源包名，`{Version}` = `Application.version`。

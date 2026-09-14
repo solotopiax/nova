@@ -34,11 +34,13 @@ namespace NovaFramework.Runtime
         private readonly float m_BundleRequestTimeout;
         private readonly HttpFallbackPreferenceStore m_PreferenceStore = new();
         private readonly Dictionary<string, RequestState> m_RequestStates = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, Queue<RequestState>> m_RetryRequestStates = new(StringComparer.Ordinal);
         private readonly Dictionary<string, Queue<CandidateSelection>> m_PendingSelections = new(StringComparer.Ordinal);
         private readonly Dictionary<string, CandidateSelection> m_LastFailures = new(StringComparer.Ordinal);
         private readonly Dictionary<string, RetryOverride> m_RetryOverrides = new(StringComparer.Ordinal);
         private readonly List<CandidateSelection> m_ActiveMetadataSelections = new();
         private readonly Dictionary<string, MetadataTransportFailure> m_TransportFailedMetadataSelections = new(StringComparer.Ordinal);
+        private long m_RequestSequence;
 
         private enum CandidateFamily
         {
@@ -49,6 +51,7 @@ namespace NovaFramework.Runtime
         private sealed class RequestState
         {
             public string RequestKey;
+            public string FileKey;
             public string FileName;
             public CandidateFamily Family;
             public string CandidateSignature;
@@ -60,6 +63,7 @@ namespace NovaFramework.Runtime
             public Stopwatch SendStopwatch;
             public int StartedSendCount;
             public bool TelemetryEnded;
+            public bool RetryQueued;
         }
 
         private sealed class RetryOverride
@@ -184,20 +188,15 @@ namespace NovaFramework.Runtime
                 throw new YooInternalException("Candidate URL list is null or empty.");
             }
 
-            string requestKey = BuildRequestKey(candidateUrls[0]);
+            string fileKey = BuildRequestKey(candidateUrls[0]);
             CandidateFamily family = IsMetadataUrl(candidateUrls[0])
                 ? CandidateFamily.Metadata
                 : CandidateFamily.Regular;
             string candidateSignature = BuildCandidateSignature(candidateUrls);
-            if (m_RequestStates.TryGetValue(requestKey, out RequestState existingState)
-                && !string.Equals(existingState.CandidateSignature, candidateSignature, StringComparison.Ordinal))
+            if (!TryTakeRetryRequestState(fileKey, candidateSignature, out RequestState state))
             {
-                RemoveRequestState(requestKey);
-            }
-            if (!m_RequestStates.TryGetValue(requestKey, out RequestState state))
-            {
-                state = CreateRequestState(requestKey, candidateUrls, family, candidateSignature);
-                m_RequestStates[requestKey] = state;
+                state = CreateRequestState(fileKey, candidateUrls, family, candidateSignature);
+                m_RequestStates.Add(state.RequestKey, state);
             }
 
             if (state.TelemetryEnded)
@@ -272,7 +271,7 @@ namespace NovaFramework.Runtime
                         CompleteSelectionIfInFlight(selection);
                         TrackSelectionEnd(selection, false, transportFailure.HttpCode,
                             transportFailure.HttpError, null);
-                        m_RequestStates.Remove(selection.RequestKey);
+                        RemoveRequestState(selection.RequestKey);
                     }
                     shouldRetry |= retryable;
                     continue;
@@ -286,7 +285,7 @@ namespace NovaFramework.Runtime
                     if (!retryable)
                     {
                         TrackSelectionEnd(selection, false, 0L, operationError, "content_verification_failed");
-                        m_RequestStates.Remove(selection.RequestKey);
+                        RemoveRequestState(selection.RequestKey);
                     }
                     shouldRetry |= retryable;
                     if (m_EnableWhitelistMetadataDebugLog)
@@ -353,7 +352,7 @@ namespace NovaFramework.Runtime
                 RejectSelectionIfInFlight(selection);
                 TrackSelectionEnd(selection, false, httpCode, httpError, null);
                 m_LastFailures.Remove(normalizedUrl);
-                m_RequestStates.Remove(selection.RequestKey);
+                RemoveRequestState(selection.RequestKey);
             }
         }
 
@@ -377,6 +376,10 @@ namespace NovaFramework.Runtime
                 {
                     state.Cursor.RejectCurrent();
                     retryable = state.Cursor.State != HttpFallbackExecutionState.Exhausted;
+                    if (retryable)
+                    {
+                        EnqueueRetryRequestState(state);
+                    }
                 }
                 else
                 {
@@ -390,7 +393,7 @@ namespace NovaFramework.Runtime
             if (!retryable)
             {
                 TrackSelectionEnd(selection, false, httpCode, httpError, null);
-                m_RequestStates.Remove(selection.RequestKey);
+                RemoveRequestState(selection.RequestKey);
             }
             return retryable;
         }
@@ -445,7 +448,7 @@ namespace NovaFramework.Runtime
             RemoveFileState(fileName);
         }
 
-        private RequestState CreateRequestState(string requestKey, IReadOnlyList<string> candidateUrls,
+        private RequestState CreateRequestState(string fileKey, IReadOnlyList<string> candidateUrls,
             CandidateFamily family, string candidateSignature)
         {
             string fileName = GetFileName(candidateUrls[0]);
@@ -470,7 +473,8 @@ namespace NovaFramework.Runtime
             }
             return new RequestState
             {
-                RequestKey = requestKey,
+                RequestKey = $"{fileKey}#{++m_RequestSequence}",
+                FileKey = fileKey,
                 FileName = fileName,
                 Family = family,
                 CandidateSignature = candidateSignature,
@@ -526,12 +530,19 @@ namespace NovaFramework.Runtime
                 {
                     state.Cursor.CompleteCurrent();
                     TrackSelectionEnd(selection, true, 200L, null, null);
-                    m_RequestStates.Remove(selection.RequestKey);
+                    RemoveRequestState(selection.RequestKey);
                 }
                 else
                 {
+#if UNITY_WEBGL && !UNITY_EDITOR
                     state.Cursor.RejectCurrent();
                     TrackSelectionEnd(selection, true, 200L, null, null);
+                    EnqueueRetryRequestState(state);
+#else
+                    state.Cursor.CompleteCurrent();
+                    TrackSelectionEnd(selection, true, 200L, null, null);
+                    RemoveRequestState(selection.RequestKey);
+#endif
                 }
             }
             m_LastFailures.Remove(NormalizeUrl(selection.SelectedUrl));
@@ -554,7 +565,12 @@ namespace NovaFramework.Runtime
                 && state.Cursor.State == HttpFallbackExecutionState.CandidateInFlight)
             {
                 state.Cursor.RejectCurrent();
-                return state.Cursor.State != HttpFallbackExecutionState.Exhausted;
+                bool retryable = state.Cursor.State != HttpFallbackExecutionState.Exhausted;
+                if (retryable)
+                {
+                    EnqueueRetryRequestState(state);
+                }
+                return retryable;
             }
             return false;
         }
@@ -715,7 +731,7 @@ namespace NovaFramework.Runtime
             }
             for (int i = 0; i < requestKeys.Count; i++)
             {
-                m_RequestStates.Remove(requestKeys[i]);
+                RemoveRequestState(requestKeys[i]);
             }
 
             var pendingUrls = new List<string>();
@@ -735,28 +751,114 @@ namespace NovaFramework.Runtime
 
         private void RemoveRequestState(string requestKey)
         {
-            m_RequestStates.Remove(requestKey);
+            if (m_RequestStates.TryGetValue(requestKey, out RequestState state))
+            {
+                m_RequestStates.Remove(requestKey);
+                state.RetryQueued = false;
+                RemoveRetryRequestState(state);
+            }
             var pendingUrls = new List<string>();
+            var pendingUpdates = new Dictionary<string, Queue<CandidateSelection>>(StringComparer.Ordinal);
             foreach (KeyValuePair<string, Queue<CandidateSelection>> pair in m_PendingSelections)
             {
-                bool containsRequest = false;
-                foreach (CandidateSelection selection in pair.Value)
+                var remaining = new Queue<CandidateSelection>(pair.Value.Count);
+                while (pair.Value.Count > 0)
                 {
-                    if (string.Equals(selection.RequestKey, requestKey, StringComparison.Ordinal))
+                    CandidateSelection selection = pair.Value.Dequeue();
+                    if (!string.Equals(selection.RequestKey, requestKey, StringComparison.Ordinal))
                     {
-                        containsRequest = true;
-                        break;
+                        remaining.Enqueue(selection);
                     }
                 }
-                if (containsRequest)
+                if (remaining.Count == 0)
                 {
                     pendingUrls.Add(pair.Key);
                 }
+                else
+                {
+                    pendingUpdates.Add(pair.Key, remaining);
+                }
+            }
+            foreach (KeyValuePair<string, Queue<CandidateSelection>> pair in pendingUpdates)
+            {
+                m_PendingSelections[pair.Key] = pair.Value;
             }
             for (int i = 0; i < pendingUrls.Count; i++)
             {
                 m_PendingSelections.Remove(pendingUrls[i]);
                 m_LastFailures.Remove(pendingUrls[i]);
+            }
+        }
+
+        private bool TryTakeRetryRequestState(
+            string fileKey,
+            string candidateSignature,
+            out RequestState state)
+        {
+            state = null;
+            if (!m_RetryRequestStates.TryGetValue(fileKey, out Queue<RequestState> states))
+            {
+                return false;
+            }
+
+            while (states.Count > 0)
+            {
+                RequestState candidate = states.Dequeue();
+                candidate.RetryQueued = false;
+                if (m_RequestStates.ContainsKey(candidate.RequestKey)
+                    && candidate.Cursor.State == HttpFallbackExecutionState.CandidateRejected
+                    && string.Equals(candidate.CandidateSignature, candidateSignature, StringComparison.Ordinal))
+                {
+                    state = candidate;
+                    break;
+                }
+                m_RequestStates.Remove(candidate.RequestKey);
+            }
+            if (states.Count == 0)
+            {
+                m_RetryRequestStates.Remove(fileKey);
+            }
+            return state != null;
+        }
+
+        private void EnqueueRetryRequestState(RequestState state)
+        {
+            if (state == null || state.RetryQueued || !m_RequestStates.ContainsKey(state.RequestKey))
+            {
+                return;
+            }
+            if (!m_RetryRequestStates.TryGetValue(state.FileKey, out Queue<RequestState> states))
+            {
+                states = new Queue<RequestState>();
+                m_RetryRequestStates.Add(state.FileKey, states);
+            }
+            state.RetryQueued = true;
+            states.Enqueue(state);
+        }
+
+        private void RemoveRetryRequestState(RequestState target)
+        {
+            if (target == null
+                || !m_RetryRequestStates.TryGetValue(target.FileKey, out Queue<RequestState> states))
+            {
+                return;
+            }
+            var remaining = new Queue<RequestState>(states.Count);
+            while (states.Count > 0)
+            {
+                RequestState state = states.Dequeue();
+                if (!ReferenceEquals(state, target))
+                {
+                    remaining.Enqueue(state);
+                }
+            }
+            if (remaining.Count == 0)
+            {
+                m_RetryRequestStates.Remove(target.FileKey);
+            }
+            else
+            {
+                m_RetryRequestStates[target.FileKey] = remaining;
             }
         }
 

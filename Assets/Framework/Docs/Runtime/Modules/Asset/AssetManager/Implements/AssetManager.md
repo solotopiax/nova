@@ -83,6 +83,8 @@
 
 启动白名单默认关闭，并同时要求 `EnableHotfix=true`、有效模式为 HostPlayMode、白名单文件 URL 与元数据根 URL 至少各有一个有效地址。本地 DeviceID 来自 `persistentDataPath/Asset/asset-check-device-id.dat`；首次没有缓存时直接跳过，SDK 插件完成初始化后通过 `SaveAssetCheckDeviceId` 原子写入 UTF-8 明文，供后续启动使用。
 
+成功拉取并解析的白名单会按包保存在当前进程内存中。业务可通过 `Nova.Asset.TryIsDeviceInStartupWhitelist(deviceId, out matched)` 同步查询默认包的缓存数据；该调用不触发网络，也不改变当前设备已经确定的资源路由。返回 `false` 表示白名单数据尚不可用或 DeviceID 无效，返回 `true` 时由 `matched` 区分命中与未命中。
+
 `VersionsCheckWhiteList.json` 使用独立的 `StartupWhitelistFallbackRoundCount`、`StartupWhitelistRetryRequestCount`、`StartupWhitelistPreferLastSuccessfulHost`、`StartupWhitelistEnableUWRTracks` 与 `StartupWhitelistCheckTimeout`；默认分别为 `1`、`1`、`true`、`true`、`5`。这些配置不影响白名单命中后的版本元数据请求或 Bundle 下载。
 
 内置 `HttpManager` 下，白名单文件通过不创建 Network 逻辑链的物理 UWR 入口请求，由 Asset 统一管理主备、轮次、重试和 `uwr_*` 链路埋点；兼容自定义 `IHttpManager` 时回退到 `DownloadTextAsync`。资源下载、CDN 与热更新由 YooAsset 的 UnityWebRequest 后端和 `AssetDownloadUrlPolicy` 独立路由。三条链统一按候选数 `C`、完整轮数 `R`、重试次数 `K` 形成 `C × R × (K + 1)` 次物理尝试；每次重试都会重新执行全部轮次。404/408/416/429、5xx、无响应及内容校验失败继续下一个候选；401/403 和其他 4xx 立即停止。`.version` / `.hash` / `.bytes` 未命中白名单时使用常规主备，命中时使用白名单主备后再到常规主备；全部尝试失败后才进入现有离线回退。Bundle 始终走常规主机地址。

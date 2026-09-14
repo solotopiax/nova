@@ -262,4 +262,19 @@ namespace NovaFramework.Runtime
         /// <param name="ct">取消令牌。</param>
         UniTask ClearUnusedCacheAsync(string package = null, CancellationToken ct = default);
     }
+
+    /// <summary>
+    /// 内置 AssetManager 提供的启动白名单缓存查询能力。
+    /// 与 IAssetManager 分离，避免要求仓外自定义资源 Manager 补齐可选能力。
+    /// </summary>
+    internal interface IAssetStartupWhitelistLookup
+    {
+        /// <summary>
+        /// 从本次启动已成功拉取并解析的默认包白名单中查询指定设备 ID。
+        /// </summary>
+        /// <param name="deviceId">待查询的稳定设备 ID。</param>
+        /// <param name="matched">白名单可用时，返回指定设备 ID 是否命中。</param>
+        /// <returns>true 表示白名单数据可用且已完成查询；false 表示当前无法查询。</returns>
+        bool TryIsDeviceInStartupWhitelist(string deviceId, out bool matched);
+    }
 }

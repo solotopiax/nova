@@ -43,6 +43,12 @@ namespace NovaFramework.Runtime
         private readonly HashSet<string> m_StartupWhitelistMatchedPackages = new();
 
         /// <summary>
+        /// 本次进程已成功拉取并解析的启动白名单，键为 YooAsset 包名。
+        /// 仅保留规范化后的非空设备 ID，供同步业务查询复用。
+        /// </summary>
+        private readonly Dictionary<string, HashSet<string>> m_StartupWhitelists = new();
+
+        /// <summary>
         /// 每个包最近一次成功返回有效内容的启动白名单域名；整条失败链不会清除。
         /// </summary>
         private readonly HttpFallbackPreferenceStore m_StartupWhitelistPreferenceStore = new();

@@ -188,6 +188,24 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 从本次启动已成功拉取并解析的默认包白名单中查询指定设备 ID。
+        /// 不触发网络请求；白名单尚不可用或设备 ID 无效时返回 false。
+        /// </summary>
+        /// <param name="deviceId">待查询的稳定设备 ID。</param>
+        /// <param name="matched">白名单可用时，返回指定设备 ID 是否命中。</param>
+        /// <returns>true 表示白名单数据可用且已完成查询；false 表示当前无法查询。</returns>
+        public bool TryIsDeviceInStartupWhitelist(string deviceId, out bool matched)
+        {
+            if (m_AssetManager is IAssetStartupWhitelistLookup lookup)
+            {
+                return lookup.TryIsDeviceInStartupWhitelist(deviceId, out matched);
+            }
+
+            matched = false;
+            return false;
+        }
+
+        /// <summary>
         /// 检查指定包是否有补丁需要下载。
         /// </summary>
         /// <param name="package">包名，null 走默认包。</param>

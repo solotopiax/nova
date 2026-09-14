@@ -20,7 +20,7 @@ namespace NovaFramework.Runtime
     /// <remarks>
     /// Priority = 4，与原 AssetLoadManager 等价；Update/Shutdown 由 FrameworkManager 派生强制覆盖。
     /// </remarks>
-    internal abstract class AssetManagerBase : FrameworkManager, IAssetManager
+    internal abstract class AssetManagerBase : FrameworkManager, IAssetManager, IAssetStartupWhitelistLookup
     {
         /// <summary>
         /// FrameworkManager 调度优先级。
@@ -79,6 +79,14 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="deviceId">稳定设备 ID 明文。</param>
         public abstract void SaveAssetCheckDeviceId(string deviceId);
+
+        /// <summary>
+        /// 从本次启动已成功拉取并解析的默认包白名单中查询指定设备 ID。
+        /// </summary>
+        /// <param name="deviceId">待查询的稳定设备 ID。</param>
+        /// <param name="matched">白名单可用时，返回指定设备 ID 是否命中。</param>
+        /// <returns>true 表示白名单数据可用且已完成查询；false 表示当前无法查询。</returns>
+        public abstract bool TryIsDeviceInStartupWhitelist(string deviceId, out bool matched);
 
         /// <summary>
         /// 将当前激活且已满足启动下载范围的清单版本记录为本地可启动版本。

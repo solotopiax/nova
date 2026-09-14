@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -104,6 +105,7 @@ namespace NovaFramework.Runtime
             m_OfflineRecoveredPackages.Clear();
             m_StartupWhitelistCheckedPackages.Clear();
             m_StartupWhitelistMatchedPackages.Clear();
+            m_StartupWhitelists.Clear();
             m_StartupWhitelistPreferenceStore.ClearAll();
             m_DownloadUrlPolicies.Clear();
             m_RemoteServices.Clear();
@@ -246,6 +248,47 @@ namespace NovaFramework.Runtime
             }
 
             WriteAssetCheckDeviceId(normalized);
+        }
+
+        /// <summary>
+        /// 从本次启动已成功拉取并解析的默认包白名单中查询指定设备 ID。
+        /// 本方法只读取内存缓存，不触发网络请求或改变当前设备的资源路由。
+        /// </summary>
+        /// <param name="deviceId">待查询的稳定设备 ID。</param>
+        /// <param name="matched">白名单可用时，返回指定设备 ID 是否命中。</param>
+        /// <returns>true 表示白名单数据可用且已完成查询；false 表示当前无法查询。</returns>
+        public override bool TryIsDeviceInStartupWhitelist(string deviceId, out bool matched)
+        {
+            HashSet<string> whitelist = null;
+            if (!string.IsNullOrEmpty(m_DefaultPackageName))
+            {
+                m_StartupWhitelists.TryGetValue(m_DefaultPackageName, out whitelist);
+            }
+
+            return TryMatchStartupWhitelist(whitelist, deviceId, out matched);
+        }
+
+        /// <summary>
+        /// 在指定内存白名单中同步查询设备 ID，不读取磁盘或触发网络请求。
+        /// </summary>
+        /// <param name="whitelist">已成功解析的设备 ID 集合；null 表示数据不可用。</param>
+        /// <param name="deviceId">待查询的稳定设备 ID。</param>
+        /// <param name="matched">白名单可用时，返回指定设备 ID 是否命中。</param>
+        /// <returns>true 表示白名单数据可用且已完成查询；false 表示当前无法查询。</returns>
+        private static bool TryMatchStartupWhitelist(
+            HashSet<string> whitelist,
+            string deviceId,
+            out bool matched)
+        {
+            matched = false;
+            string normalized = deviceId?.Trim();
+            if (whitelist == null || string.IsNullOrEmpty(normalized))
+            {
+                return false;
+            }
+
+            matched = whitelist.Contains(normalized);
+            return true;
         }
 
         /// <summary>

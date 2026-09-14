@@ -171,7 +171,7 @@ namespace NovaFramework.Runtime
                 UwrNetworkTelemetry.TrackAssetStart(
                     shouldTrack, chainId, firstStep.Candidate.Url, m_Config.StartupWhitelistCheckTimeout,
                     fallbackPlan, firstStep, downloadOperationId, package, "startup_whitelist");
-                List<string> whitelist = null;
+                HashSet<string> whitelist = null;
                 bool hasValidWhitelist = false;
                 int attemptsStarted = 0;
                 while (cursor.TryBeginNext(out HttpFallbackStep step))
@@ -252,14 +252,12 @@ namespace NovaFramework.Runtime
                     return;
                 }
 
-                for (int i = 0; i < whitelist.Count; i++)
+                m_StartupWhitelists[package] = whitelist;
+                if (whitelist.Contains(deviceId))
                 {
-                    if (string.Equals(whitelist[i]?.Trim(), deviceId, StringComparison.Ordinal))
-                    {
-                        m_StartupWhitelistMatchedPackages.Add(package);
-                        Log.Debug(LogTag.Asset, "启动白名单命中：Package={0}, DeviceID={1}，仅切换 YooAsset 版本元数据地址。", package, deviceId);
-                        return;
-                    }
+                    m_StartupWhitelistMatchedPackages.Add(package);
+                    Log.Debug(LogTag.Asset, "启动白名单命中：Package={0}, DeviceID={1}，仅切换 YooAsset 版本元数据地址。", package, deviceId);
+                    return;
                 }
 
                 Log.Debug(LogTag.Asset, "启动白名单未命中，继续使用常规资源地址。Package={0}", package);
@@ -273,7 +271,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 校验并解析启动白名单内容；传输成功但内容无效时允许调用方继续尝试备用地址。
         /// </summary>
-        private static bool TryParseStartupWhitelist(string body, out List<string> whitelist)
+        private static bool TryParseStartupWhitelist(string body, out HashSet<string> whitelist)
         {
             whitelist = null;
             if (string.IsNullOrWhiteSpace(body))
@@ -283,9 +281,18 @@ namespace NovaFramework.Runtime
 
             try
             {
-                whitelist = Util.Json.Deserialize<List<string>>(body);
-                if (whitelist != null)
+                List<string> entries = Util.Json.Deserialize<List<string>>(body);
+                if (entries != null)
                 {
+                    whitelist = new HashSet<string>(StringComparer.Ordinal);
+                    for (int i = 0; i < entries.Count; i++)
+                    {
+                        string deviceId = entries[i]?.Trim();
+                        if (!string.IsNullOrEmpty(deviceId))
+                        {
+                            whitelist.Add(deviceId);
+                        }
+                    }
                     return true;
                 }
 

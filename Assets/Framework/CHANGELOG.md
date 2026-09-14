@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.6.29] - 2026-09-14
+
+### Added
+
+- `Nova.Asset` 新增同步 `TryIsDeviceInStartupWhitelist`，允许业务查询本次启动已拉取的默认包白名单，并区分数据不可用与明确未命中。
+
+### Fixed
+
+- Asset 下载策略为同一文件的重叠请求分配独立执行状态，避免新请求在旧请求回调交接窗口命中 `CandidateInFlight` 并报错。
+
 ## [0.6.28] - 2026-09-14
 
 ### Fixed

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.15] - 2026-09-14
+
+### Fixed
+
+- Firebase Topic 订阅与退订将 FCM `INTERNAL_SERVER_ERROR` 作为可恢复的注册服务异常执行有界重试，并复用默认 Topic 的延迟及前台补偿同步。
+
 ## [0.1.14] - 2026-09-14
 
 ### Changed

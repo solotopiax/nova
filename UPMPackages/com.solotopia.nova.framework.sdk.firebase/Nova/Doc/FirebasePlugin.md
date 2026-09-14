@@ -91,7 +91,7 @@
 
 ## 6. 默认推送 Topic
 
-Firebase 依赖检查通过后，`FirebasePlugin` 会启动默认 FCM topic 同步，但实际 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token。iOS 上 FCM Token 字符串可用不等于 APNs Token 已被 Firebase 原生层用于 topic 操作；如果 `SubscribeAsync(...)` 或 `UnsubscribeAsync(...)` 返回 APNs Token 尚未就绪，插件会延迟后重试当前 topic 操作。同步只在 Android / iOS 编译平台执行，WebGL 不包含 Firebase Runtime。
+Firebase 依赖检查通过后，`FirebasePlugin` 会启动默认 FCM topic 同步，但实际 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token。iOS 上 FCM Token 字符串可用不等于 APNs Token 已被 Firebase 原生层用于 topic 操作；如果 `SubscribeAsync(...)` 或 `UnsubscribeAsync(...)` 返回 APNs Token 尚未就绪，或 Firebase 注册服务返回 `INTERNAL_SERVER_ERROR`，插件会延迟后重试当前 topic 操作。同步只在 Android / iOS 编译平台执行，WebGL 不包含 Firebase Runtime。
 
 默认 Topic 前缀来自 `IConfigManager.DevelopMode`：`Debug` 使用 `top_debug_`，`Release` 使用 `top_release_`。如果 Config Manager 不存在或尚未完成加载，则按 `Debug` 处理，避免误订阅正式分群。
 
@@ -127,7 +127,7 @@ Android、`zh-CN`、UTC+08、国家码 `CN` 的 Debug 分群会同步 `top_debug
 | `BaseState` | `FirebaseTopicSubscriptionState` | 记录语言、平台、时区和上次成功订阅的基础 topic 列表 |
 | `CountryState` | `FirebaseCountryTopicSubscriptionState` | 记录国家码和上次成功订阅的国家 topic |
 
-同步时会先读取旧状态并与当前状态计算差异：旧状态独有的 topic 先退订，新状态独有的 topic 再订阅。只有所有退订/订阅操作都成功后才覆盖保存新状态；若 iOS APNs Token 尚未就绪导致本轮失败，则保留旧存档并安排后续补偿同步，应用恢复前台时也会再次请求默认 topic 差异同步。若当前状态和存档一致，则不重复调用 Firebase 订阅接口。启动基础同步和 Localization 刷新触发的语言同步共用同一把内部锁，避免并发读写 `BaseState`。
+同步时会先读取旧状态并与当前状态计算差异：旧状态独有的 topic 先退订，新状态独有的 topic 再订阅。只有所有退订/订阅操作都成功后才覆盖保存新状态；若 iOS APNs Token 尚未就绪或 Firebase 注册服务瞬时失败导致本轮未完成，则保留旧存档并安排后续补偿同步，应用恢复前台时也会再次请求默认 topic 差异同步。若当前状态和存档一致，则不重复调用 Firebase 订阅接口。启动基础同步和 Localization 刷新触发的语言同步共用同一把内部锁，避免并发读写 `BaseState`。
 
 国家码最终无效或为 `IV` 时，不会订阅国家 topic，也不会退订旧国家 topic 或覆盖旧国家存档。这样可以避免广告 SDK 临时返回 `IV` 或国家码暂不可用时误删上一次有效国家订阅。
 

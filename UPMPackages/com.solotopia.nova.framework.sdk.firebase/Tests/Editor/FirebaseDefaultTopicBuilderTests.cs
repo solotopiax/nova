@@ -174,40 +174,59 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         }
 
         /// <summary>
-        /// iOS APNs Token 未就绪时应重试 Topic 操作本身，不能只依赖下一次 TokenReceived 回调。
+        /// 已知可恢复错误应重试 Topic 操作本身，不能只依赖下一次 TokenReceived 回调。
         /// </summary>
         [Test]
-        public void TopicSubscription_RetriesApnsTokenNotReadyAtTopicOperationLevel()
+        public void TopicSubscription_RetriesKnownTransientErrorsAtTopicOperationLevel()
         {
             string topicsSource = File.ReadAllText(c_FirebaseDefaultTopicsSourcePath);
             string visitorsSource = File.ReadAllText(c_FirebasePluginVisitorsSourcePath);
 
             StringAssert.Contains("c_ApnsTokenNotReadyExceptionMessage", visitorsSource);
             StringAssert.Contains("No APNS token specified before fetching FCM Token", visitorsSource);
-            StringAssert.Contains("IsApnsTokenNotReadyException(ex)", topicsSource);
-            StringAssert.Contains("s_TopicSubscriptionApnsRetryDelays", topicsSource);
+            StringAssert.Contains("IsRetryableTopicException(ex)", topicsSource);
+            StringAssert.Contains("s_TopicSubscriptionRetryDelays", topicsSource);
             StringAssert.Contains("await UniTask.Delay(delay, cancellationToken: ct);", topicsSource);
-            StringAssert.Contains("TopicSubscriptionOperationResult.ApnsTokenNotReady", topicsSource);
+            StringAssert.Contains("TopicSubscriptionOperationResult.RetryableTransient", topicsSource);
             StringAssert.Contains("await FirebaseMessaging.SubscribeAsync(topic);", topicsSource);
             StringAssert.Contains("await FirebaseMessaging.UnsubscribeAsync(topic);", topicsSource);
-            StringAssert.Contains("Log.Warning(LogTag.Firebase, $\"Firebase 推送 Topic {(subscribed ? \"订阅\" : \"退订\")}等待 APNs Token", topicsSource);
+            StringAssert.Contains("遇到可恢复错误，准备重试", topicsSource);
+            StringAssert.Contains("c_FirebaseInternalServerErrorMessage", visitorsSource);
+            StringAssert.Contains("INTERNAL_SERVER_ERROR", visitorsSource);
         }
 
         /// <summary>
-        /// 默认 Topic 因 APNs Token 未就绪失败时应保留存档并安排后续补偿同步。
+        /// Topic 瞬时错误分类必须覆盖 APNs 未就绪和 Firebase 注册服务内部错误，且不能误判永久参数错误。
+        /// </summary>
+        [TestCase("No APNS token specified before fetching FCM Token", true)]
+        [TestCase("Invalid registration response :'Error=INTERNAL_SERVER_ERROR'. It is missing 'token' field.", true)]
+        [TestCase("Invalid topic name", false)]
+        public void TopicSubscription_ClassifiesKnownRetryableErrors(string message, bool expected)
+        {
+            MethodInfo method = typeof(NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePlugin).GetMethod(
+                "IsRetryableTopicException",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.That(method, Is.Not.Null);
+
+            var wrapped = new AggregateException(new InvalidOperationException(message));
+            Assert.That((bool)method.Invoke(null, new object[] { wrapped }), Is.EqualTo(expected));
+        }
+
+        /// <summary>
+        /// 默认 Topic 因可恢复错误失败时应保留存档并安排后续补偿同步。
         /// </summary>
         [Test]
-        public void DefaultTopicSync_SchedulesApnsRetryAndForegroundCompensation()
+        public void DefaultTopicSync_SchedulesTransientRetryAndForegroundCompensation()
         {
             string pluginSource = File.ReadAllText(c_FirebasePluginSourcePath);
             string topicsSource = File.ReadAllText(c_FirebaseDefaultTopicsSourcePath);
             string visitorsSource = File.ReadAllText(c_FirebasePluginVisitorsSourcePath);
 
-            StringAssert.Contains("m_DefaultBaseTopicApnsRetryScheduled", visitorsSource);
-            StringAssert.Contains("m_DefaultCountryTopicApnsRetryScheduled", visitorsSource);
-            StringAssert.Contains("ScheduleDefaultBaseTopicApnsRetry(preferredLanguage, ct);", topicsSource);
-            StringAssert.Contains("ScheduleDefaultCountryTopicApnsRetry(ct);", topicsSource);
-            StringAssert.Contains("await UniTask.Delay(s_DefaultTopicApnsRetryDelay, cancellationToken: ct);", topicsSource);
+            StringAssert.Contains("m_DefaultBaseTopicRetryScheduled", visitorsSource);
+            StringAssert.Contains("m_DefaultCountryTopicRetryScheduled", visitorsSource);
+            StringAssert.Contains("ScheduleDefaultBaseTopicRetry(preferredLanguage, ct);", topicsSource);
+            StringAssert.Contains("ScheduleDefaultCountryTopicRetry(ct);", topicsSource);
+            StringAssert.Contains("await UniTask.Delay(s_DefaultTopicRetryDelay, cancellationToken: ct);", topicsSource);
             StringAssert.Contains("RequestDefaultTopicSyncOnForeground();", pluginSource);
         }
 
@@ -462,7 +481,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
 
         private static Type GetBuilderType()
         {
-            Type type = typeof(FirebasePlugin).Assembly.GetType("NovaFramework.SDK.FirebasePlugin.Runtime.FirebaseDefaultTopicBuilder", false);
+            Type type = typeof(NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePlugin).Assembly.GetType("NovaFramework.SDK.FirebasePlugin.Runtime.FirebaseDefaultTopicBuilder", false);
             Assert.IsNotNull(type, "FirebaseDefaultTopicBuilder should exist.");
             return type;
         }

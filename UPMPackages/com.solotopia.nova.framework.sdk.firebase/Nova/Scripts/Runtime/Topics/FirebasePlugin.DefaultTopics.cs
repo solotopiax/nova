@@ -56,14 +56,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             Succeeded,
 
             /// <summary>
-            /// Firebase Topic 操作失败，且不是当前可恢复的 APNs Token 未就绪场景。
+            /// Firebase Topic 操作失败，且不属于当前可恢复的瞬时错误。
             /// </summary>
             Failed,
 
             /// <summary>
-            /// Firebase iOS 原生层尚未拿到 APNs Token，当前 Topic 操作需要延后重试。
+            /// Firebase iOS APNs Token 未就绪或注册服务暂时失败，当前 Topic 操作需要延后重试。
             /// </summary>
-            ApnsTokenNotReady,
+            RetryableTransient,
         }
 
         /// <summary>
@@ -91,8 +91,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         private void CancelDefaultTopicSync()
         {
             UnsubscribeDefaultTopicLocalizationRefresh();
-            m_DefaultBaseTopicApnsRetryScheduled = false;
-            m_DefaultCountryTopicApnsRetryScheduled = false;
+            m_DefaultBaseTopicRetryScheduled = false;
+            m_DefaultCountryTopicRetryScheduled = false;
 
             if (m_DefaultTopicSyncCts == null)
             {
@@ -123,20 +123,20 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         }
 
         /// <summary>
-        /// 安排基础默认 Topic 在 APNs Token 后续就绪后再次同步。
+        /// 安排基础默认 Topic 在 Firebase 瞬时错误恢复后再次同步。
         /// </summary>
         /// <param name="preferredLanguage">本轮基础 Topic 同步使用的语言提示。</param>
         /// <param name="ct">默认 Topic 同步取消令牌。</param>
-        private void ScheduleDefaultBaseTopicApnsRetry(Language preferredLanguage, CancellationToken ct)
+        private void ScheduleDefaultBaseTopicRetry(Language preferredLanguage, CancellationToken ct)
         {
 #if (UNITY_IOS || UNITY_ANDROID)
-            if (m_DefaultBaseTopicApnsRetryScheduled || ct.IsCancellationRequested)
+            if (m_DefaultBaseTopicRetryScheduled || ct.IsCancellationRequested)
             {
                 return;
             }
 
-            m_DefaultBaseTopicApnsRetryScheduled = true;
-            RetryDefaultBaseTopicAfterApnsDelayAsync(preferredLanguage, ct).Forget();
+            m_DefaultBaseTopicRetryScheduled = true;
+            RetryDefaultBaseTopicAfterDelayAsync(preferredLanguage, ct).Forget();
 #endif
         }
 
@@ -146,34 +146,34 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// <param name="preferredLanguage">本轮基础 Topic 同步使用的语言提示。</param>
         /// <param name="ct">默认 Topic 同步取消令牌。</param>
         /// <returns>异步任务。</returns>
-        private async UniTaskVoid RetryDefaultBaseTopicAfterApnsDelayAsync(Language preferredLanguage, CancellationToken ct)
+        private async UniTaskVoid RetryDefaultBaseTopicAfterDelayAsync(Language preferredLanguage, CancellationToken ct)
         {
             try
             {
-                await UniTask.Delay(s_DefaultTopicApnsRetryDelay, cancellationToken: ct);
-                m_DefaultBaseTopicApnsRetryScheduled = false;
+                await UniTask.Delay(s_DefaultTopicRetryDelay, cancellationToken: ct);
+                m_DefaultBaseTopicRetryScheduled = false;
                 await SyncDefaultBaseTopicsAsync(ct, preferredLanguage);
             }
             catch (OperationCanceledException)
             {
-                m_DefaultBaseTopicApnsRetryScheduled = false;
+                m_DefaultBaseTopicRetryScheduled = false;
             }
         }
 
         /// <summary>
-        /// 安排国家默认 Topic 在 APNs Token 后续就绪后再次同步。
+        /// 安排国家默认 Topic 在 Firebase 瞬时错误恢复后再次同步。
         /// </summary>
         /// <param name="ct">默认 Topic 同步取消令牌。</param>
-        private void ScheduleDefaultCountryTopicApnsRetry(CancellationToken ct)
+        private void ScheduleDefaultCountryTopicRetry(CancellationToken ct)
         {
 #if (UNITY_IOS || UNITY_ANDROID)
-            if (m_DefaultCountryTopicApnsRetryScheduled || ct.IsCancellationRequested)
+            if (m_DefaultCountryTopicRetryScheduled || ct.IsCancellationRequested)
             {
                 return;
             }
 
-            m_DefaultCountryTopicApnsRetryScheduled = true;
-            RetryDefaultCountryTopicAfterApnsDelayAsync(ct).Forget();
+            m_DefaultCountryTopicRetryScheduled = true;
+            RetryDefaultCountryTopicAfterDelayAsync(ct).Forget();
 #endif
         }
 
@@ -182,17 +182,17 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// </summary>
         /// <param name="ct">默认 Topic 同步取消令牌。</param>
         /// <returns>异步任务。</returns>
-        private async UniTaskVoid RetryDefaultCountryTopicAfterApnsDelayAsync(CancellationToken ct)
+        private async UniTaskVoid RetryDefaultCountryTopicAfterDelayAsync(CancellationToken ct)
         {
             try
             {
-                await UniTask.Delay(s_DefaultTopicApnsRetryDelay, cancellationToken: ct);
-                m_DefaultCountryTopicApnsRetryScheduled = false;
+                await UniTask.Delay(s_DefaultTopicRetryDelay, cancellationToken: ct);
+                m_DefaultCountryTopicRetryScheduled = false;
                 await WaitAndSyncCountryTopicAsync(ct);
             }
             catch (OperationCanceledException)
             {
-                m_DefaultCountryTopicApnsRetryScheduled = false;
+                m_DefaultCountryTopicRetryScheduled = false;
             }
         }
 
@@ -280,9 +280,9 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 if (result != TopicSubscriptionOperationResult.Succeeded)
                 {
                     Log.Warning(LogTag.Firebase, "默认基础推送 Topic 同步失败，本次不更新存档。");
-                    if (result == TopicSubscriptionOperationResult.ApnsTokenNotReady)
+                    if (result == TopicSubscriptionOperationResult.RetryableTransient)
                     {
-                        ScheduleDefaultBaseTopicApnsRetry(preferredLanguage, ct);
+                        ScheduleDefaultBaseTopicRetry(preferredLanguage, ct);
                     }
 
                     return;
@@ -387,9 +387,9 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             if (result != TopicSubscriptionOperationResult.Succeeded)
             {
                 Log.Warning(LogTag.Firebase, "默认国家推送 Topic 同步失败，本次不更新存档。");
-                if (result == TopicSubscriptionOperationResult.ApnsTokenNotReady)
+                if (result == TopicSubscriptionOperationResult.RetryableTransient)
                 {
-                    ScheduleDefaultCountryTopicApnsRetry(ct);
+                    ScheduleDefaultCountryTopicRetry(ct);
                 }
 
                 return;
@@ -577,7 +577,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
         /// <summary>
         /// 执行单个 Firebase Topic 的订阅或退订操作。
-        /// 该方法会观察 Firebase 返回的 Task，APNs Token 未就绪时做有界重试，其他失败记录错误。
+        /// 该方法会观察 Firebase 返回的 Task；APNs Token 未就绪和注册服务内部错误执行有界重试，永久错误直接结束。
         /// </summary>
         /// <param name="topic">完整 Firebase Topic。</param>
         /// <param name="subscribed">true 表示订阅，false 表示退订。</param>
@@ -628,16 +628,16 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 {
                     throw;
                 }
-                catch (Exception ex) when (IsApnsTokenNotReadyException(ex))
+                catch (Exception ex) when (IsRetryableTopicException(ex))
                 {
-                    if (attempt >= s_TopicSubscriptionApnsRetryDelays.Length)
+                    if (attempt >= s_TopicSubscriptionRetryDelays.Length)
                     {
-                        Log.Warning(LogTag.Firebase, $"Firebase 推送 Topic {(subscribed ? "订阅" : "退订")}等待 APNs Token 超时，本次操作未完成，等待后续同步或业务再次调用重试：{topic}，{ex.Message}");
-                        return TopicSubscriptionOperationResult.ApnsTokenNotReady;
+                        Log.Warning(LogTag.Firebase, $"Firebase 推送 Topic {(subscribed ? "订阅" : "退订")}可恢复错误重试已耗尽，本次操作未完成，等待后续同步或业务再次调用重试：{topic}，{ex.Message}");
+                        return TopicSubscriptionOperationResult.RetryableTransient;
                     }
 
-                    TimeSpan delay = s_TopicSubscriptionApnsRetryDelays[attempt];
-                    Log.Warning(LogTag.Firebase, $"Firebase 推送 Topic {(subscribed ? "订阅" : "退订")}等待 APNs Token 就绪后重试：{topic}，第 {attempt + 1}/{s_TopicSubscriptionApnsRetryDelays.Length} 次，延迟 {delay.TotalSeconds:0} 秒。异常：{ex.Message}");
+                    TimeSpan delay = s_TopicSubscriptionRetryDelays[attempt];
+                    Log.Warning(LogTag.Firebase, $"Firebase 推送 Topic {(subscribed ? "订阅" : "退订")}遇到可恢复错误，准备重试：{topic}，第 {attempt + 1}/{s_TopicSubscriptionRetryDelays.Length} 次，延迟 {delay.TotalSeconds:0} 秒。异常：{ex.Message}");
                     await UniTask.Delay(delay, cancellationToken: ct);
                 }
                 catch (Exception ex)
@@ -649,18 +649,30 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         }
 
         /// <summary>
-        /// 判断异常是否为 Firebase iOS 原生层 APNs Token 尚未就绪。
+        /// 判断异常是否属于可通过延迟重试恢复的 Firebase Topic 错误。
         /// </summary>
         /// <param name="ex">待判断异常。</param>
-        /// <returns>APNs Token 未就绪返回 true。</returns>
-        private static bool IsApnsTokenNotReadyException(Exception ex)
+        /// <returns>APNs Token 未就绪或 Firebase 注册服务瞬时失败时返回 true。</returns>
+        private static bool IsRetryableTopicException(Exception ex)
         {
             while (ex != null)
             {
                 if (!string.IsNullOrEmpty(ex.Message) &&
-                    ex.Message.IndexOf(c_ApnsTokenNotReadyExceptionMessage, StringComparison.OrdinalIgnoreCase) >= 0)
+                    (ex.Message.IndexOf(c_ApnsTokenNotReadyExceptionMessage, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                     ex.Message.IndexOf(c_FirebaseInternalServerErrorMessage, StringComparison.OrdinalIgnoreCase) >= 0))
                 {
                     return true;
+                }
+
+                if (ex is AggregateException aggregateException)
+                {
+                    for (int i = 0; i < aggregateException.InnerExceptions.Count; i++)
+                    {
+                        if (IsRetryableTopicException(aggregateException.InnerExceptions[i]))
+                        {
+                            return true;
+                        }
+                    }
                 }
 
                 ex = ex.InnerException;

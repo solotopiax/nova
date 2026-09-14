@@ -4,7 +4,7 @@
 
 候选去重、最近成功优先排序、不可变计划、执行游标和偏好存储均复用 Core 的 `HttpFallbackPlanner`、`HttpFallbackExecutionPlan`、`HttpFallbackExecutionCursor` 与 `HttpFallbackPreferenceStore`；本类只适配 YooAsset 的 URL/失败回调和 Asset 专属错误码规则。
 
-- 每个文件按 URL 路径拥有独立计划；A/B/C 并发失败不会互相推进候选。
+- 每个文件请求拥有独立计划；A/B/C 并发失败不会互相推进候选，同一文件的新旧下载在回调交接窗口重叠时也不共享游标。
 - 候选先去重，再按 `C × R × (K + 1)` 计算最大物理尝试数；传给 YooAsset 的额外物理重试数为该值减一。
 - `FallbackRoundCount` 的一轮会完整尝试全部候选；`RetryDownloadCount` 是下载重试次数，每次重试重新执行完整轮次组合。
 - 404/408/416/429、5xx、无响应可继续；401/403 和其他 4xx 立即停止。

@@ -107,9 +107,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         private const string c_ApnsTokenNotReadyExceptionMessage = "No APNS token specified before fetching FCM Token";
 
         /// <summary>
-        /// Topic 订阅或退订遇到 APNs Token 未就绪时的单次操作重试间隔。
+        /// Firebase 注册服务暂时不可用时返回的稳定错误标记。
         /// </summary>
-        private static readonly TimeSpan[] s_TopicSubscriptionApnsRetryDelays =
+        private const string c_FirebaseInternalServerErrorMessage = "INTERNAL_SERVER_ERROR";
+
+        /// <summary>
+        /// Topic 订阅或退订遇到可恢复错误时的单次操作重试间隔。
+        /// </summary>
+        private static readonly TimeSpan[] s_TopicSubscriptionRetryDelays =
         {
             TimeSpan.FromSeconds(2),
             TimeSpan.FromSeconds(5),
@@ -119,9 +124,9 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         };
 
         /// <summary>
-        /// 默认 Topic 因 APNs Token 未就绪而整轮失败后的补偿同步延迟。
+        /// 默认 Topic 因可恢复错误而整轮失败后的补偿同步延迟。
         /// </summary>
-        private static readonly TimeSpan s_DefaultTopicApnsRetryDelay = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan s_DefaultTopicRetryDelay = TimeSpan.FromSeconds(60);
 
         /// <summary>
         /// 由 SDKManager 注入并在初始化期缓存的运行时配置；事件回调（如 OnUserLogin）需读取协议名等字段时使用。
@@ -141,14 +146,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         private CancellationTokenSource m_DefaultTopicSyncCts;
 
         /// <summary>
-        /// 基础默认 Topic 是否已安排 APNs Token 未就绪后的补偿同步。
+        /// 基础默认 Topic 是否已安排可恢复错误后的补偿同步。
         /// </summary>
-        private bool m_DefaultBaseTopicApnsRetryScheduled;
+        private bool m_DefaultBaseTopicRetryScheduled;
 
         /// <summary>
-        /// 国家默认 Topic 是否已安排 APNs Token 未就绪后的补偿同步。
+        /// 国家默认 Topic 是否已安排可恢复错误后的补偿同步。
         /// </summary>
-        private bool m_DefaultCountryTopicApnsRetryScheduled;
+        private bool m_DefaultCountryTopicRetryScheduled;
 
         /// <summary>
         /// 默认通知权限请求后台任务的取消令牌源。
