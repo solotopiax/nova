@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-09-14
+
+### Changed
+
+- IAPDemo 补齐缺失坐标的 IAP 配置，并完善支付等待面板的加载动画显示。
+- IAPDemo 的 ThirdPay 刷新入口改为读取 Store 自动预取的商品快照，不再由业务 Sample 主动发起商品列表请求。
+
 ## [0.1.13] - 2026-09-04
 
 ### Changed

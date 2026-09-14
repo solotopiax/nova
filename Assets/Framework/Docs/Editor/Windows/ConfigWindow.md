@@ -22,9 +22,9 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.Python3.cs` | `ConfigWindow` | Python3 面板：`DrawPython3Section`、`DrawPython3StatusAndButtons`、`ResolvePython3StatusText` |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.HybridCLR.cs` | `ConfigWindow` | HybridCLR 面板：`DrawHybridCLRPanel`、`DrawHybridCLREntranceSection`、`DrawHybridCLRAotMetadataSection`、`DrawHybridCLRGameDllSection`；ReorderableList 辅助：`EnsureHybridCLRAotMetadataDllsList`、`EnsureHybridCLRGameDllsList`、`DrawHybridCLRDllEntryElementCore`（三字段：源位置 / 目标位置 / Asset 地址）、`OnAddHybridCLRAotMetadataDllEntry`、`OnAddHybridCLRGameDllEntry`、`OnAddHybridCLRDllEntry`；维度化接线：`ResolveHybridCLRDllListProp`（按当前坐标+HybridEditorConfigsMask 解析 Dll 列表 SerializedProperty，IsGlobal 回落顶层，mask 非全局时进入坐标即建份经 `EnsureHybridEditorConfigsOverrideIndexAtCoord` 含顶层快照，list 绑 Override 内嵌列表）、`CommitHybridCLRDllEntryField`（单字段写入经 Ensure 懒创建落 Override 份）、`OnPickFolderForRelativePathForDllEntry`（Dll 元素"选择"按钮，写回走 Commit）、`PickRelativeFolder`（弹面板+算相对路径共享逻辑）、`SyncFoldoutCapacity`（折叠状态容量同步）；两个 Dll 列表与字符串字段同等遵循平台/渠道/开发模式批量部署 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.CDN.cs` | `ConfigWindow` | CDN 面板包含“部署”“白名单部署”“Cloudflare 缓存清理”三个业务区；OSS 工具包缺失时显示安装引导并仅禁用前两项部署；白名单区直接编辑设备 ID 字符串数组、配置文件云端文件位置、三个 YooAsset 版本文件本地位置和版本文件云端目录，并通过独立按钮分别上传；所有字段沿用 `CDNEditorConfigsMask + CDNEditorConfigsOverrides` 维度快照、WorkingCopy 延迟保存与 `CreateCdnConfigSnapshot` 执行快照机制。 |
-| `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.YooAsset.cs` | `ConfigWindow` | YooAsset 配置面板：`DrawRightPanelYooAsset`、`DrawYooAssetSettingsPathRow`、`DrawBundleCollectorSettingPathRow`、`BrowseYooAssetSettingsPath`、`BrowseBundleCollectorSettingPath`、`ToProjectRelativePath`（绝对路径 → 项目根相对）；内联标题行：`DrawYooAssetTitleWithMask`（标题+三 toggle 行委托 `DrawTitleWithMaskCore` 渲染，HelpBox 留本方法；toggle 回调作用于真实资产 m_Master，改完即时 SetDirty + SaveAssetIfDirty + `ReInjectYooAsset`）；`ReInjectYooAsset`（调 `DimensionalResolver.ResolveYooAsset` + `YooAssetInjector.InjectByPath`）；`SyncYooAssetDimensionToWorkingCopy`（维度 toggle 直写 m_Master 后将 YooAssetEditorConfigsMask/YooAssetEditorConfigsOverrides 补同步到 WorkingCopy） |
+| `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.YooAsset.cs` | `ConfigWindow` | YooAsset 配置面板：字段和维度开关统一只修改 WorkingCopy；`ReInjectYooAsset` 从 WorkingCopy 解析当前坐标并刷新编辑期预览，点击保存后才整体写入 ConfigMaster 资产；导出时再把当前维度模板单向写入目标 YooAssetSettings.asset。 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.BindGuide.cs` | `ConfigWindow` | 绑定引导面板（m_Master 为 null 时显示）：`DrawBindGuide`、`BrowseAndBindConfigMaster`、`CreateAndBindConfigMaster`、`BindMaster`；绑定后重建 WorkingCopy，不直接将 SerializedObject 绑到真实资产 |
-| `Editor/Windows/ConfigWindow/ConfigWindow.Dialogs.cs` | `ConfigWindow` | 弹框：`HandleCloseReminder`（关窗保存/导出单次提醒）、`ConfirmDiscardDirty`、`HasAnyError`、`ShowValidationDialog`、`ConfirmValidationWarnings`、`BuildValidationMessage`、`PromptMissingRefsIfAny`（启动时检测并可清理 SDK / Kit 的缺失 `SerializeReference`；清理后保存真实 Master 并重建 WorkingCopy） |
+| `Editor/Windows/ConfigWindow/ConfigWindow.Dialogs.cs` | `ConfigWindow` | 弹框：`HandleCloseReminder`（关窗保存/导出单次提醒）、`ConfirmDiscardDirty`、维度切换确认、校验提示与缺失引用清理；清理 SDK / Kit 失效引用也只修改 WorkingCopy，等待统一保存。 |
 
 ---
 
@@ -164,7 +164,7 @@ OnEnable()
   ├─ EditorSceneManager.sceneOpened += OnSceneOpenedRefresh
   ├─ RunLubanCheck()    跑 Luban 环境检测
   ├─ RunPython3Check()  跑 Python3 环境检测（读 SessionState 缓存，不阻塞）
-  └─ PromptMissingRefsIfAny()   检测并弹框处理 SDK / Kit 配置里的 null 占位；确认清理后保存 Master 并重建 WorkingCopy
+  └─ PromptMissingRefsIfAny()   检测并弹框处理 SDK / Kit 配置里的 null 占位；确认后只清理 WorkingCopy 并标记待保存
 
 OnDisable()
   ├─ 正常关窗：HandleCloseReminder() → 按未保存 / 已保存未导出状态提醒
@@ -231,6 +231,8 @@ OnGUI()
 
 ```
 CommitWorkingCopyToAsset()
+  ├─ ApplyModifiedProperties()（提交当前帧字段）
+  ├─ Validator.ValidateDimensionInvariants(m_WorkingCopy)（只读门禁，不自动改值）
   ├─ EditorUtility.CopySerialized(m_WorkingCopy, m_Master)
   ├─ 还原资产文件名，避免 CopySerialized 带入 (Clone) 后缀
   ├─ EditorUtility.SetDirty(m_Master)
@@ -240,6 +242,10 @@ CommitWorkingCopyToAsset()
   ├─ RebuildWorkingCopy()（关窗保存时跳过）
   └─ EditorUtil.Config.Events.NotifyActiveConfigMasterSaved(m_Master)
 ```
+
+保存不会广播，也不会猜哪个坐标是权威值。普通字段发生实际变化时，系统立即按掩码把当前值同步到所有未勾选轴；用户确认勾选或取消维度时，系统一次投影整个矩阵。保存只检查同一逻辑组是否仍有冲突，再把完整 WorkingCopy 写回资产。Exporter 入口复用同一门禁，因此 ConfigWindow、Pipify、Agent Action 与迁移导出都不能绕过。
+
+例如只勾选 `DevelopMode` 时，修改任意平台/渠道的 Release 会立即同步所有平台和渠道的 Release，Debug 不变。若旧资产已经存在同组不一致，保存或导出会明确阻断，要求用户重新编辑该组或通过维度开关确认拆分/合并，不会静默挑一格覆盖其它数据。
 
 保存事件在 WorkingCopy 写回真实资产并落盘后触发。SDKComponent Inspector 依赖该事件刷新当前 active `EnabledSDKs` 对应的 Plugin 可见列表。
 
@@ -279,7 +285,7 @@ DrawRightPanel()
 
 - 维度化存储（ADR-055）：`ConfigMasterSO.CDNEditorConfigsMask` 为面板维度掩码，`ConfigMasterSO.CDNEditorConfigsOverrides` 为按坐标覆盖列表（两者均 `#if UNITY_EDITOR` 内，仅 Editor 期消费）；`CDNEditorConfigsOverride` 携带坐标三字段（Platform / Channel / DevelopMode，未勾选轴写 None 哨兵或维持默认值）+ 整套 `CDNEditorConfigs` 快照，切坐标即整套切换。这里的当前 Platform 来自 ConfigWindow 编辑平台，可独立于 Unity Active BuildTarget。
 - 显示与写入：整套配置快照经 `DimensionalResolver.ResolveCDNEditorConfigs` 按当前坐标解析（IsGlobal 直接顶层；非全局按 mask 勾选轴匹配首个 CDNEditorConfigsOverrides 条目，命中后整份快照独立生效且空字符串/空列表有效；无命中回落顶层；恒返回深拷贝，禁共享引用）；编辑经 `CommitCdnField` 或白名单数组专用提交入口双分支写入；点击保存后随 WorkingCopy 落入 ConfigMasterSO 资产；整套字段仅在 Editor 编译，不参与 ConfigRuntimeSO 导出。
-- 维度语义：对齐矩阵类面板走 WorkingCopy 延迟落盘（区别于 YooAsset 的 C1 即时落盘）；IsGlobal（三 toggle 全不勾）时全局一份；加维分裂（OnCdnEnabled 按新轴 upsert 坐标条目）/ 减维合并（OnCdnDisabled 裁剪坐标并清理或回填条目，全不勾时回写顶层）/ 广播（BroadcastCdn 将当前坐标快照覆写全组条目）由 DimensionProjector 处理；常规部署、白名单部署与清缓存均经 `CreateCdnConfigSnapshot` 取当前坐标生效份快照执行。
+- 维度语义：CDN 与 YooAsset、矩阵类面板统一走 WorkingCopy 延迟落盘；IsGlobal 时全局一份。勾选或取消任一轴都由 DimensionProjector 对全部旧逻辑组原子投影，普通字段写入当前逻辑组对应的规范 Override。常规部署、白名单部署与清缓存均经 `CreateCdnConfigSnapshot` 取当前坐标生效份快照执行。
 - OSS 配置包含 `Endpoint`、`AccessKeyID`、`AccessKeySecret` 和 `PresetOSSPath`。Region 从标准地域 Endpoint 推导，`PresetOSSPath` 必须使用 `oss://bucket-name/fixed/prefix` 格式。OSS 是 `com.solotopia.alibabacloud.oss` 提供的可选 Editor 工具：缺包时面板给出安装引导并只禁用资源部署、白名单部署，Cloudflare 缓存清理保持可用。
 - “资源部署”区顶部以“版本检查-模板文件位置”只读展示 `AppDownloadRulesTemplate.json` 的工程相对位置并提供“打开文件夹”，随后提供“版本检查-本地文件位置”与“版本检查-云端文件位置”：本地位置保存项目根相对文件路径，支持选择、打开所在文件夹；实时校验文件非空、位于 Unity 项目根内、实际存在、不经过 symlink/junction 且扩展名为 `.json`，不合规时输入框标红并在下方显示包含实际路径的错误提示。“新建”会让用户选择项目内目录，将模板覆盖复制为固定文件名 `AppDownloadRules.json`，并把创建结果的工程相对路径回写到当前维度。云端位置以只读 `PresetOSSPath` 为前缀，只编辑文件后缀。紧随两项之后的 HelpBox 说明它们用于应用启动时拉取的大版本更新规则文件，与热更新版本检测无关，并列出四类占位符。两项参与 CDN 维度化保存；两项都非空时，“批量部署到 CDN”会把该单文件与热更资源目录合并上传。
 - “热更资源-本地目录位置”保存为 Unity 项目根相对路径。其“自动关联最新版本”开关独占上一行，文字使用与下方字段一致的标签列宽，勾选框对齐下方输入框的值列起点；开关下方 HelpBox 说明完整版本识别、`.version` 写入时间排序以及 ConfigMaster 当前维度取值规则。开关随 CDN 当前维度保存且默认开启。当前维度的 Platform 取 ConfigWindow 编辑平台；输入框只读显示自动解析结果，“选择”仍可选择包根或任一版本目录；文件命名所需 `PackageFilePrefix` 通常从当前 ConfigMaster 当前维度解析，包含 `{Time}` 时则读取构建导出后 `YooAssetSettings.asset` 中已固化的实际前缀。系统仅接受 `.version` 内容与目录名一致，对应 `.bytes`、`.hash`、`.report` 齐全，并且 report 引用的全部 bundle 文件均存在的完整版本目录，按 `.version` 文件 `LastWriteTimeUtc` 选最新。部署时只上传 `.version`、匹配版本的 `.hash/.bytes` 与 report 中 `BundleInfos` 引用的资源文件，不上传 manifest JSON、`.report`、`buildlogtep.json`、`link.xml` 或其他未引用的构建辅助文件；Bundle 文件扩展名不作假设。YooAsset 不定义 `PackageVersion` 大小关系，因此不按日期或 SemVer 解析目录名；多个候选时间完全相同时明确报歧义。找不到有效版本时输入框标红并提示检查当前目录，部署按钮也会阻止执行。关闭开关后恢复手工编辑，并实时校验目录非空、位于 Unity 项目根内、实际存在且不包含 symlink/junction；不合规时输入框标红并在下方显示包含实际路径的错误提示。`LocalDirectory` 支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，配置中保留模板原文。
@@ -435,7 +441,7 @@ if (!envResult.IsReady)
 - [EditorUtil.Config.Exporter.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md)
 - [EditorUtil.Config.WorkspaceActive.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md)（OnEnable / OnSceneOpenedRefresh 读取激活 Master）
 - [EditorUtil.Config.YooAssetInjector.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md)（OnEnable / OnSceneOpenedRefresh / DrawRightPanelYooAsset 注入调用）
-- [EditorUtil.Config.DimensionProjector.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md)（`DrawDimensionMaskRow` 触发三操作；CDN 一套：`OnCdnEnabled` / `OnCdnDisabled` / `BroadcastCdn` / `EnsureCDNEditorConfigsOverrideAtCoord`）
+- [EditorUtil.Config.DimensionProjector.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md)（`DrawDimensionMaskRow` 在用户确认后触发全矩阵原子投影；普通字段变化时按未勾选轴广播同一逻辑组）
 - [EditorUtil.Config.DimensionalResolver.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md)（`DrawYooAssetTitleWithMask` / `ReInjectYooAsset` 取数；CDN 面板经 `ResolveCDNEditorConfigs` 取当前坐标生效份）
 - [EditorUtil.Environment.LubanChecker.md](../EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.md)
 - [EditorUtil.Environment.Python3.md](../EditorUtil/EditorUtil.Environment/EditorUtil.Environment.Python3.md)

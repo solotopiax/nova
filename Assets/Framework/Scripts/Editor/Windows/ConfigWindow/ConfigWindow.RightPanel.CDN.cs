@@ -61,14 +61,11 @@ namespace NovaFramework.Editor
                 curCoord.Mode);
             bool isAlibabaCloudOssAvailable = EditorUtil.CDN.IsAlibabaCloudOssAvailable;
 
-            // 标题 + 内联维度三 toggle + 维度 HelpBox 全套，与 Common / Namespace 等面板一致
+            // 标题、内联维度开关和说明与其它配置面板保持一致。
             DrawPanelTitleWithMask("CDN 内容分发网络部署", workingSrc, EditorUtil.Config.DimensionProjector.PanelKind.CDNEditorConfigs, null);
 
-            // 每帧刷新 SerializedObject（对齐 Namespace / Common 面板）：
-            // 维度 toggle 经 OnCdnEnabled/Disabled 直改 C# 层 CDNEditorConfigsMask 与 CDNEditorConfigsOverrides（绕过 SerializedProperty），
-            // 若不每帧 Update() 把 native 最新值同步进 SO 缓存，SO 中 mask 停留旧值 false；
-            // 后续任一 ApplyModifiedProperties 触发整树回写 native 时，会用旧 false 覆盖刚勾的 true（clobber），toggle 表现为勾选后复原。
-            // CDN 字段控件均为普通 TextField（BeginChangeCheck 实时提交），控件 ID 基于固定 path 不漂移，不受每帧 Update 影响（同 Namespace 面板结论）。
+            // 维度投影与 CDN 字段提交直接修改 WorkingCopy 的 C# 对象；刷新 SerializedObject，
+            // 避免后续 ApplyModifiedProperties 用旧缓存覆盖刚完成的内存修改。
             m_MasterSO.Update();
 
             DrawCdnSectionTitle(

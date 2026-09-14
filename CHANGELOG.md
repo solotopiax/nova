@@ -8,6 +8,17 @@
 
 ## [Unreleased]
 
+## [0.6.28] - 2026-09-14
+
+### Fixed
+
+- `SDKComponent.InitializeTask` 支持初始化中的并发等待与完成后的重复等待，并保持初始化只执行一次。
+- ConfigWindow 修复未勾选维度广播、维度 Mask 原子投影、矩阵一致性校验及 WorkingCopy 保存/导出链问题。
+
+### Changed
+
+- 同步发布 SDK Ad `1.1.12`、DataMaster ABTest `0.0.20`、Firebase `0.1.14`、IAP `0.1.14` 与 MAX `0.1.10`。
+
 ## [0.6.27] - 2026-09-04
 
 ### Changed

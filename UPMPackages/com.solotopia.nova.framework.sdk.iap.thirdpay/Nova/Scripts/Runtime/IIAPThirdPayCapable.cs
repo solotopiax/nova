@@ -9,8 +9,6 @@
  ***************************************************************/
 
 using System.Collections.Generic;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
@@ -48,13 +46,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         /// <param name="channelParams">CID 等渠道参数。</param>
         void SetChannelParams(string channelParams);
-
-        /// <summary>
-        /// 拉取当前国家或地区可用的第三方支付商品。
-        /// </summary>
-        /// <param name="ct">取消令牌。</param>
-        /// <returns>成功取得有效商品列表时返回 true。</returns>
-        UniTask<bool> FetchProductListAsync(CancellationToken ct);
 
         /// <summary>
         /// 按支付表行 ID 获取已拉取的第三方商品信息。

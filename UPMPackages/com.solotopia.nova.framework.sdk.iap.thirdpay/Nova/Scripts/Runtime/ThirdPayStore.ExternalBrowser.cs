@@ -124,7 +124,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             session.HasLeftApp = true;
-            session.CancelReturnDelay();
+            if (!session.IsValidating)
+            {
+                PopExternalBrowserReturnWaiting(session);
+                session.CancelReturnDelay();
+            }
         }
 
         /// <summary>
@@ -140,9 +144,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             session.ReturnVersion++;
             int version = session.ReturnVersion;
+            float delaySeconds = GetExternalBrowserReturnValidateDelaySeconds();
             session.CancelReturnDelay();
             session.DelayCts = CancellationTokenSource.CreateLinkedTokenSource(session.SessionCts.Token);
-            RunExternalBrowserReturnValidationAfterDelayAsync(session.ClientOrderId, version, session.DelayCts.Token).Forget();
+            PushExternalBrowserReturnWaiting(session);
+            // 记录倒计时启动，便于真机确认从外部浏览器返回后的自动验单触发点。
+            LogDebug($"第三方支付外部浏览器返回验单倒计时开始：OrderId={session.ClientOrderId}，Version={version}，DelaySeconds={delaySeconds:0.###}");
+            RunExternalBrowserReturnValidationAfterDelayAsync(session.ClientOrderId, version, delaySeconds, session.DelayCts.Token).Forget();
         }
 
         /// <summary>
@@ -150,13 +158,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         /// <param name="clientOrderId">期望的客户端订单号。</param>
         /// <param name="version">期望的返回版本号。</param>
+        /// <param name="delaySeconds">本次返回验单倒计时秒数。</param>
         /// <param name="delayToken">延迟取消令牌。</param>
-        private async UniTaskVoid RunExternalBrowserReturnValidationAfterDelayAsync(string clientOrderId, int version, CancellationToken delayToken)
+        private async UniTaskVoid RunExternalBrowserReturnValidationAfterDelayAsync(string clientOrderId, int version, float delaySeconds, CancellationToken delayToken)
         {
             bool validationStarted = false;
             try
             {
-                await UniTask.Delay(TimeSpan.FromSeconds(GetExternalBrowserReturnValidateDelaySeconds()), cancellationToken: delayToken);
+                await UniTask.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken: delayToken);
                 if (!TryBeginExternalBrowserReturnValidation(clientOrderId, version, out ThirdPayExternalBrowserPaySession session))
                 {
                     return;
@@ -169,15 +178,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     return;
                 }
 
-                AddWaitingRef();
-                try
-                {
-                    await ValidateOrderAsync(order, ThirdPayValidationScene.ExternalBrowserReturn, session.SessionCts.Token);
-                }
-                finally
-                {
-                    SubWaitingRef();
-                }
+                // 只在当前版本倒计时完成且订单仍存在时，记录即将发起的验单。
+                LogDebug($"第三方支付外部浏览器返回验单倒计时结束，开始验证订单：OrderId={clientOrderId}，Version={version}，TableId={order.TableId}，UserId={order.UserId}");
+                await ValidateOrderAsync(order, ThirdPayValidationScene.ExternalBrowserReturn, session.SessionCts.Token);
             }
             catch (OperationCanceledException)
             {
@@ -222,6 +225,37 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 外部浏览器返回 App 后显示 Loading，覆盖倒计时等待期，避免玩家误触底层 UI。
+        /// </summary>
+        /// <param name="session">当前外部浏览器支付会话。</param>
+        private void PushExternalBrowserReturnWaiting(ThirdPayExternalBrowserPaySession session)
+        {
+            if (session == null || session.Completed || session.ReturnWaitingRefAdded)
+            {
+                return;
+            }
+
+            bool shouldShow = m_LoadingGuard.ShouldShow();
+            AddWaitingRef(shouldShow);
+            session.ReturnWaitingRefAdded = shouldShow;
+        }
+
+        /// <summary>
+        /// 释放外部浏览器返回等待期持有的 Loading 引用。
+        /// </summary>
+        /// <param name="session">当前外部浏览器支付会话。</param>
+        private void PopExternalBrowserReturnWaiting(ThirdPayExternalBrowserPaySession session)
+        {
+            if (session == null || !session.ReturnWaitingRefAdded)
+            {
+                return;
+            }
+
+            session.ReturnWaitingRefAdded = false;
+            SubWaitingRef(true);
+        }
+
+        /// <summary>
         /// 当前会话仍匹配预期订单和版本时完成并清理会话。
         /// </summary>
         /// <param name="clientOrderId">期望的客户端订单号。</param>
@@ -254,6 +288,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             m_ExternalBrowserPaySession = null;
+            PopExternalBrowserReturnWaiting(session);
             session.Completed = true;
             session.Dispose();
         }

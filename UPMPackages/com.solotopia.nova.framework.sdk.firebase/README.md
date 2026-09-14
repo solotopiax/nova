@@ -1,7 +1,7 @@
 # Nova Framework - SDK - Firebase
 
 > 包名：`com.solotopia.nova.framework.sdk.firebase`
-> 当前版本：`0.1.13`
+> 当前版本：`0.1.14`
 > Firebase Unity SDK：`13.14.0`
 
 Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置，并提供 Nova 侧默认 Topic 同步与业务 push task 缓存发送能力。
@@ -12,12 +12,13 @@ Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置�
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.firebase": "0.1.13"
+  "com.solotopia.nova.framework.sdk.firebase": "0.1.14"
 }
 ```
 
 ## 能力概览
 
+- 初始化：SDK 初始化任务会等待 `FirebaseApp.CheckAndFixDependenciesAsync()` 完成；`IsAvailable == true` 表示 Firebase 依赖已可用且 Messaging 事件已注册。
 - Analytics：`TrackEvent(...)`、`SetUserId(...)`、`SetUserProperty(...)`。
 - FCM：`GetTokenAsync(...)`、`OnTokenRefreshed`、`SetTopicSubscribed(...)`。
 - 默认 Topic：初始化后等待 FCM Token 就绪，再按 `IConfigManager.DevelopMode` 同步 `top_debug_*` 或 `top_release_*` 的全量、语言、平台、时区和国家 Topic；Config Manager 不存在或未加载完成时只使用 Debug 分群，并通过 `IFileFragmentManager` 记录订阅状态，变化时先退订旧 Topic 再订阅新 Topic。
@@ -32,7 +33,7 @@ Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置�
 - `PushCmdName`：批量创建或取消服务端 push task 使用的 NetCmd 名称；为空时保留本地缓存并等待下次发送。
 - `PushFlushIntervalSeconds`：push task 本地缓存后的时间阈值，默认 `100` 秒。
 - `PushFlushBatchSize`：push task 缓存数量阈值，默认 `5` 条。
-- `AutoRequestNotificationPermission`：是否在 Firebase 依赖初始化成功后自动请求通知权限，默认开启；如项目希望由业务自行选择交互时机，可关闭后显式调用 `Nova.Native.RequestNotificationPermissionAsync(...)`。
+- `AutoRequestNotificationPermission`：是否在 SDK 全部插件初始化完成且应用仍在前台后自动请求通知权限，默认开启；请求会延迟到启动前景稳定后执行，不阻塞 SDK 初始化任务；如项目希望由业务自行选择交互时机，可关闭后显式调用 Native 模块通知权限 API。
 
 国家码不在 Firebase 配置中单独设置；默认国家 Topic 和登录上报会通过 `IAdPlugin.GetCountryCodeAsync(...)` 获取，等待超时和上次成功缓存兜底由 AD 模块负责。
 

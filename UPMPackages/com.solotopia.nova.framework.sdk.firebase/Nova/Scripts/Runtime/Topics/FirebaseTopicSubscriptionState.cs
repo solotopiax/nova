@@ -20,7 +20,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
     {
         /// <summary>
         /// 上一次成功订阅时使用的语言标记。
-        /// 来源为 LanguageMetadata.GetFlag(Nova.Localization.Language)。
+        /// 来源为 LanguageMetadata.GetFlag(ILocalizationManager.Language)。
         /// </summary>
         public string Language { get; set; } = string.Empty;
 

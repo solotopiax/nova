@@ -45,6 +45,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnRVLoaded(string adUnitId, MaxSdkBase.AdInfo info)
         {
+            Log.Debug(LogTag.Max, $"MAX Rewarded 加载成功回调：placement={adUnitId}，network={info?.NetworkName}，revenue={FormatRevenue((decimal)info.Revenue)}，precision={info.RevenuePrecision}。");
             RaiseAdLoaded(new AdLoadResult
             {
                 Success = true,
@@ -64,6 +65,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="err">错误信息。</param>
         private void OnRVLoadFailed(string adUnitId, MaxSdkBase.ErrorInfo err)
         {
+            Log.Debug(LogTag.Max, $"MAX Rewarded 加载失败回调：placement={adUnitId}，code={(int)err.Code}，message={err.Message}。");
             RaiseAdLoadFailed(new AdLoadResult
             {
                 Success = false,
@@ -81,6 +83,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnRVDisplayed(string adUnitId, MaxSdkBase.AdInfo info)
         {
+            Log.Debug(LogTag.Max, $"MAX Rewarded 展示成功回调：placement={adUnitId}，network={info?.NetworkName}。");
             TrackAdShow(AdFormat.Rewarded, adUnitId);
             RaiseShowCompleted(new AdResult
             {
@@ -101,6 +104,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnRVDisplayFailed(string adUnitId, MaxSdkBase.ErrorInfo err, MaxSdkBase.AdInfo info)
         {
+            Log.Debug(LogTag.Max, $"MAX Rewarded 展示失败回调：placement={adUnitId}，network={info?.NetworkName}，code={(int)err.Code}，message={err.Message}。");
             var result = new AdResult
             {
                 Success = false,
@@ -120,6 +124,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnRVClicked(string adUnitId, MaxSdkBase.AdInfo info)
         {
+            Log.Debug(LogTag.Max, $"MAX Rewarded 点击回调：placement={adUnitId}，network={info?.NetworkName}。");
             TrackAdClick(AdFormat.Rewarded, adUnitId);
         }
 
@@ -131,6 +136,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnRVReceivedReward(string adUnitId, MaxSdk.Reward reward, MaxSdkBase.AdInfo info)
         {
+            Log.Debug(LogTag.Max, $"MAX Rewarded 奖励回调：placement={adUnitId}，network={info?.NetworkName}。");
             m_RVRewarded = true;
         }
 
@@ -141,6 +147,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnRVHidden(string adUnitId, MaxSdkBase.AdInfo info)
         {
+            Log.Debug(LogTag.Max, $"MAX Rewarded 关闭回调：placement={adUnitId}，network={info?.NetworkName}，rewarded={m_RVRewarded}。");
             var result = new AdResult
             {
                 Success = true,
@@ -163,6 +170,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="info">广告信息。</param>
         private void OnRVRevenuePaid(string adUnitId, MaxSdkBase.AdInfo info)
         {
+            Log.Debug(LogTag.Max, $"MAX Rewarded 收益回调：placement={adUnitId}，network={info?.NetworkName}，revenue={FormatRevenue((decimal)info.Revenue)}，precision={info.RevenuePrecision}。");
             RaiseRevenueImmediately(new AdEvent
             {
                 Format = AdFormat.Rewarded,

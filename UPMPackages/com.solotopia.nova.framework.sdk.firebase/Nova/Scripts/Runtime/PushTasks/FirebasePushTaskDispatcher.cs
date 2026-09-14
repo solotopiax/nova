@@ -207,7 +207,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                     m_CacheLock.Release();
                 }
 
-                Log.Info(LogTag.Firebase, $"Firebase push task 已缓存：TaskKey={normalizedTask.TaskKey}，CacheCount={cacheCount}，FlushBatchSize={GetFlushBatchSize()}，FlushIntervalSeconds={GetFlushInterval().TotalSeconds}。");
+                Log.Debug(LogTag.Firebase, $"Firebase push task 已缓存：TaskKey={normalizedTask.TaskKey}，CacheCount={cacheCount}，FlushBatchSize={GetFlushBatchSize()}，FlushIntervalSeconds={GetFlushInterval().TotalSeconds}。");
                 OnQueued(cacheCount);
                 return true;
             }
@@ -303,7 +303,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 m_FlushRequested = true;
                 if (!m_FirebaseReady || !m_UserReady || m_FlushRunning)
                 {
-                    Log.Info(LogTag.Firebase, $"Firebase push task 等待发送条件：FirebaseReady={m_FirebaseReady}，UserReady={m_UserReady}，FlushRunning={m_FlushRunning}。");
+                    Log.Debug(LogTag.Firebase, $"Firebase push task 等待发送条件：FirebaseReady={m_FirebaseReady}，UserReady={m_UserReady}，FlushRunning={m_FlushRunning}。");
                     return;
                 }
 
@@ -347,7 +347,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 m_TimerRunning = true;
             }
 
-            Log.Info(LogTag.Firebase, $"Firebase push task 未达到数量阈值，将在 {interval.TotalSeconds} 秒后请求发送。");
+            Log.Debug(LogTag.Firebase, $"Firebase push task 未达到数量阈值，将在 {interval.TotalSeconds} 秒后请求发送。");
             DelayFlushAsync(interval, cts.Token).Forget();
         }
 
@@ -497,7 +497,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 return FirebasePushTaskFlushResult.Failed;
             }
 
-            Log.Info(LogTag.Firebase, $"Firebase push task 协议响应成功：PushCmdName={m_Config.PushCmdName}，TaskCount={snapshot.Count}，准备删除本地缓存。");
+            Log.Debug(LogTag.Firebase, $"Firebase push task 协议响应成功：PushCmdName={m_Config.PushCmdName}，TaskCount={snapshot.Count}，准备删除本地缓存。");
             await RemoveSucceededSnapshotAsync(snapshot, ct);
             return FirebasePushTaskFlushResult.Success;
         }
@@ -536,7 +536,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             try
             {
                 int removedCount = m_Repository?.RemoveSucceededSnapshotItems(snapshot) ?? 0;
-                Log.Info(LogTag.Firebase, $"Firebase push task 已删除发送成功缓存：RemovedCount={removedCount}，SnapshotCount={snapshot.Count}。");
+                Log.Debug(LogTag.Firebase, $"Firebase push task 已删除发送成功缓存：RemovedCount={removedCount}，SnapshotCount={snapshot.Count}。");
             }
             finally
             {

@@ -210,6 +210,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
             m_WasApplicationPaused = false;
             RequestPushTaskFlushOnForeground();
+            RequestDefaultTopicSyncOnForeground();
         }
 
         /// <summary>

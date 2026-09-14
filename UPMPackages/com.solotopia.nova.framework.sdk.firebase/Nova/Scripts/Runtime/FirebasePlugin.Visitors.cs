@@ -39,6 +39,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// </summary>
         private bool m_InitOver;
         /// <summary>
+        /// 插件是否已进入释放流程；用于阻断初始化完成后的迟到回调继续写入运行时状态。
+        /// </summary>
+        private bool m_IsDisposed;
+        /// <summary>
+        /// 是否已成功订阅 FirebaseMessaging 事件；释放时只在订阅成功后反注册，避免依赖检查完成前触发 FirebaseMessaging 静态初始化。
+        /// </summary>
+        private bool m_FirebaseMessagingSubscribed;
+        /// <summary>
         /// 当前 SDK 是否已完成初始化。
         /// </summary>
         public bool IsInitialized => m_InitOver;
@@ -94,6 +102,28 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         private UniTaskCompletionSource<string> m_FcmTokenReadySource = new UniTaskCompletionSource<string>();
 
         /// <summary>
+        /// Firebase iOS 在 APNs Token 尚未绑定到 Messaging 时抛出的错误文本。
+        /// </summary>
+        private const string c_ApnsTokenNotReadyExceptionMessage = "No APNS token specified before fetching FCM Token";
+
+        /// <summary>
+        /// Topic 订阅或退订遇到 APNs Token 未就绪时的单次操作重试间隔。
+        /// </summary>
+        private static readonly TimeSpan[] s_TopicSubscriptionApnsRetryDelays =
+        {
+            TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(20),
+            TimeSpan.FromSeconds(30),
+        };
+
+        /// <summary>
+        /// 默认 Topic 因 APNs Token 未就绪而整轮失败后的补偿同步延迟。
+        /// </summary>
+        private static readonly TimeSpan s_DefaultTopicApnsRetryDelay = TimeSpan.FromSeconds(60);
+
+        /// <summary>
         /// 由 SDKManager 注入并在初始化期缓存的运行时配置；事件回调（如 OnUserLogin）需读取协议名等字段时使用。
         /// </summary>
         private FirebasePluginConfig m_RuntimeConfig;
@@ -109,6 +139,22 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// Firebase 释放时取消基础 Topic 和国家 Topic 的异步订阅流程，避免插件销毁后继续访问状态。
         /// </summary>
         private CancellationTokenSource m_DefaultTopicSyncCts;
+
+        /// <summary>
+        /// 基础默认 Topic 是否已安排 APNs Token 未就绪后的补偿同步。
+        /// </summary>
+        private bool m_DefaultBaseTopicApnsRetryScheduled;
+
+        /// <summary>
+        /// 国家默认 Topic 是否已安排 APNs Token 未就绪后的补偿同步。
+        /// </summary>
+        private bool m_DefaultCountryTopicApnsRetryScheduled;
+
+        /// <summary>
+        /// 默认通知权限请求后台任务的取消令牌源。
+        /// Firebase 释放时取消等待 SDK 全部初始化的请求任务，避免插件销毁后继续弹系统权限窗口。
+        /// </summary>
+        private CancellationTokenSource m_NotificationPermissionRequestCts;
 
         /// <summary>
         /// 基础默认 Topic 同步锁。

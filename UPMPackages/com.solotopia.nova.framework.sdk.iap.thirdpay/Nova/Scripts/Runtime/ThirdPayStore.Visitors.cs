@@ -8,6 +8,7 @@
  * descrip:   ThirdPayStore 常量、字段与属性
  ***************************************************************/
 
+using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
@@ -143,6 +144,31 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 商品列表请求版本号，用于忽略旧国家或旧账号返回的过期响应。
         /// </summary>
         private int m_ProductListRequestVersion;
+
+        /// <summary>
+        /// 当前商品列表在途请求的版本号；只有版本仍为 Store 最新值时才允许合并等待。
+        /// </summary>
+        private int m_ProductListFetchVersion;
+
+        /// <summary>
+        /// 当前商品列表在途请求对应的 GameUID。
+        /// </summary>
+        private string m_ProductListFetchUid = string.Empty;
+
+        /// <summary>
+        /// 当前商品列表在途请求对应的协议命令名。
+        /// </summary>
+        private string m_ProductListFetchCmdName = string.Empty;
+
+        /// <summary>
+        /// 当前商品列表在途请求对应的有效国家或地区代码。
+        /// </summary>
+        private string m_ProductListFetchCountryCode = string.Empty;
+
+        /// <summary>
+        /// 当前商品列表在途请求的共享完成源，允许登录预取、Demo 刷新与支付兜底并发等待。
+        /// </summary>
+        private UniTaskCompletionSource<bool> m_ProductListFetchCompletion;
 
         /// <summary>
         /// 当前是否跳过 Google 第三方支付信息页。

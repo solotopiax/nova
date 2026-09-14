@@ -32,7 +32,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         [SerializeField] private TMP_Text m_StatusText;
 
         /// <summary>
-        /// 第三方支付资格刷新入口。
+        /// 第三方支付商品快照刷新入口。
         /// </summary>
         [SerializeField] private Button m_RefreshButton;
 
@@ -82,7 +82,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         private Action<long> m_PayRequested;
 
         /// <summary>
-        /// ThirdPay 可选模块注入的资格刷新回调。
+        /// ThirdPay 可选模块注入的商品快照刷新回调。
         /// </summary>
         private Action m_RefreshRequested;
 
@@ -129,7 +129,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// </summary>
         /// <param name="productTitleBuilder">商品标题构建回调。</param>
         /// <param name="payRequested">第三方支付回调。</param>
-        /// <param name="refreshRequested">资格刷新回调。</param>
+        /// <param name="refreshRequested">商品快照刷新回调。</param>
         internal void Configure(Func<long, string> productTitleBuilder, Action<long> payRequested,
             Action refreshRequested, Action<string> debugCountryChanged,
             Action<bool> skipPaymentInformationChanged)
@@ -139,7 +139,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             m_RefreshRequested = refreshRequested;
             m_DebugCountryChanged = debugCountryChanged;
             m_SkipPaymentInformationChanged = skipPaymentInformationChanged;
-            DemoIAPView.BindButton(m_RefreshButton, "刷新资格", "RefreshThirdPayAsync",
+            DemoIAPView.BindButton(m_RefreshButton, "刷新快照", "RefreshThirdPaySnapshot",
                 () => m_RefreshRequested?.Invoke());
             ConfigureDebugControls();
             if (m_ProductCardTemplate != null)
@@ -247,7 +247,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 设置刷新资格和第三方支付按钮的交互状态。
+        /// 设置刷新快照和第三方支付按钮的交互状态。
         /// </summary>
         /// <param name="interactable">是否允许交互。</param>
         internal void SetInteractable(bool interactable)

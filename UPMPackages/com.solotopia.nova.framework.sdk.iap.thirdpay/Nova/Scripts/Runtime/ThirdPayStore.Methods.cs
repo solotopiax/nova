@@ -206,7 +206,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 拉取第三方支付商品列表，每次业务调用独立请求，并在网络失败时最多尝试三次。
+        /// 拉取第三方支付商品列表；同一账号、协议名与国家码的在途请求会合并等待，网络失败时最多尝试三次。
         /// 仅允许请求上下文仍与当前 Store 一致的响应覆盖商品快照。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
@@ -219,14 +219,82 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 return false;
             }
 
+            ct.ThrowIfCancellationRequested();
             string requestUid = m_GameUID;
             string requestCmdName = m_Config.GetProductListCmdName;
             string requestCountryCode = GetCountryCode();
+            if (IsSameProductListFetchInFlight(requestUid, requestCmdName, requestCountryCode))
+            {
+                // 只取消当前等待者，不把 UI 手动刷新取消传播给共享的登录预取请求。
+                return await m_ProductListFetchCompletion.Task.AttachExternalCancellation(ct);
+            }
+
             int requestVersion = ++m_ProductListRequestVersion;
+            var completion = new UniTaskCompletionSource<bool>();
+            m_ProductListFetchVersion = requestVersion;
+            m_ProductListFetchUid = requestUid;
+            m_ProductListFetchCmdName = requestCmdName;
+            m_ProductListFetchCountryCode = requestCountryCode;
+            m_ProductListFetchCompletion = completion;
+            RunProductListFetchAsync(requestUid, requestCmdName, requestCountryCode, requestVersion, completion).Forget();
+            return await completion.Task.AttachExternalCancellation(ct);
+        }
+
+        /// <summary>
+        /// 判断当前是否已有相同上下文的商品列表在途请求可供复用。
+        /// </summary>
+        /// <param name="requestUid">请求发起时的 GameUID。</param>
+        /// <param name="requestCmdName">商品列表协议命令名。</param>
+        /// <param name="requestCountryCode">请求使用的有效国家或地区代码。</param>
+        /// <returns>同一请求仍在途且未被版本号失效时返回 true。</returns>
+        private bool IsSameProductListFetchInFlight(string requestUid, string requestCmdName, string requestCountryCode)
+        {
+            return m_ProductListFetchCompletion != null
+                && m_ProductListFetchVersion == m_ProductListRequestVersion
+                && string.Equals(m_ProductListFetchUid, requestUid, StringComparison.Ordinal)
+                && string.Equals(m_ProductListFetchCmdName, requestCmdName, StringComparison.Ordinal)
+                && string.Equals(m_ProductListFetchCountryCode, requestCountryCode, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 后台执行一次真实商品列表请求，并把结果回填给所有共享等待者。
+        /// </summary>
+        /// <param name="requestUid">请求发起时的 GameUID。</param>
+        /// <param name="requestCmdName">商品列表协议命令名。</param>
+        /// <param name="requestCountryCode">请求使用的有效国家或地区代码。</param>
+        /// <param name="requestVersion">请求发起时的商品列表版本号。</param>
+        /// <param name="completion">本次请求独占的共享完成源。</param>
+        /// <returns>请求结束的异步任务。</returns>
+        private async UniTask RunProductListFetchAsync(string requestUid, string requestCmdName, string requestCountryCode, int requestVersion, UniTaskCompletionSource<bool> completion)
+        {
+            try
+            {
+                bool succeeded = await FetchProductListCoreAsync(requestUid, requestCmdName, requestCountryCode, requestVersion);
+                completion.TrySetResult(succeeded);
+            }
+            catch (Exception ex)
+            {
+                completion.TrySetException(ex);
+            }
+            finally
+            {
+                ClearProductListFetchIfCurrent(completion);
+            }
+        }
+
+        /// <summary>
+        /// 执行商品列表真实协议请求，并在成功响应仍属于当前 Store 时刷新商品快照。
+        /// </summary>
+        /// <param name="requestUid">请求发起时的 GameUID。</param>
+        /// <param name="requestCmdName">商品列表协议命令名。</param>
+        /// <param name="requestCountryCode">请求使用的有效国家或地区代码。</param>
+        /// <param name="requestVersion">请求发起时的商品列表版本号。</param>
+        /// <returns>成功取得有效响应时返回 true。</returns>
+        private async UniTask<bool> FetchProductListCoreAsync(string requestUid, string requestCmdName, string requestCountryCode, int requestVersion)
+        {
             const int maxAttempts = 3;
             for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
-                ct.ThrowIfCancellationRequested();
                 NetResponse<PbNetThirdProductListResp> response = await m_NetService.GetProductListAsync(requestCmdName, requestCountryCode);
                 if (response.IsSuccess && response.Data != null)
                 {
@@ -249,6 +317,40 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 在账号、国家码或释放流程使商品请求失效时，结束当前共享等待并清空在途状态。
+        /// </summary>
+        private void CompleteProductListFetchAsInvalidated()
+        {
+            UniTaskCompletionSource<bool> completion = m_ProductListFetchCompletion;
+            ResetProductListFetchState();
+            completion?.TrySetResult(false);
+        }
+
+        /// <summary>
+        /// 当前后台请求结束时，仅清理由它自己创建的在途状态，避免覆盖后续新请求。
+        /// </summary>
+        /// <param name="completion">本次后台请求持有的共享完成源。</param>
+        private void ClearProductListFetchIfCurrent(UniTaskCompletionSource<bool> completion)
+        {
+            if (ReferenceEquals(m_ProductListFetchCompletion, completion))
+            {
+                ResetProductListFetchState();
+            }
+        }
+
+        /// <summary>
+        /// 清空商品列表在途请求的上下文字段。
+        /// </summary>
+        private void ResetProductListFetchState()
+        {
+            m_ProductListFetchVersion = 0;
+            m_ProductListFetchUid = string.Empty;
+            m_ProductListFetchCmdName = string.Empty;
+            m_ProductListFetchCountryCode = string.Empty;
+            m_ProductListFetchCompletion = null;
         }
 
         /// <summary>
@@ -762,6 +864,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 CountryCode = GetCountryCode(),
                 ClientOrderId = order.ClientOrderId,
                 Platform = header.Platform.ToString(),
+                Channel = header.Channel.ToString(),
                 AppId = header.Appid,
                 ChannelParams = m_PersistData?.ChannelParams,
                 GoogleToken = googleToken,

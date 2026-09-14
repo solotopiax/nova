@@ -69,8 +69,7 @@ namespace NovaFramework.Editor
             m_Master = reconciled ? EditorUtil.Config.WorkspaceActive.Get() : null;
             if (m_Master != null)
             {
-                RebuildWorkingCopy();
-                EditorUtil.Config.StructureGuard.SyncEnumGrid(m_Master);
+                RebuildWorkingCopyAndSyncStructure();
                 RefreshPluginCache();
                 m_LastKnownChannel = m_Master.CurrentChannel;
                 EditorUtil.Config.YooAssetInjector.Inject(m_Master);
@@ -123,6 +122,7 @@ namespace NovaFramework.Editor
                 DrawLeftTree();
                 DrawRightPanel();
             });
+            ApplyPendingSave();
             ApplyPendingCoordSwitch();
             PollChannelChangeForRepaint();
         }
@@ -254,9 +254,8 @@ namespace NovaFramework.Editor
             DestroyWorkingCopy();
             if (m_Master != null)
             {
-                RebuildWorkingCopy();
+                RebuildWorkingCopyAndSyncStructure();
                 RefreshPluginCache();
-                EditorUtil.Config.StructureGuard.SyncEnumGrid(m_Master);
             }
             m_IsDirty = false;
             m_HasSavedChangesPendingExport = false;
@@ -273,6 +272,19 @@ namespace NovaFramework.Editor
             m_WorkingCopy.hideFlags = UnityEngine.HideFlags.DontSave;
             m_MasterSO = new SerializedObject(m_WorkingCopy);
             m_IsDirty = false;
+        }
+
+        /// <summary>
+        /// 先从真实资产建立 WorkingCopy，再仅在副本上补齐枚举矩阵；结构变化也作为待保存修改。
+        /// </summary>
+        private void RebuildWorkingCopyAndSyncStructure()
+        {
+            RebuildWorkingCopy();
+            if (m_WorkingCopy == null) return;
+            string before = EditorJsonUtility.ToJson(m_WorkingCopy);
+            EditorUtil.Config.StructureGuard.SyncEnumGrid(m_WorkingCopy);
+            m_MasterSO?.Update();
+            m_IsDirty = !string.Equals(before, EditorJsonUtility.ToJson(m_WorkingCopy), System.StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -304,9 +316,17 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 将 WorkingCopy 写回真实资产并落盘；保存后重建 WorkingCopy 保持后续编辑隔离。
         /// </summary>
-        private void CommitWorkingCopyToAsset(bool rebuildWorkingCopy = true)
+        private bool CommitWorkingCopyToAsset(bool rebuildWorkingCopy = true)
         {
-            if (m_Master == null || m_WorkingCopy == null) return;
+            if (m_Master == null || m_WorkingCopy == null) return false;
+            m_MasterSO?.ApplyModifiedProperties();
+            System.Collections.Generic.IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> invariantIssues =
+                EditorUtil.Config.Validator.ValidateDimensionInvariants(m_WorkingCopy);
+            if (invariantIssues.Count > 0)
+            {
+                ScheduleSaveBlockedDialog(invariantIssues);
+                return false;
+            }
             EditorUtility.CopySerialized(m_WorkingCopy, m_Master);
             // CopySerialized 会连带复制 WorkingCopy 的 (Clone) 后缀名，此处用资产文件名还原
             string assetPath = AssetDatabase.GetAssetPath(m_Master);
@@ -319,6 +339,17 @@ namespace NovaFramework.Editor
             // 保存后重建 WorkingCopy，保持后续编辑基于最新已落盘状态
             if (rebuildWorkingCopy) RebuildWorkingCopy();
             EditorUtil.Config.Events.NotifyActiveConfigMasterSaved(m_Master);
+            return true;
+        }
+
+        /// <summary>
+        /// 在右面板完成当前帧绘制和字段提交后，执行顶栏登记的保存请求。
+        /// </summary>
+        private void ApplyPendingSave()
+        {
+            if (!m_HasPendingSave) return;
+            m_HasPendingSave = false;
+            CommitWorkingCopyToAsset();
         }
 
         /// <summary>

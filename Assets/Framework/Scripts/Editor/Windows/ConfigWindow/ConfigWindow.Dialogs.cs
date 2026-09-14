@@ -18,6 +18,18 @@ namespace NovaFramework.Editor
     internal sealed partial class ConfigWindow : EditorWindow
     {
         /// <summary>
+        /// 将保存门禁提示推迟到当前 GUI 绘制结束后展示，避免在 DrawRect/OnGUI 调用栈中直接打开模态窗口。
+        /// </summary>
+        /// <param name="issues">阻止保存的维度一致性问题。</param>
+        private static void ScheduleSaveBlockedDialog(
+            IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues)
+        {
+            string message = EditorUtil.Config.Validator.BuildDimensionInvariantMessage(issues);
+            EditorApplication.delayCall += () =>
+                EditorUtility.DisplayDialog("配置无法保存", message, "知道了");
+        }
+
+        /// <summary>
         /// 窗口关闭时提醒保存或导出的统一入口。
         /// 未保存时只弹一次“仅保存 / 保存并导出”；选择“仅保存”后本次关闭不再追问导出。
         /// 已手动保存但尚未导出时，仅询问是否立即导出。
@@ -34,7 +46,11 @@ namespace NovaFramework.Editor
                     "保存并导出：保存修改，并立即更新游戏运行配置。",
                     "保存并导出",
                     "仅保存");
-                CommitWorkingCopyToAsset(false);
+                if (!CommitWorkingCopyToAsset(false))
+                {
+                    ReopenAfterFailedCloseExport();
+                    return;
+                }
                 if (saveAndExport && !TryExport(false)) ReopenAfterFailedCloseExport();
                 return;
             }
@@ -81,8 +97,7 @@ namespace NovaFramework.Editor
                 "保存", "取消", "丢弃");
             if (choice == 0)
             {
-                CommitWorkingCopyToAsset();
-                return true;
+                return CommitWorkingCopyToAsset();
             }
             if (choice == 2)
             {
@@ -109,7 +124,7 @@ namespace NovaFramework.Editor
                 "丢弃旧改动并切换");
             if (save)
             {
-                CommitWorkingCopyToAsset();
+                if (!CommitWorkingCopyToAsset()) ReopenAfterFailedCloseExport();
                 return;
             }
 
@@ -179,12 +194,13 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// OnEnable / RebindMaster 调：扫出失效的 SDK / Kit 配置（SerializeReference 丢失）则弹清理确认框（推荐清理）。
+        /// OnEnable / RebindMaster 调：在 WorkingCopy 中扫出失效的 SDK / Kit 配置（SerializeReference 丢失）则弹清理确认框。
+        /// 用户确认后只清理内存副本并标记待保存，不绕过统一保存入口直接修改真实资产。
         /// </summary>
         private void PromptMissingRefsIfAny()
         {
-            if (m_Master == null) return;
-            IReadOnlyList<EditorUtil.Config.StructureGuard.MissingRef> missing = EditorUtil.Config.StructureGuard.DetectMissingPluginRefs(m_Master);
+            if (m_WorkingCopy == null) return;
+            IReadOnlyList<EditorUtil.Config.StructureGuard.MissingRef> missing = EditorUtil.Config.StructureGuard.DetectMissingPluginRefs(m_WorkingCopy);
             if (missing.Count == 0) return;
             int total = 0;
             for (int i = 0; i < missing.Count; i++) total += missing[i].MissingCount;
@@ -196,10 +212,9 @@ namespace NovaFramework.Editor
                 "清理（推荐）", "暂不处理");
             if (clean)
             {
-                EditorUtil.Config.StructureGuard.CleanMissingPluginRefs(m_Master);
-                AssetDatabase.SaveAssetIfDirty(m_Master);
-                DestroyWorkingCopy();
-                RebuildWorkingCopy();
+                EditorUtil.Config.StructureGuard.CleanMissingPluginRefs(m_WorkingCopy);
+                m_MasterSO?.Update();
+                m_IsDirty = true;
             }
         }
     }

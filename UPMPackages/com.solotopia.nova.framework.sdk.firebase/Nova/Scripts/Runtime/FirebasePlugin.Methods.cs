@@ -12,10 +12,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 using Firebase.Extensions;
+using UnityEngine;
 
 using Firebase.Messaging;
 
@@ -29,12 +29,15 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// Firebase 通过 FirebaseApp.DefaultInstance 自主初始化；config 仅提供初始化完成后的框架侧行为开关。
         /// </summary>
         /// <param name="config">Firebase 插件运行时配置。</param>
-        /// <param name="ct">取消令牌，Firebase 初始化链路不支持取消，此参数不使用。</param>
+        /// <param name="ct">取消令牌；Firebase 原生任务不可中断，但框架初始化等待会随组件销毁取消。</param>
         /// <returns>初始化完成的异步任务。</returns>
-        protected override UniTask OnInitializeAsync(ISDKPluginConfig config, CancellationToken ct)
+        protected override async UniTask OnInitializeAsync(ISDKPluginConfig config, CancellationToken ct)
         {
             try
             {
+                m_IsDisposed = false;
+                m_InitOver = false;
+                m_FirebaseMessagingSubscribed = false;
                 m_FcmTokenReadySource = new UniTaskCompletionSource<string>();
                 if (!string.IsNullOrEmpty(m_TokenReceived))
                 {
@@ -48,44 +51,59 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 m_EventManager.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
 #if (UNITY_IOS || UNITY_ANDROID)
                 Firebase.FirebaseApp.LogLevel = Firebase.LogLevel.Warning;
-                var tempTask = Firebase.FirebaseApp.CheckAndFixDependenciesAsync();
-                TaskContinueWithOnMainThread(tempTask, (_) =>
-                {
-                    var dependencyStatus = tempTask.Result;
-                    if (dependencyStatus == Firebase.DependencyStatus.Available)
-                    {
-                        FirebaseMessaging.TokenReceived += OnTokenReceived;
-                        FirebaseMessaging.MessageReceived += OnMessageReceived;
-                        m_InitOver = true;
-                        m_PushTaskDispatcher?.SetFirebaseReady(true);
-                        ApplyPendingUserIdIfReady();
-                        RequestDefaultNotificationPermissionIfEnabled().Forget();
-                        StartDefaultTopicSync();
+                Firebase.DependencyStatus dependencyStatus = await Firebase.FirebaseApp
+                    .CheckAndFixDependenciesAsync()
+                    .AsUniTask()
+                    .AttachExternalCancellation(ct);
 
-                        Firebase.Analytics.FirebaseAnalytics.GetAnalyticsInstanceIdAsync().ContinueWithOnMainThread(idTask =>
-                        {
-                            if (idTask.IsCompleted && !string.IsNullOrEmpty(idTask.Result))
-                            {
-                                m_AnalyticsInstanceId = idTask.Result;
-                                PublishData(SDKDataKeys.FirebaseAnalyticsInstanceId, m_AnalyticsInstanceId);
-                                Log.Debug(LogTag.Firebase, $"AnalyticsInstanceId : {m_AnalyticsInstanceId} 。");
-                            }
-                        });
-                        Log.Debug(LogTag.Firebase, "初始化完成。");
-                    }
-                    else
+                await UniTask.SwitchToMainThread(ct);
+                if (m_IsDisposed)
+                {
+                    throw new OperationCanceledException("Firebase 初始化已在插件释放后取消。");
+                }
+
+                if (dependencyStatus != Firebase.DependencyStatus.Available)
+                {
+                    throw new InvalidOperationException($"Firebase 初始化失败，依赖状态：{dependencyStatus}。");
+                }
+
+                FirebaseMessaging.TokenReceived += OnTokenReceived;
+                m_FirebaseMessagingSubscribed = true;
+                FirebaseMessaging.MessageReceived += OnMessageReceived;
+                m_InitOver = true;
+                m_PushTaskDispatcher?.SetFirebaseReady(true);
+                ApplyPendingUserIdIfReady();
+                ScheduleDefaultNotificationPermissionIfEnabled();
+                StartDefaultTopicSync();
+
+                _ = Firebase.Analytics.FirebaseAnalytics.GetAnalyticsInstanceIdAsync().ContinueWithOnMainThread(idTask =>
+                {
+                    if (m_IsDisposed || !m_InitOver)
                     {
-                        Log.Warning(LogTag.Firebase, $"初始化失败，依赖状态：{dependencyStatus}。");
+                        return;
+                    }
+
+                    if (idTask.IsCompletedSuccessfully && !string.IsNullOrEmpty(idTask.Result))
+                    {
+                        m_AnalyticsInstanceId = idTask.Result;
+                        PublishData(SDKDataKeys.FirebaseAnalyticsInstanceId, m_AnalyticsInstanceId);
+                        Log.Debug(LogTag.Firebase, $"AnalyticsInstanceId : {m_AnalyticsInstanceId} 。");
                     }
                 });
+                Log.Debug(LogTag.Firebase, "初始化完成。");
 #endif
+            }
+            catch (OperationCanceledException)
+            {
+                CleanupRuntimeState();
+                throw;
             }
             catch (Exception e)
             {
+                CleanupRuntimeState();
                 Log.Error(LogTag.Firebase, $"OnInitializeAsync 初始化异常：{e}");
+                throw;
             }
-
-            return UniTask.CompletedTask;
         }
 
 #if (UNITY_IOS || UNITY_ANDROID)
@@ -106,26 +124,75 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         }
 
         /// <summary>
-        /// 根据 Firebase 配置请求通知权限；默认开启，业务可在 ConfigMaster 关闭该行为。
-        /// 请求结果只记录系统权威状态，不阻塞 Firebase 初始化完成回调。
+        /// 根据 Firebase 配置调度通知权限请求；默认开启，业务可在 ConfigMaster 关闭该行为。
+        /// 实际请求会等待 SDK 全部插件初始化完成，并延迟到启动前景稳定后执行。
         /// </summary>
-        private async UniTaskVoid RequestDefaultNotificationPermissionIfEnabled()
+        private void ScheduleDefaultNotificationPermissionIfEnabled()
         {
             if (m_RuntimeConfig == null || !m_RuntimeConfig.AutoRequestNotificationPermission)
             {
                 return;
             }
 
-            if (Nova.Native == null)
+            CancelDefaultNotificationPermissionRequest();
+            m_NotificationPermissionRequestCts = new CancellationTokenSource();
+            RequestDefaultNotificationPermissionAfterSdkInitializedAsync(m_NotificationPermissionRequestCts.Token).Forget();
+        }
+
+        /// <summary>
+        /// 取消默认通知权限请求后台任务。
+        /// </summary>
+        private void CancelDefaultNotificationPermissionRequest()
+        {
+            if (m_NotificationPermissionRequestCts == null)
             {
-                Log.Warning(LogTag.Firebase, "Firebase 默认请求通知权限失败，Nova.Native 不可用。");
+                return;
+            }
+
+            m_NotificationPermissionRequestCts.Cancel();
+            m_NotificationPermissionRequestCts.Dispose();
+            m_NotificationPermissionRequestCts = null;
+        }
+
+        /// <summary>
+        /// 等待 SDK 全部初始化完成后请求通知权限，避免启动早期系统权限 Activity 打断 Unity 初始化窗口。
+        /// </summary>
+        /// <param name="ct">插件释放时取消的令牌。</param>
+        private async UniTaskVoid RequestDefaultNotificationPermissionAfterSdkInitializedAsync(CancellationToken ct)
+        {
+            if (m_RuntimeConfig == null || !m_RuntimeConfig.AutoRequestNotificationPermission)
+            {
                 return;
             }
 
             try
             {
+                ISDKManager sdkManager = FrameworkManagersGroup.GetManager<ISDKManager>();
+                if (sdkManager == null)
+                {
+                    Log.Warning(LogTag.Firebase, "Firebase 默认请求通知权限失败，SDK Manager 不可用。");
+                    return;
+                }
+
+                await sdkManager.WaitForInitializedAsync(ct);
+                await UniTask.SwitchToMainThread(ct);
+                await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, ct);
+                await UniTask.DelayFrame(1, PlayerLoopTiming.LastPostLateUpdate, ct);
+
+                if (m_IsDisposed || !m_InitOver || !Application.isFocused)
+                {
+                    return;
+                }
+
+                INativeManager nativeManager = FrameworkManagersGroup.GetManager<INativeManager>();
+                if (nativeManager == null)
+                {
+                    Log.Warning(LogTag.Firebase, "Firebase 默认请求通知权限失败，Native Manager 不可用。");
+                    return;
+                }
+
                 NotificationPermissionResult result =
-                    await Nova.Native.RequestNotificationPermissionAsync();
+                    await nativeManager.RequestNotificationPermissionAsync(ct: ct);
                 if (result.IsOperationSuccessful)
                 {
                     Log.Debug(LogTag.Firebase, $"Firebase 默认通知权限请求完成，系统状态：{result.Status}。");
@@ -153,8 +220,23 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// <returns>释放完成的异步任务。</returns>
         protected override UniTask OnDisposeAsync(CancellationToken ct)
         {
+            m_IsDisposed = true;
+            CleanupRuntimeState();
+            return UniTask.CompletedTask;
+        }
+
+        /// <summary>
+        /// 清理 Firebase 插件运行期状态。
+        /// 初始化失败时 SDKManager 不会再调用 DisposeAsync，因此初始化失败与正常释放共用同一套收口逻辑。
+        /// </summary>
+        private void CleanupRuntimeState()
+        {
+            m_InitOver = false;
             CancelPushTaskFlush();
             CancelDefaultTopicSync();
+#if (UNITY_IOS || UNITY_ANDROID)
+            CancelDefaultNotificationPermissionRequest();
+#endif
             m_FcmTokenReadySource.TrySetCanceled();
             if (m_EventManager != null)
             {
@@ -162,10 +244,13 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 m_EventManager = null;
             }
 #if (UNITY_IOS || UNITY_ANDROID)
-            FirebaseMessaging.TokenReceived -= OnTokenReceived;
-            FirebaseMessaging.MessageReceived -= OnMessageReceived;
+            if (m_FirebaseMessagingSubscribed)
+            {
+                FirebaseMessaging.TokenReceived -= OnTokenReceived;
+                FirebaseMessaging.MessageReceived -= OnMessageReceived;
+                m_FirebaseMessagingSubscribed = false;
+            }
 #endif
-            return UniTask.CompletedTask;
         }
 
 #if (UNITY_IOS || UNITY_ANDROID)
@@ -236,8 +321,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                     templateId = messageTemplateId;
                 }
                  
-                SDKComponent sdkComponent = FrameworkComponentsGroup.GetComponent<SDKComponent>();
-                if (sdkComponent != null && sdkComponent.TryGet<ITrackPlugin>(out ITrackPlugin trackPlugin))
+                ISDKManager sdkManager = FrameworkManagersGroup.GetManager<ISDKManager>();
+                if (sdkManager != null && sdkManager.TryGet<ITrackPlugin>(out ITrackPlugin trackPlugin))
                 {
                     trackPlugin.TrackEvent("nova_firebase_fcm_click", new Dictionary<string, object>
                     {
@@ -248,43 +333,6 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                     });
                 }
                 Log.Debug(LogTag.Firebase, $"推送点击，MessageId：{message.MessageId}。");
-            }
-        }
-
-        /// <summary>
-        /// 等待Task完成后切换到主线程执行回调。
-        /// </summary>
-        /// <param name="task">要等待的异步任务。</param>
-        /// <param name="callBack">任务完成后在主线程执行的回调。</param>
-        private async void TaskContinueWithOnMainThread(Task task, Action<Task> callBack)
-        {
-            try
-            {
-                await task;
-            }
-            catch (OperationCanceledException)
-            {
-                return;
-            }
-            catch (Exception e)
-            {
-                Log.Error(LogTag.Firebase, $"TaskContinueWithOnMainThread 等待任务异常：{e}");
-                return;
-            }
-
-            if (!task.IsCompletedSuccessfully)
-            {
-                return;
-            }
-
-            await UniTask.SwitchToMainThread();
-            try
-            {
-                callBack(task);
-            }
-            catch (Exception e)
-            {
-                Log.Error(LogTag.Firebase, $"TaskContinueWithOnMainThread 回调异常：{e}");
             }
         }
 

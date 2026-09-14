@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Breaking
+
+- 移除 `IIAPThirdPayCapable.FetchProductListAsync`；商品列表改由 Store 在登录、Debug 国家切换及支付前按需预取，业务侧只读取当前商品快照。
+
 ### Changed
 
 - ThirdPay 支付页打开方式改为平台固定策略：Android 默认外部浏览器并按 Auth Tab → Custom Tabs → `Application.OpenURL` 兜底，iOS 使用 UniWebView Safe Browsing；移除 `UseExternalBrowserPayment` 与 `ExternalBrowserCountryCodes` 配置。
@@ -12,6 +16,8 @@
 - 为嵌入式 UniWebView 显式设置全屏 Frame，避免支付页未铺满屏幕。
 - 支持第三方验单状态 `6`（订单不存在）：删除本地订单并广播验单失败结果，避免无效订单持续补单。
 - Android 外部支付页优先 Auth Tab，不支持时回退 AndroidX Browser `1.10.0` Custom Tabs，两者不可用或打开失败时由 C# `Application.OpenURL` 回退系统浏览器。
+- Android 外部浏览器返回 App 后，自动验单倒计时等待期也会显示 IAP Loading，避免等待服务端确认前误触底层 UI。
+- ThirdPay 商品列表拉取收口为 Store 内部流程，登录、Debug 国家切换和支付前兜底共用同账号、同协议名、同国家码的在途请求，业务侧不再手动触发 `GetProductList`。
 - ThirdPay 国家码规则对齐 Solar：`CountryCode` / `SetDebugCountryCode` 作为 Debug 覆盖源，有效国家码按 `Debug > Lock > Billing > Native > AD > US` 解析，`IV` 归一化为 `US`，iOS 初始化时读取 StoreKit storefront，商品列表按请求版本忽略旧国家响应；IAPDemo 默认不再写死 `US`。
 - Google Play Billing 商店地区未配置时，通过 `getBillingConfigAsync()` 自动读取国家/地区代码；External Billing Program 因设备、账号或地区不可用时直接进入平台默认 ThirdPay 支付页。
 - 新增第三方商品列表读取、商品存在性查询、WebView 导航栏文案设置和跳过 Google 信息页能力；信息页跳过默认读取 `ThirdPayStoreConfig`，运行时可由 `IIAPThirdPayCapable` 覆盖。

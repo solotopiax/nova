@@ -32,8 +32,8 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 获取或创建 InitializeAsync 惰性任务。
-        /// 首次调用时向 Manager 发起 InitializeAsync（使用组件销毁令牌），并通过 Preserve 缓存完成结果。
-        /// 后续调用返回同一任务，允许初始化完成后再次等待而不重复执行初始化。
+        /// 首次调用时向 Manager 发起 InitializeAsync（使用组件销毁令牌），并通过 AsyncLazy 共享完成结果。
+        /// 后续调用返回同一共享任务，允许初始化中的并发等待与完成后的重复等待，且不重复执行初始化。
         /// Manager 为 null（Awake 创建失败）时返回已完成的任务。
         /// </summary>
         /// <returns>InitializeAsync 对应的 UniTask。</returns>
@@ -46,14 +46,14 @@ namespace NovaFramework.Runtime
 
             ConfigureManagerIfNeeded();
 
-            if (m_InitializeTaskCache.HasValue)
+            if (m_InitializeTaskCache != null)
             {
-                return m_InitializeTaskCache.Value;
+                return m_InitializeTaskCache.Task;
             }
 
             var ct = this.GetCancellationTokenOnDestroy();
-            m_InitializeTaskCache = m_SDKManager.InitializeAsync(ct).Preserve();
-            return m_InitializeTaskCache.Value;
+            m_InitializeTaskCache = m_SDKManager.InitializeAsync(ct).ToAsyncLazy();
+            return m_InitializeTaskCache.Task;
         }
     }
 }

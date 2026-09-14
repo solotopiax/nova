@@ -41,7 +41,7 @@ public UniTask<bool> OpenNotificationSettingsAsync();
 ```
 
 - `GetNotificationPermissionStatusAsync` 返回当前操作系统状态。
-- `RequestNotificationPermissionAsync` 是 Native 模块提供的显式请求入口；Native 模块初始化和场景启动不会自动弹窗。其他 SDK 插件可按自身配置调用该门面，例如 Firebase 插件的 `AutoRequestNotificationPermission` 默认会在 Firebase 依赖初始化成功后请求一次通知权限。
+- `RequestNotificationPermissionAsync` 是 Native 模块提供的显式请求入口；Native 模块初始化和场景启动不会自动弹窗。其他 SDK 插件可按自身配置调用该门面，例如 Firebase 插件的 `AutoRequestNotificationPermission` 默认会在 Firebase 依赖初始化成功后调度一次请求，实际请求等待全 SDK 初始化完成并确认应用仍在前台后执行。
 - `RequestInAppReviewAsync` 只能由业务在完成有价值流程后的合适时机显式调用；框架初始化、场景启动和方法所在页面打开时都不会自动请求。
 - `OpenAppSettingsAsync` 打开当前应用的系统设置根页。
 - `OpenNotificationSettingsAsync` 只打开当前应用的通知设置页；不支持或无法精准跳转时直接返回 `false`，绝不回退到应用设置页。

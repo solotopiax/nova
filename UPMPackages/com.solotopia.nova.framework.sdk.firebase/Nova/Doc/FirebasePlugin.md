@@ -32,11 +32,12 @@
 
 - `Priority => 30`，在 TGA 与 AppsFlyer 分桶之后初始化
 
-- `OnInitializeAsync(...)` 会立即返回，但真正的可用时机取决于 `FirebaseApp.CheckAndFixDependenciesAsync()` 的异步回调。
-- 只有在依赖检查通过后，`m_InitOver` 才会置为 `true`。
-- 依赖检查通过后，若 `FirebasePluginConfig.AutoRequestNotificationPermission` 为 `true`（默认值），插件会通过 `Nova.Native.RequestNotificationPermissionAsync()` 请求 `Alert | Sound | Badge` 通知权限；该请求为异步 Fire-and-Forget，不阻塞 Firebase 初始化完成回调。若项目希望由业务自行选择交互时机，可在配置中关闭该开关。
+- `OnInitializeAsync(...)` 会等待 `FirebaseApp.CheckAndFixDependenciesAsync()` 完成；只有依赖检查通过并成功注册 `FirebaseMessaging` 回调后才返回。
+- `SDKPluginBase` 会在 `OnInitializeAsync(...)` 正常返回后把 `IsAvailable` 置为 `true`，因此 Firebase 插件的 `IsAvailable == true` 表示 Firebase 依赖已可用且 Messaging 事件已完成注册。
+- 若依赖检查失败，`OnInitializeAsync(...)` 会抛出异常，由 `SDKManager` 按单插件失败隔离语义记录并保持该插件不可用。
+- 依赖检查通过后，若 `FirebasePluginConfig.AutoRequestNotificationPermission` 为 `true`（默认值），插件会先调度一次异步 Fire-and-Forget 请求；实际通知权限请求会等待 SDK Manager 对应的全 SDK 初始化完成，并在启动前景稳定后才请求 `Alert | Sound | Badge` 通知权限。该请求不阻塞 Firebase 初始化完成回调；若项目希望由业务自行选择交互时机，可在配置中关闭该开关。
 - 大多数公开方法都会在 `m_InitOver == false` 时直接静默返回。
-- 默认 Topic 和显式 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token 后再调用 Firebase；iOS 首次安装时不会在 APNs / FCM Token 就绪前强行订阅。
+- 默认 Topic 和显式 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token 后再调用 Firebase；iOS 首次安装时如果 Firebase topic API 返回 APNs Token 尚未就绪，会对订阅或退订操作本身做有界延迟重试。
 - `GetTokenAsync(...)` 不依赖 `m_InitOver` 直接返回，而是等待 `m_TokenReceived` 非空。
 
 ## 4. 配置与上报
@@ -47,7 +48,7 @@
 - `PushCmdName`：批量创建或取消服务端 push task 时使用的 NetCmd 名称
 - `PushFlushIntervalSeconds`：push task 本地缓存后的时间发送阈值，默认 `100` 秒；小于等于 `0` 时写入后立即尝试发送
 - `PushFlushBatchSize`：push task 本地缓存达到数量阈值后立即发送，默认 `5` 条；小于 `1` 时运行时按 `1` 处理
-- `AutoRequestNotificationPermission`：Firebase 依赖初始化成功后是否自动请求 `Alert | Sound | Badge` 通知权限，默认开启；关闭后不会自动调用 Native 通知权限请求
+- `AutoRequestNotificationPermission`：SDK 全部插件初始化完成且应用仍在前台后是否自动请求 `Alert | Sound | Badge` 通知权限，默认开启；关闭后不会自动调用 Native 通知权限请求
 
 上报链路依赖 Firebase 自身发布的两个内部数据槽位：
 
@@ -90,7 +91,7 @@
 
 ## 6. 默认推送 Topic
 
-Firebase 依赖检查通过后，`FirebasePlugin` 会启动默认 FCM topic 同步，但实际 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token。同步只在 Android / iOS 编译平台执行，WebGL 不包含 Firebase Runtime。
+Firebase 依赖检查通过后，`FirebasePlugin` 会启动默认 FCM topic 同步，但实际 Topic 订阅会等待 `TokenReceived` 提供有效 FCM Token。iOS 上 FCM Token 字符串可用不等于 APNs Token 已被 Firebase 原生层用于 topic 操作；如果 `SubscribeAsync(...)` 或 `UnsubscribeAsync(...)` 返回 APNs Token 尚未就绪，插件会延迟后重试当前 topic 操作。同步只在 Android / iOS 编译平台执行，WebGL 不包含 Firebase Runtime。
 
 默认 Topic 前缀来自 `IConfigManager.DevelopMode`：`Debug` 使用 `top_debug_`，`Release` 使用 `top_release_`。如果 Config Manager 不存在或尚未完成加载，则按 `Debug` 处理，避免误订阅正式分群。
 
@@ -99,15 +100,15 @@ Firebase 依赖检查通过后，`FirebasePlugin` 会启动默认 FCM topic 同�
 | 维度 | Topic 示例 | 来源 |
 |---|---|---|
 | 全量 | `top_debug_all` / `top_release_all` | 固定值 + `IConfigManager.DevelopMode` |
-| 语言 | `top_debug_lang_en` / `top_release_lang_zh-CN` | `LocalizationRefreshEventData.NewLanguage` 或已初始化的 `Nova.Localization.Language` |
+| 语言 | `top_debug_lang_en` / `top_release_lang_zh-CN` | `LocalizationRefreshEventData.NewLanguage` 或已初始化的 `ILocalizationManager.Language` |
 | 平台 | `top_debug_platform_iOS` / `top_release_platform_Android` | 编译平台 |
 | 时区 | `top_debug_timezone_utc_plus_08` / `top_release_timezone_utc_plus_05_30` | `TimeZoneInfo.Local.GetUtcOffset(DateTime.Now)` |
 
-`Nova.Localization.LoadAsync()` 只准备支持语言和字体数据，不代表当前语言已初始化。Firebase 因此不会在 `Nova.Localization.Language == Language.Unspecified` 时生成新的语言 topic；全量、平台和时区 topic 仍会先同步。等 `LocalizationRefreshEventData` 发布真实 `NewLanguage` 后，Firebase 再同步 `top_debug_lang_*` 或 `top_release_lang_*`，并通过存档差异退订旧语言 topic、订阅新语言 topic。若语言未就绪但旧存档里已有有效语言 topic，本轮基础同步会暂时保留旧语言 topic，避免启动早期误退订。
+Localization Manager 的 `LoadAsync()` 只准备支持语言和字体数据，不代表当前语言已初始化。Firebase 因此不会在 `ILocalizationManager.Language == Language.Unspecified` 时生成新的语言 topic；全量、平台和时区 topic 仍会先同步。等 `LocalizationRefreshEventData` 发布真实 `NewLanguage` 后，Firebase 再同步 `top_debug_lang_*` 或 `top_release_lang_*`，并通过存档差异退订旧语言 topic、订阅新语言 topic。若语言未就绪但旧存档里已有有效语言 topic，本轮基础同步会暂时保留旧语言 topic，避免启动早期误退订。
 
 国家 topic 独立同步：
 
-- 数据来源：`Nova.SDK.Get<IAdPlugin>().GetCountryCodeAsync(ct)`
+- 数据来源：SDK Manager 中可用的 `IAdPlugin.GetCountryCodeAsync(ct)`
 - 等待上限：`AdPluginConfig.CountryCodeWaitTimeoutSeconds`
 - 兜底来源：广告模块上次成功缓存；缓存不存在时返回空字符串
 - 有效值：非空且不等于 `IV`
@@ -126,7 +127,7 @@ Android、`zh-CN`、UTC+08、国家码 `CN` 的 Debug 分群会同步 `top_debug
 | `BaseState` | `FirebaseTopicSubscriptionState` | 记录语言、平台、时区和上次成功订阅的基础 topic 列表 |
 | `CountryState` | `FirebaseCountryTopicSubscriptionState` | 记录国家码和上次成功订阅的国家 topic |
 
-同步时会先读取旧状态并与当前状态计算差异：旧状态独有的 topic 先退订，新状态独有的 topic 再订阅。只有所有退订/订阅操作都成功后才覆盖保存新状态；若当前状态和存档一致，则不重复调用 Firebase 订阅接口。启动基础同步和 Localization 刷新触发的语言同步共用同一把内部锁，避免并发读写 `BaseState`。
+同步时会先读取旧状态并与当前状态计算差异：旧状态独有的 topic 先退订，新状态独有的 topic 再订阅。只有所有退订/订阅操作都成功后才覆盖保存新状态；若 iOS APNs Token 尚未就绪导致本轮失败，则保留旧存档并安排后续补偿同步，应用恢复前台时也会再次请求默认 topic 差异同步。若当前状态和存档一致，则不重复调用 Firebase 订阅接口。启动基础同步和 Localization 刷新触发的语言同步共用同一把内部锁，避免并发读写 `BaseState`。
 
 国家码最终无效或为 `IV` 时，不会订阅国家 topic，也不会退订旧国家 topic 或覆盖旧国家存档。这样可以避免广告 SDK 临时返回 `IV` 或国家码暂不可用时误删上一次有效国家订阅。
 

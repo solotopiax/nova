@@ -22,6 +22,6 @@
 
 支付 URL 参数加密不读取 Store 配置、`ConfigManager.AppConfigs.AppAesKey/AppAesIV` 或隐私配置默认 AES。ThirdPay 每次构造支付 URL 时生成 16 字节 Key 和 16 字节 IV，调用 `Util.Encrypt.AES.EncryptBytes(Encoding.UTF8.GetBytes(value), key, iv)` 得到密文，再按 `key + iv + cipher` 拼接字节并整体 Base64 写入 `params`。
 
-支付 URL 基址固定通过 NetCmd `ThirdOpenURL` 解析；应用 ID 统一读取公共请求头的 `AppId`，不在 Store 配置中重复保存。
+支付 URL 基址固定通过 NetCmd `ThirdOpenURL` 解析；应用 ID 和渠道统一读取公共请求头的 `AppId` / `Channel`，不在 Store 配置中重复保存。
 
 本配置不再包含打开模式和创建订单协议；ThirdPay 固定为客户端造单 + InAppAuto。

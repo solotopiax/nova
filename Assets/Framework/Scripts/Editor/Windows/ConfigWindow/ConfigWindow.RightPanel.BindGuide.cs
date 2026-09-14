@@ -114,8 +114,7 @@ namespace NovaFramework.Editor
         {
             m_Master = master;
             DestroyWorkingCopy();
-            RebuildWorkingCopy();
-            EditorUtil.Config.StructureGuard.SyncEnumGrid(m_Master);
+            RebuildWorkingCopyAndSyncStructure();
             RefreshPluginCache();
             m_LastKnownChannel = m_Master.CurrentChannel;
             EditorUtil.Config.YooAssetInjector.Inject(m_Master);

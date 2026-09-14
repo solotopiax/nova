@@ -53,4 +53,4 @@ string ns = DimensionalResolver.ResolveNamespace(
 - [PanelDimensionMask.md](PanelDimensionMask.md)（`NamespaceMask` 类型）
 - [ConfigMasterSO.md](../ConfigMasterSO.md)（`NamespaceMask` / `NamespaceOverrides` 字段）
 - [EditorUtil.Config.DimensionalResolver.md](../../EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md)（`ResolveNamespace` 取数）
-- [EditorUtil.Config.DimensionProjector.md](../../EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md)（`OnNamespaceEnabled` / `UpsertNamespaceOverride` 写入）
+- [EditorUtil.Config.DimensionProjector.md](../../EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md)（`OnDimensionEnabled` / `UpsertNamespaceOverride` 写入）

@@ -42,12 +42,11 @@ namespace NovaFramework.Runtime
         private bool m_IsManagerConfigured;
 
         /// <summary>
-        /// InitializeTask 的缓存，首次访问时由 GetOrCreateInitializeTask 创建。
-        /// 惰性 InitializeAsync 任务；首次访问时调用 Manager.InitializeAsync 并 Preserve 完成结果，
-        /// 后续调用可在初始化完成后再次等待同一任务。
+        /// InitializeTask 的共享缓存，首次访问时由 GetOrCreateInitializeTask 创建。
+        /// AsyncLazy 通过多等待者完成源共享 InitializeAsync 的结果，支持初始化中的并发等待与完成后的重复等待。
         /// 业务层通过 await Nova.SDK.InitializeTask 完成 SDK 统一初始化。
         /// </summary>
-        private UniTask? m_InitializeTaskCache;
+        private AsyncLazy m_InitializeTaskCache;
         public UniTask InitializeTask => GetOrCreateInitializeTask();
 
         /// <summary>

@@ -1403,9 +1403,11 @@ MonoBehaviour:
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
-      SDKConfigs: []
+      SDKConfigs:
+      - rid: 5117132822996320499
     - Mode: 1
-      SDKConfigs: []
+      SDKConfigs:
+      - rid: 5117132822996320503
     KitConfigsByMode:
     - Mode: 0
       KitConfigs: []
@@ -1440,9 +1442,11 @@ MonoBehaviour:
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
-      SDKConfigs: []
+      SDKConfigs:
+      - rid: 5117132822996320507
     - Mode: 1
-      SDKConfigs: []
+      SDKConfigs:
+      - rid: 5117132822996320511
     KitConfigsByMode:
     - Mode: 0
       KitConfigs: []
@@ -1477,9 +1481,11 @@ MonoBehaviour:
     CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
-      SDKConfigs: []
+      SDKConfigs:
+      - rid: 5117132822996320515
     - Mode: 1
-      SDKConfigs: []
+      SDKConfigs:
+      - rid: 5117132822996320520
     KitConfigsByMode:
     - Mode: 0
       KitConfigs: []
@@ -5931,3 +5937,100 @@ MonoBehaviour:
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
+    - rid: 5117132822996320499
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 1
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 5117132822996320503
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 1
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 5117132822996320507
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 1
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 5117132822996320511
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 1
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 5117132822996320515
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 1
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 5117132822996320520
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 1
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 5117132822996320521
+          - rid: 5117132822996320522
+        m_Products:
+          m_Items: []
+    - rid: 5117132822996320521
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 5117132822996320522
+      type: {class: ThirdPayStoreConfig, ns: NovaFramework.SDK.IAP.ThirdPay.Runtime, asm: NovaFramework.SDK.IAP.ThirdPay.Runtime}
+      data:
+        m_Enabled: 1
+        m_CountryCode: US
+        m_SkipPaymentInformationScreen: 0
+        m_ExternalBrowserReturnValidateDelaySeconds: 2.5
+        m_GetProductListCmdName: ThirdGetProductList
+        m_QueryPendingOrderCmdName: ThirdQueryPendingOrder
+        m_PayChannelParamsCmdName: ThirdGetPayChannelParams
+        m_VerifyIapCmdName: ThirdVerifyIap
+        m_GoogleApiTimeoutSeconds: 15

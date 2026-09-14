@@ -25,7 +25,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Editor
     internal static class FirebaseDesktopLibraryGuard
     {
         /// <summary>会话级去重标记，避免每次域重载重复弹窗。</summary>
-        private const string c_SessionKey = "Nova.Firebase.DesktopLibChecked";
+        private const string c_SessionKey = "Firebase.DesktopLibChecked";
 
         /// <summary>Firebase 官方 Unity SDK 下载地址。</summary>
         private const string c_DownloadUrl = "https://firebase.google.com/download/unity";

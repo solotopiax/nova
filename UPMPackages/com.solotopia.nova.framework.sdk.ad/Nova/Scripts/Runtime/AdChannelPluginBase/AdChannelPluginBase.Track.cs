@@ -271,9 +271,9 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         protected void RaiseAdLoadFailed(AdLoadResult e)
         {
             e.Success = false;
+            var unit = FindAdUnit(e.PlacementId);
             MarkLoadFailed(e.PlacementId, e.ErrorMessage);
             NotifyBatchFailed(e);
-            var unit = FindAdUnit(e.PlacementId);
             var props = new Dictionary<string, object>
             {
                 { "nova_ad_channel", Name },

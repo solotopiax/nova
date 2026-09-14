@@ -41,62 +41,54 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Layout.Vertical(EditorStyles.helpBox, () =>
             {
                 m_RightPanelScrollPos = EditorGUILayout.BeginScrollView(m_RightPanelScrollPos, false, false);
-                // YooAsset 面板即时写真实资产（ADR-049 C1 例外），不参与 WorkingCopy 脏检测
-                if (m_Master != null && m_SelectedItem == LeftTreeItem.YooAssetConfig)
+                EditorGUI.BeginChangeCheck();
+                if (m_Master == null)
                 {
-                    DrawRightPanelYooAsset();
+                    DrawBindGuide();
                 }
                 else
                 {
-                    EditorGUI.BeginChangeCheck();
-                    if (m_Master == null)
+                    switch (m_SelectedItem)
                     {
-                        DrawBindGuide();
-                    }
-                    else
-                    {
-                        switch (m_SelectedItem)
-                        {
-                            case LeftTreeItem.LubanEnv:
-                                DrawLubanSection();
-                                break;
-                            case LeftTreeItem.Python3Env:
-                                DrawPython3Section();
-                                break;
-                            case LeftTreeItem.HybridCLREnv:
-                                DrawHybridCLREnvSection();
-                                break;
-                            case LeftTreeItem.AppConfig when m_MasterSO != null:
-                                DrawAppConfigsPanel();
-                                break;
-                            case LeftTreeItem.PrivacyConfig when m_MasterSO != null:
-                                DrawPrivacyConfigsPanel();
-                                break;
-                            case LeftTreeItem.NamespaceConfig when m_MasterSO != null:
-                                DrawNamespacePanel();
-                                break;
-                            case LeftTreeItem.SDKNode when m_SelectedPluginType != null:
-                                DrawSDKPanel();
-                                break;
-                            case LeftTreeItem.HybridCLRConfig when m_MasterSO != null:
-                                DrawHybridCLRPanel();
-                                break;
-                            case LeftTreeItem.CDNEditorConfigs when m_MasterSO != null:
-                                DrawCdnDeploymentPanel();
-                                break;
-                            case LeftTreeItem.KitNode when m_SelectedPluginType != null:
-                                DrawKitPanel();
-                                break;
-                            default:
-                                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "请在左侧选择一项开始编辑。" }, false);
-                                break;
-                        }
-                    }
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        m_IsDirty = true;
+                        case LeftTreeItem.LubanEnv:
+                            DrawLubanSection();
+                            break;
+                        case LeftTreeItem.Python3Env:
+                            DrawPython3Section();
+                            break;
+                        case LeftTreeItem.HybridCLREnv:
+                            DrawHybridCLREnvSection();
+                            break;
+                        case LeftTreeItem.AppConfig when m_MasterSO != null:
+                            DrawAppConfigsPanel();
+                            break;
+                        case LeftTreeItem.PrivacyConfig when m_MasterSO != null:
+                            DrawPrivacyConfigsPanel();
+                            break;
+                        case LeftTreeItem.NamespaceConfig when m_MasterSO != null:
+                            DrawNamespacePanel();
+                            break;
+                        case LeftTreeItem.SDKNode when m_SelectedPluginType != null:
+                            DrawSDKPanel();
+                            break;
+                        case LeftTreeItem.HybridCLRConfig when m_MasterSO != null:
+                            DrawHybridCLRPanel();
+                            break;
+                        case LeftTreeItem.YooAssetConfig when m_MasterSO != null:
+                            DrawRightPanelYooAsset();
+                            break;
+                        case LeftTreeItem.CDNEditorConfigs when m_MasterSO != null:
+                            DrawCdnDeploymentPanel();
+                            break;
+                        case LeftTreeItem.KitNode when m_SelectedPluginType != null:
+                            DrawKitPanel();
+                            break;
+                        default:
+                            EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "请在左侧选择一项开始编辑。" }, false);
+                            break;
                     }
                 }
+                if (EditorGUI.EndChangeCheck()) m_IsDirty = true;
                 EditorGUILayout.EndScrollView();
             });
         }
@@ -223,17 +215,17 @@ namespace NovaFramework.Editor
             {
                 return EditorUtil.Draw.Panel.Confirm(
                     $"开启「按 {axisCN} 分别配置」？",
-                    $"开启后，本面板的内容会按不同的 {axisCN} 各存一份，每份相互独立、互不影响。\n\n" +
-                    $"当前这份会被复制到每个 {axisCN} 作为初始内容；渠道/模式可在顶部切换，其它平台需切换 Unity BuildTarget 后分别修改。\n\n" +
-                    $"未勾选的其它维度仍然共用同一份，不受影响。",
+                    $"开启后，本面板会按 {axisCN} 拆成多份，之后可分别修改。\n\n" +
+                    $"系统会遍历整个配置矩阵：每个已有组合都会用当前 {axisCN} 的内容初始化新分支，不会拿当前一个平台或渠道覆盖其它组合。\n\n" +
+                    "未勾选的其它维度仍然共用，普通编辑会继续自动同步。",
                     "开启分别配置",
                     "取消");
             }
             return EditorUtil.Draw.Panel.Confirm(
                 $"⚠ 取消「按 {axisCN} 分别配置」？",
-                $"取消后，本面板将合并为所有 {axisCN} 共用一份；保留的就是你当前正在编辑的这一份。\n\n" +
-                $"⚠ 该维度下其它 {axisCN} 取值已经分别填过的内容会被永久丢弃，无法撤销。\n\n" +
-                $"如果你只是想查看其它取值，不要点这里——渠道/模式切换顶部坐标，其它平台切换 Unity BuildTarget。",
+                $"取消后，{axisCN} 将改为共用。系统会遍历整个配置矩阵，对每个其余维度组合，都保留顶部当前选中的 {axisCN} 内容。\n\n" +
+                $"⚠ 其它 {axisCN} 分支的内容会被丢弃；但不同平台、渠道或模式的其余组合仍保留各自的值。\n\n" +
+                "确认后只修改内存副本，点击保存后才会写入 Asset。",
                 "合并并丢弃其余",
                 "返回");
         }
@@ -331,11 +323,21 @@ namespace NovaFramework.Editor
             DrawTitleWithMaskCore(title, mask, titleTrailingSpace: 30f,
                 onAxisToggled: (axis, enabled) =>
                 {
-                    if (enabled)
-                        EditorUtil.Config.DimensionProjector.OnDimensionEnabled(workingSrc, m_MasterSO, panelKind, typeName, curCoord, axis);
-                    else
-                        EditorUtil.Config.DimensionProjector.OnDimensionDisabled(workingSrc, m_MasterSO, panelKind, typeName, curCoord, axis);
-                    m_IsDirty = true;
+                    GUI.FocusControl(null);
+                    EditorGUIUtility.editingTextField = false;
+                    m_MasterSO?.ApplyModifiedProperties();
+                    try
+                    {
+                        if (enabled)
+                            EditorUtil.Config.DimensionProjector.OnDimensionEnabled(workingSrc, m_MasterSO, panelKind, typeName, curCoord, axis);
+                        else
+                            EditorUtil.Config.DimensionProjector.OnDimensionDisabled(workingSrc, m_MasterSO, panelKind, typeName, curCoord, axis);
+                        m_IsDirty = true;
+                    }
+                    catch (System.Exception exception)
+                    {
+                        EditorUtility.DisplayDialog("维度切换失败", exception.Message, "知道了");
+                    }
                     Repaint();
                 });
 
@@ -433,6 +435,7 @@ namespace NovaFramework.Editor
             }
 
             DevelopMode mode = workingSrc.CurrentDevelopMode;
+            EditorGUI.BeginChangeCheck();
             for (int i = 0; i < appConfigsByMode.arraySize; i++)
             {
                 SerializedProperty modeEntry = appConfigsByMode.GetArrayElementAtIndex(i);
@@ -453,10 +456,21 @@ namespace NovaFramework.Editor
                 break;
             }
 
+            bool appFieldChanged = EditorGUI.EndChangeCheck();
             DrawCustomConfigRows(m_MasterSO.FindProperty("Custom")?.FindPropertyRelative("Entries"));
             m_MasterSO.ApplyModifiedProperties();
-            // 字段编辑完成后广播同组格，确保组内数据一致（ChangeCheck 覆盖后追加）
-            EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs, null, new EditorUtil.Config.DimensionProjector.Coord(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
+            if (appFieldChanged)
+            {
+                EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(
+                    workingSrc,
+                    m_MasterSO,
+                    EditorUtil.Config.DimensionProjector.PanelKind.AppConfigs,
+                    null,
+                    new EditorUtil.Config.DimensionProjector.Coord(
+                        m_EditingPlatform,
+                        workingSrc.CurrentChannel,
+                        workingSrc.CurrentDevelopMode));
+            }
             EditorUtil.Draw.Space(16f);
         }
 
@@ -485,6 +499,7 @@ namespace NovaFramework.Editor
                 return;
             }
 
+            EditorGUI.BeginChangeCheck();
             for (int i = 0; i < byMode.arraySize; i++)
             {
                 SerializedProperty modeEntry = byMode.GetArrayElementAtIndex(i);
@@ -508,6 +523,7 @@ namespace NovaFramework.Editor
                 break;
             }
 
+            bool privacyFieldChanged = EditorGUI.EndChangeCheck();
             EditorUtil.Draw.Space(8f);
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
@@ -523,15 +539,18 @@ namespace NovaFramework.Editor
             });
 
             m_MasterSO.ApplyModifiedProperties();
-            EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(
-                workingSrc,
-                m_MasterSO,
-                EditorUtil.Config.DimensionProjector.PanelKind.PrivacyConfigs,
-                null,
-                new EditorUtil.Config.DimensionProjector.Coord(
-                    m_EditingPlatform,
-                    workingSrc.CurrentChannel,
-                    workingSrc.CurrentDevelopMode));
+            if (privacyFieldChanged)
+            {
+                EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(
+                    workingSrc,
+                    m_MasterSO,
+                    EditorUtil.Config.DimensionProjector.PanelKind.PrivacyConfigs,
+                    null,
+                    new EditorUtil.Config.DimensionProjector.Coord(
+                        m_EditingPlatform,
+                        workingSrc.CurrentChannel,
+                        workingSrc.CurrentDevelopMode));
+            }
             EditorUtil.Draw.Space(16f);
         }
 

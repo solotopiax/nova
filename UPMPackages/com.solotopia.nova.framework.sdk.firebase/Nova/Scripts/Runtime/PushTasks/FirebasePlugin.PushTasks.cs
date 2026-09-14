@@ -56,11 +56,11 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         {
             if (m_PushTaskDispatcher == null)
             {
-                Log.Info(LogTag.Firebase, "Firebase push task 前台恢复发送请求已跳过：调度器尚未初始化。");
+                Log.Debug(LogTag.Firebase, "Firebase push task 前台恢复发送请求已跳过：调度器尚未初始化。");
                 return;
             }
 
-            Log.Info(LogTag.Firebase, "Firebase push task 前台恢复，主动请求发送本地缓存。");
+            Log.Debug(LogTag.Firebase, "Firebase push task 前台恢复，主动请求发送本地缓存。");
             m_PushTaskDispatcher.FlushAllCachedTasks();
         }
 

@@ -507,6 +507,7 @@ ImmediateRetry(unit):
 ImmediateRetryAsync(unit, ct):
   await UniTask.Yield(PlayerLoopTiming.Update, ct)  // 推迟一帧，打散递归
   unit.State = Loading
+  TrackAdRequest(unit.Format, unit.PlacementId, Retry, unit.RequestCustomProps)
   await InvokeOnRequestSafeAsync(unit, unit.Format, ct)
 
 ScheduleRetry(unit):
@@ -518,12 +519,13 @@ DelayedRetryAsync(unit, ct):
   await UniTask.Delay(TimeSpan.FromSeconds(RetryLoadAdInterv), ct)  // 全局间隔
   unit.RetryCount = 0   // 清零后继续无限重试
   unit.State = Loading
+  TrackAdRequest(unit.Format, unit.PlacementId, Retry, unit.RequestCustomProps)
   await InvokeOnRequestSafeAsync(unit, unit.Format, ct)
 ```
 
 ### 打点属性构建
 
-`BuildBaseProps` 构建三个基础属性 `{ nova_ad_channel, nova_ad_format, nova_ad_id }`（`nova_ad_channel` 值为 `Name` 字符串）；`TrackAdShow` / `TrackAdClick` 额外调用 `MergeCustom` 合并 `unit.ShowCustomProps`（已有 key 跳过，不覆盖基础属性）。
+`BuildBaseProps` 构建三个基础属性 `{ nova_ad_channel, nova_ad_format, nova_ad_id }`（`nova_ad_channel` 值为 `Name` 字符串）；每次实际发起渠道 `OnRequestAsync` 前都会上报 `nova_ad_request`，自动重试使用 `AdRequestReason.Retry`；`TrackAdShow` / `TrackAdClick` 额外调用 `MergeCustom` 合并 `unit.ShowCustomProps`（已有 key 跳过，不覆盖基础属性）。
 
 ---
 

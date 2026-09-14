@@ -63,6 +63,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public bool Completed;
 
         /// <summary>
+        /// 返回 App 后的倒计时等待期是否已经持有 Loading 引用。
+        /// </summary>
+        public bool ReturnWaitingRefAdded;
+
+        /// <summary>
         /// App 返回前台的版本号；每次稳定返回前台都会递增，用于让旧延迟任务失效。
         /// </summary>
         public int ReturnVersion;

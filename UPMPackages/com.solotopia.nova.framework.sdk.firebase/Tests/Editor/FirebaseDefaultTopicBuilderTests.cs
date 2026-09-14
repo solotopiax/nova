@@ -31,9 +31,13 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
 
         private const string c_FirebasePluginMethodsSourcePath = "UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/FirebasePlugin.Methods.cs";
 
+        private const string c_FirebasePluginVisitorsSourcePath = "UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/FirebasePlugin.Visitors.cs";
+
         private const string c_FirebasePluginConfigSourcePath = "UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/FirebasePluginConfig.cs";
 
         private const string c_FirebaseReportNetServiceSourcePath = "UPMPackages/com.solotopia.nova.framework.sdk.firebase/Nova/Scripts/Runtime/Services/FirebaseReportNetService.cs";
+
+        private const string c_NovaFacadePrefix = "Nova" + ".";
 
         /// <summary>
         /// Firebase 推送主题公开入口应只保留 SetTopicSubscribed，避免订阅和退订暴露三套同义 API。
@@ -69,6 +73,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         {
             string source = File.ReadAllText(c_FirebaseDefaultTopicsSourcePath);
 
+            StringAssert.Contains("FrameworkManagersGroup.GetManager<ISDKManager>()", source);
+            StringAssert.DoesNotContain(c_NovaFacadePrefix + "SDK", source);
             StringAssert.Contains("GetCountryCodeAsync(ct)", source);
             StringAssert.DoesNotContain("RegionInfo.CurrentRegion.TwoLetterISORegionName", source);
             StringAssert.DoesNotContain("WaitForValidAdCountryCodeAsync", source);
@@ -141,11 +147,13 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
             StringAssert.Contains("configManager == null || !configManager.IsLoadOver", source);
             StringAssert.Contains("configManager.DevelopMode", source);
             StringAssert.Contains("DevelopMode.Debug", source);
-            StringAssert.DoesNotContain("Nova.Config.DevelopMode", source);
+            StringAssert.DoesNotContain(c_NovaFacadePrefix + "Config.DevelopMode", source);
+            StringAssert.Contains("FrameworkManagersGroup.GetManager<ILocalizationManager>()", source);
+            StringAssert.DoesNotContain(c_NovaFacadePrefix + "Localization", source);
         }
 
         /// <summary>
-        /// Topic 操作必须等待 FCM Token，避免 iOS 首次安装时在 APNs Token 就绪前调用 Firebase。
+        /// Topic 操作必须先等待 FCM Token，再调用 Firebase 订阅或退订接口。
         /// </summary>
         [Test]
         public void TopicSubscription_WaitsForFcmTokenBeforeCallingFirebase()
@@ -163,6 +171,44 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
             Assert.Greater(unsubscribeIndex, waitIndex);
             StringAssert.Contains("m_FcmTokenReadySource", methodsSource);
             StringAssert.Contains("m_FcmTokenReadySource.TrySetResult(m_TokenReceived)", methodsSource);
+        }
+
+        /// <summary>
+        /// iOS APNs Token 未就绪时应重试 Topic 操作本身，不能只依赖下一次 TokenReceived 回调。
+        /// </summary>
+        [Test]
+        public void TopicSubscription_RetriesApnsTokenNotReadyAtTopicOperationLevel()
+        {
+            string topicsSource = File.ReadAllText(c_FirebaseDefaultTopicsSourcePath);
+            string visitorsSource = File.ReadAllText(c_FirebasePluginVisitorsSourcePath);
+
+            StringAssert.Contains("c_ApnsTokenNotReadyExceptionMessage", visitorsSource);
+            StringAssert.Contains("No APNS token specified before fetching FCM Token", visitorsSource);
+            StringAssert.Contains("IsApnsTokenNotReadyException(ex)", topicsSource);
+            StringAssert.Contains("s_TopicSubscriptionApnsRetryDelays", topicsSource);
+            StringAssert.Contains("await UniTask.Delay(delay, cancellationToken: ct);", topicsSource);
+            StringAssert.Contains("TopicSubscriptionOperationResult.ApnsTokenNotReady", topicsSource);
+            StringAssert.Contains("await FirebaseMessaging.SubscribeAsync(topic);", topicsSource);
+            StringAssert.Contains("await FirebaseMessaging.UnsubscribeAsync(topic);", topicsSource);
+            StringAssert.Contains("Log.Warning(LogTag.Firebase, $\"Firebase 推送 Topic {(subscribed ? \"订阅\" : \"退订\")}等待 APNs Token", topicsSource);
+        }
+
+        /// <summary>
+        /// 默认 Topic 因 APNs Token 未就绪失败时应保留存档并安排后续补偿同步。
+        /// </summary>
+        [Test]
+        public void DefaultTopicSync_SchedulesApnsRetryAndForegroundCompensation()
+        {
+            string pluginSource = File.ReadAllText(c_FirebasePluginSourcePath);
+            string topicsSource = File.ReadAllText(c_FirebaseDefaultTopicsSourcePath);
+            string visitorsSource = File.ReadAllText(c_FirebasePluginVisitorsSourcePath);
+
+            StringAssert.Contains("m_DefaultBaseTopicApnsRetryScheduled", visitorsSource);
+            StringAssert.Contains("m_DefaultCountryTopicApnsRetryScheduled", visitorsSource);
+            StringAssert.Contains("ScheduleDefaultBaseTopicApnsRetry(preferredLanguage, ct);", topicsSource);
+            StringAssert.Contains("ScheduleDefaultCountryTopicApnsRetry(ct);", topicsSource);
+            StringAssert.Contains("await UniTask.Delay(s_DefaultTopicApnsRetryDelay, cancellationToken: ct);", topicsSource);
+            StringAssert.Contains("RequestDefaultTopicSyncOnForeground();", pluginSource);
         }
 
         /// <summary>
@@ -240,6 +286,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
             StringAssert.Contains("Async(string cmdName, string firebasePushToken, string firebaseAnalyticsInstanceId, string country, string timezoneOffset)", source);
             StringAssert.Contains("Country = country ?? string.Empty", source);
             StringAssert.Contains("TimezoneOffset = timezoneOffset ?? string.Empty", source);
+            StringAssert.Contains("FrameworkManagersGroup.GetManager<INetworkManager>()", source);
         }
 
         /// <summary>

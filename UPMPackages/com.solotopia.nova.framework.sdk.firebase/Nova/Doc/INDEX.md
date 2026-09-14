@@ -13,6 +13,7 @@
 
 ## 当前能力
 
+- 初始化门槛：SDK 初始化任务会等待 `FirebaseApp.CheckAndFixDependenciesAsync()` 完成；`IsAvailable == true` 表示 Firebase 依赖已可用且 Messaging 事件已注册
 - Analytics 事件上报：`TrackEvent(...)`
 - 用户标识与属性：`SetUserId(...)`、`SetUserProperty(...)`
 - FCM 推送：`GetTokenAsync(...)`、`OnTokenRefreshed`、`SetTopicSubscribed(...)`

@@ -57,33 +57,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_SkipPaymentInformationScreen = m_Config?.SkipPaymentInformationScreen ?? false;
             ResetRepository((ThirdPayPersistData)CreateEmptyPersistData());
             ResolveNativeCountryCode();
-
-#if UNITY_ANDROID && !UNITY_EDITOR
-            if (m_GooglePolicy == null)
-            {
-                double googleTimeout = m_Config?.GoogleApiTimeoutSeconds ?? 15d;
-                m_GooglePolicy = new ThirdPayGooglePolicyService(new ThirdPayGoogleExternalBillingClient(googleTimeout));
-            }
-
-            if (m_GooglePolicy != null)
-            {
-                try
-                {
-                    string billingCountryCode = await m_GooglePolicy.GetBillingCountryCodeAsync(ct);
-                    SetBillingCountryCode(billingCountryCode);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    // 商店地区读取失败不应阻断 ThirdPay；服务端仍可按空地区码处理。
-                    LogWarning($"读取 Google Play Billing 商店地区失败，将使用配置中的地区码：{ex.Message}");
-                }
-            }
-#endif
-
+            await InitializeGooglePolicyAsync(ct);
             ResolveAdCountryCodeAsync(CancellationToken.None).Forget();
 
             if (m_Config == null)
@@ -107,6 +81,57 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         {
             return request is IAPThirdPayRequest;
         }
+
+        /// <summary>
+        /// 初始化 Google 外链政策服务入口；非 Android 真机直接跳过，避免平台条件散落在 Store 初始化流程中。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>初始化完成任务。</returns>
+        private UniTask InitializeGooglePolicyAsync(CancellationToken ct)
+        {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            return InitializeAndroidGooglePolicyAsync(ct);
+#else
+            return UniTask.CompletedTask;
+#endif
+        }
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+        /// <summary>
+        /// Android 真机初始化 Google 外链政策服务，并尽力读取 Google Play Billing 商店国家码。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>初始化完成任务。</returns>
+        private async UniTask InitializeAndroidGooglePolicyAsync(CancellationToken ct)
+        {
+            // 测试注入的 m_GooglePolicy 会优先复用；未注入时才创建默认 Google 外链客户端。
+            if (m_GooglePolicy == null)
+            {
+                double googleTimeout = m_Config?.GoogleApiTimeoutSeconds ?? 15d;
+                m_GooglePolicy = new ThirdPayGooglePolicyService(new ThirdPayGoogleExternalBillingClient(googleTimeout));
+            }
+
+            if (m_GooglePolicy == null)
+            {
+                return;
+            }
+
+            try
+            {
+                string billingCountryCode = await m_GooglePolicy.GetBillingCountryCodeAsync(ct);
+                SetBillingCountryCode(billingCountryCode);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // 商店地区读取失败不应阻断 ThirdPay；服务端仍可按空地区码处理。
+                LogWarning($"读取 Google Play Billing 商店地区失败，将使用配置中的地区码：{ex.Message}");
+            }
+        }
+#endif
 
         /// <summary>
         /// 发起一次应用内第三方支付。
@@ -156,6 +181,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 m_LockCountryCode = string.Empty;
                 m_ProductListRequestVersion++;
                 m_ProductList = null;
+                CompleteProductListFetchAsInvalidated();
                 PrefetchProductListAsync(CancellationToken.None).Forget();
             }
 
@@ -186,6 +212,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_DebugCountryCode = NormalizeCountryCode(countryCode);
             m_ProductListRequestVersion++;
             m_ProductList = null;
+            CompleteProductListFetchAsInvalidated();
             if (!string.IsNullOrEmpty(m_GameUID))
             {
                 PrefetchProductListAsync(CancellationToken.None).Forget();
@@ -257,16 +284,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 拉取当前国家或地区可用的第三方支付商品。
-        /// </summary>
-        /// <param name="ct">取消令牌。</param>
-        /// <returns>成功取得有效商品列表时返回 true。</returns>
-        public UniTask<bool> FetchProductListAsync(CancellationToken ct)
-        {
-            return FetchProductListInternalAsync(ct);
-        }
-
-        /// <summary>
         /// 按支付表行 ID 获取已拉取的第三方商品信息。
         /// </summary>
         /// <param name="tableId">支付商品表行 ID。</param>
@@ -335,6 +352,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_OrderRepository = null;
             m_PersistData = null;
             m_ProductList = null;
+            CompleteProductListFetchAsInvalidated();
             m_DebugCountryCode = string.Empty;
             m_LockCountryCode = string.Empty;
             m_BillingCountryCode = string.Empty;

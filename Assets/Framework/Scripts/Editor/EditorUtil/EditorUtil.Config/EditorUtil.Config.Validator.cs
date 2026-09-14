@@ -8,10 +8,12 @@
  * descrip:   AppConfigs / PluginConfig 必填字段校验；返回问题列表供 ConfigWindow 弹窗展示
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using NovaFramework.Runtime;
 using UnityEditor;
+using UnityEngine;
 
 namespace NovaFramework.Editor
 {
@@ -149,6 +151,306 @@ namespace NovaFramework.Editor
                     }
 
                     return issues;
+                }
+
+                /// <summary>
+                /// 校验 ConfigMaster 完整三维矩阵的结构与分组一致性；方法只读，不会自动广播或修复数据。
+                /// </summary>
+                /// <param name="master">待检查的设计态配置。</param>
+                /// <returns>所有会导致分组取值不确定或未勾选维度不一致的错误。</returns>
+                public static IReadOnlyList<ValidationIssue> ValidateDimensionInvariants(ConfigMasterSO master)
+                {
+                    List<ValidationIssue> issues = new();
+                    if (master == null)
+                    {
+                        issues.Add(new ValidationIssue("<root>", "ConfigMaster 为空。", Severity.Error));
+                        return issues;
+                    }
+
+                    ValidateMatrixShape(master, issues);
+                    ValidateMatrixValues(master, master.AppConfigsMask, "AppConfigs", ReadAppConfig, issues);
+                    ValidateMatrixValues(master, master.PrivacyConfigsMask, "PrivacyConfigs", ReadPrivacyConfig, issues);
+                    ValidateTypedMatrixValues(master, true, issues);
+                    ValidateTypedMatrixValues(master, false, issues);
+                    ValidateOverrideKeys(master.NamespaceOverrides, master.NamespaceMask, "NamespaceOverrides", o => o.Platform, o => o.Channel, o => o.DevelopMode, issues);
+                    ValidateOverrideKeys(master.HybridEditorConfigsOverrides, master.HybridEditorConfigsMask, "HybridEditorConfigsOverrides", o => o.Platform, o => o.Channel, o => o.DevelopMode, issues);
+                    ValidateOverrideKeys(master.YooAssetEditorConfigsOverrides, master.YooAssetEditorConfigsMask, "YooAssetEditorConfigsOverrides", o => o.Platform, o => o.Channel, o => o.DevelopMode, issues);
+                    ValidateOverrideKeys(master.CDNEditorConfigsOverrides, master.CDNEditorConfigsMask, "CDNEditorConfigsOverrides", o => o.Platform, o => o.Channel, o => o.DevelopMode, issues);
+                    return issues;
+                }
+
+                /// <summary>
+                /// 将维度一致性问题格式化为可直接展示或抛出的人读文本。
+                /// </summary>
+                /// <param name="issues">维度一致性问题。</param>
+                /// <returns>包含定位路径与原因的多行文本。</returns>
+                public static string BuildDimensionInvariantMessage(IReadOnlyList<ValidationIssue> issues)
+                {
+                    StringBuilder builder = new();
+                    builder.AppendLine("配置矩阵存在不一致，为避免不同平台导出新旧混合数据，本次操作已停止：");
+                    for (int i = 0; i < issues.Count; i++)
+                        builder.AppendLine($"- {issues[i].Path}: {issues[i].Message}");
+                    return builder.ToString();
+                }
+
+                /// <summary>
+                /// 检查已有 Platform×Channel 行及各 DevelopMode 容器是否唯一且内部完整。
+                /// 不要求资产预先包含未来或尚未保存的全部枚举组合；缺少目标行仍由坐标级导出校验负责。
+                /// </summary>
+                private static void ValidateMatrixShape(ConfigMasterSO master, List<ValidationIssue> issues)
+                {
+                    HashSet<string> rows = new();
+                    IReadOnlyList<PlatformChannelEntry> entries = master.EditorEntries;
+                    for (int i = 0; i < entries.Count; i++)
+                    {
+                        PlatformChannelEntry entry = entries[i];
+                        if (entry == null)
+                        {
+                            issues.Add(new ValidationIssue($"Entries[{i}]", "矩阵行为空。", Severity.Error));
+                            continue;
+                        }
+                        string rowKey = $"{entry.Platform}|{entry.Channel}";
+                        if (!rows.Add(rowKey))
+                            issues.Add(new ValidationIssue($"Entries[{i}]", $"存在重复矩阵行 {entry.Platform}/{entry.Channel}。", Severity.Error));
+                        ValidateModeKeys(entry.AppConfigsByMode, $"Entries[{rowKey}].AppConfigsByMode", item => item.Mode, issues);
+                        ValidateModeKeys(entry.PrivacyConfigsByMode, $"Entries[{rowKey}].PrivacyConfigsByMode", item => item.Mode, issues);
+                        ValidateModeKeys(entry.SDKConfigsByMode, $"Entries[{rowKey}].SDKConfigsByMode", item => item.Mode, issues);
+                        ValidateModeKeys(entry.KitConfigsByMode, $"Entries[{rowKey}].KitConfigsByMode", item => item.Mode, issues);
+                    }
+
+                }
+
+                /// <summary>
+                /// 检查按 DevelopMode 分组的列表是否包含枚举全集且没有重复项。
+                /// </summary>
+                private static void ValidateModeKeys<T>(IReadOnlyList<T> entries, string path, Func<T, DevelopMode> getMode, List<ValidationIssue> issues)
+                {
+                    HashSet<DevelopMode> modes = new();
+                    if (entries != null)
+                    {
+                        for (int i = 0; i < entries.Count; i++)
+                        {
+                            if (entries[i] == null)
+                            {
+                                issues.Add(new ValidationIssue($"{path}[{i}]", "开发模式分组为空。", Severity.Error));
+                                continue;
+                            }
+                            DevelopMode mode = getMode(entries[i]);
+                            if (!modes.Add(mode))
+                                issues.Add(new ValidationIssue($"{path}[{i}]", $"存在重复的开发模式 {mode}。", Severity.Error));
+                        }
+                    }
+                    foreach (DevelopMode mode in Enum.GetValues(typeof(DevelopMode)))
+                    {
+                        if (!modes.Contains(mode))
+                            issues.Add(new ValidationIssue(path, $"缺少开发模式 {mode} 的配置分组。", Severity.Error));
+                    }
+                }
+
+                /// <summary>
+                /// 检查 App/Privacy 在每个逻辑组内是否保持完全一致。
+                /// </summary>
+                private static void ValidateMatrixValues(
+                    ConfigMasterSO master,
+                    PanelDimensionMask mask,
+                    string panelName,
+                    Func<PlatformChannelEntry, DevelopMode, object> read,
+                    List<ValidationIssue> issues)
+                {
+                    Dictionary<string, DimensionValue> expected = new();
+                    IReadOnlyList<PlatformChannelEntry> entries = master.EditorEntries;
+                    for (int i = 0; i < entries.Count; i++)
+                    {
+                        PlatformChannelEntry entry = entries[i];
+                        if (entry == null || entry.Platform == PlatformType.None) continue;
+                        foreach (DevelopMode mode in Enum.GetValues(typeof(DevelopMode)))
+                        {
+                            object value = read(entry, mode);
+                            if (value == null) continue;
+                            CheckGroupValue(expected, mask, panelName, entry.Platform, entry.Channel, mode, value, issues);
+                        }
+                    }
+                }
+
+                /// <summary>
+                /// 检查已启用 SDK/Kit 类型的现有实例在逻辑组内是否一致。
+                /// 未启用类型的历史残留不参与导出，因此不阻断；某坐标缺实例由该坐标的既有导出校验负责。
+                /// </summary>
+                private static void ValidateTypedMatrixValues(ConfigMasterSO master, bool sdk, List<ValidationIssue> issues)
+                {
+                    IReadOnlyList<string> enabledTypes = sdk ? master.EnabledSDKs : master.EnabledKits;
+                    HashSet<string> typeNames = enabledTypes != null
+                        ? new HashSet<string>(enabledTypes)
+                        : new HashSet<string>();
+                    List<TypedDimensionMask> masks = sdk ? master.SDKMasks : master.KitMasks;
+
+                    foreach (string typeName in typeNames)
+                    {
+                        PanelDimensionMask mask = FindTypedMask(masks, typeName);
+                        Dictionary<string, DimensionValue> expected = new();
+                        foreach (PlatformChannelEntry entry in master.EditorEntries)
+                        {
+                            if (entry == null || entry.Platform == PlatformType.None) continue;
+                            foreach (DevelopMode mode in Enum.GetValues(typeof(DevelopMode)))
+                            {
+                                object value = ReadTypedConfig(entry, mode, typeName, sdk, out int count);
+                                string path = $"{(sdk ? "SDK" : "Kit")}[{typeName}]/{entry.Platform}/{entry.Channel}/{mode}";
+                                if (count > 1)
+                                    issues.Add(new ValidationIssue(path, "同一坐标存在重复类型配置。", Severity.Error));
+                                if (value == null) continue;
+                                CheckGroupValue(expected, mask, sdk ? "SDK" : "Kit", entry.Platform, entry.Channel, mode, value, issues);
+                            }
+                        }
+                    }
+                }
+
+                /// <summary>
+                /// 比较同一逻辑组内的序列化值，发现不一致时记录源坐标和冲突坐标。
+                /// </summary>
+                private static void CheckGroupValue(
+                    IDictionary<string, DimensionValue> expected,
+                    PanelDimensionMask mask,
+                    string panelName,
+                    PlatformType platform,
+                    ChannelType channel,
+                    DevelopMode mode,
+                    object value,
+                    List<ValidationIssue> issues)
+                {
+                    string key = $"{(mask.ByPlatform ? (int)platform : -1)}|{(mask.ByChannel ? (int)channel : -1)}|{(mask.ByDevelopMode ? (int)mode : -1)}";
+                    string json = JsonUtility.ToJson(value);
+                    string coord = $"{platform}/{channel}/{mode}";
+                    if (!expected.TryGetValue(key, out DimensionValue first))
+                    {
+                        expected[key] = new DimensionValue(coord, json);
+                        return;
+                    }
+                    if (!string.Equals(first.Json, json, StringComparison.Ordinal))
+                    {
+                        issues.Add(new ValidationIssue(
+                            $"{panelName}[{key}]",
+                            $"未勾选维度本应共用同一份，但 {first.Coord} 与 {coord} 的内容不一致。请在 Config 窗口重新编辑该组，或通过维度开关明确拆分/合并。",
+                            Severity.Error));
+                    }
+                }
+
+                /// <summary>
+                /// 检查 Override 列表是否含重复逻辑键；旧资产在未勾选轴保留坐标但不造成歧义时允许继续读取。
+                /// </summary>
+                private static void ValidateOverrideKeys<T>(
+                    IReadOnlyList<T> overrides,
+                    PanelDimensionMask mask,
+                    string path,
+                    Func<T, PlatformType> getPlatform,
+                    Func<T, ChannelType> getChannel,
+                    Func<T, DevelopMode> getMode,
+                    List<ValidationIssue> issues)
+                    where T : class
+                {
+                    HashSet<string> keys = new();
+                    if (overrides == null) return;
+                    for (int i = 0; i < overrides.Count; i++)
+                    {
+                        T item = overrides[i];
+                        if (item == null)
+                        {
+                            issues.Add(new ValidationIssue($"{path}[{i}]", "Override 为空。", Severity.Error));
+                            continue;
+                        }
+                        PlatformType platform = getPlatform(item);
+                        ChannelType channel = getChannel(item);
+                        DevelopMode mode = getMode(item);
+                        string key = $"{(mask.ByPlatform ? (int)platform : -1)}|{(mask.ByChannel ? (int)channel : -1)}|{(mask.ByDevelopMode ? (int)mode : -1)}";
+                        if (!keys.Add(key))
+                            issues.Add(new ValidationIssue($"{path}[{i}]", $"存在重复逻辑组 {key}，实际取值会受列表顺序影响。", Severity.Error));
+                    }
+                }
+
+                /// <summary>
+                /// 从类型掩码列表只读取值，未配置时返回全局共用掩码且不修改资产。
+                /// </summary>
+                private static PanelDimensionMask FindTypedMask(IReadOnlyList<TypedDimensionMask> masks, string typeName)
+                {
+                    for (int i = 0; i < masks.Count; i++)
+                    {
+                        if (masks[i] != null && masks[i].TypeName == typeName) return masks[i].Mask ?? new PanelDimensionMask();
+                    }
+                    return new PanelDimensionMask();
+                }
+
+                /// <summary>
+                /// 只读查找指定模式的 AppConfigs，不补齐缺失分组。
+                /// </summary>
+                private static object ReadAppConfig(PlatformChannelEntry entry, DevelopMode mode)
+                {
+                    for (int i = 0; i < entry.AppConfigsByMode.Count; i++)
+                        if (entry.AppConfigsByMode[i] != null && entry.AppConfigsByMode[i].Mode == mode) return entry.AppConfigsByMode[i].Config;
+                    return null;
+                }
+
+                /// <summary>
+                /// 只读查找指定模式的 PrivacyConfigs，不补齐缺失分组。
+                /// </summary>
+                private static object ReadPrivacyConfig(PlatformChannelEntry entry, DevelopMode mode)
+                {
+                    for (int i = 0; i < entry.PrivacyConfigsByMode.Count; i++)
+                        if (entry.PrivacyConfigsByMode[i] != null && entry.PrivacyConfigsByMode[i].Mode == mode) return entry.PrivacyConfigsByMode[i].Config;
+                    return null;
+                }
+
+                /// <summary>
+                /// 只读查找单个坐标的 SDK/Kit 类型实例，并返回同类型出现次数。
+                /// </summary>
+                private static object ReadTypedConfig(PlatformChannelEntry entry, DevelopMode mode, string typeName, bool sdk, out int count)
+                {
+                    count = 0;
+                    object result = null;
+                    if (sdk)
+                    {
+                        for (int i = 0; i < entry.SDKConfigsByMode.Count; i++)
+                        {
+                            DevelopModeSDKEntry modeEntry = entry.SDKConfigsByMode[i];
+                            if (modeEntry == null || modeEntry.Mode != mode) continue;
+                            for (int c = 0; c < modeEntry.SDKConfigs.Count; c++)
+                            {
+                                ISDKPluginConfig config = modeEntry.SDKConfigs[c];
+                                if (config == null || config.GetType().FullName != typeName) continue;
+                                count++;
+                                result ??= config;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < entry.KitConfigsByMode.Count; i++)
+                        {
+                            DevelopModeKitEntry modeEntry = entry.KitConfigsByMode[i];
+                            if (modeEntry == null || modeEntry.Mode != mode) continue;
+                            for (int c = 0; c < modeEntry.KitConfigs.Count; c++)
+                            {
+                                IKitConfig config = modeEntry.KitConfigs[c];
+                                if (config == null || config.GetType().FullName != typeName) continue;
+                                count++;
+                                result ??= config;
+                            }
+                        }
+                    }
+                    return result;
+                }
+
+                /// <summary>
+                /// 同一逻辑组中首个坐标的序列化比较基准。
+                /// </summary>
+                private readonly struct DimensionValue
+                {
+                    public readonly string Coord;
+                    public readonly string Json;
+
+                    public DimensionValue(string coord, string json)
+                    {
+                        Coord = coord;
+                        Json = json;
+                    }
                 }
 
                 /// <summary>

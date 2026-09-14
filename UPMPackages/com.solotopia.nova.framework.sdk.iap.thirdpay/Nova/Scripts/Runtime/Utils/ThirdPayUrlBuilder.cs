@@ -69,6 +69,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public string Platform = string.Empty;
 
         /// <summary>
+        /// 当前运行渠道，来源于 Nova.Config.Channel。
+        /// </summary>
+        public string Channel = string.Empty;
+
+        /// <summary>
         /// 公共请求头应用 ID。
         /// </summary>
         public int AppId;
@@ -147,8 +152,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 { "price", payload.Price ?? string.Empty },
                 { "product_name", payload.ProductName ?? string.Empty },
                 { "country", payload.CountryCode ?? string.Empty },
-                { "order_id", payload.ClientOrderId ?? string.Empty },
+                { "client_order_id", payload.ClientOrderId ?? string.Empty },
                 { "platform", payload.Platform ?? string.Empty },
+                { "channel", payload.Channel ?? string.Empty },
                 { "is_external_browser", payload.IsExternalBrowser },
                 { "show_back_button", payload.ShowBackButton },
                 { "custom_param", customParam },

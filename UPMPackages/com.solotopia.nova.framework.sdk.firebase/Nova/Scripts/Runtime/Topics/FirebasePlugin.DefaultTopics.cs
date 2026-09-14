@@ -46,6 +46,27 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         private static readonly string s_UnspecifiedLanguageTopicFlag = LanguageMetadata.GetFlag(Language.Unspecified);
 
         /// <summary>
+        /// 单个 Topic 操作的结果。
+        /// </summary>
+        private enum TopicSubscriptionOperationResult
+        {
+            /// <summary>
+            /// Firebase Topic 操作成功。
+            /// </summary>
+            Succeeded,
+
+            /// <summary>
+            /// Firebase Topic 操作失败，且不是当前可恢复的 APNs Token 未就绪场景。
+            /// </summary>
+            Failed,
+
+            /// <summary>
+            /// Firebase iOS 原生层尚未拿到 APNs Token，当前 Topic 操作需要延后重试。
+            /// </summary>
+            ApnsTokenNotReady,
+        }
+
+        /// <summary>
         /// Firebase 初始化完成后启动默认 Topic 同步。
         /// 基础 Topic 同步任务会等待 FCM Token 就绪；语言 Topic 还需等待 Localization 发布真实当前语言后再同步。
         /// 国家 Topic 通过 AdPlugin.GetCountryCodeAsync 读取最终国家码；广告模块负责等待、超时和上次成功缓存兜底。
@@ -70,6 +91,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         private void CancelDefaultTopicSync()
         {
             UnsubscribeDefaultTopicLocalizationRefresh();
+            m_DefaultBaseTopicApnsRetryScheduled = false;
+            m_DefaultCountryTopicApnsRetryScheduled = false;
 
             if (m_DefaultTopicSyncCts == null)
             {
@@ -79,6 +102,98 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             m_DefaultTopicSyncCts.Cancel();
             m_DefaultTopicSyncCts.Dispose();
             m_DefaultTopicSyncCts = null;
+        }
+
+        /// <summary>
+        /// 应用从后台恢复前台后请求一次默认 Topic 补偿同步。
+        /// Topic 未变化时会被存档差异直接跳过。
+        /// </summary>
+        private void RequestDefaultTopicSyncOnForeground()
+        {
+#if (UNITY_IOS || UNITY_ANDROID)
+            if (!m_InitOver || m_DefaultTopicSyncCts == null)
+            {
+                return;
+            }
+
+            CancellationToken ct = m_DefaultTopicSyncCts.Token;
+            SyncDefaultBaseTopicsAsync(ct, Language.Unspecified).Forget();
+            WaitAndSyncCountryTopicAsync(ct).Forget();
+#endif
+        }
+
+        /// <summary>
+        /// 安排基础默认 Topic 在 APNs Token 后续就绪后再次同步。
+        /// </summary>
+        /// <param name="preferredLanguage">本轮基础 Topic 同步使用的语言提示。</param>
+        /// <param name="ct">默认 Topic 同步取消令牌。</param>
+        private void ScheduleDefaultBaseTopicApnsRetry(Language preferredLanguage, CancellationToken ct)
+        {
+#if (UNITY_IOS || UNITY_ANDROID)
+            if (m_DefaultBaseTopicApnsRetryScheduled || ct.IsCancellationRequested)
+            {
+                return;
+            }
+
+            m_DefaultBaseTopicApnsRetryScheduled = true;
+            RetryDefaultBaseTopicAfterApnsDelayAsync(preferredLanguage, ct).Forget();
+#endif
+        }
+
+        /// <summary>
+        /// 延迟后重新同步基础默认 Topic。
+        /// </summary>
+        /// <param name="preferredLanguage">本轮基础 Topic 同步使用的语言提示。</param>
+        /// <param name="ct">默认 Topic 同步取消令牌。</param>
+        /// <returns>异步任务。</returns>
+        private async UniTaskVoid RetryDefaultBaseTopicAfterApnsDelayAsync(Language preferredLanguage, CancellationToken ct)
+        {
+            try
+            {
+                await UniTask.Delay(s_DefaultTopicApnsRetryDelay, cancellationToken: ct);
+                m_DefaultBaseTopicApnsRetryScheduled = false;
+                await SyncDefaultBaseTopicsAsync(ct, preferredLanguage);
+            }
+            catch (OperationCanceledException)
+            {
+                m_DefaultBaseTopicApnsRetryScheduled = false;
+            }
+        }
+
+        /// <summary>
+        /// 安排国家默认 Topic 在 APNs Token 后续就绪后再次同步。
+        /// </summary>
+        /// <param name="ct">默认 Topic 同步取消令牌。</param>
+        private void ScheduleDefaultCountryTopicApnsRetry(CancellationToken ct)
+        {
+#if (UNITY_IOS || UNITY_ANDROID)
+            if (m_DefaultCountryTopicApnsRetryScheduled || ct.IsCancellationRequested)
+            {
+                return;
+            }
+
+            m_DefaultCountryTopicApnsRetryScheduled = true;
+            RetryDefaultCountryTopicAfterApnsDelayAsync(ct).Forget();
+#endif
+        }
+
+        /// <summary>
+        /// 延迟后重新解析国家码并同步国家默认 Topic。
+        /// </summary>
+        /// <param name="ct">默认 Topic 同步取消令牌。</param>
+        /// <returns>异步任务。</returns>
+        private async UniTaskVoid RetryDefaultCountryTopicAfterApnsDelayAsync(CancellationToken ct)
+        {
+            try
+            {
+                await UniTask.Delay(s_DefaultTopicApnsRetryDelay, cancellationToken: ct);
+                m_DefaultCountryTopicApnsRetryScheduled = false;
+                await WaitAndSyncCountryTopicAsync(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                m_DefaultCountryTopicApnsRetryScheduled = false;
+            }
         }
 
         /// <summary>
@@ -137,7 +252,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// 若持久化可用，则只处理旧状态和当前状态的差异；语言未就绪时保留旧语言 Topic，全部操作成功后才覆盖保存当前状态。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
-        /// <param name="preferredLanguage">事件传入的已就绪语言；为 Unspecified 时从 Nova.Localization 当前状态解析。</param>
+        /// <param name="preferredLanguage">事件传入的已就绪语言；为 Unspecified 时从 Localization Manager 当前状态解析。</param>
         /// <returns>异步任务。</returns>
         private async UniTask SyncDefaultBaseTopicsAsync(CancellationToken ct, Language preferredLanguage)
         {
@@ -161,10 +276,15 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                     return;
                 }
 
-                bool success = await ApplyTopicDiffAsync(diff, ct);
-                if (!success)
+                TopicSubscriptionOperationResult result = await ApplyTopicDiffAsync(diff, ct);
+                if (result != TopicSubscriptionOperationResult.Succeeded)
                 {
                     Log.Warning(LogTag.Firebase, "默认基础推送 Topic 同步失败，本次不更新存档。");
+                    if (result == TopicSubscriptionOperationResult.ApnsTokenNotReady)
+                    {
+                        ScheduleDefaultBaseTopicApnsRetry(preferredLanguage, ct);
+                    }
+
                     return;
                 }
 
@@ -216,13 +336,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// <returns>待使用的国家码；不可用时返回空字符串。</returns>
         private async UniTask<string> ResolveFirebaseCountryCodeAsync(CancellationToken ct)
         {
-            if (Nova.SDK == null || Nova.SDK.SDKManager == null)
+            ISDKManager sdkManager = FrameworkManagersGroup.GetManager<ISDKManager>();
+            if (sdkManager == null)
             {
                 return string.Empty;
             }
 
-            await Nova.SDK.SDKManager.WaitForInitializedAsync(ct);
-            if (!Nova.SDK.TryGet<IAdPlugin>(out IAdPlugin adPlugin))
+            await sdkManager.WaitForInitializedAsync(ct);
+            if (!sdkManager.TryGet<IAdPlugin>(out IAdPlugin adPlugin))
             {
                 Log.Debug(LogTag.Firebase, "广告插件不可用，默认国家 Topic 和 Firebase 登录上报国家码将使用空字符串。");
                 return string.Empty;
@@ -262,10 +383,15 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             string[] oldTopics = string.IsNullOrEmpty(oldState?.Topic) ? Array.Empty<string>() : new[] { oldState.Topic };
             string[] currentTopics = new[] { currentState.Topic };
             FirebaseTopicSubscriptionDiff diff = FirebaseDefaultTopicBuilder.BuildTopicDiff(oldTopics, currentTopics);
-            bool success = await ApplyTopicDiffAsync(diff, ct);
-            if (!success)
+            TopicSubscriptionOperationResult result = await ApplyTopicDiffAsync(diff, ct);
+            if (result != TopicSubscriptionOperationResult.Succeeded)
             {
                 Log.Warning(LogTag.Firebase, "默认国家推送 Topic 同步失败，本次不更新存档。");
+                if (result == TopicSubscriptionOperationResult.ApnsTokenNotReady)
+                {
+                    ScheduleDefaultCountryTopicApnsRetry(ct);
+                }
+
                 return;
             }
 
@@ -274,10 +400,10 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
         /// <summary>
         /// 构建当前基础默认 Topic 状态。
-        /// 语言来自已就绪的 Nova.Localization；未就绪时沿用旧存档语言，避免启动早期误退订旧语言 Topic。
+        /// 语言来自已就绪的 Localization Manager；未就绪时沿用旧存档语言，避免启动早期误退订旧语言 Topic。
         /// </summary>
         /// <param name="oldState">上一次成功保存的基础 Topic 状态。</param>
-        /// <param name="preferredLanguage">事件传入的已就绪语言；为 Unspecified 时从 Nova.Localization 当前状态解析。</param>
+        /// <param name="preferredLanguage">事件传入的已就绪语言；为 Unspecified 时从 Localization Manager 当前状态解析。</param>
         /// <returns>当前基础默认 Topic 状态。</returns>
         private static FirebaseTopicSubscriptionState BuildCurrentBaseTopicState(
             FirebaseTopicSubscriptionState oldState,
@@ -302,7 +428,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// 尝试解析默认语言 Topic 使用的语言标记。
         /// Localization 只在当前语言初始化或切换完成后才提供真实语言，Unspecified 不会进入 Topic。
         /// </summary>
-        /// <param name="preferredLanguage">事件传入的已就绪语言；为 Unspecified 时从 Nova.Localization 当前状态解析。</param>
+        /// <param name="preferredLanguage">事件传入的已就绪语言；为 Unspecified 时从 Localization Manager 当前状态解析。</param>
         /// <param name="language">解析后的语言标记。</param>
         /// <returns>语言已就绪且存在有效标记时返回 true。</returns>
         private static bool TryResolveDefaultTopicLanguage(Language preferredLanguage, out string language)
@@ -311,12 +437,13 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             Language currentLanguage = preferredLanguage;
             if (currentLanguage == Language.Unspecified)
             {
-                if (Nova.Localization == null)
+                ILocalizationManager localizationManager = FrameworkManagersGroup.GetManager<ILocalizationManager>();
+                if (localizationManager == null)
                 {
                     return false;
                 }
 
-                currentLanguage = Nova.Localization.Language;
+                currentLanguage = localizationManager.Language;
             }
 
             if (currentLanguage == Language.Unspecified)
@@ -418,85 +545,128 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
         /// <summary>
         /// 应用 Topic 差异。
-        /// 先退订旧 Topic，再订阅新 Topic；任一步失败都会返回 false，调用方不得覆盖持久化状态。
+        /// 先退订旧 Topic，再订阅新 Topic；任一步失败都会返回失败结果，调用方不得覆盖持久化状态。
         /// </summary>
         /// <param name="diff">Topic 订阅差异。</param>
         /// <param name="ct">取消令牌。</param>
-        /// <returns>全部操作成功返回 true，否则返回 false。</returns>
-        private async UniTask<bool> ApplyTopicDiffAsync(FirebaseTopicSubscriptionDiff diff, CancellationToken ct)
+        /// <returns>全部操作成功返回 Succeeded，否则返回失败原因。</returns>
+        private async UniTask<TopicSubscriptionOperationResult> ApplyTopicDiffAsync(FirebaseTopicSubscriptionDiff diff, CancellationToken ct)
         {
             for (int i = 0; i < diff.UnsubscribeTopics.Count; i++)
             {
-                if (!await SetTopicSubscriptionInternalAsync(diff.UnsubscribeTopics[i], false, ct))
+                TopicSubscriptionOperationResult result =
+                    await SetTopicSubscriptionInternalAsync(diff.UnsubscribeTopics[i], false, ct);
+                if (result != TopicSubscriptionOperationResult.Succeeded)
                 {
-                    return false;
+                    return result;
                 }
             }
 
             for (int i = 0; i < diff.SubscribeTopics.Count; i++)
             {
-                if (!await SetTopicSubscriptionInternalAsync(diff.SubscribeTopics[i], true, ct))
+                TopicSubscriptionOperationResult result =
+                    await SetTopicSubscriptionInternalAsync(diff.SubscribeTopics[i], true, ct);
+                if (result != TopicSubscriptionOperationResult.Succeeded)
                 {
-                    return false;
+                    return result;
                 }
             }
 
-            return true;
+            return TopicSubscriptionOperationResult.Succeeded;
         }
 
         /// <summary>
         /// 执行单个 Firebase Topic 的订阅或退订操作。
-        /// 该方法会观察 Firebase 返回的 Task，失败时记录错误并返回 false。
+        /// 该方法会观察 Firebase 返回的 Task，APNs Token 未就绪时做有界重试，其他失败记录错误。
         /// </summary>
         /// <param name="topic">完整 Firebase Topic。</param>
         /// <param name="subscribed">true 表示订阅，false 表示退订。</param>
         /// <param name="ct">取消令牌。</param>
-        /// <returns>操作成功返回 true，否则返回 false。</returns>
-        private async UniTask<bool> SetTopicSubscriptionInternalAsync(string topic, bool subscribed, CancellationToken ct)
+        /// <returns>Topic 操作结果。</returns>
+        private async UniTask<TopicSubscriptionOperationResult> SetTopicSubscriptionInternalAsync(
+            string topic,
+            bool subscribed,
+            CancellationToken ct)
         {
             if (string.IsNullOrWhiteSpace(topic))
             {
                 Log.Warning(LogTag.Firebase, "Firebase 推送 Topic 为空，订阅操作已跳过。");
-                return false;
+                return TopicSubscriptionOperationResult.Failed;
             }
 
             if (!m_InitOver)
             {
                 Log.Warning(LogTag.Firebase, $"Firebase 尚未初始化，无法{(subscribed ? "订阅" : "退订")}推送 Topic：{topic}。");
-                return false;
+                return TopicSubscriptionOperationResult.Failed;
             }
 
-            try
+            for (int attempt = 0; ; attempt++)
             {
-                ct.ThrowIfCancellationRequested();
+                try
+                {
+                    ct.ThrowIfCancellationRequested();
 #if (UNITY_IOS || UNITY_ANDROID)
-                await WaitForFcmTokenAsync(ct);
+                    await WaitForFcmTokenAsync(ct);
 #endif
 #if (UNITY_IOS || UNITY_ANDROID)
-                if (subscribed)
-                {
-                    await FirebaseMessaging.SubscribeAsync(topic);
-                    Log.Debug(LogTag.Firebase, $"已订阅推送 Topic：{topic}。");
-                }
-                else
-                {
-                    await FirebaseMessaging.UnsubscribeAsync(topic);
-                    Log.Debug(LogTag.Firebase, $"已退订推送 Topic：{topic}。");
-                }
+                    if (subscribed)
+                    {
+                        await FirebaseMessaging.SubscribeAsync(topic);
+                        Log.Debug(LogTag.Firebase, $"已订阅推送 Topic：{topic}。");
+                    }
+                    else
+                    {
+                        await FirebaseMessaging.UnsubscribeAsync(topic);
+                        Log.Debug(LogTag.Firebase, $"已退订推送 Topic：{topic}。");
+                    }
 #else
-                Log.Debug(LogTag.Firebase, $"当前平台不执行 Firebase 推送 Topic 操作：{topic}。");
+                    Log.Debug(LogTag.Firebase, $"当前平台不执行 Firebase 推送 Topic 操作：{topic}。");
 #endif
-                return true;
+                    return TopicSubscriptionOperationResult.Succeeded;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex) when (IsApnsTokenNotReadyException(ex))
+                {
+                    if (attempt >= s_TopicSubscriptionApnsRetryDelays.Length)
+                    {
+                        Log.Warning(LogTag.Firebase, $"Firebase 推送 Topic {(subscribed ? "订阅" : "退订")}等待 APNs Token 超时，本次操作未完成，等待后续同步或业务再次调用重试：{topic}，{ex.Message}");
+                        return TopicSubscriptionOperationResult.ApnsTokenNotReady;
+                    }
+
+                    TimeSpan delay = s_TopicSubscriptionApnsRetryDelays[attempt];
+                    Log.Warning(LogTag.Firebase, $"Firebase 推送 Topic {(subscribed ? "订阅" : "退订")}等待 APNs Token 就绪后重试：{topic}，第 {attempt + 1}/{s_TopicSubscriptionApnsRetryDelays.Length} 次，延迟 {delay.TotalSeconds:0} 秒。异常：{ex.Message}");
+                    await UniTask.Delay(delay, cancellationToken: ct);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(LogTag.Firebase, $"Firebase 推送 Topic {(subscribed ? "订阅" : "退订")}失败：{topic}，{ex}");
+                    return TopicSubscriptionOperationResult.Failed;
+                }
             }
-            catch (OperationCanceledException)
+        }
+
+        /// <summary>
+        /// 判断异常是否为 Firebase iOS 原生层 APNs Token 尚未就绪。
+        /// </summary>
+        /// <param name="ex">待判断异常。</param>
+        /// <returns>APNs Token 未就绪返回 true。</returns>
+        private static bool IsApnsTokenNotReadyException(Exception ex)
+        {
+            while (ex != null)
             {
-                throw;
+                if (!string.IsNullOrEmpty(ex.Message) &&
+                    ex.Message.IndexOf(c_ApnsTokenNotReadyExceptionMessage, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+
+                ex = ex.InnerException;
             }
-            catch (Exception ex)
-            {
-                Log.Error(LogTag.Firebase, $"Firebase 推送 Topic {(subscribed ? "订阅" : "退订")}失败：{topic}，{ex}");
-                return false;
-            }
+
+            return false;
         }
     }
 }

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.6.28] - 2026-09-14
+
+### Fixed
+
+- `SDKComponent.InitializeTask` 改用多等待者共享完成源，修复初始化尚未结束时多个调用方并发等待会抛出 `Already continuation registered` 的问题，同时保持初始化只执行一次及完成结果可重复等待。
+- ConfigWindow 的未勾选维度会在普通字段编辑时立即广播；勾选或取消维度会原子投影整个矩阵的全部逻辑组，新增枚举行按各面板 Mask 继承既有逻辑组，保存仅校验并完整落盘 WorkingCopy，Exporter 同步阻断同组不一致，避免 Android 与 iOS 等不同物理格混入新旧配置；保存门禁弹窗延迟到 GUI 绘制结束后展示。
+
 ## [0.6.27] - 2026-09-04
 
 ### Changed

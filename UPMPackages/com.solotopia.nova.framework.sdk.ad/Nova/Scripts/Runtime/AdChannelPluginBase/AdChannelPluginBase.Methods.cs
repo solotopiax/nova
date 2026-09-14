@@ -252,6 +252,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
                 return;
             }
             u.State = AdUnitState.Loading;
+            TrackAdRequest(u.Format, u.PlacementId, AdRequestReason.Retry, u.RequestCustomProps);
             await InvokeOnRequestSafeAsync(u, u.Format, ct);
         }
 
@@ -290,6 +291,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             }
             u.RetryCount = 0;
             u.State = AdUnitState.Loading;
+            TrackAdRequest(u.Format, u.PlacementId, AdRequestReason.Retry, u.RequestCustomProps);
             await InvokeOnRequestSafeAsync(u, u.Format, ct);
         }
 

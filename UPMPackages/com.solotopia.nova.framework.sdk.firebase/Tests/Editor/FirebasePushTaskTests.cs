@@ -39,6 +39,21 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         private const string c_FirebasePushTaskNetServiceSourcePath = c_ServicesFolder + "FirebasePushTaskNetService.cs";
         private const string c_FirebasePluginPushTasksSourcePath = c_PushTasksFolder + "FirebasePlugin.PushTasks.cs";
         private const string c_FirebaseEditorDestroyFixSourcePath = c_EditorFolder + "FirebaseEditorDestroyFix.cs";
+        private const string c_NovaFacadePrefix = "Nova" + ".";
+
+        /// <summary>
+        /// Firebase Runtime 包内代码不应使用 Nova 静态门面，内部跨模块访问统一走 Manager 接口。
+        /// </summary>
+        [Test]
+        public void FirebaseRuntimeCode_DoesNotUseNovaStaticFacade()
+        {
+            string[] runtimeFiles = Directory.GetFiles(c_RuntimeFolder, "*.cs", SearchOption.AllDirectories);
+            foreach (string path in runtimeFiles)
+            {
+                string source = File.ReadAllText(path);
+                StringAssert.DoesNotContain(c_NovaFacadePrefix, source, path);
+            }
+        }
 
         /// <summary>
         /// FCM notification click tracking should reuse the generic track plugin and keep the template id payload.
@@ -86,21 +101,86 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
         }
 
         /// <summary>
-        /// 验证 Firebase 通知权限请求由配置开关控制，默认会在初始化成功后走 Native 门面请求。
+        /// 验证 Firebase 通知权限请求由配置开关控制，默认会在 SDK 全部初始化完成并前景稳定后走 Native 门面请求。
         /// </summary>
         [Test]
         public void FirebasePlugin_RequestsNotificationPermissionWhenConfigEnabled()
         {
             string methodsSource = File.ReadAllText(c_FirebasePluginMethodsSourcePath);
+            string visitorsSource = File.ReadAllText(c_FirebasePluginVisitorsSourcePath);
 
             int initOverIndex = methodsSource.IndexOf("m_InitOver = true;", StringComparison.Ordinal);
-            int requestIndex = methodsSource.IndexOf("RequestDefaultNotificationPermissionIfEnabled().Forget();", initOverIndex, StringComparison.Ordinal);
+            int scheduleIndex = methodsSource.IndexOf("ScheduleDefaultNotificationPermissionIfEnabled();", initOverIndex, StringComparison.Ordinal);
+            int waitIndex = methodsSource.IndexOf("WaitForInitializedAsync(ct)", StringComparison.Ordinal);
+            int requestIndex = methodsSource.IndexOf("RequestNotificationPermissionAsync(ct: ct)", waitIndex, StringComparison.Ordinal);
 
             Assert.GreaterOrEqual(initOverIndex, 0);
-            Assert.Greater(requestIndex, initOverIndex);
+            Assert.Greater(scheduleIndex, initOverIndex);
+            Assert.GreaterOrEqual(waitIndex, 0);
+            Assert.Greater(requestIndex, waitIndex);
             StringAssert.Contains("!m_RuntimeConfig.AutoRequestNotificationPermission", methodsSource);
             StringAssert.Contains("AutoRequestNotificationPermission", methodsSource);
-            StringAssert.Contains("Nova.Native.RequestNotificationPermissionAsync()", methodsSource);
+            StringAssert.Contains("RequestDefaultNotificationPermissionAfterSdkInitializedAsync", methodsSource);
+            StringAssert.Contains("FrameworkManagersGroup.GetManager<ISDKManager>()", methodsSource);
+            StringAssert.Contains("FrameworkManagersGroup.GetManager<INativeManager>()", methodsSource);
+            StringAssert.Contains("UniTask.SwitchToMainThread(ct)", methodsSource);
+            StringAssert.Contains("UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate, ct)", methodsSource);
+            StringAssert.Contains("UniTask.DelayFrame(1, PlayerLoopTiming.LastPostLateUpdate, ct)", methodsSource);
+            StringAssert.Contains("m_IsDisposed || !m_InitOver || !Application.isFocused", methodsSource);
+            StringAssert.Contains("CancelDefaultNotificationPermissionRequest();", methodsSource);
+            StringAssert.Contains("m_NotificationPermissionRequestCts", visitorsSource);
+            StringAssert.DoesNotContain("RequestDefaultNotificationPermissionIfEnabled().Forget();", methodsSource);
+            StringAssert.DoesNotContain(c_NovaFacadePrefix + "SDK", methodsSource);
+            StringAssert.DoesNotContain(c_NovaFacadePrefix + "Native", methodsSource);
+        }
+
+        /// <summary>
+        /// Firebase 初始化必须等待依赖检查完成后才返回，避免 SDKPluginBase 过早把插件标记为可用。
+        /// </summary>
+        [Test]
+        public void FirebasePlugin_AwaitsDependencyCheckBeforeInitialized()
+        {
+            string methodsSource = File.ReadAllText(c_FirebasePluginMethodsSourcePath);
+
+            StringAssert.Contains("protected override async UniTask OnInitializeAsync", methodsSource);
+            StringAssert.Contains(".CheckAndFixDependenciesAsync()", methodsSource);
+            StringAssert.Contains(".AsUniTask()", methodsSource);
+            StringAssert.Contains(".AttachExternalCancellation(ct)", methodsSource);
+            StringAssert.Contains("throw new InvalidOperationException", methodsSource);
+            StringAssert.DoesNotContain("TaskContinueWithOnMainThread", methodsSource);
+
+            int dependencyStatusIndex = methodsSource.IndexOf("dependencyStatus != Firebase.DependencyStatus.Available", StringComparison.Ordinal);
+            int subscribeIndex = methodsSource.IndexOf("FirebaseMessaging.TokenReceived += OnTokenReceived;", StringComparison.Ordinal);
+            int initOverIndex = methodsSource.IndexOf("m_InitOver = true;", StringComparison.Ordinal);
+
+            Assert.GreaterOrEqual(dependencyStatusIndex, 0);
+            Assert.Greater(subscribeIndex, dependencyStatusIndex);
+            Assert.Greater(initOverIndex, subscribeIndex);
+        }
+
+        /// <summary>
+        /// 释放时只在 FirebaseMessaging 事件订阅成功后退订，避免依赖检查完成前触发 FirebaseMessaging 静态初始化。
+        /// </summary>
+        [Test]
+        public void FirebasePlugin_DisposeOnlyTouchesMessagingAfterSubscription()
+        {
+            string visitorsSource = File.ReadAllText(c_FirebasePluginVisitorsSourcePath);
+            string methodsSource = File.ReadAllText(c_FirebasePluginMethodsSourcePath);
+
+            StringAssert.Contains("m_IsDisposed", visitorsSource);
+            StringAssert.Contains("m_FirebaseMessagingSubscribed", visitorsSource);
+
+            int subscribeIndex = methodsSource.IndexOf("FirebaseMessaging.TokenReceived += OnTokenReceived;", StringComparison.Ordinal);
+            int subscribedFlagIndex = methodsSource.IndexOf("m_FirebaseMessagingSubscribed = true;", subscribeIndex, StringComparison.Ordinal);
+            int cleanupIndex = methodsSource.IndexOf("private void CleanupRuntimeState()", StringComparison.Ordinal);
+            int guardIndex = methodsSource.IndexOf("if (m_FirebaseMessagingSubscribed)", cleanupIndex, StringComparison.Ordinal);
+            int unsubscribeIndex = methodsSource.IndexOf("FirebaseMessaging.TokenReceived -= OnTokenReceived;", guardIndex, StringComparison.Ordinal);
+
+            Assert.GreaterOrEqual(subscribeIndex, 0);
+            Assert.Greater(subscribedFlagIndex, subscribeIndex);
+            Assert.GreaterOrEqual(cleanupIndex, 0);
+            Assert.Greater(guardIndex, cleanupIndex);
+            Assert.Greater(unsubscribeIndex, guardIndex);
         }
 
         /// <summary>
@@ -277,6 +357,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
             StringAssert.Contains("BuildPushTaskMessage", source);
             StringAssert.Contains("PbNetCreatePushTasksResp.Parser", source);
             StringAssert.Contains("NetService.SendAsync", source);
+            StringAssert.Contains("FrameworkManagersGroup.GetManager<INetworkManager>()", source);
             StringAssert.DoesNotContain("PbPushTaskResult", source);
         }
 
@@ -321,12 +402,12 @@ namespace NovaFramework.SDK.FirebasePlugin.Tests
             string dispatcherSource = File.ReadAllText(c_FirebasePushTaskDispatcherSourcePath);
             string repositorySource = File.ReadAllText(c_FirebasePushTaskRepositorySourcePath);
 
-            StringAssert.Contains("Log.Info(LogTag.Firebase", netServiceSource);
+            StringAssert.Contains("Log.Debug(LogTag.Firebase", netServiceSource);
             StringAssert.Contains("Firebase push task 准备发送协议", netServiceSource);
             StringAssert.Contains("PushCmdName={cmdName}", netServiceSource);
             StringAssert.Contains("TaskCount={body.Tasks.Count}", netServiceSource);
 
-            StringAssert.Contains("Log.Info(LogTag.Firebase", dispatcherSource);
+            StringAssert.Contains("Log.Debug(LogTag.Firebase", dispatcherSource);
             StringAssert.Contains("Firebase push task 协议响应成功", dispatcherSource);
             StringAssert.Contains("RemoveSucceededSnapshotAsync(snapshot, ct)", dispatcherSource);
             StringAssert.Contains("Firebase push task 已删除发送成功缓存", dispatcherSource);

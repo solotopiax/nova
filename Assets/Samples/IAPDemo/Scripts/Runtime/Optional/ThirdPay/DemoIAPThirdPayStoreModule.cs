@@ -79,7 +79,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 第三方支付 Tab 被选中时重新请求商品。
+        /// 第三方支付 Tab 被选中时刷新当前商品快照展示。
         /// </summary>
         /// <returns>刷新结束的异步任务。</returns>
         public UniTask OnSelectedAsync()
@@ -88,10 +88,10 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 刷新服务端第三方支付商品和当前账号资格。
+        /// 刷新当前已预取的第三方支付商品快照和账号资格。
         /// </summary>
         /// <returns>异步任务。</returns>
-        public async UniTask RefreshAsync()
+        public UniTask RefreshAsync()
         {
             var status = new ThirdPayStatus
             {
@@ -109,7 +109,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             {
                 m_Panel?.SetStatusText(status.ToDisplayText());
                 m_Bridge?.AppendFeedback("当前 IAP 插件未暴露 ThirdPay 能力。", FeedbackLevel.Warn);
-                return;
+                return UniTask.CompletedTask;
             }
 
             try
@@ -118,30 +118,25 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                 status.GooglePolicy = Application.platform == RuntimePlatform.Android
                     ? (capability.IsPaymentInformationScreenSkipped ? "跳过信息页，直接进入 ThirdPay" : "不跳过，执行政策校验")
                     : "跳过（非 Android）";
-                bool productReady = await capability.FetchProductListAsync(m_Bridge.CancellationToken);
-                status.Eligible = productReady;
-                if (productReady)
+                status.Eligible = capability.HasProducts();
+                if (status.Eligible)
                 {
                     RefreshProductPrices(capability);
                     m_Panel?.RefreshProductTitles();
-                    m_Bridge.AppendFeedback("第三方支付资格刷新完成：" + (status.Eligible ? "具备资格" : "暂无资格"),
-                        status.Eligible ? FeedbackLevel.Success : FeedbackLevel.Warn);
+                    m_Bridge.AppendFeedback("第三方支付商品快照刷新完成：具备资格", FeedbackLevel.Success);
                 }
                 else
                 {
-                    m_Bridge.AppendFeedback("第三方支付商品刷新失败，已保留上次价格。", FeedbackLevel.Error);
+                    m_Bridge.AppendFeedback("第三方支付商品尚未就绪，等待登录或国家切换后的内部预取。", FeedbackLevel.Warn);
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                m_Bridge.AppendFeedback("第三方支付资格刷新已取消。", FeedbackLevel.Warn);
             }
             catch (Exception exception)
             {
-                m_Bridge.AppendFeedback("第三方支付资格刷新失败：" + exception.Message, FeedbackLevel.Error);
+                m_Bridge.AppendFeedback("第三方支付商品快照刷新失败：" + exception.Message, FeedbackLevel.Error);
             }
 
             m_Panel?.SetStatusText(status.ToDisplayText());
+            return UniTask.CompletedTask;
         }
 
         /// <summary>
@@ -187,7 +182,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
 
             capability.SetDebugCountryCode(countryCode);
             m_Bridge.AppendFeedback(
-                "ThirdPay 调试国家已设置为：" + (string.IsNullOrEmpty(countryCode) ? "Auto" : countryCode),
+                "ThirdPay 调试国家已设置为：" + (string.IsNullOrEmpty(countryCode) ? "Auto" : countryCode) + "，商品列表将由 Store 内部重新预取。",
                 FeedbackLevel.Info);
         }
 

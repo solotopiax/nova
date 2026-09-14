@@ -12,20 +12,13 @@ using UnityEngine;
 
 namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 {
-   internal sealed class FacebookAdSetting
+    internal sealed class FacebookAdSetting
     {
 #if NOVA_APPLOVIN_MAX
 
         public static void Initialize()
-        
         {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-#if UNITY_IOS
-            if (MaxSdkUtils.CompareVersions(UnityEngine.iOS.Device.systemVersion, "14.5") != MaxSdkUtils.VersionComparisonResult.Lesser)
-            {
-                FacebookAdSetting.SetAdvertiserTrackingEnabled(true);
-            }
-#endif
             FacebookAdSetting.SetDataProcessingOptions(new string[] { "LDU" }, 0, 0);
 #endif
         }
@@ -43,7 +36,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 #if UNITY_IOS
             FBAdSettingsBridgeSetDetailedDataProcessingOptions(dataProcessingOptions, dataProcessingOptions.Length, country, state);
 #endif
-            
+
 #if UNITY_ANDROID
             AndroidJavaClass adSettings = new AndroidJavaClass("com.facebook.ads.AdSettings");
             adSettings.CallStatic("setDataProcessingOptions", (object)dataProcessingOptions, country, state);

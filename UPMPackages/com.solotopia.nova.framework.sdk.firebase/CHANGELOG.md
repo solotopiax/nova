@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-09-14
+
+### Changed
+
+- Firebase 插件内部访问 SDK、Native、Network、Localization 模块时改为通过 Manager 接口获取，避免 SDK 包运行时代码依赖 Nova 静态门面。
+
+- Firebase push task 运行时过程日志从 `Info` 降为 `Debug`，避免包内产生常规信息级日志。
+
+### Fixed
+
+- Firebase topic 订阅/退订在 iOS APNs Token 尚未就绪时改为对当前 topic 操作做有界延迟重试，并在默认 topic 同步失败时保留旧存档等待后续补偿同步，避免启动早期退订旧 `top_*` topic 直接上报异常。
+
+- `AutoRequestNotificationPermission` 自动权限请求改为等待 SDK 全部插件初始化完成并延迟到启动前景稳定后执行，避免启动早期系统权限 Activity 打断 Unity 窗口生命周期导致游戏卡住。
+
+- Firebase 初始化现在会等待依赖检查完成后才进入可用状态，并且释放时仅在 Messaging 事件已订阅后退订，避免快速启动/杀进程时触发 Firebase 依赖检查竞态异常。
+
 ## [0.1.13] - 2026-09-04
 
 ### Changed

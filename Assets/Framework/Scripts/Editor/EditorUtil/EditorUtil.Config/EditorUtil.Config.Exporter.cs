@@ -70,6 +70,9 @@ namespace NovaFramework.Editor
                     bool saveOnlyTouchedAssets)
                 {
                     if (master == null) return null;
+                    IReadOnlyList<Validator.ValidationIssue> invariantIssues = Validator.ValidateDimensionInvariants(master);
+                    if (invariantIssues.Count > 0)
+                        throw new System.InvalidOperationException(Validator.BuildDimensionInvariantMessage(invariantIssues));
                     if (!master.TryGetEntry(platform, channel, out var entry)) return null;
 
                     // 先校验两类业务 DLL 的职责边界，失败时不写 YooAssetSettings 或 Runtime 资产。

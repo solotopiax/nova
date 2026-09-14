@@ -164,14 +164,14 @@
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.unityads.android": {
-      "version": "4190001.0.0",
+      "version": "4200000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
     "com.applovin.mediation.adapters.unityads.ios": {
-      "version": "4190001.0.0",
+      "version": "4200000.0.0",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
@@ -507,8 +507,8 @@
         "com.applovin.mediation.adapters.mintegral.ios": "801040000.0.0",
         "com.applovin.mediation.adapters.moloco.android": "4110000.0.0",
         "com.applovin.mediation.adapters.moloco.ios": "4090000.0.0",
-        "com.applovin.mediation.adapters.unityads.android": "4190001.0.0",
-        "com.applovin.mediation.adapters.unityads.ios": "4190001.0.0",
+        "com.applovin.mediation.adapters.unityads.android": "4200000.0.0",
+        "com.applovin.mediation.adapters.unityads.ios": "4200000.0.0",
         "com.applovin.mediation.adapters.vungle.android": "7070200.0.0",
         "com.applovin.mediation.adapters.vungle.ios": "7070200.0.0",
         "com.applovin.mediation.adapters.yandex.android": "8010000.0.0"

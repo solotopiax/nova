@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using NovaFramework.Runtime;
 using UnityEditor;
+using UnityEngine;
 
 namespace NovaFramework.Editor
 {
@@ -28,7 +29,7 @@ namespace NovaFramework.Editor
             public static class StructureGuard
             {
                 /// <summary>
-                /// 同步 ConfigMasterSO 矩阵与当前枚举成员：新增成员补空行，已废弃成员移除行；完成后 SetDirty。
+                /// 同步 ConfigMasterSO 矩阵与当前枚举成员：新增成员按面板维度掩码继承既有逻辑组，已废弃成员移除行；完成后 SetDirty。
                 /// <para>忽略 PlatformType.None；ChannelType.None 是合法渠道坐标；重复组合只保留第一条。</para>
                 /// </summary>
                 /// <param name="master">待同步的 ConfigMasterSO 实例。</param>
@@ -51,6 +52,7 @@ namespace NovaFramework.Editor
 
                     var entries = master.EditorEntries;
                     HashSet<(PlatformType, ChannelType)> present = new();
+                    List<PlatformChannelEntry> existingEntries = new();
                     for (int i = entries.Count - 1; i >= 0; i--)
                     {
                         var e = entries[i];
@@ -61,96 +63,191 @@ namespace NovaFramework.Editor
                             continue;
                         }
                         present.Add(key);
+                        existingEntries.Add(e);
                     }
 
+                    List<PlatformChannelEntry> addedEntries = new();
                     foreach (var key in wanted)
                     {
                         if (present.Contains(key)) continue;
-                        master.EditorAddEntry(new PlatformChannelEntry { Platform = key.Item1, Channel = key.Item2 });
+                        PlatformChannelEntry added = new() { Platform = key.Item1, Channel = key.Item2 };
+                        master.EditorAddEntry(added);
+                        addedEntries.Add(added);
                     }
 
-                    // 若 AppConfigsMask 全局唯一（IsGlobal=true），将第一个有效格的 AppConfigs 广播到所有新增格，
-                    // 确保新格不以零值破坏 IsGlobal 一致性语义。
-                    if (master.AppConfigsMask.IsGlobal)
-                    {
-                        AppConfigs seedDebug = null;
-                        AppConfigs seedRelease = null;
-                        var allEntries = master.EditorEntries;
-                        for (int i = 0; i < allEntries.Count; i++)
-                        {
-                            if (allEntries[i].Platform == PlatformType.None) continue;
-                            AppConfigs cd = allEntries[i].GetAppConfigs(DevelopMode.Debug);
-                            AppConfigs cr = allEntries[i].GetAppConfigs(DevelopMode.Release);
-                            // 取第一个非空字段格作为种子（AppID 非空说明该格已编辑过）
-                            if (!string.IsNullOrEmpty(cd?.AppID) || !string.IsNullOrEmpty(cd?.AppAesKey))
-                            {
-                                seedDebug = cd;
-                                seedRelease = cr;
-                                break;
-                            }
-                        }
-                        if (seedDebug != null)
-                        {
-                            for (int i = 0; i < allEntries.Count; i++)
-                            {
-                                if (allEntries[i].Platform == PlatformType.None) continue;
-                                if (present.Contains((allEntries[i].Platform, allEntries[i].Channel))) continue; // 跳过原有格，只处理新增格
-                                AppConfigs dst = allEntries[i].GetAppConfigs(DevelopMode.Debug);
-                                if (dst != null && string.IsNullOrEmpty(dst.AppID))
-                                {
-                                    dst.AppID = seedDebug.AppID;
-                                    dst.AppAesKey = seedDebug.AppAesKey;
-                                    dst.AppAesIV = seedDebug.AppAesIV;
-                                    dst.CustomConfigCmdName = seedDebug.CustomConfigCmdName;
-                                    dst.CustomName = seedDebug.CustomName;
-                                }
-                                AppConfigs dstR = allEntries[i].GetAppConfigs(DevelopMode.Release);
-                                if (dstR != null && seedRelease != null && string.IsNullOrEmpty(dstR.AppID))
-                                {
-                                    dstR.AppID = seedRelease.AppID;
-                                    dstR.AppAesKey = seedRelease.AppAesKey;
-                                    dstR.AppAesIV = seedRelease.AppAesIV;
-                                    dstR.CustomConfigCmdName = seedRelease.CustomConfigCmdName;
-                                    dstR.CustomName = seedRelease.CustomName;
-                                }
-                            }
-                        }
-                    }
-
-                    // 隐私配置使用独立掩码；全局模式下仅把已有种子广播到新补齐的矩阵行。
-                    if (master.PrivacyConfigsMask.IsGlobal)
-                    {
-                        PrivacyConfigs seedDebug = null;
-                        PrivacyConfigs seedRelease = null;
-                        var allEntries = master.EditorEntries;
-                        for (int i = 0; i < allEntries.Count; i++)
-                        {
-                            if (allEntries[i].Platform == PlatformType.None) continue;
-                            PrivacyConfigs candidate = allEntries[i].GetPrivacyConfigs(DevelopMode.Debug);
-                            if (!string.IsNullOrEmpty(candidate?.AESKey) || !string.IsNullOrEmpty(candidate?.AESIV))
-                            {
-                                seedDebug = candidate;
-                                seedRelease = allEntries[i].GetPrivacyConfigs(DevelopMode.Release);
-                                break;
-                            }
-                        }
-
-                        if (seedDebug != null)
-                        {
-                            for (int i = 0; i < allEntries.Count; i++)
-                            {
-                                if (present.Contains((allEntries[i].Platform, allEntries[i].Channel))) continue;
-                                PrivacyConfigs debug = allEntries[i].GetPrivacyConfigs(DevelopMode.Debug);
-                                debug.AESKey = seedDebug.AESKey;
-                                debug.AESIV = seedDebug.AESIV;
-                                PrivacyConfigs release = allEntries[i].GetPrivacyConfigs(DevelopMode.Release);
-                                release.AESKey = seedRelease?.AESKey;
-                                release.AESIV = seedRelease?.AESIV;
-                            }
-                        }
-                    }
-
+                    SeedAddedEntries(master, existingEntries, addedEntries);
                     EditorUtility.SetDirty(master);
+                }
+
+                /// <summary>
+                /// 按各面板的维度掩码为新增矩阵行继承既有逻辑组数据，避免补空行破坏未勾选维度的一致性。
+                /// 已勾选轴若是全新的枚举值且没有既有来源，则保留该独立分支的默认空配置。
+                /// </summary>
+                private static void SeedAddedEntries(
+                    ConfigMasterSO master,
+                    IReadOnlyList<PlatformChannelEntry> existingEntries,
+                    IReadOnlyList<PlatformChannelEntry> addedEntries)
+                {
+                    if (existingEntries.Count == 0 || addedEntries.Count == 0) return;
+
+                    HashSet<string> sdkTypes = CollectStoredTypeNames(existingEntries, true);
+                    HashSet<string> kitTypes = CollectStoredTypeNames(existingEntries, false);
+                    foreach (PlatformChannelEntry target in addedEntries)
+                    {
+                        foreach (DevelopMode targetMode in Enum.GetValues(typeof(DevelopMode)))
+                        {
+                            SeedAppConfigs(master, existingEntries, target, targetMode);
+                            SeedPrivacyConfigs(master, existingEntries, target, targetMode);
+                            SeedTypedConfigs(master, existingEntries, target, targetMode, sdkTypes, true);
+                            SeedTypedConfigs(master, existingEntries, target, targetMode, kitTypes, false);
+                        }
+                    }
+                }
+
+                /// <summary>
+                /// 为新增行的应用配置选择同逻辑组既有来源并复制完整序列化内容。
+                /// </summary>
+                private static void SeedAppConfigs(
+                    ConfigMasterSO master,
+                    IReadOnlyList<PlatformChannelEntry> existingEntries,
+                    PlatformChannelEntry target,
+                    DevelopMode targetMode)
+                {
+                    PlatformChannelEntry source = FindSourceEntry(master, existingEntries, target, master.AppConfigsMask);
+                    if (source == null) return;
+                    DevelopMode sourceMode = master.AppConfigsMask.ByDevelopMode ? targetMode : master.CurrentDevelopMode;
+                    CopySerializable(source.GetAppConfigs(sourceMode), target.GetAppConfigs(targetMode));
+                }
+
+                /// <summary>
+                /// 为新增行的隐私配置选择同逻辑组既有来源并复制完整序列化内容。
+                /// </summary>
+                private static void SeedPrivacyConfigs(
+                    ConfigMasterSO master,
+                    IReadOnlyList<PlatformChannelEntry> existingEntries,
+                    PlatformChannelEntry target,
+                    DevelopMode targetMode)
+                {
+                    PlatformChannelEntry source = FindSourceEntry(master, existingEntries, target, master.PrivacyConfigsMask);
+                    if (source == null) return;
+                    DevelopMode sourceMode = master.PrivacyConfigsMask.ByDevelopMode ? targetMode : master.CurrentDevelopMode;
+                    CopySerializable(source.GetPrivacyConfigs(sourceMode), target.GetPrivacyConfigs(targetMode));
+                }
+
+                /// <summary>
+                /// 为新增行复制指定类别的 SDK 或 Kit SerializeReference 配置，每个目标格保持独立实例。
+                /// </summary>
+                private static void SeedTypedConfigs(
+                    ConfigMasterSO master,
+                    IReadOnlyList<PlatformChannelEntry> existingEntries,
+                    PlatformChannelEntry target,
+                    DevelopMode targetMode,
+                    IEnumerable<string> typeNames,
+                    bool sdk)
+                {
+                    foreach (string typeName in typeNames)
+                    {
+                        PanelDimensionMask mask = sdk ? master.GetSDKMask(typeName) : master.GetKitMask(typeName);
+                        PlatformChannelEntry source = FindSourceEntry(master, existingEntries, target, mask);
+                        if (source == null) continue;
+                        DevelopMode sourceMode = mask.ByDevelopMode ? targetMode : master.CurrentDevelopMode;
+                        object sourceConfig = FindTypedConfig(source, sourceMode, typeName, sdk);
+                        if (sourceConfig == null) continue;
+                        object clone = DimensionProjector.DeepCloneManagedRef(sourceConfig);
+                        if (sdk && clone is ISDKPluginConfig sdkConfig)
+                            target.GetSDKConfigs(targetMode).Add(sdkConfig);
+                        else if (!sdk && clone is IKitConfig kitConfig)
+                            target.GetKitConfigs(targetMode).Add(kitConfig);
+                    }
+                }
+
+                /// <summary>
+                /// 按已勾选轴匹配目标逻辑组；未勾选轴优先采用 Config 窗口当前选择，缺失时回退同组首个既有行。
+                /// </summary>
+                private static PlatformChannelEntry FindSourceEntry(
+                    ConfigMasterSO master,
+                    IReadOnlyList<PlatformChannelEntry> existingEntries,
+                    PlatformChannelEntry target,
+                    PanelDimensionMask mask)
+                {
+                    PlatformType preferredPlatform = mask.ByPlatform ? target.Platform : master.CurrentPlatform;
+                    ChannelType preferredChannel = mask.ByChannel ? target.Channel : master.CurrentChannel;
+                    for (int i = 0; i < existingEntries.Count; i++)
+                    {
+                        PlatformChannelEntry candidate = existingEntries[i];
+                        if (candidate.Platform == preferredPlatform && candidate.Channel == preferredChannel)
+                            return candidate;
+                    }
+
+                    for (int i = 0; i < existingEntries.Count; i++)
+                    {
+                        PlatformChannelEntry candidate = existingEntries[i];
+                        if (mask.ByPlatform && candidate.Platform != target.Platform) continue;
+                        if (mask.ByChannel && candidate.Channel != target.Channel) continue;
+                        return candidate;
+                    }
+                    return null;
+                }
+
+                /// <summary>
+                /// 收集既有矩阵中实际存储的 SDK 或 Kit 配置类型名。
+                /// </summary>
+                private static HashSet<string> CollectStoredTypeNames(
+                    IReadOnlyList<PlatformChannelEntry> entries,
+                    bool sdk)
+                {
+                    HashSet<string> result = new();
+                    for (int i = 0; i < entries.Count; i++)
+                    {
+                        foreach (DevelopMode mode in Enum.GetValues(typeof(DevelopMode)))
+                        {
+                            if (sdk)
+                            {
+                                List<ISDKPluginConfig> configs = entries[i].GetSDKConfigs(mode);
+                                for (int c = 0; c < configs.Count; c++)
+                                    if (configs[c] != null) result.Add(configs[c].GetType().FullName);
+                            }
+                            else
+                            {
+                                List<IKitConfig> configs = entries[i].GetKitConfigs(mode);
+                                for (int c = 0; c < configs.Count; c++)
+                                    if (configs[c] != null) result.Add(configs[c].GetType().FullName);
+                            }
+                        }
+                    }
+                    return result;
+                }
+
+                /// <summary>
+                /// 在指定矩阵行和模式中查找目标类型的 SDK 或 Kit 配置。
+                /// </summary>
+                private static object FindTypedConfig(
+                    PlatformChannelEntry entry,
+                    DevelopMode mode,
+                    string typeName,
+                    bool sdk)
+                {
+                    if (sdk)
+                    {
+                        List<ISDKPluginConfig> configs = entry.GetSDKConfigs(mode);
+                        for (int i = 0; i < configs.Count; i++)
+                            if (configs[i] != null && configs[i].GetType().FullName == typeName) return configs[i];
+                        return null;
+                    }
+
+                    List<IKitConfig> kitConfigs = entry.GetKitConfigs(mode);
+                    for (int i = 0; i < kitConfigs.Count; i++)
+                        if (kitConfigs[i] != null && kitConfigs[i].GetType().FullName == typeName) return kitConfigs[i];
+                    return null;
+                }
+
+                /// <summary>
+                /// 使用 Unity 序列化规则将源对象完整复制到已存在的目标对象。
+                /// </summary>
+                private static void CopySerializable(object source, object target)
+                {
+                    if (source == null || target == null) return;
+                    JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(source), target);
                 }
 
                 /// <summary>

@@ -98,6 +98,11 @@ namespace NovaFramework.Editor
         private bool m_IsDirty;
 
         /// <summary>
+        /// 顶栏保存按钮的延迟执行标记；右面板先完成当前帧字段提交，帧末再整体落盘。
+        /// </summary>
+        private bool m_HasPendingSave;
+
+        /// <summary>
         /// 当前窗口会话中是否已有保存到 ConfigMaster、但尚未成功导出到 ConfigRuntime 的修改。
         /// </summary>
         [SerializeField]

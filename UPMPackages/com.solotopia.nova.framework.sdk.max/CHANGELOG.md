@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-09-14
+
+### Added
+
+- MAX Rewarded、Interstitial、AppOpen 原始 SDK 回调补充 Debug 日志，便于真机排查加载、展示、关闭、奖励和收益回调是否到达。
+
+### Changed
+
+- Unity Ads Android/iOS adapter 升级至 `4200000.0.0`（AppLovin adapter `4.20.0.0`，Unity Ads SDK `4.20.0`）。
+- iOS 14.5 及以上不再由 MAX 初始化流程主动启用 Meta Advertiser Tracking，避免绕过业务侧 ATT 授权结果。
+
 ## [0.1.9] - 2026-09-04
 
 ### Fixed

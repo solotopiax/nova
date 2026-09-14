@@ -170,8 +170,7 @@ namespace NovaFramework.Editor
             DestroyWorkingCopy();
             if (newMaster != null)
             {
-                RebuildWorkingCopy();
-                EditorUtil.Config.StructureGuard.SyncEnumGrid(newMaster);
+                RebuildWorkingCopyAndSyncStructure();
                 RefreshPluginCache();
                 m_LastKnownChannel = newMaster.CurrentChannel;
                 PromptMissingRefsIfAny();
@@ -265,7 +264,10 @@ namespace NovaFramework.Editor
         private void OnClickSave()
         {
             if (m_Master == null) return;
-            CommitWorkingCopyToAsset();
+            GUI.FocusControl(null);
+            EditorGUIUtility.editingTextField = false;
+            m_HasPendingSave = true;
+            Repaint();
         }
 
         /// <summary>

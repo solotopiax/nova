@@ -113,7 +113,7 @@ public final class NovaThirdPayAuthTabActivity extends ComponentActivity {
 
             authTabIntent.launch(m_AuthTabLauncher, Uri.parse(rawUrl), REDIRECT_SCHEME);
         } catch (RuntimeException exception) {
-            Log.w(TAG, "Launch Auth Tab failed, fallback to Custom Tabs.", exception);
+            Log.w(TAG, "Auth Tab 启动失败，回退 Custom Tabs。", exception);
             Uri uri = Uri.parse(rawUrl);
             if (!TextUtils.isEmpty(providerPackage)) {
                 openUrlByCustomTabs(this, uri, providerPackage);
@@ -130,7 +130,7 @@ public final class NovaThirdPayAuthTabActivity extends ComponentActivity {
     private void handleAuthResult(AuthTabIntent.AuthResult result) {
         int resultCode = result == null ? AuthTabIntent.RESULT_UNKNOWN_CODE : result.resultCode;
         Uri resultUri = result == null ? null : result.resultUri;
-        Log.i(TAG, "Auth Tab finished. resultCode=" + resultCode + ", uri=" + resultUri);
+        Log.i(TAG, "Auth Tab 已结束：resultCode=" + resultCode + "，uri=" + resultUri);
         finish();
     }
 
@@ -148,7 +148,7 @@ public final class NovaThirdPayAuthTabActivity extends ComponentActivity {
         try {
             return CustomTabsClient.getPackageName(context, null);
         } catch (RuntimeException exception) {
-            Log.w(TAG, "Query Custom Tabs package failed.", exception);
+            Log.w(TAG, "查询 Custom Tabs provider 失败。", exception);
             return null;
         }
     }
@@ -168,7 +168,7 @@ public final class NovaThirdPayAuthTabActivity extends ComponentActivity {
         try {
             return CustomTabsClient.isAuthTabSupported(context, packageName);
         } catch (RuntimeException exception) {
-            Log.w(TAG, "Query Auth Tab support failed.", exception);
+            Log.w(TAG, "查询 Auth Tab 支持状态失败。", exception);
             return false;
         }
     }
@@ -194,7 +194,7 @@ public final class NovaThirdPayAuthTabActivity extends ComponentActivity {
             context.startActivity(intent);
             return true;
         } catch (RuntimeException exception) {
-            Log.w(TAG, "Open url by Auth Tab failed.", exception);
+            Log.w(TAG, "通过 Auth Tab 打开支付页失败。", exception);
             return false;
         }
     }
@@ -218,6 +218,7 @@ public final class NovaThirdPayAuthTabActivity extends ComponentActivity {
                     .setDownloadButtonEnabled(false)
                     .setCloseButtonEnabled(false)
                     .setOpenInBrowserButtonState(CustomTabsIntent.OPEN_IN_BROWSER_STATE_OFF)
+                    .setInitialNavigationAllowedToLeaveBrowser(true)
                     .build();
             customTabsIntent.intent.setPackage(packageName);
             if (!(context instanceof Activity)) {
@@ -227,7 +228,7 @@ public final class NovaThirdPayAuthTabActivity extends ComponentActivity {
             customTabsIntent.launchUrl(context, uri);
             return true;
         } catch (RuntimeException exception) {
-            Log.w(TAG, "Open url by Custom Tabs failed.", exception);
+            Log.w(TAG, "通过 Custom Tabs 打开支付页失败。", exception);
             return false;
         }
     }

@@ -166,10 +166,11 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/DataMasterDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Datamaster.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/DataMasterDemo/Dlls/GameDlls/NovaFramework.Sdk.Datamaster.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Sdk.Datamaster.Samples.Runtime.dll
+    RunningGameDlls: []
     LinkXmlTargetPath: Assets/Samples/DataMasterDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
   HybridEditorConfigsOverrides:
@@ -198,10 +199,11 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/DataMasterDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Datamaster.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/DataMasterDemo/Dlls/GameDlls/NovaFramework.Sdk.Datamaster.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Sdk.Datamaster.Samples.Runtime.dll
+    RunningGameDlls: []
     LinkXmlTargetPath: Assets/Samples/DataMasterDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
     Platform: 2
@@ -232,10 +234,11 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
       m_TargetLocation: Assets/Samples/DataMasterDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Datamaster.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/DataMasterDemo/Dlls/GameDlls/NovaFramework.Sdk.Datamaster.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Sdk.Datamaster.Samples.Runtime.dll
+    RunningGameDlls: []
     LinkXmlTargetPath: Assets/Samples/DataMasterDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
     Platform: 3
@@ -275,10 +278,11 @@ MonoBehaviour:
     - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.dll
       m_TargetLocation: Assets/Samples/DataMasterDemo/Dlls/AOTMetas/NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Datamaster.Samples.Runtime.dll
       m_TargetLocation: Assets/Samples/DataMasterDemo/Dlls/GameDlls/NovaFramework.Sdk.Datamaster.Samples.Runtime.dll.bytes
       m_AssetLocation: NovaFramework.Sdk.Datamaster.Samples.Runtime.dll
+    RunningGameDlls: []
     LinkXmlTargetPath: Assets/Samples/DataMasterDemo/Editor/link.xml
     GameEntranceProcedureName: ProcedurePreload
     Platform: 1
@@ -351,7 +355,7 @@ MonoBehaviour:
   AotMetadataDlls: []
   GameDlls: []
   CurrentDevelopMode: 0
-  CurrentPlatform: 1
+  m_LegacyCurrentPlatform: 1
   CurrentChannel: 2
   ExportTarget: {fileID: 11400000, guid: fb9560f2f6b048d084f155f3552086fe, type: 2}
   m_Entries:
@@ -1417,9 +1421,894 @@ MonoBehaviour:
       KitConfigs:
       - rid: 3589943518543478928
       - rid: 8085688802696757606
+  - Platform: 1
+    Channel: 0
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    CommonByMode: []
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 1000
+      - rid: 1001
+      - rid: 1002
+      - rid: 1003
+      - rid: 1004
+      - rid: 1005
+      - rid: 1006
+      - rid: 1007
+      - rid: 1008
+    - Mode: 1
+      SDKConfigs:
+      - rid: 1009
+      - rid: 1010
+      - rid: 1011
+      - rid: 1012
+      - rid: 1013
+      - rid: 1014
+      - rid: 1015
+      - rid: 1016
+      - rid: 1017
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 1018
+      - rid: 1019
+    - Mode: 1
+      KitConfigs:
+      - rid: 1020
+      - rid: 1021
+  - Platform: 2
+    Channel: 0
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    CommonByMode: []
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 1022
+      - rid: 1023
+      - rid: 1024
+      - rid: 1025
+      - rid: 1026
+      - rid: 1027
+      - rid: 1028
+      - rid: 1029
+      - rid: 1030
+    - Mode: 1
+      SDKConfigs:
+      - rid: 1031
+      - rid: 1032
+      - rid: 1033
+      - rid: 1034
+      - rid: 1035
+      - rid: 1036
+      - rid: 1037
+      - rid: 1038
+      - rid: 1039
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 1040
+      - rid: 1041
+    - Mode: 1
+      KitConfigs:
+      - rid: 1042
+      - rid: 1043
+  - Platform: 3
+    Channel: 0
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    CommonByMode: []
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 1044
+      - rid: 1045
+      - rid: 1046
+      - rid: 1047
+      - rid: 1048
+      - rid: 1049
+      - rid: 1050
+      - rid: 1051
+      - rid: 1052
+    - Mode: 1
+      SDKConfigs:
+      - rid: 1053
+      - rid: 1054
+      - rid: 1055
+      - rid: 1056
+      - rid: 1057
+      - rid: 1058
+      - rid: 1059
+      - rid: 1060
+      - rid: 1061
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 1062
+      - rid: 1063
+    - Mode: 1
+      KitConfigs:
+      - rid: 1064
+      - rid: 1065
   references:
     version: 2
     RefIds:
+    - rid: 1000
+      type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
+      data:
+        m_DevKey: YOUR_APPSFLYER_DEV_KEY
+        m_AppId: YOUR_APPSFLYER_APP_ID
+        m_LogEnable: 1
+        m_OneLinkHost: your-app.onelink.me
+        m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
+        m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
+        m_ReportCmdName: AppsFlyerReport
+    - rid: 1001
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 1002
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1066
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1003
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 1004
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1005
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1006
+      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
+      data:
+        m_RequestFullName: 1
+    - rid: 1007
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1067
+        m_Products:
+          m_Items: []
+    - rid: 1008
+      type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
+      data:
+        m_AppId: app_lg38on
+        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+    - rid: 1009
+      type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
+      data:
+        m_DevKey: YOUR_APPSFLYER_DEV_KEY
+        m_AppId: YOUR_APPSFLYER_APP_ID
+        m_LogEnable: 1
+        m_OneLinkHost: your-app.onelink.me
+        m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
+        m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
+        m_ReportCmdName: AppsFlyerReport
+    - rid: 1010
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 1011
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1068
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1012
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 1013
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1014
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1015
+      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
+      data:
+        m_RequestFullName: 1
+    - rid: 1016
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1069
+        m_Products:
+          m_Items: []
+    - rid: 1017
+      type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
+      data:
+        m_AppId: app_lg38on
+        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+    - rid: 1018
+      type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
+      data:
+        m_GetCmdName: 
+        m_SetCmdName: 
+    - rid: 1019
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 1020
+      type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
+      data:
+        m_GetCmdName: 
+        m_SetCmdName: 
+    - rid: 1021
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 1022
+      type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
+      data:
+        m_DevKey: YOUR_APPSFLYER_DEV_KEY
+        m_AppId: YOUR_APPSFLYER_APP_ID
+        m_LogEnable: 1
+        m_OneLinkHost: your-app.onelink.me
+        m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
+        m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
+        m_ReportCmdName: AppsFlyerReport
+    - rid: 1023
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 1024
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1070
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1025
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 1026
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1027
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1028
+      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
+      data:
+        m_RequestFullName: 1
+    - rid: 1029
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1071
+        m_Products:
+          m_Items: []
+    - rid: 1030
+      type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
+      data:
+        m_AppId: app_lg38on
+        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+    - rid: 1031
+      type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
+      data:
+        m_DevKey: YOUR_APPSFLYER_DEV_KEY
+        m_AppId: YOUR_APPSFLYER_APP_ID
+        m_LogEnable: 1
+        m_OneLinkHost: your-app.onelink.me
+        m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
+        m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
+        m_ReportCmdName: AppsFlyerReport
+    - rid: 1032
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 1033
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1072
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1034
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 1035
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1036
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1037
+      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
+      data:
+        m_RequestFullName: 1
+    - rid: 1038
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1073
+        m_Products:
+          m_Items: []
+    - rid: 1039
+      type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
+      data:
+        m_AppId: app_lg38on
+        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+    - rid: 1040
+      type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
+      data:
+        m_GetCmdName: 
+        m_SetCmdName: 
+    - rid: 1041
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 1042
+      type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
+      data:
+        m_GetCmdName: 
+        m_SetCmdName: 
+    - rid: 1043
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 1044
+      type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
+      data:
+        m_DevKey: YOUR_APPSFLYER_DEV_KEY
+        m_AppId: YOUR_APPSFLYER_APP_ID
+        m_LogEnable: 1
+        m_OneLinkHost: your-app.onelink.me
+        m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
+        m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
+        m_ReportCmdName: AppsFlyerReport
+    - rid: 1045
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 1046
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1074
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1047
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 1048
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1049
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1050
+      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
+      data:
+        m_RequestFullName: 1
+    - rid: 1051
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1075
+        m_Products:
+          m_Items: []
+    - rid: 1052
+      type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
+      data:
+        m_AppId: app_lg38on
+        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+    - rid: 1053
+      type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
+      data:
+        m_DevKey: YOUR_APPSFLYER_DEV_KEY
+        m_AppId: YOUR_APPSFLYER_APP_ID
+        m_LogEnable: 1
+        m_OneLinkHost: your-app.onelink.me
+        m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
+        m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
+        m_ReportCmdName: AppsFlyerReport
+    - rid: 1054
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 1055
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1076
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1056
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 1057
+      type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
+      data:
+        m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+        m_RequestEmail: 1
+        m_FilterByAuthorizedAccounts: 1
+        m_AutoSelectEnabled: 1
+        m_AutoRestoreOnInitialize: 0
+    - rid: 1058
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 1059
+      type: {class: AppleSignInPluginConfig, ns: NovaFramework.SDK.AppleSignIn, asm: NovaFramework.SDK.AppleSignIn.Runtime}
+      data:
+        m_RequestFullName: 1
+    - rid: 1060
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 1077
+        m_Products:
+          m_Items: []
+    - rid: 1061
+      type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
+      data:
+        m_AppId: app_lg38on
+        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+    - rid: 1062
+      type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
+      data:
+        m_GetCmdName: 
+        m_SetCmdName: 
+    - rid: 1063
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 1064
+      type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
+      data:
+        m_GetCmdName: 
+        m_SetCmdName: 
+    - rid: 1065
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: GameAccountDelete
+    - rid: 1066
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1067
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1068
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1069
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1070
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1071
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1072
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1073
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1074
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1075
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 1076
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1077
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
     - rid: 209362707701039362
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -1431,6 +2320,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 209362707701039396
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1471,6 +2361,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728672
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1500,6 +2391,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728674
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1529,6 +2421,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728676
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1558,6 +2451,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728678
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1587,6 +2481,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728680
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1616,6 +2511,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728682
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1645,6 +2541,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728684
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1674,6 +2571,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728686
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1703,6 +2601,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728688
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1732,6 +2631,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728690
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1761,6 +2661,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728692
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1790,6 +2691,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728694
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1819,6 +2721,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728696
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1848,6 +2751,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728698
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1877,6 +2781,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728700
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1906,6 +2811,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728702
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1935,6 +2841,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728704
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1964,6 +2871,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728706
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -1993,6 +2901,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728708
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2022,6 +2931,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728710
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2051,6 +2961,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728712
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2080,6 +2991,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728714
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2109,6 +3021,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728716
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2138,6 +3051,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728718
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2167,6 +3081,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728720
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2196,6 +3111,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728722
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2225,6 +3141,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728724
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2254,6 +3171,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728726
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2283,6 +3201,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728728
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2312,6 +3231,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728730
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2341,6 +3261,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728732
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2370,6 +3291,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728734
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2399,6 +3321,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728736
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2428,6 +3351,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728738
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2457,6 +3381,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 2533177004360728740
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
@@ -2479,146 +3404,290 @@ MonoBehaviour:
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729498
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729499
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729500
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729501
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729502
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729503
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729504
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729505
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729506
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729507
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729508
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729509
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729510
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729511
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729512
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729513
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729514
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729515
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729516
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729517
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729518
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729519
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729520
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729521
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729522
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729523
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729524
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729525
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729526
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729527
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729528
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729529
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729530
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729531
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177004360729532
       type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
       data:
         m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
     - rid: 2533177598672896521
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:

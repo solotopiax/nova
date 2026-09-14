@@ -5,10 +5,9 @@
  * filename:  ConfigWindow.RightPanel.YooAsset.cs
  * author:    taoye
  * created:   2026/5/28
- * descrip:   ConfigWindow 右侧面板 YooAsset 配置分片（路径字段编辑与立即注入）
+ * descrip:   ConfigWindow 右侧面板 YooAsset 配置分片（WorkingCopy 编辑与预览注入）
  ***************************************************************/
 
-using System.Collections.Generic;
 using NovaFramework.Runtime;
 using IOPath = System.IO.Path;
 using UnityEditor;
@@ -20,8 +19,7 @@ namespace NovaFramework.Editor
     {
         /// <summary>
         /// 绘制 YooAsset 配置面板，提供 YooAssetSettings 与 BundleCollectorSetting 两条路径的编辑与浏览。
-        /// <para>本面板为 ADR-049 C1 即时落盘模式：路径修改不进 WorkingCopy 暂存，直接写真实资产并 Inject。</para>
-        /// <para>维度 toggle（YooAssetEditorConfigsMask）已添加，但维度操作（加维/减维/广播）作用于真实资产 m_Master（不同于矩阵类的 WorkingCopy 路径），切换坐标后仅在编辑平台与 Active BuildTarget 一致时按新坐标 Resolve 重新 Inject。</para>
+        /// <para>全部字段与维度操作只修改 WorkingCopy，点击保存后才整体写入 ConfigMaster.asset。</para>
         /// </summary>
         private void DrawRightPanelYooAsset()
         {
@@ -29,8 +27,7 @@ namespace NovaFramework.Editor
             // 坐标或路径变化时重新 Resolve+Inject；缓存比较在 ReInjectYooAsset 内完成，无变化则跳过，避免每帧 ResetCache+LoadAssetAtPath 造成编辑器卡顿
             ReInjectYooAsset();
 
-            // 内联标题行（标题 + 维度 toggle）——YooAsset 面板顶层维度，C1 即时落盘，不走 WorkingCopy 暂存
-            // toggle 操作直接作用于真实资产 m_Master，改完即时 SaveAssetIfDirty + Inject 当前坐标份
+            // 内联标题行（标题 + 维度 toggle）；维度投影只修改 WorkingCopy，预览注入也读取该副本。
             DrawYooAssetTitleWithMask();
 
             EditorUtil.Draw.Layout.Horizontal(() =>
@@ -41,7 +38,7 @@ namespace NovaFramework.Editor
                     "(1) YooAssetSettingsPath：编辑器期注入 YooAssetConfiguration，避免多 Sample 共存时加载到非预期的配置资产。",
                     "(2) BundleCollectorSettingPath：供 BundleBuilder 步骤显式加载指定 sample 的收集器配置。",
                     "(3) 两个路径均为项目根相对路径（以 Assets/ 开头）。",
-                    "(4) 本面板路径修改即时写盘生效，同时点亮顶部保存按钮。",
+                    "(4) 本面板的修改先进入内存副本，点击顶部保存后才写入 ConfigMaster.asset。",
                 }, false, GUILayout.ExpandWidth(true));
                 EditorUtil.Draw.Space(16f);
             });
@@ -75,9 +72,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// YooAsset 面板内联标题行（标题 + 维度 toggle，C1 即时落盘版）。
-        /// <para>与矩阵类 DrawPanelTitleWithMask 的区别：toggle 回调作用于真实资产 m_Master 而非 WorkingCopy，
-        /// 改完即时 SetDirty + SaveAssetIfDirty，并按新坐标 Resolve 重新 Inject。</para>
+        /// YooAsset 面板内联标题行（标题 + 维度 toggle）；维度投影与其它面板一样只作用于 WorkingCopy。
         /// </summary>
         private void DrawYooAssetTitleWithMask()
         {
@@ -85,7 +80,7 @@ namespace NovaFramework.Editor
 
             // 修复 1：坐标取 workingSrc（m_WorkingCopy ?? m_Master），与 HybridCLR 面板对齐，避免 TopBar 切坐标写 WorkingCopy 后 YooAsset 面板坐标失步
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
-            PanelDimensionMask mask = m_Master.YooAssetEditorConfigsMask;
+            PanelDimensionMask mask = workingSrc.YooAssetEditorConfigsMask;
             EditorUtil.Config.DimensionProjector.Coord curCoord = new(
                 m_EditingPlatform,
                 workingSrc.CurrentChannel,
@@ -96,16 +91,21 @@ namespace NovaFramework.Editor
             DrawTitleWithMaskCore("YooAsset 配置", mask, titleTrailingSpace: 30f,
                 onAxisToggled: (axis, enabled) =>
                 {
-                    Undo.RecordObject(m_Master, $"YooAsset 维度 {axis}");
-                    if (enabled)
-                        EditorUtil.Config.DimensionProjector.OnDimensionEnabled(m_Master, null, EditorUtil.Config.DimensionProjector.PanelKind.YooAssetEditorConfigs, null, curCoord, axis);
-                    else
-                        EditorUtil.Config.DimensionProjector.OnDimensionDisabled(m_Master, null, EditorUtil.Config.DimensionProjector.PanelKind.YooAssetEditorConfigs, null, curCoord, axis);
-                    EditorUtility.SetDirty(m_Master);
-                    AssetDatabase.SaveAssetIfDirty(m_Master);
-                    ReInjectYooAsset();
-                    SyncYooAssetDimensionToWorkingCopy();
-                    m_IsDirty = true;
+                    GUI.FocusControl(null);
+                    EditorGUIUtility.editingTextField = false;
+                    try
+                    {
+                        if (enabled)
+                            EditorUtil.Config.DimensionProjector.OnDimensionEnabled(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.YooAssetEditorConfigs, null, curCoord, axis);
+                        else
+                            EditorUtil.Config.DimensionProjector.OnDimensionDisabled(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.YooAssetEditorConfigs, null, curCoord, axis);
+                        m_IsDirty = true;
+                        ReInjectYooAsset();
+                    }
+                    catch (System.Exception exception)
+                    {
+                        EditorUtility.DisplayDialog("维度切换失败", exception.Message, "知道了");
+                    }
                     Repaint();
                 });
 
@@ -119,7 +119,7 @@ namespace NovaFramework.Editor
                     {
                         "(1) 当前是【全局共用一份】：本面板内容不区分平台 / 渠道 / 开发模式，整个工程共用同一份",
                         "(2) 勾选上方任一维度，可以让本面板按该维度的不同取值【分别保存】，每份独立编辑",
-                        "(3) 路径修改即时写盘生效，同时点亮顶部保存按钮",
+                        "(3) 修改会同步所有未勾选维度的组合，点击顶部保存后才落盘",
                     }, false, GUILayout.ExpandWidth(true));
                 }
                 else
@@ -132,7 +132,7 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                     {
                         $"(1) 当前按【{activeAxes}】分别保存：勾选的每个维度，其每种取值各存一份，互不影响",
-                        $"(2) 正在编辑【{editingDesc}】这一份；平台/渠道/模式均可在顶部切换；路径修改即时写盘",
+                        $"(2) 正在编辑【{editingDesc}】这一份；平台/渠道/模式均可在顶部切换",
                         "(3) 未勾选的维度仍然共用同一份",
                         "(4) ⚠ 取消任一维度的勾选 = 把当前份合并到该维全部取值，其它份内容会被永久丢弃",
                     }, false, GUILayout.ExpandWidth(true));
@@ -161,7 +161,7 @@ namespace NovaFramework.Editor
             ChannelType curChannel = workingSrc.CurrentChannel;
             DevelopMode curMode = workingSrc.CurrentDevelopMode;
             EditorUtil.Config.DimensionalResolver.YooAssetResult result = EditorUtil.Config.DimensionalResolver.ResolveYooAsset(
-                m_Master, curPlatform, curChannel, curMode);
+                workingSrc, curPlatform, curChannel, curMode);
             // 缓存守卫：路径 + 坐标全等则跳过注入，避免每帧 ResetCache+LoadAssetAtPath 造成编辑器卡顿
             if (result.YooAssetSettingsPath == m_CachedInjectSettingsPath
                 && curPlatform == m_CachedInjectPlatform
@@ -178,39 +178,6 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 将 m_Master 的 YooAssetEditorConfigsMask（三 bool）、YooAssetEditorConfigsOverrides 列表以及顶层两路径同步到 m_WorkingCopy，
-        /// 防止后续 CommitWorkingCopyToAsset 的 CopySerialized 用旧 WorkingCopy 覆写 m_Master。
-        /// <para>YooAsset 维度 toggle 及路径编辑均直写 m_Master（C1 即时落盘），WorkingCopy 不感知；此方法补齐差异。</para>
-        /// </summary>
-        private void SyncYooAssetDimensionToWorkingCopy()
-        {
-            if (m_WorkingCopy == null) return;
-            m_WorkingCopy.YooAssetEditorConfigsMask.ByPlatform = m_Master.YooAssetEditorConfigsMask.ByPlatform;
-            m_WorkingCopy.YooAssetEditorConfigsMask.ByChannel = m_Master.YooAssetEditorConfigsMask.ByChannel;
-            m_WorkingCopy.YooAssetEditorConfigsMask.ByDevelopMode = m_Master.YooAssetEditorConfigsMask.ByDevelopMode;
-            // YooAssetEditorConfigsOverride 字段均为不可变 string，逐元素 new 复制避免共享引用
-            m_WorkingCopy.YooAssetEditorConfigsOverrides = new List<YooAssetEditorConfigsOverride>(m_Master.YooAssetEditorConfigsOverrides.Count);
-            foreach (YooAssetEditorConfigsOverride o in m_Master.YooAssetEditorConfigsOverrides)
-            {
-                m_WorkingCopy.YooAssetEditorConfigsOverrides.Add(new YooAssetEditorConfigsOverride
-                {
-                    Platform = o.Platform,
-                    Channel = o.Channel,
-                    DevelopMode = o.DevelopMode,
-                    YooAssetSettingsPath = o.YooAssetSettingsPath,
-                    BundleCollectorSettingPath = o.BundleCollectorSettingPath,
-                    YooFolderName = o.YooFolderName,
-                    PackageFilePrefix = o.PackageFilePrefix,
-                });
-            }
-            // IsGlobal 写顶层后同步顶层两路径，防止 CopySerialized 以旧 WorkingCopy 值回退即时落盘的顶层字段
-            m_WorkingCopy.YooAssetEditorConfigs.YooAssetSettingsPath = m_Master.YooAssetEditorConfigs.YooAssetSettingsPath;
-            m_WorkingCopy.YooAssetEditorConfigs.BundleCollectorSettingPath = m_Master.YooAssetEditorConfigs.BundleCollectorSettingPath;
-            m_WorkingCopy.YooAssetEditorConfigs.YooFolderName = m_Master.YooAssetEditorConfigs.YooFolderName;
-            m_WorkingCopy.YooAssetEditorConfigs.PackageFilePrefix = m_Master.YooAssetEditorConfigs.PackageFilePrefix;
-        }
-
-        /// <summary>
         /// 绘制由 ConfigMaster 单向导出到 YooAssetSettings.asset 的字符串字段。
         /// </summary>
         private void DrawYooAssetSettingValueRow(string label, bool isYooFolderName)
@@ -222,7 +189,7 @@ namespace NovaFramework.Editor
                 workingSrc.CurrentDevelopMode);
             EditorUtil.Config.DimensionalResolver.YooAssetResult resolved =
                 EditorUtil.Config.DimensionalResolver.ResolveYooAsset(
-                    m_Master,
+                    workingSrc,
                     curCoord.Platform,
                     curCoord.Channel,
                     curCoord.Mode);
@@ -256,34 +223,30 @@ namespace NovaFramework.Editor
             string value,
             EditorUtil.Config.DimensionProjector.Coord curCoord)
         {
-            Undo.RecordObject(m_Master, isYooFolderName ? "修改 YooFolderName" : "修改 PackageFilePrefix");
-            YooAssetEditorConfigs target = m_Master.YooAssetEditorConfigsMask.IsGlobal
-                ? m_Master.YooAssetEditorConfigs
-                : EditorUtil.Config.DimensionProjector.EnsureYooAssetEditorConfigsOverrideAtCoord(m_Master, curCoord);
+            ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
+            YooAssetEditorConfigs target = workingSrc.YooAssetEditorConfigsMask.IsGlobal
+                ? workingSrc.YooAssetEditorConfigs
+                : EditorUtil.Config.DimensionProjector.EnsureYooAssetEditorConfigsOverrideAtCoord(workingSrc, curCoord);
 
             if (isYooFolderName)
                 target.YooFolderName = value;
             else
                 target.PackageFilePrefix = value;
 
-            EditorUtility.SetDirty(m_Master);
-            AssetDatabase.SaveAssetIfDirty(m_Master);
-            SyncYooAssetDimensionToWorkingCopy();
+            m_MasterSO?.Update();
         }
 
         /// <summary>
-        /// 绘制 YooAssetSettingsPath 路径行（文本框 + 浏览按钮）；路径变更后立即注入（ADR-049 C1 即时落盘）。
-        /// 使用普通 TextField 实时提交（Bug 1 修复：DelayedTextField 在切页时丢弃 pending 缓冲；
-        /// C1 即时落盘语义本身要求每次按键都写入 m_Master，实时 TextField 与该语义完全一致）。
+        /// 绘制 YooAssetSettingsPath 路径行（文本框 + 浏览按钮）；路径变更后更新 WorkingCopy 并刷新预览注入。
+        /// 使用普通 TextField 实时提交，避免 DelayedTextField 在切页时丢弃 pending 缓冲。
         /// 提交时依 YooAssetEditorConfigsMask 双分支写入。
         /// </summary>
         private void DrawYooAssetSettingsPathRow()
         {
-            // 修复 1：坐标取 workingSrc，显示值解析对象仍为 m_Master（YooAsset C1 即时落盘到 m_Master）
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
             EditorUtil.Config.DimensionProjector.Coord curCoord = new(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
             // 按当前坐标通过 DimensionalResolver 取显示值（正确读取 Override 或顶层默认值）
-            string committedPath = EditorUtil.Config.DimensionalResolver.ResolveYooAsset(m_Master, m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode).YooAssetSettingsPath;
+            string committedPath = EditorUtil.Config.DimensionalResolver.ResolveYooAsset(workingSrc, m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode).YooAssetSettingsPath;
 
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
@@ -304,17 +267,16 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制 BundleCollectorSettingPath 路径行（文本框 + 浏览按钮）；路径变更后即时落盘（ADR-049 C1）。
+        /// 绘制 BundleCollectorSettingPath 路径行（文本框 + 浏览按钮）；路径变更后仅更新 WorkingCopy。
         /// 使用普通 TextField 实时提交（Bug 1 修复：同 DrawYooAssetSettingsPathRow）。
         /// 提交时依 YooAssetEditorConfigsMask 双分支写入。
         /// </summary>
         private void DrawBundleCollectorSettingPathRow()
         {
-            // 修复 1：坐标取 workingSrc，显示值解析对象仍为 m_Master（YooAsset C1 即时落盘到 m_Master）
             ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
             EditorUtil.Config.DimensionProjector.Coord curCoord = new(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode);
             // 按当前坐标通过 DimensionalResolver 取显示值（正确读取 Override 或顶层默认值）
-            string committedPath = EditorUtil.Config.DimensionalResolver.ResolveYooAsset(m_Master, m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode).BundleCollectorSettingPath;
+            string committedPath = EditorUtil.Config.DimensionalResolver.ResolveYooAsset(workingSrc, m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode).BundleCollectorSettingPath;
 
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
@@ -335,54 +297,50 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 提交 YooAssetSettingsPath 值：依 YooAssetEditorConfigsMask 双分支写入（IsGlobal 写顶层，否则写 Override 条目），
-        /// 然后 SetDirty / SaveAssetIfDirty / SyncYooAssetDimensionToWorkingCopy / ReInjectYooAsset。
+        /// 提交 YooAssetSettingsPath 值：依 YooAssetEditorConfigsMask 双分支写入 WorkingCopy
+        /// （IsGlobal 写顶层，否则写 Override 条目），然后刷新当前坐标的预览注入。
         /// 文本行提交与 Browse 共用同一逻辑（DRY）。
         /// </summary>
         /// <param name="value">要写入的路径值。</param>
         /// <param name="curCoord">当前坐标（由调用方从 workingSrc 构造）。</param>
         private void CommitYooAssetSettingsPath(string value, EditorUtil.Config.DimensionProjector.Coord curCoord)
         {
-            Undo.RecordObject(m_Master, "修改 YooAssetSettingsPath");
-            PanelDimensionMask mask = m_Master.YooAssetEditorConfigsMask;
+            ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
+            PanelDimensionMask mask = workingSrc.YooAssetEditorConfigsMask;
             if (mask.IsGlobal)
             {
-                m_Master.YooAssetEditorConfigs.YooAssetSettingsPath = value;
+                workingSrc.YooAssetEditorConfigs.YooAssetSettingsPath = value;
             }
             else
             {
-                YooAssetEditorConfigsOverride ov = EditorUtil.Config.DimensionProjector.EnsureYooAssetEditorConfigsOverrideAtCoord(m_Master, curCoord);
+                YooAssetEditorConfigsOverride ov = EditorUtil.Config.DimensionProjector.EnsureYooAssetEditorConfigsOverrideAtCoord(workingSrc, curCoord);
                 if (ov != null) ov.YooAssetSettingsPath = value;
             }
-            EditorUtility.SetDirty(m_Master);
-            AssetDatabase.SaveAssetIfDirty(m_Master);
-            SyncYooAssetDimensionToWorkingCopy();
+            m_MasterSO?.Update();
             ReInjectYooAsset();
         }
 
         /// <summary>
-        /// 提交 BundleCollectorSettingPath 值：依 YooAssetEditorConfigsMask 双分支写入（IsGlobal 写顶层，否则写 Override 条目），
-        /// 然后 SetDirty / SaveAssetIfDirty / SyncYooAssetDimensionToWorkingCopy。
+        /// 提交 BundleCollectorSettingPath 值：依 YooAssetEditorConfigsMask 双分支写入 WorkingCopy
+        /// （IsGlobal 写顶层，否则写 Override 条目）。
         /// 文本行提交与 Browse 共用同一逻辑（DRY）。
         /// </summary>
         /// <param name="value">要写入的路径值。</param>
         /// <param name="curCoord">当前坐标（由调用方从 workingSrc 构造）。</param>
         private void CommitBundleCollectorSettingPath(string value, EditorUtil.Config.DimensionProjector.Coord curCoord)
         {
-            Undo.RecordObject(m_Master, "修改 BundleCollectorSettingPath");
-            PanelDimensionMask mask = m_Master.YooAssetEditorConfigsMask;
+            ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
+            PanelDimensionMask mask = workingSrc.YooAssetEditorConfigsMask;
             if (mask.IsGlobal)
             {
-                m_Master.YooAssetEditorConfigs.BundleCollectorSettingPath = value;
+                workingSrc.YooAssetEditorConfigs.BundleCollectorSettingPath = value;
             }
             else
             {
-                YooAssetEditorConfigsOverride ov = EditorUtil.Config.DimensionProjector.EnsureYooAssetEditorConfigsOverrideAtCoord(m_Master, curCoord);
+                YooAssetEditorConfigsOverride ov = EditorUtil.Config.DimensionProjector.EnsureYooAssetEditorConfigsOverrideAtCoord(workingSrc, curCoord);
                 if (ov != null) ov.BundleCollectorSettingPath = value;
             }
-            EditorUtility.SetDirty(m_Master);
-            AssetDatabase.SaveAssetIfDirty(m_Master);
-            SyncYooAssetDimensionToWorkingCopy();
+            m_MasterSO?.Update();
         }
 
         /// <summary>
@@ -391,8 +349,9 @@ namespace NovaFramework.Editor
         /// <param name="curCoord">当前坐标（由调用方从 workingSrc 构造）。</param>
         private void BrowseYooAssetSettingsPath(EditorUtil.Config.DimensionProjector.Coord curCoord)
         {
-            // 显示值取 Resolved 路径（m_Master 是落盘源），确保 initialFolder 指向正确目录
-            string currentResolved = EditorUtil.Config.DimensionalResolver.ResolveYooAsset(m_Master, curCoord.Platform, curCoord.Channel, curCoord.Mode).YooAssetSettingsPath;
+            // 显示值取 WorkingCopy 的已解析路径，确保未保存编辑也能作为浏览起始目录。
+            ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
+            string currentResolved = EditorUtil.Config.DimensionalResolver.ResolveYooAsset(workingSrc, curCoord.Platform, curCoord.Channel, curCoord.Mode).YooAssetSettingsPath;
             string initial = string.IsNullOrEmpty(currentResolved)
                 ? Application.dataPath
                 : IOPath.GetFullPath(IOPath.Combine(Application.dataPath, "..", currentResolved));
@@ -414,7 +373,8 @@ namespace NovaFramework.Editor
         private void BrowseBundleCollectorSettingPath(EditorUtil.Config.DimensionProjector.Coord curCoord)
         {
             // 显示值取 Resolved 路径，确保 initialFolder 指向正确目录
-            string currentResolved = EditorUtil.Config.DimensionalResolver.ResolveYooAsset(m_Master, curCoord.Platform, curCoord.Channel, curCoord.Mode).BundleCollectorSettingPath;
+            ConfigMasterSO workingSrc = m_WorkingCopy != null ? m_WorkingCopy : m_Master;
+            string currentResolved = EditorUtil.Config.DimensionalResolver.ResolveYooAsset(workingSrc, curCoord.Platform, curCoord.Channel, curCoord.Mode).BundleCollectorSettingPath;
             string initial = string.IsNullOrEmpty(currentResolved)
                 ? Application.dataPath
                 : IOPath.GetFullPath(IOPath.Combine(Application.dataPath, "..", currentResolved));

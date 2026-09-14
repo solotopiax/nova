@@ -43,7 +43,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 Country = country ?? string.Empty,
                 TimezoneOffset = timezoneOffset ?? string.Empty,
             };
-            INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
+            INetworkManager networkManager = FrameworkManagersGroup.GetManager<INetworkManager>();
+            INetworkCmdRow cmdRow = networkManager?.ResolveNetCmdRow(cmdName);
             return await NetService.SendAsync(cmdRow, body, PbNetReportFirebaseResp.Parser);
         }
     }

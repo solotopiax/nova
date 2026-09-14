@@ -41,16 +41,19 @@ ADR-054 建好了三维矩阵底座，但不是所有面板都需要按三维分
 
 - 给每个面板加 `PanelDimensionMask`，决定它是否按平台 / 渠道 / 开发模式分格。
 - 顶层面板用 `XxxOverrides` 承载维度化后的差异值，矩阵面板直接沿用 `m_Entries`。
-- 维度切换由 `DimensionProjector` 统一处理，包含分裂、合并和广播。
+- 普通字段编辑只以当前坐标为输入：已勾选轴保持独立，未勾选轴立即广播到同一逻辑组的全部物理格。
+- 维度勾选或取消由 `DimensionProjector` 对整个矩阵原子投影：勾选时拆分全部旧逻辑组；取消时每个剩余逻辑组分别保留顶部当前轴取值，不能用一个完整坐标覆盖全矩阵。
+- 保存只校验 WorkingCopy 的维度不变量，再用 `CopySerialized` 完整写回真实资产；保存阶段禁止重新广播或猜测权威来源。Exporter 使用同一只读门禁，阻止同一逻辑组的新旧值混合进入运行时快照。
 - 取数由 `DimensionalResolver` 统一处理，运行时 `ConfigRuntimeSO` 仍保持单格快照，不感知掩码。
-- YooAsset 在切换维度后要重新注入，避免编辑期工具继续消费旧值。
-- CDN 部署面板（2026-07-22 接入）：`CdnMask + CdnOverrides`，`CdnDeploymentConfig` 整套 9 字段为一份快照，切坐标即整套切换；走 WorkingCopy 延迟落盘（对齐矩阵类），非 YooAsset 的 C1 即时落盘；仅 Editor 期消费，不导出 Runtime。
+- YooAsset 与其它面板一样只编辑 WorkingCopy；路径或维度变化后用 WorkingCopy 刷新预览注入，点击保存后才写入 ConfigMaster 资产。
+- CDN 部署面板（2026-07-22 接入）：`CdnMask + CdnOverrides`，整套 `CDNEditorConfigs` 为一份快照，切坐标即整套切换；走 WorkingCopy 延迟落盘，仅 Editor 期消费，不导出 Runtime。
 
 ## 影响
 
 - 全局唯一和维度化配置可以并存，避免无意义的重复填写。
 - 读写职责分离，Exporter / ConfigWindow 共享同一套取数规则。
 - 运行时结构不变，风险主要集中在编辑器侧。
+- 用户确认维度切换后，内存副本会一次完成全矩阵转换；用户取消或投影失败时保持原副本不变。
 
 ## 关联
 

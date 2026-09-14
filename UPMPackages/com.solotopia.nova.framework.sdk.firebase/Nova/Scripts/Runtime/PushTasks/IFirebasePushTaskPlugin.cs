@@ -17,7 +17,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 {
     /// <summary>
     /// Firebase 业务 push task 接口。
-    /// 业务层通过 Nova.SDK.Get/ TryGet 获取该接口后写入待推送任务；插件会先持久化缓存，再按配置批量发送协议。
+    /// 业务层通过 SDK 模块获取该接口后写入待推送任务；插件会先持久化缓存，再按配置批量发送协议。
     /// </summary>
     public interface IFirebasePushTaskPlugin : ISDKPlugin
     {

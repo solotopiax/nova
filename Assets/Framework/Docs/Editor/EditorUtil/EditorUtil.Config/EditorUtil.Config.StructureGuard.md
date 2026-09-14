@@ -40,7 +40,7 @@ EditorUtil (public static partial class)
 ## §5 完整公开 API
 
 ```csharp
-// 同步 ConfigMasterSO 矩阵与当前枚举成员：新增补空行，废弃移除；仅忽略 PlatformType.None；完成后 SetDirty
+// 同步 ConfigMasterSO 矩阵与当前枚举成员：新增行按各面板 Mask 继承既有逻辑组，废弃行移除；完成后 SetDirty
 // master 为 null 时直接返回
 public static void SyncEnumGrid(ConfigMasterSO master);
 
@@ -67,7 +67,11 @@ SyncEnumGrid(master):
      - key 已在 present 中 → EditorRemoveEntryAt(i)（重复行）
      - 否则 → present.Add(key)
   3. 遍历 wanted：不在 present 中 → EditorAddEntry(new PlatformChannelEntry{Platform, Channel})
-  4. EditorUtility.SetDirty(master)
+  4. 仅针对新增行，按 App / Privacy / SDK / Kit 各自 Mask 查找既有同逻辑组来源：
+     - 已勾选轴必须匹配新增行坐标
+     - 未勾选轴优先采用 Config 窗口当前坐标，无命中时回退同组首个既有行
+     - SDK / Kit 使用独立深拷贝，禁止多个物理格共享 SerializeReference 实例
+  5. EditorUtility.SetDirty(master)
 ```
 
 ---
@@ -90,7 +94,8 @@ if (missing.Count > 0)
 
 ## §12 注意事项
 
-- `SyncEnumGrid` 在 `PlatformType` 或 `ChannelType` 枚举新增成员时会自动补空行；移除枚举成员时会清除对应行（该行下 SDK / Kit / Common 数据都会随矩阵行移除）
+- `SyncEnumGrid` 在 `PlatformType` 或 `ChannelType` 枚举新增成员时会自动补行；未勾选轴会继承既有共享值，已勾选且没有既有来源的新分支保留默认空配置。
+- 移除枚举成员时会清除对应行（该行下 SDK / Kit / App / Privacy 数据都会随矩阵行移除）。
 - `DetectMissingPluginRefs` 仅检测，不修改；需要清理时单独调用 `CleanMissingPluginRefs`
 
 ---

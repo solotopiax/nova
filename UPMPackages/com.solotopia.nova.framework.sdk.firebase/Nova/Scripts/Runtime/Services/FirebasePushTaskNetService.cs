@@ -65,8 +65,9 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 }
             }
 
-            Log.Info(LogTag.Firebase, $"Firebase push task 准备发送协议：PushCmdName={cmdName}，TaskCount={body.Tasks.Count}。");
-            INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
+            Log.Debug(LogTag.Firebase, $"Firebase push task 准备发送协议：PushCmdName={cmdName}，TaskCount={body.Tasks.Count}。");
+            INetworkManager networkManager = FrameworkManagersGroup.GetManager<INetworkManager>();
+            INetworkCmdRow cmdRow = networkManager?.ResolveNetCmdRow(cmdName);
             return await NetService.SendAsync(cmdRow, body, PbNetCreatePushTasksResp.Parser);
         }
 

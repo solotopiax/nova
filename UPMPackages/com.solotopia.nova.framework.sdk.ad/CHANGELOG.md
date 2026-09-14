@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [1.1.12] - 2026-09-14
+
+### Changed
+
+- AdDemo 补齐当前 SDK 配置默认值，并将 YooAsset 数据目录由 `yooasset` 对齐为 `yoo`，使导入后的示例配置与当前工程约定一致。
+
+### Fixed
+
+- 自动重试真正发起渠道请求前补充 `nova_ad_request`，使每次实际广告请求与后续 `nova_ad_fill` / `nova_ad_fill_fail` 结果打点按请求粒度对齐。
+
 ## [1.1.11] - 2026-09-04
 
 ### Changed

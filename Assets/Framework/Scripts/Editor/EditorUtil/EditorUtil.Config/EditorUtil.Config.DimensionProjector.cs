@@ -5,7 +5,7 @@
  * filename:  EditorUtil.Config.DimensionProjector.cs
  * author:    taoye
  * created:   2026/6/1
- * descrip:   Config 面板维度投影器；按掩码将当前坐标格的值在同组格之间广播/分裂/合并，全部作用于 m_WorkingCopy（不落盘）
+ * descrip:   Config 面板维度投影器；按掩码广播普通编辑，并对维度切换执行全矩阵原子投影
  ***************************************************************/
 
 using System;
@@ -21,18 +21,18 @@ namespace NovaFramework.Editor
         public static partial class Config
         {
             /// <summary>
-            /// Config 面板维度投影器；按 PanelDimensionMask 把当前坐标格的值在"被掩码视为同一份的格子集合"内广播/分裂/合并。
+            /// Config 面板维度投影器；普通编辑按当前掩码广播同组数据，维度切换则对整个矩阵的全部逻辑组做原子分裂或合并。
             /// <para>全部操作作用于调用方传入的 SerializedObject（m_WorkingCopy），不落盘，不设 m_IsDirty，由 ConfigWindow 负责后续脏标记。</para>
-            /// <para>Phase 2-B 只处理矩阵三类（Common / SDK / Kit）；顶层类（Namespace / HybridCLR / YooAsset）在 Phase 3 扩充，PanelKind 枚举已留好扩展位。</para>
+            /// <para>覆盖 App、Privacy、SDK、Kit、Namespace、HybridCLR、YooAsset 与 CDN 八类面板。</para>
             /// </summary>
             public static class DimensionProjector
             {
                 // -------------------------------------------------------
-                // 公开枚举：面板种类（Phase 2-B 矩阵三类，Phase 3 扩充顶层类）
+                // 公开枚举：矩阵类与顶层 Override 类面板
                 // -------------------------------------------------------
 
                 /// <summary>
-                /// 配置面板种类；区分 Common / SDK / Kit 三种矩阵面板，以及顶层三类面板（Namespace / HybridCLR / YooAsset）。
+                /// 配置面板种类；区分四种矩阵面板与四种顶层 Override 面板。
                 /// </summary>
                 public enum PanelKind
                 {
@@ -134,133 +134,37 @@ namespace NovaFramework.Editor
                 }
 
                 // -------------------------------------------------------
-                // 三个公开操作
+                // 公开操作
                 // -------------------------------------------------------
 
                 /// <summary>
-                /// 加维分裂：启用指定轴后，将当前坐标格的值深拷贝广播到该轴所有取值的同组格中。
-                /// <para>步骤：读当前坐标格深拷贝快照 → mask.[axis]=true → 遍历该轴所有取值 v，对目标坐标格写入深拷贝。</para>
+                /// 加维分裂：冻结旧掩码下每个逻辑组的快照，再为新轴的全部取值建立独立副本。
+                /// <para>整个矩阵一次完成；不会只处理顶部当前平台、渠道或模式所在的单一切片。</para>
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
                 /// <param name="masterSO">对应 master 的 SerializedObject（工作副本），SDK/Kit 路径必需。</param>
                 /// <param name="panelKind">面板种类。</param>
-                /// <param name="typeName">SDK 或 Kit 的配置类型全名；panelKind 为 Common 时忽略。</param>
+                /// <param name="typeName">SDK 或 Kit 的配置类型全名；其它面板忽略。</param>
                 /// <param name="curCoord">当前坐标格。</param>
                 /// <param name="axis">要启用的维度轴。</param>
                 public static void OnDimensionEnabled(ConfigMasterSO master, SerializedObject masterSO, PanelKind panelKind, string typeName, Coord curCoord, DimensionAxis axis)
                 {
-                    if (master == null) return;
-
-                    // 顶层类走独立分支（不经过矩阵 m_Entries 路径）
-                    if (panelKind == PanelKind.Namespace) { OnNamespaceEnabled(master, curCoord, axis); return; }
-#if UNITY_EDITOR
-                    if (panelKind == PanelKind.HybridEditorConfigs) { OnHybridCLREnabled(master, curCoord, axis); return; }
-                    if (panelKind == PanelKind.YooAssetEditorConfigs) { OnYooAssetEnabled(master, curCoord, axis); return; }
-                    if (panelKind == PanelKind.CDNEditorConfigs) { OnCdnEnabled(master, curCoord, axis); return; }
-#endif
-
-                    PanelDimensionMask mask = GetMask(master, panelKind, typeName);
-
-                    if (panelKind == PanelKind.AppConfigs)
-                    {
-                        AppConfigs snapshot = DeepCloneAppConfigs(GetAppConfigsFromMaster(master, curCoord));
-                        SetAxis(mask, axis, true);
-                        foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
-                        {
-                            // 跳过当前格自身，与 BroadcastWithinGroup 的守卫写法对齐，语义一致且避免 SerializedProperty 别名自覆写
-                            if (IsSameCoord(targetCoord, curCoord)) continue;
-                            FillGroupAppConfigs(master, targetCoord, DeepCloneAppConfigs(snapshot));
-                        }
-                    }
-                    else if (panelKind == PanelKind.PrivacyConfigs)
-                    {
-                        PrivacyConfigs snapshot = DeepClonePrivacyConfigs(GetPrivacyConfigsFromMaster(master, curCoord));
-                        SetAxis(mask, axis, true);
-                        foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
-                        {
-                            if (IsSameCoord(targetCoord, curCoord)) continue;
-                            FillGroupPrivacyConfigs(master, targetCoord, DeepClonePrivacyConfigs(snapshot));
-                        }
-                    }
-                    else
-                    {
-                        // SetAxis 必须先于 masterSO.Update()：mask 是 m_WorkingCopy 上绕过 SerializedProperty 直改的 C# 字段；
-                        // 若先 Update 再 SetAxis，SO 缓存中 mask 仍是旧值（stale），后续 ApplyModifiedPropertiesWithoutUndo
-                        // 会把整棵 SO 缓存回写 native，导致新 mask 值被旧缓存覆盖（clobber），toggle 表现为勾选后复原。
-                        SetAxis(mask, axis, true);
-                        masterSO.Update();
-                        SerializedProperty srcProp = FindSerializedRefProp(masterSO, master, panelKind, typeName, curCoord);
-                        foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
-                        {
-                            // 跳过当前格自身；FillGroupSerializedRef 第一步 dstElemProp.managedReferenceValue = null 若 dst == src（别名）会清空源数据
-                            if (IsSameCoord(targetCoord, curCoord)) continue;
-                            FillGroupSerializedRef(master, masterSO, panelKind, typeName, targetCoord, srcProp);
-                        }
-                        masterSO.ApplyModifiedPropertiesWithoutUndo();
-                    }
+                    ProjectDimensionAtomically(master, masterSO, panelKind, typeName, curCoord, axis, true);
                 }
 
                 /// <summary>
-                /// 减维合并：禁用指定轴后，将当前坐标格的值深拷贝广播到新 mask 下所有同组格（其余格数据丢弃）。
-                /// <para>步骤：读当前坐标格深拷贝快照 → mask.[axis]=false → members=GroupMembers(新 mask, curCoord) → 全体写入深拷贝。</para>
+                /// 减维合并：对新掩码下的每个剩余逻辑组，分别保留顶部当前轴取值对应的旧分支。
+                /// <para>整个矩阵一次完成；不会拿顶部当前完整坐标覆盖其它剩余逻辑组。</para>
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
                 /// <param name="masterSO">对应 master 的 SerializedObject（工作副本），SDK/Kit 路径必需。</param>
                 /// <param name="panelKind">面板种类。</param>
-                /// <param name="typeName">SDK 或 Kit 的配置类型全名；panelKind 为 Common 时忽略。</param>
+                /// <param name="typeName">SDK 或 Kit 的配置类型全名；其它面板忽略。</param>
                 /// <param name="curCoord">当前坐标格。</param>
                 /// <param name="axis">要禁用的维度轴。</param>
                 public static void OnDimensionDisabled(ConfigMasterSO master, SerializedObject masterSO, PanelKind panelKind, string typeName, Coord curCoord, DimensionAxis axis)
                 {
-                    if (master == null) return;
-
-                    // 顶层类走独立分支
-                    if (panelKind == PanelKind.Namespace) { OnNamespaceDisabled(master, curCoord, axis); return; }
-#if UNITY_EDITOR
-                    if (panelKind == PanelKind.HybridEditorConfigs) { OnHybridCLRDisabled(master, curCoord, axis); return; }
-                    if (panelKind == PanelKind.YooAssetEditorConfigs) { OnYooAssetDisabled(master, curCoord, axis); return; }
-                    if (panelKind == PanelKind.CDNEditorConfigs) { OnCdnDisabled(master, curCoord, axis); return; }
-#endif
-
-                    PanelDimensionMask mask = GetMask(master, panelKind, typeName);
-
-                    if (panelKind == PanelKind.AppConfigs)
-                    {
-                        AppConfigs snapshot = DeepCloneAppConfigs(GetAppConfigsFromMaster(master, curCoord));
-                        SetAxis(mask, axis, false);
-                        foreach (Coord memberCoord in GroupMembers(master, mask, curCoord))
-                        {
-                            // 跳过当前格自身，与 BroadcastWithinGroup 的守卫写法对齐，语义一致且避免 SerializedProperty 别名自覆写
-                            if (IsSameCoord(memberCoord, curCoord)) continue;
-                            FillGroupAppConfigs(master, memberCoord, DeepCloneAppConfigs(snapshot));
-                        }
-                    }
-                    else if (panelKind == PanelKind.PrivacyConfigs)
-                    {
-                        PrivacyConfigs snapshot = DeepClonePrivacyConfigs(GetPrivacyConfigsFromMaster(master, curCoord));
-                        SetAxis(mask, axis, false);
-                        foreach (Coord memberCoord in GroupMembers(master, mask, curCoord))
-                        {
-                            if (IsSameCoord(memberCoord, curCoord)) continue;
-                            FillGroupPrivacyConfigs(master, memberCoord, DeepClonePrivacyConfigs(snapshot));
-                        }
-                    }
-                    else
-                    {
-                        // SetAxis 必须先于 masterSO.Update()：mask 是 m_WorkingCopy 上绕过 SerializedProperty 直改的 C# 字段；
-                        // 若先 Update 再 SetAxis，SO 缓存中 mask 仍是旧值（stale），后续 ApplyModifiedPropertiesWithoutUndo
-                        // 会把整棵 SO 缓存回写 native，导致新 mask 值被旧缓存覆盖（clobber），toggle 表现为勾选后复原。
-                        SetAxis(mask, axis, false);
-                        masterSO.Update();
-                        SerializedProperty srcProp = FindSerializedRefProp(masterSO, master, panelKind, typeName, curCoord);
-                        foreach (Coord memberCoord in GroupMembers(master, mask, curCoord))
-                        {
-                            // 跳过当前格自身；FillGroupSerializedRef 第一步 dstElemProp.managedReferenceValue = null 若 dst == src（别名）会清空源数据
-                            if (IsSameCoord(memberCoord, curCoord)) continue;
-                            FillGroupSerializedRef(master, masterSO, panelKind, typeName, memberCoord, srcProp);
-                        }
-                        masterSO.ApplyModifiedPropertiesWithoutUndo();
-                    }
+                    ProjectDimensionAtomically(master, masterSO, panelKind, typeName, curCoord, axis, false);
                 }
 
                 /// <summary>
@@ -286,7 +190,7 @@ namespace NovaFramework.Editor
                 /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
                 /// <param name="masterSO">对应 master 的 SerializedObject（工作副本），SDK/Kit 路径必需。</param>
                 /// <param name="panelKind">面板种类。</param>
-                /// <param name="typeName">SDK 或 Kit 的配置类型全名；panelKind 为 Common 时忽略。</param>
+                /// <param name="typeName">SDK 或 Kit 的配置类型全名；其它面板忽略。</param>
                 /// <param name="curCoord">当前坐标格（值来源）。</param>
                 public static void BroadcastWithinGroup(ConfigMasterSO master, SerializedObject masterSO, PanelKind panelKind, string typeName, Coord curCoord)
                 {
@@ -322,16 +226,342 @@ namespace NovaFramework.Editor
                     }
                     else
                     {
-                        // 调用方（DrawSDKPanel / DrawKitPanel）已在 BroadcastWithinGroup 前执行 ApplyModifiedProperties()，
-                        // SO 与底层 native 已同步，此处无需再 Update()——多余的 Update 会重载整个 SO，
-                        // 破坏 PropertyField 正在编辑的 SerializeReference 控件状态与键盘焦点，导致 Bug2。
-                        SerializedProperty srcProp = FindSerializedRefProp(masterSO, master, panelKind, typeName, curCoord);
+                        object snapshot = GetManagedConfigAtCoord(master, panelKind, typeName, curCoord);
+                        if (snapshot == null)
+                            throw new InvalidOperationException($"同步失败：{curCoord.Platform}/{curCoord.Channel}/{curCoord.Mode} 缺少配置 {typeName}。");
                         foreach (Coord memberCoord in GroupMembers(master, mask, curCoord))
                         {
                             if (IsSameCoord(memberCoord, curCoord)) continue;
-                            FillGroupSerializedRef(master, masterSO, panelKind, typeName, memberCoord, srcProp);
+                            SetManagedConfigAtCoord(master, panelKind, typeName, memberCoord, DeepCloneManagedRef(snapshot));
                         }
-                        masterSO.ApplyModifiedPropertiesWithoutUndo();
+                        masterSO?.Update();
+                    }
+                }
+
+                /// <summary>
+                /// 原子地对整个配置面板切换一条维度轴；任何异常都会恢复切换前的完整工作副本。
+                /// </summary>
+                /// <param name="master">待修改的工作副本。</param>
+                /// <param name="masterSO">绑定工作副本的 SerializedObject。</param>
+                /// <param name="panelKind">面板种类。</param>
+                /// <param name="typeName">SDK 或 Kit 类型全名。</param>
+                /// <param name="curCoord">顶部当前坐标，决定新增或被合并轴的值来源。</param>
+                /// <param name="axis">要切换的轴。</param>
+                /// <param name="enabled">切换后是否启用该轴。</param>
+                private static void ProjectDimensionAtomically(
+                    ConfigMasterSO master,
+                    SerializedObject masterSO,
+                    PanelKind panelKind,
+                    string typeName,
+                    Coord curCoord,
+                    DimensionAxis axis,
+                    bool enabled)
+                {
+                    if (master == null) return;
+                    masterSO?.ApplyModifiedProperties();
+
+                    ConfigMasterSO backup = UnityEngine.Object.Instantiate(master);
+                    string originalName = master.name;
+                    try
+                    {
+                        ProjectAllLogicalGroups(master, panelKind, typeName, curCoord, axis, enabled);
+                        masterSO?.Update();
+                    }
+                    catch
+                    {
+                        EditorUtility.CopySerialized(backup, master);
+                        master.name = originalName;
+                        masterSO?.Update();
+                        throw;
+                    }
+                    finally
+                    {
+                        UnityEngine.Object.DestroyImmediate(backup);
+                    }
+                }
+
+                /// <summary>
+                /// 按新旧掩码对面板的全部逻辑组做一次完整投影，不仅处理当前坐标切片。
+                /// </summary>
+                private static void ProjectAllLogicalGroups(
+                    ConfigMasterSO master,
+                    PanelKind panelKind,
+                    string typeName,
+                    Coord curCoord,
+                    DimensionAxis axis,
+                    bool enabled)
+                {
+                    PanelDimensionMask liveMask = GetMask(master, panelKind, typeName);
+                    PanelDimensionMask oldMask = CloneMask(liveMask);
+                    PanelDimensionMask newMask = CloneMask(liveMask);
+                    SetAxis(newMask, axis, enabled);
+
+                    List<ProjectionValue> values = new();
+                    foreach (Coord representative in EnumerateLogicalRepresentatives(master, newMask, curCoord))
+                    {
+                        Coord source = ResolveProjectionSource(oldMask, representative, curCoord);
+                        values.Add(new ProjectionValue(representative, CapturePanelValue(master, panelKind, typeName, source)));
+                    }
+                    if (values.Count == 0)
+                        throw new InvalidOperationException("维度切换失败：ConfigMaster 中没有可用的平台、渠道和开发模式坐标。");
+
+                    SetAxis(liveMask, axis, enabled);
+                    if (panelKind == PanelKind.Namespace || panelKind == PanelKind.HybridEditorConfigs ||
+                        panelKind == PanelKind.YooAssetEditorConfigs || panelKind == PanelKind.CDNEditorConfigs)
+                    {
+                        RebuildTopLevelGroups(master, panelKind, newMask, values);
+                        return;
+                    }
+
+                    for (int i = 0; i < values.Count; i++)
+                    {
+                        foreach (Coord member in GroupMembers(master, newMask, values[i].Representative))
+                            ApplyMatrixValue(master, panelKind, typeName, member, values[i].Value);
+                    }
+                }
+
+                /// <summary>
+                /// 为新掩码枚举全部逻辑组代表坐标；未勾选轴固定为顶部当前值。
+                /// </summary>
+                private static IEnumerable<Coord> EnumerateLogicalRepresentatives(
+                    ConfigMasterSO master,
+                    PanelDimensionMask mask,
+                    Coord curCoord)
+                {
+                    HashSet<string> seen = new();
+                    foreach (Coord coord in EnumerateAllCoords(master))
+                    {
+                        Coord representative = new(
+                            mask.ByPlatform ? coord.Platform : curCoord.Platform,
+                            mask.ByChannel ? coord.Channel : curCoord.Channel,
+                            mask.ByDevelopMode ? coord.Mode : curCoord.Mode);
+                        string key = BuildLogicalKey(mask, representative);
+                        if (seen.Add(key)) yield return representative;
+                    }
+                }
+
+                /// <summary>
+                /// 枚举 ConfigMaster 已存在的全部有效物理坐标，DevelopMode 从枚举定义实时取值。
+                /// </summary>
+                private static IEnumerable<Coord> EnumerateAllCoords(ConfigMasterSO master)
+                {
+                    Array modes = Enum.GetValues(typeof(DevelopMode));
+                    IReadOnlyList<PlatformChannelEntry> entries = master.GetAllEntries();
+                    for (int i = 0; i < entries.Count; i++)
+                    {
+                        PlatformChannelEntry entry = entries[i];
+                        if (entry == null || entry.Platform == PlatformType.None) continue;
+                        foreach (DevelopMode mode in modes)
+                            yield return new Coord(entry.Platform, entry.Channel, mode);
+                    }
+                }
+
+                /// <summary>
+                /// 按旧掩码确定新逻辑组的数据来源：旧的独立轴沿用该组值，旧的共用轴使用顶部当前值。
+                /// </summary>
+                private static Coord ResolveProjectionSource(PanelDimensionMask oldMask, Coord representative, Coord curCoord)
+                {
+                    return new Coord(
+                        oldMask.ByPlatform ? representative.Platform : curCoord.Platform,
+                        oldMask.ByChannel ? representative.Channel : curCoord.Channel,
+                        oldMask.ByDevelopMode ? representative.Mode : curCoord.Mode);
+                }
+
+                /// <summary>
+                /// 生成仅包含已勾选轴的稳定逻辑键。
+                /// </summary>
+                private static string BuildLogicalKey(PanelDimensionMask mask, Coord coord)
+                {
+                    return $"{(mask.ByPlatform ? (int)coord.Platform : -1)}|" +
+                           $"{(mask.ByChannel ? (int)coord.Channel : -1)}|" +
+                           $"{(mask.ByDevelopMode ? (int)coord.Mode : -1)}";
+                }
+
+                /// <summary>
+                /// 复制维度掩码，避免计算新旧分组时共享同一实例。
+                /// </summary>
+                private static PanelDimensionMask CloneMask(PanelDimensionMask source)
+                {
+                    return new PanelDimensionMask
+                    {
+                        ByPlatform = source.ByPlatform,
+                        ByChannel = source.ByChannel,
+                        ByDevelopMode = source.ByDevelopMode,
+                    };
+                }
+
+                /// <summary>
+                /// 捕获指定面板在源坐标的独立快照。
+                /// </summary>
+                private static object CapturePanelValue(ConfigMasterSO master, PanelKind panelKind, string typeName, Coord source)
+                {
+                    switch (panelKind)
+                    {
+                        case PanelKind.AppConfigs:
+                            return DeepCloneAppConfigs(GetAppConfigsFromMaster(master, source));
+                        case PanelKind.PrivacyConfigs:
+                            return DeepClonePrivacyConfigs(GetPrivacyConfigsFromMaster(master, source));
+                        case PanelKind.SDK:
+                        case PanelKind.Kit:
+                            object managed = GetManagedConfigAtCoord(master, panelKind, typeName, source);
+                            if (managed == null)
+                                throw new InvalidOperationException($"维度切换失败：{source.Platform}/{source.Channel}/{source.Mode} 缺少配置 {typeName}。");
+                            return DeepCloneManagedRef(managed);
+                        case PanelKind.Namespace:
+                            return DimensionalResolver.ResolveNamespace(master, source.Platform, source.Channel, source.Mode);
+#if UNITY_EDITOR
+                        case PanelKind.HybridEditorConfigs:
+                            return DimensionalResolver.ResolveHybridCLR(master, source.Platform, source.Channel, source.Mode);
+                        case PanelKind.YooAssetEditorConfigs:
+                            return DimensionalResolver.ResolveYooAsset(master, source.Platform, source.Channel, source.Mode);
+                        case PanelKind.CDNEditorConfigs:
+                            return DeepCloneCdn(DimensionalResolver.ResolveCDNEditorConfigs(master, source.Platform, source.Channel, source.Mode));
+#endif
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(panelKind), panelKind, null);
+                    }
+                }
+
+                /// <summary>
+                /// 将矩阵面板快照写入指定物理格，每格都使用独立深拷贝。
+                /// </summary>
+                private static void ApplyMatrixValue(ConfigMasterSO master, PanelKind panelKind, string typeName, Coord target, object value)
+                {
+                    if (panelKind == PanelKind.AppConfigs)
+                    {
+                        FillGroupAppConfigs(master, target, DeepCloneAppConfigs((AppConfigs)value));
+                        return;
+                    }
+                    if (panelKind == PanelKind.PrivacyConfigs)
+                    {
+                        FillGroupPrivacyConfigs(master, target, DeepClonePrivacyConfigs((PrivacyConfigs)value));
+                        return;
+                    }
+                    SetManagedConfigAtCoord(master, panelKind, typeName, target, DeepCloneManagedRef(value));
+                }
+
+                /// <summary>
+                /// 重建顶层面板的逻辑组，保证新掩码下每个键恰好一条 Override。
+                /// </summary>
+                private static void RebuildTopLevelGroups(
+                    ConfigMasterSO master,
+                    PanelKind panelKind,
+                    PanelDimensionMask newMask,
+                    IReadOnlyList<ProjectionValue> values)
+                {
+                    switch (panelKind)
+                    {
+                        case PanelKind.Namespace:
+                            master.NamespaceOverrides.Clear();
+                            if (newMask.IsGlobal) master.Namespace = (string)values[0].Value;
+                            else for (int i = 0; i < values.Count; i++)
+                                UpsertNamespaceOverride(master, newMask, ClipCoordToMask(newMask, values[i].Representative), (string)values[i].Value);
+                            break;
+#if UNITY_EDITOR
+                        case PanelKind.HybridEditorConfigs:
+                            master.HybridEditorConfigsOverrides.Clear();
+                            if (newMask.IsGlobal) ApplyHybridCLRTopLevel(master, (DimensionalResolver.HybridCLRResult)values[0].Value);
+                            else for (int i = 0; i < values.Count; i++)
+                                UpsertHybridEditorConfigsOverride(master, newMask, ClipCoordToMask(newMask, values[i].Representative), (DimensionalResolver.HybridCLRResult)values[i].Value);
+                            break;
+                        case PanelKind.YooAssetEditorConfigs:
+                            master.YooAssetEditorConfigsOverrides.Clear();
+                            if (newMask.IsGlobal) ApplyYooAssetTopLevel(master, (DimensionalResolver.YooAssetResult)values[0].Value);
+                            else for (int i = 0; i < values.Count; i++)
+                                UpsertYooAssetEditorConfigsOverride(master, newMask, ClipCoordToMask(newMask, values[i].Representative), (DimensionalResolver.YooAssetResult)values[i].Value);
+                            break;
+                        case PanelKind.CDNEditorConfigs:
+                            master.CDNEditorConfigsOverrides.Clear();
+                            if (newMask.IsGlobal) master.CDNEditorConfigs = DeepCloneCdn((CDNEditorConfigs)values[0].Value);
+                            else for (int i = 0; i < values.Count; i++)
+                                UpsertCdnOverride(master, newMask, ClipCoordToMask(newMask, values[i].Representative), (CDNEditorConfigs)values[i].Value);
+                            break;
+#endif
+                    }
+                }
+
+                /// <summary>
+                /// 取得 SDK 或 Kit 在指定坐标的类型配置。
+                /// </summary>
+                private static object GetManagedConfigAtCoord(ConfigMasterSO master, PanelKind panelKind, string typeName, Coord coord)
+                {
+                    if (!master.TryGetEntry(coord.Platform, coord.Channel, out PlatformChannelEntry entry)) return null;
+                    if (panelKind == PanelKind.SDK)
+                    {
+                        List<ISDKPluginConfig> configs = entry.GetSDKConfigs(coord.Mode);
+                        for (int i = 0; i < configs.Count; i++)
+                            if (configs[i] != null && configs[i].GetType().FullName == typeName) return configs[i];
+                    }
+                    else
+                    {
+                        List<IKitConfig> configs = entry.GetKitConfigs(coord.Mode);
+                        for (int i = 0; i < configs.Count; i++)
+                            if (configs[i] != null && configs[i].GetType().FullName == typeName) return configs[i];
+                    }
+                    return null;
+                }
+
+                /// <summary>
+                /// 替换或补入 SDK/Kit 指定类型的独立配置实例。
+                /// </summary>
+                private static void SetManagedConfigAtCoord(ConfigMasterSO master, PanelKind panelKind, string typeName, Coord coord, object value)
+                {
+                    if (!master.TryGetEntry(coord.Platform, coord.Channel, out PlatformChannelEntry entry))
+                        throw new InvalidOperationException($"维度切换失败：缺少矩阵行 {coord.Platform}/{coord.Channel}。");
+                    if (panelKind == PanelKind.SDK)
+                    {
+                        List<ISDKPluginConfig> configs = entry.GetSDKConfigs(coord.Mode);
+                        int index = configs.FindIndex(item => item != null && item.GetType().FullName == typeName);
+                        ISDKPluginConfig typed = value as ISDKPluginConfig
+                            ?? throw new InvalidOperationException($"维度切换失败：{typeName} 不是有效的 SDK 配置。");
+                        if (index >= 0) configs[index] = typed;
+                        else configs.Add(typed);
+                        return;
+                    }
+
+                    List<IKitConfig> kitConfigs = entry.GetKitConfigs(coord.Mode);
+                    int kitIndex = kitConfigs.FindIndex(item => item != null && item.GetType().FullName == typeName);
+                    IKitConfig kit = value as IKitConfig
+                        ?? throw new InvalidOperationException($"维度切换失败：{typeName} 不是有效的 Kit 配置。");
+                    if (kitIndex >= 0) kitConfigs[kitIndex] = kit;
+                    else kitConfigs.Add(kit);
+                }
+
+                /// <summary>
+                /// 将 HybridCLR 快照写回顶层全局配置。
+                /// </summary>
+                private static void ApplyHybridCLRTopLevel(ConfigMasterSO master, DimensionalResolver.HybridCLRResult value)
+                {
+                    master.HybridEditorConfigs.AotMetadataDlls = DeepCloneDllList(value.AotMetadataDlls);
+                    master.HybridEditorConfigs.StartupGameDlls = DeepCloneDllList(value.StartupGameDlls);
+                    master.HybridEditorConfigs.RunningGameDlls = DeepCloneDllList(value.RunningGameDlls);
+                    master.HybridEditorConfigs.LinkXmlTargetPath = value.LinkXmlTargetPath;
+                    master.HybridEditorConfigs.GameEntranceProcedureName = value.GameEntranceProcedureName;
+                }
+
+                /// <summary>
+                /// 将 YooAsset 快照写回顶层全局配置。
+                /// </summary>
+                private static void ApplyYooAssetTopLevel(ConfigMasterSO master, DimensionalResolver.YooAssetResult value)
+                {
+                    master.YooAssetEditorConfigs.YooAssetSettingsPath = value.YooAssetSettingsPath;
+                    master.YooAssetEditorConfigs.BundleCollectorSettingPath = value.BundleCollectorSettingPath;
+                    master.YooAssetEditorConfigs.YooFolderName = value.YooFolderName;
+                    master.YooAssetEditorConfigs.PackageFilePrefix = value.PackageFilePrefix;
+                }
+
+                /// <summary>
+                /// 单个新逻辑组及其在旧掩码下捕获的数据快照。
+                /// </summary>
+                private sealed class ProjectionValue
+                {
+                    public readonly Coord Representative;
+                    public readonly object Value;
+
+                    public ProjectionValue(Coord representative, object value)
+                    {
+                        Representative = representative;
+                        Value = value;
                     }
                 }
 
@@ -351,7 +581,7 @@ namespace NovaFramework.Editor
                 private static IEnumerable<Coord> GroupMembers(ConfigMasterSO master, PanelDimensionMask mask, Coord coord)
                 {
                     IReadOnlyList<PlatformChannelEntry> entries = master.GetAllEntries();
-                    DevelopMode[] modes = { DevelopMode.Debug, DevelopMode.Release };
+                    Array modes = Enum.GetValues(typeof(DevelopMode));
                     for (int i = 0; i < entries.Count; i++)
                     {
                         PlatformChannelEntry entry = entries[i];
@@ -363,39 +593,6 @@ namespace NovaFramework.Editor
                             if (mask.ByDevelopMode && mode != coord.Mode) continue;
                             yield return new Coord(entry.Platform, entry.Channel, mode);
                         }
-                    }
-                }
-
-                // -------------------------------------------------------
-                // 私有：OnDimensionEnabled 用轴方向枚举
-                // -------------------------------------------------------
-
-                /// <summary>
-                /// 枚举 axis 轴方向所有取值下的坐标；用于 OnDimensionEnabled 将当前格值广播到轴向所有格。
-                /// </summary>
-                /// <param name="baseCoord">参照坐标（轴以外维度固定）。</param>
-                /// <param name="axis">要遍历的轴。</param>
-                /// <returns>轴方向所有取值的坐标序列。</returns>
-                private static IEnumerable<Coord> EnumerateAxisCoords(Coord baseCoord, DimensionAxis axis)
-                {
-                    switch (axis)
-                    {
-                        case DimensionAxis.Platform:
-                            foreach (PlatformType p in Enum.GetValues(typeof(PlatformType)))
-                            {
-                                if (p != PlatformType.None) yield return new Coord(p, baseCoord.Channel, baseCoord.Mode);
-                            }
-                            break;
-                        case DimensionAxis.Channel:
-                            foreach (ChannelType c in Enum.GetValues(typeof(ChannelType)))
-                            {
-                                yield return new Coord(baseCoord.Platform, c, baseCoord.Mode);
-                            }
-                            break;
-                        case DimensionAxis.DevelopMode:
-                            yield return new Coord(baseCoord.Platform, baseCoord.Channel, DevelopMode.Debug);
-                            yield return new Coord(baseCoord.Platform, baseCoord.Channel, DevelopMode.Release);
-                            break;
                     }
                 }
 
@@ -493,11 +690,11 @@ namespace NovaFramework.Editor
                 // -------------------------------------------------------
 
                 /// <summary>
-                /// 按面板种类取对应的 PanelDimensionMask；Common 返回 master.AppConfigsMask，SDK/Kit 分别调用 GetSDKMask/GetKitMask。
+                /// 按面板种类取得对应的 PanelDimensionMask；AppConfigs 使用 master.AppConfigsMask，SDK/Kit 分别调用 GetSDKMask/GetKitMask。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例。</param>
                 /// <param name="panelKind">面板种类。</param>
-                /// <param name="typeName">SDK/Kit 类型全名；Common 时忽略。</param>
+                /// <param name="typeName">SDK/Kit 类型全名；其它面板忽略。</param>
                 /// <returns>对应的 PanelDimensionMask 实例，永不为 null。</returns>
                 private static PanelDimensionMask GetMask(ConfigMasterSO master, PanelKind panelKind, string typeName)
                 {
@@ -546,7 +743,7 @@ namespace NovaFramework.Editor
                 /// </summary>
                 /// <param name="src">源 SerializeReference 对象；为 null 时返回 null。</param>
                 /// <returns>与 src 字段一致、类型相同、实例独立的深拷贝；src 为 null 时返回 null。</returns>
-                private static object DeepCloneManagedRef(object src)
+                internal static object DeepCloneManagedRef(object src)
                 {
                     if (src == null) return null;
                     Type type = src.GetType();
@@ -780,7 +977,7 @@ namespace NovaFramework.Editor
                 {
                     PlatformType p = mask.ByPlatform ? coord.Platform : PlatformType.None;
                     ChannelType c = mask.ByChannel ? coord.Channel : ChannelType.None;
-                    DevelopMode m = mask.ByDevelopMode ? coord.Mode : coord.Mode; // DevelopMode 无 None 哨兵，始终保留（匹配时由 mask 控制是否参与比对）
+                    DevelopMode m = mask.ByDevelopMode ? coord.Mode : default;
                     return new Coord(p, c, m);
                 }
 
@@ -806,55 +1003,6 @@ namespace NovaFramework.Editor
                 private static Coord OverrideCoord(NamespaceOverride o) => new Coord(o.Platform, o.Channel, o.DevelopMode);
 
                 // ——— Namespace 顶层类操作 ———
-
-                /// <summary>
-                /// Namespace 面板加维分裂：将当前坐标值广播到轴向所有 Override 条目（同组覆盖，无条目则新建）。
-                /// <para>步骤：读当前值快照 → mask.ByXxx=true → 遍历轴向所有坐标 → 同组更新/创建 Override 条目。</para>
-                /// </summary>
-                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
-                /// <param name="curCoord">当前坐标格。</param>
-                /// <param name="axis">要启用的维度轴。</param>
-                private static void OnNamespaceEnabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
-                {
-                    PanelDimensionMask mask = master.NamespaceMask;
-                    string snapshot = DimensionalResolver.ResolveNamespace(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
-                    SetAxis(mask, axis, true);
-                    foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
-                    {
-                        if (IsSameCoord(targetCoord, curCoord)) continue;
-                        Coord clipped = ClipCoordToMask(mask, targetCoord);
-                        UpsertNamespaceOverride(master, mask, clipped, snapshot);
-                    }
-                    // 确保当前坐标也有一条 Override 条目（否则全局默认值会优先于预期值）
-                    UpsertNamespaceOverride(master, mask, ClipCoordToMask(mask, curCoord), snapshot);
-                }
-
-                /// <summary>
-                /// Namespace 面板减维合并：以当前坐标值覆盖全组，裁剪 Override 列表至新 mask 下的代表格。
-                /// <para>步骤：读当前值快照 → mask.ByXxx=false → 移除与新 mask 同组的旧条目 → 保留代表格单条。</para>
-                /// </summary>
-                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
-                /// <param name="curCoord">当前坐标格。</param>
-                /// <param name="axis">要禁用的维度轴。</param>
-                private static void OnNamespaceDisabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
-                {
-                    PanelDimensionMask mask = master.NamespaceMask;
-                    string snapshot = DimensionalResolver.ResolveNamespace(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
-                    SetAxis(mask, axis, false);
-                    // 新 mask 下删除全部同组旧条目，再写入代表坐标单条
-                    Coord clipped = ClipCoordToMask(mask, curCoord);
-                    master.NamespaceOverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
-                    if (mask.ByPlatform || mask.ByChannel || mask.ByDevelopMode)
-                    {
-                        UpsertNamespaceOverride(master, mask, clipped, snapshot);
-                    }
-                    else
-                    {
-                        // 全不勾（IsGlobal）：Override 列表已清空，将减维前当前坐标那份回写顶层默认字段，
-                        // 语义：全局唯一值 = 减维时用户正在编辑的那份（设计单 D2 / 减维语义）
-                        master.Namespace = snapshot;
-                    }
-                }
 
                 /// <summary>
                 /// Namespace 面板广播：将当前坐标的值同步到同组所有 Override 条目。
@@ -911,54 +1059,6 @@ namespace NovaFramework.Editor
                 /// 从 CDNEditorConfigsOverride 条目取坐标。
                 /// </summary>
                 private static Coord OverrideCoord(CDNEditorConfigsOverride o) => new Coord(o.Platform, o.Channel, o.DevelopMode);
-
-                /// <summary>
-                /// HybridCLR 面板加维分裂：将当前坐标值广播到轴向所有 Override 条目。
-                /// </summary>
-                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
-                /// <param name="curCoord">当前坐标格。</param>
-                /// <param name="axis">要启用的维度轴。</param>
-                private static void OnHybridCLREnabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
-                {
-                    PanelDimensionMask mask = master.HybridEditorConfigsMask;
-                    DimensionalResolver.HybridCLRResult snapshot = DimensionalResolver.ResolveHybridCLR(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
-                    SetAxis(mask, axis, true);
-                    foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
-                    {
-                        if (IsSameCoord(targetCoord, curCoord)) continue;
-                        Coord clipped = ClipCoordToMask(mask, targetCoord);
-                        UpsertHybridEditorConfigsOverride(master, mask, clipped, snapshot);
-                    }
-                    UpsertHybridEditorConfigsOverride(master, mask, ClipCoordToMask(mask, curCoord), snapshot);
-                }
-
-                /// <summary>
-                /// HybridCLR 面板减维合并：以当前坐标值覆盖全组，裁剪 Override 列表至新 mask 下的代表格。
-                /// </summary>
-                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
-                /// <param name="curCoord">当前坐标格。</param>
-                /// <param name="axis">要禁用的维度轴。</param>
-                private static void OnHybridCLRDisabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
-                {
-                    PanelDimensionMask mask = master.HybridEditorConfigsMask;
-                    DimensionalResolver.HybridCLRResult snapshot = DimensionalResolver.ResolveHybridCLR(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
-                    SetAxis(mask, axis, false);
-                    Coord clipped = ClipCoordToMask(mask, curCoord);
-                    master.HybridEditorConfigsOverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
-                    if (mask.ByPlatform || mask.ByChannel || mask.ByDevelopMode)
-                    {
-                        UpsertHybridEditorConfigsOverride(master, mask, clipped, snapshot);
-                    }
-                    else
-                    {
-                        // 全不勾（IsGlobal）：Override 列表已清空，将减维前当前坐标那份回写顶层默认字段
-                        master.HybridEditorConfigs.AotMetadataDlls = DeepCloneDllList(snapshot.AotMetadataDlls);
-                        master.HybridEditorConfigs.StartupGameDlls = DeepCloneDllList(snapshot.StartupGameDlls);
-                        master.HybridEditorConfigs.RunningGameDlls = DeepCloneDllList(snapshot.RunningGameDlls);
-                        master.HybridEditorConfigs.LinkXmlTargetPath = snapshot.LinkXmlTargetPath;
-                        master.HybridEditorConfigs.GameEntranceProcedureName = snapshot.GameEntranceProcedureName;
-                    }
-                }
 
                 /// <summary>
                 /// HybridCLR 面板广播：将当前坐标的值同步到同组所有 Override 条目。
@@ -1085,53 +1185,6 @@ namespace NovaFramework.Editor
                 // ——— YooAsset 顶层类操作 ———
 
                 /// <summary>
-                /// YooAsset 面板加维分裂：将当前坐标值广播到轴向所有 Override 条目。
-                /// </summary>
-                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
-                /// <param name="curCoord">当前坐标格。</param>
-                /// <param name="axis">要启用的维度轴。</param>
-                private static void OnYooAssetEnabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
-                {
-                    PanelDimensionMask mask = master.YooAssetEditorConfigsMask;
-                    DimensionalResolver.YooAssetResult snapshot = DimensionalResolver.ResolveYooAsset(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
-                    SetAxis(mask, axis, true);
-                    foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
-                    {
-                        if (IsSameCoord(targetCoord, curCoord)) continue;
-                        Coord clipped = ClipCoordToMask(mask, targetCoord);
-                        UpsertYooAssetEditorConfigsOverride(master, mask, clipped, snapshot);
-                    }
-                    UpsertYooAssetEditorConfigsOverride(master, mask, ClipCoordToMask(mask, curCoord), snapshot);
-                }
-
-                /// <summary>
-                /// YooAsset 面板减维合并：以当前坐标值覆盖全组，裁剪 Override 列表至新 mask 下的代表格。
-                /// </summary>
-                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
-                /// <param name="curCoord">当前坐标格。</param>
-                /// <param name="axis">要禁用的维度轴。</param>
-                private static void OnYooAssetDisabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
-                {
-                    PanelDimensionMask mask = master.YooAssetEditorConfigsMask;
-                    DimensionalResolver.YooAssetResult snapshot = DimensionalResolver.ResolveYooAsset(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
-                    SetAxis(mask, axis, false);
-                    Coord clipped = ClipCoordToMask(mask, curCoord);
-                    master.YooAssetEditorConfigsOverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
-                    if (mask.ByPlatform || mask.ByChannel || mask.ByDevelopMode)
-                    {
-                        UpsertYooAssetEditorConfigsOverride(master, mask, clipped, snapshot);
-                    }
-                    else
-                    {
-                        // 全不勾（IsGlobal）：Override 列表已清空，将减维前当前坐标那份回写顶层默认字段
-                        master.YooAssetEditorConfigs.YooAssetSettingsPath = snapshot.YooAssetSettingsPath;
-                        master.YooAssetEditorConfigs.BundleCollectorSettingPath = snapshot.BundleCollectorSettingPath;
-                        master.YooAssetEditorConfigs.YooFolderName = snapshot.YooFolderName;
-                        master.YooAssetEditorConfigs.PackageFilePrefix = snapshot.PackageFilePrefix;
-                    }
-                }
-
-                /// <summary>
                 /// YooAsset 面板广播：将当前坐标的值同步到同组所有 Override 条目。
                 /// </summary>
                 /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
@@ -1219,71 +1272,6 @@ namespace NovaFramework.Editor
                 }
 
                 // ——— CDN 顶层类操作 ———
-
-                /// <summary>
-                /// CDN 面板加维分裂：将当前坐标的 CDN 部署整套配置广播到轴向所有 Override 条目。
-                /// </summary>
-                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
-                /// <param name="curCoord">当前坐标格。</param>
-                /// <param name="axis">要启用的维度轴。</param>
-                private static void OnCdnEnabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
-                {
-                    PanelDimensionMask mask = master.CDNEditorConfigsMask;
-                    CDNEditorConfigs snapshot = DimensionalResolver.ResolveCDNEditorConfigs(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
-                    SetAxis(mask, axis, true);
-                    foreach (Coord targetCoord in EnumerateAxisCoords(curCoord, axis))
-                    {
-                        if (IsSameCoord(targetCoord, curCoord)) continue;
-                        Coord clipped = ClipCoordToMask(mask, targetCoord);
-                        UpsertCdnOverride(master, mask, clipped, snapshot);
-                    }
-                    UpsertCdnOverride(master, mask, ClipCoordToMask(mask, curCoord), snapshot);
-                }
-
-                /// <summary>
-                /// CDN 面板减维合并：以当前坐标的 CDN 部署整套配置覆盖全组，裁剪 Override 列表至新 mask 下的代表格。
-                /// </summary>
-                /// <param name="master">编辑期 ConfigMasterSO 实例（工作副本）。</param>
-                /// <param name="curCoord">当前坐标格。</param>
-                /// <param name="axis">要禁用的维度轴。</param>
-                private static void OnCdnDisabled(ConfigMasterSO master, Coord curCoord, DimensionAxis axis)
-                {
-                    PanelDimensionMask mask = master.CDNEditorConfigsMask;
-                    CDNEditorConfigs snapshot = DimensionalResolver.ResolveCDNEditorConfigs(master, curCoord.Platform, curCoord.Channel, curCoord.Mode);
-                    SetAxis(mask, axis, false);
-                    Coord clipped = ClipCoordToMask(mask, curCoord);
-                    master.CDNEditorConfigsOverrides.RemoveAll(o => IsOverrideInGroup(mask, OverrideCoord(o), clipped));
-                    if (mask.ByPlatform || mask.ByChannel || mask.ByDevelopMode)
-                    {
-                        UpsertCdnOverride(master, mask, clipped, snapshot);
-                    }
-                    else
-                    {
-                        // 全不勾（IsGlobal）：Override 列表已清空，将减维前当前坐标那份回写顶层默认字段
-                        master.CDNEditorConfigs.Endpoint = snapshot.Endpoint;
-                        master.CDNEditorConfigs.AccessKeyID = snapshot.AccessKeyID;
-                        master.CDNEditorConfigs.AccessKeySecret = snapshot.AccessKeySecret;
-                        master.CDNEditorConfigs.PresetOSSPath = snapshot.PresetOSSPath;
-                        master.CDNEditorConfigs.VersionCheckLocalFilePath = snapshot.VersionCheckLocalFilePath;
-                        master.CDNEditorConfigs.VersionCheckRemoteFilePath = snapshot.VersionCheckRemoteFilePath;
-                        master.CDNEditorConfigs.LocalDirectory = snapshot.LocalDirectory;
-                        master.CDNEditorConfigs.AutoLinkLatestVersion = snapshot.AutoLinkLatestVersion;
-                        master.CDNEditorConfigs.RemotePathSuffix = snapshot.RemotePathSuffix;
-                        master.CDNEditorConfigs.AssetCheckWhitelistDeviceIDs = snapshot.AssetCheckWhitelistDeviceIDs != null
-                            ? new List<string>(snapshot.AssetCheckWhitelistDeviceIDs)
-                            : new List<string>();
-                        master.CDNEditorConfigs.AssetCheckWhitelistRemoteFilePath = snapshot.AssetCheckWhitelistRemoteFilePath;
-                        master.CDNEditorConfigs.AutoLinkLatestAssetCheckVersionFiles = snapshot.AutoLinkLatestAssetCheckVersionFiles;
-                        master.CDNEditorConfigs.AssetCheckManifestBytesLocalFilePath = snapshot.AssetCheckManifestBytesLocalFilePath;
-                        master.CDNEditorConfigs.AssetCheckManifestHashLocalFilePath = snapshot.AssetCheckManifestHashLocalFilePath;
-                        master.CDNEditorConfigs.AssetCheckPackageVersionLocalFilePath = snapshot.AssetCheckPackageVersionLocalFilePath;
-                        master.CDNEditorConfigs.AssetCheckVersionRemoteDirectory = snapshot.AssetCheckVersionRemoteDirectory;
-                        master.CDNEditorConfigs.ZoneID = snapshot.ZoneID;
-                        master.CDNEditorConfigs.PurgeURL = snapshot.PurgeURL;
-                        master.CDNEditorConfigs.Token = snapshot.Token;
-                        master.CDNEditorConfigs.CachePaths = snapshot.CachePaths;
-                    }
-                }
 
                 /// <summary>
                 /// CDN 面板广播：将当前坐标的 CDN 部署整套配置同步到同组所有 Override 条目。
