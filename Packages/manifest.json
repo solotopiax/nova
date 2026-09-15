@@ -35,7 +35,7 @@
     "com.solotopia.unitask": "file:../UPMPackages/com.solotopia.unitask",
     "com.solotopia.webglsupport": "file:../UPMPackages/com.solotopia.webglsupport",
     "com.solotopia.yooasset": "file:../UPMPackages/com.solotopia.yooasset",
-    "com.starlus.sdk.datamaster": "1.0.1",
+    "com.starlus.sdk.datamaster": "1.0.2",
     "com.unity.cinemachine": "3.1.7",
     "com.unity.feature.2d": "2.0.2",
     "com.unity.ide.rider": "3.0.40",
