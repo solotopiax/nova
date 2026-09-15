@@ -180,10 +180,11 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 将维度一致性问题格式化为可直接展示或抛出的人读文本。
+                /// 将维度一致性问题格式化为技术诊断文本，供异常、Console 与 Editor.log 使用。
+                /// 用户弹窗不得直接展示该文本，其中包含字段路径、逻辑键与精确冲突坐标。
                 /// </summary>
                 /// <param name="issues">维度一致性问题。</param>
-                /// <returns>包含定位路径与原因的多行文本。</returns>
+                /// <returns>包含定位路径与原因的多行技术诊断文本。</returns>
                 public static string BuildDimensionInvariantMessage(IReadOnlyList<ValidationIssue> issues)
                 {
                     StringBuilder builder = new();
@@ -298,7 +299,15 @@ namespace NovaFramework.Editor
                                 if (count > 1)
                                     issues.Add(new ValidationIssue(path, "同一坐标存在重复类型配置。", Severity.Error));
                                 if (value == null) continue;
-                                CheckGroupValue(expected, mask, sdk ? "SDK" : "Kit", entry.Platform, entry.Channel, mode, value, issues);
+                                CheckGroupValue(
+                                    expected,
+                                    mask,
+                                    $"{(sdk ? "SDK" : "Kit")}[{typeName}]",
+                                    entry.Platform,
+                                    entry.Channel,
+                                    mode,
+                                    value,
+                                    issues);
                             }
                         }
                     }

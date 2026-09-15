@@ -145,6 +145,20 @@ namespace NovaFramework.Editor
             public Receipt Receipt;
         }
 
+        private readonly struct MutationSummary
+        {
+            public readonly int AddedInstances;
+            public readonly int AddedRows;
+            public readonly int EnableChanges;
+
+            public MutationSummary(int addedInstances, int addedRows, int enableChanges)
+            {
+                AddedInstances = addedInstances;
+                AddedRows = addedRows;
+                EnableChanges = enableChanges;
+            }
+        }
+
         /// <summary>
         /// 严格校验资产、类别、类型全名、作用域和 coordinate 专属坐标字段。
         /// </summary>
@@ -309,6 +323,85 @@ namespace NovaFramework.Editor
                 return Task.FromResult(AgentActionResult.Create(null, "blocked", "ConfigMaster 精确 diff 已漂移，请重新 Plan。"));
             }
 
+            IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> existingInvariantIssues =
+                EditorUtil.Config.Validator.ValidateDimensionInvariants(master);
+            if (existingInvariantIssues.Count > 0)
+            {
+                return Task.FromResult(AgentActionResult.Create(
+                    null,
+                    "blocked",
+                    "ConfigMaster 已存在维度矩阵不一致。请先在 Nova/Open Config 中按当前坐标修复并保存。"));
+            }
+
+            ConfigMasterSO preview = UnityEngine.Object.Instantiate(master);
+            try
+            {
+                ApplyMutation(preview, kinds, targets, typed.Receipt.typeFullName, typed.Receipt.enable);
+                IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> prospectiveIssues =
+                    EditorUtil.Config.Validator.ValidateDimensionInvariants(preview);
+                if (prospectiveIssues.Count > 0)
+                {
+                    return Task.FromResult(AgentActionResult.Create(
+                        null,
+                        "blocked",
+                        "本次 Ensure 会破坏 ConfigMaster 的维度一致性，已在写盘前停止。请先通过 ConfigWindow 补齐矩阵或调整维度开关。"));
+                }
+                if (typed.Receipt.enable && !HasCompleteEnabledTypeGrid(preview, kinds, out string missingCell))
+                {
+                    return Task.FromResult(AgentActionResult.Create(
+                        null,
+                        "blocked",
+                        $"本次 Ensure 启用类型后仍有坐标缺少配置实例（{missingCell}），已在写盘前停止。请改用 matrix 范围补齐全部坐标，或先在 ConfigWindow 完成配置。"));
+                }
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(preview);
+            }
+
+            MutationSummary mutation = ApplyMutation(
+                master,
+                kinds,
+                targets,
+                typed.Receipt.typeFullName,
+                typed.Receipt.enable);
+            bool changed = mutation.AddedRows > 0 || mutation.AddedInstances > 0 || mutation.EnableChanges > 0;
+            if (changed)
+            {
+                EditorUtility.SetDirty(master);
+                AssetDatabase.SaveAssetIfDirty(master);
+            }
+
+            string receiptJson = Util.Json.Serialize(typed.Receipt);
+            AgentActionResult result = AgentActionResult.Create(null, "success", changed
+                ? $"已新增 {mutation.AddedRows} 个矩阵行、{mutation.AddedInstances} 个插件配置实例，并应用 {mutation.EnableChanges} 项 enable 变化。"
+                : "目标状态已满足，未写入 ConfigMaster。");
+            result.DataJson = Util.Json.Serialize(new
+            {
+                changed,
+                addedRows = mutation.AddedRows,
+                addedInstances = mutation.AddedInstances,
+                enableChanges = mutation.EnableChanges,
+                assetPath = AssetDatabase.GUIDToAssetPath(typed.Receipt.masterGuid),
+            });
+            result.ReceiptJson = receiptJson;
+            result.EvidenceKinds = AgentActionEvidence.Static;
+            result.Evidence.Add(changed
+                ? "已对 ConfigMaster 调用 SetDirty 与 SaveAssetIfDirty。"
+                : "执行时再次确认目标状态，无需脏标记或保存。" );
+            return Task.FromResult(result);
+        }
+
+        /// <summary>
+        /// 将冻结后的 Ensure 变更应用到指定 ConfigMaster；既用于内存预演，也用于正式写入。
+        /// </summary>
+        private static MutationSummary ApplyMutation(
+            ConfigMasterSO master,
+            IReadOnlyList<ResolvedKind> kinds,
+            IReadOnlyList<TargetCell> targets,
+            string typeFullName,
+            bool enable)
+        {
             int addedInstances = 0;
             int addedRows = 0;
             foreach (TargetCell target in targets)
@@ -334,42 +427,51 @@ namespace NovaFramework.Editor
                 List<string> enabled = kind.Name == "sdk" ? master.EnabledSDKs : master.EnabledKits;
                 if (enabled == null)
                 {
-                    if (!typed.Receipt.enable) continue;
+                    if (!enable) continue;
                     enabled = new List<string>();
                     if (kind.Name == "sdk") master.EnabledSDKs = enabled;
                     else master.EnabledKits = enabled;
                 }
-                int oldCount = enabled.Count(value => value == typed.Receipt.typeFullName);
-                enabled.RemoveAll(value => value == typed.Receipt.typeFullName);
-                if (typed.Receipt.enable) enabled.Add(typed.Receipt.typeFullName);
-                if (oldCount != (typed.Receipt.enable ? 1 : 0)) enableChanges++;
+                int oldCount = enabled.Count(value => value == typeFullName);
+                enabled.RemoveAll(value => value == typeFullName);
+                if (enable) enabled.Add(typeFullName);
+                if (oldCount != (enable ? 1 : 0)) enableChanges++;
             }
+            return new MutationSummary(addedInstances, addedRows, enableChanges);
+        }
 
-            bool changed = addedRows > 0 || addedInstances > 0 || enableChanges > 0;
-            if (changed)
+        /// <summary>
+        /// 启用 SDK / Kit 类型前确认当前枚举全集的每个物理坐标都有对应实例，
+        /// 避免 coordinate Ensure 只补一格却把类型全局启用，导致其它坐标无法导出。
+        /// </summary>
+        private static bool HasCompleteEnabledTypeGrid(
+            ConfigMasterSO master,
+            IReadOnlyList<ResolvedKind> kinds,
+            out string missingCell)
+        {
+            foreach (PlatformType platform in Enum.GetValues(typeof(PlatformType)))
             {
-                EditorUtility.SetDirty(master);
-                AssetDatabase.SaveAssetIfDirty(master);
+                if (platform == PlatformType.None) continue;
+                foreach (ChannelType channel in Enum.GetValues(typeof(ChannelType)))
+                {
+                    if (!master.TryGetEntry(platform, channel, out PlatformChannelEntry entry))
+                    {
+                        missingCell = $"matrix:{platform}/{channel}";
+                        return false;
+                    }
+                    foreach (DevelopMode mode in Enum.GetValues(typeof(DevelopMode)))
+                    {
+                        for (int i = 0; i < kinds.Count; i++)
+                        {
+                            if (HasInstance(entry, mode, kinds[i], out _)) continue;
+                            missingCell = $"{kinds[i].Name}:{platform}/{channel}/{mode}";
+                            return false;
+                        }
+                    }
+                }
             }
-
-            string receiptJson = Util.Json.Serialize(typed.Receipt);
-            AgentActionResult result = AgentActionResult.Create(null, "success", changed
-                ? $"已新增 {addedRows} 个矩阵行、{addedInstances} 个插件配置实例，并应用 {enableChanges} 项 enable 变化。"
-                : "目标状态已满足，未写入 ConfigMaster。");
-            result.DataJson = Util.Json.Serialize(new
-            {
-                changed,
-                addedRows,
-                addedInstances,
-                enableChanges,
-                assetPath = AssetDatabase.GUIDToAssetPath(typed.Receipt.masterGuid),
-            });
-            result.ReceiptJson = receiptJson;
-            result.EvidenceKinds = AgentActionEvidence.Static;
-            result.Evidence.Add(changed
-                ? "已对 ConfigMaster 调用 SetDirty 与 SaveAssetIfDirty。"
-                : "执行时再次确认目标状态，无需脏标记或保存。" );
-            return Task.FromResult(result);
+            missingCell = null;
+            return true;
         }
 
         /// <summary>

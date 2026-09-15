@@ -8,6 +8,16 @@
 
 ## [Unreleased]
 
+## [0.6.30] - 2026-09-15
+
+### Changed
+
+- HostKey + NetCmd 业务请求候选链耗尽后的“通信失败 / 结果未确认”终态日志降为 Warning，避免普通网络失败被 TGA `ta_app_crash` 误记为应用崩溃；网络诊断继续使用 `uwr_request_start/error/end`。
+
+### Fixed
+
+- ConfigWindow 保存复制或旧版本遗留的维度矩阵时，可按当前编辑坐标一键归一实际冲突组并重新校验后保存；用户弹窗只说明原因、影响与操作建议，字段路径和逻辑键仅写入 Console / Editor.log；已勾选维度继续保留独立分支，SDK / Kit 托管配置保持逐格深拷贝，避免用户陷入无法保存且无有效恢复入口的死循环；插件实例 Ensure Action 增加写盘前预演，拒绝生成新的维度不一致。
+
 ## [0.6.29] - 2026-09-14
 
 ### Added

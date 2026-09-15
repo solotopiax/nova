@@ -289,11 +289,11 @@ namespace NovaFramework.Runtime
 
             if (mayHaveReachedServer)
             {
-                Log.Error(LogTag.Http, "【结果未确认】请求可能已到达服务器，但未获得可确认的响应，本次请求已结束。");
+                Log.Warning(LogTag.Http, "【结果未确认】请求可能已到达服务器，但未获得可确认的响应，本次请求已结束。");
             }
             else
             {
-                Log.Error(LogTag.Http, "【通信失败】所有请求均未到达服务器，本次请求已结束。");
+                Log.Warning(LogTag.Http, "【通信失败】所有请求均未到达服务器，本次请求已结束。");
             }
 
             HttpDeliveryState finalDeliveryState = mayHaveReachedServer

@@ -101,7 +101,7 @@ public static void BroadcastWithinGroup(
 
 ```
 
-保存阶段不调用投影器。ConfigWindow 会先提交 `SerializedProperty` 缓冲并校验维度不变量，再通过 `CopySerialized(m_WorkingCopy, m_Master)` 完整落盘；Exporter 在所有入口执行同一只读门禁。
+正常保存阶段不调用投影器。ConfigWindow 会先提交 `SerializedProperty` 缓冲并校验维度不变量，再通过 `CopySerialized(m_WorkingCopy, m_Master)` 完整落盘；若复制或旧版本资产已有不一致，用户可在保存门禁中明确选择按当前坐标调用 `NormalizeInvalidGroups`，重新校验通过后才落盘。Exporter 在所有入口执行同一只读门禁。
 
 ---
 
@@ -115,6 +115,10 @@ public static void BroadcastWithinGroup(
 - 取消轴：每个剩余逻辑组分别保留顶部当前轴值对应的分支，不能拿一个完整坐标覆盖全矩阵。
 - 矩阵类写回每个物理格；SDK / Kit 每格使用独立 `SerializeReference` 深拷贝。
 - 顶层类清理旧 Override 后，按新掩码每个逻辑键重建一条规范 Override；全局模式回写顶层字段。
+
+### 复制资产恢复归一
+
+`NormalizeInvalidGroups` 不改变任何维度开关，也只处理本次 `ValidationIssue` 实际点名的 App / Privacy 面板或 SDK / Kit 类型，不触碰其它配置。未勾选轴以 ConfigWindow 顶部当前坐标对应分支为权威值，已勾选轴仍逐逻辑组保留；SDK / Kit 仅在每个逻辑组都有明确来源实例时处理，并继续为每个物理格深拷贝独立实例。重复或空 Override、矩阵缺项等结构问题继续 fail-closed，不能依据列表顺序自动丢弃。整个恢复在 WorkingCopy 上原子执行，异常会完整回滚，且恢复后必须再次通过 `ValidateDimensionInvariants` 才能保存。
 
 ### GroupMembers — 同组格枚举
 
@@ -153,7 +157,7 @@ SDK / Kit 广播与投影调用此 helper 将源格的 `[SerializeReference]` �
 | 误区 | 正确做法 |
 |------|---------|
 | 直接修改 `m_Entries` 某格数据并期望其他同组格同步 | 修改后调用 `BroadcastWithinGroup`，由 ConfigWindow 负责触发 |
-| 点击保存时再广播当前格 | 保存只校验并完整复制 WorkingCopy；广播必须发生在字段实际变化时，维度全矩阵投影只发生在用户确认开关时 |
+| 保存时静默广播当前格 | 正常保存只校验；仅当旧/复制资产已不一致且用户明确选择“一键修复”时，才按当前坐标归一并重新校验 |
 | 开启维度时只复制当前切片 | 先枚举旧掩码的全部逻辑组，再对新轴完整拆分 |
 | 取消维度时拿当前完整坐标覆盖全矩阵 | 对每个剩余逻辑组分别保留顶部当前轴值对应的旧分支 |
 | 顶层类维度切换后不刷 `YooAssetInjector.Inject` | YooAsset mask 变更后路径已更新但注入还是旧值；`ConfigWindow.RightPanel.YooAsset.cs` 的 `ReInjectYooAsset` 需在 toggle 回调中调用 |

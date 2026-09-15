@@ -284,7 +284,15 @@ namespace NovaFramework.Editor
             string before = EditorJsonUtility.ToJson(m_WorkingCopy);
             EditorUtil.Config.StructureGuard.SyncEnumGrid(m_WorkingCopy);
             m_MasterSO?.Update();
-            m_IsDirty = !string.Equals(before, EditorJsonUtility.ToJson(m_WorkingCopy), System.StringComparison.Ordinal);
+            bool structureChanged = !string.Equals(
+                before,
+                EditorJsonUtility.ToJson(m_WorkingCopy),
+                System.StringComparison.Ordinal);
+            // 复制或旧版本遗留的矩阵不一致同样需要进入保存恢复流；否则窗口刚打开时
+            // “保存”按钮会保持禁用，用户没有机会触发一键归一。
+            bool needsDimensionRepair = EditorUtil.Config.Validator
+                .ValidateDimensionInvariants(m_WorkingCopy).Count > 0;
+            m_IsDirty = structureChanged || needsDimensionRepair;
         }
 
         /// <summary>
@@ -324,8 +332,17 @@ namespace NovaFramework.Editor
                 EditorUtil.Config.Validator.ValidateDimensionInvariants(m_WorkingCopy);
             if (invariantIssues.Count > 0)
             {
-                ScheduleSaveBlockedDialog(invariantIssues);
-                return false;
+                // 关窗保存发生在 OnDisable，WorkingCopy 随后会销毁，不能依赖 delayCall。
+                // 此路径同步完成确认与修复；普通按钮保存仍延迟弹窗，避开 OnGUI 绘制栈。
+                if (!rebuildWorkingCopy)
+                {
+                    if (!TryRepairDimensionInvariants(invariantIssues)) return false;
+                }
+                else
+                {
+                    ScheduleSaveBlockedDialog(invariantIssues);
+                    return false;
+                }
             }
             EditorUtility.CopySerialized(m_WorkingCopy, m_Master);
             // CopySerialized 会连带复制 WorkingCopy 的 (Clone) 后缀名，此处用资产文件名还原

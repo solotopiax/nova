@@ -21,12 +21,91 @@ namespace NovaFramework.Editor
         /// 将保存门禁提示推迟到当前 GUI 绘制结束后展示，避免在 DrawRect/OnGUI 调用栈中直接打开模态窗口。
         /// </summary>
         /// <param name="issues">阻止保存的维度一致性问题。</param>
-        private static void ScheduleSaveBlockedDialog(
+        private void ScheduleSaveBlockedDialog(
             IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues)
         {
-            string message = EditorUtil.Config.Validator.BuildDimensionInvariantMessage(issues);
+            ConfigMasterSO expectedMaster = m_Master;
+            ConfigMasterSO expectedWorkingCopy = m_WorkingCopy;
             EditorApplication.delayCall += () =>
-                EditorUtility.DisplayDialog("配置无法保存", message, "知道了");
+            {
+                // 用户可能在 delayCall 前切换了场景或 ConfigMaster；旧问题绝不能作用到新绑定。
+                if (!ReferenceEquals(expectedMaster, m_Master) ||
+                    !ReferenceEquals(expectedWorkingCopy, m_WorkingCopy)) return;
+                if (!TryRepairDimensionInvariants(issues)) return;
+                m_IsDirty = true;
+                CommitWorkingCopyToAsset();
+            };
+        }
+
+        /// <summary>
+        /// 让用户明确选择当前编辑坐标作为未勾选维度的权威分支，并在 WorkingCopy 上原子归一。
+        /// 普通保存由 delayCall 调用；关窗保存则在 WorkingCopy 销毁前同步调用。
+        /// </summary>
+        private bool TryRepairDimensionInvariants(
+            IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues)
+        {
+            if (m_WorkingCopy == null) return false;
+            if (!EditorUtil.Config.DimensionProjector.HasRepairableIssues(issues))
+            {
+                LogDimensionInvariantDetails("配置结构异常，无法自动修复。", issues);
+                EditorUtility.DisplayDialog(
+                    "配置结构需要处理",
+                    "检测到配置结构异常，暂时不能保存。这个问题无法安全地自动处理，否则可能丢失配置。\n\n" +
+                    "请查看 Console 中以 [ConfigWindow] 开头的详细日志，或联系框架维护人员处理。",
+                    "知道了");
+                return false;
+            }
+            string currentCoord = $"{m_EditingPlatform}/{m_WorkingCopy.CurrentChannel}/{m_WorkingCopy.CurrentDevelopMode}";
+            bool repair = EditorUtility.DisplayDialog(
+                "发现配置范围冲突",
+                "这份配置中，有些内容设置为跨平台或渠道共用，但文件里实际保存了不同内容，因此现在不能直接保存。\n\n" +
+                $"当前基准：{currentCoord}\n" +
+                "选择自动整理后，未单独配置的范围会以当前基准为准；已经勾选为分别配置的内容会继续保留。整理完成并重新检查通过后才会保存。\n\n" +
+                "如果当前基准内容是正确的，建议直接自动整理；如果这些差异需要保留，请取消后先勾选上方需要分别保存的平台、渠道或开发模式。",
+                "使用当前配置自动整理",
+                "取消");
+            if (!repair) return false;
+
+            try
+            {
+                EditorUtil.Config.DimensionProjector.NormalizeInvalidGroups(
+                    m_WorkingCopy,
+                    m_MasterSO,
+                    new EditorUtil.Config.DimensionProjector.Coord(
+                        m_EditingPlatform,
+                        m_WorkingCopy.CurrentChannel,
+                        m_WorkingCopy.CurrentDevelopMode),
+                    issues);
+                IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> remaining =
+                    EditorUtil.Config.Validator.ValidateDimensionInvariants(m_WorkingCopy);
+                if (remaining.Count == 0) return true;
+                LogDimensionInvariantDetails("自动整理后仍有配置问题。", remaining);
+                EditorUtility.DisplayDialog(
+                    "自动整理未能完成",
+                    "可自动处理的配置差异已经整理，但仍有结构问题，因此没有保存。\n\n" +
+                    "请查看 Console 中以 [ConfigWindow] 开头的详细日志，或联系框架维护人员处理。",
+                    "知道了");
+            }
+            catch (System.Exception exception)
+            {
+                UnityEngine.Debug.LogException(exception);
+                EditorUtility.DisplayDialog(
+                    "自动整理失败",
+                    "整理过程中发生异常，本次没有保存，原配置不会被覆盖。详细原因已写入 Console。",
+                    "知道了");
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 将矩阵路径、逻辑键与冲突坐标等技术信息写入 Console / Editor.log，避免污染用户弹窗。
+        /// </summary>
+        private static void LogDimensionInvariantDetails(
+            string summary,
+            IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> issues)
+        {
+            UnityEngine.Debug.LogError(
+                $"[ConfigWindow] {summary}\n{EditorUtil.Config.Validator.BuildDimensionInvariantMessage(issues)}");
         }
 
         /// <summary>
@@ -48,7 +127,7 @@ namespace NovaFramework.Editor
                     "仅保存");
                 if (!CommitWorkingCopyToAsset(false))
                 {
-                    ReopenAfterFailedCloseExport();
+                    ReopenAfterFailedCloseExport(true);
                     return;
                 }
                 if (saveAndExport && !TryExport(false)) ReopenAfterFailedCloseExport();
@@ -67,7 +146,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 关窗联动导出未完成时，在销毁流程结束后的下一次 Editor 更新重新打开配置窗口，保留修正入口。
         /// </summary>
-        private void ReopenAfterFailedCloseExport()
+        private void ReopenAfterFailedCloseExport(bool preserveWorkingCopy = false)
         {
             ConfigMasterSO master = m_Master;
             PlatformType platform = m_EditingPlatform;
@@ -75,11 +154,29 @@ namespace NovaFramework.Editor
             DevelopMode developMode = m_Master.CurrentDevelopMode;
             LeftTreeItem selectedItem = m_SelectedItem;
             System.Type selectedPluginType = m_SelectedPluginType;
+            bool hadPendingExport = m_HasSavedChangesPendingExport;
+            ConfigMasterSO workingCopySnapshot = preserveWorkingCopy && m_WorkingCopy != null
+                ? Instantiate(m_WorkingCopy)
+                : null;
             EditorApplication.delayCall += () =>
             {
                 ConfigWindow window = OpenConfigSection(
                     master, platform, channel, developMode, selectedItem, selectedPluginType);
-                window.m_HasSavedChangesPendingExport = true;
+                if (workingCopySnapshot != null)
+                {
+                    if (window.m_WorkingCopy != null)
+                    {
+                        EditorUtility.CopySerialized(workingCopySnapshot, window.m_WorkingCopy);
+                        window.m_MasterSO?.Update();
+                        window.m_IsDirty = true;
+                        window.m_HasSavedChangesPendingExport = hadPendingExport;
+                    }
+                    DestroyImmediate(workingCopySnapshot);
+                }
+                else
+                {
+                    window.m_HasSavedChangesPendingExport = true;
+                }
             };
         }
 
@@ -124,7 +221,15 @@ namespace NovaFramework.Editor
                 "丢弃旧改动并切换");
             if (save)
             {
-                if (!CommitWorkingCopyToAsset()) ReopenAfterFailedCloseExport();
+                // 场景已经切换，随后会销毁旧 WorkingCopy；必须在此同步完成修复/保存，
+                // 不能把旧问题留给 delayCall 后误作用到新场景绑定的 ConfigMaster。
+                if (!CommitWorkingCopyToAsset(false))
+                {
+                    EditorUtility.DisplayDialog(
+                        "旧配置未保存",
+                        "场景已经切换，旧 ConfigMaster 的修改未能通过保存校验，因此不会把工作区重新切回旧配置。请返回原场景后重新打开 Config 窗口处理。",
+                        "知道了");
+                }
                 return;
             }
 

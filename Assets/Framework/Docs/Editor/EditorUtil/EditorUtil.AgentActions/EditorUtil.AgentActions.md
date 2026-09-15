@@ -37,6 +37,8 @@ Action 的 Request Schema、effects、locks、contractMajor、idempotency 和 co
 
 `channel` 接受 `ChannelType` 的全部声明名称，包含 `None`；`None` 表示无特定运营渠道，不会被 Config 校验、导出、插件补齐或构建预检拦截。`PlatformType.None` 仍被拒绝。
 
+`nova.project.config.ensure-plugin-instances` 在写盘前先拒绝已有的维度矩阵不一致，并在完整内存副本上预演本次 Ensure；若补行、补实例或启用类型会制造新的未勾选维度冲突，或启用后仍有任一 Platform × Channel × DevelopMode 坐标缺少该类型实例，则以 `blocked` 收口且不修改资产。此时应改用 `matrix` 范围补齐，或先在 ConfigWindow 完成矩阵修复/维度调整，再重新 Plan。
+
 ## 代码组织
 
 ```text

@@ -232,7 +232,8 @@ OnGUI()
 ```
 CommitWorkingCopyToAsset()
   ├─ ApplyModifiedProperties()（提交当前帧字段）
-  ├─ Validator.ValidateDimensionInvariants(m_WorkingCopy)（只读门禁，不自动改值）
+  ├─ Validator.ValidateDimensionInvariants(m_WorkingCopy)（只读门禁）
+  │    └─ 若不一致：用户可选择按顶部当前坐标归一 WorkingCopy → 重新校验
   ├─ EditorUtility.CopySerialized(m_WorkingCopy, m_Master)
   ├─ 还原资产文件名，避免 CopySerialized 带入 (Clone) 后缀
   ├─ EditorUtility.SetDirty(m_Master)
@@ -243,9 +244,9 @@ CommitWorkingCopyToAsset()
   └─ EditorUtil.Config.Events.NotifyActiveConfigMasterSaved(m_Master)
 ```
 
-保存不会广播，也不会猜哪个坐标是权威值。普通字段发生实际变化时，系统立即按掩码把当前值同步到所有未勾选轴；用户确认勾选或取消维度时，系统一次投影整个矩阵。保存只检查同一逻辑组是否仍有冲突，再把完整 WorkingCopy 写回资产。Exporter 入口复用同一门禁，因此 ConfigWindow、Pipify、Agent Action 与迁移导出都不能绕过。
+正常保存不会广播，也不会猜哪个坐标是权威值。普通字段发生实际变化时，系统立即按掩码把当前值同步到所有未勾选轴；用户确认勾选或取消维度时，系统一次投影整个矩阵。保存先检查同一逻辑组是否仍有冲突，再把完整 WorkingCopy 写回资产。Exporter 入口复用同一门禁，因此 ConfigWindow、Pipify、Agent Action 与迁移导出都不能绕过。
 
-例如只勾选 `DevelopMode` 时，修改任意平台/渠道的 Release 会立即同步所有平台和渠道的 Release，Debug 不变。若旧资产已经存在同组不一致，保存或导出会明确阻断，要求用户重新编辑该组或通过维度开关确认拆分/合并，不会静默挑一格覆盖其它数据。
+例如只勾选 `DevelopMode` 时，修改任意平台/渠道的 Release 会立即同步所有平台和渠道的 Release，Debug 不变。若从其它项目复制或旧版本遗留的资产已经存在同组不一致，窗口打开后会把它视为待修复状态并启用保存按钮；点击保存可明确选择“使用当前配置自动整理”：未勾选轴以顶部当前分支为准，已勾选轴继续分别保留，修复发生在 WorkingCopy 并重新校验后才落盘。若差异本来需要保留，应取消并先勾选对应维度。弹窗只展示原因、影响和下一步，`AppConfigs[-1|-1|0]` 等字段路径、逻辑键与冲突坐标仅写入 Console / Editor.log。
 
 保存事件在 WorkingCopy 写回真实资产并落盘后触发。SDKComponent Inspector 依赖该事件刷新当前 active `EnabledSDKs` 对应的 Plugin 可见列表。
 

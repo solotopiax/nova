@@ -239,6 +239,71 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
+                /// 按现有维度掩码重新投影校验报告点名的配置组，修复从旧项目复制或外部合并后遗留的组内不一致。
+                /// <para>未勾选轴以当前编辑坐标对应的分支为准；已勾选轴继续保留各逻辑组自己的值。</para>
+                /// <para>SDK / Kit 仅在每个逻辑组都存在来源实例时归一；同组缺失物理格会继承来源实例。</para>
+                /// <para>整个操作作用于 WorkingCopy 且具备原子回滚，不直接写入资产。</para>
+                /// </summary>
+                internal static void NormalizeInvalidGroups(
+                    ConfigMasterSO master,
+                    SerializedObject masterSO,
+                    Coord curCoord,
+                    IReadOnlyList<Validator.ValidationIssue> issues)
+                {
+                    if (master == null || issues == null || issues.Count == 0) return;
+                    masterSO?.ApplyModifiedProperties();
+
+                    ConfigMasterSO backup = UnityEngine.Object.Instantiate(master);
+                    string originalName = master.name;
+                    try
+                    {
+                        HashSet<string> repaired = new();
+                        for (int i = 0; i < issues.Count; i++)
+                        {
+                            string path = issues[i].Path;
+                            if (path.StartsWith("AppConfigs[", StringComparison.Ordinal) && repaired.Add("AppConfigs"))
+                                NormalizePanel(master, PanelKind.AppConfigs, null, curCoord);
+                            else if (path.StartsWith("PrivacyConfigs[", StringComparison.Ordinal) && repaired.Add("PrivacyConfigs"))
+                                NormalizePanel(master, PanelKind.PrivacyConfigs, null, curCoord);
+                            else if (TryReadTypedIssue(path, "SDK", out string sdkType) && repaired.Add("SDK|" + sdkType))
+                                NormalizeTypedPanelIfComplete(master, PanelKind.SDK, sdkType, curCoord);
+                            else if (TryReadTypedIssue(path, "Kit", out string kitType) && repaired.Add("Kit|" + kitType))
+                                NormalizeTypedPanelIfComplete(master, PanelKind.Kit, kitType, curCoord);
+                        }
+                        masterSO?.Update();
+                    }
+                    catch
+                    {
+                        EditorUtility.CopySerialized(backup, master);
+                        master.name = originalName;
+                        masterSO?.Update();
+                        throw;
+                    }
+                    finally
+                    {
+                        UnityEngine.Object.DestroyImmediate(backup);
+                    }
+                }
+
+                /// <summary>
+                /// 判断维度问题中是否至少有一项可通过当前坐标安全归一。
+                /// 结构缺项、空项与重复 Override 不在自动修复范围内。
+                /// </summary>
+                internal static bool HasRepairableIssues(IReadOnlyList<Validator.ValidationIssue> issues)
+                {
+                    if (issues == null) return false;
+                    for (int i = 0; i < issues.Count; i++)
+                    {
+                        string path = issues[i].Path ?? string.Empty;
+                        if (path.StartsWith("AppConfigs[", StringComparison.Ordinal) ||
+                            path.StartsWith("PrivacyConfigs[", StringComparison.Ordinal) ||
+                            TryReadTypedIssue(path, "SDK", out _) ||
+                            TryReadTypedIssue(path, "Kit", out _)) return true;
+                    }
+                    return false;
+                }
+
+                /// <summary>
                 /// 原子地对整个配置面板切换一条维度轴；任何异常都会恢复切换前的完整工作副本。
                 /// </summary>
                 /// <param name="master">待修改的工作副本。</param>
@@ -318,6 +383,104 @@ namespace NovaFramework.Editor
                         foreach (Coord member in GroupMembers(master, newMask, values[i].Representative))
                             ApplyMatrixValue(master, panelKind, typeName, member, values[i].Value);
                     }
+                }
+
+                /// <summary>
+                /// 在不改变掩码的前提下，用当前坐标补齐每个逻辑组的物理格。
+                /// </summary>
+                private static void NormalizePanel(
+                    ConfigMasterSO master,
+                    PanelKind panelKind,
+                    string typeName,
+                    Coord curCoord)
+                {
+                    PanelDimensionMask mask = CloneMask(GetMask(master, panelKind, typeName));
+                    List<ProjectionValue> values = CaptureLogicalGroupValues(master, panelKind, typeName, mask, curCoord);
+                    if (values.Count == 0)
+                        throw new InvalidOperationException("配置归一失败：ConfigMaster 中没有可用的平台、渠道和开发模式坐标。");
+
+                    if (panelKind == PanelKind.Namespace || panelKind == PanelKind.HybridEditorConfigs ||
+                        panelKind == PanelKind.YooAssetEditorConfigs || panelKind == PanelKind.CDNEditorConfigs)
+                    {
+                        RebuildTopLevelGroups(master, panelKind, mask, values);
+                        return;
+                    }
+
+                    for (int i = 0; i < values.Count; i++)
+                    {
+                        foreach (Coord member in GroupMembers(master, mask, values[i].Representative))
+                            ApplyMatrixValue(master, panelKind, typeName, member, values[i].Value);
+                    }
+                }
+
+                /// <summary>
+                /// 对已启用的 SDK / Kit 类型做可恢复归一；来源缺失的类型保持原状，由既有必填校验报告。
+                /// </summary>
+                private static void NormalizeTypedPanelIfComplete(
+                    ConfigMasterSO master,
+                    PanelKind panelKind,
+                    string typeName,
+                    Coord curCoord)
+                {
+                    if (string.IsNullOrEmpty(typeName)) return;
+                    PanelDimensionMask mask = CloneMask(GetMask(master, panelKind, typeName));
+                    if (!CanCaptureEveryTypedGroup(master, panelKind, typeName, mask, curCoord)) return;
+                    NormalizePanel(master, panelKind, typeName, curCoord);
+                }
+
+                /// <summary>
+                /// 从 Validator 的 SDK[type] / Kit[type] 路径中提取精确类型名。
+                /// </summary>
+                private static bool TryReadTypedIssue(string path, string prefix, out string typeName)
+                {
+                    typeName = null;
+                    string marker = prefix + "[";
+                    if (string.IsNullOrEmpty(path) || !path.StartsWith(marker, StringComparison.Ordinal)) return false;
+                    int end = path.IndexOf(']', marker.Length);
+                    if (end <= marker.Length) return false;
+                    // 仅接受组值冲突路径 SDK[type][logical-key]。SDK[type]/coord 是同格重复实例，
+                    // 属于结构损坏，必须保持 fail-closed，不能尝试投影第一项。
+                    if (end + 1 >= path.Length || path[end + 1] != '[') return false;
+                    typeName = path.Substring(marker.Length, end - marker.Length);
+                    return true;
+                }
+
+                /// <summary>
+                /// SDK / Kit 归一前确认每个逻辑组都有明确来源；同组缺失的物理格会继承该来源，
+                /// 但不会在整个逻辑组都缺失时凭空构造默认实例。
+                /// </summary>
+                private static bool CanCaptureEveryTypedGroup(
+                    ConfigMasterSO master,
+                    PanelKind panelKind,
+                    string typeName,
+                    PanelDimensionMask mask,
+                    Coord curCoord)
+                {
+                    foreach (Coord representative in EnumerateLogicalRepresentatives(master, mask, curCoord))
+                    {
+                        Coord source = ResolveProjectionSource(mask, representative, curCoord);
+                        if (GetManagedConfigAtCoord(master, panelKind, typeName, source) == null) return false;
+                    }
+                    return true;
+                }
+
+                /// <summary>
+                /// 捕获现有掩码下每个逻辑组的独立来源快照。
+                /// </summary>
+                private static List<ProjectionValue> CaptureLogicalGroupValues(
+                    ConfigMasterSO master,
+                    PanelKind panelKind,
+                    string typeName,
+                    PanelDimensionMask mask,
+                    Coord curCoord)
+                {
+                    List<ProjectionValue> values = new();
+                    foreach (Coord representative in EnumerateLogicalRepresentatives(master, mask, curCoord))
+                    {
+                        Coord source = ResolveProjectionSource(mask, representative, curCoord);
+                        values.Add(new ProjectionValue(representative, CapturePanelValue(master, panelKind, typeName, source)));
+                    }
+                    return values;
                 }
 
                 /// <summary>
