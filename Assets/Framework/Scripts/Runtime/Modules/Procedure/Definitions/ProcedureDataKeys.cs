@@ -27,5 +27,12 @@ namespace NovaFramework.Runtime
         /// 写入者：ProcedureCheckVersion | 读取者：ProcedureHotfix
         /// </summary>
         public const string HasAssetPatch = "HasAssetPatch";
+
+        /// <summary>
+        /// 是否需要进入启动资源处理流程（bool）。
+        /// 非 WebGL 表示存在资源补丁；WebGL 还包含 TagsOnLaunch / AllOnLaunch 的 Warmup。
+        /// 写入者：ProcedureCheckVersion | 读取者：ProcedureAppDownload
+        /// </summary>
+        public const string RequiresStartupAssetWork = "RequiresStartupAssetWork";
     }
 }

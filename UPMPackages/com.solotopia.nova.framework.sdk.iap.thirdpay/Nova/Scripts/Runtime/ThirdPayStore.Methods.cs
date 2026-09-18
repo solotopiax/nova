@@ -22,9 +22,21 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private enum ThirdPayValidationScene
         {
             DirectPay,
+            DirectPayAmbiguousReturn,
+            DirectPayPreflight,
             Recovered,
             ExternalBrowserReturn,
         }
+
+        /// <summary>
+        /// 支付结果不明确的场景最多验单次数，避免关闭按钮或回前台链路长时间占用用户等待。
+        /// </summary>
+        private const int c_AmbiguousValidateMaxAttempts = 3;
+
+        /// <summary>
+        /// 明确收到支付成功回调后的默认验单次数，需覆盖完整重试间隔序列。
+        /// </summary>
+        private static int ConfirmedValidateMaxAttempts => s_ValidateRetryIntervals.Length + 1;
 
         /// <summary>
         /// 注入测试或平台适配使用的 Google 外部结算客户端。
@@ -35,6 +47,57 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_GooglePolicy?.Dispose();
             m_GooglePolicy = client == null ? null : new ThirdPayGooglePolicyService(client);
         }
+
+        /// <summary>
+        /// 初始化 Google 外链政策服务入口；非 Android 真机直接跳过，避免平台条件散落在 Store 初始化流程中。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>初始化完成任务。</returns>
+        private UniTask InitializeGooglePolicyAsync(CancellationToken ct)
+        {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            return InitializeAndroidGooglePolicyAsync(ct);
+#else
+            return UniTask.CompletedTask;
+#endif
+        }
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+        /// <summary>
+        /// Android 真机初始化 Google 外链政策服务，并尽力读取 Google Play Billing 商店国家码。
+        /// </summary>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>初始化完成任务。</returns>
+        private async UniTask InitializeAndroidGooglePolicyAsync(CancellationToken ct)
+        {
+            // 测试注入的 m_GooglePolicy 会优先复用；未注入时才创建默认 Google 外链客户端。
+            if (m_GooglePolicy == null)
+            {
+                double googleTimeout = m_Config?.GoogleApiTimeoutSeconds ?? 15d;
+                m_GooglePolicy = new ThirdPayGooglePolicyService(new ThirdPayGoogleExternalBillingClient(googleTimeout));
+            }
+
+            if (m_GooglePolicy == null)
+            {
+                return;
+            }
+
+            try
+            {
+                string billingCountryCode = await m_GooglePolicy.GetBillingCountryCodeAsync(ct);
+                SetBillingCountryCode(billingCountryCode);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // 商店地区读取失败不应阻断 ThirdPay；服务端仍可按空地区码处理。
+                LogWarning($"读取 Google Play Billing 商店地区失败，将使用配置中的地区码：{ex.Message}");
+            }
+        }
+#endif
 
         /// <summary>
         /// 校验第三方支付必需的 Store 配置项是否齐备；缺失时记录错误并判定 Store 未就绪。
@@ -52,6 +115,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             if (string.IsNullOrEmpty(m_Config.GetProductListCmdName))
             {
                 LogError("ThirdPayStoreConfig.GetProductListCmdName 未配置，无法拉取第三方商品列表。");
+                ready = false;
+            }
+
+            if (string.IsNullOrEmpty(m_Config.OpenUrlCmdName))
+            {
+                LogError("ThirdPayStoreConfig.OpenUrlCmdName 未配置，无法解析第三方支付页基址。");
                 ready = false;
             }
 
@@ -93,7 +162,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 return false;
             }
 
-            INetworkCmdRow openUrlCmd = Nova.Network?.ResolveNetCmdRow(c_OpenUrlCmdName);
+            INetworkCmdRow openUrlCmd = Nova.Network?.ResolveNetCmdRow(m_Config?.OpenUrlCmdName);
             string payUrlBase = Nova.Network?.ResolveNetCmdUrl(openUrlCmd);
             if (string.IsNullOrEmpty(payUrlBase))
             {
@@ -121,11 +190,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="countryCode">Billing 原始国家或地区代码。</param>
         private void SetBillingCountryCode(string countryCode)
         {
-            m_BillingCountryCode = NormalizeCountryCode(countryCode);
-            if (!string.IsNullOrEmpty(m_BillingCountryCode))
+            if (!m_CountryState.SetBillingCountryCode(countryCode))
             {
-                LogDebug($"ThirdPay BillingCountryCode={m_BillingCountryCode}");
+                return;
             }
+
+            LogDebug($"ThirdPay BillingCountryCode={m_CountryState.BillingCountryCode}");
+            PersistCountryCodesIfChanged();
         }
 
         /// <summary>
@@ -134,7 +205,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="countryCode">商品列表请求使用的国家或地区代码。</param>
         private void SetLockCountryCode(string countryCode)
         {
-            m_LockCountryCode = NormalizeCountryCode(countryCode);
+            m_CountryState.SetLockCountryCode(countryCode);
         }
 
         /// <summary>
@@ -142,37 +213,56 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         /// <param name="countryCode">原生层返回的国家或地区代码。</param>
         /// <param name="identifier">原生层返回的商店区域标识。</param>
-        private void SetNativeCountryCode(string countryCode, string identifier)
+        private void SetIosStorefrontCountryCode(string countryCode, string identifier)
         {
-            m_NativeCountryCode = NormalizeCountryCode(countryCode);
-            m_NativeStorefrontIdentifier = string.IsNullOrWhiteSpace(identifier) ? string.Empty : identifier.Trim();
-            if (!string.IsNullOrEmpty(m_NativeCountryCode))
+            if (!m_CountryState.SetIosStorefrontCountryCode(countryCode, identifier))
             {
-                LogDebug($"ThirdPay NativeCountryCode={m_NativeCountryCode}, StorefrontIdentifier={m_NativeStorefrontIdentifier}");
+                return;
             }
+
+            LogDebug($"ThirdPay IosStorefrontCountryCode={m_CountryState.IosStorefrontCountryCode}, StorefrontIdentifier={m_CountryState.IosStorefrontIdentifier}");
+            PersistCountryCodesIfChanged();
         }
 
         /// <summary>
-        /// 记录广告模块返回或缓存的国家码。
+        /// 记录广告模块返回或 ThirdPay 存档恢复的国家码。
         /// </summary>
         /// <param name="countryCode">广告模块返回的国家或地区代码。</param>
         private void SetAdCountryCode(string countryCode)
         {
-            m_AdCountryCode = NormalizeCountryCode(countryCode);
-            if (!string.IsNullOrEmpty(m_AdCountryCode))
+            if (!m_CountryState.SetAdCountryCode(countryCode))
             {
-                LogDebug($"ThirdPay AdCountryCode={m_AdCountryCode}");
+                return;
             }
+
+            LogDebug($"ThirdPay AdCountryCode={m_CountryState.AdCountryCode}");
+            PersistCountryCodesIfChanged();
+        }
+
+        /// <summary>
+        /// 将当前账号有效的 Billing / iOS Storefront / AD 国家码写入 ThirdPay 自有存档。
+        /// </summary>
+        private void PersistCountryCodesIfChanged()
+        {
+            m_PersistContext.PersistCountryCodesIfChanged(m_CountryState);
+        }
+
+        /// <summary>
+        /// 清理除 Debug 覆盖外的运行时国家码来源。
+        /// </summary>
+        private void ClearResolvedCountryCodes()
+        {
+            m_CountryState.ClearRuntimeSources();
         }
 
         /// <summary>
         /// 初始化时触发平台原生商店国家码获取，目前仅 iOS 有有效实现。
         /// </summary>
-        private void ResolveNativeCountryCode()
+        private void ResolveIosStorefrontCountryCode()
         {
             try
             {
-                ThirdPayStorefrontRegionNativeBridge.Request(SetNativeCountryCode);
+                ThirdPayIosStorefrontCountryBridge.Request(SetIosStorefrontCountryCode);
             }
             catch (Exception ex)
             {
@@ -181,7 +271,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 按 Nova AD 模块异步读取广告国家码缓存。
+        /// 按 Nova AD 模块异步读取运行时广告国家码。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         private async UniTask ResolveAdCountryCodeAsync(CancellationToken ct)
@@ -223,37 +313,15 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             string requestUid = m_GameUID;
             string requestCmdName = m_Config.GetProductListCmdName;
             string requestCountryCode = GetCountryCode();
-            if (IsSameProductListFetchInFlight(requestUid, requestCmdName, requestCountryCode))
+            if (m_ProductCatalogState.IsSameFetchInFlight(requestUid, requestCmdName, requestCountryCode))
             {
                 // 只取消当前等待者，不把 UI 手动刷新取消传播给共享的登录预取请求。
-                return await m_ProductListFetchCompletion.Task.AttachExternalCancellation(ct);
+                return await m_ProductCatalogState.FetchCompletion.Task.AttachExternalCancellation(ct);
             }
 
-            int requestVersion = ++m_ProductListRequestVersion;
-            var completion = new UniTaskCompletionSource<bool>();
-            m_ProductListFetchVersion = requestVersion;
-            m_ProductListFetchUid = requestUid;
-            m_ProductListFetchCmdName = requestCmdName;
-            m_ProductListFetchCountryCode = requestCountryCode;
-            m_ProductListFetchCompletion = completion;
+            int requestVersion = m_ProductCatalogState.BeginFetch(requestUid, requestCmdName, requestCountryCode, out UniTaskCompletionSource<bool> completion);
             RunProductListFetchAsync(requestUid, requestCmdName, requestCountryCode, requestVersion, completion).Forget();
             return await completion.Task.AttachExternalCancellation(ct);
-        }
-
-        /// <summary>
-        /// 判断当前是否已有相同上下文的商品列表在途请求可供复用。
-        /// </summary>
-        /// <param name="requestUid">请求发起时的 GameUID。</param>
-        /// <param name="requestCmdName">商品列表协议命令名。</param>
-        /// <param name="requestCountryCode">请求使用的有效国家或地区代码。</param>
-        /// <returns>同一请求仍在途且未被版本号失效时返回 true。</returns>
-        private bool IsSameProductListFetchInFlight(string requestUid, string requestCmdName, string requestCountryCode)
-        {
-            return m_ProductListFetchCompletion != null
-                && m_ProductListFetchVersion == m_ProductListRequestVersion
-                && string.Equals(m_ProductListFetchUid, requestUid, StringComparison.Ordinal)
-                && string.Equals(m_ProductListFetchCmdName, requestCmdName, StringComparison.Ordinal)
-                && string.Equals(m_ProductListFetchCountryCode, requestCountryCode, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -298,16 +366,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 NetResponse<PbNetThirdProductListResp> response = await m_NetService.GetProductListAsync(requestCmdName, requestCountryCode);
                 if (response.IsSuccess && response.Data != null)
                 {
-                    if (requestVersion != m_ProductListRequestVersion
-                        || !string.Equals(requestUid, m_GameUID, StringComparison.Ordinal)
-                        || !string.Equals(requestCmdName, m_Config?.GetProductListCmdName, StringComparison.Ordinal)
-                        || !string.Equals(requestCountryCode, GetCountryCode(), StringComparison.OrdinalIgnoreCase))
+                    if (!m_ProductCatalogState.CanApplyResponse(requestVersion, requestUid, requestCmdName, requestCountryCode, m_GameUID, m_Config?.GetProductListCmdName, GetCountryCode()))
                     {
                         return false;
                     }
 
-                    m_ProductList = response.Data;
-                    if (string.IsNullOrEmpty(m_DebugCountryCode))
+                    m_ProductCatalogState.SetProductList(response.Data);
+                    if (!m_CountryState.HasDebugCountryCode)
                     {
                         SetLockCountryCode(requestCountryCode);
                     }
@@ -324,9 +389,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         private void CompleteProductListFetchAsInvalidated()
         {
-            UniTaskCompletionSource<bool> completion = m_ProductListFetchCompletion;
-            ResetProductListFetchState();
-            completion?.TrySetResult(false);
+            m_ProductCatalogState.CompleteFetchAsInvalidated();
         }
 
         /// <summary>
@@ -335,22 +398,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="completion">本次后台请求持有的共享完成源。</param>
         private void ClearProductListFetchIfCurrent(UniTaskCompletionSource<bool> completion)
         {
-            if (ReferenceEquals(m_ProductListFetchCompletion, completion))
-            {
-                ResetProductListFetchState();
-            }
-        }
-
-        /// <summary>
-        /// 清空商品列表在途请求的上下文字段。
-        /// </summary>
-        private void ResetProductListFetchState()
-        {
-            m_ProductListFetchVersion = 0;
-            m_ProductListFetchUid = string.Empty;
-            m_ProductListFetchCmdName = string.Empty;
-            m_ProductListFetchCountryCode = string.Empty;
-            m_ProductListFetchCompletion = null;
+            m_ProductCatalogState.ClearFetchIfCurrent(completion);
         }
 
         /// <summary>
@@ -360,7 +408,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>已持有或成功补拉到有效商品列表时返回 true。</returns>
         private async UniTask<bool> EnsureProductListAsync(CancellationToken ct)
         {
-            if (m_ProductList?.ProductList != null && m_ProductList.ProductList.Count > 0)
+            if (m_ProductCatalogState.HasProductList)
             {
                 return true;
             }
@@ -402,20 +450,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         {
             IAPProductEntry entry = Table?.FindByTableId(tableId);
             string thirdProductId = entry?.ThirdProductID;
-            if (string.IsNullOrEmpty(thirdProductId) || m_ProductList?.ProductList == null)
-            {
-                return null;
-            }
-
-            foreach (PbNetThirdProductInfo product in m_ProductList.ProductList)
-            {
-                if (string.Equals(product.ProductId, thirdProductId, StringComparison.Ordinal))
-                {
-                    return product;
-                }
-            }
-
-            return null;
+            return m_ProductCatalogState.FindProductInfo(thirdProductId);
         }
 
         /// <summary>
@@ -436,18 +471,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         private static string NormalizeCountryCode(string countryCode)
         {
-            if (string.IsNullOrWhiteSpace(countryCode))
-            {
-                return string.Empty;
-            }
-
-            string normalized = countryCode.Trim().ToUpperInvariant();
-            if (string.Equals(normalized, c_UnknownCountryCode, StringComparison.Ordinal))
-            {
-                return string.Empty;
-            }
-
-            return string.Equals(normalized, c_InvalidCountryCode, StringComparison.Ordinal) ? c_DefaultCountryCode : normalized;
+            return ThirdPayCountryState.NormalizeCountryCode(countryCode);
         }
 
         /// <summary>
@@ -479,6 +503,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             try
             {
                 LogDebug($"第三方支付开始：TableId={request.TableId}，UserId={m_GameUID}，Country={GetCountryCode()}");
+                IAPResult localValidationResult = await TryValidateExistingOrderBeforePayAsync(request, ct);
+                if (localValidationResult != null)
+                {
+                    return localValidationResult;
+                }
+
                 TrackBuyInternal(request);
                 LogDebug($"第三方支付准备阶段：开始拉取渠道参数，TableId={request.TableId}");
                 bool hasChannelParams = await EnsureChannelParamsAsync(ct);
@@ -510,9 +540,17 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 }
 
                 string clientOrderId = GenerateOrderId();
-                order = new ThirdPayOrderRecord { ClientOrderId = clientOrderId, TableId = request.TableId, UserId = m_GameUID, CustomData = request.CustomData ?? string.Empty, ReceiptParam = request.ReceiptParam ?? string.Empty };
+                order = new ThirdPayOrderRecord
+                {
+                    ClientOrderId = clientOrderId,
+                    TableId = request.TableId,
+                    UserId = m_GameUID,
+                    CustomData = request.CustomData ?? string.Empty,
+                    ReceiptParam = request.ReceiptParam ?? string.Empty,
+                    State = ThirdPayLocalOrderState.Created,
+                };
 
-                m_OrderRepository.Upsert(order);
+                m_PersistContext.UpsertOrder(order);
                 TrackCreateOrderSuccessInternal(order);
                 LogDebug($"第三方支付本地订单已创建：OrderId={order.ClientOrderId}，TableId={order.TableId}，ExternalBrowser={useExternalBrowser}");
 
@@ -530,7 +568,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 catch (Exception ex)
                 {
                     LogWarning($"第三方支付授权或 URL 构建异常：OrderId={clientOrderId}，Error={ex.Message}");
-                    m_OrderRepository.Remove(clientOrderId);
+                    m_PersistContext.RemoveOrder(clientOrderId);
                     TrackCreateOrderFailInternal(request, ex.Message);
                     return Fail(request, IAPThirdPayErrorCode.StoreInitFailed, $"构造支付 URL 失败：{ex.Message}");
                 }
@@ -539,7 +577,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 {
                     (IAPThirdPayErrorCode code, string reason) = MapGoogleAuthorizationFailure(authorization.Status);
                     LogWarning($"第三方支付授权未通过：OrderId={clientOrderId}，Status={authorization.Status}，HasUrl={!string.IsNullOrEmpty(authorization.PaymentUrl)}，Reason={reason}");
-                    m_OrderRepository.Remove(clientOrderId);
+                    m_PersistContext.RemoveOrder(clientOrderId);
                     TrackCreateOrderFailInternal(request, reason);
                     return Fail(request, code, reason);
                 }
@@ -572,24 +610,29 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             catch (Exception ex)
             {
                 LogWarning($"第三方支付 WebView 打开异常：OrderId={order.ClientOrderId}，Error={ex.Message}");
+                RemoveLocalOrderIfPaymentPageDidNotOpen(order);
                 TrackLocalPayFailInternal(request, IAPThirdPayErrorCode.WebViewClosed, ex.Message);
                 return Fail(request, IAPThirdPayErrorCode.WebViewClosed, $"打开支付页异常：{ex.Message}");
             }
 
+            ThirdPayValidationScene validationScene;
             if (openResult == ThirdPayOpenResult.Cancel)
             {
                 TrackThirdPayCloseOrderInternal(order);
+                validationScene = ThirdPayValidationScene.DirectPayAmbiguousReturn;
                 LogDebug($"第三方支付 WebView 关闭返回，开始验单：OrderId={order.ClientOrderId}");
             }
             else if (openResult == ThirdPayOpenResult.Failed)
             {
                 LogWarning($"第三方支付 WebView failed 返回：OrderId={order.ClientOrderId}");
+                RemoveLocalOrderIfPaymentPageDidNotOpen(order);
                 TrackLocalPayFailInternal(request, IAPThirdPayErrorCode.WebViewClosed, "支付页返回失败或打开异常。");
-                return Fail(request, IAPThirdPayErrorCode.WebViewClosed, "支付页返回失败或打开异常，订单保留等待后续验单。");
+                return Fail(request, IAPThirdPayErrorCode.WebViewClosed, "支付页返回失败或打开异常。");
             }
             else
             {
                 TrackLocalPaySuccessInternal(order, false);
+                validationScene = ThirdPayValidationScene.DirectPay;
                 LogDebug($"第三方支付 WebView 正常 message 返回，开始验单：OrderId={order.ClientOrderId}");
             }
 
@@ -597,11 +640,81 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             AddWaitingRef();
             try
             {
-                return await ValidateOrderAsync(order, ThirdPayValidationScene.DirectPay, ct);
+                return await ValidateOrderAsync(order, validationScene, ct);
             }
             finally
             {
                 SubWaitingRef();
+            }
+        }
+
+        /// <summary>
+        /// 发起新支付前按业务键查找本地未完成订单；命中时直接验单并将结果作为本次 PayAsync 返回。
+        /// </summary>
+        /// <param name="request">第三方支付请求。</param>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>命中本地订单时返回验单结果；未命中时返回 null。</returns>
+        private async UniTask<IAPResult> TryValidateExistingOrderBeforePayAsync(IAPThirdPayRequest request, CancellationToken ct)
+        {
+            if (!m_PersistContext.TryFindOrderByKey(request.TableId, request.ReceiptParam, out ThirdPayOrderRecord order))
+            {
+                return null;
+            }
+
+            RefreshOrderContextForRequest(order, request);
+            m_PersistContext.UpsertOrder(order);
+            LogDebug($"第三方支付命中本地未完成订单，直接验单：OrderId={order.ClientOrderId}，OrderKey={ThirdPayOrderKey.Build(order)}");
+            return await ValidateOrderAsync(order, ThirdPayValidationScene.DirectPayPreflight, ct);
+        }
+
+        /// <summary>
+        /// 用当前支付请求补齐旧本地订单缺失的上下文。
+        /// </summary>
+        /// <param name="order">待补齐本地订单。</param>
+        /// <param name="request">当前支付请求。</param>
+        private void RefreshOrderContextForRequest(ThirdPayOrderRecord order, IAPThirdPayRequest request)
+        {
+            if (order == null || request == null)
+            {
+                return;
+            }
+
+            order.TableId = request.TableId;
+            if (string.IsNullOrEmpty(order.UserId))
+            {
+                order.UserId = m_GameUID;
+            }
+
+            if (string.IsNullOrEmpty(order.CustomData))
+            {
+                order.CustomData = request.CustomData ?? string.Empty;
+            }
+
+            if (string.IsNullOrEmpty(order.ReceiptParam))
+            {
+                order.ReceiptParam = request.ReceiptParam ?? string.Empty;
+            }
+
+            if (string.IsNullOrEmpty(order.State))
+            {
+                order.State = ThirdPayLocalOrderState.PendingValidation;
+            }
+        }
+
+        /// <summary>
+        /// 支付页明确未打开成功时清理本地订单，避免进入后续补单。
+        /// </summary>
+        /// <param name="order">需要清理的本地订单。</param>
+        private void RemoveLocalOrderIfPaymentPageDidNotOpen(ThirdPayOrderRecord order)
+        {
+            if (order == null || string.IsNullOrEmpty(order.ClientOrderId))
+            {
+                return;
+            }
+
+            if (m_PersistContext.RemoveOrder(order.ClientOrderId))
+            {
+                LogDebug($"第三方支付页未打开成功，本地订单已清理：OrderId={order.ClientOrderId}，OrderKey={ThirdPayOrderKey.Build(order)}");
             }
         }
 
@@ -613,7 +726,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>当前账号已存在或成功取得渠道参数时返回 true。</returns>
         private async UniTask<bool> EnsureChannelParamsAsync(CancellationToken ct)
         {
-            if (!string.IsNullOrEmpty(m_PersistData?.ChannelParams))
+            if (m_PersistContext.HasChannelParams)
             {
                 return true;
             }
@@ -624,7 +737,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             string requestUid = m_GameUID;
-            ThirdPayPersistData requestData = m_PersistData;
+            ThirdPayPersistData requestData = m_PersistContext.Data;
             NetResponse<PbNetThirdPayChannelParamsResp> response;
             try
             {
@@ -651,7 +764,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 return false;
             }
 
-            if (!string.Equals(requestUid, m_GameUID, StringComparison.Ordinal) || !ReferenceEquals(requestData, m_PersistData))
+            if (!string.Equals(requestUid, m_GameUID, StringComparison.Ordinal) || !ReferenceEquals(requestData, m_PersistContext.Data))
+            {
+                return false;
+            }
+
+            if (requestData == null)
             {
                 return false;
             }
@@ -661,8 +779,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 return true;
             }
 
-            requestData.ChannelParams = channelParams;
-            SavePersistData(requestData);
+            m_PersistContext.SetChannelParams(channelParams);
             return true;
         }
 
@@ -674,7 +791,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>补单检查完成的异步任务。</returns>
         private async UniTask RecoverOrdersAsync(CancellationToken ct)
         {
-            IReadOnlyCollection<ThirdPayOrderRecord> localOrders = m_OrderRepository?.GetAll();
+            IReadOnlyCollection<ThirdPayOrderRecord> localOrders = m_PersistContext.GetAllOrders();
 
             PbNetThirdQueryPendingOrderResp serverOrders = null;
             if (m_NetService != null && !string.IsNullOrEmpty(m_Config?.QueryPendingOrderCmdName))
@@ -779,16 +896,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             if (m_GooglePolicy == null)
             {
                 LogWarning($"第三方支付 Android Google 授权服务为空，使用无 Google token 支付 URL 兜底：OrderId={order.ClientOrderId}");
-                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, string.Empty, isExternalBrowser));
+                return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, string.Empty, isExternalBrowser, isCustomTab: isExternalBrowser));
             }
 
-            ThirdPayGoogleAuthorization authorization = await m_GooglePolicy.AuthorizeAsync(token => BuildPaymentUrl(order, token, isExternalBrowser), m_SkipPaymentInformationScreen, ct);
+            ThirdPayGoogleAuthorization authorization = await m_GooglePolicy.AuthorizeAsync(token => BuildPaymentUrl(order, token, isExternalBrowser, isCustomTab: isExternalBrowser), m_SkipPaymentInformationScreen, ct);
             LogDebug($"第三方支付 Android Google 授权结果：OrderId={order.ClientOrderId}，Status={authorization.Status}，HasUrl={!string.IsNullOrEmpty(authorization.PaymentUrl)}");
             return authorization;
 #else
             LogDebug($"第三方支付非 Android 环境直接构建 URL：OrderId={order.ClientOrderId}，ExternalBrowser={isExternalBrowser}");
             await UniTask.CompletedTask;
-            return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, string.Empty, isExternalBrowser));
+            return new ThirdPayGoogleAuthorization(ThirdPayGoogleAuthorizationStatus.Authorized, string.Empty, BuildPaymentUrl(order, string.Empty, isExternalBrowser, isCustomTab: false));
 #endif
         }
 
@@ -821,8 +938,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="googleToken">Google 外部结算上报 token。</param>
         /// <param name="isExternalBrowser">是否使用外部浏览器支付页。</param>
         /// <param name="showBackButton">支付页是否显示返回键。</param>
+        /// <param name="isCustomTab">支付页是否由 Android Auth Tab 或 Custom Tabs 打开。</param>
         /// <returns>加密后的第三方支付 URL。</returns>
-        private string BuildPaymentUrl(ThirdPayOrderRecord order, string googleToken, bool isExternalBrowser, bool showBackButton = false)
+        private string BuildPaymentUrl(ThirdPayOrderRecord order, string googleToken, bool isExternalBrowser, bool showBackButton = false, bool isCustomTab = false)
         {
             IAPProductEntry productEntry = Table?.FindByTableId(order.TableId);
             if (productEntry == null)
@@ -866,10 +984,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 Platform = header.Platform.ToString(),
                 Channel = header.Channel.ToString(),
                 AppId = header.Appid,
-                ChannelParams = m_PersistData?.ChannelParams,
+                ChannelParams = m_PersistContext.ChannelParams,
                 GoogleToken = googleToken,
                 ReceiptParam = order.ReceiptParam,
                 IsExternalBrowser = isExternalBrowser,
+                IsCustomTab = isCustomTab,
                 ShowBackButton = showBackButton,
             });
         }
@@ -884,7 +1003,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private async UniTask<IAPResult> ValidateOrderAsync(ThirdPayOrderRecord order, ThirdPayValidationScene scene, CancellationToken ct)
         {
             List<IAPResult> results = await ValidateOrdersAsync(new List<ThirdPayOrderRecord> { order }, scene, ct);
-            return results.Count > 0 ? results[0] : new IAPResult(order.TableId, (int)IAPThirdPayErrorCode.ServerValidationFailed, IAPErrorSource.ThirdPay, "验单未返回结果。", order.CustomData, order.ReceiptParam);
+            return results.Count > 0 ? MarkStoreResult(results[0]) : new IAPResult(order.TableId, (int)IAPThirdPayErrorCode.ServerValidationFailed, IAPErrorSource.ThirdPay, "验单未返回结果。", order.CustomData, order.ReceiptParam);
         }
 
         /// <summary>
@@ -902,7 +1021,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             bool isRecovered = scene == ThirdPayValidationScene.Recovered;
-            bool publishNonTerminalFailures = scene == ThirdPayValidationScene.DirectPay;
+            bool publishNonTerminalFailures = ShouldPublishNonTerminalFailure(scene);
+            MarkOrdersValidating(orders);
 
             if (m_NetService == null || string.IsNullOrEmpty(m_Config?.VerifyIapCmdName))
             {
@@ -916,7 +1036,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 clientOrderIds.Add(order.ClientOrderId);
             }
 
-            int maxAttempts = isRecovered ? 1 : Math.Max(1, Context?.RetryValidateMaxNum ?? 1);
+            int maxAttempts = ResolveValidateMaxAttempts(scene);
             for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
                 ct.ThrowIfCancellationRequested();
@@ -928,7 +1048,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
                 bool isFinalAttempt = attempt + 1 >= maxAttempts;
                 TrackValidationFailureBatchInternal(orders, isRecovered, attempt + 1, true, response.ErrorCode, response.ErrorMessage, isFinalAttempt);
-                if (scene == ThirdPayValidationScene.DirectPay && attempt == 0)
+                if (IsConfirmedPaymentSuccessScene(scene) && attempt == 0)
                 {
                     TrackFirstValidationFailureBatchInternal(orders, attempt + 1, true);
                 }
@@ -944,6 +1064,34 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 按验单场景解析本次最大验单次数。
+        /// </summary>
+        /// <param name="scene">验单触发场景。</param>
+        /// <returns>本次最多发起的验单次数。</returns>
+        private int ResolveValidateMaxAttempts(ThirdPayValidationScene scene)
+        {
+            if (scene == ThirdPayValidationScene.Recovered)
+            {
+                return 1;
+            }
+
+            int configuredMaxAttempts = Math.Max(1, Context?.RetryValidateMaxNum ?? c_AmbiguousValidateMaxAttempts);
+            return IsConfirmedPaymentSuccessScene(scene)
+                ? Math.Max(ConfirmedValidateMaxAttempts, configuredMaxAttempts)
+                : Math.Min(c_AmbiguousValidateMaxAttempts, configuredMaxAttempts);
+        }
+
+        /// <summary>
+        /// 判断验单场景是否已经由支付页明确回调支付成功。
+        /// </summary>
+        /// <param name="scene">验单触发场景。</param>
+        /// <returns>明确支付成功后触发验单时返回 true。</returns>
+        private static bool IsConfirmedPaymentSuccessScene(ThirdPayValidationScene scene)
+        {
+            return scene == ThirdPayValidationScene.DirectPay;
+        }
+
+        /// <summary>
         /// 将服务端验单响应转换为业务结果，并同步更新本地订单存档。
         /// </summary>
         /// <param name="orders">本次验单的本地订单列表。</param>
@@ -955,15 +1103,17 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         {
             var results = new List<IAPResult>(orders.Count);
             bool anyRemoved = false;
+            bool anyChanged = false;
             bool isRecovered = scene == ThirdPayValidationScene.Recovered;
-            bool publishNonTerminalFailures = scene == ThirdPayValidationScene.DirectPay;
-            bool publishTerminalFailures = scene != ThirdPayValidationScene.Recovered;
+            bool publishNonTerminalFailures = ShouldPublishNonTerminalFailure(scene);
+            bool publishTerminalFailures = ShouldPublishTerminalFailure(scene);
             foreach (ThirdPayOrderRecord order in orders)
             {
                 PbNetThirdVerifyOrderResult matched = FindResponse(response, order.ClientOrderId);
                 if (matched == null)
                 {
                     const string missingReason = "验单响应未包含该订单，订单已保留。";
+                    anyChanged |= MarkOrderPendingValidation(order);
                     TrackValidateFailFinishInternal(order, isRecovered, validateCount, false, 0, missingReason);
                     var missing = new IAPResult(order.TableId, (int)IAPThirdPayErrorCode.ServerValidationFailed, IAPErrorSource.ThirdPay, missingReason, order.CustomData, order.ReceiptParam);
                     if (publishNonTerminalFailures)
@@ -975,39 +1125,41 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     continue;
                 }
 
-                ThirdPayOrderResolution resolution = ThirdPayOrderResolution.FromStatus(matched.Status);
+                PbNetThirdVerifyOrderStatus status = matched.Status;
+                ThirdPayOrderResolution resolution = ThirdPayOrderResolution.FromStatus(status);
                 long tableId = matched.TableId != 0 ? matched.TableId : order.TableId;
                 string receiptParam = string.IsNullOrEmpty(matched.ReceiptParam) ? order.ReceiptParam : matched.ReceiptParam;
                 if (resolution.RemoveOrder)
                 {
-                    anyRemoved |= m_OrderRepository.Remove(order.ClientOrderId, false);
+                    anyRemoved |= m_PersistContext.RemoveOrder(order.ClientOrderId, false);
+                }
+                else
+                {
+                    anyChanged |= MarkOrderPendingValidation(order);
                 }
 
-                if (resolution.Disposition == ThirdPayOrderDisposition.Deliverable)
+                if (resolution.IsSuccess)
                 {
                     string orderId = string.IsNullOrEmpty(matched.ServerOrderId) ? order.ClientOrderId : matched.ServerOrderId;
                     TrackValidateSuccessInternal(order, tableId, orderId, isRecovered, validateCount);
-                    var success = new IAPResult(tableId, orderId, isRecovered, true, order.CustomData, receiptParam);
-                    Context?.EventBridge?.RaisePaySuccess(success);
+                    var success = new IAPResult(tableId, orderId, isRecovered, resolution.CanDeliver, order.CustomData, receiptParam, StoreType);
+                    if (resolution.CanDeliver || ShouldPublishNonDeliverableSuccess(scene))
+                    {
+                        Context?.EventBridge?.RaisePaySuccess(success);
+                    }
+
                     results.Add(success);
                     continue;
                 }
 
-                if (resolution.Disposition == ThirdPayOrderDisposition.AlreadyDelivered)
-                {
-                    string orderId = string.IsNullOrEmpty(matched.ServerOrderId) ? order.ClientOrderId : matched.ServerOrderId;
-                    TrackValidateSuccessInternal(order, tableId, orderId, isRecovered, validateCount);
-                    results.Add(new IAPResult(tableId, orderId, isRecovered, false, order.CustomData, receiptParam));
-                    continue;
-                }
-
-                bool isFailed = resolution.Disposition == ThirdPayOrderDisposition.Failed
-                    || resolution.Disposition == ThirdPayOrderDisposition.NotFound;
-                string reason = resolution.Disposition == ThirdPayOrderDisposition.NotFound
+                bool isFailed = resolution.RaiseTerminalEvent;
+                string reason = status == PbNetThirdVerifyOrderStatus.NotFound
                     ? "第三方订单不存在，已移除本地订单。"
+                    : status == PbNetThirdVerifyOrderStatus.PendingPayment
+                        ? "第三方订单用户未支付，已移除本地订单。"
                     : isFailed
-                        ? $"第三方订单支付失败，状态={matched.Status}。"
-                        : $"第三方订单仍在处理中，状态={matched.Status}，订单已保留。";
+                        ? $"第三方订单支付失败，状态={status}。"
+                        : $"第三方订单仍在处理中，状态={status}，订单已保留。";
                 var failure = new IAPResult(tableId, (int)(isFailed ? IAPThirdPayErrorCode.ServerValidationFailed : IAPThirdPayErrorCode.OrderPending), IAPErrorSource.ThirdPay, reason, order.CustomData, receiptParam);
                 if (isFailed)
                 {
@@ -1029,9 +1181,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 results.Add(failure);
             }
 
-            if (anyRemoved)
+            if (anyRemoved || anyChanged)
             {
-                m_OrderRepository.Save();
+                m_PersistContext.Save();
             }
 
             return results;
@@ -1062,6 +1214,89 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 判断非终态验单失败是否需要派发到 IAPPlugin 全局事件。
+        /// DirectPay 有同步调用方等待结果；ExternalBrowserReturn 是异步回前台链路，也必须通知 UI 验单已有结论。
+        /// </summary>
+        /// <param name="scene">验单触发场景。</param>
+        /// <returns>需要通过 PayFailed 派发非终态结果时返回 true。</returns>
+        private static bool ShouldPublishNonTerminalFailure(ThirdPayValidationScene scene)
+        {
+            return scene == ThirdPayValidationScene.DirectPay
+                   || scene == ThirdPayValidationScene.DirectPayAmbiguousReturn
+                   || scene == ThirdPayValidationScene.DirectPayPreflight
+                   || scene == ThirdPayValidationScene.ExternalBrowserReturn;
+        }
+
+        /// <summary>
+        /// 判断终态失败是否需要派发到 IAPPlugin 全局事件。
+        /// 补单扫描由调用方接收结果列表，避免重复打扰业务 UI。
+        /// </summary>
+        /// <param name="scene">验单触发场景。</param>
+        /// <returns>需要通过 PayFailed 派发终态失败时返回 true。</returns>
+        private static bool ShouldPublishTerminalFailure(ThirdPayValidationScene scene)
+        {
+            return scene != ThirdPayValidationScene.Recovered;
+        }
+
+        /// <summary>
+        /// 判断不可发货成功结果是否需要派发到 IAPPlugin 全局事件。
+        /// 外部浏览器返回验单会回传给 PayAsync 调用方；已发货状态仍需要通过 CanDeliver=false 派发全局事件通知 UI，但不能触发重复发奖。
+        /// </summary>
+        /// <param name="scene">验单触发场景。</param>
+        /// <returns>需要通过 PaySuccess 派发不可发货成功结果时返回 true。</returns>
+        private static bool ShouldPublishNonDeliverableSuccess(ThirdPayValidationScene scene)
+        {
+            return scene == ThirdPayValidationScene.ExternalBrowserReturn;
+        }
+
+        /// <summary>
+        /// 标记一批订单即将发起服务端验单。
+        /// </summary>
+        /// <param name="orders">待验单订单列表。</param>
+        private void MarkOrdersValidating(List<ThirdPayOrderRecord> orders)
+        {
+            if (orders == null || orders.Count == 0)
+            {
+                return;
+            }
+
+            bool anyChanged = false;
+            foreach (ThirdPayOrderRecord order in orders)
+            {
+                if (order == null)
+                {
+                    continue;
+                }
+
+                bool changed = !string.Equals(order.State, ThirdPayLocalOrderState.Validating, StringComparison.Ordinal);
+                order.State = ThirdPayLocalOrderState.Validating;
+                anyChanged |= changed;
+            }
+
+            if (anyChanged)
+            {
+                m_PersistContext.Save();
+            }
+        }
+
+        /// <summary>
+        /// 标记订单验单尚未终结，后续仍可继续补单。
+        /// </summary>
+        /// <param name="order">本地订单。</param>
+        /// <returns>订单状态被更新时返回 true。</returns>
+        private static bool MarkOrderPendingValidation(ThirdPayOrderRecord order)
+        {
+            if (order == null)
+            {
+                return false;
+            }
+
+            bool changed = !string.Equals(order.State, ThirdPayLocalOrderState.PendingValidation, StringComparison.Ordinal);
+            order.State = ThirdPayLocalOrderState.PendingValidation;
+            return changed;
+        }
+
+        /// <summary>
         /// 为整批订单构造相同原因的验单失败结果。
         /// </summary>
         /// <param name="orders">待构造结果的订单列表。</param>
@@ -1071,8 +1306,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private List<IAPResult> BuildValidationFailures(List<ThirdPayOrderRecord> orders, string reason, bool publishFailures)
         {
             var results = new List<IAPResult>(orders.Count);
+            bool anyChanged = false;
             foreach (ThirdPayOrderRecord order in orders)
             {
+                anyChanged |= MarkOrderPendingValidation(order);
                 var failure = new IAPResult(order.TableId, (int)IAPThirdPayErrorCode.ServerValidationFailed, IAPErrorSource.ThirdPay, reason, order.CustomData, order.ReceiptParam);
                 if (publishFailures)
                 {
@@ -1080,6 +1317,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 }
 
                 results.Add(failure);
+            }
+
+            if (anyChanged)
+            {
+                m_PersistContext.Save();
             }
 
             return results;
@@ -1105,8 +1347,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="data">当前账号存档；为空时创建空存档。</param>
         private void ResetRepository(ThirdPayPersistData data)
         {
-            m_PersistData = data ?? (ThirdPayPersistData)CreateEmptyPersistData();
-            m_OrderRepository = new ThirdPayOrderRepository(m_PersistData, SavePersistData);
+            m_PersistContext.Reset(data ?? (ThirdPayPersistData)CreateEmptyPersistData(), SavePersistData);
+            m_PersistContext.RestoreCountryCodes(m_CountryState);
         }
 
         /// <summary>

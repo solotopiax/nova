@@ -31,6 +31,12 @@ namespace NovaFramework.Runtime
         public AssetPlayMode RuntimePlayMode = AssetPlayMode.HostPlayMode;
 
         /// <summary>
+        /// WebGL 启动阶段的资源加载策略；默认按 LaunchHotfixTags 预热。
+        /// 该配置与 OfflinePlayMode / HostPlayMode 及 EnableHotfix 相互独立。
+        /// </summary>
+        public WebGLAssetStrategy WebGLAssetStrategy = WebGLAssetStrategy.TagsOnLaunch;
+
+        /// <summary>
         /// 需要 CreatePackage 的包名列表，至少包含一个默认包（Inspector 下沉字段）。
         /// </summary>
         public System.Collections.Generic.List<string> Packages;
@@ -46,8 +52,9 @@ namespace NovaFramework.Runtime
         public bool AutoCleanupOnSceneUnload;
 
         /// <summary>
-        /// 热更新功能总开关。
-        /// 默认 true，关闭时启动直跳 ProcedureLoadDll，跳过 CheckVersion / Hotfix / AppDownload 三个 Procedure；
+        /// 资源热更新总开关。
+        /// 默认 true，关闭时跳过资源补丁检查与下载，但不跳过 App 大版本检查；
+        /// WebGL TagsOnLaunch / AllOnLaunch 的启动预热不受该开关影响；
         /// 与 RuntimePlayMode 在 Inspector 编辑期双向联动：关闭时 RuntimePlayMode 强制为 OfflinePlayMode；
         /// 开启时 RuntimePlayMode 限制为 HostPlayMode（详见 AssetComponentInspector 联动逻辑）。
         /// </summary>
@@ -104,17 +111,12 @@ namespace NovaFramework.Runtime
         public int StartupWhitelistCheckTimeout = 5;
 
         /// <summary>
-        /// 启动期资源补丁就绪后是否自动开始下载。
-        /// </summary>
-        public bool AutoHotfix = true;
-
-        /// <summary>
         /// 资源补丁下载失败或取消时是否强制退出应用。
         /// </summary>
         public bool QuitOnFailedOrCancel;
 
         /// <summary>
-        /// 资源补丁下载最大并发数，推荐 3-8。
+        /// 资源请求最大并发数；非 WebGL 用于补丁下载，WebGL 用于限制 Bundle Warmup，推荐 3-8。
         /// </summary>
         public int MaxDownloadConcurrency = 5;
 
@@ -176,9 +178,9 @@ namespace NovaFramework.Runtime
         public ChannelType Channel;
 
         /// <summary>
-        /// 启动期热更按 tag 过滤的 tag 列表。
-        /// 非空时 ProcedureCheckVersion 与 ProcedureHotfix 分别按 Tag 判断和下载；
-        /// 空列表或 null 表示检查并下载整包（行为与旧逻辑一致）。
+        /// 启动期资源 Tag 列表。
+        /// 非 WebGL 下用于限制补丁检查与下载范围，空列表表示整包；
+        /// WebGL 下仅供 TagsOnLaunch 预热使用，清理空白与重复项后为空时降级为 OnDemand。
         /// </summary>
         public System.Collections.Generic.List<string> LaunchHotfixTags;
 

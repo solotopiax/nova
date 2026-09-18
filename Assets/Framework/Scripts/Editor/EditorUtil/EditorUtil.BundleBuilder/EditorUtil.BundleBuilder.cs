@@ -45,6 +45,12 @@ namespace NovaFramework.Editor
 
                 BuildTarget target = args.Target == BuildTarget.NoTarget ? EditorUserBuildSettings.activeBuildTarget : args.Target;
                 string version = string.IsNullOrEmpty(args.BuildVersion) ? GetDefaultPackageVersion() : args.BuildVersion;
+                ResolveBundledCopy(
+                    target,
+                    args.BundledCopyOption,
+                    args.BundledCopyParams,
+                    out EBundledCopyOption bundledCopyOption,
+                    out string bundledCopyParams);
 
                 ScriptableBuildParameters parameters = new ScriptableBuildParameters();
                 parameters.BuildOutputRoot = BundleBuilderHelper.GetDefaultBuildOutputRoot();
@@ -57,8 +63,8 @@ namespace NovaFramework.Editor
                 parameters.EnableSharePackRule = true;
                 parameters.VerifyBuildingResult = true;
                 parameters.FileNameStyle = args.FileNameStyle;
-                parameters.BundledCopyOption = args.BundledCopyOption;
-                parameters.BundledCopyParams = args.BundledCopyParams ?? string.Empty;
+                parameters.BundledCopyOption = bundledCopyOption;
+                parameters.BundledCopyParams = bundledCopyParams;
                 parameters.CompressOption = args.Compression;
                 parameters.ClearBuildCacheFiles = args.ClearBuildCache;
                 parameters.UseAssetDependencyDB = args.UseAssetDependencyDB;
@@ -77,6 +83,7 @@ namespace NovaFramework.Editor
                 {
                     throw new InvalidOperationException(string.Format("{0} 构建失败：FailedTask={1}, Error={2}", c_LogPrefix, result.FailedTask, result.ErrorInfo));
                 }
+                FinalizeWebGLBundledCopy(target, args.PackageName, bundledCopyOption);
                 Log.Debug(LogTag.Editor, "{0} 构建成功：{1}", c_LogPrefix, result.OutputPackageDirectory);
                 return result;
             }
@@ -100,6 +107,12 @@ namespace NovaFramework.Editor
 
                 BuildTarget target = args.Target == BuildTarget.NoTarget ? EditorUserBuildSettings.activeBuildTarget : args.Target;
                 string version = string.IsNullOrEmpty(args.BuildVersion) ? GetDefaultPackageVersion() : args.BuildVersion;
+                ResolveBundledCopy(
+                    target,
+                    args.BundledCopyOption,
+                    args.BundledCopyParams,
+                    out EBundledCopyOption bundledCopyOption,
+                    out string bundledCopyParams);
 
                 RawFileBuildParameters parameters = new RawFileBuildParameters();
                 parameters.BuildOutputRoot = BundleBuilderHelper.GetDefaultBuildOutputRoot();
@@ -111,8 +124,8 @@ namespace NovaFramework.Editor
                 parameters.PackageVersion = version;
                 parameters.VerifyBuildingResult = true;
                 parameters.FileNameStyle = args.FileNameStyle;
-                parameters.BundledCopyOption = args.BundledCopyOption;
-                parameters.BundledCopyParams = args.BundledCopyParams ?? string.Empty;
+                parameters.BundledCopyOption = bundledCopyOption;
+                parameters.BundledCopyParams = bundledCopyParams;
                 parameters.ClearBuildCacheFiles = args.ClearBuildCache;
                 parameters.UseAssetDependencyDB = args.UseAssetDependencyDB;
                 parameters.BundleEncryptor = CreateInstanceOrNull<IBundleEncryptor>(ResolveClassName(args.BundleEncryptorClassName, typeof(EncryptionNone)));
@@ -130,6 +143,7 @@ namespace NovaFramework.Editor
                 {
                     throw new InvalidOperationException(string.Format("{0} RawFile 构建失败：FailedTask={1}, Error={2}", c_LogPrefix, result.FailedTask, result.ErrorInfo));
                 }
+                FinalizeWebGLBundledCopy(target, args.PackageName, bundledCopyOption);
                 Log.Debug(LogTag.Editor, "{0} RawFile 构建成功：{1}", c_LogPrefix, result.OutputPackageDirectory);
                 return result;
             }
@@ -142,6 +156,75 @@ namespace NovaFramework.Editor
             {
                 int totalMinutes = DateTime.Now.Hour * 60 + DateTime.Now.Minute;
                 return string.Format("{0}-{1}", DateTime.Now.ToString("yyyy-MM-dd"), totalMinutes);
+            }
+
+            /// <summary>
+            /// 解析最终首包拷贝参数；WebGL 仅允许可准确描述当前 Package 完整布局的三种清理式选项。
+            /// </summary>
+            /// <param name="target">目标构建平台。</param>
+            /// <param name="requestedOption">调用方请求的拷贝模式。</param>
+            /// <param name="requestedParams">调用方请求的 Tag 参数。</param>
+            /// <param name="option">最终拷贝模式。</param>
+            /// <param name="copyParams">最终 Tag 参数。</param>
+            internal static void ResolveBundledCopy(
+                BuildTarget target,
+                EBundledCopyOption requestedOption,
+                string requestedParams,
+                out EBundledCopyOption option,
+                out string copyParams)
+            {
+                if (target == BuildTarget.WebGL)
+                {
+                    if (!IsWebGLBundledCopyOptionSupported(requestedOption))
+                    {
+                        throw new ArgumentOutOfRangeException(
+                            nameof(requestedOption),
+                            requestedOption,
+                            "WebGL 仅支持 None、ClearAndCopyByTags 或 ClearAndCopyAll。");
+                    }
+
+                    option = requestedOption;
+                    copyParams = requestedOption == EBundledCopyOption.ClearAndCopyByTags
+                        ? requestedParams ?? string.Empty
+                        : string.Empty;
+                    return;
+                }
+
+                option = requestedOption;
+                copyParams = requestedParams ?? string.Empty;
+            }
+
+            /// <summary>
+            /// 判断首包拷贝选项是否可用于 WebGL；禁止不清理旧目录的增量拷贝，避免遗留 Catalog 与 Bundle 污染当前构建。
+            /// </summary>
+            /// <param name="option">待检查的 YooAsset 首包拷贝选项。</param>
+            /// <returns>WebGL 可安全使用时返回 true。</returns>
+            internal static bool IsWebGLBundledCopyOptionSupported(EBundledCopyOption option)
+            {
+                return option == EBundledCopyOption.None
+                       || option == EBundledCopyOption.ClearAndCopyByTags
+                       || option == EBundledCopyOption.ClearAndCopyAll;
+            }
+
+            /// <summary>
+            /// 在 WebGL 的 None 构建成功后清理当前 Package 的旧首包目录，确保 Catalog 缺失能够准确表示纯 CDN 布局。
+            /// </summary>
+            /// <param name="target">本次资源构建平台。</param>
+            /// <param name="packageName">YooAsset Package 名称。</param>
+            /// <param name="copyOption">已校验的最终首包拷贝选项。</param>
+            private static void FinalizeWebGLBundledCopy(
+                BuildTarget target,
+                string packageName,
+                EBundledCopyOption copyOption)
+            {
+                if (target != BuildTarget.WebGL || copyOption != EBundledCopyOption.None)
+                {
+                    return;
+                }
+
+                string packageRoot = System.IO.Path.Combine(BundleBuilderHelper.GetStreamingAssetsRoot(), packageName);
+                EditorFileUtility.DeleteDirectory(packageRoot);
+                AssetDatabase.Refresh();
             }
         }
     }

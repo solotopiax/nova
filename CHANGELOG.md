@@ -8,6 +8,27 @@
 
 ## [Unreleased]
 
+## [0.6.31] - 2026-09-18
+
+### Breaking
+
+- Config 的 Platform 与 Channel 坐标不再接受 `None`；旧 Channel None 数据按有效坐标迁移到 Official，旧 Platform None 数据会被清理，导出、构建和运行时均拒绝无效坐标。
+- 资源预加载统一迁移到可显式释放的 Warmup Group；删除未投入使用的 `PreloadAsync` 与未生效的自动热更配置。
+
+### Added
+
+- WebGL 新增按启动 Tag、按需和启动全量三种资源策略，并支持按全部资源、Tag 或地址创建可控生命周期的 Warmup Group。
+
+### Changed
+
+- WebGL 启动资源准备、首包布局、超时与 CDN 回退链按 YooAsset 官方目录能力重新收口；CDN 部署改为直接覆盖上传，不再提供上传前清理。
+- 应用配置网络日志仅在成功时输出完整响应，失败继续使用明确的 Warning 或 Error。
+- 同步发布 SDK Ad `1.1.13`、AIHelp `0.0.15`、Apple Sign-In `0.0.20`、Firebase `0.1.16`、Google Sign-In `0.0.21`、IAP `0.1.15`、IAP Mobile `0.1.13`、MAX `0.1.11` 与 TGA `0.1.15`。
+
+### Fixed
+
+- 修复 WebGL SDK 配置类型缺失、FileFragment 恢复与删除阻塞、应用更新及失败退出误触发等问题，并让相关 Inspector 提示随配置可用状态正确显示。
+
 ## [0.6.30] - 2026-09-15
 
 ### Changed

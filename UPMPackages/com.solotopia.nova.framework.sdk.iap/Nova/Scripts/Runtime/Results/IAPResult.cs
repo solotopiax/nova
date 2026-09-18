@@ -39,6 +39,12 @@ namespace NovaFramework.SDK.IAP.Runtime
         public string OrderId { get; }
 
         /// <summary>
+        /// 本次支付结果所属的 IAP Store。
+        /// 全局 PaySuccess / PayFailed 事件可通过该字段区分 Mobile、ThirdPay 或 Voucher 来源。
+        /// </summary>
+        public IAPStoreType StoreType { get; private set; }
+
+        /// <summary>
         /// 是否为补单恢复的历史订单；true 表示本次结果来自补单而非新购。
         /// </summary>
         public bool IsRecoveredOrder { get; }
@@ -74,7 +80,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="canDeliver">是否可以发货。</param>
         /// <param name="customData">调用方传入的自定义数据。</param>
         /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
-        public IAPResult(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, string receiptParam = null)
+        public IAPResult(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, string receiptParam = null, IAPStoreType storeType = IAPStoreType.None)
         {
             IsSuccess = true;
             ErrorCode = 0;
@@ -85,6 +91,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             CanDeliver = canDeliver;
             CustomData = customData;
             ReceiptParam = receiptParam;
+            StoreType = ResolveStoreType(storeType, ErrorSource);
         }
 
         /// <summary>
@@ -98,9 +105,9 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="subscriptionExpireTimeMs">订阅到期时间（毫秒 Unix 时间戳）。</param>
         /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
         /// <returns>包含订阅到期时间的成功结果实例。</returns>
-        public static IAPResult SuccessWithExpire(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, long subscriptionExpireTimeMs, string receiptParam = null)
+        public static IAPResult SuccessWithExpire(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, long subscriptionExpireTimeMs, string receiptParam = null, IAPStoreType storeType = IAPStoreType.None)
         {
-            return new IAPResult(tableId, orderId, isRecoveredOrder, canDeliver, customData, subscriptionExpireTimeMs, receiptParam);
+            return new IAPResult(tableId, orderId, isRecoveredOrder, canDeliver, customData, subscriptionExpireTimeMs, receiptParam, storeType);
         }
 
         /// <summary>
@@ -112,7 +119,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="errorDesc">错误描述。</param>
         /// <param name="customData">调用方传入的自定义数据。</param>
         /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
-        public IAPResult(long tableId, int errorCode, IAPErrorSource errorSource, string errorDesc, string customData, string receiptParam = null)
+        public IAPResult(long tableId, int errorCode, IAPErrorSource errorSource, string errorDesc, string customData, string receiptParam = null, IAPStoreType storeType = IAPStoreType.None)
         {
             IsSuccess = false;
             ErrorCode = errorCode;
@@ -121,6 +128,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             ErrorDesc = errorDesc;
             CustomData = customData;
             ReceiptParam = receiptParam;
+            StoreType = ResolveStoreType(storeType, errorSource);
         }
 
         /// <summary>
@@ -135,8 +143,8 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="isRecoveredOrder">是否为补单恢复的历史订单。</param>
         /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
         public IAPResult(long tableId, int errorCode, IAPErrorSource errorSource, string errorDesc, string customData, string orderId,
-            bool isRecoveredOrder, string receiptParam = null)
-            : this(tableId, errorCode, errorSource, errorDesc, customData, receiptParam)
+            bool isRecoveredOrder, string receiptParam = null, IAPStoreType storeType = IAPStoreType.None)
+            : this(tableId, errorCode, errorSource, errorDesc, customData, receiptParam, storeType)
         {
             OrderId = orderId;
             IsRecoveredOrder = isRecoveredOrder;
@@ -152,7 +160,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <param name="customData">调用方传入的自定义数据。</param>
         /// <param name="subscriptionExpireTimeMs">订阅到期时间（毫秒 Unix 时间戳）。</param>
         /// <param name="receiptParam">平台票据透传字符串；无则为 null。</param>
-        private IAPResult(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, long subscriptionExpireTimeMs, string receiptParam)
+        private IAPResult(long tableId, string orderId, bool isRecoveredOrder, bool canDeliver, string customData, long subscriptionExpireTimeMs, string receiptParam, IAPStoreType storeType)
         {
             IsSuccess = true;
             ErrorCode = 0;
@@ -164,6 +172,44 @@ namespace NovaFramework.SDK.IAP.Runtime
             CustomData = customData;
             SubscriptionExpireTimeMs = subscriptionExpireTimeMs;
             ReceiptParam = receiptParam;
+            StoreType = ResolveStoreType(storeType, ErrorSource);
+        }
+
+        /// <summary>
+        /// 为结果补齐所属 StoreType，并返回当前实例，便于事件派发前链式调用。
+        /// </summary>
+        /// <param name="storeType">所属 IAP Store。</param>
+        /// <returns>当前结果实例。</returns>
+        public IAPResult WithStoreType(IAPStoreType storeType)
+        {
+            StoreType = ResolveStoreType(storeType, ErrorSource);
+            return this;
+        }
+
+        /// <summary>
+        /// 优先使用显式 StoreType；未显式提供时从错误来源推断失败结果所属商店。
+        /// </summary>
+        /// <param name="storeType">显式 StoreType。</param>
+        /// <param name="errorSource">错误来源。</param>
+        /// <returns>可用于结果对外暴露的 StoreType。</returns>
+        private static IAPStoreType ResolveStoreType(IAPStoreType storeType, IAPErrorSource errorSource)
+        {
+            if (storeType != IAPStoreType.None)
+            {
+                return storeType;
+            }
+
+            switch (errorSource)
+            {
+                case IAPErrorSource.Mobile:
+                    return IAPStoreType.Mobile;
+                case IAPErrorSource.ThirdPay:
+                    return IAPStoreType.ThirdPay;
+                case IAPErrorSource.Voucher:
+                    return IAPStoreType.Voucher;
+                default:
+                    return IAPStoreType.None;
+            }
         }
     }
 }

@@ -30,7 +30,7 @@ namespace NovaFramework.Editor
             {
                 /// <summary>
                 /// 同步 ConfigMasterSO 矩阵与当前枚举成员：新增成员按面板维度掩码继承既有逻辑组，已废弃成员移除行；完成后 SetDirty。
-                /// <para>忽略 PlatformType.None；ChannelType.None 是合法渠道坐标；重复组合只保留第一条。</para>
+                /// <para>PlatformType.None 与 ChannelType.None 均为内部哨兵，不生成矩阵行；重复组合只保留第一条。</para>
                 /// </summary>
                 /// <param name="master">待同步的 ConfigMasterSO 实例。</param>
                 public static void SyncEnumGrid(ConfigMasterSO master)
@@ -46,16 +46,45 @@ namespace NovaFramework.Editor
                         if (platforms[p] == PlatformType.None) continue;
                         for (int c = 0; c < channels.Length; c++)
                         {
+                            if (channels[c] == ChannelType.None) continue;
                             wanted.Add((platforms[p], channels[c]));
                         }
                     }
 
+                    // 旧资产可能把 None 保存为当前渠道；在补齐矩阵前归一到首个可用渠道。
+                    if (master.CurrentChannel == ChannelType.None ||
+                        !Enum.IsDefined(typeof(ChannelType), master.CurrentChannel))
+                    {
+                        master.CurrentChannel = ChannelType.Official;
+                    }
+
                     var entries = master.EditorEntries;
+                    HashSet<(PlatformType, ChannelType)> explicitValidCoordinates = new();
+                    for (int i = 0; i < entries.Count; i++)
+                    {
+                        PlatformChannelEntry entry = entries[i];
+                        if (entry == null) continue;
+                        var key = (entry.Platform, entry.Channel);
+                        if (wanted.Contains(key)) explicitValidCoordinates.Add(key);
+                    }
                     HashSet<(PlatformType, ChannelType)> present = new();
                     List<PlatformChannelEntry> existingEntries = new();
                     for (int i = entries.Count - 1; i >= 0; i--)
                     {
                         var e = entries[i];
+                        if (e == null)
+                        {
+                            master.EditorRemoveEntryAt(i);
+                            continue;
+                        }
+
+                        // 旧版允许 Channel=None；同平台没有 Official 行时原位迁移，避免升级后丢失唯一配置。
+                        var officialKey = (e.Platform, ChannelType.Official);
+                        if (e.Platform != PlatformType.None && e.Channel == ChannelType.None &&
+                            wanted.Contains(officialKey) && !explicitValidCoordinates.Contains(officialKey))
+                        {
+                            e.Channel = ChannelType.Official;
+                        }
                         var key = (e.Platform, e.Channel);
                         if (!wanted.Contains(key) || present.Contains(key))
                         {

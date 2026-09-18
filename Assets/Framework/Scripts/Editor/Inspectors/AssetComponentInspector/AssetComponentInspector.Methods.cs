@@ -23,9 +23,14 @@ namespace NovaFramework.Editor
         /// </summary>
         private void DrawConfigs()
         {
+            bool isWebGLBuildTarget = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+
             // 顶层：实现选择（不加 Foldout，平铺展示）
-            EditorUtil.Draw.TypesSelector("Asset 管理器", m_AssetManagerTypeNames, m_CurAssetManagerTypeName, true, null, GUILayout.Width(180f));
-            EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "支持自定义类型，实现框架层 IAssetManager 接口后，该类型将自动出现在此列表中。" });
+            using (new EditorGUI.DisabledScope(EditorApplication.isPlaying))
+            {
+                EditorUtil.Draw.TypesSelector("Asset 管理器", m_AssetManagerTypeNames, m_CurAssetManagerTypeName, false, null, GUILayout.Width(180f));
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "支持自定义类型，实现框架层 IAssetManager 接口后，该类型将自动出现在此列表中。" }, false);
+            }
 
             EditorUtil.Draw.Line();
 
@@ -34,32 +39,45 @@ namespace NovaFramework.Editor
             DrawEditorPlayModePopup();
             EditorUtil.Draw.HelpBox(MessageType.Info, new[]
             {
-                "(1)编辑器下的资源加载模式",
-                "(2)EditorSimulateMode 直接读取 Editor 资源",
-                "(3)EditorSimulateMode 不产生资源补丁，不会进入 ProcedureHotfix",
-                "(4)开发期推荐使用，无网络开销"
+                "(1)控制在编辑器中运行时的资源来源",
+                "(2)EditorSimulateMode 直接使用工程资源，启动更快，适合日常开发",
+                "(3)OfflinePlayMode 和 HostPlayMode 用于验证真实资源包"
             }, false, GUILayout.ExpandWidth(true));
 
             // 终端模式 —— 永远 enable，2 选 1 自定义 Popup（禁 EditorSimulateMode）
             // EditorUtil.Draw 无 IntPopup 封装，此处局部实现以满足限制选项集需求
             DrawRuntimePlayModePopup();
-            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+            EditorUtil.Draw.HelpBox(
+                MessageType.Info,
+                GetRuntimePlayModeHelpBoxMessages(EditorUserBuildSettings.activeBuildTarget),
+                false,
+                GUILayout.ExpandWidth(true));
+
+            using (new EditorGUI.DisabledScope(!isWebGLBuildTarget))
             {
-                "(1)终端发布版的资源加载模式",
-                "(2)OfflinePlayMode 不连服，与 EnableHotfix = false 双向联动",
-                "(3)HostPlayMode 联机，与 EnableHotfix = true 双向联动"
-            }, false, GUILayout.ExpandWidth(true));
+                DrawWebGLAssetStrategyPopup();
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1)TagsOnLaunch：启动时准备指定 Tag 的资源，适合作为默认方案",
+                    "(2)OnDemand：使用时再加载资源，启动更快，首次使用可能需要等待",
+                    "(3)AllOnLaunch：启动时准备全部资源，运行更平滑，但启动更慢且内存占用更高",
+                    "(4)仅 WebGL 平台生效"
+                }, false, GUILayout.ExpandWidth(true));
+            }
 
             EditorUtil.Draw.Line();
 
             // 顶层平铺：资源包名列表（③ 资源包配置段首项；不使用 Foldout，直接平铺增删）
-            DrawPackagesList();
-            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+            using (new EditorGUI.DisabledScope(EditorApplication.isPlaying))
             {
-                "(1)本组件管理的所有资源包名",
-                "(2)默认含 Default 包，多包项目按需追加",
-                "(3)DefaultPackageName 留空时回退至此列表首项"
-            }, false, GUILayout.ExpandWidth(true));
+                DrawPackagesList();
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1)本组件管理的所有资源包名",
+                    "(2)默认含 Default 包，多包项目按需追加",
+                    "(3)默认资源包名留空时使用列表第一项"
+                }, false, GUILayout.ExpandWidth(true));
+            }
 
             // 顶层平铺：默认包名（下拉，选项严格来自 Packages 列表）
             DrawDefaultPackageNamePopup();
@@ -70,12 +88,15 @@ namespace NovaFramework.Editor
             }, false, GUILayout.ExpandWidth(true));
 
             // 顶层平铺：场景卸载时自动清理
-            EditorUtil.Draw.Property("场景卸载时自动清理：", m_AutoCleanupOnSceneUnload, true, GUILayout.Width(180f));
-            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+            using (new EditorGUI.DisabledScope(EditorApplication.isPlaying))
             {
-                "(1)勾选后场景卸载时自动调用默认包 CleanupAsync 释放未引用资源",
-                "(2)未勾选时由业务侧自行决定清理时机"
-            }, false, GUILayout.ExpandWidth(true));
+                EditorUtil.Draw.Property("场景卸载时自动清理：", m_AutoCleanupOnSceneUnload, false, GUILayout.Width(180f));
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                {
+                    "(1)勾选后场景卸载时自动释放未使用资源",
+                    "(2)未勾选时由业务侧自行决定清理时机"
+                }, false, GUILayout.ExpandWidth(true));
+            }
 
             EditorUtil.Draw.Line();
 
@@ -83,54 +104,54 @@ namespace NovaFramework.Editor
             if (EditorUtil.Draw.Foldout("热更配置", "AssetHotfixConfigGroup", true))
             {
                 // 0. 总开关 —— 关闭后直跳 LoadDll；与 RuntimePlayMode 双向联动
-                EditorGUI.BeginChangeCheck();
-                EditorUtil.Draw.Layout.Horizontal(() =>
+                using (new EditorGUI.DisabledScope(EditorApplication.isPlaying))
                 {
-                    EditorUtil.Draw.Space(16f);
-                    EditorUtil.Draw.Property("启用热更新：", m_EnableHotfix, true, GUILayout.Width(180f));
-                });
-                if (EditorGUI.EndChangeCheck())
-                {
-                    // EnableHotfix 变动 → 联动 RuntimePlayMode
-                    if (m_EnableHotfix.boolValue)
+                    EditorGUI.BeginChangeCheck();
+                    EditorUtil.Draw.Layout.Horizontal(() =>
                     {
-                        // 开启热更 → RuntimePlayMode 若为 OfflinePlayMode 则升至 HostPlayMode
-                        if (m_RuntimePlayMode.intValue == (int)AssetPlayMode.OfflinePlayMode)
-                            m_RuntimePlayMode.intValue = (int)AssetPlayMode.HostPlayMode;
-                    }
-                    else
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.Property("启用热更新：", m_EnableHotfix, false, GUILayout.Width(180f));
+                    });
+                    if (EditorGUI.EndChangeCheck())
                     {
-                        // 关闭热更 → 强制 RuntimePlayMode = OfflinePlayMode
-                        m_RuntimePlayMode.intValue = (int)AssetPlayMode.OfflinePlayMode;
+                        // EnableHotfix 变动 → 联动 RuntimePlayMode
+                        if (m_EnableHotfix.boolValue)
+                        {
+                            // 开启热更 → RuntimePlayMode 若为 OfflinePlayMode 则升至 HostPlayMode
+                            if (m_RuntimePlayMode.intValue == (int)AssetPlayMode.OfflinePlayMode)
+                                m_RuntimePlayMode.intValue = (int)AssetPlayMode.HostPlayMode;
+                        }
+                        else
+                        {
+                            // 关闭热更 → 强制 RuntimePlayMode = OfflinePlayMode
+                            m_RuntimePlayMode.intValue = (int)AssetPlayMode.OfflinePlayMode;
+                        }
+                        serializedObject.ApplyModifiedProperties();
+                        serializedObject.Update();
                     }
-                    serializedObject.ApplyModifiedProperties();
-                    serializedObject.Update();
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Space(16f);
+                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        {
+                            "(1)控制启动时是否检查并下载资源更新",
+                            "(2)关闭后仍会正常检查应用版本更新",
+                            "(3)关闭后终端加载模式自动切换为 OfflinePlayMode"
+                        }, false, GUILayout.ExpandWidth(true));
+                    });
                 }
-                EditorUtil.Draw.Layout.Horizontal(() =>
-                {
-                    EditorUtil.Draw.Space(16f);
-                    EditorUtil.Draw.HelpBox(MessageType.Info, new[]
-                    {
-                        "(1)热更新功能总开关",
-                        "(2)关闭后只跳过资源热更新检查与下载流程",
-                        "(3)App 大版本检查与应用更新流程不受此开关影响",
-                        "(4)关闭后 RuntimePlayMode 自动锁定为 OfflinePlayMode"
-                    }, false, GUILayout.ExpandWidth(true));
-                });
 
                 // 以下字段在 EnableHotfix==false 时联动灰度禁用
-                using (new EditorGUI.DisabledScope(!m_EnableHotfix.boolValue))
+                using (new EditorGUI.DisabledScope(EditorApplication.isPlaying || !m_EnableHotfix.boolValue))
                 {
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)运行时按当前节点上的 DevelopMode 选择 Debug 或 Release 这一组地址",
-                            "(2)支持 {Platform}/{Channel}/{Package}/{Version} 占位符，框架会在运行时替换",
-                            "(3){Platform}=Player 编译宏对应的 PlatformType，不读取 Editor Active BuildTarget 或 ConfigMaster；{Channel}=Config 导出时选中的渠道；{Package}=YooAsset 当前资源包名；{Version}=Application.version",
-                            "(4)每个文件独立按主备候选顺序重试，不会被同包其他并发文件推进",
-                            "(5)一轮会完整尝试主备；后续轮次按配置绕回，且新文件可优先最近成功域名"
+                            "(1)运行时按当前 Debug 或 Release 配置选择对应地址",
+                            "(2)支持 {Platform}/{Channel}/{Package}/{Version} 占位符",
+                            "(3)主地址不可用时会尝试备用地址"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
@@ -185,7 +206,7 @@ namespace NovaFramework.Editor
                             EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                             {
                                 "(1)用于让指定测试设备提前验证版本元数据",
-                                "(2)命中后仅切换版本元数据地址，Bundle 仍使用常规主机地址",
+                                "(2)测试设备使用单独配置的版本地址，资源下载仍使用常规地址",
                                 "(3)首次启动无 DeviceID 或请求失败时自动跳过，不阻断启动"
                             }, false, GUILayout.ExpandWidth(true));
                         });
@@ -286,13 +307,15 @@ namespace NovaFramework.Editor
                     }
                 }
 
-                // 1. 启动期切片下载 tag 列表 —— 数组 Foldout 禁用时只降低内容色，保留 Inspector 原始背景
+                // 1. 启动资源 Tag 列表 —— WebGL 仅 TagsOnLaunch 使用，非 WebGL 由热更新开关控制
                 bool enableHotfix = m_EnableHotfix.boolValue;
-                bool isWebGLBuildTarget = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
-                using (new EditorGUI.DisabledScope(!enableHotfix))
+                bool webGLTagsOnLaunch = isWebGLBuildTarget
+                    && m_WebGLAssetStrategy.intValue == (int)WebGLAssetStrategy.TagsOnLaunch;
+                bool launchTagsEditable = isWebGLBuildTarget ? webGLTagsOnLaunch : enableHotfix;
+                using (new EditorGUI.DisabledScope(EditorApplication.isPlaying || !launchTagsEditable))
                 {
                     Color previousContentColor = GUI.contentColor;
-                    if (!enableHotfix)
+                    if (!launchTagsEditable)
                     {
                         GUI.contentColor = new Color(0.5f, 0.5f, 0.5f, previousContentColor.a);
                     }
@@ -302,7 +325,10 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Layout.Horizontal(() =>
                         {
                             EditorUtil.Draw.Space(16f);
-                            EditorUtil.Draw.PropertyField(m_LaunchHotfixTags, "启动期热更 Tag 列表：", true);
+                            EditorUtil.Draw.PropertyField(
+                                m_LaunchHotfixTags,
+                                isWebGLBuildTarget ? "启动预热 Tag 列表：" : "启动期热更 Tag 列表：",
+                                true);
                         });
                     }
                     finally
@@ -313,18 +339,41 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        string[] messages;
+                        if (!isWebGLBuildTarget)
                         {
-                            "(1)空列表：启动期对全部资源做整包差异更新（适合包体小或单机项目）",
-                            "(2)填入 tag 列表：启动期仅更新命中这些 tag 的资源，其余资源在运行时按需增量下载（适合中重度或含 DLC 的项目）",
-                            "(3)需配套首包构建按 tag 内置使用",
-                            "(4)WebGL：该列表应覆盖启动必须资源，并与首包按 Tag 内置配置保持一致",
-                            "(5)WebGL 远端清单不可用时会回退首包；首包缺少启动资源仍会导致启动失败"
-                        }, false, GUILayout.ExpandWidth(true));
+                            messages = new[]
+                            {
+                                "空列表：启动期对全部资源做整包差异更新。",
+                                "填入 Tag：启动期仅更新命中范围，其余资源由业务按需下载。"
+                            };
+                        }
+                        else if (webGLTagsOnLaunch)
+                        {
+                            messages = new[]
+                            {
+                                "填写启动阶段必须提前准备的资源 Tag；未填写有效 Tag 时按 OnDemand 运行。"
+                            };
+                        }
+                        else if (m_WebGLAssetStrategy.intValue == (int)WebGLAssetStrategy.AllOnLaunch)
+                        {
+                            messages = new[]
+                            {
+                                "当前策略会在启动时准备全部资源，无需配置 Tag。"
+                            };
+                        }
+                        else
+                        {
+                            messages = new[]
+                            {
+                                "当前策略按需加载资源，无需配置 Tag。"
+                            };
+                        }
+                        EditorUtil.Draw.HelpBox(MessageType.Info, messages, false, GUILayout.ExpandWidth(true));
                     });
                 }
 
-                using (new EditorGUI.DisabledScope(!m_EnableHotfix.boolValue))
+                using (new EditorGUI.DisabledScope(EditorApplication.isPlaying || (!m_EnableHotfix.boolValue && !isWebGLBuildTarget)))
                 {
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
@@ -340,121 +389,124 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "清空 YooAsset Editor 沙盒缓存及框架自主保存的 .version 文件；DeviceID 与其他本地文件不会删除"
+                            "清空当前工程在 Editor 中下载的资源缓存，不会删除其他本地数据。"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 2. 补丁就绪自动开始下载 —— 决定整个补丁流程是否启动
+                    // 2. 失败/取消时强制退出 —— WebGL 固定关闭，其他平台保持原配置
+                    using (new EditorGUI.DisabledScope(isWebGLBuildTarget))
+                    {
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            if (isWebGLBuildTarget)
+                            {
+                                EditorUtil.Draw.Label("失败/取消时强制退出：", false, GUILayout.Width(180f));
+                                EditorUtil.Draw.Toggle(false, GUILayout.ExpandWidth(true));
+                            }
+                            else
+                            {
+                                EditorUtil.Draw.Property("失败/取消时强制退出：", m_QuitOnFailedOrCancel, false, GUILayout.Width(180f));
+                            }
+                        });
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.HelpBox(MessageType.Info, isWebGLBuildTarget
+                                ? new[] { "WebGL 平台下不使用此项，失败或取消后可继续启动。" }
+                                : new[]
+                                {
+                                    "(1)启动资源准备失败时会显示重试或取消提示",
+                                    "(2)勾选后取消会退出应用；未勾选则跳过本次资源准备并继续进入游戏"
+                                }, false, GUILayout.ExpandWidth(true));
+                        });
+                    }
+
+                    // 3. 资源请求最大并发数 —— 非 WebGL 下载与 WebGL Warmup 共用
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("补丁就绪自动开始下载：", m_AutoHotfix, true, GUILayout.Width(180f));
+                        EditorUtil.Draw.Property("资源请求最大并发数：", m_MaxDownloadConcurrency, true, GUILayout.Width(180f));
                     });
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1)勾选后启动期补丁清单就绪即自动开始下载",
-                            "(2)未勾选时需由业务侧手动触发下载"
-                        }, false, GUILayout.ExpandWidth(true));
-                    });
-
-                    // 3. 失败/取消时强制退出 —— 决定异常路径行为
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("失败/取消时强制退出：", m_QuitOnFailedOrCancel, true, GUILayout.Width(180f));
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
-                        {
-                            "(1)单文件失败后先走完全部主备轮次；每次重试都会重新执行该完整组合",
-                            "(2)任一文件耗尽重试后，整批停止并显示失败弹窗",
-                            "(3)点击「重试」重新下载整批文件，次数不限",
-                            "(4)点击「取消」：勾选则退出应用；未勾选则跳过热更进入游戏"
-                        }, false, GUILayout.ExpandWidth(true));
-                    });
-
-                    // 4. 下载最大并发数 —— 性能与限速核心参数
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("下载最大并发数：", m_MaxDownloadConcurrency, true, GUILayout.Width(180f));
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
-                        {
-                            "(1)同时下载的单文件数量",
+                            "(1)控制同时进行的资源请求数量",
                             "(2)建议 3-8；过高可能被限速，过低会降低下载速度"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 5. 主备完整轮数与完整组合重试 —— 最大物理尝试数为 C × R × (K + 1)
-                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    // 4. CDN 主备、重试、域名偏好与埋点只在 HostPlayMode 下生效。
+                    bool usesCdnResources = m_RuntimePlayMode.intValue == (int)AssetPlayMode.HostPlayMode;
+                    using (new EditorGUI.DisabledScope(!usesCdnResources))
                     {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("主备完整轮数：", m_FallbackRoundCount, true, GUILayout.Width(180f));
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "每轮依次尝试全部有效的主备地址。" }, false, GUILayout.ExpandWidth(true));
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("下载重试次数：", m_RetryDownloadCount, true, GUILayout.Width(180f));
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "单文件全部轮次失败后的重试次数；每次重试重新执行全部轮次。" }, false, GUILayout.ExpandWidth(true));
-                    });
-
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("最近成功域名优先：", m_PreferLastSuccessfulHost, true, GUILayout.Width(180f));
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "新文件优先使用本进程最近成功的域名；失败后仍会尝试其他地址。" }, false, GUILayout.ExpandWidth(true));
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("启用 UWR 埋点：", m_EnableUWRTracks, true, GUILayout.Width(180f));
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "仅控制 Asset 下载链路埋点，不影响下载。" }, false, GUILayout.ExpandWidth(true));
-                    });
-
-                    // 6. 热更完成后自动清理旧缓存 —— 磁盘管理策略
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("热更完成后自动清理缓存：", m_AutoClearUnusedCacheOnHotfix, true, GUILayout.Width(180f));
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
-                            "(1)勾选后，热更成功时删除当前清单不再使用的本地缓存文件",
-                            "(2)未勾选时不自动清理，由业务决定清理时机",
-                            "(3)已删除的文件再次需要时必须重新下载"
-                        }, false, GUILayout.ExpandWidth(true));
-                    });
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.Property("主备完整轮数：", m_FallbackRoundCount, true, GUILayout.Width(180f));
+                        });
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "每轮依次尝试全部有效的 CDN 主备地址。" }, false, GUILayout.ExpandWidth(true));
+                        });
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.Property("资源请求重试次数：", m_RetryDownloadCount, true, GUILayout.Width(180f));
+                        });
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "单个 CDN 资源完成全部轮次仍失败后的重试次数。" }, false, GUILayout.ExpandWidth(true));
+                        });
 
-                    // 7. 版本检查请求超时 —— 控制远端版本文件请求的总时长
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.Property("最近成功域名优先：", m_PreferLastSuccessfulHost, true, GUILayout.Width(180f));
+                        });
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "新的 CDN 请求优先使用本进程最近成功的域名；失败后仍会尝试其他地址。" }, false, GUILayout.ExpandWidth(true));
+                        });
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.Property("启用 UWR 埋点：", m_EnableUWRTracks, true, GUILayout.Width(180f));
+                        });
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "仅控制 CDN 资源请求埋点，不影响资源加载。" }, false, GUILayout.ExpandWidth(true));
+                        });
+                    }
+
+                    // 5. 热更完成后自动清理旧缓存 —— 仅非 WebGL Downloader 热更成功后执行
+                    using (new EditorGUI.DisabledScope(!m_EnableHotfix.boolValue || isWebGLBuildTarget))
+                    {
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.Property("热更完成后自动清理缓存：", m_AutoClearUnusedCacheOnHotfix, true, GUILayout.Width(180f));
+                        });
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                            {
+                                "(1)勾选后，热更成功时删除当前清单不再使用的本地缓存文件",
+                                "(2)未勾选时不自动清理，由业务决定清理时机",
+                                "(3)已删除的文件再次需要时必须重新下载",
+                                "(4)WebGL 平台下不使用此项"
+                            }, false, GUILayout.ExpandWidth(true));
+                        });
+                    }
+
+                    // 6. 版本检查请求超时 —— 控制远端版本文件请求的总时长
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
@@ -465,72 +517,94 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1).version 单次物理请求的总时长上限",
-                            "(2)共用主备轮次、下载重试次数、最近成功域名优先和 UWR 埋点配置",
-                            "(3)每个主备候选独立使用该超时，超时后继续后续候选"
+                            "(1)单次版本检查请求的最长等待时间",
+                            "(2)HostPlayMode 下超时后会继续尝试其他可用地址"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 8. Manifest 请求总超时 —— 控制 .hash/.bytes 单次物理请求的总时长
+                    // 7. Manifest 请求超时 —— 控制 .hash/.bytes 单次物理请求的总时长
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.Property("Manifest 请求总超时（秒）：", m_ManifestRequestTimeout, true, GUILayout.Width(180f));
+                        EditorUtil.Draw.Property("Manifest 请求超时（秒）：", m_ManifestRequestTimeout, true, GUILayout.Width(180f));
                     });
                     EditorUtil.Draw.Layout.Horizontal(() =>
                     {
                         EditorUtil.Draw.Space(16f);
                         EditorUtil.Draw.HelpBox(MessageType.Info, new[]
                         {
-                            "(1).hash 和 .bytes 各自单次物理请求的总时长上限",
-                            "(2)共用主备轮次、下载重试次数、最近成功域名优先和 UWR 埋点配置",
-                            "(3)每个主备候选独立使用该超时，超时后继续后续候选"
+                            "(1)单次 Manifest 请求的最长等待时间",
+                            "(2)HostPlayMode 下超时后会继续尝试其他可用地址"
                         }, false, GUILayout.ExpandWidth(true));
                     });
 
-                    // 9. WebGL Bundle 请求超时 —— WebGL 无可靠字节流入进度时使用
-                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    // 8. WebGL Bundle 请求超时 —— WebGL 无可靠字节流入进度时使用
+                    using (new EditorGUI.DisabledScope(!isWebGLBuildTarget))
                     {
-                        EditorUtil.Draw.Space(16f);
-                        using (new EditorGUI.DisabledScope(!isWebGLBuildTarget))
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
+                            EditorUtil.Draw.Space(16f);
                             EditorUtil.Draw.Property("WebGL Bundle 请求超时（秒）：", m_WebGLBundleRequestTimeout, true, GUILayout.Width(180f));
-                        }
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        });
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
-                            "(1)仅 WebGL 生效；限制远端 Bundle 单次请求的最长时间",
-                            "(2)请根据最大 Bundle 体积和用户网络速度预留足够时间",
-                            "(3)非 WebGL 平台请使用下方的单文件字节流入超时"
-                        }, false, GUILayout.ExpandWidth(true));
-                    });
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                            {
+                                "(1)仅 WebGL 生效，控制单个资源文件请求的最长等待时间",
+                                "(2)请根据最大资源文件大小和用户网络速度预留足够时间",
+                                "(3)非 WebGL 平台请使用下方的单文件字节流入超时"
+                            }, false, GUILayout.ExpandWidth(true));
+                        });
+                    }
 
-                    // 10. 单文件字节流入超时 —— 非 WebGL 检测连续无新字节的停滞时间
-                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    // 9. 单文件字节流入超时 —— 非 WebGL 检测连续无新字节的停滞时间
+                    using (new EditorGUI.DisabledScope(isWebGLBuildTarget))
                     {
-                        EditorUtil.Draw.Space(16f);
-                        using (new EditorGUI.DisabledScope(isWebGLBuildTarget))
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
+                            EditorUtil.Draw.Space(16f);
                             EditorUtil.Draw.Property("单文件字节流入超时（秒）：", m_IdleTimeout, true, GUILayout.Width(180f));
-                        }
-                    });
-                    EditorUtil.Draw.Layout.Horizontal(() =>
-                    {
-                        EditorUtil.Draw.Space(16f);
-                        EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                        });
+                        EditorUtil.Draw.Layout.Horizontal(() =>
                         {
-                            "(1)非 WebGL 平台下，单个文件连续无新字节流入的时长上限",
-                            "(2)收到任意新字节后重新计时",
-                            "(3)WebGL 下该项不可编辑，请使用上方的 Bundle 请求超时"
-                        }, false, GUILayout.ExpandWidth(true));
-                    });
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                            {
+                                "(1)非 WebGL 平台下，单个文件连续无新字节流入的时长上限",
+                                "(2)收到任意新字节后重新计时",
+                                "(3)WebGL 下该项不可编辑，请使用上方的 Bundle 请求超时"
+                            }, false, GUILayout.ExpandWidth(true));
+                        });
+                    }
                 }
             }
 
             EditorUtil.Draw.Line();
+        }
+
+        /// <summary>
+        /// 获取当前构建平台对应的终端加载模式说明；WebGL 额外说明首包布局要求。
+        /// </summary>
+        /// <param name="buildTarget">Unity 当前活动构建平台。</param>
+        /// <returns>用于终端加载模式下方单个 HelpBox 的用户提示。</returns>
+        internal static string[] GetRuntimePlayModeHelpBoxMessages(BuildTarget buildTarget)
+        {
+            if (buildTarget == BuildTarget.WebGL)
+            {
+                return new[]
+                {
+                    "(1)OfflinePlayMode 只使用随网页发布的资源，构建资源时必须选择 ClearAndCopyAll；选择 None 时游戏无法启动",
+                    "(2)HostPlayMode 支持 None、ClearAndCopyByTags、ClearAndCopyAll；选择 None 时请先把当前版本的完整资源上传到 CDN",
+                    "(3)按 Tag 发布时，HostPlayMode 可从 CDN 获取其余资源；OfflinePlayMode 无法加载未随网页发布的资源"
+                };
+            }
+
+            return new[]
+            {
+                "(1)OfflinePlayMode 使用随安装包发布的资源，不检查远端更新",
+                "(2)HostPlayMode 检查并使用远端资源更新"
+            };
         }
 
         /// <summary>
@@ -681,6 +755,34 @@ namespace NovaFramework.Editor
                 serializedObject.ApplyModifiedProperties();
                 serializedObject.Update();
             }
+        }
+
+        /// <summary>
+        /// 绘制 WebGL 资源策略 Popup，并保留 OnDemand / TagsOnLaunch / AllOnLaunch 原始拼写。
+        /// </summary>
+        private void DrawWebGLAssetStrategyPopup()
+        {
+            int currentValue = m_WebGLAssetStrategy.intValue;
+            int[] optionValues =
+            {
+                (int)WebGLAssetStrategy.TagsOnLaunch,
+                (int)WebGLAssetStrategy.OnDemand,
+                (int)WebGLAssetStrategy.AllOnLaunch,
+            };
+            string[] optionLabels = { "TagsOnLaunch", "OnDemand", "AllOnLaunch" };
+
+            EditorUtil.Draw.Layout.Horizontal(() =>
+            {
+                EditorUtil.Draw.Label("WebGL 资源策略：", false, GUILayout.Width(180f));
+                EditorGUI.BeginChangeCheck();
+                int newValue = EditorUtil.Draw.IntPopup(currentValue, optionLabels, optionValues);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    m_WebGLAssetStrategy.intValue = newValue;
+                    serializedObject.ApplyModifiedProperties();
+                    serializedObject.Update();
+                }
+            });
         }
     }
 }

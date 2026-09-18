@@ -56,7 +56,17 @@ namespace NovaFramework.SDK.IAP.Runtime
                 return CompletePayGuardFailure(r);
             }
 
-            return await payCore();
+            return MarkStoreResult(await payCore());
+        }
+
+        /// <summary>
+        /// 为当前 Store 产生的支付结果补齐 StoreType。
+        /// </summary>
+        /// <param name="result">待补齐 StoreType 的支付结果。</param>
+        /// <returns>已补齐 StoreType 的原结果。</returns>
+        protected IAPResult MarkStoreResult(IAPResult result)
+        {
+            return result?.WithStoreType(StoreType);
         }
 
         /// <summary>
@@ -66,6 +76,7 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// <returns>原始失败结果。</returns>
         private IAPResult CompletePayGuardFailure(IAPResult result)
         {
+            result = MarkStoreResult(result);
             Context?.EventBridge?.RaisePayFailed(result);
             if (ShouldTrackPayGuardFailure(result))
             {

@@ -99,6 +99,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public bool IsExternalBrowser;
 
         /// <summary>
+        /// 最终 ThirdPay 支付页是否由 Android Auth Tab 或 Custom Tabs 打开。
+        /// </summary>
+        public bool IsCustomTab;
+
+        /// <summary>
         /// 支付页是否显示返回键。
         /// </summary>
         public bool ShowBackButton;
@@ -156,6 +161,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 { "platform", payload.Platform ?? string.Empty },
                 { "channel", payload.Channel ?? string.Empty },
                 { "is_external_browser", payload.IsExternalBrowser },
+                { "is_custom_tab", payload.IsCustomTab },
                 { "show_back_button", payload.ShowBackButton },
                 { "custom_param", customParam },
             };

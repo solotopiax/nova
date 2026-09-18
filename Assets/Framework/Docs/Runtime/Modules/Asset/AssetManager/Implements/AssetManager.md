@@ -6,6 +6,7 @@
 - 启动资源系统并注册包
 - 管理清单、补丁检查与下载器创建
 - 返回统一的 Handle 接口，屏蔽底层资源框架细节
+- 创建并收口有明确所有权的 Bundle WarmupGroup
 
 ## 什么时候先看这页
 
@@ -71,11 +72,14 @@
 
 1. `ResolvePackageName` 解析包名，空值走默认包
 2. 已在 `m_ManifestLoadedPackages` 中则直接返回
-3. 如果包尚未成功初始化，先按配置尝试启动白名单检查
-4. 调用 `InitializePackageAsync(options)`
-5. 再 `RequestPackageVersionAsync()`
-6. 再按 `ManifestRequestTimeout` 执行 `LoadPackageManifestAsync`
-7. 成功后只把包名记入 `m_ManifestLoadedPackages`；Manifest 激活本身不再推进本地可启动版本
+3. WebGL Host 模式先探测当前 Package 的 YooAsset 官方 `BuiltinCatalog.bytes`
+4. 如果包尚未成功初始化，再按配置尝试启动白名单检查
+5. 调用 `InitializePackageAsync(options)`
+6. 再 `RequestPackageVersionAsync()`
+7. 再按 `ManifestRequestTimeout` 执行 `LoadPackageManifestAsync`
+8. 成功后只把包名记入 `m_ManifestLoadedPackages`；Manifest 激活本身不再推进本地可启动版本
+
+WebGL 初始化时还把 `BundleLoadingMaxConcurrency` 设为 `MaxDownloadConcurrency`（最小 1），限制无工作线程环境中同时启动的 Bundle 加载数量。
 
 这一步既做“包初始化”，也做“版本 + 清单拉取”，而且是按包幂等的。只有当前启动下载策略确认就绪后，`ProcedureCheckVersion` / `ProcedureHotfix` 才通过 `CommitBootableVersion` 推进本地可启动版本。
 
@@ -106,9 +110,11 @@ HostPlayMode 下，如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifes
 整体优先级是：远端最新清单 → 已激活清单 → 本地可启动版本清单 → 随包内置清单 → 抛出原始远端错误。
 全链路不修改 YooAsset 源码；Nova 兼容层只在前缀迁移时定位并复制 Sandbox 中成对的 Manifest/hash 文件，其余加载与校验仍走 YooAsset API。本地可启动版本回退随 HostPlayMode 默认开启；本地无记录、缓存 Manifest 缺失或当前启动范围不完整时自动降级到内置回退。
 
-WebGL HostPlayMode 保持 `WebServer + WebNetwork` 文件系统拓扑，不使用 Sandbox 或 `System.IO` 回退，也不使用 WebNetwork 的下载判断来证明旧 Manifest 已具备完整启动资源。远端元数据候选耗尽后，Nova 临时把 `.version/.hash/.bytes` 路由到 `StreamingAssets/{YooFolder}/{Package}`，加载随 Player 发布的首包 Manifest，并在成功或失败后立即恢复远端元数据路由。Bundle 地址始终保持常规远端主备；首包内置 Bundle 由 WebServer 命中，未内置 Bundle 可在网络恢复后继续由 WebNetwork 按需加载。回退成功的包本次启动跳过远端热更；`LaunchHotfixTags` 必须覆盖启动必须资源并与首包按 Tag 内置配置一致。
+WebGL Host 运行时先探测 `StreamingAssets/{YooFolder}/{Package}/BuiltinCatalog.bytes`：Catalog 可访问时使用 `WebServer + WebNetwork`，不存在或探测失败时使用纯 `WebNetwork`。WebGL Offline 不探测 Catalog，也不创建远端文件系统，固定使用纯 `WebServer`；因此必须用 `ClearAndCopyAll` 构建完整首包，Catalog 缺失时由 YooAsset 初始化明确失败。
 
-WebGL Bundle 不使用 `IdleTimeout` 字节流入看门狗，而是为每个 WebNetwork Bundle 物理请求应用 `WebGLBundleRequestTimeout` 总超时，默认 300 秒。每个主备候选独立计时，超时后仍按现有候选轮次与重试策略推进；该值不影响 `.version/.hash/.bytes` 的独立超时。
+Host 探测到 Catalog 时，远端元数据候选耗尽后，Nova 可临时把 `.version/.hash/.bytes` 路由到 `StreamingAssets/{YooFolder}/{Package}`，加载随 Player 发布的首包 Manifest，并在成功或失败后立即恢复远端元数据路由。纯 CDN 没有 Catalog，因此明确跳过该回退。`LaunchHotfixTags` 只在 `TagsOnLaunch` 中选择启动预热范围，不代替 Pipify 的首包拷贝选择。详见 [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md)。
+
+WebGL Bundle 不使用 `IdleTimeout` 字节流入看门狗，而是为每个 WebServer（StreamingAssets）或 WebNetwork（CDN）Bundle 请求应用 `WebGLBundleRequestTimeout`，默认 300 秒。每个主备候选独立计时，超时后仍按现有候选轮次与重试策略推进；该值不影响 `.version/.hash/.bytes` 的独立超时。
 
 #### 本地可启动版本记录文件（LastBootableVersion）
 
@@ -138,7 +144,7 @@ WebGL Bundle 不使用 `IdleTimeout` 字节流入看门狗，而是为每个 Web
 - `HasPatchByTagsAsync(tags)` 检查指定 Tag 范围；`tags` 为 null 或空数组时等价整包。
 - 启动链在 `LaunchHotfixTags` 非空时使用 Tag 范围判断，保证进入 `ProcedureHotfix` 的条件与实际下载范围一致。
 
-### 5. Load / Preload / Cleanup：大多数资源操作默认只走默认包
+### 5. Load / Warmup / Cleanup：加载默认走默认包，Warmup 可显式选包
 
 这是非常重要的当前事实：
 
@@ -147,16 +153,18 @@ WebGL Bundle 不使用 `IdleTimeout` 字节流入看门狗，而是为每个 Web
 - `LoadAllSync/Async`
 - `LoadRawSync/Async`
 - `LoadSceneSync/Async`
-- `PreloadAsync`
 
-这些 API 内部都直接使用 `m_DefaultPackageName`。
+这些 Load API 内部都直接使用 `m_DefaultPackageName`。
 
-也就是说，当前设计里并不是每个加载 API 都支持任意包名切换。  
-显式 `package` 主要出现在清单、下载器、tag 查询、回收这类 API 上。
+`CreateWarmupAll`、`CreateWarmupByTags`、`CreateWarmupByLocations` 则提供可选 `package` 参数：省略时走默认包，传入包名时在该已加载 Manifest 的 Package 中创建 Group。显式 `package` 也出现在清单、下载器、tag 查询与回收 API 中。
 
 `LoadRawSync/Async` 的 Nova 公共签名与调用方式不变，但路径行为不是完全兼容。YooAsset 3.0.5 下内部改为 `AssetHandle + RawFileObject`：`GetBytes()` 从 `RawFileObject` 可靠返回原始内容副本；异步路径尽力从 `EnsureBundleFileAsync` 获取底层 bundle 文件路径，失败不影响字节加载。同步操作无法等待 Ensure，Web/内存文件系统也可能不支持本地路径，所以 `FilePath` 可以为 null。同步、异步、异常与取消路径都由 AssetManager/Adapter 成对释放 `AssetHandle`。仓库检索未发现框架内部的 `IRawFileHandle.FilePath` 消费方；外部消费方需要按新语义复核。
 
-WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使用 WebServer + WebNetwork 文件系统。WebNetwork 不接受 Sandbox 专用的 `DownloadWatchdogTimeout`，因此使用 `WebGLBundleRequestTimeout` 控制 Bundle 单次请求总时长；非 WebGL HostPlayMode 的 Sandbox 文件系统仍保留 watchdog 配置。
+WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使用 WebServer + WebNetwork 文件系统。WebGL 没有可靠的字节流入看门狗，因此 WebServer 与 WebNetwork 都使用 `WebGLBundleRequestTimeout` 控制 Bundle 单次请求时长；非 WebGL HostPlayMode 的 Sandbox 文件系统仍保留 watchdog 配置。
+
+`CreateWarmup*` 只创建 `IAssetWarmupGroup`，不会自动发起请求；调用方需要 `RunAsync()` 并在终止时 `Release()`。Group 的 Release 只是释放 BundleFileHandle 引用；随后 `CleanupAsync()` 才会卸载引用归零的运行时 Bundle。`TagsOnLaunch` 由启动流程先 Release，并在启动 DLL 消费完成后 Cleanup；`AllOnLaunch` 成功后由 `m_AllOnLaunchWarmupGroup` 持有到 Shutdown，业务主动创建的普通 Group 仍由创建者负责释放。
+
+`IAssetWarmupGroup.Cancel()` 只停止等待并释放已创建 Handle；它不能承诺已经发出的 Web 请求立刻取消。WebGL 下所有业务资源加载也必须使用异步 API，不能把 Warmup 当作同步加载的替代品。
 
 在 Unity Editor 下，如果 `EditorPlayMode` 不是 `EditorSimulateMode`，这些真实 AssetBundle 加载 API 会在资源出句柄前执行一次 **Editor-only shader 重绑**：
 
@@ -172,10 +180,11 @@ WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使�
 `Shutdown()` 会：
 
 1. `Cancel + Dispose` 生命周期 `CancellationTokenSource`
-2. `YooAssets.Destroy()`
-3. 清空已加载 Manifest 包集合
-4. 清空已注册包字典
-5. 清空配置引用
+2. 先释放 `AllOnLaunch` 接管的 WarmupGroup
+3. `YooAssets.Destroy()`
+4. 清空已加载 Manifest 包集合
+5. 清空已注册包字典
+6. 清空配置引用
 
 这一步之后再调用加载 API，不再成立。
 
@@ -207,7 +216,9 @@ WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使�
 
 ### 4. 缓存治理
 
-- `PreloadAsync(...)`
+- `CreateWarmupAll(...)`
+- `CreateWarmupByTags(...)`
+- `CreateWarmupByLocations(...)`
 - `CleanupAsync(package)`
 - `ClearUnusedCacheAsync(package)`
 
@@ -219,18 +230,21 @@ WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使�
 - `m_ManifestLoadedPackages`：清单幂等集合
 - `m_StartupWhitelistCheckedPackages / m_StartupWhitelistMatchedPackages`：本次进程的白名单检查与命中状态
 - `m_Cts`：Manager 生命周期取消源
+- `m_AllOnLaunchWarmupGroup`：WebGL AllOnLaunch 成功后持有到 Shutdown 的预热组
 
 ## 风险点 / 易错点
 
 - `Initialize()` 不等于 `BootstrapAsync()`；只注入配置，不做包注册。
 - `LoadManifestAsync()` 之前必须至少完成一次 `BootstrapAsync()`，否则包都还没注册。
-- HostPlayMode 远端版本或 Manifest 请求失败时走三级回退链（已激活清单 → 本地可启动版本 → 内置清单）。本地记录位于 `persistentDataPath/Asset/{package}.version`，包含资源版本与文件名前缀，并会按当前启动 Tag 范围复核；首次安装无记录时自动降级内置清单，最终仍保持 HostPlayMode 的 Builtin + Sandbox 文件系统。
+- 非 WebGL HostPlayMode 的远端版本或 Manifest 请求失败时走三级回退链（已激活清单 → 本地可启动版本 → 内置清单）。本地记录位于 `persistentDataPath/Asset/{package}.version`，包含资源版本与文件名前缀，并会按当前启动 Tag 范围复核；首次安装无记录时自动降级内置清单，最终仍保持 HostPlayMode 的 Builtin + Sandbox 文件系统。WebGL Host 只有在探测到官方 Catalog 时才使用 WebServer + WebNetwork 并允许首包元数据回退，否则使用纯 WebNetwork；WebGL Offline 固定使用纯 WebServer，二者都不使用 Sandbox 本地版本回退。
 - 大多数 `Load*` API 都默认走 `m_DefaultPackageName`；如果你以为它们支持多包透传，那是错的。
 - Raw 文件内容应通过 `IRawFileHandle.GetBytes()` 获取；`FilePath` 是底层 bundle 路径，不能假定为可直接读取的原始文件路径。
 - Editor 下用 Host/Offline PlayMode 跑真实包时，TMP 或普通材质出现洋红色块，优先检查 shader bundle 与当前 Editor 渲染端是否跨平台；AssetManager 会对已加载资源做同名 shader 重绑，但这只服务编辑器预览，不代表 Player 会走同一套修复路径。
 - `CreateDownloaderByLocations()` 对空数组会直接抛异常；“整包下载”应该用 `CreateDownloader()`。
 - `CreateDownloaderByLocations()` 遇到无效 location 会跳过并记 warning，不会整体失败。
 - `ClearUnusedCacheAsync()` 需要当前 Manifest 已可用，否则“未使用”没有判定基准。
+- `CreateWarmup*()` 同样要求目标 Package 已加载 Manifest；不要把它当作自动 Bootstrap 或自动 Manifest 加载 API。
+- 标准未加密 AssetBundle 的 WebGL 请求可使用 Unity Web Cache；加密 AssetBundle、RawBundle、ArchiveBundle 走字节内存装载，Warmup 后不应承诺仍留在 Web Cache。
 - `Shutdown()` 会 `YooAssets.Destroy()`；这是全局级清理，不能把它当成局部无害重置。
 
 ## 继续阅读
@@ -239,6 +253,7 @@ WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使�
 
 - [AssetManager.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.cs)
 - [AssetManager.Methods.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Methods.cs)
+- [AssetManager.WebGLCatalog.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.WebGLCatalog.cs)
 - [AssetManager.Load.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Load.cs)
 - [AssetManager.Cleanup.cs](../../../../../../Scripts/Runtime/Modules/Asset/Managers/AssetManager/Implements/AssetManager.Cleanup.cs)
 
@@ -249,3 +264,5 @@ WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使�
 - [AssetManagerConfig.md](../Definitions/AssetManagerConfig.md)
 - [IAssetHandle.md](../Interfaces/IAssetHandle.md)
 - [IAssetDownloader.md](../Interfaces/IAssetDownloader.md)
+- [IAssetWarmupGroup.md](../Interfaces/IAssetWarmupGroup.md)
+- [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md)

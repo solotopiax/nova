@@ -39,6 +39,11 @@ namespace NovaFramework.Editor
         /// </summary>
         private SerializedProperty m_RuntimePlayMode;
 
+        /// <summary>
+        /// WebGL 启动资源策略。
+        /// </summary>
+        private SerializedProperty m_WebGLAssetStrategy;
+
         // ③ 资源包配置
 
         /// <summary>
@@ -154,17 +159,12 @@ namespace NovaFramework.Editor
         private SerializedProperty m_HostServerUrlFallbackRelease;
 
         /// <summary>
-        /// 补丁就绪是否自动开始下载。
-        /// </summary>
-        private SerializedProperty m_AutoHotfix;
-
-        /// <summary>
         /// 失败或取消时是否强制退出。
         /// </summary>
         private SerializedProperty m_QuitOnFailedOrCancel;
 
         /// <summary>
-        /// 下载最大并发数。
+        /// 资源请求最大并发数。
         /// </summary>
         private SerializedProperty m_MaxDownloadConcurrency;
 

@@ -52,14 +52,24 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
             "c3ASNAoEaGVhZBgBIAEoCzImLk5vdmFGcmFtZXdvcmsuUnVudGltZS5QYk5l",
             "dFJlc3BIZWFkZXISUwoKb3JkZXJfbGlzdBgCIAMoCzI/Lk5vdmFGcmFtZXdv",
             "cmsuSUFQLlRoaXJkUGF5LlJ1bnRpbWUuUGJOZXRUaGlyZFZlcmlmeU9yZGVy",
-            "UmVzdWx0IogBChtQYk5ldFRoaXJkVmVyaWZ5T3JkZXJSZXN1bHQSFwoPc2Vy",
-            "dmVyX29yZGVyX2lkGAEgASgJEg4KBnN0YXR1cxgCIAEoBRIVCg1yZWNlaXB0",
-            "X3BhcmFtGAMgASgJEhAKCHRhYmxlX2lkGAQgASgDEhcKD2NsaWVudF9vcmRl",
-            "cl9pZBgFIAEoCUIpqgImTm92YUZyYW1ld29yay5TREsuSUFQLlRoaXJkUGF5",
-            "LlJ1bnRpbWViBnByb3RvMw=="));
+            "UmVzdWx0IskBChtQYk5ldFRoaXJkVmVyaWZ5T3JkZXJSZXN1bHQSFwoPc2Vy",
+            "dmVyX29yZGVyX2lkGAEgASgJEk8KBnN0YXR1cxgCIAEoDjI/Lk5vdmFGcmFt",
+            "ZXdvcmsuSUFQLlRoaXJkUGF5LlJ1bnRpbWUuUGJOZXRUaGlyZFZlcmlmeU9y",
+            "ZGVyU3RhdHVzEhUKDXJlY2VpcHRfcGFyYW0YAyABKAkSEAoIdGFibGVfaWQY",
+            "BCABKAMSFwoPY2xpZW50X29yZGVyX2lkGAUgASgJKvkCChtQYk5ldFRoaXJk",
+            "VmVyaWZ5T3JkZXJTdGF0dXMSMAosUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRF",
+            "Ul9TVEFUVVNfVU5TUEVDSUZJRUQQABI0CjBQQl9ORVRfVEhJUkRfVkVSSUZZ",
+            "X09SREVSX1NUQVRVU19QRU5ESU5HX1BBWU1FTlQQARIvCitQQl9ORVRfVEhJ",
+            "UkRfVkVSSUZZX09SREVSX1NUQVRVU19QUk9DRVNTSU5HEAISKQolUEJfTkVU",
+            "X1RISVJEX1ZFUklGWV9PUkRFUl9TVEFUVVNfUEFJRBADEjYKMlBCX05FVF9U",
+            "SElSRF9WRVJJRllfT1JERVJfU1RBVFVTX0ZBSUxFRF9PUl9FWFBJUkVEEAQS",
+            "LgoqUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRFUl9TVEFUVVNfREVMSVZFUkVE",
+            "EAUSLgoqUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRFUl9TVEFUVVNfTk9UX0ZP",
+            "VU5EEAZCKaoCJk5vdmFGcmFtZXdvcmsuU0RLLklBUC5UaGlyZFBheS5SdW50",
+            "aW1lYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductListReq), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductListReq.Parser, new[]{ "Head", "Country" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductListResp), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductListResp.Parser, new[]{ "Head", "ProductList" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo.Parser, new[]{ "Id", "LocalCurrency", "LocalPrice", "ProductId" }, null, null, null, null),
@@ -76,6 +86,43 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     #endregion
 
   }
+  #region Enums
+  /// <summary>
+  /// 第三方支付验单订单状态
+  /// </summary>
+  public enum PbNetThirdVerifyOrderStatus {
+    /// <summary>
+    /// 未指定
+    /// </summary>
+    [pbr::OriginalName("PB_NET_THIRD_VERIFY_ORDER_STATUS_UNSPECIFIED")] Unspecified = 0,
+    /// <summary>
+    /// 待支付
+    /// </summary>
+    [pbr::OriginalName("PB_NET_THIRD_VERIFY_ORDER_STATUS_PENDING_PAYMENT")] PendingPayment = 1,
+    /// <summary>
+    /// 支付中
+    /// </summary>
+    [pbr::OriginalName("PB_NET_THIRD_VERIFY_ORDER_STATUS_PROCESSING")] Processing = 2,
+    /// <summary>
+    /// 支付成功
+    /// </summary>
+    [pbr::OriginalName("PB_NET_THIRD_VERIFY_ORDER_STATUS_PAID")] Paid = 3,
+    /// <summary>
+    /// 支付失败或过期
+    /// </summary>
+    [pbr::OriginalName("PB_NET_THIRD_VERIFY_ORDER_STATUS_FAILED_OR_EXPIRED")] FailedOrExpired = 4,
+    /// <summary>
+    /// 已发货
+    /// </summary>
+    [pbr::OriginalName("PB_NET_THIRD_VERIFY_ORDER_STATUS_DELIVERED")] Delivered = 5,
+    /// <summary>
+    /// 订单不存在
+    /// </summary>
+    [pbr::OriginalName("PB_NET_THIRD_VERIFY_ORDER_STATUS_NOT_FOUND")] NotFound = 6,
+  }
+
+  #endregion
+
   #region Messages
   /// <summary>
   /// 商品列表请求
@@ -2614,13 +2661,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
 
     /// <summary>Field number for the "status" field.</summary>
     public const int StatusFieldNumber = 2;
-    private int status_;
+    private global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus status_ = global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus.Unspecified;
     /// <summary>
-    /// 1=待支付 2=支付中 3=支付成功 4=支付失败/过期 5=已发货 6=订单不存在
+    /// 订单状态
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int Status {
+    public global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus Status {
       get { return status_; }
       set {
         status_ = value;
@@ -2700,7 +2747,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     public override int GetHashCode() {
       int hash = 1;
       if (ServerOrderId.Length != 0) hash ^= ServerOrderId.GetHashCode();
-      if (Status != 0) hash ^= Status.GetHashCode();
+      if (Status != global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus.Unspecified) hash ^= Status.GetHashCode();
       if (ReceiptParam.Length != 0) hash ^= ReceiptParam.GetHashCode();
       if (TableId != 0L) hash ^= TableId.GetHashCode();
       if (ClientOrderId.Length != 0) hash ^= ClientOrderId.GetHashCode();
@@ -2726,9 +2773,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
         output.WriteRawTag(10);
         output.WriteString(ServerOrderId);
       }
-      if (Status != 0) {
+      if (Status != global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus.Unspecified) {
         output.WriteRawTag(16);
-        output.WriteInt32(Status);
+        output.WriteEnum((int) Status);
       }
       if (ReceiptParam.Length != 0) {
         output.WriteRawTag(26);
@@ -2756,9 +2803,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
         output.WriteRawTag(10);
         output.WriteString(ServerOrderId);
       }
-      if (Status != 0) {
+      if (Status != global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus.Unspecified) {
         output.WriteRawTag(16);
-        output.WriteInt32(Status);
+        output.WriteEnum((int) Status);
       }
       if (ReceiptParam.Length != 0) {
         output.WriteRawTag(26);
@@ -2785,8 +2832,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       if (ServerOrderId.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ServerOrderId);
       }
-      if (Status != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Status);
+      if (Status != global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus.Unspecified) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Status);
       }
       if (ReceiptParam.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ReceiptParam);
@@ -2812,7 +2859,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       if (other.ServerOrderId.Length != 0) {
         ServerOrderId = other.ServerOrderId;
       }
-      if (other.Status != 0) {
+      if (other.Status != global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus.Unspecified) {
         Status = other.Status;
       }
       if (other.ReceiptParam.Length != 0) {
@@ -2848,7 +2895,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
             break;
           }
           case 16: {
-            Status = input.ReadInt32();
+            Status = (global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus) input.ReadEnum();
             break;
           }
           case 26: {
@@ -2887,7 +2934,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
             break;
           }
           case 16: {
-            Status = input.ReadInt32();
+            Status = (global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus) input.ReadEnum();
             break;
           }
           case 26: {

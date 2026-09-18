@@ -51,7 +51,7 @@ related:
    - 基础状态：全量、语言、平台、时区。
    - 国家状态：广告模块异步返回的最终国家码。
 3. 基础状态在 Firebase 初始化完成后启动；全量、平台、时区可立即同步，语言只在 `Nova.Localization.Language` 已有有效值或收到 `LocalizationRefreshEventData` 后进入新状态。
-4. 国家状态通过 AD 模块的异步国家码接口获取最终值；等待、超时和上次成功缓存兜底由 AD 模块负责，Firebase 不直接等待广告数据槽位，也不使用系统区域兜底。
+4. 国家状态通过 AD 模块的异步国家码接口获取最终运行时值；等待和超时由 AD 模块负责，超时或无有效值时返回空字符串。AD 模块不再负责本地成功缓存兜底，Firebase 不直接等待广告数据槽位，也不使用系统区域兜底。
 5. 需要进入 Topic 名称的动态片段必须先清洗为 Firebase Topic 安全字符；协议上报格式和 Topic 格式分开，例如服务端时区可用 `+08:00`，Topic 使用 `utc_plus_08`。
 6. 上一次成功订阅状态通过 `IFileFragmentManager` 持久化，按来源拆分 item，例如 `FirebaseDefaultTopics/BaseState` 与 `FirebaseDefaultTopics/CountryState`。
 7. 每次同步先构建当前状态，再和旧存档计算差异；旧状态独有 Topic 先退订，新状态独有 Topic 再订阅。

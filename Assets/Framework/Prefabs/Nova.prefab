@@ -355,6 +355,7 @@ MonoBehaviour:
   m_CurAssetManagerTypeName: NovaFramework.Runtime.AssetManager
   m_EditorPlayMode: 0
   m_RuntimePlayMode: 1
+  m_WebGLAssetStrategy: 0
   m_Packages:
   - Default
   m_DefaultPackageName: Default
@@ -374,7 +375,6 @@ MonoBehaviour:
   m_StartupWhitelistPreferLastSuccessfulHost: 1
   m_StartupWhitelistEnableUWRTracks: 1
   m_StartupWhitelistCheckTimeout: 5
-  m_AutoHotfix: 1
   m_QuitOnFailedOrCancel: 0
   m_MaxDownloadConcurrency: 5
   m_FallbackRoundCount: 1

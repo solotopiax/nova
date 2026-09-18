@@ -97,6 +97,17 @@ namespace NovaFramework.Editor
                         return issues;
                     }
 
+                    if (platform == PlatformType.None || !Enum.IsDefined(typeof(PlatformType), platform))
+                    {
+                        issues.Add(new ValidationIssue("Platform", "平台必须是非 None 的有效 PlatformType。", Severity.Error));
+                        return issues;
+                    }
+                    if (channel == ChannelType.None || !Enum.IsDefined(typeof(ChannelType), channel))
+                    {
+                        issues.Add(new ValidationIssue("Channel", "渠道必须是非 None 的有效 ChannelType。", Severity.Error));
+                        return issues;
+                    }
+
                     // 顶层维度化校验路径：经 DimensionalResolver 取当前坐标生效值，避免全不勾/勾选两态校验错位
                     RequireNotEmpty(issues, "Namespace", DimensionalResolver.ResolveNamespace(master, platform, channel, mode));
                     ValidateAppConfigs(master.GetAppConfigs(platform, channel, mode), issues);
@@ -210,6 +221,16 @@ namespace NovaFramework.Editor
                             issues.Add(new ValidationIssue($"Entries[{i}]", "矩阵行为空。", Severity.Error));
                             continue;
                         }
+                        if (entry.Platform == PlatformType.None || entry.Channel == ChannelType.None ||
+                            !Enum.IsDefined(typeof(PlatformType), entry.Platform) ||
+                            !Enum.IsDefined(typeof(ChannelType), entry.Channel))
+                        {
+                            issues.Add(new ValidationIssue(
+                                $"Entries[{i}]",
+                                $"矩阵行坐标 {entry.Platform}/{entry.Channel} 无效，Platform 和 Channel 均不能为 None。",
+                                Severity.Error));
+                            continue;
+                        }
                         string rowKey = $"{entry.Platform}|{entry.Channel}";
                         if (!rows.Add(rowKey))
                             issues.Add(new ValidationIssue($"Entries[{i}]", $"存在重复矩阵行 {entry.Platform}/{entry.Channel}。", Severity.Error));
@@ -263,7 +284,7 @@ namespace NovaFramework.Editor
                     for (int i = 0; i < entries.Count; i++)
                     {
                         PlatformChannelEntry entry = entries[i];
-                        if (entry == null || entry.Platform == PlatformType.None) continue;
+                        if (entry == null || entry.Platform == PlatformType.None || entry.Channel == ChannelType.None) continue;
                         foreach (DevelopMode mode in Enum.GetValues(typeof(DevelopMode)))
                         {
                             object value = read(entry, mode);
@@ -291,7 +312,7 @@ namespace NovaFramework.Editor
                         Dictionary<string, DimensionValue> expected = new();
                         foreach (PlatformChannelEntry entry in master.EditorEntries)
                         {
-                            if (entry == null || entry.Platform == PlatformType.None) continue;
+                            if (entry == null || entry.Platform == PlatformType.None || entry.Channel == ChannelType.None) continue;
                             foreach (DevelopMode mode in Enum.GetValues(typeof(DevelopMode)))
                             {
                                 object value = ReadTypedConfig(entry, mode, typeName, sdk, out int count);

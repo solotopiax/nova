@@ -355,8 +355,9 @@ namespace NovaFramework.Runtime
                 
                 /// <summary>
                 /// 删除文件。
-                /// Win 下 SQLite 等场景可能因句柄延迟释放抛 IOException，内部走"GC.Collect + WaitForPendingFinalizers + 等待重试"兜底，
-                /// 仍失败时记录 Log.Error，不再抛出，调用方按需通过随后再 Exists 判定真实状态。
+                /// Win 下 SQLite 等场景可能因句柄延迟释放抛 IOException，内部走"GC.Collect + WaitForPendingFinalizers + 等待重试"兜底；
+                /// WebGL 不使用线程等待与 finalizer 重试，删除失败时直接记录 Log.Error；其他平台重试后仍失败时同样只记录、不抛出。
+                /// 调用方可按需通过随后再 Exists 判定真实状态。
                 /// </summary>
                 /// <param name="filePath">文件路径。</param>
                 public static void Delete(string filePath)
@@ -395,8 +396,12 @@ namespace NovaFramework.Runtime
                 /// <returns>实际删除成功返回 true；超过重试次数仍失败返回 false 并记录 Log.Error。</returns>
                 private static bool TryDeleteWithRetry(string filePath)
                 {
+#if UNITY_WEBGL
+                    const int retryCount = 1;
+#else
                     const int retryCount = 3;
                     const int retryDelayMs = 50;
+#endif
                     System.Exception lastException = null;
 
                     for (int attempt = 0; attempt < retryCount; attempt++)
@@ -415,7 +420,9 @@ namespace NovaFramework.Runtime
                             lastException = ex;
                         }
 
-                        // GC 兜底：强制回收 SQLiteConnection / FileStream finalizer 持有的 native 句柄
+                        // GC 兜底：强制回收 SQLiteConnection / FileStream finalizer 持有的 native 句柄。
+                        // WebGL 没有可供同步等待的后台线程；同步删除失败时立即结束，避免阻塞主线程。
+#if !UNITY_WEBGL
                         System.GC.Collect();
                         System.GC.WaitForPendingFinalizers();
                         System.GC.Collect();
@@ -424,6 +431,7 @@ namespace NovaFramework.Runtime
                         {
                             System.Threading.Thread.Sleep(retryDelayMs);
                         }
+#endif
                     }
 
                     Log.Error(LogTag.SysIO, "Util.SysIO.File.Delete 失败（{0} 次重试后仍占用）：{1}，异常：{2}", retryCount, filePath, lastException?.Message);

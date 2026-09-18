@@ -25,11 +25,21 @@ namespace NovaFramework.Runtime
         public string CurManagerTypeName => m_CurManagerTypeName;
 
         /// <summary>
-        /// App 更新功能总开关；默认关闭，关闭时跳过大版本检查，继续后续资源热更或启动流程。
+        /// App 更新功能总开关；WebGL 固定返回 false，其他平台返回序列化配置。
         /// </summary>
         [SerializeField]
         private bool m_EnableAppUpdate;
-        public bool EnableAppUpdate => m_EnableAppUpdate;
+        public bool EnableAppUpdate
+        {
+            get
+            {
+#if UNITY_WEBGL
+                return false;
+#else
+                return m_EnableAppUpdate;
+#endif
+            }
+        }
 
         /// <summary>
         /// Debug 开发模式下的主版本检查地址。

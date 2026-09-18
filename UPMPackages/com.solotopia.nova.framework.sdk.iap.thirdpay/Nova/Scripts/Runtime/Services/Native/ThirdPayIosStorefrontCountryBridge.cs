@@ -2,7 +2,7 @@
  * (c) copyright 2026 - 2030, Solotopia
  * All Rights Reserved.
  * -------------------------------------------------------------
- * filename:  ThirdPayStorefrontRegionNativeBridge.cs
+ * filename:  ThirdPayIosStorefrontCountryBridge.cs
  * author:    yingzheng
  * created:   2026/8/28
  * descrip:   ThirdPay iOS StoreKit storefront 区域桥接
@@ -17,7 +17,7 @@ using AOT;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
-    internal static class ThirdPayStorefrontRegionNativeBridge
+    internal static class ThirdPayIosStorefrontCountryBridge
     {
 #if UNITY_IOS && !UNITY_EDITOR
         /// <summary>

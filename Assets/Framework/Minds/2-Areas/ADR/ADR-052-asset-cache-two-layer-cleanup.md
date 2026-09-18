@@ -17,6 +17,7 @@ superseded-by: []
 related:
   - "[[ADR-011-load-unload-and-ireference-pairing|ADR-011]]"
   - "[[ADR-042-assetmanager-load-api-all-return-handle|ADR-042]]"
+  - "[[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]]"
   - "[[MOC-Asset]]"
 ---
 
@@ -24,7 +25,7 @@ related:
 
 ## 背景（Context）
 
-策略 B（启动切片 + 运行时增量）下，某 tag 资源更新后，**旧版本的 bundle 会变成"无主缓存"堆在 persistentDataPath 沙盒里**——它们不在当前 manifest 中，既不会被加载也不会自动删除，长期运行会持续占用磁盘。
+在使用 Sandbox 文件系统的平台上，策略 B（启动切片 + 运行时增量）下，某 tag 资源更新后，**旧版本的 bundle 会变成"无主缓存"堆在 persistentDataPath 沙盒里**——它们不在当前 manifest 中，既不会被加载也不会自动删除，长期运行会持续占用磁盘。
 
 现状 `IAssetManager.CleanupAsync`（`AssetManager.Cleanup.cs`）只做 YooAsset `UnloadUnusedAssetsAsync`，即**内存引用计数级**回收（销毁 RefCount=0 的 Provider/BundleLoader），完全不触碰磁盘缓存文件。磁盘上的无主旧 bundle 没有任何清理入口。
 
@@ -42,6 +43,8 @@ related:
 |---|---|---|---|
 | `CleanupAsync`（已有） | 内存引用计数 | RefCount=0 的 Provider/BundleLoader | 场景卸载后回收内存 |
 | `ClearUnusedCacheAsync`（新增） | 磁盘沙盒 | 不在当前 manifest 的旧版本 bundle 文件 | 热更完成后清磁盘 |
+
+WebGL 不使用上述 Sandbox 磁盘模型。`IAssetWarmupGroup.Release()` 与 `CleanupAsync()` 只负责撤销运行时引用并回收无引用 Bundle；浏览器 Unity Web Cache 由浏览器管理，不会被 `ClearUnusedCacheAsync()` 当作移动端 Sandbox 清理，详见 [[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]]。
 
 ### 3. 自动触发：API + 可选开关（不内置强制）
 

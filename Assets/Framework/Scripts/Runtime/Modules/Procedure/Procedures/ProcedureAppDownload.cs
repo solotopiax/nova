@@ -22,7 +22,7 @@ namespace NovaFramework.Runtime
     /// 1. 根据 AppVersionResult 弹出 ForcedDownload / RecommendedDownload 弹窗。
     /// 2. 确认后按 AppManagerConfig.DownloadRoute 选择跳商店或下载 APK。
     /// 3. 操作结束（无论成败）重新显示弹窗，直到用户选择退出或下载完成。
-    /// 4. 推荐更新取消后，按 HasAssetPatch 回到热更或 DLL 启动流程。
+    /// 4. 推荐更新取消后，按启动资源工作状态回到热更/Warmup 或 DLL 启动流程。
     /// </summary>
     public sealed class ProcedureAppDownload : ProcedureBase
     {
@@ -37,9 +37,9 @@ namespace NovaFramework.Runtime
         private AppVersionResult m_AppResult;
 
         /// <summary>
-        /// 推荐更新取消后是否还需要继续热更。
+        /// 推荐更新取消后是否还需要继续下载或 WebGL Warmup。
         /// </summary>
-        private bool m_HasAssetPatch;
+        private bool m_RequiresStartupAssetWork;
 
         /// <summary>
         /// 是否已有更新动作正在执行，防止确认按钮重入。
@@ -56,7 +56,7 @@ namespace NovaFramework.Runtime
 
             m_Complete = false;
             m_AppResult = procedureOwner.GetData<AppVersionResult>(ProcedureDataKeys.AppVersionResult);
-            m_HasAssetPatch = procedureOwner.GetData<bool>(ProcedureDataKeys.HasAssetPatch);
+            m_RequiresStartupAssetWork = procedureOwner.GetData<bool>(ProcedureDataKeys.RequiresStartupAssetWork);
             m_IsOperationInProgress = false;
 
             if (m_AppResult != AppVersionResult.ForcedDownload
@@ -67,7 +67,10 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            Log.Debug(LogTag.Procedure, Txt.Format("ProcedureAppDownload — 显示大版本更新弹窗。Result={0} HasAssetPatch={1}", m_AppResult, m_HasAssetPatch));
+            Log.Debug(LogTag.Procedure, Txt.Format(
+                "ProcedureAppDownload — 显示大版本更新弹窗。Result={0} RequiresStartupAssetWork={1}",
+                m_AppResult,
+                m_RequiresStartupAssetWork));
             ShowDialog();
         }
 
@@ -84,7 +87,7 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            if (m_AppResult == AppVersionResult.RecommendedDownload && m_HasAssetPatch)
+            if (m_AppResult == AppVersionResult.RecommendedDownload && m_RequiresStartupAssetWork)
             {
                 ChangeState<ProcedureHotfix>(procedureOwner);
                 return;
@@ -103,6 +106,7 @@ namespace NovaFramework.Runtime
             base.OnLeave(procedureOwner, isShutdown);
             procedureOwner.RemoveData(ProcedureDataKeys.AppVersionResult);
             procedureOwner.RemoveData(ProcedureDataKeys.HasAssetPatch);
+            procedureOwner.RemoveData(ProcedureDataKeys.RequiresStartupAssetWork);
             m_IsOperationInProgress = false;
 
             if (isShutdown)

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-09-18
+
+### Fixed
+
+- WebGL 下保留配置类型所在 Runtime 程序集，避免 Config 资产中的 Mobile Store 配置产生 Missing types 警告；非移动平台验单分支不再产生无 `await` 编译警告。
+
+### Changed
+
+- Mobile 支付成功与验单结果显式标记为 `IAPStoreType.Mobile`，使 IAP 全局事件可识别结果来源。
+
 ## [0.1.12] - 2026-09-02
 
 ### Changed

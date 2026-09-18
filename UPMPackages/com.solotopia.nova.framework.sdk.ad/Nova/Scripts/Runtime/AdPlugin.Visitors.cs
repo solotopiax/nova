@@ -26,16 +26,6 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public override int Priority => 80;
 
         /// <summary>
-        /// 广告国家码上次成功缓存的持久化分类名。
-        /// </summary>
-        private const string c_CountryCodePersistClassify = "AdCountryCode";
-
-        /// <summary>
-        /// 广告国家码上次成功缓存的持久化条目名。
-        /// </summary>
-        private const string c_CountryCodePersistItem = "LastSuccess";
-
-        /// <summary>
         /// 未注入配置时等待广告国家码的默认超时时间。
         /// </summary>
         private const float c_DefaultCountryCodeWaitTimeoutSeconds = 5f;

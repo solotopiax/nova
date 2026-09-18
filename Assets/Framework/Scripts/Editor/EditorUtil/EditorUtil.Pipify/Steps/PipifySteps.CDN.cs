@@ -49,7 +49,6 @@ namespace NovaFramework.Editor
                 master.CurrentPlatform,
                 master.CurrentChannel,
                 packageFilePrefix,
-                parameters.CleanRemoteFilesAndDirectories,
                 (completed, total, _) =>
                 {
                     float progress = total > 0 ? completed / (float)total : 0f;
@@ -109,7 +108,6 @@ namespace NovaFramework.Editor
                 master.CurrentPlatform,
                 master.CurrentChannel,
                 packageFilePrefix,
-                parameters.CleanRemoteFilesAndDirectories,
                 (completed, total, _) =>
                 {
                     float progress = total > 0 ? completed / (float)total : 0f;

@@ -36,7 +36,6 @@ SDKPluginBase
 | `m_ActiveBannerChannel` | `IAdInternalPlugin` | `null` | RequestAsync(Banner) 成功后记录的活跃 Banner 渠道；Banner 控制方法委托到此渠道 |
 | `m_EventManager` | `IEventManager` | `null` | 事件管理器引用；OnInitializeAsync 末尾取得，OnDisposeAsync 开头清空 |
 | `m_RuntimeConfig` | `AdPluginConfig` | `null` | SDKManager 注入的广告运行时配置，提供国家码等待超时时间 |
-| `c_CountryCodePersistClassify` / `c_CountryCodePersistItem` | `string` | `AdCountryCode` / `LastSuccess` | 广告国家码上次成功缓存的 `IFileFragmentManager` 存储位置 |
 | `Events` | `AdPluginEvents` | `new AdPluginEvents()` | 事件容器，readonly，持有 7 个 ObservableEvent 字段 |
 | `Name` | `string` | `"AdPlugin"` | 插件友好名 |
 | `Priority` | `int` | `80` | 在现有收益打点插件之后初始化，确保广告渠道能缓存可用的打点实例 |
@@ -68,7 +67,7 @@ public bool HasUserConsent();
 public async UniTask WaitForPrivacyFlowAsync(CancellationToken ct = default);
 
 /// 异步获取广告 SDK 返回的有效国家或地区代码。
-/// 优先等待 SDKDataKeys.AdCountryCode；超时后读取广告模块上次成功缓存；拿到空值或 IV 时直接返回空字符串。
+/// 优先等待 SDKDataKeys.AdCountryCode；超时或拿到空值 / IV 时直接返回空字符串。
 public async UniTask<string> GetCountryCodeAsync(CancellationToken ct = default);
 
 /// 展示指定格式广告，选 Revenue 最高的就绪渠道执行；无就绪渠道时 Log.Warning 并跳过。
@@ -126,17 +125,11 @@ private IAdInternalPlugin SelectBestChannel(AdFormat format);
 private async UniTask<AdLoadResult> BroadcastRequestAsync(AdFormat format, Dictionary<string, object> customProps, CancellationToken ct);
 
 /// 从渠道读取国家码，过滤空值和 IV，占位无效时不发布。
-/// 有效国家码会统一转成大写，并通过 SDKDataKeys.AdCountryCode 发布，同时写入广告模块缓存。
+/// 有效国家码会统一转成大写，并通过 SDKDataKeys.AdCountryCode 发布。
 private void TryPublishCountryCodeFromChannel(IAdInternalPlugin channel);
 
-/// 发布已经读取到的国家码字符串，并保存广告模块上次成功缓存。
+/// 发布已经读取到的国家码字符串。
 private void TryPublishCountryCode(string countryCode);
-
-/// 读取广告模块上次成功国家码缓存；缓存为空或为 IV 时返回空字符串。
-private static string ReadCountryCodeCache();
-
-/// 保存广告模块上次成功国家码缓存；空值和 IV 不写入。
-private static void SaveCountryCodeCache(string normalizedCountryCode);
 ```
 
 ---
@@ -186,9 +179,9 @@ OnUserLogin(sender, e):
 - 来源：已注册渠道的 `IAdInternalPlugin.GetCountryCode()`。
 - 过滤：空字符串、空白字符串和 `IV` 不发布。
 - 规范化：发布前转成大写，例如 `us` → `US`。
-- 发布语义：渠道注册或初始化成功时读到有效国家码就发布到同一数据槽位，后发布值可覆盖前值；每次有效发布都会写入广告模块上次成功缓存。
+- 发布语义：渠道注册或初始化成功时读到有效国家码就发布到同一数据槽位，后发布值可覆盖前值；广告模块不做本地持久化缓存。
 
-消费方应通过 `IAdPlugin.GetCountryCodeAsync(ct)` 获取最终国家码，而不是直接等待数据槽位或轮询具体广告渠道。该方法会按 `AdPluginConfig.CountryCodeWaitTimeoutSeconds` 等待广告国家码；等待超时时读取广告模块上次成功缓存，拿到空值或 `IV` 时直接返回空字符串。
+消费方应通过 `IAdPlugin.GetCountryCodeAsync(ct)` 获取最终国家码，而不是直接等待数据槽位或轮询具体广告渠道。该方法会按 `AdPluginConfig.CountryCodeWaitTimeoutSeconds` 等待广告国家码；等待超时、拿到空值或拿到 `IV` 时直接返回空字符串。
 
 ## §9.1 广告隐私授权状态
 
@@ -205,7 +198,7 @@ OnUserLogin(sender, e):
 - **误区：从 `ShowAsync` 读取 `AdResult`**：`ShowAsync` 返回 `UniTask`，展示成功、失败和关闭结果分别通过 `Events.ShowCompleted`、`Events.ShowFailed`、`Events.AdClosed` 发布；激励奖励以 `AdClosed.UserCompleted` 为准。
 - **误区：直接调 Banner 控制方法而不先 RequestAsync**：`m_ActiveBannerChannel` 在 `RequestAsync(Banner)` 成功后才会被赋值；未预加载时所有 Banner 控制方法为无操作。
 - **误区：调 `Supports(format)` 检查格式**：`Supports` 方法已全链路删除；直接 `RequestAsync`，未注册该格式的渠道 fail-soft 返回 `Success=false`，不抛异常。
-- **误区：从 `IAdPlugin` 同步查询国家码**：国家码只能通过 `GetCountryCodeAsync(ct)` 异步获取；等待、超时和缓存兜底均由广告模块内部负责。
+- **误区：从 `IAdPlugin` 同步查询国家码**：国家码只能通过 `GetCountryCodeAsync(ct)` 异步获取；广告模块只负责等待运行时数据，超时返回空字符串，不负责持久化兜底。
 - **误区：只检查 `HasUserConsent()`**：明确拒绝、尚未设置和渠道不支持查询都会返回 `false`，必须结合 `IsUserConsentSet()`。
 - **误区：用 `IsUserConsentSet()` 轮询等待弹窗结束**：无须展示 CMP 时该值可能一直为 `false`；应等待 `WaitForPrivacyFlowAsync()`。
 

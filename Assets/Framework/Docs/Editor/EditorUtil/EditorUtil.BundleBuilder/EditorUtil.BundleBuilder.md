@@ -11,8 +11,8 @@ YooAsset 标准 AssetBundle 与可选 RawFile 构建薄封装。两个入口使�
 
 | 文件 | 类 | 说明 |
 |------|------|------|
-| `EditorUtil.BundleBuilder.cs` | `EditorUtil.BundleBuilder` | public API：`BuildAssetBundle` / `BuildRawFileBundle` / `GetDefaultPackageVersion` |
-| `EditorUtil.BundleBuilder.Visitors.cs` | `EditorUtil.BundleBuilder` | 常量：`c_LogPrefix` |
+| `EditorUtil.BundleBuilder.cs` | `EditorUtil.BundleBuilder` | public API、默认版本号、首包拷贝校验与 WebGL `None` 旧目录清理 |
+| `EditorUtil.BundleBuilder.Visitors.cs` | `EditorUtil.BundleBuilder` | 日志常量 |
 | `EditorUtil.BundleBuilder.Methods.cs` | `EditorUtil.BundleBuilder` | 私有方法：`ResolveClassName` / `CreateInstanceOrNull` / `ResolveBuiltinShaderBundleName` |
 | `AssetBundleBuildArgs.cs` | `AssetBundleBuildArgs` | `[Serializable]` 标准 AssetBundle 构建参数 DTO |
 | `RawFileBuildArgs.cs` | `RawFileBuildArgs` | `[Serializable]` RawFile 构建参数 DTO |
@@ -65,8 +65,8 @@ public static string GetDefaultPackageVersion();
 | `ManifestDecryptorClassName` | `string` | `typeof(ManifestDecryptorNone).FullName` | 资源清单解密器全类型名；空时同样回退 `YooAsset.Editor.ManifestDecryptorNone` | `[PipifyDropdown(typeof(IManifestDecryptor))]` |
 | `Compression` | `ECompressOption` | `LZ4` | 压缩方式（`Uncompressed` / `LZMA` / `LZ4`） | — |
 | `FileNameStyle` | `EFileNameStyle` | `BundleName_HashName` | 远端资源文件命名风格 | — |
-| `BundledCopyOption` | `EBundledCopyOption` | `ClearAndCopyAll` | 首包资源拷贝选项 | — |
-| `BundledCopyParams` | `string` | `""` | 首包资源拷贝标签（仅按标签拷贝时生效） | `[PipifyVisibleWhen(nameof(BundledCopyOption), (int)ClearAndCopyByTags, (int)OnlyCopyByTags)]` |
+| `BundledCopyOption` | `EBundledCopyOption` | `ClearAndCopyAll` | WebGL 允许 `None` / `ClearAndCopyByTags` / `ClearAndCopyAll`；其他平台保留 YooAsset 原选项 | — |
+| `BundledCopyParams` | `string` | `""` | 按 Tag 拷贝时的标签；多标签以分号分隔 | `[PipifyVisibleWhen(nameof(BundledCopyOption), (int)ClearAndCopyByTags, (int)OnlyCopyByTags)]` |
 
 **`RawFileBuildArgs` 字段：**
 
@@ -81,8 +81,8 @@ public static string GetDefaultPackageVersion();
 | `ManifestEncryptorClassName` | `string` | `typeof(ManifestEncryptorNone).FullName` | 资源清单加密器全类型名 | `[PipifyDropdown(typeof(IManifestEncryptor))]` |
 | `ManifestDecryptorClassName` | `string` | `typeof(ManifestDecryptorNone).FullName` | 资源清单解密器全类型名 | `[PipifyDropdown(typeof(IManifestDecryptor))]` |
 | `FileNameStyle` | `EFileNameStyle` | `BundleName_HashName` | 远端资源文件命名风格 | — |
-| `BundledCopyOption` | `EBundledCopyOption` | `ClearAndCopyAll` | 首包资源拷贝选项 | — |
-| `BundledCopyParams` | `string` | `""` | 首包资源拷贝标签参数 | `[PipifyVisibleWhen(nameof(BundledCopyOption), (int)ClearAndCopyByTags, (int)OnlyCopyByTags)]` |
+| `BundledCopyOption` | `EBundledCopyOption` | `ClearAndCopyAll` | WebGL 允许 `None` / `ClearAndCopyByTags` / `ClearAndCopyAll`；其他平台保留 YooAsset 原选项 | — |
+| `BundledCopyParams` | `string` | `""` | 按 Tag 拷贝时的标签 | `[PipifyVisibleWhen(nameof(BundledCopyOption), (int)ClearAndCopyByTags, (int)OnlyCopyByTags)]` |
 | `IncludePathInHash` | `bool` | `false` | 计算 RawFile 哈希时是否包含文件路径 | — |
 
 Raw DTO 不包含 `Compression`、`BuiltinShadersBundleName` 等 ScriptableBuildPipeline 专属配置。
@@ -112,6 +112,18 @@ Raw DTO 不包含 `Compression`、`BuiltinShadersBundleName` 等 ScriptableBuild
 - BuildBundleType = `EBundleType.RawBundle`
 - `VerifyBuildingResult = true`
 - 仅处理 Collector 中使用 `PackRawFile` 的目标资源
+
+### WebGL 的首包拷贝规则
+
+`BuildAssetBundle`、`BuildRawFileBundle`、Pipify Step 与受控 Build Action 在 WebGL 下统一支持：
+
+- `None`：清理目标 Package 的旧首包目录，不复制 Manifest/Bundle，运行时使用纯 CDN。
+- `ClearAndCopyByTags`：复制 Manifest、Catalog 和指定 Tag 的 Bundle，运行时组合 StreamingAssets 与 CDN。
+- `ClearAndCopyAll`：复制 Manifest、Catalog 和全部 Bundle；Host 模式仍保留 CDN 更新能力。
+
+WebGL 不允许 `OnlyCopyAll` / `OnlyCopyByTags`，因为它们可能保留旧文件，使运行时无法准确判断本次构建布局。非 WebGL 平台仍保留 YooAsset 原有五种选项。
+
+Nova 不生成私有布局标记。运行时只根据 YooAsset 构建生成的官方 `BuiltinCatalog.bytes` 是否存在选择 WebServer/WebNetwork 组合；因此 WebGL 的 `None` 构建成功后必须删除目标 Package 的旧首包目录，避免遗留 Catalog 被误判为仍有首包。浏览器何时请求 Bundle 仍由 `WebGLAssetStrategy` 决定，见 [WebGLAssetStrategies.md](../../../Runtime/Modules/Asset/WebGLAssetStrategies.md)。
 
 ---
 
@@ -156,3 +168,4 @@ HybridCLR DLL 不走 RawFile 通道，仍按标准 AssetBundle 构建并通过 `
 - [EditorUtil.md](../EditorUtil.md)
 - [EditorUtil.Build.md](../EditorUtil.Build/EditorUtil.Build.md)
 - [PipifySteps.md](../EditorUtil.Pipify/PipifySteps.md)
+- [WebGLAssetStrategies.md](../../../Runtime/Modules/Asset/WebGLAssetStrategies.md)

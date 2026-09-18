@@ -21,7 +21,7 @@ related:
 
 # ADR-013：热更总开关 EnableHotfix 与启动流程二分
 
-## 修订注记（2026-06-09）
+## 修订注记（2026-09-17）
 
 本 ADR 中“`EnableHotfix=false` 时 `ProcedureSplash` 直接跳 `ProcedureLoadDll`，且启动期不发 App 版本检查 HTTP 请求”的描述，已不再代表当前实现。
 
@@ -31,8 +31,10 @@ related:
 - `ProcedureCheckVersion` 始终先执行 App 大版本检测
 - `EnableHotfix` 只控制 Asset 资源热更检查 / 下载链路
 - `AppDownloadCheckUrl` 为空时，App 检查降级为 `NoDownload`，继续后续启动流程
+- WebGL 不使用 Downloader 做启动补丁差异检查；即使 `EnableHotfix=false`，`TagsOnLaunch` / `AllOnLaunch` 仍会加载 Manifest 并执行 Warmup，`OnDemand` 或空有效 Tag 则跳过 Warmup
+- `AutoHotfix` 从未被启动流程读取，也没有配套的业务手动触发入口，现已从公共配置、序列化字段和 Inspector 删除；进入 `ProcedureHotfix` 后仍固定立即执行 Downloader 或 WebGL Warmup
 
-因此，本 ADR 保留其“`EnableHotfix` 归属 Asset 配置域”的决策背景，但启动链分流细节应以 [[PAT-44-procedure-checkversion-two-stage|PAT-44]] 和当前 `Docs` 为准。
+因此，本 ADR 保留其“`EnableHotfix` 归属 Asset 配置域”的决策背景，但启动链分流细节应以 [[PAT-44-procedure-checkversion-two-stage|PAT-44]]、[[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]] 和当前 `Docs` 为准。
 
 ## 背景（Context）
 
@@ -63,7 +65,7 @@ ProcedureLaunch → ProcedureSplash → ProcedureCheckVersion
 
 ### 1. 单字段总开关
 
-在 `AssetManagerConfig` 新增 `public bool EnableHotfix = true;`，与 `AutoHotfix` / `QuitOnFailedOrCancel` / `MaxDownloadConcurrency` 等热更字段聚合。
+在 `AssetManagerConfig` 新增 `public bool EnableHotfix = true;`，与 `QuitOnFailedOrCancel` / `MaxDownloadConcurrency` 等热更字段聚合。
 
 - **位置**：`Assets/Framework/Scripts/Runtime/Modules/Asset/Managers/AssetManager/Definitions/AssetManagerConfig.cs`
 - **默认值**：`true`（既有项目零改动）
@@ -109,7 +111,7 @@ effectiveMode = EnableHotfix
 - **抗远端配置爆炸**：`LaunchConfig` 远端下发被服务器宕机或配置错误污染时，关闭开关的项目仍能启动
 - **PlayMode 一刀切**：开发者改一个开关即获得"非热更行为"完整链路（流程 + Asset），不需要"两处都改"
 - **既有项目零改动升级**：默认 `true` 保证升级框架后行为不变
-- **架构边界清晰**：开关在 Asset 模块（与同族 `AutoHotfix` 聚合），不抬到 Launch 模块（避免 sibling 概念错位）
+- **架构边界清晰**：开关在 Asset 模块，与下载失败策略及并发配置聚合，不抬到 App 模块。
 
 ### 负面
 
@@ -124,7 +126,7 @@ effectiveMode = EnableHotfix
 |---|---|
 | **多个细粒度开关（CheckVersion / Hotfix / AppDownload 各一个）** | 调参复杂度上升 3 倍；业务上"只想关版本检查不关资源补丁"的场景几乎不存在；违反"一个开关解决一类问题"原则 |
 | **开关放在 LaunchConfig 远端 JSON** | "本地是否启用热更"是项目级编译期决策，远端可改等于让线上配置反向决定本地代码路径；服务器宕机或配置错乱将导致项目无法启动 |
-| **开关放在 LaunchComponent.Inspector** | LaunchComponent 承担"版本检查 / 双地址下载 / 跳商店"，与"是否启用整套热更"是 sibling 概念不是 parent；和同族字段（`AutoHotfix`）分裂，违反"相关字段聚合"原则 |
+| **开关放在 AppComponent Inspector** | App 模块承担应用版本检查、下载和商店跳转，不应持有 Asset 资源热更总开关 |
 | **默认值取 false** | 既有项目升级框架后默认行为大变（启动直跳 LoadDll），破坏既有 CI / 灰度链路，P0 风险 |
 | **保留 CheckVersion 但内部短路返回 SkipRequired** | 仍执行无意义的 Manager.CheckAsync 调用、UI 显示 CheckVersion 阶段进度面板；既浪费启动期 100-300ms 又污染 UI 节拍 |
 | **按 Application.isEditor 静态决定（不引入 Inspector 字段）** | 项目接入方无法在打包后切换；Editor 与 Player 行为分裂导致 Editor 调试不能复现 Player 真实路径 |

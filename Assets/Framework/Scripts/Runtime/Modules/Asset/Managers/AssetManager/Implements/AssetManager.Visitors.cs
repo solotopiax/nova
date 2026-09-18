@@ -64,6 +64,11 @@ namespace NovaFramework.Runtime
         private readonly Dictionary<string, AssetRemoteService> m_RemoteServices = new();
 
         /// <summary>
+        /// WebGL Package 的官方内置 Catalog 探测结果；Host 初始化前用于决定是否启用 WebServer 文件系统。
+        /// </summary>
+        private readonly Dictionary<string, bool> m_WebGLBuiltinCatalogAvailability = new();
+
+        /// <summary>
         /// 每个包的版本元数据编排互斥门，避免初始化、版本请求与清单加载并发修改同一 YooAsset 包状态。
         /// </summary>
         private readonly Dictionary<string, SemaphoreSlim> m_PackageMetadataGates = new();
@@ -87,5 +92,15 @@ namespace NovaFramework.Runtime
         /// HTTP 管理器，用于通过 UnityWebRequest 下载启动白名单文件。
         /// </summary>
         private IHttpManager m_HttpManager;
+
+        /// <summary>
+        /// AllOnLaunch 成功后由 AssetManager 接管并持有到 Shutdown 的预热组。
+        /// </summary>
+        private IAssetWarmupGroup m_AllOnLaunchWarmupGroup;
+
+        /// <summary>
+        /// TagsOnLaunch 成功释放 Handle 后，是否需要等待启动 DLL 消费完成再清理 Bundle。
+        /// </summary>
+        private bool m_LaunchWarmupCleanupPending;
     }
 }

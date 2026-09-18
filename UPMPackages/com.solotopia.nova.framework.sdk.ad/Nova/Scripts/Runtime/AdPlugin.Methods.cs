@@ -268,7 +268,6 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             }
 
             PublishData(SDKDataKeys.AdCountryCode, normalizedCountryCode);
-            SaveCountryCodeCache(normalizedCountryCode);
             Log.Debug(LogTag.AD, $"已发布广告国家代码：{normalizedCountryCode}。");
         }
 
@@ -291,7 +290,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 获取广告国家码等待超时时间。
-        /// 配置值小于等于 0、NaN 或无穷大时不等待，直接读取本地缓存。
+        /// 配置值小于等于 0、NaN 或无穷大时不等待，直接返回空字符串。
         /// </summary>
         /// <returns>等待超时时间。</returns>
         private TimeSpan GetCountryCodeWaitTimeout()
@@ -305,56 +304,6 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
             double timeoutMilliseconds = Math.Min(timeoutSeconds * 1000d, int.MaxValue);
             return TimeSpan.FromMilliseconds(timeoutMilliseconds);
-        }
-
-        /// <summary>
-        /// 读取广告模块上次成功获取到的国家码缓存。
-        /// 缓存为空、为 IV 或持久化模块不可用时返回空字符串。
-        /// </summary>
-        /// <returns>大写国家或地区代码；不可用时返回空字符串。</returns>
-        private static string ReadCountryCodeCache()
-        {
-            try
-            {
-                IFileFragmentManager persistManager = FrameworkManagersGroup.GetManager<IFileFragmentManager>();
-                string countryCode = persistManager.GetObject<string>(
-                    c_CountryCodePersistClassify,
-                    c_CountryCodePersistItem,
-                    string.Empty);
-                return TryNormalizeCountryCode(countryCode, out string normalizedCountryCode)
-                    ? normalizedCountryCode
-                    : string.Empty;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(LogTag.AD, $"读取广告国家码缓存失败：{ex.Message}");
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// 保存广告模块上次成功获取到的国家码。
-        /// 只有有效国家码会写入缓存，空值和 IV 会被忽略。
-        /// </summary>
-        /// <param name="normalizedCountryCode">已规范化的国家或地区代码。</param>
-        private static void SaveCountryCodeCache(string normalizedCountryCode)
-        {
-            if (!TryNormalizeCountryCode(normalizedCountryCode, out string countryCode))
-            {
-                return;
-            }
-
-            try
-            {
-                IFileFragmentManager persistManager = FrameworkManagersGroup.GetManager<IFileFragmentManager>();
-                persistManager.SetObject(c_CountryCodePersistClassify, c_CountryCodePersistItem, countryCode);
-                persistManager.Save(c_CountryCodePersistClassify);
-                Log.Debug(LogTag.AD, $"广告国家码缓存已更新：{countryCode}。");
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(LogTag.AD, $"保存广告国家码缓存失败：{ex.Message}");
-            }
         }
 
         /// <summary>

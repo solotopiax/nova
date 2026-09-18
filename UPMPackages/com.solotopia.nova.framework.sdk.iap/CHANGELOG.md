@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.1.15] - 2026-09-18
+
+### Added
+
+- `IAPResult` 新增 `StoreType`，全局支付成功/失败与 Restore 事件可直接区分结果来自 Mobile、ThirdPay 或 Voucher。
+
+### Changed
+
+- IAPDemo 全局支付事件与 Restore 反馈中的结果文本补充 `StoreType`，方便日志直接区分商店来源。
+- `RetryValidateMaxNum` 文档补充 Store 可按验单来源覆盖重试次数；ThirdPay 明确支付成功会覆盖完整重试间隔序列，关闭/返回等不明确场景仍按短验单处理。
+
 ## [0.1.14] - 2026-09-14
 
 ### Changed

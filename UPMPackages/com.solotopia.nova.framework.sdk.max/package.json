@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.max",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "8.6.4",
   "displayName": "Nova Framework - SDK - MAX",
@@ -46,7 +46,9 @@
     "com.applovin.mediation.adapters.unityads.ios": "4200000.0.0",
     "com.applovin.mediation.adapters.vungle.android": "7070200.0.0",
     "com.applovin.mediation.adapters.vungle.ios": "7070200.0.0",
-    "com.applovin.mediation.adapters.yandex.android": "8010000.0.0"
+    "com.applovin.mediation.adapters.yandex.android": "8010000.0.0",
+    "com.applovin.mediation.adapters.line.ios": "3010101.0.0",
+    "com.applovin.mediation.adapters.line.android": "300001010.0.0"
   },
   "nova": {
     "scopedRegistries": [

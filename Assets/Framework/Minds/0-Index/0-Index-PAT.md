@@ -91,7 +91,7 @@ auto_generated: true
 - [PAT-128 Inspector 持久化 UI 状态勿每帧强写](../2-Areas/Patterns/PAT-128-inspector-oninspectorgui-state-antipattern.md) — 持久化 UI 状态只在 OnEnable 设一次，绘制回调禁每帧强写
 - [PAT-149 IMGUI Foldout 展开位移先查布局 margin 传播](../2-Areas/Patterns/PAT-149-imgui-foldout-margin-propagation-layout-shift.md) — Foldout 位移先量 Rect 并阻断 margin 传播
 - [PAT-20 Editor 配置详情页标题与缩进规则](../2-Areas/Patterns/PAT-20-editor-panel-title-indent.md) — 复杂 Editor 配置面板应有明确标题，并给标题下条目统一缩进
-- [PAT-21 Inspector HelpBox 多语义分行规则](../2-Areas/Patterns/PAT-21-inspector-helpbox-multiline.md) — HelpBox 多条信息必须分行
+- [PAT-21 Inspector HelpBox 用户视角与多语义分行规则](../2-Areas/Patterns/PAT-21-inspector-helpbox-multiline.md) — HelpBox 只写用户需要的用途影响与操作且多条信息必须分行
 - [PAT-22 IMGUI TextField 切数据源前必须先释放焦点](../2-Areas/Patterns/PAT-22-imgui-textfield-focus-release.md) — IMGUI TextField编辑后需主动释放焦点
 - [PAT-24 Inspector 同层级编辑区对齐规则](../2-Areas/Patterns/PAT-24-inspector-row-vertical-alignment.md) — Inspector 同层级编辑区垂直对齐
 - [PAT-31 新增 Inspector SOP（继承结构 + 文件命名 + 4 步骤）](../2-Areas/Patterns/PAT-31-inspector-sop.md) — Inspector三文件SOP声明绑定绘制分离

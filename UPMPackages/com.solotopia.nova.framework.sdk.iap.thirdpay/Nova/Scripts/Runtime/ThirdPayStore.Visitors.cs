@@ -8,7 +8,6 @@
  * descrip:   ThirdPayStore 常量、字段与属性
  ***************************************************************/
 
-using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
@@ -16,34 +15,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     public sealed partial class ThirdPayStore
     {
         /// <summary>
-        /// 应用内第三方支付页对应的固定 NetCmd 名称。
-        /// </summary>
-        private const string c_OpenUrlCmdName = "ThirdOpenURL";
-
-        /// <summary>
         /// 服务端验单失败后的重试间隔，单位为秒。
         /// </summary>
-        private static readonly float[] s_ValidateRetryIntervals = { 0.2f, 0.5f, 1f, 2f, 4f };
+        private static readonly float[] s_ValidateRetryIntervals = { 0.2f, 0.5f, 1f, 2f, 4f, 8f };
 
         /// <summary>
         /// 外部浏览器支付返回 App 后的默认自动验单延迟，单位为秒。
         /// </summary>
         private const float c_DefaultExternalBrowserReturnValidateDelaySeconds = 2.5f;
-
-        /// <summary>
-        /// 第三方支付国家码兜底值，和 Solar 保持一致。
-        /// </summary>
-        private const string c_DefaultCountryCode = "US";
-
-        /// <summary>
-        /// 广告或平台侧可能返回的无效国家码，ThirdPay 按 Solar 规则映射为 US。
-        /// </summary>
-        private const string c_InvalidCountryCode = "IV";
-
-        /// <summary>
-        /// iOS 原生层在无法识别商店国家码时返回的占位值。
-        /// </summary>
-        private const string c_UnknownCountryCode = "UNKNOWN";
 
         /// <summary>
         /// 获取第三方支付打点使用的固定渠道标识。
@@ -76,21 +55,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private ThirdPayChannelParamsLoader m_ChannelParamsLoader;
 
         /// <summary>
-        /// 最近一次成功拉取的第三方商品列表。
-        /// </summary>
-        private PbNetThirdProductListResp m_ProductList;
-
-        /// <summary>
-        /// 当前账号的第三方支付存档容器。
-        /// </summary>
-        private ThirdPayPersistData m_PersistData;
-
-        /// <summary>
-        /// 当前账号待处理订单仓储。
-        /// </summary>
-        private ThirdPayOrderRepository m_OrderRepository;
-
-        /// <summary>
         /// 框架内应用内支付页服务。
         /// </summary>
         private IThirdPayWebViewService m_WebViewService;
@@ -101,74 +65,29 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private IThirdPayExternalBrowserService m_ExternalBrowserService;
 
         /// <summary>
-        /// 当前外部浏览器支付会话；为空表示没有浏览器支付等待返回验单。
-        /// </summary>
-        private ThirdPayExternalBrowserPaySession m_ExternalBrowserPaySession;
-
-        /// <summary>
         /// Android Google 外链政策处理服务。
         /// </summary>
         private ThirdPayGooglePolicyService m_GooglePolicy;
 
         /// <summary>
-        /// Debug 覆盖用国家或地区代码，优先级高于所有运行时自动解析来源。
+        /// 第三方支付国家码运行时状态。
         /// </summary>
-        private string m_DebugCountryCode = string.Empty;
+        private readonly ThirdPayCountryState m_CountryState = new ThirdPayCountryState();
 
         /// <summary>
-        /// 首次自动解析后锁定的国家码，避免同一运行期商品国家反复漂移。
+        /// 第三方支付商品快照与在途请求状态。
         /// </summary>
-        private string m_LockCountryCode = string.Empty;
+        private readonly ThirdPayProductCatalogState m_ProductCatalogState = new ThirdPayProductCatalogState();
 
         /// <summary>
-        /// Google Play Billing 返回的商店国家码。
+        /// 当前账号持久化和订单仓储上下文。
         /// </summary>
-        private string m_BillingCountryCode = string.Empty;
+        private readonly ThirdPayPersistContext m_PersistContext = new ThirdPayPersistContext();
 
         /// <summary>
-        /// iOS StoreKit storefront 返回的商店国家码。
+        /// 外部浏览器支付会话状态。
         /// </summary>
-        private string m_NativeCountryCode = string.Empty;
-
-        /// <summary>
-        /// iOS StoreKit storefront 返回的商店区域标识。
-        /// </summary>
-        private string m_NativeStorefrontIdentifier = string.Empty;
-
-        /// <summary>
-        /// 广告模块返回或缓存的国家码，用作 Billing 与原生国家码之后的兜底来源。
-        /// </summary>
-        private string m_AdCountryCode = string.Empty;
-
-        /// <summary>
-        /// 商品列表请求版本号，用于忽略旧国家或旧账号返回的过期响应。
-        /// </summary>
-        private int m_ProductListRequestVersion;
-
-        /// <summary>
-        /// 当前商品列表在途请求的版本号；只有版本仍为 Store 最新值时才允许合并等待。
-        /// </summary>
-        private int m_ProductListFetchVersion;
-
-        /// <summary>
-        /// 当前商品列表在途请求对应的 GameUID。
-        /// </summary>
-        private string m_ProductListFetchUid = string.Empty;
-
-        /// <summary>
-        /// 当前商品列表在途请求对应的协议命令名。
-        /// </summary>
-        private string m_ProductListFetchCmdName = string.Empty;
-
-        /// <summary>
-        /// 当前商品列表在途请求对应的有效国家或地区代码。
-        /// </summary>
-        private string m_ProductListFetchCountryCode = string.Empty;
-
-        /// <summary>
-        /// 当前商品列表在途请求的共享完成源，允许登录预取、Demo 刷新与支付兜底并发等待。
-        /// </summary>
-        private UniTaskCompletionSource<bool> m_ProductListFetchCompletion;
+        private readonly ThirdPayExternalBrowserSessionState m_ExternalBrowserSessionState = new ThirdPayExternalBrowserSessionState();
 
         /// <summary>
         /// 当前是否跳过 Google 第三方支付信息页。

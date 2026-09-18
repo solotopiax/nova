@@ -38,6 +38,7 @@ auto_generated: true
 - [ADR-052 下载缓存两层清理分工，内存引用计数与磁盘沙盒分离](../2-Areas/ADR/ADR-052-asset-cache-two-layer-cleanup.md) — 内存引用计数与磁盘旧资源文件分两层独立清理
 - [ADR-055 Excel 源数据迁入各 Demo 独立副本，路径生命周期收敛单链](../2-Areas/ADR/ADR-055-excel-source-into-demo-copies.md) — Excel 源移进各 Demo 副本，删 Docs 搬运
 - [ADR-060 YooAssetSettings 只保留 Editor 权威源并在 Player 构建期临时 staging](../2-Areas/ADR/ADR-060-yooasset-settings-global-resources-copy.md) — 构建期临时生成唯一 YooAssetSettings 副本
+- [ADR-085 WebGL 三种资源策略与 IAssetWarmupGroup 句柄分层](../2-Areas/ADR/ADR-085-webgl-asset-strategies-and-warmup-group.md) — 官方 Catalog 驱动 WebGL 文件系统与预热句柄
 
 ## core
 
@@ -111,4 +112,4 @@ auto_generated: true
 
 
 ---
-_共 69 条，分布于 10 个 category。_
+_共 70 条，分布于 10 个 category。_

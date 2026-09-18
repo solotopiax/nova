@@ -41,6 +41,16 @@ namespace NovaFramework.Runtime
         private AssetPlayMode m_RuntimePlayMode = AssetPlayMode.HostPlayMode;
 
         /// <summary>
+        /// WebGL 启动资源策略；与 OfflinePlayMode / HostPlayMode 和热更新开关相互独立。
+        /// </summary>
+        [SerializeField]
+        private WebGLAssetStrategy m_WebGLAssetStrategy = WebGLAssetStrategy.TagsOnLaunch;
+        /// <summary>
+        /// WebGL 启动资源策略对外只读属性。
+        /// </summary>
+        public WebGLAssetStrategy WebGLStrategy => m_WebGLAssetStrategy;
+
+        /// <summary>
         /// 需要 CreatePackage 的包名列表，至少包含一个默认包。
         /// </summary>
         [SerializeField]
@@ -59,7 +69,8 @@ namespace NovaFramework.Runtime
         private bool m_AutoCleanupOnSceneUnload;
 
         /// <summary>
-        /// 热更新功能总开关；默认 true，关闭时启动直跳 ProcedureLoadDll，跳过 CheckVersion / Hotfix / AppDownload 三个 Procedure。
+        /// 资源热更新总开关；默认 true，只控制资源补丁检查与下载。
+        /// WebGL TagsOnLaunch / AllOnLaunch 的启动预热不受该开关影响。
         /// 与 RuntimePlayMode 在 Inspector 编辑期双向联动。
         /// </summary>
         [SerializeField]
@@ -155,28 +166,32 @@ namespace NovaFramework.Runtime
         private int m_StartupWhitelistCheckTimeout = 5;
 
         /// <summary>
-        /// 启动期资源补丁就绪后是否自动开始下载；默认 true。
-        /// </summary>
-        [SerializeField]
-        private bool m_AutoHotfix = true;
-
-        /// <summary>
         /// 资源补丁下载失败或取消时是否强制退出应用；默认 false。
         /// </summary>
         [SerializeField]
         private bool m_QuitOnFailedOrCancel;
         /// <summary>
-        /// 下载失败或取消时是否强制退出应用对外只读属性。
+        /// 下载失败或取消时是否强制退出应用；WebGL 固定返回 false。
         /// </summary>
-        public bool QuitOnFailedOrCancel => m_QuitOnFailedOrCancel;
+        public bool QuitOnFailedOrCancel
+        {
+            get
+            {
+#if UNITY_WEBGL
+                return false;
+#else
+                return m_QuitOnFailedOrCancel;
+#endif
+            }
+        }
 
         /// <summary>
-        /// 资源补丁下载最大并发数，推荐 3-8；默认 5。
+        /// 资源请求最大并发数；非 WebGL 用于补丁下载，WebGL 用于限制 Bundle Warmup，推荐 3-8；默认 5。
         /// </summary>
         [SerializeField]
         private int m_MaxDownloadConcurrency = 5;
         /// <summary>
-        /// 下载最大并发数对外只读属性。
+        /// 资源请求最大并发数对外只读属性。
         /// </summary>
         public int MaxDownloadConcurrency => m_MaxDownloadConcurrency;
 
@@ -221,9 +236,9 @@ namespace NovaFramework.Runtime
         public bool EnableUWRTracks => m_EnableUWRTracks;
 
         /// <summary>
-        /// 启动期热更按 tag 过滤的 tag 列表。
-        /// 非空时 ProcedureCheckVersion 与 ProcedureHotfix 分别按 Tag 判断和下载；
-        /// 空列表表示检查并下载整包（行为与旧逻辑一致）。
+        /// 启动期资源 Tag 列表。
+        /// 非 WebGL 下用于限制补丁检查与下载范围，空列表表示整包；
+        /// WebGL 下仅供 TagsOnLaunch 预热使用，清理空白与重复项后为空时降级为 OnDemand。
         /// </summary>
         [SerializeField]
         private List<string> m_LaunchHotfixTags;
@@ -257,7 +272,7 @@ namespace NovaFramework.Runtime
         private int m_ManifestRequestTimeout = 60;
 
         /// <summary>
-        /// WebGL 远端 Bundle 单次物理请求的总超时秒数；默认 300。
+        /// WebGL StreamingAssets 与 CDN Bundle 单次物理请求的总超时秒数；默认 300。
         /// 非 WebGL 平台不使用该字段。
         /// </summary>
         [SerializeField]

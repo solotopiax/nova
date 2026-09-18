@@ -100,9 +100,9 @@ namespace NovaFramework.Editor
             if (window.m_WorkingCopy != null)
             {
                 if (platform != PlatformType.None) window.m_EditingPlatform = platform;
-                window.m_WorkingCopy.CurrentChannel = channel;
+                if (channel != ChannelType.None) window.m_WorkingCopy.CurrentChannel = channel;
                 window.m_WorkingCopy.CurrentDevelopMode = developMode;
-                window.m_LastKnownChannel = channel;
+                window.m_LastKnownChannel = window.m_WorkingCopy.CurrentChannel;
             }
             window.m_GroupExpandedCommon = target == LeftTreeItem.AppConfig ||
                                            target == LeftTreeItem.PrivacyConfig ||

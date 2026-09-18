@@ -34,7 +34,7 @@ related:
 - Nova 当前不使用 Addressables 作为运行时资源系统；提到“地址”“远端资源”或“热更新”时，默认指 YooAsset 与 Asset 模块抽象，除非上下文明示 Addressables 调研。
 - AssetBundle 是底层产物，不应让业务模块直接拼接 Bundle 路径或管理依赖。
 - Asset 模块以外的 Runtime 消费方只使用 `IAssetManager`、`IAssetHandle` 与 Nova 的 AssetLocation 语义，不直接依赖 YooAsset API。
-- YooAsset Manifest 决定 Bundle hash 和依赖；Tag 只是 Downloader 的筛选条件，不是另一套持久化资源目录。
+- YooAsset Manifest 决定 Bundle hash 和依赖；Tag 是 Downloader 或 `CreateWarmupByTags` 的筛选条件，不是另一套持久化资源目录。WebGL `TagsOnLaunch` 使用 Tag 选择启动预热范围。
 
 ## 易混淆项
 

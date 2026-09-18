@@ -90,7 +90,7 @@ namespace NovaFramework.Editor
 
         protected override bool TryValidateRequest(Request request, out string error)
         {
-            if (!BuildActionCommon.TryResolveActiveTarget(request.target, out _, out error) ||
+            if (!BuildActionCommon.TryResolveActiveTarget(request.target, out BuildTarget target, out error) ||
                 !BuildActionCommon.TryValidateName("packageName", request.packageName, out error) ||
                 !BuildActionCommon.TryResolveEncryptionPolicy(request.encryptionPolicy, out error) ||
                 !BuildActionCommon.TryResolveCompression(request.compression, out _, out error) ||
@@ -99,6 +99,18 @@ namespace NovaFramework.Editor
             {
                 return false;
             }
+            if (target == BuildTarget.WebGL &&
+                !EditorUtil.BundleBuilder.IsWebGLBundledCopyOptionSupported(copyOption))
+            {
+                error = "WebGL 的 bundledCopyOption 仅允许 none、clear-and-copy-by-tags 或 clear-and-copy-all。";
+                return false;
+            }
+            EditorUtil.BundleBuilder.ResolveBundledCopy(
+                target,
+                copyOption,
+                request.bundledCopyParams,
+                out copyOption,
+                out _);
             if (!string.IsNullOrWhiteSpace(request.buildVersion) &&
                 !BuildActionCommon.TryValidateName("buildVersion", request.buildVersion, out error))
             {
@@ -124,6 +136,12 @@ namespace NovaFramework.Editor
             BuildActionCommon.TryResolveCompression(request.compression, out ECompressOption compression, out _);
             BuildActionCommon.TryResolveFileNameStyle(request.fileNameStyle, out EFileNameStyle fileNameStyle, out _);
             BuildActionCommon.TryResolveBundledCopyOption(request.bundledCopyOption, out EBundledCopyOption copyOption, out _);
+            EditorUtil.BundleBuilder.ResolveBundledCopy(
+                target,
+                copyOption,
+                request.bundledCopyParams,
+                out copyOption,
+                out string bundledCopyParams);
             string version = string.IsNullOrWhiteSpace(request.buildVersion)
                 ? EditorUtil.BundleBuilder.GetDefaultPackageVersion()
                 : request.buildVersion;
@@ -162,7 +180,7 @@ namespace NovaFramework.Editor
                 Compression = compression,
                 FileNameStyle = fileNameStyle,
                 BundledCopyOption = copyOption,
-                BundledCopyParams = request.bundledCopyParams ?? string.Empty,
+                BundledCopyParams = bundledCopyParams,
                 Inputs = inputs,
             };
             var recovery = new BuildActionCommon.ArtifactReceipt
@@ -189,8 +207,12 @@ namespace NovaFramework.Editor
                 if (copyOption == EBundledCopyOption.ClearAndCopyAll ||
                     copyOption == EBundledCopyOption.ClearAndCopyByTags)
                 {
-                    writeSet.Add(BuildActionCommon.ResolveStreamingAssetsRoot() + " (clear before bundled copy)");
+                    writeSet.Add(BuildActionCommon.ResolveBundledPackageRoot(request.packageName) + " (clear before bundled copy)");
                 }
+            }
+            else if (target == BuildTarget.WebGL)
+            {
+                writeSet.Add(BuildActionCommon.ResolveBundledPackageRoot(request.packageName) + " (delete stale WebGL bundled package root)");
             }
 
             return Task.FromResult(new AgentActionHandlerPlan
@@ -211,7 +233,7 @@ namespace NovaFramework.Editor
                     compression = request.compression,
                     fileNameStyle = request.fileNameStyle,
                     bundledCopyOption = request.bundledCopyOption,
-                    bundledCopyParams = request.bundledCopyParams ?? string.Empty,
+                    bundledCopyParams = bundledCopyParams,
                     inputs = inputs,
                 }),
                 WriteSet = writeSet.ToArray(),
@@ -220,7 +242,7 @@ namespace NovaFramework.Editor
                     "已冻结激活 ConfigMaster 当前坐标、YooAssetSettings、BundleCollectorSetting、目标 Package 与配置 Hash。",
                     copyOption == EBundledCopyOption.None
                         ? "构建后只读核对输出目录、YooAsset manifest 与 SHA-256。"
-                        : "构建后额外核对 BundledCopy 目标 Package 目录与 SHA-256。",
+                        : "构建后额外核对首包目标 Package 目录与 SHA-256。",
                 },
                 RecoveryPayloadJson = Util.Json.Serialize(recovery),
             });

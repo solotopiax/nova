@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.1.15] - 2026-09-18
+
+### Changed
+
+- 移除 Nova TGA 包装层的 WebGL 编译禁用；WebGL 现在可初始化 TGA，并通过 `IDeviceIdProvider` 返回 ThinkingAnalytics 持久化的随机设备 ID。
+- WebGL 调用 `CalibrateTimeWithNtp` 时安全跳过并记录提示，避免浏览器进入不支持的 NTP 网络路径；可继续使用 `CalibrateTime(long)` 传入服务端时间戳。
+
 ## [0.1.14] - 2026-09-04
 
 ### Changed

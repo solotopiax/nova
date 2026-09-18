@@ -8,7 +8,6 @@
  * descrip:   TGA 动态公共属性回调监听器，MonoBehaviour 包装，供 TDAnalytics.SetDynamicSuperProperties 使用
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using System.Collections.Generic;
 using ThinkingData.Analytics;
 using UnityEngine;
@@ -51,4 +50,3 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         private TGAPlugin m_Owner;
     }
 }
-#endif

@@ -100,7 +100,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             if (Context.EnableAlwaysPaySucceed)
             {
                 TrackBuyInternal(request.TableId, null, request.CustomData);
-                var mockResult = new IAPResult(request.TableId, "MOCK_ORDER_MOBILE", false, true, request.CustomData, request.ReceiptParam);
+                var mockResult = new IAPResult(request.TableId, "MOCK_ORDER_MOBILE", false, true, request.CustomData, request.ReceiptParam, StoreType);
                 Context.EventBridge?.RaisePaySuccess(mockResult);
                 return mockResult;
             }

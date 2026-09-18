@@ -134,7 +134,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 异步获取广告 SDK 返回的有效国家或地区代码。
-        /// 优先等待广告国家码数据槽位；等待超时后读取广告模块上次成功缓存，仍不可用时返回空字符串。
+        /// 优先等待广告国家码数据槽位；等待超时后返回空字符串。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         /// <returns>大写国家或地区代码；不可用时返回空字符串。</returns>
@@ -143,7 +143,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             TimeSpan waitTimeout = GetCountryCodeWaitTimeout();
             if (waitTimeout <= TimeSpan.Zero)
             {
-                return ReadCountryCodeCache();
+                return string.Empty;
             }
 
             using (CancellationTokenSource timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct))
@@ -163,17 +163,8 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
                 }
                 catch (OperationCanceledException) when (!ct.IsCancellationRequested)
                 {
-                    string cachedCountryCode = ReadCountryCodeCache();
-                    if (string.IsNullOrEmpty(cachedCountryCode))
-                    {
-                        Log.Debug(LogTag.AD, "等待广告国家码超时，且没有可用的广告国家码缓存。");
-                    }
-                    else
-                    {
-                        Log.Debug(LogTag.AD, $"等待广告国家码超时，使用广告国家码缓存：{cachedCountryCode}。");
-                    }
-
-                    return cachedCountryCode;
+                    Log.Debug(LogTag.AD, "等待广告国家码超时，返回空字符串。");
+                    return string.Empty;
                 }
             }
         }

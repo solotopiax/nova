@@ -27,7 +27,8 @@
 
 ## 平台边界
 
-- 整体受 `#if !UNITY_WEBGL` 保护，WebGL 不编译本包
+- Android / iOS 继续使用 ThinkingAnalytics 对应的原生实现。
+- WebGL 使用 ThinkingAnalytics PC/WebGL 实现；`DeviceId` 是通过 PlayerPrefs 持久化的随机 GUID，不是硬件标识。清除浏览器站点数据、使用无痕模式或更换站点来源后会重新生成。
 - 依赖 ThinkingAnalytics Unity SDK `3.4.6`
 
 ## 相关

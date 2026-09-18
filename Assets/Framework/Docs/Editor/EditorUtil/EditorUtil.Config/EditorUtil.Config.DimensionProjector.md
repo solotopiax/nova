@@ -126,7 +126,7 @@ public static void BroadcastWithinGroup(
 - 掩码勾选的轴：只允许与 `coord` 同值的格
 - 掩码未勾选的轴：允许所有取值（等价于该轴维度无区别）
 
-仅跳过 `Platform == None` 的占位行；`Channel == None` 是合法的无特定运营渠道坐标，会正常参与分组与广播。
+物理矩阵只处理 Platform 与 Channel 均非 `None` 的有效坐标；`None` 仅允许出现在 Override 的未参与轴哨兵中，不作为实际矩阵行参与分组与广播。
 
 ### DeepCloneManagedRef — SerializeReference 跨格深拷贝（内存态独立）
 

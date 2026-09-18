@@ -8,7 +8,6 @@
  * descrip:   TGAPlugin 动态公共事件属性管理
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using System.Collections.Generic;
 
 namespace NovaFramework.SDK.TGAPlugin.Runtime
@@ -80,4 +79,3 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         }
     }
 }
-#endif

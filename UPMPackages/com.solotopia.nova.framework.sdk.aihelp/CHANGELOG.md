@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [0.0.15] - 2026-09-18
+
+### Fixed
+
+- WebGL 下保留配置类型所在 Runtime 程序集，避免 Config 资产中的 AIHelp 配置产生 Missing types 警告。
+
 ## [0.0.14] - 2026-09-04
 
 ### Changed

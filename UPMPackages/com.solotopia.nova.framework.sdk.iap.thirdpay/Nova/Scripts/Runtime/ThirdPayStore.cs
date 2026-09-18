@@ -47,16 +47,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_ExternalBrowserService?.Dispose();
             m_ExternalBrowserService = new ThirdPayExternalBrowserService();
             ThirdPayExternalBrowserLifecycleProxy.Register(OnStorePause, OnStoreFocus);
-            m_DebugCountryCode = NormalizeCountryCode(m_Config?.CountryCode);
-            m_LockCountryCode = string.Empty;
-            m_BillingCountryCode = string.Empty;
-            m_NativeCountryCode = string.Empty;
-            m_NativeStorefrontIdentifier = string.Empty;
-            m_AdCountryCode = string.Empty;
-            m_ProductListRequestVersion = 0;
+            m_CountryState.SetDebugCountryCode(m_Config?.CountryCode);
+            ClearResolvedCountryCodes();
+            m_ProductCatalogState.Reset();
             m_SkipPaymentInformationScreen = m_Config?.SkipPaymentInformationScreen ?? false;
             ResetRepository((ThirdPayPersistData)CreateEmptyPersistData());
-            ResolveNativeCountryCode();
+            ResolveIosStorefrontCountryCode();
             await InitializeGooglePolicyAsync(ct);
             ResolveAdCountryCodeAsync(CancellationToken.None).Forget();
 
@@ -83,57 +79,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 初始化 Google 外链政策服务入口；非 Android 真机直接跳过，避免平台条件散落在 Store 初始化流程中。
-        /// </summary>
-        /// <param name="ct">取消令牌。</param>
-        /// <returns>初始化完成任务。</returns>
-        private UniTask InitializeGooglePolicyAsync(CancellationToken ct)
-        {
-#if UNITY_ANDROID && !UNITY_EDITOR
-            return InitializeAndroidGooglePolicyAsync(ct);
-#else
-            return UniTask.CompletedTask;
-#endif
-        }
-
-#if UNITY_ANDROID && !UNITY_EDITOR
-        /// <summary>
-        /// Android 真机初始化 Google 外链政策服务，并尽力读取 Google Play Billing 商店国家码。
-        /// </summary>
-        /// <param name="ct">取消令牌。</param>
-        /// <returns>初始化完成任务。</returns>
-        private async UniTask InitializeAndroidGooglePolicyAsync(CancellationToken ct)
-        {
-            // 测试注入的 m_GooglePolicy 会优先复用；未注入时才创建默认 Google 外链客户端。
-            if (m_GooglePolicy == null)
-            {
-                double googleTimeout = m_Config?.GoogleApiTimeoutSeconds ?? 15d;
-                m_GooglePolicy = new ThirdPayGooglePolicyService(new ThirdPayGoogleExternalBillingClient(googleTimeout));
-            }
-
-            if (m_GooglePolicy == null)
-            {
-                return;
-            }
-
-            try
-            {
-                string billingCountryCode = await m_GooglePolicy.GetBillingCountryCodeAsync(ct);
-                SetBillingCountryCode(billingCountryCode);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                // 商店地区读取失败不应阻断 ThirdPay；服务端仍可按空地区码处理。
-                LogWarning($"读取 Google Play Billing 商店地区失败，将使用配置中的地区码：{ex.Message}");
-            }
-        }
-#endif
-
-        /// <summary>
         /// 发起一次应用内第三方支付。
         /// </summary>
         /// <param name="request">第三方支付请求。</param>
@@ -146,7 +91,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 #if UNITY_EDITOR
             if (Context?.EnableAlwaysPaySucceed == true)
             {
-                var mock = new IAPResult(request.TableId, "MOCK_ORDER_THIRDPAY", false, true, request.CustomData, request.ReceiptParam);
+                var mock = new IAPResult(request.TableId, "MOCK_ORDER_THIRDPAY", false, true, request.CustomData, request.ReceiptParam, StoreType);
                 Context.EventBridge?.RaisePaySuccess(mock);
                 return UniTask.FromResult(mock);
             }
@@ -177,11 +122,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             if (!string.Equals(previous, m_GameUID, StringComparison.Ordinal))
             {
                 ClearExternalBrowserPaySession();
+                ClearResolvedCountryCodes();
                 ResetRepository(LoadPersistData<ThirdPayPersistData>());
-                m_LockCountryCode = string.Empty;
-                m_ProductListRequestVersion++;
-                m_ProductList = null;
-                CompleteProductListFetchAsInvalidated();
+                ResolveIosStorefrontCountryCode();
+                ResolveAdCountryCodeAsync(CancellationToken.None).Forget();
+                m_ProductCatalogState.Invalidate();
                 PrefetchProductListAsync(CancellationToken.None).Forget();
             }
 
@@ -209,10 +154,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="countryCode">ISO 3166-1 alpha-2 国家或地区代码；空值表示取消 Debug 覆盖。</param>
         public void SetDebugCountryCode(string countryCode)
         {
-            m_DebugCountryCode = NormalizeCountryCode(countryCode);
-            m_ProductListRequestVersion++;
-            m_ProductList = null;
-            CompleteProductListFetchAsInvalidated();
+            m_CountryState.SetDebugCountryCode(countryCode);
+            m_ProductCatalogState.Invalidate();
             if (!string.IsNullOrEmpty(m_GameUID))
             {
                 PrefetchProductListAsync(CancellationToken.None).Forget();
@@ -220,37 +163,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 获取 ThirdPay 当前使用的国家码，优先级与 Solar 保持一致：Debug > Lock > Billing > Native > AD > US。
+        /// 获取 ThirdPay 当前使用的国家码，优先级为 Debug > Lock > Billing > iOS Storefront > AD；无有效来源时返回空字符串。
         /// </summary>
         /// <returns>规范化后的 ISO 3166-1 alpha-2 国家或地区代码。</returns>
         public string GetCountryCode()
         {
-            if (!string.IsNullOrEmpty(m_DebugCountryCode))
-            {
-                return m_DebugCountryCode;
-            }
-
-            if (!string.IsNullOrEmpty(m_LockCountryCode))
-            {
-                return m_LockCountryCode;
-            }
-
-            if (!string.IsNullOrEmpty(m_BillingCountryCode))
-            {
-                return m_BillingCountryCode;
-            }
-
-            if (!string.IsNullOrEmpty(m_NativeCountryCode))
-            {
-                return m_NativeCountryCode;
-            }
-
-            if (!string.IsNullOrEmpty(m_AdCountryCode))
-            {
-                return m_AdCountryCode;
-            }
-
-            return c_DefaultCountryCode;
+            return m_CountryState.Resolve();
         }
 
         /// <summary>
@@ -274,13 +192,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="channelParams">支付页需要透传的 CID 等渠道参数。</param>
         public void SetChannelParams(string channelParams)
         {
-            if (m_PersistData == null)
-            {
-                return;
-            }
-
-            m_PersistData.ChannelParams = channelParams ?? string.Empty;
-            SavePersistData(m_PersistData);
+            m_PersistContext.SetChannelParams(channelParams);
         }
 
         /// <summary>
@@ -299,12 +211,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>商品列表；尚未拉取成功或列表为空时返回空列表。</returns>
         public IReadOnlyList<PbNetThirdProductInfo> GetProductList()
         {
-            if (m_ProductList == null)
-            {
-                return Array.Empty<PbNetThirdProductInfo>();
-            }
-
-            return m_ProductList.ProductList;
+            return m_ProductCatalogState.ProductList;
         }
 
         /// <summary>
@@ -313,7 +220,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>有商品时返回 true。</returns>
         public bool HasProducts()
         {
-            return m_ProductList?.ProductList != null && m_ProductList.ProductList.Count > 0;
+            return m_ProductCatalogState.HasProductList;
         }
 
         /// <summary>
@@ -349,17 +256,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_WebViewService = null;
             m_ExternalBrowserService?.Dispose();
             m_ExternalBrowserService = null;
-            m_OrderRepository = null;
-            m_PersistData = null;
-            m_ProductList = null;
-            CompleteProductListFetchAsInvalidated();
-            m_DebugCountryCode = string.Empty;
-            m_LockCountryCode = string.Empty;
-            m_BillingCountryCode = string.Empty;
-            m_NativeCountryCode = string.Empty;
-            m_NativeStorefrontIdentifier = string.Empty;
-            m_AdCountryCode = string.Empty;
-            m_ProductListRequestVersion = 0;
+            m_PersistContext.Clear();
+            m_ProductCatalogState.Reset();
+            m_CountryState.ClearAll();
             m_SkipPaymentInformationScreen = false;
             m_ChannelParamsLoader = null;
             m_NetService = null;

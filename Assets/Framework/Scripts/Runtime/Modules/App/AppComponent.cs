@@ -42,7 +42,7 @@ namespace NovaFramework.Runtime
         {
             m_AppManager.Initialize(new AppManagerConfig
             {
-                EnableAppUpdate = m_EnableAppUpdate,
+                EnableAppUpdate = EnableAppUpdate,
                 AppDownloadCheckUrl = ResolvePrimaryCheckUrl(),
                 AppDownloadCheckUrlFallback = ResolveFallbackCheckUrl(),
                 TimeoutSeconds = m_TimeoutSeconds,

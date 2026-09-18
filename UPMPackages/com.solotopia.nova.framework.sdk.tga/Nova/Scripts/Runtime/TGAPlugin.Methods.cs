@@ -8,7 +8,6 @@
  * descrip:   TGAPlugin 私有辅助方法
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -380,4 +379,3 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         }
     }
 }
-#endif

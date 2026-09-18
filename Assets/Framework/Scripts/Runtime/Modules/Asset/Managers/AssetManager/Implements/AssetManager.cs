@@ -97,6 +97,9 @@ namespace NovaFramework.Runtime
             m_Cts?.Cancel();
             m_Cts?.Dispose();
             m_Cts = null;
+            m_AllOnLaunchWarmupGroup?.Release();
+            m_AllOnLaunchWarmupGroup = null;
+            m_LaunchWarmupCleanupPending = false;
             if (YooAssets.IsInitialized)
             {
                 YooAssets.Destroy();
@@ -109,6 +112,7 @@ namespace NovaFramework.Runtime
             m_StartupWhitelistPreferenceStore.ClearAll();
             m_DownloadUrlPolicies.Clear();
             m_RemoteServices.Clear();
+            m_WebGLBuiltinCatalogAvailability.Clear();
             m_PackageMetadataGates.Clear();
             m_Packages.Clear();
             m_Config = null;
@@ -530,6 +534,7 @@ namespace NovaFramework.Runtime
                 ? m_Config.EditorPlayMode
                 : m_Config.RuntimePlayMode;
             if (effectiveMode != AssetPlayMode.HostPlayMode
+                || !HasWebGLBuiltinCatalog(name)
                 || !m_RemoteServices.TryGetValue(name, out AssetRemoteService remoteService))
             {
                 return false;

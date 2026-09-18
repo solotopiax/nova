@@ -3,7 +3,7 @@
 **类签名**：`[Serializable] public enum PlatformType : byte`
 **命名空间**：`NovaFramework.Runtime`
 
-运行平台类型枚举，标识应用发布的目标平台，供 ConfigMasterSO 矩阵行索引使用。ConfigWindow 仅只读展示由 Unity Active BuildTarget 映射的当前值；平台切换必须通过 Unity Build Settings 完成。
+运行平台类型枚举，标识应用发布的目标平台，供 ConfigMasterSO 矩阵行索引使用。ConfigWindow 可以选择要编辑的平台配置，但只有与 Unity Active BuildTarget 一致时才能导出。
 
 ---
 
@@ -21,7 +21,7 @@
 [Serializable]
 public enum PlatformType : byte
 {
-    None    = 0,  // 无效平台，兜底默认值
+    None    = 0,  // 无效平台，仅作内部哨兵，不可作为 Config 坐标
     Android = 1,  // Android 平台
     iOS     = 2,  // iOS 平台
     WebGL   = 3,  // WebGL 平台

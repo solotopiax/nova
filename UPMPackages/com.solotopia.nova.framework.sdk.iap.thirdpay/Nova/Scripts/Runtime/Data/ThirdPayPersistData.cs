@@ -33,6 +33,21 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public string ChannelParams;
 
         /// <summary>
+        /// 当前账号最近一次有效的广告国家码，作为 Billing 与 iOS Storefront 均不可用时的 ThirdPay 兜底来源。
+        /// </summary>
+        public string AdCountryCode;
+
+        /// <summary>
+        /// 当前账号最近一次有效的 Google Play Billing 国家码，作为 ThirdPay 优先兜底来源。
+        /// </summary>
+        public string BillingCountryCode;
+
+        /// <summary>
+        /// 当前账号最近一次有效的 iOS StoreKit storefront 国家码，作为 Billing 不可用时的 ThirdPay 兜底来源。
+        /// </summary>
+        public string IosStorefrontCountryCode;
+
+        /// <summary>
         /// 反序列化后或新建空容器后由 IAPStoreBase 调用一次，确保引用类型字段非 null。
         /// </summary>
         public void EnsureInitialized()
@@ -45,6 +60,21 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             if (ChannelParams == null)
             {
                 ChannelParams = string.Empty;
+            }
+
+            if (AdCountryCode == null)
+            {
+                AdCountryCode = string.Empty;
+            }
+
+            if (BillingCountryCode == null)
+            {
+                BillingCountryCode = string.Empty;
+            }
+
+            if (IosStorefrontCountryCode == null)
+            {
+                IosStorefrontCountryCode = string.Empty;
             }
         }
     }

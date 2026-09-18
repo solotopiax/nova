@@ -10,6 +10,7 @@ TGA 数据埋点插件，提供事件追踪服务
 - 封装 ThinkingAnalytics Unity SDK `3.4.6`。
 - 提供 `ITrackPlugin` 事件上报能力。
 - 提供 `IDeviceIdProvider` 设备标识能力。
+- WebGL 使用 ThinkingAnalytics 内置的持久化随机 GUID 作为逻辑设备 ID，不依赖浏览器硬件标识。
 - 支持通过 `TGAPluginConfig` 配置包内 `TGAReportMode`、`TGATimeZone`、日志开关、上报指令名、测试用户标识；配置 DTO 不直接依赖厂商 API。
 - 支持在初始化后将 TGA `DeviceId` 同步为 `DistinctId`，用于让访客 ID 与设备 ID 保持一致。
 

@@ -77,7 +77,7 @@ App、Asset 与业务协议现在需要共享同一种候选规划机制，同�
 
 - 启动白名单使用独立的 `StartupWhitelistCheckTimeout`；`.version` 使用普通 Asset `CheckTimeout`。
 - `.hash/.bytes` Manifest 使用独立的 `ManifestRequestTimeout`，默认 60 秒。
-- 非 WebGL Bundle 使用 `IdleTimeout`（Inspector 中文名称为“单文件字节流入超时”）；WebGL WebNetwork 无可靠字节流入看门狗，改用独立的 `WebGLBundleRequestTimeout` 单次物理请求总超时，默认 300 秒。Inspector 按当前 BuildTarget 互斥启用两项配置。
+- 非 WebGL Bundle 使用 `IdleTimeout`（Inspector 中文名称为“单文件字节流入超时”）；WebGL 无可靠字节流入看门狗，改用独立的 `WebGLBundleRequestTimeout` 控制 WebServer 与 WebNetwork Bundle 的单次物理请求，默认 300 秒。Inspector 按当前 BuildTarget 互斥启用两项配置。
 - 开启 `EnableUWRTracks` 后，每个文件按 `1 uwr_request_start → 0～N uwr_request_error → 1 uwr_request_end` 上报；显式下载器内多个文件通过 `uwr_download_operation_id` 聚合。
 - 非 WebGL HostPlayMode 的缓存下载可在文件校验完成后闭环；WebGL HostPlayMode 的 WebNetwork 内存 Bundle 可能在内容校验前收到成功回调，校验重试会在同一 download operation 下产生新的 UWR chain。
 

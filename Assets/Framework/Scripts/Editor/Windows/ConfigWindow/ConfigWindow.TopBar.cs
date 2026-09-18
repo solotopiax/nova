@@ -17,6 +17,36 @@ namespace NovaFramework.Editor
 {
     internal sealed partial class ConfigWindow : EditorWindow
     {
+        /// <summary>平台下拉只提供可配置平台，排除内部 None 哨兵。</summary>
+        private static readonly PlatformType[] s_PlatformOptions = System.Array.FindAll(
+            (PlatformType[])System.Enum.GetValues(typeof(PlatformType)),
+            platform => platform != PlatformType.None);
+
+        /// <summary>平台下拉显示项直接使用枚举声明名。</summary>
+        private static readonly string[] s_PlatformDisplayNames = System.Array.ConvertAll(
+            s_PlatformOptions,
+            platform => platform.ToString());
+
+        /// <summary>平台下拉显示项对应的原始枚举值。</summary>
+        private static readonly int[] s_PlatformOptionValues = System.Array.ConvertAll(
+            s_PlatformOptions,
+            platform => (int)platform);
+
+        /// <summary>渠道下拉只提供可配置渠道，并使用枚举声明名避免 Unity 自动拆分驼峰名称。</summary>
+        private static readonly ChannelType[] s_ChannelOptions = System.Array.FindAll(
+            (ChannelType[])System.Enum.GetValues(typeof(ChannelType)),
+            channel => channel != ChannelType.None);
+
+        /// <summary>渠道下拉显示项直接使用枚举声明名。</summary>
+        private static readonly string[] s_ChannelDisplayNames = System.Array.ConvertAll(
+            s_ChannelOptions,
+            channel => channel.ToString());
+
+        /// <summary>渠道下拉显示项对应的原始枚举值，不改变配置序列化取值。</summary>
+        private static readonly int[] s_ChannelOptionValues = System.Array.ConvertAll(
+            s_ChannelOptions,
+            channel => (int)channel);
+
         /// <summary>
         /// 绘制顶部工具栏：第一行 SO 选择与文件操作（含保存），第二行 Platform/Channel/DevelopMode 与导出区域。
         /// </summary>
@@ -52,12 +82,23 @@ namespace NovaFramework.Editor
                         EditorGUIUtility.labelWidth = 80f;
 
                         EditorUtil.Draw.Label("平台类型：", false, GUILayout.Width(64f));
-                        PlatformType platform = EditorUtil.Draw.EnumPopup<PlatformType>(string.Empty, m_EditingPlatform, false, GUILayout.Width(120));
+                        PlatformType platform = (PlatformType)EditorUtil.Draw.IntPopup(
+                            (int)m_EditingPlatform,
+                            s_PlatformDisplayNames,
+                            s_PlatformOptionValues,
+                            false,
+                            GUILayout.Width(120));
                         TryApplyPlatform(platform);
                         EditorUtil.Draw.Space(24f);
 
                         EditorUtil.Draw.Label("渠道类型：", false, GUILayout.Width(64f));
-                        ChannelType channel = EditorUtil.Draw.EnumPopup<ChannelType>(string.Empty, m_WorkingCopy != null ? m_WorkingCopy.CurrentChannel : m_Master.CurrentChannel, false, GUILayout.Width(120));
+                        ChannelType currentChannel = m_WorkingCopy != null ? m_WorkingCopy.CurrentChannel : m_Master.CurrentChannel;
+                        ChannelType channel = (ChannelType)EditorUtil.Draw.IntPopup(
+                            (int)currentChannel,
+                            s_ChannelDisplayNames,
+                            s_ChannelOptionValues,
+                            false,
+                            GUILayout.Width(120));
                         TryApplyChannel(channel);
                         EditorUtil.Draw.Space(24f);
 
@@ -221,7 +262,7 @@ namespace NovaFramework.Editor
         /// <param name="channel">目标渠道类型。</param>
         private void TryApplyChannel(ChannelType channel)
         {
-            if (m_WorkingCopy == null) return;
+            if (m_WorkingCopy == null || channel == ChannelType.None) return;
             if (channel == m_WorkingCopy.CurrentChannel) return;
             m_MasterSO?.ApplyModifiedProperties();
             GUI.FocusControl(null);

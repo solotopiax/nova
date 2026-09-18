@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Google.Protobuf;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
@@ -110,6 +111,23 @@ namespace NovaFramework.Runtime
                 handle.Release();
                 Log.Error(LogTag.Config, "ConfigManager 未能加载 ConfigRuntimeSO：location={0}", m_AssetLocation);
                 throw new InvalidOperationException("ConfigRuntimeSO 加载结果为 null。");
+            }
+
+            if (handle.Asset.Platform == PlatformType.None || handle.Asset.Channel == ChannelType.None ||
+                !Enum.IsDefined(typeof(PlatformType), handle.Asset.Platform) ||
+                !Enum.IsDefined(typeof(ChannelType), handle.Asset.Channel))
+            {
+                PlatformType invalidPlatform = handle.Asset.Platform;
+                ChannelType invalidChannel = handle.Asset.Channel;
+                handle.Release();
+                Log.Error(
+                    LogTag.Config,
+                    "ConfigRuntimeSO 使用了无效坐标：Platform={0}, Channel={1}, location={2}",
+                    invalidPlatform,
+                    invalidChannel,
+                    m_AssetLocation);
+                throw new InvalidOperationException(
+                    $"ConfigRuntimeSO 的 Platform 与 Channel 必须是非 None 的有效值：{invalidPlatform}/{invalidChannel}。");
             }
 
             try
@@ -360,9 +378,6 @@ namespace NovaFramework.Runtime
                 Head = NetBuilder.BuildHeader(),
                 Key = appConfigs.CustomName,
             };
-            Log.Debug(LogTag.Config, "应用配置开始远端请求：cmd={0}, name={1}",
-                appConfigs.CustomConfigCmdName,
-                appConfigs.CustomName);
             NetResponse<PbNetAppCustomConfigResp> response = await NetService.SendAsync(
                 cmdRow,
                 request,
@@ -402,8 +417,7 @@ namespace NovaFramework.Runtime
             }
 
             m_AppConfigSnapshot.ApplyRemote(remoteRoot);
-            Log.Debug(LogTag.Config, "Custom 配置刷新成功：name={0}, keys={1}", appConfigs.CustomName, remoteRoot.Count);
-            Log.Debug(LogTag.Config, "Custom 配置内容：{0}", response.Data.Value);
+            Log.Debug(LogTag.Config, "应用配置拉取成功：{0}", JsonFormatter.Default.Format(response.Data));
             return true;
         }
 

@@ -100,8 +100,21 @@ namespace NovaFramework.Runtime
                 return;
             }
 
+#if UNITY_WEBGL
+            AssetPlayMode effectiveMode = Application.isEditor
+                ? m_Config.EditorPlayMode
+                : m_Config.RuntimePlayMode;
+            if (effectiveMode == AssetPlayMode.HostPlayMode)
+            {
+                await ProbeWebGLBuiltinCatalogAsync(packageName, ct);
+            }
+#endif
             await CheckStartupWhitelistAsync(packageName, ct);
             InitializePackageOptions options = BuildPlayModeOptions(packageName);
+#if UNITY_WEBGL && !UNITY_EDITOR
+            // WebGL 没有工作线程，统一复用下载并发配置限制同时启动的 Bundle 加载数量。
+            options.BundleLoadingMaxConcurrency = Math.Max(1, m_Config.MaxDownloadConcurrency);
+#endif
             var initOp = package.InitializePackageAsync(options);
             await UniTask.WaitUntil(() => initOp.IsDone, cancellationToken: ct);
             if (initOp.Status != EOperationStatus.Succeeded)
@@ -1048,13 +1061,16 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 构造离线运行模式初始化参数；WebGL 使用网页服务器文件系统，其他平台使用内置文件系统。
+        /// 构造离线运行模式初始化参数；WebGL 仅使用网页服务器文件系统，其他平台使用内置文件系统。
         /// </summary>
         /// <returns>OfflinePlayModeOptions 实例。</returns>
         private InitializePackageOptions BuildOfflineOptions()
         {
 #if UNITY_WEBGL
             var serverParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+            serverParams.AddParameter(
+                EFileSystemParameter.UnityWebRequestCreator,
+                (UnityWebRequestCreator)CreateWebGLUnityWebRequest);
             // YooAsset 的 Offline 参数槽接受通用 FileSystemParameters，WebGL 用 WebServer 替代不受支持的 Builtin。
             return new OfflinePlayModeOptions
             {
@@ -1070,7 +1086,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 构造联机运行模式初始化参数；WebGL 使用网页服务器与网络文件系统，其他平台使用内置与缓存文件系统。
+        /// 构造联机运行模式初始化参数；WebGL 按构建布局组合网页服务器与网络文件系统，其他平台使用内置与缓存文件系统。
         /// </summary>
         /// <param name="package">包名，用于构建远端 URL 模板。</param>
         /// <param name="copyBuiltinManifest">是否把当前安装包清单复制到 Sandbox，供内置回退后保持 HostPlayMode。</param>
@@ -1080,15 +1096,21 @@ namespace NovaFramework.Runtime
             AssetRemoteService remote = CreateRemoteService(package);
             m_RemoteServices[package] = remote;
 #if UNITY_WEBGL
-            var serverParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+            FileSystemParameters serverParams = null;
+            if (HasWebGLBuiltinCatalog(package))
+            {
+                serverParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+                serverParams.AddParameter(
+                    EFileSystemParameter.UnityWebRequestCreator,
+                    (UnityWebRequestCreator)CreateWebGLUnityWebRequest);
+            }
             var remoteParams = FileSystemParameters.CreateDefaultWebNetworkFileSystemParameters(remote);
             remoteParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
             remoteParams.AddParameter(EFileSystemParameter.DownloadRetryPolicy, GetOrCreateDownloadUrlPolicy(package));
             remoteParams.AddParameter(
                 EFileSystemParameter.UnityWebRequestCreator,
                 (UnityWebRequestCreator)CreateWebGLUnityWebRequest);
-            // Web 文件系统不支持 Sandbox 的下载 watchdog，Bundle 改用单次请求总超时。
-            // YooAsset 的 Host 两个参数槽接受通用 FileSystemParameters，顺序保持首包优先、网络兜底。
+            // Catalog 不存在时使用纯 WebNetwork；存在时保持 WebServer 优先、WebNetwork 兜底。
             return new HostPlayModeOptions
             {
                 BuiltinFileSystemParameters = serverParams,
@@ -1126,7 +1148,7 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 为 WebGL WebNetwork 请求创建带 Bundle 总超时默认值的 UnityWebRequest。
+        /// 为 WebGL WebServer 与 WebNetwork 请求创建带 Bundle 总超时默认值的 UnityWebRequest。
         /// 元数据请求随后会用 CheckTimeout 或 ManifestRequestTimeout 覆盖该默认值。
         /// </summary>
         private UnityWebRequest CreateWebGLUnityWebRequest(string url, string method)

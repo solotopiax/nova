@@ -38,7 +38,7 @@
 | `DisplayName` | 固定为 `IAP 支付` |
 | `EnableAlwaysPaySucceed` | Editor 调试开关；为 true 时 Editor 下 Store 可直接返回成功，非 Editor 编译态强制关闭 |
 | `EnableIAPLog` | 详细日志开关，默认开启；初始化时会传入 `IAPLog.SetEnabled` 控制 IAP 日志统一网关 |
-| `RetryValidateMaxNum` | 首次验单重试次数，默认 3 |
+| `RetryValidateMaxNum` | Store 共享的首次验单重试次数配置，默认 3；具体 Store 可按验单来源覆盖，例如 ThirdPay 明确支付成功会覆盖完整重试间隔序列，关闭/返回等不明确场景最多 3 次 |
 | `SkipLoadingForReplenish` | 补单是否跳过 Loading |
 | `LoadingPanelPrefab` | 支付期 Loading 面板 Resources 路径，默认 `IAP/IAPLoadingPanel` |
 | `StoreConfigs` | `[SerializeReference]` Store 配置只读列表 |
@@ -102,6 +102,8 @@ public readonly ReplayEvent<IReadOnlyList<IAPResult>> SubscriptionRestored
 public readonly ReplayEvent<IReadOnlyList<IAPResult>> NonConsumeRestored
 ```
 
+`PaySuccess` / `PayFailed` / Restore 事件中的 `IAPResult.StoreType` 表示结果所属商店，可用于区分 `Mobile`、`ThirdPay`、`Voucher`。失败结果未显式传入时会从 `ErrorSource` 推断；`IAPStoreBase.PayGuardAsync` 的公共 guard 失败会由具体 Store 补齐 `StoreType`。
+
 ## 5. 生命周期
 
 ### 初始化
@@ -148,6 +150,7 @@ if (!sdk.TryGet<IAPPlugin>(out IAPPlugin iap))
 
 iap.Events.PaySuccess.Subscribe(result =>
 {
+    IAPStoreType storeType = result.StoreType;
     if (result.CanDeliver)
         Deliver(result.TableId, result.OrderId, result.CustomData);
 });

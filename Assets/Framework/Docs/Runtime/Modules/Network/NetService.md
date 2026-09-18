@@ -54,14 +54,7 @@ var resp = await NetService.SendAsync(
 
 ## 4. 内部约束
 
-- **统一诊断日志**：Editor 与 Development Build 中，每次请求在实际 HTTP 发送前通过 `Log.Debug` 输出请求 Proto JSON；BaseResponse 与业务 Proto 解析后通过 `Log.Debug` 输出响应 JSON。日志均为单行 JSON，便于 Console 检索和外部工具解析：
-
-  ```json
-  {"source":"Nova.NetService","stage":"request","name":"Login","url":"https://example.com/login","sent":true,"data":{}}
-  {"source":"Nova.NetService","stage":"response","name":"Login","httpStatusCode":200,"code":0,"msg":"","data":{},"rawDataLength":64}
-  ```
-
-  只有已进入实际 HTTP 发送阶段的请求才使用 `Log.Debug`。URL 缺失、AES 配置缺失或加密失败等未发送请求使用 `Log.Warning`，并输出 `"sent":false` 与 `reason`；不会产生误导性的 Debug 请求日志。HTTP 失败、解密失败、BaseResponse 解析失败、业务 Proto 解析失败或传输异常也会输出一次响应终态；尚未获得的 `httpStatusCode` / `code` 为 `null`，并附 `failureStage`、`error` 与 `rawDataLength`。正式非 Development Build 会移除这些日志调用，避免输出 UID、OpenID、验证码和存档等敏感内容，也避免 JSON 序列化开销。
+- **结果日志边界**：`NetService` 不输出请求或响应的通用 JSON 包装；成功结果由具体业务层按业务语义输出。HTTP、解密、协议解析及服务端业务错误继续使用明确的 Warning/Error 表达，不再额外打印 `source/stage/name/httpStatusCode/rawDataLength` 等包装字段。
 - **固定加解密链路**：每个业务请求均从 `Nova.Config.AppConfigs.AppAesKey/AppAesIV` 取 AES Key/IV，发送前加密、收到响应后解密。
 - **无需手动注入**：`UID`、`OpenID` 有默认值；AES Key/IV 由运行时的 `Nova.Config.AppConfigs.AppAesKey/AppAesIV` 自动读取。
 - **仅进程内身份**：`UID` 与 `OpenID` 都不写 PlayerPrefs、FileFragment 或 SQLite；进程重启后均为空，必须重新登录恢复。

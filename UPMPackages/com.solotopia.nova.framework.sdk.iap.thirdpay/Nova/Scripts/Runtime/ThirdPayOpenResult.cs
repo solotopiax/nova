@@ -27,7 +27,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         Cancel,
 
         /// <summary>
-        /// 打开失败 / 进程异常 / 不确定状态——保留订单走补单链路。
+        /// 打开失败 / 进程异常 / 不确定状态，调用方按“支付页未打开成功”处理。
         /// </summary>
         Failed,
     }

@@ -61,8 +61,9 @@ public static void CleanMissingPluginRefs(ConfigMasterSO master);
 
 ```
 SyncEnumGrid(master):
-  1. wanted = 所有非 `None` PlatformType × 全部 ChannelType（包含 `ChannelType.None`）组合的 HashSet
+  1. wanted = 所有非 `None` PlatformType × 所有非 `None` ChannelType 组合的 HashSet；当前渠道为 None 时先归一为 `Official`
   2. 从末尾向前遍历 master.EditorEntries：
+     - `Channel=None` 且同平台没有 `Official` 行 → 原位迁移为 `Official`
      - key 不在 wanted 中 → EditorRemoveEntryAt(i)（废弃成员）
      - key 已在 present 中 → EditorRemoveEntryAt(i)（重复行）
      - 否则 → present.Add(key)
@@ -95,6 +96,7 @@ if (missing.Count > 0)
 ## §12 注意事项
 
 - `SyncEnumGrid` 在 `PlatformType` 或 `ChannelType` 枚举新增成员时会自动补行；未勾选轴会继承既有共享值，已勾选且没有既有来源的新分支保留默认空配置。
+- `PlatformType.None` 与 `ChannelType.None` 只作内部哨兵；旧 Platform None 行直接清除，旧 Channel None 行优先迁移到同平台的 Official，已有 Official 时清除重复行。
 - 移除枚举成员时会清除对应行（该行下 SDK / Kit / App / Privacy 数据都会随矩阵行移除）。
 - `DetectMissingPluginRefs` 仅检测，不修改；需要清理时单独调用 `CleanMissingPluginRefs`
 

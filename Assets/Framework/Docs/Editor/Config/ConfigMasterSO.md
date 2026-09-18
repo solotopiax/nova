@@ -11,6 +11,8 @@
 - Runtime SDK 与 Kit 配置矩阵
 - 顶层 `Custom` → 本地 JSONPath/string 默认值；云端完整 JSON 不受这些路径限制
 
+SDK / Kit 配置 DTO 会跨平台保留，以便同一份 ConfigMaster 安全编辑 Android、iOS 与 WebGL 矩阵。某个平台不支持厂商原生能力时，只禁用该平台实现，不删除 DTO 类型，也不清理其他平台已经保存的配置。
+
 ## Editor-only 数据
 
 - `YooAssetEditorConfigs` 与 `YooAssetEditorConfigsOverrides`
@@ -19,6 +21,8 @@
 - 各 Editor 面板维度掩码，以及当前编辑的 Channel / DevelopMode
 
 这些数据保存在 `ConfigMaster.asset`，不会写入 `ConfigRuntime.asset`。
+
+Config 矩阵只生成非 `None` 的 Platform × Channel 组合。`PlatformType.None` 与 `ChannelType.None` 仅供框架表示未识别或尚未加载状态，不能通过 `GetAppConfigs`、`GetPrivacyConfigs`、`TryGetEntry` 或 `EditorAddEntry` 作为实际配置坐标使用。旧资产中的 Platform None 行会删除；Channel None 行在同平台尚无 Official 行时迁移为 Official，否则作为重复行删除；旧的当前渠道 None 同样归一为 `Official`。
 
 ## Active BuildTarget 平台真相源
 

@@ -123,7 +123,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
         /// <returns>成功 IAP 结果。</returns>
         private static IAPResult CreateSuccess(VoucherSpendCommand command, bool isRecoveredOrder)
         {
-            return new IAPResult(command.TableId, command.GameOrderId, isRecoveredOrder, true, command.CustomData);
+            return new IAPResult(command.TableId, command.GameOrderId, isRecoveredOrder, true, command.CustomData, storeType: IAPStoreType.Voucher);
         }
 
         /// <summary>

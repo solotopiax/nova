@@ -34,6 +34,7 @@ namespace NovaFramework.Editor
             // ② 加载模式
             m_EditorPlayMode = serializedObject.FindProperty("m_EditorPlayMode");
             m_RuntimePlayMode = serializedObject.FindProperty("m_RuntimePlayMode");
+            m_WebGLAssetStrategy = serializedObject.FindProperty("m_WebGLAssetStrategy");
 
             // ③ 资源包配置
             m_Packages = serializedObject.FindProperty("m_Packages");
@@ -62,7 +63,6 @@ namespace NovaFramework.Editor
             m_HostServerUrlFallbackDebug = serializedObject.FindProperty("m_HostServerUrlFallbackDebug");
             m_HostServerUrlRelease = serializedObject.FindProperty("m_HostServerUrlRelease");
             m_HostServerUrlFallbackRelease = serializedObject.FindProperty("m_HostServerUrlFallbackRelease");
-            m_AutoHotfix = serializedObject.FindProperty("m_AutoHotfix");
             m_QuitOnFailedOrCancel = serializedObject.FindProperty("m_QuitOnFailedOrCancel");
             m_MaxDownloadConcurrency = serializedObject.FindProperty("m_MaxDownloadConcurrency");
             m_FallbackRoundCount = serializedObject.FindProperty("m_FallbackRoundCount");

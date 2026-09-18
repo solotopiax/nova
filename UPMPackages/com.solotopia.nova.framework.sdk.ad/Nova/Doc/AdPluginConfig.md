@@ -20,7 +20,7 @@ AdPlugin 配置，由 SDKManager 注入 AdPlugin 初始化；持有所有渠道�
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `m_ChannelConfigs` | `AdChannelConfigList` | `new AdChannelConfigList()` | Inspector 渠道配置列表，由 `AdChannelConfigListDrawer` 绘制；同时承载 5 个全局开关 |
-| `m_CountryCodeWaitTimeoutSeconds` | `float` | `5f` | `IAdPlugin.GetCountryCodeAsync` 等待广告 SDK 返回国家码的超时时间（秒）；超时后读取广告模块上次成功缓存，缓存不存在则返回空字符串 |
+| `m_CountryCodeWaitTimeoutSeconds` | `float` | `5f` | `IAdPlugin.GetCountryCodeAsync` 等待广告 SDK 返回国家码的超时时间（秒）；超时后返回空字符串 |
 
 面板显示顺序上，`m_CountryCodeWaitTimeoutSeconds` 仍序列化在 `AdPluginConfig`，但通过 `AdChannelConfigListDrawer` 绘制在“重试加载间隔(秒)”下方，避免和渠道全局配置割裂。
 

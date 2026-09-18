@@ -51,7 +51,7 @@ Scene 检查使用已加载 Scene 或只读 Preview Scene，不保存、不修�
 
 ProjectGuard 不注册全局 Build preprocessor。Unity Build、显式 `BuildPlayerOptions.scenes` 和项目自定义 BuildPipeline 均保持原行为；若项目希望发布门禁，应在自己的流水线中显式调用并解释报告。
 
-构建就绪检查只拒绝 `PlatformType.None` 或缺失的矩阵行；`ChannelType.None` 是合法的无特定运营渠道，不会单独导致预检失败。
+构建就绪检查会拒绝 `PlatformType.None`、`ChannelType.None` 或缺失的矩阵行；两个 `None` 都不能作为 Config 构建坐标。
 
 构建就绪检查还会以 `ConfigMasterSO.ExportTarget` 指向的 `ConfigRuntimeSO.Channel` 为准，只读检查 Build Settings 全部启用场景内的 `AssetComponent` 与 `AppComponent` 渠道快照。任一快照不一致时，`NOVA-BUILD-012` 返回 Error 并令报告 `ready=false`；需要在 `Nova/Open Config` 重新导出后保存场景，再重新执行构建前检查。没有 Asset/App 组件的自定义 Bootstrap 或纯 Content 场景不单独触发该错误。
 

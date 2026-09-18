@@ -130,61 +130,6 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 从已校验的资源上传计划派生本次允许清理的精确对象。
-            /// 不清理整个目录，避免同目录下其他 PackageFilePrefix 分支被误删。
-            /// </summary>
-            internal static OssCleanupPlan BuildCleanupPlan(
-                CDNEditorConfigs config,
-                IReadOnlyList<OssUploadItem> uploadPlan,
-                PlatformType platform,
-                ChannelType channel,
-                string package,
-                string version)
-            {
-                return BuildCleanupPlanCore(
-                    config,
-                    uploadPlan);
-            }
-
-            /// <summary>
-            /// 从已校验的白名单上传计划派生本次允许清理的精确对象。
-            /// 不清理整个目录，避免同目录下其他 PackageFilePrefix 分支被误删。
-            /// </summary>
-            internal static OssCleanupPlan BuildAssetCheckWhitelistCleanupPlan(
-                CDNEditorConfigs config,
-                IReadOnlyList<OssUploadItem> uploadPlan,
-                PlatformType platform,
-                ChannelType channel,
-                string package,
-                string version)
-            {
-                return BuildCleanupPlanCore(
-                    config,
-                    uploadPlan);
-            }
-
-            private static OssCleanupPlan BuildCleanupPlanCore(
-                CDNEditorConfigs config,
-                IReadOnlyList<OssUploadItem> uploadPlan)
-            {
-                if (config == null) throw new ArgumentNullException(nameof(config));
-                if (uploadPlan == null) throw new ArgumentNullException(nameof(uploadPlan));
-                ParseOssLocation(config.PresetOSSPath);
-
-                var exactObjectKeys = new List<string>();
-                var seen = new HashSet<string>(StringComparer.Ordinal);
-                foreach (OssUploadItem item in uploadPlan)
-                {
-                    if (!string.IsNullOrEmpty(item.ObjectKey) && seen.Add(item.ObjectKey))
-                    {
-                        exactObjectKeys.Add(item.ObjectKey);
-                    }
-                }
-
-                return new OssCleanupPlan(exactObjectKeys, Array.Empty<string>());
-            }
-
-            /// <summary>
             /// 按 Asset 主机服务器 URL 的同一规则替换 CDN 路径占位符。
             /// </summary>
             internal static string ResolvePathPlaceholders(
@@ -798,40 +743,7 @@ namespace NovaFramework.Editor
                     channel,
                     package,
                     version,
-                    false,
-                    null,
-                    null,
-                    uploadAsync,
-                    onProgress);
-            }
-
-            /// <summary>
-            /// 可选先清理本次资源部署目标，再按上传计划顺序上传。
-            /// </summary>
-            internal static async UniTask<int> DeployAsync(
-                CDNEditorConfigs config,
-                string projectRoot,
-                PlatformType platform,
-                ChannelType channel,
-                string package,
-                string version,
-                bool cleanRemoteFilesAndDirectories,
-                Func<string, string, UniTask<OssObjectPage>> listObjectsAsync,
-                Func<IReadOnlyList<string>, UniTask> deleteObjectsAsync,
-                Func<OssUploadItem, UniTask> uploadAsync,
-                Action<int, int, string> onProgress)
-            {
-                return await DeployAsync(
-                    config,
-                    projectRoot,
-                    platform,
-                    channel,
-                    package,
-                    version,
                     string.Empty,
-                    cleanRemoteFilesAndDirectories,
-                    listObjectsAsync,
-                    deleteObjectsAsync,
                     uploadAsync,
                     onProgress);
             }
@@ -847,9 +759,6 @@ namespace NovaFramework.Editor
                 string package,
                 string version,
                 string packageFilePrefix,
-                bool cleanRemoteFilesAndDirectories,
-                Func<string, string, UniTask<OssObjectPage>> listObjectsAsync,
-                Func<IReadOnlyList<string>, UniTask> deleteObjectsAsync,
                 Func<OssUploadItem, UniTask> uploadAsync,
                 Action<int, int, string> onProgress)
             {
@@ -864,25 +773,6 @@ namespace NovaFramework.Editor
                     package,
                     version,
                     packageFilePrefix);
-                if (cleanRemoteFilesAndDirectories)
-                {
-                    OssCleanupPlan cleanupPlan = BuildCleanupPlan(
-                        config,
-                        plan,
-                        platform,
-                        channel,
-                        package,
-                        version);
-                    try
-                    {
-                        await CleanRemoteAsync(cleanupPlan, listObjectsAsync, deleteObjectsAsync);
-                    }
-                    catch (Exception exception)
-                    {
-                        string detail = RedactSecrets(exception.Message, config.AccessKeySecret, config.Token);
-                        throw new InvalidOperationException($"清理云端文件和目录失败：{detail}");
-                    }
-                }
                 onProgress?.Invoke(0, plan.Count, plan[0].LocalPath);
 
                 for (int index = 0; index < plan.Count; index++)
@@ -927,42 +817,7 @@ namespace NovaFramework.Editor
                     channel,
                     package,
                     version,
-                    false,
-                    null,
-                    null,
-                    uploadAsync,
-                    onProgress);
-            }
-
-            /// <summary>
-            /// 可选先清理本次白名单部署目标，再按上传计划顺序上传。
-            /// </summary>
-            internal static async UniTask<int> DeployAssetCheckWhitelistAsync(
-                CDNEditorConfigs config,
-                string projectRoot,
-                string generatedWhitelistFilePath,
-                PlatformType platform,
-                ChannelType channel,
-                string package,
-                string version,
-                bool cleanRemoteFilesAndDirectories,
-                Func<string, string, UniTask<OssObjectPage>> listObjectsAsync,
-                Func<IReadOnlyList<string>, UniTask> deleteObjectsAsync,
-                Func<OssUploadItem, UniTask> uploadAsync,
-                Action<int, int, string> onProgress)
-            {
-                return await DeployAssetCheckWhitelistAsync(
-                    config,
-                    projectRoot,
-                    generatedWhitelistFilePath,
-                    platform,
-                    channel,
-                    package,
-                    version,
                     string.Empty,
-                    cleanRemoteFilesAndDirectories,
-                    listObjectsAsync,
-                    deleteObjectsAsync,
                     uploadAsync,
                     onProgress);
             }
@@ -979,9 +834,6 @@ namespace NovaFramework.Editor
                 string package,
                 string version,
                 string packageFilePrefix,
-                bool cleanRemoteFilesAndDirectories,
-                Func<string, string, UniTask<OssObjectPage>> listObjectsAsync,
-                Func<IReadOnlyList<string>, UniTask> deleteObjectsAsync,
                 Func<OssUploadItem, UniTask> uploadAsync,
                 Action<int, int, string> onProgress)
             {
@@ -998,25 +850,6 @@ namespace NovaFramework.Editor
                     version,
                     packageFilePrefix);
                 if (plan.Count == 0) return 0;
-                if (cleanRemoteFilesAndDirectories)
-                {
-                    OssCleanupPlan cleanupPlan = BuildAssetCheckWhitelistCleanupPlan(
-                        config,
-                        plan,
-                        platform,
-                        channel,
-                        package,
-                        version);
-                    try
-                    {
-                        await CleanRemoteAsync(cleanupPlan, listObjectsAsync, deleteObjectsAsync);
-                    }
-                    catch (Exception exception)
-                    {
-                        string detail = RedactSecrets(exception.Message, config.AccessKeySecret, config.Token);
-                        throw new InvalidOperationException($"清理云端文件和目录失败：{detail}");
-                    }
-                }
                 onProgress?.Invoke(0, plan.Count, plan[0].LocalPath);
 
                 for (int index = 0; index < plan.Count; index++)
@@ -1037,59 +870,6 @@ namespace NovaFramework.Editor
                 }
 
                 return plan.Count;
-            }
-
-            /// <summary>
-            /// 列举目录前缀下的对象，与精确对象合并去重后分批删除。
-            /// </summary>
-            internal static async UniTask<int> CleanRemoteAsync(
-                OssCleanupPlan cleanupPlan,
-                Func<string, string, UniTask<OssObjectPage>> listObjectsAsync,
-                Func<IReadOnlyList<string>, UniTask> deleteObjectsAsync)
-            {
-                if (cleanupPlan == null) throw new ArgumentNullException(nameof(cleanupPlan));
-                if (listObjectsAsync == null) throw new ArgumentNullException(nameof(listObjectsAsync));
-                if (deleteObjectsAsync == null) throw new ArgumentNullException(nameof(deleteObjectsAsync));
-
-                var objectKeys = new List<string>();
-                var seen = new HashSet<string>(StringComparer.Ordinal);
-                foreach (string exactObjectKey in cleanupPlan.ExactObjectKeys)
-                {
-                    if (!string.IsNullOrEmpty(exactObjectKey) && seen.Add(exactObjectKey))
-                    {
-                        objectKeys.Add(exactObjectKey);
-                    }
-                }
-
-                foreach (string directoryPrefix in cleanupPlan.DirectoryPrefixes)
-                {
-                    string continuationToken = null;
-                    do
-                    {
-                        OssObjectPage page = await listObjectsAsync(directoryPrefix, continuationToken);
-                        if (page.ObjectKeys != null)
-                        {
-                            foreach (string objectKey in page.ObjectKeys)
-                            {
-                                if (!string.IsNullOrEmpty(objectKey) &&
-                                    objectKey.StartsWith(directoryPrefix, StringComparison.Ordinal) &&
-                                    seen.Add(objectKey))
-                                {
-                                    objectKeys.Add(objectKey);
-                                }
-                            }
-                        }
-                        continuationToken = page.NextContinuationToken;
-                    } while (!string.IsNullOrEmpty(continuationToken));
-                }
-
-                const int deleteBatchSize = 1000;
-                for (int start = 0; start < objectKeys.Count; start += deleteBatchSize)
-                {
-                    int count = Math.Min(deleteBatchSize, objectKeys.Count - start);
-                    await deleteObjectsAsync(objectKeys.GetRange(start, count));
-                }
-                return objectKeys.Count;
             }
 
             /// <summary>

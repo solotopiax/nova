@@ -37,7 +37,7 @@ SDKComponent
 |---|---|
 | `EnableAlwaysPaySucceed` | Editor 调试开关；仅 Editor 编译态允许 Store 读取 `Context.EnableAlwaysPaySucceed` 跳过真实平台支付，非 Editor 编译态强制为 false |
 | `EnableIAPLog` | IAP 详细日志开关，默认开启；初始化时写入 `IAPLog.SetEnabled` |
-| `RetryValidateMaxNum` | 首次验单失败后的最大重试次数，默认 3 |
+| `RetryValidateMaxNum` | Store 共享的首次验单失败后重试次数配置，默认 3；具体 Store 可按验单来源覆盖，例如 ThirdPay 明确支付成功会覆盖完整重试间隔序列，关闭/返回等不明确场景最多 3 次 |
 | `SkipLoadingForReplenish` | 启动补单是否跳过 Loading |
 | `LoadingPanelPrefab` | 支付期 Loading 面板 Resources 路径，默认 `IAP/IAPLoadingPanel` |
 | `StoreConfigs` | `[SerializeReference]` 多态 Store 配置列表 |

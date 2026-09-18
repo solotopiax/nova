@@ -21,24 +21,51 @@ namespace NovaFramework.Editor
         /// </summary>
         private void DrawConfigs()
         {
+            bool isWebGLBuildTarget = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+
             // 顶层：实现选择（不加 Foldout，平铺展示）
-            EditorUtil.Draw.TypesSelector("App 管理器", m_AppManagerTypeNames, m_CurManagerTypeName, true, null, GUILayout.Width(180f));
-            EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "支持自定义类型，实现框架层 IAppManager 接口后，该类型将自动出现在此列表中。" });
+            using (new EditorGUI.DisabledScope(EditorApplication.isPlaying))
+            {
+                EditorUtil.Draw.TypesSelector("App 管理器", m_AppManagerTypeNames, m_CurManagerTypeName, false, null, GUILayout.Width(180f));
+                EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "支持自定义类型，实现框架层 IAppManager 接口后，该类型将自动出现在此列表中。" }, false);
+            }
 
             EditorUtil.Draw.Line();
 
-            EditorUtil.Draw.Property("启用 App 更新：", m_EnableAppUpdate, true, GUILayout.Width(180f));
-            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+            if (isWebGLBuildTarget)
             {
-                "(1)App 大版本检查与更新下载功能总开关",
-                "(2)关闭后不请求版本配置，也不会进入推荐更新或强制更新流程",
-                "(3)资源热更新仍由 Asset 面板的 EnableHotfix 独立控制"
-            }, false, GUILayout.ExpandWidth(true));
+                using (new EditorGUI.DisabledScope(true))
+                {
+                    EditorUtil.Draw.Layout.Horizontal(() =>
+                    {
+                        EditorUtil.Draw.Label("启用 App 更新：", false, GUILayout.Width(180f));
+                        EditorUtil.Draw.Toggle(false, GUILayout.ExpandWidth(true));
+                    });
+                    EditorUtil.Draw.HelpBox(
+                        MessageType.Info,
+                        new[] { "WebGL 暂不支持 App 大版本更新，当前平台固定关闭。" },
+                        false,
+                        GUILayout.ExpandWidth(true));
+                }
+            }
+            else
+            {
+                using (new EditorGUI.DisabledScope(EditorApplication.isPlaying))
+                {
+                    EditorUtil.Draw.Property("启用 App 更新：", m_EnableAppUpdate, false, GUILayout.Width(180f));
+                    EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                    {
+                        "(1)App 大版本检查与更新下载功能总开关",
+                        "(2)关闭后不请求版本配置，也不会进入推荐更新或强制更新流程",
+                        "(3)资源热更新仍由 Asset 面板的 EnableHotfix 独立控制"
+                    }, false, GUILayout.ExpandWidth(true));
+                }
+            }
 
             EditorUtil.Draw.Line();
 
             // 总开关关闭时，以下三组 App 更新配置统一灰度禁用。
-            using (new EditorGUI.DisabledScope(!m_EnableAppUpdate.boolValue))
+            using (new EditorGUI.DisabledScope(EditorApplication.isPlaying || isWebGLBuildTarget || !m_EnableAppUpdate.boolValue))
             {
                 // Foldout 1：版本检查
                 if (EditorUtil.Draw.Foldout("版本检查", "AppVersionCheckGroup", true))

@@ -8,7 +8,6 @@
  * descrip:   TGAPlugin 用户属性管理（Set/SetOnce/Add/Append/Unset/Delete）
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using System.Collections.Generic;
 using NovaFramework.Runtime;
 using ThinkingData.Analytics;
@@ -149,4 +148,3 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         }
     }
 }
-#endif

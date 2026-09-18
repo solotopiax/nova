@@ -84,7 +84,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
 #if UNITY_EDITOR
             if (Context?.EnableAlwaysPaySucceed == true)
             {
-                var mockResult = new IAPResult(request.TableId, $"MOCK_VOUCHER_{Guid.NewGuid():N}", false, true, request.CustomData);
+                var mockResult = new IAPResult(request.TableId, $"MOCK_VOUCHER_{Guid.NewGuid():N}", false, true, request.CustomData, storeType: StoreType);
                 Context.EventBridge?.RaisePaySuccess(mockResult);
                 return UniTask.FromResult(mockResult);
             }

@@ -144,6 +144,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             {
                 LogWarning("IAPPlugin.PayAsync：request 为 null，拒绝处理。");
                 var result = new IAPResult(0, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, "request 为 null。", null);
+                result.WithStoreType(IAPStoreType.None);
                 TrackRouterPayFail(result, null);
                 return result as T;
             }
@@ -153,6 +154,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             {
                 LogWarning($"IAPPlugin.PayAsync：未找到能处理请求的商店，tableId={request.TableId}。");
                 var result = new IAPResult(request.TableId, (int)IAPPluginErrorCode.StoreNotAvailable, IAPErrorSource.PluginRouter, "未找到匹配的支付渠道。", iapRequest?.CustomData, iapRequest?.ReceiptParam);
+                result.WithStoreType(iapRequest?.StoreType ?? IAPStoreType.None);
                 TrackRouterPayFail(result, iapRequest);
                 return result as T;
             }

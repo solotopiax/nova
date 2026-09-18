@@ -83,11 +83,13 @@ Bundle 下载始终使用常规 Host/Web 主备地址，不因白名单命中切
 
 ### 5. 白名单命中不等于版本已经可启动
 
-白名单只决定本次请求哪套版本元数据，不推进本地可启动版本记录。只有当前 Manifest 对应的启动下载范围已经完整可用时，`CommitBootableVersion` 才能写入 `persistentDataPath/Asset/{package}.version`：
+白名单只决定本次请求哪套版本元数据，不推进本地可启动版本记录。非 WebGL 平台只有当前 Manifest 对应的启动下载范围已经完整可用时，`CommitBootableVersion` 才能写入 `persistentDataPath/Asset/{package}.version`：
 
 - `LaunchHotfixTags` 为空时检查整包范围。
 - `LaunchHotfixTags` 非空时只检查启动 Tag 范围。
 - 下载失败、取消、用户跳过或离线恢复都不得推进记录。
+
+WebGL 不使用 Downloader 数量证明启动范围完整，也不依赖上述 Sandbox 本地版本记录。它按 [[ADR-065-asset-manifest-three-tier-offline-fallback|ADR-065]] 回退首包元数据，并按 [[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]] 由 `OnDemand` / `TagsOnLaunch` / `AllOnLaunch` 决定是否执行启动 Warmup；`TagsOnLaunch` 没有有效 Tag 时降级为 `OnDemand`。
 
 因此，灰度路由、资源下载完整性和离线可启动回退保持三层独立职责。
 

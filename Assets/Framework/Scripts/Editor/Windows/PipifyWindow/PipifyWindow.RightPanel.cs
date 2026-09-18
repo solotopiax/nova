@@ -235,7 +235,7 @@ namespace NovaFramework.Editor
                 if (!IsFieldVisible(field, paramsInstance, info.ParamsType)) continue;
                 float fieldHeight = GetParamFieldHeight(field, field.GetValue(paramsInstance));
                 Rect fieldRect = new Rect(fieldX, fieldY, fieldW, fieldHeight);
-                bool readOnly = field.GetCustomAttribute<PipifyReadOnlyAttribute>() != null;
+                bool readOnly = IsParamFieldReadOnly(field, paramsInstance);
                 EditorGUI.BeginDisabledGroup(readOnly);
                 DrawParamField(
                     fieldRect,
@@ -247,7 +247,7 @@ namespace NovaFramework.Editor
                 EditorGUI.EndDisabledGroup();
                 fieldY += fieldHeight + 2f;
 
-                float fieldHelpBoxHeight = GetParamFieldHelpBoxHeight(field);
+                float fieldHelpBoxHeight = GetResolvedParamFieldHelpBoxHeight(field, paramsInstance);
                 if (fieldHelpBoxHeight > 0f)
                 {
                     Rect fieldHelpBoxRect = new Rect(
@@ -257,7 +257,7 @@ namespace NovaFramework.Editor
                         fieldHelpBoxHeight);
                     EditorGUI.HelpBox(
                         fieldHelpBoxRect,
-                        string.Join("\n", GetParamFieldHelpBoxMessages(field)),
+                        string.Join("\n", GetResolvedParamFieldHelpBoxMessages(field, paramsInstance)),
                         MessageType.Info);
                     fieldY += fieldHelpBoxHeight + 4f;
                 }
@@ -518,7 +518,7 @@ namespace NovaFramework.Editor
             else if (fieldType.IsEnum)
             {
                 Enum v = currentValue as Enum ?? (Enum)Enum.GetValues(fieldType).GetValue(0);
-                Enum newV = DrawEnumPopup(valueRect, fieldType, v);
+                Enum newV = DrawEnumPopup(valueRect, field, paramsInstance, v);
                 field.SetValue(paramsInstance, newV);
             }
             else
@@ -529,25 +529,93 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制 Pipify 枚举参数，并保留 WebGL 等标准技术名词的大小写格式。
+        /// 判断 Pipify 参数字段是否只读。
         /// </summary>
-        private static Enum DrawEnumPopup(Rect position, Type enumType, Enum currentValue)
+        /// <param name="field">待绘制字段。</param>
+        /// <param name="paramsInstance">当前 Step 参数实例。</param>
+        /// <returns>true 表示字段只读。</returns>
+        private static bool IsParamFieldReadOnly(FieldInfo field, object paramsInstance)
         {
-            Array values = Enum.GetValues(enumType);
-            string[] displayNames = new string[values.Length];
-            int selectedIndex = 0;
-            for (int i = 0; i < values.Length; i++)
+            if (field.GetCustomAttribute<PipifyReadOnlyAttribute>() != null)
             {
-                Enum value = (Enum)values.GetValue(i);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 绘制 Pipify 枚举参数；WebGL 首包拷贝字段只展示可生成确定布局的三种选项。
+        /// </summary>
+        /// <param name="position">枚举控件绘制区域。</param>
+        /// <param name="field">当前参数字段。</param>
+        /// <param name="paramsInstance">当前 Step 参数实例。</param>
+        /// <param name="currentValue">当前枚举值。</param>
+        /// <returns>用户选择后的枚举值。</returns>
+        private static Enum DrawEnumPopup(
+            Rect position,
+            FieldInfo field,
+            object paramsInstance,
+            Enum currentValue)
+        {
+            List<Enum> values = GetEnumValues(field, paramsInstance);
+            string[] displayNames = new string[values.Count];
+            int selectedIndex = 0;
+            bool containsCurrentValue = false;
+            for (int i = 0; i < values.Count; i++)
+            {
+                Enum value = values[i];
                 displayNames[i] = GetEnumDisplayName(value);
                 if (value.Equals(currentValue))
                 {
                     selectedIndex = i;
+                    containsCurrentValue = true;
                 }
             }
 
-            int newIndex = Mathf.Clamp(EditorGUI.Popup(position, selectedIndex, displayNames), 0, values.Length - 1);
-            return (Enum)values.GetValue(newIndex);
+            // 旧 Config 参数可能仍保存 Channel=None。候选过滤后主动触发保存，
+            // 让首个合法值 Official 同步回 ParamsJson，而不是只在本帧临时显示。
+            bool normalizeLegacyConfigChannel = paramsInstance is PipifySteps.ConfigExportParams &&
+                field.Name == nameof(PipifySteps.ConfigExportParams.Channel) &&
+                !containsCurrentValue;
+            if (normalizeLegacyConfigChannel)
+            {
+                GUI.changed = true;
+            }
+            int newIndex = Mathf.Clamp(EditorGUI.Popup(position, selectedIndex, displayNames), 0, values.Count - 1);
+            return values[newIndex];
+        }
+
+        /// <summary>
+        /// 获取当前字段允许展示的枚举值；Config 渠道隐藏 None，非特例字段保持完整枚举集合。
+        /// </summary>
+        /// <param name="field">当前参数字段。</param>
+        /// <param name="paramsInstance">当前 Step 参数实例。</param>
+        /// <returns>按声明顺序排列的可选枚举值。</returns>
+        private static List<Enum> GetEnumValues(FieldInfo field, object paramsInstance)
+        {
+            Array rawValues = Enum.GetValues(field.FieldType);
+            var values = new List<Enum>(rawValues.Length);
+            bool filterConfigNoneChannel = paramsInstance is PipifySteps.ConfigExportParams &&
+                field.Name == nameof(PipifySteps.ConfigExportParams.Channel);
+            bool filterWebGLBundledCopy = field.Name == nameof(AssetBundleBuildArgs.BundledCopyOption) &&
+                (paramsInstance is AssetBundleBuildArgs assetBundle && assetBundle.Target == BuildTarget.WebGL
+                 || paramsInstance is RawFileBuildArgs rawFile && rawFile.Target == BuildTarget.WebGL);
+            for (int i = 0; i < rawValues.Length; i++)
+            {
+                var value = (Enum)rawValues.GetValue(i);
+                if (filterConfigNoneChannel && value.Equals(ChannelType.None))
+                {
+                    continue;
+                }
+                if (filterWebGLBundledCopy &&
+                    !EditorUtil.BundleBuilder.IsWebGLBundledCopyOptionSupported((YooAsset.Editor.EBundledCopyOption)value))
+                {
+                    continue;
+                }
+                values.Add(value);
+            }
+            return values;
         }
 
         /// <summary>
@@ -617,6 +685,93 @@ namespace NovaFramework.Editor
         {
             string[] messages = GetParamFieldHelpBoxMessages(field);
             return messages.Length == 0 ? 0f : messages.Length * c_ParamFieldHeight + 26f;
+        }
+
+        /// <summary>
+        /// 获取参数字段当前状态对应的 HelpBox 文案；WebGL 首包拷贝选项按当前选择给出操作提示。
+        /// </summary>
+        /// <param name="field">参数字段反射信息。</param>
+        /// <param name="paramsInstance">当前 Step 参数实例。</param>
+        /// <returns>应显示的 HelpBox 文案。</returns>
+        internal static string[] GetResolvedParamFieldHelpBoxMessages(FieldInfo field, object paramsInstance)
+        {
+            if (field?.Name == nameof(AssetBundleBuildArgs.BundledCopyOption) &&
+                TryGetWebGLBundledCopyOption(paramsInstance, out YooAsset.Editor.EBundledCopyOption option))
+            {
+                return GetWebGLBundledCopyHelpBoxMessages(option);
+            }
+
+            return GetParamFieldHelpBoxMessages(field);
+        }
+
+        /// <summary>
+        /// 计算参数字段当前状态对应的 HelpBox 高度。
+        /// </summary>
+        /// <param name="field">参数字段反射信息。</param>
+        /// <param name="paramsInstance">当前 Step 参数实例。</param>
+        /// <returns>HelpBox 绘制高度；无需显示时返回 0。</returns>
+        internal static float GetResolvedParamFieldHelpBoxHeight(FieldInfo field, object paramsInstance)
+        {
+            string[] messages = GetResolvedParamFieldHelpBoxMessages(field, paramsInstance);
+            return messages.Length == 0 ? 0f : messages.Length * c_ParamFieldHeight + 26f;
+        }
+
+        /// <summary>
+        /// 读取 WebGL Bundle 构建参数当前选择的首包拷贝方式。
+        /// </summary>
+        /// <param name="paramsInstance">当前 Step 参数实例。</param>
+        /// <param name="option">读取到的首包拷贝方式。</param>
+        /// <returns>当前参数属于 WebGL Bundle 构建时返回 true。</returns>
+        private static bool TryGetWebGLBundledCopyOption(
+            object paramsInstance,
+            out YooAsset.Editor.EBundledCopyOption option)
+        {
+            if (paramsInstance is AssetBundleBuildArgs assetBundle && assetBundle.Target == BuildTarget.WebGL)
+            {
+                option = assetBundle.BundledCopyOption;
+                return true;
+            }
+
+            if (paramsInstance is RawFileBuildArgs rawFile && rawFile.Target == BuildTarget.WebGL)
+            {
+                option = rawFile.BundledCopyOption;
+                return true;
+            }
+
+            option = default;
+            return false;
+        }
+
+        /// <summary>
+        /// 获取 WebGL 首包拷贝方式对应的用户操作提示。
+        /// </summary>
+        /// <param name="option">当前首包拷贝方式。</param>
+        /// <returns>只包含使用方式与选错影响的提示文案。</returns>
+        internal static string[] GetWebGLBundledCopyHelpBoxMessages(YooAsset.Editor.EBundledCopyOption option)
+        {
+            switch (option)
+            {
+                case YooAsset.Editor.EBundledCopyOption.None:
+                    return new[]
+                    {
+                        "(1)WebGL 下仅适用于 HostPlayMode；请先把当前版本的完整资源上传到 CDN",
+                        "(2)OfflinePlayMode 选择 None 时游戏无法启动"
+                    };
+                case YooAsset.Editor.EBundledCopyOption.ClearAndCopyByTags:
+                    return new[]
+                    {
+                        "(1)WebGL 下 HostPlayMode 可从 CDN 获取未随网页发布的资源",
+                        "(2)OfflinePlayMode 无法加载未包含在所选 Tag 中的资源"
+                    };
+                case YooAsset.Editor.EBundledCopyOption.ClearAndCopyAll:
+                    return new[]
+                    {
+                        "(1)WebGL 下会把当前版本全部资源随网页发布",
+                        "(2)OfflinePlayMode 必须选择此项；HostPlayMode 也可使用"
+                    };
+                default:
+                    return Array.Empty<string>();
+            }
         }
 
         private static float GetCdnAutoLinkErrorHeight(string error)

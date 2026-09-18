@@ -135,6 +135,20 @@
       "dependencies": {},
       "url": "https://unity.packages.applovin.com"
     },
+    "com.applovin.mediation.adapters.line.android": {
+      "version": "300001010.0.0",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://unity.packages.applovin.com"
+    },
+    "com.applovin.mediation.adapters.line.ios": {
+      "version": "3010101.0.0",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://unity.packages.applovin.com"
+    },
     "com.applovin.mediation.adapters.mintegral.android": {
       "version": "17016100.0.0",
       "depth": 1,
@@ -451,7 +465,7 @@
       "source": "local",
       "dependencies": {
         "com.solotopia.nova.framework": "0.6.15",
-        "com.solotopia.nova.framework.sdk.iap": "0.1.12",
+        "com.solotopia.nova.framework.sdk.iap": "0.1.15",
         "com.solotopia.unitask": "10.0.6",
         "com.unity.purchasing": "5.3.1"
       }
@@ -511,7 +525,9 @@
         "com.applovin.mediation.adapters.unityads.ios": "4200000.0.0",
         "com.applovin.mediation.adapters.vungle.android": "7070200.0.0",
         "com.applovin.mediation.adapters.vungle.ios": "7070200.0.0",
-        "com.applovin.mediation.adapters.yandex.android": "8010000.0.0"
+        "com.applovin.mediation.adapters.yandex.android": "8010000.0.0",
+        "com.applovin.mediation.adapters.line.ios": "3010101.0.0",
+        "com.applovin.mediation.adapters.line.android": "300001010.0.0"
       }
     },
     "com.solotopia.nova.framework.sdk.tga": {

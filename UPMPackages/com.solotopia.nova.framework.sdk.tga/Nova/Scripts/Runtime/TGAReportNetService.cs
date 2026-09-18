@@ -8,7 +8,6 @@
  * descrip:   TGA 标识上报业务网络 Service，封装 PbNetReportTGAReq 协议的发送逻辑
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 
@@ -44,4 +43,3 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         }
     }
 }
-#endif

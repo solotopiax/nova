@@ -93,7 +93,6 @@ namespace NovaFramework.Editor
             DrawCdnLocalDirectoryRow(resolved, workingSrc, curCoord);
             DrawCdnRemoteDirectoryRow(resolved, workingSrc, curCoord);
             DrawCdnHotfixResourcePathHelp();
-            m_CleanCdnRemoteBeforeDeploy = DrawCdnCleanRemoteBeforeDeploy(m_CleanCdnRemoteBeforeDeploy, c_CdnLabelWidth);
             DrawCdnWideButton("批量部署到 CDN", m_IsCdnDeploying || !isAlibabaCloudOssAvailable, OnDeployCdn);
 
             EditorUtil.Draw.Space(12f);
@@ -170,7 +169,6 @@ namespace NovaFramework.Editor
                 curCoord,
                 (cfg, value) => cfg.AssetCheckVersionRemoteDirectory = value);
             DrawCdnAssetCheckWhitelistHelp();
-            m_CleanCdnWhitelistRemoteBeforeDeploy = DrawCdnCleanRemoteBeforeDeploy(m_CleanCdnWhitelistRemoteBeforeDeploy, c_CdnWhitelistLabelWidth);
             DrawCdnWideButton("批量部署到 CDN", m_IsCdnWhitelistDeploying || !isAlibabaCloudOssAvailable, OnDeployCdnWhitelist);
 
             EditorUtil.Draw.Space(12f);
@@ -449,37 +447,6 @@ namespace NovaFramework.Editor
                 EditorUtil.Draw.Space(16f);
             });
             EditorUtil.Draw.Space(8f);
-        }
-
-        /// <summary>
-        /// 绘制与当前分区字段列对齐的清理开关，并在值列下方说明执行顺序、范围和失败行为。
-        /// </summary>
-        private static bool DrawCdnCleanRemoteBeforeDeploy(bool value, float labelWidth)
-        {
-            bool newValue = value;
-            EditorUtil.Draw.Layout.Horizontal(() =>
-            {
-                EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.Label("清理本次上传文件", false, GUILayout.Width(labelWidth));
-                newValue = EditorUtil.Draw.Toggle(value, GUILayout.Width(18f));
-                EditorUtil.Draw.FlexibleSpace();
-                EditorUtil.Draw.Space(16f);
-            });
-            EditorUtil.Draw.Space(4f);
-
-            EditorUtil.Draw.Layout.Horizontal(() =>
-            {
-                EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
-                {
-                    "(1) 默认关闭；勾选后会在上传前清理本次部署目标",
-                    "(2) 只清理本次上传计划中的精确文件，不删除共享目录中的其他 prefix 分支",
-                    "(3) 清理失败时立即停止，不继续上传",
-                }, false, GUILayout.ExpandWidth(true));
-                EditorUtil.Draw.Space(16f);
-            });
-            EditorUtil.Draw.Space(8f);
-            return newValue;
         }
 
         /// <summary>
@@ -1475,7 +1442,6 @@ namespace NovaFramework.Editor
                     m_EditingPlatform,
                     source.CurrentChannel,
                     packageFilePrefix,
-                    m_CleanCdnRemoteBeforeDeploy,
                     (completed, total, path) => EditorUtility.DisplayProgressBar(
                         "批量部署到 CDN",
                         $"{completed}/{total}  {path}",
@@ -1523,7 +1489,6 @@ namespace NovaFramework.Editor
                     m_EditingPlatform,
                     source.CurrentChannel,
                     packageFilePrefix,
-                    m_CleanCdnWhitelistRemoteBeforeDeploy,
                     (completed, total, path) => EditorUtility.DisplayProgressBar(
                         "批量部署白名单到 CDN",
                         $"{completed}/{total}  {path}",

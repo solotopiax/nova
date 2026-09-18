@@ -75,9 +75,9 @@
 | [FrameworkComponent.md](Runtime/Modules/FrameworkComponent.md) | 所有 Component 基类 |
 | [FrameworkManager.md](Runtime/Modules/FrameworkManager.md) | 所有 Manager 基类 |
 | [Definitions.md](Runtime/Core/Definitions/Definitions.md) | 框架级枚举（渠道/平台/模式/语言类型） |
-| [ChannelType.md](Runtime/Core/Definitions/ChannelType.md) | 游戏运营渠道类型枚举（None/Official/Google/Apple/WeChat/TikTok/Alipay） |
+| [ChannelType.md](Runtime/Core/Definitions/ChannelType.md) | 游戏运营渠道类型枚举；Config 坐标仅允许非 None 值 |
 | [DevelopMode.md](Runtime/Core/Definitions/DevelopMode.md) | 开发/发布模式枚举（Debug / Publish），Config 第三维度 |
-| [PlatformType.md](Runtime/Core/Definitions/PlatformType.md) | 运行平台类型枚举（None/Android/iOS/WebGL） |
+| [PlatformType.md](Runtime/Core/Definitions/PlatformType.md) | 运行平台类型枚举；Config 坐标仅允许 Android/iOS/WebGL |
 | [Language.md](Runtime/Core/Definitions/Language.md) | 游戏语言枚举与 LanguageMetadata（GetDesc/GetFlag 字典查询） |
 | [LanguageSelectionWay.md](Runtime/Core/Definitions/LanguageSelectionWay.md) | 已移除，保留历史兼容说明页 |
 | [Extensions.md](Runtime/Core/Extensions/Extensions.md) | C# 和 Unity 扩展方法 |
@@ -153,7 +153,7 @@
 
 | 文档 | 说明 |
 |------|------|
-| [AssetComponent.md](Runtime/Modules/Asset/AssetComponent.md) | 资源加载 Component（全 Load/Preload/Release API 薄代理入口） |
+| [AssetComponent.md](Runtime/Modules/Asset/AssetComponent.md) | 资源加载 Component（全 Load/Warmup/Release API 薄代理入口） |
 | [AssetCallbacks.md](Runtime/Modules/Asset/AssetCallbacks.md) | 说明旧回调式资源契约已被当前 Handle 模式取代 |
 | [IAssetManager.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetManager.md) | Asset Manager 接口（全量契约，所有 LoadXxx 返回 Handle） |
 | [IAssetHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetHandle.md) | 主资源句柄接口（非泛型基接口 + 泛型 IAssetHandle&lt;T&gt;） |
@@ -162,11 +162,14 @@
 | [IRawFileHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/IRawFileHandle.md) | 原始文件句柄接口（FilePath / GetBytes / Release） |
 | [ISceneHandle.md](Runtime/Modules/Asset/AssetManager/Interfaces/ISceneHandle.md) | 场景句柄接口（IsValid / IsDone / UnloadAsync） |
 | [IAssetDownloader.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetDownloader.md) | 资源下载器接口（TotalCount/Progress/RunAsync/Cancel） |
-| [AssetManager.md](Runtime/Modules/Asset/AssetManager/Implements/AssetManager.md) | Asset Manager 三层实现链（AssetManagerBase + AssetManager，12 个 partial 文件） |
+| [AssetManager.md](Runtime/Modules/Asset/AssetManager/Implements/AssetManager.md) | Asset Manager 三层实现链（AssetManagerBase + AssetManager，含 Warmup 分部实现） |
 | [AssetManagerConfig.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetManagerConfig.md) | Asset Manager 配置类（运行模式、热更总开关、启动白名单、主备 URL、超时与并发） |
 | [AssetDownloader.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetDownloader.md) | IAssetDownloader 实现（YooAsset ResourceDownloaderOperation 包装） |
 | [AssetDownloadUrlPolicy.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetDownloadUrlPolicy.md) | YooAsset 候选 URL 轮换策略（传输失败与内容校验失败统一推进且去重） |
 | [AssetRemoteService.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetRemoteService.md) | YooAsset 远端寻址服务（常规主备 + 白名单 metadata-only 路由 + 占位符替换） |
+| [WebGLAssetStrategies.md](Runtime/Modules/Asset/WebGLAssetStrategies.md) | WebGL 首包布局、三种资源运行策略与浏览器缓存边界 |
+| [WebGLAssetStrategy.md](Runtime/Modules/Asset/Definitions/WebGLAssetStrategy.md) | WebGL 启动资源策略枚举（TagsOnLaunch / OnDemand / AllOnLaunch） |
+| [IAssetWarmupGroup.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetWarmupGroup.md) | 有明确 Handle 所有权的 Bundle 批量预热接口 |
 | [YooAssetHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetHandleAdapter.md) | IAssetHandle 到 YooAsset.AssetHandle 的 ReferencePool 适配器 |
 | [YooAssetSubAssetsHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetSubAssetsHandleAdapter.md) | ISubAssetsHandle 到 YooAsset.SubAssetsHandle 的 ReferencePool 适配器 |
 | [YooAssetAllAssetsHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetAllAssetsHandleAdapter.md) | IAllAssetsHandle 到 YooAsset.AllAssetsHandle 的 ReferencePool 适配器 |

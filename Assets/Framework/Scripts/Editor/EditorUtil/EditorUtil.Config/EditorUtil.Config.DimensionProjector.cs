@@ -513,7 +513,7 @@ namespace NovaFramework.Editor
                     for (int i = 0; i < entries.Count; i++)
                     {
                         PlatformChannelEntry entry = entries[i];
-                        if (entry == null || entry.Platform == PlatformType.None) continue;
+                        if (entry == null || entry.Platform == PlatformType.None || entry.Channel == ChannelType.None) continue;
                         foreach (DevelopMode mode in modes)
                             yield return new Coord(entry.Platform, entry.Channel, mode);
                     }
@@ -748,7 +748,7 @@ namespace NovaFramework.Editor
                     for (int i = 0; i < entries.Count; i++)
                     {
                         PlatformChannelEntry entry = entries[i];
-                        if (entry.Platform == PlatformType.None) continue;
+                        if (entry.Platform == PlatformType.None || entry.Channel == ChannelType.None) continue;
                         if (mask.ByPlatform && entry.Platform != coord.Platform) continue;
                         if (mask.ByChannel && entry.Channel != coord.Channel) continue;
                         foreach (DevelopMode mode in modes)

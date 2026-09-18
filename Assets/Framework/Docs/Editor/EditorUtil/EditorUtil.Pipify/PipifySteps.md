@@ -82,7 +82,7 @@
 
 `export.config` 的参数区按 `Platform`、`Channel`、`DevelopMode` 顺序显示。`Platform` 是只读字段，每次显示和执行都同步为 Unity 当前 Active BuildTarget 映射的 `PlatformType`；新建条目与历史空参数条目的首次初始化会写入这一时刻的平台值以及当前激活 `ConfigMasterSO` 的 Channel / DevelopMode。历史 `ParamsJson` 中的平台值仍可读取以保持兼容，但不会成为执行真相。
 
-`Channel` 与 `DevelopMode` 仍可保存和按本次运行的 CLI 参数覆盖。`Platform` CLI override 会在覆盖完成后被 Active BuildTarget 再次同步而失效。执行时 Step 用“Active BuildTarget Platform + Step Channel + Step DevelopMode”显式调用 `EditorUtil.Config.Exporter.Export`，只更新目标 `ConfigRuntimeSO`，不会修改、标脏或保存 `ConfigMasterSO`；Unity 当前目标未映射为 Android / iOS / WebGL 时明确中断。
+`Channel` 下拉只显示可用于 Config 坐标的实际渠道，不显示 `None`；旧参数若仍保存 `None`，打开参数区后会归一为 `Official` 并将 Batch 标记为待保存。`Channel` 与 `DevelopMode` 仍可保存和按本次运行的 CLI 参数覆盖。`Platform` CLI override 会在覆盖完成后被 Active BuildTarget 再次同步而失效。执行时 Step 用“Active BuildTarget Platform + Step Channel + Step DevelopMode”显式调用 `EditorUtil.Config.Exporter.Export`，只更新目标 `ConfigRuntimeSO`，不会修改、标脏或保存 `ConfigMasterSO`；Unity 当前目标未映射为 Android / iOS / WebGL 时明确中断。
 
 ### 4. Bundle 构建
 
@@ -102,6 +102,8 @@
 两个 Step 是独立的可选构建入口，不要求在同一 Batch 中连续运行。
 
 两个 Step 的 `Target` 在 PipifyWindow 中均为只读字段，执行前强制同步 Unity 当前 `EditorUserBuildSettings.activeBuildTarget`；旧 `ParamsJson` 与 CLI 的 `Target` 值不生效。当前 BuildTarget 未映射为 Nova Android / iOS / WebGL 时，Step 会在构建前中断。`EditorUtil.BundleBuilder.BuildAssetBundle` / `BuildRawFileBundle` 的直接 API 仍允许调用方显式传 `Target`，该兼容语义不适用于 Pipify。
+
+当当前目标为 WebGL 时，两个 Step 的 `BundledCopyOption` 只显示 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll`；选择按 Tag 拷贝时显示 `BundledCopyParams`。选项下方会按当前选择提示适用的 `OfflinePlayMode` / `HostPlayMode`、需要随网页或 CDN 部署的资源，以及选错后的加载影响。`OnlyCopyAll` / `OnlyCopyByTags` 会被拒绝，因为它们可能残留旧首包文件。`None` 构建成功后会清理目标 Package 的旧首包目录；运行时依据 YooAsset 官方 `BuiltinCatalog.bytes` 是否存在选择纯 CDN 或 StreamingAssets + CDN 文件系统组合。
 
 ### 5. Player 打包
 
@@ -186,10 +188,9 @@ Step：
 - `AutoLinkLatestVersion`：窗口标签为“自动关联最新版本”，默认 `true`；开启时 `LocalDirectory` 作为包根或版本目录锚点，参数面板实时显示最新完整版本目录并将输入框置为只读，执行前仍按 Config 相同的完整性与写入时间规则重新解析；失败时显示红色路径和错误说明
 - `LocalDirectory`：窗口标签为“热更资源-本地目录位置”；自动关联开启时作为可编辑锚点，关闭时必须手工指向待部署目录
 - `RemoteDirectory`：窗口标签为“热更资源-云端目录位置”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示
-- `CleanRemoteFilesAndDirectories`：窗口标签为“清理本次上传文件”，默认 `false`；只删除本次上传计划中的精确 Object Key，避免误删共享目录中的其他 prefix 分支
 
-四个路径都支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，其中 `{Platform}` 取 Unity 当前 Active BuildTarget 映射的 `PlatformType`。执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照；其中 Platform 始终来自同一 Active BuildTarget，仅在快照中覆盖这四个路径和自动关联开关，不回写 `ConfigMasterSO`。自动关联的 `PackageFilePrefix` 取当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 `YooAssetSettings.asset`。开启清理时只删除本次上传计划中的精确 Object Key，再调用上传；清理失败时不上传并中断 Batch。
-随后直接调用 `EditorUtil.CDN.DeployAsync`；配置、目录、清理或上传失败时抛错并中断 Batch。
+四个路径都支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，其中 `{Platform}` 取 Unity 当前 Active BuildTarget 映射的 `PlatformType`。执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照；其中 Platform 始终来自同一 Active BuildTarget，仅在快照中覆盖这四个路径和自动关联开关，不回写 `ConfigMasterSO`。自动关联的 `PackageFilePrefix` 取当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 `YooAssetSettings.asset`。
+随后直接调用 `EditorUtil.CDN.DeployAsync`，只上传计划内文件并由 OSS 覆盖同 Key；配置、目录或上传失败时抛错并中断 Batch。
 版本检查本地与云端文件位置都非空时，该单文件会与热更资源目录合并进入同一上传计划。
 参数区不提供独立部署按钮，部署只由 Pipify Runner 执行该 Step 时触发。
 
@@ -213,11 +214,10 @@ Step：
 - `ManifestHashLocalFilePath`：窗口标签为“版本文件(.hash)-本地文件位置”
 - `PackageVersionLocalFilePath`：窗口标签为“版本文件(.version)-本地文件位置”
 - `RemoteDirectory`：窗口标签为“版本文件云端目录位置”；当前维度 Config 的 `PresetOSSPath` 以前缀只读框显示
-- `CleanRemoteFilesAndDirectories`：窗口标签为“清理本次上传文件”，默认 `false`；只删除本次上传计划中的精确 Object Key，避免误删共享目录中的其他 prefix 分支
 
-执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照，其中 Platform 实时映射 Unity Active BuildTarget；仅覆盖上述七个内容参数并读取本次清理开关，不回写 `ConfigMasterSO`。自动关联的三个文件名取当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 `YooAssetSettings.asset`。设备 ID 按行解析，生成 `VersionsCheckWhiteList.json` 时统一去空、Trim 和去重；配置文件上传到
+执行时按当前 `Platform / Channel / DevelopMode` Resolve CDN 配置快照，其中 Platform 实时映射 Unity Active BuildTarget；仅覆盖上述七个内容参数，不回写 `ConfigMasterSO`。自动关联的三个文件名取当前 ConfigMaster 当前维度的 YooAsset 配置，不读取 `YooAssetSettings.asset`。设备 ID 按行解析，生成 `VersionsCheckWhiteList.json` 时统一去空、Trim 和去重；配置文件上传到
 `WhitelistRemoteFilePath` 指定的完整对象位置，`.bytes/.hash/.version` 三个文件上传到 `RemoteDirectory`。配置文件位置为空或非法时仅跳过
-配置文件，不回退到版本文件目录。五个路径支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，其中 `{Platform}` 取同一 Active BuildTarget 映射值。开启清理时只删除本次上传计划中的精确 Object Key；清理失败或任一实际上传失败时抛错并中断 Batch。
+配置文件，不回退到版本文件目录。五个路径支持大小写敏感的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}`，其中 `{Platform}` 取同一 Active BuildTarget 映射值。部署只上传计划内文件并由 OSS 覆盖同 Key；任一实际上传失败时抛错并中断 Batch。
 
 ### 11. CDN 缓存清理
 
@@ -290,7 +290,7 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 - 必须能通过 `EditorUtil.Config.WorkspaceActive` 定位当前激活 `ConfigMasterSO`
 - `ConfigMasterSO.ExportTarget` 不能为空
 - Unity 当前 Active BuildTarget 必须映射为 Android / iOS / WebGL 的 Nova `PlatformType`；该 Platform 为只读，且 ConfigMaster 中必须存在其与指定 Channel 对应的矩阵配置
-- `ChannelType.None` 是合法的无特定运营渠道，`export.config` 不会因 Channel 为 `None` 拦截；但对应的 Platform × None 矩阵行仍必须存在
+- `PlatformType.None` 与 `ChannelType.None` 都不是有效 Config 坐标，`export.config` 会拒绝两者
 
 ### 组件型导出 Step
 
@@ -310,6 +310,7 @@ Cloudflare 返回业务失败时抛错并中断 Batch。
 
 - 构建类 Batch 应先跑 `export.config`，再按目标资源选择 `bundlebuilder.build`（标准 AssetBundle）或 `bundlebuilder.build_raw_file`（`PackRawFile`）；需要 Player 产物时再运行 `build.package`
 - `bundlebuilder.build`、`bundlebuilder.build_raw_file` 与 `build.package` 的 `Target` 均只读并随 Unity Active BuildTarget 同步；切换目标必须在 Unity Build Settings 完成
+- WebGL Bundle Step 可选择 `None`、`ClearAndCopyByTags` 或 `ClearAndCopyAll`，分别生成纯 CDN、按 Tag 首包或全量首包布局；运行时何时请求资源仍由 `WebGLAssetStrategy` 独立决定
 - 其他前置导出物必须已就绪
 - `build.package` 的产物命名还依赖当前激活 `ConfigRuntimeSO` 的 `DevelopMode`
 - `build.package` 的 `OutputFolderPath` 不做特殊字符清洗；相对路径基于项目根解析，绝对路径直接使用

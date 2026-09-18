@@ -860,7 +860,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             FinalizeVerifiedOrderRecord(record);
 
             bool isReplenish = record.IsReplenish;
-            IAPResult result = IAPResult.SuccessWithExpire(record.TableId, record.TransactionId ?? string.Empty, isReplenish, canDeliver, BuildCustomData(record), expireMs, record.ReceiptParam);
+            IAPResult result = IAPResult.SuccessWithExpire(record.TableId, record.TransactionId ?? string.Empty, isReplenish, canDeliver, BuildCustomData(record), expireMs, record.ReceiptParam, IAPStoreType.Mobile);
             // product 为 null（订阅商品拉取失败等）时按表配置的 isSubscription 回退，
             // 避免订阅被误判为 Consumable 导致 RestoreCoordinator 计数与恢复通知走错分支。
             ProductType pt = product?.definition.type ?? (isSubscription ? ProductType.Subscription : ProductType.Consumable);
@@ -1047,7 +1047,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="attempt">当前请求重试次数，从 0 开始。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>包含验单响应数据或错误信息的 NetResponse。</returns>
-        private async UniTask<NetResponse<PbNetMobileVerifyResp>> SendVerifyBatchAsync(IReadOnlyList<VerifyOrderContext> contexts, bool isSubscription, int attempt, CancellationToken ct)
+        private UniTask<NetResponse<PbNetMobileVerifyResp>> SendVerifyBatchAsync(IReadOnlyList<VerifyOrderContext> contexts, bool isSubscription, int attempt, CancellationToken ct)
         {
 #if UNITY_ANDROID
             string cmdName = isSubscription ? m_Hub.Config?.GoogleVerifySubscriptionCmdName : m_Hub.Config?.GoogleVerifyCmdName;
@@ -1061,8 +1061,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                     Price = ResolveVerifyPrice(context.Entry),
                 });
             }
-            NetResponse<PbNetMobileVerifyResp> resp = await m_Hub.PayService.VerifyGoogleAsync(cmdName, items, isSubscription);
-            return resp;
+            return m_Hub.PayService.VerifyGoogleAsync(cmdName, items, isSubscription);
 #elif UNITY_IOS
             string cmdName = isSubscription ? m_Hub.Config?.AppleVerifySubscriptionCmdName : m_Hub.Config?.AppleVerifyCmdName;
             var items = new List<PbNetAppleVerifyIapOrderItem>();
@@ -1074,11 +1073,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                     Price = ResolveVerifyPrice(context.Entry),
                 });
             }
-            NetResponse<PbNetMobileVerifyResp> resp = await m_Hub.PayService.VerifyAppleAsync(cmdName, items, isSubscription);
-            return resp;
+            return m_Hub.PayService.VerifyAppleAsync(cmdName, items, isSubscription);
 #else
             LogWarning($"不支持的平台，批量验单数量={contexts?.Count ?? 0}");
-            return NetResponse<PbNetMobileVerifyResp>.Fail(0, "不支持的平台");
+            return UniTask.FromResult(NetResponse<PbNetMobileVerifyResp>.Fail(0, "不支持的平台"));
 #endif
         }
 

@@ -166,10 +166,30 @@ namespace NovaFramework.Editor
             else if (parameters is AssetBundleBuildArgs assetBundle)
             {
                 assetBundle.Target = activeBuildTarget;
+                if (activeBuildTarget == BuildTarget.WebGL &&
+                    !EditorUtil.BundleBuilder.IsWebGLBundledCopyOptionSupported(assetBundle.BundledCopyOption))
+                {
+                    assetBundle.BundledCopyOption = YooAsset.Editor.EBundledCopyOption.ClearAndCopyAll;
+                }
+                if (activeBuildTarget == BuildTarget.WebGL &&
+                    assetBundle.BundledCopyOption != YooAsset.Editor.EBundledCopyOption.ClearAndCopyByTags)
+                {
+                    assetBundle.BundledCopyParams = string.Empty;
+                }
             }
             else if (parameters is RawFileBuildArgs rawFile)
             {
                 rawFile.Target = activeBuildTarget;
+                if (activeBuildTarget == BuildTarget.WebGL &&
+                    !EditorUtil.BundleBuilder.IsWebGLBundledCopyOptionSupported(rawFile.BundledCopyOption))
+                {
+                    rawFile.BundledCopyOption = YooAsset.Editor.EBundledCopyOption.ClearAndCopyAll;
+                }
+                if (activeBuildTarget == BuildTarget.WebGL &&
+                    rawFile.BundledCopyOption != YooAsset.Editor.EBundledCopyOption.ClearAndCopyByTags)
+                {
+                    rawFile.BundledCopyParams = string.Empty;
+                }
             }
         }
 
@@ -256,15 +276,6 @@ namespace NovaFramework.Editor
             [PipifyCdnRemotePath]
             public string RemoteDirectory;
 
-            /// <summary>
-            /// 上传前是否清理本次上传计划中的精确文件。
-            /// </summary>
-            [InspectorName("清理本次上传文件")]
-            [PipifyHelpBox(
-                "默认关闭；勾选后会在上传前清理本次部署目标。",
-                "只清理本次上传计划中的精确文件，不删除共享目录中的其他 prefix 分支。",
-                "清理失败时立即停止，不继续上传。")]
-            public bool CleanRemoteFilesAndDirectories;
         }
 
         /// <summary>
@@ -326,15 +337,6 @@ namespace NovaFramework.Editor
             [PipifyCdnRemotePath]
             public string RemoteDirectory;
 
-            /// <summary>
-            /// 上传前是否清理本次上传计划中的精确文件。
-            /// </summary>
-            [InspectorName("清理本次上传文件")]
-            [PipifyHelpBox(
-                "默认关闭；勾选后会在上传前清理本次部署目标。",
-                "只清理本次上传计划中的精确文件，不删除共享目录中的其他 prefix 分支。",
-                "清理失败时立即停止，不继续上传。")]
-            public bool CleanRemoteFilesAndDirectories;
         }
 
         /// <summary>

@@ -35,7 +35,7 @@ EditorUtil (public static partial class)
 
 ```csharp
 // 将指定 Platform×Channel×DevelopMode 三维组合的配置写入目标路径
-// master 为 null 或未找到对应行时返回 null；目标路径已有资产时覆盖写入
+// master 为空、Platform/Channel 为 None 或未找到对应行时返回 null；目标路径已有资产时覆盖写入
 public static ConfigRuntimeSO Export(
     ConfigMasterSO master, PlatformType platform, ChannelType channel, DevelopMode mode, string savePath);
 ```
@@ -50,7 +50,7 @@ public static ConfigRuntimeSO Export(
 
 ```
 Export(master, platform, channel, mode, savePath):
-  1. master == null → return null
+  1. master == null，或 Platform / Channel 为 None、未定义值 → return null
   2. master.TryGetEntry(platform, channel, out entry) 失败 → return null
   3. 按目标坐标 Resolve YooAsset 配置；若配置了 `YooAssetSettingsPath`，使用显式占位符上下文解析 `YooFolderName` / `PackageFilePrefix`，单向写入对应 `YooAssetSettings.asset`
   4. System.IO.Path.GetDirectoryName(savePath) → 目录不存在则递归创建

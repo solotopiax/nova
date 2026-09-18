@@ -46,6 +46,8 @@
 
 `EnableAppUpdate` 默认关闭。关闭后 App 大版本检查稳定返回 `NoDownload`，启动链仍会继续执行 Asset 模块自己的热更新判断；需要 App 大版本检查时，由项目在 Inspector 中主动开启。
 
+WebGL 当前固定跳过 App 大版本检查，不进入推荐更新或强制更新流程；该限制不影响 Asset 模块的 Manifest、启动 Warmup 与按需资源加载。切换回 Android 或 iOS 后，Inspector 中原有 App 更新配置保持不变。
+
 ### 版本检查主备执行口径
 
 `AppComponent` 只注入配置；实际候选编排由 `AppManager` 使用共享 `HttpFallback` 规划器完成。去重后的候选数为 `C`、完整轮数为 `R`、额外完整重试次数为 `K` 时，最多物理请求数为：

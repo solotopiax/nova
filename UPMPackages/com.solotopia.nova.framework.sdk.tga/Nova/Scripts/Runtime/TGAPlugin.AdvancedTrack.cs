@@ -8,7 +8,6 @@
  * descrip:   TGAPlugin 高级事件上报（首次/可更新/可覆写）
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using System.Collections.Generic;
 using ThinkingData.Analytics;
 
@@ -57,4 +56,3 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         }
     }
 }
-#endif

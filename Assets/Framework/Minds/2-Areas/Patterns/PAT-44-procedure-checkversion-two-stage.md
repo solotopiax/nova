@@ -28,6 +28,7 @@ related: []
 - App 强更生效时不应再做资源差异检查（用户都得跳商店了，资源差异无意义）
 - App 推荐更新或无更新时，是否执行资源差异检查由 `AssetComponent.EnableHotfix` 决定
 - 两条结论需要联合决定下一个 Procedure 跳转目标
+- WebGL 当前不具备商店或安装包更新路由，因此第一阶段固定为 `NoDownload`，但仍继续执行独立的 Asset Manifest 与 Warmup 流程
 
 ## 核心做法（What & How）
 
@@ -107,7 +108,7 @@ public static readonly string HasAssetPatch = "ProcedureDataKeys.HasAssetPatch";
 - `IAppManager.CheckAsync` 必须**异常宽容**（参 [[PAT-43-optional-remote-check-tolerance|PAT-43]]）
 - `IAssetManager.LoadManifestAsync` 必须**幂等**（HashSet 守护已加载包）
   - 否则下一个 Procedure（ProcedureLoadDll）再次调用会触发二次网络请求
-- `IAssetManager.HasPatchAsync` 通过 `CreateResourceDownloader().TotalDownloadCount > 0` 判定差异
+- 非 WebGL 的 `IAssetManager.HasPatchAsync` 通过 `CreateResourceDownloader().TotalDownloadCount > 0` 判定差异；WebGL Downloader 不能作为缓存完整性或启动路由依据，按 [[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]] 使用独立 Warmup 判断
 
 ## 为什么这么做（Why）
 

@@ -14,4 +14,4 @@
 
 白名单命中时，候选顺序由 `AssetRemoteService` 提供：白名单元数据主、白名单元数据备用、常规主、常规备用。全部逻辑组合失败后才进入 AssetManager 回退。WebGL 首包元数据回退也复用同一计划、错误分类和埋点，但候选临时收口为首包同源地址；Bundle 地址不受影响。同步加载行为不变，WebGL 仍受 YooAsset 异步加载边界约束。
 
-Bundle 超时按平台互斥：WebGL 使用 `WebGLBundleRequestTimeout` 作为单次物理请求总超时，其他平台使用 `IdleTimeout` 监测连续无字节流入；两者都不表示整条候选链的共享总时限。
+Bundle 超时按平台互斥：WebGL 使用 `WebGLBundleRequestTimeout` 作为单次物理请求超时，其他平台使用 `IdleTimeout` 监测连续无字节流入；两者都不表示整条候选链的共享时限。

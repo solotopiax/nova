@@ -21,7 +21,7 @@
 [Serializable]
 public enum ChannelType : byte
 {
-    None     = 0,   // 无特定运营渠道，是合法的跨平台配置坐标
+    None     = 0,   // 未指定渠道，仅用于内部状态，不可作为 Config 坐标
     Official = 1,   // 官网包渠道
     Google   = 2,   // 谷歌商店渠道
     Apple    = 3,   // 苹果商店渠道
@@ -31,7 +31,7 @@ public enum ChannelType : byte
 }
 ```
 
-`ChannelType.None` 适用于不区分包体分发渠道的项目。它可在 Android、iOS 和 WebGL 等所有有效 `PlatformType` 下用于 Config 编辑、导出、Agent Action 与构建预检；`PlatformType.None` 仍不是可执行坐标。
+`ChannelType.None` 仅保留给配置尚未加载等内部状态。Config 编辑、矩阵行、导出、Agent Action 与构建预检都拒绝 `None`；不区分第三方商店的包体应明确选择 `Official`。`PlatformType.None` 同样只作未识别平台哨兵，不是 Config 坐标。
 
 ---
 

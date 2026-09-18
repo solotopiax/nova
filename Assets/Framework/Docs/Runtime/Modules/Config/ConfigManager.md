@@ -11,9 +11,11 @@
 
 它不读取或持有 YooAsset、HybridCLR 构建路径、`link.xml`、CDN 部署等 Editor 数据。
 
-`LoadAsync()` 以 `m_IsLoadOver` 保证幂等。加载 ConfigRuntimeSO 后，先使用独立 `PrivacyConfigs` 初始化 `Util.Encrypt.AES` 默认 Key/IV，再建立本地默认快照并恢复 `persistentDataPath/Nova/Config/app-config.json`；之后才标记 Config 可用。`Shutdown()` 释放 ConfigRuntimeSO 句柄与内部资源；默认 AES 密钥由 `FrameworkManagersGroup` 在全部 Manager 逆序 Shutdown 完成后的 `finally` 中统一清空，避免禁用 Domain Reload 时残留上一次运行的默认凭据。
+`LoadAsync()` 以 `m_IsLoadOver` 保证幂等。加载 ConfigRuntimeSO 后先验证 Platform 与 Channel 均为已定义的非 `None` 值；无效时释放句柄并中断启动。验证通过后使用独立 `PrivacyConfigs` 初始化 `Util.Encrypt.AES` 默认 Key/IV，再建立本地默认快照并恢复 `persistentDataPath/Nova/Config/app-config.json`；之后才标记 Config 可用。`Shutdown()` 释放 ConfigRuntimeSO 句柄与内部资源；默认 AES 密钥由 `FrameworkManagersGroup` 在全部 Manager 逆序 Shutdown 完成后的 `finally` 中统一清空，避免禁用 Domain Reload 时残留上一次运行的默认凭据。
 
 远端 `PbNetAppCustomConfigResp.value` 必须是以 object 为根的完整 JSON，可以包含嵌套对象、数组以及本地未声明的路径。成功响应完整替换远端快照；磁盘使用同目录 `.tmp` 加原子替换。网络失败、未配置或自定义 NetworkManager 没有就绪信号时保留当前值；JSON/协议错误记录 Error，同样不阻塞启动。
+
+应用配置拉取成功后只输出一条 `应用配置拉取成功：{PbNetAppCustomConfigResp Proto JSON}`；不输出请求开始、指令名称、配置名称、键数量或通用网络成功包装日志。
 
 业务通过 `Nova.Config.Custom` 按 JSONPath 读取。路径优先查询远端快照，远端缺失或非 null 值转换失败时回退 `ConfigRuntimeSO.Custom` 本地字符串，再失败时返回调用方默认值；远端显式 `null` 直接返回调用方默认值。基础类型使用固定区域格式，布尔值支持 `true/false` 与 GM 常用的 `1/0`。
 

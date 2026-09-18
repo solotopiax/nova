@@ -1,95 +1,55 @@
 # ProcedureCheckVersion
 
-`ProcedureCheckVersion` 是启动链里的“路由判定”流程。
-
-它负责把两类事实汇总出来：
-
-- App 大版本检查结果
-- 当前是否存在资源补丁
-
-然后把结果写进流程黑板，再决定后续进入 `ProcedureAppDownload`、`ProcedureHotfix` 还是 `ProcedureLoadDll`。
+`ProcedureCheckVersion` 是启动链的路由判定点。它把 App 大版本结果、常规资源补丁结果和 WebGL 启动 Warmup 需求分开计算，最后写入流程黑板并决定后续进入 `ProcedureAppDownload`、`ProcedureHotfix` 或 `ProcedureLoadDll`。
 
 ## 主链路
 
-### 1. OnEnter：重置状态并启动异步检查
+1. 先执行 `await IAppManager.CheckAsync(ct)`。
+2. `ForcedDownload` 立即结束资源判断，路由 `ProcedureAppDownload`。
+3. 非强更时，按当前 `EnableHotfix` 与 WebGL 策略决定是否 Bootstrap、加载 Manifest、检查补丁和/或准备 Warmup。
+4. 把 `AppVersionResult`、`HasAssetPatch`、`RequiresStartupAssetWork` 写入黑板。
+5. 推荐更新优先进入 `ProcedureAppDownload`；其余情况由 `RequiresStartupAssetWork` 决定是否进 `ProcedureHotfix`。
 
-进入流程时会重置：
+## WebGL 与非 WebGL 的路由差异
 
-- `m_CheckComplete = false`
-- `m_AppResult = NoDownload`
-- `m_HasAssetPatch = false`
-- `m_HasError = false`
+| 平台 / 状态 | `HasAssetPatch` | `RequiresStartupAssetWork` | 后续资源流程 |
+|---|---|---|---|
+| 非 WebGL，存在补丁 | `true` | `true` | `ProcedureHotfix` 创建 Downloader |
+| 非 WebGL，无补丁 | `false` | `false` | `ProcedureLoadDll` |
+| WebGL `OnDemand` | 不执行 Downloader 差异检查 | `false` | 跳过 `ProcedureHotfix`，业务异步按需加载 |
+| WebGL `TagsOnLaunch` | 不执行 Downloader 差异检查 | `true` | `ProcedureHotfix` 创建 Tag WarmupGroup |
+| WebGL `AllOnLaunch` | 不执行 Downloader 差异检查 | `true` | `ProcedureHotfix` 创建全量 WarmupGroup |
 
-然后启动 `RunCheckAsync(procedureOwner, CancellationToken).Forget()`。
+因此 WebGL 的 `HasAssetPatch` 固定为 `false`；只有 `RequiresStartupAssetWork` 才是启动路由真相。`OnDemand` 不会进入 Downloader / Warmup 阶段。
 
-### 2. RunCheckAsync：先看 App，再按 EnableHotfix 决定是否看资源
+## EnableHotfix 的边界
 
-异步主链是：
+`EnableHotfix` 只关闭常规资源补丁检查和 Downloader 路径，不关闭 App 大版本检查。
 
-1. `m_AppResult = await appManager.CheckAsync(ct)`
-   - 如果 App 面板的 `EnableAppUpdate` 关闭，`CheckAsync()` 不请求网络并直接返回 `NoDownload`
-   - 如果 `AppDownloadCheckUrl` 为空，`CheckAsync()` 会直接降级返回 `NoDownload`
-   - 不报错、不阻断启动
-2. 如果是 `ForcedDownload`
-   - 直接标记完成
-   - 跳过资源清单和补丁检查
-3. 否则继续
-   - `EnableHotfix == false`
-     - 直接跳过资源清单和补丁检查
-     - `m_HasAssetPatch = false`
-   - `EnableHotfix == true`
-     - `await assetManager.BootstrapAsync(ct)`
-     - `await assetManager.LoadManifestAsync(null, ct)`
-     - `LaunchHotfixTags` 为空时通过 `HasPatchAsync(null, ct)` 检查整包
-     - `LaunchHotfixTags` 非空时通过 `HasPatchByTagsAsync(tags, null, ct)` 检查启动 Tag 范围
-     - 无补丁时调用 `CommitBootableVersion()`，确认当前启动范围可离线复用
+- `EnableHotfix=false` 且不需要 WebGL Warmup：不 Bootstrap、不加载 Manifest，直入 `ProcedureLoadDll`。
+- `EnableHotfix=false` 且 WebGL 为 `TagsOnLaunch` / `AllOnLaunch`：仍 Bootstrap、加载 Manifest，并进入 `ProcedureHotfix` 完成启动预热。
+- `OnDemand` 不创建启动 WarmupGroup；`TagsOnLaunch` 没有有效 Tag 时也会先降级为 `OnDemand`。
 
-### 3. OnUpdate：完成后写黑板并路由
+## 推荐更新取消后的续行
 
-检查完成后会先写：
+`RecommendedDownload` 仍会在资源判断之后先进入 `ProcedureAppDownload`。用户取消推荐更新时，`ProcedureAppDownload` 读取 `RequiresStartupAssetWork`：
 
-- `ProcedureDataKeys.AppVersionResult`
-- `ProcedureDataKeys.HasAssetPatch`
+- `true`：进入 `ProcedureHotfix`，执行 Downloader 或 WebGL Warmup。
+- `false`：直接进入 `ProcedureLoadDll`。
 
-然后按当前实现路由：
+不再用 `HasAssetPatch` 决定这条路由，避免 WebGL `OnDemand` 被错误带回 Hotfix。
 
-- `ForcedDownload`：`ProcedureAppDownload`
-- `RecommendedDownload`：`ProcedureAppDownload`
-- `NoDownload && HasAssetPatch == true`：`ProcedureHotfix`
-- `NoDownload && HasAssetPatch == false`：`ProcedureLoadDll`
+## 本地可启动版本提交
 
-推荐更新的特殊点在于：
+当不需要进入启动资源工作阶段时，流程调用 `CommitBootableVersion()`。需要 Warmup 时则由 `ProcedureHotfix` 成功后提交；失败、取消或用户跳过不会把当前状态当作新的可启动资源版本。
 
-- 先完成资源补丁检查
-- 再进入 `ProcedureAppDownload`
-- 用户取消推荐更新后，会根据 `HasAssetPatch` 回到 `ProcedureHotfix` 或 `ProcedureLoadDll`
-- 如果推荐规则命中但仍处于上次放弃后的提示间隔内，`AppManager.CheckAsync()` 会返回 `NoDownload`，因此本次启动不会进入 `ProcedureAppDownload`，但资源补丁检查和后续启动链仍照常执行
+## 异常与取消
 
-### 4. 异常保护：检查失败时降级直入 LoadDll
+`OperationCanceledException` 表示流程已离开，不继续路由。其他未恢复异常会记 Warning 并安全降级到 `ProcedureLoadDll`，而不是卡死在启动检查阶段。
 
-如果检查链里出现不可恢复异常：
-
-- `m_HasError = true`
-- `OnUpdate()` 会 warning 后直接 `ChangeState<ProcedureLoadDll>()`
-
-## 风险点 / 易错点
-
-- `ForcedDownload` 会跳过资源检查；它不是“强更后再看资源补丁”的组合路径。
-- `RecommendedDownload` 现在是框架内建弹窗分支，不再与 `NoDownload` 共享同一路由。
-- `EnableHotfix` 现在只影响资源热更检查，不影响 App 大版本检测是否执行。
-- `EnableAppUpdate` 只影响 App 大版本阶段；关闭后仍会继续按 `EnableHotfix` 判断资源热更阶段。
-- 补丁检查范围必须与 `ProcedureHotfix` 的实际下载范围一致；否则非启动 Tag 的差异会造成空下载流程和 0% 进度闪现。
-
-## 继续阅读
-
-关键源码：
-
-- [ProcedureCheckVersion.cs](../../../../Scripts/Runtime/Modules/Procedure/Procedures/ProcedureCheckVersion.cs)
-
-相关文档：
+## 相关文档
 
 - [ProcedureDataKeys.md](ProcedureDataKeys.md)
 - [ProcedureHotfix.md](ProcedureHotfix.md)
 - [Procedures/ProcedureAppDownload.md](Procedures/ProcedureAppDownload.md)
-- [Procedures/ProcedureLoadDll.md](Procedures/ProcedureLoadDll.md)
-- [../App/Definitions/AppVersionResult.md](../App/Definitions/AppVersionResult.md)
+- [WebGLAssetStrategies.md](../Asset/WebGLAssetStrategies.md)

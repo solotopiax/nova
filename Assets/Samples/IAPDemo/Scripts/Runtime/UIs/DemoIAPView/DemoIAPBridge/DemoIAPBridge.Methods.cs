@@ -88,6 +88,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             }
 
             return "TableId=" + result.TableId
+                   + ", StoreType=" + result.StoreType
                    + ", IsSuccess=" + result.IsSuccess
                    + ", OrderId=" + result.OrderId
                    + ", ErrorCode=" + result.ErrorCode

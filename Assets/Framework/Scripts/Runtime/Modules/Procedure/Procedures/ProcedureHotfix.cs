@@ -20,7 +20,7 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// 资源补丁下载流程。
     /// 1. 显示进度面板（Hotfix 阶段）。
-    /// 2. 根据 LaunchHotfixTags 决定整包下载还是切片下载。
+    /// 2. 非 WebGL 使用 Downloader；WebGL TagsOnLaunch / AllOnLaunch 使用 WarmupGroup。
     /// 3. 失败时弹出 HotfixFailed 弹窗：确认重试，取消按 QuitOnFailedOrCancel 强退或跳过补丁进入游戏。
     /// 4. 成功后若 AutoClearUnusedCacheOnHotfix 为 true 则执行清缓存（失败不阻断）。
     /// 5. m_Complete=true 时 OnUpdate 跳转 ProcedureLoadDll。
@@ -33,9 +33,19 @@ namespace NovaFramework.Runtime
         private bool m_Complete;
 
         /// <summary>
-        /// 下载是否成功。
+        /// 本轮下载或 WebGL 预热是否成功。
         /// </summary>
         private bool m_Success;
+
+        /// <summary>
+        /// 当前是否执行 WebGL Warmup，用于区分计数进度与下载字节进度。
+        /// </summary>
+        private bool m_IsWarmup;
+
+        /// <summary>
+        /// 是否已有下载或 Warmup 轮次正在执行，防止重试按钮重复回调并发启动。
+        /// </summary>
+        private bool m_AttemptInProgress;
 
         /// <summary>
         /// 用户手动点击重试的累计次数（仅用于日志，不设上限）。
@@ -88,15 +98,18 @@ namespace NovaFramework.Runtime
 
             m_Complete = false;
             m_Success = false;
+            m_IsWarmup = false;
+            m_AttemptInProgress = false;
             m_UserRetryCount = 0;
             m_DownloadCts = null;
             ResetProgressCache();
 
             procedureOwner.RemoveData(ProcedureDataKeys.AppVersionResult);
             procedureOwner.RemoveData(ProcedureDataKeys.HasAssetPatch);
+            procedureOwner.RemoveData(ProcedureDataKeys.RequiresStartupAssetWork);
 
             Log.Debug(LogTag.Procedure, "触发资源热更新。");
-            TryDownloadAsync(CancellationToken).Forget();
+            StartDownloadAttempt(CancellationToken);
         }
 
         /// <summary>
@@ -112,7 +125,16 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            Log.Debug(LogTag.Procedure, Txt.Format("热更新进度 {0}% [字节 {1}/{2}] [完成 {3}/{4}]", m_LastPercent, m_LastFinishedBytes, m_LastTotalBytes, m_LastFinishedCount, m_LastTotalCount));
+            if (m_IsWarmup)
+            {
+                Log.Debug(LogTag.Procedure,
+                    Txt.Format("WebGL 资源预热进度 {0}% [完成 {1}/{2}]", m_LastPercent, m_LastFinishedCount, m_LastTotalCount));
+            }
+            else
+            {
+                Log.Debug(LogTag.Procedure,
+                    Txt.Format("热更新进度 {0}% [字节 {1}/{2}] [完成 {3}/{4}]", m_LastPercent, m_LastFinishedBytes, m_LastTotalBytes, m_LastFinishedCount, m_LastTotalCount));
+            }
             Log.Debug(LogTag.Procedure, Txt.Format("热更新完毕 成功={0}", m_Success));
             ChangeState<ProcedureLoadDll>(procedureOwner);
         }
@@ -143,10 +165,55 @@ namespace NovaFramework.Runtime
         /// 根据 LaunchHotfixTags 选择整包或切片下载；下载失败后弹出重试弹窗而非直接决策。
         /// </summary>
         /// <param name="ct">流程生命周期取消令牌。</param>
-        private async UniTaskVoid TryDownloadAsync(CancellationToken ct)
+        private async UniTask TryDownloadAsync(CancellationToken ct)
+        {
+            if (m_AttemptInProgress || m_Complete || ct.IsCancellationRequested)
+            {
+                return;
+            }
+
+            m_AttemptInProgress = true;
+            try
+            {
+                await RunDownloadAttemptAsync(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                // 流程离开或框架关闭时由生命周期令牌统一终止当前轮次。
+            }
+            catch (Exception e)
+            {
+                Log.Warning(LogTag.Procedure, Txt.Format("资源下载轮次异常: {0}", e.Message));
+                if (!ct.IsCancellationRequested)
+                {
+                    AssetComponent assetComponent = FrameworkComponentsGroup.GetComponent<AssetComponent>();
+                    ShowRetryDialog(assetComponent.QuitOnFailedOrCancel, ct);
+                }
+            }
+            finally
+            {
+                m_AttemptInProgress = false;
+            }
+        }
+
+        /// <summary>
+        /// 执行一次实际下载或 WebGL Warmup；外层统一负责互斥和未预期异常兜底。
+        /// </summary>
+        /// <param name="ct">流程生命周期取消令牌。</param>
+        private async UniTask RunDownloadAttemptAsync(CancellationToken ct)
         {
             AssetComponent assetComponent = FrameworkComponentsGroup.GetComponent<AssetComponent>();
             IAssetManager assetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
+
+            if (assetManager is IAssetStartupWarmupController warmupController
+                && warmupController.RequiresLaunchWarmup)
+            {
+                m_IsWarmup = true;
+                await TryWarmupAsync(assetComponent, assetManager, warmupController, ct);
+                return;
+            }
+
+            m_IsWarmup = false;
 
             int concurrency = assetComponent.MaxDownloadConcurrency;
             // retry 表示下载重试次数；每次重试都会重新走完主备候选与配置轮数，
@@ -249,6 +316,104 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
+        /// 执行一轮 WebGL 启动预热；失败或取消后释放本轮全部 Handle，重试会创建新组。
+        /// </summary>
+        /// <param name="assetComponent">资源组件，用于读取失败策略。</param>
+        /// <param name="assetManager">资源管理器，用于提交可启动版本。</param>
+        /// <param name="warmupController">启动预热控制器。</param>
+        /// <param name="ct">流程生命周期取消令牌。</param>
+        private async UniTask TryWarmupAsync(
+            AssetComponent assetComponent,
+            IAssetManager assetManager,
+            IAssetStartupWarmupController warmupController,
+            CancellationToken ct)
+        {
+            IAssetWarmupGroup warmupGroup = null;
+            bool ok = false;
+            m_DownloadCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            CancellationToken runToken = m_DownloadCts.Token;
+            try
+            {
+                warmupGroup = warmupController.CreateLaunchWarmupGroup();
+                Log.Debug(LogTag.Procedure,
+                    Txt.Format("开始 WebGL 资源预热 Scope={0} 总项数={1}", warmupGroup.Scope, warmupGroup.TotalCount));
+
+                if (warmupGroup.TotalCount > 0)
+                {
+                    LauncherUIController.ShowProgress(LauncherStage.Hotfix);
+                }
+                warmupGroup.OnProgress += OnWarmupProgress;
+                ok = await warmupGroup.RunAsync(runToken);
+                warmupGroup.OnProgress -= OnWarmupProgress;
+
+                string error = warmupGroup.Error;
+                IAssetWarmupGroup completedGroup = warmupGroup;
+                warmupGroup = null;
+                await warmupController.CompleteLaunchWarmupAsync(completedGroup, ok, runToken);
+
+                if (!ok)
+                {
+                    Log.Warning(LogTag.Procedure, Txt.Format("WebGL 资源预热失败: {0}", error));
+                    ShowRetryDialog(assetComponent.QuitOnFailedOrCancel, ct);
+                    return;
+                }
+
+                assetManager.CommitBootableVersion();
+                m_Success = true;
+                m_Complete = true;
+            }
+            catch (OperationCanceledException)
+            {
+                warmupGroup?.Release();
+            }
+            catch (Exception e)
+            {
+                Log.Warning(LogTag.Procedure, Txt.Format("WebGL 资源预热异常: {0}", e.Message));
+                if (warmupGroup != null)
+                {
+                    try
+                    {
+                        await warmupController.CompleteLaunchWarmupAsync(warmupGroup, false, ct);
+                    }
+                    catch (Exception cleanupException)
+                    {
+                        Log.Warning(LogTag.Procedure,
+                            Txt.Format("WebGL 资源预热失败后的清理异常: {0}", cleanupException.Message));
+                    }
+                }
+                ShowRetryDialog(assetComponent.QuitOnFailedOrCancel, ct);
+            }
+            finally
+            {
+                m_DownloadCts?.Dispose();
+                m_DownloadCts = null;
+            }
+        }
+
+        /// <summary>
+        /// 接收 WebGL Warmup 的计数进度并更新启动进度 UI，不伪造字节进度。
+        /// </summary>
+        /// <param name="finished">已完成项数。</param>
+        /// <param name="total">总项数。</param>
+        private void OnWarmupProgress(int finished, int total)
+        {
+            float progress = total <= 0 ? 1f : (float)finished / total;
+            LauncherUIController.UpdateProgress(progress);
+            int percent = (int)(progress * 100f);
+            m_LastFinishedCount = finished;
+            m_LastTotalCount = total;
+            m_LastFinishedBytes = 0L;
+            m_LastTotalBytes = 0L;
+            m_LastPercent = percent;
+            if (percent / 10 != m_LastLoggedPercent / 10)
+            {
+                m_LastLoggedPercent = percent;
+                Log.Debug(LogTag.Procedure,
+                    Txt.Format("WebGL 资源预热进度 {0}% [完成 {1}/{2}]", percent, finished, total));
+            }
+        }
+
+        /// <summary>
         /// 显示热更重试弹窗（HotfixFailed 类型）。
         /// 确认回调触发 OnRetryClicked；取消回调触发 OnCancelClicked。
         /// </summary>
@@ -269,7 +434,7 @@ namespace NovaFramework.Runtime
         /// <param name="ct">流程生命周期取消令牌。</param>
         private void OnRetryClicked(CancellationToken ct)
         {
-            if (m_Complete || ct.IsCancellationRequested)
+            if (m_AttemptInProgress || m_Complete || ct.IsCancellationRequested)
             {
                 return;
             }
@@ -280,6 +445,15 @@ namespace NovaFramework.Runtime
             LauncherUIController.DestroyDialog();
             ResetProgressCache();
 
+            StartDownloadAttempt(ct);
+        }
+
+        /// <summary>
+        /// 尝试启动一轮下载；已有轮次执行中时直接忽略重复触发。
+        /// </summary>
+        /// <param name="ct">流程生命周期取消令牌。</param>
+        private void StartDownloadAttempt(CancellationToken ct)
+        {
             TryDownloadAsync(ct).Forget();
         }
 
@@ -290,6 +464,10 @@ namespace NovaFramework.Runtime
         /// <param name="quitOnCancel">是否强退应用。</param>
         private void OnCancelClicked(bool quitOnCancel)
         {
+#if UNITY_WEBGL
+            // 浏览器环境不执行应用强退，取消后按跳过本次资源准备继续启动。
+            quitOnCancel = false;
+#endif
             if (m_Complete)
             {
                 return;

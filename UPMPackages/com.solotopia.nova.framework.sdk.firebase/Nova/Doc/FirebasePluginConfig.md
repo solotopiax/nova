@@ -4,7 +4,7 @@
 
 `FirebasePluginConfig` 是 Firebase 插件的运行时配置，实现 `ISDKPluginConfig`。
 
-和 TGA / AppsFlyer 不同，Firebase SDK 自身的大部分初始化信息并不从 Nova 配置系统注入；当前配置对象承载框架侧需要的可选初始化行为、业务服务器协议名和 push task 批量发送策略。默认国家 topic 的国家码等待、超时和缓存兜底已经收口到 AD 模块的 `IAdPlugin.GetCountryCodeAsync(...)`。
+和 TGA / AppsFlyer 不同，Firebase SDK 自身的大部分初始化信息并不从 Nova 配置系统注入；当前配置对象承载框架侧需要的可选初始化行为、业务服务器协议名和 push task 批量发送策略。默认国家 topic 的国家码等待和超时已经收口到 AD 模块的 `IAdPlugin.GetCountryCodeAsync(...)`；AD 不保存国家码缓存。
 
 ## 2. 配置字段
 

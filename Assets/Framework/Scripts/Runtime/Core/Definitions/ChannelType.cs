@@ -19,7 +19,7 @@ namespace NovaFramework.Runtime
     public enum ChannelType : byte
     {
         /// <summary>
-        /// 无特定运营渠道，适用于不区分分发渠道的包体。
+        /// 未指定渠道；仅用于配置尚未加载等内部状态，不可作为 Config 坐标。
         /// </summary>
         None = 0,
 

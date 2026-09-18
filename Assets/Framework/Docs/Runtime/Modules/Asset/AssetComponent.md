@@ -33,7 +33,7 @@
 - 启动资源系统入口
 - 清单加载与补丁检查入口
 - 下载器创建入口
-- 各类 `Load*` / `Preload*` / `Cleanup*` 门面
+- 各类 `Load*` / `CreateWarmup*` / `Cleanup*` 门面
 
 ### 它不负责什么
 
@@ -57,11 +57,11 @@
 
 `Start()` 不会触达底层资源框架，只会把这些配置注入到 `AssetManager`：
 
-- PlayMode
+- PlayMode 与 WebGL 启动资源策略
 - Packages / DefaultPackageName
 - 热更总开关、启动白名单与下载参数
 - 当前节点 `DevelopMode` 对应的 Host / Fallback URL 模板
-- 启动期 tag 下载配置
+- 启动期 Tag 配置与 WebGL 请求超时
 
 也就是说，`Start()` 只是“配置注入”，不是“资源系统启动”。
 
@@ -76,7 +76,7 @@
 - `HasPatchByTagsAsync()`
 - `CreateDownloader*()`
 - `Load*()`
-- `PreloadAsync()`
+- `CreateWarmupAll()` / `CreateWarmupByTags()` / `CreateWarmupByLocations()`
 - `CleanupAsync()`
 - `RefreshManifestAsync()`
 - `ClearUnusedCacheAsync()`
@@ -89,6 +89,7 @@
 
 - `m_EditorPlayMode`
 - `m_RuntimePlayMode`
+- `m_WebGLAssetStrategy`
 - `m_Packages`
 - `m_DefaultPackageName`
 
@@ -105,8 +106,7 @@
 - `m_StartupWhitelistPreferLastSuccessfulHost`
 - `m_StartupWhitelistEnableUWRTracks`
 - `m_StartupWhitelistCheckTimeout`
-- `m_AutoHotfix`
-- `QuitOnFailedOrCancel`
+- `QuitOnFailedOrCancel`（WebGL 固定为 `false`，Android/iOS 使用序列化配置）
 - `MaxDownloadConcurrency`
 - `FallbackRoundCount`
 - `RetryDownloadCount`
@@ -119,7 +119,17 @@
 - `LaunchHotfixTags`
 - `AutoClearUnusedCacheOnHotfix`
 
-### 3. 远端地址
+### 3. WebGL 启动策略
+
+`m_WebGLAssetStrategy` 只在浏览器 WebGL Player 生效，默认 `TagsOnLaunch`。它不替代 `m_RuntimePlayMode`：PlayMode 决定 YooAsset 文件系统组合，策略决定何时预热、是否临时持有 Bundle 内存。
+
+- `TagsOnLaunch`：按 `LaunchHotfixTags` 创建启动 WarmupGroup，成功后框架自动 Release，并在启动 DLL 消费完成后 Cleanup。
+- `OnDemand`：不创建启动 WarmupGroup；业务使用异步加载时才请求资源。
+- `AllOnLaunch`：预热默认 Package 全部资源，并由 AssetManager 持有到关闭。
+
+WebGL 构建可在 Pipify 中选择 `None`、`ClearAndCopyByTags` 或 `ClearAndCopyAll`。`LaunchHotfixTags` 仅是 `TagsOnLaunch` 的预热范围，不是首包拷贝范围；空白和重复 Tag 会被清理，没有有效 Tag 时默认策略会降级为 `OnDemand`。`OfflinePlayMode` 必须配套 `ClearAndCopyAll`；`HostPlayMode` 可使用三种首包布局，其中 `None` 要求 CDN 已部署当前版本的完整资源。
+
+### 4. 远端地址
 
 - `m_HostServerUrlDebug`
 - `m_HostServerUrlFallbackDebug`
@@ -132,6 +142,11 @@
 - 所有 `Load*` 方法返回的 Handle 都需要调用方显式释放；这不是组件层自动兜底的事。
 - `EnableHotfix`、`RuntimePlayMode`、热更地址 URL 这些配置不会在运行时二次推导；进入 `AssetManagerConfig` 的就是当前节点 `DevelopMode` 已选定的那一组事实。
 - `EnableHotfix` 现在只控制资源热更检查 / 下载链路，不再决定 App 大版本检测是否执行。
+- WebGL 的启动 Warmup 独立于 `EnableHotfix`：选择 `TagsOnLaunch` 或 `AllOnLaunch` 时，为完成预热所需的 Bootstrap 和 Manifest 加载仍会发生。
+- `CreateWarmup*()` 创建的是有所有权的 `IAssetWarmupGroup`，不会自动开始。调用方需要 `await group.RunAsync()`，并在完成、失败或取消后 `Release()`；如果要回收引用归零的运行时 Bundle，再显式 `CleanupAsync()`。
+- `IAssetWarmupGroup.Cancel()` 会停止等待并释放 Group 的 Handle，但不能承诺已开始的浏览器 HTTP 请求立刻中止。
+- WebGL 下不应调用任何同步 `Load*Sync` API；YooAsset Web 文件系统会报 `WebGL platform does not support synchronous loading.`。
+- `WebGLBundleRequestTimeout` 同时适用于 WebServer（StreamingAssets）和 WebNetwork（CDN）的 Bundle 单次请求；WebGL 下 `IdleTimeout` 显示为不可编辑且不参与请求。
 - 启动白名单还受 `EnableHotfix` 和有效 `HostPlayMode` 约束；默认关闭，当前 DevelopMode 没有可用白名单文件或元数据根 URL 时自动跳过。
 - `TryIsDeviceInStartupWhitelist(deviceId, out matched)` 只同步查询本次启动已成功拉取并解析的默认包白名单，不发起网络请求。返回 `false` 表示白名单尚不可用、DeviceID 无效或自定义 AssetManager 不支持该能力；返回 `true` 时通过 `matched` 区分命中与未命中。
 - 下载启动白名单文件时使用独立的主备完整轮数、请求重试次数、最近成功域名优先、UWR 埋点和请求超时配置；这些选项位于“启用白名单”折叠区的 URL 配置之后，不复用普通 Asset 下载的对应字段。
@@ -140,7 +155,7 @@
 - `{Channel}` 快照与同次导出的 `ConfigRuntimeSO.Channel` 同源，但在资源 Bootstrap 前即可读取，避免 Asset 反向依赖尚未加载的运行时配置。
 - `OnDestroy()` 这里只是把 `m_AssetManager` 置空，不是底层资源系统真正销毁点；真正销毁在 `AssetManager.Shutdown()`。
 - `AssetComponent` 只负责资源系统，不负责 Prefab / UI / Config 等上层消费模块。
-- `RetryDownloadCount` 是完整走完所有候选和 `FallbackRoundCount` 后的下载重试次数；每次重试重新执行全部轮次，最大物理尝试数为 `C × R × (K + 1)`，不是每个域名单独只试 K 次。
+- `RetryDownloadCount` 是 HostPlayMode 下 CDN 资源完整走完所有候选和 `FallbackRoundCount` 后的请求重试次数；每次重试重新执行全部轮次，最大物理尝试数为 `C × R × (K + 1)`，不是每个域名单独只试 K 次。
 - 每个文件独立冻结候选计划；最近成功域名只调整后续新文件的起点，整条失败链不会清除已有偏好。
 
 ## 继续阅读
@@ -157,3 +172,5 @@
 - [AssetManagerConfig.md](AssetManager/Definitions/AssetManagerConfig.md)
 - [IAssetHandle.md](AssetManager/Interfaces/IAssetHandle.md)
 - [IAssetDownloader.md](AssetManager/Interfaces/IAssetDownloader.md)
+- [IAssetWarmupGroup.md](AssetManager/Interfaces/IAssetWarmupGroup.md)
+- [WebGLAssetStrategies.md](WebGLAssetStrategies.md)

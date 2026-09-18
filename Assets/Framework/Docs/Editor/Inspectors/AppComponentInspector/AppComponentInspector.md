@@ -4,6 +4,9 @@
 **命名空间**：`NovaFramework.Editor`
 
 App 组件编辑器面板定制，绘制 Manager 选择器、App 更新总开关与三组 Foldout 配置（版本检查 / 更新规则 / 更新下载）。
+
+当 Active BuildTarget 为 WebGL 时，“启用 App 更新”固定显示为关闭且不可编辑，下方三组配置同步禁用；切换回 Android 或 iOS 后继续显示并使用原有序列化配置。
+配置项因平台、总开关、子选项或 Play Mode 禁用时，其对应 HelpBox 同步灰显。
 所有字段上方会先显示一条只读 `DevelopMode` 场景快照标签，由 `BaseComponentInspector` 统一绘制。
 
 ---

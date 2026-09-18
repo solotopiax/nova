@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+## [0.6.31] - 2026-09-18
+
+### Added
+
+- WebGL 新增 `TagsOnLaunch`（默认）、`OnDemand` 与 `AllOnLaunch` 三种资源运行策略，以及有明确 Bundle Handle 所有权的 `IAssetWarmupGroup` 和 `CreateWarmupAll` / `CreateWarmupByTags` / `CreateWarmupByLocations` API。
+
+### Changed
+
+- 网络协议不再输出请求或响应的通用 JSON 包装日志；应用配置成功后仅输出一条包含响应 Proto JSON 的结果日志，失败继续使用明确的 Warning/Error 表达。
+- CDN 资源部署与白名单部署移除“上传前清理”选项，统一直接上传并覆盖同名 OSS 对象，避免删除与重传之间出现短暂资源缺失。
+- WebGL Bundle 与 RawFile 构建重新开放 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll` 三种首包布局；运行时以 YooAsset 官方 `BuiltinCatalog.bytes` 为依据，让 Host 自动选择纯 CDN 或 StreamingAssets + CDN，Offline 固定使用纯 WebServer，纯 CDN 不再进入首包 Manifest 回退。
+- 启动路由把常规资源补丁与 WebGL 启动 Warmup 分开：`OnDemand` 跳过 `ProcedureHotfix`，`TagsOnLaunch` 预热后释放并在启动 DLL 消费完成后清理未使用内存，`AllOnLaunch` 持有到 AssetManager 关闭；两种 Warmup 不受 `EnableHotfix` 关闭常规热更的影响。
+- WebGL Bundle 请求超时同时覆盖 StreamingAssets 与 CDN 来源；`.version`、`.hash/.bytes` 继续使用各自独立超时，并复用现有主备、重试、最近成功域名和 UWR 埋点配置。
+- Asset Inspector 将终端加载模式说明合并为单个、随 Active BuildTarget 切换的 HelpBox；Pipify 的 WebGL 首包提示同样随平台和当前拷贝选项动态显示，只保留使用者需要的选择要求、资源准备和选错影响。
+
+### Fixed
+
+- Pipify 的 `export.config.Channel` 下拉不再显示 `None`；旧 Batch 中遗留的 `None` 会在打开参数区时归一为 `Official` 并提示保存。
+- SDK 配置 DTO 所在 Runtime 程序集在 WebGL 下保持可解析，避免保留但未启用的 Google Sign-In、Apple Sign-In、MAX、AIHelp 与 IAP 配置在加载 `ConfigMasterSO` / `ConfigRuntimeSO` 时产生 Missing types 警告；原生能力是否运行仍由当前平台配置决定。
+- FileFragment 在 WebGL 下恢复已有 `.dat` 分片时改为主线程逐文件读取并分帧执行，避免首次落盘后刷新页面因线程池不可用而永久停在预加载 0%；Android、iOS 与 Editor 继续使用线程池并行读取。
+- WebGL 文件删除失败时不再等待 finalizer 或休眠重试，避免异常分支阻塞浏览器主线程；其他平台保留原有句柄回收与重试行为。
+- WebGL 下 App 更新开关固定关闭并跳过大版本检查，避免进入当前仅面向 Android/iOS 的商店跳转或安装包下载流程；Asset 资源流程保持独立。
+- WebGL 下“失败/取消时强制退出”固定关闭，Android/iOS 保持原配置；App 与 Asset 面板的配置项禁用时，对应 HelpBox 现在会同步灰显。
+
+### Breaking
+
+- Config 的 Platform 与 Channel 坐标统一禁止 `None`：ConfigWindow 不再显示两个 None 选项；矩阵同步会清理旧 Platform None 行，并将没有同平台 Official 行的旧 Channel None 数据迁移到 Official；导出、校验、构建预检、Agent Action 与 ConfigRuntime 加载同步拒绝无效坐标。
+- 删除未投入使用的 `PreloadAsync`，不保留兼容转发。调用方需迁移到 `IAssetWarmupGroup` 并明确释放；仓外自定义 `IAssetManager` / `AssetManagerBase` 实现需补齐三项 `CreateWarmup*` 成员。
+- 删除从未被启动流程读取的 `AssetManagerConfig.AutoHotfix` 与 `AssetComponent.m_AutoHotfix`；Android、iOS 和 WebGL 启动资源准备仍在进入 `ProcedureHotfix` 后立即开始。
+
 ## [0.6.30] - 2026-09-15
 
 ### Changed
@@ -47,12 +77,12 @@
 
 ### Added
 
-- WebGL HostPlayMode 增加远端 Bundle 单次物理请求总超时，并在远端 Manifest 候选耗尽后回退随 Player 发布的首包元数据；Bundle 仍保持常规远端按需加载。
+- WebGL HostPlayMode 增加远端 Bundle 单次物理请求超时，并在远端 Manifest 候选耗尽后回退随 Player 发布的首包元数据；Bundle 仍保持常规远端按需加载。
 - BuildReadiness 增加场景渠道快照校验；Asset/App 渠道与已导出的 ConfigRuntime 不一致时阻断 Nova Player 构建流程，并提示重新导出和保存场景。
 
 ### Changed
 
-- Asset Inspector 按平台互斥编辑 WebGL Bundle 总超时与非 WebGL 单文件字节流入超时，并补充启动必须资源与首包 Tag 一致性的提示。
+- Asset Inspector 按平台互斥编辑 WebGL Bundle 请求超时与非 WebGL 单文件字节流入超时，并补充启动必须资源与首包 Tag 一致性的提示。
 
 ## [0.6.25] - 2026-09-02
 

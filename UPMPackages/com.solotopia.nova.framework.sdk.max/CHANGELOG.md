@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-09-18
+
+### Added
+
+- 增加 AppLovin LINE Android `300001010.0.0` 与 iOS `3010101.0.0` Adapter 依赖。
+
+### Fixed
+
+- WebGL 下保留配置类型所在 Runtime 程序集，避免 Config 资产中的 MAX 渠道配置产生 Missing types 警告。
+
 ## [0.1.10] - 2026-09-14
 
 ### Added

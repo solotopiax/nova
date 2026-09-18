@@ -110,15 +110,17 @@ namespace NovaFramework.Runtime
                 return true;
             }
 
-            var tasks = toLoad.Select(file => UniTask.RunOnThreadPool(() =>
+#if UNITY_WEBGL
+            var results = new (string classify, FileFragmentItemGroup group, bool success)[toLoad.Length];
+            for (int i = 0; i < toLoad.Length; i++)
             {
-                var classify = Util.SysIO.File.GetName(file, includeFileExtension: false);
-                var group = new FileFragmentItemGroup();
-                var success = group.Deserialize(file, m_UseAESEncrypt);
-                return (classify, group, success);
-            }));
-
+                results[i] = DeserializeFragment(toLoad[i]);
+                await UniTask.Yield();
+            }
+#else
+            var tasks = toLoad.Select(file => UniTask.RunOnThreadPool(() => DeserializeFragment(file)));
             var results = await UniTask.WhenAll(tasks);
+#endif
 
             foreach (var (classify, group, success) in results)
             {
@@ -130,6 +132,19 @@ namespace NovaFramework.Runtime
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// 从单个分片文件恢复分类数据。调用线程由平台分支决定。
+        /// </summary>
+        /// <param name="file">分片文件绝对路径。</param>
+        /// <returns>分类名、反序列化结果与是否成功。</returns>
+        private (string classify, FileFragmentItemGroup group, bool success) DeserializeFragment(string file)
+        {
+            string classify = Util.SysIO.File.GetName(file, includeFileExtension: false);
+            var group = new FileFragmentItemGroup();
+            bool success = group.Deserialize(file, m_UseAESEncrypt);
+            return (classify, group, success);
         }
 
         /// <summary>

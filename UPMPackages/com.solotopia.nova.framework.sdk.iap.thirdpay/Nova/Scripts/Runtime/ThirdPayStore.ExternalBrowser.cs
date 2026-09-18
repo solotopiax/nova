@@ -56,21 +56,29 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="googleToken">Google 外部结算上报 token。</param>
         /// <param name="paymentUrl">最终支付 URL。</param>
         /// <param name="ct">Cancellation token.</param>
-        /// <returns>浏览器打开请求提交后的待确认结果。</returns>
+        /// <returns>浏览器返回 App 后的验单结果。</returns>
         private async UniTask<IAPResult> OpenExternalBrowserPaymentAsync(IAPThirdPayRequest request, ThirdPayOrderRecord order, string googleToken, string paymentUrl, CancellationToken ct)
         {
             if (m_ExternalBrowserService == null)
             {
                 LogWarning($"第三方支付外部浏览器服务未初始化：OrderId={order?.ClientOrderId}");
+                RemoveLocalOrderIfPaymentPageDidNotOpen(order);
                 return Fail(request, IAPThirdPayErrorCode.StoreInitFailed, "第三方外部浏览器支付服务尚未初始化。");
             }
 
             BeginExternalBrowserPaySession(order);
+            ThirdPayExternalBrowserPaySession session = m_ExternalBrowserSessionState.Current;
+            if (session == null)
+            {
+                RemoveLocalOrderIfPaymentPageDidNotOpen(order);
+                return Fail(request, IAPThirdPayErrorCode.StoreInitFailed, "第三方外部浏览器支付会话创建失败。");
+            }
+
             ThirdPayOpenResult openResult;
             try
             {
                 LogDebug($"第三方支付准备打开外部支付页：OrderId={order.ClientOrderId}");
-                openResult = await m_ExternalBrowserService.OpenAsync(paymentUrl, () => BuildPaymentUrl(order, googleToken, true, true), ct);
+                openResult = await m_ExternalBrowserService.OpenAsync(paymentUrl, () => BuildPaymentUrl(order, googleToken, true, showBackButton: true), ct);
                 LogDebug($"第三方支付外部支付页打开返回：OrderId={order.ClientOrderId}，Result={openResult}");
             }
             catch (OperationCanceledException)
@@ -82,6 +90,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             {
                 LogWarning($"第三方支付外部支付页打开异常：OrderId={order.ClientOrderId}，Error={ex.Message}");
                 ClearExternalBrowserPaySession();
+                RemoveLocalOrderIfPaymentPageDidNotOpen(order);
                 TrackLocalPayFailInternal(request, IAPThirdPayErrorCode.WebViewClosed, ex.Message);
                 return Fail(request, IAPThirdPayErrorCode.WebViewClosed, $"打开外部浏览器支付页异常：{ex.Message}");
             }
@@ -90,11 +99,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             {
                 LogWarning($"第三方支付外部支付页打开失败：OrderId={order.ClientOrderId}");
                 ClearExternalBrowserPaySession();
+                RemoveLocalOrderIfPaymentPageDidNotOpen(order);
                 TrackLocalPayFailInternal(request, IAPThirdPayErrorCode.WebViewClosed, "外部浏览器支付页打开失败。");
-                return Fail(request, IAPThirdPayErrorCode.WebViewClosed, "外部浏览器支付页打开失败，订单保留等待后续验单。");
+                return Fail(request, IAPThirdPayErrorCode.WebViewClosed, "外部浏览器支付页打开失败。");
             }
 
-            return BuildExternalBrowserPendingResult(order);
+            return await session.PayTcs.Task;
         }
 
         /// <summary>
@@ -109,7 +119,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 return;
             }
 
-            m_ExternalBrowserPaySession = new ThirdPayExternalBrowserPaySession(order.ClientOrderId, order.TableId, order.UserId);
+            m_ExternalBrowserSessionState.Begin(order);
         }
 
         /// <summary>
@@ -117,7 +127,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         private void MarkExternalBrowserPaymentLeftApp()
         {
-            ThirdPayExternalBrowserPaySession session = m_ExternalBrowserPaySession;
+            ThirdPayExternalBrowserPaySession session = m_ExternalBrowserSessionState.Current;
             if (session == null || session.Completed)
             {
                 return;
@@ -136,7 +146,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         private void ScheduleExternalBrowserReturnValidation()
         {
-            ThirdPayExternalBrowserPaySession session = m_ExternalBrowserPaySession;
+            ThirdPayExternalBrowserPaySession session = m_ExternalBrowserSessionState.Current;
             if (session == null || session.Completed || session.IsValidating || !session.HasLeftApp)
             {
                 return;
@@ -163,10 +173,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         private async UniTaskVoid RunExternalBrowserReturnValidationAfterDelayAsync(string clientOrderId, int version, float delaySeconds, CancellationToken delayToken)
         {
             bool validationStarted = false;
+            ThirdPayExternalBrowserPaySession session = null;
             try
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken: delayToken);
-                if (!TryBeginExternalBrowserReturnValidation(clientOrderId, version, out ThirdPayExternalBrowserPaySession session))
+                if (!TryBeginExternalBrowserReturnValidation(clientOrderId, version, out session))
                 {
                     return;
                 }
@@ -175,12 +186,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 ThirdPayOrderRecord order = FindLocalOrder(clientOrderId);
                 if (order == null)
                 {
+                    IAPResult missing = BuildExternalBrowserMissingOrderResult(session);
+                    Context?.EventBridge?.RaisePayFailed(missing);
+                    CompleteExternalBrowserReturnPayResult(session, missing);
                     return;
                 }
 
                 // 只在当前版本倒计时完成且订单仍存在时，记录即将发起的验单。
                 LogDebug($"第三方支付外部浏览器返回验单倒计时结束，开始验证订单：OrderId={clientOrderId}，Version={version}，TableId={order.TableId}，UserId={order.UserId}");
-                await ValidateOrderAsync(order, ThirdPayValidationScene.ExternalBrowserReturn, session.SessionCts.Token);
+                IAPResult result = await ValidateOrderAsync(order, ThirdPayValidationScene.ExternalBrowserReturn, session.SessionCts.Token);
+                CompleteExternalBrowserReturnPayResult(session, result);
             }
             catch (OperationCanceledException)
             {
@@ -189,6 +204,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             catch (Exception ex)
             {
                 LogWarning($"外部浏览器支付返回验单异常：{ex.Message}");
+                if (session != null)
+                {
+                    IAPResult failure = BuildExternalBrowserValidationExceptionResult(session, ex);
+                    Context?.EventBridge?.RaisePayFailed(failure);
+                    CompleteExternalBrowserReturnPayResult(session, failure);
+                }
             }
             finally
             {
@@ -208,13 +229,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>可开始验单时返回 true。</returns>
         private bool TryBeginExternalBrowserReturnValidation(string clientOrderId, int version, out ThirdPayExternalBrowserPaySession session)
         {
-            session = m_ExternalBrowserPaySession;
-            if (session == null || session.Completed || session.IsValidating)
-            {
-                return false;
-            }
-
-            if (!string.Equals(session.ClientOrderId, clientOrderId, StringComparison.Ordinal) || session.ReturnVersion != version)
+            if (!m_ExternalBrowserSessionState.TryGetMatching(clientOrderId, version, out session)
+                || session.Completed
+                || session.IsValidating)
             {
                 return false;
             }
@@ -262,7 +279,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="version">期望的返回版本号。</param>
         private void CompleteExternalBrowserPaySession(string clientOrderId, int version)
         {
-            ThirdPayExternalBrowserPaySession session = m_ExternalBrowserPaySession;
+            ThirdPayExternalBrowserPaySession session = m_ExternalBrowserSessionState.Current;
             if (session == null)
             {
                 return;
@@ -281,16 +298,31 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         private void ClearExternalBrowserPaySession()
         {
-            ThirdPayExternalBrowserPaySession session = m_ExternalBrowserPaySession;
+            ThirdPayExternalBrowserPaySession session = m_ExternalBrowserSessionState.Detach();
             if (session == null)
             {
                 return;
             }
 
-            m_ExternalBrowserPaySession = null;
             PopExternalBrowserReturnWaiting(session);
             session.Completed = true;
+            session.PayTcs.TrySetResult(BuildExternalBrowserSessionClosedResult(session));
             session.Dispose();
+        }
+
+        /// <summary>
+        /// 将外部浏览器返回验单结果回传给仍在等待的 PayAsync 调用方。
+        /// </summary>
+        /// <param name="session">当前外部浏览器支付会话。</param>
+        /// <param name="result">返回 App 后取得的验单结果。</param>
+        private static void CompleteExternalBrowserReturnPayResult(ThirdPayExternalBrowserPaySession session, IAPResult result)
+        {
+            if (session == null || result == null)
+            {
+                return;
+            }
+
+            session.PayTcs.TrySetResult(result);
         }
 
         /// <summary>
@@ -300,22 +332,43 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>本地订单；未找到时返回 null。</returns>
         private ThirdPayOrderRecord FindLocalOrder(string clientOrderId)
         {
-            if (m_OrderRepository == null || string.IsNullOrEmpty(clientOrderId))
+            if (string.IsNullOrEmpty(clientOrderId))
             {
                 return null;
             }
 
-            return m_OrderRepository.TryGet(clientOrderId, out ThirdPayOrderRecord order) ? order : null;
+            return m_PersistContext.TryGetOrder(clientOrderId, out ThirdPayOrderRecord order) ? order : null;
         }
 
         /// <summary>
-        /// 构造外部浏览器打开后立即返回给调用方的待确认结果。
+        /// 构造外部浏览器会话被清理但尚无验单结果时返回给调用方的失败结果。
         /// </summary>
-        /// <param name="order">已保存的本地订单。</param>
-        /// <returns>携带稳定客户端订单号的待确认结果。</returns>
-        private static IAPResult BuildExternalBrowserPendingResult(ThirdPayOrderRecord order)
+        /// <param name="session">当前外部浏览器支付会话。</param>
+        /// <returns>携带稳定客户端订单号的失败结果。</returns>
+        private static IAPResult BuildExternalBrowserSessionClosedResult(ThirdPayExternalBrowserPaySession session)
         {
-            return new IAPResult(order.TableId, (int)IAPThirdPayErrorCode.OrderPending, IAPErrorSource.ThirdPay, "外部浏览器支付已打开，订单等待返回 App 后验单。", order.CustomData, order.ClientOrderId, false, order.ReceiptParam);
+            return new IAPResult(session.TableId, (int)IAPThirdPayErrorCode.StoreNotAvailable, IAPErrorSource.ThirdPay, "外部浏览器支付会话已结束，订单保留等待后续验单。", session.CustomData, session.ClientOrderId, false, session.ReceiptParam);
+        }
+
+        /// <summary>
+        /// 构造外部浏览器返回验单时本地订单缺失的失败结果。
+        /// </summary>
+        /// <param name="session">当前外部浏览器支付会话。</param>
+        /// <returns>携带稳定客户端订单号的失败结果。</returns>
+        private static IAPResult BuildExternalBrowserMissingOrderResult(ThirdPayExternalBrowserPaySession session)
+        {
+            return new IAPResult(session.TableId, (int)IAPThirdPayErrorCode.ServerValidationFailed, IAPErrorSource.ThirdPay, "外部浏览器返回验单未找到本地订单。", session.CustomData, session.ClientOrderId, false, session.ReceiptParam);
+        }
+
+        /// <summary>
+        /// 构造外部浏览器返回验单异常时返回给调用方的失败结果。
+        /// </summary>
+        /// <param name="session">当前外部浏览器支付会话。</param>
+        /// <param name="exception">验单异常。</param>
+        /// <returns>携带稳定客户端订单号的失败结果。</returns>
+        private static IAPResult BuildExternalBrowserValidationExceptionResult(ThirdPayExternalBrowserPaySession session, Exception exception)
+        {
+            return new IAPResult(session.TableId, (int)IAPThirdPayErrorCode.ServerValidationFailed, IAPErrorSource.ThirdPay, $"外部浏览器返回验单异常：{exception.Message}", session.CustomData, session.ClientOrderId, false, session.ReceiptParam);
         }
 
         /// <summary>

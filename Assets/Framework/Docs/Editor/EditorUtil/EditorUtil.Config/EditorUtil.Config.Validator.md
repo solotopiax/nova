@@ -57,9 +57,10 @@ public static IReadOnlyList<ValidationIssue> Validate(
 
 校验范围：
 1. `master` 空值检查（Error）
-2. `master.GetAppConfigs(mode)` 返回的 `AppConfigs` 全部 4 个必填字段（AppID / AppAesKey / AppAesIV / Namespace，任意为空 → Error）
-3. 目标 Platform×Channel 矩阵行存在性（不存在 → Error）
-4. 该行 `GetSDKConfigs(mode)` 中 null 占位检查（每个 null → Error）
+2. Platform / Channel 必须是已定义的非 `None` 值（Error）
+3. `master.GetAppConfigs(mode)` 返回的 `AppConfigs` 全部 4 个必填字段（AppID / AppAesKey / AppAesIV / Namespace，任意为空 → Error）
+4. 目标 Platform×Channel 矩阵行存在性（不存在 → Error）
+5. 该行 `GetSDKConfigs(mode)` 中 null 占位检查（每个 null → Error）
 
 ---
 

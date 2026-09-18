@@ -70,6 +70,12 @@ namespace NovaFramework.Editor
                     bool saveOnlyTouchedAssets)
                 {
                     if (master == null) return null;
+                    if (platform == PlatformType.None || channel == ChannelType.None ||
+                        !System.Enum.IsDefined(typeof(PlatformType), platform) ||
+                        !System.Enum.IsDefined(typeof(ChannelType), channel))
+                    {
+                        return null;
+                    }
                     IReadOnlyList<Validator.ValidationIssue> invariantIssues = Validator.ValidateDimensionInvariants(master);
                     if (invariantIssues.Count > 0)
                         throw new System.InvalidOperationException(Validator.BuildDimensionInvariantMessage(invariantIssues));

@@ -57,7 +57,7 @@
 
 发送 `PbNetReportFirebaseReq` 时还会附带：
 
-- `country`：通过 `IAdPlugin.GetCountryCodeAsync(...)` 获取；广告模块负责等待、超时和上次成功缓存兜底，最终为空或 `IV` 时按空字符串上报
+- `country`：通过 `IAdPlugin.GetCountryCodeAsync(...)` 获取；广告模块只负责等待运行时国家码和超时控制，最终为空、超时或 `IV` 时按空字符串上报
 - `timezone_offset`：当前设备 UTC 偏移，使用服务端可读格式，例如 `+08:00`、`+05:30`、`-03:30`
 
 `timezone_offset` 的协议格式包含 `+` 和 `:`，不能直接用于 Firebase Topic。默认时区 topic 仍使用 Firebase 安全格式，例如 `top_debug_timezone_utc_plus_08` 或 `top_release_timezone_utc_plus_08`。
@@ -110,7 +110,7 @@ Localization Manager 的 `LoadAsync()` 只准备支持语言和字体数据，�
 
 - 数据来源：SDK Manager 中可用的 `IAdPlugin.GetCountryCodeAsync(ct)`
 - 等待上限：`AdPluginConfig.CountryCodeWaitTimeoutSeconds`
-- 兜底来源：广告模块上次成功缓存；缓存不存在时返回空字符串
+- 兜底来源：无；广告模块不保存国家码缓存，超时或无有效运行时国家码时返回空字符串
 - 有效值：非空且不等于 `IV`
 - Topic 示例：`top_debug_country_US` / `top_release_country_US`
 

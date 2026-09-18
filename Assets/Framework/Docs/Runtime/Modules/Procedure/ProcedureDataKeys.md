@@ -28,14 +28,24 @@
 
 - 值类型：`bool`
 - 写入者：`ProcedureCheckVersion`
-- 读取者：`ProcedureAppDownload` / `ProcedureHotfix`
+- 当前读取者：无；进入 `ProcedureAppDownload` 或 `ProcedureHotfix` 后会被清理
 
-表示是否存在资源补丁。
+表示非 WebGL 启动检查是否存在资源补丁；WebGL 不执行 Downloader 差异检查，因此固定为 `false`。
+
+它不等于“必须进入 `ProcedureHotfix`”：WebGL `TagsOnLaunch` / `AllOnLaunch` 的启动预热由 `RequiresStartupAssetWork` 独立表达。
+
+### 3. `RequiresStartupAssetWork`
+
+- 值类型：`bool`
+- 写入者：`ProcedureCheckVersion`
+- 读取者：`ProcedureAppDownload`
+
+表示本次启动是否还必须进入 `ProcedureHotfix`：非 WebGL 时表示存在待处理补丁；WebGL 时还包含 `TagsOnLaunch` / `AllOnLaunch` 的 Warmup。
 
 ## 风险点 / 易错点
 
 - 这是“键名表”，不是黑板值生命周期管理器；值什么时候写、什么时候删，仍由具体流程决定。
-- `ProcedureAppDownload` 会先读取这两个键，再在离开流程时统一清理，不要把这些键当成后续长期状态。
+- `ProcedureAppDownload` 会先读取启动路由键，再在离开流程时统一清理三个键；`ProcedureHotfix` 进入时也会清理它们。不要把这些键当成后续长期状态。
 
 ## 继续阅读
 

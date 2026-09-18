@@ -44,6 +44,7 @@ namespace NovaFramework.Runtime
             {
                 EditorPlayMode = m_EditorPlayMode,
                 RuntimePlayMode = m_RuntimePlayMode,
+                WebGLAssetStrategy = m_WebGLAssetStrategy,
                 Packages = m_Packages,
                 DefaultPackageName = m_DefaultPackageName,
                 AutoCleanupOnSceneUnload = m_AutoCleanupOnSceneUnload,
@@ -58,8 +59,7 @@ namespace NovaFramework.Runtime
                 StartupWhitelistPreferLastSuccessfulHost = m_StartupWhitelistPreferLastSuccessfulHost,
                 StartupWhitelistEnableUWRTracks = m_StartupWhitelistEnableUWRTracks,
                 StartupWhitelistCheckTimeout = m_StartupWhitelistCheckTimeout,
-                AutoHotfix = m_AutoHotfix,
-                QuitOnFailedOrCancel = m_QuitOnFailedOrCancel,
+                QuitOnFailedOrCancel = QuitOnFailedOrCancel,
                 MaxDownloadConcurrency = m_MaxDownloadConcurrency,
                 FallbackRoundCount = m_FallbackRoundCount,
                 RetryDownloadCount = m_RetryDownloadCount,
@@ -355,23 +355,35 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 预加载单个资源（仅触发 AB + Asset 进缓存，不返回对象）。
+        /// 创建默认包全部资源的 Bundle 预热组；调用方负责 RunAsync 与 Release。
         /// </summary>
-        /// <param name="location">Asset 地址。</param>
-        /// <param name="ct">取消令牌。</param>
-        public UniTask PreloadAsync(string location, CancellationToken ct = default)
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <returns>尚未启动的预热组。</returns>
+        public IAssetWarmupGroup CreateWarmupAll(string package = null)
         {
-            return m_AssetManager.PreloadAsync(location, ct);
+            return m_AssetManager.CreateWarmupAll(package);
         }
 
         /// <summary>
-        /// 批量预加载资源。
+        /// 创建指定 Tag 并集对应资源的 Bundle 预热组。
         /// </summary>
-        /// <param name="locations">Asset 地址列表。</param>
-        /// <param name="ct">取消令牌。</param>
-        public UniTask PreloadAsync(string[] locations, CancellationToken ct = default)
+        /// <param name="tags">Tag 列表；空白与重复项会被忽略。</param>
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <returns>尚未启动的预热组。</returns>
+        public IAssetWarmupGroup CreateWarmupByTags(string[] tags, string package = null)
         {
-            return m_AssetManager.PreloadAsync(locations, ct);
+            return m_AssetManager.CreateWarmupByTags(tags, package);
+        }
+
+        /// <summary>
+        /// 创建指定 Asset 地址对应资源的 Bundle 预热组。
+        /// </summary>
+        /// <param name="locations">Asset 地址列表；空白、重复和无效地址会被忽略。</param>
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <returns>尚未启动的预热组。</returns>
+        public IAssetWarmupGroup CreateWarmupByLocations(string[] locations, string package = null)
+        {
+            return m_AssetManager.CreateWarmupByLocations(locations, package);
         }
 
         /// <summary>

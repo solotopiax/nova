@@ -9,9 +9,7 @@
  ***************************************************************/
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 #if NOVA_ALIBABACLOUD_OSS
@@ -87,32 +85,17 @@ namespace NovaFramework.Editor
                 ChannelType channel,
                 Action<int, int, string> onProgress)
             {
-                return await DeployAsync(config, projectRoot, platform, channel, false, onProgress);
-            }
-
-            /// <summary>
-            /// 使用当前平台与渠道，可选先清理本次目标再部署到 OSS。
-            /// </summary>
-            internal static async UniTask<int> DeployAsync(
-                CDNEditorConfigs config,
-                string projectRoot,
-                PlatformType platform,
-                ChannelType channel,
-                bool cleanRemoteFilesAndDirectories,
-                Action<int, int, string> onProgress)
-            {
                 return await DeployAsync(
                     config,
                     projectRoot,
                     platform,
                     channel,
                     string.Empty,
-                    cleanRemoteFilesAndDirectories,
                     onProgress);
             }
 
             /// <summary>
-            /// 使用显式 YooAsset PackageFilePrefix，可选先清理本次目标再部署到 OSS。
+            /// 使用显式 YooAsset PackageFilePrefix 部署到 OSS。
             /// </summary>
             internal static async UniTask<int> DeployAsync(
                 CDNEditorConfigs config,
@@ -120,7 +103,6 @@ namespace NovaFramework.Editor
                 PlatformType platform,
                 ChannelType channel,
                 string packageFilePrefix,
-                bool cleanRemoteFilesAndDirectories,
                 Action<int, int, string> onProgress)
             {
 #if NOVA_ALIBABACLOUD_OSS
@@ -143,9 +125,6 @@ namespace NovaFramework.Editor
                     ResolveDefaultPackageName(),
                     UnityEngine.Application.version,
                     packageFilePrefix,
-                    cleanRemoteFilesAndDirectories,
-                    (prefix, token) => ListObjectPageAsync(client, location.Bucket, prefix, token),
-                    keys => DeleteObjectsAsync(client, location.Bucket, keys),
                     item => UploadObjectAsync(client, location.Bucket, item),
                     onProgress);
 #else
@@ -174,28 +153,7 @@ namespace NovaFramework.Editor
                     projectRoot,
                     platform,
                     channel,
-                    false,
-                    onProgress);
-            }
-
-            /// <summary>
-            /// 可选先清理白名单文件与版本文件目录，再执行白名单部署。
-            /// </summary>
-            internal static async UniTask<int> DeployAssetCheckWhitelistAsync(
-                CDNEditorConfigs config,
-                string projectRoot,
-                PlatformType platform,
-                ChannelType channel,
-                bool cleanRemoteFilesAndDirectories,
-                Action<int, int, string> onProgress)
-            {
-                return await DeployAssetCheckWhitelistAsync(
-                    config,
-                    projectRoot,
-                    platform,
-                    channel,
                     string.Empty,
-                    cleanRemoteFilesAndDirectories,
                     onProgress);
             }
 
@@ -208,7 +166,6 @@ namespace NovaFramework.Editor
                 PlatformType platform,
                 ChannelType channel,
                 string packageFilePrefix,
-                bool cleanRemoteFilesAndDirectories,
                 Action<int, int, string> onProgress)
             {
 #if NOVA_ALIBABACLOUD_OSS
@@ -244,9 +201,6 @@ namespace NovaFramework.Editor
                         ResolveDefaultPackageName(),
                         UnityEngine.Application.version,
                         packageFilePrefix,
-                        cleanRemoteFilesAndDirectories,
-                        (prefix, token) => ListObjectPageAsync(client, location.Bucket, prefix, token),
-                        keys => DeleteObjectsAsync(client, location.Bucket, keys),
                         item => UploadObjectAsync(client, location.Bucket, item),
                         onProgress);
                 }
@@ -280,47 +234,6 @@ namespace NovaFramework.Editor
                 });
             }
 
-            /// <summary>
-            /// 分页列举指定目录前缀下的 OSS 对象。
-            /// </summary>
-            private static async UniTask<OssObjectPage> ListObjectPageAsync(
-                OSS.Client client,
-                string bucket,
-                string prefix,
-                string continuationToken)
-            {
-                OSS.Models.ListObjectsV2Result result = await client.ListObjectsV2Async(
-                    new OSS.Models.ListObjectsV2Request
-                    {
-                        Bucket = bucket,
-                        Prefix = prefix,
-                        ContinuationToken = continuationToken,
-                        MaxKeys = 999,
-                    });
-                string[] objectKeys = result.Contents?
-                    .Select(item => item.Key)
-                    .Where(key => !string.IsNullOrEmpty(key))
-                    .ToArray() ?? Array.Empty<string>();
-                return new OssObjectPage(
-                    objectKeys,
-                    result.IsTruncated == true ? result.NextContinuationToken : null);
-            }
-
-            /// <summary>
-            /// 批量删除一组已限制在本次清理计划内的 OSS Object Key。
-            /// </summary>
-            private static async UniTask DeleteObjectsAsync(
-                OSS.Client client,
-                string bucket,
-                IReadOnlyList<string> objectKeys)
-            {
-                await client.DeleteMultipleObjectsAsync(new OSS.Models.DeleteMultipleObjectsRequest
-                {
-                    Bucket = bucket,
-                    Quiet = true,
-                    Objects = objectKeys.Select(key => new OSS.Models.DeleteObject { Key = key }).ToList(),
-                });
-            }
 #endif
         }
     }

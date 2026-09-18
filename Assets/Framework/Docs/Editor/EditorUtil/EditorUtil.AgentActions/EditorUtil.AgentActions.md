@@ -35,7 +35,7 @@ Action 的 Request Schema、effects、locks、contractMajor、idempotency 和 co
 
 `nova.project.config.export-runtime` 的请求仍显式携带 `platform / channel / developMode`，但 `platform` 必须等于 Plan 时 Unity 当前 Active BuildTarget 映射的 Nova `PlatformType`。未映射为 Android / iOS / WebGL、请求不一致，或 Execute 前 Active BuildTarget 漂移，都会以 `blocked` 收口并要求先切换 BuildTarget 后重新 Plan；该限制不改变底层 `EditorUtil.Config.Exporter.Export` 的显式平台 API。
 
-`channel` 接受 `ChannelType` 的全部声明名称，包含 `None`；`None` 表示无特定运营渠道，不会被 Config 校验、导出、插件补齐或构建预检拦截。`PlatformType.None` 仍被拒绝。
+`platform` 与 `channel` 都只接受对应枚举中非 `None` 的精确声明名称；Config 校验、导出、插件补齐与构建预检统一拒绝两个 `None` 哨兵。
 
 `nova.project.config.ensure-plugin-instances` 在写盘前先拒绝已有的维度矩阵不一致，并在完整内存副本上预演本次 Ensure；若补行、补实例或启用类型会制造新的未勾选维度冲突，或启用后仍有任一 Platform × Channel × DevelopMode 坐标缺少该类型实例，则以 `blocked` 收口且不修改资产。此时应改用 `matrix` 范围补齐，或先在 ConfigWindow 完成矩阵修复/维度调整，再重新 Plan。
 

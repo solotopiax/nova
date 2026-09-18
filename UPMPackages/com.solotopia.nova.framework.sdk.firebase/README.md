@@ -35,7 +35,7 @@ Firebase 聚合插件，统一接入分析、崩溃、FCM 推送、远程配置�
 - `PushFlushBatchSize`：push task 缓存数量阈值，默认 `5` 条。
 - `AutoRequestNotificationPermission`：是否在 SDK 全部插件初始化完成且应用仍在前台后自动请求通知权限，默认开启；请求会延迟到启动前景稳定后执行，不阻塞 SDK 初始化任务；如项目希望由业务自行选择交互时机，可关闭后显式调用 Native 模块通知权限 API。
 
-国家码不在 Firebase 配置中单独设置；默认国家 Topic 和登录上报会通过 `IAdPlugin.GetCountryCodeAsync(...)` 获取，等待超时和上次成功缓存兜底由 AD 模块负责。
+国家码不在 Firebase 配置中单独设置；默认国家 Topic 和登录上报会通过 `IAdPlugin.GetCountryCodeAsync(...)` 获取，等待超时由 AD 模块控制；AD 不保存国家码缓存，超时或无有效运行时国家码时返回空字符串。
 
 ## Sample 依赖
 

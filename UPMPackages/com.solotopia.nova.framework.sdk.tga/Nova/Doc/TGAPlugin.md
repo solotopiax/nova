@@ -37,6 +37,8 @@
 
 `TGAPluginConfig.AssignDeviceIdToDistinctId` 开启时，插件初始化后会先将 TGA `DeviceId` 写入 `DistinctId`，再发布 `TGADistinctId` 数据槽位。
 
+WebGL 下由 ThinkingAnalytics PC/WebGL 实现生成随机 GUID，并通过 PlayerPrefs 持久化作为 `DeviceId`。该值不是硬件标识，清除浏览器站点数据、使用无痕模式或更换站点来源后会重新生成。
+
 ### 2.3 用户属性
 
 | 成员 | 说明 |
@@ -61,7 +63,8 @@
 | `Flush()` | 立即冲刷本地缓存 |
 | `EnableTracking(bool)` | 开关采集 |
 | `SetTrackStatus(int)` | 设置 SDK TrackStatus |
-| `CalibrateTime(long)` / `CalibrateTimeWithNtp(string)` | 时间校准 |
+| `CalibrateTime(long)` | 使用业务服务器提供的时间戳校准 |
+| `CalibrateTimeWithNtp(string)` | 通过 NTP 服务器校准；WebGL 下会提示并跳过，请改用 `CalibrateTime(long)` |
 
 ## 3. 初始化与配置
 

@@ -22,9 +22,9 @@ namespace NovaFramework.Runtime
     /// 版本检查流程。
     /// 1. await IAppManager.CheckAsync 获取大版本检查结果。
     /// 2. ForcedDownload → 直接跳 ProcedureAppDownload，跳过资源检查。
-    /// 3. 非强更且 EnableHotfix=true → LoadManifestAsync 加载清单 → HasPatchAsync 判断补丁。
-    /// 4. 非强更且 EnableHotfix=false → 跳过资源热更检查，直接继续后续启动链。
-    /// 4. 路由：RecommendedDownload → ProcedureAppDownload | hasPatch → ProcedureHotfix | 否则 → ProcedureLoadDll。
+    /// 3. 非强更时按需加载 Manifest，并分别判断资源补丁与 WebGL 启动 Warmup。
+    /// 4. WebGL Warmup 独立于 EnableHotfix；OnDemand 不进入 ProcedureHotfix。
+    /// 5. 路由：RecommendedDownload → ProcedureAppDownload | 需要启动资源工作 → ProcedureHotfix | 否则 → ProcedureLoadDll。
     /// </summary>
     public sealed class ProcedureCheckVersion : ProcedureBase
     {
@@ -44,6 +44,11 @@ namespace NovaFramework.Runtime
         private bool m_HasAssetPatch;
 
         /// <summary>
+        /// 是否需要进入 ProcedureHotfix 执行下载或 WebGL Warmup。
+        /// </summary>
+        private bool m_RequiresStartupAssetWork;
+
+        /// <summary>
         /// 检查过程是否发生不可恢复异常（用于异常保护跳转）。
         /// </summary>
         private bool m_HasError;
@@ -59,6 +64,7 @@ namespace NovaFramework.Runtime
             m_CheckComplete = false;
             m_AppResult = AppVersionResult.NoDownload;
             m_HasAssetPatch = false;
+            m_RequiresStartupAssetWork = false;
             m_HasError = false;
 
             Log.Debug(LogTag.Procedure, "ProcedureCheckVersion — 开始版本检查。");
@@ -87,7 +93,12 @@ namespace NovaFramework.Runtime
 
             procedureOwner.SetData(ProcedureDataKeys.AppVersionResult, m_AppResult);
             procedureOwner.SetData(ProcedureDataKeys.HasAssetPatch, m_HasAssetPatch);
-            Log.Debug(LogTag.Procedure, Txt.Format("版本检查完成 AppResult={0} HasAssetPatch={1}", m_AppResult, m_HasAssetPatch));
+            procedureOwner.SetData(ProcedureDataKeys.RequiresStartupAssetWork, m_RequiresStartupAssetWork);
+            Log.Debug(LogTag.Procedure, Txt.Format(
+                "版本检查完成 AppResult={0} HasAssetPatch={1} RequiresStartupAssetWork={2}",
+                m_AppResult,
+                m_HasAssetPatch,
+                m_RequiresStartupAssetWork));
 
             if (m_AppResult == AppVersionResult.ForcedDownload)
             {
@@ -101,7 +112,7 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            if (m_HasAssetPatch)
+            if (m_RequiresStartupAssetWork)
             {
                 ChangeState<ProcedureHotfix>(procedureOwner);
                 return;
@@ -111,9 +122,9 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 异步执行版本检查完整流程：大版本检查 → 清单加载 → 补丁判断。
+        /// 异步执行版本检查完整流程：大版本检查 → 清单加载 → 补丁与 WebGL Warmup 判断。
         /// ForcedDownload 时提前跳出，不执行资源检查。
-        /// EnableHotfix=false 时仅跳过资产热更检查，不影响 App 大版本检测。
+        /// EnableHotfix=false 时仅跳过资产补丁检查，不影响 App 大版本检测或 WebGL 启动 Warmup。
         /// </summary>
         /// <param name="procedureOwner">流程持有者。</param>
         /// <param name="ct">取消令牌。</param>
@@ -121,8 +132,13 @@ namespace NovaFramework.Runtime
         {
             try
             {
+#if UNITY_WEBGL
+                m_AppResult = AppVersionResult.NoDownload;
+                Log.Debug(LogTag.Procedure, "WebGL 跳过 App 大版本检查。");
+#else
                 IAppManager appManager = FrameworkManagersGroup.GetManager<IAppManager>();
                 m_AppResult = await appManager.CheckAsync(ct);
+#endif
                 Log.Debug(LogTag.Procedure, Txt.Format("大版本检查结果: {0}", m_AppResult));
 
                 if (m_AppResult == AppVersionResult.ForcedDownload)
@@ -134,36 +150,57 @@ namespace NovaFramework.Runtime
                 }
 
                 AssetComponent assetComponent = FrameworkComponentsGroup.GetComponent<AssetComponent>();
-                if (!assetComponent.EnableHotfix)
+                IAssetManager assetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
+                bool isWebGLPlayer = UnityEngine.Application.platform == UnityEngine.RuntimePlatform.WebGLPlayer;
+                bool requiresLaunchWarmup = assetManager is IAssetStartupWarmupController warmupController
+                    && warmupController.RequiresLaunchWarmup;
+                if (!assetComponent.EnableHotfix && !requiresLaunchWarmup)
                 {
                     Log.Debug(LogTag.Procedure, "EnableHotfix=false，跳过资源热更检查。");
                     m_HasAssetPatch = false;
+                    m_RequiresStartupAssetWork = false;
                     m_CheckComplete = true;
                     return;
                 }
 
-                IAssetManager assetManager = FrameworkManagersGroup.GetManager<IAssetManager>();
                 await assetManager.BootstrapAsync(ct);
                 ct.ThrowIfCancellationRequested();
                 await assetManager.LoadManifestAsync(null, ct);
-                List<string> hotfixTags = assetComponent.LaunchHotfixTags;
-                string patchScope;
-                if (hotfixTags == null || hotfixTags.Count == 0)
+                if (assetComponent.EnableHotfix && !isWebGLPlayer)
                 {
-                    patchScope = "all";
-                    m_HasAssetPatch = await assetManager.HasPatchAsync(null, ct);
+                    List<string> hotfixTags = assetComponent.LaunchHotfixTags;
+                    string patchScope;
+                    if (hotfixTags == null || hotfixTags.Count == 0)
+                    {
+                        patchScope = "all";
+                        m_HasAssetPatch = await assetManager.HasPatchAsync(null, ct);
+                    }
+                    else
+                    {
+                        string[] tags = hotfixTags.ToArray();
+                        patchScope = Txt.Format("tags:{0}", string.Join(',', tags));
+                        m_HasAssetPatch = await assetManager.HasPatchByTagsAsync(tags, null, ct);
+                    }
+                    Log.Debug(LogTag.Procedure, Txt.Format("资源补丁检查: Scope={0} HasPatch={1}", patchScope, m_HasAssetPatch));
+                }
+                else if (isWebGLPlayer)
+                {
+                    // Web 文件系统没有 Sandbox Downloader 语义；WebGL 只刷新 Manifest，
+                    // 再由 OnDemand 或 Warmup 决定 Bundle 的实际请求时机。
+                    Log.Debug(LogTag.Procedure, "WebGL 不执行 Downloader 补丁差异检查，按资源策略继续启动。");
+                    m_HasAssetPatch = false;
                 }
                 else
                 {
-                    string[] tags = hotfixTags.ToArray();
-                    patchScope = Txt.Format("tags:{0}", string.Join(',', tags));
-                    m_HasAssetPatch = await assetManager.HasPatchByTagsAsync(tags, null, ct);
+                    Log.Debug(LogTag.Procedure, "EnableHotfix=false，仅执行 WebGL 启动 Warmup 前置清单加载。");
+                    m_HasAssetPatch = false;
                 }
-                if (!m_HasAssetPatch)
+
+                m_RequiresStartupAssetWork = requiresLaunchWarmup || (!isWebGLPlayer && m_HasAssetPatch);
+                if (!m_RequiresStartupAssetWork)
                 {
                     assetManager.CommitBootableVersion();
                 }
-                Log.Debug(LogTag.Procedure, Txt.Format("资源补丁检查: Scope={0} HasPatch={1}", patchScope, m_HasAssetPatch));
             }
             catch (OperationCanceledException)
             {

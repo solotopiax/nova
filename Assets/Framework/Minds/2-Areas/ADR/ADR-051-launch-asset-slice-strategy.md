@@ -18,6 +18,7 @@ related:
   - "[[ADR-013-hotfix-master-switch|ADR-013]]"
   - "[[ADR-025-yooasset-url-template-placeholders|ADR-025]]"
   - "[[ADR-042-assetmanager-load-api-all-return-handle|ADR-042]]"
+  - "[[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]]"
   - "[[MOC-Asset]]"
   - "[[MOC-HybridCLR]]"
 ---
@@ -46,9 +47,9 @@ Nova 的 Asset 模块需同时支持三层资源诉求：包内资源（Streamin
 | tag 切片 | `CreateDownloaderByTags(string[] tags, package, concurrency, retry)`（新增） | 策略 B：启动只下核心 + 运行时按业务切片 |
 | location 切片 | `CreateDownloaderByLocations(string[] locations, package, concurrency, retry)`（新增） | 精确预下载已知 Asset 地址 |
 
-空 tags 数组语义等价整包（`CreateResourceDownloader` 无参）。底层复用 `ResolvePackageName` / `GetPackage`。
+非 WebGL Downloader API 中，空 tags 数组语义等价整包（`CreateResourceDownloader` 无参）。WebGL 启动策略不采用该语义：`TagsOnLaunch` 清理后没有有效 Tag 时降级为 `OnDemand`。底层复用 `ResolvePackageName` / `GetPackage`。
 
-### 2. 两种策略对照
+### 2. 非 WebGL 的两种 Downloader 策略对照
 
 | 策略 | 启动期 | 运行时 | 适用 |
 |---|---|---|---|
@@ -57,7 +58,10 @@ Nova 的 Asset 模块需同时支持三层资源诉求：包内资源（Streamin
 
 ### 3. 启动期切片配置下沉 AssetComponent Inspector
 
-`AssetComponent` 新增 `[SerializeField] private List<string> m_LaunchHotfixTags`（List 形式，有几个 tag 加几个元素），经五段透传链进 `AssetManagerConfig.LaunchHotfixTags`。`ProcedureHotfix` 读取：空列表→整包差异（策略 A）；非空→`CreateDownloaderByTags`（策略 B）。配套首包构建 `BundledCopyOption=ClearAndCopyByTags`。与 ADR-013 一致，该开关是项目级编译期决策，下沉 Inspector 抗远端下发。
+`AssetComponent` 新增 `[SerializeField] private List<string> m_LaunchHotfixTags`（List 形式，有几个 tag 加几个元素），经五段透传链进 `AssetManagerConfig.LaunchHotfixTags`。`ProcedureHotfix` 读取：空列表→整包差异（策略 A）；非空→`CreateDownloaderByTags`（策略 B）。非 WebGL 可配套首包构建 `BundledCopyOption=ClearAndCopyByTags`。与 ADR-013 一致，该开关是项目级编译期决策，下沉 Inspector 抗远端下发。
+
+> [!note] WebGL 平台例外
+> [[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]] 已将 WebGL 首包布局收口到 Pipify 的 `None` / `ClearAndCopyByTags` / `ClearAndCopyAll`。在浏览器 WebGL 下，`LaunchHotfixTags` 不决定首包拷贝范围；它只在 `TagsOnLaunch` 策略中定义启动预热范围。这里的 A/B 下载器决策仍适用于非 WebGL 平台。
 
 ### 4. 关键认知：无需维护本地 tag 列表
 
@@ -77,7 +81,7 @@ YooAsset 缓存是 **bundle 文件级 + manifest hash 寻址**，tag 只是"本�
 - 业务侧零认知负担：不需要维护任何持久化 tag 列表
 
 ### 负面
-- 业务需理解 A/B 差异并正确配置 `LaunchHotfixTags` + `BundledCopyOption` 组合，配错会导致启动期下载量不符预期
+- 非 WebGL 业务需理解 A/B 差异并正确配置 `LaunchHotfixTags` + `BundledCopyOption` 组合，配错会导致启动期下载量不符预期；WebGL 的首包布局与 Warmup 范围是两项独立配置
 - 存在一种别扭的中间策略（"启动增量更新曾下过的若干 tag 但不做整包差异"）会逼业务维护持久化列表——文档需明确劝退此策略
 
 ## 被排除的方案（Alternatives）
@@ -91,7 +95,7 @@ YooAsset 缓存是 **bundle 文件级 + manifest hash 寻址**，tag 只是"本�
 ## 验证依据（Verification）
 - 源码：`IAssetManager.cs`（新增 ByTags/ByLocations）、`AssetManager.cs`（实现）、`AssetComponent.Visitors.cs`（m_LaunchHotfixTags List）、`ProcedureHotfix.cs`（整包/切片二分）
 - grep 关键词：`CreateDownloaderByTags` / `LaunchHotfixTags` / `CreateResourceDownloader`
-- 审查要点：空 tags 必须等价整包；List 透传走五段链不直接序列化 Config
+- 审查要点：非 WebGL Downloader 的空 tags 必须等价整包；WebGL `TagsOnLaunch` 空有效 Tag 必须降级 `OnDemand`；List 透传走五段链不直接序列化 Config
 
 ## 关联
 - 规范落点：热更链路约束

@@ -25,10 +25,11 @@ AssetManager 启动配置，由 `AssetComponent.Start()` 现场 `new AssetManage
 |------|------|--------|------|
 | `EditorPlayMode` | `AssetPlayMode` | `EditorSimulateMode` | 编辑器下资源加载策略（`Application.isEditor == true` 时生效）；允许 EditorSimulateMode / OfflinePlayMode / HostPlayMode |
 | `RuntimePlayMode` | `AssetPlayMode` | `HostPlayMode` | 终端（Player）下资源加载策略；仅限 OfflinePlayMode / HostPlayMode；与 EnableHotfix 双向联动，WebGL 文件系统由平台自动选择 |
+| `WebGLAssetStrategy` | `WebGLAssetStrategy` | `TagsOnLaunch` | 仅浏览器 WebGL 生效的启动资源策略；`TagsOnLaunch` / `OnDemand` / `AllOnLaunch` 与 PlayMode 独立 |
 | `Packages` | `List<string>` | `null` | 需要 CreatePackage 的包名列表，至少包含一个默认包（由 AssetComponent.m_Packages 传入） |
 | `DefaultPackageName` | `string` | `null` | 默认包名；为空时取 Packages[0] |
 | `AutoCleanupOnSceneUnload` | `bool` | `false` | 场景卸载后是否自动 CleanupAsync 默认包 |
-| `EnableHotfix` | `bool` | `true` | **热更新功能总开关**；关闭时启动直跳 ProcedureLoadDll，跳过 CheckVersion / Hotfix / AppDownload 三个 Procedure |
+| `EnableHotfix` | `bool` | `true` | **常规资源热更总开关**；不影响 App 大版本检查。WebGL 的 Tags/All 启动 Warmup 独立于此开关 |
 | `EnableStartupWhitelist` | `bool` | `false` | 启动设备白名单开关；仅在 EnableHotfix=true 且有效模式为 HostPlayMode 时生效 |
 | `StartupWhitelistUrl` | `string` | `null` | 当前 DevelopMode 对应的 `VersionsCheckWhiteList.json` 主 URL |
 | `StartupWhitelistUrlFallback` | `string` | `null` | 当前 DevelopMode 对应的白名单文件备用 URL |
@@ -39,22 +40,21 @@ AssetManager 启动配置，由 `AssetComponent.Start()` 现场 `new AssetManage
 | `StartupWhitelistPreferLastSuccessfulHost` | `bool` | `true` | 白名单文件的新请求是否优先最近成功域名 |
 | `StartupWhitelistEnableUWRTracks` | `bool` | `true` | 是否启用白名单文件 UWR 请求链埋点 |
 | `StartupWhitelistCheckTimeout` | `int` | `5` | 白名单文件单次物理请求超时秒数 |
-| `AutoHotfix` | `bool` | `true` | 启动期资源补丁就绪后是否自动开始下载 |
-| `QuitOnFailedOrCancel` | `bool` | `false` | 下载失败或取消时是否强制退出应用 |
-| `MaxDownloadConcurrency` | `int` | `5` | 资源补丁下载最大并发数（推荐 3-8） |
-| `FallbackRoundCount` | `int` | `1` | 每个逻辑周期完整遍历全部主备候选的轮数，最小为 1 |
-| `RetryDownloadCount` | `int` | `3` | 下载重试次数；每次重试重新执行完整轮次组合，0 表示只执行首次完整组合 |
-| `PreferLastSuccessfulHost` | `bool` | `true` | 后续新文件是否优先使用当前进程内最近成功的 Asset 域名 |
-| `EnableUWRTracks` | `bool` | `true` | 是否启用 Asset UnityWebRequest 链路埋点 |
-| `CheckTimeout` | `int` | `5` | `.version` 单次物理请求总超时秒数 |
-| `ManifestRequestTimeout` | `int` | `60` | `.hash/.bytes` 各自的单次物理请求总超时秒数 |
-| `WebGLBundleRequestTimeout` | `int` | `300` | WebGL 远端 Bundle 单次物理请求总超时秒数；非 WebGL 不使用 |
+| `QuitOnFailedOrCancel` | `bool` | `false` | 下载失败或取消时是否强制退出应用；由 `AssetComponent` 注入时 WebGL 固定为 `false` |
+| `MaxDownloadConcurrency` | `int` | `5` | 资源请求最大并发数（推荐 3-8）；非 WebGL 用于补丁下载，WebGL 用作 YooAsset Bundle 加载并发上限 |
+| `FallbackRoundCount` | `int` | `1` | HostPlayMode 下每个 CDN 请求逻辑周期完整遍历全部主备候选的轮数，最小为 1 |
+| `RetryDownloadCount` | `int` | `3` | HostPlayMode 下 CDN 资源请求的重试次数；每次重试重新执行完整轮次组合，0 表示只执行首次完整组合 |
+| `PreferLastSuccessfulHost` | `bool` | `true` | HostPlayMode 下后续 CDN 请求是否优先使用当前进程内最近成功的 Asset 域名 |
+| `EnableUWRTracks` | `bool` | `true` | HostPlayMode 下是否启用 CDN 资源请求的 UnityWebRequest 链路埋点 |
+| `CheckTimeout` | `int` | `5` | `.version` 单次物理请求超时秒数；Host 远端请求复用 Asset CDN 主备/重试/偏好/埋点配置 |
+| `ManifestRequestTimeout` | `int` | `60` | `.hash/.bytes` 各自的单次物理请求超时秒数；Host 远端请求复用 Asset CDN 主备/重试/偏好/埋点配置 |
+| `WebGLBundleRequestTimeout` | `int` | `300` | WebGL Bundle 单次物理请求超时秒数；同时作用于 WebServer（StreamingAssets）和 WebNetwork（CDN），非 WebGL 不使用 |
 | `IdleTimeout` | `int` | `20` | 非 WebGL 文件下载空闲超时秒数（连续无新字节流入时中止下载） |
 | `HostServerUrl` | `string` | `null` | 当前节点 `DevelopMode` 已选定的主下载地址 URL；默认直接填写完整 URL 模板 |
 | `HostServerUrlFallback` | `string` | `null` | 当前节点 `DevelopMode` 已选定的备用下载地址 URL |
 | `Channel` | `ChannelType` | `None` | Config 导出时同步到 AssetComponent 的启动期渠道快照 |
-| `LaunchHotfixTags` | `List<string>` | `null` | 启动期热更按 tag 过滤的 tag 列表；非空时补丁判断和下载均限定为对应 Tag，null/空时检查并下载整包 |
-| `AutoClearUnusedCacheOnHotfix` | `bool` | `false` | 热更完成后是否自动执行 ClearUnusedCacheAsync 清理冗余磁盘缓存 |
+| `LaunchHotfixTags` | `List<string>` | `null` | 非 WebGL：启动期补丁检查/下载范围，空列表为整包；WebGL：仅 `TagsOnLaunch` 的预热范围，空白/重复清理后为空会降级 `OnDemand` |
+| `AutoClearUnusedCacheOnHotfix` | `bool` | `false` | 非 WebGL 热更下载完成后是否自动执行 ClearUnusedCacheAsync 清理冗余磁盘缓存 |
 
 ---
 
@@ -66,6 +66,7 @@ m_AssetManager.Initialize(new AssetManagerConfig
 {
     EditorPlayMode = m_EditorPlayMode,
     RuntimePlayMode = m_RuntimePlayMode,
+    WebGLAssetStrategy = m_WebGLAssetStrategy,
     Packages = m_Packages,
     DefaultPackageName = m_DefaultPackageName,
     AutoCleanupOnSceneUnload = m_AutoCleanupOnSceneUnload,
@@ -80,8 +81,7 @@ m_AssetManager.Initialize(new AssetManagerConfig
     StartupWhitelistPreferLastSuccessfulHost = m_StartupWhitelistPreferLastSuccessfulHost,
     StartupWhitelistEnableUWRTracks = m_StartupWhitelistEnableUWRTracks,
     StartupWhitelistCheckTimeout = m_StartupWhitelistCheckTimeout,
-    AutoHotfix = m_AutoHotfix,
-    QuitOnFailedOrCancel = m_QuitOnFailedOrCancel,
+    QuitOnFailedOrCancel = QuitOnFailedOrCancel,
     MaxDownloadConcurrency = m_MaxDownloadConcurrency,
     FallbackRoundCount = m_FallbackRoundCount,
     RetryDownloadCount = m_RetryDownloadCount,
@@ -105,4 +105,6 @@ m_AssetManager.Initialize(new AssetManagerConfig
 
 - [AssetComponent.md](../../AssetComponent.md)
 - [AssetPlayMode.md](../../Definitions/AssetPlayMode.md)
+- [WebGLAssetStrategy.md](../../Definitions/WebGLAssetStrategy.md)
+- [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md)
 - [AssetComponentInspector.md](../../../../../Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.md)

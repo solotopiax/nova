@@ -69,7 +69,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// <summary>
         /// Firebase 初始化完成后启动默认 Topic 同步。
         /// 基础 Topic 同步任务会等待 FCM Token 就绪；语言 Topic 还需等待 Localization 发布真实当前语言后再同步。
-        /// 国家 Topic 通过 AdPlugin.GetCountryCodeAsync 读取最终国家码；广告模块负责等待、超时和上次成功缓存兜底。
+        /// 国家 Topic 通过 AdPlugin.GetCountryCodeAsync 读取最终国家码；广告模块只负责等待运行时国家码和超时控制。
         /// </summary>
         private void StartDefaultTopicSync()
         {

@@ -210,18 +210,27 @@ namespace NovaFramework.Runtime
         public abstract UniTask<ISceneHandle> LoadSceneAsync(string location, LoadSceneMode mode = LoadSceneMode.Single, CancellationToken ct = default);
 
         /// <summary>
-        /// 预加载单个资源（仅触发 AB + Asset 进缓存，不返回对象）。
+        /// 创建默认包全部资源的 Bundle 预热组。
         /// </summary>
-        /// <param name="location">Asset 地址。</param>
-        /// <param name="ct">取消令牌。</param>
-        public abstract UniTask PreloadAsync(string location, CancellationToken ct = default);
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <returns>尚未启动的预热组。</returns>
+        public abstract IAssetWarmupGroup CreateWarmupAll(string package = null);
 
         /// <summary>
-        /// 批量预加载资源。
+        /// 创建指定 Tag 并集对应资源的 Bundle 预热组。
+        /// </summary>
+        /// <param name="tags">Tag 列表。</param>
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <returns>尚未启动的预热组。</returns>
+        public abstract IAssetWarmupGroup CreateWarmupByTags(string[] tags, string package = null);
+
+        /// <summary>
+        /// 创建指定 Asset 地址对应资源的 Bundle 预热组。
         /// </summary>
         /// <param name="locations">Asset 地址列表。</param>
-        /// <param name="ct">取消令牌。</param>
-        public abstract UniTask PreloadAsync(string[] locations, CancellationToken ct = default);
+        /// <param name="package">包名，null 走默认包。</param>
+        /// <returns>尚未启动的预热组。</returns>
+        public abstract IAssetWarmupGroup CreateWarmupByLocations(string[] locations, string package = null);
 
         /// <summary>
         /// 通过 tag 查询 Asset 地址列表。

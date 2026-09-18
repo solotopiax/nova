@@ -574,7 +574,7 @@ namespace NovaFramework.Editor
                 if (paramsInstance != null && !IsFieldVisible(field, paramsInstance, info.ParamsType)) continue;
                 object currentValue = paramsInstance == null ? null : field.GetValue(paramsInstance);
                 height += GetParamFieldHeight(field, currentValue) + 2f;
-                float fieldHelpBoxHeight = GetParamFieldHelpBoxHeight(field);
+                float fieldHelpBoxHeight = GetResolvedParamFieldHelpBoxHeight(field, paramsInstance);
                 if (fieldHelpBoxHeight > 0f)
                     height += fieldHelpBoxHeight + 4f;
             }

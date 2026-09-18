@@ -13,7 +13,7 @@
 
 - `AppComponent.DownloadRoute`
 - `ProcedureDataKeys.AppVersionResult`
-- `ProcedureDataKeys.HasAssetPatch`
+- `ProcedureDataKeys.RequiresStartupAssetWork`
 
 ### 输出
 
@@ -28,7 +28,7 @@
 进入流程时会读取：
 
 - `AppVersionResult`
-- `HasAssetPatch`
+- `RequiresStartupAssetWork`
 
 然后立刻调用 `ShowDialog()`。
 
@@ -48,12 +48,14 @@
 - `ForcedDownload`：调用 `Nova.Self.QuitApplication()`，运行时退出应用，Editor 下同时停止 PlayMode
 - `RecommendedDownload`：先调用 `AppComponent.RecordRecommendedDownloadDismissed()` 持久化本次放弃时间，再令 `m_Complete = true`
 
-### 4. OnUpdate：推荐更新取消后按补丁状态续行
+### 4. OnUpdate：推荐更新取消后按启动资源工作状态续行
 
 当流程完成后：
 
-- `RecommendedDownload && HasAssetPatch == true`：进入 `ProcedureHotfix`
+- `RecommendedDownload && RequiresStartupAssetWork == true`：进入 `ProcedureHotfix`
 - 其他情况：进入 `ProcedureLoadDll`
+
+这个键不能用 `HasAssetPatch` 替代：WebGL 不执行 Downloader 差异检查，但 `TagsOnLaunch` / `AllOnLaunch` 仍需要进入 `ProcedureHotfix` 完成启动预热；`OnDemand` 则直接进入 DLL 加载。
 
 ## 风险点 / 易错点
 
@@ -61,6 +63,7 @@
 - 确认后的下载/跳商店操作不会自动让流程继续，而是重新显示弹窗，等待用户下一次操作。
 - 只有推荐更新取消分支会记录放弃时间；确认更新与强制更新取消均不会影响推荐提示间隔。
 - 放弃时间落盘失败只输出 warning，推荐取消分支仍必须继续后续启动流程。
+- 离开流程时会清理 `AppVersionResult`、`HasAssetPatch` 与 `RequiresStartupAssetWork` 三个启动黑板键；后续流程不应继续依赖它们。
 
 ## 继续阅读
 

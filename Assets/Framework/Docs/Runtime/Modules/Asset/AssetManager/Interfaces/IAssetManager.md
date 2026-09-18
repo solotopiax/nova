@@ -15,7 +15,7 @@
 - 启动层：`Initialize / BootstrapAsync / LoadManifestAsync / SaveAssetCheckDeviceId`
 - 版本层：`GetCurrentPackageVersion / RequestLatestPackageVersionAsync`
 - 补丁层：`HasPatchAsync / HasPatchByTagsAsync / CreateDownloader*`
-- 资源层：`Load* / Preload*`
+- 资源层：`Load* / CreateWarmup*`
 - 治理层：`CleanupAsync / RefreshManifestAsync / ClearUnusedCacheAsync`
 
 直接依赖它的通常是：
@@ -62,7 +62,17 @@
 
 真正下载发生在下载器自己的执行流程里，不在 `IAssetManager` 契约本身里。
 
-### 4. 缓存治理是显式动作
+### 4. Warmup 也有明确所有权
+
+- `CreateWarmupAll(package)`：创建默认或指定 Package 的全部 Bundle 预热组。
+- `CreateWarmupByTags(tags, package)`：创建 Tag 并集的预热组；空白/重复 Tag 会忽略，清理后为空抛异常。
+- `CreateWarmupByLocations(locations, package)`：创建指定地址预热组；无效地址会忽略，清理后为空抛异常。
+
+三个 API 都只创建 `IAssetWarmupGroup`，不会自动开始。创建者必须调用 `RunAsync()`，并在成功、失败、取消或不再需要时 `Release()`。Group 的 `Progress` 是完成项目数，不是字节进度；`Cancel()` 也不能保证已发出的浏览器 HTTP 请求立刻停止。
+
+WebGL 的启动 Group 例外：`TagsOnLaunch` 由框架在成功后 Release，并在启动 DLL 消费完成后 Cleanup；`AllOnLaunch` 由 AssetManager 持有到 Shutdown。业务主动创建的普通 Group 仍由业务负责释放。
+
+### 5. 缓存治理是显式动作
 
 - `CleanupAsync()`：回收运行时未使用资源
 - `RefreshManifestAsync()`：强制刷新清单
@@ -80,7 +90,7 @@
 - 加载：`LoadAsync<T>()` / `LoadSync<T>()`
 - 场景：`LoadSceneAsync()`
 - 原始文件：`LoadRawAsync()`
-- 预热：`PreloadAsync()`
+- 预热：`CreateWarmupAll()` / `CreateWarmupByTags()` / `CreateWarmupByLocations()`
 - 回收：`CleanupAsync()`
 
 ## 变更影响面
@@ -100,6 +110,9 @@
 - `HasPatchAsync()` 是否继续允许内部补前置清单加载
 - `HasPatchByTagsAsync()` 是否继续与 `CreateDownloaderByTags()` 使用相同 Tag 范围
 - `Load*` 是否仍以默认包为主
+- WarmupGroup 是否仍由创建者拥有并负责释放
+
+`PreloadAsync` 已删除，不保留 `[Obsolete]` 转发。仓外自定义 `IAssetManager` 实现必须补齐三个 `CreateWarmup*` 成员；调用方应迁移到 `IAssetWarmupGroup`，不要自行藏起预热 Handle。
 
 ## 相关实现
 
@@ -114,3 +127,5 @@
 - [AssetManagerConfig.md](../Definitions/AssetManagerConfig.md)
 - [IAssetHandle.md](IAssetHandle.md)
 - [IAssetDownloader.md](IAssetDownloader.md)
+- [IAssetWarmupGroup.md](IAssetWarmupGroup.md)
+- [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md)

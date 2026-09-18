@@ -177,6 +177,14 @@ namespace NovaFramework.Runtime
                     CancellationToken.ThrowIfCancellationRequested();
                 }
 
+                // TagsOnLaunch 在 ProcedureHotfix 结束时只释放 Warmup Handle。
+                // 等 AOT 与业务 DLL 都消费完成后再卸载未引用 Bundle，避免相邻阶段重复请求不具备持久缓存保证的资源。
+                if (assetManager is IAssetStartupWarmupController warmupController)
+                {
+                    await warmupController.CleanupLaunchWarmupAfterDllAsync(CancellationToken);
+                    CancellationToken.ThrowIfCancellationRequested();
+                }
+
                 // 5. 刷新程序集缓存，让 Util.Assembly 反射视图能看见新加载的程序集。
                 Util.Assembly.RefreshAssemblies();
 

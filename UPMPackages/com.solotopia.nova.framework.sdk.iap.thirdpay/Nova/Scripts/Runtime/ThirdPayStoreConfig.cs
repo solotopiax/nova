@@ -23,7 +23,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         [SerializeField, Tooltip("默认是否启用 ThirdPay Store")]
         private bool m_Enabled = true;
 
-        [SerializeField, Tooltip("Debug 覆盖用 ISO 3166-1 alpha-2 国家/地区代码；生产留空以使用 Billing/Native/广告/默认兜底")]
+        [SerializeField, Tooltip("Debug 覆盖用 ISO 3166-1 alpha-2 国家/地区代码；生产留空以使用 Billing/iOS Storefront/广告兜底")]
         private string m_CountryCode = string.Empty;
 
         [SerializeField, Tooltip("是否跳过 Google 第三方支付信息页，直接进入 ThirdPay 支付页")]
@@ -31,6 +31,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
         [SerializeField, Tooltip("外部浏览器支付返回 App 后自动验单前的等待秒数")]
         private float m_ExternalBrowserReturnValidateDelaySeconds = 2.5f;
+
+        [SerializeField, Tooltip("解析第三方支付页基址的 NetCmd 名称")]
+        private string m_OpenUrlCmdName = "ThirdOpenURL";
 
         [SerializeField, Tooltip("拉取第三方商品列表的 NetCmd 名称")]
         private string m_GetProductListCmdName = "ThirdGetProductList";
@@ -71,6 +74,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 获取外部浏览器支付返回后的自动验单延迟秒数。
         /// </summary>
         public float ExternalBrowserReturnValidateDelaySeconds => m_ExternalBrowserReturnValidateDelaySeconds > 0f ? m_ExternalBrowserReturnValidateDelaySeconds : 2.5f;
+
+        /// <summary>
+        /// 获取第三方支付页基址协议的 NetCmd 名称。
+        /// </summary>
+        public string OpenUrlCmdName => m_OpenUrlCmdName;
 
         /// <summary>
         /// 获取第三方商品列表协议的 NetCmd 名称。

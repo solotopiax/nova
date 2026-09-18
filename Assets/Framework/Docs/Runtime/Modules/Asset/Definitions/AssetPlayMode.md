@@ -23,7 +23,7 @@ Nova 资源策略枚举。资源策略与运行平台解耦，底层文件系统
 | `OfflinePlayMode` | `1` | 离线运行模式 |
 | `HostPlayMode` | `2` | 联机运行模式（需远端 URL） |
 
-WebGL 不是独立资源策略：`OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使用 WebServer + WebNetwork 文件系统。
+WebGL 不是独立 PlayMode：`OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使用 WebServer + WebNetwork 文件系统。WebGL 的启动请求时机与内存驻留由独立的 `WebGLAssetStrategy` 控制，而不是由 PlayMode 或首包拷贝选项控制。
 
 ---
 
@@ -34,6 +34,7 @@ WebGL 不是独立资源策略：`OfflinePlayMode` 使用 WebServer 文件系统
 // Application.isEditor  → m_Config.EditorPlayMode  决定资源策略
 // !Application.isEditor → m_Config.RuntimePlayMode 决定资源策略
 // UNITY_WEBGL            → AssetManager 为该策略选择 Web 文件系统
+// WebGLAssetStrategy      → 决定 TagsOnLaunch / OnDemand / AllOnLaunch
 ```
 
 ---
@@ -41,4 +42,6 @@ WebGL 不是独立资源策略：`OfflinePlayMode` 使用 WebServer 文件系统
 ## 关联文档
 
 - [AssetManagerConfig.md](../AssetManager/Definitions/AssetManagerConfig.md)
+- [WebGLAssetStrategy.md](WebGLAssetStrategy.md)
+- [WebGLAssetStrategies.md](../WebGLAssetStrategies.md)
 - [AssetComponentInspector.md](../../../../Editor/Inspectors/AssetComponentInspector/AssetComponentInspector.md)

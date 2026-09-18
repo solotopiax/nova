@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.1.13] - 2026-09-18
+
+### Changed
+
+- `IAdPlugin.GetCountryCodeAsync` 不再读取广告模块本地国家码缓存，超时或无有效运行时国家码时直接返回空字符串。
+
 ## [1.1.12] - 2026-09-14
 
 ### Changed

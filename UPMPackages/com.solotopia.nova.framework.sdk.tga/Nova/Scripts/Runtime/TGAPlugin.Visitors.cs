@@ -8,7 +8,6 @@
  * descrip:   TGAPlugin 字段、属性、常量定义
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using System;
 using System.Collections.Generic;
 using NovaFramework.Runtime;
@@ -94,4 +93,3 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         private TGAPluginConfig m_RuntimeConfig;
     }
 }
-#endif

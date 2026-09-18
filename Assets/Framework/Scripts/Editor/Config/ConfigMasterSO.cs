@@ -223,7 +223,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 当前编辑态选中的渠道；Inspector 可通过该字段感知切换。
         /// </summary>
-        public ChannelType CurrentChannel;
+        public ChannelType CurrentChannel = ChannelType.Official;
 
         /// <summary>
         /// 导出目标 ConfigRuntimeSO 资产引用；Pipify Config Step 通过此引用推导目标路径并写入导出结果。
@@ -296,6 +296,7 @@ namespace NovaFramework.Editor
         /// <returns>对应组合的 AppConfigs 实例。</returns>
         public AppConfigs GetAppConfigs(PlatformType platform, ChannelType channel, DevelopMode mode)
         {
+            EnsureValidCoordinate(platform, channel);
             if (!TryGetEntry(platform, channel, out PlatformChannelEntry entry))
             {
                 entry = new PlatformChannelEntry { Platform = platform, Channel = channel };
@@ -313,6 +314,7 @@ namespace NovaFramework.Editor
         /// <returns>对应组合的 PrivacyConfigs 实例，永不为 null。</returns>
         public PrivacyConfigs GetPrivacyConfigs(PlatformType platform, ChannelType channel, DevelopMode mode)
         {
+            EnsureValidCoordinate(platform, channel);
             if (!TryGetEntry(platform, channel, out PlatformChannelEntry entry))
             {
                 entry = new PlatformChannelEntry { Platform = platform, Channel = channel };
@@ -331,6 +333,7 @@ namespace NovaFramework.Editor
         public bool TryGetEntry(PlatformType platform, ChannelType channel, out PlatformChannelEntry entry)
         {
             entry = null;
+            if (!IsValidCoordinate(platform, channel)) return false;
             if (m_Index == null)
             {
                 RebuildIndex();
@@ -549,6 +552,8 @@ namespace NovaFramework.Editor
         /// <param name="entry">要追加的矩阵行。</param>
         public void EditorAddEntry(PlatformChannelEntry entry)
         {
+            if (entry == null) throw new ArgumentNullException(nameof(entry));
+            EnsureValidCoordinate(entry.Platform, entry.Channel);
             m_Entries.Add(entry);
             m_Index = null;
         }
@@ -573,6 +578,7 @@ namespace NovaFramework.Editor
             for (int i = 0; i < m_Entries.Count; i++)
             {
                 PlatformChannelEntry entry = m_Entries[i];
+                if (entry == null || !IsValidCoordinate(entry.Platform, entry.Channel)) continue;
                 if (!m_Index.TryGetValue(entry.Platform, out var row))
                 {
                     row = new Dictionary<ChannelType, PlatformChannelEntry>();
@@ -580,6 +586,32 @@ namespace NovaFramework.Editor
                 }
                 row[entry.Channel] = entry;
             }
+        }
+
+        /// <summary>
+        /// 判断平台与渠道是否可作为 Config 的实际矩阵坐标；两个 None 都只保留作内部哨兵。
+        /// </summary>
+        /// <param name="platform">待检查的平台。</param>
+        /// <param name="channel">待检查的渠道。</param>
+        /// <returns>两个枚举均已定义且都不是 None 时返回 true。</returns>
+        private static bool IsValidCoordinate(PlatformType platform, ChannelType channel)
+        {
+            return platform != PlatformType.None && Enum.IsDefined(typeof(PlatformType), platform) &&
+                   channel != ChannelType.None && Enum.IsDefined(typeof(ChannelType), channel);
+        }
+
+        /// <summary>
+        /// 拒绝使用 None 或未定义枚举值创建 Config 矩阵数据。
+        /// </summary>
+        /// <param name="platform">待检查的平台。</param>
+        /// <param name="channel">待检查的渠道。</param>
+        /// <exception cref="ArgumentOutOfRangeException">平台或渠道不是有效 Config 坐标时抛出。</exception>
+        private static void EnsureValidCoordinate(PlatformType platform, ChannelType channel)
+        {
+            if (platform == PlatformType.None || !Enum.IsDefined(typeof(PlatformType), platform))
+                throw new ArgumentOutOfRangeException(nameof(platform), platform, "Config 平台必须是非 None 的已定义 PlatformType。");
+            if (channel == ChannelType.None || !Enum.IsDefined(typeof(ChannelType), channel))
+                throw new ArgumentOutOfRangeException(nameof(channel), channel, "Config 渠道必须是非 None 的已定义 ChannelType。");
         }
     }
 }

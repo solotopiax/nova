@@ -38,7 +38,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <summary>
         /// 等待广告 SDK 返回国家码的超时时间，单位秒。
         /// </summary>
-        [SerializeField, HideInInspector, Tooltip("等待广告 SDK 返回国家码的超时时间（秒）。默认 5 秒；超时后读取广告模块上次成功缓存，缓存不存在则返回空字符串。")]
+        [SerializeField, HideInInspector, Tooltip("等待广告 SDK 返回国家码的超时时间（秒）。默认 5 秒；超时后返回空字符串。")]
         private float m_CountryCodeWaitTimeoutSeconds = 5f;
 
         /// <summary>

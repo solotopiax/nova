@@ -99,6 +99,7 @@ namespace NovaFramework.SDK.IAP.Voucher.Runtime
         /// <param name="result">待派发的 IAP 支付结果。</param>
         void IVoucherResultDispatcher.Dispatch(IAPResult result)
         {
+            result = MarkStoreResult(result);
             if (result.IsSuccess)
             {
                 Context?.EventBridge?.RaisePaySuccess(result);

@@ -10,6 +10,8 @@
 
 using System;
 using System.Threading;
+using Cysharp.Threading.Tasks;
+using NovaFramework.SDK.IAP.Runtime;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
@@ -24,11 +26,15 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="clientOrderId">客户端订单号。</param>
         /// <param name="tableId">支付商品表行 ID。</param>
         /// <param name="userId">订单创建时的用户 UID。</param>
-        public ThirdPayExternalBrowserPaySession(string clientOrderId, long tableId, string userId)
+        /// <param name="customData">支付请求透传数据。</param>
+        /// <param name="receiptParam">票据透传参数。</param>
+        public ThirdPayExternalBrowserPaySession(string clientOrderId, long tableId, string userId, string customData, string receiptParam)
         {
             ClientOrderId = clientOrderId;
             TableId = tableId;
             UserId = userId ?? string.Empty;
+            CustomData = customData ?? string.Empty;
+            ReceiptParam = receiptParam ?? string.Empty;
             SessionCts = new CancellationTokenSource();
         }
 
@@ -46,6 +52,21 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 订单创建时的用户 UID。
         /// </summary>
         public string UserId { get; }
+
+        /// <summary>
+        /// 支付请求透传数据，返回验单完成时回传给 PayAsync 调用方。
+        /// </summary>
+        public string CustomData { get; }
+
+        /// <summary>
+        /// 票据透传参数，返回验单完成时回传给 PayAsync 调用方。
+        /// </summary>
+        public string ReceiptParam { get; }
+
+        /// <summary>
+        /// 外部浏览器返回验单结果完成源，用于桥接生命周期回调到 PayAsync await 点。
+        /// </summary>
+        public UniTaskCompletionSource<IAPResult> PayTcs { get; } = new UniTaskCompletionSource<IAPResult>();
 
         /// <summary>
         /// 当前浏览器支付是否已经触发过离开 App。

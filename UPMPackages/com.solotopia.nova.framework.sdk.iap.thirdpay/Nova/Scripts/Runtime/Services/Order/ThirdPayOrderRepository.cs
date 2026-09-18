@@ -62,6 +62,37 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
+        /// 按商品表行 ID 与票据透传参数查找同一业务支付的未完成本地订单。
+        /// 底层存档仍以 ClientOrderId 为唯一键；此方法只用于支付发起前复用旧订单补单。
+        /// </summary>
+        /// <param name="tableId">商品表行 ID。</param>
+        /// <param name="receiptParam">票据透传参数。</param>
+        /// <param name="order">命中的本地订单。</param>
+        /// <returns>存在同业务键本地订单时返回 true。</returns>
+        public bool TryFindByOrderKey(long tableId, string receiptParam, out ThirdPayOrderRecord order)
+        {
+            order = null;
+            string orderKey = ThirdPayOrderKey.Build(tableId, receiptParam);
+            if (string.IsNullOrEmpty(orderKey))
+            {
+                return false;
+            }
+
+            foreach (ThirdPayOrderRecord item in m_Data.Orders.Values)
+            {
+                if (!ThirdPayOrderKey.Matches(item, tableId, receiptParam))
+                {
+                    continue;
+                }
+
+                order = item;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 新增或覆盖客户端订单号相同的待处理订单，并立即保存账号存档。
         /// </summary>
         /// <param name="order">待保存订单。</param>
@@ -120,5 +151,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         {
             m_Save?.Invoke(m_Data);
         }
+
     }
 }

@@ -8,7 +8,6 @@
  * descrip:   TGA SDK 插件主文件（public/override 方法）
  ***************************************************************/
 
-#if !UNITY_WEBGL
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -268,11 +267,16 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
 
         /// <summary>
         /// 通过 NTP 服务器校准 SDK 时间。
+        /// WebGL 浏览器不支持厂商实现依赖的 UDP Socket；该平台调用时仅记录警告并保留当前时间，其他平台正常委托 TGA SDK。
         /// </summary>
         /// <param name="ntpServer">NTP 服务器地址。</param>
         public void CalibrateTimeWithNtp(string ntpServer)
         {
+#if UNITY_WEBGL
+            Log.Warning(LogTag.TGA, "WebGL 不支持通过 NTP 服务器校准 TGA 时间，已跳过。");
+#else
             TDAnalytics.CalibrateTimeWithNtp(ntpServer);
+#endif
         }
 
         /// <summary>
@@ -369,4 +373,3 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         }
     }
 }
-#endif

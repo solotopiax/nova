@@ -28,6 +28,7 @@ supersedes:
 superseded-by: []
 related:
   - "[[ADR-011-load-unload-and-ireference-pairing|ADR-011]]"
+  - "[[ADR-085-webgl-asset-strategies-and-warmup-group|ADR-085]]"
   - "[[PAT-37-no-yooasset-outside-asset-module|PAT-37]]"
 ---
 
