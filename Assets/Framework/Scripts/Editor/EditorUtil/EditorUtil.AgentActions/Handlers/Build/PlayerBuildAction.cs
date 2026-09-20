@@ -93,7 +93,7 @@ namespace NovaFramework.Editor
                 return Task.FromResult(new AgentActionHandlerPlan
                 {
                     Status = "blocked",
-                    Summary = $"Player Action 首版只安全支持 Standalone 桌面目标；{target} 的平台专属构建、导出与签名设置尚未进入冻结契约。",
+                    Summary = $"Player Action 当前只支持 Standalone 桌面目标与 WebGL；{target} 的平台专属构建、导出或签名设置尚未进入冻结契约。",
                 });
             }
             string[] scenes = BuildActionCommon.GetEnabledBuildScenes();

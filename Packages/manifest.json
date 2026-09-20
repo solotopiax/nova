@@ -30,6 +30,7 @@
     "com.solotopia.nova.framework.sdk.iap.voucher": "file:../UPMPackages/com.solotopia.nova.framework.sdk.iap.voucher",
     "com.solotopia.nova.framework.sdk.max": "file:../UPMPackages/com.solotopia.nova.framework.sdk.max",
     "com.solotopia.nova.framework.sdk.tga": "file:../UPMPackages/com.solotopia.nova.framework.sdk.tga",
+    "com.solotopia.nova.framework.wechat.minigame": "file:../UPMPackages/com.solotopia.nova.framework.wechat.minigame",
     "com.solotopia.simplediskutils": "file:../UPMPackages/com.solotopia.simplediskutils",
     "com.solotopia.sqlcipher4unity3d": "file:../UPMPackages/com.solotopia.sqlcipher4unity3d",
     "com.solotopia.unitask": "file:../UPMPackages/com.solotopia.unitask",

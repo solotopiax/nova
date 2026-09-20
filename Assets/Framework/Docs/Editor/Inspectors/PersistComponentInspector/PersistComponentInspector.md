@@ -141,6 +141,8 @@ Runtime 模式（Play 中）：
 
 **SQLite 密码缓冲与存档转换**：`m_TmpSQLiteCipherPassword` 是临时文本框，不会立即写回序列化字段。当它 ≠ `m_SQLiteCipherPassword.stringValue` 时，"存档转换" 按钮解除灰显；点击后 Inspector 删除旧库（含 `-shm` / `-wal` / `-journal` 附属文件）、按当前内存数据原样重建新库并应用新 Cipher 密码，AES 条目状态保持不变。
 
+**FileFragment 文件兼容**：Editor 数据区与 Runtime 共用版本化二进制编解码和崩溃安全写入。编辑条目会保留上一版 `.bak`；切换 AES 时会让正式文件与备份同时使用新的加密状态；删除分类时同步删除正式文件、备份与残留临时文件。
+
 **Play 模式 SQLite 连接切换**：进入 Play 前通过 `EditorApplication.playModeStateChanged` 关闭 Editor 侧 SQLite 连接，退出 Play 后经 `delayCall` 在 Inspector 仍有效时重建连接；避免 Play 期间 Editor 侧与 Runtime 侧同时持有同一数据库句柄。
 
 **AES 迁移立即执行**：切换可编辑的 AES Toggle 时，立即对该存储实现已存数据做明文 ↔ 密文批量迁移，保证开关状态与实际存储格式始终一致；Inspector 始终以明文展示。WebGL 下 SQLite 组为禁用展示，不触发迁移。

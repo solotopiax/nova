@@ -1,0 +1,21 @@
+{
+  "name": "com.solotopia.nova.framework.wechat.minigame",
+  "version": "0.0.1",
+  "license": "MIT",
+  "coreVersion": "0.1.34",
+  "displayName": "Nova Framework - WeChat Mini Game",
+  "description": "Nova 微信小游戏转换 SDK 接入包，内置经过跨平台隔离的官方 SDK 0.1.34",
+  "category": "Editor",
+  "unity": "2021.3",
+  "keywords": [
+    "nova",
+    "framework",
+    "wechat",
+    "minigame",
+    "webgl"
+  ],
+  "author": {
+    "name": "Solotopia"
+  },
+  "dependencies": {}
+}

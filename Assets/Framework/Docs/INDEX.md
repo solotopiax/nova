@@ -401,10 +401,10 @@
 | [PlayerPrefsManager.md](Runtime/Modules/Persist/PlayerPrefsManager.md) | PlayerPrefs Manager（全平台，async Initialize，脏标记延迟落盘，ValidateClassifyName） |
 | [IPlayerPrefsManager.md](Runtime/Modules/Persist/IPlayerPrefsManager.md) | PlayerPrefs Manager 独立接口（28 个方法） |
 | [PlayerPrefsManagerConfig.md](Runtime/Modules/Persist/PlayerPrefsManagerConfig.md) | PlayerPrefs Manager 配置类（继承 PersistManagerConfigBase） |
-| [FileFragmentManager.md](Runtime/Modules/Persist/FileFragmentManager.md) | 文件片段 Manager（全平台，Binary 格式，async Load 重入保护，懒加载 + 脏追踪） |
+| [FileFragmentManager.md](Runtime/Modules/Persist/FileFragmentManager.md) | 文件片段 Manager（版本化 Binary、崩溃安全写入、备份恢复、懒加载 + 脏追踪） |
 | [IFileFragmentManager.md](Runtime/Modules/Persist/IFileFragmentManager.md) | 文件片段 Manager 独立接口（28 个方法） |
 | [FileFragmentManagerConfig.md](Runtime/Modules/Persist/FileFragmentManagerConfig.md) | 文件片段 Manager 配置类（继承 PersistManagerConfigBase） |
-| [FileFragmentItemGroup.md](Runtime/Modules/Persist/FileFragmentItemGroup.md) | 文件片段数据容器（AES 解密 null 检查 + count<0 + try-catch 防御） |
+| [FileFragmentItemGroup.md](Runtime/Modules/Persist/FileFragmentItemGroup.md) | 文件片段数据容器（旧格式兼容、完整性校验、坏档隔离与备份恢复） |
 | [SQLiteManager.md](Runtime/Modules/Persist/SQLiteManager.md) | SQLite Manager（写缓冲 + 事务批量 + WAL，ValidateSQLiteClassify；WebGL 下静默禁用） |
 | [ISQLiteManager.md](Runtime/Modules/Persist/ISQLiteManager.md) | SQLite Manager 独立接口（28 个方法 + GetAllClassifyNames） |
 | [SQLiteManagerConfig.md](Runtime/Modules/Persist/SQLiteManagerConfig.md) | SQLite Manager 配置类（继承 PersistManagerConfigBase，额外含 CipherPassword） |

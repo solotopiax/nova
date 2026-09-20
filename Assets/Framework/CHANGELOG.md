@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.6.32] - 2026-09-20
+
+### Changed
+
+- `nova.project.player.build` 在既有 Active BuildTarget、场景、ProjectSettings、构建模式与精确输出路径冻结契约下开放 WebGL Player 目录构建；Android 与 iOS 仍保持关闭。
+
+### Fixed
+
+- Generate Actions 接受合法的 `ChannelType.None` 坐标，WebGL 的 HybridCLR 预构建不再被错误拦截。
+
 ## [0.6.31] - 2026-09-18
 
 ### Added
@@ -19,6 +29,7 @@
 
 ### Fixed
 
+- FileFragment 改用临时文件校验后替换并保留上一版 `.bak`，新增版本化完整性校验、旧格式兼容和坏档隔离恢复；AES padding 或单分片损坏不再阻断整个 Persist 启动链。
 - Pipify 的 `export.config.Channel` 下拉不再显示 `None`；旧 Batch 中遗留的 `None` 会在打开参数区时归一为 `Official` 并提示保存。
 - SDK 配置 DTO 所在 Runtime 程序集在 WebGL 下保持可解析，避免保留但未启用的 Google Sign-In、Apple Sign-In、MAX、AIHelp 与 IAP 配置在加载 `ConfigMasterSO` / `ConfigRuntimeSO` 时产生 Missing types 警告；原生能力是否运行仍由当前平台配置决定。
 - FileFragment 在 WebGL 下恢复已有 `.dat` 分片时改为主线程逐文件读取并分帧执行，避免首次落盘后刷新页面因线程池不可用而永久停在预加载 0%；Android、iOS 与 Editor 继续使用线程池并行读取。
@@ -28,7 +39,7 @@
 
 ### Breaking
 
-- Config 的 Platform 与 Channel 坐标统一禁止 `None`：ConfigWindow 不再显示两个 None 选项；矩阵同步会清理旧 Platform None 行，并将没有同平台 Official 行的旧 Channel None 数据迁移到 Official；导出、校验、构建预检、Agent Action 与 ConfigRuntime 加载同步拒绝无效坐标。
+- Config 的 Platform 坐标禁止 `None`；Channel 的 `None` 保持为合法的无渠道坐标。ConfigWindow、导出、校验、构建预检、Agent Action 与 ConfigRuntime 加载均应遵循该边界。
 - 删除未投入使用的 `PreloadAsync`，不保留兼容转发。调用方需迁移到 `IAssetWarmupGroup` 并明确释放；仓外自定义 `IAssetManager` / `AssetManagerBase` 实现需补齐三项 `CreateWarmup*` 成员。
 - 删除从未被启动流程读取的 `AssetManagerConfig.AutoHotfix` 与 `AssetComponent.m_AutoHotfix`；Android、iOS 和 WebGL 启动资源准备仍在进入 `ProcedureHotfix` 后立即开始。
 

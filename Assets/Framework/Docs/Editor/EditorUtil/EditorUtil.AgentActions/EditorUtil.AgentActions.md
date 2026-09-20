@@ -33,6 +33,8 @@ Registry 当前注册 20 个 Action，全部进入 MCP 显式白名单：
 
 Action 的 Request Schema、effects、locks、contractMajor、idempotency 和 confirmation 以运行中的 Registry Descriptor 为准，不维护第二份静态 Action Catalog。
 
+`nova.project.player.build` 当前支持活动目标为 Standalone 桌面平台或 WebGL。Plan 冻结当前 Active BuildTarget、Build Settings 启用场景、ProjectSettings、DevelopmentBuild、BuildMode 与精确输出路径；Action 不替调用方切换平台。WebGL 产物按目录验证，Android 与 iOS 在平台专属导出、签名选项进入冻结契约前继续 fail-closed。
+
 `nova.project.config.export-runtime` 的请求仍显式携带 `platform / channel / developMode`，但 `platform` 必须等于 Plan 时 Unity 当前 Active BuildTarget 映射的 Nova `PlatformType`。未映射为 Android / iOS / WebGL、请求不一致，或 Execute 前 Active BuildTarget 漂移，都会以 `blocked` 收口并要求先切换 BuildTarget 后重新 Plan；该限制不改变底层 `EditorUtil.Config.Exporter.Export` 的显式平台 API。
 
 `platform` 与 `channel` 都只接受对应枚举中非 `None` 的精确声明名称；Config 校验、导出、插件补齐与构建预检统一拒绝两个 `None` 哨兵。
@@ -223,6 +225,8 @@ nova.project.vibration.export
 nova.project.localization.export
 nova.project.pipify.run-batch
 ```
+
+所有接收配置坐标的 Generate Action 均接受 `ChannelType.None`；`None` 是合法的无渠道坐标，不作为参数缺失处理。
 
 Gateway 要求 Registry 的全部 Action 与显式 `ExposurePolicy` 集合完全一致；任一遗漏、陈旧 ID、非法 Schema 或 Registry issue 都会使 Action 面整体 fail-closed。`Destructive / ExternalWrite / Credential / Delivery` 不再作为隐藏已注册 Action 的条件，但仍必须准确声明，并继续受一次性确认、资源锁、Receipt、脱敏和 Verify 约束。
 

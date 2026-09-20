@@ -377,39 +377,20 @@ namespace NovaFramework.Editor
         /// <returns>反序列化后的键值字典，解析失败时返回 null。</returns>
         protected System.Collections.Generic.Dictionary<string, string> TryReadFragmentFile(string filePath, bool useAES = false)
         {
-            try
-            {
-                var bytes = Util.SysIO.File.ReadAllBytesSync(filePath);
-                if (bytes == null || bytes.Length == 0)
-                {
-                    return new System.Collections.Generic.Dictionary<string, string>();
-                }
-
-                if (useAES)
-                {
-                    if (!EnsureInspectorAESCredentials()) return null;
-                    bytes = Util.Encrypt.AES.DecryptBytes(bytes, m_EditorAESKey, m_EditorAESIV);
-                }
-
-                var result = new System.Collections.Generic.Dictionary<string, string>();
-                using (var ms = new System.IO.MemoryStream(bytes))
-                using (var br = new System.IO.BinaryReader(ms, Encoding.UTF8))
-                {
-                    var count = br.ReadInt32();
-                    for (int i = 0; i < count; i++)
-                    {
-                        var key = br.ReadString();
-                        var value = br.ReadString();
-                        result[key] = value;
-                    }
-                }
-
-                return result;
-            }
-            catch
+            if (useAES && !EnsureInspectorAESCredentials())
             {
                 return null;
             }
+
+            var group = FileFragmentItemGroup.LoadWithRecovery(filePath, useAES, m_EditorAESKey, m_EditorAESIV);
+
+            var result = new System.Collections.Generic.Dictionary<string, string>();
+            foreach (var item in group.Items)
+            {
+                result[item.Key] = item.Value;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -421,28 +402,18 @@ namespace NovaFramework.Editor
         /// <param name="useAES">是否对整个文件内容进行 AES 加密后写入。</param>
         protected void WriteFragmentFile(string filePath, System.Collections.Generic.Dictionary<string, string> data, bool useAES = false)
         {
-            byte[] bytes;
-            using (var ms = new System.IO.MemoryStream())
-            using (var bw = new System.IO.BinaryWriter(ms, Encoding.UTF8))
+            if (useAES && !EnsureInspectorAESCredentials())
             {
-                bw.Write(data.Count);
-                foreach (var kv in data)
-                {
-                    bw.Write(kv.Key);
-                    bw.Write(kv.Value ?? string.Empty);
-                }
-
-                bw.Flush();
-                bytes = ms.ToArray();
+                return;
             }
 
-            if (useAES)
+            var group = new FileFragmentItemGroup();
+            foreach (var item in data)
             {
-                if (!EnsureInspectorAESCredentials()) return;
-                bytes = Util.Encrypt.AES.EncryptBytes(bytes, m_EditorAESKey, m_EditorAESIV);
+                group.SetString(item.Key, item.Value);
             }
 
-            Util.SysIO.File.WriteAllBytesSync(filePath, bytes);
+            group.Serialize(filePath, useAES, m_EditorAESKey, m_EditorAESIV);
         }
 
         /// <summary>

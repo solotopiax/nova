@@ -33,7 +33,17 @@ namespace NovaFramework.Editor
             }
 
             bool useAES = m_UseAESForFileFragment.boolValue;
-            foreach (var filePath in Util.SysIO.Directory.GetFiles(rootPath, "*" + c_FFFileExtension, System.IO.SearchOption.TopDirectoryOnly))
+            var filePaths = new List<string>(Util.SysIO.Directory.GetFiles(rootPath, "*" + c_FFFileExtension, System.IO.SearchOption.TopDirectoryOnly));
+            foreach (var backupPath in Util.SysIO.Directory.GetFiles(rootPath, "*" + c_FFFileExtension + ".bak", System.IO.SearchOption.TopDirectoryOnly))
+            {
+                string primaryPath = backupPath.Substring(0, backupPath.Length - ".bak".Length);
+                if (!Util.SysIO.File.Exists(primaryPath))
+                {
+                    filePaths.Add(primaryPath);
+                }
+            }
+
+            foreach (var filePath in filePaths)
             {
                 string classify = Util.SysIO.Path.GetFileNameWithoutExtension(filePath);
                 var raw = TryReadFragmentFile(filePath, useAES);
@@ -205,10 +215,11 @@ namespace NovaFramework.Editor
             string rootPath = Path.Persist.FileFragment.FolderFullPath;
             foreach (var classify in m_FF_Values)
             {
-                WriteFragmentFile(
-                    Util.SysIO.Path.Combine(rootPath, classify.Key + c_FFFileExtension),
-                    classify.Value,
-                    enableAES);
+                string filePath = Util.SysIO.Path.Combine(rootPath, classify.Key + c_FFFileExtension);
+                WriteFragmentFile(filePath, classify.Value, enableAES);
+
+                // 第一次写入产生的备份仍使用旧加密状态；再次写入使主档与备份都切到新状态。
+                WriteFragmentFile(filePath, classify.Value, enableAES);
             }
             OnEnableFileFragment();
         }
@@ -224,6 +235,20 @@ namespace NovaFramework.Editor
             {
                 DeleteFragmentClassify(classify, rootPath);
             }
+
+            if (!Util.SysIO.Directory.Exists(rootPath))
+            {
+                return;
+            }
+
+            foreach (var backupPath in Util.SysIO.Directory.GetFiles(rootPath, "*" + c_FFFileExtension + ".bak", System.IO.SearchOption.TopDirectoryOnly))
+            {
+                Util.SysIO.File.Delete(backupPath);
+            }
+            foreach (var temporaryPath in Util.SysIO.Directory.GetFiles(rootPath, "*" + c_FFFileExtension + ".tmp", System.IO.SearchOption.TopDirectoryOnly))
+            {
+                Util.SysIO.File.Delete(temporaryPath);
+            }
         }
 
         /// <summary>
@@ -234,7 +259,11 @@ namespace NovaFramework.Editor
         private void DeleteFragmentClassify(string classify, string rootPath)
         {
             string filePath = Util.SysIO.Path.Combine(rootPath, classify + c_FFFileExtension);
-            if (Util.SysIO.File.Exists(filePath))
+            Util.SysIO.File.Delete(FileFragmentItemGroup.GetTemporaryPath(filePath));
+            Util.SysIO.File.Delete(FileFragmentItemGroup.GetBackupPath(filePath));
+            if (!Util.SysIO.File.Exists(FileFragmentItemGroup.GetTemporaryPath(filePath)) &&
+                !Util.SysIO.File.Exists(FileFragmentItemGroup.GetBackupPath(filePath)) &&
+                Util.SysIO.File.Exists(filePath))
             {
                 Util.SysIO.File.Delete(filePath);
             }

@@ -20,6 +20,11 @@ namespace NovaFramework.Runtime
         private const string c_FileExtension = ".dat";
 
         /// <summary>
+        /// 测试或受控宿主指定的根目录；常规运行为空并使用框架持久化目录。
+        /// </summary>
+        private readonly string m_RootFolderOverride;
+
+        /// <summary>
         /// 文件片段根目录绝对路径。
         /// </summary>
         private string m_RootFolderPath;

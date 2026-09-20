@@ -45,21 +45,8 @@ namespace NovaFramework.Runtime
                 return;
             }
 
-            if (!m_ItemGroups.ContainsKey(classify))
-            {
-                m_ItemGroups[classify] = new FileFragmentItemGroup();
-            }
-
             var filePath = BuildFilePath(classify);
-            if (Util.SysIO.File.Exists(filePath))
-            {
-                bool success = m_ItemGroups[classify].Deserialize(filePath, m_UseAESEncrypt);
-                if (!success)
-                {
-                    Log.Warning(LogTag.Persist, "FileFragment 懒加载反序列化失败，将以空数据运行：{0}", classify);
-                }
-            }
-
+            m_ItemGroups[classify] = FileFragmentItemGroup.LoadWithRecovery(filePath, m_UseAESEncrypt);
             m_LoadedFragments.Add(classify);
         }
 
@@ -73,20 +60,45 @@ namespace NovaFramework.Runtime
         }
 
         /// <summary>
-        /// 执行待删除文件的物理删除并清空列表。
+        /// 执行待删除分类的正式文件、备份和临时文件清理。
         /// </summary>
-        private void ProcessPendingDeletes()
+        /// <returns>全部删除成功返回 true；失败分类保留在队列中等待重试。</returns>
+        private bool ProcessPendingDeletes()
         {
+            bool allSuccess = true;
+            var deleted = new System.Collections.Generic.List<string>();
             foreach (var classify in m_PendingDeletes)
             {
                 var filePath = BuildFilePath(classify);
+                Util.SysIO.File.Delete(FileFragmentItemGroup.GetTemporaryPath(filePath));
+                Util.SysIO.File.Delete(FileFragmentItemGroup.GetBackupPath(filePath));
+
+                // 最后删除正式文件：若辅助文件清理失败或中途退出，至少仍保留当前有效存档。
+                if (Util.SysIO.File.Exists(FileFragmentItemGroup.GetBackupPath(filePath)) ||
+                    Util.SysIO.File.Exists(FileFragmentItemGroup.GetTemporaryPath(filePath)))
+                {
+                    allSuccess = false;
+                    Log.Error(LogTag.Persist, "FileFragmentManager 删除分类文件失败，将在下次 Save 重试: {0}", classify);
+                    continue;
+                }
+
+                Util.SysIO.File.Delete(filePath);
                 if (Util.SysIO.File.Exists(filePath))
                 {
-                    Util.SysIO.File.Delete(filePath);
+                    allSuccess = false;
+                    Log.Error(LogTag.Persist, "FileFragmentManager 删除分类文件失败，将在下次 Save 重试: {0}", classify);
+                    continue;
                 }
+
+                deleted.Add(classify);
             }
 
-            m_PendingDeletes.Clear();
+            foreach (var classify in deleted)
+            {
+                m_PendingDeletes.Remove(classify);
+            }
+
+            return allSuccess;
         }
     }
 }

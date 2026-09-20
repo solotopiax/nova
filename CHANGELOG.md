@@ -8,6 +8,21 @@
 
 ## [Unreleased]
 
+## [0.6.32] - 2026-09-20
+
+### Added
+
+- 新增 `com.solotopia.nova.framework.wechat.minigame` 接入包，内置微信官方 SDK `0.1.34`，并隔离普通浏览器 WebGL 与微信小游戏的原生库和启动逻辑。
+
+### Changed
+
+- `nova.project.player.build` 开放 WebGL Player 目录构建，沿用既有构建坐标与输出路径契约。
+
+### Fixed
+
+- FileFragment 增加崩溃安全写入、完整性校验、备份恢复和坏档隔离，单个损坏分片不再阻断 Persist 启动。
+- Generate Actions 接受合法的 `ChannelType.None`，WebGL HybridCLR 预构建不再被错误拦截。
+
 ## [0.6.31] - 2026-09-18
 
 ### Breaking

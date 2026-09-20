@@ -16,8 +16,8 @@ namespace NovaFramework.Runtime
 {
     /// <summary>
     /// 文件片段持久化管理器。
-    /// 每个 classify 对应一个 .dat 文件（JSON 格式，可选 AES 加密）。
-    /// IO 优化：初始化时全量加载 + 脏追踪（只序列化变更的片段）。
+    /// 每个 classify 对应一个 .dat 文件（版本化二进制格式，可选 AES 加密）。
+    /// 支持崩溃安全写入、上一版备份恢复、初始化全量加载和脏片段写回。
     /// </summary>
     internal sealed partial class FileFragmentManager : PersistManagerBase<FileFragmentManagerConfig>, IFileFragmentManager
     {
@@ -27,13 +27,27 @@ namespace NovaFramework.Runtime
         public FileFragmentManager() { }
 
         /// <summary>
+        /// 使用指定根目录初始化实例，仅供框架测试与受控宿主隔离文件系统。
+        /// </summary>
+        /// <param name="rootFolderPath">文件片段根目录。</param>
+        internal FileFragmentManager(string rootFolderPath)
+        {
+            if (string.IsNullOrEmpty(rootFolderPath))
+            {
+                throw new System.ArgumentException("rootFolderPath 不得为空。", nameof(rootFolderPath));
+            }
+
+            m_RootFolderOverride = rootFolderPath;
+        }
+
+        /// <summary>
         /// 初始化。
         /// </summary>
         /// <param name="config">配置信息。</param>
         public override async UniTask Initialize(FileFragmentManagerConfig config)
         {
             InitializeBase(config);
-            m_RootFolderPath = Path.Persist.FileFragment.FolderFullPath;
+            m_RootFolderPath = m_RootFolderOverride ?? Path.Persist.FileFragment.FolderFullPath;
             await Load();
         }
 
@@ -98,12 +112,24 @@ namespace NovaFramework.Runtime
         {
             Util.SysIO.Directory.CreateIfNotExist(m_RootFolderPath);
 
-            var files = Util.SysIO.Directory.GetFiles(m_RootFolderPath, "*" + c_FileExtension);
+            var files = Util.SysIO.Directory.GetFiles(m_RootFolderPath, "*" + c_FileExtension).ToList();
+            var backupFiles = Util.SysIO.Directory.GetFiles(
+                m_RootFolderPath,
+                "*" + c_FileExtension + ".bak");
+            foreach (var backupFile in backupFiles)
+            {
+                string primaryFile = backupFile.Substring(0, backupFile.Length - ".bak".Length);
+                if (!Util.SysIO.File.Exists(primaryFile))
+                {
+                    files.Add(primaryFile);
+                }
+            }
+
             var toLoad = files.Where(f =>
             {
                 var classify = Util.SysIO.File.GetName(f, includeFileExtension: false);
                 return !m_LoadedFragments.Contains(classify);
-            }).ToArray();
+            }).Distinct().ToArray();
 
             if (toLoad.Length == 0)
             {
@@ -142,9 +168,8 @@ namespace NovaFramework.Runtime
         private (string classify, FileFragmentItemGroup group, bool success) DeserializeFragment(string file)
         {
             string classify = Util.SysIO.File.GetName(file, includeFileExtension: false);
-            var group = new FileFragmentItemGroup();
-            bool success = group.Deserialize(file, m_UseAESEncrypt);
-            return (classify, group, success);
+            var group = FileFragmentItemGroup.LoadWithRecovery(file, m_UseAESEncrypt);
+            return (classify, group, true);
         }
 
         /// <summary>
@@ -154,9 +179,7 @@ namespace NovaFramework.Runtime
         /// <returns>全部成功返回 true，任一失败返回 false。</returns>
         public override bool Save()
         {
-            ProcessPendingDeletes();
-
-            bool allSuccess = true;
+            bool allSuccess = ProcessPendingDeletes();
             var saved = new List<string>();
 
             foreach (var classify in m_DirtyFragments)

@@ -539,6 +539,12 @@
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
       }
     },
+    "com.solotopia.nova.framework.wechat.minigame": {
+      "version": "file:../UPMPackages/com.solotopia.nova.framework.wechat.minigame",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.solotopia.simplediskutils": {
       "version": "file:../UPMPackages/com.solotopia.simplediskutils",
       "depth": 0,

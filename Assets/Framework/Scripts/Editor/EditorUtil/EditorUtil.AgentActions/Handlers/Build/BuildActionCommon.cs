@@ -160,12 +160,18 @@ namespace NovaFramework.Editor
             return true;
         }
 
+        /// <summary>
+        /// 判断 Player Action 是否已具备可冻结、可验证的目标平台契约。
+        /// </summary>
+        /// <param name="target">待构建的 Unity 目标平台。</param>
+        /// <returns>当前支持 Standalone 桌面平台或 WebGL 时返回 true。</returns>
         internal static bool IsSupportedPlayerTarget(BuildTarget target)
         {
             return target == BuildTarget.StandaloneOSX ||
                    target == BuildTarget.StandaloneWindows ||
                    target == BuildTarget.StandaloneWindows64 ||
-                   target == BuildTarget.StandaloneLinux64;
+                   target == BuildTarget.StandaloneLinux64 ||
+                   target == BuildTarget.WebGL;
         }
 
         internal static PlayerSettingsSnapshot CapturePlayerSettings(
