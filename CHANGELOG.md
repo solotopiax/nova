@@ -8,6 +8,12 @@
 
 ## [Unreleased]
 
+## [0.6.34] - 2026-09-23
+
+### Changed
+
+- 发布 Framework `0.6.34` 与 WeChat MiniGame SDK `0.0.2`；Framework 改用构建期 WebGL 布局清单并修复 Player SDK 插件发现，微信异步 API 与持续监听回调补充分级脱敏日志。
+
 ## [0.6.33] - 2026-09-23
 
 ### Breaking

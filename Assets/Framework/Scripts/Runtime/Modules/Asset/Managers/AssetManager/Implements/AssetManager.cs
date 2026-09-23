@@ -113,6 +113,8 @@ namespace NovaFramework.Runtime
             m_DownloadUrlPolicies.Clear();
             m_RemoteServices.Clear();
             m_WebGLBuiltinCatalogAvailability.Clear();
+            m_WebGLBuiltinCatalogLayoutResolved = false;
+            m_WebGLBuiltinCatalogLayoutAvailable = false;
             m_PackageMetadataGates.Clear();
             m_Packages.Clear();
             m_Config = null;

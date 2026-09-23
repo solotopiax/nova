@@ -342,7 +342,7 @@ MonoBehaviour:
     Channel: 0
     DevelopMode: 0
   CurrentDevelopMode: 0
-  CurrentChannel: 2
+  CurrentChannel: 1
   ExportTarget: {fileID: 11400000, guid: 56ddd42abe7684994bf284d5404fde74, type: 2}
   m_Entries:
   - Platform: 1

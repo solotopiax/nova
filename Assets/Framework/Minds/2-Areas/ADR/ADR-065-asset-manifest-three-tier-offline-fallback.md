@@ -141,7 +141,7 @@ Nova 不要求“全量 Bundle 都缓存”才记录版本，而是以框架已�
 
 ## 验证依据（Verification）
 
-- Runtime：`AssetManager.CommitBootableVersion`、`IsLaunchScopeReady`、`ProbeWebGLBuiltinCatalogAsync`、`TryFallbackToLocalBootableManifestAsync`、`TryFallbackToWebGLBuiltinManifestAsync`、`TryRecoverManifestAsync`。
+- Runtime：`AssetManager.CommitBootableVersion`、`IsLaunchScopeReady`、`LoadWebGLBuiltinCatalogLayoutAsync`、`TryFallbackToLocalBootableManifestAsync`、`TryFallbackToWebGLBuiltinManifestAsync`、`TryRecoverManifestAsync`。
 - Procedure：`ProcedureCheckVersion` 在无补丁时提交；`ProcedureHotfix` 在无差异或下载成功后提交。
 - 存储 helper：`GetLocalBootableVersionFilePath`、`SaveLocalBootableVersion`、`TryLoadLocalBootableVersion`。
 - 契约测试：`AssetLocalBootableVersionTests`、`AssetManagerManifestFallbackRegressionTests`、`AssetStartupWhitelistTests`、`YooAsset305UpgradeContractTests`。

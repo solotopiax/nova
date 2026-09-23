@@ -103,7 +103,7 @@
 
 两个 Step 的 `Target` 在 PipifyWindow 中均为只读字段，执行前强制同步 Unity 当前 `EditorUserBuildSettings.activeBuildTarget`；旧 `ParamsJson` 与 CLI 的 `Target` 值不生效。当前 BuildTarget 未映射为 Nova Android / iOS / WebGL 时，Step 会在构建前中断。`EditorUtil.BundleBuilder.BuildAssetBundle` / `BuildRawFileBundle` 的直接 API 仍允许调用方显式传 `Target`，该兼容语义不适用于 Pipify。
 
-当当前目标为 WebGL 时，两个 Step 的 `BundledCopyOption` 只显示 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll`；选择按 Tag 拷贝时显示 `BundledCopyParams`。选项下方会按当前选择提示适用的 `OfflinePlayMode` / `HostPlayMode`、需要随网页或 CDN 部署的资源，以及选错后的加载影响。`OnlyCopyAll` / `OnlyCopyByTags` 会被拒绝，因为它们可能残留旧首包文件。`ClearAndCopyAll` / `ClearAndCopyByTags` 的先清后拷由 YooAsset 构建管线负责；`None` 构建成功后由 Nova 精确清理 `Assets/StreamingAssets/yoo/<PackageName>` 及其 `.meta`，不会清空整个 `StreamingAssets`。运行时依据 YooAsset 官方 `BuiltinCatalog.bytes` 是否存在选择纯 CDN 或 StreamingAssets + CDN 文件系统组合。
+当当前目标为 WebGL 时，两个 Step 的 `BundledCopyOption` 只显示 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll`；选择按 Tag 拷贝时显示 `BundledCopyParams`。选项下方会按当前选择提示适用的 `OfflinePlayMode` / `HostPlayMode`、需要随网页或 CDN 部署的资源，以及选错后的加载影响。`OnlyCopyAll` / `OnlyCopyByTags` 会被拒绝，因为它们可能残留旧首包文件。`ClearAndCopyAll` / `ClearAndCopyByTags` 的先清后拷由 YooAsset 构建管线负责；`None` 构建成功后由 Nova 精确清理 `Assets/StreamingAssets/yoo/<PackageName>` 及其 `.meta`，不会清空整个 `StreamingAssets`。Player 构建后处理根据官方 `BuiltinCatalog.bytes` 生成 `StreamingAssets/nova-webgl-layout.txt`，运行时读取该清单选择纯 CDN 或 StreamingAssets + CDN 文件系统组合。
 
 ### 5. Player 打包
 

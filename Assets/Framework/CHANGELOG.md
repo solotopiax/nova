@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.6.34] - 2026-09-23
+
+### Fixed
+
+- WebGL Host 的首包布局判断改为读取 Player 构建后处理生成的 `StreamingAssets/nova-webgl-layout.txt`；纯 CDN 不再请求不存在的 `BuiltinCatalog.bytes`，避免微信小游戏开发者工具输出预期 404，旧 Player 仍保留兼容探测。
+- SDK 插件发现仅在 Editor Play 检查测试程序集引用，Player 不再因 HybridCLR 程序集解析 `netstandard` 失败而中断 SDK 初始化，也无需为此向 `link.xml` 添加 `netstandard`。
+
 ## [0.6.33] - 2026-09-23
 
 ### Breaking

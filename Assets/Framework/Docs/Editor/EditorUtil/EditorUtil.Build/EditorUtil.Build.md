@@ -7,6 +7,8 @@ BuildPipeline.BuildPlayer 薄封装，提供统一输入校验与日志。
 
 正式 Player 构建会由全局构建回调临时生成唯一的 `Resources/YooAssetSettings.asset`：源文件取当前 `ConfigMasterSO` 三维坐标解析出的 Editor 权威配置，其中 Platform 实时映射 Unity Active BuildTarget，构建结束、失败或取消后自动清理。该机制覆盖 Build Profiles、Pipify、Debug Inspector 与 CLI 等所有 `BuildPipeline.BuildPlayer` 入口；`EditorUtil.Build` 自有入口另有 `finally` 清理兜底。
 
+WebGL Player 构建完成后，`NovaBuildPostprocessor` 会扫描输出目录中的 YooAsset 官方 `BuiltinCatalog.bytes`，生成 `StreamingAssets/nova-webgl-layout.txt`。该清单始终包含格式头，纯 CDN 构建也不会成为空文件；Host 运行时据此选择文件系统，不再用预期 404 探测首包布局。
+
 ---
 
 ## §2 文件表
@@ -19,6 +21,7 @@ BuildPipeline.BuildPlayer 薄封装，提供统一输入校验与日志。
 | `EditorUtil.Build.Definitions.cs` | `EditorUtil.Build` | 嵌套类型：BuildMode 枚举 |
 | `../../BuildProcessor/Core/YooAssetRuntimeSettingsStaging.cs` | `YooAssetRuntimeSettingsStaging` | YooAssetSettings 临时副本的解析、所有权记录、恢复与清理 |
 | `../../BuildProcessor/Core/YooAssetRuntimeSettingsBuildCallbacks.cs` | 构建回调 | 正式 Player 构建前 staging、构建后清理；跳过 HybridCLR 裁剪 AOT 临时构建 |
+| `../../BuildProcessor/Core/NovaBuildPostprocessor.cs` | `NovaBuildPostprocessor` | 分发平台后处理；WebGL 额外生成无 404 的资源布局清单 |
 
 ---
 

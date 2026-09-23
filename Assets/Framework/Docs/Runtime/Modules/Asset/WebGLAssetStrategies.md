@@ -10,7 +10,7 @@ Nova 已为浏览器 WebGL 实现三种资源运行策略：`TagsOnLaunch`、`On
 | 层次 | WebGL 下的含义 | 不代表什么 |
 |---|---|---|
 | 构建部署 | Pipify 的 `BundledCopyOption` 决定当前 Package 是纯 CDN、按 Tag 放入 `StreamingAssets`，还是全量放入 `StreamingAssets` | 浏览器已经下载或加载这些 Bundle |
-| 请求来源 | 运行时以 YooAsset 官方 `BuiltinCatalog.bytes` 是否存在为依据，组合 `WebServer` 与 `WebNetwork` | Android/iOS Sandbox 下载器 |
+| 请求来源 | Player 构建后处理根据 YooAsset 官方 `BuiltinCatalog.bytes` 生成布局清单，运行时据此组合 `WebServer` 与 `WebNetwork` | Android/iOS Sandbox 下载器 |
 | 运行策略 | 决定 Bundle 是首次业务使用时请求、启动按 Tag 请求，还是启动全部请求并常驻 | `StreamingAssets` 的拷贝范围 |
 
 WebGL 导出后的 `StreamingAssets` 是随网页一起部署在服务器上的 URL 目录。即使选择 `ClearAndCopyAll`，浏览器也只会在 Manifest 或实际资源加载发生时请求对应文件，不会在打开网页时自动下载全部 Bundle。
@@ -29,7 +29,7 @@ WebGL 在 Pipify 的 `BundledCopyOption` 中只开放三项：
 
 `OnlyCopyAll` 与 `OnlyCopyByTags` 在 WebGL 下不开放，因为它们不会先清理旧 Package 目录，历史文件可能污染实际布局。`None` 会由 Nova 精确清理目标 Package 的旧首包目录。
 
-Nova 不生成额外布局标记，也不修改 YooAsset 原包。Host 启动时会探测 `StreamingAssets/{YooFolderName}/{PackageName}/BuiltinCatalog.bytes`：可访问时启用 `WebServer + WebNetwork`，不存在或不可访问时使用纯 `WebNetwork`。Catalog 未命中时由 Nova 输出一条 Warning 说明已切换纯 CDN；浏览器或小游戏开发者工具的 Network 面板仍会保留真实 HTTP 404，它不是 Nova 的 Error 日志。Offline 固定使用纯 `WebServer`，不探测也不回退 CDN；缺少 Catalog 时由 YooAsset 初始化明确失败。
+Nova 不修改 YooAsset 原包。WebGL Player 构建完成后会扫描产物中的官方 `BuiltinCatalog.bytes`，在 `StreamingAssets/nova-webgl-layout.txt` 写入实际带首包的 Package；即使全部 Package 都是纯 CDN，该清单也会保留格式头。Host 启动只请求这份必然存在的清单：Package 在清单中时启用 `WebServer + WebNetwork`，否则使用纯 `WebNetwork`，不再通过预期 404 探测 Catalog。旧 Player 缺少或损坏清单时才兼容回退原探测方式。Offline 固定使用纯 `WebServer`，不读取布局清单也不回退 CDN；缺少 Catalog 时由 YooAsset 初始化明确失败。
 
 YooAsset 的 Catalog 只能证明首包目录存在，不能区分按 Tag 与全量拷贝。因此 Offline 的构建契约仍要求 `ClearAndCopyAll`；若错误使用按 Tag 首包，初始化可能成功，但访问未随包资源时会失败。
 

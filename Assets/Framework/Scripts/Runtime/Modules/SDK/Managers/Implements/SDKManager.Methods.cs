@@ -250,10 +250,13 @@ namespace NovaFramework.Runtime
 
             foreach (System.Reflection.Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
+#if UNITY_EDITOR
+                // 测试程序集只会参与 Editor Play；Player 不解析程序集引用，避免 HybridCLR 依赖解析影响插件发现。
                 if (IsTestAssembly(assembly))
                 {
                     continue;
                 }
+#endif
 
                 Type[] types;
                 try
@@ -290,6 +293,7 @@ namespace NovaFramework.Runtime
             return result;
         }
 
+#if UNITY_EDITOR
         /// <summary>
         /// 判断程序集是否为 Unity 测试程序集，避免 Editor Play 时把测试夹具当作真实 SDK 插件。
         /// 仅检查引用程序集名称，不在 Runtime 建立对 NUnit 或 Test Runner 类型的编译依赖。
@@ -311,6 +315,7 @@ namespace NovaFramework.Runtime
 
             return false;
         }
+#endif
 
     }
 }

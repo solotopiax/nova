@@ -37,7 +37,7 @@
 ### InitializeAsync
 
 - 先通过 `PluginBase<TConfig>` 或 `SDKPluginConfigTypeAttribute` 静态读取配置类型，仅构造 `ConfigMaster.EnabledSDKs` 命中的插件，再按 `ISDKPlugin.Priority` 分桶
-- 运行时反射发现会排除引用 NUnit 或 Unity Test Runner 的测试程序集，Editor Play 不会把测试夹具当作真实插件
+- Editor Play 的反射发现会排除引用 NUnit 或 Unity Test Runner 的测试程序集；Player 不执行该引用检查，避免 HybridCLR 程序集依赖解析影响插件发现
 - 未启用插件不会执行构造函数或字段初始化；缺少静态配置元数据的旧式插件会记录诊断并跳过
 - 再按桶顺序执行 `UniTask.WhenAll`
 - 单插件初始化失败只记日志，不中断其他插件

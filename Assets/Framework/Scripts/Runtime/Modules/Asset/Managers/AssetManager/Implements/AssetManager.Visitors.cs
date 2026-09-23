@@ -64,9 +64,19 @@ namespace NovaFramework.Runtime
         private readonly Dictionary<string, AssetRemoteService> m_RemoteServices = new();
 
         /// <summary>
-        /// WebGL Package 的官方内置 Catalog 探测结果；Host 初始化前用于决定是否启用 WebServer 文件系统。
+        /// WebGL Package 的官方内置 Catalog 布局结果；Host 初始化前用于决定是否启用 WebServer 文件系统。
         /// </summary>
         private readonly Dictionary<string, bool> m_WebGLBuiltinCatalogAvailability = new();
+
+        /// <summary>
+        /// WebGL Player 是否已读取构建后处理器生成的布局清单。
+        /// </summary>
+        private bool m_WebGLBuiltinCatalogLayoutResolved;
+
+        /// <summary>
+        /// WebGL Player 的布局清单是否有效；无效时仅为兼容旧产物回退到 Catalog 请求探测。
+        /// </summary>
+        private bool m_WebGLBuiltinCatalogLayoutAvailable;
 
         /// <summary>
         /// 每个包的版本元数据编排互斥门，避免初始化、版本请求与清单加载并发修改同一 YooAsset 包状态。

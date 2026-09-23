@@ -106,7 +106,7 @@ namespace NovaFramework.Runtime
                 : m_Config.RuntimePlayMode;
             if (effectiveMode == AssetPlayMode.HostPlayMode)
             {
-                await ProbeWebGLBuiltinCatalogAsync(packageName, ct);
+                await LoadWebGLBuiltinCatalogLayoutAsync(packageName, ct);
             }
 #endif
             await CheckStartupWhitelistAsync(packageName, ct);

@@ -8,10 +8,16 @@
  * descrip:   Nova 构建后处理器，callbackOrder = int.MaxValue 确保最后执行
  ***************************************************************/
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using NovaFramework.Runtime;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
+using YooAsset;
+using IOPath = System.IO.Path;
 #if UNITY_IOS
 using UnityEditor.iOS.Xcode;
 #endif
@@ -25,6 +31,10 @@ namespace NovaFramework.Editor
     /// </summary>
     public sealed class NovaBuildPostprocessor : IPostprocessBuildWithReport
     {
+        private const string c_WebGLBuiltinCatalogFileName = "BuiltinCatalog.bytes";
+        private const string c_WebGLAssetLayoutFileName = "nova-webgl-layout.txt";
+        private const string c_WebGLAssetLayoutHeader = "NOVA_WEBGL_LAYOUT_V1";
+
         /// <summary>
         /// 后处理回调顺序，设为 int.MaxValue 确保在所有其他后处理器之后执行。
         /// </summary>
@@ -145,6 +155,51 @@ namespace NovaFramework.Editor
                 Log.Debug(LogTag.Editor, $"[NovaBuildPostprocessor] WebGL Nova 收口后后处理：{processor.GetType().Name}");
                 processor.OnAfterNovaPostprocessBuildOnWebGL(report, NovaBuildShared.Context);
             }
+
+            WriteWebGLAssetLayout(report.summary.outputPath);
+        }
+
+        /// <summary>
+        /// 根据 WebGL 构建产物中的官方 YooAsset Catalog 生成布局清单，供运行时无 404 地选择文件系统。
+        /// </summary>
+        /// <param name="outputDirectory">WebGL Player 输出目录。</param>
+        /// <returns>生成的布局清单完整路径。</returns>
+        internal static string WriteWebGLAssetLayout(string outputDirectory)
+        {
+            if (string.IsNullOrWhiteSpace(outputDirectory))
+            {
+                throw new ArgumentException("WebGL Player 输出目录不能为空。", nameof(outputDirectory));
+            }
+
+            string streamingAssetsRoot = IOPath.Combine(outputDirectory, "StreamingAssets");
+            string yooRoot = IOPath.Combine(streamingAssetsRoot, YooAssetConfiguration.GetYooFolderName());
+            var builtinPackages = new List<string>();
+            if (Directory.Exists(yooRoot))
+            {
+                string[] packageDirectories = Directory.GetDirectories(yooRoot);
+                Array.Sort(packageDirectories, StringComparer.Ordinal);
+                for (int i = 0; i < packageDirectories.Length; i++)
+                {
+                    if (File.Exists(IOPath.Combine(packageDirectories[i], c_WebGLBuiltinCatalogFileName)))
+                    {
+                        builtinPackages.Add(IOPath.GetFileName(packageDirectories[i]));
+                    }
+                }
+            }
+
+            Directory.CreateDirectory(streamingAssetsRoot);
+            string layoutPath = IOPath.Combine(streamingAssetsRoot, c_WebGLAssetLayoutFileName);
+            string content = c_WebGLAssetLayoutHeader + "\n";
+            if (builtinPackages.Count > 0)
+            {
+                content += string.Join("\n", builtinPackages) + "\n";
+            }
+            File.WriteAllText(layoutPath, content, new UTF8Encoding(false));
+            Log.Debug(LogTag.Editor,
+                "[NovaBuildPostprocessor] 已生成 WebGL 资源布局清单：path={0}, builtinPackages={1}",
+                layoutPath,
+                builtinPackages.Count);
+            return layoutPath;
         }
     }
 }

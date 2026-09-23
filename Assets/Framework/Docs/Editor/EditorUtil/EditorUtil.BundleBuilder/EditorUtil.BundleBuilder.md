@@ -123,7 +123,7 @@ Raw DTO 不包含 `Compression`、`BuiltinShadersBundleName` 等 ScriptableBuild
 
 WebGL 不允许 `OnlyCopyAll` / `OnlyCopyByTags`，因为它们可能保留旧文件，使运行时无法准确判断本次构建布局。非 WebGL 平台仍保留 YooAsset 原有五种选项。
 
-Nova 不生成私有布局标记。运行时只根据 YooAsset 构建生成的官方 `BuiltinCatalog.bytes` 是否存在选择 WebServer/WebNetwork 组合；因此 WebGL 的 `None` 构建成功后必须删除目标 Package 的旧首包目录，避免遗留 Catalog 被误判为仍有首包。浏览器何时请求 Bundle 仍由 `WebGLAssetStrategy` 决定，见 [WebGLAssetStrategies.md](../../../Runtime/Modules/Asset/WebGLAssetStrategies.md)。
+WebGL 的 `None` 构建成功后必须删除目标 Package 的旧首包目录，避免遗留 Catalog 被误判为仍有首包。后续 Player 构建会根据输出目录中的官方 `BuiltinCatalog.bytes` 生成 `StreamingAssets/nova-webgl-layout.txt`；运行时读取该清单选择 WebServer/WebNetwork 组合，不再通过 404 探测 Catalog。浏览器何时请求 Bundle 仍由 `WebGLAssetStrategy` 决定，见 [WebGLAssetStrategies.md](../../../Runtime/Modules/Asset/WebGLAssetStrategies.md)。
 
 ---
 

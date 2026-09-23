@@ -129,7 +129,7 @@ Nova 管理的 WebGL Bundle/RawFile 构建入口开放三种清理式布局：
 | `ClearAndCopyByTags` | 复制 Manifest、Catalog 与指定 Tag Bundle | `WebServer + WebNetwork` | 不支持；访问未随包资源会失败 |
 | `ClearAndCopyAll` | 复制 Manifest、Catalog 与全部 Bundle | `WebServer + WebNetwork` | 纯 `WebServer`，仅此布局完整支持 |
 
-WebGL 禁止 `OnlyCopyAll` / `OnlyCopyByTags`，因为不清理旧目录会让历史 Catalog 与 Bundle 污染当前构建。Nova 不生成私有布局标记，也不修改 YooAsset 原包。Host 启动时探测 `StreamingAssets/{YooFolderName}/{PackageName}/BuiltinCatalog.bytes`：可访问时创建 `WebServer + WebNetwork`，不存在或探测失败时创建纯 `WebNetwork`。`None` 构建成功后必须删除目标 Package 的旧首包目录，使 Catalog 缺失能够准确表示纯 CDN。
+WebGL 禁止 `OnlyCopyAll` / `OnlyCopyByTags`，因为不清理旧目录会让历史 Catalog 与 Bundle 污染当前构建。Nova 不修改 YooAsset 原包。Player 构建后处理根据输出目录中实际存在的 `StreamingAssets/{YooFolderName}/{PackageName}/BuiltinCatalog.bytes` 生成 `StreamingAssets/nova-webgl-layout.txt`；Host 启动读取该清单，Package 被登记时创建 `WebServer + WebNetwork`，否则创建纯 `WebNetwork`。布局真相仍来自官方 Catalog，但不再以请求缺失文件产生的预期 404 作为运行时判断。`None` 构建成功后必须删除目标 Package 的旧首包目录，使生成的布局清单准确表示纯 CDN。
 
 Offline 不探测 Catalog，也不创建 `WebNetwork`，固定使用纯 `WebServer`。它的完整部署契约是 `ClearAndCopyAll`；缺少 Catalog 时由 YooAsset 初始化明确失败。Catalog 不能区分按 Tag 与全量拷贝，因此错误使用 `ClearAndCopyByTags` 时可能初始化成功、但在访问未随包资源时失败。
 
@@ -159,6 +159,7 @@ WebGL 导出后 `StreamingAssets` 仍是服务器上的独立 URL 目录，不�
 - Unity Web Cache 可能被浏览器淘汰，不能作为永久离线资源保证。
 - 首包布局与运行策略是两组独立配置，项目需要明确选择；配置错误会在初始化或构建阶段失败，而不是静默使用错误来源。
 - CopyAll 会增大 WebGL 服务器部署目录，但不会将全部 Bundle 并入网页启动必下的 `.data` 文件。
+- WebGL Player 部署必须保留构建后处理生成的 `StreamingAssets/nova-webgl-layout.txt`；旧产物缺少该文件时仅能回退到会产生 404 的兼容探测。
 - 删除 `PreloadAsync` 是公共 API 破坏性变更，外部消费者需要改用 WarmupGroup。
 
 ## 被排除的方案（Alternatives）
@@ -173,7 +174,7 @@ WebGL 导出后 `StreamingAssets` 仍是服务器上的独立 URL 目录，不�
 | 强制所有项目 AllOnLaunch | 大型项目启动流量与内存不可接受 |
 | WebGL 允许 `OnlyCopy*` | 旧文件可能残留，无法根据本次配置可靠推导真实部署布局 |
 | 在 AssetComponent 再配置一份首包模式 | 与 Pipify 构建参数形成双真相源，运行时仍无法证明 Player 内实际打入了什么 |
-| 生成 Nova 私有布局标记 | YooAsset 官方 Catalog 已足以区分“有首包”和“纯 CDN”；额外文件会形成双真相源和升级维护负担 |
+| 运行时直接请求 `BuiltinCatalog.bytes` 判断布局 | 纯 CDN 必然返回 404，微信小游戏插件会把这个预期结果打印为 Error；改为构建后处理扫描官方 Catalog 并生成只读派生清单 |
 
 ## 当前落地状态与验证依据
 
@@ -185,7 +186,7 @@ WebGL 导出后 `StreamingAssets` 仍是服务器上的独立 URL 目录，不�
 - `ProcedureCheckVersion` 将 `HasAssetPatch` 与 `RequiresStartupAssetWork` 分开：WebGL `OnDemand` 不进入 `ProcedureHotfix`，`TagsOnLaunch` / `AllOnLaunch` 则即使关闭常规热更新也会完成 Warmup。推荐 App 更新取消后同样按后者恢复启动资源工作。
 - `LaunchHotfixTags` 会清理空白和重复项；WebGL 的 `TagsOnLaunch` 清理后为空时降级为 `OnDemand`。
 - `BuildAssetBundle`、`BuildRawFileBundle`、Pipify 和受控 Build Action 在 WebGL 目标支持 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll`，拒绝 `OnlyCopy*`；非 WebGL 保留原有构建选择。
-- Nova 不写私有 WebGL 布局文件；`None` 成功后通过 Unity 资产删除语义精确清理该 Package 的旧首包目录及 `.meta`，不清空整个 `StreamingAssets`。微信纯 CDN 前置校验忽略 `.meta`，只把真实 YooAsset 文件视为首包内容。Host 依据官方 `BuiltinCatalog.bytes` 是否可访问选择 WebNetwork-only 或 WebServer + WebNetwork，Offline 固定为 WebServer-only。
+- `None` 成功后通过 Unity 资产删除语义精确清理该 Package 的旧首包目录及 `.meta`，不清空整个 `StreamingAssets`。微信纯 CDN 前置校验忽略 `.meta`，只把真实 YooAsset 文件视为首包内容。WebGL Player 构建后处理扫描输出中的官方 Catalog 并生成始终非空的 `nova-webgl-layout.txt`；Host 依据清单选择 WebNetwork-only 或 WebServer + WebNetwork，Offline 固定为 WebServer-only。旧 Player 缺少清单时保留原 Catalog 探测兼容路径。
 - `WebGLBundleRequestTimeout` 覆盖 WebServer（StreamingAssets）和 WebNetwork（CDN）的 Bundle 单次请求；`.version` 使用 `CheckTimeout`，`.hash/.bytes` 使用 `ManifestRequestTimeout`。只有 Host 的 CDN Bundle 与远端元数据请求复用 Asset 的主备、重试、最近成功域名和 UWR 埋点；StreamingAssets 请求使用对应超时，但不参与 CDN 候选轮换。
 - WebGL 远端 Manifest 候选耗尽时仍可临时回退随 Player 发布的首包元数据；Bundle 不因该回退改写自身的 WebServer/WebNetwork 拓扑。
 

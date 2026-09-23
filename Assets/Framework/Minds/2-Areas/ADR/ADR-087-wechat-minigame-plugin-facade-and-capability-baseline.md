@@ -44,6 +44,7 @@ Solar `WXHelper` 已验证了一批真实项目需要的行为，但它同时包
 - `IWeChatMiniGameBackend` 是框架定义的服务端能力契约，包内 `WeChatMiniGameBackend` 提供 Nova Network + Protobuf 的默认客户端实现。项目只配置 HostKey/NetCmd 路由和实现业务服务端，不重复编写客户端 Backend。
 - 服务端契约固定覆盖登录校验、道具签名、单笔验单、当前用户全订单查询、订阅结果登记和文本安全六项。AppSecret、session_key、access_token、Midas 密钥和私钥只存在于服务端。
 - 有状态原厂对象由 Nova 包装并实现 `IDisposable`，监听必须使用同一委托对称注册与注销；文件系统包装器本身不持有独占对象，但打开的文件描述符必须显式关闭。
+- Nova 适配层统一记录微信异步 API 的完成、失败、超时和取消结果，持续监听事件使用 Debug 级别；日志只保留 API 名和脱敏摘要，不输出登录 code、身份、用户内容、token、路径、订单号或签名原文。
 - `NOVA_WECHAT_SDK_AVAILABLE` 只是各源码文件内部的条件编译别名，不是 Unity 全局宏。`UNITY_WEBGL`、`UNITY_EDITOR` 是 Unity 内置符号；三种微信符号由不同微信导出器或工具链提供，Nova 仅兼容识别。编译可用不等于运行在微信容器，运行时仍由 `WeChatMiniGameEnvironment.IsMiniGame` 裁决。
 - 同类文件进入以能力命名的目录。公开入口位于对应主文件并按重要性、调用热度从上到下排列；私有方法进入该子模块的 `.Methods.cs`，成员字段进入该子模块的 `.Visitors.cs`。Config 同样按 Account、Payment、Social、Security、Ads 等职责拆分。
 - 本包尚未发布时，公开 API 直接收敛到最终命名并同步全部调用方，不保留旧名或 `[Obsolete]` 过渡层。
