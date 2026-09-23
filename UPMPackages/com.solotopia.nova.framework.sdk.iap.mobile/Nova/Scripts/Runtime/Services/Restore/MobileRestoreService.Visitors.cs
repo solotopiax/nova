@@ -22,9 +22,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         private bool m_IsInRestore;
 
         /// <summary>
-        /// 商品尚未拉取成功时收到过权益刷新请求；商品成功后补跑一次。
+        /// 商店、商品或平台已有购买尚未就绪时收到过权益刷新请求；依赖就绪后补跑一次。
         /// </summary>
-        private bool m_PendingEntitlementRefreshAfterProductsFetched;
+        private bool m_PendingEntitlementRefresh;
+
+        /// <summary>
+        /// 是否正在通过 Unity IAP 拉取平台已有购买；拉取完成前不启动权益汇总，避免先生成缺少票据的恢复记录。
+        /// </summary>
+        private bool m_IsExistingPurchasesFetchInProgress;
 
         /// <summary>
         /// Restore 操作完成信号，所有验单结果收集完成后触发。

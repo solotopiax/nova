@@ -212,3 +212,10 @@ Assets/Editor Default Resources.meta
 /.agents/nova-skills.lock.json
 /.agents/nova-skills.transaction.json
 /.agents/.nova-skills-staging/
+TextToolDatas/slim/backup.txt
+TextToolDatas/unpackTemp/temp/boot.config
+TextToolDatas/unpackTemp/temp/data.unity3d
+TextToolDatas/unpackTemp/temp/global-metadata.dat
+TextToolDatas/unpackTemp/temp/RuntimeInitializeOnLoads.json
+TextToolDatas/unpackTemp/temp/ScriptingAssemblies.json
+TextToolDatas/unpackTemp/temp/unity default resources

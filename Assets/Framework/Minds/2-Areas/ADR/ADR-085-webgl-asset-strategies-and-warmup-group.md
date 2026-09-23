@@ -185,7 +185,7 @@ WebGL 导出后 `StreamingAssets` 仍是服务器上的独立 URL 目录，不�
 - `ProcedureCheckVersion` 将 `HasAssetPatch` 与 `RequiresStartupAssetWork` 分开：WebGL `OnDemand` 不进入 `ProcedureHotfix`，`TagsOnLaunch` / `AllOnLaunch` 则即使关闭常规热更新也会完成 Warmup。推荐 App 更新取消后同样按后者恢复启动资源工作。
 - `LaunchHotfixTags` 会清理空白和重复项；WebGL 的 `TagsOnLaunch` 清理后为空时降级为 `OnDemand`。
 - `BuildAssetBundle`、`BuildRawFileBundle`、Pipify 和受控 Build Action 在 WebGL 目标支持 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll`，拒绝 `OnlyCopy*`；非 WebGL 保留原有构建选择。
-- Nova 不写私有 WebGL 布局文件；`None` 成功后精确清理该 Package 的旧首包目录。Host 依据官方 `BuiltinCatalog.bytes` 是否可访问选择 WebNetwork-only 或 WebServer + WebNetwork，Offline 固定为 WebServer-only。
+- Nova 不写私有 WebGL 布局文件；`None` 成功后通过 Unity 资产删除语义精确清理该 Package 的旧首包目录及 `.meta`，不清空整个 `StreamingAssets`。微信纯 CDN 前置校验忽略 `.meta`，只把真实 YooAsset 文件视为首包内容。Host 依据官方 `BuiltinCatalog.bytes` 是否可访问选择 WebNetwork-only 或 WebServer + WebNetwork，Offline 固定为 WebServer-only。
 - `WebGLBundleRequestTimeout` 覆盖 WebServer（StreamingAssets）和 WebNetwork（CDN）的 Bundle 单次请求；`.version` 使用 `CheckTimeout`，`.hash/.bytes` 使用 `ManifestRequestTimeout`。只有 Host 的 CDN Bundle 与远端元数据请求复用 Asset 的主备、重试、最近成功域名和 UWR 埋点；StreamingAssets 请求使用对应超时，但不参与 CDN 候选轮换。
 - WebGL 远端 Manifest 候选耗尽时仍可临时回退随 Player 发布的首包元数据；Bundle 不因该回退改写自身的 WebServer/WebNetwork 拓扑。
 

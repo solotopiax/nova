@@ -802,6 +802,7 @@ namespace NovaFramework.Editor
                 return;
             }
             SerializedProperty target = configsProp.GetArrayElementAtIndex(idx);
+            DrawSDKPanelActions(m_SelectedPluginType);
             SerializedProperty child = target.Copy();
             SerializedProperty end = target.GetEndProperty();
             bool enterChildren = true;
@@ -821,6 +822,43 @@ namespace NovaFramework.Editor
                 EditorUtil.Config.DimensionProjector.BroadcastWithinGroup(workingSrc, m_MasterSO, EditorUtil.Config.DimensionProjector.PanelKind.SDK, sdkTypeName, new EditorUtil.Config.DimensionProjector.Coord(m_EditingPlatform, workingSrc.CurrentChannel, workingSrc.CurrentDevelopMode));
             }
             EditorUtil.Draw.Space(16f);
+        }
+
+        /// <summary>
+        /// 绘制 SDK Editor 程序集为当前 Config 声明的快捷动作。
+        /// </summary>
+        private void DrawSDKPanelActions(System.Type configType)
+        {
+            if (configType == null || m_PluginPanelActionCache == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < m_PluginPanelActionCache.Count; i++)
+            {
+                EditorUtil.Config.SDKPluginScanner.PluginPanelActionEntry action = m_PluginPanelActionCache[i];
+                if (action.ConfigType != configType)
+                {
+                    continue;
+                }
+
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    EditorUtil.Draw.Space(16f);
+                    EditorUtil.Draw.Button(action.ButtonLabel, true, () =>
+                    {
+                        if (!EditorApplication.ExecuteMenuItem(action.MenuItemPath))
+                        {
+                            Log.Warning(
+                                LogTag.SDK,
+                                "未能打开 '{0}'。请确认对应 SDK 已正确安装，或从 Unity 顶部菜单手动进入。",
+                                action.ButtonLabel);
+                        }
+                    }, GUILayout.ExpandWidth(true));
+                    EditorUtil.Draw.Space(16f);
+                });
+                EditorUtil.Draw.Space(8f);
+            }
         }
 
         /// <summary>

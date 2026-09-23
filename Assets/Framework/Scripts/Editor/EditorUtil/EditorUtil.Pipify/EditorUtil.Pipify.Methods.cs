@@ -5,13 +5,16 @@
  * filename:  EditorUtil.Pipify.Methods.cs
  * author:    taoye
  * created:   2026/5/10
- * descrip:   Pipify 私有工具方法（ApplyOverridesForItem / ConvertOverrideValue）
+ * descrip:   Pipify 参数构建、覆盖、平台同步与运行前占位符解析
  ***************************************************************/
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using NovaFramework.Runtime;
+using UnityEngine;
 
 namespace NovaFramework.Editor
 {
@@ -56,6 +59,36 @@ namespace NovaFramework.Editor
                 IReadOnlyDictionary<string, string> overrides,
                 ConfigMasterSO configMaster = null)
             {
+                return ResolveParamsForRun(
+                    info,
+                    itemIndex,
+                    item,
+                    settings,
+                    overrides,
+                    configMaster,
+                    true);
+            }
+
+            /// <summary>
+            /// 为执行或前瞻检查解析参数；只有即将调用 Step 的执行路径才展开字符串占位符。
+            /// </summary>
+            /// <param name="info">当前 Step 元信息。</param>
+            /// <param name="itemIndex">当前条目索引。</param>
+            /// <param name="item">当前条目。</param>
+            /// <param name="settings">条目所属 PipifySettingsSO。</param>
+            /// <param name="overrides">本次执行的临时参数覆盖。</param>
+            /// <param name="configMaster">测试时显式提供的 ConfigMaster。</param>
+            /// <param name="resolvePlaceholders">是否为本次真实调用展开字符串占位符。</param>
+            /// <returns>完成指定运行期处理的参数实例。</returns>
+            private static object ResolveParamsForRun(
+                PipifyStepInfo info,
+                int itemIndex,
+                BatchItem item,
+                PipifySettingsSO settings,
+                IReadOnlyDictionary<string, string> overrides,
+                ConfigMasterSO configMaster,
+                bool resolvePlaceholders)
+            {
                 if (info?.ParamsType == null) return null;
 
                 object paramsInstance;
@@ -78,7 +111,148 @@ namespace NovaFramework.Editor
                 ApplyOverridesForItem(info, itemIndex, paramsInstance, overrides);
                 // 平台由 Unity Active BuildTarget 唯一决定；旧 JSON 或 CLI override 不能改变本次实际平台。
                 PipifySteps.SynchronizeActivePlatform(paramsInstance);
+                if (resolvePlaceholders) ResolveStringPlaceholdersForRun(paramsInstance, configMaster);
                 return paramsInstance;
+            }
+
+            /// <summary>
+            /// 在 Step 调用前统一解析本次参数快照中的标准文本占位符，不回写 ParamsJson 或配置资产。
+            /// </summary>
+            /// <param name="paramsInstance">已经完成反序列化、CLI 覆盖和平台同步的参数实例。</param>
+            /// <param name="configMaster">测试或显式调用时指定的 ConfigMaster；为空时使用当前激活资产。</param>
+            private static void ResolveStringPlaceholdersForRun(object paramsInstance, ConfigMasterSO configMaster)
+            {
+                if (paramsInstance == null || !ContainsStandardPlaceholder(
+                        paramsInstance,
+                        new HashSet<object>(ReferenceObjectComparer.Instance)))
+                {
+                    return;
+                }
+
+                ConfigMasterSO master = configMaster ?? PipifySteps.Helpers.ResolveConfigMaster();
+                PlaceholderContext context = Placeholder.FromConfigMaster(
+                    master,
+                    Placeholder.ResolveDefaultPackageName(),
+                    Application.version,
+                    DateTime.Now);
+                ResolveStringPlaceholders(
+                    paramsInstance,
+                    context,
+                    new HashSet<object>(ReferenceObjectComparer.Instance));
+            }
+
+            /// <summary>
+            /// 递归判断参数对象的公开实例字段和列表元素中是否包含标准占位符。
+            /// </summary>
+            /// <param name="value">待检查值。</param>
+            /// <param name="visited">已访问的引用对象，防止异常参数模型形成循环。</param>
+            /// <returns>任一字符串包含标准占位符时返回 true。</returns>
+            private static bool ContainsStandardPlaceholder(object value, HashSet<object> visited)
+            {
+                if (value == null) return false;
+                if (value is string text) return ContainsStandardPlaceholder(text);
+
+                Type type = value.GetType();
+                if (IsPlaceholderTraversalTerminal(type)) return false;
+                if (!type.IsValueType && !visited.Add(value)) return false;
+
+                if (value is IList list)
+                {
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        if (ContainsStandardPlaceholder(list[i], visited)) return true;
+                    }
+                    return false;
+                }
+
+                foreach (FieldInfo field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    if (ContainsStandardPlaceholder(field.GetValue(value), visited)) return true;
+                }
+                return false;
+            }
+
+            /// <summary>
+            /// 递归替换参数对象公开实例字段和列表元素中的标准占位符。
+            /// </summary>
+            /// <param name="value">待处理值。</param>
+            /// <param name="context">本 Step 统一使用的占位符值快照。</param>
+            /// <param name="visited">已访问的引用对象，防止异常参数模型形成循环。</param>
+            /// <returns>替换后的值；值类型由调用方写回所属字段或列表。</returns>
+            private static object ResolveStringPlaceholders(
+                object value,
+                PlaceholderContext context,
+                HashSet<object> visited)
+            {
+                if (value == null) return null;
+                if (value is string text) return Util.Placeholder.Resolve(text, context);
+
+                Type type = value.GetType();
+                if (IsPlaceholderTraversalTerminal(type)) return value;
+                if (!type.IsValueType && !visited.Add(value)) return value;
+
+                if (value is IList list)
+                {
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        list[i] = ResolveStringPlaceholders(list[i], context, visited);
+                    }
+                    return value;
+                }
+
+                foreach (FieldInfo field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    object current = field.GetValue(value);
+                    object resolved = ResolveStringPlaceholders(current, context, visited);
+                    if (!field.IsInitOnly && !Equals(current, resolved)) field.SetValue(value, resolved);
+                }
+                return value;
+            }
+
+            /// <summary>
+            /// 判断类型是否不应继续遍历其内部字段。
+            /// </summary>
+            private static bool IsPlaceholderTraversalTerminal(Type type)
+            {
+                return type.IsPrimitive || type.IsEnum || type == typeof(decimal) || type == typeof(DateTime) ||
+                       type == typeof(Guid) || typeof(UnityEngine.Object).IsAssignableFrom(type);
+            }
+
+            /// <summary>
+            /// 判断文本是否包含 Pipify 支持的任一标准占位符；未知占位符不会触发配置解析。
+            /// </summary>
+            private static bool ContainsStandardPlaceholder(string value)
+            {
+                if (string.IsNullOrEmpty(value)) return false;
+                return value.IndexOf("{Platform}", StringComparison.Ordinal) >= 0 ||
+                       value.IndexOf("{Channel}", StringComparison.Ordinal) >= 0 ||
+                       value.IndexOf("{Package}", StringComparison.Ordinal) >= 0 ||
+                       value.IndexOf("{Version}", StringComparison.Ordinal) >= 0 ||
+                       value.IndexOf("{Time}", StringComparison.Ordinal) >= 0;
+            }
+
+            /// <summary>
+            /// 为递归参数遍历提供引用相等比较，避免自定义 Equals 将不同参数节点误判为同一对象。
+            /// </summary>
+            private sealed class ReferenceObjectComparer : IEqualityComparer<object>
+            {
+                internal static readonly ReferenceObjectComparer Instance = new ReferenceObjectComparer();
+
+                /// <summary>
+                /// 判断两个对象是否为同一引用。
+                /// </summary>
+                public new bool Equals(object x, object y)
+                {
+                    return ReferenceEquals(x, y);
+                }
+
+                /// <summary>
+                /// 返回不受对象自定义相等语义影响的引用哈希值。
+                /// </summary>
+                public int GetHashCode(object obj)
+                {
+                    return RuntimeHelpers.GetHashCode(obj);
+                }
             }
 
             /// <summary>

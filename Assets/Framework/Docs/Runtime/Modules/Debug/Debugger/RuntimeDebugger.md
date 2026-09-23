@@ -11,7 +11,8 @@ RuntimeDebugger.Init(new RuntimeDebugger.InitOptions
 {
     LogTagType = typeof(LogTag),
     LogTagDescriptionResolver = LogTag.GetDescription,
-    MaximumConsoleEntries = maxEntries
+    MaximumConsoleEntries = maxEntries,
+    TextFont = runtimeDebuggerFont
 });
 ```
 
@@ -20,6 +21,8 @@ RuntimeDebugger.Init(new RuntimeDebugger.InitOptions
 - `DebugComponent` 统一触发初始化。
 - 不在其他模块散落调用初始化。
 - 不保留旧插件兼容门面。
+- `TextFont` 非空时，`DebugInstantiate` 会把它应用到每个动态创建对象下的全部 `UnityEngine.UI.Text`；为空时保留 Prefab 原字体。
+- WebGL / 微信小游戏不能依赖 Editor 的系统字体回退。中文日志必须使用实际包含中文字形、且会进入 Player 构建的 `Font`。
 
 ## Console 预览规则
 

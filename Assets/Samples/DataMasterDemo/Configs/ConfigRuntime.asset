@@ -75,9 +75,15 @@ MonoBehaviour:
     - rid: 3752622509981433985
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 3752622509981433986
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:

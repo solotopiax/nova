@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using NovaFramework.SDK.IAP.Runtime;
 using NovaFramework.SDK.IAP.ThirdPay.Runtime;
-using UnityEngine;
 using UnityEngine.Scripting;
 
 using FeedbackLevel = NovaFramework.Sdk.IAP.Samples.Runtime.BaseDemoView.FeedbackLevel;
@@ -37,11 +36,6 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         private DemoIAPThirdPayPanelView m_Panel;
 
         /// <summary>
-        /// 当前成功发现的可选支付商店列表。
-        /// </summary>
-        private IReadOnlyList<DemoIAPStoreKind> m_AvailableStores;
-
-        /// <summary>
         /// 最近一次成功刷新得到的服务端本地价格，失败时继续用于商品卡展示。
         /// </summary>
         private readonly Dictionary<long, string> m_ProductPrices = new Dictionary<long, string>();
@@ -59,15 +53,12 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         {
             m_Bridge = context.Bridge;
             m_Panel = context.Panel as DemoIAPThirdPayPanelView;
-            m_AvailableStores = context.AvailableStores;
             if (m_Panel == null)
             {
                 throw new InvalidOperationException("ThirdPay 模块未取得 DemoIAPThirdPayPanelView。");
             }
 
-            m_Panel.Configure(BuildProductTitle, tableId => PayAsync(tableId).Forget(),
-                () => RefreshAsync().Forget(), HandleDebugCountryChanged,
-                HandleSkipPaymentInformationChanged);
+            m_Panel.Configure(BuildProductTitle, tableId => PayAsync(tableId).Forget(), HandleDebugCountryChanged, HandleSkipPaymentInformationChanged);
         }
 
         /// <summary>
@@ -79,7 +70,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 第三方支付 Tab 被选中时刷新当前商品快照展示。
+        /// 第三方支付 Tab 被选中时展示自动请求取得的统一支付配置。
         /// </summary>
         /// <returns>刷新结束的异步任务。</returns>
         public UniTask OnSelectedAsync()
@@ -88,24 +79,14 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 刷新当前已预取的第三方支付商品快照和账号资格。
+        /// 展示自动请求取得的第三方支付开关、关闭原因和商品 SKU 数量。
         /// </summary>
         /// <returns>异步任务。</returns>
         public UniTask RefreshAsync()
         {
-            var status = new ThirdPayStatus
-            {
-                RuntimeStore = GetRuntimeStoreName(),
-                OpenStores = BuildOpenStoreText(),
-                WhiteList = "未公开/待接入",
-                BlackList = "未公开/待接入",
-                GooglePolicy = Application.platform == RuntimePlatform.Android
-                    ? "不跳过，执行政策校验"
-                    : "跳过（非 Android）",
-            };
+            var status = new ThirdPayStatus();
 
-            if (m_Bridge == null || !m_Bridge.TryInitialize()
-                || !m_Bridge.IAP.TryGetCapability(out IIAPThirdPayCapable capability))
+            if (!TryGetThirdPayCapability(out IIAPThirdPayConfigCapable configCapability) || !TryGetThirdPayCapability(out IIAPThirdPayProductCapable productCapability) || !TryGetThirdPayCapability(out IIAPThirdPayCheckoutCapable checkoutCapability))
             {
                 m_Panel?.SetStatusText(status.ToDisplayText());
                 m_Bridge?.AppendFeedback("当前 IAP 插件未暴露 ThirdPay 能力。", FeedbackLevel.Warn);
@@ -114,25 +95,33 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
 
             try
             {
-                m_Panel?.SetSkipPaymentInformation(capability.IsPaymentInformationScreenSkipped);
-                status.GooglePolicy = Application.platform == RuntimePlatform.Android
-                    ? (capability.IsPaymentInformationScreenSkipped ? "跳过信息页，直接进入 ThirdPay" : "不跳过，执行政策校验")
-                    : "跳过（非 Android）";
-                status.Eligible = capability.HasProducts();
-                if (status.Eligible)
+                m_Panel?.SetSkipPaymentInformation(checkoutCapability.IsPaymentInformationScreenSkipped);
+                status.ConfigReady = configCapability.IsPaymentConfigReady;
+                status.PaymentEnabled = status.ConfigReady && configCapability.IsPaymentAvailable;
+                status.DisabledReason = status.ConfigReady ? configCapability.PaymentDisabledReason : 0;
+                status.ProductSkuCount = productCapability.GetProductList().Count;
+                if (status.ProductSkuCount > 0)
                 {
-                    RefreshProductPrices(capability);
+                    RefreshProductPrices(productCapability);
                     m_Panel?.RefreshProductTitles();
-                    m_Bridge.AppendFeedback("第三方支付商品快照刷新完成：具备资格", FeedbackLevel.Success);
+                }
+
+                if (!status.ConfigReady)
+                {
+                    m_Bridge.AppendFeedback("第三方支付配置尚未就绪，等待登录或国家切换后的内部预取。", FeedbackLevel.Warn);
+                }
+                else if (!status.PaymentEnabled)
+                {
+                    m_Bridge.AppendFeedback("第三方支付未开启，失败原因码：" + status.DisabledReason, FeedbackLevel.Warn);
                 }
                 else
                 {
-                    m_Bridge.AppendFeedback("第三方支付商品尚未就绪，等待登录或国家切换后的内部预取。", FeedbackLevel.Warn);
+                    m_Bridge.AppendFeedback("第三方支付配置响应已展示，商品 SKU 数量：" + status.ProductSkuCount, FeedbackLevel.Success);
                 }
             }
             catch (Exception exception)
             {
-                m_Bridge.AppendFeedback("第三方支付商品快照刷新失败：" + exception.Message, FeedbackLevel.Error);
+                m_Bridge.AppendFeedback("第三方支付配置响应展示失败：" + exception.Message, FeedbackLevel.Error);
             }
 
             m_Panel?.SetStatusText(status.ToDisplayText());
@@ -163,7 +152,6 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         {
             m_Panel?.ClearRuntimeContent();
             m_ProductPrices.Clear();
-            m_AvailableStores = null;
             m_Panel = null;
             m_Bridge = null;
         }
@@ -174,7 +162,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// <param name="countryCode">ISO 3166-1 alpha-2 国家代码；空值表示恢复自动识别。</param>
         private void HandleDebugCountryChanged(string countryCode)
         {
-            if (!TryGetThirdPayCapability(out IIAPThirdPayCapable capability))
+            if (!TryGetThirdPayCapability(out IIAPThirdPayConfigCapable capability))
             {
                 m_Bridge?.AppendFeedback("ThirdPay 能力不可用，无法设置调试国家。", FeedbackLevel.Warn);
                 return;
@@ -192,7 +180,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// <param name="skip">是否跳过信息页。</param>
         private void HandleSkipPaymentInformationChanged(bool skip)
         {
-            if (!TryGetThirdPayCapability(out IIAPThirdPayCapable capability))
+            if (!TryGetThirdPayCapability(out IIAPThirdPayCheckoutCapable capability))
             {
                 m_Bridge?.AppendFeedback("ThirdPay 能力不可用，无法设置信息页跳过开关。", FeedbackLevel.Warn);
                 return;
@@ -207,9 +195,10 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// <summary>
         /// 获取当前 ThirdPay 能力，集中处理 Demo 调试控件的运行时依赖检查。
         /// </summary>
-        /// <param name="capability">当前 ThirdPay 能力。</param>
+        /// <typeparam name="T">需要获取的 ThirdPay 细分能力类型。</typeparam>
+        /// <param name="capability">当前 ThirdPay 细分能力。</param>
         /// <returns>成功取得能力时返回 true。</returns>
-        private bool TryGetThirdPayCapability(out IIAPThirdPayCapable capability)
+        private bool TryGetThirdPayCapability<T>(out T capability) where T : class, IIAPCapable
         {
             capability = null;
             return m_Bridge != null && m_Bridge.TryInitialize()
@@ -223,8 +212,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// <returns>异步任务。</returns>
         private async UniTask PayAsync(long tableId)
         {
-            if (m_Bridge == null || !m_Bridge.TryInitialize()
-                || !m_Bridge.IAP.TryGetCapability(out IIAPThirdPayCapable _))
+            if (!TryGetThirdPayCapability(out IIAPThirdPayConfigCapable _))
             {
                 m_Bridge?.AppendFeedback("ThirdPay 能力不可用。", FeedbackLevel.Warn);
                 return;
@@ -278,7 +266,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// 使用本次成功响应替换服务端价格快照，缺失或不完整的商品回退到基础商品表价格。
         /// </summary>
         /// <param name="capability">ThirdPay 商品查询能力。</param>
-        private void RefreshProductPrices(IIAPThirdPayCapable capability)
+        private void RefreshProductPrices(IIAPThirdPayProductCapable capability)
         {
             var refreshedPrices = new Dictionary<long, string>();
             for (int i = 0; i < DemoIAPProductCatalog.AllProductIds.Length; i++)
@@ -302,88 +290,47 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 将当前成功加载的可选商店模块格式化为开放商店文本。
-        /// </summary>
-        /// <returns>开放商店列表。</returns>
-        private string BuildOpenStoreText()
-        {
-            if (m_AvailableStores == null || m_AvailableStores.Count == 0)
-            {
-                return "无";
-            }
-
-            var names = new string[m_AvailableStores.Count];
-            for (int i = 0; i < m_AvailableStores.Count; i++)
-            {
-                names[i] = m_AvailableStores[i].ToString();
-            }
-            return string.Join(" / ", names);
-        }
-
-        /// <summary>
-        /// 获取当前运行平台对应的官方商店名称。
-        /// </summary>
-        /// <returns>面向演示界面的商店名称。</returns>
-        private static string GetRuntimeStoreName()
-        {
-            switch (Application.platform)
-            {
-                case RuntimePlatform.Android:
-                    return "Google Play";
-                case RuntimePlatform.IPhonePlayer:
-                    return "Apple App Store";
-                default:
-                    return "Editor / Unsupported";
-            }
-        }
-
-        /// <summary>
-        /// 第三方支付 Panel 使用的内部诊断快照。
+        /// 第三方支付 Panel 使用的精简配置状态。
         /// </summary>
         private sealed class ThirdPayStatus
         {
             /// <summary>
-            /// 当前运行平台商店名。
+            /// 是否已经取得有效的统一支付配置。
             /// </summary>
-            internal string RuntimeStore = string.Empty;
+            internal bool ConfigReady;
 
             /// <summary>
-            /// 当前已加载的支付商店模块。
+            /// 服务端是否允许当前用户发起第三方支付。
             /// </summary>
-            internal string OpenStores = string.Empty;
+            internal bool PaymentEnabled;
 
             /// <summary>
-            /// 白名单公开状态。
+            /// 服务端返回的第三方支付关闭原因码。
             /// </summary>
-            internal string WhiteList = string.Empty;
+            internal int DisabledReason;
 
             /// <summary>
-            /// 黑名单公开状态。
+            /// 当前统一配置中返回的商品 SKU 数量。
             /// </summary>
-            internal string BlackList = string.Empty;
+            internal int ProductSkuCount;
 
             /// <summary>
-            /// Google 外部内容链政策处理状态。
+            /// 将配置状态格式化为仅包含开关、失败原因和 SKU 数量的多行文本。
             /// </summary>
-            internal string GooglePolicy = string.Empty;
-
-            /// <summary>
-            /// 当前账号是否具备第三方支付资格。
-            /// </summary>
-            internal bool Eligible;
-
-            /// <summary>
-            /// 将诊断快照格式化为 Panel 多行文本。
-            /// </summary>
-            /// <returns>多行诊断文本。</returns>
+            /// <returns>第三方支付状态文本。</returns>
             internal string ToDisplayText()
             {
-                return "当前商店：" + RuntimeStore
-                       + "\n开放 Store：" + OpenStores
-                       + "\n白名单：" + WhiteList
-                       + "\n黑名单：" + BlackList
-                       + "\nGoogle 外部内容链：" + GooglePolicy
-                       + "\n第三方支付资格：" + (Eligible ? "具备" : "不具备");
+                string text = "第三方支付：" + (ConfigReady && PaymentEnabled ? "已开启" : "未开启");
+                if (!ConfigReady)
+                {
+                    text += "\n失败原因：未获取到有效支付配置";
+                }
+                else if (!PaymentEnabled)
+                {
+                    text += "\n失败原因码：" + DisabledReason;
+                }
+
+                return text + "\n商品 SKU 数量：" + ProductSkuCount;
             }
         }
     }

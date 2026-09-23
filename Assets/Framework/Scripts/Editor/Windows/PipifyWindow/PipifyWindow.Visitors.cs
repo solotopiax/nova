@@ -133,6 +133,11 @@ namespace NovaFramework.Editor
         private ReorderableList m_ItemsList;
 
         /// <summary>
+        /// 当前窗口内存中缓存的 Step 快照；切换 Batch 或 PipifySettingsSO 时保留，窗口销毁或域重载后清空。
+        /// </summary>
+        private BatchItem m_CopiedBatchItem;
+
+        /// <summary>
         /// 已展开参数区的 Item 索引集合。
         /// </summary>
         private readonly HashSet<int> m_ExpandedItemIndices = new HashSet<int>();

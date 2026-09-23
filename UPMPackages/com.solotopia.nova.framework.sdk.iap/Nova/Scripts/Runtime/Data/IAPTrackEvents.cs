@@ -74,6 +74,11 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// 第三方收银台被关闭事件。
         /// </summary>
         public const string ThirdPayCloseOrder = "nova_iap_third_pay_close_order";
+
+        /// <summary>
+        /// 第三方本地订单实际移除事件。
+        /// </summary>
+        public const string ThirdPayOrderRemoved = "nova_iap_third_pay_order_removed";
     }
 
     /// <summary>
@@ -155,6 +160,71 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// 第三方支付方式名称。
         /// </summary>
         public const string ThirdPayMethod = "nova_third_pay_method";
+
+        /// <summary>
+        /// 第三方支付页关闭原因枚举值。
+        /// </summary>
+        public const string ThirdPayCloseReason = "nova_third_pay_close_reason";
+
+        /// <summary>
+        /// 第三方支付页实际打开方式枚举值。
+        /// </summary>
+        public const string ThirdPayOpenMode = "nova_third_pay_open_mode";
+
+        /// <summary>
+        /// 第三方支付回调状态枚举值。
+        /// </summary>
+        public const string ThirdPayCallbackStatus = "nova_third_pay_callback_status";
+
+        /// <summary>
+        /// 第三方支付流程失败原因枚举值。
+        /// </summary>
+        public const string ThirdPayFailureReason = "nova_third_pay_failure_reason";
+
+        /// <summary>
+        /// 第三方创建订单失败原因枚举值。
+        /// </summary>
+        public const string ThirdPayCreateFailureReason = "nova_third_pay_create_failure_reason";
+
+        /// <summary>
+        /// ThirdPay 验单触发场景枚举值。
+        /// </summary>
+        public const string ValidationScene = "nova_validation_scene";
+
+        /// <summary>
+        /// 服务端第三方订单状态原始枚举值。
+        /// </summary>
+        public const string ServerOrderStatus = "nova_server_order_status";
+
+        /// <summary>
+        /// 客户端归一化后的第三方订单状态枚举值。
+        /// </summary>
+        public const string ClientOrderStatus = "nova_client_order_status";
+
+        /// <summary>
+        /// 第三方本地订单删除原因枚举值。
+        /// </summary>
+        public const string OrderDeleteReason = "nova_order_delete_reason";
+
+        /// <summary>
+        /// 客户端生成的第三方订单号。
+        /// </summary>
+        public const string ClientOrderId = "nova_client_order_id";
+
+        /// <summary>
+        /// 服务端确认的第三方订单号。
+        /// </summary>
+        public const string ServerOrderId = "nova_server_order_id";
+
+        /// <summary>
+        /// 支付页或原生能力返回的错误码。
+        /// </summary>
+        public const string NativeErrorCode = "nova_native_error_code";
+
+        /// <summary>
+        /// 支付页或原生能力返回的错误描述。
+        /// </summary>
+        public const string NativeErrorMessage = "nova_native_error_message";
 
         /// <summary>
         /// 业务层透传自定义字符串参数，调度层不解析。

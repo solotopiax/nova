@@ -16,6 +16,7 @@
 
 - `Resources/Debug/Settings.asset` 是运行时调试器设置资产，不再依赖自定义 Editor 绘制。
 - 运行时 UI Prefab 直接位于 `Resources/Debug/Prefabs/**`，不再额外挂一层 `UI` 或 `RuntimeDebugger` 目录。
+- UI Prefab 仍保留内置 Arial 作为默认字体；`DebugComponent.m_RuntimeDebuggerFont` 可在实例化时统一覆盖，供 WebGL / 微信小游戏绑定包含中文字形的项目字体，Framework 不反向引用 Sample 字体资产。
 - 调试器运行时图片、Sprite、Logo 位于 `Textures/Runtime/Debug/**`。
 - 当前不再保留调试器专属 Editor 代码和 Editor 图标依赖；若未来重新引入 Editor 可视化工具，必须重新同步本页与 Editor 文档。
 

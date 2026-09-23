@@ -34,6 +34,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         {
             m_RVRewarded = false;
             m_RVTcs = new UniTaskCompletionSource<AdResult>();
+            BeginFullscreenImpression(AdFormat.Rewarded, placementId);
             MaxSdk.ShowRewardedAd(placementId);
             return m_RVTcs.Task;
         }
@@ -84,7 +85,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void OnRVDisplayed(string adUnitId, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX Rewarded 展示成功回调：placement={adUnitId}，network={info?.NetworkName}。");
-            TrackAdShow(AdFormat.Rewarded, adUnitId);
+            TrackAdShow(AdFormat.Rewarded, adUnitId, MarkFullscreenDisplayed(AdFormat.Rewarded, adUnitId));
             RaiseShowCompleted(new AdResult
             {
                 Success = true,
@@ -105,6 +106,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void OnRVDisplayFailed(string adUnitId, MaxSdkBase.ErrorInfo err, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX Rewarded 展示失败回调：placement={adUnitId}，network={info?.NetworkName}，code={(int)err.Code}，message={err.Message}。");
+            AbandonFullscreenImpression(AdFormat.Rewarded, adUnitId);
             var result = new AdResult
             {
                 Success = false,
@@ -179,7 +181,10 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Revenue = info.Revenue,
                 Currency = "USD",
                 Precision = info.RevenuePrecision,
-            }, () => TrackMaxRevenue(AdFormat.Rewarded, adUnitId, info));
+            }, () => TrackMaxRevenue(AdFormat.Rewarded,
+                adUnitId,
+                info,
+                RecordFullscreenRevenue(AdFormat.Rewarded, adUnitId)));
         }
 #endif
     }

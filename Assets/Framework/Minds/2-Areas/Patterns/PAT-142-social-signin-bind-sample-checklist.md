@@ -12,6 +12,8 @@ aliases:
 keywords:
   - PAT-142
   - 社交登录Sample
+  - 平台SDK Sample
+  - GameLogin
   - GameBind
   - AOT配置
 tags: [pattern, workflow, sample, gamebind, config]
@@ -50,6 +52,17 @@ related:
 - 表源：对应 Excel 源表也要同步，避免未来重新导表覆盖 JSON。
 - 生成表：`TbNetworkCmds` / `TbNetworkHostKeys` 的 map convenience properties 也应和 JSON/Excel 保持一致。
 
+平台 SDK Sample 若额外演示“登录 Nova 游戏服务器”，也沿用同一闭环：
+
+- 游戏服务器登录必须调用 `Nova.Network.Kit<Login>()`，不能拿平台 SDK 的登录、凭证校验或支付门面代替。
+- 微信小游戏的推荐时序为：TGA 先提供 DeviceID，微信 SDK 初始化并由游戏服校验 `wx.login` code 得到 OpenID；先执行 `GameLogin(uid="", openid=OpenID, forceNewAccount=false)`，仅在 `10404` 时再执行 `GameLogin(uid="", openid="", forceNewAccount=false)`，按 DeviceID 优先登录已有游客、不存在才创建，成功后调用 `GameBind(Wechat, OpenID)`。
+- 不得把任意登录失败都转成游客注册；网络错误、服务端错误、封禁、设备标识缺失等应按原错误处理。`forceNewAccount=true` 仅用于产品明确要求放弃同设备旧游客并强制新建的独立场景。
+- 平台 code 校验、GameLogin 与 GameBind 保持三个显式操作；前两者不得产生绑定副作用，绑定冲突由业务继续 `QueryConflictAsync` / `ResolveAsync`。
+- `LoginKitConfig`、`EnabledKits`、登录 CmdName、`GameServer` Host、Excel 表源、JSON 导出物和生成表属性必须同值。
+- HybridCLR 项目还必须同时具备 GameLogin AOT metadata DLL 实体、Config 中的 AOT 映射及 `link.xml` 保留项。
+- GameLogin 仅由 Sample 使用时，依赖留在 Sample asmdef，并在 Sample 元数据或 README 明示安装前置；不得提升为平台 SDK 包的强制 `package.json` 依赖。
+- 契约测试至少同时读取 Excel 表源与正式 JSON 导出物，避免“只改导出物、下次重新导表即丢失”的假闭环。
+
 ## 为什么这么做（Why）
 
 `gamebind` 运行时包按 [[ADR-067-login-bind-save-separation|ADR-067]] 保持独立，不依赖 `gamelogin`；但 Sample 为了演示“先登录游戏账号，再把三方账号绑定到当前账号”，可以在示例层同时依赖 `gamelogin` 与 `gamebind`。
@@ -75,6 +88,9 @@ related:
   > 用户：DemoFacebookView 的绑定逻辑有点问题，我是想做绑定的时候不需要facebook重新登录一遍，这2个代码要分开，先走facebook登录，登录完毕后绑定就直接使用登录成功后的facebookID
   > 用户：给DemoGoogleSigninView 和 DemoAppleSigninView 添加上登录绑定，和facebook一样，添加一个独立按钮然后直接调用绑定协议即可
   > 用户：还有记得在ConfigMaster中的AOT元数据DLL列表中添加GameBind的DLL
+- 补强日期：2026-09-21
+- 补强依据：WechatMiniGameDemo 接入 `Nova.Network.Kit<Login>()` 时，同步验证 ConfigMaster/ConfigRuntime、`GameServer`、NetworkCmds Excel/JSON/生成代码、GameLogin AOT metadata DLL、`link.xml`、Prefab 与 Sample 依赖边界。
+- 时序依据：微信小游戏使用 TGA DeviceID 承载游客身份，微信 code 校验只返回 OpenID/UnionID；OpenID 未绑定时先完成游客 GameLogin，再单独 GameBind。
 
 ## 关联
 

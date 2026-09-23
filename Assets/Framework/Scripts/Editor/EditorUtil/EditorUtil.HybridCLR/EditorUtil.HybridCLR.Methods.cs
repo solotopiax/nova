@@ -24,6 +24,79 @@ namespace NovaFramework.Editor
     {
         public static partial class HybridCLR
         {
+            private const string DefaultWebGLTemplate = "APPLICATION:Default";
+            private const string ProjectWebGLTemplatePrefix = "PROJECT:";
+
+            /// <summary>
+            /// HybridCLR 的 AOT 裁剪构建不消费网页模板。当前 WebGL 配置指向不存在的项目模板时，
+            /// 临时使用 Unity 默认模板，避免 script-only BuildPlayer 在生成裁剪 DLL 前被模板校验阻断。
+            /// </summary>
+            /// <returns>释放时恢复进入前模板的事务范围。</returns>
+            internal static IDisposable OverrideMissingWebGLTemplateForAotBuild()
+            {
+                return new WebGLTemplateOverrideScope();
+            }
+
+            /// <summary>
+            /// 判断项目 WebGL 模板引用是否存在。
+            /// </summary>
+            /// <param name="template">PlayerSettings.WebGL.template。</param>
+            /// <returns>仅当模板是缺失的 PROJECT 引用时返回 true。</returns>
+            private static bool IsMissingProjectWebGLTemplate(string template)
+            {
+                if (string.IsNullOrWhiteSpace(template) ||
+                    !template.StartsWith(ProjectWebGLTemplatePrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                string templateName = template.Substring(ProjectWebGLTemplatePrefix.Length).Trim();
+                if (string.IsNullOrEmpty(templateName))
+                {
+                    return true;
+                }
+
+                string templatePath = Path.GetFullPath(Path.Combine(
+                    UnityEngine.Application.dataPath,
+                    "WebGLTemplates",
+                    templateName));
+                return !Directory.Exists(templatePath);
+            }
+
+            /// <summary>
+            /// 缺失项目模板的临时覆盖范围。
+            /// </summary>
+            private sealed class WebGLTemplateOverrideScope : IDisposable
+            {
+                private readonly string m_OriginalTemplate;
+                private readonly bool m_Overridden;
+
+                internal WebGLTemplateOverrideScope()
+                {
+                    m_OriginalTemplate = PlayerSettings.WebGL.template;
+                    if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.WebGL ||
+                        !IsMissingProjectWebGLTemplate(m_OriginalTemplate))
+                    {
+                        return;
+                    }
+
+                    PlayerSettings.WebGL.template = DefaultWebGLTemplate;
+                    m_Overridden = true;
+                    Log.Warning(
+                        LogTag.Editor,
+                        "[HybridCLR] WebGL 项目模板不存在，AOT 裁剪构建期间临时使用 Unity 默认模板：{0}",
+                        m_OriginalTemplate);
+                }
+
+                public void Dispose()
+                {
+                    if (m_Overridden)
+                    {
+                        PlayerSettings.WebGL.template = m_OriginalTemplate;
+                    }
+                }
+            }
+
             /// <summary>
             /// 校验 MethodBridge.cpp 中记录的开发构建标记与即将执行的 Player 构建一致。
             /// HybridCLR 开启时，二者不一致会使条件编译类型的 ABI 与最终 IL2CPP 不匹配。
@@ -230,7 +303,7 @@ namespace NovaFramework.Editor
                 var entries = new List<DllMasterAssetEntry>(hybrid.StartupGameDlls.Count + hybrid.RunningGameDlls.Count);
                 entries.AddRange(hybrid.StartupGameDlls);
                 entries.AddRange(hybrid.RunningGameDlls);
-                CopyDllEntries(entries, "业务 DLL");
+                CopyDllEntries(entries, "HybridCLR 热更新 DLL 同步");
             }
 
             /// <summary>
@@ -354,7 +427,10 @@ namespace NovaFramework.Editor
                 if (missing.Count > 0)
                 {
                     string list = string.Join("\n  ", missing);
-                    throw new FileNotFoundException($"[HybridCLR Pipeline][{tag}] 以下源文件不存在或配置缺失，请检查配置并执行编译步骤：\n  {list}");
+                    throw new FileNotFoundException(
+                        $"[HybridCLR Pipeline][{tag}] 以下已配置的源产物不存在或路径配置缺失。" +
+                        "Config 中的 DLL 列表只声明复制与加载映射，不会生成源产物；" +
+                        $"请先执行当前 ActiveBuildTarget 对应的 HybridCLR 生成或编译步骤：\n  {list}");
                 }
 
                 foreach (DllMasterAssetEntry entry in entries)

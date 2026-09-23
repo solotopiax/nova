@@ -11,7 +11,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace NovaFramework.Editor
 {
@@ -74,7 +73,6 @@ namespace NovaFramework.Editor
         /// <summary>
         /// VersionsCheckWhiteList.json 上传到的 OSS 远端文件位置。
         /// </summary>
-        [FormerlySerializedAs("AssetCheckWhitelistRemoteDirectory")]
         public string AssetCheckWhitelistRemoteFilePath;
 
         /// <summary>
@@ -106,12 +104,6 @@ namespace NovaFramework.Editor
         /// Cloudflare Zone ID。
         /// </summary>
         public string ZoneID;
-
-        /// <summary>
-        /// 旧版 Cloudflare Zone purge API 完整 URL，仅用于已有 ConfigMasterSO 兼容迁移。
-        /// </summary>
-        [HideInInspector]
-        public string PurgeURL;
 
         /// <summary>
         /// Cloudflare API Token；在 ConfigMasterSO 中以明文序列化。

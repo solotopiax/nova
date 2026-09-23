@@ -47,6 +47,7 @@ namespace NovaFramework.Editor
                     if (batch == null) throw new ArgumentNullException(nameof(batch));
                     if (reporter == null) throw new ArgumentNullException(nameof(reporter));
                     if (s_IsRunning) throw new InvalidOperationException($"{c_LogPrefix} 已有 Batch 正在执行，不能并发启动第二个 Batch。");
+                    Registry.EnsureAllStepsRegistered(batch);
                     if (!Config.WorkspaceActive.TryGetPersistedConfigMaster(
                             out _, out string frozenMasterGuid, out _, out string masterError))
                     {
@@ -220,7 +221,9 @@ namespace NovaFramework.Editor
                             i,
                             candidate,
                             settings,
-                            overrides) as PipifySteps.PackageParams;
+                            overrides,
+                            null,
+                            false) as PipifySteps.PackageParams;
                         if (packageParams == null)
                         {
                             throw new InvalidOperationException(string.Format(

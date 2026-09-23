@@ -110,7 +110,7 @@ HostPlayMode 下，如果 `RequestPackageVersionAsync()` 或 `LoadPackageManifes
 整体优先级是：远端最新清单 → 已激活清单 → 本地可启动版本清单 → 随包内置清单 → 抛出原始远端错误。
 全链路不修改 YooAsset 源码；Nova 兼容层只在前缀迁移时定位并复制 Sandbox 中成对的 Manifest/hash 文件，其余加载与校验仍走 YooAsset API。本地可启动版本回退随 HostPlayMode 默认开启；本地无记录、缓存 Manifest 缺失或当前启动范围不完整时自动降级到内置回退。
 
-WebGL Host 运行时先探测 `StreamingAssets/{YooFolder}/{Package}/BuiltinCatalog.bytes`：Catalog 可访问时使用 `WebServer + WebNetwork`，不存在或探测失败时使用纯 `WebNetwork`。WebGL Offline 不探测 Catalog，也不创建远端文件系统，固定使用纯 `WebServer`；因此必须用 `ClearAndCopyAll` 构建完整首包，Catalog 缺失时由 YooAsset 初始化明确失败。
+WebGL Host 运行时先探测 `StreamingAssets/{YooFolder}/{Package}/BuiltinCatalog.bytes`：Catalog 可访问时使用 `WebServer + WebNetwork`，不存在或探测失败时使用纯 `WebNetwork`。未命中时由 Nova 输出 Warning；浏览器或小游戏开发者工具的 Network 面板仍保留真实 HTTP 404，它不是 Nova 的 Error 日志。WebGL Offline 不探测 Catalog，也不创建远端文件系统，固定使用纯 `WebServer`；因此必须用 `ClearAndCopyAll` 构建完整首包，Catalog 缺失时由 YooAsset 初始化明确失败。
 
 Host 探测到 Catalog 时，远端元数据候选耗尽后，Nova 可临时把 `.version/.hash/.bytes` 路由到 `StreamingAssets/{YooFolder}/{Package}`，加载随 Player 发布的首包 Manifest，并在成功或失败后立即恢复远端元数据路由。纯 CDN 没有 Catalog，因此明确跳过该回退。`LaunchHotfixTags` 只在 `TagsOnLaunch` 中选择启动预热范围，不代替 Pipify 的首包拷贝选择。详见 [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md)。
 

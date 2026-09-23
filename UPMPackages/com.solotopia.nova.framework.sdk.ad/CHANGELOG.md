@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [1.1.14] - 2026-09-23
+
+### Changed
+
+- 广告打点表为 `ad_impression` 登记 `nova_ad_format` 属性，与其他 Nova 广告事件统一广告格式筛选口径。
+- `AdChannelPluginBase.TrackAdShow` 增加可选渠道附加属性重载，供渠道把同一次展示的关联信息并入 `nova_ad_show`，原有调用方式保持兼容。
+
+### Fixed
+
+- 修复广告全局配置项下方说明框额外缩进、未与对应配置项对齐的问题。
+
 ## [1.1.13] - 2026-09-18
 
 ### Changed

@@ -562,8 +562,6 @@ namespace NovaFramework.Runtime
                 stream.Flush(true);
 #endif
             }
-
-            Util.SysIO.WebGLSyncFs();
         }
 
         private static void Quarantine(string filePath)

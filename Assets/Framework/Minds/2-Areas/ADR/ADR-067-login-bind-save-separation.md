@@ -40,6 +40,24 @@ related:
 
 三包平级、均只依赖主框架，互不依赖。
 
+### 微信登录标准时序
+
+在微信小游戏同时接入 TGA、GameLogin 与 GameBind 时，业务层固定按以下顺序编排：
+
+```text
+TGA 初始化取得 DeviceID -> 微信 SDK 初始化
+-> wx.login -> 游戏服校验 code，返回 OpenID / UnionID
+-> GameLogin(uid="", openid=OpenID, forceNewAccount=false) 请求游戏服注册/登录
+   -> 成功：进入已绑定账号
+   -> 10404 未绑定：GameLogin(uid="", openid="", forceNewAccount=false)
+                    -> 游戏服按 DeviceID 登录/创建游客
+                    -> GameBind(Wechat, OpenID)
+                    -> 必要时进入绑定冲突裁决
+   -> 其他失败：按错误原因处理，不自动注册新账号
+```
+
+DeviceID 由已初始化的 TGA `IDeviceIdProvider` 经网络 Header 提供，不由微信生成。微信 code 校验只换取 `OpenID / UnionID`，不返回游戏 UID，也不建立游戏登录态。两次 GameLogin 都保持 `forceNewAccount=false`：第一次用 OpenID 查询绑定账号；只有明确返回 `10404` 时，第二次才按 DeviceID 优先登录已有游客，不存在才创建。`forceNewAccount=true` 会强制新建游客并可能软删同设备旧游客，不属于该回退流程。网络失败、服务端错误、封禁、设备标识缺失等其他失败不得自动注册。只有游客登录成功后才能调用 GameBind，禁止把 code 校验、GameLogin 与 GameBind 合并成一个客户端操作。
+
 ### Header 身份与业务目标
 
 - 请求 Header 的 UID/OpenID 是当前会话已拥有的身份声明。

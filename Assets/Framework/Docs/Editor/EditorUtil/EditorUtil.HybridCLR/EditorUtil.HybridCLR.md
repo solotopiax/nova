@@ -60,6 +60,7 @@ public static void CopyGameDlls()
 /// 对应 HybridCLR 菜单中的一键入口，等价于依次手动点击 Generate 子菜单的全部项。
 /// 内部转发到 HybridCLR.Editor.Commands.PrebuildCommand.GenerateAll()。
 /// 其中 AOT 裁剪会临时启用 script-only 并调用 BuildPipeline.BuildPlayer；该临时产物不是最终 Player 构建成功证据。
+/// WebGL 当前指向缺失的 PROJECT 模板时，裁剪构建期间临时使用 APPLICATION:Default，结束后恢复原模板。
 public static void GenerateAll()
 
 /// HybridCLR/Generate/LinkXml：编译 ActiveBuildTarget 热更 DLL 并基于热更代码引用生成 link.xml。
@@ -81,6 +82,7 @@ public static void GenerateIl2CppDef()
 
 /// HybridCLR/Generate/AOTDlls：在 ActiveBuildTarget 下执行 AOT DLL 裁剪，产出 AssembliesPostIl2CppStrip 目录。
 /// 内部转发到 HybridCLR.Editor.Commands.StripAOTDllCommand.GenerateStripedAOTDlls()。
+/// WebGL 当前指向缺失的 PROJECT 模板时，裁剪构建期间临时使用 APPLICATION:Default，结束后恢复原模板。
 public static void GenerateAotDlls()
 
 /// HybridCLR/CompileDll/ActiveBuildTarget：针对当前 activeBuildTarget 编译热更业务 DLL，产出到 HotUpdateDllsOutputDir。
@@ -112,7 +114,7 @@ public static void CompileDllActiveBuildTarget()
 `CopyAotDlls` / `CopyGameDlls` 共用同一私有方法，签名：`CopyDllEntries(IReadOnlyList<DllMasterAssetEntry> entries, string tag)`。
 
 逻辑：
-1. **预检**：遍历所有条目，若 `SourceLocation` 或 `TargetLocation` 为空字符串，标记为配置缺失；源/目标路径先解析 `{ActiveBuildTarget}`，再相对 `SettingsUtil.ProjectDir` 取完整路径。若任一源文件不存在则整批抛 `FileNotFoundException`，不执行部分拷贝。
+1. **预检**：遍历所有条目，若 `SourceLocation` 或 `TargetLocation` 为空字符串，标记为配置缺失；源/目标路径先解析 `{ActiveBuildTarget}`，再相对 `SettingsUtil.ProjectDir` 取完整路径。若任一源产物不存在则整批抛 `FileNotFoundException`，并明确说明 Config 的 DLL 列表只声明复制与加载映射，不会生成 DLL；不执行部分拷贝。
 2. **拷贝**：确认全部存在后，对每条目创建目标父目录，将源文件拷贝到解析后的目标路径（`overwrite: true`）。目标路径所见即所得，**不追加** `.bytes` 或任何后缀。
 3. **导入**：将目标路径分隔符统一为 `/`；只有以 `Assets/` 开头的目标才逐文件调用 `AssetDatabase.ImportAsset(..., ForceSynchronousImport)`，不执行全局 Refresh。
 
@@ -123,6 +125,8 @@ public static void CompileDllActiveBuildTarget()
 `GenerateAll()` 转发到当前 HybridCLR 包的 `PrebuildCommand.GenerateAll()`。该入口依次编译当前 `activeBuildTarget` 的热更 DLL、生成 Il2CppDef 与 link.xml、调用 `StripAOTDllCommand.GenerateStripedAOTDlls(target)` 生成裁剪后的 AOT DLL，之后再生成 MethodBridge 与 AOT 泛型引用。
 
 `GenerateStripedAOTDlls` 会把 `EditorUserBuildSettings.buildScriptsOnly` 临时设为 `true`，以 Build Settings 中启用的场景调用 `BuildPipeline.BuildPlayer`，输出到 `HybridCLRData/StrippedAOTDllsTempProj/{target}`，并在 `finally` 恢复原构建位置和平台设置。这个 temporary script-only BuildPipeline.BuildPlayer 只为生成 stripped AOT DLL 服务：即使它成功，也绝不是最终 Player 安装包、平台工程、运行时或真机构建成功证据。
+
+当 ActiveBuildTarget 为 WebGL 且 `PlayerSettings.WebGL.template` 指向不存在的 `PROJECT:` 目录时，`GenerateAll()` 与 `GenerateAotDlls()` 会在上述临时 Player 构建期间使用 `APPLICATION:Default`，并在成功或异常后恢复进入前的模板值。网页模板不参与 AOT 裁剪 DLL 内容；该隔离只避免无关的模板前置校验阻断 HybridCLR 产物生成，不修改正式 Player 的模板选择。
 
 ### StripDllSuffix
 
@@ -138,7 +142,7 @@ private static string StripDllSuffix(string assetLocation)
 
 **误区 1：跳过编译步骤直接执行 `CopyAotDlls` / `CopyGameDlls`**
 
-`CopyDllEntries` 的预检步骤在源文件缺失时整批失败。`CopyGameDlls` 依赖当前 Target 的业务热更 DLL 编译产物，典型最窄顺序是 `hybridclr.compile_dll_active_build_target` -> `hybridclr.copy_game_dll`；`CopyAotDlls` 则依赖另行生成的 AOT 裁剪产物。二者不能因共用拷贝方法而混成同一前置链，依赖次序由调用方（Pipify Batch 等）自行保证。
+`CopyDllEntries` 的预检步骤在源产物缺失时整批失败。Config 中显示的“启动时 DLL 列表”或“运行时 DLL 列表”只代表复制与加载映射，不代表对应平台的 DLL 已生成。`CopyGameDlls` 依赖当前 Target 的 HybridCLR 热更新 DLL 编译产物，典型最窄顺序是 `hybridclr.compile_dll_active_build_target` -> `hybridclr.copy_game_dll`；`CopyAotDlls` 则依赖另行生成的 AOT 裁剪产物。二者不能因共用拷贝方法而混成同一前置链，依赖次序由调用方（Pipify Batch 等）自行保证。
 
 **误区 2：以为目标路径会自动追加 `.bytes`**
 

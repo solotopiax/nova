@@ -39,7 +39,7 @@ internal static UniTask<int> DeployAsync(
 
 // 使用 Cloudflare API 按批清理配置中的缓存 URL
 // 先静态校验 config（ZoneID 有效、API Token 非空），再按 100 条 / 批逐批 POST
-// 请求地址固定构造为 https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/purge_cache；旧 PurgeURL 仅作兼容迁移
+// 请求地址固定构造为 https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/purge_cache
 // config 为 null 抛 ArgumentNullException；静态字段非法抛 ArgumentException；任一批失败抛 InvalidOperationException（首个失败即停）
 // onProgress 参数依次为完成批数、总批数；发送前回调一次 (0, 总批数)，每批成功后回调 (index+1, 总批数)
 // <returns>成功清理 URL 数量（等于去重后总条数）</returns>

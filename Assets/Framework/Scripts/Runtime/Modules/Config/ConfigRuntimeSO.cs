@@ -11,7 +11,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace NovaFramework.Runtime
 {
@@ -33,7 +32,6 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 应用运行时配置；字段已单值化，由导出侧按当前维度写入。
         /// </summary>
-        [FormerlySerializedAs("Common")]
         public AppConfigs AppConfigs;
 
         /// <summary>

@@ -74,11 +74,16 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="format">当前广告格式。</param>
         /// <param name="adUnitId">MAX 广告位标识。</param>
         /// <param name="adInfo">MAX 收益回调携带的广告信息。</param>
-        private void TrackMaxRevenue(AdFormat format, string adUnitId, MaxSdkBase.AdInfo adInfo)
+        /// <param name="correlationProps">当前全屏曝光的本地关联诊断属性。</param>
+        private void TrackMaxRevenue(
+            AdFormat format,
+            string adUnitId,
+            MaxSdkBase.AdInfo adInfo,
+            Dictionary<string, object> correlationProps)
         {
             decimal revenue = (decimal)adInfo.Revenue;
-            TrackMaxAdIlrd(format, adUnitId, adInfo, revenue);
-            TrackMaxAdImpression(format, adUnitId, adInfo);
+            TrackMaxAdIlrd(format, adUnitId, adInfo, revenue, correlationProps);
+            TrackMaxAdImpression(format, adUnitId, adInfo, correlationProps);
         }
 
         /// <summary>
@@ -99,8 +104,14 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="adUnitId">MAX 广告位标识。</param>
         /// <param name="adInfo">MAX 收益回调携带的广告信息。</param>
         /// <param name="revenue">本次上报使用的收益；Banner 为累计收益，非 Banner 为单次收益。</param>
+        /// <param name="correlationProps">当前全屏曝光的本地关联诊断属性；Banner 或无法关联时可为 null。</param>
         /// <returns>至少存在一个收益打点插件并完成派发时返回 true；插件未缓存时返回 false。</returns>
-        private bool TrackMaxAdIlrd(AdFormat format, string adUnitId, MaxSdkBase.AdInfo adInfo, decimal revenue)
+        private bool TrackMaxAdIlrd(
+            AdFormat format,
+            string adUnitId,
+            MaxSdkBase.AdInfo adInfo,
+            decimal revenue,
+            Dictionary<string, object> correlationProps = null)
         {
             if (!HasMaxRevenueTrackers())
             {
@@ -128,6 +139,8 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 { "waterfall_name", adInfo.WaterfallInfo?.Name },
             };
 
+            MergeCorrelationProps(ilrdProps, correlationProps);
+
             DispatchToAllTrackers("ad_ilrd", ilrdProps);
             return true;
         }
@@ -138,8 +151,13 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="format">当前广告格式。</param>
         /// <param name="adUnitId">MAX 广告位标识。</param>
         /// <param name="adInfo">MAX 收益回调携带的广告信息。</param>
+        /// <param name="correlationProps">当前全屏曝光的本地关联诊断属性；Banner 或无法关联时可为 null。</param>
         /// <returns>至少存在一个收益打点插件并完成派发时返回 true；插件未缓存时返回 false。</returns>
-        private bool TrackMaxAdImpression(AdFormat format, string adUnitId, MaxSdkBase.AdInfo adInfo)
+        private bool TrackMaxAdImpression(
+            AdFormat format,
+            string adUnitId,
+            MaxSdkBase.AdInfo adInfo,
+            Dictionary<string, object> correlationProps = null)
         {
             if (!HasMaxRevenueTrackers())
             {
@@ -152,12 +170,38 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 { "ad_source", adInfo.NetworkName },
                 { "ad_unit_name", adInfo.AdUnitIdentifier },
                 { "ad_format", (int)format },
+                { "nova_ad_format", (int)format },
                 { "value", adInfo.Revenue },
                 { "currency", "USD" },
             };
 
+            MergeCorrelationProps(impressionProps, correlationProps);
+
             DispatchToAllTrackers("ad_impression", impressionProps);
             return true;
+        }
+
+        /// <summary>
+        /// 将曝光关联诊断属性合并到收益事件；既有收益字段优先，避免附加属性改写协议字段。
+        /// </summary>
+        /// <param name="target">收益事件属性。</param>
+        /// <param name="correlationProps">曝光关联诊断属性，可为 null。</param>
+        private static void MergeCorrelationProps(
+            Dictionary<string, object> target,
+            Dictionary<string, object> correlationProps)
+        {
+            if (correlationProps == null)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<string, object> property in correlationProps)
+            {
+                if (!target.ContainsKey(property.Key))
+                {
+                    target[property.Key] = property.Value;
+                }
+            }
         }
 
         /// <summary>

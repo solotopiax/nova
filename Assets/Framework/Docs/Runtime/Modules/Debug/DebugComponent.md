@@ -39,6 +39,7 @@ Debug 模块触及运行时调试器、资源目录、程序集边界或旧插�
 |---|---|---|
 | `m_DebuggerActiveType` | `DebuggerActiveType` | 控制 RuntimeDebugger 是否启用 |
 | `m_MaximumConsoleEntries` | `int` | RuntimeDebugger 控台最大日志条数 |
+| `m_RuntimeDebuggerFont` | `Font` | RuntimeDebugger 动态创建的全部 UGUI Text 字体；为空时保留 Prefab 原字体 |
 | `m_CurManagerTypeName` | `string` | `IDebugManager` 实现类全名 |
 | `m_DiskCheckingConfigs` | `List<DiskCheckingConfig>` | 各平台磁盘检测配置 |
 | `m_DebugManager` | `IDebugManager` | 运行时调试管理器实例 |
@@ -57,6 +58,9 @@ RuntimeDebugger 初始化时会注入：
 - `LogTagType = typeof(LogTag)`
 - `LogTagDescriptionResolver`
 - `MaximumConsoleEntries = m_MaximumConsoleEntries`
+- `TextFont = m_RuntimeDebuggerFont`
+
+RuntimeDebugger 当前使用 `UnityEngine.UI.Text`。Prefab 默认的 Unity 内置 Arial 在 Editor 中可以借助操作系统字体回退显示中文，但 WebGL / 微信小游戏 Player 不具备同等回退条件。需要显示中文日志时，应在 `DebugComponent` 的 `Debugger 字体` 中绑定包含中文字形的 `Font`；运行时会把它应用到所有动态实例化的调试器文本。
 
 `RuntimeDebugger.Init(...)` 还受 `NOVA_DISABLE_RUNTIME_DEBUGGER` 编译宏保护；当该宏存在时，`Awake()`、RuntimeDebugger 自动初始化和编辑器脚本重编译恢复路径不会编译进 Nova 的自动初始化入口。
 

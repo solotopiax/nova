@@ -44,11 +44,21 @@ namespace NovaFramework.Runtime
 
                 bool exists = request.result == UnityWebRequest.Result.Success;
                 m_WebGLBuiltinCatalogAvailability[packageName] = exists;
-                Log.Debug(LogTag.Asset,
-                    "WebGL 内置 Catalog 探测完成：Package={0}, Exists={1}, Error={2}",
-                    packageName,
-                    exists,
-                    request.error);
+                if (exists)
+                {
+                    Log.Debug(LogTag.Asset,
+                        "WebGL 内置 Catalog 探测命中：Package={0}, URL={1}",
+                        packageName,
+                        url);
+                }
+                else
+                {
+                    Log.Warning(LogTag.Asset,
+                        "WebGL 内置 Catalog 探测未命中，将使用纯 CDN：Package={0}, HTTP={1}, Detail={2}",
+                        packageName,
+                        request.responseCode,
+                        request.error);
+                }
             }
         }
 

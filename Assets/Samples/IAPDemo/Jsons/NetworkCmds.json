@@ -73,10 +73,10 @@
       "Path": "/v1/mobile_pay/apple/verify_subscribe"
     },
     {
-      "Name": "ThirdGetProductList",
+      "Name": "ThirdGetPaymentConfig",
       "Way": "HTTP_POST",
       "HostKey": "IAPServer",
-      "Path": "/v1/third_pay/product_list"
+      "Path": "/v1/third_pay/payment_config"
     },
     {
       "Name": "ThirdVerifyIap",
@@ -89,18 +89,6 @@
       "Way": "HTTP_POST",
       "HostKey": "IAPServer",
       "Path": "/v1/third_pay/query_pending_order"
-    },
-    {
-      "Name": "ThirdGetPayChannelParams",
-      "Way": "HTTP_POST",
-      "HostKey": "IAPServer",
-      "Path": "/v1/third_pay/get_payment_customer_ids"
-    },
-    {
-      "Name": "ThirdOpenURL",
-      "Way": "HTTP_URL",
-      "HostKey": "ThirdOpenServer",
-      "Path": "/nova"
     },
     {
       "Name": "ThirdGetVoucherInfo",

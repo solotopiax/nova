@@ -55,11 +55,7 @@ namespace NovaFramework.Runtime
         /// <param name="downloadedBytes">已下载的字节数。</param>
         /// <param name="totalBytes">总字节数，未知时为 -1。</param>
         /// <returns>初始化完成的 HttpResponse 实例。</returns>
-#if NOVA_LEGACY_BESTHTTP_MIGRATION
-        public static HttpResponse Create(
-#else
         internal static HttpResponse Create(
-#endif
             int statusCode,
             string body,
             byte[] rawData,

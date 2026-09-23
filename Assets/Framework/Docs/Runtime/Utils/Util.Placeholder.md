@@ -45,6 +45,10 @@ Platform 与 Channel；其中 `ConfigMasterSO.CurrentPlatform` 实时映射 Unit
 不要遍历并改写全部字符串配置。启动早期尚未加载 `ConfigRuntimeSO` 的调用方，应直接构造
 `PlaceholderContext`，避免引入配置加载循环依赖。
 
+Pipify Runner 是运行时参数快照的统一入口：完成 ParamsJson 反序列化、CLI 覆盖和 Active BuildTarget
+同步后，会在调用 Step 前递归解析全部公开字符串字段及列表元素。该行为只修改本次调用参数，
+不会遍历或回写 ConfigMasterSO、ParamsJson 等持久化配置。
+
 ## 关联文档
 
 - [ConfigRuntimeSO.md](../Modules/Config/ConfigRuntimeSO.md)

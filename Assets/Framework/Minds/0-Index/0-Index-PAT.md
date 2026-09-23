@@ -40,7 +40,7 @@ auto_generated: true
 ## demo
 
 - [PAT-102 按钮内副提示叠加布局：主文字 stretch+Center 副提示锚点贴底](../2-Areas/Patterns/PAT-102-button-overlay-sub-hint-layout.md) — 主文字双居中+副提示锚点贴底
-- [PAT-105 Demo View API 提示就近显示双色规范](../2-Areas/Patterns/PAT-105-api-hint-near-element-split.md) — 一接口一提示就近挂；按钮深蓝、字段白色，标题区清空
+- [PAT-105 Demo View API 提示就近显示双色规范](../2-Areas/Patterns/PAT-105-api-hint-near-element-split.md) — 一按钮一演示接口；中文动作标题配原始 API 名，禁止斜杠并列
 - [PAT-151 Demo API Hint 源码-Prefab 闭环门禁](../2-Areas/Patterns/PAT-151-demo-api-hint-source-prefab-gate.md) — 全局门禁闭环 Demo API 提示源码与 Prefab
 - [PAT-80 Demo View 纯色块与 TMP 样式基线](../2-Areas/Patterns/PAT-80-demo-view-pure-color-style.md) — Demo 默认纯色块加 TMP
 
@@ -110,9 +110,10 @@ auto_generated: true
 - [PAT-144 反射调厂商私有方法是源只读约束下的最后手段，须标注版本升级复核](../2-Areas/Patterns/PAT-144-reflection-private-vendor-method.md) — 反射调私有厂商方法属权宜，须注释标版本复核点
 - [PAT-148 广告收益打点与展示回调边界](../2-Areas/Patterns/PAT-148-ad-revenue-track-callback-boundary.md) — Banner ILRD聚合，impression即时
 - [PAT-158 SDK UPM 包必须自带官方 Console 与 Readme 菜单入口](../2-Areas/Patterns/PAT-158-sdk-package-official-url-menu-entry.md) — SDK 包自带官方后台与文档菜单入口
-- [PAT-160 Mobile IAP 商品拉取与后台任务边界](../2-Areas/Patterns/PAT-160-mobile-iap-product-fetch-background-task-boundary.md) — 商品拉取成功态单向收敛，后台任务只做取消与异常收口
+- [PAT-160 Mobile IAP 商店连接、商品拉取与后台任务边界](../2-Areas/Patterns/PAT-160-mobile-iap-product-fetch-background-task-boundary.md) — 商店连接不阻塞主 Loading，商品拉取成功态单向收敛，后台任务只做取消与异常收口
 - [PAT-164 Firebase 默认 Topic 分层同步与差异存档](../2-Areas/Patterns/PAT-164-firebase-default-topic-sync.md) — 默认Topic分层同步并存档差异
-- [PAT-165 Mobile IAP 支付失败打点边界](../2-Areas/Patterns/PAT-165-mobile-iap-pay-failure-track-boundary.md) — PayAsync失败补打，官方回调直接打点
+- [PAT-165 Mobile IAP 支付失败打点边界](../2-Areas/Patterns/PAT-165-mobile-iap-pay-failure-track-boundary.md) — PayAsync统一失败打点，无返回链路的回调兜底
+- [PAT-167 ThirdPay 支付页终态与验单打点分层](../2-Areas/Patterns/PAT-167-thirdpay-payment-terminal-and-validation-tracking.md) — 成功 callback 与关闭终态互斥，验单和删单独立记录
 - [PAT-33 新增 SDK Plugin 的 6 步 SOP](../2-Areas/Patterns/PAT-33-sdk-plugin-sop.md) — SDK Plugin SOP UPM包加ISDKPlugin
 - [PAT-69 UGUI 等比铺满父宽的零脚本配置法](../2-Areas/Patterns/PAT-69-ugui-aspect-fit-fill-width.md) — ARF+水平 stretch 实现等比满宽零脚本
 
@@ -129,13 +130,13 @@ auto_generated: true
 
 - [PAT-01 缺陷严重度 P0-P4 分级](../2-Areas/Patterns/PAT-01-defect-severity.md) — Nova 代码审查与问题跟踪统一使用 P0-P4 严重度语言
 - [PAT-114 C# XML 注释禁止 HTML 转义](../2-Areas/Patterns/PAT-114-cs-xml-doc-no-html-escape.md) — XML 注释直接写尖括号
-- [PAT-58 Pipeline 步骤失败必须显式抛错而非静默跳过](../2-Areas/Patterns/PAT-58-pipeline-fail-fast-no-silent-skip.md) — 反射/外部 API 失败必抛异常禁静默跳过
+- [PAT-58 Pipeline 步骤失败必须显式抛错而非静默跳过](../2-Areas/Patterns/PAT-58-pipeline-fail-fast-no-silent-skip.md) — Pipeline 缺失须预检并显式失败，禁止静默跳过
 
 ## review
 
 - [PAT-02 静态审查四维度框架](../2-Areas/Patterns/PAT-02-static-review-four-dim.md) — 静态审查四维度逻辑风格架构安全性能
 - [PAT-03 运行时验证三步法](../2-Areas/Patterns/PAT-03-runtime-verify-three-step.md) — 高风险运行时变更三步验证，强度与风险相称
-- [PAT-11 qa 测试结束清场铁律与测试脚本命名规范](../2-Areas/Patterns/PAT-11-qa-battlefield-cleanup.md) — qa测试结束必须清场场景与Inspector复原
+- [PAT-11 测试结束清场铁律与测试脚本命名规范](../2-Areas/Patterns/PAT-11-qa-battlefield-cleanup.md) — 任何测试结束均须清除临时产物并复原工程状态
 - [PAT-129 死代码判定：链路追溯而非单点 grep](../2-Areas/Patterns/PAT-129-dead-code-chain-tracing.md) — 删码前追完整链路，引擎回调与预留接口不可凭单点 grep 判废
 - [PAT-134 间歇性网络故障：吞异常≠治本，'突然好了'是反向证据](../2-Areas/Patterns/PAT-134-intermittent-network-fail-diagnosis.md) — 间歇网络故障吞异常非治本，突然好了是反向证据
 - [PAT-136 同源 bug 全链路状态分析，拒绝症状驱动](../2-Areas/Patterns/PAT-136-symptom-driven-debug-trap.md) — 同链路反复 bug 先画全链路状态机根除
@@ -190,4 +191,4 @@ auto_generated: true
 
 
 ---
-_共 124 条，分布于 18 个 category。_
+_共 125 条，分布于 18 个 category。_

@@ -624,30 +624,6 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 从旧版完整 PurgeURL 中提取 Zone ID，仅接受 Cloudflare 官方 API 地址形态。
-            /// </summary>
-            internal static string ExtractCloudflareZoneId(string purgeUrl)
-            {
-                string value = purgeUrl?.Trim();
-                if (!Uri.TryCreate(value, UriKind.Absolute, out Uri uri) ||
-                    uri.Scheme != Uri.UriSchemeHttps ||
-                    !string.Equals(uri.Host, "api.cloudflare.com", StringComparison.OrdinalIgnoreCase) ||
-                    !string.IsNullOrEmpty(uri.Query) ||
-                    !string.IsNullOrEmpty(uri.Fragment) ||
-                    !uri.AbsolutePath.StartsWith("/client/v4/zones/", StringComparison.Ordinal) ||
-                    !uri.AbsolutePath.EndsWith(c_CloudflarePurgeUrlSuffix, StringComparison.Ordinal))
-                {
-                    throw new ArgumentException("Cloudflare Zone ID 不能为空，且旧 PurgeURL 无法迁移。", nameof(purgeUrl));
-                }
-
-                int start = "/client/v4/zones/".Length;
-                int length = uri.AbsolutePath.Length - start - c_CloudflarePurgeUrlSuffix.Length;
-                if (length <= 0)
-                    throw new ArgumentException("旧 PurgeURL 中缺少 Cloudflare Zone ID。", nameof(purgeUrl));
-                return ValidateAndNormalizeCloudflareZoneId(uri.AbsolutePath.Substring(start, length));
-            }
-
-            /// <summary>
             /// 将缓存 URL 按 Cloudflare 单请求上限拆成有序批次。
             /// </summary>
             /// <param name="urls">已校验的缓存 URL。</param>
@@ -973,7 +949,7 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
-            /// 校验 Cloudflare Zone ID（兼容旧 PurgeURL）与 Token，确保所有静态错误在首个请求前暴露。
+            /// 校验 Cloudflare Zone ID 与 Token，确保所有静态错误在首个请求前暴露。
             /// </summary>
             /// <param name="config">CDN 编辑态配置。</param>
             private static void ValidateCloudflareConfig(CDNEditorConfigs config)
@@ -987,18 +963,7 @@ namespace NovaFramework.Editor
             private static string ResolveCloudflarePurgeUrl(CDNEditorConfigs config)
             {
                 if (config == null) throw new ArgumentNullException(nameof(config));
-                string zoneId = string.IsNullOrWhiteSpace(config.ZoneID)
-                    ? ExtractCloudflareZoneId(config.PurgeURL)
-                    : ValidateAndNormalizeCloudflareZoneId(config.ZoneID);
-                return BuildCloudflarePurgeUrl(zoneId);
-            }
-
-            private static string ValidateAndNormalizeCloudflareZoneId(string zoneId)
-            {
-                string normalized = zoneId?.Trim();
-                if (string.IsNullOrEmpty(normalized) || !s_CloudflareZoneIdRegex.IsMatch(normalized))
-                    throw new ArgumentException("Cloudflare Zone ID 格式无效。", nameof(zoneId));
-                return normalized;
+                return BuildCloudflarePurgeUrl(config.ZoneID);
             }
 
             /// <summary>

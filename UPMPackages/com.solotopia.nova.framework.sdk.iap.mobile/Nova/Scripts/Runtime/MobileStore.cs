@@ -39,7 +39,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         public override bool CanHandle(IAPRequest request) => request is IAPMobileRequest;
 
         /// <summary>
-        /// 异步初始化商店：创建内部服务，通过 Unity IAP 5.x StoreController.Connect() 连接平台商店，触发补单扫描。
+        /// 异步初始化商店：创建内部服务，并在 Store 运行期后台连接 Unity IAP 平台商店。
+        /// 主初始化不等待 StoreController.Connect()，连接成功前支付入口由 IsStoreReady 门禁拦截。
         /// </summary>
         /// <param name="table">所有商店共用的商品表接口。</param>
         /// <param name="config">商店专属配置，应为 MobileStoreConfig 实例；为 null 时以空配置降级运行。</param>
@@ -77,12 +78,15 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             // 存档读写须等 SetUserId 拿到 m_GameUID 之后才能进行；初始化阶段先用空容器占位。
             m_PersistData = (MobileStorePersistData)CreateEmptyPersistData();
 
-            bool ok = await m_Hub.InitService.InitializeAsync(table, ct);
-            if (!ok)
+            // 商店连接依赖平台与网络回调，不能占用游戏主 Loading；后台任务跟随 Store 生命周期取消。
+            m_Hub.RunBackgroundTask(async runtimeCt =>
             {
-                LogWarning("Unity IAP 初始化失败，支付功能不可用。");
-                return;
-            }
+                bool ok = await m_Hub.InitService.InitializeAsync(table, runtimeCt);
+                if (!ok)
+                {
+                    LogWarning("Unity IAP 初始化失败，支付功能不可用。");
+                }
+            }, "Unity IAP 商店初始化");
         }
 
         /// <summary>

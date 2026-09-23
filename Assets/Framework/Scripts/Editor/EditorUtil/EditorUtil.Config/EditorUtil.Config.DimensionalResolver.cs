@@ -303,7 +303,6 @@ namespace NovaFramework.Editor
                                 AssetCheckPackageVersionLocalFilePath = oc.AssetCheckPackageVersionLocalFilePath ?? string.Empty,
                                 AssetCheckVersionRemoteDirectory = oc.AssetCheckVersionRemoteDirectory ?? string.Empty,
                                 ZoneID = oc.ZoneID ?? string.Empty,
-                                PurgeURL = oc.PurgeURL ?? string.Empty,
                                 Token = oc.Token ?? string.Empty,
                                 CachePaths = oc.CachePaths ?? string.Empty,
                             };
@@ -332,7 +331,6 @@ namespace NovaFramework.Editor
                         AssetCheckPackageVersionLocalFilePath = top.AssetCheckPackageVersionLocalFilePath ?? string.Empty,
                         AssetCheckVersionRemoteDirectory = top.AssetCheckVersionRemoteDirectory ?? string.Empty,
                         ZoneID = top.ZoneID ?? string.Empty,
-                        PurgeURL = top.PurgeURL ?? string.Empty,
                         Token = top.Token ?? string.Empty,
                         CachePaths = top.CachePaths ?? string.Empty,
                     };

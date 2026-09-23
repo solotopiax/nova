@@ -27,14 +27,9 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         [SerializeField] private ScrollRect m_ScrollRect;
 
         /// <summary>
-        /// 第三方商店、政策与资格汇总文本。
+        /// 第三方支付开关、失败原因和商品 SKU 数量文本。
         /// </summary>
         [SerializeField] private TMP_Text m_StatusText;
-
-        /// <summary>
-        /// 第三方支付商品快照刷新入口。
-        /// </summary>
-        [SerializeField] private Button m_RefreshButton;
 
         /// <summary>
         /// 第三方商品卡动态列表根节点。
@@ -82,11 +77,6 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         private Action<long> m_PayRequested;
 
         /// <summary>
-        /// ThirdPay 可选模块注入的商品快照刷新回调。
-        /// </summary>
-        private Action m_RefreshRequested;
-
-        /// <summary>
         /// 调试国家变更回调。
         /// </summary>
         private Action<string> m_DebugCountryChanged;
@@ -129,18 +119,14 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         /// </summary>
         /// <param name="productTitleBuilder">商品标题构建回调。</param>
         /// <param name="payRequested">第三方支付回调。</param>
-        /// <param name="refreshRequested">商品快照刷新回调。</param>
-        internal void Configure(Func<long, string> productTitleBuilder, Action<long> payRequested,
-            Action refreshRequested, Action<string> debugCountryChanged,
-            Action<bool> skipPaymentInformationChanged)
+        /// <param name="debugCountryChanged">调试国家变更回调。</param>
+        /// <param name="skipPaymentInformationChanged">跳过第三方支付信息页变更回调。</param>
+        internal void Configure(Func<long, string> productTitleBuilder, Action<long> payRequested, Action<string> debugCountryChanged, Action<bool> skipPaymentInformationChanged)
         {
             m_ProductTitleBuilder = productTitleBuilder;
             m_PayRequested = payRequested;
-            m_RefreshRequested = refreshRequested;
             m_DebugCountryChanged = debugCountryChanged;
             m_SkipPaymentInformationChanged = skipPaymentInformationChanged;
-            DemoIAPView.BindButton(m_RefreshButton, "刷新快照", "RefreshThirdPaySnapshot",
-                () => m_RefreshRequested?.Invoke());
             ConfigureDebugControls();
             if (m_ProductCardTemplate != null)
             {
@@ -207,7 +193,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 渲染第三方商店、支付方式、名单、政策和资格诊断文本。
+        /// 渲染第三方支付开关、失败原因和商品 SKU 数量文本。
         /// </summary>
         /// <param name="text">完整多行状态文本。</param>
         internal void SetStatusText(string text)
@@ -247,15 +233,11 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         }
 
         /// <summary>
-        /// 设置刷新快照和第三方支付按钮的交互状态。
+        /// 设置第三方支付调试控件和支付按钮的交互状态。
         /// </summary>
         /// <param name="interactable">是否允许交互。</param>
         internal void SetInteractable(bool interactable)
         {
-            if (m_RefreshButton != null)
-            {
-                m_RefreshButton.interactable = interactable;
-            }
             if (m_DebugCountryDropdown != null)
             {
                 m_DebugCountryDropdown.interactable = interactable;
@@ -307,7 +289,6 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             m_ProductTitles.Clear();
             m_ProductTitleBuilder = null;
             m_PayRequested = null;
-            m_RefreshRequested = null;
             m_DebugCountryChanged = null;
             m_SkipPaymentInformationChanged = null;
         }

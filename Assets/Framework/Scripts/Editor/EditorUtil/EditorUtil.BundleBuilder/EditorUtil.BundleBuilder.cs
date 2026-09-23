@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.IO;
 using NovaFramework.Runtime;
 using UnityEditor;
 using YooAsset;
@@ -223,7 +224,25 @@ namespace NovaFramework.Editor
                 }
 
                 string packageRoot = System.IO.Path.Combine(BundleBuilderHelper.GetStreamingAssetsRoot(), packageName);
-                EditorFileUtility.DeleteDirectory(packageRoot);
+                string assetPath = FileUtil.GetProjectRelativePath(packageRoot).Replace('\\', '/');
+                if (string.IsNullOrEmpty(assetPath) ||
+                    !assetPath.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(
+                        string.Format("{0} 无法将 WebGL 首包目录解析为工程资产路径：{1}", c_LogPrefix, packageRoot));
+                }
+
+                if (Directory.Exists(packageRoot) && !AssetDatabase.DeleteAsset(assetPath))
+                {
+                    throw new InvalidOperationException(
+                        string.Format("{0} 清理 WebGL 首包目录失败：{1}", c_LogPrefix, assetPath));
+                }
+
+                string metaPath = packageRoot + ".meta";
+                if (File.Exists(metaPath))
+                {
+                    File.Delete(metaPath);
+                }
                 AssetDatabase.Refresh();
             }
         }

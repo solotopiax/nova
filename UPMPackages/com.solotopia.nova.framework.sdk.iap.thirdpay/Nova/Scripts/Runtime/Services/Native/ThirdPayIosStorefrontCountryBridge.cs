@@ -17,6 +17,9 @@ using AOT;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
+    /// <summary>
+    /// 桥接 iOS StoreKit storefront 国家码查询，并向托管层转发查询结果。
+    /// </summary>
     internal static class ThirdPayIosStorefrontCountryBridge
     {
 #if UNITY_IOS && !UNITY_EDITOR

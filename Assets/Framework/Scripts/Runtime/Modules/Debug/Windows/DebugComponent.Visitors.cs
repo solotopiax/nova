@@ -30,6 +30,13 @@ namespace NovaFramework.Runtime
         public int MaximumConsoleEntries => m_MaximumConsoleEntries;
 
         /// <summary>
+        /// RuntimeDebugger 的 UGUI 字体；应包含运行时日志可能出现的字形。
+        /// </summary>
+        [SerializeField]
+        private Font m_RuntimeDebuggerFont;
+        public Font RuntimeDebuggerFont => m_RuntimeDebuggerFont;
+
+        /// <summary>
         /// DebugManager 实现类型的完全限定名，由 TypeCreator 反射创建。
         /// </summary>
         [SerializeField]

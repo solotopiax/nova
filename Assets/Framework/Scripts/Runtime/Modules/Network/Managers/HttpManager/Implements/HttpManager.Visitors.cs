@@ -18,7 +18,7 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// HTTP 传输实现，固定使用 UnityWebRequest。
         /// </summary>
-        private IUwrHttpTransport m_Transport;
+        private IHttpTransport m_Transport;
 
         /// <summary>
         /// 默认网络请求超时时间（秒）。

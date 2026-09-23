@@ -512,20 +512,6 @@ namespace NovaFramework.Editor
                             ref globals.projectConfigMasterGuid,
                             ref globals.projectConfigMasterPathHint);
                     }
-                    else if (!alreadyInSampleSession &&
-                             (IsSampleAssetPath(currentMasterPath) || IsSampleAssetPath(globals.configMasterPathHint)) &&
-                             string.IsNullOrEmpty(globals.projectConfigMasterGuid))
-                    {
-                        ConfigMasterSO legacyProjectMaster = FindUniqueNonSampleAsset<ConfigMasterSO>(out string legacyProjectPath);
-                        if (legacyProjectMaster != null)
-                        {
-                            changed |= ReplaceResolvedReference(
-                                legacyProjectMaster,
-                                legacyProjectPath,
-                                ref globals.projectConfigMasterGuid,
-                                ref globals.projectConfigMasterPathHint);
-                        }
-                    }
 
                     PipifySettingsSO currentPipify = LoadAssetByGuid<PipifySettingsSO>(
                         globals.pipifySettingsGuid, out string currentPipifyPath);
@@ -537,20 +523,6 @@ namespace NovaFramework.Editor
                             currentPipifyPath,
                             ref globals.projectPipifySettingsGuid,
                             ref globals.projectPipifySettingsPathHint);
-                    }
-                    else if (!alreadyInSampleSession &&
-                             (IsSampleAssetPath(currentPipifyPath) || IsSampleAssetPath(globals.pipifySettingsPathHint)) &&
-                             string.IsNullOrEmpty(globals.projectPipifySettingsGuid))
-                    {
-                        PipifySettingsSO legacyProjectPipify = FindUniqueNonSampleAsset<PipifySettingsSO>(out string legacyPipifyPath);
-                        if (legacyProjectPipify != null)
-                        {
-                            changed |= ReplaceResolvedReference(
-                                legacyProjectPipify,
-                                legacyPipifyPath,
-                                ref globals.projectPipifySettingsGuid,
-                                ref globals.projectPipifySettingsPathHint);
-                        }
                     }
 
                     FindSampleWorkspace(scenePath, out ConfigMasterSO sampleMaster, out PipifySettingsSO samplePipify,
@@ -573,8 +545,7 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 恢复非 Sample 工作区。正常路径只使用已保存的业务备份；
-                /// 兼容旧版 Sample 覆写时，只有唯一非 Sample 候选才会自动迁移。
+                /// 恢复非 Sample 工作区，只使用进入 Sample 前已保存的业务备份。
                 /// </summary>
                 /// <param name="globals">待更新的 Globals 数据。</param>
                 /// <returns>任意字段发生变化时返回 true。</returns>
@@ -582,11 +553,8 @@ namespace NovaFramework.Editor
                 {
                     bool changed = false;
                     string currentMasterPath = ResolveReferencePath(globals.configMasterGuid, globals.configMasterPathHint);
-                    bool legacySampleBinding = string.IsNullOrEmpty(globals.activeSampleRoot) &&
-                                               IsSampleAssetPath(currentMasterPath);
                     bool sampleSession = !string.IsNullOrEmpty(globals.activeSampleRoot);
-                    bool masterNeedsRestore = sampleSession || legacySampleBinding;
-                    if (masterNeedsRestore)
+                    if (sampleSession)
                     {
                         ConfigMasterSO projectMaster = LoadAssetByGuid<ConfigMasterSO>(
                             globals.projectConfigMasterGuid, out string projectMasterPath);
@@ -594,10 +562,6 @@ namespace NovaFramework.Editor
                         {
                             projectMaster = null;
                             projectMasterPath = null;
-                        }
-                        if (projectMaster == null && legacySampleBinding)
-                        {
-                            projectMaster = FindUniqueNonSampleAsset<ConfigMasterSO>(out projectMasterPath);
                         }
                         changed |= ReplaceResolvedReference(
                             projectMaster,
@@ -635,10 +599,6 @@ namespace NovaFramework.Editor
                             projectPipify = null;
                             projectPipifyPath = null;
                         }
-                        if (projectPipify == null && !sampleSession)
-                        {
-                            projectPipify = FindUniqueNonSampleAsset<PipifySettingsSO>(out projectPipifyPath);
-                        }
                         changed |= ReplaceResolvedReference(
                             projectPipify,
                             projectPipifyPath,
@@ -661,24 +621,6 @@ namespace NovaFramework.Editor
                             currentPipifyPath,
                             ref globals.projectPipifySettingsGuid,
                             ref globals.projectPipifySettingsPathHint);
-                    }
-                    else if (!string.IsNullOrEmpty(currentMasterPath))
-                    {
-                        // 旧 Globals 没有 Pipify 字段时，只接受唯一非 Sample 资产作为一次性兼容迁移。
-                        PipifySettingsSO unique = FindUniqueNonSampleAsset<PipifySettingsSO>(out string uniquePath);
-                        changed |= ReplaceResolvedReference(
-                            unique,
-                            uniquePath,
-                            ref globals.pipifySettingsGuid,
-                            ref globals.pipifySettingsPathHint);
-                        if (unique != null)
-                        {
-                            changed |= CopyReference(
-                                globals.pipifySettingsGuid,
-                                globals.pipifySettingsPathHint,
-                                ref globals.projectPipifySettingsGuid,
-                                ref globals.projectPipifySettingsPathHint);
-                        }
                     }
                     changed |= ReplaceString(string.Empty, ref globals.activeSampleRoot);
                     if (globals.schemaVersion != c_CurrentSchemaVersion)
@@ -723,35 +665,6 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 在 Assets 范围内寻找唯一的非 Sample 资产，供旧 Globals 一次性迁移。
-                /// 多候选时返回 null，禁止依赖 GUID 顺序。
-                /// </summary>
-                /// <typeparam name="T">目标资产类型。</typeparam>
-                /// <param name="assetPath">唯一候选路径；未命中或多候选时为空。</param>
-                /// <returns>唯一非 Sample 资产；否则返回 null。</returns>
-                private static T FindUniqueNonSampleAsset<T>(out string assetPath) where T : UnityEngine.Object
-                {
-                    assetPath = null;
-                    T candidate = null;
-                    string[] guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}", new[] { "Assets" });
-                    foreach (string guid in guids)
-                    {
-                        string path = NormalizeAssetPath(AssetDatabase.GUIDToAssetPath(guid));
-                        if (string.IsNullOrEmpty(path) || IsSampleAssetPath(path)) continue;
-                        T loaded = AssetDatabase.LoadAssetAtPath<T>(path);
-                        if (loaded == null) continue;
-                        if (candidate != null)
-                        {
-                            assetPath = null;
-                            return null;
-                        }
-                        candidate = loaded;
-                        assetPath = path;
-                    }
-                    return candidate;
-                }
-
-                /// <summary>
                 /// 从磁盘读取 Globals；文件不存在时返回一个空模型，解析失败时拒绝继续自动写入。
                 /// </summary>
                 /// <param name="globals">读取到的模型。</param>
@@ -769,12 +682,12 @@ namespace NovaFramework.Editor
                     try
                     {
                         globals = JsonUtility.FromJson<GlobalsJson>(File.ReadAllText(globalsPath)) ?? new GlobalsJson();
-                        if (globals.schemaVersion > c_CurrentSchemaVersion)
+                        if (globals.schemaVersion != c_CurrentSchemaVersion)
                         {
                             if (logFailure)
                             {
                                 Log.Warning(LogTag.Editor,
-                                    "[WorkspaceActive] Globals.json schemaVersion={0} 高于当前支持版本 {1}，拒绝读取和改写。",
+                                    "[WorkspaceActive] Globals.json schemaVersion={0} 与当前版本 {1} 不一致，拒绝读取和改写。",
                                     globals.schemaVersion, c_CurrentSchemaVersion);
                             }
                             globals = null;

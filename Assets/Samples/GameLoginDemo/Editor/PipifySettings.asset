@@ -49,7 +49,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 1,\n  \"DevelopmentBuild\":
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n
-        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\n
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder
@@ -125,7 +125,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 20,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n
-        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\n
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/WebGL\"\n}"
     - m_StepId: shell.open_folder
@@ -246,7 +246,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n
-        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\n
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder
@@ -259,7 +259,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n
-        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\n
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder

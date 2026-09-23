@@ -37,6 +37,7 @@
 ### InitializeAsync
 
 - 先通过 `PluginBase<TConfig>` 或 `SDKPluginConfigTypeAttribute` 静态读取配置类型，仅构造 `ConfigMaster.EnabledSDKs` 命中的插件，再按 `ISDKPlugin.Priority` 分桶
+- 运行时反射发现会排除引用 NUnit 或 Unity Test Runner 的测试程序集，Editor Play 不会把测试夹具当作真实插件
 - 未启用插件不会执行构造函数或字段初始化；缺少静态配置元数据的旧式插件会记录诊断并跳过
 - 再按桶顺序执行 `UniTask.WhenAll`
 - 单插件初始化失败只记日志，不中断其他插件
@@ -49,6 +50,7 @@
 - 若插件需要配置，则通过 `m_ConfigManager.GetSDKPluginConfig(requiredConfigType)` 获取
 - 未取到配置时记警告并跳过该插件初始化
 - 成功后调用 `plugin.InitializeAsync(config, ct)`
+- Unity Editor 中插件抛出 `PlatformNotSupportedException` 时按平台不适用处理：记录警告、保持不可用并继续初始化其他插件；其他异常仍按初始化错误隔离
 
 ## 查询语义
 

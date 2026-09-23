@@ -41,6 +41,7 @@ namespace NovaFramework.Runtime
                     LogTagType = typeof(LogTag),
                     LogTagDescriptionResolver = f => f.GetCustomAttribute<LogTagDescriptionAttribute>()?.Description,
                     MaximumConsoleEntries = m_MaximumConsoleEntries,
+                    TextFont = m_RuntimeDebuggerFont,
                 });
             }
 #endif

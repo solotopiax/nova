@@ -39,16 +39,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public ThirdPayPersistData Data => m_Data;
 
         /// <summary>
-        /// 当前账号渠道参数。
-        /// </summary>
-        public string ChannelParams => m_Data?.ChannelParams;
-
-        /// <summary>
-        /// 当前账号是否已经持有渠道参数。
-        /// </summary>
-        public bool HasChannelParams => !string.IsNullOrEmpty(m_Data?.ChannelParams);
-
-        /// <summary>
         /// 切换当前账号存档并重建订单仓储。
         /// </summary>
         /// <param name="data">当前账号存档。</param>
@@ -69,21 +59,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             m_OrderRepository = null;
             m_Data = null;
             m_Save = null;
-        }
-
-        /// <summary>
-        /// 手动设置当前账号渠道参数并保存。
-        /// </summary>
-        /// <param name="channelParams">支付页需要透传的渠道参数。</param>
-        public void SetChannelParams(string channelParams)
-        {
-            if (m_Data == null)
-            {
-                return;
-            }
-
-            m_Data.ChannelParams = channelParams ?? string.Empty;
-            Save();
         }
 
         /// <summary>

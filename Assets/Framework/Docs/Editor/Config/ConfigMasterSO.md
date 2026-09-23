@@ -37,16 +37,10 @@ Config 矩阵只生成非 `None` 的 Platform × Channel 组合。`PlatformType.
 
 映射为 `None` 时，ConfigWindow 仍可选择平台编辑并保存，但 ConfigRuntime 导出和所选 YooAsset 配置生效会被阻断；Pipify 的 Config / Bundle / Player 构建等生产入口仍要求先切换到受支持的 Unity BuildTarget。ConfigWindow 的 CDN 部署与清理由自身明确选择的编辑平台解析配置和路径，不依赖 Active BuildTarget。
 
-升级前序列化的 `CurrentPlatform` 通过隐藏字段 `m_LegacyCurrentPlatform`（`FormerlySerializedAs("CurrentPlatform")`）无损读入。该字段只承担旧资产兼容，绝不参与当前坐标、占位符解析或导出决策。
+## 结构版本保护
 
-## 结构版本与旧资产迁移
+- `ConfigSchemaVersion` 标识设计态资产结构版本，当前固定为 `1`。
+- 新建资产直接写入当前版本；Editor 脚本重载后只做版本一致性检查，不修改资产。
+- 低于或高于当前版本的资产都会报错，必须先使用对应历史版本完成升级或重新生成，最新版不再内置旧结构迁移。
 
-- `ConfigSchemaVersion` 记录设计态资产已经完成的结构版本；当前版本为 `1`。
-- 版本 `0` 是分组改造前的结构：`CommonByMode`、顶层 HybridCLR/YooAsset 字段以及旧面板掩码和 Override 字段。
-- 框架在 Editor 脚本重载后自动扫描 `ConfigMasterSO`，将旧字段迁入新分组并重新导出绑定的 `ConfigRuntimeSO`；迁移成功时不显示菜单、弹窗或日志。
-- 迁移先校验全部矩阵行及导出前置条件；失败时不会推进 `ConfigSchemaVersion`。
-- 迁移是幂等的：版本已是当前值时不会再次复制旧字段，也不会覆盖项目组迁移后的新配置。
-
-旧字段作为隐藏的序列化桥接输入仅存在于 Editor 层，并在迁移成功后清空。它们需保留到约定的兼容窗口结束；删除前必须确认所有项目已至少经过一次桥接版本迁移并保存资产。Runtime 不包含这些 Editor 迁移字段或迁移逻辑。
-
-关键源码：[ConfigMasterSO.cs](../../../Scripts/Editor/Config/ConfigMasterSO.cs)、[EditorUtil.Config.ActivePlatform.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.ActivePlatform.cs)、[SchemaMigration.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md)、[ConfigWindow.md](../Windows/ConfigWindow.md)、[ConfigRuntimeSO.md](../../Runtime/Modules/Config/ConfigRuntimeSO.md)。
+关键源码：[ConfigMasterSO.cs](../../../Scripts/Editor/Config/ConfigMasterSO.cs)、[EditorUtil.Config.ActivePlatform.cs](../../../Scripts/Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.ActivePlatform.cs)、[SchemaGuard.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaGuard.md)、[ConfigWindow.md](../Windows/ConfigWindow.md)、[ConfigRuntimeSO.md](../../Runtime/Modules/Config/ConfigRuntimeSO.md)。

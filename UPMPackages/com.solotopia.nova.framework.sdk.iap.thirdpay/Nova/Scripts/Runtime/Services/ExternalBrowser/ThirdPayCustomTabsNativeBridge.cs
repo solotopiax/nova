@@ -35,6 +35,22 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 已通过 Android Custom Tabs 打开。
         /// </summary>
         CustomTabs = 2,
+
+        /// <summary>
+        /// Auth Tab 与 Custom Tabs 均不可用后，已提交 Application.OpenURL 系统浏览器请求。
+        /// 该值不表示系统浏览器已确认展示。
+        /// </summary>
+        SystemBrowserFallback = 3,
+
+        /// <summary>
+        /// 通过嵌入式 UniWebView 打开支付页。
+        /// </summary>
+        EmbeddedWebView = 4,
+
+        /// <summary>
+        /// 通过 iOS Safe Browsing 打开支付页。
+        /// </summary>
+        IOSSafeBrowsing = 5,
     }
 
     /// <summary>

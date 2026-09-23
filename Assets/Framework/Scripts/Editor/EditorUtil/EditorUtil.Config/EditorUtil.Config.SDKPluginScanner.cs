@@ -27,6 +27,43 @@ namespace NovaFramework.Editor
             public static class SDKPluginScanner
             {
                 /// <summary>
+                /// SDK Config 面板快捷动作条目。
+                /// </summary>
+                public readonly struct PluginPanelActionEntry
+                {
+                    /// <summary>
+                    /// 创建一个已完成校验的 SDK Config 面板快捷动作条目。
+                    /// </summary>
+                    /// <param name="configType">动作所属的 SDK Plugin Config 类型。</param>
+                    /// <param name="buttonLabel">ConfigWindow 中显示的按钮名称。</param>
+                    /// <param name="menuItemPath">点击按钮时执行的 Unity 菜单路径。</param>
+                    /// <param name="order">同一 Config 下多个动作的显示顺序。</param>
+                    public PluginPanelActionEntry(
+                        Type configType,
+                        string buttonLabel,
+                        string menuItemPath,
+                        int order)
+                    {
+                        ConfigType = configType;
+                        ButtonLabel = buttonLabel;
+                        MenuItemPath = menuItemPath;
+                        Order = order;
+                    }
+
+                    /// <summary>动作所属的 SDK Plugin Config 类型。</summary>
+                    public Type ConfigType { get; }
+
+                    /// <summary>ConfigWindow 中显示的按钮名称。</summary>
+                    public string ButtonLabel { get; }
+
+                    /// <summary>点击按钮时执行的 Unity 菜单路径。</summary>
+                    public string MenuItemPath { get; }
+
+                    /// <summary>同一 Config 下多个动作的显示顺序。</summary>
+                    public int Order { get; }
+                }
+
+                /// <summary>
                 /// 扫描出的 SDK Plugin Config 条目，包含类型与左树展示名称。
                 /// </summary>
                 public readonly struct PluginConfigEntry
@@ -85,6 +122,49 @@ namespace NovaFramework.Editor
                         result.Add(new PluginConfigEntry(type, displayName));
                     }
                     return result;
+                }
+
+                /// <summary>
+                /// 扫描 SDK Editor 程序集声明的 ConfigWindow 快捷动作。
+                /// 无效声明会被忽略，不影响其他 SDK 配置面板。
+                /// </summary>
+                public static List<PluginPanelActionEntry> ScanPanelActions()
+                {
+                    var result = new List<PluginPanelActionEntry>();
+                    foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        IEnumerable<SDKPluginConfigPanelActionAttribute> attributes;
+                        try
+                        {
+                            attributes = assembly.GetCustomAttributes<SDKPluginConfigPanelActionAttribute>();
+                        }
+                        catch (Exception)
+                        {
+                            continue;
+                        }
+
+                        foreach (SDKPluginConfigPanelActionAttribute attribute in attributes)
+                        {
+                            if (attribute.ConfigType == null ||
+                                !typeof(ISDKPluginConfig).IsAssignableFrom(attribute.ConfigType) ||
+                                string.IsNullOrWhiteSpace(attribute.ButtonLabel) ||
+                                string.IsNullOrWhiteSpace(attribute.MenuItemPath))
+                            {
+                                continue;
+                            }
+                            result.Add(new PluginPanelActionEntry(
+                                attribute.ConfigType,
+                                attribute.ButtonLabel.Trim(),
+                                attribute.MenuItemPath.Trim(),
+                                attribute.Order));
+                        }
+                    }
+
+                    return result
+                        .OrderBy(entry => entry.ConfigType.FullName, StringComparer.Ordinal)
+                        .ThenBy(entry => entry.Order)
+                        .ThenBy(entry => entry.ButtonLabel, StringComparer.Ordinal)
+                        .ToList();
                 }
 
                 /// <summary>

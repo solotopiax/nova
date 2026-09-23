@@ -47,7 +47,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
         /// <summary>
         /// 当前账号已经上报过验单成功的平台注册订单键，用于跨进程去重。
-        /// Apple 使用 transaction id，Google 使用 purchase token。
+        /// Apple 使用 transaction id，Google 使用订单号。
         /// </summary>
         public List<string> ValidateSuccessOrderKeys;
 

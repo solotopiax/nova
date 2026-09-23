@@ -210,6 +210,7 @@ namespace NovaFramework.Editor
         private void RefreshPluginCache()
         {
             m_PluginTypeCache = EditorUtil.Config.SDKPluginScanner.ScanAll();
+            m_PluginPanelActionCache = EditorUtil.Config.SDKPluginScanner.ScanPanelActions();
             m_KitTypeCache = EditorUtil.Config.KitConfigScanner.ScanAll();
         }
 

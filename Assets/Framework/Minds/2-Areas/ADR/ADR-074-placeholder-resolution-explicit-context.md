@@ -45,7 +45,8 @@ Pipify 通知、CDN 路径和 Runtime URL 都需要替换 Platform、Channel、P
 3. Editor 调用方通过 `EditorUtil.Placeholder` 从 `WorkspaceActive` 锚定的 `ConfigMasterSO` 构造上下文。
 4. Runtime 在 `ConfigRuntimeSO` 已加载后从导出快照构造上下文；Package 等消费者特有值由调用方传入。
 5. 导出器使用显式 Platform/Channel 重载构造目标坐标上下文，只对明确要求固化的字段做序列化替换，
-   不遍历或改写所有字符串配置。
+   不遍历或改写所有字符串配置。Pipify Runner 作为独立边界，在调用每个 Step 前递归解析本次参数快照的
+   全部公开字符串字段和列表元素；它不回写 ParamsJson、ConfigMasterSO 或其他持久化配置。
 6. 启动早期无法依赖 `ConfigRuntimeSO` 的链路继续由调用方显式提供编译平台等值，不建立配置依赖。
 7. 标准占位符为 `{Platform}`、`{Channel}`、`{Package}`、`{Version}`、`{Time}`；未知占位符保持原样。
    `{Time}` 使用 24 小时制 `yyyy-MM-dd-HH-mm-ss`，语义为本次解析时刻。
@@ -62,7 +63,7 @@ Pipify 通知、CDN 路径和 Runtime URL 都需要替换 Platform、Channel、P
 ### 负面
 
 - 调用方必须明确提供 Package、Version 和 Time，样板参数略多。
-- 旧的专用模板解析器需要按风险逐步迁移，不能一次性替换所有历史路径逻辑。
+- 旧的专用模板解析器需要按风险逐步迁移；Pipify Step 通过 Runner 获得统一解析，Runner 以外的调用方仍须显式处理。
 - 在导出阶段解析 `{Time}` 会固化为导出时间，调用方必须确认这正是字段所需语义。
 
 ## 被排除方案
@@ -70,7 +71,7 @@ Pipify 通知、CDN 路径和 Runtime URL 都需要替换 Platform、Channel、P
 | 方案 | 否决理由 |
 |---|---|
 | 解析器自动查找 ConfigMasterSO 或 ConfigRuntimeSO | 生命周期不明确，并会破坏程序集依赖方向或形成启动循环依赖 |
-| 导出时递归替换所有字符串字段 | 会破坏需要保留到 Runtime 再解析的模板原文，也无法表达不同字段的固化时机 |
+| 导出时递归替换所有持久化字符串字段 | 会破坏需要保留到 Runtime 再解析的模板原文；Pipify 仅处理单次调用参数快照，不属于该方案 |
 | Editor 与 Runtime 各维护一套 Replace 链 | 占位符集合、格式和未知 token 行为会持续漂移 |
 | 把解析行为放进 ConfigMasterSO / ConfigRuntimeSO | 配置对象应保持数据化，行为属于消费侧 |
 
@@ -78,7 +79,7 @@ Pipify 通知、CDN 路径和 Runtime URL 都需要替换 Platform、Channel、P
 
 - 实现：`Assets/Framework/Scripts/Runtime/Core/Util/Util.Placeholder/Util.Placeholder.cs`
 - Editor 适配器：`Assets/Framework/Scripts/Editor/EditorUtil/EditorUtil.Placeholder/EditorUtil.Placeholder.cs`
-- 首个消费方：`PipifySteps.Notification.cs`，发送飞书消息前使用当前 ConfigMaster 上下文解析。
+- Pipify 消费方：`EditorUtil.Pipify.Methods.cs`，在 CLI 覆盖和平台同步后、Step 调用前统一解析参数快照。
 - EditMode 测试覆盖标准 token、未知 token、24 小时时间格式、ConfigRuntime 来源、ConfigMaster 当前坐标、
   显式导出坐标以及 Pipify HelpBox 元数据。
 

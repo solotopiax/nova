@@ -7,19 +7,19 @@
 当前 `DebugComponentInspector` 只负责三块内容：
 
 - `IDebugManager` 实现类选择
-- `DebuggerActiveType` 与 `MaximumConsoleEntries` 配置
+- `DebuggerActiveType`、`MaximumConsoleEntries` 与 RuntimeDebugger 字体配置
 - 磁盘监控 + Android 构建安装工具
 
 旧版文档里的“悬窗皮肤”“日志过滤贴图”“设备性能分级”已经不属于当前实现。
 
-Debug Inspector 仍只配置 `DebugComponent` 的激活策略、日志条数、Manager 和磁盘检测。内置调试器的 Editor 辅助工具已随 Framework 内置，不再要求安装独立调试器 UPM 包。
+Debug Inspector 仍只配置 `DebugComponent` 的激活策略、日志条数、字体、Manager 和磁盘检测。内置调试器的 Editor 辅助工具已随 Framework 内置，不再要求安装独立调试器 UPM 包。
 
 ## 当前文件表
 
 | 文件 | 说明 |
 |---|---|
 | `DebugComponentInspector.cs` | `OnEnable` 绑定属性，`OnInspectorGUI` 依次绘制配置、磁盘监控、Android 构建安装 |
-| `DebugComponentInspector.Visitors.cs` | `m_DebuggerActiveType`、`m_MaximumConsoleEntries`、`m_CurManagerTypeName`、`m_DiskCheckingConfigs` 及 Android 本地缓存字段 |
+| `DebugComponentInspector.Visitors.cs` | `m_DebuggerActiveType`、`m_MaximumConsoleEntries`、`m_RuntimeDebuggerFont`、`m_CurManagerTypeName`、`m_DiskCheckingConfigs` 及 Android 本地缓存字段 |
 | `DebugComponentInspector.Methods.cs` | `DrawConfigs`、`DrawDiskMonitoring`、`DrawAndroidBuild`、`DrawTextFieldWithWrite`、`DrawToolPathRow`、`ReadConfig`、`WriteConfig`、`ResetConfigToDefault`、`BuildAAB` / `BuildAPK`、`InstallAABToDevice` / `InstallAPKToDevice`、`RunPython` |
 
 ## 当前 Inspector 结构
@@ -30,6 +30,7 @@ Debug Inspector 仍只配置 `DebugComponent` 的激活策略、日志条数、M
 - `Debugger 激活类型`：绑定 `m_DebuggerActiveType`
 - `DebuggerActiveType.AlwaysDisable`：Inspector 会同步添加脚本宏 `NOVA_DISABLE_RUNTIME_DEBUGGER`，切换到其它策略时移除该宏。
 - `Console 最大日志条数`：绑定 `m_MaximumConsoleEntries`
+- `Debugger 字体`：绑定 `m_RuntimeDebuggerFont`。WebGL / 微信小游戏需要显式绑定包含中文字形的 Font，不能依赖 Editor 的系统字体回退。
 
 ### 磁盘监控
 

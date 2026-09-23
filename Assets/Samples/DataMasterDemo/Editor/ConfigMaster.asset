@@ -136,7 +136,6 @@ MonoBehaviour:
     AssetCheckPackageVersionLocalFilePath: 
     AssetCheckVersionRemoteDirectory: 
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
-    PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
     Token: YOUR_CLOUDFLARE_API_TOKEN
     CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
   CDNEditorConfigsOverrides: []
@@ -308,54 +307,7 @@ MonoBehaviour:
     Platform: 0
     Channel: 0
     DevelopMode: 0
-  CommonMask:
-    ByPlatform: 0
-    ByChannel: 0
-    ByDevelopMode: 0
-  HybridCLRMask:
-    ByPlatform: 0
-    ByChannel: 0
-    ByDevelopMode: 0
-  YooAssetMask:
-    ByPlatform: 0
-    ByChannel: 0
-    ByDevelopMode: 0
-  CdnMask:
-    ByPlatform: 0
-    ByChannel: 0
-    ByDevelopMode: 0
-  CdnDeployment:
-    Endpoint: YOUR_CDN_ENDPOINT
-    AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
-    AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
-    PresetOSSPath: YOUR_OSS_PATH
-    VersionCheckLocalFilePath: 
-    VersionCheckRemoteFilePath: 
-    LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
-    AutoLinkLatestVersion: 1
-    RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
-    AssetCheckWhitelistDeviceIDs: []
-    AssetCheckWhitelistRemoteFilePath: 
-    AutoLinkLatestAssetCheckVersionFiles: 1
-    AssetCheckManifestBytesLocalFilePath: 
-    AssetCheckManifestHashLocalFilePath: 
-    AssetCheckPackageVersionLocalFilePath: 
-    AssetCheckVersionRemoteDirectory: 
-    ZoneID: YOUR_CLOUDFLARE_ZONE_ID
-    PurgeURL: YOUR_CLOUDFLARE_PURGE_URL
-    Token: YOUR_CLOUDFLARE_API_TOKEN
-    CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
-  CdnOverrides: []
-  HybridCLROverrides: []
-  YooAssetOverrides: []
-  GameEntranceProcedureName: 
-  YooAssetSettingsPath: 
-  BundleCollectorSettingPath: 
-  LinkXmlTargetPath: 
-  AotMetadataDlls: []
-  GameDlls: []
   CurrentDevelopMode: 0
-  m_LegacyCurrentPlatform: 1
   CurrentChannel: 2
   ExportTarget: {fileID: 11400000, guid: fb9560f2f6b048d084f155f3552086fe, type: 2}
   m_Entries:
@@ -385,7 +337,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -444,7 +395,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -503,7 +453,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -562,7 +511,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -621,7 +569,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -680,7 +627,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -739,7 +685,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -798,7 +743,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -857,7 +801,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -916,7 +859,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -975,7 +917,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1034,7 +975,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1093,7 +1033,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1152,7 +1091,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1211,7 +1149,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1270,7 +1207,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1329,7 +1265,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1388,7 +1323,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1447,7 +1381,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1506,7 +1439,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1565,7 +1497,6 @@ MonoBehaviour:
       Config:
         AESKey: YOUR_PRIVACY_AES_KEY
         AESIV: YOUR_PRIVACY_AES_IV
-    CommonByMode: []
     SDKConfigsByMode:
     - Mode: 0
       SDKConfigs:
@@ -1677,9 +1608,15 @@ MonoBehaviour:
     - rid: 1008
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 1009
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
@@ -1756,9 +1693,15 @@ MonoBehaviour:
     - rid: 1017
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 1018
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:
@@ -1855,9 +1798,15 @@ MonoBehaviour:
     - rid: 1030
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 1031
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
@@ -1934,9 +1883,15 @@ MonoBehaviour:
     - rid: 1039
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 1040
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:
@@ -2033,9 +1988,15 @@ MonoBehaviour:
     - rid: 1052
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 1053
       type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
       data:
@@ -2112,9 +2073,15 @@ MonoBehaviour:
     - rid: 1061
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 1062
       type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
       data:
@@ -4839,9 +4806,15 @@ MonoBehaviour:
     - rid: 8085688720759194385
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757572
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
@@ -5405,210 +5378,420 @@ MonoBehaviour:
     - rid: 8085688802696757686
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757687
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757688
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757689
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757690
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757691
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757692
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757693
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757694
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757695
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757696
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757697
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757698
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757699
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757700
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757701
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757702
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757703
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757704
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757705
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757706
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757707
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757708
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757709
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757710
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757711
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757712
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757713
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757714
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757715
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757716
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757717
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757718
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757719
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1
     - rid: 8085688802696757720
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
-        m_AppId: app_lg38on
-        m_AesKey: rnnkU2WQdZ3BiyeSpwDUxRw2wNyuPvKV
+        m_AppId: YOUR_DATAMASTER_APP_ID
+        m_AesKey: YOUR_DATAMASTER_AES_KEY
         m_DefaultConfig: {fileID: 4900000, guid: f3824e2056ed84dd29e64b5b79aaa5a6, type: 3}
+        m_FeatureFallbackRounds: 1
+        m_FeatureRetries: 1
+        m_ReportFallbackRounds: 1
+        m_ReportRetries: 1
+        m_RequestTimeoutSeconds: 10
+        m_PreferLastSuccessfulHost: 1

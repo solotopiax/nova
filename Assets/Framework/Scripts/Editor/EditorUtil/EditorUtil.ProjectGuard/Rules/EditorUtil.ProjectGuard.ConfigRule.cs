@@ -10,10 +10,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using NovaFramework.Runtime;
 using UnityEditor;
+using UnityEditor.Compilation;
+using UnityEngine;
 
 namespace NovaFramework.Editor
 {
@@ -109,6 +112,7 @@ namespace NovaFramework.Editor
                 s_LastConfigRuntime = runtime;
                 ValidateConfigExport(runtime, master, runtimePath, masterPath, report);
                 ValidateConfigRuntime(runtime, runtimePath, masterPath, report);
+                ValidateBusinessAssemblyPlatform(runtime, Config.ActivePlatform.Current, runtimePath, report);
             }
 
             /// <summary>
@@ -208,6 +212,194 @@ namespace NovaFramework.Editor
                         "Nova/Open Config → 通用配置 → 名字空间配置");
                 }
                 ValidateExportedPlaceholders(runtime, runtimePath, masterPath, report);
+            }
+
+            /// <summary>
+            /// 校验业务程序集是否允许当前 Unity Active BuildTarget，避免进入 Play 后才在 DLL 加载阶段失败。
+            /// </summary>
+            /// <param name="runtime">当前 Demo 实际使用的运行时配置。</param>
+            /// <param name="platform">当前 Unity BuildTarget 对应的 Nova 平台。</param>
+            /// <param name="runtimePath">运行时配置资产路径。</param>
+            /// <param name="report">问题收集报告。</param>
+            private static void ValidateBusinessAssemblyPlatform(ConfigRuntimeSO runtime, PlatformType platform,
+                string runtimePath, NovaGuardReport report)
+            {
+                if (runtime == null || platform == PlatformType.None || string.IsNullOrWhiteSpace(runtime.Namespace))
+                {
+                    return;
+                }
+
+                string asmdefPath = CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(
+                    runtime.Namespace);
+                if (string.IsNullOrWhiteSpace(asmdefPath) || !File.Exists(asmdefPath))
+                {
+                    return;
+                }
+
+                try
+                {
+                    ValidateBusinessAssemblyPlatform(runtime.Namespace, platform, asmdefPath,
+                        File.ReadAllText(asmdefPath), runtimePath, report);
+                }
+                catch (Exception exception)
+                {
+                    Log.Warning(LogTag.Editor,
+                        "[ProjectGuard] 无法读取业务程序集平台约束，已跳过该项检查：Assembly={0}, Path={1}, Error={2}",
+                        runtime.Namespace, asmdefPath, exception.Message);
+                }
+            }
+
+            /// <summary>
+            /// 解析 asmdef 平台约束，并在明确排除目标平台时生成启动阻断问题。
+            /// </summary>
+            /// <param name="assemblyName">业务程序集名称。</param>
+            /// <param name="platform">待校验平台。</param>
+            /// <param name="asmdefPath">程序集定义路径。</param>
+            /// <param name="asmdefJson">程序集定义 JSON。</param>
+            /// <param name="runtimePath">运行时配置资产路径。</param>
+            /// <param name="report">问题收集报告。</param>
+            private static void ValidateBusinessAssemblyPlatform(string assemblyName, PlatformType platform,
+                string asmdefPath, string asmdefJson, string runtimePath, NovaGuardReport report)
+            {
+                if (platform == PlatformType.None || string.IsNullOrWhiteSpace(asmdefJson))
+                {
+                    return;
+                }
+
+                AssemblyDefinitionPlatformInfo definition =
+                    JsonUtility.FromJson<AssemblyDefinitionPlatformInfo>(asmdefJson);
+                if (definition == null)
+                {
+                    return;
+                }
+
+                string platformName = GetAssemblyDefinitionPlatformName(platform);
+                string platformSymbol = GetAssemblyDefinitionPlatformSymbol(platform);
+                string[] excludedPlatforms = definition.excludePlatforms ?? Array.Empty<string>();
+                string[] includedPlatforms = definition.includePlatforms ?? Array.Empty<string>();
+                string[] defineConstraints = definition.defineConstraints ?? Array.Empty<string>();
+                var reasons = new List<string>();
+                if (excludedPlatforms.Contains(platformName, StringComparer.OrdinalIgnoreCase))
+                {
+                    reasons.Add($"excludePlatforms 包含 {platformName}");
+                }
+
+                if (includedPlatforms.Length > 0 &&
+                    !includedPlatforms.Contains(platformName, StringComparer.OrdinalIgnoreCase))
+                {
+                    reasons.Add($"includePlatforms 未包含 {platformName}");
+                }
+
+                foreach (string constraint in defineConstraints)
+                {
+                    if (IsKnownPlatformConstraintUnsatisfied(constraint, platformSymbol))
+                    {
+                        reasons.Add($"defineConstraints 包含不满足的约束 {constraint}");
+                    }
+                }
+
+                if (reasons.Count == 0)
+                {
+                    return;
+                }
+
+                string resolvedAssemblyName = string.IsNullOrWhiteSpace(assemblyName)
+                    ? definition.name
+                    : assemblyName;
+                string message =
+                    $"当前 Demo 不支持 {platformName}。\n" +
+                    "处理方式：请切换到该 Demo 支持的平台，或选择支持当前平台的 Demo。\n" +
+                    $"用户提示：当前 Demo 不支持 {platformName}，请切换到受支持的平台。\n" +
+                    $"技术信息：业务程序集 [{resolvedAssemblyName}] 未进入当前编译目标；" +
+                    $"{string.Join("；", reasons)}。\n" +
+                    $"程序集定义：{DisplayPath(asmdefPath)}\n" +
+                    $"运行时配置：{DisplayPath(runtimePath)}";
+                report.Add(new NovaGuardIssue("NOVA-ASSEMBLY-001", NovaGuardSeverity.Error,
+                    message, asmdefPath));
+            }
+
+            /// <summary>
+            /// 判断只由 Unity 平台宏组成的 asmdef 约束在当前平台是否不成立；混入自定义宏时保守跳过。
+            /// </summary>
+            /// <param name="constraint">单条 asmdef define constraint，可包含 ||。</param>
+            /// <param name="activePlatformSymbol">当前平台对应的 Unity 宏。</param>
+            /// <returns>约束可确定且当前平台不满足时返回 true。</returns>
+            private static bool IsKnownPlatformConstraintUnsatisfied(string constraint,
+                string activePlatformSymbol)
+            {
+                if (string.IsNullOrWhiteSpace(constraint) || string.IsNullOrWhiteSpace(activePlatformSymbol))
+                {
+                    return false;
+                }
+
+                string[] alternatives = constraint.Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
+                if (alternatives.Length == 0)
+                {
+                    return false;
+                }
+
+                bool hasUnknownSymbol = false;
+                bool anySatisfied = false;
+                foreach (string rawAlternative in alternatives)
+                {
+                    string alternative = rawAlternative.Trim();
+                    bool negated = alternative.StartsWith("!", StringComparison.Ordinal);
+                    string symbol = negated ? alternative.Substring(1).Trim() : alternative;
+                    if (!IsKnownPlatformSymbol(symbol))
+                    {
+                        hasUnknownSymbol = true;
+                        continue;
+                    }
+
+                    bool symbolEnabled = string.Equals(symbol, activePlatformSymbol, StringComparison.Ordinal);
+                    if (negated ? !symbolEnabled : symbolEnabled)
+                    {
+                        anySatisfied = true;
+                    }
+                }
+
+                return !hasUnknownSymbol && !anySatisfied;
+            }
+
+            /// <summary>
+            /// 判断宏是否属于 Nova 当前支持的 Unity 目标平台集合。
+            /// </summary>
+            private static bool IsKnownPlatformSymbol(string symbol)
+                => string.Equals(symbol, "UNITY_ANDROID", StringComparison.Ordinal) ||
+                   string.Equals(symbol, "UNITY_IOS", StringComparison.Ordinal) ||
+                   string.Equals(symbol, "UNITY_WEBGL", StringComparison.Ordinal);
+
+            /// <summary>
+            /// 将 Nova 平台转换为 asmdef includePlatforms/excludePlatforms 使用的名称。
+            /// </summary>
+            private static string GetAssemblyDefinitionPlatformName(PlatformType platform)
+                => platform == PlatformType.iOS ? "iOS" : platform.ToString();
+
+            /// <summary>
+            /// 将 Nova 平台转换为 asmdef defineConstraints 使用的 Unity 宏。
+            /// </summary>
+            private static string GetAssemblyDefinitionPlatformSymbol(PlatformType platform)
+            {
+                switch (platform)
+                {
+                    case PlatformType.Android:
+                        return "UNITY_ANDROID";
+                    case PlatformType.iOS:
+                        return "UNITY_IOS";
+                    case PlatformType.WebGL:
+                        return "UNITY_WEBGL";
+                    default:
+                        return string.Empty;
+                }
+            }
+
+            [Serializable]
+            private sealed class AssemblyDefinitionPlatformInfo
+            {
+                public string name = string.Empty;
+                public string[] includePlatforms = Array.Empty<string>();
+                public string[] excludePlatforms = Array.Empty<string>();
+                public string[] defineConstraints = Array.Empty<string>();
             }
 
             /// <summary>
@@ -665,6 +857,18 @@ namespace NovaFramework.Editor
             {
                 var report = new NovaGuardReport();
                 ValidateConfigRuntime(runtime, runtimePath, masterPath, report);
+                return report;
+            }
+
+            /// <summary>
+            /// 测试入口：对指定 asmdef JSON 执行业务程序集平台兼容性诊断。
+            /// </summary>
+            private static NovaGuardReport ValidateBusinessAssemblyPlatformForDiagnostics(string assemblyName,
+                PlatformType platform, string asmdefPath, string asmdefJson, string runtimePath)
+            {
+                var report = new NovaGuardReport();
+                ValidateBusinessAssemblyPlatform(assemblyName, platform, asmdefPath, asmdefJson, runtimePath,
+                    report);
                 return report;
             }
 

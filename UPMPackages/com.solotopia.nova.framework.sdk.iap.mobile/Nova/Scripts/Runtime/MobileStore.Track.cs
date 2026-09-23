@@ -8,6 +8,7 @@
  * descrip:   MobileStore 埋点转发
  ***************************************************************/
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using NovaFramework.Runtime;
@@ -65,7 +66,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             MarkRuntimeHandledTransactionInternal(trackKey);
-            TrackLocalPaySuccess(record.TableId, ResolveProductId(record.TableId, product), IsTrackDebugMode(), ResolvePrice(record.TableId), ResolveLocalPaySuccessOrderId(record, product), record.IsReplenish, record.CustomDataParam);
+            Dictionary<string, object> properties = CreateMobileTrackProperties(record.TableId, product, record.CustomDataParam);
+            properties[IAPTrackFields.OrderId] = ResolveLocalPaySuccessOrderId(record, product);
+            properties[IAPTrackFields.AddOrder] = record.IsReplenish;
+            EmitTrackEvent(IAPTrackEvents.LocalPaySuccess, properties);
         }
 
         /// <summary>
@@ -78,7 +82,10 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="customData">业务透传数据。</param>
         internal void TrackLocalPayFailInternal(long tableId, Product product, IAPMobileErrorCode reason, string reasonDetail, string customData)
         {
-            TrackLocalPayFail(tableId, ResolveProductId(tableId, product), IsTrackDebugMode(), ResolvePrice(tableId), reason, string.IsNullOrEmpty(reasonDetail) ? reason.ToString() : reasonDetail, customData);
+            Dictionary<string, object> properties = CreateMobileTrackProperties(tableId, product, customData);
+            properties[IAPTrackFields.Reason] = (int)reason;
+            properties[IAPTrackFields.ReasonDetail] = string.IsNullOrEmpty(reasonDetail) ? reason.ToString() : reasonDetail;
+            EmitTrackEvent(IAPTrackEvents.LocalPayFail, properties);
         }
 
         /// <summary>
@@ -90,6 +97,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="netError">是否网络错误。</param>
         /// <param name="protocolCode">服务端错误码。</param>
         /// <param name="reason">失败原因。</param>
+        /// <param name="reasonDetail">失败原因补充描述。</param>
         internal void TrackValidateFailInternal(MobileOrderRecord record, Product product, int validateCount, bool netError, int protocolCode, IAPMobileErrorCode reason, string reasonDetail)
         {
             if (record == null)
@@ -97,7 +105,11 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            TrackValidateFail(record.TableId, ResolveProductId(record.TableId, product), IsTrackDebugMode(), ResolvePrice(record.TableId), record.TransactionId ?? string.Empty, record.IsReplenish, validateCount, netError, protocolCode, reason, reasonDetail, record.CustomDataParam);
+            Dictionary<string, object> properties = CreateMobileValidationTrackProperties(record, product, validateCount, netError);
+            properties[IAPTrackFields.ProtocolCode] = protocolCode;
+            properties[IAPTrackFields.Reason] = (int)reason;
+            properties[IAPTrackFields.ReasonDetail] = reasonDetail ?? string.Empty;
+            EmitTrackEvent(IAPTrackEvents.ValidateFail, properties);
         }
 
         /// <summary>
@@ -110,6 +122,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="protocolCode">服务端错误码。</param>
         /// <param name="protocolMessage">服务端错误信息。</param>
         /// <param name="reason">失败原因。</param>
+        /// <param name="reasonDetail">失败原因补充描述。</param>
         internal void TrackValidateFailFinishInternal(MobileOrderRecord record, Product product, int validateCount, bool netError, int protocolCode, string protocolMessage, IAPMobileErrorCode reason, string reasonDetail)
         {
             if (record == null)
@@ -117,7 +130,12 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            TrackValidateFailFinish(record.TableId, ResolveProductId(record.TableId, product), IsTrackDebugMode(), ResolvePrice(record.TableId), record.TransactionId ?? string.Empty, record.IsReplenish, validateCount, netError, protocolCode, protocolMessage, reason, reasonDetail, record.CustomDataParam);
+            Dictionary<string, object> properties = CreateMobileValidationTrackProperties(record, product, validateCount, netError);
+            properties[IAPTrackFields.ProtocolCode] = protocolCode;
+            properties[IAPTrackFields.ProtocolMessage] = protocolMessage ?? string.Empty;
+            properties[IAPTrackFields.Reason] = (int)reason;
+            properties[IAPTrackFields.ReasonDetail] = reasonDetail ?? string.Empty;
+            EmitTrackEvent(IAPTrackEvents.ValidateFailFinish, properties);
         }
 
         /// <summary>
@@ -126,28 +144,46 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="record">本地订单记录。</param>
         /// <param name="product">Unity IAP 商品对象。</param>
         /// <param name="validateCount">验单尝试次数。</param>
+        /// <param name="orderId">服务端确认的订单号；为空时回退平台交易号。</param>
         internal void TrackValidateSuccessInternal(MobileOrderRecord record, Product product, int validateCount, string orderId)
         {
-            if (record == null || !TryMarkValidateSuccess(record))
+            if (record == null)
             {
                 return;
             }
 
             string trackOrderId = !string.IsNullOrEmpty(orderId) ? orderId : record.TransactionId ?? string.Empty;
-            TrackValidateSuccess(record.TableId, ResolveProductId(record.TableId, product), IsTrackDebugMode(), ResolvePrice(record.TableId), trackOrderId, record.IsReplenish, validateCount, record.CustomDataParam);
+            if (!TryMarkValidateSuccess(record, trackOrderId))
+            {
+                return;
+            }
+
+            Dictionary<string, object> properties = CreateMobileTrackProperties(record.TableId, product, record.CustomDataParam);
+            properties[IAPTrackFields.OrderId] = trackOrderId;
+            properties[IAPTrackFields.AddOrder] = record.IsReplenish;
+            properties[IAPTrackFields.ValidateCount] = validateCount;
+            EmitTrackEvent(IAPTrackEvents.ValidateSuccess, properties);
         }
 
         /// <summary>
-        /// 按平台注册订单键持久化验单成功打点去重，避免重启后 FetchPurchases 或补单再次上报同一订单。
+        /// 按平台订单号持久化验单成功打点去重，避免重启后 FetchPurchases 或补单再次上报同一订单。
         /// </summary>
         /// <param name="record">已完成服务端验单的订单记录。</param>
+        /// <param name="orderId">验单成功事件使用的平台订单号。</param>
         /// <returns>首次上报该订单时返回 true。</returns>
-        private bool TryMarkValidateSuccess(MobileOrderRecord record)
+        private bool TryMarkValidateSuccess(MobileOrderRecord record, string orderId)
         {
-            string trackKey = ResolveValidateSuccessTrackKey(record);
+            string trackKey = ResolveValidateSuccessTrackKey(record, orderId);
             if (string.IsNullOrEmpty(trackKey))
             {
                 return true;
+            }
+
+            string legacyTrackKey = ResolveLegacyValidateSuccessTrackKey(record);
+            if (TryMigrateLegacyValidateSuccessTrackKey(trackKey, legacyTrackKey))
+            {
+                LogDebug($"订单已通过旧版 purchase token 上报过验单成功事件，已迁移为订单号并跳过重复打点，订单键={trackKey}");
+                return false;
             }
 
             if (m_PersistData != null && m_PersistData.ValidateSuccessOrderKeys.Contains(trackKey))
@@ -172,6 +208,54 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// 将当前订单命中的旧版 Google purchase token 去重键迁移为订单号键。
+        /// </summary>
+        /// <param name="trackKey">当前订单号去重键。</param>
+        /// <param name="legacyTrackKey">旧版 purchase token 去重键。</param>
+        /// <returns>旧版键已存在并完成迁移时返回 true。</returns>
+        private bool TryMigrateLegacyValidateSuccessTrackKey(string trackKey, string legacyTrackKey)
+        {
+            if (string.IsNullOrEmpty(legacyTrackKey) || string.Equals(trackKey, legacyTrackKey, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            bool migrated = false;
+            if (m_PersistData?.ValidateSuccessOrderKeys != null)
+            {
+                int legacyIndex = m_PersistData.ValidateSuccessOrderKeys.IndexOf(legacyTrackKey);
+                if (legacyIndex >= 0)
+                {
+                    if (m_PersistData.ValidateSuccessOrderKeys.Contains(trackKey))
+                    {
+                        m_PersistData.ValidateSuccessOrderKeys.RemoveAt(legacyIndex);
+                    }
+                    else
+                    {
+                        m_PersistData.ValidateSuccessOrderKeys[legacyIndex] = trackKey;
+                    }
+
+                    TrimValidateSuccessOrderKeys(m_PersistData.ValidateSuccessOrderKeys);
+                    SavePersistDataInternal();
+                    migrated = true;
+                }
+            }
+
+            if (m_RuntimeValidateSuccessOrderKeys.Remove(legacyTrackKey))
+            {
+                migrated = true;
+            }
+
+            if (migrated && !m_RuntimeValidateSuccessOrderKeys.Contains(trackKey))
+            {
+                m_RuntimeValidateSuccessOrderKeys.Add(trackKey);
+                TrimValidateSuccessOrderKeys(m_RuntimeValidateSuccessOrderKeys);
+            }
+
+            return migrated;
         }
 
         /// <summary>
@@ -205,7 +289,38 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            TrackFirstPayOrderValidate(record.TableId, ResolveProductId(record.TableId, product), IsTrackDebugMode(), ResolvePrice(record.TableId), record.TransactionId ?? string.Empty, false, validateCount, netError, record.CustomDataParam);
+            Dictionary<string, object> properties = CreateMobileValidationTrackProperties(record, product, validateCount, netError);
+            EmitTrackEvent(IAPTrackEvents.FirstPayOrderValidate, properties);
+        }
+
+        /// <summary>
+        /// 构造 Mobile 渠道共有的商品打点字段。
+        /// </summary>
+        /// <param name="tableId">商品配置表行 ID。</param>
+        /// <param name="product">Unity IAP 商品对象。</param>
+        /// <param name="customData">业务透传数据。</param>
+        /// <returns>包含通用字段的 Mobile 打点属性。</returns>
+        private Dictionary<string, object> CreateMobileTrackProperties(long tableId, Product product, string customData)
+        {
+            return CreateTrackProperties(tableId, ResolveProductId(tableId, product), IsTrackDebugMode(), ResolvePrice(tableId), customData);
+        }
+
+        /// <summary>
+        /// 构造 Mobile 验单事件共有的订单和尝试次数字段。
+        /// </summary>
+        /// <param name="record">本地订单记录。</param>
+        /// <param name="product">Unity IAP 商品对象。</param>
+        /// <param name="validateCount">验单尝试次数。</param>
+        /// <param name="netError">是否为网络错误。</param>
+        /// <returns>包含 Mobile 订单语义的验单属性。</returns>
+        private Dictionary<string, object> CreateMobileValidationTrackProperties(MobileOrderRecord record, Product product, int validateCount, bool netError)
+        {
+            Dictionary<string, object> properties = CreateMobileTrackProperties(record.TableId, product, record.CustomDataParam);
+            properties[IAPTrackFields.OrderId] = record.TransactionId ?? string.Empty;
+            properties[IAPTrackFields.AddOrder] = record.IsReplenish;
+            properties[IAPTrackFields.ValidateCount] = validateCount;
+            properties[IAPTrackFields.NetError] = netError;
+            return properties;
         }
 
         /// <summary>
@@ -259,13 +374,19 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
-        /// 解析验单成功打点去重 key：Apple 使用 transaction id，Google 使用 purchase token。
+        /// 解析验单成功打点去重 key：Apple 使用 transaction id，Google 使用订单号。
         /// </summary>
         /// <param name="record">移动端订单记录。</param>
+        /// <param name="orderId">验单响应确认的订单号；为空时回退记录中的平台订单号。</param>
         /// <returns>平台订单去重 key。</returns>
-        private static string ResolveValidateSuccessTrackKey(MobileOrderRecord record)
+        private static string ResolveValidateSuccessTrackKey(MobileOrderRecord record, string orderId)
         {
-            string platformOrderKey = ResolveLocalPaySuccessTrackKey(record);
+            string platformOrderKey;
+#if UNITY_ANDROID
+            platformOrderKey = !string.IsNullOrEmpty(orderId) ? orderId : record?.TransactionId ?? string.Empty;
+#else
+            platformOrderKey = ResolveLocalPaySuccessTrackKey(record);
+#endif
             if (string.IsNullOrEmpty(platformOrderKey))
             {
                 return string.Empty;
@@ -277,6 +398,20 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             return $"ios:{platformOrderKey}";
 #else
             return $"mobile:{platformOrderKey}";
+#endif
+        }
+
+        /// <summary>
+        /// 解析旧版验单成功打点去重 key，仅用于把 Android purchase token 记录迁移为订单号记录。
+        /// </summary>
+        /// <param name="record">移动端订单记录。</param>
+        /// <returns>旧版 Google purchase token 去重 key；非 Android 或 token 为空时返回空字符串。</returns>
+        private static string ResolveLegacyValidateSuccessTrackKey(MobileOrderRecord record)
+        {
+#if UNITY_ANDROID
+            return !string.IsNullOrEmpty(record?.GoogleToken) ? $"google:{record.GoogleToken}" : string.Empty;
+#else
+            return string.Empty;
 #endif
         }
 

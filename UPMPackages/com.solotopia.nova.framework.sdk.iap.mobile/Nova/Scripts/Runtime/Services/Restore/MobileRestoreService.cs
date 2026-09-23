@@ -94,22 +94,55 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         }
 
         /// <summary>
-        /// 商品拉取成功后补跑之前因商品未就绪而跳过的权益刷新。
+        /// 商品拉取完成后发起平台已有购买拉取；其回调会先缓存票据，再决定补跑权益刷新或完整补单。
         /// </summary>
-        internal void TryRunPendingEntitlementRefreshAfterProductsFetched()
+        internal void RequestExistingPurchasesFetch()
         {
-            if (!m_PendingEntitlementRefreshAfterProductsFetched)
+            if (m_IsExistingPurchasesFetchInProgress)
             {
+                LogDebug("平台已有购买正在拉取，本次请求复用当前回调。");
                 return;
+            }
+
+            if (m_Hub.ExtendedService?.IsAttached != true)
+            {
+                LogWarning("平台已有购买拉取跳过，原因=StoreControllerNotAttached。");
+                return;
+            }
+
+            m_IsExistingPurchasesFetchInProgress = true;
+            LogDebug("开始拉取平台已有购买，权益刷新将在票据缓存完成后继续。");
+            m_Hub.ExtendedService.FetchPurchases();
+        }
+
+        /// <summary>
+        /// 平台已有购买拉取结束后尝试补跑延后的权益刷新。
+        /// </summary>
+        /// <returns>本次已调度权益刷新时返回 true。</returns>
+        private bool TryRunPendingEntitlementRefreshAfterPurchasesFetched()
+        {
+            if (!m_PendingEntitlementRefresh)
+            {
+                return false;
             }
 
             if (string.IsNullOrEmpty(m_Hub.Store?.GameUID))
             {
-                return;
+                return false;
             }
 
-            m_PendingEntitlementRefreshAfterProductsFetched = false;
-            m_Hub.RunBackgroundTask(async token => { await RefreshEntitlementsAsync(token); }, "商品拉取成功后的权益刷新");
+            if (m_Hub.InitService?.IsReady != true ||
+                m_Hub.InitService.ProductFetchState != MobileProductFetchState.Succeeded ||
+                m_IsExistingPurchasesFetchInProgress)
+            {
+                LogDebug($"延后权益刷新尚不具备补跑条件，商店就绪={m_Hub.InitService?.IsReady == true}，商品状态={m_Hub.InitService?.ProductFetchState}，已有购买拉取中={m_IsExistingPurchasesFetchInProgress}。");
+                return false;
+            }
+
+            m_PendingEntitlementRefresh = false;
+            LogDebug("商店、商品和平台已有购买已就绪，开始补跑延后权益刷新。");
+            m_Hub.RunBackgroundTask(async token => { await RefreshEntitlementsAsync(token); }, "平台已有购买就绪后的权益刷新");
+            return true;
         }
 
         /// <summary>
@@ -121,6 +154,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         {
             if (!m_Hub.InitService.IsReady)
             {
+                m_PendingEntitlementRefresh = true;
+                LogDebug("商店尚未连接，已延后权益刷新，原因=StoreNotReady。");
                 return new List<IAPResult>();
             }
 
@@ -133,17 +168,26 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             MobileProductFetchState productFetchState = await m_Hub.InitService.WaitForProductsFetchedAsync(5000, ct);
             if (productFetchState != MobileProductFetchState.Succeeded)
             {
-                m_PendingEntitlementRefreshAfterProductsFetched = true;
-                LogWarning($"商品信息尚未就绪，延后权益刷新。状态={productFetchState}");
+                m_PendingEntitlementRefresh = true;
+                LogWarning($"商品信息尚未就绪，延后权益刷新，原因=ProductsNotReady，状态={productFetchState}。");
+                return new List<IAPResult>();
+            }
+
+            if (m_IsExistingPurchasesFetchInProgress)
+            {
+                m_PendingEntitlementRefresh = true;
+                LogDebug("平台已有购买尚未拉取完成，已延后权益刷新，原因=PurchasesFetchInProgress。");
                 return new List<IAPResult>();
             }
 
             if (m_IsInRestore)
             {
+                m_PendingEntitlementRefresh = false;
                 LogWarning("恢复流程正在进行中，拒绝重复刷新权益。");
                 return new List<IAPResult>();
             }
 
+            m_PendingEntitlementRefresh = false;
             m_IsInRestore = true;
             m_RestoreCoordinator.Reset();
             m_SubscriptionResults = new List<IAPResult>();
@@ -176,6 +220,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             EntitlementStatus status = entitlement.Status;
+            CacheEntitlementReceipt(productId, entitlement);
             if (status == EntitlementStatus.FullyEntitled &&
                 entitlement.Product?.definition.type == ProductType.Subscription &&
                 TryGetSubscriptionExpireDate(entitlement.Product, entitlement, out DateTime expireDate))
@@ -199,6 +244,22 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             {
                 ProcessAllEntitlementsCompleted();
             }
+        }
+
+        /// <summary>
+        /// 缓存权益回调关联订单的票据，使 FullyEntitled 恢复记录可直接取得 Google token 或 Apple order id。
+        /// </summary>
+        /// <param name="productId">当前权益回调对应的平台商品 ID。</param>
+        /// <param name="entitlement">Unity IAP 权益检查结果。</param>
+        private void CacheEntitlementReceipt(string productId, Entitlement entitlement)
+        {
+            string receipt = entitlement?.Order?.Info?.Receipt;
+            if (string.IsNullOrEmpty(receipt))
+            {
+                return;
+            }
+
+            m_Hub.ProductService.CacheReceipt(productId, receipt);
         }
 
         /// <summary>
@@ -338,6 +399,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// <param name="existingOrders">历史订单集合。</param>
         internal void OnExistingPurchasesFetched(Orders existingOrders)
         {
+            m_IsExistingPurchasesFetchInProgress = false;
             foreach (ConfirmedOrder order in existingOrders.ConfirmedOrders)
             {
                 foreach (var cartItem in order.CartOrdered.Items())
@@ -361,19 +423,34 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 m_Hub.PurchaseService.OnPurchasePending(order);
             }
 
-            if (!string.IsNullOrEmpty(m_Hub.Store?.GameUID))
+            if (!string.IsNullOrEmpty(m_Hub.Store?.GameUID) &&
+                !TryRunPendingEntitlementRefreshAfterPurchasesFetched())
             {
                 m_Hub.RunBackgroundTask(m_Hub.ValidationService.CheckLocalOrdersAsync, "平台已有购买后的补单扫描");
             }
         }
 
         /// <summary>
-        /// 处理平台已有购买拉取失败：只记录日志，保留本地/服务端补单兜底。
+        /// 处理平台已有购买拉取失败：记录日志，并在已登录时通过统一补单入口重跑服务端、本地和权益检查。
+        /// 缺少平台 PendingOrder 引用的订单继续保留，等待后续 FetchPurchases 或手动 Restore。
         /// </summary>
         /// <param name="failure">失败描述。</param>
         internal void OnExistingPurchasesFetchFailed(PurchasesFetchFailureDescription failure)
         {
+            m_IsExistingPurchasesFetchInProgress = false;
             LogWarning($"平台已有购买拉取失败，原因={failure.FailureReason}，详情={failure.Message}");
+            if (string.IsNullOrEmpty(m_Hub.Store?.GameUID))
+            {
+                return;
+            }
+
+            if (TryRunPendingEntitlementRefreshAfterPurchasesFetched())
+            {
+                return;
+            }
+
+            LogDebug("平台已有购买拉取失败，开始执行服务端、本地和权益补单兜底。");
+            m_Hub.RunBackgroundTask(m_Hub.ValidationService.CheckLocalOrdersAsync, "平台已有购买拉取失败后的补单兜底");
         }
 
         /// <summary>
@@ -381,6 +458,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         internal void Dispose()
         {
+            m_IsExistingPurchasesFetchInProgress = false;
+            m_PendingEntitlementRefresh = false;
             if (m_IsInRestore)
             {
                 FinishRestore();

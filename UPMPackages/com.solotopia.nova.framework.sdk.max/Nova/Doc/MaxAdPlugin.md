@@ -1,6 +1,6 @@
 # MaxAdPlugin
 
-> 最后更新：2026-07-30
+> 最后更新：2026-09-22
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Runtime/**`
 
 **类签名**：`[AdChannel(typeof(MaxAdChannelConfig))] public sealed partial class MaxAdPlugin : AdChannelPluginBase`
@@ -18,6 +18,7 @@ AppLovin MAX 广告渠道插件，负责 MAX SDK 初始化、激励视频/插屏
 | `MaxAdPlugin.cs` | `MaxAdPlugin` | 主实现：`override` 方法、SDK 初始化、格式分发 |
 | `MaxAdPlugin.Visitors.cs` | `MaxAdPlugin` | 私有字段定义 |
 | `MaxAdPlugin.Callbacks.cs` | `MaxAdPlugin` | MAX SDK 回调注册与反注册 |
+| `MaxAdPlugin.Impression.cs` | `MaxAdPlugin` | 全屏展示与收益回调的进程内本地关联诊断 |
 | `MaxAdPlugin.RV.cs` | `MaxAdPlugin` | 激励视频加载、展示、回调链 |
 | `MaxAdPlugin.Inter.cs` | `MaxAdPlugin` | 插屏加载、展示、回调链 |
 | `MaxAdPlugin.AppOpen.cs` | `MaxAdPlugin` | 开屏加载、展示、回调链 |
@@ -78,6 +79,8 @@ IAdChannelConfig  <── MaxAdChannelConfig  (配置值对象，非插件本体
 | `m_RevenueMonetizeTracker` | `IMonetizeTrackPlugin` | `null` | 收益回调打点用的变现插件引用；初始化主线程缓存 |
 | `m_RevenueAttributionTracker` | `IAttributionPlugin` | `null` | 收益回调打点用的归因插件引用；初始化主线程缓存 |
 | `m_RevenueEventTracker` | `ITrackPlugin` | `null` | 收益回调打点用的通用埋点插件引用；初始化主线程缓存 |
+| `m_FullscreenImpressions` | `Dictionary<AdFormat, FullscreenImpressionContext>` | 空字典 | 当前进程内各全屏格式的本地曝光关联状态，用于连接展示与收益回调 |
+| `m_CallbacksRegistered` | `bool` | `false` | MAX 全局回调注册幂等门；释放完成后恢复为 false |
 | `BannerIlrdInterval` | `int` | `5` | 继承自广告全局配置；Banner ILRD 聚合由 `AdChannelPluginBase` 统一处理，MAX 在满间隔时构造并上传自己的 `ad_ilrd` payload |
 
 ### MaxAdChannelConfig 配置字段
@@ -266,7 +269,7 @@ InitChannelSDKAsync(config, ct)
   ├─ 完成 WaitForPrivacyFlowAsync 等待信号
   ├─ Log.Debug 打印国家代码
   ├─ SetCreativeDebuggerEnabled(cfg.CreativeDebuggerEnabled)
-  ├─ RegisterCallbacks()
+  ├─ RegisterCallbacks()               ← m_CallbacksRegistered 防止重复订阅
   │    ├─ RegisterRVCallbacks()      → guard(m_RVPlacementIds.Count) → 逐 ID RegisterAdUnits + 注册 8 个事件
   │    ├─ RegisterInterCallbacks()   → guard(m_InterPlacementIds.Count) → 逐 ID RegisterAdUnits + 注册 7 个事件
   │    ├─ RegisterBannerCallbacks()  → guard(m_BannerPlacementIds.Count) → 逐 ID RegisterAdUnits + 注册 5 个事件
@@ -289,7 +292,16 @@ InitChannelSDKAsync(config, ct)
 - `ad_impression` 在每次 MAX Banner 收益回调中即时上传，不因 Banner 刷新频繁而节流；非 Banner 收益打点同样在 MAX 收益回调线程即时上传。
 - Banner 的 `ad_ilrd` 按基类 `TrackBannerIlrdAggregated` 统一累计上传；默认值 `5` 表示每 5 次 Banner 收益回调上传 1 次。
 - 未达到间隔的 Banner 累计次数和累计金额由 `AdChannelPluginBase` 写入 `PlayerPrefs`，避免下次游戏启动丢失未完成批次。
-- `ad_impression` 和 `ad_ilrd` 都不新增额外属性，且保持既有属性类型：`ad_ilrd.publisher_revenue` / `ad_ilrd.value` 为数值，`ad_ilrd.af_revenue` 为文本；未满间隔的内部存档金额使用 invariant decimal 字符串保存。
+- `ad_impression` 保留平台字段 `ad_format`，并补充与 Nova 广告事件一致的 `nova_ad_format`，便于跨事件统一筛选；`ad_ilrd.publisher_revenue` / `ad_ilrd.value` 为数值，`ad_ilrd.af_revenue` 为文本；未满间隔的内部存档金额使用 invariant decimal 字符串保存。
+
+### 全屏广告曝光关联
+
+- Rewarded、Interstitial、AppOpen 在调用 MAX 展示接口前生成进程内本地 `nova_ad_impression_id`；展示回调产生的 `nova_ad_show` 与收益回调产生的 `ad_ilrd`、`ad_impression` 使用同一个 ID。
+- `ad_ilrd` 与 `ad_impression` 增加 `nova_ad_revenue_callback_index`，从 1 开始记录同一本地曝光收到的收益回调次数；`nova_ad_correlation_status` 取值为 `best_effort_match`、`revenue_before_show` 或 `orphan`。`best_effort_match` 只表示回调匹配到当前展示尝试，不表示 MAX 提供了原生唯一曝光证明。
+- 收益回调先于 displayed 到达时仍复用 ShowAsync 已建立的 ID；没有展示上下文时生成诊断 ID 并标记 `orphan`。
+- 当前关联层不丢弃任何收益回调。MAX `AdInfo` 没有可依赖的原生唯一曝光 ID，仅凭时间、素材和金额硬去重可能误删连续真实曝光；分析侧可按 `nova_ad_impression_id` 与回调序号识别重复形态，取得真机证据后再决定是否抑制。
+- 同格式、同广告位的上一曝光若在下一次 `ShowAsync` 后才迟到回调，MAX 现有字段无法无歧义地区分它属于前一次还是当前一次；因此本地 ID 只能用于诊断候选重复，不能直接作为财务口径的自动去重键。
+- 以上关联只覆盖当前运行进程；进程重启后的厂商回调无法与重启前本地 ID 建立强关联。
 
 ### Banner 可见性恢复
 

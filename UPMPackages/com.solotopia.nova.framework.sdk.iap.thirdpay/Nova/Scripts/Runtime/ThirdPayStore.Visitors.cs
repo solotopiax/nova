@@ -8,17 +8,16 @@
  * descrip:   ThirdPayStore 常量、字段与属性
  ***************************************************************/
 
+using System.Runtime.CompilerServices;
 using NovaFramework.SDK.IAP.Runtime;
 
 namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 {
+    /// <summary>
+    /// 声明 ThirdPayStore 的运行时状态与内部协作者。
+    /// </summary>
     public sealed partial class ThirdPayStore
     {
-        /// <summary>
-        /// 服务端验单失败后的重试间隔，单位为秒。
-        /// </summary>
-        private static readonly float[] s_ValidateRetryIntervals = { 0.2f, 0.5f, 1f, 2f, 4f, 8f };
-
         /// <summary>
         /// 外部浏览器支付返回 App 后的默认自动验单延迟，单位为秒。
         /// </summary>
@@ -37,71 +36,27 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <summary>
         /// 获取当前 Store 是否已具备基础配置且必需配置项齐备。
         /// </summary>
-        protected override bool IsStoreReady => m_Config != null && m_ConfigReady;
+        protected override bool IsStoreReady => m_Hub.Config != null && m_Hub.ConfigReady;
 
         /// <summary>
-        /// 第三方支付 Store 配置。
+        /// 集中持有第三方支付共享状态、内部服务和生命周期资源的强类型容器。
         /// </summary>
-        private ThirdPayStoreConfig m_Config;
+        private readonly ThirdPayServiceHub m_Hub;
 
         /// <summary>
-        /// 第三方支付协议服务。
+        /// 按最终返回的 IAPResult 保存本次支付失败的精确埋点上下文，避免在 PayAsync 边界从粗粒度错误码反推时丢失原因。
         /// </summary>
-        private ThirdIapNetService m_NetService;
+        private readonly ConditionalWeakTable<IAPResult, ThirdPayReturnedFailureTrackContext> m_ReturnedFailureTrackContexts = new ConditionalWeakTable<IAPResult, ThirdPayReturnedFailureTrackContext>();
 
         /// <summary>
-        /// 按 GameUID 合并登录预取与支付等待的渠道参数加载器。
+        /// 获取当前账号 UID，供 Hub 内部服务按调用时状态读取。
         /// </summary>
-        private ThirdPayChannelParamsLoader m_ChannelParamsLoader;
+        internal string CurrentUserId => m_GameUID;
 
         /// <summary>
-        /// 框架内应用内支付页服务。
+        /// 获取当前业务配置允许的最大验单次数。
         /// </summary>
-        private IThirdPayWebViewService m_WebViewService;
+        internal int ConfiguredMaxValidateAttempts => Context?.RetryValidateMaxNum ?? 3;
 
-        /// <summary>
-        /// 系统外部浏览器打开服务。
-        /// </summary>
-        private IThirdPayExternalBrowserService m_ExternalBrowserService;
-
-        /// <summary>
-        /// Android Google 外链政策处理服务。
-        /// </summary>
-        private ThirdPayGooglePolicyService m_GooglePolicy;
-
-        /// <summary>
-        /// 第三方支付国家码运行时状态。
-        /// </summary>
-        private readonly ThirdPayCountryState m_CountryState = new ThirdPayCountryState();
-
-        /// <summary>
-        /// 第三方支付商品快照与在途请求状态。
-        /// </summary>
-        private readonly ThirdPayProductCatalogState m_ProductCatalogState = new ThirdPayProductCatalogState();
-
-        /// <summary>
-        /// 当前账号持久化和订单仓储上下文。
-        /// </summary>
-        private readonly ThirdPayPersistContext m_PersistContext = new ThirdPayPersistContext();
-
-        /// <summary>
-        /// 外部浏览器支付会话状态。
-        /// </summary>
-        private readonly ThirdPayExternalBrowserSessionState m_ExternalBrowserSessionState = new ThirdPayExternalBrowserSessionState();
-
-        /// <summary>
-        /// 当前是否跳过 Google 第三方支付信息页。
-        /// </summary>
-        private bool m_SkipPaymentInformationScreen;
-
-        /// <summary>
-        /// 必需的 Store 配置项是否齐备，决定 Store 是否就绪接受支付。
-        /// </summary>
-        private bool m_ConfigReady;
-
-        /// <summary>
-        /// 第三方支付页 URL 基址，初始化或首次支付时解析并缓存。
-        /// </summary>
-        private string m_PayUrlBase;
     }
 }

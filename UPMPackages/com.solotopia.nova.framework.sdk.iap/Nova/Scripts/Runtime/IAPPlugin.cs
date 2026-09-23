@@ -23,7 +23,7 @@ namespace NovaFramework.SDK.IAP.Runtime
     /// 避免随商店增多在此类上堆积转发方法。
     /// </summary>
     [SDKPluginConfigType(typeof(IAPPluginConfig))]
-    public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin
+    public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin, ISDKPauseListener, ISDKFocusListener
     {
 
         /// <summary>
@@ -97,6 +97,68 @@ namespace NovaFramework.SDK.IAP.Runtime
             m_StoreConfigMap = null;
             m_PurchasesTable = null;
             DisposeRuntimeTaskCancellation();
+        }
+
+        /// <summary>
+        /// 接收 SDKComponent 转发的应用暂停事件，并逐个通知需要该事件的 Store。
+        /// 单个 Store 抛出异常时仅记录错误，不阻断其他 Store。
+        /// </summary>
+        /// <param name="isPaused">true 表示进入后台或暂停，false 表示恢复前台。</param>
+        public void OnPause(bool isPaused)
+        {
+            if (m_Stores == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < m_Stores.Count; i++)
+            {
+                IIAPInternalStore store = m_Stores[i];
+                if (store is not IIAPStorePauseListener listener)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    listener.OnPause(isPaused);
+                }
+                catch (Exception exception)
+                {
+                    LogError($"IAP Store '{store.StoreType}' OnPause 异常（已隔离）：{exception.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 接收 SDKComponent 转发的应用焦点事件，并逐个通知需要该事件的 Store。
+        /// 单个 Store 抛出异常时仅记录错误，不阻断其他 Store。
+        /// </summary>
+        /// <param name="hasFocus">true 表示获得焦点，false 表示失去焦点。</param>
+        public void OnFocus(bool hasFocus)
+        {
+            if (m_Stores == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < m_Stores.Count; i++)
+            {
+                IIAPInternalStore store = m_Stores[i];
+                if (store is not IIAPStoreFocusListener listener)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    listener.OnFocus(hasFocus);
+                }
+                catch (Exception exception)
+                {
+                    LogError($"IAP Store '{store.StoreType}' OnFocus 异常（已隔离）：{exception.Message}");
+                }
+            }
         }
 
         /// <summary>

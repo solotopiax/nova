@@ -54,18 +54,6 @@ namespace NovaFramework.Runtime
             set => EnableUWRTracks = value;
         }
 
-#if NOVA_LEGACY_BESTHTTP_MIGRATION
-        /// <summary>
-        /// 仅供已下架的 BestHTTP adapter 在自动卸载前完成一次编译。
-        /// 实际值映射到 UWR 埋点开关，不会启用 BestHTTP。
-        /// </summary>
-        public bool EnableBestHttpTelemetry
-        {
-            get => EnableUWRTracks;
-            set => EnableUWRTracks = value;
-        }
-#endif
-
         /// <summary>
         /// 兼容旧代码读写业务候选轮数；新代码使用 BusinessFallbackRoundCount。
         /// </summary>

@@ -1,7 +1,7 @@
 ﻿# IAP 核心包架构文档
 
 > 包名：`com.solotopia.nova.framework.sdk.iap`
-> 最后更新：2026-08-17
+> 最后更新：2026-09-17
 > 代码入口：`Nova/Scripts/Runtime/**`
 
 ## 1. 当前架构
@@ -10,7 +10,7 @@
 
 ```
 SDKComponent
-  └── IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin
+  └── IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin, ISDKPauseListener, ISDKFocusListener
         ├── IAPPluginConfig              // 序列化配置数据
         ├── IAPProductTableService       // 运行期商品表查询服务
         ├── IAPStoreContext              // Store 运行期依赖容器
@@ -28,6 +28,8 @@ SDKComponent
 - 标注 `[IAPStore(IAPStoreType.Xxx)]`，静态声明对应 StoreType
 
 扫描阶段先按 Attribute 中的 StoreType 查询 `IAPPluginConfig.StoreConfigs`；未配置的可选 Store 不执行构造函数或字段初始化。已配置但 `Enabled=false` 的 Store 仍会构造并保留，以维持 `SetStoreEnabled(...)` 的运行时懒启用语义。单个 Store 实例化或初始化失败只记录 Warning 并跳过，不阻断其他 Store。
+
+应用 Pause/Focus 生命周期统一由 `SDKComponent` 采集并广播给 `IAPPlugin`。IAPPlugin 通过 `IIAPStorePauseListener` / `IIAPStoreFocusListener` 可选接口逐 Store 转发，渠道包不再自行创建 `MonoBehaviour` 生命周期代理。转发不按 Store 启用状态过滤，是否响应由 Store 当前会话状态自行判断，避免运行中禁用 Store 时丢失已有会话的返回事件。
 
 ## 2. 配置模型
 
@@ -74,7 +76,9 @@ SDKComponent
 - `IAPLogOwner` 日志收口；Store 和 Service 只声明固定 `LogTag`，日志底层不依赖 `IAPStoreType`
 - `AddUnavailableSku` / `IsUnavailableSku`
 - `InSubscriptionPeriod` 订阅有效期判断扩展
-- `Track*` 系列支付打点方法；子 Store 可通过内部转发方法在自身服务层接入，Mobile 官方内购已接入初始化、购买、平台支付、验单相关事件。`Track*Fail` 的 reason 参数统一为 `Enum`，父包转成 `int` 写入 `nova_reason`，失败描述写入 `nova_reason_detail`。
+- 初始化、购买和公共 `PayGuardAsync` 失败打点，以及通用属性构造与发送能力。订单号、验单状态和渠道失败枚举由具体 Store 的 `.Track.cs` 构造，父包不解释渠道订单语义。
+
+`IAPStoreBase.Track.cs` 只提供 `CreateTrackProperties`、`AppendTrackProperties` 和 `EmitTrackEvent` 供 Store 复用，并保留初始化、购买及默认 guard 失败入口。Mobile、ThirdPay、Voucher 各自在自己的 `.Track.cs` 定义业务事件和字段，渠道细分枚举必须写入各自专属属性，不能复用同一个属性承载不同枚举域。
 
 `IAPStoreBase` partial 文件职责固定如下：
 
@@ -104,6 +108,8 @@ SDKManager.InitializePlugin(IAPPlugin)
         ├── DiscoverAndInitializeStoresAsync(ct)
         └── 订阅 SDKEventData.UserLogin，登录后自动 SetUserId
 ```
+
+`Store.InitializeAsync` 的完成语义由各 Store 定义。Mobile Store 在创建服务并启动运行期后台连接后即返回，所以 `Nova.SDK.InitializeTask` 不会等待 Google Play / App Store 的 `Connect()` 回调；Mobile 连接结果由 `IAPPlugin.Events.InitResult` 派发，连接成功前支付由 Store Ready 门禁拦截。
 
 ### 支付
 
@@ -141,7 +147,7 @@ SDKEventData.UserLogin → IAPPlugin.SetUserId(uid) → 广播给所有 Store
 
 核心层不再维护统一的 `IAPInitFailReason`，避免上层与具体 Store 失败原因耦合。
 
-`nova_reason` 是打点字段，不是业务判断字段。`IAPStoreBase` 要求失败 reason 明确为枚举：
+`nova_reason` 是打点字段，不是业务判断字段。具体 Store 必须先把失败原因收敛到明确枚举，再把枚举整数写入事件：
 
 | 输入 | 上报值 |
 |---|---|
@@ -157,7 +163,7 @@ SDKEventData.UserLogin → IAPPlugin.SetUserId(uid) → 广播给所有 Store
 - 不新增顶层 `IAPTrackFailureReason` 这类跨 Store 失败原因全集。
 - 不把 Apple / Google / 第三方支付的订单号语义写进父包。
 - 不把初始化失败原因和支付过程失败原因合并；初始化结果走 `IAPInitResult`，支付结果和支付打点走 Store 自己的支付过程枚举。
-- `IAPStoreBase.Track*Fail` 只负责把 Store 传入的 enum 和 detail 写入打点，不做 enum 到 int 或字符串的二次规范化。
+- 具体 Store 的 `.Track.cs` 负责把渠道 enum 和 detail 写入打点；父包只在默认 guard 失败入口处理通用 `IAPResult`。
 
 ## 7. 扩展 Store 的最低要求
 

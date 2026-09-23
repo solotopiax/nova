@@ -5,7 +5,7 @@
  * filename:  ThirdIapNetService.cs
  * author:    yingzheng
  * created:   2026/5/22
- * descrip:   第三方支付商品、渠道参数、补单与验单协议服务
+ * descrip:   第三方支付统一配置、补单与验单协议服务
  ***************************************************************/
 
 using System.Collections.Generic;
@@ -23,18 +23,25 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     public sealed class ThirdIapNetService : ThirdPayLogOwner
     {
         /// <summary>
-        /// 拉取指定国家或地区的第三方支付商品列表。
+        /// 获取指定国家或地区下当前用户的第三方支付配置快照。
         /// </summary>
-        /// <param name="cmdName">ThirdPayStoreConfig.GetProductListCmdName。</param>
+        /// <param name="cmdName">ThirdPayStoreConfig.PaymentConfigCmdName。</param>
         /// <param name="countryCode">ISO 3166-1 alpha-2 国家或地区代码。</param>
-        /// <returns>商品列表响应。</returns>
-        public async UniTask<NetResponse<PbNetThirdProductListResp>> GetProductListAsync(string cmdName, string countryCode)
+        /// <returns>第三方支付配置响应。</returns>
+        public async UniTask<NetResponse<PbNetThirdPaymentConfigResp>> GetPaymentConfigAsync(string cmdName, string countryCode)
         {
-            var request = new PbNetThirdProductListReq { Head = NetBuilder.BuildHeader(), Country = countryCode ?? string.Empty };
+            string normalizedCountryCode = ThirdPayCountryState.NormalizeCountryCode(countryCode);
+            if (string.IsNullOrEmpty(normalizedCountryCode))
+            {
+                LogWarning("第三方支付配置请求国家码为空，已取消发送。");
+                return NetResponse<PbNetThirdPaymentConfigResp>.Fail(NetErrorCode.PARAM_ERROR, "第三方支付配置请求国家码为空，已取消发送。");
+            }
+
+            var request = new PbNetThirdPaymentConfigReq { Head = NetBuilder.BuildHeader(), Country = normalizedCountryCode };
             INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
-            LogRequest("GetProductList", cmdName, request);
-            NetResponse<PbNetThirdProductListResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdProductListResp.Parser);
-            LogResponse("GetProductList", cmdName, response);
+            LogRequest("GetPaymentConfig", cmdName, request);
+            NetResponse<PbNetThirdPaymentConfigResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdPaymentConfigResp.Parser);
+            LogResponse("GetPaymentConfig", cmdName, response);
             return response;
         }
 
@@ -50,21 +57,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             LogRequest("QueryPendingOrder", cmdName, request);
             NetResponse<PbNetThirdQueryPendingOrderResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdQueryPendingOrderResp.Parser);
             LogResponse("QueryPendingOrder", cmdName, response);
-            return response;
-        }
-
-        /// <summary>
-        /// 查询当前用户需要透传到第三方支付页的渠道参数。
-        /// </summary>
-        /// <param name="cmdName">ThirdPayStoreConfig.PayChannelParamsCmdName。</param>
-        /// <returns>渠道参数响应。</returns>
-        public async UniTask<NetResponse<PbNetThirdPayChannelParamsResp>> GetPayChannelParamsAsync(string cmdName)
-        {
-            var request = new PbNetThirdPayChannelParamsReq { Head = NetBuilder.BuildHeader() };
-            INetworkCmdRow cmdRow = Nova.Network?.ResolveNetCmdRow(cmdName);
-            LogRequest("GetPayChannelParams", cmdName, request);
-            NetResponse<PbNetThirdPayChannelParamsResp> response = await NetService.SendAsync(cmdRow, request, PbNetThirdPayChannelParamsResp.Parser);
-            LogResponse("GetPayChannelParams", cmdName, response);
             return response;
         }
 

@@ -1,0 +1,20 @@
+﻿{
+  "Demo_VibrateCustom": [
+    {
+      "Name": "Demo_Light",
+      "Intensity": 0.3,
+      "Sharpness": 0.4,
+      "PreDuration": 0,
+      "Duration": 0.1,
+      "Order": 1
+    },
+    {
+      "Name": "Demo_Heavy",
+      "Intensity": 0.8,
+      "Sharpness": 0.7,
+      "PreDuration": 0,
+      "Duration": 0.2,
+      "Order": 1
+    }
+  ]
+}

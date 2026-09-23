@@ -29,7 +29,7 @@ WebGL 在 Pipify 的 `BundledCopyOption` 中只开放三项：
 
 `OnlyCopyAll` 与 `OnlyCopyByTags` 在 WebGL 下不开放，因为它们不会先清理旧 Package 目录，历史文件可能污染实际布局。`None` 会由 Nova 精确清理目标 Package 的旧首包目录。
 
-Nova 不生成额外布局标记，也不修改 YooAsset 原包。Host 启动时会探测 `StreamingAssets/{YooFolderName}/{PackageName}/BuiltinCatalog.bytes`：可访问时启用 `WebServer + WebNetwork`，不存在或不可访问时使用纯 `WebNetwork`。Offline 固定使用纯 `WebServer`，不探测也不回退 CDN；缺少 Catalog 时由 YooAsset 初始化明确失败。
+Nova 不生成额外布局标记，也不修改 YooAsset 原包。Host 启动时会探测 `StreamingAssets/{YooFolderName}/{PackageName}/BuiltinCatalog.bytes`：可访问时启用 `WebServer + WebNetwork`，不存在或不可访问时使用纯 `WebNetwork`。Catalog 未命中时由 Nova 输出一条 Warning 说明已切换纯 CDN；浏览器或小游戏开发者工具的 Network 面板仍会保留真实 HTTP 404，它不是 Nova 的 Error 日志。Offline 固定使用纯 `WebServer`，不探测也不回退 CDN；缺少 Catalog 时由 YooAsset 初始化明确失败。
 
 YooAsset 的 Catalog 只能证明首包目录存在，不能区分按 Tag 与全量拷贝。因此 Offline 的构建契约仍要求 `ClearAndCopyAll`；若错误使用按 Tag 首包，初始化可能成功，但访问未随包资源时会失败。
 

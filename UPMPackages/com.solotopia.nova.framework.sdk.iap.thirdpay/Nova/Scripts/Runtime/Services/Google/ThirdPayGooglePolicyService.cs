@@ -225,9 +225,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
             string countryCode = await m_Client.GetBillingCountryCodeAsync(ct);
             LogDebug($"Google Billing 国家码读取结束：Country={countryCode}");
-            return string.IsNullOrWhiteSpace(countryCode)
-                ? string.Empty
-                : countryCode.Trim().ToUpperInvariant();
+            return string.IsNullOrWhiteSpace(countryCode) ? string.Empty : countryCode.Trim().ToUpperInvariant();
         }
 
         /// <summary>
@@ -237,8 +235,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="skipInformationScreen">是否跳过 Google 信息页并直接进入 ThirdPay。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>政策授权结果。</returns>
-        public async UniTask<ThirdPayGoogleAuthorization> AuthorizeAsync(
-            Func<string, string> buildPaymentUrl, bool skipInformationScreen, CancellationToken ct)
+        public async UniTask<ThirdPayGoogleAuthorization> AuthorizeAsync(Func<string, string> buildPaymentUrl, bool skipInformationScreen, CancellationToken ct)
         {
             if (buildPaymentUrl == null)
             {

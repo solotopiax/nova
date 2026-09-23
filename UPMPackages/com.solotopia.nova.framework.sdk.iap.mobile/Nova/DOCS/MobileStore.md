@@ -1,6 +1,6 @@
 ﻿# MobileStore
 
-> 最后更新：2026-08-17
+> 最后更新：2026-09-21
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap.mobile/Nova/Scripts/Runtime/**`
 
 **类签名**：`public sealed partial class MobileStore : IAPStoreBase, IIAPMobileQueryCapable, IIAPMobileSubscriptionCapable`
@@ -111,13 +111,15 @@ MobileStore.InitializeAsync(table, config, ctx, ct)
   ├── 创建 MobileServiceHub
   ├── 创建 Pay / Extended / Store / Init / Product / Subscription / Validation / Restore / Purchase 服务
   ├── m_PersistData = CreateEmptyPersistData()
-  └── InitService.InitializeAsync(table, ct)
-        ├── 商店连接成功即 Ready
-        ├── 商品信息后台 FetchProducts，不阻塞初始化结果；失败后按 ProductFetchRetryDelaysMs 自动重试，默认 2s/5s/10s，只标记 Controller 缺失 SKU 为不可用
-        └── 商品拉取成功后自动 FetchPurchases，恢复平台 PendingOrder 票据；若已登录则合并触发一次补单扫描；RestoreTransactions 仅由用户主动恢复购买触发
+  ├── RunBackgroundTask(runtimeCt => InitService.InitializeAsync(table, runtimeCt))
+  └── 返回，游戏主 Loading 继续
+        └── 后台连接与初始化
+              ├── 商店连接成功即 Ready
+              ├── 商品信息后台 FetchProducts；失败后按 ProductFetchRetryDelaysMs 自动重试，默认 2s/5s/10s，只标记 Controller 缺失 SKU 为不可用
+              └── 商品拉取成功后自动 FetchPurchases，恢复平台 PendingOrder 票据；若已登录则合并触发一次补单扫描；RestoreTransactions 仅由用户主动恢复购买触发
 ```
 
-初始化失败时 `MobileInitService` 通过 `IAPInitResult.Fail((int)MobileStoreInitFailureReason, detail)` 上报；支付会被基类 `PayGuardAsync` 的 `IsStoreReady` 检查拦截。初始化成功和失败都会通过父包 `IAPStoreBase.Track*` 封装上报 `nova_iap_init`。
+`MobileStore.InitializeAsync` 不等待 Unity IAP 商店连接，因此不会因平台连接长期无回调而卡住游戏 Loading。连接成功前以及初始化失败后，支付都会被基类 `PayGuardAsync` 的 `IsStoreReady` 检查拦截；初始化失败时 `MobileInitService` 通过 `IAPInitResult.Fail((int)MobileStoreInitFailureReason, detail)` 上报。初始化成功和失败复用父包的通用初始化事件入口上报 `nova_iap_init`。
 
 ### 5.1 商品拉取与不可用 SKU
 
@@ -172,12 +174,12 @@ IAPPlugin.CheckLocalOrdersAsync
               ├── `MobileValidationQueueCoordinator` 统一处理订单键入队去重和队列单次执行保护
               ├── AwaitingConfirm 跳过，不重发验单；交由本次 FetchPurchases 重新拉取到 PendingOrder 后重试确认
               ├── Google 订单缺少 purchase token 时保留记录，不发送 VerifyGoogleIap
-              └── 本地补单扫描结束后触发一次 CheckEntitlement，刷新订阅和非消耗品权益；商品未就绪时延后到 OnProductsFetched 后补跑
+              └── 本地补单扫描结束后触发一次 CheckEntitlement；商店、商品或平台已有购买未就绪时登记延后请求，在票据缓存完成后补跑
 ```
 
-登录前平台回调可能先于业务 `SetUserId` 到达。此时 Mobile 只收集待验单数据，不读写账号存档，也不发起服务端协议；商品拉取后只自动 `FetchPurchases` 恢复平台已有购买，不调用 `RestoreTransactions`。业务登录后调用 `CheckLocalOrdersAsync`，才会按“合并暂存订单 → 拉取服务端未完成订单 → 本地验单 → 订阅权益查询”的顺序执行。完整补单流程串行执行；扫描中重复触发只会标记下一轮补跑，避免 QueryPendingOrder、存档合并和权益刷新并发交错。订阅倒计时到期同样不会复用手动 `RestoreAsync`，而是先 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行 `RefreshEntitlementsAsync`。
+登录前平台回调可能先于业务 `SetUserId` 到达。此时 Mobile 只收集待验单数据，不读写账号存档，也不发起服务端协议；商品拉取后只自动 `FetchPurchases` 恢复平台已有购买，不调用 `RestoreTransactions`。业务登录后调用 `CheckLocalOrdersAsync`，会按“合并暂存订单 → 拉取服务端未完成订单 → 本地验单 → 权益查询”的顺序执行。若登录补单早于商店连接、商品或平台已有购买拉取完成，服务端查单和具备凭据的本地订单仍立即处理，权益刷新登记为延后请求。`FetchPurchases` 成功回调先缓存 ConfirmedOrder receipt 并处理 PendingOrder，再补跑延后权益刷新；因此不会先生成缺少 Google token / Apple order id 的 Restore 占位记录，也不会提前派发空恢复事件。失败回调优先消费已登记的权益刷新；没有延后请求时再执行服务端、本地和权益兜底。完整补单流程串行执行；订阅倒计时也先经 RestoreService 发起已有购买拉取，票据缓存完成后再刷新权益。
 
-`CheckEntitlement` 的 `FullyEntitled` 只代表平台侧仍返回持有记录，不直接等价于订阅仍有效。订阅权益回调中会从 `Entitlement.Order.Info.PurchasedProductInfo[*]` 里筛选与当前 `Entitlement.Product` 匹配的条目，再读取 `subscriptionInfo.GetExpireDate()`；如果同一商品有多条历史记录，使用匹配项中的最晚到期时间。这样 iOS 票据中混入其他历史订阅时，不会把其他商品的到期时间误用到当前商品。当当前商品匹配到的到期时间明确已经过期时，本次权益状态按 `NotEntitled` 缓存，不进入 Restore 验单。读取不到当前商品匹配的到期时间时保留平台返回状态，仍交由服务端验单确认。非消耗品不受该过滤影响。
+`CheckEntitlement` 的 `FullyEntitled` 只代表平台侧仍返回持有记录，不直接等价于订阅仍有效。权益回调会先缓存 `Entitlement.Order.Info.Receipt`，为 Google token 或 Apple order id 提供就地兜底；随后订阅流程从 `PurchasedProductInfo[*]` 中筛选当前商品并读取最晚到期时间。明确过期时按 `NotEntitled` 处理；读不到匹配到期时间时保留平台状态并交由服务端验单。非消耗品不受订阅到期过滤影响。
 
 ## 7. 订单状态机
 
@@ -203,18 +205,18 @@ IAPPlugin.CheckLocalOrdersAsync
 
 上表「删除记录」经 `FinalizeVerifiedOrderRecord` 收尾：若该订单仍持有平台 `PendingOrder`，先置 `AwaitingConfirm` 并落盘、发起 `ConfirmPurchase`，待 ack 回调（`OnPurchaseConfirmed`）到达后再删除；无待确认平台订单时才立即删除。业务发货（`PaySuccess` / 订阅到期更新）在验单成功即刻完成，不等待平台 ack。
 
-`PaySuccess` 派发按 `tableId + ReceiptParam` 组成的订单键做运行期去重，不使用平台 `TransactionId` 作为业务判断依据。`MobileStore` 仍维护当前运行期平台订单打点 key 缓存，但只用于平台 Pending / Confirmed 双回调的本地支付成功打点去重：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`。验单成功打点另按当前 UID 持久化平台订单键去重：Apple 使用 transaction id，Google 使用 purchase token；持久化列表和运行期兜底缓存最多各保留 300 条，新增超限时淘汰最老记录。订阅商品只有当前主动 `PayAsync` 对应的订单才走 `PaySuccess`；后台补单、Restore 和订阅刷新只更新订阅到期时间。
+`PaySuccess` 派发按 `tableId + ReceiptParam` 组成的订单键做运行期去重，不使用平台 `TransactionId` 作为业务判断依据。`MobileStore` 仍维护当前运行期平台订单打点 key 缓存，但只用于平台 Pending / Confirmed 双回调的本地支付成功打点去重：Apple 使用 `TransactionId`，Google 使用 `GoogleToken`。验单成功打点另按当前 UID 持久化平台订单号去重：Apple 使用 transaction id，Google 优先使用服务端验单响应 `OrderId`、缺失时回退当前运行期 Google `OrderId`；持久化列表和运行期兜底缓存最多各保留 300 条，新增超限时淘汰最老记录。旧版 `google:{purchaseToken}` 会在同一订单再次验单成功时迁移为订单号键并跳过重复打点。订阅商品只有当前主动 `PayAsync` 对应的订单才走 `PaySuccess`；后台补单、Restore 和订阅刷新只更新订阅到期时间。
 
 ### 埋点事件
 
-Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装，当前接入事件如下：
+Mobile 在 `MobileStore.Track.cs` 中构造订单号、验单状态和失败原因等渠道字段，并复用父包的通用属性构造与发送能力，当前接入事件如下：
 
 | 事件 | 触发时机 |
 |---|---|
 | `nova_iap_init` | 商店连接成功或初始化失败 |
 | `nova_iap_buy` | 用户发起真实平台购买前；Editor 下 `EnableAlwaysPaySucceed` 调试支付也会上报 |
 | `nova_iap_local_pay_success` | Unity IAP 返回 Pending / Confirmed 并登记本地订单后；同一订单号在当前运行期去重 |
-| `nova_iap_local_pay_fail` | `MobileStore.PayAsync` 返回失败 `IAPResult`；Unity IAP `OnPurchaseFailed`；`OnPurchaseConfirmed(FailedOrder)` |
+| `nova_iap_local_pay_fail` | `MobileStore.PayAsync` 返回失败 `IAPResult`；没有 `PayAsync` 返回链路的迟到 `OnPurchaseFailed`；`OnPurchaseConfirmed(FailedOrder)` |
 | `nova_iap_validate_fail` | 单轮验单失败但订单仍可能重试或补单 |
 | `nova_iap_first_pay_order_validate` | 当前主动支付订单第一次验单失败 |
 | `nova_iap_validate_fail_finish` | 验单最终失败、无效订单或超出重试后进入 `ValidateFailed` |
@@ -222,7 +224,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 
 `nova_iap_create_order_success`、`nova_iap_create_order_fail`、`nova_iap_third_pay_close_order` 是第三方支付链路事件，移动端官方内购不触发。`nova_iap_deliver_fail` 目前不触发，因为业务发奖不由移动端官方内购商店执行。
 
-平台官方失败回调会直接补打一条本地支付失败点：`OnPurchaseFailed` 映射 Unity IAP `PurchaseFailureReason` 到 `IAPMobileErrorCode` 的 1000-1010 号段；`OnPurchaseConfirmed(FailedOrder)` 映射为确认失败对应的本地支付失败详情。该回调打点不和 `PayAsync` 返回边界打点去重；如果一次真实支付既收到官方失败回调，又最终返回失败 `IAPResult`，两条 `nova_iap_local_pay_fail` 都会上报，用于还原完整失败流程。
+`OnPurchaseFailed` 会把 Unity IAP `PurchaseFailureReason` 映射到 `IAPMobileErrorCode` 的 1000-1010 号段，并把 `FailedOrder.Details` 写入返回结果。当前存在活跃 `PayAsync` 时，回调只完成失败结果，由 `MobileStore.PayAsync` 返回边界统一上报一次；只有没有返回链路但仍关联有效本地订单的迟到回调才直接兜底上报。`OnPurchaseConfirmed(FailedOrder)` 属于独立的平台确认失败通知，仍直接记录对应失败详情。
 
 关键字段口径：
 
@@ -230,7 +232,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 |---|---|
 | `nova_iap_local_pay_success.nova_order_id` | 优先使用 Unity IAP receipt 解析出的平台 `OrderId`；缺失时回退 Apple `TransactionId` |
 | `nova_iap_validate_success.nova_order_id` | 优先使用服务端验单响应 `OrderId`；缺失时回退当前运行期 `TransactionId` |
-| `nova_iap_validate_success` 去重 key | Apple 使用 transaction id，Google 使用 purchase token；不使用 `nova_order_id` 作为去重 key |
+| `nova_iap_validate_success` 去重 key | Apple 使用 transaction id；Google 使用该事件的 `nova_order_id`，即优先取服务端验单响应 `OrderId`、缺失时回退当前运行期 Google `OrderId` |
 | `nova_iap_local_pay_fail.nova_reason` | `IAPMobileErrorCode` 的 int 值；`PluginRouter` guard 失败会映射到对应 Mobile 错误码，Unity IAP `PurchaseFailureReason` 映射到 1000-1010 |
 | `nova_iap_validate_fail(.finish).nova_reason` | `IAPMobileErrorCode` 的 int 值；验单网络、响应缺失、待完成、凭据缺失和无效订单使用 2000+ 号段 |
 | `nova_reason_detail` | 失败原因的可读补充描述，例如协议错误信息、服务端状态或缺失凭据说明；从 `PluginRouter` 映射而来的失败会保留原始 `ErrorSource:ErrorCode` |
@@ -249,7 +251,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | `OrderRecords` | 旧版 `Dictionary<long, MobileOrderRecord>` 迁移字段，仅用于把旧存档迁移到 `OrderRecordsByKey`，新写入不再使用 |
 | `SubscriptionExpireMs` | 订阅到期 Unix 毫秒 |
 | `NonConsumeOwnership` | 非消耗品持有标记 |
-| `ValidateSuccessOrderKeys` | 当前 UID 已上报验单成功的平台注册订单键；Apple 使用 transaction id，Google 使用 purchase token；最多 300 条，新增超限时淘汰最老记录 |
+| `ValidateSuccessOrderKeys` | 当前 UID 已上报验单成功的平台订单号键；Apple 使用 transaction id，Google 使用订单号；最多 300 条，新增超限时淘汰最老记录；命中旧版 Google token 键时按当前订单迁移 |
 | `HasQueriedPendingFromServer` | 当前 UID 是否曾成功向服务端同步过未完成订单；不用于阻止后续 QueryPendingOrder |
 
 `MobileOrderRecord` 字段：
@@ -258,14 +260,14 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 |---|---|
 | `TransactionId` | 平台订单 ID；Android 运行期可写入 Google `OrderId` 但不落本地存档，iOS 写入 Apple transaction id 并持久化供补单验单使用 |
 | `TableId` | 商品配置表行 ID |
-| `GoogleToken` | Google Play purchase token；iOS 为空；Google 验单与本地支付成功打点去重使用该字段 |
+| `GoogleToken` | Google Play purchase token；iOS 为空；用于 Google 验单与本地支付成功打点的运行期去重，不再用于验单成功打点去重 |
 | `Status` | 当前订单状态 |
 | `IsReplenish` | 是否为补单路径 |
 | `CustomDataParam` | 业务透传字符串 |
 
 ## 9. 错误码
 
-`IAPMobileErrorCode` 是 Mobile 支付过程统一失败原因。0-9 可通过 `IAPResult.ErrorCode` 以 int 返回给业务层；失败打点通过父包 `IAPStoreBase.Track` 写入枚举的 int 值：
+`IAPMobileErrorCode` 是 Mobile 支付过程统一失败原因。0-9 可通过 `IAPResult.ErrorCode` 以 int 返回给业务层；`MobileStore.Track.cs` 将枚举的 int 值写入失败打点：
 
 | 值 | 名称 | 含义 |
 |---|---|---|
@@ -291,7 +293,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 1009 | `PurchaseFailurePurchaseMissing` | Unity IAP 平台未返回购买数据 |
 | 1010 | `PurchaseFailureUnknown` | Unity IAP 未知购买失败 |
 
-0-9 是移动端官方内购商店自身流程错误；1000-1010 是 Unity IAP `PurchaseFailureReason` 的专用映射号段；2000+ 是验单失败打点细分号段。`MobileStore.PayAsync` 返回失败时会统一补齐 `nova_iap_local_pay_fail`，并把 `PluginRouter` 层 guard 失败映射到 `IAPMobileErrorCode` 后写入 `nova_reason`；原始 `ErrorSource:ErrorCode` 保留在 `nova_reason_detail`。Unity IAP 官方失败回调也会直接上报本地支付失败点，且失败打点不做运行期去重。`TrackLocalPayFailInternal`、`TrackReturnedPayFailureInternal`、`TrackValidateFailInternal` 和 `TrackValidateFailFinishInternal` 都只接收 `IAPMobileErrorCode`，确保支付过程 `nova_reason` 的枚举域统一。
+0-9 是移动端官方内购商店自身流程错误；1000-1010 是 Unity IAP `PurchaseFailureReason` 的专用映射号段；2000+ 是验单失败打点细分号段。`MobileStore.PayAsync` 返回失败时会统一补齐 `nova_iap_local_pay_fail`，并把 `PluginRouter` 层 guard 失败映射到 `IAPMobileErrorCode` 后写入 `nova_reason`；原始 `ErrorSource:ErrorCode` 保留在 `nova_reason_detail`。活跃支付的 Unity IAP 失败回调不直接上报，由返回边界保证一次失败只产生一条事件；没有返回链路的迟到回调保留一次兜底上报。`TrackLocalPayFailInternal`、`TrackReturnedPayFailureInternal`、`TrackValidateFailInternal` 和 `TrackValidateFailFinishInternal` 都只接收 `IAPMobileErrorCode`，确保支付过程 `nova_reason` 的枚举域统一。
 
 | 值 | 名称 | Mobile 使用场景 |
 |---|---|---|
@@ -309,10 +311,11 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 
 | 任务 | 当前口径 |
 |---|---|
+| Unity IAP 商店连接 | 经 `MobileServiceHub.RunBackgroundTask` 启动，不阻塞游戏主 Loading；连接等待接入 Store 运行期取消令牌，连接成功前支付由 `IsStoreReady` 拦截 |
 | 验单队列处理 | 经 `MobileServiceHub.RunBackgroundTask` 启动，接入移动端官方内购商店运行期取消令牌 |
-| 商品成功后的权益刷新 | 经 `RunBackgroundTask` 启动；商品未就绪时延后到成功回调后补跑；`RefreshEntitlementsAsync` 返回 `UniTask<IReadOnlyList<IAPResult>>`，后台触发时必须包装为无返回 `UniTask` |
-| 平台已有购买后的补单扫描 | 经 `RunBackgroundTask` 启动；避免 `FetchPurchases` 回调里裸不等待后台任务 |
-| 订阅到期倒计时 | 自身 CTS 与 Hub 运行期取消令牌链接，Dispose 时统一取消；到期后先 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行 `RefreshEntitlementsAsync`，不进入手动 `RestoreAsync` / `RestoreTransactions` |
+| 商品成功后的权益刷新 | 先标记并发起 `FetchPurchases`；已有购买回调前只登记延后请求，成功缓存票据或失败收口后再经 `RunBackgroundTask` 补跑 |
+| 平台已有购买后的补单扫描 | 成功回调先缓存平台票据和 PendingOrder，再补跑延后权益或进入统一补单；失败回调优先补跑延后权益，没有延后请求时执行完整补单兜底 |
+| 订阅到期倒计时 | 自身 CTS 与 Hub 运行期取消令牌链接，Dispose 时统一取消；到期后经 RestoreService 发起 `FetchPurchases`，回调收口后继续权益刷新，不进入 `RestoreTransactions` |
 | 支付验单结果桥接 | 经 `RunBackgroundTask` 等待验单 TCS；Dispose 时取消等待，并以 `StoreNotAvailable` 失败结果解除支付 await，不向业务抛取消异常 |
 
 后台任务入口只接受 `Func<CancellationToken, UniTask>`。如果业务动作本身返回 `UniTask<T>`，不能直接作为方法组传入 `RunBackgroundTask`；当前商品成功后的权益刷新使用 `async token => { await RefreshEntitlementsAsync(token); }` 显式等待并丢弃返回列表，确保后台生命周期只承载取消与异常收口，不改变 Restore / 补单结果语义。
@@ -324,7 +327,7 @@ Mobile 通过 `MobileStore.Track.cs` 调用父包 `IAPStoreBase.Track*` 封装�
 | 初始化失败 | `MobileStoreInitFailureReason` | 初始化阶段失败分类，写入 `IAPInitResult.FailReason` 和 `nova_iap_init.nova_init_failure_reason` |
 | 支付过程失败 | `IAPMobileErrorCode` | 支付、平台本地支付失败、验单失败分类，写入 `IAPResult.ErrorCode` 或支付失败打点 `nova_reason` |
 
-支付过程失败统一落到 `IAPMobileErrorCode` 后，`TrackLocalPayFailInternal`、`TrackReturnedPayFailureInternal`、`TrackValidateFailInternal`、`TrackValidateFailFinishInternal` 都不再接受其他失败原因枚举。`nova_reason_detail` 只存可读补充描述，不参与主分类；当失败原始来源不是 `Mobile` 时，必须在该字段保留原始错误域，避免把不同枚举的相同整数误读为同一语义。失败打点按发生次数上报，不通过运行期 key 去重；本地支付成功点按运行期平台订单 key 去重，验单成功点按当前 UID 持久化的平台订单 key 去重。
+支付过程失败统一落到 `IAPMobileErrorCode` 后，`TrackLocalPayFailInternal`、`TrackReturnedPayFailureInternal`、`TrackValidateFailInternal`、`TrackValidateFailFinishInternal` 都不再接受其他失败原因枚举。`nova_reason_detail` 只存可读补充描述，不参与主分类；当失败原始来源不是 `Mobile` 时，必须在该字段保留原始错误域，避免把不同枚举的相同整数误读为同一语义。活跃支付失败在 `PayAsync` 返回边界上报一次，不使用运行期失败 key 做事后去重；本地支付成功点按运行期平台订单 key 去重，验单成功点按当前 UID 持久化的平台订单 key 去重。
 
 订单身份和存档口径：
 
@@ -377,7 +380,7 @@ if (iap.TryGetCapability<IIAPMobileSubscriptionCapable>(out var sub))
 ## 12. 常见误区
 
 **误区 1：初始化会等待商品拉取完成。**
-当前初始化只等待商店连接成功。商品信息在 `OnStoreConnected` 后后台拉取，`OnProductsFetchFailed` 不会回退初始化结果；整体失败时会按 `MobileStoreConfig.ProductFetchRetryDelaysMs` 自动重试，默认 2s / 5s / 10s 共 3 次，任一轮收到成功商品，或失败数量小于请求数量时，即停止重试。成功回调会清理旧失败 SKU，并按 StoreController 当前状态恢复仍缺失的 pending SKU；迟到失败回调也只会把 StoreController 当前仍缺失的 SKU 标记为不可用，不会把已成功商品重新污染为不可买。补单末尾的权益刷新会检查商品拉取状态：商品未成功时不把空结果当作完成，而是延后到 `OnProductsFetched` 后补跑。
+当前游戏主初始化不等待商店连接；连接和商品拉取都在 Store 运行期后台完成。连接成功前支付由 `IsStoreReady` 拦截。商品信息在 `OnStoreConnected` 后拉取，整体失败按配置重试，成功态不会被迟到失败回退。补单末尾的权益刷新同时检查商店、商品和平台已有购买拉取状态；任一项未就绪都登记延后请求，已有购买回调缓存票据后再补跑，避免把缺少验单凭据的 `FullyEntitled` 误当成一次空恢复完成。
 
 **误区 2：直接访问 `StoreController`。**
 所有平台调用必须经 `MobileExtendedService`，不要在其他服务中缓存或绕过它访问 Controller。
@@ -386,10 +389,10 @@ if (iap.TryGetCapability<IIAPMobileSubscriptionCapable>(out var sub))
 `SetUserId` 只负责切换 UID 和加载对应存档；业务层仍需在合适时机调用 `IAPPlugin.CheckLocalOrdersAsync`。
 
 **误区 4：看到 `CanDeliver=false` 仍直接发货。**
-`Reissued` 会返回成功但 `CanDeliver=false`，表示奖励已通过其他渠道补发，业务层不应重复发货。`Delivered` 仍会按 `CanDeliver=true` 返回，用于覆盖客户端发出验单协议但未收到响应的补发奖场景。验单成功打点按当前 UID 持久化的平台注册订单键去重：Apple 使用 transaction id，Google 使用 purchase token；重复平台回调仍由订单状态机和运行期队列去重控制。
+`Reissued` 会返回成功但 `CanDeliver=false`，表示奖励已通过其他渠道补发，业务层不应重复发货。`Delivered` 仍会按 `CanDeliver=true` 返回，用于覆盖客户端发出验单协议但未收到响应的补发奖场景。验单成功打点按当前 UID 持久化的平台订单号键去重：Apple 使用 transaction id，Google 使用订单号；重复平台回调仍由订单状态机和运行期队列去重控制。
 
-**误区 5：把 `TransactionId` 当成 Google 订单键。**
-Android 运行期允许 `TransactionId` 承载 Google `OrderId`，但它不会写入本地存档，也不能作为 Google 验单或本地支付成功打点去重 key。Google 仍使用 `GoogleToken` 验单和去重。
+**误区 5：用 Google purchase token 作为验单成功打点去重键。**
+Android 运行期的 `TransactionId` 承载 Google `OrderId`，服务端验单响应也会返回 `OrderId`。验单成功打点应按该订单号持久化去重；`GoogleToken` 只继续承担验单凭据和本地支付成功打点的运行期去重。
 
 **误区 6：重新引入独立的验单失败枚举。**
 当前支付过程失败原因已经统一到 `IAPMobileErrorCode`。新增验单失败类型时，应扩展 2000+ 号段，而不是新建 `MobileStoreTrackFailureReason` 或父包级失败原因枚举。

@@ -3,7 +3,7 @@
 > 最后更新：2026-08-17
 > 当前代码事实：`UPMPackages/com.solotopia.nova.framework.sdk.iap/Nova/Scripts/Runtime/**`
 
-**类签名**：`public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin`
+**类签名**：`public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin, ISDKPauseListener, ISDKFocusListener`
 **命名空间**：`NovaFramework.SDK.IAP.Runtime`
 **获取方式**：通过 `SDKComponent.TryGet<IAPPlugin>(out var iap)` 获取；没有独立 `Nova.IAP` 静态门面。
 
@@ -23,7 +23,7 @@
 | `Runtime/Internal/IAPStoreBase.cs` | `IAPStoreBase` | Store 抽象基类 public/abstract 调用面和生命周期入口 |
 | `Runtime/Internal/IAPStoreBase.Visitors.cs` | `IAPStoreBase` partial | Store 基类字段、状态属性、protected 属性和常量 |
 | `Runtime/Internal/IAPStoreBase.Methods.cs` | `IAPStoreBase` partial | Store 基类 protected/private 模板方法和辅助方法，包括 `PayGuardAsync` |
-| `Runtime/Internal/IAPStoreBase.Track.cs` | `IAPStoreBase` partial | Store 基类打点封装 |
+| `Runtime/Internal/IAPStoreBase.Track.cs` | `IAPStoreBase` partial | 初始化、购买、默认 guard 失败打点及通用属性构造与发送能力 |
 | `Runtime/Internal/IAPStoreBase.Net.cs` | `IAPStoreBase` partial | Store 基类通用网络请求能力 |
 | `Runtime/Internal/IAPLog.cs` / `Runtime/Internal/IAPLogOwner.cs` | `IAPLog` / `IAPLogOwner` | IAP 日志统一网关和日志持有者基类；底层只接收 `LogTag + message` |
 | `Runtime/Interfaces/*.cs` | `IIAPInternalStore` 等 | Store、配置、上下文、能力接口 |
@@ -82,6 +82,8 @@ public override int Priority => 70
 public IIAPProductTable ProductTable { get; }
 public IAPPluginEvents Events { get; }
 
+public void OnPause(bool isPaused)
+public void OnFocus(bool hasFocus)
 public void SetUserId(string uid)
 public UniTask<T> PayAsync<T>(IIAPRequest request, CancellationToken ct = default)
     where T : class, IIAPResult
@@ -123,7 +125,13 @@ OnInitializeAsync(config, ct)
 
 `DiscoverAndInitializeStoresAsync` 会扫描全部程序集。`config.Enabled == false` 的 Store 会加入 `m_Stores` 但跳过初始化，后续 `SetStoreEnabled(..., true)` 时懒初始化。
 
+Store 的 `InitializeAsync` 只保证该 Store 已完成自己的启动阶段，不统一保证渠道已经可支付。Mobile Store 会在该方法内启动运行期后台连接后返回，因此 `Nova.SDK.InitializeTask` 不等待 Google Play / App Store 连接；业务若关心 Mobile 就绪结果，应订阅 `IAPPlugin.Events.InitResult`，支付入口本身也会通过 Store Ready 门禁拦截未连接状态。
+
 `BuildStoreContext` 会从 `IConfigManager.DevelopMode` 读取当前运行模式并写入 `IIAPStoreContext.DevelopMode`。Store 打点里的 Debug 字段应使用该运行模式判断；`EnableAlwaysPaySucceed` 只表示 Editor 下是否跳过真实平台支付，不再作为打点 Debug 依据，非 Editor 编译态会被强制注入为 false。
+
+### 应用前后台
+
+`SDKComponent` 将 `OnApplicationPause` / `OnApplicationFocus` 广播给 `IAPPlugin`。IAPPlugin 再遍历当前 Store，仅向实现 `IIAPStorePauseListener` / `IIAPStoreFocusListener` 的 Store 同步转发；单个 Store 抛出异常时只记录错误，不阻断后续 Store。Store 是否处理事件由当前会话状态决定，不以启用标志提前过滤。
 
 ### 释放
 
@@ -196,7 +204,7 @@ if (!result.IsSuccess)
 业务层可以提前调用 `CheckLocalOrdersAsync`。如果此时 `SetUserId` 尚未执行，`IAPPlugin` 会记录一次延后补单请求，并在账号 UID 同步后经后台任务入口自动执行；如果扫描正在执行，再次调用只会标记当前轮结束后补跑一轮，避免并发重复跑，也避免无上限堆积同类补单事件。`OnDisposeAsync` 会先取消后台任务，避免插件释放后继续访问 Store。
 
 **误区 5：打点 reason 可以直接传任意对象。**
-父包 `Track*Fail` 只接收 `Enum` 类型的失败原因，并在上报前转成 `int` 写入 `nova_reason`；可读描述写入 `nova_reason_detail`。Store 侧需要先把失败原因收敛到自己的明确枚举，父包不维护跨 Store 的失败原因全集。Mobile 支付过程失败统一使用 `IAPMobileErrorCode`，初始化失败使用独立的 `MobileStoreInitFailureReason`。
+具体 Store 的 `.Track.cs` 负责把自身失败枚举转成 `int` 写入 `nova_reason`，并把可读描述写入 `nova_reason_detail`。父包不维护跨 Store 的失败原因全集，也不解释订单号和验单状态；它只提供通用属性构造、属性合并和事件发送能力，并在默认 guard 失败入口处理通用 `IAPResult`。Mobile 支付过程失败统一使用 `IAPMobileErrorCode`，初始化失败使用独立的 `MobileStoreInitFailureReason`。
 
 **误区 6：把 `EnableAlwaysPaySucceed` 当成移动端可用的运行时功能。**
 该开关只用于 Editor 调试支付链路。移动端编译产物不会包含 Store 的 mock 支付成功分支，且 `IAPPlugin` 构造上下文时会把该值强制置为 false。正式发货仍必须以服务端验单结果为准。

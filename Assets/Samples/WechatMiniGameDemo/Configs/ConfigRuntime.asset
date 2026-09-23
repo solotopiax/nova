@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dfaab8119e7041728b92d6d28ff7998, type: 3}
+  m_Name: ConfigRuntime
+  m_EditorClassIdentifier: NovaFramework.Runtime::NovaFramework.Runtime.ConfigRuntimeSO
+  DevelopMode: 0
+  Namespace: NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
+  AppConfigs:
+    AppID: YOUR_APP_ID
+    AppAesKey: YOUR_APP_AES_KEY
+    AppAesIV: YOUR_APP_AES_IV
+    CustomConfigCmdName: AppCustomConfig
+    CustomName: CustomConfigs
+  PrivacyConfigs:
+    AESKey: YOUR_PRIVACY_AES_KEY
+    AESIV: YOUR_PRIVACY_AES_IV
+  Platform: 3
+  Channel: 4
+  EnabledSDKConfigs:
+  - rid: 3752622554880148296
+  - rid: 3752622554880148297
+  EnabledKitConfigs:
+  - rid: 3752622554880148298
+  - rid: 3752622554880148299
+  HybridConfigs:
+    GameEntranceProcedureName: ProcedurePreload
+    AotMetadataDlls:
+    - m_AssetLocation: mscorlib.dll
+    - m_AssetLocation: System.dll
+    - m_AssetLocation: System.Core.dll
+    - m_AssetLocation: UniTask.dll
+    - m_AssetLocation: Newtonsoft.Json.dll
+    - m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_AssetLocation: Unity.TextMeshPro.dll
+    - m_AssetLocation: NovaFramework.Runtime.dll
+    - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
+    - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+    StartupGameDlls:
+    - m_AssetLocation: NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll
+  Custom:
+    Entries:
+    - Key: ThirdIAPOpen
+      Value: false
+    - Key: ThirdIAPIOSOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPAndroidOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPSkipGoogleMsgAlertShow
+      Value: false
+    - Key: GlobalSwitchThirdIAPOpen
+      Value: false
+  references:
+    version: 2
+    RefIds:
+    - rid: 3752622554880148296
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 3752622554880148297
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 3752622554880148298
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 3752622554880148299
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve

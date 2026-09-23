@@ -1,39 +1,142 @@
 # ThirdPayStore
 
-`ThirdPayStore` 负责客户端造单、支付 URL、Google 外链政策、应用内 UniWebView 或系统外部浏览器支付页、验单与本地补单。
+`ThirdPayStore` 负责客户端造单、统一支付配置、支付 URL、Google 外链政策、支付页、验单与本地补单。
 
-账号 UID 真正变化并切换到对应存档后，Store 会自动预取一次当前国家或地区的商品；业务侧不再手动请求商品列表，只读取 Store 已缓存的商品快照。登录预取、Debug 国家切换后的重新预取、以及支付前快照缺失时的内部兜底都会使用同一套商品拉取链路，失败时最多尝试三次；同账号、同协议名、同国家码的在途请求会合并等待同一结果。旧账号或旧国家请求完成时不会覆盖当前 Store 的商品快照。
+## 内部职责
 
-国家码解析不再使用默认国家：`ThirdPayStoreConfig.CountryCode` 和 `IIAPThirdPayCapable.SetDebugCountryCode` 都是 Debug 覆盖源，优先级最高；有效国家码按 `Debug > Lock > Billing > iOS Storefront > AD` 解析，全部缺失时返回空字符串。运行时在各赋值入口执行 `Trim + ToUpperInvariant`，并将 `IV` / `UNKNOWN` / 空值都视为无国家码。iOS 会在 ThirdPay 初始化时通过包内 StoreKit storefront bridge 读取 App Store 国家码，Android 会通过包内 Billing bridge 读取 Google Play Billing 国家码，Billing / iOS Storefront / AD 国家码会写入 ThirdPay 当前用户存档作为后续兜底。商品列表请求会记录请求版本、账号和请求国家码；旧账号或旧国家响应不会覆盖当前商品快照。
+`ThirdPayStore` 保留公开入口，并通过 IAP Store 生命周期接口接收 `IAPPlugin` 转发的 Pause/Focus；`ThirdPayServiceHub` 集中持有运行上下文、配置、商品表、共享状态及全部 internal 服务，并统一管理后台任务取消与释放顺序。国家码解析、支付主链、订单验单和补单恢复分别由专用服务处理，跨服务协调类只接收强类型 Hub，不使用字符串查询或 Callback 聚合对象，也不改变现有公共接入方式。
 
-## 内部状态边界
+Hub 在 Store 构造时即创建国家码、账号存档和外部浏览器会话状态，保证未启用、尚未执行 `InitializeAsync` 的 Store 接收账号同步或调试国家码调用时仍然安全；具体运行服务只在 `InitializeAsync` 中绑定一次。释放时先取消 Hub 启动的后台任务，再清理支付会话和各平台服务。
 
-`ThirdPayStore.Visitors` 只保留 Store 的核心协作者、配置状态和支付页基址缓存：`m_Config`、`m_ConfigReady`、`m_PayUrlBase`、`m_NetService`、`m_ChannelParamsLoader`、`m_WebViewService`、`m_ExternalBrowserService`、`m_GooglePolicy` 等。可独立演进的运行时状态拆到专用对象，避免字段继续散落在 Store partial 中。
+## 统一配置
 
-| 类型 | 职责 |
+Store 初始化阶段会独立启动 iOS Storefront、Android Billing 和 AD 三路国家码查询，三者互不等待且不阻塞初始化；其中 AD 查询会在后台等待 SDK 统一初始化完成，再持续等待广告插件首次发布国家码，不受业务层 `GetCountryCodeAsync` 默认超时限制。国家码在当前 Store 生命周期内只查询一次并持续复用，此阶段不请求用户态支付配置，也不会提前锁定国家。登录 UID 就绪后，首次通过 `GetCountryCode()` 取得的有效自动解析结果会写入锁定值；已有结果时立即预取，否则首个有效来源返回后锁定并触发 `ThirdGetPaymentConfig`。后续更高优先级来源异步返回不会改变已锁定的业务国家，重新登录也只切换账号数据并刷新支付配置。配置协议在国家码为空或无效时禁止发送；请求使用标准 Header，并额外发送锁定的 ISO 3166-1 alpha-2 国家码。一次响应集中返回：
+
+- `availability.enabled` 与整数 `disabled_reason`
+- 当前国家的 `product_config.product_list`
+- 可选的 `channel_config.payment_customer_ids`
+- `payment_page_config.payment_page_url`
+
+白名单、黑名单和国家开放策略全部由服务端判断，客户端不保存规则明细。配置按 `UID + Country + CmdName` 缓存；账号、国家或配置上下文变化时立即失效并重新预取。同上下文并发请求合并为一次网络请求，旧上下文响应不能覆盖当前快照。协议不包含版本和 TTL，因此快照在上下文失效前持续有效。
+
+### 国家码时序
+
+1. `InitializeAsync` 仅启动三路查询，任一路失败或耗时较长都不会阻塞 Store 初始化，也不会阻塞其他来源；AD 后台任务会退出当前 IAP 初始化调用栈并等待 SDK 管理器完成统一初始化，确保低优先级广告插件完成初始化后再读取数据槽。
+2. 登录前的平台回调只写入候选来源；此时调用 `GetCountryCode()` 可以读取候选值，但不会写入 Lock。
+3. `SetUserId` 收到非空 UID 后调用 `GetCountryCode()`；若已有候选值，立即锁定并预取配置。
+4. 登录时仍无候选值则不发送协议并输出等待国家码的 Warning；首个有效异步结果返回后，国家变化回调会通过统一预取门禁调用 `GetCountryCode()` 完成锁定并触发预取。
+5. Lock 建立后，后续 Billing、iOS Storefront 或 AD 回调只更新各自来源，不改变当前业务国家；账号切换也不清除 Lock。
+6. Debug 国家码始终高于 Lock，但仅用于显式调试覆盖；清除 Debug 后恢复原 Lock。
+
+`EnsurePaymentConfigAsync` 只读取一次 `GetCountryCode()` 并用该局部值创建配置上下文，避免门禁检查与请求构造之间读到不同国家。空值会在 Store 层直接结束；即使其他调用方绕过 Store，`ThirdIapNetService.GetPaymentConfigAsync` 也会在发送前归一化并拒绝空值、`IV` 与 `UNKNOWN`。
+
+启用支付时，商品配置与 HTTPS 支付页地址必须有效；否则整份响应视为不可用。`payment_customer_ids` 为空不会阻断支付，URL 中省略该参数。
+
+## 支付流程
+
+1. 先检查同业务键的本地未完成订单并验单。
+2. 获取统一配置快照，检查服务端 `enabled` 和目标商品。
+3. 创建并保存本地订单。
+4. 使用同一份固定快照完成 Google 授权和支付 URL 构建。
+5. 打开支付页，随后验单；未终结订单由补单链继续处理。
+
+固定快照保证商品、国家、渠道参数和支付页 URL 不会在一次支付中混用不同请求版本。
+`nova_iap_create_order_success` 只在本地订单、平台授权和支付 URL 都准备完成后上报；上述准备阶段失败则上报 `nova_iap_create_order_fail`，同一次新订单流程不会同时上报两者。创建成功事件写入 `nova_client_order_id`，此时尚未取得的 `nova_server_order_id` 为空。
+
+## ThirdPay 链路打点
+
+`pay_callback` 的 `status=1`（成功）或 `status=3`（成功但渠道信息尚未同步）是唯一会发送 `nova_iap_local_pay_success` 的支付页终态；随后立即按 `DirectPay` 或 `ExternalBrowserCallback` 验单。Android 外部浏览器、iOS Safe Browsing 和嵌入式 WebView 都由 Unity 的 `Application.deepLinkActivated` 或 UniWebView message 进入同一回调解析，不需要 Java 层重复转发。`pay_callback` 的 `orderid` 必须匹配当前支付会话；参数不完整或订单不匹配的全局 Deep Link 只记录诊断日志，不会结束或推进当前会话。
+
+已经建立支付会话、但没有收到成功 `pay_callback` 的关闭、失败、未知回调或异常会发送 `nova_iap_third_pay_close_order`。关闭事件通过 `nova_third_pay_close_reason` 区分 `close_callback`、嵌入式 WebView 关闭、Safe Browsing 关闭、失败/未知/非法 `pay_callback`、外部浏览器返回无成功回调、订单不匹配、验单开始后的迟到回调、页面加载失败、内容进程终止、取消、会话替换和 Store 释放。`nova_reason_detail` 是该关闭原因的稳定中文说明。
+
+`nova_iap_local_pay_fail` 只在 `PayAsync` 返回边界兜住 Store 前置校验、创建/授权失败和支付页未建立等本地支付失败。支付页已经产生 `nova_iap_local_pay_success` 或 `nova_iap_third_pay_close_order` 后，后续验单失败只发送验单事件，不再补报 `nova_iap_local_pay_fail`。既有 `nova_reason` 保持 `IAPThirdPayErrorCode` 的粗粒度数值，细分原因写入 `nova_third_pay_failure_reason`，其中文说明写入 `nova_reason_detail`。`nova_iap_create_order_fail` 同样保持既有粗粒度 `nova_reason`，并用 `nova_third_pay_create_failure_reason` 区分 UID、统一配置、服务端关闭、商品缺失、支付页服务、Google 授权、URL 构建和授权返回空 URL 等创建阶段失败。
+
+支付页相关事件按需携带以下字段：
+
+| 字段 | 含义 |
 |---|---|
-| `ThirdPayCountryState` | 维护 Debug / Lock / Billing / iOS Storefront / AD 国家码来源、归一化、优先级和存档同步 |
-| `ThirdPayProductCatalogState` | 维护商品快照、商品列表在途请求上下文、请求版本和过期响应判定 |
-| `ThirdPayPersistContext` | 维护当前账号 ThirdPay 存档、渠道参数和订单仓储操作 |
-| `ThirdPayExternalBrowserSessionState` | 维护当前外部浏览器支付 session 引用与订单/返回版本匹配 |
+| `nova_third_pay_open_mode` | 实际打开方式：Auth Tab、Custom Tabs、系统浏览器回退、嵌入式 WebView 或 iOS Safe Browsing。 |
+| `nova_third_pay_callback_status` | `pay_callback` 的归一化状态；未收到回调为 `0`。 |
+| `nova_third_pay_close_reason` | 仅关闭订单事件使用的细分关闭原因。 |
+| `nova_third_pay_failure_reason` | 支付或验单的细分失败原因；成功时为 `0`。 |
+| `nova_client_order_id` / `nova_server_order_id` | 客户端生成订单号与服务端确认订单号，未取得的一侧为空。 |
+| `nova_native_error_code` / `nova_native_error_message` | 支付页、浏览器或原生能力的补充错误信息。 |
 
-iOS 商店国家码桥接类命名为 `ThirdPayIosStorefrontCountryBridge`，只表达 StoreKit storefront 国家码读取，不再使用泛化的 Native 命名。该 bridge 的 Unity `.meta` GUID 沿用旧文件，避免 Unity 资产引用漂移。
+ThirdPay 的订单生命周期事件统一使用 `nova_client_order_id` 和 `nova_server_order_id`，不发送 `nova_order_id`。通用字段在不同阶段曾分别表示客户端订单号或服务端订单号，无法稳定关联同一笔订单；Mobile 继续保留既有 `nova_order_id` 语义，其他 Store 按自身事件契约定义订单字段。
+
+订单创建、支付页终态、验单和删单事件的完整属性由 `ThirdPayStore.Track.cs` 构造；父包只提供各 Store 共用的商品字段、属性合并和事件发送能力。这样 ThirdPay 的双订单号和细分状态不会进入通用 IAP 基类，也不需要用渠道开关隐藏字段。
+
+`nova_reason` 不承载上述细分枚举，避免同一属性混用多种枚举域。关闭订单和本地订单删除事件不写 `nova_reason`，只使用各自的专属原因字段和 `nova_reason_detail`。各专属属性的稳定枚举如下：
+
+| 属性 | 枚举值 |
+|---|---|
+| `nova_third_pay_close_reason` | `0` 未知；`1` close_callback；`2` 嵌入式 WebView 关闭；`3` iOS Safe Browsing 关闭；`4` pay_callback 失败；`5` 未知 callback 状态；`6` callback 参数无效；`7` 外部浏览器返回无成功 callback；`8` callback 订单不匹配；`9` 验单开始后的迟到 callback；`10` 页面加载失败；`11` Web 内容进程终止；`12` 页面异常；`13` 操作取消；`14` 会话被替换；`15` Store 释放。 |
+| `nova_third_pay_failure_reason` | `0` 未知；`1` Store 禁用；`2` Store 未初始化；`3` 重复支付；`4` 商品不存在；`5` UID 缺失；`6` 支付配置不可用；`7` 服务端关闭支付；`8` 服务端未配置商品；`9` WebView 服务不可用；`10` 外部浏览器服务不可用；`11` Google 连接失败；`12` Google token 创建失败；`13` Google 支付 URL 构建失败；`14` Google 用户取消；`15` 支付页打开失败；`16` 支付页打开异常；`17` 系统浏览器回退 URL 为空；`18` callback 支付失败；`19` callback 参数无效；`20` callback 状态未知；`21` callback 订单不匹配；`22` callback 到达时已开始验单；`23` 外部浏览器返回无成功 callback；`24` 验单服务不可用；`25` 验单网络失败；`26` 验单响应缺少订单；`27` 服务端待支付；`28` 服务端处理中；`29` 服务端失败或过期；`30` 服务端订单不存在；`31` 未知服务端订单状态；`32` 操作取消；`33` 会话被替换；`34` Store 释放；`35` 未分类异常；`36` 第三方支付 URL 构建失败；`37` 授权完成但支付 URL 缺失。 |
+| `nova_third_pay_create_failure_reason` | `0` 未知；`1` UID 缺失；`2` 支付配置不可用；`3` 服务端关闭支付；`4` 服务端未配置商品；`5` 支付页服务不可用；`6` Google 连接失败；`7` Google token 创建失败；`8` Google 支付 URL 构建失败；`9` Google 用户取消；`10` 支付 URL 构建异常；`11` 支付 URL 为空。 |
+| `nova_client_order_status` | `0` 未知；`1` 已支付可发货；`2` 已发货；`3` 待支付；`4` 处理中；`5` 失败或过期；`6` 不存在；`7` 响应缺单；`8` 网络失败；`9` 验单服务不可用；`10` 未知服务端状态。 |
+| `nova_order_delete_reason` | `0` 未知；`1` 已支付；`2` 已发货；`3` 待支付达到上限；`4` 失败或过期；`5` 不存在；`6` 支付页未打开；`7` 授权失败；`8` URL 构建失败；`9` 用户或账号变化；`10` 显式清理；`11` 本地订单非法。 |
+| `nova_validation_scene` | `0` 未知；`1` 应用内成功 callback；`2` 应用内支付页模糊返回；`3` 新支付前预检；`4` 启动或后台补单；`5` 外部浏览器返回兜底；`6` 外部浏览器成功 callback。 |
+
+`nova_reason_detail` 按事件选用对应枚举的稳定中文说明：关闭订单对应 `nova_third_pay_close_reason`，创建失败对应 `nova_third_pay_create_failure_reason`，本地支付/验单失败对应 `nova_third_pay_failure_reason`，删单对应 `nova_order_delete_reason`。
+
+## 验单状态与本地订单删除
+
+`nova_iap_validate_fail`、`nova_iap_validate_fail_finish` 和 `nova_iap_validate_success` 都带有 `nova_validation_scene`、`nova_server_order_status`、`nova_client_order_status`、`nova_client_order_id`、`nova_server_order_id`、`nova_protocol_code` 和 `nova_protocol_message`。`nova_protocol_code` 仅表示网络/协议错误码，不能用于代替 `nova_server_order_status` 的 `PbNetThirdVerifyOrderStatus` 原始值。
+
+| 服务端状态 | 客户端状态 | 本地订单处置 |
+|---|---|---|
+| `Paid` | `SuccessDeliverable` | 删除并允许发货。 |
+| `Delivered` | `SuccessAlreadyDelivered` | 删除，不重复发货。 |
+| `PendingPayment` | `PaymentPending` | 仅在当前场景验单上限耗尽后删除。 |
+| `Processing` | `Processing` | 保留，等待后续验单。 |
+| `FailedOrExpired` | `FailedOrExpired` | 删除。 |
+| `NotFound` | `NotFound` | 删除。 |
+| 响应缺单 / 网络失败 / 服务不可用 / 未知状态 | 对应 `ResponseOrderMissing`、`NetworkFailure`、`ValidationServiceUnavailable`、`UnknownServerStatus` | 保留。 |
+
+本地订单只有在 `RemoveOrder(...)` 实际返回 `true` 后才发送 `nova_iap_third_pay_order_removed`。该事件使用 `nova_order_delete_reason` 区分已支付、已发货、待支付达到上限、失败或过期、不存在、支付页未成功打开、授权失败、URL 构建失败、账号切换、显式清理和本地数据非法；同时记录协议码、协议描述、服务端状态、客户端状态、验单场景和双订单号。没有服务端请求的删单路径使用协议码 `0` 和空协议描述。
+
+## 验单策略
+
+验单重试按触发场景区分。下表中的次数包含首次请求；成功响应只有返回 `PendingPayment` 或 `Processing` 时才会继续重试，其他明确状态立即结束。多次验单场景发生网络失败时，同样在对应次数上限内继续重试。
+
+每次网络失败，以及每次仍需重试的 `PendingPayment` / `Processing` 响应，都会发送一条 `nova_iap_validate_fail`；`nova_validate_count` 包含当前请求，因此可完整还原单笔订单实际验单了几次。达到场景上限或收到终态响应后，再按最终结果发送 `nova_iap_validate_success`、`nova_iap_validate_fail` 或 `nova_iap_validate_fail_finish`。
+
+| 场景 | 触发时机 | 最大验单次数 | 可重试的订单状态 |
+|---|---|---:|---|
+| `DirectPay` | 当前支付页明确回调支付成功 | `max(7, RetryValidateMaxNum)` | `PendingPayment`、`Processing` |
+| `ExternalBrowserCallback` | 当前 Auth Tab、Custom Tabs 或系统浏览器明确回调支付成功 | `max(7, RetryValidateMaxNum)` | `PendingPayment`、`Processing` |
+| `DirectPayAmbiguousReturn` | 当前应用内支付页关闭，支付结果不明确 | `min(3, RetryValidateMaxNum)` | `PendingPayment`、`Processing` |
+| `ExternalBrowserReturn` | 外部支付没有收到成功回调，仅检测到 App 返回且倒计时结束 | `min(3, RetryValidateMaxNum)` | `PendingPayment`、`Processing` |
+| `DirectPayPreflight` | 后续手动点击支付，命中相同 `TableId + ReceiptParam` 的历史订单 | 1 | 不重试 |
+| `Recovered` | 后台补单 | 1 | 不重试 |
+
+达到当前场景的次数上限后，客户端统一按最终响应处理：
+
+- `Paid`：移除本地订单并允许发货。
+- `Delivered`：移除本地订单，返回成功但不重复发货。
+- `PendingPayment`、`FailedOrExpired`、`NotFound`：移除本地订单并返回失败。
+- `Processing` 或未知状态：保留本地订单，等待之后手动支付检查或后台补单再次验单。
+- 网络失败或验单响应缺少目标订单：保留本地订单。
+
+重试过程中的中间响应不会提前执行上述最终处置，也不会提前删除订单。
 
 ## 接入
 
+业务应按功能分别获取 `IIAPThirdPayConfigCapable`、`IIAPThirdPayProductCapable`、`IIAPThirdPayCheckoutCapable`，避免依赖无关能力。
+
 ```csharp
-if (iapPlugin.TryGetCapability<IIAPThirdPayCapable>(out var thirdPay))
+if (iapPlugin.TryGetCapability<IIAPThirdPayConfigCapable>(out var thirdPayConfig))
 {
-    // 可选：仅在调试或灰度固定国家时设置；生产通常留空。
-    // thirdPay.SetDebugCountryCode("US");
-    string countryCode = thirdPay.GetCountryCode();
-    thirdPay.SetSkipPaymentInformationScreen(true);
-    thirdPay.SetThirdPayWebViewTitleText("Payment");
-    thirdPay.SetThirdPayWebViewCloseText("close");
-    // 可选：业务已有 CID 时可手动注入；未设置时 Store 会在登录成功后按账号自动拉取一次。
-    thirdPay.SetChannelParams(cid);
-    IReadOnlyList<PbNetThirdProductInfo> products = thirdPay.GetProductList();
-    bool hasProducts = thirdPay.HasProducts();
+    // 仅用于调试或灰度固定国家；生产通常留空。
+    // thirdPayConfig.SetDebugCountryCode("US");
+    bool configReady = thirdPayConfig.IsPaymentConfigReady;
+    bool paymentAvailable = thirdPayConfig.IsPaymentAvailable;
+    int disabledReason = thirdPayConfig.PaymentDisabledReason;
+}
+
+if (iapPlugin.TryGetCapability<IIAPThirdPayProductCapable>(out var thirdPayProducts))
+{
+    IReadOnlyList<PbNetThirdProductInfo> products = thirdPayProducts.GetProductList();
 }
 
 var request = new IAPThirdPayRequest
@@ -46,80 +149,24 @@ var request = new IAPThirdPayRequest
 IAPResult result = await iapPlugin.PayAsync<IAPResult>(request, ct);
 ```
 
-Android 真机默认使用外部浏览器支付页，打开前先执行 Google 外链信息页流程；当前系统不支持该信息页时继续进入浏览器打开规则。iOS 真机使用全屏 `UniWebViewSafeBrowsing`，Editor 使用嵌入式 UniWebView 默认全屏显示，不再接收业务侧适配区域，也不复用 `IAPPluginConfig.LoadingPanelPrefab` 作为 WebView 承载面板。点击支付后的渠道参数拉取、商品兜底拉取、本地建单和支付 URL 构建阶段会显示 IAP Loading；打开 WebView 或系统外部浏览器前释放，外部浏览器支付页返回后的倒计时等待与验单阶段会再次显示 Loading。支付成功、取消、加载失败或 Store 释放时，框架都会关闭原生支付页。
+`PaymentDisabledReason` 直接返回统一配置中的整数关闭原因码。配置尚未就绪时该属性返回 `0`，调用方必须先检查 `IsPaymentConfigReady`；只有配置已就绪且 `IsPaymentAvailable` 为 `false` 时，原因码才表示服务端关闭原因。
 
 ## 支付 URL
 
-外层 Query 固定为：
+支付页基址直接来自统一配置的 HTTPS `payment_page_url`。外层 Query 为 `lang/params/app_id`；`params` 是 ThirdPay 动态 AES 加密后的 JSON，包含商品、用户、国家、订单、平台、渠道、打开方式、票据透传、可选 `payment_customer_ids` 和 Google token。
 
-`lang/params/app_id`
+国家、商品和渠道参数均来自本次支付固定的统一配置快照。应用 ID、语言和渠道读取标准公共 Header，不在 Store 配置中重复保存。
 
-`params` 是以下 JSON 经 ThirdPay 动态 AES 加密后的字符串：每次构造支付 URL 时生成 16 字节 Key 和 16 字节 IV，调用 `Util.Encrypt.AES.EncryptBytes(Encoding.UTF8.GetBytes(value), key, iv)` 得到密文，再按 `key + iv + cipher` 拼接字节并整体 Base64。Key/IV 已包含在 Base64 解码后的前 32 字节中，不依赖 Store 配置、`AppConfigs.AppAesKey/AppAesIV` 或隐私配置默认 AES。
+## 协议
 
-`id/uid/table_id/currency/price/product_name/country/client_order_id/platform/channel/is_external_browser/is_custom_tab/show_back_button/custom_param/payment_customer_ids/google_transaction_token`
+协议源位于 `Nova/Protos/pb_net_third_pay.proto`，生成代码位于 `Nova/Scripts/Runtime/Protos/PbNetThirdPay.cs`。
 
-其中 `channel` 来源于 `Nova.Config.Channel`，通过 `NetBuilder.BuildHeader()` 映射后写入支付 URL，不在 `ThirdPayStoreConfig` 中重复保存。`is_external_browser` 由平台固定策略决定：Android 真机写入 `true` 并使用外部支付页打开方式，iOS 与 Editor 写入 `false` 并使用包内 WebView 服务。`is_custom_tab` 用于区分 Android 外部支付页的实际打开容器：Auth Tab 与 Custom Tabs 写入 `true`，`Application.OpenURL` 兜底、iOS 与 Editor WebView 写入 `false`。`show_back_button` 仅在 Android Auth Tab / Custom Tabs 均不可用并最终回退 `Application.OpenURL` 时写入 `true`，其他支付页 URL 均写入 `false`。`custom_param` 是 JSON 字符串，固定封装为 `{"receipt_param":"<IAPRequest.ReceiptParam>"}`，字符串长度不由客户端限制；`payment_customer_ids` 为空时省略；非 Android 或无需 Google token 时 `google_transaction_token` 为空字符串。`CustomData` 只保存在本地订单与支付结果中，不写入支付 URL。
+| NetCmd | 路径 | 用途 |
+|---|---|---|
+| `ThirdGetPaymentConfig` | `/v1/third_pay/payment_config` | 获取可用性、商品、渠道参数和支付页地址 |
+| `ThirdQueryPendingOrder` | `/v1/third_pay/query_pending_order` | 查询支付成功但尚未校验的订单 |
+| `ThirdVerifyIap` | `/v1/third_pay/verify_iap` | 批量验单 |
 
-## 外部浏览器支付
+## 平台行为
 
-Android 真机固定使用外部支付页，ThirdPay 仍然先创建并保存本地订单，再构造支付 URL，然后按 Auth Tab、Custom Tabs、`Application.OpenURL` 的顺序提交打开请求。浏览器打开成功只表示跳转请求已提交，`PayAsync` 会继续等待返回 App 后的自动验单结果；验单成功、失败、处理中、网络失败或响应缺单都会通过同一份 `IAPResult` 回到本次 `PayAsync` 调用方，同时按结果派发 `PaySuccess` / `PayFailed` 全局事件。
-
-Android 外部支付页会先查询 Custom Tabs provider，再用 `CustomTabsClient.isAuthTabSupported` 判断是否支持 Auth Tab。支持时通过包内 `ThirdPayAuthTab.androidlib` 的透明 Activity 启动 `AuthTabIntent`；不支持或启动失败时回退为 AndroidX Browser `1.10.0` 的 Custom Tabs，并关闭标题、分享、书签、下载、关闭按钮和“在浏览器中打开”入口；当前设备没有 Custom Tabs provider 或 AndroidX 打开链路失败时，由 C# 层调用 Unity `Application.OpenURL` 回退系统浏览器。非 Android 平台也继续使用 Unity `Application.OpenURL` 提交外部浏览器打开请求。
-
-浏览器支付返回 App 后，ThirdPay 子包内部的隐藏生命周期代理会接收 `OnApplicationPause` / `OnApplicationFocus`。ThirdPay 仅在存在外部浏览器支付 session 时响应这些事件：离开 App 时取消旧倒计时；回到前台时重启 `ExternalBrowserReturnValidateDelaySeconds` 秒倒计时并显示 IAP Loading，防止倒计时等待期点击底层业务 UI；若用户在倒计时内反复切前后台，旧倒计时会因版本号失效，只保留最后一次稳定回前台后的验单。
-
-生命周期代理在 `ThirdPayStore.InitializeAsync` 中注册一次，内部 GameObject 使用 `DontDestroyOnLoad`，因此同一次 App 启动内跨场景持续有效；`ThirdPayStore.DisposeAsync` 会注销回调，之后不再响应前后台事件。若该隐藏 GameObject 被外部逻辑误销毁，代理会在 `OnDestroy` 清空静态实例和事件链，但不会自动重新注册；这种情况下仅失去“返回 App 后自动加速验单”，本地订单仍保留，后续补单链路继续兜底。
-
-浏览器返回验单只做一次加速确认。若验单成功或服务端返回终态失败，按现有成功/失败事件处理并清理 session；若服务端返回已发货，外部浏览器返回链路会通过 `PaySuccess` 派发 `CanDeliver=false` 的成功结果通知业务 UI，并把同一成功结果返回给仍在等待的 `PayAsync` 调用方，但业务不应重复发货；若返回处理中、网络失败或响应未包含订单，则通过 `PayFailed` 派发本次验单结果通知业务 UI，并把同一失败结果返回给仍在等待的 `PayAsync` 调用方，同时清理 session 但保留本地订单，后续由 `IAPPlugin.CheckLocalOrdersAsync` / `ThirdPayStore.CheckLocalOrdersAsync` 的补单链路继续兜底。session 清理后，后续普通前后台切换不会再触发这笔浏览器订单验单。
-
-支付 URL 基址通过 `ThirdPayStoreConfig.OpenUrlCmdName` 指定的 NetCmd 解析，默认值为 `ThirdOpenURL`；`app_id` 使用公共请求头中的全局应用 ID。
-
-包内 WebView 服务固定依赖 UniWebView 5.11.1。Editor 使用嵌入式 `UniWebView` 处理 `pay_callback`、`close_callback`、工具栏关闭、返回键、加载错误和内容进程终止；AlipayConnect Scheme 会保留原 Query 并重写为兼容 HTTPS 地址。iOS 使用 `UniWebViewSafeBrowsing`，通过 `Application.deepLinkActivated` 解析支付回调，并在收到终态、用户关闭、取消令牌或 Store 释放时注销回调和关闭浏览器。应用内 WebView 的用户关闭会保留本地订单并立即进入一次直接验单，不再直接按取消失败返回；加载失败和内容进程终止会返回支付页失败并删除本地订单，避免未实际打开成功的订单进入后续补单。
-
-## Android Google Policy
-
-Android 真机上使用 Unity Purchasing 5.3.1 的 `ExternalBillingProgramClient`：
-
-1. ThirdPay 按 `Debug > Lock > Billing > iOS Storefront > AD` 解析有效国家码，全部缺失时返回空字符串；`CountryCode` / `SetDebugCountryCode` 只作为 Debug 覆盖，留空时通过包内 Android Billing bridge 调用 `getBillingConfigAsync()` 读取 Google Play Billing 商店国家/地区代码，并在 iOS 初始化时通过包内 StoreKit storefront bridge 读取 App Store 国家/地区代码。
-2. 连接 Billing Client。
-3. 检查 External Billing Program 可用性。
-4. External Billing Program 不可用时，跳过 Google 信息页并直接用空 Google token 进入 Android 浏览器打开规则，不返回 Google 政策错误码。
-5. External Billing Program 可用时，创建 reporting details 并取得 external transaction token。
-6. `SkipPaymentInformationScreen` 或 `SetSkipPaymentInformationScreen(true)` 生效时，保留 token 并跳过 Google 信息页，直接进入 Android 浏览器打开规则。
-7. 未跳过时，用包含 token 的最终支付 URL 调用 `LaunchExternalLink`，模式为 `CALLER_WILL_LAUNCH_LINK`。
-8. Google 信息页成功、不可用或打开失败后，ThirdPay 都进入 Android 浏览器打开规则；用户取消仍返回取消。
-
-渠道参数 `GetPayChannelParams` 失败（包括服务端错误码 `10707`）不会阻断支付；ThirdPay 会继续构造不含 `payment_customer_ids` 的支付 URL 并按平台默认策略打开支付页。商品列表、支付环境、URL 构造、支付页打开和验单仍按各自错误语义处理。
-
-## 本地订单与验单
-
-订单在打开支付页前保存，并按 `clientOrderId` 唯一索引；发起新支付前会先按 `TableId + ReceiptParam` 查找同业务键的本地未完成订单，命中时直接验单并把结果作为本次 `PayAsync` 返回，不再创建新的本地订单或再次打开支付页。`IAPPlugin.CheckLocalOrdersAsync` 会先通过 `QueryPendingOrderCmdName` 查询服务端支付成功但客户端尚未校验的订单，再与本地订单按 `clientOrderId` 合并并批量验单。本地记录包含完整支付上下文、`ReceiptParam` 和本地状态；与服务端补单列表重复时优先保留本地记录，服务端列表查询失败不会阻断本地订单验单。验单响应通过 `PbNetThirdVerifyOrderResult.receipt_param` 直接返回票据透传值，客户端写入 `IAPResult.ReceiptParam`，不再解析响应侧的 `custom_param` JSON。`PbNetThirdVerifyOrderResult.status` 使用 `PbNetThirdVerifyOrderStatus` 枚举，客户端直接按协议状态决策，不再维护额外的数字状态映射或本地分类枚举。
-
-协议源文件位于 `Nova/Protos/pb_net_third_pay.proto`，生成代码位于
-`Nova/Scripts/Runtime/Protos/PbNetThirdPay.cs`。`ThirdIapNetService` 与 Mobile IAP 的
-`MobileIapNetService` 保持同一职责：内部构造公共 Header 和 Protobuf 请求、解析 NetCmd、
-调用 `NetService.SendAsync`，并记录请求/响应日志。Store 只传国家码或客户端订单号集合；应用 ID 由公共请求头统一提供。
-
-InAppAuto 由客户端直接生成支付 URL，因此协议层不包含创建订单协议，保留商品列表、渠道参数、待校验订单查询和批量验单四条业务协议。支付页基址不是 Protobuf 业务协议，通过 `OpenUrlCmdName` 指定的 NetCmd 解析，默认值为 `ThirdOpenURL`。
-
-协议路径统一使用 `/third_pay/*`，其中待校验订单与验单分别为 `/third_pay/query_pending_order` 和 `/third_pay/verify_iap`。
-
-| 配置 | 作用 |
-|---|---|
-| `OpenUrlCmdName` | 解析第三方支付页基址 |
-| `GetProductListCmdName` | 拉取第三方商品 |
-| `PayChannelParamsCmdName` | 登录成功后按当前账号拉取一次支付页需要透传的 CID 等渠道参数 |
-| `QueryPendingOrderCmdName` | 查询服务端支付成功但客户端尚未校验的订单 |
-| `VerifyIapCmdName` | 按客户端订单号批量验单 |
-
-| 服务端状态 | 处理 |
-|---|---|
-| `PendingPayment` | 用户未支付，删除订单并广播失败事件 |
-| `Processing` | 支付处理中，保留订单；直接支付和外部浏览器返回验单会广播 `OrderPending` 失败事件 |
-| `Paid` | 支付成功，删除订单并广播可发货成功事件 |
-| `FailedOrExpired` | 支付失败或过期，删除订单并广播失败事件 |
-| `Delivered` | 已发货，删除订单；外部浏览器返回验单广播 `CanDeliver=false` 的成功通知但不重复发货 |
-| `NotFound` | 订单不存在，删除本地订单并广播验单失败事件 |
-| `Unspecified` / 未知枚举值 / 网络失败 / 响应缺单 | 保留订单；直接支付和外部浏览器返回验单会广播失败事件，等待下次检查 |
-
-支付页已打开后由用户关闭时会保留订单并立即验单，避免用户已付款但客户端误删；支付页明确未打开成功（WebView 打开异常、`Failed`、外部浏览器服务不可用或打开失败）时会删除本地订单，不进入后续补单。明确收到支付成功回调的直接支付验单默认覆盖完整重试间隔序列（含 `8s` 档），关闭按钮、外部浏览器返回和发起支付前补单属于结果不明确场景，最多验单 3 次；后台补单只验 1 次。仍未终结的本地订单会记录本地状态，等待后续按同业务键发起支付或补单检查继续验单。
+Android 真机使用 Auth Tab → Custom Tabs → `Application.OpenURL` 的外部浏览器链；iOS 使用 UniWebView Safe Browsing；Editor 使用嵌入式 UniWebView。Android 外部支付会话直接订阅 Unity `Application.deepLinkActivated`，三种外部打开方式收到 `uniwebview://pay_callback?orderid=...&status=...` 后，都会先核对活动会话订单号，再取消返回倒计时并按 `ExternalBrowserCallback` 立即验单；没有收到成功回调时，App 返回后的倒计时继续按 `ExternalBrowserReturn` 兜底验单。具体请求次数和订单处置遵循“验单策略”。

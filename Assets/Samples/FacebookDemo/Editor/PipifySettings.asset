@@ -36,7 +36,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\r\n  \"Target\": 13,\r\n  \"BuildMode\": 0,\r\n  \"DevelopmentBuild\":
         true,\r\n  \"SplitApplicationBinary\": false,\r\n  \"BuildAppBundle\": false,\r\n 
-        \"UseAndroidKeystore\": false,\r\n  \"AndroidKeystorePath\": \"D:\\\\SoloGames-X\\\\nova\\\\Docs\\\\certificates\\\\solotopia.keystore\",\r\n 
+        \"UseAndroidKeystore\": false,\r\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\r\n 
         \"AndroidKeystorePass\": \"\",\r\n  \"AndroidKeyalias\": \"solotopia\",\r\n 
         \"AndroidKeyaliasPass\": \"\",\r\n  \"OutputFolderPath\": \"Builds/Android\"\r\n}"
     - m_StepId: shell.open_folder

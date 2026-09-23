@@ -15,7 +15,8 @@ namespace NovaFramework.Runtime
         public static partial class SysIO
         {
             /// <summary>
-            /// 在 WebGL 中将缓存的文件写入 IndexedDB。
+            /// 在 WebGL 中请求将虚拟文件系统写入 IndexedDB。
+            /// 请求异步执行，底层会串行合并重叠同步并在失败时记录错误。
             /// https://forum.unity.com/threads/webgl-filesystem.294358/#post-1940712
             /// </summary>
             public static void WebGLSyncFs()
@@ -28,5 +29,3 @@ namespace NovaFramework.Runtime
     }
     
 }
-
-

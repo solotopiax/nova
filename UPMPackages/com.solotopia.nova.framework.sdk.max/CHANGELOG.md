@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-09-23
+
+### Added
+
+- `ad_impression` 增加 `nova_ad_format` 属性，便于与其他 Nova 广告事件统一按广告格式筛选，同时保留原有 `ad_format`。
+- Rewarded、Interstitial、AppOpen 每次展示尝试生成本地 `nova_ad_impression_id`，并在 `nova_ad_show`、`ad_ilrd`、`ad_impression` 间作尽力关联；收益事件同时记录回调序号和关联状态，暂不丢弃无法证明为重复的收益回调，也不把本地 ID 作为硬去重依据。
+
+### Changed
+
+- 最低 Ad 基础包依赖提升至 `1.1.14`，使用支持渠道附加属性的 `TrackAdShow` 重载。
+
+### Fixed
+
+- MAX 全局 SDK 回调注册增加幂等保护，避免异常重复初始化时叠加订阅。
+
 ## [0.1.11] - 2026-09-18
 
 ### Added

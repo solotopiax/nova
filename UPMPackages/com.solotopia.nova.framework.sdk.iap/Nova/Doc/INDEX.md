@@ -22,7 +22,7 @@
 ## 当前契约重点
 
 - `IAPResult.ErrorCode` 和 `IAPInitResult.FailReason` 都是 `int` 透传；核心层只定义通用调度错误，渠道 Store 使用自己的错误码枚举。
-- 打点字段 `nova_reason` 由父包 `Track*Fail` 方法把 Store 侧传入的明确 `Enum` 转成 `int` 后写入；补充描述写入 `nova_reason_detail`。
+- 打点字段 `nova_reason` 由具体 Store 把自身明确枚举转成 `int` 后写入，补充描述写入 `nova_reason_detail`；父包不解释渠道失败枚举和订单号语义。
 - 父包不定义跨 Store 的打点失败原因枚举；`nova_reason` 只要求 Store 侧传入明确 `Enum`，具体枚举下沉到各 Store，上报载荷使用枚举整数值。
 - `IAPStoreBase` partial 布局固定：无后缀文件保留 public/abstract 调用面，`.Visitors.cs` 放字段和状态属性，`.Methods.cs` 放 protected/private/internal 模板与辅助方法，`.Track.cs` / `.Net.cs` 分别承载打点与网络能力。
 - Store 打点 Debug 字段应读取 `IIAPStoreContext.DevelopMode == DevelopMode.Debug`；`EnableAlwaysPaySucceed` 只控制 Editor 调试支付是否跳过真实平台调用，非 Editor 编译态固定关闭。
@@ -33,7 +33,7 @@
 
 ## 最新支付代码口径
 
-- 父包只负责 Store 发现、商品表、账号同步、支付路由、补单调度、Loading、持久化和通用打点封装。
+- 父包只负责 Store 发现、商品表、账号同步、支付路由、补单调度、Loading、持久化，以及初始化、购买、默认 guard 失败和通用打点属性工具。
 - 初始化失败原因由具体 Store 定义；Mobile 使用 `MobileStoreInitFailureReason`，通过 `IAPInitResult.FailReason` 以 int 透传。
 - 支付过程失败原因由具体 Store 定义；Mobile 统一使用 `IAPMobileErrorCode`，本地支付失败和验单失败都按其整数值写入同一个 `nova_reason` 数值域。
 - `nova_reason_detail` 只放补充说明，例如协议错误信息、服务端状态、Google token 缺失等，不再承载主失败分类。

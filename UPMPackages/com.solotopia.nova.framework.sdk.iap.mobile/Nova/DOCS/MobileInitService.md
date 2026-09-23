@@ -4,7 +4,7 @@
 **命名空间**：`NovaFramework.SDK.IAP.Mobile.Runtime`
 **访问方式**：通过 `MobileServiceHub.InitService` 取得；不对外暴露
 
-Unity IAP 5.x 初始化生命周期管理服务，负责三步初始化序列（SetController → RegisterStoreCallbacks → Connect）并在商店连接成功后标记就绪；商品信息拉取在连接成功后异步进行，不阻塞初始化完成。商品拉取状态机已收口到 `MobileProductFetchCoordinator`，InitService 只保留回调委托和初始化生命周期。
+Unity IAP 5.x 初始化生命周期管理服务，负责三步初始化序列（SetController → RegisterStoreCallbacks → Connect）并在商店连接成功后标记就绪。该序列由 `MobileServiceHub.RunBackgroundTask` 承载，不占用游戏主 Loading；商品信息拉取在连接成功后继续异步进行。商品拉取状态机已收口到 `MobileProductFetchCoordinator`，InitService 只保留回调委托和初始化生命周期。
 
 > 当前事实以 `Services/Init/*.cs` 为准。
 
@@ -43,7 +43,7 @@ internal sealed partial class MobileInitService
 |---|---|---|---|---|
 | `m_Hub` | `MobileServiceHub` | — | `private readonly` | 服务容器，持有共享外部依赖与其他服务引用 |
 | `m_RuntimeContext` | `MobileRuntimeContext` | `null` | `private` | 初始化阶段状态机；Dispose 后置 null，阻止后续回调继续执行 |
-| `m_InitTcs` | `UniTaskCompletionSource<bool>` | `null` | `private` | 初始化完成信号，桥接 OnStoreConnected / FailInitialization 到 InitializeAsync 的 await 点 |
+| `m_InitTcs` | `UniTaskCompletionSource<bool>` | `null` | `private` | 后台初始化完成信号，桥接 OnStoreConnected / FailInitialization 到 InitializeAsync 的 await 点 |
 | `m_PendingProductDefs` | `List<ProductDefinition>` | `null` | `private` | InitializeAsync 阶段构建，OnStoreConnected 后触发 FetchProducts 时使用 |
 | `m_ProductFetchCoordinator` | `MobileProductFetchCoordinator` | 构造器初始化 | `private readonly` | 商品拉取状态机；InitService 通过委托触发和查询 |
 | `ProductFetchState` | `MobileProductFetchState` | `None` | `internal get` | 从 `m_ProductFetchCoordinator.State` 读取；初始化成功不代表商品拉取完成 |
@@ -87,8 +87,8 @@ internal sealed partial class MobileInitService
 ### MobileInitService — 初始化流程
 
 ```csharp
-// 流程入口（由 MobileStore.InitializeAsync 调用）
-// 三步序列：SetController → RegisterStoreCallbacks → Connect → 后台商品拉取
+// 流程入口（由 MobileStore.InitializeAsync 经 MobileServiceHub.RunBackgroundTask 启动）
+// 三步序列：SetController → RegisterStoreCallbacks → Connect → 后台商品拉取；不占用游戏主 Loading
 internal async UniTask<bool> InitializeAsync(IIAPProductTable table, CancellationToken ct)
 ```
 
@@ -171,19 +171,23 @@ MobileProductFetchState 重入规则：
 | 回调顺序 / 场景 | 状态处理 | SKU 处理 | 后续流程 |
 |---|---|---|---|
 | 全失败 | `ProductFetchState=Failed` | 将 Controller 仍缺失的失败 SKU 写入不可用集合 | 调度下一轮重试，最多 3 次 |
-| 失败后成功 | `ProductFetchState=Succeeded` | 成功时清理旧失败 SKU，并按 Controller 状态恢复仍缺失 pending SKU | 触发一次 FetchPurchases 和延迟权益刷新 |
+| 失败后成功 | `ProductFetchState=Succeeded` | 成功时清理旧失败 SKU，并按 Controller 状态恢复仍缺失 pending SKU | 触发一次 FetchPurchases，回调缓存票据后补跑延迟权益刷新 |
 | 成功后迟到失败 | 保持 `Succeeded` | 只补写 Controller 仍缺失的 SKU | 不重试，不重复触发商品成功后置流程 |
-| 部分成功（失败数 < 请求数） | 视为 `Succeeded` | 只保留 Controller 仍缺失 SKU | 停止重试并触发 FetchPurchases 和延迟权益刷新 |
+| 部分成功（失败数 < 请求数） | 视为 `Succeeded` | 只保留 Controller 仍缺失 SKU | 停止重试并触发 FetchPurchases，回调后再继续权益刷新 |
 
 该规则避免两类问题：旧失败 SKU 在重试成功后继续拦截购买；Unity IAP 迟到失败回调把已进入 Controller 的商品重新标记为不可买。
 
-商品成功后的后续流程可能补跑之前因商品未就绪而延后的权益刷新。`RefreshEntitlementsAsync` 返回 `UniTask<IReadOnlyList<IAPResult>>`，返回列表只用于 Restore / 权益聚合语义；当它作为后台补跑动作接入 `MobileServiceHub.RunBackgroundTask` 时，必须用 lambda 或无返回包装方法显式 `await` 并丢弃结果，不能直接把方法组传入只接受 `Func<CancellationToken, UniTask>` 的后台任务入口。
+商品成功后的后续流程先由 RestoreService 标记拉取状态并调用 `FetchPurchases`。商店、商品或平台已有购买尚未就绪时，权益刷新只登记延后请求；成功回调先缓存 receipt / PendingOrder，再补跑权益刷新，避免 `FullyEntitled` 记录缺少验单凭据。`FetchPurchases` 失败时优先补跑已登记权益；没有延后请求时，已登录账号执行服务端、本地和权益兜底。`RefreshEntitlementsAsync` 返回 `UniTask<IReadOnlyList<IAPResult>>`；作为后台动作时使用 lambda 显式等待并丢弃返回列表。
 
 ### 初始化时序（三步序列）
 
 ```
 MobileStore.InitializeAsync
-  └── MobileInitService.InitializeAsync(table, ct)
+  ├── 创建 MobileServiceHub 与内部服务
+  ├── RunBackgroundTask(runtimeCt => MobileInitService.InitializeAsync(table, runtimeCt))
+  └── 返回，游戏主 Loading 继续
+        │
+        └── MobileInitService.InitializeAsync(table, runtimeCt)
         │
         ├─ 1. new MobileRuntimeContext()；new UniTaskCompletionSource<bool>()
         │
@@ -195,7 +199,7 @@ MobileStore.InitializeAsync
         │
         ├─ 4. 构建 m_PendingProductDefs（遍历 table.Products → 去重 ProductID → ToUnityProductType 转换）
         │
-        ├─ 5. await ExtendedService.Connect()
+        ├─ 5. await ExtendedService.Connect().AttachExternalCancellation(runtimeCt)
         │     → 成功 → OnStoreConnected（由 MobileStoreService 路由）
         │               ExtendedService.RegisterProductCallbacks()（StoreService 先注册商品级回调）
         │               MarkConnected()
@@ -203,11 +207,11 @@ MobileStore.InitializeAsync
         │               IsReady=true
         │               m_InitTcs.TrySetResult(true)
         │               MobileProductFetchCoordinator.StartFetchIfAllowed()
-        │               → OnProductsFetched 清理旧失败 SKU，并按 Controller 状态恢复仍缺失的 pending SKU，标记 ProductFetchState=Succeeded 后补跑延迟权益刷新并调用 FetchPurchases()
+        │               → OnProductsFetched 清理旧失败 SKU，并按 Controller 状态恢复仍缺失的 pending SKU，标记 ProductFetchState=Succeeded 后调用 RequestExistingPurchasesFetch()
         │               → OnProductsFetchFailed 先物化失败快照，只记录 StoreController 当前仍缺失的 SKU；整体失败时按 MobileStoreConfig.ProductFetchRetryDelaysMs 自动重试，默认 2s/5s/10s；任一成功回调会取消后续重试
-        │               → OnPurchasesFetched 路由到 RestoreService 恢复 PendingOrder 票据
+        │               → OnPurchasesFetched 路由到 RestoreService，缓存票据后补跑延迟权益刷新或完整补单
         │     → Connect 抛出异常 → FailInitialization(StoreConnectException)
-        │     → 取消 → FailInitialization(InitializationCanceled)
+        │     → Store Dispose 取消运行期令牌 → FailInitialization(InitializationCanceled)
         │
         ├─ 6. 等待 m_InitTcs.Task
         │     → OnStoreConnected 触发：MarkReady()，IsReady=true，m_InitTcs.TrySetResult(true)
@@ -230,7 +234,7 @@ MobileInitService 在旧版中直接持有 `IStoreController / IExtensionProvide
 
 **误区 3：OnProductsFetchFailed 会回退初始化结果**
 
-商品拉取已经从初始化阻塞链路中拆出，并进一步收口到 `MobileProductFetchCoordinator`。`OnProductsFetchFailed` 不会把已经连接成功的商店回退为初始化失败；它会先物化 Unity IAP 失败回调，再检查 `StoreController` 当前是否已能查询到对应商品，只把仍缺失的 SKU 写入 `m_UnavailableSkus`。整体失败时会按 `MobileStoreConfig.ProductFetchRetryDelaysMs` 自动重试，默认 2s / 5s / 10s 共 3 次。配置为空或包含非正数时回落默认值并打印中文警告日志。若任一轮收到 `OnProductsFetched`，或失败回调中的失败数量小于本轮请求数量，即认为至少有商品信息已可用，取消后续重试并触发 FetchPurchases 和延迟权益刷新。成功态下迟到的失败回调只补记录真实缺失 SKU，不回退状态、不重试、不重复触发商品成功后置流程。启动期不会调用 `RestoreTransactions`，该平台 Restore 入口仅在用户主动恢复购买时触发。
+商品拉取已经从初始化阻塞链路中拆出，并进一步收口到 `MobileProductFetchCoordinator`。`OnProductsFetchFailed` 不会把已经连接成功的商店回退为初始化失败；它会先物化 Unity IAP 失败回调，再检查 `StoreController` 当前是否已能查询到对应商品，只把仍缺失的 SKU 写入 `m_UnavailableSkus`。整体失败时会按 `MobileStoreConfig.ProductFetchRetryDelaysMs` 自动重试，默认 2s / 5s / 10s 共 3 次。配置为空或包含非正数时回落默认值并打印中文警告日志。若任一轮收到 `OnProductsFetched`，或失败回调中的失败数量小于本轮请求数量，即认为至少有商品信息已可用，取消后续重试并发起 FetchPurchases；延迟权益刷新必须等已有购买回调缓存票据后再补跑。成功态下迟到的失败回调只补记录真实缺失 SKU，不回退状态、不重试、不重复触发商品成功后置流程。启动期不会调用 `RestoreTransactions`，该平台 Restore 入口仅在用户主动恢复购买时触发。
 
 **误区 4：同一个平台 ProductID 需要重复注册给 Unity IAP**
 
@@ -252,16 +256,18 @@ Unity IAP 同一时刻只允许一个商品拉取请求。`MobileProductFetchCoo
 // 以下为 MobileStore.InitializeAsync 内部调用片段，说明 InitService 的典型用法
 // （业务层无需直接使用 InitService，通过 MobileStore 生命周期管理）
 
-// 1. Hub 构建完成后，调用 InitService 启动初始化
-bool ok = await m_Hub.InitService.InitializeAsync(table, ct);
-if (!ok)
+// 1. Hub 构建完成后，以 Store 运行期后台任务启动 InitService
+m_Hub.RunBackgroundTask(async runtimeCt =>
 {
-    // Unity IAP 初始化失败，MobileStore.IsStoreReady 返回 false
-    // 支付调用会被 PayGuardAsync 拦截，返回 StoreInitFailed 错误码
-    return;
-}
+    bool ok = await m_Hub.InitService.InitializeAsync(table, runtimeCt);
+    if (!ok)
+    {
+        // Unity IAP 初始化失败，MobileStore.IsStoreReady 保持 false
+    }
+}, "Unity IAP 商店初始化");
 
-// 2. InitService.IsReady == true 后，ExtendedService.IsAttached 也一定为 true
+// 2. MobileStore.InitializeAsync 无需等待连接；连接成功前支付由 IsStoreReady 拦截
+// 3. InitService.IsReady == true 后，ExtendedService.IsAttached 也一定为 true
 // MobileStore.IsStoreReady = InitService.IsReady && ExtendedService.IsAttached
 ```
 

@@ -33,6 +33,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private UniTask<AdResult> ShowInterAsync(string placementId, CancellationToken ct)
         {
             m_InterTcs = new UniTaskCompletionSource<AdResult>();
+            BeginFullscreenImpression(AdFormat.Interstitial, placementId);
             MaxSdk.ShowInterstitial(placementId);
             return m_InterTcs.Task;
         }
@@ -83,7 +84,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void OnInterDisplayed(string adUnitId, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX Interstitial 展示成功回调：placement={adUnitId}，network={info?.NetworkName}。");
-            TrackAdShow(AdFormat.Interstitial, adUnitId);
+            TrackAdShow(AdFormat.Interstitial, adUnitId, MarkFullscreenDisplayed(AdFormat.Interstitial, adUnitId));
             RaiseShowCompleted(new AdResult
             {
                 Success = true,
@@ -104,6 +105,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void OnInterDisplayFailed(string adUnitId, MaxSdkBase.ErrorInfo err, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX Interstitial 展示失败回调：placement={adUnitId}，network={info?.NetworkName}，code={(int)err.Code}，message={err.Message}。");
+            AbandonFullscreenImpression(AdFormat.Interstitial, adUnitId);
             var result = new AdResult
             {
                 Success = false,
@@ -165,7 +167,10 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Revenue = info.Revenue,
                 Currency = "USD",
                 Precision = info.RevenuePrecision,
-            }, () => TrackMaxRevenue(AdFormat.Interstitial, adUnitId, info));
+            }, () => TrackMaxRevenue(AdFormat.Interstitial,
+                adUnitId,
+                info,
+                RecordFullscreenRevenue(AdFormat.Interstitial, adUnitId)));
         }
 #endif
     }

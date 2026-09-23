@@ -222,6 +222,11 @@ namespace NovaFramework.Editor
         private List<EditorUtil.Config.SDKPluginScanner.PluginConfigEntry> m_PluginTypeCache = new();
 
         /// <summary>
+        /// SDK Editor 程序集为 Config 面板声明的快捷动作缓存。
+        /// </summary>
+        private List<EditorUtil.Config.SDKPluginScanner.PluginPanelActionEntry> m_PluginPanelActionCache = new();
+
+        /// <summary>
         /// 扫描到的 Kit Config 条目缓存（含类型 + DisplayName）。
         /// </summary>
         private List<EditorUtil.Config.KitConfigScanner.KitConfigEntry> m_KitTypeCache = new();

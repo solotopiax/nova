@@ -11,6 +11,7 @@
 
 ### Changed
 
+- 最低 IAP Core 依赖提升至 `0.1.16`，与已删除的旧 protected Store 打点契约保持版本边界一致；本包仍属于禁发包。
 - `IIAPVoucherCapable` 改为 `Wallet / RefreshWalletAsync / Quote` 最小能力接口。
 - `IAPVoucherRequest` 只能由 Ready `VoucherQuote` 构造，业务层不再拼装协议 payload。
 - Voucher protobuf 统一使用公共 Header，并正式生成与 `.proto` 一致的 C#；状态 1/3 均按成功处理。

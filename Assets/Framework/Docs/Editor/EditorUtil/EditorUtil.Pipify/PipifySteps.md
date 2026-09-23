@@ -103,7 +103,7 @@
 
 两个 Step 的 `Target` 在 PipifyWindow 中均为只读字段，执行前强制同步 Unity 当前 `EditorUserBuildSettings.activeBuildTarget`；旧 `ParamsJson` 与 CLI 的 `Target` 值不生效。当前 BuildTarget 未映射为 Nova Android / iOS / WebGL 时，Step 会在构建前中断。`EditorUtil.BundleBuilder.BuildAssetBundle` / `BuildRawFileBundle` 的直接 API 仍允许调用方显式传 `Target`，该兼容语义不适用于 Pipify。
 
-当当前目标为 WebGL 时，两个 Step 的 `BundledCopyOption` 只显示 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll`；选择按 Tag 拷贝时显示 `BundledCopyParams`。选项下方会按当前选择提示适用的 `OfflinePlayMode` / `HostPlayMode`、需要随网页或 CDN 部署的资源，以及选错后的加载影响。`OnlyCopyAll` / `OnlyCopyByTags` 会被拒绝，因为它们可能残留旧首包文件。`None` 构建成功后会清理目标 Package 的旧首包目录；运行时依据 YooAsset 官方 `BuiltinCatalog.bytes` 是否存在选择纯 CDN 或 StreamingAssets + CDN 文件系统组合。
+当当前目标为 WebGL 时，两个 Step 的 `BundledCopyOption` 只显示 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll`；选择按 Tag 拷贝时显示 `BundledCopyParams`。选项下方会按当前选择提示适用的 `OfflinePlayMode` / `HostPlayMode`、需要随网页或 CDN 部署的资源，以及选错后的加载影响。`OnlyCopyAll` / `OnlyCopyByTags` 会被拒绝，因为它们可能残留旧首包文件。`ClearAndCopyAll` / `ClearAndCopyByTags` 的先清后拷由 YooAsset 构建管线负责；`None` 构建成功后由 Nova 精确清理 `Assets/StreamingAssets/yoo/<PackageName>` 及其 `.meta`，不会清空整个 `StreamingAssets`。运行时依据 YooAsset 官方 `BuiltinCatalog.bytes` 是否存在选择纯 CDN 或 StreamingAssets + CDN 文件系统组合。
 
 ### 5. Player 打包
 
@@ -164,8 +164,8 @@
 - `WebhookUrl`：窗口标签为 `Webhook URL`，使用密码框遮罩，但仍以明文保存在 PipifySettingsSO
 - `MessageText`：窗口标签为“文案”，使用 3–8 行自适应 TextArea，可直接输入并保留换行排版
 
-文案支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` / `{Time}`。发送前 `{Platform}` 取 Unity 当前 Active BuildTarget 映射的 `PlatformType`（即当前激活 `ConfigMasterSO.CurrentPlatform`），`{Channel}` 取当前激活 `ConfigMasterSO.CurrentChannel`，从 canonical `Nova.prefab` 读取 YooAsset 默认资源包名，
-Version 使用 `Application.version`，Time 使用实际发送时刻并格式化为 `yyyy-MM-dd-HH-mm-ss`。
+所有 Pipify Step 的字符串参数均由 Runner 在调用前统一解析 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` / `{Time}`。其中 `{Platform}` 取 Unity 当前 Active BuildTarget 映射的 `PlatformType`（即当前激活 `ConfigMasterSO.CurrentPlatform`），`{Channel}` 取当前激活 `ConfigMasterSO.CurrentChannel`，从 canonical `Nova.prefab` 读取 YooAsset 默认资源包名，
+Version 使用 `Application.version`，Time 使用该 Step 的统一解析时刻并格式化为 `yyyy-MM-dd-HH-mm-ss`。替换发生在 CLI 临时覆盖之后，只修改本次调用参数，不回写 ParamsJson。
 参数区 HelpBox 会直接展示这些规则；未知占位符保持原样。
 
 Step 发送飞书标准 `msg_type=text` 请求。参数为空、URL 无效、HTTP 失败、响应缺少业务码或业务码非 0 时均抛错中断；日志不会输出完整 Webhook URL。

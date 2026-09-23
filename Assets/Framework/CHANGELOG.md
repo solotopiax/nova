@@ -2,6 +2,40 @@
 
 ## [Unreleased]
 
+## [0.6.33] - 2026-09-23
+
+### Breaking
+
+- 删除已完成使命的 BestHTTP 自动卸载迁移器、旧 adapter 编译桥与条件公开兼容 API；框架内部 HTTP 传输契约恢复为 `IHttpTransport`，仍固定使用 UnityWebRequest。仍装有旧 BestHTTP/TLS 包的消费项目需先自行移除这些依赖再升级。
+- 删除 Config schema 0→1、Globals v1→v2、旧序列化字段别名与 Cloudflare `PurgeURL` 兼容逻辑；现存 Sample 配置已统一保存为当前结构，旧项目必须先使用历史 Framework 完成迁移或重新生成配置。
+
+### Added
+
+- ConfigWindow 支持由 SDK Editor 程序集声明配置面板快捷动作，在不建立 Framework 到具体 SDK 依赖的前提下，为 SDK 专属配置窗口提供字段上方入口。
+- Pipify 每个 Step 新增内存复制入口，“+”菜单顶部可将完整 Step 配置粘贴到任意 Batch，并支持重复粘贴且不与来源共享编辑状态。
+
+### Changed
+
+- Pipify Runner 在 CLI 覆盖和 Active BuildTarget 同步后，统一展开所有 Step 参数快照中的 `{Platform}`、`{Channel}`、`{Package}`、`{Version}` 与 `{Time}`，不再要求各 Step 重复实现。
+
+### Fixed
+
+- 更正 0.6.31 / 0.6.32 历史发布记录：FileFragment 的版本化完整性封套与崩溃恢复实际随 0.6.32 发布。
+- UPM Sample 发布链路不再复制含本机绝对路径的可重建 `nova-export-manifest.json`，并在临时副本中脱敏 DataMaster 密钥、Android keystore 路径及 Office 作者/时间元数据；signed tarball 增加开发期描述符残留门禁。
+- RuntimeDebugger 支持由 `DebugComponent` 注入 UGUI 字体；WebGL / 微信小游戏可绑定实际包含中文字形的字体，避免 Editor 正常而 Player 中文缺字。
+- WebGL Host 的 `BuiltinCatalog.bytes` 布局探测在纯 CDN 模式未命中时改由 Nova 输出明确的 Warning 并继续使用纯 `WebNetwork`；开发者工具 Network 面板仍保留真实 HTTP 404。
+- `nova-create-sample` 现会为新 Sample Scene 自动生成与 Runtime asmdef 同命名空间的 `TableTablesBinding` override，并同步重命名可选的 Running 程序集及 DLL 产物；MainDemo Binding 模板缺失时立即中止，避免生成带错误类型或重复程序集名的 Sample。
+- Pipify Step 行内的参数配置、复制和删除按钮改为垂直居中，修复控件整体轻微上偏。
+- HybridCLR 在 WebGL 生成 AOT 裁剪 DLL 时，若 Player Settings 指向不存在的 `PROJECT:` 模板，会仅在临时 script-only Player 构建期间改用 Unity 默认模板并在结束后恢复，避免无关的网页模板校验阻断 `GenerateAll`。
+- WebGL Bundle/RawFile 使用 `BundledCopyOption=None` 时改为按 Unity 资产语义删除当前 Package 的旧 `StreamingAssets/yoo/<PackageName>` 及 `.meta`，避免空目录元数据残留导致纯 CDN 导出误判；不会清空整个 `StreamingAssets`。
+- Pipify 在执行前统一拦截包含未注册 Step 的 Batch，避免前序步骤已执行后才失败；窗口会以红色标记 Missing Step、禁用运行按钮，并在按钮下方提示安装并确保对应 Package 编译成功或删除缺失步骤。
+- SDK 运行时插件发现排除 NUnit 与 Unity Test Runner 测试程序集，避免 Editor Play 把测试夹具识别为真实插件并输出误导性配置声明警告。
+- HybridCLR Sample 自动同步缺少当前平台源产物时，日志改为“HybridCLR 热更新 DLL 同步”，并明确 Config 中的 DLL 列表只是复制与加载映射，不代表 DLL 已生成。
+- SDK 插件在 Unity Editor 中明确报告平台不支持时改为警告并跳过，保持插件不可用且继续初始化其他插件，不再记录误导性的初始化错误。
+- ProjectGuard 新增业务程序集目标平台检查；Demo 的 Runtime asmdef 明确排除当前平台时，会在进入 Play 前说明平台不受支持，`ProcedureLoadDll` 也会在已配置程序集未进入运行环境时给出平台与 asmdef 排查方向，不再误报为仅缺少 `StartupGameDlls` 配置；同时为依赖移动广告链的 AdDemo 补齐 WebGL 排除约束。
+- WebGL 文件系统同步改为串行合并重叠的 `FS.syncfs` 请求，并将 IndexedDB 同步失败写入明确日志；FileFragment 只在正式分片完成替换后提交同步，避免一次保存重复发起异步落盘。
+- WebGL 文件系统同步在微信小游戏等无 IndexedDB 的宿主中改为会话内受控降级，不再调用宿主不兼容的 `FS.syncfs` 错误路径并终止 Unity 主循环。
+
 ## [0.6.32] - 2026-09-20
 
 ### Changed

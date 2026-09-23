@@ -62,15 +62,14 @@ public static void Set(ConfigMasterSO master);
 `ReconcileScene` 会忽略 `BuildPipeline.isBuildingPlayer` 期间由 Unity 构建流程产生的内部场景加载，
 避免 HybridCLR 临时 BuildPlayer 或正式 Player 构建覆盖已经冻结的 ConfigMaster/PipifySettings。
 
-`Globals.json` v2 保留旧字段作为当前值，并新增：
+`Globals.json` schema 2 保存以下工作区引用：
 
 - `pipifySettingsGuid` / `pipifySettingsPathHint`
 - `projectConfigMasterGuid` / `projectConfigMasterPathHint`
 - `projectPipifySettingsGuid` / `projectPipifySettingsPathHint`
 - `activeSampleRoot`
 
-旧版只有 ConfigMaster 两字段时仍可读取。若旧值指向 Sample，只在工程内恰有一个非 Sample 候选时迁移；多个候选不会按 GUID 顺序猜测。
-高于当前支持版本的 `schemaVersion` 会拒绝读取和改写，避免旧框架覆盖未来字段。
+只接受当前 schema 2。低于或高于当前版本的文件都会拒绝读取和改写，避免用不完整字段恢复工作区或覆盖未知字段。
 
 ### Events
 

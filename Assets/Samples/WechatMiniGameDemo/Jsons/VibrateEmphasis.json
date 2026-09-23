@@ -1,0 +1,20 @@
+﻿{
+  "Demo_VibrateEmphasis": [
+    {
+      "Name": "Demo_Tap",
+      "Amplitude": 0.5,
+      "Frequency": 0.5,
+      "PreDuration": 0,
+      "Interval": 0.05,
+      "Order": 1
+    },
+    {
+      "Name": "Demo_Knock",
+      "Amplitude": 0.9,
+      "Frequency": 0.7,
+      "PreDuration": 0,
+      "Interval": 0.08,
+      "Order": 1
+    }
+  ]
+}

@@ -49,12 +49,22 @@ public static class RuntimeDebugger
         public int MaximumConsoleEntries { get; set; }
 
         /// <summary>
+        /// RuntimeDebugger 内所有 UGUI Text 使用的字体。为 null 时保留 Prefab 原字体。
+        /// </summary>
+        public Font TextFont { get; set; }
+
+        /// <summary>
         /// 点击上传日志按钮时触发，为 null 时按钮不显示。
         /// </summary>
         public Action<string> UploadLogCallback { get; set; }
     }
 
     public static Type LogTagType { get; private set; }
+
+    /// <summary>
+    /// RuntimeDebugger 动态实例统一使用的 UGUI 字体。
+    /// </summary>
+    public static Font TextFont { get; private set; }
 
     /// <summary>
     /// 从 FieldInfo 解析标签描述文字的委托。
@@ -91,6 +101,7 @@ public static class RuntimeDebugger
             LogTagDescriptionResolver = options.LogTagDescriptionResolver;
             if (options.MaximumConsoleEntries > 0)
                 NovaFramework.Runtime.Settings.Instance.MaximumConsoleEntries = options.MaximumConsoleEntries;
+            TextFont = options.TextFont;
             if (options.UploadLogCallback != null)
                 UploadLogCallback = options.UploadLogCallback;
         }

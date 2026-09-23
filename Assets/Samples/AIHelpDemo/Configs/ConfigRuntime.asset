@@ -45,7 +45,7 @@ MonoBehaviour:
     - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
     - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
     - m_AssetLocation: NovaFramework.SDK.AIHelp.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_AssetLocation: NovaFramework.Sdk.Aihelp.Samples.Runtime.dll
   Custom:
     Entries:
@@ -67,10 +67,12 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 8085689214958567690
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -82,6 +84,7 @@ MonoBehaviour:
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
     - rid: 8085689214958567691
       type: {class: AIHelpPluginConfig, ns: NovaFramework.SDK.AIHelp.Runtime, asm: NovaFramework.SDK.AIHelp.Runtime}
       data:
@@ -101,6 +104,7 @@ MonoBehaviour:
         m_AppKey: YOUR_APPLOVIN_SDK_KEY
         m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
         m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
         m_RVPlacementIds:
         - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
         m_InterPlacementIds:

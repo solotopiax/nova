@@ -32,7 +32,6 @@ CDN 内容部署与缓存清理的编辑态配置 DTO。仅随 `ConfigMasterSO` 
 | `RemotePathSuffix` | `string` | `null` | 拼接在固定 OSS 前缀后的可编辑远端目录后缀；支持 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` |
 | `AutoLinkLatestAssetCheckVersionFiles` | `bool` | `true` | 白名单部署是否以 `.bytes` 配置路径的父目录为锚点，自动关联最新完整版本的 `.bytes/.hash/.version` 三文件；独立于热更资源开关并随 CDN 维度保存 |
 | `ZoneID` | `string` | `null` | Cloudflare Zone ID；当前页面可编辑字段 |
-| `PurgeURL` | `string` | `null` | 旧版 Cloudflare Zone purge API 完整 URL；隐藏保留，仅用于已有资产兼容迁移 |
 | `Token` | `string` | `null` | Cloudflare API Token；在 `ConfigMasterSO` 中以明文序列化 |
 | `CachePaths` | `string` | `null` | 英文逗号、分号或换行分隔的待清理缓存 URL（`[TextArea(3, 8)]`） |
 
@@ -49,7 +48,7 @@ CDN 内容部署与缓存清理的编辑态配置 DTO。仅随 `ConfigMasterSO` 
 - 自动关联不比较目录名：YooAsset 的 `PackageVersion` 是任意字符串。候选目录必须同时包含匹配的 `.version`、`.bytes`、`.hash` 和 `.report`，且 report 引用的全部 bundle 文件存在；按 `.version` 的 `LastWriteTimeUtc` 选择最新，多个候选时间完全相同时明确报歧义
 - 版本检查文件位置与热更资源目录会合并进入“批量部署到 CDN”的上传计划；本地文件或目录错误会在对话框和日志中包含解析后的具体路径
 - `CachePaths` 为多行文本（`[TextArea(3, 8)]`），支持英文逗号 `,`、分号 `;` 或换行分隔多个待清理 URL
-- `ZoneID` 优先用于构造 Cloudflare purge 地址；`PurgeURL` 仅为旧资产兼容字段，不在页面显示
+- `ZoneID` 用于构造固定格式的 Cloudflare purge 地址
 - `PresetOSSPath` 为固定前缀，`RemotePathSuffix` 为可编辑后缀，两者拼接后再叠加 `LocalDirectory` 下各文件的相对路径得到最终 OSS Object Key（见 `EditorUtil.CDN.CombineObjectKey`）
 
 ---

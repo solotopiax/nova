@@ -1,0 +1,82 @@
+﻿{
+  "NetworkCmds": [
+    {
+      "Name": "TGAServerUrl",
+      "Way": "HTTP_URL",
+      "HostKey": "TGAServer",
+      "Path": ""
+    },
+    {
+      "Name": "TGAReport",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/report-tga"
+    },
+    {
+      "Name": "AppCustomConfig",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/common/app-config"
+    },
+    {
+      "Name": "GameAccountLogin",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/user/loginV1"
+    },
+    {
+      "Name": "GameAccountBind",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind"
+    },
+    {
+      "Name": "GameAccountBindConflict",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind/conflict"
+    },
+    {
+      "Name": "GameAccountBindResolve",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/account/bind/resolve"
+    },
+    {
+      "Name": "WeChatMiniGameVerifyLogin",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/wechat-minigame/login/verify"
+    },
+    {
+      "Name": "WeChatMiniGameGeneratePaymentSignature",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/wechat-minigame/payment/signature"
+    },
+    {
+      "Name": "WeChatMiniGameVerifyPaymentOrder",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/wechat-minigame/payment/verify"
+    },
+    {
+      "Name": "WeChatMiniGameQueryPaymentOrders",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/wechat-minigame/payment/orders"
+    },
+    {
+      "Name": "WeChatMiniGameRecordSubscriptionResults",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/wechat-minigame/subscription/results"
+    },
+    {
+      "Name": "WeChatMiniGameCheckTextContent",
+      "Way": "HTTP_POST",
+      "HostKey": "GameServer",
+      "Path": "/v1/wechat-minigame/security/text"
+    }
+  ]
+}

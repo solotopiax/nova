@@ -28,11 +28,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public Dictionary<string, ThirdPayOrderRecord> Orders;
 
         /// <summary>
-        /// 当前账号的渠道参数（CID），登录成功后从服务端拉取一次或由业务层手动注入。
-        /// </summary>
-        public string ChannelParams;
-
-        /// <summary>
         /// 当前账号最近一次有效的广告国家码，作为 Billing 与 iOS Storefront 均不可用时的 ThirdPay 兜底来源。
         /// </summary>
         public string AdCountryCode;
@@ -55,11 +50,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             if (Orders == null)
             {
                 Orders = new Dictionary<string, ThirdPayOrderRecord>();
-            }
-
-            if (ChannelParams == null)
-            {
-                ChannelParams = string.Empty;
             }
 
             if (AdCountryCode == null)

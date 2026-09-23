@@ -31,13 +31,12 @@
 | **大版本检查 / APP 强更** | [AppComponent.md · CheckAsync+推荐放弃记录+DownloadAsync+OpenStoreAsync](Runtime/Modules/App/AppComponent.md) → [AppManagerConfig.md · 超时+下载路由+规则](Runtime/Modules/App/Definitions/AppManagerConfig.md) |
 | **加载运行时配置（AB 加载 ConfigRuntimeSO）** | [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) → [ConfigManager.md · AB加载+解析+PluginConfig索引](Runtime/Modules/Config/ConfigManager.md) |
 | **加载 Excel/CSV 表格数据（Luban Project）** | [TableManager.md · 多 Binding 加载](Runtime/Modules/Table/TableManager.md) → [TableComponentInspector.md · 多 Project 与导出描述](Editor/Inspectors/TableComponentInspector/TableComponentInspector.md) → [EditorUtil.Table.Exporter.md · 多导出描述透传](Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) |
-| **编辑 Config SO / 导出 ConfigRuntime**（ConfigWindow 流程） | [ConfigWindow.md · 可选编辑平台+Active BuildTarget 导出门禁](Editor/Windows/ConfigWindow.md) → [ConfigMasterSO.md · Editor 设计态数据](Editor/Config/ConfigMasterSO.md) → [SchemaMigration.md · 旧资产迁移](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md) → [ConfigRuntimeSO.md · Runtime 快照](Runtime/Modules/Config/ConfigRuntimeSO.md) → [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) → [EditorUtil.Config.WorkspaceActive.md · 激活 Master 锚点](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) → [EditorUtil.Config.YooAssetInjector.md · YooAsset 注入](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
+| **编辑 Config SO / 导出 ConfigRuntime**（ConfigWindow 流程） | [ConfigWindow.md · 可选编辑平台+Active BuildTarget 导出门禁](Editor/Windows/ConfigWindow.md) → [ConfigMasterSO.md · Editor 设计态数据](Editor/Config/ConfigMasterSO.md) → [SchemaGuard.md · 当前结构版本保护](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaGuard.md) → [ConfigRuntimeSO.md · Runtime 快照](Runtime/Modules/Config/ConfigRuntimeSO.md) → [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) → [EditorUtil.Config.WorkspaceActive.md · 激活 Master 锚点](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) → [EditorUtil.Config.YooAssetInjector.md · YooAsset 注入](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
 | **Config 面板按平台/渠道/模式分别配置**（per-panel 可勾选维度） | [PanelDimensionMask.md · Editor 掩码三轴+IsGlobal](Editor/Config/Definitions/PanelDimensionMask.md) → [EditorUtil.Config.DimensionProjector.md · 三操作+双路径](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) → [EditorUtil.Config.DimensionalResolver.md · 只读取数+回落逻辑](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) |
 | **新增 SDK PluginConfig**（ISDKPluginConfig + 自动注入） | [PluginBase.md · PluginBase<TConfig>泛型基类+自动注入](Runtime/Modules/SDK/Definitions/PluginBase.md) → [ISDKPluginConfig.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) → [EditorUtil.Config.SDKPluginScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) → [PlatformChannelEntry.md · Editor 矩阵行结构](Editor/Config/Definitions/PlatformChannelEntry.md) |
 | **新增 Kit 配置（IKitConfig + ConfigWindow 配置）** | [IKitConfig.md · marker 接口](Runtime/Modules/Config/Definitions/IKitConfig.md) → [KitConfigMissingException.md · 缺失异常](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) → [EditorUtil.Config.KitConfigScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.md) → [ConfigWindow.md · Kit 配置一级组](Editor/Windows/ConfigWindow.md) |
 | **构建 AssetBundle / RawFile (CI/编辑器菜单)** | [EditorUtil.BundleBuilder.md · YooAsset Scriptable/RawFile 构建封装](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) → [PipifySteps.md · `bundlebuilder.build` / `bundlebuilder.build_raw_file` Step](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) |
 | **管理私有 UPM 包（安装/升级/卸载/搜索/UPM 联动）** | [PlugPalsWindow.md · Verdaccio 包管理窗口](Editor/Windows/PlugPalsWindow.md) → [EditorUtil.PlugPals.md · 工具层能力](Editor/EditorUtil/EditorUtil.PlugPals/EditorUtil.PlugPals.md) |
-| **升级后清理旧 BestHTTP / DoH 依赖** | [LegacyNetworkPackageMigration.md · 自动移除旧包、宏与生成配置](Editor/Migrations/LegacyNetworkPackageMigration.md) |
 | **检查 UPM 包是否有新版本（启动弹窗 / 手动打开）** | [EditorUtil.CheckUpdate.md · 版本检查工具](Editor/EditorUtil/EditorUtil.CheckUpdate/EditorUtil.CheckUpdate.md) → [CheckUpdateWindow.md · 更新提示窗口](Editor/Windows/CheckUpdateWindow.md) |
 | **Inspector GUI 绘制工具** | [EditorUtil.Draw.md · 全方法签名](Editor/EditorUtil/EditorUtil.Draw/EditorUtil.Draw.md) |
 | **持久化存储（读写数据）** | [PersistComponent.md · 直接访问属性](Runtime/Modules/Persist/PersistComponent.md) → [PlayerPrefsManager.md](Runtime/Modules/Persist/PlayerPrefsManager.md) / [FileFragmentManager.md](Runtime/Modules/Persist/FileFragmentManager.md) / [SQLiteManager.md](Runtime/Modules/Persist/SQLiteManager.md) |
@@ -387,7 +386,7 @@
 | [DiskCheckEventData.md](Runtime/Modules/Debug/DiskCheckEventData.md) | 磁盘检测事件数据 |
 | [DiskCheckingConfig.md](Runtime/Modules/Debug/Windows/DiskCheckingConfig.md) | 磁盘检测配置（嵌套于 DebugComponent） |
 | [DebuggerActiveType.md](Runtime/Modules/Debug/Definitions/DebuggerActiveType.md) | 调试器启用策略枚举（AlwaysEnable / Development / Editor / Disable） |
-| [RuntimeDebugger.md](Runtime/Modules/Debug/Debugger/RuntimeDebugger.md) | Debug 模块内置调试器门面（含 Console rich text 预览规则） |
+| [RuntimeDebugger.md](Runtime/Modules/Debug/Debugger/RuntimeDebugger.md) | Debug 模块内置调试器门面（含 Console rich text 预览与 UGUI 字体覆盖规则） |
 | [DebugOptions.md](Runtime/Modules/Debug/Debugger/DebugOptions.md) | 运行时调试选项容器 |
 | [DebuggerAssets.md](Runtime/Modules/Debug/Debugger/DebuggerAssets.md) | 调试器资源目录与资源迁移同步规则 |
 
@@ -528,7 +527,7 @@
 | [EditorUtil.Config.Validator.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Validator.md) | AppConfigs/PluginConfig 必填字段校验（Severity 枚举 + ValidationIssue 结构体；支持三维 Platform×Channel×DevelopMode） |
 | [EditorUtil.Config.ActivePlatform.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.ActivePlatform.md) | Unity Active BuildTarget 到 Nova 编辑期执行 PlatformType 的实时唯一映射与生产操作门禁入口 |
 | [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) | 将 ConfigMasterSO 三维组合导出为 ConfigRuntimeSO.asset |
-| [EditorUtil.Config.SchemaMigration.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaMigration.md) | 版本化迁移旧 ConfigMasterSO，并重导出关联 Runtime 快照 |
+| [EditorUtil.Config.SchemaGuard.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaGuard.md) | 检查 ConfigMasterSO 结构版本，只接受当前版本且不自动迁移 |
 | [EditorUtil.Config.RuntimeProvider.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.md) | 从 AssetDatabase 按三维（Platform×Channel×DevelopMode）读取 ConfigRuntimeSO（不缓存，替代已删除的 ConfigLookup）；GetChannel() 新增 |
 | [EditorUtil.Config.WorkspaceActive.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) | 工程级激活 ConfigMaster 锚点；通过 Globals.json 持久化 GUID，四段回退策略，根除多 Sample 共存命中歧义 |
 | [EditorUtil.Config.YooAssetInjector.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) | Asset 模块编辑期注入层；按 ConfigMaster 路径字段注入 YooAssetSettings / 加载 BundleCollectorSetting，替代全工程扫描 |
@@ -582,7 +581,7 @@
 | [UIComponentInspector.md](Editor/Inspectors/UIComponentInspector/UIComponentInspector.md) | UI Inspector |
 | [NetworkComponentInspector.md](Editor/Inspectors/NetworkComponentInspector/NetworkComponentInspector.md) | 网络 Inspector |
 | [ProcedureComponentInspector.md](Editor/Inspectors/ProcedureComponentInspector/ProcedureComponentInspector.md) | 流程管理 Inspector |
-| [DebugComponentInspector.md](Editor/Inspectors/DebugComponentInspector/DebugComponentInspector.md) | Debug Inspector |
+| [DebugComponentInspector.md](Editor/Inspectors/DebugComponentInspector/DebugComponentInspector.md) | Debug Inspector（激活策略、日志条数、RuntimeDebugger 字体、磁盘监控与 Android 工具） |
 | [PersistComponentInspector.md](Editor/Inspectors/PersistComponentInspector/PersistComponentInspector.md) | 持久化 Inspector |
 | [SDKComponentInspector.md](Editor/Inspectors/SDKComponentInspector/SDKComponentInspector.md) | SDK Inspector（Manager 选择器 + Plugin 条目分组列表） |
 | [PluginEntriesDrawer.md](Editor/Inspectors/SDKComponentInspector/PluginEntriesDrawer.md) | Plugin 条目绘制器（反射扫描 + 分组渲染 + Missing 清理） |

@@ -31,6 +31,11 @@ namespace NovaFramework.Editor
         private SerializedProperty m_MaximumConsoleEntries;
 
         /// <summary>
+        /// RuntimeDebugger 的 UGUI 字体属性。
+        /// </summary>
+        private SerializedProperty m_RuntimeDebuggerFont;
+
+        /// <summary>
         /// DebugManager 类型名称属性。
         /// </summary>
         private SerializedProperty m_CurManagerTypeName;

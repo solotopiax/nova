@@ -115,6 +115,8 @@ namespace NovaFramework.Editor
                     .FirstOrDefault(line => line.StartsWith("用户提示：", System.StringComparison.Ordinal));
                 if (!string.IsNullOrEmpty(explicitSummary))
                     return explicitSummary.Substring("用户提示：".Length);
+                if (issue?.RuleId == "NOVA-ASSEMBLY-001")
+                    return "当前 Demo 不支持 Unity 当前选择的平台。";
                 if (message.Contains("EnabledSDKConfigs"))
                     return "已启用的 SDK 配置还没有同步到游戏。";
                 if (message.Contains("EnabledKitConfigs"))
@@ -139,6 +141,7 @@ namespace NovaFramework.Editor
             private static string BuildUserFacingIssueCategory(NovaGuardIssue issue)
             {
                 string message = issue?.Message ?? string.Empty;
+                if (issue?.RuleId == "NOVA-ASSEMBLY-001") return "assembly-platform";
                 if (message.Contains("EnabledSDKConfigs")) return "config-sdk";
                 if (message.Contains("EnabledKitConfigs")) return "config-kit";
                 if (message.Contains("PrivacyConfigs")) return "config-privacy";

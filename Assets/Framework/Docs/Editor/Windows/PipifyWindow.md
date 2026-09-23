@@ -18,7 +18,7 @@ Pipify 流水线配置与执行窗口，用于管理 Batch 列表、配置步骤
 |------|----|------|
 | `PipifyWindow.cs` | `PipifyWindow` | 主文件：`[MenuItem]` 入口 `Open()` |
 | `PipifyWindow.Visitors.cs` | `PipifyWindow` | 字段声明：常量（含 TopBar 布局常量 / `c_LeftPanelWidth` / `c_LeftRowHeight`）、实例字段（`m_Settings` / `m_SettingsSO` / `m_IsDirty` / `m_SelectedBatchIndex` / `m_Filter` / `m_LeftScroll` / 样式字段） |
-| `PipifyWindow.Methods.cs` | `PipifyWindow` | 总调度 + Batch 辅助：`OnEnable` / `TryAutoBindSettings` / `OnGUI` / `DrawBody` / `DrawMainTitle` / `EnsureStyles` / `RebindSettings` / `OnClickCreate` / `OnClickSave` / `OnClickRevealInFinder` / `ConfirmDiscardDirty` / `MarkDirty` / `OnClickNewBatch` / `OnRenameBatch` / `OnDuplicateBatch` / `OnDeleteBatch` / `ShowBatchContextMenu` / `IsBatchNameDuplicate` / `GenerateUniqueBatchName` |
+| `PipifyWindow.Methods.cs` | `PipifyWindow` | 总调度 + Batch / Step 辅助：`OnEnable` / `TryAutoBindSettings` / `OnGUI` / `DrawBody` / `DrawMainTitle` / `EnsureStyles` / `RebindSettings` / `OnClickCreate` / `OnClickSave` / `OnClickRevealInFinder` / `ConfirmDiscardDirty` / `MarkDirty` / `OnClickNewBatch` / `OnRenameBatch` / `OnDuplicateBatch` / `OnDeleteBatch` / `ShowBatchContextMenu` / `IsBatchNameDuplicate` / `GenerateUniqueBatchName` / `CopyBatchItemToClipboard` / `PasteBatchItemFromClipboard` / `CloneBatchItem` |
 | `PipifyWindow.TopBar.cs` | `PipifyWindow` | 顶部工具栏：编辑器存档文件 ObjectField + 创建/选择/保存/打开文件夹按钮；`DrawTopBar()` / `OnClickPick()` |
 | `PipifyWindow.LeftList.cs` | `PipifyWindow` | 左侧 Batch 列表：搜索框 / ScrollView / 行点击事件 / 右键菜单 / 新建按钮；`DrawLeftList()` |
 | `PipifyWindow.RightPanel.cs` | `PipifyWindow` | 右侧详情面板：`DrawRightPanel()` / `DrawBatchHeader()` / `DrawItemsList()` / `DrawItemElement()` / `DrawItemParams()` / `DrawParamField()` |
@@ -74,14 +74,15 @@ CLI 可使用 `-configMasterGuid` 与 `-pipifySettingsGuid` 成对指定工作�
 | `DrawItemsList()` | 调用 `m_ItemsList.DoLayoutList()`，懒初始化由 `EnsureItemsListForSelectedBatch()` 保证 |
 | `EnsureItemsListForSelectedBatch()` | Batch 索引与 `m_ItemsListBoundBatchIndex` 不符时重建 ReorderableList，同时清空 `m_ExpandedItemIndices` 和 `m_ParamsCache` |
 | ReorderableList Header | 显示 `"Steps (N)"`（N = 当前 Items 数量） |
-| ReorderableList 行内容 | 序号标签 + `[Category] DisplayName` + 折叠箭头（有参时显示） + 自定义删除按钮（×） |
-| 折叠箭头 | 切换 `m_ExpandedItemIndices` 集合中对应索引的存在性，展开后通过 `DrawItemParams` 绘制参数字段 |
+| ReorderableList 行内容 | 序号标签 + `[Category] DisplayName` + 参数配置按钮（有参时显示）+ 复制按钮 + 自定义删除按钮（×）；Step 未注册时仍可复制并以红色 `[Missing] StepId` 显示 |
+| 参数配置按钮 | 切换 `m_ExpandedItemIndices` 集合中对应索引的存在性，展开后通过 `DrawItemParams` 绘制参数字段 |
 | 删除按钮 | 通过 `EditorApplication.delayCall` 延迟移除，防止 Layout/Repaint 阶段直接修改集合导致崩溃；同时清空 `m_ExpandedItemIndices` / `m_ParamsCache` 并设 `m_ItemsListBoundBatchIndex = -1` 强制重建 ReorderableList，避免 key 移位错位 |
-| `onAddDropdownCallback` | 按 Category 分组弹 GenericMenu，选中后调用 `AddBatchItemFromStep(info)` |
+| 复制按钮 | 将当前 Step 的 `StepId + ParamsJson` 独立快照缓存到当前窗口内存；不立即创建副本、不置脏，切换 Batch 或 PipifySettingsSO 后仍可使用，窗口销毁或域重载后清空 |
+| `onAddDropdownCallback` | GenericMenu 顶部固定显示“粘贴”（无缓存时禁用），随后按 Category 分组列出可新增 Step；粘贴会把独立副本追加到当前 Batch，保留缓存以支持重复粘贴，并置脏等待保存 |
 | `onReorderCallback` | 拖拽排序后清空 `m_ExpandedItemIndices` 和 `m_ParamsCache` 并 `MarkDirty()` |
 | 参数内联 Drawer | 参数类型标注 `PipifyHelpBoxAttribute` 时先绘制通用说明框；随后反射遍历 `ParamsType.GetFields(Public | Instance)` 按类型分发：普通 `string`→TextField；标注 `TextAreaAttribute` 的 `string`→按 3–8 行等声明范围自适应高度的 TextArea；`bool`→Toggle；`int`→IntField；`float`→FloatField；`Enum`→Popup（优先采用 `InspectorName`，并保持 `WebGL` 连写）；标注 `PipifyReadOnlyAttribute` 的字段以 DisabledGroup 绘制；其他复杂类型→Log.Warning 跳过。`export.config.Platform`、`build.package.Target`、`bundlebuilder.build.Target`、`bundlebuilder.build_raw_file.Target` 均只读展示 Unity 当前 Active BuildTarget 的实时值。WebGL 下两个 Bundle Step 的首包拷贝模式仅显示 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll`；`BundledCopyParams` 只在按 Tag 拷贝时显示，选项下方的动态 HelpBox 会说明当前选择适用的加载模式、需要准备的资源和选错影响。切回其他 Active BuildTarget 后恢复完整枚举并隐藏 WebGL 专用 HelpBox。`build.package` 首次进入 Android `DevelopmentBuild + BuildAppBundle` 风险组合时立即 Warning + 弹窗，取消会恢复编辑前快照 |
 | 参数持久化 | `EditorGUI.BeginChangeCheck/EndChangeCheck` 包住字段组；普通变化或用户确认风险组合后，`Util.Json.Serialize(paramsInstance)` 写回 `item.ParamsJson` + `MarkDirty()`；用户取消风险弹窗时不持久化，也不置脏 |
-| `DrawExecute()` | 顶部 `EditorUtil.Draw.Line()` 分割线 + 右对齐 `SuccessButton("▶ 运行")`；禁用条件：`batch.Items.Count == 0 \|\| m_IsDirty`；点击后 fire-and-forget 调用 `EditorUtil.Pipify.RunBatchAsync(batch, this)`，Runner 内部通过 WindowReporter 以模态进度条呈现执行进度，结束后通过宿主窗口 `ShowNotification` 弹右下角结果浮窗 |
+| `DrawExecute()` | 顶部 `EditorUtil.Draw.Line()` 分割线 + 右对齐 `SuccessButton("▶ 运行")`；Batch 为空、存在未保存改动或包含未注册 Step 时禁用。缺失 Step 时，按钮下方用红字列出 StepId，并提示恢复对应 Package 或删除条目；点击后 fire-and-forget 调用 `EditorUtil.Pipify.RunBatchAsync(batch, this)`，Runner 内部通过 WindowReporter 以模态进度条呈现执行进度，结束后通过宿主窗口 `ShowNotification` 弹右下角结果浮窗 |
 
 ---
 
@@ -126,6 +127,7 @@ DrawBody()
 | `m_RightScroll` | `Vector2` | 右侧面板 ScrollView 滚动位置 |
 | `m_ItemsList` | `ReorderableList` | 绑定当前选中 Batch.m_Items 的 ReorderableList；Batch 切换时重建 |
 | `m_ItemsListBoundBatchIndex` | `int` | 当前 m_ItemsList 绑定的 Batch 索引；-1 表示未绑定 |
+| `m_CopiedBatchItem` | `BatchItem` | 当前窗口内存中的 Step 快照；跨 Batch / 存档绑定保留，不持久化 |
 | `m_ExpandedItemIndices` | `HashSet<int>` | 已展开参数区的 Item 索引集合 |
 | `m_ParamsCache` | `Dictionary<int, object>` | Item 参数对象缓存；key = 索引，value = 反序列化后的参数实例 |
 

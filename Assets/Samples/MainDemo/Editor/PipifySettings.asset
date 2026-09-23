@@ -49,7 +49,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 1,\n  \"DevelopmentBuild\":
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
-        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder
@@ -105,7 +105,7 @@ MonoBehaviour:
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
     - m_StepId: export.config
-      m_ParamsJson: "{\n  \"Platform\": 3,\n  \"Channel\": 0,\n  \"DevelopMode\":
+      m_ParamsJson: "{\n  \"Platform\": 3,\n  \"Channel\": 1,\n  \"DevelopMode\":
         0\n}"
     - m_StepId: export.network.hostkey.code
       m_ParamsJson: 
@@ -116,16 +116,16 @@ MonoBehaviour:
     - m_StepId: export.network.netcmd.data
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
+      m_ParamsJson: "{\n  \"Target\": 20,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
         \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
         \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
         \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
-        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
+        2,\n  \"BundledCopyOption\": 0,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 20,\n  \"BuildMode\": 1,\n  \"DevelopmentBuild\":
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
-        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/WebGL\"\n}"
     - m_StepId: shell.open_folder
@@ -170,7 +170,7 @@ MonoBehaviour:
     - m_StepId: hybridclr.copy_game_dll
       m_ParamsJson: 
     - m_StepId: export.config
-      m_ParamsJson: "{\n  \"Platform\": 1,\n  \"Channel\": 2,\n  \"DevelopMode\":
+      m_ParamsJson: "{\n  \"Platform\": 3,\n  \"Channel\": 1,\n  \"DevelopMode\":
         0\n}"
     - m_StepId: export.network.hostkey.code
       m_ParamsJson: 
@@ -181,18 +181,17 @@ MonoBehaviour:
     - m_StepId: export.network.netcmd.data
       m_ParamsJson: 
     - m_StepId: bundlebuilder.build
-      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
+      m_ParamsJson: "{\n  \"Target\": 20,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
         \"\",\n  \"ClearBuildCache\": false,\n  \"UseAssetDependencyDB\": false,\n 
         \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
         \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
         \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
-        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
+        2,\n  \"BundledCopyOption\": 0,\n  \"BundledCopyParams\": \"\"\n}"
     - m_StepId: cdn.deploy
       m_ParamsJson: "{\n  \"VersionCheckLocalFilePath\": \"ProjectSettings/Nova/AppDownloadRules.json\",\n 
         \"VersionCheckRemoteFilePath\": \"Nova/{Platform}/{Package}/AppDownloadRules.json\",\n 
         \"AutoLinkLatestVersion\": true,\n  \"LocalDirectory\": \"Bundles/{Platform}/{Package}/2026-07-22-908\",\n 
-        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/Versions\",\n  \"CleanRemoteFilesAndDirectories\":
-        false\n}"
+        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/Versions\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Bundles/Android/Default"}'
   - m_Name: "\u66F4\u65B0Bundle+CDN\uFF08\u5DEE\u5F02\u5316\uFF09"
@@ -219,8 +218,7 @@ MonoBehaviour:
       m_ParamsJson: "{\n  \"VersionCheckLocalFilePath\": \"ProjectSettings/Nova/AppDownloadRules.json\",\n 
         \"VersionCheckRemoteFilePath\": \"Nova/{Platform}/{Package}/AppDownloadRules.json\",\n 
         \"AutoLinkLatestVersion\": true,\n  \"LocalDirectory\": \"Bundles/{Platform}/{Package}/2026-07-22-908\",\n 
-        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/Versions\",\n  \"CleanRemoteFilesAndDirectories\":
-        false\n}"
+        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/Versions\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Bundles/Android/Default"}'
   - m_Name: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
@@ -246,7 +244,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
-        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder
@@ -259,7 +257,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 0,\n  \"DevelopmentBuild\":
         false,\n  \"SplitApplicationBinary\": false,\n  \"BuildAppBundle\": false,\n 
-        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"Docs/certificates/solotopia.keystore\",\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\n 
         \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder
@@ -338,8 +336,7 @@ MonoBehaviour:
       m_ParamsJson: "{\n  \"VersionCheckLocalFilePath\": \"ProjectSettings/Nova/AppDownloadRules.json\",\n 
         \"VersionCheckRemoteFilePath\": \"Nova/{Platform}/{Package}/AppDownloadRules.json\",\n 
         \"AutoLinkLatestVersion\": true,\n  \"LocalDirectory\": \"Bundles/{Platform}/{Package}/2026-07-22-908\",\n 
-        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/Versions\",\n  \"CleanRemoteFilesAndDirectories\":
-        false\n}"
+        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/Versions\"\n}"
   - m_Name: "\u70ED\u66F4\u65B0\u767D\u540D\u5355\u90E8\u7F72CDN"
     m_Description: 
     m_Items:
@@ -349,5 +346,4 @@ MonoBehaviour:
         \"AutoLinkLatestVersion\": true,\n  \"ManifestBytesLocalFilePath\": \"Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.bytes\",\n 
         \"ManifestHashLocalFilePath\": \"Bundles/{Platform}/{Package}/2026-07-22-908/Default_2026-07-22-908.hash\",\n 
         \"PackageVersionLocalFilePath\": \"Bundles/{Platform}/{Package}/2026-07-22-908/Default.version\",\n 
-        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/WhiteListVersions\",\n 
-        \"CleanRemoteFilesAndDirectories\": false\n}"
+        \"RemoteDirectory\": \"Nova/{Platform}/{Package}/WhiteListVersions\"\n}"

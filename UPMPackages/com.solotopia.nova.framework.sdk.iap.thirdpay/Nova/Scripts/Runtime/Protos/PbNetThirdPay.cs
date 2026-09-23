@@ -25,59 +25,69 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChZwYl9uZXRfdGhpcmRfcGF5LnByb3RvEiJOb3ZhRnJhbWV3b3JrLklBUC5U",
-            "aGlyZFBheS5SdW50aW1lGhNwYl9uZXRfaGVhZGVyLnByb3RvImAKGFBiTmV0",
-            "VGhpcmRQcm9kdWN0TGlzdFJlcRIzCgRoZWFkGAEgASgLMiUuTm92YUZyYW1l",
-            "d29yay5SdW50aW1lLlBiTmV0UmVxSGVhZGVyEg8KB2NvdW50cnkYAiABKAki",
-            "ogEKGVBiTmV0VGhpcmRQcm9kdWN0TGlzdFJlc3ASNAoEaGVhZBgBIAEoCzIm",
-            "Lk5vdmFGcmFtZXdvcmsuUnVudGltZS5QYk5ldFJlc3BIZWFkZXISTwoMcHJv",
-            "ZHVjdF9saXN0GAIgAygLMjkuTm92YUZyYW1ld29yay5JQVAuVGhpcmRQYXku",
-            "UnVudGltZS5QYk5ldFRoaXJkUHJvZHVjdEluZm8iZAoVUGJOZXRUaGlyZFBy",
-            "b2R1Y3RJbmZvEgoKAmlkGAEgASgFEhYKDmxvY2FsX2N1cnJlbmN5GAIgASgJ",
-            "EhMKC2xvY2FsX3ByaWNlGAMgASgJEhIKCnByb2R1Y3RfaWQYBCABKAkiVQoe",
-            "UGJOZXRUaGlyZFF1ZXJ5UGVuZGluZ09yZGVyUmVxEjMKBGhlYWQYASABKAsy",
-            "JS5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXIisAEKH1Bi",
-            "TmV0VGhpcmRRdWVyeVBlbmRpbmdPcmRlclJlc3ASNAoEaGVhZBgBIAEoCzIm",
-            "Lk5vdmFGcmFtZXdvcmsuUnVudGltZS5QYk5ldFJlc3BIZWFkZXISVwoKb3Jk",
-            "ZXJfbGlzdBgCIAMoCzJDLk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJkUGF5LlJ1",
-            "bnRpbWUuUGJOZXRUaGlyZFF1ZXJ5UGVuZGluZ09yZGVySW5mbyJMCh9QYk5l",
-            "dFRoaXJkUXVlcnlQZW5kaW5nT3JkZXJJbmZvEhcKD2NsaWVudF9vcmRlcl9p",
-            "ZBgBIAEoCRIQCgh0YWJsZV9pZBgCIAEoAyJUCh1QYk5ldFRoaXJkUGF5Q2hh",
-            "bm5lbFBhcmFtc1JlcRIzCgRoZWFkGAEgASgLMiUuTm92YUZyYW1ld29yay5S",
-            "dW50aW1lLlBiTmV0UmVxSGVhZGVyInQKHlBiTmV0VGhpcmRQYXlDaGFubmVs",
-            "UGFyYW1zUmVzcBI0CgRoZWFkGAEgASgLMiYuTm92YUZyYW1ld29yay5SdW50",
-            "aW1lLlBiTmV0UmVzcEhlYWRlchIcChRwYXltZW50X2N1c3RvbWVyX2lkcxgC",
-            "IAEoCSJnChZQYk5ldFRoaXJkVmVyaWZ5SWFwUmVxEjMKBGhlYWQYASABKAsy",
-            "JS5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXISGAoQY2xp",
-            "ZW50X29yZGVyX2lkcxgCIAMoCSKkAQoXUGJOZXRUaGlyZFZlcmlmeUlhcFJl",
-            "c3ASNAoEaGVhZBgBIAEoCzImLk5vdmFGcmFtZXdvcmsuUnVudGltZS5QYk5l",
-            "dFJlc3BIZWFkZXISUwoKb3JkZXJfbGlzdBgCIAMoCzI/Lk5vdmFGcmFtZXdv",
-            "cmsuSUFQLlRoaXJkUGF5LlJ1bnRpbWUuUGJOZXRUaGlyZFZlcmlmeU9yZGVy",
-            "UmVzdWx0IskBChtQYk5ldFRoaXJkVmVyaWZ5T3JkZXJSZXN1bHQSFwoPc2Vy",
-            "dmVyX29yZGVyX2lkGAEgASgJEk8KBnN0YXR1cxgCIAEoDjI/Lk5vdmFGcmFt",
-            "ZXdvcmsuSUFQLlRoaXJkUGF5LlJ1bnRpbWUuUGJOZXRUaGlyZFZlcmlmeU9y",
-            "ZGVyU3RhdHVzEhUKDXJlY2VpcHRfcGFyYW0YAyABKAkSEAoIdGFibGVfaWQY",
-            "BCABKAMSFwoPY2xpZW50X29yZGVyX2lkGAUgASgJKvkCChtQYk5ldFRoaXJk",
-            "VmVyaWZ5T3JkZXJTdGF0dXMSMAosUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRF",
-            "Ul9TVEFUVVNfVU5TUEVDSUZJRUQQABI0CjBQQl9ORVRfVEhJUkRfVkVSSUZZ",
-            "X09SREVSX1NUQVRVU19QRU5ESU5HX1BBWU1FTlQQARIvCitQQl9ORVRfVEhJ",
-            "UkRfVkVSSUZZX09SREVSX1NUQVRVU19QUk9DRVNTSU5HEAISKQolUEJfTkVU",
-            "X1RISVJEX1ZFUklGWV9PUkRFUl9TVEFUVVNfUEFJRBADEjYKMlBCX05FVF9U",
-            "SElSRF9WRVJJRllfT1JERVJfU1RBVFVTX0ZBSUxFRF9PUl9FWFBJUkVEEAQS",
-            "LgoqUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRFUl9TVEFUVVNfREVMSVZFUkVE",
-            "EAUSLgoqUEJfTkVUX1RISVJEX1ZFUklGWV9PUkRFUl9TVEFUVVNfTk9UX0ZP",
-            "VU5EEAZCKaoCJk5vdmFGcmFtZXdvcmsuU0RLLklBUC5UaGlyZFBheS5SdW50",
-            "aW1lYgZwcm90bzM="));
+            "aGlyZFBheS5SdW50aW1lGhNwYl9uZXRfaGVhZGVyLnByb3RvImIKGlBiTmV0",
+            "VGhpcmRQYXltZW50Q29uZmlnUmVxEjMKBGhlYWQYASABKAsyJS5Ob3ZhRnJh",
+            "bWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXFIZWFkZXISDwoHY291bnRyeRgCIAEo",
+            "CSKwAwobUGJOZXRUaGlyZFBheW1lbnRDb25maWdSZXNwEjQKBGhlYWQYASAB",
+            "KAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJOZXRSZXNwSGVhZGVyElMK",
+            "DGF2YWlsYWJpbGl0eRgCIAEoCzI9Lk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJk",
+            "UGF5LlJ1bnRpbWUuUGJOZXRUaGlyZFBheUF2YWlsYWJpbGl0eRJTCg5wcm9k",
+            "dWN0X2NvbmZpZxgDIAEoCzI7Lk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJkUGF5",
+            "LlJ1bnRpbWUuUGJOZXRUaGlyZFByb2R1Y3RDb25maWcSUwoOY2hhbm5lbF9j",
+            "b25maWcYBCABKAsyOy5Ob3ZhRnJhbWV3b3JrLklBUC5UaGlyZFBheS5SdW50",
+            "aW1lLlBiTmV0VGhpcmRDaGFubmVsQ29uZmlnElwKE3BheW1lbnRfcGFnZV9j",
+            "b25maWcYBSABKAsyPy5Ob3ZhRnJhbWV3b3JrLklBUC5UaGlyZFBheS5SdW50",
+            "aW1lLlBiTmV0VGhpcmRQYXltZW50UGFnZUNvbmZpZyJFChlQYk5ldFRoaXJk",
+            "UGF5QXZhaWxhYmlsaXR5Eg8KB2VuYWJsZWQYASABKAgSFwoPZGlzYWJsZWRf",
+            "cmVhc29uGAIgASgFImoKF1BiTmV0VGhpcmRQcm9kdWN0Q29uZmlnEk8KDHBy",
+            "b2R1Y3RfbGlzdBgBIAMoCzI5Lk5vdmFGcmFtZXdvcmsuSUFQLlRoaXJkUGF5",
+            "LlJ1bnRpbWUuUGJOZXRUaGlyZFByb2R1Y3RJbmZvIjcKF1BiTmV0VGhpcmRD",
+            "aGFubmVsQ29uZmlnEhwKFHBheW1lbnRfY3VzdG9tZXJfaWRzGAEgASgJIjcK",
+            "G1BiTmV0VGhpcmRQYXltZW50UGFnZUNvbmZpZxIYChBwYXltZW50X3BhZ2Vf",
+            "dXJsGAEgASgJImQKFVBiTmV0VGhpcmRQcm9kdWN0SW5mbxIKCgJpZBgBIAEo",
+            "BRIWCg5sb2NhbF9jdXJyZW5jeRgCIAEoCRITCgtsb2NhbF9wcmljZRgDIAEo",
+            "CRISCgpwcm9kdWN0X2lkGAQgASgJIlUKHlBiTmV0VGhpcmRRdWVyeVBlbmRp",
+            "bmdPcmRlclJlcRIzCgRoZWFkGAEgASgLMiUuTm92YUZyYW1ld29yay5SdW50",
+            "aW1lLlBiTmV0UmVxSGVhZGVyIrABCh9QYk5ldFRoaXJkUXVlcnlQZW5kaW5n",
+            "T3JkZXJSZXNwEjQKBGhlYWQYASABKAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1bnRp",
+            "bWUuUGJOZXRSZXNwSGVhZGVyElcKCm9yZGVyX2xpc3QYAiADKAsyQy5Ob3Zh",
+            "RnJhbWV3b3JrLklBUC5UaGlyZFBheS5SdW50aW1lLlBiTmV0VGhpcmRRdWVy",
+            "eVBlbmRpbmdPcmRlckluZm8iTAofUGJOZXRUaGlyZFF1ZXJ5UGVuZGluZ09y",
+            "ZGVySW5mbxIXCg9jbGllbnRfb3JkZXJfaWQYASABKAkSEAoIdGFibGVfaWQY",
+            "AiABKAMiZwoWUGJOZXRUaGlyZFZlcmlmeUlhcFJlcRIzCgRoZWFkGAEgASgL",
+            "MiUuTm92YUZyYW1ld29yay5SdW50aW1lLlBiTmV0UmVxSGVhZGVyEhgKEGNs",
+            "aWVudF9vcmRlcl9pZHMYAiADKAkipAEKF1BiTmV0VGhpcmRWZXJpZnlJYXBS",
+            "ZXNwEjQKBGhlYWQYASABKAsyJi5Ob3ZhRnJhbWV3b3JrLlJ1bnRpbWUuUGJO",
+            "ZXRSZXNwSGVhZGVyElMKCm9yZGVyX2xpc3QYAiADKAsyPy5Ob3ZhRnJhbWV3",
+            "b3JrLklBUC5UaGlyZFBheS5SdW50aW1lLlBiTmV0VGhpcmRWZXJpZnlPcmRl",
+            "clJlc3VsdCLJAQobUGJOZXRUaGlyZFZlcmlmeU9yZGVyUmVzdWx0EhcKD3Nl",
+            "cnZlcl9vcmRlcl9pZBgBIAEoCRJPCgZzdGF0dXMYAiABKA4yPy5Ob3ZhRnJh",
+            "bWV3b3JrLklBUC5UaGlyZFBheS5SdW50aW1lLlBiTmV0VGhpcmRWZXJpZnlP",
+            "cmRlclN0YXR1cxIVCg1yZWNlaXB0X3BhcmFtGAMgASgJEhAKCHRhYmxlX2lk",
+            "GAQgASgDEhcKD2NsaWVudF9vcmRlcl9pZBgFIAEoCSr5AgobUGJOZXRUaGly",
+            "ZFZlcmlmeU9yZGVyU3RhdHVzEjAKLFBCX05FVF9USElSRF9WRVJJRllfT1JE",
+            "RVJfU1RBVFVTX1VOU1BFQ0lGSUVEEAASNAowUEJfTkVUX1RISVJEX1ZFUklG",
+            "WV9PUkRFUl9TVEFUVVNfUEVORElOR19QQVlNRU5UEAESLworUEJfTkVUX1RI",
+            "SVJEX1ZFUklGWV9PUkRFUl9TVEFUVVNfUFJPQ0VTU0lORxACEikKJVBCX05F",
+            "VF9USElSRF9WRVJJRllfT1JERVJfU1RBVFVTX1BBSUQQAxI2CjJQQl9ORVRf",
+            "VEhJUkRfVkVSSUZZX09SREVSX1NUQVRVU19GQUlMRURfT1JfRVhQSVJFRBAE",
+            "Ei4KKlBCX05FVF9USElSRF9WRVJJRllfT1JERVJfU1RBVFVTX0RFTElWRVJF",
+            "RBAFEi4KKlBCX05FVF9USElSRF9WRVJJRllfT1JERVJfU1RBVFVTX05PVF9G",
+            "T1VORBAGQimqAiZOb3ZhRnJhbWV3b3JrLlNESy5JQVAuVGhpcmRQYXkuUnVu",
+            "dGltZWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::NovaFramework.Runtime.PbNetHeaderReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderStatus), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductListReq), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductListReq.Parser, new[]{ "Head", "Country" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductListResp), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductListResp.Parser, new[]{ "Head", "ProductList" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigReq), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigReq.Parser, new[]{ "Head", "Country" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigResp), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentConfigResp.Parser, new[]{ "Head", "Availability", "ProductConfig", "ChannelConfig", "PaymentPageConfig" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability.Parser, new[]{ "Enabled", "DisabledReason" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig.Parser, new[]{ "ProductList" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig.Parser, new[]{ "PaymentCustomerIds" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig.Parser, new[]{ "PaymentPageUrl" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo.Parser, new[]{ "Id", "LocalCurrency", "LocalPrice", "ProductId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderReq), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderReq.Parser, new[]{ "Head" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderResp), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderResp.Parser, new[]{ "Head", "OrderList" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderInfo), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdQueryPendingOrderInfo.Parser, new[]{ "ClientOrderId", "TableId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayChannelParamsReq), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayChannelParamsReq.Parser, new[]{ "Head" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayChannelParamsResp), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayChannelParamsResp.Parser, new[]{ "Head", "PaymentCustomerIds" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyIapReq), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyIapReq.Parser, new[]{ "Head", "ClientOrderIds" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyIapResp), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyIapResp.Parser, new[]{ "Head", "OrderList" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderResult), global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdVerifyOrderResult.Parser, new[]{ "ServerOrderId", "Status", "ReceiptParam", "TableId", "ClientOrderId" }, null, null, null, null)
@@ -125,19 +135,19 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
 
   #region Messages
   /// <summary>
-  /// 商品列表请求
+  /// 第三方支付配置请求
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class PbNetThirdProductListReq : pb::IMessage<PbNetThirdProductListReq>
+  public sealed partial class PbNetThirdPaymentConfigReq : pb::IMessage<PbNetThirdPaymentConfigReq>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<PbNetThirdProductListReq> _parser = new pb::MessageParser<PbNetThirdProductListReq>(() => new PbNetThirdProductListReq());
+    private static readonly pb::MessageParser<PbNetThirdPaymentConfigReq> _parser = new pb::MessageParser<PbNetThirdPaymentConfigReq>(() => new PbNetThirdPaymentConfigReq());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<PbNetThirdProductListReq> Parser { get { return _parser; } }
+    public static pb::MessageParser<PbNetThirdPaymentConfigReq> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -153,7 +163,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdProductListReq() {
+    public PbNetThirdPaymentConfigReq() {
       OnConstruction();
     }
 
@@ -161,7 +171,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdProductListReq(PbNetThirdProductListReq other) : this() {
+    public PbNetThirdPaymentConfigReq(PbNetThirdPaymentConfigReq other) : this() {
       head_ = other.head_ != null ? other.head_.Clone() : null;
       country_ = other.country_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -169,8 +179,8 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdProductListReq Clone() {
-      return new PbNetThirdProductListReq(this);
+    public PbNetThirdPaymentConfigReq Clone() {
+      return new PbNetThirdPaymentConfigReq(this);
     }
 
     /// <summary>Field number for the "head" field.</summary>
@@ -192,7 +202,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     public const int CountryFieldNumber = 2;
     private string country_ = "";
     /// <summary>
-    /// 国家编码，例如 US
+    /// ISO 3166-1 alpha-2 国家或地区代码，例如 US
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -206,12 +216,12 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as PbNetThirdProductListReq);
+      return Equals(other as PbNetThirdPaymentConfigReq);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(PbNetThirdProductListReq other) {
+    public bool Equals(PbNetThirdPaymentConfigReq other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -297,7 +307,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(PbNetThirdProductListReq other) {
+    public void MergeFrom(PbNetThirdPaymentConfigReq other) {
       if (other == null) {
         return;
       }
@@ -378,19 +388,19 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
   }
 
   /// <summary>
-  /// 商品列表响应
+  /// 第三方支付配置响应
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class PbNetThirdProductListResp : pb::IMessage<PbNetThirdProductListResp>
+  public sealed partial class PbNetThirdPaymentConfigResp : pb::IMessage<PbNetThirdPaymentConfigResp>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       , pb::IBufferMessage
   #endif
   {
-    private static readonly pb::MessageParser<PbNetThirdProductListResp> _parser = new pb::MessageParser<PbNetThirdProductListResp>(() => new PbNetThirdProductListResp());
+    private static readonly pb::MessageParser<PbNetThirdPaymentConfigResp> _parser = new pb::MessageParser<PbNetThirdPaymentConfigResp>(() => new PbNetThirdPaymentConfigResp());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<PbNetThirdProductListResp> Parser { get { return _parser; } }
+    public static pb::MessageParser<PbNetThirdPaymentConfigResp> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -406,7 +416,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdProductListResp() {
+    public PbNetThirdPaymentConfigResp() {
       OnConstruction();
     }
 
@@ -414,16 +424,19 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdProductListResp(PbNetThirdProductListResp other) : this() {
+    public PbNetThirdPaymentConfigResp(PbNetThirdPaymentConfigResp other) : this() {
       head_ = other.head_ != null ? other.head_.Clone() : null;
-      productList_ = other.productList_.Clone();
+      availability_ = other.availability_ != null ? other.availability_.Clone() : null;
+      productConfig_ = other.productConfig_ != null ? other.productConfig_.Clone() : null;
+      channelConfig_ = other.channelConfig_ != null ? other.channelConfig_.Clone() : null;
+      paymentPageConfig_ = other.paymentPageConfig_ != null ? other.paymentPageConfig_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdProductListResp Clone() {
-      return new PbNetThirdProductListResp(this);
+    public PbNetThirdPaymentConfigResp Clone() {
+      return new PbNetThirdPaymentConfigResp(this);
     }
 
     /// <summary>Field number for the "head" field.</summary>
@@ -441,29 +454,75 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       }
     }
 
-    /// <summary>Field number for the "product_list" field.</summary>
-    public const int ProductListFieldNumber = 2;
-    private static readonly pb::FieldCodec<global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo> _repeated_productList_codec
-        = pb::FieldCodec.ForMessage(18, global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo.Parser);
-    private readonly pbc::RepeatedField<global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo> productList_ = new pbc::RepeatedField<global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo>();
+    /// <summary>Field number for the "availability" field.</summary>
+    public const int AvailabilityFieldNumber = 2;
+    private global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability availability_;
     /// <summary>
-    /// 商品列表
+    /// 当前用户是否允许发起第三方支付
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo> ProductList {
-      get { return productList_; }
+    public global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability Availability {
+      get { return availability_; }
+      set {
+        availability_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "product_config" field.</summary>
+    public const int ProductConfigFieldNumber = 3;
+    private global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig productConfig_;
+    /// <summary>
+    /// 当前国家可购买的商品配置
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig ProductConfig {
+      get { return productConfig_; }
+      set {
+        productConfig_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "channel_config" field.</summary>
+    public const int ChannelConfigFieldNumber = 4;
+    private global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig channelConfig_;
+    /// <summary>
+    /// 支付页需要透传的渠道参数
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig ChannelConfig {
+      get { return channelConfig_; }
+      set {
+        channelConfig_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "payment_page_config" field.</summary>
+    public const int PaymentPageConfigFieldNumber = 5;
+    private global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig paymentPageConfig_;
+    /// <summary>
+    /// 支付页入口配置
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig PaymentPageConfig {
+      get { return paymentPageConfig_; }
+      set {
+        paymentPageConfig_ = value;
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
-      return Equals(other as PbNetThirdProductListResp);
+      return Equals(other as PbNetThirdPaymentConfigResp);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(PbNetThirdProductListResp other) {
+    public bool Equals(PbNetThirdPaymentConfigResp other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
@@ -471,7 +530,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
         return true;
       }
       if (!object.Equals(Head, other.Head)) return false;
-      if(!productList_.Equals(other.productList_)) return false;
+      if (!object.Equals(Availability, other.Availability)) return false;
+      if (!object.Equals(ProductConfig, other.ProductConfig)) return false;
+      if (!object.Equals(ChannelConfig, other.ChannelConfig)) return false;
+      if (!object.Equals(PaymentPageConfig, other.PaymentPageConfig)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -480,7 +542,10 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     public override int GetHashCode() {
       int hash = 1;
       if (head_ != null) hash ^= Head.GetHashCode();
-      hash ^= productList_.GetHashCode();
+      if (availability_ != null) hash ^= Availability.GetHashCode();
+      if (productConfig_ != null) hash ^= ProductConfig.GetHashCode();
+      if (channelConfig_ != null) hash ^= ChannelConfig.GetHashCode();
+      if (paymentPageConfig_ != null) hash ^= PaymentPageConfig.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -503,7 +568,22 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
         output.WriteRawTag(10);
         output.WriteMessage(Head);
       }
-      productList_.WriteTo(output, _repeated_productList_codec);
+      if (availability_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Availability);
+      }
+      if (productConfig_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(ProductConfig);
+      }
+      if (channelConfig_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(ChannelConfig);
+      }
+      if (paymentPageConfig_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(PaymentPageConfig);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -518,7 +598,22 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
         output.WriteRawTag(10);
         output.WriteMessage(Head);
       }
-      productList_.WriteTo(ref output, _repeated_productList_codec);
+      if (availability_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Availability);
+      }
+      if (productConfig_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(ProductConfig);
+      }
+      if (channelConfig_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(ChannelConfig);
+      }
+      if (paymentPageConfig_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(PaymentPageConfig);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -532,7 +627,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
       if (head_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Head);
       }
-      size += productList_.CalculateSize(_repeated_productList_codec);
+      if (availability_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Availability);
+      }
+      if (productConfig_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ProductConfig);
+      }
+      if (channelConfig_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ChannelConfig);
+      }
+      if (paymentPageConfig_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(PaymentPageConfig);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -541,7 +647,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(PbNetThirdProductListResp other) {
+    public void MergeFrom(PbNetThirdPaymentConfigResp other) {
       if (other == null) {
         return;
       }
@@ -551,7 +657,30 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
         }
         Head.MergeFrom(other.Head);
       }
-      productList_.Add(other.productList_);
+      if (other.availability_ != null) {
+        if (availability_ == null) {
+          Availability = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability();
+        }
+        Availability.MergeFrom(other.Availability);
+      }
+      if (other.productConfig_ != null) {
+        if (productConfig_ == null) {
+          ProductConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig();
+        }
+        ProductConfig.MergeFrom(other.ProductConfig);
+      }
+      if (other.channelConfig_ != null) {
+        if (channelConfig_ == null) {
+          ChannelConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig();
+        }
+        ChannelConfig.MergeFrom(other.ChannelConfig);
+      }
+      if (other.paymentPageConfig_ != null) {
+        if (paymentPageConfig_ == null) {
+          PaymentPageConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig();
+        }
+        PaymentPageConfig.MergeFrom(other.PaymentPageConfig);
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -579,7 +708,31 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
             break;
           }
           case 18: {
-            productList_.AddEntriesFrom(input, _repeated_productList_codec);
+            if (availability_ == null) {
+              Availability = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability();
+            }
+            input.ReadMessage(Availability);
+            break;
+          }
+          case 26: {
+            if (productConfig_ == null) {
+              ProductConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig();
+            }
+            input.ReadMessage(ProductConfig);
+            break;
+          }
+          case 34: {
+            if (channelConfig_ == null) {
+              ChannelConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig();
+            }
+            input.ReadMessage(ChannelConfig);
+            break;
+          }
+          case 42: {
+            if (paymentPageConfig_ == null) {
+              PaymentPageConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig();
+            }
+            input.ReadMessage(PaymentPageConfig);
             break;
           }
         }
@@ -609,7 +762,870 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
             break;
           }
           case 18: {
+            if (availability_ == null) {
+              Availability = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayAvailability();
+            }
+            input.ReadMessage(Availability);
+            break;
+          }
+          case 26: {
+            if (productConfig_ == null) {
+              ProductConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductConfig();
+            }
+            input.ReadMessage(ProductConfig);
+            break;
+          }
+          case 34: {
+            if (channelConfig_ == null) {
+              ChannelConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdChannelConfig();
+            }
+            input.ReadMessage(ChannelConfig);
+            break;
+          }
+          case 42: {
+            if (paymentPageConfig_ == null) {
+              PaymentPageConfig = new global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPaymentPageConfig();
+            }
+            input.ReadMessage(PaymentPageConfig);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// 当前用户的第三方支付可用性
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PbNetThirdPayAvailability : pb::IMessage<PbNetThirdPayAvailability>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PbNetThirdPayAvailability> _parser = new pb::MessageParser<PbNetThirdPayAvailability>(() => new PbNetThirdPayAvailability());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PbNetThirdPayAvailability> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdPayAvailability() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdPayAvailability(PbNetThirdPayAvailability other) : this() {
+      enabled_ = other.enabled_;
+      disabledReason_ = other.disabledReason_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdPayAvailability Clone() {
+      return new PbNetThirdPayAvailability(this);
+    }
+
+    /// <summary>Field number for the "enabled" field.</summary>
+    public const int EnabledFieldNumber = 1;
+    private bool enabled_;
+    /// <summary>
+    /// 是否允许发起新的第三方支付
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Enabled {
+      get { return enabled_; }
+      set {
+        enabled_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "disabled_reason" field.</summary>
+    public const int DisabledReasonFieldNumber = 2;
+    private int disabledReason_;
+    /// <summary>
+    /// 禁用原因；具体枚举值由服务端协议后续约定
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int DisabledReason {
+      get { return disabledReason_; }
+      set {
+        disabledReason_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PbNetThirdPayAvailability);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PbNetThirdPayAvailability other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Enabled != other.Enabled) return false;
+      if (DisabledReason != other.DisabledReason) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Enabled != false) hash ^= Enabled.GetHashCode();
+      if (DisabledReason != 0) hash ^= DisabledReason.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (Enabled != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(Enabled);
+      }
+      if (DisabledReason != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(DisabledReason);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Enabled != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(Enabled);
+      }
+      if (DisabledReason != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(DisabledReason);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (Enabled != false) {
+        size += 1 + 1;
+      }
+      if (DisabledReason != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(DisabledReason);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PbNetThirdPayAvailability other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Enabled != false) {
+        Enabled = other.Enabled;
+      }
+      if (other.DisabledReason != 0) {
+        DisabledReason = other.DisabledReason;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Enabled = input.ReadBool();
+            break;
+          }
+          case 16: {
+            DisabledReason = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Enabled = input.ReadBool();
+            break;
+          }
+          case 16: {
+            DisabledReason = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// 第三方支付商品配置
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PbNetThirdProductConfig : pb::IMessage<PbNetThirdProductConfig>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PbNetThirdProductConfig> _parser = new pb::MessageParser<PbNetThirdProductConfig>(() => new PbNetThirdProductConfig());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PbNetThirdProductConfig> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[3]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdProductConfig() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdProductConfig(PbNetThirdProductConfig other) : this() {
+      productList_ = other.productList_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdProductConfig Clone() {
+      return new PbNetThirdProductConfig(this);
+    }
+
+    /// <summary>Field number for the "product_list" field.</summary>
+    public const int ProductListFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo> _repeated_productList_codec
+        = pb::FieldCodec.ForMessage(10, global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo.Parser);
+    private readonly pbc::RepeatedField<global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo> productList_ = new pbc::RepeatedField<global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdProductInfo> ProductList {
+      get { return productList_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PbNetThirdProductConfig);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PbNetThirdProductConfig other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!productList_.Equals(other.productList_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= productList_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      productList_.WriteTo(output, _repeated_productList_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      productList_.WriteTo(ref output, _repeated_productList_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      size += productList_.CalculateSize(_repeated_productList_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PbNetThirdProductConfig other) {
+      if (other == null) {
+        return;
+      }
+      productList_.Add(other.productList_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            productList_.AddEntriesFrom(input, _repeated_productList_codec);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
             productList_.AddEntriesFrom(ref input, _repeated_productList_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// 第三方支付渠道参数配置
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PbNetThirdChannelConfig : pb::IMessage<PbNetThirdChannelConfig>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PbNetThirdChannelConfig> _parser = new pb::MessageParser<PbNetThirdChannelConfig>(() => new PbNetThirdChannelConfig());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PbNetThirdChannelConfig> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdChannelConfig() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdChannelConfig(PbNetThirdChannelConfig other) : this() {
+      paymentCustomerIds_ = other.paymentCustomerIds_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdChannelConfig Clone() {
+      return new PbNetThirdChannelConfig(this);
+    }
+
+    /// <summary>Field number for the "payment_customer_ids" field.</summary>
+    public const int PaymentCustomerIdsFieldNumber = 1;
+    private string paymentCustomerIds_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string PaymentCustomerIds {
+      get { return paymentCustomerIds_; }
+      set {
+        paymentCustomerIds_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PbNetThirdChannelConfig);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PbNetThirdChannelConfig other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (PaymentCustomerIds != other.PaymentCustomerIds) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (PaymentCustomerIds.Length != 0) hash ^= PaymentCustomerIds.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (PaymentCustomerIds.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(PaymentCustomerIds);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (PaymentCustomerIds.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(PaymentCustomerIds);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (PaymentCustomerIds.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PaymentCustomerIds);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PbNetThirdChannelConfig other) {
+      if (other == null) {
+        return;
+      }
+      if (other.PaymentCustomerIds.Length != 0) {
+        PaymentCustomerIds = other.PaymentCustomerIds;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            PaymentCustomerIds = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            PaymentCustomerIds = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// 第三方支付页面配置
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class PbNetThirdPaymentPageConfig : pb::IMessage<PbNetThirdPaymentPageConfig>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<PbNetThirdPaymentPageConfig> _parser = new pb::MessageParser<PbNetThirdPaymentPageConfig>(() => new PbNetThirdPaymentPageConfig());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<PbNetThirdPaymentPageConfig> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[5]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdPaymentPageConfig() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdPaymentPageConfig(PbNetThirdPaymentPageConfig other) : this() {
+      paymentPageUrl_ = other.paymentPageUrl_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public PbNetThirdPaymentPageConfig Clone() {
+      return new PbNetThirdPaymentPageConfig(this);
+    }
+
+    /// <summary>Field number for the "payment_page_url" field.</summary>
+    public const int PaymentPageUrlFieldNumber = 1;
+    private string paymentPageUrl_ = "";
+    /// <summary>
+    /// 支付页 HTTPS 绝对地址
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string PaymentPageUrl {
+      get { return paymentPageUrl_; }
+      set {
+        paymentPageUrl_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as PbNetThirdPaymentPageConfig);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(PbNetThirdPaymentPageConfig other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (PaymentPageUrl != other.PaymentPageUrl) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (PaymentPageUrl.Length != 0) hash ^= PaymentPageUrl.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (PaymentPageUrl.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(PaymentPageUrl);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (PaymentPageUrl.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(PaymentPageUrl);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (PaymentPageUrl.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PaymentPageUrl);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(PbNetThirdPaymentPageConfig other) {
+      if (other == null) {
+        return;
+      }
+      if (other.PaymentPageUrl.Length != 0) {
+        PaymentPageUrl = other.PaymentPageUrl;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            PaymentPageUrl = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            PaymentPageUrl = input.ReadString();
             break;
           }
         }
@@ -637,7 +1653,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[2]; }
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -961,7 +1977,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[3]; }
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1174,7 +2190,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[4]; }
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1416,7 +2432,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[5]; }
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1643,472 +2659,6 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
   }
 
   /// <summary>
-  /// 渠道参数查询请求
-  /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class PbNetThirdPayChannelParamsReq : pb::IMessage<PbNetThirdPayChannelParamsReq>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
-    private static readonly pb::MessageParser<PbNetThirdPayChannelParamsReq> _parser = new pb::MessageParser<PbNetThirdPayChannelParamsReq>(() => new PbNetThirdPayChannelParamsReq());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<PbNetThirdPayChannelParamsReq> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[6]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdPayChannelParamsReq() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdPayChannelParamsReq(PbNetThirdPayChannelParamsReq other) : this() {
-      head_ = other.head_ != null ? other.head_.Clone() : null;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdPayChannelParamsReq Clone() {
-      return new PbNetThirdPayChannelParamsReq(this);
-    }
-
-    /// <summary>Field number for the "head" field.</summary>
-    public const int HeadFieldNumber = 1;
-    private global::NovaFramework.Runtime.PbNetReqHeader head_;
-    /// <summary>
-    /// 请求公共头，包含应用 ID 和用户 ID
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::NovaFramework.Runtime.PbNetReqHeader Head {
-      get { return head_; }
-      set {
-        head_ = value;
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override bool Equals(object other) {
-      return Equals(other as PbNetThirdPayChannelParamsReq);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(PbNetThirdPayChannelParamsReq other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(Head, other.Head)) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (head_ != null) hash ^= Head.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
-      if (head_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Head);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (head_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Head);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int CalculateSize() {
-      int size = 0;
-      if (head_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Head);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(PbNetThirdPayChannelParamsReq other) {
-      if (other == null) {
-        return;
-      }
-      if (other.head_ != null) {
-        if (head_ == null) {
-          Head = new global::NovaFramework.Runtime.PbNetReqHeader();
-        }
-        Head.MergeFrom(other.Head);
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 10: {
-            if (head_ == null) {
-              Head = new global::NovaFramework.Runtime.PbNetReqHeader();
-            }
-            input.ReadMessage(Head);
-            break;
-          }
-        }
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 10: {
-            if (head_ == null) {
-              Head = new global::NovaFramework.Runtime.PbNetReqHeader();
-            }
-            input.ReadMessage(Head);
-            break;
-          }
-        }
-      }
-    }
-    #endif
-
-  }
-
-  /// <summary>
-  /// 渠道参数查询响应
-  /// </summary>
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class PbNetThirdPayChannelParamsResp : pb::IMessage<PbNetThirdPayChannelParamsResp>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
-    private static readonly pb::MessageParser<PbNetThirdPayChannelParamsResp> _parser = new pb::MessageParser<PbNetThirdPayChannelParamsResp>(() => new PbNetThirdPayChannelParamsResp());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<PbNetThirdPayChannelParamsResp> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[7]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdPayChannelParamsResp() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdPayChannelParamsResp(PbNetThirdPayChannelParamsResp other) : this() {
-      head_ = other.head_ != null ? other.head_.Clone() : null;
-      paymentCustomerIds_ = other.paymentCustomerIds_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public PbNetThirdPayChannelParamsResp Clone() {
-      return new PbNetThirdPayChannelParamsResp(this);
-    }
-
-    /// <summary>Field number for the "head" field.</summary>
-    public const int HeadFieldNumber = 1;
-    private global::NovaFramework.Runtime.PbNetRespHeader head_;
-    /// <summary>
-    /// 响应公共头
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::NovaFramework.Runtime.PbNetRespHeader Head {
-      get { return head_; }
-      set {
-        head_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "payment_customer_ids" field.</summary>
-    public const int PaymentCustomerIdsFieldNumber = 2;
-    private string paymentCustomerIds_ = "";
-    /// <summary>
-    /// 部分渠道要求透传的 CID 等参数
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string PaymentCustomerIds {
-      get { return paymentCustomerIds_; }
-      set {
-        paymentCustomerIds_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override bool Equals(object other) {
-      return Equals(other as PbNetThirdPayChannelParamsResp);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(PbNetThirdPayChannelParamsResp other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(Head, other.Head)) return false;
-      if (PaymentCustomerIds != other.PaymentCustomerIds) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (head_ != null) hash ^= Head.GetHashCode();
-      if (PaymentCustomerIds.Length != 0) hash ^= PaymentCustomerIds.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
-      if (head_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Head);
-      }
-      if (PaymentCustomerIds.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteString(PaymentCustomerIds);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (head_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Head);
-      }
-      if (PaymentCustomerIds.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteString(PaymentCustomerIds);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int CalculateSize() {
-      int size = 0;
-      if (head_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Head);
-      }
-      if (PaymentCustomerIds.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(PaymentCustomerIds);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(PbNetThirdPayChannelParamsResp other) {
-      if (other == null) {
-        return;
-      }
-      if (other.head_ != null) {
-        if (head_ == null) {
-          Head = new global::NovaFramework.Runtime.PbNetRespHeader();
-        }
-        Head.MergeFrom(other.Head);
-      }
-      if (other.PaymentCustomerIds.Length != 0) {
-        PaymentCustomerIds = other.PaymentCustomerIds;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 10: {
-            if (head_ == null) {
-              Head = new global::NovaFramework.Runtime.PbNetRespHeader();
-            }
-            input.ReadMessage(Head);
-            break;
-          }
-          case 18: {
-            PaymentCustomerIds = input.ReadString();
-            break;
-          }
-        }
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 10: {
-            if (head_ == null) {
-              Head = new global::NovaFramework.Runtime.PbNetRespHeader();
-            }
-            input.ReadMessage(Head);
-            break;
-          }
-          case 18: {
-            PaymentCustomerIds = input.ReadString();
-            break;
-          }
-        }
-      }
-    }
-    #endif
-
-  }
-
-  /// <summary>
   /// 验单请求
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -2126,7 +2676,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[8]; }
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2368,7 +2918,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[9]; }
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2610,7 +3160,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[10]; }
+      get { return global::NovaFramework.SDK.IAP.ThirdPay.Runtime.PbNetThirdPayReflection.Descriptor.MessageTypes[12]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

@@ -302,6 +302,8 @@ namespace NovaFramework.Editor
 
             EditorUtil.Draw.EnumSelector<DebuggerActiveType>("Debugger 激活类型", m_DebuggerActiveType, true, null, UnityEngine.GUILayout.Width(180f));
             EditorUtil.Draw.IntSlider("Console 最大日志条数", m_MaximumConsoleEntries, 0, 20000, true, null, null, UnityEngine.GUILayout.Width(180f));
+            EditorUtil.Draw.PropertyField(m_RuntimeDebuggerFont, "Debugger 字体", false);
+            EditorUtil.Draw.HelpBox(MessageType.Info, new[] { "WebGL / 微信小游戏没有 Editor 的系统字体回退；需要显示中文日志时，请绑定包含中文字形的 Font。" });
             EditorUtil.Draw.Line();
         }
 

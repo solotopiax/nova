@@ -493,6 +493,16 @@ namespace NovaFramework.Editor
             m_ItemsList.onAddDropdownCallback = (Rect buttonRect, ReorderableList list) =>
             {
                 GenericMenu menu = new GenericMenu();
+                if (m_CopiedBatchItem != null)
+                {
+                    menu.AddItem(new GUIContent("粘贴"), false, PasteBatchItemFromClipboard);
+                }
+                else
+                {
+                    menu.AddDisabledItem(new GUIContent("粘贴"));
+                }
+                menu.AddSeparator(string.Empty);
+
                 foreach (IGrouping<string, PipifyStepInfo> group in EditorUtil.Pipify.Registry.GroupByCategory())
                 {
                     string category = group.Key;
@@ -546,6 +556,50 @@ namespace NovaFramework.Editor
             m_ItemsListBoundBatchIndex = -1;
             EnsureItemsListForSelectedBatch();
             MarkDirty();
+        }
+
+        /// <summary>
+        /// 把 Step 的当前配置复制为窗口内存快照，不修改任何 Batch。
+        /// </summary>
+        /// <param name="source">要复制的 Step。</param>
+        private void CopyBatchItemToClipboard(BatchItem source)
+        {
+            m_CopiedBatchItem = CloneBatchItem(source);
+            ShowNotification(new GUIContent("已复制 Step，可在“+”菜单中粘贴"));
+        }
+
+        /// <summary>
+        /// 把内存快照的独立副本追加到当前 Batch。剪贴板保留，可重复粘贴。
+        /// </summary>
+        private void PasteBatchItemFromClipboard()
+        {
+            if (m_CopiedBatchItem == null ||
+                m_Settings == null ||
+                m_SelectedBatchIndex < 0 ||
+                m_SelectedBatchIndex >= m_Settings.Batches.Count)
+            {
+                return;
+            }
+
+            m_Settings.Batches[m_SelectedBatchIndex].Items.Add(CloneBatchItem(m_CopiedBatchItem));
+            m_ItemsListBoundBatchIndex = -1;
+            EnsureItemsListForSelectedBatch();
+            MarkDirty();
+        }
+
+        /// <summary>
+        /// 创建 BatchItem 的独立快照，避免粘贴项与来源项共享可变对象。
+        /// </summary>
+        /// <param name="source">源 Step。</param>
+        /// <returns>独立副本；源为空时返回 null。</returns>
+        internal static BatchItem CloneBatchItem(BatchItem source)
+        {
+            if (source == null) return null;
+            return new BatchItem
+            {
+                StepId = source.StepId,
+                ParamsJson = source.ParamsJson,
+            };
         }
 
         /// <summary>

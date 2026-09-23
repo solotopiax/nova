@@ -21,7 +21,7 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// 基于 UnityWebRequest 的内置且唯一 HTTP 传输。
     /// </summary>
-    internal sealed class UnityWebRequestTransport : IUwrHttpTransport
+    internal sealed class UnityWebRequestTransport : IHttpTransport
     {
         private const string c_BinaryContentType = "application/octet-stream";
 

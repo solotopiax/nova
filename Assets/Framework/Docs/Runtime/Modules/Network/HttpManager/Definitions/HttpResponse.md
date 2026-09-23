@@ -21,9 +21,6 @@ HTTP 响应数据，实现 IReference 支持 ReferencePool 池化复用。除状
 // --- 构造器（ReferencePool 要求的公开空参构造器；TotalBytes 初始化为 -1）---
 public HttpResponse()
 
-// --- 工厂方法（public SPI，从 ReferencePool 获取实例并初始化）---
-public static HttpResponse Create(int statusCode, string body, byte[] rawData, Dictionary<string, string> headers, string error, bool isSuccess, long downloadedBytes, long totalBytes, HttpDeliveryState deliveryState = HttpDeliveryState.Unknown)
-
 // --- IReference.Clear（归还池时重置所有字段；TotalBytes 重置为 -1）---
 public void Clear()
 
@@ -46,7 +43,7 @@ public float DownloadProgress { get; }
 
 `HttpDeliveryState` 只表达网络通信层结果：`NotReachedServer` 表示明确停在 DNS、TCP 或 TLS 建连阶段；`Unknown` 表示超时等无法确认情况；`ServerResponded` 表示服务器已返回正式 HTTP 响应，不区分业务结果成功或失败。
 
-普通业务调用方不应直接创建有状态实例，应通过 `IHttpManager` / `IDownloadService` 的异步方法获得；可选 HTTP 后端实现可以通过 `Create(...)` 创建池化响应。消费完毕后通过 `ReferencePool.Put(response)` 归还。
+普通业务调用方不能直接创建有状态实例，应通过 `IHttpManager` / `IDownloadService` 的异步方法获得。消费完毕后通过 `ReferencePool.Put(response)` 归还。
 
 ---
 

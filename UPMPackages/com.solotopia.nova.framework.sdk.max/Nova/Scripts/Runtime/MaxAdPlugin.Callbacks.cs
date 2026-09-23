@@ -24,10 +24,17 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// </summary>
         private void RegisterCallbacks()
         {
+            if (m_CallbacksRegistered)
+            {
+                Log.Warning(LogTag.Max, "MAX SDK 回调已经注册，跳过重复注册。");
+                return;
+            }
+
             RegisterRVCallbacks();
             RegisterInterCallbacks();
             RegisterBannerCallbacks();
             RegisterAppOpenCallbacks();
+            m_CallbacksRegistered = true;
         }
 
         /// <summary>
@@ -120,10 +127,16 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// </summary>
         protected override UniTask DisposeChannelSDKAsync(CancellationToken ct)
         {
+            if (!m_CallbacksRegistered)
+            {
+                return UniTask.CompletedTask;
+            }
+
             UnregisterRVCallbacks();
             UnregisterInterCallbacks();
             UnregisterBannerCallbacks();
             UnregisterAppOpenCallbacks();
+            m_CallbacksRegistered = false;
             return UniTask.CompletedTask;
         }
 

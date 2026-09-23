@@ -497,9 +497,14 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             m_PayTcs = null;
 
             LogWarning($"平台购买失败，商品表ID={tableId}，原因={order.FailureReason}，详情={order.Details}，{diagnostic}");
-            string errorDesc = $"平台购买失败：{order.FailureReason}";
-            m_Hub.Store.TrackLocalPayFailInternal(tableId, product, code, errorDesc, customData);
+            string errorDesc = $"平台购买失败：{order.FailureReason}，详情={order.Details}";
             var failResult = new IAPResult(tableId, (int)code, IAPErrorSource.Mobile, errorDesc, customData, receiptParam);
+            // 活跃 PayAsync 会在 Store 返回边界统一上报；只有没有返回链路的迟到回调才在这里兜底，避免同一次取消重复打点。
+            if (payTcs == null)
+            {
+                m_Hub.Store.TrackLocalPayFailInternal(tableId, product, code, errorDesc, customData);
+            }
+
             m_Hub.Context.EventBridge?.RaisePayFailed(failResult);
             payTcs?.TrySetResult(failResult);
         }

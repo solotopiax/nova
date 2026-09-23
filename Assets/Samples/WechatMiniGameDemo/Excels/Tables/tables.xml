@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+  <table name="TbDemo_Item" value="Demo_Item" input="Demo_Item@TableList.xlsx" mode="list" readSchemaFromFile="true" comment="Demo_Item" />
+  <table name="TbListA" value="ListA" input="ListA@TableList.xlsx" mode="list" readSchemaFromFile="true" comment="ListA" />
+  <table name="TbListB" value="ListB" input="ListB@TableList.xlsx" mode="list" readSchemaFromFile="true" comment="ListB" />
+  <table name="TbMap1" value="Map1" input="Map1@TableMap.xlsx" mode="map" index="Name" readSchemaFromFile="true" comment="Map1" />
+</module>

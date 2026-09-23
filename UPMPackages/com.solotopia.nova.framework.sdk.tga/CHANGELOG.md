@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.1.16] - 2026-09-23
+
+### Fixed
+
+- TGADemo 的 Runtime 与 Editor 程序集移除遗留的 WebGL 禁用约束，与 TGA 0.1.15 已支持 WebGL 的包装层和示例能力保持一致。
+
 ## [0.1.15] - 2026-09-18
 
 ### Changed

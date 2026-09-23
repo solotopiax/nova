@@ -36,7 +36,7 @@ MonoBehaviour:
     - m_StepId: build.package
       m_ParamsJson: "{\r\n  \"Target\": 13,\r\n  \"BuildMode\": 1,\r\n  \"DevelopmentBuild\":
         false,\r\n  \"SplitApplicationBinary\": false,\r\n  \"BuildAppBundle\": false,\r\n 
-        \"UseAndroidKeystore\": false,\r\n  \"AndroidKeystorePath\": \"D:\\\\SoloGames-X\\\\nova\\\\Docs\\\\certificates\\\\solotopia.keystore\",\r\n 
+        \"UseAndroidKeystore\": false,\r\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\r\n 
         \"AndroidKeystorePass\": \"\",\r\n  \"AndroidKeyalias\": \"solotopia\",\r\n 
         \"AndroidKeyaliasPass\": \"\",\r\n  \"OutputFolderPath\": \"Builds/Android\"\r\n}"
     - m_StepId: shell.open_folder
@@ -113,14 +113,14 @@ MonoBehaviour:
   - m_Name: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
     m_Description: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
     m_Items:
-    - m_StepId: edm4u.android_resolve
-      m_ParamsJson: 
-    - m_StepId: export.config
-      m_ParamsJson: 
     - m_StepId: build.package
-      m_ParamsJson: '{"Target":13,"DevelopmentBuild":false,"OutputPath":"Build/Nova.apk"}'
+      m_ParamsJson: "{\r\n  \"Target\": 13,\r\n  \"BuildMode\": 1,\r\n  \"DevelopmentBuild\":
+        false,\r\n  \"SplitApplicationBinary\": false,\r\n  \"BuildAppBundle\": false,\r\n 
+        \"UseAndroidKeystore\": false,\r\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\r\n 
+        \"AndroidKeystorePass\": \"\",\r\n  \"AndroidKeyalias\": \"solotopia\",\r\n 
+        \"AndroidKeyaliasPass\": \"\",\r\n  \"OutputFolderPath\": \"Builds/Android\"\r\n}"
     - m_StepId: shell.open_folder
-      m_ParamsJson: '{"Path":"Build"}'
+      m_ParamsJson: "{\r\n  \"Path\": \"Builds/Android\"\r\n}"
   - m_Name: "Localization\u5BFC\u51FA\u6D4B\u8BD5"
     m_Description: "Localization\u5BFC\u51FA\u6D4B\u8BD5"
     m_Items:

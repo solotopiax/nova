@@ -31,6 +31,15 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         UniTask<ThirdPayOpenResult> OpenAsync(string paymentUrl, CancellationToken ct);
 
         /// <summary>
+        /// 打开支付页并返回包含回调状态、打开方式和失败详情的结构化结果。
+        /// </summary>
+        /// <param name="paymentUrl">已完成加密的支付 URL。</param>
+        /// <param name="expectedClientOrderId">当前支付会话期望的客户端订单号。</param>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>支付页结构化结果。</returns>
+        UniTask<ThirdPayPaymentPageResult> OpenWithResultAsync(string paymentUrl, string expectedClientOrderId, CancellationToken ct);
+
+        /// <summary>
         /// 设置 WebView 导航栏标题。
         /// </summary>
         /// <param name="titleText">标题文本。</param>
@@ -48,9 +57,24 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     /// </summary>
     internal sealed class ThirdPayWebViewService : ThirdPayLogOwner, IThirdPayWebViewService
     {
+        /// <summary>
+        /// 当前正在运行的支付页会话。
+        /// </summary>
         private ThirdPayWebViewSession m_CurrentSession;
+
+        /// <summary>
+        /// 标记支付页服务是否已经释放。
+        /// </summary>
         private bool m_Disposed;
+
+        /// <summary>
+        /// 支付页导航栏标题；空值表示使用应用名称。
+        /// </summary>
         private string m_TitleText = string.Empty;
+
+        /// <summary>
+        /// 支付页导航栏关闭按钮文本。
+        /// </summary>
         private string m_CloseText = "close";
 
         /// <summary>
@@ -86,6 +110,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>支付页流程结果。</returns>
         public async UniTask<ThirdPayOpenResult> OpenAsync(string paymentUrl, CancellationToken ct)
         {
+            return (await OpenWithResultAsync(paymentUrl, string.Empty, ct)).Result;
+        }
+
+        /// <summary>
+        /// 打开支付页并返回包含回调状态、打开方式和失败详情的结构化结果。
+        /// </summary>
+        /// <param name="paymentUrl">已完成加密的支付 URL。</param>
+        /// <param name="expectedClientOrderId">当前支付会话期望的客户端订单号；为空时保留旧调用方兼容行为。</param>
+        /// <param name="ct">取消令牌。</param>
+        /// <returns>支付页结构化结果。</returns>
+        public async UniTask<ThirdPayPaymentPageResult> OpenWithResultAsync(string paymentUrl, string expectedClientOrderId, CancellationToken ct)
+        {
             if (m_Disposed)
             {
                 throw new ObjectDisposedException(nameof(ThirdPayWebViewService));
@@ -102,11 +138,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             ct.ThrowIfCancellationRequested();
-            var session = new ThirdPayWebViewSession();
+            var session = new ThirdPayWebViewSession(expectedClientOrderId);
             m_CurrentSession = session;
             try
             {
-                return await session.OpenAsync(paymentUrl, m_TitleText, m_CloseText, ct);
+                return await session.OpenWithResultAsync(paymentUrl, m_TitleText, m_CloseText, ct);
             }
             finally
             {
@@ -130,7 +166,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             m_Disposed = true;
-            m_CurrentSession?.Complete(ThirdPayOpenResult.Failed);
+            m_CurrentSession?.CompleteAsDisposed();
             m_CurrentSession?.Dispose();
             m_CurrentSession = null;
         }
@@ -140,22 +176,71 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// </summary>
         private sealed class ThirdPayWebViewSession : ThirdPayLogOwner, IDisposable
         {
-            private readonly UniTaskCompletionSource<ThirdPayOpenResult> m_CompletionSource = new();
+            /// <summary>
+            /// 当前支付页期望接收的客户端订单号；用于拒绝其他会话的全局 Deep Link。
+            /// </summary>
+            private readonly string m_ExpectedClientOrderId;
+
+            /// <summary>
+            /// 向支付调用方发布页面终态的完成源。
+            /// </summary>
+            private readonly UniTaskCompletionSource<ThirdPayPaymentPageResult> m_CompletionSource = new();
+
+            /// <summary>
+            /// 当前支付页会话的实际打开方式。
+            /// </summary>
+            private ThirdPayExternalBrowserLaunchMode m_OpenMode = ThirdPayExternalBrowserLaunchMode.Failed;
+
+            /// <summary>
+            /// 标记当前支付页是否已经建立支付会话。
+            /// </summary>
+            private bool m_IsSessionEstablished;
+
+            /// <summary>
+            /// 当前支付调用的取消令牌注册。
+            /// </summary>
             private CancellationTokenRegistration m_CancellationRegistration;
+
+            /// <summary>
+            /// 承载嵌入式 UniWebView 的临时 Unity 对象。
+            /// </summary>
             private GameObject m_WebViewHost;
+
+            /// <summary>
+            /// Android 与 Editor 使用的嵌入式 UniWebView。
+            /// </summary>
             private UniWebView m_WebView;
+
+            /// <summary>
+            /// iOS 使用的 Safe Browsing 支付页。
+            /// </summary>
             private UniWebViewSafeBrowsing m_SafeBrowsing;
+
+            /// <summary>
+            /// 标记当前支付页会话是否已经释放。
+            /// </summary>
             private bool m_Disposed;
+
+            /// <summary>
+            /// 创建单次支付页会话并冻结期望的客户端订单号。
+            /// </summary>
+            /// <param name="expectedClientOrderId">当前支付会话期望的客户端订单号。</param>
+            public ThirdPayWebViewSession(string expectedClientOrderId)
+            {
+                m_ExpectedClientOrderId = expectedClientOrderId ?? string.Empty;
+            }
 
             /// <summary>
             /// 创建并展示单次 UniWebView 支付页。
             /// </summary>
             /// <param name="paymentUrl">已完成加密的支付 URL。</param>
+            /// <param name="titleText">支付页导航栏标题。</param>
+            /// <param name="closeText">支付页导航栏关闭按钮文本。</param>
             /// <param name="ct">取消令牌。</param>
             /// <returns>支付页流程结果。</returns>
-            public UniTask<ThirdPayOpenResult> OpenAsync(string paymentUrl, string titleText, string closeText, CancellationToken ct)
+            public UniTask<ThirdPayPaymentPageResult> OpenWithResultAsync(string paymentUrl, string titleText, string closeText, CancellationToken ct)
             {
-                m_CancellationRegistration = ct.Register(() => m_CompletionSource.TrySetCanceled(ct));
+                m_CancellationRegistration = ct.Register(() => Complete(ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Failed, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.OperationCancelled, ThirdPayPaymentFailureReason.OperationCancelled, 0, string.Empty, m_IsSessionEstablished)));
 #if UNITY_IOS && !UNITY_EDITOR
                 OpenSafeBrowsing(paymentUrl);
 #else
@@ -168,8 +253,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// 创建 Android 与 Editor 使用的嵌入式 UniWebView，并接入页面回调和 URL 重写。
             /// </summary>
             /// <param name="paymentUrl">已完成加密的支付 URL。</param>
+            /// <param name="titleText">支付页导航栏标题。</param>
+            /// <param name="closeText">支付页导航栏关闭按钮文本。</param>
             private void OpenEmbeddedWebView(string paymentUrl, string titleText, string closeText)
             {
+                m_OpenMode = ThirdPayExternalBrowserLaunchMode.EmbeddedWebView;
                 m_WebViewHost = new GameObject("ThirdPayWebView");
                 m_WebView = m_WebViewHost.AddComponent<UniWebView>();
                 // 不依赖业务侧 RectTransform，显式按当前屏幕铺满支付页。
@@ -195,10 +283,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 if (!m_WebView.Show())
                 {
                     LogWarning("第三方支付 WebView failed 返回：来源=ShowFailed");
-                    Complete(ThirdPayOpenResult.Failed);
+                    Complete(ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Failed, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.Unknown, ThirdPayPaymentFailureReason.PaymentPageOpenFailed, 0, string.Empty, false));
                 }
                 else
                 {
+                    m_IsSessionEstablished = true;
                     LogDebug("第三方支付 WebView 已显示：Mode=Embedded");
                 }
             }
@@ -209,10 +298,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// <param name="paymentUrl">已完成加密的支付 URL。</param>
             private void OpenSafeBrowsing(string paymentUrl)
             {
+                m_OpenMode = ThirdPayExternalBrowserLaunchMode.IOSSafeBrowsing;
                 if (!UniWebViewSafeBrowsing.IsSafeBrowsingSupported)
                 {
                     LogWarning("第三方支付 WebView failed 返回：来源=SafeBrowsingUnsupported");
-                    Complete(ThirdPayOpenResult.Failed);
+                    Complete(ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Failed, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.Unknown, ThirdPayPaymentFailureReason.PaymentPageOpenFailed, 0, "SafeBrowsingUnsupported", false));
                     return;
                 }
 
@@ -220,6 +310,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 m_SafeBrowsing = UniWebViewSafeBrowsing.Create(paymentUrl);
                 m_SafeBrowsing.OnSafeBrowsingFinished += OnSafeBrowsingFinished;
                 m_SafeBrowsing.Show();
+                m_IsSessionEstablished = true;
                 LogDebug("第三方支付 SafeBrowsing 已显示");
             }
 
@@ -227,16 +318,24 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             /// 尝试完成当前支付页；重复回调不会覆盖第一个终态。
             /// </summary>
             /// <param name="result">支付页终态。</param>
-            public void Complete(ThirdPayOpenResult result)
+            public void Complete(ThirdPayPaymentPageResult result)
             {
                 if (m_CompletionSource.TrySetResult(result))
                 {
-                    LogDebug($"第三方支付 WebView 完成：Result={result}");
+                    LogDebug($"第三方支付 WebView 完成：Result={result.Result}，Mode={result.OpenMode}，CallbackStatus={(int)result.CallbackStatus}，CloseReason={result.CloseReason}，FailureReason={result.FailureReason}");
                 }
                 else
                 {
-                    LogDebug($"第三方支付 WebView 重复完成已忽略：Result={result}");
+                    LogDebug($"第三方支付 WebView 重复完成已忽略：Result={result.Result}，CloseReason={result.CloseReason}");
                 }
+            }
+
+            /// <summary>
+            /// 使用当前会话真实打开状态完成 Store 释放结果。
+            /// </summary>
+            public void CompleteAsDisposed()
+            {
+                Complete(ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Failed, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.StoreDisposed, ThirdPayPaymentFailureReason.StoreDisposed, 0, string.Empty, m_IsSessionEstablished));
             }
 
             /// <summary>
@@ -254,10 +353,28 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                     return;
                 }
 
-                if (ThirdPayWebViewCallbackResolver.TryResolve(message.Path, message.Args, out ThirdPayOpenResult result))
+                ThirdPayCallbackResolveResult resolveResult = ThirdPayWebViewCallbackResolver.ResolveCallback(message.Path, message.Args, out ThirdPayWebViewCallback callback);
+                if ((resolveResult == ThirdPayCallbackResolveResult.Valid || resolveResult == ThirdPayCallbackResolveResult.UnknownStatus) && !IsCallbackForCurrentOrder(callback))
                 {
-                    LogDebug($"第三方支付 WebView message 返回：Path={message.Path}，Args={FormatArgs(message.Args)}，Result={result}");
+                    LogWarning($"第三方支付 WebView 忽略非当前订单回调：ExpectedOrderId={m_ExpectedClientOrderId}，CallbackOrderId={callback.OrderId}");
+                    return;
+                }
+
+                if (resolveResult == ThirdPayCallbackResolveResult.Valid)
+                {
+                    ThirdPayPaymentPageResult result = CreateCallbackResult(callback);
+                    LogDebug($"第三方支付 WebView message 返回：Path={message.Path}，Args={FormatArgs(message.Args)}，Result={result.Result}，Status={callback.RawStatus}");
                     Complete(result);
+                }
+                else if (resolveResult == ThirdPayCallbackResolveResult.InvalidPayload)
+                {
+                    LogWarning($"第三方支付 WebView pay_callback 参数无效：Path={message.Path}，Args={FormatArgs(message.Args)}");
+                    Complete(ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Failed, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.PayCallbackInvalidPayload, ThirdPayPaymentFailureReason.PaymentCallbackInvalidPayload, 0, string.Empty, m_IsSessionEstablished));
+                }
+                else if (resolveResult == ThirdPayCallbackResolveResult.UnknownStatus)
+                {
+                    LogWarning($"第三方支付 WebView pay_callback 状态未知：Path={message.Path}，Status={callback.RawStatus}");
+                    Complete(ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Failed, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.PayCallbackUnknownStatus, ThirdPayPaymentFailureReason.PaymentCallbackUnknownStatus, callback.RawStatus, string.Empty, m_IsSessionEstablished));
                 }
                 else
                 {
@@ -279,13 +396,35 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
 
                 LogDebug($"第三方支付 SafeBrowsing 收到 DeepLink：URL={url}");
                 var message = new UniWebViewMessage(url);
-                if (!ThirdPayWebViewCallbackResolver.TryResolve(message.Path, message.Args, out ThirdPayOpenResult result))
+                ThirdPayCallbackResolveResult resolveResult = ThirdPayWebViewCallbackResolver.ResolveCallback(message.Path, message.Args, out ThirdPayWebViewCallback callback);
+                if (resolveResult == ThirdPayCallbackResolveResult.NotPaymentCallback)
                 {
                     LogDebug($"第三方支付 SafeBrowsing 未识别 DeepLink，继续等待：Path={message.Path}，Args={FormatArgs(message.Args)}");
                     return;
                 }
 
-                LogDebug($"第三方支付 SafeBrowsing message 返回：Path={message.Path}，Args={FormatArgs(message.Args)}，Result={result}");
+                if (resolveResult == ThirdPayCallbackResolveResult.InvalidPayload)
+                {
+                    LogWarning($"第三方支付 SafeBrowsing pay_callback 参数无效，无法确认所属订单并继续等待：Path={message.Path}，Args={FormatArgs(message.Args)}");
+                    return;
+                }
+
+                if (!IsCallbackForCurrentOrder(callback))
+                {
+                    LogWarning($"第三方支付 SafeBrowsing 忽略非当前订单回调：ExpectedOrderId={m_ExpectedClientOrderId}，CallbackOrderId={callback.OrderId}");
+                    return;
+                }
+
+                ThirdPayPaymentPageResult result;
+                if (resolveResult == ThirdPayCallbackResolveResult.Valid)
+                {
+                    result = CreateCallbackResult(callback);
+                }
+                else
+                {
+                    result = ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Failed, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.PayCallbackUnknownStatus, ThirdPayPaymentFailureReason.PaymentCallbackUnknownStatus, callback.RawStatus, string.Empty, m_IsSessionEstablished);
+                }
+                LogDebug($"第三方支付 SafeBrowsing message 返回：Path={message.Path}，Args={FormatArgs(message.Args)}，Result={result.Result}，Resolve={resolveResult}");
                 DismissSafeBrowsing();
                 Complete(result);
             }
@@ -304,7 +443,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 }
 
                 LogDebug("第三方支付 SafeBrowsing 关闭返回：Result=Cancel");
-                Complete(ThirdPayOpenResult.Cancel);
+                Complete(ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Cancel, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.IOSSafeBrowsingDismissed, ThirdPayPaymentFailureReason.OperationCancelled, 0, string.Empty, m_IsSessionEstablished));
             }
 
             /// <summary>
@@ -325,14 +464,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             }
 
             /// <summary>
-            /// 把工具栏关闭或 Android 返回键统一映射为用户取消，并由会话自行清理资源。
+            /// 把 UniWebView 关闭回调统一映射为用户取消，并由会话自行清理资源。
             /// </summary>
             /// <param name="webView">请求关闭的 WebView。</param>
             /// <returns>固定返回 false，避免 UniWebView 与会话重复销毁同一对象。</returns>
             private bool OnShouldClose(UniWebView webView)
             {
                 LogDebug("第三方支付 WebView 关闭返回：来源=OnShouldClose，Result=Cancel");
-                Complete(ThirdPayOpenResult.Cancel);
+                Complete(ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Cancel, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.EmbeddedWebViewUserClosed, ThirdPayPaymentFailureReason.OperationCancelled, 0, string.Empty, m_IsSessionEstablished));
                 return false;
             }
 
@@ -346,7 +485,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             private void OnLoadingErrorReceived(UniWebView webView, int errorCode, string errorMessage, UniWebViewNativeResultPayload payload)
             {
                 LogWarning($"第三方支付 WebView failed 返回：来源=LoadingError，ErrorCode={errorCode}，Error={errorMessage}，Payload={payload}");
-                Complete(ThirdPayOpenResult.Failed);
+                Complete(ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Failed, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.PaymentPageLoadingError, ThirdPayPaymentFailureReason.PaymentPageOpenFailed, errorCode, errorMessage, m_IsSessionEstablished));
             }
 
             /// <summary>
@@ -356,7 +495,39 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             private void OnWebContentProcessTerminated(UniWebView webView)
             {
                 LogWarning("第三方支付 WebView failed 返回：来源=WebContentProcessTerminated");
-                Complete(ThirdPayOpenResult.Failed);
+                Complete(ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Failed, m_OpenMode, ThirdPayWebViewCallbackStatus.Unknown, ThirdPayCloseReason.WebContentProcessTerminated, ThirdPayPaymentFailureReason.PaymentPageOpenFailed, 0, string.Empty, m_IsSessionEstablished));
+            }
+
+            /// <summary>
+            /// 将字段完整的支付回调转换为支付页结构化结果。
+            /// </summary>
+            /// <param name="callback">已解析的支付页回调。</param>
+            /// <returns>可供 Checkout 统一上报和验单的支付页结果。</returns>
+            private ThirdPayPaymentPageResult CreateCallbackResult(ThirdPayWebViewCallback callback)
+            {
+                if (callback.Result == ThirdPayOpenResult.Success)
+                {
+                    return ThirdPayPaymentPageResult.CallbackSuccess(m_OpenMode, callback.Status);
+                }
+
+                if (callback.Result == ThirdPayOpenResult.Cancel)
+                {
+                    return ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Cancel, m_OpenMode, callback.Status, ThirdPayCloseReason.CloseCallback, ThirdPayPaymentFailureReason.OperationCancelled, 0, string.Empty, m_IsSessionEstablished);
+                }
+
+                return ThirdPayPaymentPageResult.Completed(ThirdPayOpenResult.Failed, m_OpenMode, callback.Status, ThirdPayCloseReason.PayCallbackFailed, ThirdPayPaymentFailureReason.PaymentCallbackFailed, callback.RawStatus, string.Empty, m_IsSessionEstablished);
+            }
+
+            /// <summary>
+            /// 判断支付回调是否属于当前支付页会话；close_callback 不含订单号，按当前会话关闭处理。
+            /// </summary>
+            /// <param name="callback">已解析的支付页回调。</param>
+            /// <returns>非 pay_callback、未配置期望订单号或订单号匹配时返回 true。</returns>
+            private bool IsCallbackForCurrentOrder(ThirdPayWebViewCallback callback)
+            {
+                return !string.Equals(callback.Path, "pay_callback", StringComparison.Ordinal)
+                       || string.IsNullOrEmpty(m_ExpectedClientOrderId)
+                       || string.Equals(callback.OrderId, m_ExpectedClientOrderId, StringComparison.Ordinal);
             }
 
             /// <summary>

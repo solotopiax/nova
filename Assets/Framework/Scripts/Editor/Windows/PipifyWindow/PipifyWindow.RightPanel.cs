@@ -128,10 +128,11 @@ namespace NovaFramework.Editor
             PipifyStepInfo info = EditorUtil.Pipify.Registry.FindById(item.StepId);
             string displayLabel = info != null
                 ? $"[{info.Category}] {info.DisplayName}"
-                : $"(未知 Step: {item.StepId})";
+                : $"[Missing] {(string.IsNullOrWhiteSpace(item.StepId) ? "<空 StepId>" : item.StepId)}";
 
             // ── 主行区域 ──
-            float rowY = rect.y + 1f;
+            // Unity 的 miniButton 视觉重心偏上，额外下移 2，使按钮与行背景视觉居中。
+            float rowY = rect.y + 4f;
             float rowH = c_ItemRowHeight;
 
             // 序号
@@ -139,12 +140,15 @@ namespace NovaFramework.Editor
             GUI.Label(indexRect, (index + 1).ToString(), EditorStyles.centeredGreyMiniLabel);
 
             // Step 名称
-            Rect labelRect = new Rect(rect.x + 26f, rowY, rect.width - 26f - 56f, rowH);
+            Rect labelRect = new Rect(rect.x + 26f, rowY, rect.width - 26f - 158f, rowH);
+            Color previousContentColor = GUI.contentColor;
+            if (info == null) GUI.contentColor = Color.red;
             GUI.Label(labelRect, displayLabel, EditorStyles.label);
+            GUI.contentColor = previousContentColor;
 
             // "参数配置" 按钮（仅当 Step 有参数时显示）
             bool hasParams = info != null && info.ParamsType != null;
-            Rect foldRect = new Rect(rect.xMax - 103f, rowY, 70f, rowH);
+            Rect foldRect = new Rect(rect.xMax - 151f, rowY, 70f, rowH);
             if (hasParams)
             {
                 bool expanded = m_ExpandedItemIndices.Contains(index);
@@ -155,6 +159,16 @@ namespace NovaFramework.Editor
                     else m_ExpandedItemIndices.Add(index);
                     Repaint();
                 }
+            }
+
+            // 复制按钮只更新窗口内存中的快照，不修改当前 Batch，也不产生脏标记。
+            Rect copyRect = new Rect(rect.xMax - 75f, rowY, 44f, rowH);
+            if (GUI.Button(
+                    copyRect,
+                    new GUIContent("复制", "复制此 Step，稍后可从“+”菜单粘贴到任意 Batch"),
+                    EditorStyles.miniButton))
+            {
+                CopyBatchItemToClipboard(item);
             }
 
             // 删除按钮

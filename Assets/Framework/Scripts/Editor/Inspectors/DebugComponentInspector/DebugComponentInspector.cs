@@ -29,6 +29,7 @@ namespace NovaFramework.Editor
 
             m_DebuggerActiveType = serializedObject.FindProperty("m_DebuggerActiveType");
             m_MaximumConsoleEntries = serializedObject.FindProperty("m_MaximumConsoleEntries");
+            m_RuntimeDebuggerFont = serializedObject.FindProperty("m_RuntimeDebuggerFont");
             m_CurManagerTypeName = serializedObject.FindProperty("m_CurManagerTypeName");
             m_ManagerTypeNames = new List<string>(EditorUtil.TypeCache.GetTypeNames(typeof(IDebugManager)));
 

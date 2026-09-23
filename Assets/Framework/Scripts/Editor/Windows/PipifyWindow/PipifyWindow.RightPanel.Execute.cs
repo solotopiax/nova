@@ -19,7 +19,8 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 绘制底部执行区。
         /// <para>顶部分割线 + 右对齐「▶ 运行」按钮；</para>
-        /// <para>禁用条件：当前 Batch 无 Item 或存在未保存改动（m_IsDirty）。</para>
+        /// <para>禁用条件：当前 Batch 无 Item、存在未保存改动（m_IsDirty），或包含未注册 Step。</para>
+        /// <para>包含未注册 Step 时，在按钮下方用红字说明禁用原因与处理方式。</para>
         /// <para>点击后 fire-and-forget 调用 EditorUtil.Pipify.RunBatchAsync，
         /// 异常由 Runner 内部通过 WindowReporter 以模态对话框呈现，UI 不额外 try/catch。</para>
         /// </summary>
@@ -34,7 +35,8 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Space(4f);
             EditorUtil.Draw.Line();
 
-            bool disabled = batch.Items.Count == 0 || m_IsDirty;
+            string missingStepsReason = EditorUtil.Pipify.Registry.GetMissingStepsReason(batch);
+            bool disabled = batch.Items.Count == 0 || m_IsDirty || !string.IsNullOrEmpty(missingStepsReason);
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.FlexibleSpace();
@@ -43,6 +45,11 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.SuccessButton("▶ 运行", true, () => OnClickRunBatch(batch), GUILayout.Width(96f));
                 });
             });
+
+            if (!string.IsNullOrEmpty(missingStepsReason))
+            {
+                EditorUtil.Draw.ColoredMiniLabel($"运行已禁用：{missingStepsReason}", Color.red, false);
+            }
         }
 
         /// <summary>

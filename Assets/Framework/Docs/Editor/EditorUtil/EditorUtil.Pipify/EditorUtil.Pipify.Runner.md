@@ -36,8 +36,9 @@
 ### RunBatchAsync 执行流程
 
 1. batch / reporter 为 null 抛 `ArgumentNullException`
-2. `Stopwatch` 全程计时；`reporter.BeginBatch` 通知开始
-3. 按索引遍历 `batch.Items`：
+2. 在读取工作区和执行任何 Step 前预检整个 Batch；存在未注册 Step 时一次性列出缺失 StepId 并抛 `InvalidOperationException`
+3. `Stopwatch` 全程计时；`reporter.BeginBatch` 通知开始
+4. 按索引遍历 `batch.Items`：
    - `ct.ThrowIfCancellationRequested()` 响应外部取消
    - `Registry.FindById` 查元信息，未命中抛 `InvalidOperationException`
    - 有参 Step：ParamsJson 非空时 `Util.Json.Deserialize(json, type)` 反序列化，否则创建默认实例；随后 `ApplyOverridesForItem` 覆盖 CLI 参数，并以 Unity Active BuildTarget 覆盖所有平台字段
@@ -46,7 +47,7 @@
    - 反射调用 `info.Method.Invoke`，强转 `UniTask` 后 `await`
    - `TargetInvocationException` 解包为 `InnerException`，经 `ExceptionDispatchInfo.Capture().Throw()` 保留原始栈后再抛
    - 任何异常先 `reporter.EndStep(false)` 再 throw
-4. `finally` 确保 `reporter.EndBatch` 必被调用
+5. `finally` 确保已开始的 Batch 调用 `reporter.EndBatch`
 
 ### ApplyOverridesForItem Key 匹配优先级
 

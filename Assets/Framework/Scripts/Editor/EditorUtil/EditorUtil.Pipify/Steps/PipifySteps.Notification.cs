@@ -41,8 +41,7 @@ namespace NovaFramework.Editor
             return SendFeishuWebhookAsync(
                 ctx,
                 parameters,
-                s_FeishuHttpClient.SendAsync,
-                EditorUtil.Placeholder.ResolveFromActiveConfig);
+                s_FeishuHttpClient.SendAsync);
         }
 
         /// <summary>
@@ -61,7 +60,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 校验参数、解析消息占位符并发送飞书文本请求。
+        /// 校验参数、按调用方提供的文本处理器转换消息并发送飞书文本请求。
         /// </summary>
         internal static async UniTask SendFeishuWebhookAsync(
             PipifyContext ctx,

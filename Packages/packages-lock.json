@@ -465,7 +465,7 @@
       "source": "local",
       "dependencies": {
         "com.solotopia.nova.framework": "0.6.15",
-        "com.solotopia.nova.framework.sdk.iap": "0.1.15",
+        "com.solotopia.nova.framework.sdk.iap": "0.1.16",
         "com.solotopia.unitask": "10.0.6",
         "com.unity.purchasing": "5.3.1"
       }
@@ -477,7 +477,7 @@
       "dependencies": {
         "com.onevcat.uniwebview": "5.11.1",
         "com.solotopia.nova.framework": "0.6.0",
-        "com.solotopia.nova.framework.sdk.iap": "0.1.12",
+        "com.solotopia.nova.framework.sdk.iap": "0.1.16",
         "com.solotopia.unitask": "10.0.6",
         "com.unity.purchasing": "5.3.1"
       }
@@ -488,7 +488,7 @@
       "source": "local",
       "dependencies": {
         "com.solotopia.nova.framework": "0.6.0",
-        "com.solotopia.nova.framework.sdk.iap": "0.1.12",
+        "com.solotopia.nova.framework.sdk.iap": "0.1.16",
         "com.solotopia.unitask": "10.0.6"
       }
     },
@@ -497,7 +497,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework.sdk.ad": "1.1.10",
+        "com.solotopia.nova.framework.sdk.ad": "1.1.14",
         "com.applovin.mediation.ads": "8.6.4",
         "com.applovin.mediation.adapters.bidmachine.android": "3070000.0.0",
         "com.applovin.mediation.adapters.bidmachine.ios": "307000000.0.0",
@@ -539,11 +539,16 @@
         "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.8"
       }
     },
-    "com.solotopia.nova.framework.wechat.minigame": {
-      "version": "file:../UPMPackages/com.solotopia.nova.framework.wechat.minigame",
+    "com.solotopia.nova.framework.sdk.wechat.minigame": {
+      "version": "file:../UPMPackages/com.solotopia.nova.framework.sdk.wechat.minigame",
       "depth": 0,
       "source": "local",
-      "dependencies": {}
+      "dependencies": {
+        "com.solotopia.nova.framework": "0.6.33",
+        "com.solotopia.nova.framework.kit.network.gamelogin": "0.1.14",
+        "com.solotopia.nova.framework.kit.network.gamebind": "0.1.6",
+        "com.solotopia.nova.framework.sdk.tga": "0.1.16"
+      }
     },
     "com.solotopia.simplediskutils": {
       "version": "file:../UPMPackages/com.solotopia.simplediskutils",

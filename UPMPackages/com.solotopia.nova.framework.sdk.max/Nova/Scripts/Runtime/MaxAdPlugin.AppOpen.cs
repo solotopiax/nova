@@ -33,6 +33,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private UniTask<AdResult> ShowAppOpenAsync(string placementId, CancellationToken ct)
         {
             m_AppOpenTcs = new UniTaskCompletionSource<AdResult>();
+            BeginFullscreenImpression(AdFormat.AppOpen, placementId);
             MaxSdk.ShowAppOpenAd(placementId);
             return m_AppOpenTcs.Task;
         }
@@ -83,7 +84,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void OnAppOpenDisplayed(string adUnitId, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX AppOpen 展示成功回调：placement={adUnitId}，network={info?.NetworkName}。");
-            TrackAdShow(AdFormat.AppOpen, adUnitId);
+            TrackAdShow(AdFormat.AppOpen, adUnitId, MarkFullscreenDisplayed(AdFormat.AppOpen, adUnitId));
             RaiseShowCompleted(new AdResult
             {
                 Success = true,
@@ -104,6 +105,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void OnAppOpenDisplayFailed(string adUnitId, MaxSdkBase.ErrorInfo err, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX AppOpen 展示失败回调：placement={adUnitId}，network={info?.NetworkName}，code={(int)err.Code}，message={err.Message}。");
+            AbandonFullscreenImpression(AdFormat.AppOpen, adUnitId);
             var result = new AdResult
             {
                 Success = false,
@@ -164,7 +166,10 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Revenue = info.Revenue,
                 Currency = "USD",
                 Precision = info.RevenuePrecision,
-            }, () => TrackMaxRevenue(AdFormat.AppOpen, adUnitId, info));
+            }, () => TrackMaxRevenue(AdFormat.AppOpen,
+                adUnitId,
+                info,
+                RecordFullscreenRevenue(AdFormat.AppOpen, adUnitId)));
         }
 #endif
     }

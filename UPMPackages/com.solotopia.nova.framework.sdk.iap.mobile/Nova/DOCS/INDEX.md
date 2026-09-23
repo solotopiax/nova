@@ -27,7 +27,7 @@
 
 ## 商品拉取与不可用 SKU 口径
 
-- 移动端官方内购商店初始化只等待 Unity IAP 商店连接成功；商品信息在后台 `FetchProducts`，不会阻塞 `IAPInitResult.Success`。
+- 移动端官方内购商店连接由 `MobileServiceHub.RunBackgroundTask` 启动，不占用游戏主 Loading；连接成功前支付由 `IsStoreReady` 拦截，商品信息随后在后台 `FetchProducts`。
 - 商品拉取状态、自动重试、部分成功、迟到失败和不可用 SKU 校正收口在 `Services/Init` 内部 `MobileProductFetchCoordinator`，`MobileInitService` 只保留初始化生命周期和回调委托。
 - `MobileProductFetchCoordinator` 是 Init 内部协调器，不是独立 service；相关成员级 XML 注释、运行期日志和测试断言消息遵循全仓 OPS 中文口径，简单表达式体、短三元表达式和短属性 getter 在不牺牲可读性时保持一行，文件头继续沿用仓库英文模板标签。
 - 商品整体拉取失败后按 `MobileStoreConfig.ProductFetchRetryDelaysMs` 自动重试；默认值为 `2s / 5s / 10s` 共 3 次。配置为空或包含非正数时回落默认值并打印中文警告日志；成功、部分成功或 Dispose 会取消悬空重试并重置重试序号。
@@ -43,13 +43,13 @@
 - 订阅商品在自身有效期内重复支付会本地返回 `IAPMobileErrorCode.SubscriptionIsReady`，不会再发起 Unity IAP 平台购买。
 - Google 验单与本地支付成功打点去重使用 `GoogleToken`，不是 `TransactionId`。
 - `nova_iap_local_pay_success.nova_order_id` 优先使用 Unity IAP receipt 解析出的平台 `OrderId`；缺失时回退当前运行期 `TransactionId`。
-- `nova_iap_validate_success` 按当前 UID 持久化平台注册订单键去重：Apple 使用 transaction id，Google 使用 purchase token；持久化和运行期兜底缓存最多保留 300 条，新键超限时淘汰最老记录。
+- `nova_iap_validate_success` 按当前 UID 持久化平台订单号键去重：Apple 使用 transaction id，Google 使用订单号；持久化和运行期兜底缓存最多保留 300 条，新键超限时淘汰最老记录，旧版 Google token 键在同一订单再次成功时迁移。
 - `nova_iap_validate_success.nova_order_id` 优先使用服务端验单响应 `OrderId`；缺失时回退当前运行期 `TransactionId`。
-- `nova_iap_local_pay_fail` 覆盖所有 `MobileStore.PayAsync` 返回失败 `IAPResult` 的场景；Unity IAP `OnPurchaseFailed` 与 `OnPurchaseConfirmed(FailedOrder)` 也会直接上报本地支付失败点。失败打点不做运行期去重；`nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值，`PluginRouter` guard 失败会映射到 Mobile 错误码并在 `nova_reason_detail` 保留原始 `ErrorSource:ErrorCode`。
+- `nova_iap_local_pay_fail` 覆盖所有 `MobileStore.PayAsync` 返回失败 `IAPResult` 的场景；活跃支付的 `OnPurchaseFailed` 由返回边界统一上报，没有返回链路的迟到回调才直接兜底，`OnPurchaseConfirmed(FailedOrder)` 作为独立确认失败通知直接上报。`nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值，`PluginRouter` guard 失败会映射到 Mobile 错误码并在 `nova_reason_detail` 保留原始 `ErrorSource:ErrorCode`。
 - `nova_iap_validate_fail` / `nova_iap_validate_fail_finish` 的 `nova_reason` 统一写入 `IAPMobileErrorCode` 的 int 值；补充描述写入 `nova_reason_detail`。
 - Mobile 打点 `Debug` 字段来自父包注入的 `DevelopMode == Debug`，不再使用 `EnableAlwaysPaySucceed`；`EnableAlwaysPaySucceed` 只在 Editor 调试支付时生效。
 - 商品拉取成功后只自动触发启动期平台 `FetchPurchases` 和延迟权益刷新；订阅倒计时到期会再次 `FetchPurchases` 刷新平台已有购买与票据缓存，再执行权益刷新；`RestoreTransactions` 仅由用户主动恢复购买入口调用，完整补单扫描仍由统一补单入口串行执行。
-- Mobile 后台任务统一经 `MobileServiceHub.RunBackgroundTask` 启动并接入移动端官方内购商店运行期取消令牌；`DisposeAsync` 会先取消后台任务，再释放各内部服务。入口委托固定为 `Func<CancellationToken, UniTask>`，返回 `UniTask<T>` 的动作需要用 lambda 或包装方法显式 `await` 后丢弃返回值。支付验单桥接被取消时返回 `StoreNotAvailable` 失败结果，不向业务层抛取消异常。
+- Mobile 商店连接及其他后台任务统一经 `MobileServiceHub.RunBackgroundTask` 启动并接入移动端官方内购商店运行期取消令牌；`DisposeAsync` 会先取消后台任务，再释放各内部服务。入口委托固定为 `Func<CancellationToken, UniTask>`，返回 `UniTask<T>` 的动作需要用 lambda 或包装方法显式 `await` 后丢弃返回值。支付验单桥接被取消时返回 `StoreNotAvailable` 失败结果，不向业务层抛取消异常。
 - `MobileValidationService` 已把验单队列单次执行保护拆到 `MobileValidationQueueCoordinator`，本地订单扫描规则拆到 `MobileValidationLocalOrderScanner`；对外补单、支付和 Restore API 不变。
 
 ## 最新实现快照

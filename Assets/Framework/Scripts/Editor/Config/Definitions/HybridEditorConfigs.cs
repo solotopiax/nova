@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEngine.Serialization;
 
 namespace NovaFramework.Editor
 {
@@ -25,7 +24,6 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 启动阶段自动加载的业务 DLL；该列表会导出到 ConfigRuntimeSO。
         /// </summary>
-        [FormerlySerializedAs("GameDlls")]
         public List<DllMasterAssetEntry> StartupGameDlls = new();
 
         /// <summary>

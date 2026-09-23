@@ -1547,7 +1547,6 @@ namespace NovaFramework.Editor
                         AssetCheckPackageVersionLocalFilePath = src.AssetCheckPackageVersionLocalFilePath,
                         AssetCheckVersionRemoteDirectory = src.AssetCheckVersionRemoteDirectory,
                         ZoneID = src.ZoneID,
-                        PurgeURL = src.PurgeURL,
                         Token = src.Token,
                         CachePaths = src.CachePaths,
                     };

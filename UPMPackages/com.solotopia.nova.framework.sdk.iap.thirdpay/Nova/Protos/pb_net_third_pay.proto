@@ -10,20 +10,44 @@ option csharp_namespace = "NovaFramework.SDK.IAP.ThirdPay.Runtime";
 import "pb_net_header.proto";
 
 // =====================================================================
-// 第三方支付商品列表
-// post: "/third_pay/product_list"
+// 第三方支付配置
+// post: "/v1/third_pay/payment_config"
 // =====================================================================
 
-// 商品列表请求
-message PbNetThirdProductListReq {
+// 第三方支付配置请求
+message PbNetThirdPaymentConfigReq {
     NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头
-    string country = 2;                            // 国家编码，例如 US
+    string country = 2;                            // ISO 3166-1 alpha-2 国家或地区代码，例如 US
 }
 
-// 商品列表响应
-message PbNetThirdProductListResp {
-    NovaFramework.Runtime.PbNetRespHeader head = 1;          // 响应公共头
-    repeated PbNetThirdProductInfo product_list = 2;         // 商品列表
+// 第三方支付配置响应
+message PbNetThirdPaymentConfigResp {
+    NovaFramework.Runtime.PbNetRespHeader head = 1;              // 响应公共头
+    PbNetThirdPayAvailability availability = 2;                  // 当前用户是否允许发起第三方支付
+    PbNetThirdProductConfig product_config = 3;                  // 当前国家可购买的商品配置
+    PbNetThirdChannelConfig channel_config = 4;                  // 支付页需要透传的渠道参数
+    PbNetThirdPaymentPageConfig payment_page_config = 5;         // 支付页入口配置
+}
+
+// 当前用户的第三方支付可用性
+message PbNetThirdPayAvailability {
+    bool enabled = 1;                                            // 是否允许发起新的第三方支付
+    int32 disabled_reason = 2;                                   // 禁用原因；具体枚举值由服务端协议后续约定
+}
+
+// 第三方支付商品配置
+message PbNetThirdProductConfig {
+    repeated PbNetThirdProductInfo product_list = 1;
+}
+
+// 第三方支付渠道参数配置
+message PbNetThirdChannelConfig {
+    string payment_customer_ids = 1;
+}
+
+// 第三方支付页面配置
+message PbNetThirdPaymentPageConfig {
+    string payment_page_url = 1;                                 // 支付页 HTTPS 绝对地址
 }
 
 // 商品信息
@@ -36,7 +60,7 @@ message PbNetThirdProductInfo {
 
 // =====================================================================
 // 查询支付成功但尚未校验的订单
-// post: "/third_pay/query_pending_order"
+// post: "/v1/third_pay/query_pending_order"
 // =====================================================================
 
 // 未校验订单查询请求
@@ -57,24 +81,8 @@ message PbNetThirdQueryPendingOrderInfo {
 }
 
 // =====================================================================
-// 查询第三方支付渠道参数
-// post: "/third_pay/get_payment_customer_ids"
-// =====================================================================
-
-// 渠道参数查询请求
-message PbNetThirdPayChannelParamsReq {
-    NovaFramework.Runtime.PbNetReqHeader head = 1;  // 请求公共头，包含应用 ID 和用户 ID
-}
-
-// 渠道参数查询响应
-message PbNetThirdPayChannelParamsResp {
-    NovaFramework.Runtime.PbNetRespHeader head = 1;  // 响应公共头
-    string payment_customer_ids = 2;                 // 部分渠道要求透传的 CID 等参数
-}
-
-// =====================================================================
 // 第三方支付验单
-// post: "/third_pay/verify_iap"
+// post: "/v1/third_pay/verify_iap"
 // =====================================================================
 
 // 验单请求

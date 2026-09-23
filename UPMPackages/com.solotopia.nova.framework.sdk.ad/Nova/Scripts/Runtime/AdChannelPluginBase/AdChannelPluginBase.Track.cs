@@ -377,10 +377,24 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <param name="format">广告格式。</param>
         /// <param name="placementId">广告位唯一标识。</param>
         protected void TrackAdShow(AdFormat format, string placementId)
+            => TrackAdShow(format, placementId, null);
+
+        /// <summary>
+        /// 派生类在广告展示回调中调用，上报带渠道附加属性的 nova_ad_show 事件。
+        /// 基类先合并对应 AdUnit 的 ShowCustomProps，再合并渠道附加属性；已有键不会被覆盖。
+        /// </summary>
+        /// <param name="format">广告格式。</param>
+        /// <param name="placementId">广告位唯一标识。</param>
+        /// <param name="extraProps">渠道侧附加属性，可为 null。</param>
+        protected void TrackAdShow(
+            AdFormat format,
+            string placementId,
+            Dictionary<string, object> extraProps)
         {
             var unit = FindAdUnit(placementId);
             var props = BuildBaseProps(format, placementId);
             MergeCustom(props, unit?.ShowCustomProps);
+            MergeProps(props, extraProps);
             TrackEvent("nova_ad_show", props);
         }
 

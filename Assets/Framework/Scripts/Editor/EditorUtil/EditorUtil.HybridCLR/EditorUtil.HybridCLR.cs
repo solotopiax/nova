@@ -69,7 +69,10 @@ namespace NovaFramework.Editor
             /// </summary>
             public static void GenerateAll()
             {
-                PrebuildCommand.GenerateAll();
+                using (OverrideMissingWebGLTemplateForAotBuild())
+                {
+                    PrebuildCommand.GenerateAll();
+                }
             }
 
             /// <summary>
@@ -110,7 +113,10 @@ namespace NovaFramework.Editor
             /// </summary>
             public static void GenerateAotDlls()
             {
-                StripAOTDllCommand.GenerateStripedAOTDlls();
+                using (OverrideMissingWebGLTemplateForAotBuild())
+                {
+                    StripAOTDllCommand.GenerateStripedAOTDlls();
+                }
             }
 
             /// <summary>

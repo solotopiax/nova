@@ -45,12 +45,6 @@ namespace NovaFramework.Editor
         public List<DevelopModePrivacyConfigsEntry> PrivacyConfigsByMode = new();
 
         /// <summary>
-        /// 旧版按 DevelopMode 分组的 CommonConfig 数据缓冲；迁移成功后清空。
-        /// </summary>
-        [SerializeField, HideInInspector]
-        private List<DevelopModeAppConfigsEntry> CommonByMode;
-
-        /// <summary>
         /// 按 DevelopMode 分组的 SDK Plugin 配置列表；
         /// 默认预置 Debug 与 Release 两份空条目。
         /// </summary>
@@ -153,52 +147,6 @@ namespace NovaFramework.Editor
             return entry.KitConfigs;
         }
 
-        /// <summary>
-        /// 验证旧版 CommonByMode 通过 FormerlySerializedAs 恢复后的条目是否可安全使用。
-        /// </summary>
-        /// <param name="error">失败时返回首个无效条目的位置；成功时为 null。</param>
-        /// <returns>列表与条目均有效时返回 true。</returns>
-        internal bool ValidateLegacyData(out string error)
-        {
-            error = null;
-            List<DevelopModeAppConfigsEntry> source = CommonByMode != null && CommonByMode.Count > 0
-                ? CommonByMode
-                : AppConfigsByMode;
-            if (source == null)
-            {
-                error = "AppConfigsByMode 为空。";
-                return false;
-            }
-
-            for (int i = 0; i < source.Count; i++)
-            {
-                if (source[i] == null)
-                {
-                    error = $"AppConfigsByMode[{i}] 为空。";
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// 完成矩阵行的旧字段迁移收尾；当前字段重命名由 FormerlySerializedAs 直接恢复，无需再次复制。
-        /// </summary>
-        internal void ApplyLegacyData()
-        {
-            if (CommonByMode != null &&
-                (CommonByMode.Count > 0 || AppConfigsByMode == null || AppConfigsByMode.Count == 0))
-            {
-                AppConfigsByMode = new List<DevelopModeAppConfigsEntry>(CommonByMode);
-                CommonByMode = null;
-            }
-            else
-            {
-                CommonByMode = null;
-            }
-            AppConfigsByMode ??= new List<DevelopModeAppConfigsEntry>();
-        }
     }
 
     /// <summary>

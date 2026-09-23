@@ -1,7 +1,7 @@
 ---
 id: GLO-08
-title: DataMaster 分流用户属性口径（app_version / install_time 必传）
-summary: 两条必传分流属性的口径：版本号 + 安装时间
+title: DataMaster 分流用户属性口径（app_version / install_time / platform）
+summary: 必传分流属性与平台报表维度的类型和值域口径
 category: module
 status: active
 date: 2026-07-07
@@ -13,24 +13,30 @@ keywords:
   - DataMaster用户属性
   - app_version
   - install_time
+  - platform
 tags: [glossary, module, sdk, datamaster, abtest]
 related:
   - "[[ADR-084-bootstrap-state-before-persist|ADR-084]]"
 ---
 
-# GLO-08：DataMaster 分流用户属性口径（app_version / install_time 必传）
+# GLO-08：DataMaster 分流用户属性口径（app_version / install_time / platform）
 
 DataMaster 拉取配置（`RefreshFromServer` 的 `userProperties`）用于服务端分流与规则匹配。以下为口径约定。
 
 ## 必传字段（红线）
 
-`app_version` 与 `install_time` 是**必传字段**，缺失会影响服务端分流命中。DataMaster 在每次服务端刷新前由框架自动注入这两个字段；业务只需通过 `SetUserProperty` 补充 `country_code` 等自定义属性。
+`app_version` 与 `install_time` 是**必传字段**，缺失会影响服务端分流命中；`platform` 是报表拆分维度。DataMaster 在每次服务端刷新前由框架自动注入这三个字段；业务只需通过 `SetUserProperty` 补充 `country_code` 等自定义属性。
 
 | 属性 | 类型 | 口径 |
 |---|---|---|
 | `app_version` | number（int） | 整数版本号，见下方合成算法 |
 | `install_time` | number（long） | `Nova.InstallTimeMs`，框架首次启动近似值（13 位 UTC Unix ms，非 s） |
+| `platform` | string | iOS 为 `"Ios"`，Android 为 `"Google"`；禁止继续发送旧数字枚举 `1 / 2` |
 | `country_code` | string | 国家码，如 `US`（示例分流条件，非必传） |
+
+## platform 字符串口径
+
+原厂 `Platform` 枚举中 `Ios = 1`、`Google = 2`，但配置拉取的 `userProperties` 是由调用方提供并原样序列化，数字不是原厂自动转换结果。Nova 适配层在每次拉取前以当前 `Application.platform` 覆盖该字段，确保 iOS / Android 请求分别发送 `"Ios"` / `"Google"`；其他运行平台不发送该字段。
 
 ## app_version 合成算法（全平台通用）
 

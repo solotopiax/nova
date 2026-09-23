@@ -21,8 +21,16 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     /// 仅支持 InAppAuto，由 Store 负责支付页、政策校验、验单、补单与订单持久化。
     /// </summary>
     [IAPStore(IAPStoreType.ThirdPay)]
-    public sealed partial class ThirdPayStore : IAPStoreBase, IIAPThirdPayCapable
+    public sealed partial class ThirdPayStore : IAPStoreBase, IIAPThirdPayConfigCapable, IIAPThirdPayProductCapable, IIAPThirdPayCheckoutCapable, IIAPStorePauseListener, IIAPStoreFocusListener
     {
+        /// <summary>
+        /// 创建第三方支付 Store，并提前建立初始化前可用的共享状态容器。
+        /// </summary>
+        public ThirdPayStore()
+        {
+            m_Hub = new ThirdPayServiceHub(this);
+        }
+
         /// <summary>
         /// 获取当前 Store 类型。
         /// </summary>
@@ -38,34 +46,29 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>初始化完成的异步任务。</returns>
         public override async UniTask InitializeAsync(IIAPProductTable table, IIAPStoreConfig config, IIAPStoreContext ctx, CancellationToken ct)
         {
+            // 初始化 Store 基类持有的商品表、运行上下文和公共运行状态。
             await base.InitializeAsync(table, config, ctx, ct);
-            m_Config = config as ThirdPayStoreConfig;
-            m_NetService = new ThirdIapNetService();
-            m_ChannelParamsLoader = new ThirdPayChannelParamsLoader(m_NetService.GetPayChannelParamsAsync);
-            m_WebViewService?.Dispose();
-            m_WebViewService = new ThirdPayWebViewService();
-            m_ExternalBrowserService?.Dispose();
-            m_ExternalBrowserService = new ThirdPayExternalBrowserService();
-            ThirdPayExternalBrowserLifecycleProxy.Register(OnStorePause, OnStoreFocus);
-            m_CountryState.SetDebugCountryCode(m_Config?.CountryCode);
+            // 由 Hub 一次性绑定共享依赖并按顺序创建全部内部服务。
+            m_Hub.Bind(ctx, config as ThirdPayStoreConfig, table);
+            // 清空各平台上一次解析得到的国家码。
             ClearResolvedCountryCodes();
-            m_ProductCatalogState.Reset();
-            m_SkipPaymentInformationScreen = m_Config?.SkipPaymentInformationScreen ?? false;
+            // 清空支付配置快照及其请求状态。
+            m_Hub.PaymentConfigService.Reset();
+            // 恢复是否跳过 Google 第三方支付信息页的配置值。
+            m_Hub.SkipPaymentInformationScreen = m_Hub.Config?.SkipPaymentInformationScreen ?? false;
+            // 创建空订单仓储，等待设置用户 ID 后切换到对应账号数据。
             ResetRepository((ThirdPayPersistData)CreateEmptyPersistData());
-            ResolveIosStorefrontCountryCode();
-            await InitializeGooglePolicyAsync(ct);
-            ResolveAdCountryCodeAsync(CancellationToken.None).Forget();
 
-            if (m_Config == null)
+            // 配置缺失或类型错误时记录初始化错误。
+            if (m_Hub.Config == null)
             {
                 LogError("ThirdPayStoreConfig 缺失或类型不正确。");
             }
 
-            m_ConfigReady = ValidateConfig();
-            if (!EnsurePayEnvironment())
-            {
-                LogWarning("第三方支付环境（支付页基址）在初始化时尚未就绪，将在首次支付时重试解析。");
-            }
+            // 校验必需配置并缓存 Store 是否可用。
+            m_Hub.ConfigReady = ValidateConfig();
+            // 并行启动三种国家码查询，不等待结果，也不阻塞 Store 初始化。
+            ResolveCountryCodesInBackground();
         }
 
         /// <summary>
@@ -84,7 +87,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="request">第三方支付请求。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>支付及服务端验单结果。</returns>
-        public override UniTask<IAPResult> PayAsync(IAPRequest request, CancellationToken ct)
+        public override async UniTask<IAPResult> PayAsync(IAPRequest request, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -93,11 +96,11 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             {
                 var mock = new IAPResult(request.TableId, "MOCK_ORDER_THIRDPAY", false, true, request.CustomData, request.ReceiptParam, StoreType);
                 Context.EventBridge?.RaisePaySuccess(mock);
-                return UniTask.FromResult(mock);
+                return mock;
             }
 #endif
 
-            return PayGuardAsync(request, ct, async () =>
+            Func<UniTask<IAPResult>> executeAsync = async () =>
             {
                 m_InPayTableId = request.TableId;
                 try
@@ -108,11 +111,14 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
                 {
                     m_InPayTableId = 0;
                 }
-            });
+            };
+            IAPResult result = await PayGuardAsync(request, ct, executeAsync);
+            TrackReturnedPayFailureInternal(result);
+            return result;
         }
 
         /// <summary>
-        /// 同步当前用户；账号变化时加载独立存档并预取商品，每次调用后都立即确保渠道参数已获取。
+        /// 同步当前用户；账号变化时加载独立存档，并复用 Store 初始化阶段取得的国家码预取支付配置。
         /// </summary>
         /// <param name="uid">当前用户 UID。</param>
         public override void SetUserId(string uid)
@@ -121,16 +127,18 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             base.SetUserId(uid);
             if (!string.Equals(previous, m_GameUID, StringComparison.Ordinal))
             {
-                ClearExternalBrowserPaySession();
-                ClearResolvedCountryCodes();
+                CloseAndClearExternalBrowserPaySession(ThirdPayCloseReason.SessionReplaced, ThirdPayPaymentFailureReason.SessionReplaced);
+                // 平台国家码和首次业务读取形成的锁定值均在 Store 生命周期内复用，账号切换只切换用户态数据。
                 ResetRepository(LoadPersistData<ThirdPayPersistData>());
-                ResolveIosStorefrontCountryCode();
-                ResolveAdCountryCodeAsync(CancellationToken.None).Forget();
-                m_ProductCatalogState.Invalidate();
-                PrefetchProductListAsync(CancellationToken.None).Forget();
-            }
+                // 未启用的 Store 不创建运行服务，账号同步只更新初始化前共享状态。
+                if (!m_Hub.IsBound)
+                {
+                    return;
+                }
 
-            EnsureChannelParamsAsync(CancellationToken.None).Forget();
+                m_Hub.PaymentConfigService?.Invalidate();
+                TrySchedulePaymentConfigPrefetch("登录后支付配置预取");
+            }
         }
 
         /// <summary>
@@ -154,21 +162,29 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="countryCode">ISO 3166-1 alpha-2 国家或地区代码；空值表示取消 Debug 覆盖。</param>
         public void SetDebugCountryCode(string countryCode)
         {
-            m_CountryState.SetDebugCountryCode(countryCode);
-            m_ProductCatalogState.Invalidate();
-            if (!string.IsNullOrEmpty(m_GameUID))
+            if (m_Hub.CountryResolver != null)
             {
-                PrefetchProductListAsync(CancellationToken.None).Forget();
+                m_Hub.CountryResolver.SetDebugCountryCode(countryCode);
+                return;
             }
+
+            m_Hub.CountryState.SetDebugCountryCode(countryCode);
         }
 
         /// <summary>
-        /// 获取 ThirdPay 当前使用的国家码，优先级为 Debug > Lock > Billing > iOS Storefront > AD；无有效来源时返回空字符串。
+        /// 获取 ThirdPay 当前使用的国家码；登录后首次读取会锁定自动解析结果，避免后续异步来源改变业务国家。
         /// </summary>
         /// <returns>规范化后的 ISO 3166-1 alpha-2 国家或地区代码。</returns>
         public string GetCountryCode()
         {
-            return m_CountryState.Resolve();
+            string countryCode = m_Hub.CountryResolver?.Resolve() ?? m_Hub.CountryState.Resolve();
+            if (string.IsNullOrEmpty(countryCode) || string.IsNullOrEmpty(m_GameUID) || m_Hub.CountryState.HasDebugCountryCode || !string.IsNullOrEmpty(m_Hub.CountryState.LockCountryCode))
+            {
+                return countryCode;
+            }
+
+            SetLockCountryCode(countryCode);
+            return m_Hub.CountryResolver?.Resolve() ?? m_Hub.CountryState.Resolve();
         }
 
         /// <summary>
@@ -177,23 +193,13 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="skip">是否跳过信息页。</param>
         public void SetSkipPaymentInformationScreen(bool skip)
         {
-            m_SkipPaymentInformationScreen = skip;
+            m_Hub.SkipPaymentInformationScreen = skip;
         }
 
         /// <summary>
         /// 获取当前是否跳过 Google 第三方支付信息页。
         /// </summary>
-        public bool IsPaymentInformationScreenSkipped => m_SkipPaymentInformationScreen;
-
-        /// <summary>
-        /// 手动设置当前账号的第三方支付渠道参数。
-        /// 非空值会阻止支付前再次向服务端拉取。
-        /// </summary>
-        /// <param name="channelParams">支付页需要透传的 CID 等渠道参数。</param>
-        public void SetChannelParams(string channelParams)
-        {
-            m_PersistContext.SetChannelParams(channelParams);
-        }
+        public bool IsPaymentInformationScreenSkipped => m_Hub.SkipPaymentInformationScreen;
 
         /// <summary>
         /// 按支付表行 ID 获取已拉取的第三方商品信息。
@@ -211,7 +217,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>商品列表；尚未拉取成功或列表为空时返回空列表。</returns>
         public IReadOnlyList<PbNetThirdProductInfo> GetProductList()
         {
-            return m_ProductCatalogState.ProductList;
+            return m_Hub.PaymentConfigService?.Snapshot?.Products ?? Array.Empty<PbNetThirdProductInfo>();
         }
 
         /// <summary>
@@ -220,8 +226,23 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>有商品时返回 true。</returns>
         public bool HasProducts()
         {
-            return m_ProductCatalogState.HasProductList;
+            return GetProductList().Count > 0;
         }
+
+        /// <summary>
+        /// 获取统一支付配置是否已经成功加载且仍在有效期内。
+        /// </summary>
+        public bool IsPaymentConfigReady => m_Hub.PaymentConfigService?.Snapshot != null;
+
+        /// <summary>
+        /// 获取服务端是否允许当前用户在当前国家发起新的第三方支付。
+        /// </summary>
+        public bool IsPaymentAvailable => m_Hub.PaymentConfigService?.Snapshot?.Enabled == true;
+
+        /// <summary>
+        /// 获取服务端返回的第三方支付关闭原因码；配置未就绪时返回 0。
+        /// </summary>
+        public int PaymentDisabledReason => m_Hub.PaymentConfigService?.Snapshot?.DisabledReason ?? 0;
 
         /// <summary>
         /// 设置第三方支付 WebView 导航栏左上角的显示名称。
@@ -229,7 +250,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="titleText">标题文本；空值时恢复应用名称。</param>
         public void SetThirdPayWebViewTitleText(string titleText)
         {
-            m_WebViewService?.SetTitleText(titleText);
+            m_Hub.WebViewService?.SetTitleText(titleText);
         }
 
         /// <summary>
@@ -238,7 +259,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <param name="closeText">关闭文本；空值时恢复为 close。</param>
         public void SetThirdPayWebViewCloseText(string closeText)
         {
-            m_WebViewService?.SetCloseText(closeText);
+            m_Hub.WebViewService?.SetCloseText(closeText);
         }
 
         /// <summary>
@@ -248,23 +269,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// <returns>释放完成的异步任务。</returns>
         public override async UniTask DisposeAsync(CancellationToken ct)
         {
-            ThirdPayExternalBrowserLifecycleProxy.Unregister(OnStorePause, OnStoreFocus);
-            m_GooglePolicy?.Dispose();
-            m_GooglePolicy = null;
-            ClearExternalBrowserPaySession();
-            m_WebViewService?.Dispose();
-            m_WebViewService = null;
-            m_ExternalBrowserService?.Dispose();
-            m_ExternalBrowserService = null;
-            m_PersistContext.Clear();
-            m_ProductCatalogState.Reset();
-            m_CountryState.ClearAll();
-            m_SkipPaymentInformationScreen = false;
-            m_ChannelParamsLoader = null;
-            m_NetService = null;
-            m_Config = null;
-            m_ConfigReady = false;
-            m_PayUrlBase = null;
+            m_Hub.Dispose();
             await base.DisposeAsync(ct);
         }
     }

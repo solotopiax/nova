@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEngine.Serialization;
 
 namespace NovaFramework.Runtime
 {
@@ -34,7 +33,6 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 启动阶段自动加载的业务 DLL 运行时 Asset 地址列表。
         /// </summary>
-        [FormerlySerializedAs("GameDlls")]
         public List<DllAssetEntry> StartupGameDlls = new();
     }
 }

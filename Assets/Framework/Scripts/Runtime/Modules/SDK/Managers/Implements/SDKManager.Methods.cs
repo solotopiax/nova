@@ -76,6 +76,13 @@ namespace NovaFramework.Runtime
                 sw.Stop();
                 throw;
             }
+#if UNITY_EDITOR
+            catch (PlatformNotSupportedException e)
+            {
+                sw.Stop();
+                Log.Warning(LogTag.SDK, Txt.Format("SDK 插件 '{0}' 不支持在 Unity Editor 中运行，已跳过初始化：{1}", plugin.Name, e.Message));
+            }
+#endif
             catch (Exception e)
             {
                 sw.Stop();
@@ -165,8 +172,19 @@ namespace NovaFramework.Runtime
                 }
             }
 
+            InstantiateEnabledPlugins(EnumerateConcreteSDKPluginTypes(), enabledConfigTypes);
+        }
+
+        /// <summary>
+        /// 从候选类型中实例化配置已启用的 SDK 插件。
+        /// 候选集合由调用方提供，便于把程序集发现边界与配置匹配、构造逻辑分开验证。
+        /// </summary>
+        /// <param name="pluginTypes">已完成程序集边界过滤的插件候选类型。</param>
+        /// <param name="enabledConfigTypes">ConfigMaster 当前启用的 SDK 配置类型。</param>
+        private void InstantiateEnabledPlugins(IEnumerable<Type> pluginTypes, HashSet<Type> enabledConfigTypes)
+        {
             HashSet<Type> coveredConfigTypes = new HashSet<Type>();
-            foreach (Type pluginType in EnumerateConcreteSDKPluginTypes())
+            foreach (Type pluginType in pluginTypes)
             {
                 if (m_Plugins.ContainsKey(pluginType))
                 {
@@ -220,6 +238,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 枚举当前已加载程序集中所有可实例化的 ISDKPlugin 实现类型（非抽象、非接口、含无参构造）。
+        /// 测试程序集中的插件仅用于验证，不属于运行时候选，因此在读取类型前统一排除。
         /// 运行时反射扫描，供 InstantiateEnabledPluginsFromConfig 按启用配置实例化使用。
         /// 单个程序集类型加载异常被隔离，不影响其余程序集扫描。
         /// </summary>
@@ -231,6 +250,11 @@ namespace NovaFramework.Runtime
 
             foreach (System.Reflection.Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
+                if (IsTestAssembly(assembly))
+                {
+                    continue;
+                }
+
                 Type[] types;
                 try
                 {
@@ -264,6 +288,28 @@ namespace NovaFramework.Runtime
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 判断程序集是否为 Unity 测试程序集，避免 Editor Play 时把测试夹具当作真实 SDK 插件。
+        /// 仅检查引用程序集名称，不在 Runtime 建立对 NUnit 或 Test Runner 类型的编译依赖。
+        /// </summary>
+        /// <param name="assembly">待判断的已加载程序集。</param>
+        /// <returns>引用 NUnit 或 Unity Test Runner 时返回 true。</returns>
+        private static bool IsTestAssembly(System.Reflection.Assembly assembly)
+        {
+            foreach (System.Reflection.AssemblyName referencedAssembly in assembly.GetReferencedAssemblies())
+            {
+                string name = referencedAssembly.Name;
+                if (string.Equals(name, "nunit.framework", StringComparison.Ordinal) ||
+                    string.Equals(name, "UnityEngine.TestRunner", StringComparison.Ordinal) ||
+                    string.Equals(name, "UnityEditor.TestRunner", StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
     }

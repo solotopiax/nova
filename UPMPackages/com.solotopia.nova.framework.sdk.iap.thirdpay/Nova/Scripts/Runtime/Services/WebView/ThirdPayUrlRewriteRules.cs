@@ -18,8 +18,19 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
     /// </summary>
     internal static class ThirdPayUrlRewriteRules
     {
+        /// <summary>
+        /// AlipayConnect 原始自定义 Scheme 地址。
+        /// </summary>
         private const string c_AlipayConnectSource = "alipayconnect://platformapi/alipayconnectcode.htm";
+
+        /// <summary>
+        /// AlipayConnect 兼容的 HTTPS 目标地址。
+        /// </summary>
         private const string c_AlipayConnectTarget = "https://psp.ac.alipay.com/page/simulation-wallet/acwallet/alipayconnectcode.html";
+
+        /// <summary>
+        /// 支付页需要监听的自定义 Scheme 列表。
+        /// </summary>
         private static readonly string[] s_Schemes = { "alipayconnect" };
 
         /// <summary>

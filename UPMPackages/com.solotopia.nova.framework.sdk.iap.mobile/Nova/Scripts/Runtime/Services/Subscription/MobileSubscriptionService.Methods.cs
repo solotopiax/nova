@@ -41,8 +41,8 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 return;
             }
 
-            LogDebug($"订阅倒计时到期，商品表ID={tableId}，触发平台购买拉取和权益刷新。");
-            m_Hub.ExtendedService?.FetchPurchases();
+            LogDebug($"订阅倒计时到期，商品表ID={tableId}，触发平台购买拉取；票据缓存完成后继续权益刷新。");
+            m_Hub.RestoreService?.RequestExistingPurchasesFetch();
             if (m_Hub.RestoreService != null)
             {
                 await m_Hub.RestoreService.RefreshEntitlementsAsync(ct);

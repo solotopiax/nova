@@ -42,7 +42,7 @@ MonoBehaviour:
     - m_AssetLocation: NovaFramework.Runtime.dll
     - m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
     - m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_AssetLocation: NovaFramework.Sdk.Tga.Samples.Runtime.dll
   Custom:
     Entries:
@@ -64,10 +64,12 @@ MonoBehaviour:
       data:
         m_AppID: YOUR_TGA_APP_ID
         m_Mode: 0
+        m_TimeZone: 0
         m_LogEnable: 1
         m_ServerCmdName: TGAServerUrl
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
     - rid: 8085689214958567681
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:

@@ -1,0 +1,166 @@
+/***************************************************************
+ * (c) copyright 2026 - 2030, Solotopia
+ * All Rights Reserved.
+ * -------------------------------------------------------------
+ * filename:  ProcedurePreload.cs
+ * author:    taoye
+ * created:   2026/3/12
+ * descrip:   预加载流程（含 SDK 初始化）
+ *            职责：初始化运行时模块 -> 加载业务资源。
+ ***************************************************************/
+
+using System;
+using Cysharp.Threading.Tasks;
+using NovaFramework.Runtime;
+using NovaFramework.SDK.WeChatMiniGame.Runtime;
+using ProcedureOwner = NovaFramework.Runtime.IFsm<NovaFramework.Runtime.IProcedureManager>;
+
+namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
+{
+    /// <summary>
+    /// 预加载流程。
+    /// 1. 显示进度面板（Preload 阶段）。
+    /// 2. 按步骤加载：Persist -> Localization -> Network -> SDK -> Table -> UI -> Sound -> Vibrate（共 8 步）。
+    /// 3. 全部完成后跳转 ProcedurePlaying。
+    /// </summary>
+    public class ProcedurePreload : ProcedureBase
+    {
+        /// <summary>
+        /// 预加载总步骤数。
+        /// </summary>
+        private const int c_TotalSteps = 8;
+
+        /// <summary>
+        /// 已完成步骤数。
+        /// </summary>
+        private int m_CompletedSteps;
+
+        /// <summary>
+        /// 是否全部加载完成。
+        /// </summary>
+        private bool m_AllLoaded;
+
+        /// <summary>
+        /// 进入流程时调用。
+        /// </summary>
+        /// <param name="procedureOwner">流程持有者。</param>
+        protected override void OnEnter(ProcedureOwner procedureOwner)
+        {
+            base.OnEnter(procedureOwner);
+
+            m_CompletedSteps = 0;
+            m_AllLoaded = false;
+
+            LauncherUIController.ShowProgress(LauncherStage.Preload);
+            Log.Debug(LogTag.Procedure, "ProcedurePreload — 开始预加载。");
+            RunPreloadAsync().Forget();
+        }
+
+        /// <summary>
+        /// 流程轮询时调用。
+        /// </summary>
+        /// <param name="procedureOwner">流程持有者。</param>
+        protected override void OnUpdate(ProcedureOwner procedureOwner)
+        {
+            base.OnUpdate(procedureOwner);
+
+            if (!m_AllLoaded)
+            {
+                return;
+            }
+
+            ChangeState<ProcedurePlaying>(procedureOwner);
+        }
+
+        /// <summary>
+        /// 离开流程时调用。
+        /// </summary>
+        /// <param name="procedureOwner">流程持有者。</param>
+        /// <param name="isShutdown">是否因流程管理器关闭而离开。</param>
+        protected override void OnLeave(ProcedureOwner procedureOwner, bool isShutdown)
+        {
+            LauncherUIController.DestroyAll();
+
+            if (!isShutdown && m_AllLoaded && Nova.SDK.TryGet(out WeChatMiniGamePlugin wechat))
+            {
+                wechat.ReportGameStart();
+            }
+
+            base.OnLeave(procedureOwner, isShutdown);
+        }
+
+        /// <summary>
+        /// 按步骤顺序预加载：Persist -> Localization -> Network -> SDK -> Table -> UI -> Sound -> Vibrate。
+        /// </summary>
+        private async UniTaskVoid RunPreloadAsync()
+        {
+            try
+            {
+                Log.Debug(LogTag.Procedure, "Preload Step 1/8 — 加载持久化数据。");
+                await Nova.Persist.LoadAsync();
+                CancellationToken.ThrowIfCancellationRequested();
+                OnStepComplete();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 2/8 — 加载本地化数据。");
+                await Nova.Localization.LoadAsync();
+                CancellationToken.ThrowIfCancellationRequested();
+                await Nova.Localization.InitCurrentLanguageAsync();
+                CancellationToken.ThrowIfCancellationRequested();
+                OnStepComplete();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 3/8 — 加载网络配置。");
+                await Nova.Network.LoadAsync();
+                CancellationToken.ThrowIfCancellationRequested();
+                OnStepComplete();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 4/8 — 初始化 SDK。");
+                await Nova.SDK.InitializeTask;
+                CancellationToken.ThrowIfCancellationRequested();
+                OnStepComplete();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 5/8 — 加载数据表。");
+                await Nova.Table.LoadAsync();
+                CancellationToken.ThrowIfCancellationRequested();
+                OnStepComplete();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 6/8 — 加载UI配置。");
+                await Nova.UI.LoadAsync();
+                CancellationToken.ThrowIfCancellationRequested();
+                OnStepComplete();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 7/8 — 加载声音数据。");
+                await Nova.Sound.LoadAsync();
+                CancellationToken.ThrowIfCancellationRequested();
+                OnStepComplete();
+
+                Log.Debug(LogTag.Procedure, "Preload Step 8/8 — 加载振动数据。");
+                await Nova.Vibrate.LoadAsync();
+                CancellationToken.ThrowIfCancellationRequested();
+                OnStepComplete();
+
+                Log.Debug(LogTag.Procedure, "预加载全部完成。");
+                m_AllLoaded = true;
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception e)
+            {
+                Log.Error(LogTag.Procedure, Txt.Format("预加载异常: {0}", e.Message));
+                LauncherUIController.ShowDialog(
+                    LauncherDialogType.PreloadFailed,
+                    () => RunPreloadAsync().Forget(),
+                    () => UnityEngine.Application.Quit());
+            }
+        }
+
+        /// <summary>
+        /// 单步完成时更新进度。
+        /// </summary>
+        private void OnStepComplete()
+        {
+            m_CompletedSteps++;
+            LauncherUIController.UpdateProgress((float)m_CompletedSteps / c_TotalSteps);
+        }
+    }
+}

@@ -63,6 +63,8 @@
 | `FindById(id)` | `static PipifyStepInfo` | 按 ID 查找 Step，未命中或 id 为空返回 null |
 | `GroupByCategory()` | `static IEnumerable<IGrouping<string, PipifyStepInfo>>` | 按 Category 分组，组内按 DisplayName 升序 |
 
+Registry 还会在内部统一收集 Batch 中未注册的 StepId。Window 用该结果禁用运行并显示原因，Runner 在 UI、CLI 和外部任务入口真正执行前再次预检，防止缺失 Step 位于中间时前序步骤已经产生副作用。
+
 ### EditorUtil.Pipify.Runner（执行引擎，internal）
 
 | 成员 | 签名 | 说明 |
@@ -87,23 +89,33 @@
 
 任一条件不满足均 `Log.Error` 并跳过，不影响其他 Step 的注册。
 
+### 可选 Package Step 生命周期
+
+- Package 内的静态方法使用 `[PipifyStep]` 声明后，由 Registry 通过 `TypeCache` 自动发现，不需要 Framework 中央注册表硬编码。
+- Package 安装并完成域重载后，对应 Step 自动出现在新增菜单；Package 卸载并完成域重载后，对应新增入口自动消失。
+- 已保存的 `BatchItem` 只持有稳定 `StepId + ParamsJson`，Package 卸载时不会形成 Missing Script，也不会自动删除配置。
+- Batch 中存在未注册 Step 时，窗口以红色 `[Missing] StepId` 标记条目、禁用运行按钮并说明原因；Runner 同时在任何步骤执行前拦截 UI、CLI 与外部任务入口。
+- 重新安装提供该 Step 的 Package 后，只要 StepId 未变化，原条目和参数会自动恢复；Package 升级时应保持 StepId 与参数 JSON 的兼容性。
+
 ### Runner 执行循环（RunBatchAsync）
 
 1. batch / reporter 为 null 立即抛 `ArgumentNullException`
-2. `reporter.BeginBatch(name, count)` 通知开始
-3. 对每个 `BatchItem`：
+2. 预检整个 Batch 的 StepId；存在未注册 Step 时，在任何 Step 执行和 Reporter 开始前一次性抛错
+3. `reporter.BeginBatch(name, count)` 通知开始
+4. 对每个 `BatchItem`：
    - `ct.ThrowIfCancellationRequested()` 响应外部取消
    - `Registry.FindById(stepId)` 查找元信息，未命中抛 `InvalidOperationException`
    - 若为旧版空参数 `export.config`：从当前激活 ConfigMaster 初始化 Platform / Channel / DevelopMode，先写入条目并保存所属 PipifySettingsSO；Platform 只是兼容快照，执行期会再次同步 Active BuildTarget
    - 其他有参 Step：ParamsJson 非空则反序列化，否则创建默认参数实例
    - 调用 `ApplyOverridesForItem` 应用仅本次执行有效的 CLI 参数；标记 `[PipifyReadOnly]` 的平台字段会直接跳过 CLI 值解析，随后统一同步到 Unity 当前 Active BuildTarget。故 `export.config.Platform`、`build.package.Target`、`bundlebuilder.build.Target`、`bundlebuilder.build_raw_file.Target` 的旧 ParamsJson 或 CLI override 不会改变实际平台；其他字段仍按既有规则覆盖且不回写
+   - 在 Step 调用前递归解析参数对象全部公开字符串字段及列表元素中的 `{Platform}` / `{Channel}` / `{Package}` / `{Version}` / `{Time}`；上下文来自当前激活 ConfigMaster、canonical `Nova.prefab` 默认包、`Application.version` 与该 Step 的统一解析时刻。替换只作用于本次参数快照，不回写 ParamsJson 或 Config 资产；未知占位符保持原样
    - `hybridclr.*` Step 若后续存在 `build.package`：先按同一套参数解析规则（含 CLI override）取得该 Player 构建的 `DevelopmentBuild`，仅在该 HybridCLR Step 执行期间临时镜像到 `EditorUserBuildSettings.development`，并在成功、失败或取消后还原；没有后续 Player 构建的纯热更 Batch 不改全局设置
    - 构造 `PipifyContext` 并下发
    - `reporter.ReportStep(i, name, 0f)` 返回 true 时抛 `OperationCanceledException`（Window 取消按钮）
    - `info.Method.Invoke(null, args)` 反射调用，得 `UniTask` 后 `await`
    - `TargetInvocationException` 解包为 `InnerException`，经 `ExceptionDispatchInfo.Capture().Throw()` 保留原始栈后重新抛出
    - 任何异常均先调 `reporter.EndStep(i, false, elapsed, ex)` 再 throw
-4. 全部成功后 `reporter.EndBatch(true, total)`；异常在 `finally` 中以 `success=false` 调用
+5. 全部成功后 `reporter.EndBatch(true, total)`；已开始执行后的异常在 `finally` 中以 `success=false` 调用
 
 ### ApplyOverridesForItem 覆盖规则
 

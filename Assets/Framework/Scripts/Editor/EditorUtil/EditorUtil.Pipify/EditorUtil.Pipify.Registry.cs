@@ -85,6 +85,57 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
+                /// 获取 Batch 中当前未注册的 StepId，按首次出现顺序去重。
+                /// Package 被卸载或程序集编译失败时，已保存的 BatchItem 会继续保留，
+                /// 调用方可据此阻止执行并向用户说明原因。
+                /// </summary>
+                /// <param name="batch">待检查的 Batch。</param>
+                /// <returns>未注册的 StepId；空值以“&lt;空 StepId&gt;”表示。</returns>
+                internal static IReadOnlyList<string> GetMissingStepIds(Batch batch)
+                {
+                    if (batch == null) throw new ArgumentNullException(nameof(batch));
+
+                    var missingIds = new List<string>();
+                    var seen = new HashSet<string>(StringComparer.Ordinal);
+                    for (int i = 0; i < batch.Items.Count; i++)
+                    {
+                        string stepId = batch.Items[i]?.StepId;
+                        if (FindById(stepId) != null) continue;
+
+                        string displayId = string.IsNullOrWhiteSpace(stepId) ? "<空 StepId>" : stepId;
+                        if (seen.Add(displayId)) missingIds.Add(displayId);
+                    }
+                    return missingIds;
+                }
+
+                /// <summary>
+                /// 构建 Batch 无法执行时面向用户的缺失 Step 原因；没有缺失项时返回 null。
+                /// </summary>
+                /// <param name="batch">待检查的 Batch。</param>
+                /// <returns>缺失原因；全部 Step 已注册时返回 null。</returns>
+                internal static string GetMissingStepsReason(Batch batch)
+                {
+                    IReadOnlyList<string> missingIds = GetMissingStepIds(batch);
+                    if (missingIds.Count == 0) return null;
+
+                    return $"以下 Step 未注册：{string.Join("、", missingIds)}。" +
+                           "请安装并确保对应 Package 编译成功，或删除这些 Step。";
+                }
+
+                /// <summary>
+                /// 确保 Batch 的全部 Step 均已注册；用于所有执行入口的统一前置门禁。
+                /// </summary>
+                /// <param name="batch">待检查的 Batch。</param>
+                internal static void EnsureAllStepsRegistered(Batch batch)
+                {
+                    string reason = GetMissingStepsReason(batch);
+                    if (!string.IsNullOrEmpty(reason))
+                    {
+                        throw new InvalidOperationException($"{c_LogPrefix} {reason}");
+                    }
+                }
+
+                /// <summary>
                 /// 按 Category 分组，组内按 DisplayName 升序排列。
                 /// </summary>
                 /// <returns>按分类分组的 StepInfo 枚举。</returns>

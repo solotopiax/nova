@@ -19,11 +19,6 @@
       "Name": "ThirdServer",
       "Value": "https://t-pay-v3.ahameet.com",
       "FallbackValue": "https://t-pay-v3.ahameet.com"
-    },
-    {
-      "Name": "ThirdOpenServer",
-      "Value": "https://t-payments.solotopiax.com",
-      "FallbackValue": "https://t-payments.solotopiax.com"
     }
   ]
 }

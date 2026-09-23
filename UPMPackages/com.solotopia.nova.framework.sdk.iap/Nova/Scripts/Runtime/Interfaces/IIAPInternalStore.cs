@@ -16,6 +16,32 @@ using NovaFramework.Runtime;
 namespace NovaFramework.SDK.IAP.Runtime
 {
     /// <summary>
+    /// IAP Store 可选的应用暂停监听能力。
+    /// 由 IAPPlugin 接收 SDK 生命周期广播后转发，仅需要暂停事件的 Store 实现。
+    /// </summary>
+    public interface IIAPStorePauseListener
+    {
+        /// <summary>
+        /// 应用暂停或恢复时调用。
+        /// </summary>
+        /// <param name="isPaused">true 表示进入后台或暂停，false 表示恢复前台。</param>
+        void OnPause(bool isPaused);
+    }
+
+    /// <summary>
+    /// IAP Store 可选的应用焦点监听能力。
+    /// 由 IAPPlugin 接收 SDK 生命周期广播后转发，仅需要焦点事件的 Store 实现。
+    /// </summary>
+    public interface IIAPStoreFocusListener
+    {
+        /// <summary>
+        /// 应用焦点发生变化时调用。
+        /// </summary>
+        /// <param name="hasFocus">true 表示获得焦点，false 表示失去焦点。</param>
+        void OnFocus(bool hasFocus);
+    }
+
+    /// <summary>
     /// IAP 内部渠道 store 接口。
     /// 每种支付渠道（Google/iOS/第三方/代金券）对应一个实现。
     /// 由 IAPPlugin 在运行时按 CanHandle 结果路由请求。

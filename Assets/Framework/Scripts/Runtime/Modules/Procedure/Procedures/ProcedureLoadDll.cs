@@ -173,8 +173,16 @@ namespace NovaFramework.Runtime
                 for (int i = 0; i < dllCount; i++)
                 {
                     DllAssetEntry entry = dllList[i];
-                    await Util.HybridCLR.LoadGameAssemblyAsync(entry.AssetLocation);
+                    System.Reflection.Assembly loadedAssembly =
+                        await Util.HybridCLR.LoadGameAssemblyAsync(entry.AssetLocation);
                     CancellationToken.ThrowIfCancellationRequested();
+                    if (loadedAssembly == null)
+                    {
+                        throw new InvalidOperationException(Txt.Format(
+                            "[ProcedureLoadDll] 启动业务程序集 '{0}' 已配置但未进入当前运行环境。当前平台={1}。" +
+                            "请检查对应 asmdef 的平台限制；若该 Demo 不支持当前平台，请切换到受支持的平台。",
+                            entry.AssetLocation, configManager.Platform));
+                    }
                 }
 
                 // TagsOnLaunch 在 ProcedureHotfix 结束时只释放 Warmup Handle。

@@ -17,11 +17,12 @@ Nova IAP 核心包，提供多渠道内购调度、Store 抽象、商品表运�
 
 ## 当前公开入口
 
-- `IAPPlugin`：SDK 插件入口，通过 `SDKComponent.TryGet<IAPPlugin>(out var iap)` 获取。
+- `IAPPlugin`：SDK 插件入口，通过 `SDKComponent.TryGet<IAPPlugin>(out var iap)` 获取；统一接收 SDK Pause/Focus 生命周期并转发给有需要的 Store。
 - `IAPPluginConfig`：Inspector 序列化配置，只保存配置数据和内联商品表。
 - `IAP Products Excel`：Inspector 支持导出模板并导入工作簿；校验通过后全量覆盖 `IAPPluginConfig.Products`，不接入 Luban。
 - `IIAPProductTable`：运行期商品表查询接口，由 `IAPProductTableService` 基于配置数据构建。
 - `IAPStoreBase`：各渠道 Store 的公共抽象基类。
+- `IIAPStorePauseListener` / `IIAPStoreFocusListener`：Store 可选生命周期接口，不要求所有 Store 实现。
 - `IAPLog` / `IAPLogOwner`：统一日志网关与 Store/Service 日志基类；`IAPStoreBase` 子类通过 protected `LogTag` 指定日志标签。
 - `IAPRequest` / `IAPResult`：统一支付请求与结果；`ReceiptParam` 可随平台票据在支付、补单与恢复流程中往返。
 - `IAPInitResult`：统一初始化结果；错误码均为 `int`，核心层和各 Store 分别定义自己的错误码枚举。

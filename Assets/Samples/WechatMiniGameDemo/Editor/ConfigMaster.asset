@@ -1,0 +1,4829 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e9d17fb1ec904d88aed1cb3be70705a, type: 3}
+  m_Name: ConfigMaster
+  m_EditorClassIdentifier: NovaFramework.Editor::NovaFramework.Editor.ConfigMasterSO
+  ConfigSchemaVersion: 1
+  Namespace: NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
+  EnabledSDKs:
+  - NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+  - NovaFramework.SDK.WeChatMiniGame.Runtime.WeChatMiniGamePluginConfig
+  EnabledKits:
+  - NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+  - NovaFramework.Kit.Network.GameBind.Runtime.BindKitConfig
+  Custom:
+    Entries:
+    - Key: ThirdIAPOpen
+      Value: false
+    - Key: ThirdIAPIOSOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPAndroidOpenCountry
+      Value: '["CN"]'
+    - Key: ThirdIAPSkipGoogleMsgAlertShow
+      Value: false
+    - Key: GlobalSwitchThirdIAPOpen
+      Value: false
+  AppConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  PrivacyConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  SDKMasks:
+  - TypeName: NovaFramework.SDK.AdPlugin.Runtime.AdPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.AppsFlyerPlugin.Runtime.AppsFlyerPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.TGAPlugin.Runtime.TGAPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.IAP.Runtime.IAPPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.FirebasePlugin.Runtime.FirebasePluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.AppleSignIn.AppleSignInPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.Facebook.FacebookPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.GoogleSignIn.GoogleSignInPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.IAP.Runtime.IAPPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.WeChatMiniGame.Runtime.WeChatMiniGamePluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.DataMasterPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.SDK.AIHelp.Runtime.AIHelpPluginConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  KitMasks:
+  - TypeName: NovaFramework.Kit.Network.GameSave.Runtime.SaveKitConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.Kit.Network.GameLogin.Runtime.LoginKitConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  - TypeName: NovaFramework.Kit.Network.GameBind.Runtime.BindKitConfig
+    Mask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+  NamespaceMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 0
+  HybridEditorConfigsMask:
+    ByPlatform: 1
+    ByChannel: 0
+    ByDevelopMode: 0
+  YooAssetEditorConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 1
+  CDNEditorConfigsMask:
+    ByPlatform: 0
+    ByChannel: 0
+    ByDevelopMode: 1
+  NamespaceOverrides: []
+  CDNEditorConfigs:
+    Endpoint: YOUR_CDN_ENDPOINT
+    AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
+    AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
+    PresetOSSPath: YOUR_OSS_PATH
+    VersionCheckLocalFilePath: Bundles/{Platform}/{Package}/AppDownloadRules.json
+    VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
+    LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+    AutoLinkLatestVersion: 1
+    RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+    AssetCheckWhitelistDeviceIDs: []
+    AssetCheckWhitelistRemoteFilePath: 
+    AutoLinkLatestAssetCheckVersionFiles: 1
+    AssetCheckManifestBytesLocalFilePath: 
+    AssetCheckManifestHashLocalFilePath: 
+    AssetCheckPackageVersionLocalFilePath: 
+    AssetCheckVersionRemoteDirectory: 
+    ZoneID: YOUR_CLOUDFLARE_ZONE_ID
+    Token: YOUR_CLOUDFLARE_API_TOKEN
+    CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
+  CDNEditorConfigsOverrides:
+  - Platform: 0
+    Channel: 0
+    DevelopMode: 1
+    Config:
+      Endpoint: YOUR_CDN_ENDPOINT
+      AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
+      AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
+      PresetOSSPath: YOUR_OSS_PATH
+      VersionCheckLocalFilePath: ProjectSettings/Nova/AppDownloadRules.json
+      VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
+      LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+      AutoLinkLatestVersion: 1
+      RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+      AssetCheckWhitelistDeviceIDs: []
+      AssetCheckWhitelistRemoteFilePath: 
+      AutoLinkLatestAssetCheckVersionFiles: 1
+      AssetCheckManifestBytesLocalFilePath: 
+      AssetCheckManifestHashLocalFilePath: 
+      AssetCheckPackageVersionLocalFilePath: 
+      AssetCheckVersionRemoteDirectory: 
+      ZoneID: YOUR_CLOUDFLARE_ZONE_ID
+      Token: YOUR_CLOUDFLARE_API_TOKEN
+      CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
+  - Platform: 0
+    Channel: 0
+    DevelopMode: 0
+    Config:
+      Endpoint: YOUR_CDN_ENDPOINT
+      AccessKeyID: YOUR_ALIBABA_CLOUD_ACCESS_KEY_ID
+      AccessKeySecret: YOUR_ALIBABA_CLOUD_ACCESS_KEY_SECRET
+      PresetOSSPath: YOUR_OSS_PATH
+      VersionCheckLocalFilePath: ProjectSettings/Nova/AppDownloadRules.json
+      VersionCheckRemoteFilePath: Nova/{Platform}/{Package}/AppDownloadRules.json
+      LocalDirectory: YOUR_CDN_LOCAL_DIRECTORY
+      AutoLinkLatestVersion: 1
+      RemotePathSuffix: YOUR_CDN_REMOTE_PATH_SUFFIX
+      AssetCheckWhitelistDeviceIDs: []
+      AssetCheckWhitelistRemoteFilePath: 
+      AutoLinkLatestAssetCheckVersionFiles: 1
+      AssetCheckManifestBytesLocalFilePath: 
+      AssetCheckManifestHashLocalFilePath: 
+      AssetCheckPackageVersionLocalFilePath: 
+      AssetCheckVersionRemoteDirectory: 
+      ZoneID: YOUR_CLOUDFLARE_ZONE_ID
+      Token: YOUR_CLOUDFLARE_API_TOKEN
+      CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
+  HybridEditorConfigs:
+    AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameLogin.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.TGAPlugin.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.SDK.TGAPlugin.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+    StartupGameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/GameDlls/NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll
+    RunningGameDlls: []
+    LinkXmlTargetPath: Assets/Samples/WechatMiniGameDemo/Editor/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+  HybridEditorConfigsOverrides:
+  - AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameLogin.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.TGAPlugin.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.SDK.TGAPlugin.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+    StartupGameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/GameDlls/NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll
+    RunningGameDlls: []
+    LinkXmlTargetPath: Assets/Samples/WechatMiniGameDemo/Editor/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+    Platform: 2
+    Channel: 0
+    DevelopMode: 0
+  - AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameLogin.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.TGAPlugin.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.SDK.TGAPlugin.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+    StartupGameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/GameDlls/NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll
+    RunningGameDlls: []
+    LinkXmlTargetPath: Assets/HybridCLRGenerate/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+    Platform: 3
+    Channel: 0
+    DevelopMode: 0
+  - AotMetadataDlls:
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/mscorlib.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/mscorlib.dll.bytes
+      m_AssetLocation: mscorlib.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/System.dll.bytes
+      m_AssetLocation: System.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/System.Core.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/System.Core.dll.bytes
+      m_AssetLocation: System.Core.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UniTask.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/UniTask.dll.bytes
+      m_AssetLocation: UniTask.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Newtonsoft.Json.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/Newtonsoft.Json.dll.bytes
+      m_AssetLocation: Newtonsoft.Json.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/UnityEngine.CoreModule.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/UnityEngine.CoreModule.dll.bytes
+      m_AssetLocation: UnityEngine.CoreModule.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/Unity.TextMeshPro.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/Unity.TextMeshPro.dll.bytes
+      m_AssetLocation: Unity.TextMeshPro.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameLogin.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameLogin.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameLogin.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.Kit.Network.GameBind.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.Kit.Network.GameBind.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
+    - m_SourceLocation: HybridCLRData/AssembliesPostIl2CppStrip/{ActiveBuildTarget}/NovaFramework.SDK.TGAPlugin.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/AOTMetas/NovaFramework.SDK.TGAPlugin.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.SDK.TGAPlugin.Runtime.dll
+    StartupGameDlls:
+    - m_SourceLocation: HybridCLRData/HotUpdateDlls/{ActiveBuildTarget}/NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll
+      m_TargetLocation: Assets/Samples/WechatMiniGameDemo/Dlls/GameDlls/NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll.bytes
+      m_AssetLocation: NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime.dll
+    RunningGameDlls: []
+    LinkXmlTargetPath: Assets/Samples/WechatMiniGameDemo/Editor/link.xml
+    GameEntranceProcedureName: ProcedurePreload
+    Platform: 1
+    Channel: 0
+    DevelopMode: 1
+  YooAssetEditorConfigs:
+    YooAssetSettingsPath: Assets/Samples/WechatMiniGameDemo/Editor/YooAssetSettings.asset
+    BundleCollectorSettingPath: Assets/Samples/WechatMiniGameDemo/Editor/BundleCollectorSetting.asset
+    YooFolderName: yoo
+    PackageFilePrefix: 
+  YooAssetEditorConfigsOverrides:
+  - YooAssetSettingsPath: Assets/Samples/WechatMiniGameDemo/Editor/YooAssetSettings.asset
+    BundleCollectorSettingPath: Assets/Samples/WechatMiniGameDemo/Editor/BundleCollectorSetting.asset
+    YooFolderName: yoo
+    PackageFilePrefix: 
+    Platform: 0
+    Channel: 0
+    DevelopMode: 1
+  - YooAssetSettingsPath: Assets/Samples/WechatMiniGameDemo/Editor/YooAssetSettings.asset
+    BundleCollectorSettingPath: Assets/Samples/WechatMiniGameDemo/Editor/BundleCollectorSetting.asset
+    YooFolderName: yoo
+    PackageFilePrefix: 
+    Platform: 0
+    Channel: 0
+    DevelopMode: 0
+  CurrentDevelopMode: 0
+  CurrentChannel: 4
+  ExportTarget: {fileID: 11400000, guid: 536460d3ac4a446abfbe0e8d09008ffe, type: 2}
+  m_Entries:
+  - Platform: 1
+    Channel: 1
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728913
+      - rid: 1000
+      - rid: 2533177004360729497
+      - rid: 2533177598672896557
+      - rid: 2533177598672896629
+      - rid: 1350
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728914
+      - rid: 1001
+      - rid: 2533177004360729498
+      - rid: 2533177598672896558
+      - rid: 2533177598672896630
+      - rid: 1351
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148200
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148201
+  - Platform: 1
+    Channel: 2
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 3589942986135568568
+      - rid: 1002
+      - rid: 2533177004360729499
+      - rid: 2533177598672896559
+      - rid: 2533177598672896631
+      - rid: 1352
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728915
+      - rid: 1003
+      - rid: 2533177004360729500
+      - rid: 2533177598672896560
+      - rid: 2533177598672896632
+      - rid: 1353
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148202
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148203
+  - Platform: 1
+    Channel: 3
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728916
+      - rid: 1004
+      - rid: 2533177004360729501
+      - rid: 2533177598672896561
+      - rid: 2533177598672896633
+      - rid: 1354
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728917
+      - rid: 1005
+      - rid: 2533177004360729502
+      - rid: 2533177598672896562
+      - rid: 2533177598672896634
+      - rid: 1355
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148204
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148205
+  - Platform: 1
+    Channel: 4
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728918
+      - rid: 1006
+      - rid: 2533177004360729503
+      - rid: 2533177598672896563
+      - rid: 2533177598672896635
+      - rid: 1356
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728919
+      - rid: 1007
+      - rid: 2533177004360729504
+      - rid: 2533177598672896564
+      - rid: 2533177598672896636
+      - rid: 1357
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148206
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148207
+  - Platform: 1
+    Channel: 5
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728920
+      - rid: 1008
+      - rid: 2533177004360729505
+      - rid: 2533177598672896565
+      - rid: 2533177598672896637
+      - rid: 1358
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728921
+      - rid: 1009
+      - rid: 2533177004360729506
+      - rid: 2533177598672896566
+      - rid: 2533177598672896638
+      - rid: 1359
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148208
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148209
+  - Platform: 1
+    Channel: 6
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728922
+      - rid: 1010
+      - rid: 2533177004360729507
+      - rid: 2533177598672896567
+      - rid: 2533177598672896639
+      - rid: 1360
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728923
+      - rid: 1011
+      - rid: 2533177004360729508
+      - rid: 2533177598672896568
+      - rid: 2533177598672896640
+      - rid: 1361
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148210
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148211
+  - Platform: 2
+    Channel: 1
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728924
+      - rid: 1012
+      - rid: 2533177004360729509
+      - rid: 2533177598672896569
+      - rid: 2533177598672896641
+      - rid: 1362
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728925
+      - rid: 1013
+      - rid: 2533177004360729510
+      - rid: 2533177598672896570
+      - rid: 2533177598672896642
+      - rid: 1363
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148212
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148213
+  - Platform: 2
+    Channel: 2
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728926
+      - rid: 1014
+      - rid: 2533177004360729511
+      - rid: 2533177598672896571
+      - rid: 2533177598672896643
+      - rid: 1364
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728927
+      - rid: 1015
+      - rid: 2533177004360729512
+      - rid: 2533177598672896572
+      - rid: 2533177598672896644
+      - rid: 1365
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148214
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148215
+  - Platform: 2
+    Channel: 3
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728928
+      - rid: 1016
+      - rid: 2533177004360729513
+      - rid: 2533177598672896573
+      - rid: 2533177598672896645
+      - rid: 1366
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728929
+      - rid: 1017
+      - rid: 2533177004360729514
+      - rid: 2533177598672896574
+      - rid: 2533177598672896646
+      - rid: 1367
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148216
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148217
+  - Platform: 2
+    Channel: 4
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728930
+      - rid: 1018
+      - rid: 2533177004360729515
+      - rid: 2533177598672896575
+      - rid: 2533177598672896647
+      - rid: 1368
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728931
+      - rid: 1019
+      - rid: 2533177004360729516
+      - rid: 2533177598672896576
+      - rid: 2533177598672896648
+      - rid: 1369
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148218
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148219
+  - Platform: 2
+    Channel: 5
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728932
+      - rid: 1020
+      - rid: 2533177004360729517
+      - rid: 2533177598672896577
+      - rid: 2533177598672896649
+      - rid: 1370
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728933
+      - rid: 1021
+      - rid: 2533177004360729518
+      - rid: 2533177598672896578
+      - rid: 2533177598672896650
+      - rid: 1371
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148220
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148221
+  - Platform: 2
+    Channel: 6
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728934
+      - rid: 1022
+      - rid: 2533177004360729519
+      - rid: 2533177598672896579
+      - rid: 2533177598672896651
+      - rid: 1372
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728935
+      - rid: 1023
+      - rid: 2533177004360729520
+      - rid: 2533177598672896580
+      - rid: 2533177598672896652
+      - rid: 1373
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148222
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148223
+  - Platform: 3
+    Channel: 1
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728936
+      - rid: 1024
+      - rid: 2533177004360729521
+      - rid: 2533177598672896581
+      - rid: 2533177598672896653
+      - rid: 1374
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728937
+      - rid: 1025
+      - rid: 2533177004360729522
+      - rid: 2533177598672896582
+      - rid: 2533177598672896654
+      - rid: 1375
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148224
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148225
+  - Platform: 3
+    Channel: 2
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728938
+      - rid: 1026
+      - rid: 2533177004360729523
+      - rid: 2533177598672896583
+      - rid: 2533177598672896655
+      - rid: 1376
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728939
+      - rid: 1027
+      - rid: 2533177004360729524
+      - rid: 2533177598672896584
+      - rid: 2533177598672896656
+      - rid: 1377
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148226
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148227
+  - Platform: 3
+    Channel: 3
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728940
+      - rid: 1028
+      - rid: 2533177004360729525
+      - rid: 2533177598672896585
+      - rid: 2533177598672896657
+      - rid: 1378
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728941
+      - rid: 1029
+      - rid: 2533177004360729526
+      - rid: 2533177598672896586
+      - rid: 2533177598672896658
+      - rid: 1379
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148228
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148229
+  - Platform: 3
+    Channel: 4
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728942
+      - rid: 2533177004360728729
+      - rid: 2533177004360729527
+      - rid: 2533177598672896587
+      - rid: 2533177598672896659
+      - rid: 3752622554880148093
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728943
+      - rid: 1030
+      - rid: 2533177004360729528
+      - rid: 2533177598672896588
+      - rid: 2533177598672896660
+      - rid: 1380
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148230
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148231
+  - Platform: 3
+    Channel: 5
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728944
+      - rid: 1031
+      - rid: 2533177004360729529
+      - rid: 2533177598672896589
+      - rid: 2533177598672896661
+      - rid: 1381
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728945
+      - rid: 1032
+      - rid: 2533177004360729530
+      - rid: 2533177598672896590
+      - rid: 2533177598672896662
+      - rid: 1382
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148232
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148233
+  - Platform: 3
+    Channel: 6
+    AppConfigsByMode:
+    - Mode: 0
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    - Mode: 1
+      Config:
+        AppID: YOUR_APP_ID
+        AppAesKey: YOUR_APP_AES_KEY
+        AppAesIV: YOUR_APP_AES_IV
+        CustomConfigCmdName: AppCustomConfig
+        CustomName: CustomConfigs
+    PrivacyConfigsByMode:
+    - Mode: 0
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    - Mode: 1
+      Config:
+        AESKey: YOUR_PRIVACY_AES_KEY
+        AESIV: YOUR_PRIVACY_AES_IV
+    SDKConfigsByMode:
+    - Mode: 0
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728946
+      - rid: 1033
+      - rid: 2533177004360729531
+      - rid: 2533177598672896591
+      - rid: 2533177598672896663
+      - rid: 1383
+    - Mode: 1
+      SDKConfigs:
+      - rid: 3589942986135568532
+      - rid: 2533177004360728947
+      - rid: 1034
+      - rid: 2533177004360729532
+      - rid: 2533177598672896592
+      - rid: 2533177598672896664
+      - rid: 1384
+    KitConfigsByMode:
+    - Mode: 0
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148234
+    - Mode: 1
+      KitConfigs:
+      - rid: 3589943518543478928
+      - rid: 3589943518543478964
+      - rid: 3752622554880148235
+  references:
+    version: 2
+    RefIds:
+    - rid: 1000
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1035
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1001
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1036
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1002
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1037
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1003
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1038
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1004
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1039
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1005
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1040
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1006
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1041
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1007
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1042
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1008
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1043
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1009
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1044
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1010
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1045
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1011
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1046
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1012
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1047
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1013
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1048
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1014
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1049
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1015
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1050
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1016
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1051
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1017
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1052
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1018
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1053
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1019
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1054
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1020
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1055
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1021
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1056
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1022
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1057
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1023
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1058
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1024
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1059
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1025
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1060
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1026
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1061
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1027
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1062
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1028
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1063
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1029
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1064
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1030
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1065
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1031
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1066
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1032
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1067
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1033
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1068
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1034
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 1069
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 1035
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1036
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1037
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1038
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1039
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1040
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1041
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1042
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1043
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1044
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1045
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1046
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1047
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1048
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1049
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1050
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1051
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1052
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1053
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1054
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1055
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1056
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1057
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1058
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1059
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1060
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1061
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1062
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1063
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1064
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1065
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1066
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1067
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1068
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1069
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 1350
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1351
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1352
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1353
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1354
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1355
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1356
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1357
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1358
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1359
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1360
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1361
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1362
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1363
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1364
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1365
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1366
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1367
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1368
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1369
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1370
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1371
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1372
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1373
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1374
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1375
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1376
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1377
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1378
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1379
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1380
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1381
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1382
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1383
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 1384
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 791343950849900544
+      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+      data:
+        m_Enabled: 1
+        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
+        m_GoogleVerifyCmdName: IAPGoogleVerify
+        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
+        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
+        m_AppleVerifyCmdName: IAPAppleVerify
+        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
+        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+    - rid: 2533177004360728729
+      type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
+      data:
+        m_ChannelConfigs:
+          m_Items:
+          - rid: 2533177004360728730
+          m_EnableBidding: 1
+          m_BannerIlrdInterval: 5
+          m_MuteAd: 0
+          m_RetryLoadAdMaxNum: 3
+          m_RetryLoadAdInterv: 30
+        m_CountryCodeWaitTimeoutSeconds: 5
+    - rid: 2533177004360728730
+      type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
+      data:
+        m_Enabled: 1
+        m_AppKey: YOUR_APPLOVIN_SDK_KEY
+        m_AdMobAppIdAndroid: YOUR_ADMOB_ANDROID_APP_ID
+        m_AdMobAppIdIOS: YOUR_ADMOB_IOS_APP_ID
+        m_BannerAutoRefreshIntervalSeconds: 10
+        m_RVPlacementIds:
+        - YOUR_APPLOVIN_REWARDED_PLACEMENT_ID
+        m_InterPlacementIds:
+        - YOUR_APPLOVIN_INTER_PLACEMENT_ID
+        m_BannerPlacementIds:
+        - YOUR_APPLOVIN_BANNER_PLACEMENT_ID
+        m_AppOpenPlacementIds: []
+        m_LogEnable: 1
+        m_CreativeDebuggerEnabled: 1
+        m_MediationDebuggerEnabled: 1
+    - rid: 2533177004360728913
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728914
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728915
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728916
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728917
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728918
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728919
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728920
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728921
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728922
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728923
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728924
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728925
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728926
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728927
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728928
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728929
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728930
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728931
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728932
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728933
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728934
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728935
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728936
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728937
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728938
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728939
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728940
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728941
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728942
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728943
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728944
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728945
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728946
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360728947
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 2533177004360729497
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729498
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729499
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729500
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729501
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729502
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729503
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729504
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729505
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729506
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729507
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729508
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729509
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729510
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729511
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729512
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729513
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729514
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729515
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729516
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729517
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729518
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729519
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729520
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729521
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729522
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729523
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729524
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729525
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729526
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729527
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729528
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729529
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729530
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729531
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177004360729532
+      type: {class: FirebasePluginConfig, ns: NovaFramework.SDK.FirebasePlugin.Runtime, asm: NovaFramework.SDK.FirebasePlugin.Runtime}
+      data:
+        m_ReportCmdName: FirebaseReport
+        m_PushCmdName: 
+        m_PushFlushIntervalSeconds: 100
+        m_PushFlushBatchSize: 5
+        m_AutoRequestNotificationPermission: 1
+    - rid: 2533177598672896557
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896558
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896559
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
+        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896560
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896561
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896562
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896563
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896564
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896565
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896566
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896567
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896568
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896569
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896570
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896571
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896572
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896573
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896574
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896575
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896576
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896577
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896578
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896579
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896580
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896581
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896582
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896583
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896584
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896585
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896586
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896587
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896588
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896589
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896590
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896591
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896592
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2533177598672896629
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896630
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896631
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items:
+          - rid: 791343950849900544
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896632
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896633
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896634
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896635
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896636
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896637
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896638
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896639
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896640
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896641
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896642
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896643
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896644
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896645
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896646
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896647
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896648
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896649
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896650
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896651
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896652
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896653
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896654
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896655
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896656
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896657
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896658
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896659
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896660
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896661
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896662
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896663
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2533177598672896664
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 3589942986135568532
+      type: {class: AppsFlyerPluginConfig, ns: NovaFramework.SDK.AppsFlyerPlugin.Runtime, asm: NovaFramework.SDK.AppsFlyerPlugin.Runtime}
+      data:
+        m_DevKey: YOUR_APPSFLYER_DEV_KEY
+        m_AppId: YOUR_APPSFLYER_APP_ID
+        m_LogEnable: 1
+        m_OneLinkHost: your-app.onelink.me
+        m_OneLinkFallbackName: YOUR_ONELINK_SUBDOMAIN
+        m_OneLinkPathPrefix: /YOUR_ONELINK_PATH
+        m_ReportCmdName: AppsFlyerReport
+    - rid: 3589942986135568568
+      type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
+      data:
+        m_AppID: YOUR_TGA_APP_ID
+        m_Mode: 0
+        m_TimeZone: 0
+        m_LogEnable: 1
+        m_ServerCmdName: TGAServerUrl
+        m_ReportCmdName: TGAReport
+        m_IsTestUser: 1
+        m_AssignDeviceIdToDistinctId: 0
+    - rid: 3589943518543478928
+      type: {class: SaveKitConfig, ns: NovaFramework.Kit.Network.GameSave.Runtime, asm: NovaFramework.Kit.Network.GameSave.Runtime}
+      data:
+        m_GetCmdName: 
+        m_SetCmdName: 
+    - rid: 3589943518543478964
+      type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
+      data:
+        m_LoginCmdName: GameAccountLogin
+        m_DeleteCmdName: 
+    - rid: 3752622554880148093
+      type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
+      data:
+        m_AppId: wxec64551daa21353f
+        m_InitializationTimeoutSeconds: 15
+        m_ApiTimeoutSeconds: 15
+        m_MinimumBaseLibraryVersion: 
+        m_EnableMemoryWarning: 1
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_MidasOfferId: 
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_PaymentPlatform: android
+        m_AdUnits: []
+    - rid: 3752622554880148200
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148201
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148202
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148203
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148204
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148205
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148206
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148207
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148208
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148209
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148210
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148211
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148212
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148213
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148214
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148215
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148216
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148217
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148218
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148219
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148220
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148221
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148222
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148223
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148224
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148225
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148226
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148227
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148228
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148229
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148230
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148231
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148232
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148233
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148234
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve
+    - rid: 3752622554880148235
+      type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
+      data:
+        m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
+        m_BindConflictCmdName: GameAccountBindConflict
+        m_BindResolveCmdName: GameAccountBindResolve

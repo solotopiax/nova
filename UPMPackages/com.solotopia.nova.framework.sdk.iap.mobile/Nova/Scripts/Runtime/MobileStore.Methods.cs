@@ -85,11 +85,9 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
             }
 
             IAPMobileErrorCode reason = MapPayFailureResultToMobileReason(result);
-            string reasonDetail = string.IsNullOrEmpty(result.ErrorDesc)
-                ? $"{result.ErrorSource}:{result.ErrorCode}"
-                : $"{result.ErrorSource}:{result.ErrorCode} {result.ErrorDesc}";
+            string reasonDetail = string.IsNullOrEmpty(result.ErrorDesc) ? $"{result.ErrorSource}:{result.ErrorCode}" : $"{result.ErrorSource}:{result.ErrorCode} {result.ErrorDesc}";
             Product product = ResolveTrackProduct(result.TableId);
-            TrackLocalPayFail(tableId: result.TableId, productId: ResolveProductId(result.TableId, product), debug: IsTrackDebugMode(), price: ResolvePrice(result.TableId), reason: reason, reasonDetail: reasonDetail, customData: result.CustomData);
+            TrackLocalPayFailInternal(result.TableId, product, reason, reasonDetail, result.CustomData);
         }
 
         /// <summary>

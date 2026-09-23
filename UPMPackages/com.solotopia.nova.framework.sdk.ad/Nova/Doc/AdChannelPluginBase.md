@@ -249,6 +249,12 @@ protected void RaiseAdClosed(AdResult result, bool rewarded = false);
 /// 基类自动从对应 AdUnit 取 ShowCustomProps 合并；派生侧调用面无需传 customProps。
 protected void TrackAdShow(AdFormat format, string placementId);
 
+// 上报 nova_ad_show，并在 ShowCustomProps 之后合并渠道附加属性；已有键不覆盖。
+protected void TrackAdShow(
+    AdFormat format,
+    string placementId,
+    Dictionary<string, object> extraProps);
+
 /// 上报 nova_ad_click 事件（广告点击回调中调用）。
 /// 基类自动从对应 AdUnit 取 ShowCustomProps 合并。
 protected void TrackAdClick(AdFormat format, string placementId);
@@ -525,7 +531,7 @@ DelayedRetryAsync(unit, ct):
 
 ### 打点属性构建
 
-`BuildBaseProps` 构建三个基础属性 `{ nova_ad_channel, nova_ad_format, nova_ad_id }`（`nova_ad_channel` 值为 `Name` 字符串）；每次实际发起渠道 `OnRequestAsync` 前都会上报 `nova_ad_request`，自动重试使用 `AdRequestReason.Retry`；`TrackAdShow` / `TrackAdClick` 额外调用 `MergeCustom` 合并 `unit.ShowCustomProps`（已有 key 跳过，不覆盖基础属性）。
+`BuildBaseProps` 构建三个基础属性 `{ nova_ad_channel, nova_ad_format, nova_ad_id }`（`nova_ad_channel` 值为 `Name` 字符串）；每次实际发起渠道 `OnRequestAsync` 前都会上报 `nova_ad_request`，自动重试使用 `AdRequestReason.Retry`；`TrackAdShow` / `TrackAdClick` 额外调用 `MergeCustom` 合并 `unit.ShowCustomProps`（已有 key 跳过，不覆盖基础属性）。渠道需要补充曝光关联信息时可调用 `TrackAdShow(format, placementId, extraProps)` 重载，附加属性在业务展示属性之后合并且不覆盖既有键。
 
 ---
 

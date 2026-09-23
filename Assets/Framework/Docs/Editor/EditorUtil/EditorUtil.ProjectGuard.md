@@ -36,11 +36,12 @@ Scene 检查使用已加载 Scene 或只读 Preview Scene，不保存、不修�
 | `NOVA-CONFIG-002` | Error | 已导出的必需参数仍含公开包 `YOUR_` 占位符；覆盖 App、已启用 SDK 与已启用 Kit |
 | `NOVA-CONFIG-003` | Error | AppID、AES Key/IV、Namespace 等核心启动参数为空或格式不正确；AES 按 UTF-8 严格要求 16 字节 |
 | `NOVA-CONFIG-004` | Error | ConfigMaster 与 ConfigRuntime 的应用配置或 SDK/Kit 启用类型不一致，需要重新导出 |
+| `NOVA-ASSEMBLY-001` | Error | 当前业务程序集的 asmdef 明确排除了 Unity 当前目标平台，启动前直接说明平台不受支持 |
 | `NOVA-RES-001` | Warning | 当前范围发现归属待确认的非 `Resources/BuiltIn` Resources；先确认所有权，再决定是否迁移 Bundle |
 
 `Resources/BuiltIn/**` 合法；UPM 与识别为第三方插件所有的 Resources 被忽略。资源归属不能确定时只给 Warning，不阻断 Play 或 Unity Build。
 
-进入 Play Mode 前若存在 Error，Play gate 会取消启动并弹出“Nova 启动配置未就绪”。弹窗只用普通项目成员可理解的语言说明“哪一类配置尚未同步”和下一步操作；同一类别即使涉及多个导出坐标也只展示一次，并只描述当前失败状态，不推断用户是否做过修改。规则号、字段名、类型全名、来源资产、导出物和坐标只保留在 Console / Editor.log。选择“打开配置”后，窗口会切换到报告对应的 ConfigMaster、Platform、Channel/DevelopMode，并定位首个错误所属的应用配置、隐私配置、名字空间、SDK 或 Kit 面板；编辑平台与 Unity 当前 Active BuildTarget 不一致时仍可编辑和保存，但需先切换 BuildTarget 才能导出。修正后依次点击“保存”和“导出”，再进入 Play。
+进入 Play Mode 前若存在 Error，Play gate 会取消启动。配置错误弹出“Nova 启动配置未就绪”；程序集平台不兼容等结构错误弹出“Nova 启动检查未通过”。弹窗只用普通项目成员可理解的语言说明真实原因和下一步操作；同一类别即使涉及多个导出坐标也只展示一次，并只描述当前失败状态，不推断用户是否做过修改。规则号、字段名、类型全名、asmdef 路径、来源资产、导出物和坐标只保留在 Console / Editor.log。配置错误选择“打开配置”后，窗口会切换到报告对应的 ConfigMaster、Platform、Channel/DevelopMode，并定位首个错误所属的应用配置、隐私配置、名字空间、SDK 或 Kit 面板；平台不兼容则直接提示切换到 Demo 支持的平台。编辑平台与 Unity 当前 Active BuildTarget 不一致时仍可编辑和保存，但需先切换 BuildTarget 才能导出。修正后再进入 Play。
 
 ## 集中位置
 

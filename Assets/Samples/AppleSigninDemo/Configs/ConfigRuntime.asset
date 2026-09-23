@@ -45,7 +45,7 @@ MonoBehaviour:
     - m_AssetLocation: NovaFramework.SDK.AppleSignIn.Runtime.dll
     - m_AssetLocation: AppleAuth.dll
     - m_AssetLocation: NovaFramework.Kit.Network.GameBind.Runtime.dll
-    GameDlls:
+    StartupGameDlls:
     - m_AssetLocation: NovaFramework.Sdk.Applesignin.Samples.Runtime.dll
   Custom:
     Entries:
@@ -75,5 +75,6 @@ MonoBehaviour:
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
+        m_BindingQueryCmdName: 
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve

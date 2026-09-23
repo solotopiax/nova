@@ -8,6 +8,19 @@
 
 ## [Unreleased]
 
+## [0.6.33] - 2026-09-23
+
+### Breaking
+
+- Framework 删除旧 BestHTTP 兼容接口与 Config 历史迁移入口；仍依赖旧接口或旧 schema 的项目必须先迁移再升级。
+- IAP Core 删除派生 Store 的旧 protected 打点接口；自定义 Store 必须改用新的通用属性与事件发送入口。
+- 微信小游戏接入包 ID 从 `com.solotopia.nova.framework.wechat.minigame` 调整为 `com.solotopia.nova.framework.sdk.wechat.minigame`，使其在 PlugPals 中归入 SDK 分类；公开副仓不再包含该包。
+
+### Changed
+
+- Pipify 在调用每个 Step 前统一展开本次参数快照中的标准文本占位符，UI 与 CLI 使用相同语义且不改写存档。
+- 发布 Framework `0.6.33`、Ad `1.1.14`、DataMaster ABTest `0.1.0`、IAP `0.1.16`、IAP Mobile `0.1.14`、MAX `0.1.12`、TGA `0.1.16` 与 WeChat MiniGame SDK `0.0.1`。
+
 ## [0.6.32] - 2026-09-20
 
 ### Added

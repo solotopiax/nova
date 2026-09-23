@@ -44,7 +44,7 @@ auto_generated: true
 
 ## module
 
-- [GLO-08 DataMaster 分流用户属性口径（app_version / install_time 必传）](../2-Areas/Glossary/GLO-08-datamaster-user-properties.md) — 两条必传分流属性的口径：版本号 + 安装时间
+- [GLO-08 DataMaster 分流用户属性口径（app_version / install_time / platform）](../2-Areas/Glossary/GLO-08-datamaster-user-properties.md) — 必传分流属性与平台报表维度的类型和值域口径
 - [GLO-19 TMP_Text 文本组件](../2-Areas/Glossary/GLO-19-tmp-text-component.md) — TMP_Text是依赖字体材质链的文本基类
 
 ## naming

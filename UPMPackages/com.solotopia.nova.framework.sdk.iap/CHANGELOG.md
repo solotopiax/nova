@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.1.16] - 2026-09-23
+
+### Added
+
+- IAP 支付打点支持渠道补充上下文；ThirdPay 现在可在保留既有事件语义的同时记录支付页、验单和本地订单删除结果。
+- 新增可选 Store Pause/Focus 生命周期接口，`IAPPlugin` 统一接收 SDK 生命周期并按能力转发给各 Store。
+
+### Changed
+
+- 打点基类收口为初始化、购买、默认 guard 失败和通用属性工具；订单号、验单状态及渠道失败枚举改由各 Store 自己构造，避免父包混入渠道语义。
+- IAPDemo 的 ThirdPay 状态区精简为支付是否开启、关闭失败原因和已获取商品 SKU 数量，不再展示商店、名单及 Google Policy 等内部诊断信息。
+
+### Breaking
+
+- 删除 `IAPStoreBase` 面向派生 Store 的旧订单、验单、发货与 ThirdPay 专属 protected 打点方法；自定义 Store 必须改为自行构造渠道属性，并复用新的通用属性与事件发送入口。
+
 ## [0.1.15] - 2026-09-18
 
 ### Added

@@ -1,0 +1,34 @@
+﻿{
+  "Demo_Sound": [
+    {
+      "Name": "Demo_BgmMain",
+      "Desc": "BGM演示主背景音乐",
+      "AssetLocation": "bgm_main",
+      "GroupName": "BGM",
+      "Priority": 0,
+      "Loop": true,
+      "Volume": 0.6,
+      "SpatialBlend": 0
+    },
+    {
+      "Name": "Demo_SfxClick",
+      "Desc": "SFX演示点击音效",
+      "AssetLocation": "sfx_click",
+      "GroupName": "SFX",
+      "Priority": 0,
+      "Loop": false,
+      "Volume": 1,
+      "SpatialBlend": 0
+    },
+    {
+      "Name": "Demo_SfxConfirm",
+      "Desc": "SFX演示确认音效",
+      "AssetLocation": "sfx_confirm",
+      "GroupName": "SFX",
+      "Priority": 0,
+      "Loop": false,
+      "Volume": 1,
+      "SpatialBlend": 0
+    }
+  ]
+}

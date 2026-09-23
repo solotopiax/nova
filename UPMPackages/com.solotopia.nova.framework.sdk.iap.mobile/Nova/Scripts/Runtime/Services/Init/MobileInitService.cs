@@ -46,7 +46,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
         /// <summary>
         /// 异步初始化 Unity IAP：经由 ExtendedService 完成 Controller 注入、事件注册、平台连接。
-        /// 初始化结果通过 OnStoreConnected / FailInitialization 回调驱动，await InitTcs 等待结果。
+        /// 该方法由 Store 运行期后台任务调用；初始化结果通过 OnStoreConnected / FailInitialization 回调驱动。
         /// </summary>
         /// <param name="table">IAP 商品表接口，用于注册 productId。</param>
         /// <param name="ct">取消令牌。</param>
@@ -82,7 +82,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
 
             try
             {
-                await m_Hub.ExtendedService.Connect();
+                await m_Hub.ExtendedService.Connect().AttachExternalCancellation(ct);
             }
             catch (OperationCanceledException e)
             {

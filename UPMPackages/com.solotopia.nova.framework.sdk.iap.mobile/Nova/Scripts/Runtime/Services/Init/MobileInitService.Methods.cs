@@ -84,8 +84,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
         /// </summary>
         private void OnProductFetchCompleted()
         {
-            m_Hub.RestoreService.TryRunPendingEntitlementRefreshAfterProductsFetched();
-            m_Hub.ExtendedService.FetchPurchases();
+            m_Hub.RestoreService.RequestExistingPurchasesFetch();
         }
     }
 }

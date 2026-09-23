@@ -21,6 +21,10 @@
 | `StepId` | `string` { get; set; } | Step 稳定 ID，重命名 DisplayName 不影响存档 |
 | `ParamsJson` | `string` { get; set; } | 参数序列化结果（Util.Json），无参 Step 为空字符串 |
 
+## §9 可选 Package 卸载行为
+
+`BatchItem` 不序列化 Step 实现类型，只保存 `StepId + ParamsJson`。提供该 Step 的可选 Package 被卸载或暂时编译失败时，条目与参数仍保留，不会变成 Unity Missing Script；PipifyWindow 会将其标为 `[Missing]` 并禁止运行整个 Batch。重新安装 Package 且 StepId 不变后，条目自动恢复为可配置、可执行状态。
+
 ## §11 使用示例
 
 ```csharp

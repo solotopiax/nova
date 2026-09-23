@@ -156,11 +156,15 @@
 表现：
 
 - `Util.Assembly.GetAssembly(businessAssemblyName)` 返回 `null`
+- Editor 下某个已配置的启动业务程序集没有进入当前编译目标
 
 优先排查：
 
 - `ConfigMasterSO.HybridEditorConfigs.StartupGameDlls`
 - DLL 是否真的被拷贝到可加载位置
+- 对应 asmdef 的 `includePlatforms`、`excludePlatforms` 与 `defineConstraints` 是否允许当前平台
+
+Editor 下 `LoadGameAssemblyAsync` 不会再次加载 DLL，而是复用源码编译产物。已配置条目却找不到程序集时，异常会同时给出当前平台，并明确提示检查 asmdef 平台限制；ProjectGuard 在进入 Play 前也会用 `NOVA-ASSEMBLY-001` 阻断这种确定的不兼容。
 
 ### 4. `GameEntranceProcedureName` 配错
 

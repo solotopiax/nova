@@ -127,6 +127,22 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// 收益回调即时打点用的通用埋点插件引用，初始化阶段在主线程缓存。
         /// </summary>
         private ITrackPlugin m_RevenueEventTracker;
+
+        /// <summary>
+        /// 全屏广告曝光关联状态锁；MAX 回调可能来自非 Unity 主线程。
+        /// </summary>
+        private readonly object m_FullscreenImpressionLock = new object();
+
+        /// <summary>
+        /// 各全屏广告格式当前一次展示尝试的本地关联状态。
+        /// </summary>
+        private readonly Dictionary<AdFormat, FullscreenImpressionContext> m_FullscreenImpressions =
+            new Dictionary<AdFormat, FullscreenImpressionContext>();
+
+        /// <summary>
+        /// MAX 全局静态回调是否已经完成注册，防止重复初始化时叠加订阅。
+        /// </summary>
+        private bool m_CallbacksRegistered;
 #endif
 
     }

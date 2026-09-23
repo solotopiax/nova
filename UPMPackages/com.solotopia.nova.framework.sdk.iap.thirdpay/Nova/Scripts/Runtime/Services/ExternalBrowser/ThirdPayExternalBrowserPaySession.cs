@@ -84,6 +84,41 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public bool Completed;
 
         /// <summary>
+        /// 外部支付页实际采用的打开方式。
+        /// </summary>
+        public ThirdPayExternalBrowserLaunchMode OpenMode = ThirdPayExternalBrowserLaunchMode.Failed;
+
+        /// <summary>
+        /// 当前会话是否已经成功提交支付页打开请求。
+        /// </summary>
+        public bool IsPaymentPageEstablished;
+
+        /// <summary>
+        /// 当前会话最后一次可归因的支付回调状态。
+        /// </summary>
+        public ThirdPayWebViewCallbackStatus CallbackStatus = ThirdPayWebViewCallbackStatus.Unknown;
+
+        /// <summary>
+        /// 当前会话最终关闭原因；成功回调时保持 Unknown。
+        /// </summary>
+        public ThirdPayCloseReason CloseReason = ThirdPayCloseReason.Unknown;
+
+        /// <summary>
+        /// 当前会话最终失败原因；无明确失败时保持 Unknown。
+        /// </summary>
+        public ThirdPayPaymentFailureReason FailureReason = ThirdPayPaymentFailureReason.Unknown;
+
+        /// <summary>
+        /// 支付页或原生能力返回的补充错误码。
+        /// </summary>
+        public int NativeErrorCode;
+
+        /// <summary>
+        /// 支付页或原生能力返回的补充错误描述。
+        /// </summary>
+        public string NativeErrorMessage = string.Empty;
+
+        /// <summary>
         /// 返回 App 后的倒计时等待期是否已经持有 Loading 引用。
         /// </summary>
         public bool ReturnWaitingRefAdded;
@@ -102,6 +137,67 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         /// 当前返回前台后的延迟验单取消源；反复切前后台时会被替换。
         /// </summary>
         public CancellationTokenSource DelayCts;
+
+        /// <summary>
+        /// 支付页成功或关闭终态是否已经上报；通过原子门禁避免 Deep Link 与返回倒计时重复上报。
+        /// </summary>
+        private int m_PaymentPageTrackFinalized;
+
+        /// <summary>
+        /// 尝试取得当前支付页会话唯一终态埋点权。
+        /// </summary>
+        /// <returns>本次调用首次取得终态埋点权时返回 true。</returns>
+        public bool TryFinalizePaymentPageTrack()
+        {
+            return Interlocked.CompareExchange(ref m_PaymentPageTrackFinalized, 1, 0) == 0;
+        }
+
+        /// <summary>
+        /// 记录当前会话的支付页结果上下文，供成功回调或最终关闭埋点统一读取。
+        /// </summary>
+        /// <param name="pageResult">需要记录的支付页结果。</param>
+        public void RecordPaymentPageResult(ThirdPayPaymentPageResult pageResult)
+        {
+            OpenMode = pageResult.OpenMode;
+            IsPaymentPageEstablished = pageResult.IsSessionEstablished;
+            CallbackStatus = pageResult.CallbackStatus;
+            CloseReason = pageResult.CloseReason;
+            FailureReason = pageResult.FailureReason;
+            NativeErrorCode = pageResult.NativeErrorCode;
+            NativeErrorMessage = pageResult.NativeErrorMessage ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 记录一个比无回调兜底更具体的关闭候选；已经记录明确回调错误时不再被弱原因覆盖。
+        /// </summary>
+        /// <param name="callbackStatus">支付回调状态。</param>
+        /// <param name="closeReason">支付页关闭原因。</param>
+        /// <param name="failureReason">支付失败原因。</param>
+        /// <param name="nativeErrorCode">回调原始状态或原生错误码。</param>
+        /// <param name="nativeErrorMessage">原生错误描述。</param>
+        public void RecordCloseCandidate(ThirdPayWebViewCallbackStatus callbackStatus, ThirdPayCloseReason closeReason, ThirdPayPaymentFailureReason failureReason, int nativeErrorCode = 0, string nativeErrorMessage = "")
+        {
+            if (CloseReason != ThirdPayCloseReason.Unknown && closeReason == ThirdPayCloseReason.ExternalBrowserReturnedWithoutCallback)
+            {
+                return;
+            }
+
+            CallbackStatus = callbackStatus;
+            CloseReason = closeReason;
+            FailureReason = failureReason;
+            NativeErrorCode = nativeErrorCode;
+            NativeErrorMessage = nativeErrorMessage ?? string.Empty;
+        }
+
+        /// <summary>
+        /// 构造当前会话用于成功或关闭埋点的结构化支付页结果。
+        /// </summary>
+        /// <param name="result">支付页结果。</param>
+        /// <returns>包含当前会话上下文的支付页结果。</returns>
+        public ThirdPayPaymentPageResult BuildPaymentPageResult(ThirdPayOpenResult result)
+        {
+            return ThirdPayPaymentPageResult.Completed(result, OpenMode, CallbackStatus, CloseReason, FailureReason, NativeErrorCode, NativeErrorMessage, IsPaymentPageEstablished);
+        }
 
         /// <summary>
         /// 取消并释放当前返回前台延迟验单计时器。

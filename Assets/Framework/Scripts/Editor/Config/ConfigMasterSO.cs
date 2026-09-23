@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using NovaFramework.Runtime;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace NovaFramework.Editor
 {
@@ -23,15 +22,15 @@ namespace NovaFramework.Editor
     public sealed class ConfigMasterSO : ScriptableObject, ISerializationCallbackReceiver
     {
         /// <summary>
-        /// 当前 ConfigMasterSO 序列化结构版本；版本 1 对应 Runtime / Editor 配置分层后的分组结构。
+        /// 当前 ConfigMasterSO 序列化结构版本。
         /// </summary>
         public const int CurrentConfigSchemaVersion = 1;
 
         /// <summary>
-        /// 当前资产已经完成的配置结构版本；旧资产缺少该字段时按 0 处理并由 Editor 迁移器升级。
+        /// 当前资产的配置结构版本；Editor 只接受与当前版本完全一致的资产。
         /// </summary>
         [HideInInspector]
-        public int ConfigSchemaVersion;
+        public int ConfigSchemaVersion = CurrentConfigSchemaVersion;
 
         /// <summary>
         /// 顶层默认命名空间；NamespaceMask 全不勾时全局统一使用此值，勾选维度后由 NamespaceOverrides 按坐标覆盖，
@@ -144,76 +143,10 @@ namespace NovaFramework.Editor
 
         public List<YooAssetEditorConfigsOverride> YooAssetEditorConfigsOverrides = new();
 
-        // 以下字段仅在兼容窗口内接收旧版 ConfigMasterSO 的顶层序列化数据。
-        // 迁移成功后会清空；字段本身需保留到约定的大版本清理窗口，避免旧项目直接升级时丢失数据。
-
-        /// <summary>旧版 CommonMask 序列化缓冲；迁移后清空。</summary>
-        [SerializeField, HideInInspector]
-        private PanelDimensionMask CommonMask;
-
-        /// <summary>旧版 HybridCLRMask 序列化缓冲；迁移后清空。</summary>
-        [SerializeField, HideInInspector]
-        private PanelDimensionMask HybridCLRMask;
-
-        /// <summary>旧版 YooAssetMask 序列化缓冲；迁移后清空。</summary>
-        [SerializeField, HideInInspector]
-        private PanelDimensionMask YooAssetMask;
-
-        /// <summary>旧版 CdnMask 序列化缓冲；迁移后清空。</summary>
-        [SerializeField, HideInInspector]
-        private PanelDimensionMask CdnMask;
-
-        /// <summary>旧版 CdnDeployment 序列化缓冲；迁移后清空。</summary>
-        [SerializeField, HideInInspector]
-        private CDNEditorConfigs CdnDeployment;
-
-        /// <summary>旧版 CdnOverrides 序列化缓冲；迁移后清空。</summary>
-        [SerializeField, HideInInspector]
-        private List<CDNEditorConfigsOverride> CdnOverrides;
-
-        /// <summary>旧版 HybridCLROverrides 序列化缓冲；迁移后清空。</summary>
-        [SerializeField, HideInInspector]
-        private List<HybridEditorConfigsOverride> HybridCLROverrides;
-
-        /// <summary>旧版 YooAssetOverrides 序列化缓冲；迁移后清空。</summary>
-        [SerializeField, HideInInspector]
-        private List<YooAssetEditorConfigsOverride> YooAssetOverrides;
-
-        /// <summary>旧版业务入口 Procedure 名序列化缓冲；迁移到 HybridEditorConfigs 后清空。</summary>
-        [SerializeField, HideInInspector]
-        private string GameEntranceProcedureName;
-
-        /// <summary>旧版 YooAssetSettings 路径序列化缓冲；迁移后清空。</summary>
-        [SerializeField, HideInInspector]
-        private string YooAssetSettingsPath;
-
-        /// <summary>旧版 BundleCollectorSetting 路径序列化缓冲；迁移后清空。</summary>
-        [SerializeField, HideInInspector]
-        private string BundleCollectorSettingPath;
-
-        /// <summary>旧版 link.xml 目标路径序列化缓冲；迁移到 HybridEditorConfigs 后清空。</summary>
-        [SerializeField, HideInInspector]
-        private string LinkXmlTargetPath;
-
-        /// <summary>旧版 AOT DLL 编辑配置序列化缓冲；迁移到 HybridEditorConfigs 后清空。</summary>
-        [SerializeField, HideInInspector]
-        private List<DllMasterAssetEntry> AotMetadataDlls;
-
-        /// <summary>旧版业务 DLL 编辑配置序列化缓冲；迁移到 HybridEditorConfigs 后清空。</summary>
-        [SerializeField, HideInInspector]
-        private List<DllMasterAssetEntry> GameDlls;
-
         /// <summary>
         /// 当前编辑态选中的开发模式；默认 Debug，与原 m_DevelopMode = true 语义一致。
         /// </summary>
         public DevelopMode CurrentDevelopMode = DevelopMode.Debug;
-
-        /// <summary>
-        /// 旧版编辑态平台序列化值；仅用于无损读取升级前资产，不再参与平台选择或导出。
-        /// </summary>
-        [FormerlySerializedAs("CurrentPlatform")]
-        [SerializeField, HideInInspector]
-        private PlatformType m_LegacyCurrentPlatform;
 
         /// <summary>
         /// 当前编辑期平台；每次访问都实时映射 Unity 的 Active BuildTarget，不受 ConfigMaster 资产内容影响。
@@ -362,187 +295,6 @@ namespace NovaFramework.Editor
         public void OnAfterDeserialize()
         {
             RebuildIndex();
-        }
-
-        /// <summary>
-        /// 将版本 0 的旧顶层字段与矩阵公共配置迁入版本 1 分组结构。
-        /// 方法先验证全部矩阵行，再统一写入并推进版本，验证失败时不会部分修改或标记完成。
-        /// </summary>
-        /// <param name="changed">成功时返回本次是否实际推进了结构版本。</param>
-        /// <param name="error">失败时返回可定位的错误信息；成功时为 null。</param>
-        /// <returns>迁移成功或无需迁移时返回 true；数据损坏或版本不受支持时返回 false。</returns>
-        internal bool TryMigrateLegacyData(out bool changed, out string error)
-        {
-            changed = false;
-            error = null;
-
-            if (ConfigSchemaVersion == CurrentConfigSchemaVersion)
-            {
-                return true;
-            }
-
-            if (ConfigSchemaVersion < 0 || ConfigSchemaVersion > CurrentConfigSchemaVersion)
-            {
-                error = $"不支持的 ConfigMasterSO 结构版本：{ConfigSchemaVersion}。";
-                return false;
-            }
-
-            if (m_Entries == null)
-            {
-                error = "ConfigMasterSO.m_Entries 为空，无法安全迁移。";
-                return false;
-            }
-
-            for (int i = 0; i < m_Entries.Count; i++)
-            {
-                PlatformChannelEntry entry = m_Entries[i];
-                if (entry == null)
-                {
-                    error = $"ConfigMasterSO.m_Entries[{i}] 为空，无法安全迁移。";
-                    return false;
-                }
-
-                if (!entry.ValidateLegacyData(out error))
-                {
-                    error = $"ConfigMasterSO.m_Entries[{i}] 迁移校验失败：{error}";
-                    return false;
-                }
-            }
-
-            if (HasMaskValue(CommonMask) || !HasMaskValue(AppConfigsMask)) AppConfigsMask = CommonMask ?? AppConfigsMask;
-            if (HasMaskValue(HybridCLRMask) || !HasMaskValue(HybridEditorConfigsMask)) HybridEditorConfigsMask = HybridCLRMask ?? HybridEditorConfigsMask;
-            if (HasMaskValue(YooAssetMask) || !HasMaskValue(YooAssetEditorConfigsMask)) YooAssetEditorConfigsMask = YooAssetMask ?? YooAssetEditorConfigsMask;
-            if (HasMaskValue(CdnMask) || !HasMaskValue(CDNEditorConfigsMask)) CDNEditorConfigsMask = CdnMask ?? CDNEditorConfigsMask;
-            if (HasCDNValue(CdnDeployment) || !HasCDNValue(CDNEditorConfigs)) CDNEditorConfigs = CdnDeployment ?? CDNEditorConfigs;
-            if (HasItems(CdnOverrides) || !HasItems(CDNEditorConfigsOverrides)) CDNEditorConfigsOverrides = CdnOverrides ?? CDNEditorConfigsOverrides;
-            if (HasItems(HybridCLROverrides) || !HasItems(HybridEditorConfigsOverrides)) HybridEditorConfigsOverrides = HybridCLROverrides ?? HybridEditorConfigsOverrides;
-            if (HasItems(YooAssetOverrides) || !HasItems(YooAssetEditorConfigsOverrides)) YooAssetEditorConfigsOverrides = YooAssetOverrides ?? YooAssetEditorConfigsOverrides;
-
-            bool hasLegacyHybridValue = HasItems(AotMetadataDlls) || HasItems(GameDlls) ||
-                                        !string.IsNullOrEmpty(GameEntranceProcedureName) ||
-                                        !string.IsNullOrEmpty(LinkXmlTargetPath);
-            if (hasLegacyHybridValue || !HasHybridValue(HybridEditorConfigs))
-            {
-                HybridEditorConfigs = new HybridEditorConfigs
-                {
-                    GameEntranceProcedureName = GameEntranceProcedureName,
-                    LinkXmlTargetPath = LinkXmlTargetPath,
-                    AotMetadataDlls = AotMetadataDlls == null ? new List<DllMasterAssetEntry>() : new List<DllMasterAssetEntry>(AotMetadataDlls),
-                    StartupGameDlls = GameDlls == null ? new List<DllMasterAssetEntry>() : new List<DllMasterAssetEntry>(GameDlls),
-                    RunningGameDlls = new List<DllMasterAssetEntry>(),
-                };
-            }
-
-            bool hasLegacyYooAssetValue = !string.IsNullOrEmpty(YooAssetSettingsPath) ||
-                                          !string.IsNullOrEmpty(BundleCollectorSettingPath);
-            if (hasLegacyYooAssetValue || !HasYooAssetValue(YooAssetEditorConfigs))
-            {
-                YooAssetEditorConfigs = new YooAssetEditorConfigs
-                {
-                    YooAssetSettingsPath = YooAssetSettingsPath,
-                    BundleCollectorSettingPath = BundleCollectorSettingPath,
-                };
-            }
-
-            for (int i = 0; i < m_Entries.Count; i++)
-            {
-                m_Entries[i].ApplyLegacyData();
-            }
-
-            GameEntranceProcedureName = null;
-            CommonMask = null;
-            HybridCLRMask = null;
-            YooAssetMask = null;
-            CdnMask = null;
-            CdnDeployment = null;
-            CdnOverrides = null;
-            HybridCLROverrides = null;
-            YooAssetOverrides = null;
-            YooAssetSettingsPath = null;
-            BundleCollectorSettingPath = null;
-            LinkXmlTargetPath = null;
-            AotMetadataDlls = null;
-            GameDlls = null;
-
-            ConfigSchemaVersion = CurrentConfigSchemaVersion;
-            RebuildIndex();
-            changed = true;
-            return true;
-        }
-
-        /// <summary>
-        /// 判断维度掩码是否包含任一启用轴，用于区分真实旧值与 Unity 自动实例化的空桥接对象。
-        /// </summary>
-        /// <param name="mask">待判断的维度掩码。</param>
-        /// <returns>任一轴启用时返回 true。</returns>
-        private static bool HasMaskValue(PanelDimensionMask mask)
-        {
-            return mask != null && (mask.ByPlatform || mask.ByChannel || mask.ByDevelopMode);
-        }
-
-        /// <summary>
-        /// 判断 CDN 配置是否包含任一非空字段，避免空桥接对象覆盖已存在的新结构数据。
-        /// </summary>
-        /// <param name="config">待判断的 CDN 编辑配置。</param>
-        /// <returns>任一字段非空时返回 true。</returns>
-        private static bool HasCDNValue(CDNEditorConfigs config)
-        {
-            return config != null &&
-                   (!string.IsNullOrEmpty(config.Endpoint) ||
-                    !string.IsNullOrEmpty(config.AccessKeyID) ||
-                    !string.IsNullOrEmpty(config.AccessKeySecret) ||
-                    !string.IsNullOrEmpty(config.PresetOSSPath) ||
-                    !string.IsNullOrEmpty(config.VersionCheckLocalFilePath) ||
-                    !string.IsNullOrEmpty(config.VersionCheckRemoteFilePath) ||
-                    !string.IsNullOrEmpty(config.LocalDirectory) ||
-                    !string.IsNullOrEmpty(config.RemotePathSuffix) ||
-                    (config.AssetCheckWhitelistDeviceIDs != null && config.AssetCheckWhitelistDeviceIDs.Count > 0) ||
-                    !string.IsNullOrEmpty(config.AssetCheckWhitelistRemoteFilePath) ||
-                    !string.IsNullOrEmpty(config.AssetCheckManifestBytesLocalFilePath) ||
-                    !string.IsNullOrEmpty(config.AssetCheckManifestHashLocalFilePath) ||
-                    !string.IsNullOrEmpty(config.AssetCheckPackageVersionLocalFilePath) ||
-                    !string.IsNullOrEmpty(config.AssetCheckVersionRemoteDirectory) ||
-                    !string.IsNullOrEmpty(config.ZoneID) ||
-                    !string.IsNullOrEmpty(config.PurgeURL) ||
-                    !string.IsNullOrEmpty(config.Token) ||
-                    !string.IsNullOrEmpty(config.CachePaths));
-        }
-
-        /// <summary>
-        /// 判断 HybridCLR 编辑配置是否包含任一有效路径、入口名或 DLL 条目。
-        /// </summary>
-        /// <param name="config">待判断的 HybridCLR 编辑配置。</param>
-        /// <returns>存在任一有效值时返回 true。</returns>
-        private static bool HasHybridValue(HybridEditorConfigs config)
-        {
-            return config != null &&
-                   (HasItems(config.AotMetadataDlls) || HasItems(config.StartupGameDlls) ||
-                    HasItems(config.RunningGameDlls) ||
-                    !string.IsNullOrEmpty(config.LinkXmlTargetPath) ||
-                    !string.IsNullOrEmpty(config.GameEntranceProcedureName));
-        }
-
-        /// <summary>
-        /// 判断 YooAsset 编辑配置是否包含任一路径。
-        /// </summary>
-        /// <param name="config">待判断的 YooAsset 编辑配置。</param>
-        /// <returns>任一路径非空时返回 true。</returns>
-        private static bool HasYooAssetValue(YooAssetEditorConfigs config)
-        {
-            return config != null &&
-                   (!string.IsNullOrEmpty(config.YooAssetSettingsPath) ||
-                    !string.IsNullOrEmpty(config.BundleCollectorSettingPath));
-        }
-
-        /// <summary>
-        /// 判断列表是否包含至少一个条目；空列表视为 Unity 自动实例化的默认桥接值。
-        /// </summary>
-        /// <typeparam name="T">列表元素类型。</typeparam>
-        /// <param name="items">待判断的列表。</param>
-        /// <returns>列表非空时返回 true。</returns>
-        private static bool HasItems<T>(List<T> items)
-        {
-            return items != null && items.Count > 0;
         }
 
         /// <summary>

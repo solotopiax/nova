@@ -33,7 +33,7 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         public string DebugCountryCode { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 首次自动解析后锁定的国家码，避免同一运行期商品国家反复漂移。
+        /// 登录后首次业务读取锁定的自动解析国家码，避免同一 Store 生命周期内业务国家漂移。
         /// </summary>
         public string LockCountryCode { get; private set; } = string.Empty;
 
@@ -72,9 +72,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
         }
 
         /// <summary>
-        /// 设置商品快照锁定国家码。
+        /// 设置登录后首次业务读取锁定的国家码。
         /// </summary>
-        /// <param name="countryCode">商品列表请求使用的国家或地区代码。</param>
+        /// <param name="countryCode">需要在当前 Store 生命周期内锁定的国家或地区代码。</param>
         public void SetLockCountryCode(string countryCode)
         {
             LockCountryCode = NormalizeCountryCode(countryCode);

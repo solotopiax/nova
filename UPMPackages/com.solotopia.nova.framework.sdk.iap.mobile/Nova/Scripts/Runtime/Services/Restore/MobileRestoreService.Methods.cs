@@ -76,7 +76,7 @@ namespace NovaFramework.SDK.IAP.Mobile.Runtime
                 // 无需查询的商品时直接进入汇总阶段，避免 Restore 流程永久挂起
                 if (skippedEligibleProductBecauseNotFetched)
                 {
-                    m_PendingEntitlementRefreshAfterProductsFetched = true;
+                    m_PendingEntitlementRefresh = true;
                     LogWarning("订阅或非消耗品尚未进入 StoreController，已延后权益刷新。");
                 }
                 else

@@ -11,6 +11,7 @@
 
 | 文件 | 类 | 说明 |
 |------|----|------|
+| `Editor/Config/Definitions/SDKPluginConfigPanelActionAttribute.cs` | `SDKPluginConfigPanelActionAttribute` | SDK Editor 程序集声明 Config 面板快捷动作的程序集特性 |
 | `Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.cs` | `EditorUtil.Config.SDKPluginScanner` | 扫描器工具类 |
 
 ---
@@ -27,7 +28,7 @@ EditorUtil (public static partial class)
 
 ## §4 关键字段表
 
-无字段（静态工具类）。
+`PluginPanelActionEntry` 保存快捷动作所属的 Config 类型、按钮名称、Unity 菜单路径和排序值。
 
 ---
 
@@ -37,7 +38,11 @@ EditorUtil (public static partial class)
 // 扫描全程序集中满足条件的 Plugin Config 类型
 // 条件：非抽象、非接口、实现 ISDKPluginConfig、标注 [Serializable]
 // 无匹配时返回空列表
-public static List<Type> ScanAll();
+public static List<PluginConfigEntry> ScanAll();
+
+// 扫描 SDK Editor 程序集通过 SDKPluginConfigPanelActionAttribute 声明的面板快捷动作
+// 无效声明会被忽略，结果按 Config 类型、排序值和按钮名称稳定排序
+public static List<PluginPanelActionEntry> ScanPanelActions();
 
 // 若 Entry 指定 DevelopMode 的 SDKConfigs 缺少指定类型实例，反射补空实例并追加；已存在返回 false
 // entry 或 configType 为 null 时返回 false
@@ -67,6 +72,10 @@ ScanAll():
 ```
 
 `SafeGetTypes` 在程序集包含加载失败类型时捕获 `ReflectionTypeLoadException` 并返回 `e.Types` 非 null 部分，避免中断整个扫描。
+
+### ScanPanelActions — SDK Config 面板快捷动作
+
+SDK 的 Editor 程序集可以声明 `[assembly: SDKPluginConfigPanelAction(...)]`，ConfigWindow 会按当前 Config 类型在字段上方绘制按钮，并通过 `EditorApplication.ExecuteMenuItem` 转发到已有 Unity 菜单。Framework 不直接依赖具体 SDK Editor 类型，按钮也只负责打开入口，不执行转换等耗时操作。
 
 ---
 

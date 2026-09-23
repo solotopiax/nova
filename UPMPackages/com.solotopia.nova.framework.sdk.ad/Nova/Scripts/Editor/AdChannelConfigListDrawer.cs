@@ -38,12 +38,6 @@ namespace NovaFramework.SDK.AdPlugin.Editor
         private const float c_BannerSliderWidth = 300f;
 
         /// <summary>
-        /// 全局字段绘制左侧缩进量。
-        /// 与基类 SerializeReferenceListDrawer 的 c_FieldIndent = 12f 约定对齐。
-        /// </summary>
-        private const float c_FieldIndent = 12f;
-
-        /// <summary>
         /// AdPluginConfig 中渠道配置字段名。
         /// </summary>
         private const string c_ChannelConfigsFieldName = "m_ChannelConfigs";
@@ -102,9 +96,9 @@ namespace NovaFramework.SDK.AdPlugin.Editor
             float lineStep = EditorGUIUtility.singleLineHeight + 2f;
             bool hasCountryCodeWaitTimeout = FindCountryCodeWaitTimeoutProperty(property) != null;
             float h = lineStep * (hasCountryCodeWaitTimeout ? 6f : 5f) + c_GlobalSectionSpacing;
-            // 使用 EditorGUIUtility.currentViewWidth - c_FieldIndent 近似可用宽度，
+            // 使用 EditorGUIUtility.currentViewWidth 近似可用宽度，
             // 与基类 GetEntryHeight 同款策略对齐，避免 HelpBox 高度估算偏差。
-            float availableWidth = EditorGUIUtility.currentViewWidth - c_FieldIndent;
+            float availableWidth = EditorGUIUtility.currentViewWidth;
             h += CalcGlobalTooltipHeight("m_EnableBidding", availableWidth);
             h += CalcGlobalTooltipHeight("m_BannerIlrdInterval", availableWidth);
             h += CalcGlobalTooltipHeight("m_MuteAd", availableWidth);
@@ -165,10 +159,10 @@ namespace NovaFramework.SDK.AdPlugin.Editor
             string tooltip = EditorUtil.Reflect.GetFieldTooltip(tooltipOwnerType, fieldName);
             if (!string.IsNullOrEmpty(tooltip))
             {
-                // HelpBox 宽度铺满可用宽度（起点 position.x + c_FieldIndent，宽度 = position.width - c_FieldIndent）
-                float helpBoxWidth = position.width - c_FieldIndent;
+                // HelpBox 与对应配置项共用相同的左边缘和可用宽度。
+                float helpBoxWidth = position.width;
                 float helpH = EditorUtil.Draw.CalcHelpBoxHeight(MessageType.Info, tooltip, helpBoxWidth);
-                EditorUtil.Draw.HelpBox(new Rect(position.x + c_FieldIndent, y, helpBoxWidth, helpH), MessageType.Info, tooltip);
+                EditorUtil.Draw.HelpBox(new Rect(position.x, y, helpBoxWidth, helpH), MessageType.Info, tooltip);
                 y += helpH + 4f;
             }
             return y;
@@ -198,10 +192,10 @@ namespace NovaFramework.SDK.AdPlugin.Editor
             string tooltip = EditorUtil.Reflect.GetFieldTooltip(typeof(AdChannelConfigList), fieldName);
             if (!string.IsNullOrEmpty(tooltip))
             {
-                // HelpBox 宽度铺满可用宽度（起点 position.x + c_FieldIndent，宽度 = position.width - c_FieldIndent）
-                float helpBoxWidth = position.width - c_FieldIndent;
+                // HelpBox 与对应配置项共用相同的左边缘和可用宽度。
+                float helpBoxWidth = position.width;
                 float helpH = EditorUtil.Draw.CalcHelpBoxHeight(MessageType.Info, tooltip, helpBoxWidth);
-                EditorUtil.Draw.HelpBox(new Rect(position.x + c_FieldIndent, y, helpBoxWidth, helpH), MessageType.Info, tooltip);
+                EditorUtil.Draw.HelpBox(new Rect(position.x, y, helpBoxWidth, helpH), MessageType.Info, tooltip);
                 y += helpH + 4f;
             }
             return y;

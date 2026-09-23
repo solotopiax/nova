@@ -84,7 +84,7 @@ Plugin 内部允许任意线程执行（iOS/Android Native 回调常在非主线
 
 - **Plugin 实现红线**：纯 C# 类、显式 `Priority`、`ConfigType` 虚属性声明依赖、`OnInitializeAsync` / `OnDisposeAsync` 必须主线程完成
 - **业务消费红线**：先 `SetConfig`，再 `await Nova.SDK.InitializeTask`，最后 `Get<T>` / `GetAll<TInterface>`；查询 API 仅主线程调用
-- **失败隔离**：单 Plugin 初始化失败仅置 `IsAvailable=false`，不影响其他 Plugin 与主流程；失败必须 `Log.Error` 留痕
+- **失败隔离**：单 Plugin 初始化失败仅置 `IsAvailable=false`，不影响其他 Plugin 与主流程；真实初始化失败必须 `Log.Error` 留痕。Unity Editor 中插件明确抛出 `PlatformNotSupportedException` 表示平台不适用时，按正常跳过处理，只记 `Warning`，插件继续保持不可用
 - **Missing 类型容忍**：`Type.GetType(entry.TypeName)==null` 时 `entry.IsMissing=true`，Editor 红字 + 「清理 Missing」按钮，避免误清用户已配 Priority
 
 ## 反模式
