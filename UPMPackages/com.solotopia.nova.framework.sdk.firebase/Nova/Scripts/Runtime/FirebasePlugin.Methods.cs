@@ -376,12 +376,12 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         }
 
         /// <summary>
-        /// SDKEventData.UserLogin 事件处理器；调用 Firebase 的 SetUserId 同步用户身份，
+        /// SDKManager 登录回调；调用 Firebase 的 SetUserId 同步用户身份，
         /// 然后以 Fire-and-Forget 方式触发 ReportOnLoginAsync 走异步上报流程。
         /// SetUserId 会记录用户 ID；若 Firebase 尚未初始化完成，会在初始化成功后补同步。
         /// </summary>
-        /// <param name="sender">事件源。</param>
-        /// <param name="e">事件数据，期望为 SDKEventData.UserLogin。</param>
+        /// <param name="userId">本次登录的用户 ID。</param>
+        /// <param name="sessionId">本次登录会话 ID，用于隔离迟到的异步上报结果。</param>
         public void OnSDKLogin(string userId, long sessionId)
         {
             m_LoginSessionId = sessionId;

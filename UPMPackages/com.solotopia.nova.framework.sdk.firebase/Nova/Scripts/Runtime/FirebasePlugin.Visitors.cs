@@ -80,6 +80,10 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// </summary>
         private Action<PushToken> m_OnTokenRefreshed;
 
+        /// <summary>
+        /// 事件管理器引用，用于订阅和退订本地化刷新事件。
+        /// </summary>
+        private IEventManager m_EventManager;
 
         /// <summary>
         /// Firebase 标识上报 NetService 实例；OnInitializeAsync 入口处由 Plugin 自行 new 出。

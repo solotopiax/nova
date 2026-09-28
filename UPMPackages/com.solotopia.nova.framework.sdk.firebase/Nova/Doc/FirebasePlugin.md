@@ -2,13 +2,15 @@
 
 ## 1. 简介
 
-`FirebasePlugin` 是 Firebase 聚合插件，实现两个主框架能力契约和一个 SDK 生命周期接口：
+`FirebasePlugin` 是 Firebase 聚合插件，实现框架能力与 SDK 生命周期接口：
 
 - `IMonetizeTrackPlugin`：事件埋点与用户属性
 - `IPushPlugin`：FCM Token 获取、主题订阅、Token 刷新通知
 - `ISDKPauseListener`：接收应用前后台切换，在恢复前台时请求发送本地 push task 缓存
+- `ISDKLoginReceiver`：接收 `SDKManager` 交付的账号，设置 Firebase 用户 ID 并触发标识上报
+- `ISDKLoginSessionEndReceiver`：更新账号会话边界，使旧会话的异步上报结果失效
 
-此外，它会在收到 `SDKEventData.UserLogin` 后，把 Firebase 标识异步上报到业务服务器。
+`SDKManager` 在插件就绪后调用 `OnSDKLogin`，插件随后把 Firebase 标识异步上报到业务服务器。
 
 ## 2. 公开 API
 
