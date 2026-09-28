@@ -28,6 +28,10 @@ public TPlugin Get<TPlugin>() where TPlugin : class, ISDKPlugin;
 public bool TryGet<TPlugin>(out TPlugin plugin) where TPlugin : class, ISDKPlugin;
 public IReadOnlyList<TInterface> GetAll<TInterface>() where TInterface : class, ISDKPlugin;
 public void Login(string userId);
+public void Login(string userId, IReadOnlyDictionary<string, object> userProperties);
+public void EndLoginSession();
+public SDKPluginInitializationState GetPluginInitializationState<TPlugin>() where TPlugin : class, ISDKPlugin;
+public UniTask<SDKPluginInitializationState> WaitForPluginAsync<TPlugin>(CancellationToken ct = default) where TPlugin : class, ISDKPlugin;
 ```
 
 ## 当前初始化流程
@@ -40,7 +44,7 @@ m_SDKManager.Initialize(new SDKManagerConfig { PluginEntries = m_PluginEntries }
 ```
 
 3. 首次访问 `InitializeTask` 时会先确保 Manager 已缓存跨模块依赖，再创建一次 `m_SDKManager.InitializeAsync(GetCancellationTokenOnDestroy())`，并通过 `AsyncLazy` 的多等待者完成源共享结果。
-4. `InitializeAsync` 内部按 `ConfigMaster.EnabledSDKs` 实例化启用插件，并按 `ISDKPlugin.Priority` 初始化；`PluginEntries` 不参与运行时启用或排序。
+4. `InitializeAsync` 内部按 `ConfigMaster.EnabledSDKs` 实例化启用插件；无依赖插件并发初始化，声明了能力依赖的插件只等待所需提供者。`PluginEntries` 不参与运行时启用或排序。
 5. 初始化进行中可由多个调用方并发等待；初始化完成后也可重复等待同一结果，底层初始化始终只执行一次。
 
 ## 生命周期代理
@@ -78,6 +82,8 @@ foreach (ITrackPlugin tracker in Nova.SDK.GetAll<ITrackPlugin>())
 - 后续去除组件侧配置状态时，依赖缓存、抢跑兜底和重复初始化保护应收敛到 `SDKManager` 自身保证。
 - `InitializeTask` 在 `m_SDKManager == null` 时返回 `UniTask.CompletedTask`。
 - `InitializeTask` 支持初始化中的并发等待与完成后的重复等待；业务启动流程和 SDK 能力模块可同时等待，失败重试时也可再次等待，且不会重复初始化 SDK。
+- 只需要某个 SDK 时等待 `WaitForPluginAsync<T>()`，并确认结果为 `Ready`；全局 `InitializeTask` 仍等所有已启用 SDK 得出结果。
+- 如果首次 DataMaster 拉取需要 `country_code` 等业务属性，登录成功后一次调用 `Login(uid, properties)`。先 `Login(uid)` 再取得插件写属性，不能保证属性赶上首次拉取。
 - `[DisallowMultipleComponent]` 要求一个 GameObject 上最多只能挂一个 `SDKComponent`。
 
 ## 关联文档

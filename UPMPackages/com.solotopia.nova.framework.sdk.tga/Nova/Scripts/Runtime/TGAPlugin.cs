@@ -23,7 +23,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
     /// 通过独立的 TGADynamicSuperPropertyListener 监听器接收 TDA SDK 的动态公共属性回调。
     /// </summary>
     [SDKPluginConfigType(typeof(TGAPluginConfig))]
-    public sealed partial class TGAPlugin : SDKPluginBase, ITrackPlugin, IDeviceIdProvider
+    public sealed partial class TGAPlugin : SDKPluginBase, ITrackPlugin, IDeviceIdProvider, ISDKLoginReceiver, ISDKLoginSessionEndReceiver
     {
     
         /// <summary>
@@ -54,13 +54,13 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
                 if (string.IsNullOrEmpty(appId))
                 {
                     Log.Warning(LogTag.TGA, "TGA AppId 为空，SDK 初始化跳过。");
-                    return UniTask.CompletedTask;
+                    throw new InvalidOperationException("TGA AppId 为空。");
                 }
 
                 if (string.IsNullOrEmpty(serverCmdName))
                 {
                     Log.Warning(LogTag.TGA, "TGA ServerCmdName 为空，SDK 初始化跳过。");
-                    return UniTask.CompletedTask;
+                    throw new InvalidOperationException("TGA ServerCmdName 为空。");
                 }
 
                 // ServerCmdName 只保存表名入口，实际 URL 走 Network 模块解析，保持配置与环境地址解耦。
@@ -69,7 +69,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
                 if (string.IsNullOrEmpty(serverUrl))
                 {
                     Log.Warning(LogTag.TGA, $"按 ServerCmdName「{serverCmdName}」解析上报地址失败，TGA SDK 初始化跳过。");
-                    return UniTask.CompletedTask;
+                    throw new InvalidOperationException("TGA 上报地址解析失败。");
                 }
 
                 // 将 Nova 配置直写到 ThinkingAnalytics 配置对象，避免在初始化路径中再做枚举转换。
@@ -95,15 +95,14 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
                 PublishTGAIdentifiers();
                 RegisterFetchDataAsync(ct).Forget();
 
-                // 登录事件到来后再绑定 AccountId，并触发 TGA 标识上报到业务服务器。
-                m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
-                m_EventManager.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
+                // 登录 UID 由 SDKManager 在插件就绪后交付。
 
                 Log.Debug(LogTag.TGA, "初始化完成。");
             }
             catch (Exception e)
             {
                 Log.Error(LogTag.TGA, $"初始化异常：{e}");
+                throw;
             }
 
             return UniTask.CompletedTask;
@@ -111,18 +110,12 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
 
         /// <summary>
         /// 异步释放 TGA SDK 资源。
-        /// 先退订 SDKEventData.UserLogin 事件，再返回完成任务；TGA SDK 无显式 Shutdown API。
+        /// TGA SDK 无显式 Shutdown API，返回完成任务。
         /// </summary>
         /// <param name="ct">取消令牌，TGA 无释放逻辑，此处不使用。</param>
         /// <returns>释放完成的异步任务。</returns>
         protected override UniTask OnDisposeAsync(CancellationToken ct)
         {
-            if (m_EventManager != null)
-            {
-                m_EventManager.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
-                m_EventManager = null;
-            }
-
             return UniTask.CompletedTask;
         }
 

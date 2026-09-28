@@ -32,6 +32,10 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// </summary>
         public override int Priority => 70;
 
+        /// <summary>已启用埋点插件先就绪，IAP 商店上下文才能取得它；未启用时仍允许支付。</summary>
+        public IReadOnlyList<SDKInitializationDependency> InitializationDependencies { get; } =
+            new[] { new SDKInitializationDependency(typeof(ITrackPlugin), false) };
+
         /// <summary>
         /// 声明所需配置类型，SDKManager 按此类型从 IConfigManager 拉取并注入。
         /// </summary>
@@ -69,10 +73,6 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// </summary>
         public IAPPluginEvents Events { get; } = new IAPPluginEvents();
 
-        /// <summary>
-        /// 框架事件管理器引用，用于订阅 SDKEventData.UserLogin，OnDisposeAsync 时注销。
-        /// </summary>
-        private IEventManager m_EventManager;
 
         /// <summary>
         /// 当前已同步到 IAP 插件的账号 UID。

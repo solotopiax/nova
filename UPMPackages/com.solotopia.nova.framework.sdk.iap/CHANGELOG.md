@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Breaking
+
+## [0.1.17] - 2026-09-28
+
+### Changed
+
+- 登录 UID 由 SDKManager 补交，初始化只等待已启用的埋点能力，配置缺失时明确失败。
+
+- Framework 依赖下界提升至 0.6.35，以匹配本包使用的 SDK 初始化与登录会话新接口。
+
 ## [0.1.16] - 2026-09-23
 
 ### Added

@@ -311,14 +311,13 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// </summary>
         /// <param name="sender">事件源（SDKManager 实例）。</param>
         /// <param name="e">事件数据，期望为 SDKEventData.UserLogin。</param>
-        private void OnUserLogin(object sender, EventData e)
+        public void OnSDKLogin(string userId, long sessionId)
         {
-            if (!(e is SDKEventData.UserLogin login)) return;
             for (int i = 0; i < m_ChannelPlugins.Count; i++)
             {
                 try
                 {
-                    m_ChannelPlugins[i].SetUserId(login.UserId);
+                    m_ChannelPlugins[i].SetUserId(userId);
                 }
                 catch (Exception ex)
                 {

@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Breaking
+
+## [0.6.35] - 2026-09-28
+
+### Added
+
+- 通用隐私配置新增仅 iOS 可编辑的 PrivacyInfoConfig，导出时校验 Required Reason API JSON，并在 iOS 构建后处理合并应用级 PrivacyInfo.xcprivacy。
+
+### Changed
+
+- SDK 插件改为按显式能力依赖并发初始化，新增插件级状态等待和最新账号 UID、用户属性补交；全局 InitializeTask 仍等待全部插件的最终状态。
+
+- ConfigWindow 将微信小游戏配置中的引力引擎字段统一展示在微信字段之后，不改变保存与导出语义。
+
+- 隐私配置 PrivacyInfoConfig 默认填入 Solar iOS Required Reason API 参考值；旧 ConfigMaster 首次打开时补齐空值并在保存后保留可清空和自定义语义。
+
+### Fixed
+
+- 系统语言自动选择补充 UI Culture 标签识别，覆盖 Unity SystemLanguage 无独立枚举值的 12 种语言，并区分巴西葡语及塞尔维亚语文字变体；保留已保存偏好、支持语言与原有回退规则。
+
+- iOS 导出时按 PlayerSettings 的最低系统版本提升较低或缺失的 Pods 部署版本设置，保留已达到更高版本的 Pods 配置。
+
+### Breaking
+
+- ISDKManager 新增插件状态查询、定向等待和登录会话方法；自定义 ISDKManager 实现必须补齐成员。ISDKPlugin.Priority 不再控制初始化先后，插件间顺序约束须改用 ISDKInitializationDependencies 显式声明。
+
 ## [0.6.34] - 2026-09-23
 
 ### Fixed

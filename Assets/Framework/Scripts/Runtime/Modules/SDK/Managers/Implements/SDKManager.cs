@@ -43,9 +43,9 @@ namespace NovaFramework.Runtime
         }
         /// <summary>
         /// 异步批量初始化 ConfigMaster.EnabledSDKs 启用的插件。
-        /// 按插件自身 Priority 升序分桶，同桶内 UniTask.WhenAll 并行；桶间串行执行降低启动期 CPU 峰值。
+        /// 插件只等待自己声明的能力依赖；无依赖插件并发初始化。
         /// 单插件失败隔离：catch 后记录 Log.Error，不向上传播。
-        /// 所有桶完成后 m_IsInitialized = true 并解锁 WaitForInitializedAsync。
+        /// 所有已启用插件都得到最终结果后设置 m_IsInitialized，失败不阻止其他插件。
         /// </summary>
         /// <param name="ct">取消令牌；传入 CancellationToken.None 时不可取消。</param>
         /// <returns>所有批次初始化完成的异步任务。</returns>
@@ -56,19 +56,31 @@ namespace NovaFramework.Runtime
                 Log.Warning(LogTag.SDK, "SDKManager.InitializeAsync：已初始化，重复调用已忽略。");
                 return;
             }
-
-            // Config 已在 Procedure 加载流程就绪（Initialize 处于 Unity Start 期，早于 Config 加载）。
-            // 此处以 ConfigMaster.EnabledSDKs 为唯一启用源实例化插件，排序使用 ISDKPlugin.Priority。
-            InstantiateEnabledPluginsFromConfig();
-            SortPluginsByPriority();
+            if (m_IsInitializing)
+            {
+                await WaitForInitializedAsync(ct);
+                return;
+            }
+            m_IsInitializing = true;
+            m_InitializationCancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            CancellationToken initializationToken = m_InitializationCancellation.Token;
 
             try
             {
-                List<List<ISDKPlugin>> buckets = GroupByPriority();
-                for (int i = 0; i < buckets.Count; i++)
+                // Config 已在 Procedure 加载流程就绪；只实例化 ConfigMaster.EnabledSDKs 启用的插件。
+                InstantiateEnabledPluginsFromConfig();
+                SortPluginsByPriority();
+                PreparePluginInitialization();
+
+                var graph = ResolveInitializationDependencies();
+                var tasks = new UniTask[m_SortedPlugins.Count];
+                for (int i = 0; i < m_SortedPlugins.Count; i++)
                 {
-                    await InitializeBucketAsync(buckets[i], ct);
+                    ISDKPlugin plugin = m_SortedPlugins[i];
+                    tasks[i] = InitializeScheduledPluginAsync(plugin, graph[plugin], initializationToken);
                 }
+                await UniTask.WhenAll(tasks);
+                initializationToken.ThrowIfCancellationRequested();
 
                 CacheAssetCheckDeviceId();
                 m_IsInitialized = true;
@@ -78,8 +90,23 @@ namespace NovaFramework.Runtime
             catch (OperationCanceledException)
             {
                 // 取消时唤醒所有等待者，避免 TCS 永久挂起。
+                CompleteUnfinishedPlugins(SDKPluginInitializationState.Cancelled);
+                m_PluginsDiscoveredTcs.TrySetCanceled();
                 m_InitializedTcs.TrySetCanceled();
                 throw;
+            }
+            catch (Exception exception)
+            {
+                CompleteUnfinishedPlugins(SDKPluginInitializationState.Failed);
+                m_PluginsDiscoveredTcs.TrySetException(exception);
+                m_InitializedTcs.TrySetException(exception);
+                throw;
+            }
+            finally
+            {
+                m_InitializationCancellation?.Dispose();
+                m_InitializationCancellation = null;
+                m_IsInitializing = false;
             }
         }
 
@@ -121,10 +148,19 @@ namespace NovaFramework.Runtime
         /// <returns>所有插件释放完成的异步任务。</returns>
         public override async UniTask DisposeAsync(CancellationToken ct = default)
         {
+            if (m_IsInitializing)
+            {
+                m_InitializationCancellation?.Cancel();
+                try { await m_InitializedTcs.Task; }
+                catch (OperationCanceledException) { }
+                catch (Exception) { }
+            }
+
             for (int i = m_SortedPlugins.Count - 1; i >= 0; i--)
             {
                 ISDKPlugin plugin = m_SortedPlugins[i];
-                if (plugin.IsAvailable)
+                if (m_PluginStates.TryGetValue(plugin, out var state) &&
+                    state == SDKPluginInitializationState.Ready)
                 {
                     try
                     {
@@ -140,7 +176,17 @@ namespace NovaFramework.Runtime
 
             m_Plugins.Clear();
             m_SortedPlugins.Clear();
+            foreach (var source in m_PluginCompletionSources.Values)
+                source.TrySetResult(SDKPluginInitializationState.Cancelled);
+            m_PluginStates.Clear();
+            m_PluginCompletionSources.Clear();
+            m_PluginsDiscoveredTcs.TrySetCanceled();
+            m_PluginsDiscoveredTcs = new UniTaskCompletionSource();
+            m_DeliveredSessionIds.Clear();
+            m_CurrentUserId = null;
+            m_CurrentUserProperties = null;
             m_IsInitialized = false;
+            m_IsInitializing = false;
             // 唤醒所有挂在旧 TCS 上的等待者，避免因 DisposeAsync 替换 TCS 后旧等待者永久挂起。
             m_InitializedTcs.TrySetCanceled();
             m_InitializedTcs = new UniTaskCompletionSource();
@@ -171,14 +217,7 @@ namespace NovaFramework.Runtime
         /// <returns>对应的可用插件实例。</returns>
         public override TPlugin Get<TPlugin>()
         {
-            foreach (ISDKPlugin plugin in m_Plugins.Values)
-            {
-                if (plugin is TPlugin typed && plugin.IsAvailable)
-                {
-                    return typed;
-                }
-            }
-
+            if (TryGet<TPlugin>(out TPlugin plugin)) return plugin;
             throw new SDKUnavailableException(typeof(TPlugin));
         }
 
@@ -192,7 +231,8 @@ namespace NovaFramework.Runtime
         {
             foreach (ISDKPlugin candidate in m_Plugins.Values)
             {
-                if (candidate is TPlugin typed && candidate.IsAvailable)
+                if (candidate is TPlugin typed && candidate.IsAvailable &&
+                    m_PluginStates.TryGetValue(candidate, out var state) && state == SDKPluginInitializationState.Ready)
                 {
                     plugin = typed;
                     return true;
@@ -201,6 +241,28 @@ namespace NovaFramework.Runtime
 
             plugin = null;
             return false;
+        }
+
+        /// <summary>查询指定类型的初始化状态；未启用返回 NotEnabled。</summary>
+        public override SDKPluginInitializationState GetPluginInitializationState<TPlugin>()
+        {
+            foreach (ISDKPlugin candidate in m_SortedPlugins)
+            {
+                if (candidate is TPlugin && m_PluginStates.TryGetValue(candidate, out var state)) return state;
+            }
+            return SDKPluginInitializationState.NotEnabled;
+        }
+
+        /// <summary>等待指定插件得到最终初始化结果，不等待无关插件。</summary>
+        public override async UniTask<SDKPluginInitializationState> WaitForPluginAsync<TPlugin>(CancellationToken ct = default)
+        {
+            await m_PluginsDiscoveredTcs.Task.AttachExternalCancellation(ct);
+            foreach (ISDKPlugin candidate in m_SortedPlugins)
+            {
+                if (candidate is TPlugin)
+                    return await m_PluginCompletionSources[candidate].Task.AttachExternalCancellation(ct);
+            }
+            return SDKPluginInitializationState.NotEnabled;
         }
 
         /// <summary>
@@ -214,7 +276,8 @@ namespace NovaFramework.Runtime
             List<TInterface> result = new List<TInterface>();
             for (int i = 0; i < m_SortedPlugins.Count; i++)
             {
-                if (m_SortedPlugins[i] is TInterface typed && m_SortedPlugins[i].IsAvailable)
+                if (m_SortedPlugins[i] is TInterface typed && m_SortedPlugins[i].IsAvailable &&
+                    m_PluginStates.TryGetValue(m_SortedPlugins[i], out var state) && state == SDKPluginInitializationState.Ready)
                 {
                     result.Add(typed);
                 }
@@ -297,13 +360,46 @@ namespace NovaFramework.Runtime
         /// <param name="userId">已登录用户的唯一标识。</param>
         public override void Login(string userId)
         {
+            Login(userId, null);
+        }
+
+        public override void Login(string userId, IReadOnlyDictionary<string, object> userProperties)
+        {
             if (string.IsNullOrWhiteSpace(userId))
             {
                 Log.Warning(LogTag.SDK, "SDKManager.Login：userId 为空，已跳过登录事件广播。");
                 return;
             }
 
+            if (m_CurrentUserId != null && !string.Equals(m_CurrentUserId, userId, StringComparison.Ordinal))
+                EndLoginSession();
+
+            m_CurrentUserId = userId;
+            m_CurrentUserProperties = userProperties == null
+                ? null
+                : new Dictionary<string, object>(userProperties);
+            m_CurrentSessionId++;
+            foreach (ISDKPlugin plugin in m_SortedPlugins)
+                DeliverCurrentLogin(plugin);
+
+            // 保留公开事件的原有每次调用都广播语义，供尚未迁移的外部消费者使用。
             m_EventManager?.Fire(this, SDKEventData.UserLogin.Create(userId));
+        }
+
+        /// <summary>显式结束当前账号会话；同 UID 再次登录也会获得新的会话编号。</summary>
+        public override void EndLoginSession()
+        {
+            m_CurrentUserId = null;
+            m_CurrentUserProperties = null;
+            m_CurrentSessionId++;
+            foreach (ISDKPlugin plugin in m_SortedPlugins)
+            {
+                if (plugin is not ISDKLoginSessionEndReceiver receiver ||
+                    !m_PluginStates.TryGetValue(plugin, out var state) || state != SDKPluginInitializationState.Ready)
+                    continue;
+                try { receiver.OnSDKLoginSessionEnded(m_CurrentSessionId); }
+                catch (Exception e) { Log.Error(LogTag.SDK, "SDK 插件 '{0}' 结束登录会话异常：{1}", plugin.Name, e); }
+            }
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿/***************************************************************
+/***************************************************************
  * (c) copyright 2026 - 2030, Solotopia
  * All Rights Reserved.
  * -------------------------------------------------------------
@@ -23,7 +23,7 @@ namespace NovaFramework.SDK.IAP.Runtime
     /// 避免随商店增多在此类上堆积转发方法。
     /// </summary>
     [SDKPluginConfigType(typeof(IAPPluginConfig))]
-    public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin, ISDKPauseListener, ISDKFocusListener
+    public sealed partial class IAPPlugin : SDKPluginBase, IIAPStoreEventBridge, IIAPPlugin, ISDKPauseListener, ISDKFocusListener, ISDKLoginReceiver, ISDKInitializationDependencies
     {
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             if (iapConfig == null)
             {
                 LogWarning("IAPPlugin 初始化失败：config 为 null 或类型不匹配，期望 IAPPluginConfig。");
-                return;
+                throw new InvalidOperationException("IAPPlugin 配置缺失。");
             }
 
             IAPLog.SetEnabled(iapConfig.EnableIAPLog);
@@ -50,7 +50,7 @@ namespace NovaFramework.SDK.IAP.Runtime
             if (iapConfig.Products == null || iapConfig.Products.Count == 0)
             {
                 LogWarning("IAPPlugin 初始化跳过：商品表为空，不创建任何商店。");
-                return;
+                throw new InvalidOperationException("IAPPlugin 商品表为空。");
             }
 
             m_StoreContext = BuildStoreContext(iapConfig);
@@ -61,8 +61,6 @@ namespace NovaFramework.SDK.IAP.Runtime
             // Store 实现通过 Attribute + 接口反射发现，核心插件只负责编排和路由。
             await DiscoverAndInitializeStoresAsync(ct);
 
-            m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
-            m_EventManager?.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
         }
 
         /// <summary>
@@ -74,8 +72,6 @@ namespace NovaFramework.SDK.IAP.Runtime
         protected override async UniTask OnDisposeAsync(CancellationToken ct)
         {
             CancelRuntimeTasks();
-            m_EventManager?.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
-            m_EventManager = null;
             m_CurrentUserId = null;
             m_HasDeferredCheckLocalOrders = false;
             m_IsCheckingLocalOrders = false;
@@ -163,7 +159,7 @@ namespace NovaFramework.SDK.IAP.Runtime
 
         /// <summary>
         /// 手动设置当前账号 UID，广播给所有商店。
-        /// 通常无需主动调用——IAPPlugin 已在初始化时订阅 SDKEventData.UserLogin 自动同步；
+        /// 通常无需主动调用——IAPPlugin 已由 SDKManager 在插件就绪后自动同步；
         /// 仅在登录事件触达前 IAP 已使用或需要强制切换账号时使用。
         /// </summary>
         /// <param name="uid">已登录用户的唯一 ID。</param>

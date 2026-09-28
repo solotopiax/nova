@@ -475,7 +475,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制隐私配置面板；按 ConfigMaster 当前三维坐标编辑独立的 AES 默认 Key/IV。
+        /// 绘制隐私配置面板；按当前三维坐标编辑 AES 凭据及仅 iOS 可编辑的隐私清单声明。
         /// </summary>
         private void DrawPrivacyConfigsPanel()
         {
@@ -508,6 +508,7 @@ namespace NovaFramework.Editor
                 SerializedProperty config = modeEntry.FindPropertyRelative("Config");
                 SerializedProperty key = config?.FindPropertyRelative("AESKey");
                 SerializedProperty iv = config?.FindPropertyRelative("AESIV");
+                SerializedProperty privacyInfo = config?.FindPropertyRelative("PrivacyInfoConfig");
                 EditorUtil.Draw.Layout.Horizontal(() =>
                 {
                     EditorUtil.Draw.Space(16f);
@@ -520,24 +521,60 @@ namespace NovaFramework.Editor
                     if (iv != null) EditorUtil.Draw.Property("AES-IV", iv, false, GUILayout.Width(140f));
                     EditorUtil.Draw.Space(16f);
                 });
+                EditorUtil.Draw.Space(8f);
+                EditorUtil.Draw.Layout.Horizontal(() =>
+                {
+                    EditorUtil.Draw.Space(16f);
+                    EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                    {
+                        "(1) AES-Key 与 AES-IV 按 UTF-8 编码后必须各为 16 字节。",
+                        "(2) 仅用于 Util.Encrypt.AES 默认密钥及 Persist，与 AppAesKey / AppAesIV 独立。",
+                        "(3) Nova.Config.LoadAsync() 完成前自动初始化，业务侧不手动调用 Util.Encrypt.AES.Configure。",
+                    }, false, GUILayout.ExpandWidth(true));
+                    EditorUtil.Draw.Space(16f);
+                });
+
+                if (privacyInfo != null)
+                {
+                    EditorUtil.Draw.Space(12f);
+                    using (new EditorGUI.DisabledScope(m_EditingPlatform != PlatformType.iOS))
+                    {
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.Label("PrivacyInfoConfig", false, GUILayout.Width(140f));
+                            privacyInfo.stringValue = EditorUtil.Draw.TextArea(
+                                privacyInfo.stringValue ?? string.Empty,
+                                false,
+                                GUILayout.MinHeight(80f),
+                                GUILayout.ExpandWidth(true));
+                            EditorUtil.Draw.Space(16f);
+                        });
+
+                        EditorUtil.Draw.Space(8f);
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                            {
+                                "(1) PrivacyInfoConfig 仅 iOS 平台可编辑；其他平台下灰显且不参与构建。",
+                                "(2) 按实际 Required Reason API 填写 JSON；iOS 构建时写入 PrivacyInfo.xcprivacy，留空则跳过。",
+                            }, false, GUILayout.ExpandWidth(true));
+                            if (m_EditingPlatform != PlatformType.iOS && Event.current.type == EventType.Repaint)
+                            {
+                                // HelpBox 背景由自绘颜色完成，不受 GUI.enabled 影响；仅覆盖禁用态背景和图标。
+                                EditorGUI.DrawRect(
+                                    GUILayoutUtility.GetLastRect(),
+                                    new Color(0.22f, 0.22f, 0.22f, 0.45f));
+                            }
+                            EditorUtil.Draw.Space(16f);
+                        });
+                    }
+                }
                 break;
             }
 
             bool privacyFieldChanged = EditorGUI.EndChangeCheck();
-            EditorUtil.Draw.Space(8f);
-            EditorUtil.Draw.Layout.Horizontal(() =>
-            {
-                EditorUtil.Draw.Space(16f);
-                EditorUtil.Draw.HelpBox(MessageType.Info, new[]
-                {
-                    "(1) 仅用于 Util.Encrypt.AES 默认密钥初始化及 Persist 本地数据加解密。",
-                    "(2) 不属于应用配置中的 AppAesKey / AppAesIV，两套配置相互独立。",
-                    "(3) AES-Key 与 AES-IV 按 UTF-8 编码后必须各为 16 字节。",
-                    "(4) Nova.Config.LoadAsync() 完成前会自动初始化，业务侧禁止手动调用 Util.Encrypt.AES.Configure。",
-                }, false, GUILayout.ExpandWidth(true));
-                EditorUtil.Draw.Space(16f);
-            });
-
             m_MasterSO.ApplyModifiedProperties();
             if (privacyFieldChanged)
             {
@@ -806,13 +843,33 @@ namespace NovaFramework.Editor
             SerializedProperty child = target.Copy();
             SerializedProperty end = target.GetEndProperty();
             bool enterChildren = true;
+            List<SerializedProperty> gravityFields = null;
             // 门控：仅本帧有实际编辑时才广播同组格，避免无意义同组写入
             EditorGUI.BeginChangeCheck();
             while (child.NextVisible(enterChildren) && !SerializedProperty.EqualContents(child, end))
             {
-                DrawIndentedPropertyFieldWithTooltip(child);
+                // 同页展示引力配置时，保持微信字段在前、引力字段在后。
+                if (child.name == "m_EnableGravityEngine" || child.name.StartsWith("m_Gravity"))
+                {
+                    gravityFields ??= new List<SerializedProperty>();
+                    gravityFields.Add(child.Copy());
+                }
+                else
+                {
+                    DrawIndentedPropertyFieldWithTooltip(child);
+                }
+
                 enterChildren = false;
             }
+
+            if (gravityFields != null)
+            {
+                foreach (SerializedProperty gravityField in gravityFields)
+                {
+                    DrawIndentedPropertyFieldWithTooltip(gravityField);
+                }
+            }
+
             bool sdkFieldChanged = EditorGUI.EndChangeCheck();
 
             m_MasterSO.ApplyModifiedProperties();

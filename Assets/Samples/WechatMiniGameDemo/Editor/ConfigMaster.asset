@@ -88,9 +88,9 @@ MonoBehaviour:
       ByDevelopMode: 0
   - TypeName: NovaFramework.SDK.WeChatMiniGame.Runtime.WeChatMiniGamePluginConfig
     Mask:
-      ByPlatform: 0
-      ByChannel: 0
-      ByDevelopMode: 0
+      ByPlatform: 1
+      ByChannel: 1
+      ByDevelopMode: 1
   - TypeName: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime.DataMasterPluginConfig
     Mask:
       ByPlatform: 0
@@ -435,7 +435,7 @@ MonoBehaviour:
       - rid: 2533177004360729497
       - rid: 2533177598672896557
       - rid: 2533177598672896629
-      - rid: 1350
+      - rid: 1105
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -444,7 +444,7 @@ MonoBehaviour:
       - rid: 2533177004360729498
       - rid: 2533177598672896558
       - rid: 2533177598672896630
-      - rid: 1351
+      - rid: 1106
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -491,7 +491,7 @@ MonoBehaviour:
       - rid: 2533177004360729499
       - rid: 2533177598672896559
       - rid: 2533177598672896631
-      - rid: 1352
+      - rid: 1107
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -500,7 +500,7 @@ MonoBehaviour:
       - rid: 2533177004360729500
       - rid: 2533177598672896560
       - rid: 2533177598672896632
-      - rid: 1353
+      - rid: 1108
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -547,7 +547,7 @@ MonoBehaviour:
       - rid: 2533177004360729501
       - rid: 2533177598672896561
       - rid: 2533177598672896633
-      - rid: 1354
+      - rid: 1109
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -556,7 +556,7 @@ MonoBehaviour:
       - rid: 2533177004360729502
       - rid: 2533177598672896562
       - rid: 2533177598672896634
-      - rid: 1355
+      - rid: 1110
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -603,7 +603,7 @@ MonoBehaviour:
       - rid: 2533177004360729503
       - rid: 2533177598672896563
       - rid: 2533177598672896635
-      - rid: 1356
+      - rid: 1111
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -612,7 +612,7 @@ MonoBehaviour:
       - rid: 2533177004360729504
       - rid: 2533177598672896564
       - rid: 2533177598672896636
-      - rid: 1357
+      - rid: 1112
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -659,7 +659,7 @@ MonoBehaviour:
       - rid: 2533177004360729505
       - rid: 2533177598672896565
       - rid: 2533177598672896637
-      - rid: 1358
+      - rid: 1113
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -668,7 +668,7 @@ MonoBehaviour:
       - rid: 2533177004360729506
       - rid: 2533177598672896566
       - rid: 2533177598672896638
-      - rid: 1359
+      - rid: 1114
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -715,7 +715,7 @@ MonoBehaviour:
       - rid: 2533177004360729507
       - rid: 2533177598672896567
       - rid: 2533177598672896639
-      - rid: 1360
+      - rid: 1115
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -724,7 +724,7 @@ MonoBehaviour:
       - rid: 2533177004360729508
       - rid: 2533177598672896568
       - rid: 2533177598672896640
-      - rid: 1361
+      - rid: 1116
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -771,7 +771,7 @@ MonoBehaviour:
       - rid: 2533177004360729509
       - rid: 2533177598672896569
       - rid: 2533177598672896641
-      - rid: 1362
+      - rid: 1117
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -780,7 +780,7 @@ MonoBehaviour:
       - rid: 2533177004360729510
       - rid: 2533177598672896570
       - rid: 2533177598672896642
-      - rid: 1363
+      - rid: 1118
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -827,7 +827,7 @@ MonoBehaviour:
       - rid: 2533177004360729511
       - rid: 2533177598672896571
       - rid: 2533177598672896643
-      - rid: 1364
+      - rid: 1119
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -836,7 +836,7 @@ MonoBehaviour:
       - rid: 2533177004360729512
       - rid: 2533177598672896572
       - rid: 2533177598672896644
-      - rid: 1365
+      - rid: 1120
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -883,7 +883,7 @@ MonoBehaviour:
       - rid: 2533177004360729513
       - rid: 2533177598672896573
       - rid: 2533177598672896645
-      - rid: 1366
+      - rid: 1121
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -892,7 +892,7 @@ MonoBehaviour:
       - rid: 2533177004360729514
       - rid: 2533177598672896574
       - rid: 2533177598672896646
-      - rid: 1367
+      - rid: 1122
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -939,7 +939,7 @@ MonoBehaviour:
       - rid: 2533177004360729515
       - rid: 2533177598672896575
       - rid: 2533177598672896647
-      - rid: 1368
+      - rid: 1123
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -948,7 +948,7 @@ MonoBehaviour:
       - rid: 2533177004360729516
       - rid: 2533177598672896576
       - rid: 2533177598672896648
-      - rid: 1369
+      - rid: 1124
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -995,7 +995,7 @@ MonoBehaviour:
       - rid: 2533177004360729517
       - rid: 2533177598672896577
       - rid: 2533177598672896649
-      - rid: 1370
+      - rid: 1125
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1004,7 +1004,7 @@ MonoBehaviour:
       - rid: 2533177004360729518
       - rid: 2533177598672896578
       - rid: 2533177598672896650
-      - rid: 1371
+      - rid: 1126
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1051,7 +1051,7 @@ MonoBehaviour:
       - rid: 2533177004360729519
       - rid: 2533177598672896579
       - rid: 2533177598672896651
-      - rid: 1372
+      - rid: 1127
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1060,7 +1060,7 @@ MonoBehaviour:
       - rid: 2533177004360729520
       - rid: 2533177598672896580
       - rid: 2533177598672896652
-      - rid: 1373
+      - rid: 1128
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1107,7 +1107,7 @@ MonoBehaviour:
       - rid: 2533177004360729521
       - rid: 2533177598672896581
       - rid: 2533177598672896653
-      - rid: 1374
+      - rid: 1129
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1116,7 +1116,7 @@ MonoBehaviour:
       - rid: 2533177004360729522
       - rid: 2533177598672896582
       - rid: 2533177598672896654
-      - rid: 1375
+      - rid: 1130
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1163,7 +1163,7 @@ MonoBehaviour:
       - rid: 2533177004360729523
       - rid: 2533177598672896583
       - rid: 2533177598672896655
-      - rid: 1376
+      - rid: 1131
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1172,7 +1172,7 @@ MonoBehaviour:
       - rid: 2533177004360729524
       - rid: 2533177598672896584
       - rid: 2533177598672896656
-      - rid: 1377
+      - rid: 1132
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1219,7 +1219,7 @@ MonoBehaviour:
       - rid: 2533177004360729525
       - rid: 2533177598672896585
       - rid: 2533177598672896657
-      - rid: 1378
+      - rid: 1133
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1228,7 +1228,7 @@ MonoBehaviour:
       - rid: 2533177004360729526
       - rid: 2533177598672896586
       - rid: 2533177598672896658
-      - rid: 1379
+      - rid: 1134
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1284,7 +1284,7 @@ MonoBehaviour:
       - rid: 2533177004360729528
       - rid: 2533177598672896588
       - rid: 2533177598672896660
-      - rid: 1380
+      - rid: 1135
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1331,7 +1331,7 @@ MonoBehaviour:
       - rid: 2533177004360729529
       - rid: 2533177598672896589
       - rid: 2533177598672896661
-      - rid: 1381
+      - rid: 1136
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1340,7 +1340,7 @@ MonoBehaviour:
       - rid: 2533177004360729530
       - rid: 2533177598672896590
       - rid: 2533177598672896662
-      - rid: 1382
+      - rid: 1137
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -1387,7 +1387,7 @@ MonoBehaviour:
       - rid: 2533177004360729531
       - rid: 2533177598672896591
       - rid: 2533177598672896663
-      - rid: 1383
+      - rid: 1138
     - Mode: 1
       SDKConfigs:
       - rid: 3589942986135568532
@@ -1396,7 +1396,7 @@ MonoBehaviour:
       - rid: 2533177004360729532
       - rid: 2533177598672896592
       - rid: 2533177598672896664
-      - rid: 1384
+      - rid: 1139
     KitConfigsByMode:
     - Mode: 0
       KitConfigs:
@@ -2461,671 +2461,916 @@ MonoBehaviour:
         m_LogEnable: 1
         m_CreativeDebuggerEnabled: 1
         m_MediationDebuggerEnabled: 1
-    - rid: 1350
+    - rid: 1105
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1351
+    - rid: 1106
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1352
+    - rid: 1107
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1353
+    - rid: 1108
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1354
+    - rid: 1109
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1355
+    - rid: 1110
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1356
+    - rid: 1111
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1357
+    - rid: 1112
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1358
+    - rid: 1113
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1359
+    - rid: 1114
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1360
+    - rid: 1115
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1361
+    - rid: 1116
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1362
+    - rid: 1117
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1363
+    - rid: 1118
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1364
+    - rid: 1119
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1365
+    - rid: 1120
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1366
+    - rid: 1121
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1367
+    - rid: 1122
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1368
+    - rid: 1123
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1369
+    - rid: 1124
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1370
+    - rid: 1125
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1371
+    - rid: 1126
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1372
+    - rid: 1127
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1373
+    - rid: 1128
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1374
+    - rid: 1129
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1375
+    - rid: 1130
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1376
+    - rid: 1131
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1377
+    - rid: 1132
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1378
+    - rid: 1133
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1379
+    - rid: 1134
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1380
+    - rid: 1135
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 1
+        m_GravityAccessToken: uSsvEV36s1ewYiFhCcgpilfXdtU9fkxN
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1381
+    - rid: 1136
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1382
+    - rid: 1137
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1383
+    - rid: 1138
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
-    - rid: 1384
+    - rid: 1139
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 0
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
     - rid: 791343950849900544
       type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
       data:
@@ -4559,22 +4804,29 @@ MonoBehaviour:
     - rid: 3752622554880148093
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
+        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
+        m_AdUnits: []
+        m_EnableDataNexus: 0
+        m_DataNexusUserActionSetId: 0
+        m_DataNexusSdkKey: ''
+        m_EnableGravityEngine: 1
+        m_GravityAccessToken: uSsvEV36s1ewYiFhCcgpilfXdtU9fkxN
+        m_GravityChannel: base_channel
+        m_GravityDebugMode: 1
+        m_GravitySilentPeriodDays: 7
+        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
+        m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
+        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
+        m_MidasOfferId: 1450259788
+        m_ZoneId: 1
+        m_CurrencyType: CNY
+        m_GameCurrencyCoinsPerYuan: 10
+        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
+        m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
-        m_MinimumBaseLibraryVersion: 
         m_EnableMemoryWarning: 1
-        m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
-        m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
-        m_VerifyPaymentOrderCmdName: WeChatMiniGameVerifyPaymentOrder
-        m_QueryPaymentOrdersCmdName: WeChatMiniGameQueryPaymentOrders
-        m_RecordSubscriptionResultsCmdName: WeChatMiniGameRecordSubscriptionResults
-        m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
-        m_MidasOfferId: 
-        m_ZoneId: 1
-        m_CurrencyType: CNY
-        m_PaymentPlatform: android
-        m_AdUnits: []
     - rid: 3752622554880148200
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:

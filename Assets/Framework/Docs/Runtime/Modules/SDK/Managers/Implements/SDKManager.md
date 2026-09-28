@@ -11,14 +11,14 @@
 |---|---|
 | `SDKManager.cs` | 公开 override：`Initialize`、`InitializeAsync`、`DisposeAsync`、`Get`、`TryGet`、`GetAll`、`Broadcast*`、`Login`、`Update`、`Shutdown` |
 | `SDKManager.Visitors.cs` | 内部字段与属性 |
-| `SDKManager.Methods.cs` | `InstantiateEnabledPluginsFromConfig`、`InitializePluginAsync`、`GroupByPriority` 等私有方法 |
+| `SDKManager.Methods.cs` | 插件实例化、依赖解析、单插件初始化和登录补交 |
 
 ## 当前关键字段
 
 | 字段 | 说明 |
 |---|---|
 | `m_Plugins` | 以插件具体 `Type` 为键保存实例 |
-| `m_SortedPlugins` | 按 `ISDKPlugin.Priority` 升序保存实例，用于初始化、广播和 `GetAll` |
+| `m_SortedPlugins` | 按 `ISDKPlugin.Priority` 升序保存实例，用于稳定遍历、广播和 `GetAll`；Priority 不构成初始化依赖 |
 | m_InitializedTcs | WaitForInitializedAsync 的完成信号 |
 | `m_IsInitialized` | 异步初始化是否已完成 |
 | `m_EventManager` | `Login` 时发送 `SDKEventData.UserLogin` |
@@ -36,13 +36,15 @@
 
 ### InitializeAsync
 
-- 先通过 `PluginBase<TConfig>` 或 `SDKPluginConfigTypeAttribute` 静态读取配置类型，仅构造 `ConfigMaster.EnabledSDKs` 命中的插件，再按 `ISDKPlugin.Priority` 分桶
+- 先通过 `PluginBase<TConfig>` 或 `SDKPluginConfigTypeAttribute` 静态读取配置类型，仅构造 `ConfigMaster.EnabledSDKs` 命中的插件
 - Editor Play 的反射发现会排除引用 NUnit 或 Unity Test Runner 的测试程序集；Player 不执行该引用检查，避免 HybridCLR 程序集依赖解析影响插件发现
 - 未启用插件不会执行构造函数或字段初始化；缺少静态配置元数据的旧式插件会记录诊断并跳过
-- 再按桶顺序执行 `UniTask.WhenAll`
+- 先建立所有插件的完成信号，校验依赖缺失、重复提供者与循环；无依赖插件并发启动，有依赖插件只等待声明的能力
 - 单插件初始化失败只记日志，不中断其他插件
-- 所有 Priority 桶完成后，若存在可用 `IDeviceIdProvider`，将非空 `GetDeviceID()` 通过 `IAssetManager.SaveAssetCheckDeviceId` 写入启动白名单缓存；失败不影响初始化
+- 所有插件得到最终状态后，若存在可用 `IDeviceIdProvider`，将非空 `GetDeviceID()` 通过 `IAssetManager.SaveAssetCheckDeviceId` 写入启动白名单缓存；失败不影响初始化
 - 全部完成后设置 `m_IsInitialized = true`
+- `WaitForPluginAsync<T>()` 可独立等待目标；`Ready` 才能通过 `Get/TryGet/GetAll` 查询。`InitializeTask` 仍等待全体，若某插件初始化永不返回，等待仍不会结束。
+- `Login(uid, properties)` 保存属性快照；插件就绪后自动补交，重复登录或切换账号更新会话编号。旧 `Login(uid)` 保留，业务属性须由接收插件自行提前准备。
 
 ### InitializePluginAsync
 
@@ -54,9 +56,9 @@
 
 ## 查询语义
 
-- `Get<T>()` / `TryGet<T>()` 通过遍历 `m_Plugins.Values` 做 `candidate is T && candidate.IsAvailable` 判断。
+- `Get<T>()` / `TryGet<T>()` 通过遍历 `m_Plugins.Values` 做 `candidate is T && candidate.IsAvailable && state == Ready` 判断。
 - 这意味着查询既支持具体插件类型，也支持接口类型。
-- `GetAll<T>()` 只返回 `IsAvailable == true` 的实例，并保持`ISDKPlugin.Priority` 升序。
+- `GetAll<T>()` 只返回 `IsAvailable == true` 且状态为 `Ready` 的实例，并保持 `ISDKPlugin.Priority` 升序。
 
 ## 生命周期与关闭
 

@@ -24,28 +24,14 @@ namespace NovaFramework.SDK.AIHelp.Runtime
     public sealed partial class AIHelpPlugin
     {
         /// <summary>
-        /// 拉取框架 EventManager 并订阅 SDKEventData.UserLogin。
-        /// 订阅后用户登录时触发 OnUserLogin，自动把 uid 同步给 AIHelp。
-        /// </summary>
-        private void SubscribeEvents()
-        {
-            m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
-            m_EventManager.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
-        }
-
-        /// <summary>
         /// SDKEventData.UserLogin 处理器：取已登录用户 ID 后自动以 uid 同步登录到 AIHelp。
         /// 富参（name/serverId/tags）由业务按需显式调用 Login 重载。
         /// </summary>
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件数据，期望为 SDKEventData.UserLogin。</param>
-        private void OnUserLogin(object sender, EventData e)
+        public void OnSDKLogin(string userId, long sessionId)
         {
-            if (!(e is SDKEventData.UserLogin login) || string.IsNullOrEmpty(login.UserId))
-            {
-                return;
-            }
-            Login(login.UserId);
+            if (!string.IsNullOrEmpty(userId)) Login(userId);
         }
 
         /// <summary>

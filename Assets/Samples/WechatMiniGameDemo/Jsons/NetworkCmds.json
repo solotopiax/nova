@@ -46,37 +46,37 @@
       "Name": "WeChatMiniGameVerifyLogin",
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
-      "Path": "/v1/wechat-minigame/login/verify"
+      "Path": "/v1/wx/login/verify"
     },
     {
       "Name": "WeChatMiniGameGeneratePaymentSignature",
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
-      "Path": "/v1/wechat-minigame/payment/signature"
+      "Path": "/v1/wx/payment/game-item/sign"
     },
     {
-      "Name": "WeChatMiniGameVerifyPaymentOrder",
+      "Name": "WeChatMiniGameVerifyPaymentOrders",
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
-      "Path": "/v1/wechat-minigame/payment/verify"
+      "Path": "/v1/wx/payment/orders/verify"
     },
     {
       "Name": "WeChatMiniGameQueryPaymentOrders",
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
-      "Path": "/v1/wechat-minigame/payment/orders"
+      "Path": "/v1/wx/payment/orders/query"
     },
     {
-      "Name": "WeChatMiniGameRecordSubscriptionResults",
+      "Name": "WeChatMiniGameCreateNotice",
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
-      "Path": "/v1/wechat-minigame/subscription/results"
+      "Path": "/v1/wx/notice"
     },
     {
       "Name": "WeChatMiniGameCheckTextContent",
       "Way": "HTTP_POST",
       "HostKey": "GameServer",
-      "Path": "/v1/wechat-minigame/security/text"
+      "Path": "/v1/wx/content/text/check"
     }
   ]
 }

@@ -170,6 +170,12 @@ namespace NovaFramework.Editor
         private List<PlatformChannelEntry> m_Entries = new();
 
         /// <summary>
+        /// 旧资产 PrivacyInfoConfig 缺失时的一次性补默认值标记；保存后允许用户主动留空。
+        /// </summary>
+        [SerializeField]
+        private bool m_PrivacyInfoDefaultApplied;
+
+        /// <summary>
         /// 运行时形态：按平台、渠道二级字典索引；非序列化，由 OnAfterDeserialize 重建。
         /// </summary>
         [NonSerialized]
@@ -283,6 +289,29 @@ namespace NovaFramework.Editor
         /// </summary>
         /// <returns>所有 PlatformChannelEntry 的只读列表。</returns>
         public IReadOnlyList<PlatformChannelEntry> GetAllEntries() => m_Entries;
+
+        /// <summary>
+        /// 首次编辑旧资产时为未填写的隐私清单补默认模板；后续不覆盖用户主动清空或自定义的值。
+        /// </summary>
+        /// <returns>本次是否执行了旧资产默认值迁移。</returns>
+        internal bool ApplyPrivacyInfoDefaultOnce()
+        {
+            if (m_PrivacyInfoDefaultApplied) return false;
+
+            foreach (PlatformChannelEntry entry in m_Entries)
+            {
+                if (entry?.PrivacyConfigsByMode == null) continue;
+                foreach (DevelopModePrivacyConfigsEntry modeEntry in entry.PrivacyConfigsByMode)
+                {
+                    PrivacyConfigs config = modeEntry?.Config;
+                    if (config != null && string.IsNullOrEmpty(config.PrivacyInfoConfig))
+                        config.PrivacyInfoConfig = PrivacyConfigs.DefaultPrivacyInfoConfig;
+                }
+            }
+
+            m_PrivacyInfoDefaultApplied = true;
+            return true;
+        }
 
         /// <summary>
         /// 序列化前钩子；当前无额外操作。

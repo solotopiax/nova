@@ -76,7 +76,7 @@ namespace NovaFramework.Runtime
         public abstract string Name { get; }
 
         /// <summary>
-        /// 初始化优先级（值越小越先提交；默认 100）。
+        /// 稳定遍历及释放顺序（默认 100）；不决定初始化先后。
         /// </summary>
         public virtual int Priority => 100;
 
@@ -157,6 +157,8 @@ namespace NovaFramework.Runtime
         public async UniTask InitializeAsync(ISDKPluginConfig config, CancellationToken ct)
         {
             await OnInitializeAsync(config, ct);
+            // 原生初始化任务可能在外部取消之后才返回，不能把这种晚到结果标成可用。
+            ct.ThrowIfCancellationRequested();
             m_IsAvailable = true;
         }
 

@@ -64,6 +64,13 @@ namespace NovaFramework.Runtime
         /// <returns>等待完成的异步任务。</returns>
         public abstract UniTask WaitForInitializedAsync(CancellationToken ct = default);
 
+        /// <summary>查询指定插件或能力的初始化状态。</summary>
+        public abstract SDKPluginInitializationState GetPluginInitializationState<TPlugin>() where TPlugin : class, ISDKPlugin;
+
+        /// <summary>等待指定插件或能力得到最终初始化结果。</summary>
+        public abstract UniTask<SDKPluginInitializationState> WaitForPluginAsync<TPlugin>(CancellationToken ct = default)
+            where TPlugin : class, ISDKPlugin;
+
         /// <summary>
         /// 按插件具体类型获取已初始化且可用的插件实例。
         /// 不可用时抛 SDKUnavailableException。
@@ -113,6 +120,11 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="userId">已登录用户的唯一标识。</param>
         public abstract void Login(string userId);
+
+        public abstract void Login(string userId, IReadOnlyDictionary<string, object> userProperties);
+
+        /// <summary>显式结束当前登录会话。</summary>
+        public abstract void EndLoginSession();
 
         /// <summary>
         /// 框架管理器轮询（SDK Manager 无帧轮询需求，空实现）。

@@ -9,6 +9,8 @@
  ***************************************************************/
 
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace NovaFramework.Runtime
@@ -87,6 +89,32 @@ namespace NovaFramework.Runtime
         public void Login(string userId)
         {
             m_SDKManager.Login(userId);
+        }
+
+        /// <summary>同时提交 UID 和本次登录属性，保证延迟初始化的 SDK 在第一次拉取前取得属性。</summary>
+        public void Login(string userId, IReadOnlyDictionary<string, object> userProperties)
+        {
+            m_SDKManager.Login(userId, userProperties);
+        }
+
+        /// <summary>只等待指定 SDK 插件完成初始化，并返回其成功或失败状态。</summary>
+        public UniTask<SDKPluginInitializationState> WaitForPluginAsync<TPlugin>(CancellationToken ct = default)
+            where TPlugin : class, ISDKPlugin
+        {
+            _ = InitializeTask;
+            return m_SDKManager.WaitForPluginAsync<TPlugin>(ct);
+        }
+
+        /// <summary>查询指定 SDK 插件当前的初始化状态。</summary>
+        public SDKPluginInitializationState GetPluginInitializationState<TPlugin>() where TPlugin : class, ISDKPlugin
+        {
+            return m_SDKManager.GetPluginInitializationState<TPlugin>();
+        }
+
+        /// <summary>结束当前账号会话，避免同 UID 下次登录被当作重复交付。</summary>
+        public void EndLoginSession()
+        {
+            m_SDKManager.EndLoginSession();
         }
     }
 }

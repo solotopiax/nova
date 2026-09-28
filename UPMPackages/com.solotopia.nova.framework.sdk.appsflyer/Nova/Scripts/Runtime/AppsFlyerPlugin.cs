@@ -24,7 +24,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
     /// 负责SDK初始化、归因事件上报、归因数据接收及深度链接处理。
     /// </summary>
     [SDKPluginConfigType(typeof(AppsFlyerPluginConfig))]
-    public sealed partial class AppsFlyerPlugin : SDKPluginBase, IAttributionPlugin
+    public sealed partial class AppsFlyerPlugin : SDKPluginBase, IAttributionPlugin, ISDKLoginReceiver, ISDKLoginSessionEndReceiver, ISDKInitializationDependencies
     {
       
         /// <summary>
@@ -58,9 +58,8 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
 
                 if (!TryParseAndCacheConfig(config, out var sdkComponent))
                 {
-                    return;
+                    throw new InvalidOperationException("AppsFlyer 初始化前置条件不满足。");
                 }
-                SubscribeEvents();
                 await InitializeAFSDKAsync(sdkComponent, ct);
             
 
@@ -74,22 +73,18 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
                     m_ConversionListener = null;
                 }
                 Log.Error(LogTag.AppsFlyer, $"OnInitializeAsync 初始化异常：{e}");
+                throw;
             }
         }
 
         /// <summary>
         /// 异步释放AppsFlyer SDK资源。
-        /// 先退订 SDKEventData.UserLogin，再返回完成任务；AF SDK 无显式 shutdown 接口。
+        /// 无需退订登录事件，返回完成任务；AF SDK 无显式 shutdown 接口。
         /// </summary>
         /// <param name="ct">取消令牌，本插件不使用。</param>
         /// <returns>释放完成的异步任务。</returns>
         protected override UniTask OnDisposeAsync(CancellationToken ct)
         {
-            if (m_EventManager != null)
-            {
-                m_EventManager.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
-                m_EventManager = null;
-            }
             return UniTask.CompletedTask;
         }
 

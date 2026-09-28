@@ -25,17 +25,13 @@ namespace NovaFramework.SDK.AIHelp.Runtime
     /// 用户信息同步、语言切换、未读数查询、推送 token 设置等能力。
     /// </summary>
     [SDKPluginConfigType(typeof(AIHelpPluginConfig))]
-    public sealed partial class AIHelpPlugin : SDKPluginBase
+    public sealed partial class AIHelpPlugin : SDKPluginBase, ISDKLoginReceiver
     {
         /// <summary>
         /// 缓存的运行期配置，OnInitializeAsync 时由注入的 ISDKPluginConfig 强转得到。
         /// </summary>
         private AIHelpPluginConfig m_Config;
 
-        /// <summary>
-        /// 事件管理器引用，用于订阅 / 退订 SDKEventData.UserLogin。
-        /// </summary>
-        private IEventManager m_EventManager;
 
         /// <summary>
         /// vendor SDK 是否已完成 Initialize；未完成时公开方法早退，避免向未初始化的 SDK 发指令。
@@ -78,7 +74,7 @@ namespace NovaFramework.SDK.AIHelp.Runtime
             if (m_Config == null || string.IsNullOrEmpty(m_Config.ServerCmdName) || string.IsNullOrEmpty(m_Config.AppId))
             {
                 Log.Warning(LogTag.SDK, "AIHelp 配置缺失（ServerCmdName / AppId 为空），初始化跳过。");
-                return UniTask.CompletedTask;
+                throw new InvalidOperationException("AIHelp 配置缺失。");
             }
 
             INetworkManager networkManager = FrameworkManagersGroup.GetManager<INetworkManager>();
@@ -88,7 +84,7 @@ namespace NovaFramework.SDK.AIHelp.Runtime
             if (string.IsNullOrEmpty(domain))
             {
                 Log.Warning(LogTag.SDK, $"AIHelp 域名解析失败（netcmd 指令 {m_Config.ServerCmdName} 未找到或 URL 为空），初始化跳过。");
-                return UniTask.CompletedTask;
+                throw new InvalidOperationException("AIHelp 域名解析失败。");
             }
 
             global::AIHelp.AIHelpSupport.enableLogging(m_Config.EnableLogging);
@@ -96,7 +92,6 @@ namespace NovaFramework.SDK.AIHelp.Runtime
             m_InitOver = true;
 
             RegisterAIHelpEventListeners();
-            SubscribeEvents();
             Log.Debug(LogTag.SDK, "AIHelp 初始化完成。");
             return UniTask.CompletedTask;
         }
@@ -108,11 +103,6 @@ namespace NovaFramework.SDK.AIHelp.Runtime
         /// <returns>释放完成的异步任务。</returns>
         protected override UniTask OnDisposeAsync(CancellationToken ct)
         {
-            if (m_EventManager != null)
-            {
-                m_EventManager.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
-                m_EventManager = null;
-            }
             if (m_InitOver)
             {
                 UnregisterAIHelpEventListeners();
@@ -122,7 +112,7 @@ namespace NovaFramework.SDK.AIHelp.Runtime
         }
 
         /// <summary>
-        /// 用户登录：把用户信息同步给 AIHelp。框架会在收到 SDKEventData.UserLogin 时自动以 uid 调用；
+        /// 用户登录：把用户信息同步给 AIHelp。框架会在插件就绪并收到当前账号后自动以 uid 调用；
         /// 需要携带 name / serverId / tags / customData 时由业务显式调用本重载。
         /// </summary>
         /// <param name="uid">用户唯一标识。</param>

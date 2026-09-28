@@ -25,6 +25,10 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// </summary>
         public override int Priority => 80;
 
+        /// <summary>广告渠道初始化时缓存已启用的埋点能力；没有埋点插件时仍可初始化广告。</summary>
+        public IReadOnlyList<SDKInitializationDependency> InitializationDependencies { get; } =
+            new[] { new SDKInitializationDependency(typeof(ITrackPlugin), false) };
+
         /// <summary>
         /// 未注入配置时等待广告国家码的默认超时时间。
         /// </summary>
@@ -46,10 +50,6 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// </summary>
         private IAdInternalPlugin m_ActiveBannerChannel;
 
-        /// <summary>
-        /// 事件管理器引用，用于订阅/退订 SDKEventData.UserLogin。
-        /// </summary>
-        private IEventManager m_EventManager;
 
         /// <summary>
         /// AdPlugin 所有可观察事件的容器；字段全部 readonly，禁止外部替换实例。

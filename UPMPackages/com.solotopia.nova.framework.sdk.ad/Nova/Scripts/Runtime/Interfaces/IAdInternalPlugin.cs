@@ -31,7 +31,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         AdChannelType Channel { get; }
 
         /// <summary>
-        /// 同步用户登录的 userId 到当前渠道 SDK；AdPlugin 收到 SDKEventData.UserLogin 后 fanout 调用本方法。
+        /// 同步用户登录的 userId 到当前渠道 SDK；AdPlugin 收到 SDKManager 当前账号后 fanout 调用本方法。
         /// 渠道无对应原生 API 时保留基类空实现即可。
         /// </summary>
         /// <param name="userId">已登录用户的唯一标识。</param>

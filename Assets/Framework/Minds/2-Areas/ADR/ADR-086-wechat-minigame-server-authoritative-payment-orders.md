@@ -40,14 +40,16 @@ related:
 - 客户端生成满足微信约束的最终 `outTradeNo`，在调用微信前将完整订单按业务 UID 写入 Nova Persist；本地只保留未完成订单。
 - Nova 统一管理 `Created -> AwaitingSignature -> ReadyForPayment -> PaymentSubmitted -> PendingValidation -> ReadyToDeliver -> Delivering` 状态，项目不得另建一套微信订单状态机。
 - 游戏币和道具支付复用同一编排。道具 `signData` 由客户端按固定契约创建，但 `paySig/signature` 必须由服务端校验后使用私密密钥生成。
-- 平台 `success/fail/cancel/timeout` 不决定支付终态。除明确未提交且不支持支付外，客户端保留订单并调用单笔服务端验单。
-- 服务端不创建、不保存 Nova 客户端订单，也不维护客户端发货状态；它负责登录 code 校验、道具签名、向微信验单、当前用户全量订单只读查询、订阅结果登记和文本安全检查。
+- 平台 `success/fail/cancel/timeout` 不决定支付终态。除明确未提交且不支持支付外，客户端保留订单并调用服务端验单；手动单笔和本地批量补单共用批量协议。
+- 服务端不创建、不保存 Nova 客户端订单，也不维护客户端发货状态；它负责登录 code 校验、道具签名、最多 20 笔批量验单、当前用户全量订单只读查询、个人通知任务创建和文本安全检查。
 - 服务端必须把客户端提交的 UID、商品、数量、单价、环境、OfferId、ZoneId 和 Payload 视为不可信输入，结合认证会话、服务端商品配置和微信查询结果返回 `Status/CanDeliver`。
 - 只有 `CanDeliver=true` 时，Nova 才调用项目的 `IWeChatMiniGameFulfillmentHandler`。项目业务存档必须以 `OrderId` 幂等：同一订单重复调用时不得重复增加资产，并应返回成功。
-- 发货成功，或服务端确认 `Closed/Refunded/Failed` 后删除本地订单；网络失败、待定状态和发货失败保留，并在 UID 与发货器就绪后逐笔补单。
+- 发货成功，或服务端确认 `Closed/Refunded/Failed` 后删除本地订单；网络失败、待定状态和发货失败保留，并在 UID 与发货器就绪后每批最多 20 笔验单、逐笔处理发货。
 - `Payload` 只允许小型、非敏感透传数据。AppSecret、session_key、access_token、Midas 密钥和私钥不得进入客户端配置、订单、响应或日志。
 - Android 与 iOS 共享流程；iOS 不使用客服会话充值，只允许现网并以运行时 `allow_pay` 为准。
 - 支付公开入口固定为 `PurchaseAndVerifyAsync`、`PurchaseAsync`、`VerifyPaymentOrderAsync`、`VerifyAllPaymentOrdersAsync`、`QueryCurrentUserPaymentOrdersAsync`。前三类分别表达完整支付、纯拉起、单笔验单；后两类分别表达本地未完成订单补单和服务端全订单只读查询，不得混为同一行为。
+- 手动单笔补单的 Demo 默认选择当前 UID 最近创建的本地未完成订单，而非仅选择当前页面刚创建的订单；服务端全订单查询展示每笔订单的全部已返回字段与可信状态，不能只报数量。Demo 发货器只打印醒目的“客户端已发货／模拟增加资产”并返回成功，不冒充真实资产写入。
+- 支付平台从微信运行时识别为 `ios` 或 `android`，未知值拒绝建单；不得在可序列化 Config 中写死一个平台值。
 - 游戏币支付由框架在 `RequestMidasPaymentOption` 固定写入 `mode = "game"`；道具直购的签名原文固定写入 `mode = "goods"`，并调用独立的 `RequestMidasPaymentGameItem`。业务只选择 `WeChatMiniGamePaymentKind`，不直接拼微信支付模式。
 - 本包尚未发布，旧命名直接删除并同步调用方，不保留 `[Obsolete]` 或转发兼容层。
 
@@ -56,7 +58,7 @@ related:
 ### 正面
 
 - Nova 对项目组提供完整、固定的客户端支付调用面，不再要求每个项目自行拼接订单存储和补单流程。
-- 客户端崩溃、网络中断或验单响应丢失后，可从本地未完成订单继续逐笔验单和发货。
+- 客户端崩溃、网络中断或验单响应丢失后，可从本地未完成订单继续分批验单、逐笔发货。
 - 服务端接口收敛为六项明确职责，客户端不持有 AppSecret、access token 或支付签名密钥。
 - 游戏币与道具、Android 与 iOS 共享同一订单状态机和错误语义。
 
@@ -81,9 +83,17 @@ related:
 ## 验证依据
 
 - Runtime：`WeChatMiniGamePaymentModels`、`WeChatMiniGamePaymentOrderRepository`、`WeChatMiniGameBackend`、`WeChatMiniGameCommerce`、`WeChatMiniGamePlugin.Payment`。
-- 协议与配置：六项 `PbNetWeChat*` 协议、六项 NetCmd、`WeChatMiniGamePluginConfig` 与 ConfigRuntime。
+- 协议与配置：六项 `PbNetWechat*` 协议、六项 NetCmd、`WeChatMiniGamePluginConfig` 与 ConfigRuntime。
 - Demo：`WechatMiniGameDemo` 覆盖游戏币、道具、本地订单读取、单笔验单、全部补单和项目发货器接入点。
 - Docs：微信小游戏包 `RUNTIME_API.md`、`SERVER_CONTRACT.md`、`CAPABILITY_MATRIX.md`。
+
+## 2026-09-24 协议契约更新
+
+用户确认以 `wechat-new.proto` 为标准：单笔手动验单仍是客户端公开入口，但底层与全部补单共用 `PbNetWechatVerifyPaymentOrdersReq/Resp`；客户端全部补单每批最多 20 笔，服务端响应按订单号匹配并逐笔发货。原“订阅结果登记”服务端接口改为 `PbNetWechatCreateNoticeReq/Resp`；客户端必须先获得目标微信模板的 `accept`，再提供服务端配置 ID、Unix 秒级触发时间和稳定幂等键。当前协议源、Backend、Sample NetCmd 表源及正式导出物共同验证此边界。
+
+## 2026-09-28 Demo 与配置落地
+
+单个“微信登录校验”按钮串联 `wx.login → VerifyLoginAsync → GameLogin`，仅在 `ErrAccountNotFound` 时转游客 GameLogin 与 GameBind；绑定冲突仍由玩家业务选择，不由 Demo 自动裁决。支付发货仍严格由服务端验单后的本地发货器执行；Demo 只用日志演示“增加资产”。订单查询的 Protobuf 响应已有 `repeated PbWechatPaymentOrderInfo`，客户端 DTO 包含订单状态等字段，Demo 逐笔展示。六条微信 NetCmd 同名存在于 Sample 的 Excel 表源、JSON 导出和生成访问代码；这一静态闭环不等于服务端实际部署或支付真机验收。
 
 ## 关联
 

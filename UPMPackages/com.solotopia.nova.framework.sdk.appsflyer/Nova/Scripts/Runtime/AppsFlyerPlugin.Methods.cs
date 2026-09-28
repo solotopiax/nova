@@ -21,6 +21,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
 {
     public sealed partial class AppsFlyerPlugin
     {
+        private long m_LoginSessionId;
         /// <summary>
         /// 初始化阶段 1：解析并缓存运行时配置。
         /// 把 SDKManager 注入的 ISDKPluginConfig 强转为 AppsFlyerPluginConfig 缓存到 m_RuntimeConfig，
@@ -101,16 +102,6 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
 #else
             PublishData(SDKDataKeys.AppsFlyerId, GetAppsFlyerID());
 #endif
-        }
-
-        /// <summary>
-        /// 初始化阶段 3：拉取 EventManager 并订阅 SDKEventData.UserLogin 事件。
-        /// 订阅后用户登录时触发 OnUserLogin 回调，由其调用 SetUserId 与上报 NetService。
-        /// </summary>
-        private void SubscribeEvents()
-        {
-            m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
-            m_EventManager.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
         }
 
         /// <summary>
@@ -207,15 +198,14 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         /// </summary>
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件数据，期望为 SDKEventData.UserLogin。</param>
-        private void OnUserLogin(object sender, EventData e)
+        public void OnSDKLogin(string userId, long sessionId)
         {
-            if (!(e is SDKEventData.UserLogin login))
-            {
-                return;
-            }
-            SetUserId(login.UserId);
-            ReportOnLoginAsync().Forget();
+            m_LoginSessionId = sessionId;
+            SetUserId(userId);
+            ReportOnLoginAsync(sessionId).Forget();
         }
+
+        public void OnSDKLoginSessionEnded(long sessionId) => m_LoginSessionId = sessionId;
 
         /// <summary>
         /// 登录后异步上报 AppsFlyerId 至服务端：先 await FetchDataAsync 等待 AppsFlyerId 数据槽位就绪，
@@ -226,7 +216,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         /// CancellationToken 暂用 default（无 Plugin 生命周期 CTS）；OperationCanceledException 静默吞，其他异常仅记日志不上抛。
         /// </summary>
         /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
-        private async UniTaskVoid ReportOnLoginAsync()
+        private async UniTaskVoid ReportOnLoginAsync(long sessionId)
         {
             if (m_ReportNetService == null || m_RuntimeConfig == null)
             {
@@ -235,6 +225,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
             try
             {
                 object afIdObj = await FetchDataAsync(SDKDataKeys.AppsFlyerId, default);
+                if (sessionId != m_LoginSessionId) return;
                 string afId = afIdObj as string ?? string.Empty;
                 m_ReportNetService.Async(m_RuntimeConfig.ReportCmdName, afId).Forget();
             }

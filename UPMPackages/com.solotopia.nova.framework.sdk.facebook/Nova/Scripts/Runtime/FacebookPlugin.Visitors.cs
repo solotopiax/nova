@@ -93,10 +93,6 @@ namespace NovaFramework.SDK.Facebook
         /// </summary>
         private FacebookShareService m_ShareService;
 
-        /// <summary>
-        /// Event manager used to listen for Nova business user login events.
-        /// </summary>
-        private IEventManager m_EventManager;
 
         /// <summary>
         /// 当前用户。

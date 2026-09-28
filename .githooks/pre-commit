@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+exec python3 "$repo_root/.agents/skills/nova-publish/scripts/changelog_tool.py" --root "$repo_root" check --source index

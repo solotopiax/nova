@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System;
+using System.Globalization;
 using UnityEngine;
 
 namespace NovaFramework.Runtime
@@ -54,6 +55,7 @@ namespace NovaFramework.Runtime
         /// <param name="isSupported">判断语言在当前阶段是否可用。</param>
         /// <param name="firstSupportedLanguage">当前阶段支持列表的第一项；无列表时传 Unspecified。</param>
         /// <param name="isEditor">当前是否运行在编辑器。</param>
+        /// <param name="systemLocale">可选的系统语言标签；为空时读取当前 UI Culture。</param>
         /// <returns>解析后的目标语言。</returns>
         internal static Language Resolve(
             LocalizationLanguagePolicy policy,
@@ -61,7 +63,8 @@ namespace NovaFramework.Runtime
             SystemLanguage systemLanguage,
             Func<Language, bool> isSupported,
             Language firstSupportedLanguage,
-            bool isEditor)
+            bool isEditor,
+            string systemLocale = null)
         {
             if (isEditor && IsSupported(policy.EditorLanguage, isSupported))
             {
@@ -78,22 +81,59 @@ namespace NovaFramework.Runtime
                 return persistedLanguage;
             }
 
-            Language mappedSystemLanguage = MapSystemLanguage(systemLanguage);
+            Language mappedSystemLanguage = MapSystemLanguage(systemLanguage, systemLocale ?? GetCurrentLocaleName());
             if (IsSupported(mappedSystemLanguage, isSupported))
             {
                 return mappedSystemLanguage;
+            }
+
+            // 地区或文字变体不可用时，仍尝试 Unity 原有的宽泛语言映射。
+            Language genericSystemLanguage = MapSystemLanguage(systemLanguage, string.Empty);
+            if (genericSystemLanguage != mappedSystemLanguage && IsSupported(genericSystemLanguage, isSupported))
+            {
+                return genericSystemLanguage;
             }
 
             return ResolveFallback(policy.FallbackLanguage, firstSupportedLanguage, isSupported);
         }
 
         /// <summary>
-        /// 将 Unity 系统语言映射为 Nova Language。
+        /// 将 Unity 系统语言和当前 UI Culture 的语言标签映射为 Nova Language。
         /// </summary>
         /// <param name="systemLanguage">Unity 系统语言。</param>
         /// <returns>对应的 Nova 语言；无法映射时返回 Unspecified。</returns>
         internal static Language MapSystemLanguage(SystemLanguage systemLanguage)
         {
+            return MapSystemLanguage(systemLanguage, GetCurrentLocaleName());
+        }
+
+        /// <summary>
+        /// 使用明确的语言标签映射系统语言；仅在 Unity 值不明确时采用标签。
+        /// </summary>
+        /// <param name="systemLanguage">Unity 系统语言。</param>
+        /// <param name="localeName">BCP 47 风格的语言标签，可为空。</param>
+        /// <returns>对应的 Nova 语言；无法映射时返回 Unspecified。</returns>
+        internal static Language MapSystemLanguage(SystemLanguage systemLanguage, string localeName)
+        {
+            Language localeLanguage = MapLocaleLanguage(localeName);
+            if (systemLanguage == SystemLanguage.Unknown)
+            {
+                return localeLanguage;
+            }
+
+            if (systemLanguage == SystemLanguage.Portuguese && localeLanguage == Language.PortugueseBrazil)
+            {
+                return Language.PortugueseBrazil;
+            }
+
+            if (systemLanguage == SystemLanguage.SerboCroatian &&
+                (localeLanguage == Language.Croatian ||
+                 localeLanguage == Language.SerbianCyrillic ||
+                 localeLanguage == Language.SerbianLatin))
+            {
+                return localeLanguage;
+            }
+
             switch (systemLanguage)
             {
                 case SystemLanguage.Afrikaans: return Language.Afrikaans;
@@ -138,6 +178,66 @@ namespace NovaFramework.Runtime
                 case SystemLanguage.Turkish: return Language.Turkish;
                 case SystemLanguage.Ukrainian: return Language.Ukrainian;
                 case SystemLanguage.Vietnamese: return Language.Vietnamese;
+                default: return Language.Unspecified;
+            }
+        }
+
+        /// <summary>
+        /// 读取当前运行环境提供的 UI Culture 语言标签；不可用时尝试普通 Culture。
+        /// </summary>
+        /// <returns>语言标签；两者均不可用时返回空字符串。</returns>
+        private static string GetCurrentLocaleName()
+        {
+            string uiLocale = CultureInfo.CurrentUICulture.Name;
+            return string.IsNullOrEmpty(uiLocale) ? CultureInfo.CurrentCulture.Name : uiLocale;
+        }
+
+        /// <summary>
+        /// 解析 Unity SystemLanguage 未覆盖的语言，以及葡萄牙语和塞尔维亚语变体。
+        /// </summary>
+        /// <param name="localeName">BCP 47 风格的语言标签，可为空。</param>
+        /// <returns>可识别的 Nova 语言；标签不明确时返回 Unspecified。</returns>
+        private static Language MapLocaleLanguage(string localeName)
+        {
+            if (string.IsNullOrWhiteSpace(localeName))
+            {
+                return Language.Unspecified;
+            }
+
+            string[] subtags = localeName.Trim().Replace('_', '-').Split('-');
+            switch (subtags[0].ToLowerInvariant())
+            {
+                case "sq": return Language.Albanian;
+                case "hr": return Language.Croatian;
+                case "fil":
+                case "tl": return Language.Filipino;
+                case "ka": return Language.Georgian;
+                case "hi": return Language.Hindi;
+                case "mk": return Language.Macedonian;
+                case "ms": return Language.Malay;
+                case "ml": return Language.Malayalam;
+                case "fa": return Language.Persian;
+                case "pt":
+                    for (int i = 1; i < subtags.Length; i++)
+                    {
+                        if (string.Equals(subtags[i], "BR", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return Language.PortugueseBrazil;
+                        }
+                    }
+
+                    return Language.PortuguesePortugal;
+                case "sr":
+                    for (int i = 1; i < subtags.Length; i++)
+                    {
+                        if (string.Equals(subtags[i], "Latn", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return Language.SerbianLatin;
+                        }
+                    }
+
+                    // BCP 47 的 sr 默认使用西里尔文字；拉丁文字必须显式带 Latn。
+                    return Language.SerbianCyrillic;
                 default: return Language.Unspecified;
             }
         }

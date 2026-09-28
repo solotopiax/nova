@@ -8,6 +8,30 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Breaking
+
+## [0.6.35] - 2026-09-28
+
+### Changed
+
+- 发布 Framework `0.6.35`，同步发布 Ad `1.1.15`、AIHelp `0.0.16`、AppsFlyer `0.1.12`、DataMaster ABTest `0.1.1`、Facebook `0.1.14`、Firebase `0.1.17`、IAP `0.1.17`、TGA `0.1.17` 与 WeChat MiniGame SDK `0.0.3`；框架更新 SDK 初始化、iOS 隐私声明和本地化，微信包接入引力引擎、DataNexus 并更新服务端协议。
+
+- CHANGELOG 维护新增结构化 add/release 工具，并由日常 health、Git 暂存区钩子、CI 与发布器共同阻断已发布版本节改写。
+
+### Fixed
+
+- Sample 依赖审计支持描述符显式声明演示专属包，避免将仅供 Demo 使用的 Kit/SDK 错误提升为包级强制依赖。
+
+### Breaking
+
+- 自定义 `ISDKManager` 实现需补齐新增方法；依赖 SDK 初始化先后顺序的插件需改用显式能力依赖。微信小游戏服务端需按新的 `PbNetWechat*` 协议和每批最多 20 笔验单接口升级。
+
 ## [0.6.34] - 2026-09-23
 
 ### Changed

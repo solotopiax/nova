@@ -9,6 +9,8 @@ BuildPipeline.BuildPlayer 薄封装，提供统一输入校验与日志。
 
 WebGL Player 构建完成后，`NovaBuildPostprocessor` 会扫描输出目录中的 YooAsset 官方 `BuiltinCatalog.bytes`，生成 `StreamingAssets/nova-webgl-layout.txt`。该清单始终包含格式头，纯 CDN 构建也不会成为空文件；Host 运行时据此选择文件系统，不再用预期 404 探测首包布局。
 
+iOS 导出使用 EDM4U 生成 Podfile 时，`IOSPodsDeploymentTargetPostprocessor` 在 Podfile 生成后、`pod install` 前读取 `PlayerSettings.iOS.targetOSVersionString`，给各 Pods target 的 `IPHONEOS_DEPLOYMENT_TARGET` 设置下限。仅低于下限或缺少该设置的配置会被提升；等于或高于下限的值保持原样。若 Podfile 已包含其他 `post_install`，构建明确失败，需先将两段规则合并，避免 CocoaPods 的重复回调错误。
+
 ---
 
 ## §2 文件表
@@ -22,6 +24,7 @@ WebGL Player 构建完成后，`NovaBuildPostprocessor` 会扫描输出目录中
 | `../../BuildProcessor/Core/YooAssetRuntimeSettingsStaging.cs` | `YooAssetRuntimeSettingsStaging` | YooAssetSettings 临时副本的解析、所有权记录、恢复与清理 |
 | `../../BuildProcessor/Core/YooAssetRuntimeSettingsBuildCallbacks.cs` | 构建回调 | 正式 Player 构建前 staging、构建后清理；跳过 HybridCLR 裁剪 AOT 临时构建 |
 | `../../BuildProcessor/Core/NovaBuildPostprocessor.cs` | `NovaBuildPostprocessor` | 分发平台后处理；WebGL 额外生成无 404 的资源布局清单 |
+| `../../BuildProcessor/Core/IOSPodsDeploymentTargetPostprocessor.cs` | `IOSPodsDeploymentTargetPostprocessor` | 在 EDM4U 的 Podfile 生成与 pod install 之间设置 Pods iOS 部署版本下限 |
 
 ---
 

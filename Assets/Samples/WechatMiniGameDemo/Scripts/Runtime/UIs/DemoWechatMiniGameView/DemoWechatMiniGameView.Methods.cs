@@ -18,6 +18,7 @@ using NovaFramework.Kit.Network.GameLogin.Runtime;
 using NovaFramework.Runtime;
 using NovaFramework.SDK.WeChatMiniGame.Runtime;
 using TMPro;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
@@ -47,6 +48,129 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(callback);
             SetButtonApiHint(button, apiHint);
+        }
+
+        /// <summary>创建订阅和文本安全演示表单，并紧邻对应操作按钮排列。</summary>
+        private void CreateDemoFormControls()
+        {
+            if (m_SubscriptionTemplateIdInput != null && m_NoticeConfigIdInput != null &&
+                m_NoticeTriggerTimeInput != null && m_NoticeClientTaskIdInput != null &&
+                m_TextSecurityContentInput != null && m_CheckTextSecurityButton != null)
+            {
+                SetDemoFormInitialValues();
+                BindButton(m_CheckTextSecurityButton, OnCheckTextSecurityClick,
+                    "检查文本安全", "WeChatMiniGamePlugin.CheckTextContentAsync()");
+                return;
+            }
+
+            if (m_InteractionRoot == null || m_SubscribeMessageButton == null || m_TitleText == null)
+            {
+                AppendFeedback("演示表单缺少 Prefab 绑定，无法创建输入框。", FeedbackLevel.Error);
+                return;
+            }
+
+            int insertIndex = m_SubscribeMessageButton.transform.GetSiblingIndex();
+            m_SubscriptionTemplateIdInput = CreateFormInput(
+                "订阅模板 ID", "微信公众平台申请的模板 ID", FirstTemplateId(), ref insertIndex);
+            m_NoticeConfigIdInput = CreateFormInput(
+                "服务端通知配置 ID", "服务端已配置的通知配置 ID", NoticeConfigId, ref insertIndex);
+            m_NoticeTriggerTimeInput = CreateFormInput(
+                "通知触发时间（Unix 秒）", "输入 0 表示立即发送", "0", ref insertIndex);
+            m_NoticeClientTaskIdInput = CreateFormInput(
+                "通知任务幂等键", "重试时保持相同的任务键", NoticeClientTaskId, ref insertIndex);
+
+            insertIndex = m_SubscribeMessageButton.transform.GetSiblingIndex() + 1;
+            m_TextSecurityContentInput = CreateFormInput(
+                "待检查文本", "输入需要检查的文本内容", string.Empty, ref insertIndex);
+            m_CheckTextSecurityButton = Instantiate(m_SubscribeMessageButton, m_InteractionRoot);
+            m_CheckTextSecurityButton.gameObject.name = "CheckTextSecurityButton";
+            m_CheckTextSecurityButton.transform.SetSiblingIndex(insertIndex);
+            BindButton(m_CheckTextSecurityButton, OnCheckTextSecurityClick,
+                "检查文本安全", "WeChatMiniGamePlugin.CheckTextContentAsync()");
+        }
+
+        private void SetDemoFormInitialValues()
+        {
+            if (string.IsNullOrEmpty(m_SubscriptionTemplateIdInput.text))
+            {
+                m_SubscriptionTemplateIdInput.text = FirstTemplateId();
+            }
+            if (string.IsNullOrEmpty(m_NoticeConfigIdInput.text))
+            {
+                m_NoticeConfigIdInput.text = NoticeConfigId;
+            }
+            if (string.IsNullOrEmpty(m_NoticeTriggerTimeInput.text))
+            {
+                m_NoticeTriggerTimeInput.text = "0";
+            }
+            if (string.IsNullOrEmpty(m_NoticeClientTaskIdInput.text))
+            {
+                m_NoticeClientTaskIdInput.text = NoticeClientTaskId;
+            }
+        }
+
+        private string FirstTemplateId()
+        {
+            return SubscriptionTemplateIds != null && SubscriptionTemplateIds.Length > 0
+                ? SubscriptionTemplateIds[0]
+                : string.Empty;
+        }
+
+        private TMP_InputField CreateFormInput(
+            string title, string hint, string value, ref int siblingIndex)
+        {
+            var fieldObject = new GameObject(title, typeof(RectTransform));
+            fieldObject.transform.SetParent(m_InteractionRoot, false);
+            fieldObject.transform.SetSiblingIndex(siblingIndex++);
+            fieldObject.AddComponent<LayoutElement>().minHeight = 132f;
+
+            TextMeshProUGUI label = CreateFormText(fieldObject.transform, "Title", title, 25f, Color.white);
+            SetAnchors(label.rectTransform, new Vector2(0f, 0.62f), Vector2.one, 8f, -8f);
+
+            var inputObject = new GameObject("Input", typeof(RectTransform));
+            inputObject.transform.SetParent(fieldObject.transform, false);
+            var inputRect = (RectTransform)inputObject.transform;
+            SetAnchors(inputRect, Vector2.zero, new Vector2(1f, 0.6f), 8f, -8f);
+            Image background = inputObject.AddComponent<Image>();
+            background.color = Color.white;
+            TMP_InputField input = inputObject.AddComponent<TMP_InputField>();
+            input.targetGraphic = background;
+            input.lineType = TMP_InputField.LineType.SingleLine;
+
+            TextMeshProUGUI placeholder = CreateFormText(inputRect, "Placeholder", hint, 23f,
+                new Color(0.42f, 0.42f, 0.42f));
+            SetAnchors(placeholder.rectTransform, Vector2.zero, Vector2.one, 12f, -12f);
+            TextMeshProUGUI text = CreateFormText(inputRect, "Text", string.Empty, 23f, Color.black);
+            SetAnchors(text.rectTransform, Vector2.zero, Vector2.one, 12f, -12f);
+            input.textComponent = text;
+            input.placeholder = placeholder;
+            input.text = value ?? string.Empty;
+            inputObject.AddComponent<WeChatMiniGameTmpInputBridge>();
+            return input;
+        }
+
+        private TextMeshProUGUI CreateFormText(
+            Transform parent, string name, string value, float fontSize, Color color)
+        {
+            var textObject = new GameObject(name, typeof(RectTransform));
+            textObject.transform.SetParent(parent, false);
+            TextMeshProUGUI result = textObject.AddComponent<TextMeshProUGUI>();
+            result.font = m_TitleText.font;
+            result.fontSize = fontSize;
+            result.color = color;
+            result.alignment = TextAlignmentOptions.MidlineLeft;
+            result.raycastTarget = false;
+            result.text = value;
+            return result;
+        }
+
+        private static void SetAnchors(
+            RectTransform rect, Vector2 min, Vector2 max, float leftInset, float rightInset)
+        {
+            rect.anchorMin = min;
+            rect.anchorMax = max;
+            rect.offsetMin = new Vector2(leftInset, 0f);
+            rect.offsetMax = new Vector2(rightInset, 0f);
         }
 
         private bool TryGetWechat(out WeChatMiniGamePlugin plugin)
@@ -83,7 +207,6 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
                 m_Wechat.MemoryWarning -= OnWechatMemoryWarning;
                 m_Wechat = null;
             }
-            m_LastOrderId = null;
             m_WechatOpenId = null;
             m_WechatUnionId = null;
             m_SessionCancellation?.Cancel();
@@ -121,38 +244,28 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
                 FeedbackLevel.Success);
         }
 
-        private async void OnGameLoginClick()
+        /// <summary>使用已校验 OpenID 登录游戏账号；未绑定时登录游客并绑定微信。</summary>
+        private async UniTask LoginGameServerAsync()
         {
-            if (string.IsNullOrWhiteSpace(m_WechatOpenId))
+            Login login = Nova.Network.Kit<Login>();
+            NetResponse<PbNetLoginResp> response = await login.Async(string.Empty, m_WechatOpenId, false);
+            if (response.IsSuccess && response.Data != null)
             {
-                AppendFeedback("请先完成微信登录校验，获取已校验的 OpenID。", FeedbackLevel.Warn);
+                // 游戏服登录成功后同步设置本地支付与通知任务所属 UID。
+                m_Wechat?.SetPaymentUserId(response.Data.Uid);
+                AppendFeedback($"已通过微信 OpenID 登录已绑定的游戏账号，UID={Mask(response.Data.Uid)}。", FeedbackLevel.Success);
                 return;
             }
 
-            try
+            if (response.ErrorCode == LoginErrorCode.ErrAccountNotFound)
             {
-                Login login = Nova.Network.Kit<Login>();
-                NetResponse<PbNetLoginResp> response = await login.Async(string.Empty, m_WechatOpenId, false);
-                if (response.IsSuccess && response.Data != null)
-                {
-                    AppendFeedback($"已通过微信 OpenID 登录已绑定的游戏账号，UID={Mask(response.Data.Uid)}。", FeedbackLevel.Success);
-                    return;
-                }
-
-                if (response.ErrorCode == LoginErrorCode.ErrAccountNotFound)
-                {
-                    await LoginGuestAndBindWechatAsync(login);
-                    return;
-                }
-
-                AppendFeedback(
-                    $"微信 OpenID 登录游戏服务器失败：错误码 {response.ErrorCode}，{response.ErrorMessage}",
-                    FeedbackLevel.Error);
+                await LoginGuestAndBindWechatAsync(login);
+                return;
             }
-            catch (Exception exception)
-            {
-                ReportFailure("登录游戏服务器", exception);
-            }
+
+            AppendFeedback(
+                $"微信 OpenID 登录游戏服务器失败：错误码 {response.ErrorCode}，{response.ErrorMessage}",
+                FeedbackLevel.Error);
         }
 
         private async void OnWechatLoginClick()
@@ -176,6 +289,11 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
                     $"微信 code 校验成功，OpenID={Mask(m_WechatOpenId)}" +
                     (string.IsNullOrWhiteSpace(m_WechatUnionId) ? "。" : $"，UnionID={Mask(m_WechatUnionId)}。"),
                     FeedbackLevel.Success);
+                if (plugin.IsGravityInitialized)
+                {
+                    AppendFeedback("引力引擎已使用校验后的微信 OpenID 启动。", FeedbackLevel.Info);
+                }
+                await LoginGameServerAsync();
             }
             catch (Exception exception)
             {
@@ -202,6 +320,8 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
                 .BindAsync(ThirdLoginProvider.Wechat, m_WechatOpenId);
             if (bindResponse.IsSuccess)
             {
+                // 绑定完成后才允许当前游客 UID 发起支付和个人通知任务。
+                m_Wechat?.SetPaymentUserId(guestResponse.Data.Uid);
                 AppendFeedback("微信 OpenID 已绑定到当前游客账号。", FeedbackLevel.Success);
                 return;
             }
@@ -374,9 +494,25 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
             try
             {
                 WeChatMiniGamePurchaseResult result = await plugin.PurchaseAndVerifyAsync(intent, SessionToken);
-                m_LastOrderId = result.LaunchResult.OrderId;
                 AppendFeedback($"{label}支付窗口结果：{DescribeLaunchStatus(result.LaunchResult.Status)}。", FeedbackLevel.Info);
                 AppendVerificationResult($"{label}支付验单", result.VerificationResult, result.Delivered);
+                if (result.Delivered && result.VerificationResult != null &&
+                    intent.Kind == WeChatMiniGamePaymentKind.GameItem &&
+                    plugin.IsGravityInitialized)
+                {
+                    try
+                    {
+                        plugin.TrackGravityPayment(
+                            checked(intent.UnitPriceCents * intent.Quantity),
+                            result.VerificationResult.OrderId,
+                            intent.ProductId);
+                        AppendFeedback("已向引力引擎上报本次已验单道具支付。", FeedbackLevel.Info);
+                    }
+                    catch (Exception gravityException)
+                    {
+                        AppendFeedback($"引力支付埋点失败，不影响订单发货：{gravityException.Message}", FeedbackLevel.Warn);
+                    }
+                }
             }
             catch (Exception exception)
             {
@@ -395,6 +531,20 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
                 IReadOnlyList<WeChatMiniGamePaymentOrderInfo> orders =
                     await plugin.QueryCurrentUserPaymentOrdersAsync(SessionToken);
                 AppendFeedback($"服务端返回当前用户 {orders?.Count ?? 0} 笔支付订单。", FeedbackLevel.Success);
+                if (orders != null)
+                {
+                    foreach (WeChatMiniGamePaymentOrderInfo order in orders)
+                    {
+                        AppendFeedback(
+                            $"订单 {order.OrderId}｜{order.Kind}｜商品 {order.ProductId} × {order.Quantity}｜" +
+                            $"单价 {order.UnitPriceCents} 分｜状态 {DescribeVerificationStatus(order.Status)}｜" +
+                            $"可发货 {(order.CanDeliver ? "是" : "否")}｜说明 {order.Message}｜" +
+                            $"环境 {order.Environment}｜OfferId {order.OfferId}｜分区 {order.ZoneId}｜" +
+                            $"透传 {order.Payload}｜创建 {order.CreatedAtUnixMilliseconds}｜" +
+                            $"更新 {order.UpdatedAtUnixMilliseconds}。",
+                            FeedbackLevel.Info);
+                    }
+                }
             }
             catch (Exception exception)
             {
@@ -404,18 +554,27 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
 
         private async void OnVerifyOrderClick()
         {
-            if (!TryGetOrderOperation(out WeChatMiniGamePlugin plugin))
+            if (!TryGetWechat(out WeChatMiniGamePlugin plugin))
             {
                 return;
             }
             try
             {
+                WeChatMiniGamePaymentOrderRecord order = plugin.GetPendingPaymentOrders()
+                    .OrderByDescending(item => item.CreatedAtUnixMilliseconds)
+                    .FirstOrDefault();
+                if (order == null)
+                {
+                    AppendFeedback("当前账号没有本地待处理漏单。", FeedbackLevel.Warn);
+                    return;
+                }
+                AppendFeedback($"手动补单选取最近创建的本地订单 {Mask(order.OrderId)}，不依赖本次页面会话。", FeedbackLevel.Info);
                 WeChatMiniGamePaymentVerificationResult result =
-                    await plugin.VerifyPaymentOrderAsync(m_LastOrderId, SessionToken);
+                    await plugin.VerifyPaymentOrderAsync(order.OrderId, SessionToken);
                 AppendVerificationResult(
                     "单笔验单",
                     result,
-                    plugin.GetPendingPaymentOrder(m_LastOrderId) == null && result.CanDeliver);
+                    plugin.GetPendingPaymentOrder(order.OrderId) == null && result.CanDeliver);
             }
             catch (Exception exception)
             {
@@ -448,20 +607,26 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
             {
                 return;
             }
-            if (SubscriptionTemplateIds == null || SubscriptionTemplateIds.Length == 0)
+            string templateId = m_SubscriptionTemplateIdInput?.text?.Trim();
+            string configId = m_NoticeConfigIdInput?.text?.Trim();
+            string clientTaskId = m_NoticeClientTaskIdInput?.text?.Trim();
+            string triggerText = m_NoticeTriggerTimeInput?.text?.Trim();
+            if (string.IsNullOrWhiteSpace(templateId) || string.IsNullOrWhiteSpace(configId) ||
+                string.IsNullOrWhiteSpace(clientTaskId) || !long.TryParse(triggerText, out long triggerTime) ||
+                triggerTime < 0)
             {
-                AppendFeedback("尚未配置消息模板，暂时无法请求订阅。请先按照本示例 README 完成消息提醒配置。", FeedbackLevel.Warn);
+                AppendFeedback("请填写模板 ID、通知配置 ID、幂等键和非负 Unix 秒时间戳；0 表示立即。", FeedbackLevel.Warn);
                 return;
             }
             try
             {
                 WeChatMiniGameUserGestureToken gesture = plugin.CaptureUserGesture();
-                IReadOnlyDictionary<string, string> results = await plugin.RequestSubscribeMessagesAsync(
-                    SubscriptionTemplateIds,
-                    gesture,
-                    SessionToken);
-                string summary = string.Join("，", results.Select(item => $"模板 {Mask(item.Key)}：{DescribeSubscriptionResult(item.Value)}"));
-                AppendFeedback($"消息订阅结果已保存到游戏服务器：{summary}", FeedbackLevel.Success);
+                WeChatMiniGameNoticeTaskResult task = await plugin.RequestSubscribeAndCreateNoticeAsync(
+                    templateId, configId, triggerTime, clientTaskId, gesture, SessionToken);
+                AppendFeedback(task == null
+                    ? "微信未接受该模板授权，未创建通知任务。"
+                    : $"服务端通知任务 {Mask(task.TaskId)} 已创建，当前状态 {task.Status}；实际送达以服务端发送结果为准。",
+                    task == null ? FeedbackLevel.Warn : FeedbackLevel.Success);
             }
             catch (Exception exception)
             {
@@ -469,21 +634,31 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
             }
         }
 
-        /// <summary>取得微信 Plugin，并确认当前会话存在可手动验单的最近订单号。</summary>
-        /// <param name="plugin">当前已初始化的微信小游戏 Plugin。</param>
-        /// <returns>Plugin 可用且存在最近订单号时返回 true。</returns>
-        private bool TryGetOrderOperation(out WeChatMiniGamePlugin plugin)
+        private async void OnCheckTextSecurityClick()
         {
-            if (!TryGetWechat(out plugin))
+            if (!TryGetWechat(out WeChatMiniGamePlugin plugin))
             {
-                return false;
+                return;
             }
-            if (!string.IsNullOrWhiteSpace(m_LastOrderId))
+            string content = m_TextSecurityContentInput?.text;
+            if (string.IsNullOrWhiteSpace(content))
             {
-                return true;
+                AppendFeedback("请输入需要检查的文本。", FeedbackLevel.Warn);
+                return;
             }
-            AppendFeedback("当前还没有可查询的订单，请先购买一次游戏币或道具。", FeedbackLevel.Warn);
-            return false;
+            try
+            {
+                WeChatMiniGameTextSecurityCheckResult result = await plugin.CheckTextContentAsync(
+                    content, WeChatMiniGameContentSecurityScene.Comment, SessionToken);
+                AppendFeedback(
+                    $"文本安全检查：{(result.IsAllowed ? "允许" : "不允许直接发布")}，" +
+                    $"建议 {result.Suggestion}，标签 {result.Label}。",
+                    result.IsAllowed ? FeedbackLevel.Success : FeedbackLevel.Warn);
+            }
+            catch (Exception exception)
+            {
+                ReportFailure("文本安全检查", exception);
+            }
         }
 
         private void AppendVerificationResult(string action, WeChatMiniGamePaymentVerificationResult result, bool delivered)
@@ -493,7 +668,6 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
                 AppendFeedback($"{action}未返回订单。", FeedbackLevel.Warn);
                 return;
             }
-            m_LastOrderId = result.OrderId;
             AppendFeedback(
                 $"{action}：订单 {Mask(result.OrderId)}，服务端状态为“{DescribeVerificationStatus(result.Status)}”，" +
                 $"{(delivered ? "客户端发货已完成" : result.CanDeliver ? "等待客户端发货重试" : "尚不可发货")}。",
@@ -524,23 +698,14 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
             };
         }
 
-        /// <summary>Demo 不增加真实资产，仅展示项目侧按订单号幂等发货的接入位置。</summary>
+        /// <summary>Demo 以醒目的日志模拟增加资产并确认发货；真实项目仍须按订单号幂等落盘。</summary>
         public UniTask<bool> DeliverAsync(WeChatMiniGamePaymentDelivery delivery, CancellationToken ct = default)
         {
-            AppendFeedback($"Demo 发货处理器收到订单 {Mask(delivery.Order.OrderId)}，实际项目必须在资产存档中按订单号幂等发货。", FeedbackLevel.Success);
+            AppendFeedback(
+                $"【客户端已发货／模拟增加资产】{delivery.Order.Kind} 商品 {delivery.Order.ProductId} × {delivery.Order.Quantity}，" +
+                $"订单 {Mask(delivery.Order.OrderId)}。Demo 不写真实资产；正式项目须按订单号幂等落盘。",
+                FeedbackLevel.Success);
             return UniTask.FromResult(true);
-        }
-
-        private static string DescribeSubscriptionResult(string result)
-        {
-            return result switch
-            {
-                "accept" => "已允许",
-                "reject" => "已拒绝",
-                "ban" => "已被系统禁止",
-                "filter" => "模板受限",
-                _ => "结果未知"
-            };
         }
 
         private static string Mask(string value)

@@ -27,6 +27,10 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         /// </summary>
         public override int Priority => 20;
 
+        /// <summary>AppsFlyer 启动前必须取得埋点插件发布的 TGA 标识。</summary>
+        public IReadOnlyList<SDKInitializationDependency> InitializationDependencies { get; } =
+            new[] { new SDKInitializationDependency(typeof(ITrackPlugin), true) };
+
          /// <summary>
         /// 声明本插件所需的配置类型；SDKManager 据此从 IConfigManager 拉取 AppsFlyerPluginConfig 注入 OnInitializeAsync。
         /// </summary>
@@ -57,10 +61,6 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         /// </summary>
         private AppsFlyerConversionListener m_ConversionListener;
 
-        /// <summary>
-        /// 事件管理器引用，用于订阅/退订 SDKEventData.UserLogin。
-        /// </summary>
-        private IEventManager m_EventManager;
 
         /// <summary>
         /// AppsFlyer 标识上报 NetService 实例；OnInitializeAsync 入口处由 Plugin 自行 new 出。
@@ -68,7 +68,7 @@ namespace NovaFramework.SDK.AppsFlyerPlugin.Runtime
         private AppsFlyerReportNetService m_ReportNetService;
 
         /// <summary>
-        /// 由 SDKManager 注入并在初始化期缓存的运行时配置；事件回调（如 OnUserLogin）需读取协议名等字段时使用。
+        /// 由 SDKManager 注入并在初始化期缓存的运行时配置；事件回调（如 OnSDKLogin）需读取协议名等字段时使用。
         /// </summary>
         private AppsFlyerPluginConfig m_RuntimeConfig;
     }

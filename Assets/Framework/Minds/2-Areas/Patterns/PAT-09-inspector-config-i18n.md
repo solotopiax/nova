@@ -21,6 +21,7 @@ related:
   - "[[PAT-21-inspector-helpbox-multiline|PAT-21]]"
   - "[[PAT-24-inspector-row-vertical-alignment|PAT-24]]"
   - "[[PAT-35-editor-draw-only|PAT-35]]"
+  - "[[PAT-46-iteration-grep-self-check|PAT-46]]"
 ---
 
 # PAT-09：Inspector 配置分组与中文说明模式
@@ -28,6 +29,7 @@ related:
 ## 适用场景
 
 - `Assets/Framework/Scripts/Editor/Inspectors/**` 下的 `*ComponentInspector`
+- `ConfigWindow` 等在同一面板内绘制多个配置类别的 EditorWindow
 - 一个配置区包含多个业务簇，直接平铺会明显增加阅读成本
 - 需要把字段语义、默认行为、推荐值、边界条件直接暴露给面板使用者
 
@@ -43,7 +45,13 @@ related:
 
 - 面向人的 Label、HelpBox、Tooltip 统一写中文。
 - 一个字段需要说明时，HelpBox 紧跟该字段下方，不要把说明挪到面板其他区域。
+- 把“同类别字段 → 本类别 HelpBox”视作不可拆的视觉单元；一个单元结束后再画下一类别。不要先集中画完不同类别的输入框，再集中堆叠说明。
 - 说明写“作用 + 默认行为/推荐值 + 关键边界”，不要写空泛描述。
+
+### 2.1. 输入控件尺寸服从数据形态
+
+- JSON、长文本等天然需要多行阅读和编辑的字段，即使当前为空或某平台下禁用，也应保留多行输入形态；不能仅凭空白面积擅自缩成单行。
+- 调整尺寸前先核对实际数据长度及使用方式，避免把截图上的“空白”误判为无用空间。
 
 ### 3. 字段顺序与源码顺序保持一致
 
@@ -71,6 +79,7 @@ related:
 - 每个字段都建一个 Foldout
 - 只翻译字段名，不解释默认行为和边界
 - 面板顺序与配置类顺序长期分裂
+- 字段和对应 HelpBox 分属两处，或为了压缩空白把长 JSON 输入框改成单行
 - 用全局缩进状态硬凑层级，导致字段与 HelpBox 错位
 
 ## 关联
@@ -78,3 +87,4 @@ related:
 - [[PAT-21-inspector-helpbox-multiline|PAT-21]]：多条说明如何拆行
 - [[PAT-24-inspector-row-vertical-alignment|PAT-24]]：同层级控件如何对齐
 - [[PAT-35-editor-draw-only|PAT-35]]：绘制必须走 `EditorUtil.Draw`
+- [[PAT-46-iteration-grep-self-check|PAT-46]]：每轮 Editor 改动都要核对视觉状态与绘制封装

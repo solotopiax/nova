@@ -20,6 +20,7 @@ tags:
 related:
   - "[[PAT-09-inspector-config-i18n|PAT-09]]"
   - "[[PAT-24-inspector-row-vertical-alignment|PAT-24]]"
+  - "[[PAT-46-iteration-grep-self-check|PAT-46]]"
 ---
 
 # PAT-21：Inspector HelpBox 用户视角与多语义分行规则
@@ -39,7 +40,8 @@ related:
 - 出现 2 条及以上独立语义时，必须拆成多行。
 - 多行说明统一用 `(1)`、`(2)`、`(3)` 这种编号风格。
 - 每一行只表达一件事，不把“推荐值 + 例外 + 平台差异”重新塞回一行长句。
-- 配置项因平台、总开关、子选项或 Play Mode 禁用时，对应 HelpBox 必须进入相同禁用作用域并同步灰显。
+- 配置项因平台、总开关、子选项或 Play Mode 禁用时，字段标题、交互控件与专属 HelpBox 必须作为完整单元进入同一禁用作用域并同步灰显；只禁用输入框不算完成。
+- 若 HelpBox 自绘背景或图标，`GUI.enabled = false` 未必会影响这些自绘像素；必须在实际禁用态核对文字、图标、背景全部灰显，并由绘制封装层提供一致的禁用样式，避免在业务窗口重复补丁。
 
 ## 推荐写法
 
@@ -67,8 +69,10 @@ related:
 - 单条说明也强行编号
 - 同一面板内混用 `(1)`、`1.`、`-` 多种编号风格
 - 配置项已经灰显，但对应 HelpBox 仍保持高亮
+- 只用 `DisabledScope` 推断自绘 HelpBox 已全部灰显，没有查看实际禁用态画面
 
 ## 关联
 
 - [[PAT-09-inspector-config-i18n|PAT-09]]
 - [[PAT-24-inspector-row-vertical-alignment|PAT-24]]
+- [[PAT-46-iteration-grep-self-check|PAT-46]]：多轮视觉改动的状态矩阵与封装自检

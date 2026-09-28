@@ -18,7 +18,7 @@ namespace NovaFramework.SDK.Facebook
     /// Facebook SDK 插件。
     /// </summary>
     [SDKPluginConfigType(typeof(FacebookPluginConfig))]
-    public sealed partial class FacebookPlugin : SDKPluginBase, IAuthPlugin, IAcquisitionTrackPlugin
+    public sealed partial class FacebookPlugin : SDKPluginBase, IAuthPlugin, IAcquisitionTrackPlugin, ISDKLoginReceiver
     {
         /// <summary>
         /// 异步发起 Facebook 登录流程。

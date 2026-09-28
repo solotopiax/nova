@@ -29,7 +29,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 异步批量初始化 ConfigMaster.EnabledSDKs 启用的插件。
-        /// 按 ISDKPlugin.Priority 升序分桶，同桶内 UniTask.WhenAll 并行；单插件失败隔离（不影响其他插件与主流程）。
+        /// 只等待声明的能力依赖，无依赖插件并发启动；单插件失败隔离（不影响其他插件与主流程）。
         /// 完成后 IsInitialized 置为 true。
         /// </summary>
         /// <param name="ct">取消令牌；传入 CancellationToken.None 时不可取消。</param>
@@ -57,6 +57,13 @@ namespace NovaFramework.Runtime
         /// <param name="ct">取消令牌。</param>
         /// <returns>等待完成的异步任务。</returns>
         UniTask WaitForInitializedAsync(CancellationToken ct = default);
+
+        /// <summary>查询指定插件或能力当前的初始化状态；未启用返回 NotEnabled。</summary>
+        SDKPluginInitializationState GetPluginInitializationState<TPlugin>() where TPlugin : class, ISDKPlugin;
+
+        /// <summary>只等待指定插件或能力得到最终初始化结果。</summary>
+        UniTask<SDKPluginInitializationState> WaitForPluginAsync<TPlugin>(CancellationToken ct = default)
+            where TPlugin : class, ISDKPlugin;
 
         /// <summary>
         /// 按插件具体类型获取已初始化且可用的插件实例。
@@ -106,5 +113,11 @@ namespace NovaFramework.Runtime
         /// </summary>
         /// <param name="userId">已登录用户的唯一标识。</param>
         void Login(string userId);
+
+        /// <summary>提交 UID 与本次登录的用户属性快照；插件就绪后一次性交付。</summary>
+        void Login(string userId, IReadOnlyDictionary<string, object> userProperties);
+
+        /// <summary>结束当前登录会话；下次即使使用相同 UID，也作为新会话交付。</summary>
+        void EndLoginSession();
     }
 }

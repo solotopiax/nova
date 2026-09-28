@@ -5,6 +5,22 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Breaking
+
+## [0.0.16] - 2026-09-28
+
+### Changed
+
+- 登录 UID 由 SDKManager 补交，配置或域名缺失时明确保持不可用。
+
+- Framework 依赖下界提升至 0.6.35，以匹配本包使用的 SDK 初始化与登录会话新接口。
+
 ## [0.0.15] - 2026-09-18
 
 ### Fixed

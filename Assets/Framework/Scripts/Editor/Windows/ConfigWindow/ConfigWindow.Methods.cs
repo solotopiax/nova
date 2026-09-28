@@ -283,6 +283,7 @@ namespace NovaFramework.Editor
             RebuildWorkingCopy();
             if (m_WorkingCopy == null) return;
             string before = EditorJsonUtility.ToJson(m_WorkingCopy);
+            m_WorkingCopy.ApplyPrivacyInfoDefaultOnce();
             EditorUtil.Config.StructureGuard.SyncEnumGrid(m_WorkingCopy);
             m_MasterSO?.Update();
             bool structureChanged = !string.Equals(

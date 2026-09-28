@@ -225,7 +225,7 @@
 | [Definitions/IKitConfig.md](Runtime/Modules/Config/Definitions/IKitConfig.md) | Kit 固有配置 marker 接口（DisplayName）；实例按 Platform×Channel×DevelopMode 存于 PlatformChannelEntry，EnabledKits 为白名单，导出为当前单格 ConfigRuntimeSO |
 | [Definitions/KitConfigMissingException.md](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) | Kit 配置缺失异常；fail-fast 暴露配置漏填 |
 | [AppConfigs.md](Runtime/Modules/Config/AppConfigs.md) | Runtime 应用配置（应用标识、AES、启动拉取 NetCmd 与配置项名称） |
-| [PrivacyConfigs.md](Runtime/Modules/Config/PrivacyConfigs.md) | Runtime 隐私配置（Util.Encrypt.AES 默认 Key/IV，与 AppConfigs 独立） |
+| [PrivacyConfigs.md](Runtime/Modules/Config/PrivacyConfigs.md) | Runtime 隐私配置（AES 默认 Key/IV 与 iOS Required Reason API 清单） |
 | [HybridConfigs.md](Runtime/Modules/Config/Definitions/HybridConfigs.md) | Runtime HybridCLR 配置（入口名与 DLL Asset 地址） |
 | [CustomConfigs.md](Runtime/Modules/Config/Definitions/CustomConfigs.md) | Custom 本地 JSONPath 默认值与云端完整 JSON 查询入口 |
 | [PlatformChannelEntry.md](Editor/Config/Definitions/PlatformChannelEntry.md) | Editor 三维配置矩阵行 |
@@ -439,7 +439,7 @@
 | [Definitions/SDKPluginBase.md](Runtime/Modules/SDK/Definitions/SDKPluginBase.md) | SDK 插件通用抽象基类（纯 C#，非 MonoBehaviour，模板方法 + IsAvailable 管理） |
 | [Definitions/PluginBase.md](Runtime/Modules/SDK/Definitions/PluginBase.md) | SDK 插件泛型基类（IPluginBaseMarker + PluginBase<TConfig>，自动 config 注入分支） |
 | [Managers/Interfaces/ISDKManager.md](Runtime/Modules/SDK/Managers/Interfaces/ISDKManager.md) | SDK Manager 接口（Initialize / Get / TryGet / GetAll / Broadcast*） |
-| [Managers/Implements/SDKManager.md](Runtime/Modules/SDK/Managers/Implements/SDKManager.md) | SDK Manager 唯一实现（Priority 分桶初始化、失败隔离、初始化后缓存稳定 DeviceID） |
+| [Managers/Implements/SDKManager.md](Runtime/Modules/SDK/Managers/Implements/SDKManager.md) | SDK Manager 唯一实现（能力依赖调度、失败隔离、登录补交、插件级等待） |
 | [Managers/Implements/SDKManagerBase.md](Runtime/Modules/SDK/Managers/Implements/SDKManagerBase.md) | SDK Manager 抽象基类（Priority=16） |
 | [Managers/Definitions/SDKManagerConfig.md](Runtime/Modules/SDK/Managers/Definitions/SDKManagerConfig.md) | SDK Manager 配置类（承载 PluginEntries 数组） |
 | [Plugins/Device/IDeviceIdProvider.md](Runtime/Modules/SDK/Plugins/Device/IDeviceIdProvider.md) | 设备唯一标识提供者接口（GetDeviceID）；Kit-Network NetBuilder.BuildHeader 自动读取 |

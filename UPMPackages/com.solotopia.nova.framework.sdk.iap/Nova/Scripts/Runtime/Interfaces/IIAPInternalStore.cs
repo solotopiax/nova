@@ -1,4 +1,4 @@
-﻿/***************************************************************
+/***************************************************************
  * (c) copyright 2026 - 2030, Solotopia
  * All Rights Reserved.
  * -------------------------------------------------------------
@@ -126,7 +126,7 @@ namespace NovaFramework.SDK.IAP.Runtime
 
         /// <summary>
         /// 设置当前账号 UID，供存档隔离与补单路由使用。
-        /// 由 IAPPlugin 在收到 SDKEventData.UserLogin 事件时自动广播；同 UID 重复调用须幂等。
+        /// 由 IAPPlugin 在收到 SDKManager 当前账号时自动广播；同 UID 重复调用须幂等。
         /// </summary>
         /// <param name="uid">已登录用户的唯一 ID。</param>
         void SetUserId(string uid);

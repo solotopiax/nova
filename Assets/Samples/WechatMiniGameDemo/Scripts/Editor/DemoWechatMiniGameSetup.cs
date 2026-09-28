@@ -47,7 +47,6 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
             DemoWechatMiniGameView view = prefab != null ? prefab.GetComponent<DemoWechatMiniGameView>() : null;
             var serialized = view != null ? new SerializedObject(view) : null;
             bool hasWechatLoginButton = serialized?.FindProperty("m_LoginButton")?.objectReferenceValue != null;
-            bool hasGameLoginButton = serialized?.FindProperty("m_GameLoginButton")?.objectReferenceValue != null;
             ConfigRuntimeSO runtime = AssetDatabase.LoadAssetAtPath<ConfigRuntimeSO>(c_RuntimeConfigPath);
             bool hasTgaConfig = runtime?.GetSDKPluginConfig<TGAPluginConfig>() != null;
             bool hasGameLoginConfig = runtime?.GetKitConfig<LoginKitConfig>() != null;
@@ -57,7 +56,7 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
                 c_WechatAppId,
                 StringComparison.Ordinal);
             bool hasWechatPipifyParams = HasWechatPipifyParams();
-            if ((hasWechatLoginButton && hasGameLoginButton && hasTgaConfig && hasGameLoginConfig &&
+            if ((hasWechatLoginButton && hasTgaConfig && hasGameLoginConfig &&
                  hasGameBindConfig && hasWechatAppId && !hasWechatPipifyParams) || s_Scheduled)
             {
                 return;
@@ -320,7 +319,6 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
             (string field, string objectName, string label)[] buttons =
             {
                 ("m_LoginButton", "LoginButton", "微信登录校验"),
-                ("m_GameLoginButton", "GameLoginButton", "登录游戏服务器"),
                 ("m_RuntimeInfoButton", "RuntimeInfoButton", "运行环境信息"),
                 ("m_PrivacyStatusButton", "PrivacyStatusButton", "查询隐私状态"),
                 ("m_PrivacyAuthorizeButton", "PrivacyAuthorizeButton", "请求隐私授权"),
@@ -331,8 +329,8 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
                 ("m_PaymentSupportButton", "PaymentSupportButton", "检查支付能力"),
                 ("m_PayCurrencyButton", "PayCurrencyButton", "购买游戏币"),
                 ("m_PayItemButton", "PayItemButton", "购买道具"),
-                ("m_QueryOrderButton", "QueryOrderButton", "查询最近订单"),
-                ("m_RecoverOrderButton", "RecoverOrderButton", "验证最近订单"),
+                ("m_QueryOrderButton", "QueryOrderButton", "查询当前用户全部订单"),
+                ("m_RecoverOrderButton", "RecoverOrderButton", "补验最近本地漏单"),
                 ("m_RecoverPendingButton", "RecoverPendingButton", "验证全部订单"),
                 ("m_SubscribeMessageButton", "SubscribeMessageButton", "开启消息提醒")
             };
@@ -340,7 +338,77 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
             {
                 serialized.FindProperty(field).objectReferenceValue = CreateButton(root, titleText, objectName, label);
             }
+
+            Button subscribeButton = serialized.FindProperty("m_SubscribeMessageButton").objectReferenceValue as Button;
+            int insertIndex = subscribeButton.transform.GetSiblingIndex();
+            serialized.FindProperty("m_SubscriptionTemplateIdInput").objectReferenceValue = CreateFormInput(
+                root, titleText, "SubscriptionTemplateId", "订阅模板 ID", "微信公众平台申请的模板 ID", string.Empty, ref insertIndex);
+            serialized.FindProperty("m_NoticeConfigIdInput").objectReferenceValue = CreateFormInput(
+                root, titleText, "NoticeConfigId", "服务端通知配置 ID", "服务端已配置的通知配置 ID", string.Empty, ref insertIndex);
+            serialized.FindProperty("m_NoticeTriggerTimeInput").objectReferenceValue = CreateFormInput(
+                root, titleText, "NoticeTriggerTime", "通知触发时间（Unix 秒）", "输入 0 表示立即发送", "0", ref insertIndex);
+            serialized.FindProperty("m_NoticeClientTaskIdInput").objectReferenceValue = CreateFormInput(
+                root, titleText, "NoticeClientTaskId", "通知任务幂等键", "重试时保持相同的任务键", string.Empty, ref insertIndex);
+
+            insertIndex = subscribeButton.transform.GetSiblingIndex() + 1;
+            serialized.FindProperty("m_TextSecurityContentInput").objectReferenceValue = CreateFormInput(
+                root, titleText, "TextSecurityContent", "待检查文本", "输入需要检查的文本内容", string.Empty, ref insertIndex);
+            Button checkTextButton = CreateButton(root, titleText, "CheckTextSecurityButton", "检查文本安全");
+            checkTextButton.transform.SetSiblingIndex(insertIndex);
+            serialized.FindProperty("m_CheckTextSecurityButton").objectReferenceValue = checkTextButton;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static TMP_InputField CreateFormInput(
+            Transform root,
+            TMP_Text titleText,
+            string objectName,
+            string title,
+            string placeholderText,
+            string initialValue,
+            ref int siblingIndex)
+        {
+            var fieldObject = new GameObject(objectName, typeof(RectTransform));
+            fieldObject.transform.SetParent(root, false);
+            fieldObject.transform.SetSiblingIndex(siblingIndex++);
+            fieldObject.AddComponent<LayoutElement>().minHeight = 132f;
+
+            TextMeshProUGUI label = CreateText(fieldObject.transform, titleText, "Title", title, 25f, Color.white);
+            label.alignment = TextAlignmentOptions.MidlineLeft;
+            SetFormAnchors(label.rectTransform, new Vector2(0f, 0.62f), Vector2.one, 8f, -8f);
+
+            var inputObject = new GameObject("Input", typeof(RectTransform));
+            inputObject.transform.SetParent(fieldObject.transform, false);
+            RectTransform inputRect = (RectTransform)inputObject.transform;
+            SetFormAnchors(inputRect, Vector2.zero, new Vector2(1f, 0.6f), 8f, -8f);
+            Image background = inputObject.AddComponent<Image>();
+            background.color = Color.white;
+            TMP_InputField input = inputObject.AddComponent<TMP_InputField>();
+            input.targetGraphic = background;
+            input.lineType = TMP_InputField.LineType.SingleLine;
+
+            TextMeshProUGUI placeholder = CreateText(
+                inputRect, titleText, "Placeholder", placeholderText, 23f,
+                new Color(0.42f, 0.42f, 0.42f));
+            placeholder.alignment = TextAlignmentOptions.MidlineLeft;
+            SetFormAnchors(placeholder.rectTransform, Vector2.zero, Vector2.one, 12f, -12f);
+            TextMeshProUGUI value = CreateText(inputRect, titleText, "Text", string.Empty, 23f, Color.black);
+            value.alignment = TextAlignmentOptions.MidlineLeft;
+            SetFormAnchors(value.rectTransform, Vector2.zero, Vector2.one, 12f, -12f);
+            input.textComponent = value;
+            input.placeholder = placeholder;
+            input.text = initialValue;
+            inputObject.AddComponent<WeChatMiniGameTmpInputBridge>();
+            return input;
+        }
+
+        private static void SetFormAnchors(
+            RectTransform rect, Vector2 min, Vector2 max, float leftInset, float rightInset)
+        {
+            rect.anchorMin = min;
+            rect.anchorMax = max;
+            rect.offsetMin = new Vector2(leftInset, 0f);
+            rect.offsetMax = new Vector2(rightInset, 0f);
         }
 
         private static Button CreateButton(Transform parent, TMP_Text titleText, string objectName, string label)

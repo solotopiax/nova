@@ -23,6 +23,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 {
     public sealed partial class FirebasePlugin
     {
+        private long m_LoginSessionId;
         /// <summary>
         /// 异步初始化 Firebase SDK。
         /// 检查并修复 Firebase 依赖，注册 FCM Token 与消息回调，获取 Analytics 实例 ID。
@@ -46,9 +47,10 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
 
                 m_ReportNetService = new FirebaseReportNetService();
                 m_RuntimeConfig = config as FirebasePluginConfig;
+                if (m_RuntimeConfig == null)
+                    throw new InvalidOperationException("Firebase 配置缺失。");
                 InitializePushTaskServices();
                 m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
-                m_EventManager.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
 #if (UNITY_IOS || UNITY_ANDROID)
                 Firebase.FirebaseApp.LogLevel = Firebase.LogLevel.Warning;
                 Firebase.DependencyStatus dependencyStatus = await Firebase.FirebaseApp
@@ -91,6 +93,8 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                     }
                 });
                 Log.Debug(LogTag.Firebase, "初始化完成。");
+#else
+                throw new PlatformNotSupportedException("Firebase 插件仅支持 iOS 和 Android Player。");
 #endif
             }
             catch (OperationCanceledException)
@@ -240,7 +244,6 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
             m_FcmTokenReadySource.TrySetCanceled();
             if (m_EventManager != null)
             {
-                m_EventManager.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
                 m_EventManager = null;
             }
 #if (UNITY_IOS || UNITY_ANDROID)
@@ -379,15 +382,14 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// </summary>
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件数据，期望为 SDKEventData.UserLogin。</param>
-        private void OnUserLogin(object sender, EventData e)
+        public void OnSDKLogin(string userId, long sessionId)
         {
-            if (!(e is SDKEventData.UserLogin login))
-            {
-                return;
-            }
-            SetUserId(login.UserId);
-            ReportOnLoginAsync().Forget();
+            m_LoginSessionId = sessionId;
+            SetUserId(userId);
+            ReportOnLoginAsync(sessionId).Forget();
         }
+
+        public void OnSDKLoginSessionEnded(long sessionId) => m_LoginSessionId = sessionId;
 
         /// <summary>
         /// 登录后异步上报 Firebase 标识至服务端：先 await FetchDataAsync 等待 FirebasePushToken / FirebaseAnalyticsInstanceId
@@ -399,7 +401,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
         /// CancellationToken 暂用 default；OperationCanceledException 静默吞，其他异常仅记日志不上抛。
         /// </summary>
         /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
-        private async UniTaskVoid ReportOnLoginAsync()
+        private async UniTaskVoid ReportOnLoginAsync(long sessionId)
         {
             if (m_RuntimeConfig == null)
             {
@@ -414,6 +416,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
                 string pushToken = pushTokenObj as string ?? string.Empty;
                 string instanceId = instanceIdObj as string ?? string.Empty;
                 string resolvedCountryCode = await ResolveFirebaseCountryCodeAsync(default);
+                if (sessionId != m_LoginSessionId) return;
                 string country = FirebaseDefaultTopicBuilder.NormalizeReportCountryCode(resolvedCountryCode);
                 TimeSpan utcOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
                 string timezoneOffset = FirebaseDefaultTopicBuilder.FormatReportTimezoneOffset(utcOffset);

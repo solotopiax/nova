@@ -1,0 +1,14 @@
+stages:
+  - validate
+
+variables:
+  GIT_DEPTH: "0"
+
+changelog-history:
+  stage: validate
+  image: python:3.13-slim
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git
+  script:
+    - git fetch --tags --force
+    - python3 .agents/skills/nova-publish/scripts/changelog_tool.py --root . check

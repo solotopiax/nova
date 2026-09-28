@@ -24,7 +24,7 @@ namespace NovaFramework.Runtime
     {
         /// <summary>
         /// 设置当前登录用户 ID，广播给所有 store。
-        /// 通常无需主动调用——IAPPlugin 已在初始化时订阅 SDKEventData.UserLogin 自动同步；
+        /// 通常无需主动调用——IAPPlugin 已由 SDKManager 在插件就绪后自动同步；
         /// 仅在登录事件触达前 IAP 已使用或需要强制切换账号时使用。
         /// </summary>
         /// <param name="userId">已登录用户的唯一 ID。</param>

@@ -20,6 +20,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
 {
     public sealed partial class TGAPlugin
     {
+        private long m_LoginSessionId;
         /// <summary>
         /// 创建 TGADynamicSuperPropertyListener 宿主 GameObject 并挂载到指定父节点。
         /// 绑定当前 Plugin 作为回调目标，返回 listener 实例供 TDAnalytics.SetDynamicSuperProperties 使用。
@@ -307,27 +308,26 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         /// </summary>
         /// <param name="sender">事件源。</param>
         /// <param name="e">事件数据，期望为 SDKEventData.UserLogin。</param>
-        private void OnUserLogin(object sender, EventData e)
+        public void OnSDKLogin(string userId, long sessionId)
         {
-            if (!(e is SDKEventData.UserLogin login))
-            {
-                return;
-            }
-            SetUserId(login.UserId);
-            PublishData(SDKDataKeys.TGAAccountId, login.UserId);
-            ReportOnLoginAsync().Forget();
+            m_LoginSessionId = sessionId;
+            SetUserId(userId);
+            PublishData(SDKDataKeys.TGAAccountId, userId);
+            ReportOnLoginAsync(userId, sessionId).Forget();
         }
+
+        public void OnSDKLoginSessionEnded(long sessionId) => m_LoginSessionId = sessionId;
 
         /// <summary>
         /// 登录后异步上报 TGA 标识至服务端：先 await FetchDataAsync 等待 TGADistinctId / TGAAccountId 数据槽位就绪，
         /// 直接拿 fetch 返回值作为协议参数，与 AppsFlyerPlugin.ReportOnLoginAsync 同构。
         /// 把"初始化结果"与"登录结果"统一为"先 await 拿值、再用值"的可等待过程。
-        /// 数据槽位由本插件自身发布（TGADistinctId 在 PublishTGAIdentifiers，TGAAccountId 在 OnUserLogin）；
+        /// 数据槽位由本插件自身发布（TGADistinctId 在 PublishTGAIdentifiers，TGAAccountId 在 OnSDKLogin）；
         /// m_ReportNetService 或 m_RuntimeConfig 为 null（守卫早返回路径）时静默跳过；
         /// CancellationToken 暂用 default；OperationCanceledException 静默吞，其他异常仅记日志不上抛。
         /// </summary>
         /// <returns>UniTaskVoid，专用于 Fire-and-Forget 调用。</returns>
-        private async UniTaskVoid ReportOnLoginAsync()
+        private async UniTaskVoid ReportOnLoginAsync(string userId, long sessionId)
         {
             if (m_ReportNetService == null || m_RuntimeConfig == null)
             {
@@ -336,10 +336,9 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
             try
             {
                 object distinctIdObj = await FetchDataAsync(SDKDataKeys.TGADistinctId, default);
-                object accountIdObj = await FetchDataAsync(SDKDataKeys.TGAAccountId, default);
                 string distinctId = distinctIdObj as string ?? string.Empty;
-                string accountId = accountIdObj as string ?? string.Empty;
-                m_ReportNetService.Async(m_RuntimeConfig.ReportCmdName, distinctId, accountId).Forget();
+                if (sessionId != m_LoginSessionId) return;
+                m_ReportNetService.Async(m_RuntimeConfig.ReportCmdName, distinctId, userId).Forget();
             }
             catch (OperationCanceledException)
             {

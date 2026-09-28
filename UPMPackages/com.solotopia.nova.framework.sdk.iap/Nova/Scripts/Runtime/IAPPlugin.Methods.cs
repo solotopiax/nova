@@ -330,12 +330,9 @@ namespace NovaFramework.SDK.IAP.Runtime
         /// </summary>
         /// <param name="sender">事件发送者。</param>
         /// <param name="e">事件数据，须为 SDKEventData.UserLogin 类型。</param>
-        private void OnUserLogin(object sender, EventData e)
+        public void OnSDKLogin(string userId, long sessionId)
         {
-            if (e is SDKEventData.UserLogin login)
-            {
-                SetUserId(login.UserId);
-            }
+            SetUserId(userId);
         }
 
     }

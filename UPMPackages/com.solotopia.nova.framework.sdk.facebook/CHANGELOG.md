@@ -4,6 +4,22 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Breaking
+
+## [0.1.14] - 2026-09-28
+
+### Changed
+
+- 登录 UID 改由 SDKManager 在插件就绪后补交。
+
+- Framework 依赖下界提升至 0.6.35，以匹配本包使用的 SDK 初始化与登录会话新接口。
+
 ## [0.1.13] - 2026-09-04
 
 ### Changed

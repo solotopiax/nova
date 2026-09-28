@@ -37,8 +37,6 @@ namespace NovaFramework.SDK.Facebook
             m_AuthService = new FacebookAuthService();
 
             await m_AuthService.InitializeAsync(ct);
-            m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
-            m_EventManager?.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
 
             SetLoginState(new FacebookUserData(m_AuthService.CurrentUserId, m_AuthService.CurrentAccessToken));
         }
@@ -49,12 +47,6 @@ namespace NovaFramework.SDK.Facebook
         /// <param name="ct">取消令牌。</param>
         protected override UniTask OnDisposeAsync(CancellationToken ct)
         {
-            if (m_EventManager != null)
-            {
-                m_EventManager.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
-                m_EventManager = null;
-            }
-
             SetLoginState(null);
             m_AuthService = null;
             m_ProfileService = null;
@@ -123,15 +115,9 @@ namespace NovaFramework.SDK.Facebook
         /// </summary>
         /// <param name="sender">Event sender.</param>
         /// <param name="e">Login event data.</param>
-        private void OnUserLogin(object sender, EventData e)
+        public void OnSDKLogin(string userId, long sessionId)
         {
-            SDKEventData.UserLogin login = e as SDKEventData.UserLogin;
-            if (login == null)
-            {
-                return;
-            }
-
-            SetUserId(login.UserId);
+            SetUserId(userId);
         }
     }
 }

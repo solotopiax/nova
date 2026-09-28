@@ -42,6 +42,8 @@ public static ConfigRuntimeSO Export(
 
 `Export` 保留显式 `platform` 参数，作为公共底层 API 可导出调用方明确传入的任意合法矩阵坐标，不在此层读取或改写 Unity BuildTarget。生产入口的约束在调用方执行：ConfigWindow 可手工切换编辑平台，但只有编辑平台与 Unity 当前 Active BuildTarget 映射一致时才会调用导出；Pipify `export.config` 与 `nova.project.config.export-runtime` 同样在未映射或漂移时阻断。
 
+`PrivacyConfigs` 导出时深拷贝 AES Key/IV 与 `PrivacyInfoConfig`；iOS 构建后处理读取此单格快照，不直接读取 ConfigWindow 的工作副本。
+
 ---
 
 ## §9 关键算法

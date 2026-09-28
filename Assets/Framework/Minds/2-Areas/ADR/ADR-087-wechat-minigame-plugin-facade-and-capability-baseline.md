@@ -42,12 +42,14 @@ Solar `WXHelper` 已验证了一批真实项目需要的行为，但它同时包
 - Nova 公共 API 的参数、返回值、事件、基类、接口、泛型约束和委托签名不得暴露 `WeChatWASM` 类型。原厂 DTO 和回调只允许存在于包内适配实现。
 - Solar `WXHelper` 已公开的每一种业务行为都是 Nova 的最低覆盖基线，必须存在可直接调用的等价实现和自动化映射测试；等价指行为可达，不要求复刻旧命名、旧流程或旧缺陷。
 - `IWeChatMiniGameBackend` 是框架定义的服务端能力契约，包内 `WeChatMiniGameBackend` 提供 Nova Network + Protobuf 的默认客户端实现。项目只配置 HostKey/NetCmd 路由和实现业务服务端，不重复编写客户端 Backend。
-- 服务端契约固定覆盖登录校验、道具签名、单笔验单、当前用户全订单查询、订阅结果登记和文本安全六项。AppSecret、session_key、access_token、Midas 密钥和私钥只存在于服务端。
+- 服务端契约固定覆盖登录校验、道具签名、最多 20 笔批量验单、当前用户全订单查询、个人通知任务创建和文本安全六项。微信 AppSecret、session_key、微信 access_token、Midas 密钥和私钥只存在于服务端；引力引擎项目 Access Token 属于其官方客户端 SDK 配置，不与微信凭据混淆。
 - 有状态原厂对象由 Nova 包装并实现 `IDisposable`，监听必须使用同一委托对称注册与注销；文件系统包装器本身不持有独占对象，但打开的文件描述符必须显式关闭。
 - Nova 适配层统一记录微信异步 API 的完成、失败、超时和取消结果，持续监听事件使用 Debug 级别；日志只保留 API 名和脱敏摘要，不输出登录 code、身份、用户内容、token、路径、订单号或签名原文。
 - `NOVA_WECHAT_SDK_AVAILABLE` 只是各源码文件内部的条件编译别名，不是 Unity 全局宏。`UNITY_WEBGL`、`UNITY_EDITOR` 是 Unity 内置符号；三种微信符号由不同微信导出器或工具链提供，Nova 仅兼容识别。编译可用不等于运行在微信容器，运行时仍由 `WeChatMiniGameEnvironment.IsMiniGame` 裁决。
 - 同类文件进入以能力命名的目录。公开入口位于对应主文件并按重要性、调用热度从上到下排列；私有方法进入该子模块的 `.Methods.cs`，成员字段进入该子模块的 `.Visitors.cs`。Config 同样按 Account、Payment、Social、Security、Ads 等职责拆分。
 - 本包尚未发布时，公开 API 直接收敛到最终命名并同步全部调用方，不保留旧名或 `[Obsolete]` 过渡层。
+- 按具体微信 API 判断基础库能力，不把一个全局最低基础库版本暴露成 Config 门槛。微信小游戏 Demo 的 TMP 输入框由软键盘适配器桥接 `ShowKeyboardAsync` 与输入/确认/完成事件；普通 Editor 和浏览器 WebGL 保留默认输入。Solar 的 `StandaloneInputModule` 触摸覆盖器不能直接套到 Nova 的 `InputSystemUIInputModule`，微信真机触摸仍要独立验收。
+- 引力引擎作为可选微信小游戏能力与微信包同分发，项目参数由同页 Config 管理；只在业务服务端校验 OpenID 后用该 ID 启动 SDK。原厂代码置于独立程序集、保留版本和许可，不把 Android/iOS 原生插件及 EDM4U 提升为微信包强制依赖。真实 Token、微信合法域名和隐私授权策略由项目提供。
 
 ## 关键命名语义
 
@@ -57,7 +59,7 @@ Solar `WXHelper` 已验证了一批真实项目需要的行为，但它同时包
 | `PurchaseAndVerifyAsync` | 建单、拉起支付、验单并在允许时发货 |
 | `PurchaseAsync` | 只建单和拉起支付，不验单、不发货 |
 | `VerifyPaymentOrderAsync` | 手动校验一笔本地订单并尝试发货 |
-| `VerifyAllPaymentOrdersAsync` | 遍历当前 UID 的本地未完成订单逐笔验单 |
+| `VerifyAllPaymentOrdersAsync` | 遍历当前 UID 的本地未完成订单，每批最多 20 笔验单、逐笔发货 |
 | `QueryCurrentUserPaymentOrdersAsync` | 通过独立协议只读查询服务端可见的当前用户全部订单 |
 
 ## 后果
@@ -92,6 +94,7 @@ Solar `WXHelper` 已验证了一批真实项目需要的行为，但它同时包
 - `StatefulWrappers_AreDisposable` 固定有状态包装器的释放契约。
 - 微信专项 EditMode 包内契约与消费端契约共 52 项通过；Unity Console 无编译错误。
 - 当前事实文档：微信小游戏包 `ARCHITECTURE.md`、`RUNTIME_API.md`、`SERVER_CONTRACT.md` 和 `CAPABILITY_MATRIX.md`。
+- 2026-09-28 增量：微信包 49 项 EditMode 契约测试通过；Unity 临时加载 Demo Prefab 可看到 5 个输入框和文本安全按钮，且无独立 GameLogin 按钮。引力引擎 Unity SDK 5.0.45 源码在 Editor 完成编译；微信开发者工具/真机的键盘、触摸、支付、通知送达和引力数据回传仍未实测。
 
 ## 关联
 

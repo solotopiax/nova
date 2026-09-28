@@ -22,9 +22,20 @@ namespace NovaFramework.Runtime
         private readonly Dictionary<Type, ISDKPlugin> m_Plugins = new Dictionary<Type, ISDKPlugin>();
 
         /// <summary>
-        /// 按插件自身 Priority 升序排列的插件列表，用于有序初始化、有序广播与 GetAll 遍历。
+        /// 按插件自身 Priority 升序排列的插件列表，用于稳定广播、释放顺序与 GetAll 遍历。
         /// </summary>
         private readonly List<ISDKPlugin> m_SortedPlugins = new List<ISDKPlugin>();
+
+        /// <summary>各插件本轮初始化状态及完成信号，先于并发初始化任务建立。</summary>
+        private readonly Dictionary<ISDKPlugin, SDKPluginInitializationState> m_PluginStates = new();
+        private readonly Dictionary<ISDKPlugin, UniTaskCompletionSource<SDKPluginInitializationState>> m_PluginCompletionSources = new();
+        private UniTaskCompletionSource m_PluginsDiscoveredTcs = new();
+
+        /// <summary>当前账号快照及已交付的会话编号；只在 Unity 主线程修改。</summary>
+        private string m_CurrentUserId;
+        private IReadOnlyDictionary<string, object> m_CurrentUserProperties;
+        private long m_CurrentSessionId;
+        private readonly Dictionary<ISDKPlugin, long> m_DeliveredSessionIds = new();
 
 
         /// <summary>
@@ -36,6 +47,8 @@ namespace NovaFramework.Runtime
         /// 管理器是否已完成 InitializeAsync（含失败隔离后的最终状态）。
         /// </summary>
         private bool m_IsInitialized;
+        private bool m_IsInitializing;
+        private System.Threading.CancellationTokenSource m_InitializationCancellation;
         public override bool IsInitialized => m_IsInitialized;
 
         /// <summary>

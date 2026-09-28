@@ -24,13 +24,14 @@
 职责：
 
 - 在 `InitializeAsync` 中先用静态配置元数据匹配 `ConfigMaster.EnabledSDKs`，再反射实例化命中的插件。
-- 按 `ISDKPlugin.Priority` 升序分桶初始化，同桶并行。
+- 无依赖插件并发初始化；声明 `ISDKInitializationDependencies` 的插件只等待自己所需能力。
 - 通过 `IConfigManager.GetSDKPluginConfig(requiredConfigType)` 给需要配置的插件注入配置。
 - 统一处理可用性、失败隔离、生命周期广播与登录事件转发。
 
 ### 3. 插件契约层
 
 - 根接口：`ISDKPlugin`
+- 可选初始化依赖：`ISDKInitializationDependencies`；账号交付：`ISDKLoginReceiver`、`ISDKLoginContextReceiver`、`ISDKLoginSessionEndReceiver`
 - 可选生命周期接口：`ISDKPauseListener`、`ISDKFocusListener`、`ISDKQuitListener`
 - 基类：`SDKPluginBase`、`PluginBase<TConfig>`
 
@@ -74,7 +75,8 @@
 2. `SDKComponent.Start()` 调用 `Initialize(new SDKManagerConfig { PluginEntries = m_PluginEntries })`，只同步 Manager 依赖。
 3. 首次访问 `InitializeTask` 时，`SDKComponent` 调用 `InitializeAsync(ct)`。
 4. `SDKManager` 从 `PluginBase<TConfig>` 或 `SDKPluginConfigTypeAttribute` 静态读取配置类型，仅构造已启用插件，再从 `IConfigManager` 拉取配置并注入。
-5. 初始化完成后，业务层通过 `Nova.SDK.Get<T>()` / `TryGet<T>()` / `GetAll<T>()` 访问能力。
+5. 单个插件可通过 `WaitForPluginAsync<T>()` 等待；`InitializeTask` 仍表示所有已启用插件得出最终状态，不保证它们全部成功。
+6. 登录成功时调用 `Nova.SDK.Login(uid, userProperties)`；框架保存属性快照，并在插件就绪时补交当前账号。切换账号再次调用 `Login`，登出调用 `EndLoginSession`。
 
 ## 关键边界
 

@@ -35,6 +35,189 @@ namespace NovaFramework.Runtime
             m_SortedPlugins.Sort((a, b) => a.Priority.CompareTo(b.Priority));
         }
 
+        /// <summary>建立全部插件的完成信号，保证并发启动时依赖者总能找到等待对象。</summary>
+        private void PreparePluginInitialization()
+        {
+            foreach (ISDKPlugin plugin in m_SortedPlugins)
+            {
+                m_PluginStates[plugin] = SDKPluginInitializationState.Pending;
+                m_PluginCompletionSources[plugin] = new UniTaskCompletionSource<SDKPluginInitializationState>();
+            }
+            m_PluginsDiscoveredTcs.TrySetResult();
+        }
+
+        /// <summary>已启用的能力提供者必须唯一；缺失的可选能力不参与等待。</summary>
+        private Dictionary<ISDKPlugin, List<(ISDKPlugin provider, bool required)>> ResolveInitializationDependencies()
+        {
+            var graph = new Dictionary<ISDKPlugin, List<(ISDKPlugin provider, bool required)>>();
+            foreach (ISDKPlugin plugin in m_SortedPlugins)
+            {
+                var resolved = new List<(ISDKPlugin provider, bool required)>();
+                graph[plugin] = resolved;
+                if (plugin is not ISDKInitializationDependencies declarations)
+                    continue;
+
+                IReadOnlyList<SDKInitializationDependency> declared;
+                try { declared = declarations.InitializationDependencies; }
+                catch (Exception e)
+                {
+                    BlockPlugin(plugin, $"读取依赖声明失败：{e.Message}");
+                    continue;
+                }
+                if (declared == null) continue;
+
+                foreach (SDKInitializationDependency dependency in declared)
+                {
+                    Type capability = dependency.CapabilityType;
+                    if (capability == null || !typeof(ISDKPlugin).IsAssignableFrom(capability))
+                    {
+                        BlockPlugin(plugin, "依赖必须是 ISDKPlugin 能力接口");
+                        continue;
+                    }
+
+                    ISDKPlugin provider = null;
+                    bool ambiguous = false;
+                    foreach (ISDKPlugin candidate in m_SortedPlugins)
+                    {
+                        if (!capability.IsInstanceOfType(candidate)) continue;
+                        if (provider != null) { ambiguous = true; break; }
+                        provider = candidate;
+                    }
+
+                    if (ambiguous || ReferenceEquals(provider, plugin))
+                    {
+                        BlockPlugin(plugin, $"依赖 {capability.Name} 有多个提供者或指向自身");
+                    }
+                    else if (provider == null)
+                    {
+                        if (dependency.Required) BlockPlugin(plugin, $"必需能力 {capability.Name} 未启用");
+                    }
+                    else
+                    {
+                        resolved.Add((provider, dependency.Required));
+                    }
+                }
+            }
+
+            // Kahn 检查会把环以及依赖环的插件一并标为 Blocked，其他分支仍可启动。
+            var remaining = new Dictionary<ISDKPlugin, int>();
+            var queue = new Queue<ISDKPlugin>();
+            foreach (var pair in graph)
+            {
+                remaining[pair.Key] = pair.Value.Count;
+                if (pair.Value.Count == 0) queue.Enqueue(pair.Key);
+            }
+            while (queue.Count > 0)
+            {
+                ISDKPlugin completed = queue.Dequeue();
+                foreach (var pair in graph)
+                {
+                    foreach (var dependency in pair.Value)
+                    {
+                        if (!ReferenceEquals(dependency.provider, completed)) continue;
+                        if (--remaining[pair.Key] == 0) queue.Enqueue(pair.Key);
+                    }
+                }
+            }
+            foreach (var pair in remaining)
+            {
+                if (pair.Value > 0) BlockPlugin(pair.Key, "初始化依赖存在循环");
+            }
+            return graph;
+        }
+
+        /// <summary>在必需能力失败时阻止插件，并唤醒等待该插件的其他插件。</summary>
+        private void BlockPlugin(ISDKPlugin plugin, string reason)
+        {
+            if (m_PluginStates[plugin] != SDKPluginInitializationState.Pending) return;
+            Log.Error(LogTag.SDK, "SDK 插件 '{0}' 无法初始化：{1}。", plugin.Name, reason);
+            CompletePlugin(plugin, SDKPluginInitializationState.Blocked);
+        }
+
+        /// <summary>等待本插件声明的依赖后执行初始化；无依赖的插件立即并发启动。</summary>
+        private async UniTask InitializeScheduledPluginAsync(
+            ISDKPlugin plugin, List<(ISDKPlugin provider, bool required)> dependencies, CancellationToken ct)
+        {
+            if (m_PluginStates[plugin] != SDKPluginInitializationState.Pending) return;
+            try
+            {
+                foreach (var dependency in dependencies)
+                {
+                    SDKPluginInitializationState providerState = await m_PluginCompletionSources[dependency.provider]
+                        .Task.AttachExternalCancellation(ct);
+                    if (dependency.required && providerState != SDKPluginInitializationState.Ready)
+                    {
+                        BlockPlugin(plugin, $"必需能力 {dependency.provider.Name} 未就绪：{providerState}");
+                        return;
+                    }
+                }
+
+                m_PluginStates[plugin] = SDKPluginInitializationState.Initializing;
+                SDKPluginInitializationState state = await InitializePluginAsync(plugin, ct);
+                if (state != SDKPluginInitializationState.Ready)
+                    await CleanupFailedPluginAsync(plugin);
+                CompletePlugin(plugin, state);
+            }
+            catch (OperationCanceledException)
+            {
+                await CleanupFailedPluginAsync(plugin);
+                CompletePlugin(plugin, SDKPluginInitializationState.Cancelled);
+            }
+            catch (Exception e)
+            {
+                Log.Error(LogTag.SDK, "SDK 插件 '{0}' 调度异常：{1}", plugin.Name, e);
+                await CleanupFailedPluginAsync(plugin);
+                CompletePlugin(plugin, SDKPluginInitializationState.Failed);
+            }
+        }
+
+        private static async UniTask CleanupFailedPluginAsync(ISDKPlugin plugin)
+        {
+            try { await plugin.DisposeAsync(CancellationToken.None); }
+            catch (Exception e) { Log.Warning(LogTag.SDK, "SDK 插件 '{0}' 失败清理异常：{1}", plugin.Name, e); }
+        }
+
+        /// <summary>只完成一次插件状态；成功时补交当前账号并释放单插件等待者。</summary>
+        private void CompletePlugin(ISDKPlugin plugin, SDKPluginInitializationState state)
+        {
+            m_PluginStates[plugin] = state;
+            if (state == SDKPluginInitializationState.Ready)
+                DeliverCurrentLogin(plugin);
+            m_PluginCompletionSources[plugin].TrySetResult(state);
+        }
+
+        private void CompleteUnfinishedPlugins(SDKPluginInitializationState state)
+        {
+            foreach (ISDKPlugin plugin in m_SortedPlugins)
+            {
+                if (!m_PluginCompletionSources.ContainsKey(plugin)) continue;
+                if (m_PluginStates[plugin] is SDKPluginInitializationState.Pending or SDKPluginInitializationState.Initializing)
+                    CompletePlugin(plugin, state);
+            }
+        }
+
+        /// <summary>把当前 UID 至多一次交给本插件；接收失败时保留可重试状态。</summary>
+        private void DeliverCurrentLogin(ISDKPlugin plugin)
+        {
+            if ((plugin is not ISDKLoginReceiver && plugin is not ISDKLoginContextReceiver) || string.IsNullOrEmpty(m_CurrentUserId) ||
+                !m_PluginStates.TryGetValue(plugin, out var state) || state != SDKPluginInitializationState.Ready)
+                return;
+            if (m_DeliveredSessionIds.TryGetValue(plugin, out long delivered) && delivered == m_CurrentSessionId)
+                return;
+            try
+            {
+                if (plugin is ISDKLoginContextReceiver contextReceiver)
+                    contextReceiver.OnSDKLogin(m_CurrentUserId, m_CurrentSessionId, m_CurrentUserProperties);
+                else
+                    ((ISDKLoginReceiver)plugin).OnSDKLogin(m_CurrentUserId, m_CurrentSessionId);
+                m_DeliveredSessionIds[plugin] = m_CurrentSessionId;
+            }
+            catch (Exception e)
+            {
+                Log.Error(LogTag.SDK, "SDK 插件 '{0}' 同步登录 UID 失败：{1}", plugin.Name, e);
+            }
+        }
+
         /// <summary>
         /// 对单个已实例化插件执行 InitializeAsync，统一从 IConfigManager 按 RequiredConfigType 拉取 config 并注入。
         /// RequiredConfigType 为 null 的插件表示无需 config，直接传 null 进入初始化。
@@ -42,7 +225,7 @@ namespace NovaFramework.Runtime
         /// <param name="plugin">已完成实例化的插件实例。</param>
         /// <param name="ct">由 InitializeAsync 串联的取消令牌。</param>
         /// <returns>初始化任务（失败时已捕获，不向上传播）。</returns>
-        private async UniTask InitializePluginAsync(ISDKPlugin plugin, CancellationToken ct)
+        private async UniTask<SDKPluginInitializationState> InitializePluginAsync(ISDKPlugin plugin, CancellationToken ct)
         {
             Type pluginType = plugin.GetType();
             Type requiredConfigType = (plugin as SDKPluginBase)?.RequiredConfigType;
@@ -53,14 +236,14 @@ namespace NovaFramework.Runtime
                 if (m_ConfigManager == null)
                 {
                     Log.Error(LogTag.SDK, Txt.Format("SDK 插件 '{0}' 配置注入失败：IConfigManager 不可用。", pluginType.FullName));
-                    return;
+                    return SDKPluginInitializationState.Failed;
                 }
 
                 config = m_ConfigManager.GetSDKPluginConfig(requiredConfigType);
                 if (config == null)
                 {
                     Log.Warning(LogTag.SDK, Txt.Format("SDK 插件 '{0}' 未从 IConfigManager 取到 '{1}'，该插件未启用或配置缺失，跳过初始化。", pluginType.FullName, requiredConfigType.FullName));
-                    return;
+                    return SDKPluginInitializationState.Failed;
                 }
             }
 
@@ -70,6 +253,7 @@ namespace NovaFramework.Runtime
                 await plugin.InitializeAsync(config, ct);
                 sw.Stop();
                 Log.Debug(LogTag.SDK, Txt.Format("SDK 插件 '{0}' 初始化成功，耗时 {1} ms。", plugin.Name, sw.ElapsedMilliseconds));
+                return plugin.IsAvailable ? SDKPluginInitializationState.Ready : SDKPluginInitializationState.Failed;
             }
             catch (OperationCanceledException)
             {
@@ -81,66 +265,15 @@ namespace NovaFramework.Runtime
             {
                 sw.Stop();
                 Log.Warning(LogTag.SDK, Txt.Format("SDK 插件 '{0}' 不支持在 Unity Editor 中运行，已跳过初始化：{1}", plugin.Name, e.Message));
+                return SDKPluginInitializationState.Failed;
             }
 #endif
             catch (Exception e)
             {
                 sw.Stop();
                 Log.Error(LogTag.SDK, Txt.Format("SDK 插件 '{0}' 初始化异常（已隔离）：{1}", plugin.Name, e));
+                return SDKPluginInitializationState.Failed;
             }
-        }
-
-        /// <summary>
-        /// 将 m_SortedPlugins 按插件自身 Priority 值分桶，相同 Priority 归入同一桶。
-        /// 返回按插件自身 Priority 升序排列的桶列表，每桶包含一个或多个插件。
-        /// </summary>
-        /// <returns>按插件自身 Priority 升序排列的分桶列表；每个元素为同 Priority 插件的列表。</returns>
-        private List<List<ISDKPlugin>> GroupByPriority()
-        {
-            List<List<ISDKPlugin>> buckets = new List<List<ISDKPlugin>>();
-            if (m_SortedPlugins.Count == 0)
-            {
-                return buckets;
-            }
-
-            List<ISDKPlugin> currentBucket = new List<ISDKPlugin> { m_SortedPlugins[0] };
-            int currentPriority = m_SortedPlugins[0].Priority;
-
-            for (int i = 1; i < m_SortedPlugins.Count; i++)
-            {
-                ISDKPlugin plugin = m_SortedPlugins[i];
-                if (plugin.Priority == currentPriority)
-                {
-                    currentBucket.Add(plugin);
-                }
-                else
-                {
-                    buckets.Add(currentBucket);
-                    currentBucket = new List<ISDKPlugin> { plugin };
-                    currentPriority = plugin.Priority;
-                }
-            }
-
-            buckets.Add(currentBucket);
-            return buckets;
-        }
-
-        /// <summary>
-        /// 对一个 Priority 桶内的所有插件并行执行 InitializePluginAsync（UniTask.WhenAll）。
-        /// 单插件失败已在 InitializePluginAsync 内隔离，此方法不再捕获。
-        /// </summary>
-        /// <param name="bucket">同 Priority 的插件桶。</param>
-        /// <param name="ct">取消令牌。</param>
-        /// <returns>桶内所有插件并行初始化完成的任务。</returns>
-        private async UniTask InitializeBucketAsync(List<ISDKPlugin> bucket, CancellationToken ct)
-        {
-            UniTask[] tasks = new UniTask[bucket.Count];
-            for (int i = 0; i < bucket.Count; i++)
-            {
-                tasks[i] = InitializePluginAsync(bucket[i], ct);
-            }
-
-            await UniTask.WhenAll(tasks);
         }
 
         /// <summary>

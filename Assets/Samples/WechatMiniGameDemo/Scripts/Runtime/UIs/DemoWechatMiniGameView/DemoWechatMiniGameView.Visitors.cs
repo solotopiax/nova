@@ -26,9 +26,6 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
         /// <summary>关闭 View 时统一取消仍在等待的微信异步调用。</summary>
         private CancellationTokenSource m_SessionCancellation;
 
-        /// <summary>当前 Demo 会话最近一笔客户端订单号，仅用于按钮定位。</summary>
-        private string m_LastOrderId;
-
         /// <summary>当前 Demo 会话已由业务服务端校验的微信 OpenID。</summary>
         private string m_WechatOpenId;
 
@@ -39,9 +36,6 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
         /// 查看 SDK 运行环境信息。
         /// </summary>
         [SerializeField] private Button m_RuntimeInfoButton;
-
-        /// <summary>用已校验的微信 OpenID 登录游戏服务器，未绑定时注册游客并绑定。</summary>
-        [SerializeField] private Button m_GameLoginButton;
 
         /// <summary>获取微信一次性登录 code，并交由微信业务后端完成校验。</summary>
         [SerializeField] private Button m_LoginButton;
@@ -84,5 +78,23 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
 
         /// <summary>请求用户订阅消息授权并把逐模板结果登记到服务端。</summary>
         [SerializeField] private Button m_SubscribeMessageButton;
+
+        /// <summary>微信订阅模板 ID 输入框。</summary>
+        [SerializeField] private TMPro.TMP_InputField m_SubscriptionTemplateIdInput;
+
+        /// <summary>服务端通知配置 ID 输入框。</summary>
+        [SerializeField] private TMPro.TMP_InputField m_NoticeConfigIdInput;
+
+        /// <summary>通知触发 Unix 秒时间戳输入框；0 表示立即。</summary>
+        [SerializeField] private TMPro.TMP_InputField m_NoticeTriggerTimeInput;
+
+        /// <summary>通知任务稳定幂等键输入框。</summary>
+        [SerializeField] private TMPro.TMP_InputField m_NoticeClientTaskIdInput;
+
+        /// <summary>待做内容安全检查的文本输入框。</summary>
+        [SerializeField] private TMPro.TMP_InputField m_TextSecurityContentInput;
+
+        /// <summary>运行时创建的文本安全检查按钮。</summary>
+        [SerializeField] private Button m_CheckTextSecurityButton;
     }
 }

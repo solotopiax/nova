@@ -794,6 +794,7 @@ namespace NovaFramework.Editor
                     if (dst == null || value == null) return;
                     dst.AESKey = value.AESKey;
                     dst.AESIV = value.AESIV;
+                    dst.PrivacyInfoConfig = value.PrivacyInfoConfig;
                 }
 
                 /// <summary>
@@ -945,7 +946,12 @@ namespace NovaFramework.Editor
                 private static PrivacyConfigs DeepClonePrivacyConfigs(PrivacyConfigs src)
                 {
                     if (src == null) return null;
-                    return new PrivacyConfigs { AESKey = src.AESKey, AESIV = src.AESIV };
+                    return new PrivacyConfigs
+                    {
+                        AESKey = src.AESKey,
+                        AESIV = src.AESIV,
+                        PrivacyInfoConfig = src.PrivacyInfoConfig,
+                    };
                 }
 
                 /// <summary>

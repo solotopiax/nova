@@ -223,6 +223,7 @@ namespace NovaFramework.Editor
                     {
                         AESKey = src.AESKey,
                         AESIV = src.AESIV,
+                        PrivacyInfoConfig = src.PrivacyInfoConfig,
                     };
                 }
 

@@ -8,11 +8,68 @@
  * descrip:   SDK 插件基础接口及可选生命周期/账号监听接口
  ***************************************************************/
 
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace NovaFramework.Runtime
 {
+    /// <summary>插件初始化的过程与最终状态；结束不代表成功。</summary>
+    public enum SDKPluginInitializationState
+    {
+        NotEnabled,
+        Pending,
+        Initializing,
+        Ready,
+        Failed,
+        Blocked,
+        Cancelled,
+    }
+
+    /// <summary>初始化依赖通过框架能力接口表达，不引用其他 SDK 子包。</summary>
+    public readonly struct SDKInitializationDependency
+    {
+        /// <summary>依赖的框架能力接口。</summary>
+        public Type CapabilityType { get; }
+
+        /// <summary>提供者缺失或失败时，是否阻止当前插件初始化。</summary>
+        public bool Required { get; }
+
+        /// <summary>创建初始化依赖；可选依赖只等待已启用的提供者。</summary>
+        public SDKInitializationDependency(Type capabilityType, bool required)
+        {
+            CapabilityType = capabilityType ?? throw new ArgumentNullException(nameof(capabilityType));
+            Required = required;
+        }
+    }
+
+    /// <summary>插件可选实现的依赖声明；未实现表示无需等待其他插件。</summary>
+    public interface ISDKInitializationDependencies
+    {
+        /// <summary>当前插件启动前要等待的能力列表。</summary>
+        IReadOnlyList<SDKInitializationDependency> InitializationDependencies { get; }
+    }
+
+    /// <summary>需要游戏账号 UID 的插件实现此接口，由 SDKManager 在就绪及切换账号时交付。</summary>
+    public interface ISDKLoginReceiver
+    {
+        /// <summary>接收当前会话；异步结果必须检查 sessionId，避免旧账号结果覆盖新账号。</summary>
+        void OnSDKLogin(string userId, long sessionId);
+    }
+
+    /// <summary>需要本次登录属性的插件实现此接口；属性快照会随 UID 一起延迟交付。</summary>
+    public interface ISDKLoginContextReceiver
+    {
+        void OnSDKLogin(string userId, long sessionId, IReadOnlyDictionary<string, object> userProperties);
+    }
+
+    /// <summary>持有异步账号任务的插件实现此接口，在登出时作废旧会话。</summary>
+    public interface ISDKLoginSessionEndReceiver
+    {
+        void OnSDKLoginSessionEnded(long sessionId);
+    }
+
     /// <summary>
     /// SDK 插件可选生命周期钩子：OnApplicationFocus 代理。
     /// 实现此接口的 Plugin 会在 SDKComponent.OnApplicationFocus 触发时收到回调。
@@ -68,7 +125,7 @@ namespace NovaFramework.Runtime
         string Name { get; }
 
         /// <summary>
-        /// 初始化优先级（值越小越先提交；同批内并行执行）。
+        /// 稳定遍历及释放顺序（值越小越靠前）；初始化依赖由 ISDKInitializationDependencies 决定。
         /// </summary>
         int Priority { get; }
 
@@ -89,7 +146,7 @@ namespace NovaFramework.Runtime
 
         /// <summary>
         /// 异步释放资源。
-        /// 逆序 Priority 调度，异常被上层捕获不中断其他 Plugin。
+        /// 逆序 Priority 释放，异常被上层捕获不中断其他 Plugin。
         /// 主线程调用。
         /// </summary>
         /// <param name="ct">取消令牌。</param>

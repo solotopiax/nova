@@ -26,7 +26,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
     /// 业务层通过 Nova.SDK.Get<IAdPlugin>() 取得此实例，不感知具体渠道。
     /// </summary>
     [SDKPluginConfigType(typeof(AdPluginConfig))]
-    public sealed partial class AdPlugin : SDKPluginBase, IAdPlugin
+    public sealed partial class AdPlugin : SDKPluginBase, IAdPlugin, ISDKLoginReceiver, ISDKInitializationDependencies
     {
         /// <summary>
         /// 声明本插件所需配置类型，SDKManager 自动从 IConfigManager 拉取并注入。
@@ -45,7 +45,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             m_RuntimeConfig = config as AdPluginConfig;
             var adConfig = m_RuntimeConfig;
             m_ChannelPlugins = new List<IAdInternalPlugin>();
-            if (adConfig == null) return UniTask.CompletedTask;
+            if (adConfig == null) throw new InvalidOperationException("AdPlugin 配置缺失。");
             var configs = adConfig.ChannelConfigs.Items;
             for (int i = 0; i < configs.Count; i++)
             {
@@ -54,8 +54,6 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
                 WireChannelEvents(channel);
                 RegisterChannel(channel);
             }
-            m_EventManager = FrameworkManagersGroup.GetManager<IEventManager>();
-            m_EventManager.Subscribe<SDKEventData.UserLogin>(OnUserLogin);
             return UniTask.CompletedTask;
         }
 
@@ -66,11 +64,6 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <returns>释放完成的异步任务。</returns>
         protected override UniTask OnDisposeAsync(CancellationToken ct)
         {
-            if (m_EventManager != null)
-            {
-                m_EventManager.Unsubscribe<SDKEventData.UserLogin>(OnUserLogin);
-                m_EventManager = null;
-            }
             Events.InitResult.Clear();
             Events.AdLoaded.Clear();
             Events.AdLoadFailed.Clear();

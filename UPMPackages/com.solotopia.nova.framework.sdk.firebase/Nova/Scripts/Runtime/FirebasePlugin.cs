@@ -27,7 +27,7 @@ namespace NovaFramework.SDK.FirebasePlugin.Runtime
     /// 负责 Firebase 初始化、Analytics 事件上报、FCM Token 接收及推送主题订阅管理。
     /// </summary>
     [SDKPluginConfigType(typeof(FirebasePluginConfig))]
-    public sealed partial class FirebasePlugin : SDKPluginBase, IMonetizeTrackPlugin, IPushPlugin, IFirebasePushTaskPlugin, ISDKPauseListener
+    public sealed partial class FirebasePlugin : SDKPluginBase, IMonetizeTrackPlugin, IPushPlugin, IFirebasePushTaskPlugin, ISDKPauseListener, ISDKLoginReceiver, ISDKLoginSessionEndReceiver
     {
         /// <summary>
         /// 上报携带自定义参数的埋点事件。

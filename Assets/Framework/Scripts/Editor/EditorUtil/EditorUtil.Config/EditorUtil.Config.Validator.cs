@@ -111,7 +111,7 @@ namespace NovaFramework.Editor
                     // 顶层维度化校验路径：经 DimensionalResolver 取当前坐标生效值，避免全不勾/勾选两态校验错位
                     RequireNotEmpty(issues, "Namespace", DimensionalResolver.ResolveNamespace(master, platform, channel, mode));
                     ValidateAppConfigs(master.GetAppConfigs(platform, channel, mode), issues);
-                    ValidatePrivacyConfigs(master.GetPrivacyConfigs(platform, channel, mode), issues);
+                    ValidatePrivacyConfigs(master.GetPrivacyConfigs(platform, channel, mode), platform, issues);
 
                     if (master.TryGetEntry(platform, channel, out var entry))
                     {
@@ -631,11 +631,12 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 校验隐私配置中的 AES Key/IV 均为 16 字节 UTF-8 字符串。
+                /// 校验 AES Key/IV 长度，以及 iOS 隐私清单 JSON 的结构。
                 /// </summary>
                 /// <param name="privacy">待校验的隐私配置。</param>
+                /// <param name="platform">当前校验的平台。</param>
                 /// <param name="issues">问题收集列表。</param>
-                private static void ValidatePrivacyConfigs(PrivacyConfigs privacy, List<ValidationIssue> issues)
+                private static void ValidatePrivacyConfigs(PrivacyConfigs privacy, PlatformType platform, List<ValidationIssue> issues)
                 {
                     if (privacy == null)
                     {
@@ -645,6 +646,11 @@ namespace NovaFramework.Editor
 
                     RequireUtf8Length(issues, "PrivacyConfigs.AESKey", privacy.AESKey, 16);
                     RequireUtf8Length(issues, "PrivacyConfigs.AESIV", privacy.AESIV, 16);
+                    if (platform == PlatformType.iOS
+                        && !PrivacyInfoConfigParser.TryParse(privacy.PrivacyInfoConfig, out _, out string error))
+                    {
+                        issues.Add(new ValidationIssue("PrivacyConfigs.PrivacyInfoConfig", error, Severity.Error));
+                    }
                 }
 
                 /// <summary>

@@ -77,10 +77,6 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         /// </summary>
         private TGADynamicSuperPropertyListener m_DynamicSuperPropertyListener;
 
-        /// <summary>
-        /// 事件管理器引用，用于订阅/退订 SDKEventData.UserLogin。
-        /// </summary>
-        private IEventManager m_EventManager;
 
         /// <summary>
         /// TGA 标识上报 NetService 实例；OnInitializeAsync 入口处由 Plugin 自行 new 出。
@@ -88,7 +84,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
         private TGAReportNetService m_ReportNetService;
 
         /// <summary>
-        /// 由 SDKManager 注入并在初始化期缓存的运行时配置；事件回调（如 OnUserLogin）需读取协议名等字段时使用。
+        /// 由 SDKManager 注入并在初始化期缓存的运行时配置；事件回调（如 OnSDKLogin）需读取协议名等字段时使用。
         /// </summary>
         private TGAPluginConfig m_RuntimeConfig;
     }

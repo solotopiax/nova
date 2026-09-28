@@ -9,6 +9,7 @@
   <assembly fullname="Unity.TextMeshPro" preserve="all" />
   <assembly fullname="NovaFramework.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.WeChatMiniGame.Runtime" preserve="all" />
+  <assembly fullname="NovaFramework.SDK.WeChatMiniGame.GravityEngine.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.TGAPlugin.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.SDK.AppsFlyerPlugin.Runtime" preserve="all" />
   <assembly fullname="NovaFramework.Kit.Network.GameLogin.Runtime" preserve="all" />

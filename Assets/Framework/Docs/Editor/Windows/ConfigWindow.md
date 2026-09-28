@@ -111,7 +111,7 @@ UnityEditor.EditorWindow
 | `Python3Env` | Python3 环境检测面板（环境检测组下） |
 | `HybridCLREnv` | HybridCLR 环境检测面板（环境检测组下） |
 | `AppConfig` | 应用配置面板（通用配置组下） |
-| `PrivacyConfig` | 隐私配置面板：独立维护 Util.Encrypt.AES 默认 Key/IV，携带三维配置头部 |
+| `PrivacyConfig` | 隐私配置面板：AES Key/IV 与其说明成组，随后是 `PrivacyInfoConfig` JSON 多行输入及其说明；非 iOS 时后一组（标题、输入框、HelpBox）整体灰显；携带三维配置头部 |
 | `NamespaceConfig` | 名字空间配置面板（通用配置组下） |
 | `HybridCLRConfig` | HybridCLR 配置面板（通用配置组下）：业务入口 Procedure 相对名 + AOT 元数据 DLL 列表 + 业务 DLL 列表 |
 | `YooAssetConfig` | YooAsset 配置面板（通用配置组下）：两条资产路径，以及只存 ConfigMaster、导出时单向写入 `YooAssetSettings.asset` 的 `YooFolderName` / `PackageFilePrefix` 模板 |
@@ -284,6 +284,8 @@ DrawRightPanel()
 ```
 
 SDK Config 可以由其 Editor 程序集通过 `SDKPluginConfigPanelActionAttribute` 声明快捷动作。窗口会在该 Config 的序列化字段上方显示按钮，并把点击转发到声明的 Unity 菜单路径；未安装或菜单不可用时只记录警告，不影响配置字段继续编辑。该入口不写入 ConfigMasterSO，也不参与 ConfigRuntimeSO 导出。
+
+SDK 配置字段通常按序列化顺序展示；同一配置中的引力引擎字段（`m_EnableGravityEngine` 和 `m_Gravity*`）统一排在其他字段之后。此排序只影响面板绘制，不改变字段绑定、WorkingCopy 保存或导出数据。
 
 ### CDN 内容分发网络部署
 

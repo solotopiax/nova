@@ -18,8 +18,14 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
     /// </summary>
     public sealed partial class DemoWechatMiniGameView : BaseDemoView, IWeChatMiniGameFulfillmentHandler
     {
-        /// <summary>由消费项目配置的订阅消息模板 ID，最多三个。</summary>
+        /// <summary>订阅模板输入框的可选初始值。</summary>
         public static string[] SubscriptionTemplateIds { get; set; } = System.Array.Empty<string>();
+
+        /// <summary>通知配置 ID 输入框的可选初始值。</summary>
+        public static string NoticeConfigId { get; set; } = string.Empty;
+
+        /// <summary>稳定幂等键输入框的可选初始值，失败重试时必须复用。</summary>
+        public static string NoticeClientTaskId { get; set; } = string.Empty;
 
         /// <summary>Demo 游戏币商品 ID。</summary>
         public static string CurrencyProductId { get; set; } = "demo_currency";
@@ -39,11 +45,9 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
 
             SetTitle("微信小游戏接口演示");
 
-            // 先取得并校验微信 OpenID，再用它查询游戏账号绑定关系。
+            // 单个按钮串联微信身份、游戏服账号登录及未绑定时的游客绑定。
             m_LoginButton?.transform.SetAsFirstSibling();
-            m_GameLoginButton?.transform.SetSiblingIndex(1);
-            BindButton(m_LoginButton, OnWechatLoginClick, "微信登录校验", "WeChatMiniGamePlugin.LoginAndVerifyAsync()");
-            BindButton(m_GameLoginButton, OnGameLoginClick, "登录游戏服务器", "Login.Async(openid) -> Login.Async() -> Bind.BindAsync(Wechat, openid)");
+            BindButton(m_LoginButton, OnWechatLoginClick, "微信登录校验", "LoginAndVerifyAsync() → GameLogin → GameBind");
             BindButton(m_RuntimeInfoButton, OnRuntimeInfoClick, "运行环境信息", "RuntimeInfo");
             BindButton(m_PrivacyStatusButton, OnPrivacyStatusClick, "查询隐私状态", "GetPrivacyStatusAsync()");
             BindButton(m_PrivacyAuthorizeButton, OnPrivacyAuthorizeClick, "请求隐私授权", "RequirePrivacyAuthorizationAsync()");
@@ -54,10 +58,11 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
             BindButton(m_PaymentSupportButton, OnPaymentSupportClick, "检查支付能力", "CheckPaymentSupportAsync()");
             BindButton(m_PayCurrencyButton, OnPayCurrencyClick, "购买游戏币", "WeChatMiniGamePlugin.PurchaseAndVerifyAsync()");
             BindButton(m_PayItemButton, OnPayItemClick, "购买道具", "WeChatMiniGamePlugin.PurchaseAndVerifyAsync()");
-            BindButton(m_QueryOrderButton, OnQueryOrderClick, "查询服务端订单", "WeChatMiniGamePlugin.QueryCurrentUserPaymentOrdersAsync()");
-            BindButton(m_RecoverOrderButton, OnVerifyOrderClick, "验证最近订单", "WeChatMiniGamePlugin.VerifyPaymentOrderAsync()");
+            BindButton(m_QueryOrderButton, OnQueryOrderClick, "查询当前用户全部订单", "WeChatMiniGamePlugin.QueryCurrentUserPaymentOrdersAsync()");
+            BindButton(m_RecoverOrderButton, OnVerifyOrderClick, "补验最近本地漏单", "WeChatMiniGamePlugin.VerifyPaymentOrderAsync()");
             BindButton(m_RecoverPendingButton, OnVerifyAllOrdersClick, "验证全部订单", "WeChatMiniGamePlugin.VerifyAllPaymentOrdersAsync()");
-            BindButton(m_SubscribeMessageButton, OnSubscribeMessageClick, "开启消息提醒", "WeChatMiniGamePlugin.RequestSubscribeMessagesAsync()");
+            BindButton(m_SubscribeMessageButton, OnSubscribeMessageClick, "开启消息提醒", "WeChatMiniGamePlugin.RequestSubscribeAndCreateNoticeAsync()");
+            CreateDemoFormControls();
         }
 
         /// <summary>

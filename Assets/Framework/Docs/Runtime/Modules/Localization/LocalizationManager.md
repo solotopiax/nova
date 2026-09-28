@@ -85,6 +85,14 @@
 - 支持列表第一项
 - 最终回退到 `FallbackLanguage` 或 `English`
 
+系统语言映射先采用 Unity 的 `Application.systemLanguage`。当 Unity 返回 `Unknown` 时，
+共用解析器会尝试当前 UI Culture 的语言标签（为空时尝试当前 Culture），识别
+Albanian、Croatian、Filipino、Georgian、Hindi、Macedonian、Malay、Malayalam、
+Persian、PortugueseBrazil、SerbianCyrillic 和 SerbianLatin。Unity 返回宽泛的
+`Portuguese` 或 `SerboCroatian` 时，也会用标签区分巴西葡语、克罗地亚语和塞尔维亚语文字变体；
+明确的其他 Unity 语言值仍以 Unity 为准。地区变体未进入支持语言列表时，先尝试原有宽泛
+Unity 映射，再按配置回退。标签由运行平台提供，若没有可用标签，则保留原有映射及回退结果。
+
 ### 4. InitCurrentLanguage：解析后立即切换
 
 - `InitCurrentLanguageSync()`：`ResolveLanguage()` 后调用 `SetLanguageSync()`

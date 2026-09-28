@@ -6,6 +6,8 @@
 
 - `PlatformChannelEntry.AppConfigsByMode` → `AppConfigs`
 - `PlatformChannelEntry.PrivacyConfigsByMode` → `PrivacyConfigs`；使用独立 `PrivacyConfigsMask`
+
+旧资产首次由 ConfigWindow 建立工作副本时，会一次性为尚未填写的 `PrivacyInfoConfig` 补入 Solar 参考模板；保存后记录迁移标记，用户后续主动留空不会被再次覆盖。
 - `Namespace` 与 `NamespaceOverrides` → `Namespace`
 - `HybridEditorConfigs.GameEntranceProcedureName / AotMetadataDlls / StartupGameDlls` → 去除构建路径后生成 `HybridConfigs`
 - Runtime SDK 与 Kit 配置矩阵

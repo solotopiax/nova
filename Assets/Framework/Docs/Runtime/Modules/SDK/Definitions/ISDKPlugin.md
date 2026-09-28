@@ -37,9 +37,10 @@ ISDKPlugin
 
 ## 关键语义
 
-- `Priority` 越小越早初始化。
+- `Priority` 只决定稳定遍历与释放顺序。插件间初始化先后由 `ISDKInitializationDependencies` 声明；未声明的插件并发启动。
 - `IsAvailable` 表示插件已成功初始化并可用。
 - `FetchDataAsync()` 读取插件发布的数据槽位；key 约定见 [SDKDataKeys.md](./SDKDataKeys.md)。
+- `ISDKLoginReceiver` 接收 UID；`ISDKLoginContextReceiver` 接收 UID 和属性快照；`ISDKLoginSessionEndReceiver` 在登出或切换账号时作废旧会话。异步工作须在提交结果前核对 `sessionId`。
 
 ## 关联文档
 
