@@ -470,6 +470,11 @@ namespace NovaFramework.Editor
                 var changedPrivacyFields = new List<string>();
                 ComparePrivacyField(changedPrivacyFields, "AESKey", sourcePrivacy?.AESKey, runtime.PrivacyConfigs?.AESKey);
                 ComparePrivacyField(changedPrivacyFields, "AESIV", sourcePrivacy?.AESIV, runtime.PrivacyConfigs?.AESIV);
+                if (runtime.Platform == PlatformType.iOS)
+                {
+                    ComparePrivacyField(changedPrivacyFields, "PrivacyInfoConfig", sourcePrivacy?.PrivacyInfoConfig, runtime.PrivacyConfigs?.PrivacyInfoConfig);
+                    ComparePrivacyField(changedPrivacyFields, "InfoPlistUsageDescriptions", sourcePrivacy?.InfoPlistUsageDescriptions, runtime.PrivacyConfigs?.InfoPlistUsageDescriptions);
+                }
                 if (changedPrivacyFields.Count > 0)
                 {
                     AddConfigIssue(report, "NOVA-CONFIG-004", runtime, runtimePath, masterPath,

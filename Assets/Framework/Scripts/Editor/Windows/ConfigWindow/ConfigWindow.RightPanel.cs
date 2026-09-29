@@ -475,7 +475,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制隐私配置面板；按当前三维坐标编辑 AES 凭据及仅 iOS 可编辑的隐私清单声明。
+        /// 绘制隐私配置面板；按当前三维坐标编辑 AES 凭据、iOS 隐私清单和权限用途说明。
         /// </summary>
         private void DrawPrivacyConfigsPanel()
         {
@@ -509,6 +509,7 @@ namespace NovaFramework.Editor
                 SerializedProperty key = config?.FindPropertyRelative("AESKey");
                 SerializedProperty iv = config?.FindPropertyRelative("AESIV");
                 SerializedProperty privacyInfo = config?.FindPropertyRelative("PrivacyInfoConfig");
+                SerializedProperty usageDescriptions = config?.FindPropertyRelative("InfoPlistUsageDescriptions");
                 EditorUtil.Draw.Layout.Horizontal(() =>
                 {
                     EditorUtil.Draw.Space(16f);
@@ -555,18 +556,43 @@ namespace NovaFramework.Editor
                         EditorUtil.Draw.Layout.Horizontal(() =>
                         {
                             EditorUtil.Draw.Space(16f);
-                            EditorUtil.Draw.HelpBox(MessageType.Info, new[]
+                            EditorUtil.Draw.HelpBoxWithDisabledState(MessageType.Info, new[]
                             {
                                 "(1) PrivacyInfoConfig 仅 iOS 平台可编辑；其他平台下灰显且不参与构建。",
                                 "(2) 按实际 Required Reason API 填写 JSON；iOS 构建时写入 PrivacyInfo.xcprivacy，留空则跳过。",
-                            }, false, GUILayout.ExpandWidth(true));
-                            if (m_EditingPlatform != PlatformType.iOS && Event.current.type == EventType.Repaint)
+                            }, m_EditingPlatform != PlatformType.iOS, GUILayout.ExpandWidth(true));
+                            EditorUtil.Draw.Space(16f);
+                        });
+                    }
+                }
+                if (usageDescriptions != null)
+                {
+                    EditorUtil.Draw.Space(12f);
+                    using (new EditorGUI.DisabledScope(m_EditingPlatform != PlatformType.iOS))
+                    {
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.Label("Info.plist 用途说明", false, GUILayout.Width(140f));
+                            usageDescriptions.stringValue = EditorUtil.Draw.TextArea(
+                                usageDescriptions.stringValue ?? string.Empty,
+                                false,
+                                GUILayout.MinHeight(80f),
+                                GUILayout.ExpandWidth(true));
+                            EditorUtil.Draw.Space(16f);
+                        });
+
+                        EditorUtil.Draw.Space(8f);
+                        EditorUtil.Draw.Layout.Horizontal(() =>
+                        {
+                            EditorUtil.Draw.Space(16f);
+                            EditorUtil.Draw.HelpBoxWithDisabledState(MessageType.Info, new[]
                             {
-                                // HelpBox 背景由自绘颜色完成，不受 GUI.enabled 影响；仅覆盖禁用态背景和图标。
-                                EditorGUI.DrawRect(
-                                    GUILayoutUtility.GetLastRect(),
-                                    new Color(0.22f, 0.22f, 0.22f, 0.45f));
-                            }
+                                "(1) 仅 iOS 生效；JSON 键填写 UsageDescription，例如 NSPhotoLibraryUsageDescription。",
+                                "(2) 值填写真实的用户用途说明，例如从相册选择照片；不能使用通用占位文案。",
+                                "(3) iOS 构建时仅写入已配置的键；同名键覆盖 Info.plist 原值，其他已有键保留。",
+                                "(4) 留空不会自动补齐权限键；提交前请检查最终归档。",
+                            }, m_EditingPlatform != PlatformType.iOS, GUILayout.ExpandWidth(true));
                             EditorUtil.Draw.Space(16f);
                         });
                     }

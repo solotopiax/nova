@@ -544,7 +544,7 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.solotopia.nova.framework": "0.6.35"
+        "com.solotopia.nova.framework": "0.6.36"
       }
     },
     "com.solotopia.simplediskutils": {

@@ -26,6 +26,7 @@ tags:
   - persist
 related:
   - "[[ADR-058-per-panel-dimension-mask|ADR-058]]"
+  - "[[ADR-089-ios-privacy-usage-descriptions-project-owned|ADR-089]]"
   - "[[PAT-108-upm-kit-public-api-collapse|PAT-108]]"
   - "[[PAT-161-configwindow-new-panel-dimension-header|PAT-161]]"
 ---
@@ -87,3 +88,4 @@ Nova 同时存在两组 AES Key/IV，但它们的职责不同：
 - 三维配置面板与导出：[[ADR-058-per-panel-dimension-mask|ADR-058]]
 - 仅暴露必要 Kit API：[[PAT-108-upm-kit-public-api-collapse|PAT-108]]
 - 新配置面板三维头部：[[PAT-161-configwindow-new-panel-dimension-header|PAT-161]]
+- 同一隐私配置面板中的 iOS 用途说明归属：[[ADR-089-ios-privacy-usage-descriptions-project-owned|ADR-089]]

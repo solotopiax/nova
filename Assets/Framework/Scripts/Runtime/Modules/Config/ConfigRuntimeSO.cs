@@ -35,7 +35,7 @@ namespace NovaFramework.Runtime
         public AppConfigs AppConfigs;
 
         /// <summary>
-        /// 隐私配置快照；AES 字段供 ConfigManager 初始化默认密钥，PrivacyInfoConfig 供 iOS 构建期生成隐私清单。
+        /// 隐私配置快照；AES 字段供 ConfigManager 初始化默认密钥，两个 iOS 字段供构建期写入隐私清单和用途说明。
         /// </summary>
         public PrivacyConfigs PrivacyConfigs;
 

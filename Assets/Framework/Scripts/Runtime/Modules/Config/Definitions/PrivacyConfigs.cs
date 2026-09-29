@@ -14,7 +14,7 @@ using UnityEngine;
 namespace NovaFramework.Runtime
 {
     /// <summary>
-    /// 隐私运行时配置；承载框架本地 AES 默认密钥及 iOS 隐私清单声明。
+    /// 隐私运行时配置；承载框架本地 AES 默认密钥及 iOS 构建期隐私声明。
     /// </summary>
     [Serializable]
     public sealed class PrivacyConfigs
@@ -48,5 +48,13 @@ namespace NovaFramework.Runtime
         [TextArea(3, 8)]
         [Tooltip("仅 iOS 生效；填写 Required Reason API 类别与理由码的 JSON 映射，留空则不注入应用级声明。")]
         public string PrivacyInfoConfig = DefaultPrivacyInfoConfig;
+
+        /// <summary>
+        /// iOS 应用 Info.plist 的权限用途说明；JSON 对象的键为 UsageDescription，值为面向用户的实际用途。
+        /// 仅供 iOS 构建后处理使用；空对象或旧资产中的空值不注入任何条目。
+        /// </summary>
+        [TextArea(3, 8)]
+        [Tooltip("仅 iOS 生效；填写 Info.plist 的 UsageDescription 键与实际用途说明，留空则不注入。")]
+        public string InfoPlistUsageDescriptions = "{}";
     }
 }

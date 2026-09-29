@@ -16,6 +16,12 @@
 
 ### Breaking
 
+## [0.6.36] - 2026-09-29
+
+### Changed
+
+- Framework 补充 iOS Info.plist 用途说明配置并修复 iOS 构建编译错误；WeChat MiniGame SDK 同步 Demo 隐私配置快照。
+
 ## [0.6.35] - 2026-09-28
 
 ### Changed

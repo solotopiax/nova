@@ -30,6 +30,7 @@ auto_generated: true
 - [ADR-078 隐私 AES 默认密钥与应用协议 AES 密钥分域](../2-Areas/ADR/ADR-078-privacy-aes-and-app-aes-separation.md) — 隐私默认 AES 与应用协议 AES 分域
 - [ADR-084 Persist 就绪前的框架启动状态使用受限 PlatformPlayerPrefs](../2-Areas/ADR/ADR-084-bootstrap-state-before-persist.md) — Persist 前启动状态使用受限 PlayerPrefs
 - [ADR-086 微信小游戏虚拟支付采用客户端订单生命周期与服务端验单](../2-Areas/ADR/ADR-086-wechat-minigame-server-authoritative-payment-orders.md) — 客户端持久化订单并发货，服务端负责签名验单
+- [ADR-089 iOS 应用权限用途说明由项目显式配置](../2-Areas/ADR/ADR-089-ios-privacy-usage-descriptions-project-owned.md) — iOS 用途文案由项目填写，框架只提供配置与注入
 
 ## asset
 
@@ -115,4 +116,4 @@ auto_generated: true
 
 
 ---
-_共 73 条，分布于 10 个 category。_
+_共 74 条，分布于 10 个 category。_

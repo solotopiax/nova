@@ -28,7 +28,7 @@ public sealed class ConfigRuntimeSO : ScriptableObject
 - YooAsset 工程资产路径归 `YooAssetEditorConfigs`，不进入本 SO。
 - CDN 部署凭据与路径归 `CDNEditorConfigs`，不进入本 SO。
 - `Custom` 保存 ConfigMaster 导出的本地 JSONPath/string 默认值。运行时不会修改本 SO；ConfigManager 另行维护不受本地路径限制的完整远端 JSON 快照。
-- `PrivacyConfigs` 保存 `Util.Encrypt.AES` 默认 Key/IV 以及 iOS `PrivacyInfoConfig`。后者供构建期生成应用级隐私清单，不参与运行时 AES 初始化；前者不替代、不迁移 `AppConfigs.AppAesKey / AppAesIV`。
+- `PrivacyConfigs` 保存 `Util.Encrypt.AES` 默认 Key/IV、iOS `PrivacyInfoConfig` 和 `InfoPlistUsageDescriptions`。后两者仅供构建期分别写入应用级隐私清单和 `Info.plist`，不参与运行时 AES 初始化；AES 字段不替代、不迁移 `AppConfigs.AppAesKey / AppAesIV`。
 - SDK / Kit 配置使用 `[SerializeReference]` 保存；承载这些配置 DTO 的程序集必须在所有支持平台保持可解析。原生能力不支持 WebGL 时应在实现层禁用，不得连同配置 DTO 一起排除，否则加载资产时会产生 Missing types 警告。
 
 关联文档：[IConfigManager.md](Interfaces/IConfigManager.md)、[ConfigMasterSO.md](../../../Editor/Config/ConfigMasterSO.md)、[EditorUtil.Config.Exporter.md](../../../Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md)。

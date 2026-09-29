@@ -11,6 +11,8 @@ WebGL Player 构建完成后，`NovaBuildPostprocessor` 会扫描输出目录中
 
 iOS 导出使用 EDM4U 生成 Podfile 时，`IOSPodsDeploymentTargetPostprocessor` 在 Podfile 生成后、`pod install` 前读取 `PlayerSettings.iOS.targetOSVersionString`，给各 Pods target 的 `IPHONEOS_DEPLOYMENT_TARGET` 设置下限。仅低于下限或缺少该设置的配置会被提升；等于或高于下限的值保持原样。若 Podfile 已包含其他 `post_install`，构建明确失败，需先将两段规则合并，避免 CocoaPods 的重复回调错误。
 
+iOS 隐私构建处理器从当前已导出的 `ConfigRuntimeSO.PrivacyConfigs` 读取两份配置：`PrivacyInfoConfig` 合并到应用级 `PrivacyInfo.xcprivacy`，`InfoPlistUsageDescriptions` 按键写入应用 `Info.plist`。后者仅接受非空的 `UsageDescription` 文案，不自动补齐 SDK 可能需要的键；归档提交前仍需检查最终 `.app/Info.plist`。
+
 ---
 
 ## §2 文件表

@@ -22,6 +22,7 @@ tags:
   - inspector
 related:
   - "[[ADR-058-per-panel-dimension-mask|ADR-058]]"
+  - "[[ADR-089-ios-privacy-usage-descriptions-project-owned|ADR-089]]"
   - "[[PAT-20-editor-panel-title-indent|PAT-20]]"
 ---
 
@@ -63,3 +64,4 @@ related:
 
 - 每面板独立维度掩码：[[ADR-058-per-panel-dimension-mask|ADR-058]]
 - 配置详情页标题与缩进：[[PAT-20-editor-panel-title-indent|PAT-20]]
+- iOS 用途说明沿用隐私配置三维链：[[ADR-089-ios-privacy-usage-descriptions-project-owned|ADR-089]]

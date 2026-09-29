@@ -122,6 +122,30 @@ namespace NovaFramework.Editor
             }
 
             /// <summary>
+            /// 绘制平台禁用态提示框；同时灰显文字、背景和图标，供受限配置面板复用。
+            /// </summary>
+            /// <param name="messageType">消息类型。</param>
+            /// <param name="messages">提示内容。</param>
+            /// <param name="disabled">当前配置是否禁用。</param>
+            /// <param name="options">额外 GUILayout 选项。</param>
+            internal static void HelpBoxWithDisabledState(
+                MessageType messageType, string[] messages, bool disabled, params GUILayoutOption[] options)
+            {
+                if (messages == null || messages.Length == 0) return;
+
+                using (new EditorGUI.DisabledScope(disabled))
+                {
+                    HelpBox(messageType, messages, false, options);
+                }
+
+                if (disabled && Event.current.type == EventType.Repaint)
+                {
+                    // 自绘背景和图标不受 GUI.enabled 影响，统一叠加禁用态遮罩。
+                    EditorGUI.DrawRect(GUILayoutUtility.GetLastRect(), new Color(0.22f, 0.22f, 0.22f, 0.45f));
+                }
+            }
+
+            /// <summary>
             /// 在首行位置叠加绘制图标。
             /// </summary>
             /// <param name="rect">容器 rect。</param>

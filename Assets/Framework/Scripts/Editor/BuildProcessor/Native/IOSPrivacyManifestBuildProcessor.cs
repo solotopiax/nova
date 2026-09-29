@@ -5,7 +5,7 @@
  * filename:  IOSPrivacyManifestBuildProcessor.cs
  * author:    taoye
  * created:   2026/9/28
- * descrip:   将 iOS 隐私配置合并到应用级 PrivacyInfo.xcprivacy
+ * descrip:   将 iOS 隐私声明写入应用级 PrivacyInfo.xcprivacy 与 Info.plist
  ***************************************************************/
 
 #if UNITY_IOS
@@ -20,7 +20,7 @@ using UnityEditor.iOS.Xcode;
 namespace NovaFramework.Editor
 {
     /// <summary>
-    /// iOS 构建时读取当前已导出的隐私配置，并合并写入应用级隐私清单。
+    /// iOS 构建时读取当前已导出的隐私配置，写入应用级隐私清单和用途说明。
     /// </summary>
     public sealed class IOSPrivacyManifestBuildProcessor : NovaSDKBuildProcessor
     {
@@ -30,12 +30,12 @@ namespace NovaFramework.Editor
         private const string c_ReasonsKey = "NSPrivacyAccessedAPITypeReasons";
 
         /// <summary>
-        /// 在其他普通构建处理器之后合并应用级隐私清单。
+        /// 在其他普通构建处理器之后合并应用级隐私声明。
         /// </summary>
         public override int PostprocessPriority => 1000;
 
         /// <summary>
-        /// 把当前 iOS 导出坐标中的理由码加入 Xcode 应用目标资源，同时保留现有隐私声明。
+        /// 把当前 iOS 导出坐标中的用途说明写入 Info.plist，并合并隐私清单理由码。
         /// </summary>
         /// <param name="report">iOS 构建报告。</param>
         /// <param name="context">已加载 Xcode 工程的 Nova 构建上下文。</param>
@@ -45,11 +45,25 @@ namespace NovaFramework.Editor
             if (runtime == null || runtime.Platform != PlatformType.iOS)
             {
                 Log.Warning(LogTag.Editor,
-                    "[iOS Privacy] 当前未找到已导出的 iOS ConfigRuntimeSO，跳过应用级隐私清单注入。请先在 ConfigWindow 导出 iOS 配置。");
+                    "[iOS Privacy] 当前未找到已导出的 iOS ConfigRuntimeSO，跳过隐私清单和用途说明注入。请先在 ConfigWindow 导出 iOS 配置。");
                 return;
             }
 
-            string json = runtime.PrivacyConfigs?.PrivacyInfoConfig;
+            PrivacyConfigs privacy = runtime.PrivacyConfigs;
+            if (!InfoPlistUsageDescriptionsParser.TryParse(
+                    privacy?.InfoPlistUsageDescriptions,
+                    out Dictionary<string, string> descriptions,
+                    out string usageError))
+            {
+                throw new BuildFailedException($"InfoPlistUsageDescriptions 无效：{usageError}");
+            }
+
+            foreach (KeyValuePair<string, string> entry in descriptions)
+            {
+                context.XPlistDict.SetString(entry.Key, entry.Value);
+            }
+
+            string json = privacy?.PrivacyInfoConfig;
             if (string.IsNullOrWhiteSpace(json)) return;
             if (!PrivacyInfoConfigParser.TryParse(json, out Dictionary<string, List<string>> reasonsByCategory, out string error))
             {
@@ -57,7 +71,7 @@ namespace NovaFramework.Editor
             }
 
             if (reasonsByCategory.Count == 0) return;
-            string manifestPath = Path.Combine(report.summary.outputPath, c_ManifestFileName);
+            string manifestPath = System.IO.Path.Combine(report.summary.outputPath, c_ManifestFileName);
             PlistDocument manifest = new PlistDocument();
             if (File.Exists(manifestPath)) manifest.ReadFromFile(manifestPath);
 

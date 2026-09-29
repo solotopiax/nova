@@ -1,7 +1,7 @@
 ---
 id: PAT-160
 title: Mobile IAP 商店连接、商品拉取与后台任务边界
-summary: 商店连接不阻塞主 Loading，商品拉取成功态单向收敛，后台任务只做取消与异常收口
+summary: 连接不阻塞启动，商品成功态单向收敛，后台任务仅管取消与异常
 category: module
 type: pattern
 status: active

@@ -631,7 +631,7 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 校验 AES Key/IV 长度，以及 iOS 隐私清单 JSON 的结构。
+                /// 校验 AES Key/IV 长度，以及 iOS 隐私清单和用途说明 JSON 的结构。
                 /// </summary>
                 /// <param name="privacy">待校验的隐私配置。</param>
                 /// <param name="platform">当前校验的平台。</param>
@@ -650,6 +650,11 @@ namespace NovaFramework.Editor
                         && !PrivacyInfoConfigParser.TryParse(privacy.PrivacyInfoConfig, out _, out string error))
                     {
                         issues.Add(new ValidationIssue("PrivacyConfigs.PrivacyInfoConfig", error, Severity.Error));
+                    }
+                    if (platform == PlatformType.iOS
+                        && !InfoPlistUsageDescriptionsParser.TryParse(privacy.InfoPlistUsageDescriptions, out _, out string usageError))
+                    {
+                        issues.Add(new ValidationIssue("PrivacyConfigs.InfoPlistUsageDescriptions", usageError, Severity.Error));
                     }
                 }
 

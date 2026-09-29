@@ -10,6 +10,16 @@
 
 ### Breaking
 
+## [0.6.36] - 2026-09-29
+
+### Added
+
+- 隐私配置新增仅 iOS 有效的 Info.plist UsageDescription JSON，随 Config 导出并在 iOS 构建时注入应用级用途说明；ConfigWindow 导出前与构建时校验无效键和空文案，ProjectGuard 检查 iOS 隐私配置与导出快照的漂移。
+
+### Fixed
+
+- 修复 iOS 隐私清单构建后处理中的 Path 类型歧义，避免 iOS 条件编译报 CS0104。
+
 ## [0.6.35] - 2026-09-28
 
 ### Added

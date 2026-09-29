@@ -35,7 +35,7 @@ Scene 检查使用已加载 Scene 或只读 Preview Scene，不保存、不修�
 | `NOVA-CONFIG-001` | Error | ConfigRuntime、ConfigMaster、AssetLocation 或 ExportTarget 来源关系未就绪 |
 | `NOVA-CONFIG-002` | Error | 已导出的必需参数仍含公开包 `YOUR_` 占位符；覆盖 App、已启用 SDK 与已启用 Kit |
 | `NOVA-CONFIG-003` | Error | AppID、AES Key/IV、Namespace 等核心启动参数为空或格式不正确；AES 按 UTF-8 严格要求 16 字节 |
-| `NOVA-CONFIG-004` | Error | ConfigMaster 与 ConfigRuntime 的应用配置或 SDK/Kit 启用类型不一致，需要重新导出 |
+| `NOVA-CONFIG-004` | Error | ConfigMaster 与 ConfigRuntime 的应用配置、隐私配置或 SDK/Kit 启用类型不一致，需要重新导出；iOS 隐私清单和用途说明也参与比较 |
 | `NOVA-ASSEMBLY-001` | Error | 当前业务程序集的 asmdef 明确排除了 Unity 当前目标平台，启动前直接说明平台不受支持 |
 | `NOVA-RES-001` | Warning | 当前范围发现归属待确认的非 `Resources/BuiltIn` Resources；先确认所有权，再决定是否迁移 Bundle |
 

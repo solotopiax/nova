@@ -110,7 +110,7 @@ auto_generated: true
 - [PAT-144 反射调厂商私有方法是源只读约束下的最后手段，须标注版本升级复核](../2-Areas/Patterns/PAT-144-reflection-private-vendor-method.md) — 反射调私有厂商方法属权宜，须注释标版本复核点
 - [PAT-148 广告收益打点与展示回调边界](../2-Areas/Patterns/PAT-148-ad-revenue-track-callback-boundary.md) — Banner ILRD聚合，impression即时
 - [PAT-158 SDK UPM 包必须自带官方 Console 与 Readme 菜单入口](../2-Areas/Patterns/PAT-158-sdk-package-official-url-menu-entry.md) — SDK 包自带官方后台与文档菜单入口
-- [PAT-160 Mobile IAP 商店连接、商品拉取与后台任务边界](../2-Areas/Patterns/PAT-160-mobile-iap-product-fetch-background-task-boundary.md) — 商店连接不阻塞主 Loading，商品拉取成功态单向收敛，后台任务只做取消与异常收口
+- [PAT-160 Mobile IAP 商店连接、商品拉取与后台任务边界](../2-Areas/Patterns/PAT-160-mobile-iap-product-fetch-background-task-boundary.md) — 连接不阻塞启动，商品成功态单向收敛，后台任务仅管取消与异常
 - [PAT-164 Firebase 默认 Topic 分层同步与差异存档](../2-Areas/Patterns/PAT-164-firebase-default-topic-sync.md) — 默认Topic分层同步并存档差异
 - [PAT-165 Mobile IAP 支付失败打点边界](../2-Areas/Patterns/PAT-165-mobile-iap-pay-failure-track-boundary.md) — PayAsync统一失败打点，无返回链路的回调兜底
 - [PAT-167 ThirdPay 支付页终态与验单打点分层](../2-Areas/Patterns/PAT-167-thirdpay-payment-terminal-and-validation-tracking.md) — 成功 callback 与关闭终态互斥，验单和删单独立记录

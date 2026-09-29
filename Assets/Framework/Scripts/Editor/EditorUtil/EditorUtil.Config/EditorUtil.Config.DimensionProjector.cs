@@ -795,6 +795,7 @@ namespace NovaFramework.Editor
                     dst.AESKey = value.AESKey;
                     dst.AESIV = value.AESIV;
                     dst.PrivacyInfoConfig = value.PrivacyInfoConfig;
+                    dst.InfoPlistUsageDescriptions = value.InfoPlistUsageDescriptions;
                 }
 
                 /// <summary>
@@ -951,6 +952,7 @@ namespace NovaFramework.Editor
                         AESKey = src.AESKey,
                         AESIV = src.AESIV,
                         PrivacyInfoConfig = src.PrivacyInfoConfig,
+                        InfoPlistUsageDescriptions = src.InfoPlistUsageDescriptions,
                     };
                 }
 

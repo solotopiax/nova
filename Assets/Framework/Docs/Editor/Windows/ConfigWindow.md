@@ -111,7 +111,7 @@ UnityEditor.EditorWindow
 | `Python3Env` | Python3 环境检测面板（环境检测组下） |
 | `HybridCLREnv` | HybridCLR 环境检测面板（环境检测组下） |
 | `AppConfig` | 应用配置面板（通用配置组下） |
-| `PrivacyConfig` | 隐私配置面板：AES Key/IV 与其说明成组，随后是 `PrivacyInfoConfig` JSON 多行输入及其说明；非 iOS 时后一组（标题、输入框、HelpBox）整体灰显；携带三维配置头部 |
+| `PrivacyConfig` | 隐私配置面板：AES Key/IV 与其说明成组，随后依次是 `PrivacyInfoConfig` 与 `InfoPlistUsageDescriptions` JSON 多行输入及各自说明；非 iOS 时两组的标题、输入框、HelpBox 整体灰显；携带三维配置头部 |
 | `NamespaceConfig` | 名字空间配置面板（通用配置组下） |
 | `HybridCLRConfig` | HybridCLR 配置面板（通用配置组下）：业务入口 Procedure 相对名 + AOT 元数据 DLL 列表 + 业务 DLL 列表 |
 | `YooAssetConfig` | YooAsset 配置面板（通用配置组下）：两条资产路径，以及只存 ConfigMaster、导出时单向写入 `YooAssetSettings.asset` 的 `YooFolderName` / `PackageFilePrefix` 模板 |
