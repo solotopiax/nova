@@ -59,6 +59,7 @@ find UPMPackages Packages Library/PackageCache -ipath '*/Nova/doc*/INDEX.md' -pr
 
 | 文档 | 说明 |
 |---|---|
+| [Plugins/Tracking/IUserPropertyPlugin.md](./Plugins/Tracking/IUserPropertyPlugin.md) | 一次性用户属性可选能力 |
 | [Plugins/Tracking/ITrackPlugin.md](./Plugins/Tracking/ITrackPlugin.md) | 通用埋点接口 |
 | [Plugins/Tracking/IMonetizeTrackPlugin.md](./Plugins/Tracking/IMonetizeTrackPlugin.md) | 变现分析事件接口 |
 | [Plugins/Tracking/IAcquisitionTrackPlugin.md](./Plugins/Tracking/IAcquisitionTrackPlugin.md) | 投放 / 买量转化事件接口 |
@@ -85,6 +86,7 @@ find UPMPackages Packages Library/PackageCache -ipath '*/Nova/doc*/INDEX.md' -pr
 
 | 文档 | 说明 |
 |---|---|
+| [Managers/Interfaces/ISDKRegistrationManager.md](./Managers/Interfaces/ISDKRegistrationManager.md) | 可选明确注册能力 |
 | [Managers/Interfaces/ISDKManager.md](./Managers/Interfaces/ISDKManager.md) | Manager 对外契约 |
 | [Managers/Implements/SDKManagerBase.md](./Managers/Implements/SDKManagerBase.md) | 抽象基类 |
 | [Managers/Implements/SDKManager.md](./Managers/Implements/SDKManager.md) | 唯一实现 |

@@ -20,6 +20,9 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
     /// </summary>
     public sealed partial class DemoWechatMiniGameView
     {
+        /// <summary>仅供本 Demo 使用的购买、广告和通知物料，不进入正式 SDK 配置。</summary>
+        [SerializeField] private DemoWechatMiniGameMaterials m_DemoMaterials = new DemoWechatMiniGameMaterials();
+
         /// <summary>当前 View 会话使用的微信插件。</summary>
         private WeChatMiniGamePlugin m_Wechat;
 
@@ -31,6 +34,9 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
 
         /// <summary>当前 Demo 会话已由业务服务端校验的微信 UnionID，可为空。</summary>
         private string m_WechatUnionId;
+
+        /// <summary>保持已经登录的业务 UID，供页面重开后的已发货埋点重试。</summary>
+        private string m_DemoGameUid;
 
         /// <summary>
         /// 查看 SDK 运行环境信息。
@@ -75,6 +81,21 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
 
         /// <summary>验证当前账号全部订单并刷新服务端入账结果。</summary>
         [SerializeField] private Button m_RecoverPendingButton;
+
+        /// <summary>切换订单列表的支付类型筛选。</summary>
+        [SerializeField] private Button m_FilterOrdersButton;
+        /// <summary>预加载激励视频广告。</summary>
+        [SerializeField] private Button m_LoadRewardedButton;
+        /// <summary>显示已经预加载的激励视频广告。</summary>
+        [SerializeField] private Button m_ShowRewardedButton;
+        /// <summary>预加载插屏广告。</summary>
+        [SerializeField] private Button m_LoadInterstitialButton;
+        /// <summary>显示已经预加载的插屏广告。</summary>
+        [SerializeField] private Button m_ShowInterstitialButton;
+        /// <summary>显示底部居中 Banner。</summary>
+        [SerializeField] private Button m_ShowBannerButton;
+        /// <summary>隐藏已创建 Banner。</summary>
+        [SerializeField] private Button m_HideBannerButton;
 
         /// <summary>请求用户订阅消息授权并把逐模板结果登记到服务端。</summary>
         [SerializeField] private Button m_SubscribeMessageButton;

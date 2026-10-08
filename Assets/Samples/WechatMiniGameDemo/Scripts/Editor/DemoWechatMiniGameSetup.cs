@@ -46,8 +46,11 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(c_TargetPrefabPath);
             DemoWechatMiniGameView view = prefab != null ? prefab.GetComponent<DemoWechatMiniGameView>() : null;
             var serialized = view != null ? new SerializedObject(view) : null;
+            bool hasExpandedDemo = serialized?.FindProperty("m_FilterOrdersButton")?.objectReferenceValue != null &&
+                serialized?.FindProperty("m_ShowBannerButton")?.objectReferenceValue != null;
             bool hasWechatLoginButton = serialized?.FindProperty("m_LoginButton")?.objectReferenceValue != null;
             ConfigRuntimeSO runtime = AssetDatabase.LoadAssetAtPath<ConfigRuntimeSO>(c_RuntimeConfigPath);
+            bool hasPurchaseConfig = runtime?.GetSDKPluginConfig<WeChatMiniGamePluginConfig>()?.Purchases.Count > 0;
             bool hasTgaConfig = runtime?.GetSDKPluginConfig<TGAPluginConfig>() != null;
             bool hasGameLoginConfig = runtime?.GetKitConfig<LoginKitConfig>() != null;
             bool hasGameBindConfig = runtime?.GetKitConfig<BindKitConfig>() != null;
@@ -56,7 +59,7 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
                 c_WechatAppId,
                 StringComparison.Ordinal);
             bool hasWechatPipifyParams = HasWechatPipifyParams();
-            if ((hasWechatLoginButton && hasTgaConfig && hasGameLoginConfig &&
+            if ((hasPurchaseConfig && hasExpandedDemo && hasWechatLoginButton && hasTgaConfig && hasGameLoginConfig &&
                  hasGameBindConfig && hasWechatAppId && !hasWechatPipifyParams) || s_Scheduled)
             {
                 return;
@@ -135,6 +138,7 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
             List<ISDKPluginConfig> sdkConfigs = entry.GetSDKConfigs(mode);
             WeChatMiniGamePluginConfig wechatConfig = sdkConfigs.OfType<WeChatMiniGamePluginConfig>().First();
             SetPrivateString(wechatConfig, "m_AppId", c_WechatAppId);
+            DemoWechatMiniGameConfigMaterials.Ensure(wechatConfig);
 
             TGAPluginConfig tgaConfig = sdkConfigs.OfType<TGAPluginConfig>().First();
             SetPrivateString(tgaConfig, "m_ServerCmdName", "TGAServerUrl");
@@ -312,6 +316,7 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
             target.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        /// <summary>确定性创建并绑定微信支付、订单、广告和通知演示控件。</summary>
         private static void BindActionButtons(DemoWechatMiniGameView view, RectTransform root, TMP_Text titleText)
         {
             var serialized = new SerializedObject(view);
@@ -330,8 +335,15 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Editor
                 ("m_PayCurrencyButton", "PayCurrencyButton", "购买游戏币"),
                 ("m_PayItemButton", "PayItemButton", "购买道具"),
                 ("m_QueryOrderButton", "QueryOrderButton", "查询当前用户全部订单"),
-                ("m_RecoverOrderButton", "RecoverOrderButton", "补验最近本地漏单"),
+                ("m_RecoverOrderButton", "RecoverOrderButton", "验证选中订单"),
                 ("m_RecoverPendingButton", "RecoverPendingButton", "验证全部订单"),
+                ("m_FilterOrdersButton", "FilterOrdersButton", "订单类型：全部"),
+                ("m_LoadRewardedButton", "LoadRewardedButton", "加载激励视频"),
+                ("m_ShowRewardedButton", "ShowRewardedButton", "显示激励视频"),
+                ("m_LoadInterstitialButton", "LoadInterstitialButton", "加载插屏广告"),
+                ("m_ShowInterstitialButton", "ShowInterstitialButton", "显示插屏广告"),
+                ("m_ShowBannerButton", "ShowBannerButton", "显示底部居中 Banner"),
+                ("m_HideBannerButton", "HideBannerButton", "隐藏 Banner"),
                 ("m_SubscribeMessageButton", "SubscribeMessageButton", "开启消息提醒")
             };
             foreach ((string field, string objectName, string label) in buttons)

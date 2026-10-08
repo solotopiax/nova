@@ -41,8 +41,9 @@ namespace NovaFramework.Kit.Network.GameLogin.Runtime
                 string respUID = resp.Data.Uid ?? string.Empty;
                 string respOpenID = resp.Data.Openid ?? string.Empty;
                 NetService.SetIdentity(respUID, respOpenID);
-                // 通知 SDK 登录成功
-                Nova.SDK.Login(respUID);
+                // 注册事实只取服务端 IsNewAccount；RegisterAndLogin 已包含同次登录，避免重复登录事件。
+                if (resp.Data.IsNewAccount) Nova.SDK.RegisterAndLogin(respUID);
+                else Nova.SDK.Login(respUID);
             }
             else if (resp.IsSuccess)
             {

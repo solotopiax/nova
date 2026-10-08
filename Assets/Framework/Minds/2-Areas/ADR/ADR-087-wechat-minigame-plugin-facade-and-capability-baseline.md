@@ -47,7 +47,7 @@ Solar `WXHelper` 已验证了一批真实项目需要的行为，但它同时包
 - Nova 适配层统一记录微信异步 API 的完成、失败、超时和取消结果，持续监听事件使用 Debug 级别；日志只保留 API 名和脱敏摘要，不输出登录 code、身份、用户内容、token、路径、订单号或签名原文。
 - `NOVA_WECHAT_SDK_AVAILABLE` 只是各源码文件内部的条件编译别名，不是 Unity 全局宏。`UNITY_WEBGL`、`UNITY_EDITOR` 是 Unity 内置符号；三种微信符号由不同微信导出器或工具链提供，Nova 仅兼容识别。编译可用不等于运行在微信容器，运行时仍由 `WeChatMiniGameEnvironment.IsMiniGame` 裁决。
 - 同类文件进入以能力命名的目录。公开入口位于对应主文件并按重要性、调用热度从上到下排列；私有方法进入该子模块的 `.Methods.cs`，成员字段进入该子模块的 `.Visitors.cs`。Config 同样按 Account、Payment、Social、Security、Ads 等职责拆分。
-- 本包尚未发布时，公开 API 直接收敛到最终命名并同步全部调用方，不保留旧名或 `[Obsolete]` 过渡层。
+- 初版未发布时可直接收敛命名；本包已有发布版本，当前新增能力必须保留已有公共签名，并核对外部消费者兼容性。
 - 按具体微信 API 判断基础库能力，不把一个全局最低基础库版本暴露成 Config 门槛。微信小游戏 Demo 的 TMP 输入框由软键盘适配器桥接 `ShowKeyboardAsync` 与输入/确认/完成事件；普通 Editor 和浏览器 WebGL 保留默认输入。Solar 的 `StandaloneInputModule` 触摸覆盖器不能直接套到 Nova 的 `InputSystemUIInputModule`，微信真机触摸仍要独立验收。
 - 引力引擎作为可选微信小游戏能力与微信包同分发，项目参数由同页 Config 管理；只在业务服务端校验 OpenID 后用该 ID 启动 SDK。原厂代码置于独立程序集、保留版本和许可，不把 Android/iOS 原生插件及 EDM4U 提升为微信包强制依赖。真实 Token、微信合法域名和隐私授权策略由项目提供。
 
@@ -85,16 +85,22 @@ Solar `WXHelper` 已验证了一批真实项目需要的行为，但它同时包
 | 完整复制微信全部 API | 公共面无限膨胀，长尾能力缺少统一语义和维护收益 |
 | 逐行照搬 Solar `WXHelper` | 会继承旧框架耦合、历史平台分支、硬编码参数和不对称监听等问题 |
 | 只凭 `NOVA_WECHAT_SDK_AVAILABLE` 判断运行环境 | 该符号只说明当前源码可引用适配层，Editor 和普通 WebGL 也可能满足编译条件 |
-| 为旧命名保留兼容方法 | 本包尚未发布，没有外部兼容成本，双入口只会制造歧义 |
+| 无视已发布消费者删除公共签名 | 初版未发布前提已失效，必须明确兼容成本与迁移策略 |
 
 ## 验证依据
 
 - `WeChatMiniGameContractTests.SolarWxHelperPublicBehaviors_HaveNovaEquivalents` 固定 Solar 公开行为映射。
 - `RuntimePublicApi_DoesNotExposeVendorTypes` 递归检查公开类型、接口、基类、泛型和委托边界。
 - `StatefulWrappers_AreDisposable` 固定有状态包装器的释放契约。
-- 微信专项 EditMode 包内契约与消费端契约共 52 项通过；Unity Console 无编译错误。
+- 初版历史验证：微信专项 EditMode 包内契约与消费端契约共 52 项通过；当时 Unity Console 无编译错误。
 - 当前事实文档：微信小游戏包 `ARCHITECTURE.md`、`RUNTIME_API.md`、`SERVER_CONTRACT.md` 和 `CAPABILITY_MATRIX.md`。
 - 2026-09-28 增量：微信包 49 项 EditMode 契约测试通过；Unity 临时加载 Demo Prefab 可看到 5 个输入框和文本安全按钮，且无独立 GameLogin 按钮。引力引擎 Unity SDK 5.0.45 源码在 Editor 完成编译；微信开发者工具/真机的键盘、触摸、支付、通知送达和引力数据回传仍未实测。
+
+## 当前消费边界补充
+
+购买表属于 SDK 正式配置；订阅、广告等 Demo-only 物料由 Sample View Inspector 管理。微信订阅必须在原生 TouchEnd 回调内同步请求，Unity 同帧令牌不能替代该约束；UI 顶层射线命中满足按钮定位，不要求复制 Solar Physics2D Collider 方案。三类广告是微信内置激励视频、插屏和 Banner，真实展示回调与请求按钮统计分开。
+
+引力公开能力与Solar实际调用分别核对。归因通过可选一次性用户属性能力桥接TGA；注册由服务端新账号事实驱动，注册含一次登录，其余登录按会话交付；初始化回调只表示厂商就绪，不能替代注册/登录。归因等待随业务会话取消，插件释放时对称解绑。支付观察、TGA阶段、引力/腾讯支付是不同调用链，必须检验实际自动消费；微信包不强制依赖TGA实现包。厂商GravitySDK.PC.GravityTurbo.GravityHelper与框架Solar.Runtime.GravityHelper须区分。
 
 ## 关联
 

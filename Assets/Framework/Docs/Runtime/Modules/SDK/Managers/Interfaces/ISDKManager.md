@@ -43,6 +43,9 @@ public interface ISDKManager
 - `WaitForPluginAsync<T>()` 只等待目标插件；返回 `Ready` 才表示可用。`WaitForInitializedAsync()` 等待所有已启用插件取得最终状态。
 - `Login(uid, properties)` 保存属性快照，晚就绪插件会收到最新会话；切换账号再次调用，登出调用 `EndLoginSession()`。
 
+- `ISDKRegistrationManager.RegisterAndLogin(uid)` 仅在业务明确新用户时调用，同时发送注册与一次登录；重复 UID 调用也照常通知，晚就绪插件只补交当前账号。已有登录 API 和每次调用广播语义保留。
+- 兼容性：注册使用独立可选 `ISDKRegistrationManager`，既有 `ISDKManager` 实现无需增加成员。`SDKManagerBase` 提供虚拟默认实现转发 `Login`，已有派生类不强制新增 override；正式 `SDKManager` 提供完整注册交付。
+
 ## 使用顺序
 
 ```text

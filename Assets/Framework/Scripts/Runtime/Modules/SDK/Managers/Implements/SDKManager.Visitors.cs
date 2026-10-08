@@ -31,6 +31,10 @@ namespace NovaFramework.Runtime
         private readonly Dictionary<ISDKPlugin, UniTaskCompletionSource<SDKPluginInitializationState>> m_PluginCompletionSources = new();
         private UniTaskCompletionSource m_PluginsDiscoveredTcs = new();
 
+        /// <summary>已收到当前注册通知的插件。</summary>
+        private readonly HashSet<ISDKPlugin> m_RegistrationDeliveredPlugins = new();
+        /// <summary>等待晚初始化插件接收的当前注册账号。</summary>
+        private string m_PendingRegistrationUserId;
         /// <summary>当前账号快照及已交付的会话编号；只在 Unity 主线程修改。</summary>
         private string m_CurrentUserId;
         private IReadOnlyDictionary<string, object> m_CurrentUserProperties;

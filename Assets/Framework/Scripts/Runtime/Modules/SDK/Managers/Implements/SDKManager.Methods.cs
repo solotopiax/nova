@@ -182,7 +182,10 @@ namespace NovaFramework.Runtime
         {
             m_PluginStates[plugin] = state;
             if (state == SDKPluginInitializationState.Ready)
+            {
+                DeliverCurrentRegistration(plugin);
                 DeliverCurrentLogin(plugin);
+            }
             m_PluginCompletionSources[plugin].TrySetResult(state);
         }
 
@@ -193,6 +196,26 @@ namespace NovaFramework.Runtime
                 if (!m_PluginCompletionSources.ContainsKey(plugin)) continue;
                 if (m_PluginStates[plugin] is SDKPluginInitializationState.Pending or SDKPluginInitializationState.Initializing)
                     CompletePlugin(plugin, state);
+            }
+        }
+
+        /// <summary>只将当前账号的注册至多一次补交给就绪插件。</summary>
+        private void DeliverCurrentRegistration(ISDKPlugin plugin)
+        {
+            if (plugin is not ISDKRegistrationReceiver receiver
+                || m_RegistrationDeliveredPlugins.Contains(plugin)
+                || string.IsNullOrEmpty(m_PendingRegistrationUserId)
+                || !string.Equals(m_CurrentUserId, m_PendingRegistrationUserId, StringComparison.Ordinal)
+                || !m_PluginStates.TryGetValue(plugin, out var state) || state != SDKPluginInitializationState.Ready)
+                return;
+            try
+            {
+                receiver.OnSDKRegister(m_CurrentUserId, m_CurrentSessionId);
+                m_RegistrationDeliveredPlugins.Add(plugin);
+            }
+            catch (Exception e)
+            {
+                Log.Error(LogTag.SDK, "SDK 插件 '{0}' 注册通知失败：{1}", plugin.Name, e.GetType().Name);
             }
         }
 

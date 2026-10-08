@@ -29,6 +29,7 @@ public bool TryGet<TPlugin>(out TPlugin plugin) where TPlugin : class, ISDKPlugi
 public IReadOnlyList<TInterface> GetAll<TInterface>() where TInterface : class, ISDKPlugin;
 public void Login(string userId);
 public void Login(string userId, IReadOnlyDictionary<string, object> userProperties);
+public void RegisterAndLogin(string userId);
 public void EndLoginSession();
 public SDKPluginInitializationState GetPluginInitializationState<TPlugin>() where TPlugin : class, ISDKPlugin;
 public UniTask<SDKPluginInitializationState> WaitForPluginAsync<TPlugin>(CancellationToken ct = default) where TPlugin : class, ISDKPlugin;
@@ -74,6 +75,12 @@ foreach (ITrackPlugin tracker in Nova.SDK.GetAll<ITrackPlugin>())
     tracker.TrackEvent("startup", null);
 }
 ```
+
+## 明确注册与登录
+
+服务端明确创建新用户后调用 `Nova.SDK.RegisterAndLogin(uid)`；此入口按注册、登录顺序通知插件，包含一次 `Login`，调用方无需再调用 `Login(uid)`。同一 UID 重复调用也照常通知，调用方负责决定注册时机。既有用户仍调用 `Login(uid, properties)`，每次调用产生新会话，保留原有登录广播语义。
+
+注册可早于插件就绪；只向晚就绪插件补交当前账号的注册和登录。登出或切换账号清理旧账号待补交注册。该入口不从微信校验结果猜测新用户。自定义 Manager 未实现可选 `ISDKRegistrationManager` 时，仅警告并保留 `Login`，不会伪造注册。
 
 ## 注意事项
 

@@ -31,7 +31,7 @@ related:
 
 ## 背景
 
-微信小游戏同时提供游戏币支付与道具直购。项目希望 Nova 固定客户端订单、持久化、补单和发货接口，避免各项目重复实现；服务端团队只承担必须依赖服务端秘密或微信可信查询的校验职责。Solar 已有客户端订单与补单实践，但其回调网络、散落存储键和平台分支不适合作为 Nova 公共契约直接复制。
+微信小游戏同时提供游戏币支付与道具直购。项目希望 Nova 固定客户端订单、持久化、补单和发货接口，避免各项目重复实现；服务端控制可信支付、托管金币和扣币买道具；客户端负责服务端允许后的幂等发货及本地订单恢复。Solar 已有客户端订单与补单实践，但其回调网络、散落存储键和平台分支不适合作为 Nova 公共契约直接复制。
 
 平台拉起成功或失败只描述客户端交互结果，不能作为到账或发货依据。客户端本地方案也无法天然抵抗卸载、清缓存、存档损坏和篡改，且业务资产写入与订单删除之间没有跨存储事务。
 
@@ -41,17 +41,17 @@ related:
 - Nova 统一管理 `Created -> AwaitingSignature -> ReadyForPayment -> PaymentSubmitted -> PendingValidation -> ReadyToDeliver -> Delivering` 状态，项目不得另建一套微信订单状态机。
 - 游戏币和道具支付复用同一编排。道具 `signData` 由客户端按固定契约创建，但 `paySig/signature` 必须由服务端校验后使用私密密钥生成。
 - 平台 `success/fail/cancel/timeout` 不决定支付终态。除明确未提交且不支持支付外，客户端保留订单并调用服务端验单；手动单笔和本地批量补单共用批量协议。
-- 服务端不创建、不保存 Nova 客户端订单，也不维护客户端发货状态；它负责登录 code 校验、道具签名、最多 20 笔批量验单、当前用户全量订单只读查询、个人通知任务创建和文本安全检查。
+- 服务端不接管 Nova 客户端本地状态机，但控制托管金币、扣币购买道具、可信支付与业务审计；它负责登录 code 校验、道具签名、最多 20 笔批量验单、当前用户全量订单只读查询、个人通知任务创建和文本安全检查。
 - 服务端必须把客户端提交的 UID、商品、数量、单价、环境、OfferId、ZoneId 和 Payload 视为不可信输入，结合认证会话、服务端商品配置和微信查询结果返回 `Status/CanDeliver`。
 - 只有 `CanDeliver=true` 时，Nova 才调用项目的 `IWeChatMiniGameFulfillmentHandler`。项目业务存档必须以 `OrderId` 幂等：同一订单重复调用时不得重复增加资产，并应返回成功。
 - 发货成功，或服务端确认 `Closed/Refunded/Failed` 后删除本地订单；网络失败、待定状态和发货失败保留，并在 UID 与发货器就绪后每批最多 20 笔验单、逐笔处理发货。
 - `Payload` 只允许小型、非敏感透传数据。AppSecret、session_key、access_token、Midas 密钥和私钥不得进入客户端配置、订单、响应或日志。
 - Android 与 iOS 共享流程；iOS 不使用客服会话充值，只允许现网并以运行时 `allow_pay` 为准。
 - 支付公开入口固定为 `PurchaseAndVerifyAsync`、`PurchaseAsync`、`VerifyPaymentOrderAsync`、`VerifyAllPaymentOrdersAsync`、`QueryCurrentUserPaymentOrdersAsync`。前三类分别表达完整支付、纯拉起、单笔验单；后两类分别表达本地未完成订单补单和服务端全订单只读查询，不得混为同一行为。
-- 手动单笔补单的 Demo 默认选择当前 UID 最近创建的本地未完成订单，而非仅选择当前页面刚创建的订单；服务端全订单查询展示每笔订单的全部已返回字段与可信状态，不能只报数量。Demo 发货器只打印醒目的“客户端已发货／模拟增加资产”并返回成功，不冒充真实资产写入。
+- Demo 支持任意本地订单选择和全部/游戏币/道具筛选；服务端历史订单只读，不触发发货。长期模拟发货器按 UID 将模拟资产和订单去重一次保存，不修改正式托管金币或游戏资产。页面只订阅反馈，注册句柄托管发货器生命周期并等待在途发货结束后释放。
 - 支付平台从微信运行时识别为 `ios` 或 `android`，未知值拒绝建单；不得在可序列化 Config 中写死一个平台值。
 - 游戏币支付由框架在 `RequestMidasPaymentOption` 固定写入 `mode = "game"`；道具直购的签名原文固定写入 `mode = "goods"`，并调用独立的 `RequestMidasPaymentGameItem`。业务只选择 `WeChatMiniGamePaymentKind`，不直接拼微信支付模式。
-- 本包尚未发布，旧命名直接删除并同步调用方，不保留 `[Obsolete]` 或转发兼容层。
+- 本包已有发布版本；新增能力保留既有公共签名，并复核仓内调用方和外部消费者兼容性，不能沿用初版未发布时的删除策略。
 
 ## 后果
 
@@ -93,7 +93,11 @@ related:
 
 ## 2026-09-28 Demo 与配置落地
 
-单个“微信登录校验”按钮串联 `wx.login → VerifyLoginAsync → GameLogin`，仅在 `ErrAccountNotFound` 时转游客 GameLogin 与 GameBind；绑定冲突仍由玩家业务选择，不由 Demo 自动裁决。支付发货仍严格由服务端验单后的本地发货器执行；Demo 只用日志演示“增加资产”。订单查询的 Protobuf 响应已有 `repeated PbWechatPaymentOrderInfo`，客户端 DTO 包含订单状态等字段，Demo 逐笔展示。六条微信 NetCmd 同名存在于 Sample 的 Excel 表源、JSON 导出和生成访问代码；这一静态闭环不等于服务端实际部署或支付真机验收。
+单个“微信登录校验”按钮串联 `wx.login → VerifyLoginAsync → GameLogin`，仅在 `ErrAccountNotFound` 时转游客 GameLogin 与 GameBind；当前固定微信校验 → 游戏服登录/绑定流程不要求增加玩家账号选择演示。支付发货严格由服务端验单后的本地发货器执行；此段原来的日志模拟描述已由下述持久化模拟发货更新。订单查询的 Protobuf 响应已有 `repeated PbWechatPaymentOrderInfo`，客户端 DTO 包含订单状态等字段，Demo 逐笔展示。六条微信 NetCmd 同名存在于 Sample 的 Excel 表源、JSON 导出和生成访问代码；这一静态闭环不等于服务端实际部署或支付真机验收。
+
+## 当前支付观察边界
+
+来源、AttemptId 和恢复原因随本地订单持久化，主动购买及恢复共用观察入口。正式插件通过可选统计能力上报阶段，并在服务端Paid后对齐Solar报告购买时报价；统计去重与资产幂等分别维护，各目标独立保存重试状态，初始化晚到可补交。报价不能证明实付，财务对账仍取服务器/微信流水。Demo事件只表达演示，不能替代正式接线。托管金币与扣币由服务器控制，客户端只负责获准后的幂等发货。
 
 ## 关联
 

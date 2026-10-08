@@ -23,7 +23,7 @@ namespace NovaFramework.SDK.TGAPlugin.Runtime
     /// 通过独立的 TGADynamicSuperPropertyListener 监听器接收 TDA SDK 的动态公共属性回调。
     /// </summary>
     [SDKPluginConfigType(typeof(TGAPluginConfig))]
-    public sealed partial class TGAPlugin : SDKPluginBase, ITrackPlugin, IDeviceIdProvider, ISDKLoginReceiver, ISDKLoginSessionEndReceiver
+    public sealed partial class TGAPlugin : SDKPluginBase, ITrackPlugin, IUserPropertyPlugin, IDeviceIdProvider, ISDKLoginReceiver, ISDKLoginSessionEndReceiver
     {
     
         /// <summary>

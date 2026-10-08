@@ -24,6 +24,7 @@ public interface ISDKPlugin
 
 ```text
 ISDKPlugin
+  ├── IUserPropertyPlugin
   ├── ITrackPlugin
   ├── IMonetizeTrackPlugin
   ├── IAcquisitionTrackPlugin
@@ -41,6 +42,9 @@ ISDKPlugin
 - `IsAvailable` 表示插件已成功初始化并可用。
 - `FetchDataAsync()` 读取插件发布的数据槽位；key 约定见 [SDKDataKeys.md](./SDKDataKeys.md)。
 - `ISDKLoginReceiver` 接收 UID；`ISDKLoginContextReceiver` 接收 UID 和属性快照；`ISDKLoginSessionEndReceiver` 在登出或切换账号时作废旧会话。异步工作须在提交结果前核对 `sessionId`。
+
+- `ISDKRegistrationReceiver.OnSDKRegister(uid, sessionId)` 接收业务明确确认的注册。框架先发送注册再交付同会话登录，插件不得从首次登录推断注册。
+- [IUserPropertyPlugin](../Plugins/Tracking/IUserPropertyPlugin.md) 是可选的一次性用户属性能力，当前由 TGA 实现，不改变 `ITrackPlugin.SetUserProperty` 的覆盖语义。
 
 ## 关联文档
 

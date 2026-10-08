@@ -16,7 +16,7 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
     /// DemoWechatMiniGameView 演示 View，派生自 BaseDemoView，遵循三段式骨架（TitleBar / InteractionArea / FeedbackArea）。
     /// 覆盖运行环境、登录、隐私、剪贴板、振动与主动分享等常用微信能力。
     /// </summary>
-    public sealed partial class DemoWechatMiniGameView : BaseDemoView, IWeChatMiniGameFulfillmentHandler
+    public sealed partial class DemoWechatMiniGameView : BaseDemoView
     {
         /// <summary>订阅模板输入框的可选初始值。</summary>
         public static string[] SubscriptionTemplateIds { get; set; } = System.Array.Empty<string>();
@@ -59,9 +59,16 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
             BindButton(m_PayCurrencyButton, OnPayCurrencyClick, "购买游戏币", "WeChatMiniGamePlugin.PurchaseAndVerifyAsync()");
             BindButton(m_PayItemButton, OnPayItemClick, "购买道具", "WeChatMiniGamePlugin.PurchaseAndVerifyAsync()");
             BindButton(m_QueryOrderButton, OnQueryOrderClick, "查询当前用户全部订单", "WeChatMiniGamePlugin.QueryCurrentUserPaymentOrdersAsync()");
-            BindButton(m_RecoverOrderButton, OnVerifyOrderClick, "补验最近本地漏单", "WeChatMiniGamePlugin.VerifyPaymentOrderAsync()");
+            BindButton(m_RecoverOrderButton, OnVerifyOrderClick, "验证选中订单", "WeChatMiniGamePlugin.VerifyPaymentOrderAsync()");
             BindButton(m_RecoverPendingButton, OnVerifyAllOrdersClick, "验证全部订单", "WeChatMiniGamePlugin.VerifyAllPaymentOrdersAsync()");
             BindButton(m_SubscribeMessageButton, OnSubscribeMessageClick, "开启消息提醒", "WeChatMiniGamePlugin.RequestSubscribeAndCreateNoticeAsync()");
+            BindButton(m_FilterOrdersButton, OnFilterOrdersClick, "订单类型：全部", "本地/服务端订单筛选");
+            BindButton(m_LoadRewardedButton, OnLoadRewardedClick, "加载激励视频", "CreateConfiguredRewardedVideoAd → LoadAsync");
+            BindButton(m_ShowRewardedButton, OnShowRewardedClick, "显示激励视频", "ShowAsync → Completed");
+            BindButton(m_LoadInterstitialButton, OnLoadInterstitialClick, "加载插屏广告", "CreateConfiguredInterstitialAd → LoadAsync");
+            BindButton(m_ShowInterstitialButton, OnShowInterstitialClick, "显示插屏广告", "ShowAsync → Closed");
+            BindButton(m_ShowBannerButton, OnShowBannerClick, "显示底部居中 Banner", "CreateConfiguredBottomCenteredBannerAd → ShowAsync");
+            BindButton(m_HideBannerButton, OnHideBannerClick, "隐藏 Banner", "Hide");
             CreateDemoFormControls();
         }
 

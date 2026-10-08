@@ -10,6 +10,16 @@
 
 ### Breaking
 
+## [0.1.18] - 2026-10-08
+
+### Added
+
+- 通过可选 IUserPropertyPlugin 暴露既有 UserSetOnce 能力，供微信引力归因写入用户属性，不增加微信包强制依赖。
+
+### Changed
+
+- Framework 最低依赖提升至 0.6.37，确保 IUserPropertyPlugin 接口可用；README 当前版本与安装示例同步为 0.1.17。
+
 ## [0.1.17] - 2026-09-28
 
 ### Changed

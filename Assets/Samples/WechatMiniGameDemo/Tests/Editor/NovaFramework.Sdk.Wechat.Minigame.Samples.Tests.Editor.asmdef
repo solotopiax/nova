@@ -1,0 +1,17 @@
+{
+    "name": "NovaFramework.Sdk.Wechat.Minigame.Samples.Tests.Editor",
+    "rootNamespace": "NovaFramework.Sdk.Wechat.Minigame.Samples.Tests.Editor",
+    "references": [
+        "NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime",
+        "NovaFramework.Runtime",
+        "NovaFramework.SDK.WeChatMiniGame.Runtime",
+        "UniTask"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

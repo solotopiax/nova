@@ -12,6 +12,8 @@
 
 ---
 
+成功响应先同步 NetService 身份；服务端 `IsNewAccount=true` 时调用 `Nova.SDK.RegisterAndLogin(uid)`，同时交付注册及一次登录；已有账号调用 `Nova.SDK.Login(uid)`。不从 OpenID 首次校验或 forceNewAccount 请求推断注册成功。
+
 ## 2. 公开 API
 
 ### 属性

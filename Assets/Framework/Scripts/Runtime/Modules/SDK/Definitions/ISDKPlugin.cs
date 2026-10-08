@@ -58,6 +58,13 @@ namespace NovaFramework.Runtime
         void OnSDKLogin(string userId, long sessionId);
     }
 
+    /// <summary>接收每次业务注册通知；框架不按 UID 判断是否重复注册。</summary>
+    public interface ISDKRegistrationReceiver
+    {
+        /// <summary>注册与当前登录会话关联，初始化晚到时只补交当前账号。</summary>
+        void OnSDKRegister(string userId, long sessionId);
+    }
+
     /// <summary>需要本次登录属性的插件实现此接口；属性快照会随 UID 一起延迟交付。</summary>
     public interface ISDKLoginContextReceiver
     {

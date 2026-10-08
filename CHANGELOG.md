@@ -16,6 +16,16 @@
 
 ### Breaking
 
+## [0.6.37] - 2026-10-08
+
+### Changed
+
+- Framework 新增可选注册并登录及一次性用户属性能力；GameLogin 根据服务端新账号标记通知 SDK，TGA 暴露一次性用户属性，微信小游戏补齐购买表、支付阶段与统计恢复、广告及 Demo 接线。
+
+### Breaking
+
+- 微信小游戏调整 iOS 支付参数与门禁：道具固定现网并省略 platform，游戏币使用 requestMidasPayment / mode=game 并检查支付支持。
+
 ## [0.6.36] - 2026-09-29
 
 ### Changed

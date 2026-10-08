@@ -5,7 +5,7 @@
 `TGAPlugin` 是 Nova 对 ThinkingAnalytics 的运行时封装，当前实现：
 
 - 继承 `SDKPluginBase`
-- 实现 `ITrackPlugin`
+- 实现 `ITrackPlugin` 与可选 `IUserPropertyPlugin`
 - 实现 `IDeviceIdProvider`
 
 它不再暴露旧文档里的 `ITGAPlugin` 专属接口栈，而是直接对齐主框架当前的通用 SDK 契约。
@@ -110,3 +110,7 @@ tga.SetDynamicSuperProperty("session_id", "abc-123");
 ## 5. 关联
 
 - 配置类型：[TGAPluginConfig.md](./TGAPluginConfig.md)
+
+## 可选一次性属性能力
+
+`TGAPlugin` 实现框架 `IUserPropertyPlugin`，复用已有 `UserSetOnce(Dictionary<string, object>)`。消费者按能力查询无需依赖 TGA 类型；既有用户属性合并和仅首次写入语义保持不变。微信引力通过该能力自动提交非敏感归因属性，等待 TGA 就绪不会阻塞微信登录或 SDK 初始化。启用该功能需安装含 `IUserPropertyPlugin` 的 Framework 版本；正式发布时须提升依赖下界。

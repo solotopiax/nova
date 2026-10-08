@@ -116,6 +116,8 @@ namespace NovaFramework.Sdk.Wechat.Minigame.Samples.Runtime
                 Log.Debug(LogTag.Procedure, "Preload Step 4/8 — 初始化 SDK。");
                 await Nova.SDK.InitializeTask;
                 CancellationToken.ThrowIfCancellationRequested();
+                if (Nova.SDK.TryGet(out WeChatMiniGamePlugin wechat) && wechat.IsAvailable)
+                    DemoWechatFulfillmentService.Attach(wechat);
                 OnStepComplete();
 
                 Log.Debug(LogTag.Procedure, "Preload Step 5/8 — 加载数据表。");

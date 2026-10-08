@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Breaking
+
+## [0.1.15] - 2026-10-08
+
+### Changed
+
+- 根据成功响应 IsNewAccount 自动交付 SDK 注册或登录；注册包含同次登录，支持微信引力真实新用户自动统计。
+
+- 新账号成功响应改用 SDK RegisterAndLogin 通知入口，名称明确表达注册及登录，原有登录请求和身份处理不变。
+
+- Framework 最低依赖提升至 0.6.37，确保 RegisterAndLogin 通知入口可用。
+
 ## [0.1.14] - 2026-09-04
 
 ### Changed

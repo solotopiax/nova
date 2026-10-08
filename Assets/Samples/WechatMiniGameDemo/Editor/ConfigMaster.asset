@@ -2541,7 +2541,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2554,6 +2554,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2567,7 +2584,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2580,6 +2597,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2593,7 +2627,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2606,6 +2640,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2619,7 +2670,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2632,6 +2683,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2645,7 +2713,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2658,6 +2726,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2671,7 +2756,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2684,6 +2769,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2697,7 +2799,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2710,6 +2812,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2723,7 +2842,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2736,6 +2855,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2749,7 +2885,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2762,6 +2898,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2775,7 +2928,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2788,6 +2941,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2801,7 +2971,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2814,6 +2984,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2827,7 +3014,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2840,6 +3027,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2853,7 +3057,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2866,6 +3070,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2879,7 +3100,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2892,6 +3113,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2905,7 +3143,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2918,6 +3156,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2931,7 +3186,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2944,6 +3199,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2957,7 +3229,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2970,6 +3242,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -2983,7 +3272,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2996,6 +3285,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3009,7 +3315,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3022,6 +3328,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3035,7 +3358,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3048,6 +3371,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3061,7 +3401,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3074,6 +3414,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3087,7 +3444,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3100,6 +3457,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3113,7 +3487,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3126,6 +3500,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3139,7 +3530,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3152,6 +3543,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3165,7 +3573,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3178,6 +3586,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3191,7 +3616,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3204,6 +3629,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3217,7 +3659,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3230,6 +3672,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3243,7 +3702,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3256,6 +3715,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3269,7 +3745,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3282,6 +3758,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3295,7 +3788,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3308,6 +3801,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3321,7 +3831,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 1
         m_GravityAccessToken: uSsvEV36s1ewYiFhCcgpilfXdtU9fkxN
         m_GravityChannel: base_channel
@@ -3334,6 +3844,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3347,7 +3874,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3360,6 +3887,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3373,7 +3917,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3386,6 +3930,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3399,7 +3960,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3412,6 +3973,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -3425,7 +4003,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3438,6 +4016,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f
@@ -4881,7 +5476,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey: ''
+        m_DataNexusSdkKey:
         m_EnableGravityEngine: 1
         m_GravityAccessToken: uSsvEV36s1ewYiFhCcgpilfXdtU9fkxN
         m_GravityChannel: base_channel
@@ -4894,6 +5489,23 @@ MonoBehaviour:
         m_ZoneId: 1
         m_CurrencyType: CNY
         m_GameCurrencyCoinsPerYuan: 10
+        m_PurchaseList:
+          m_Items:
+          - m_TableId: 1
+            m_Name: "\u793A\u4F8B\u9053\u5177"
+            m_Kind: 2
+            m_ProductId: REPLACE_WITH_WECHAT_PRODUCT_ID
+            m_PriceFen: 100
+            m_Quantity: 1
+            m_EditorNote: "\u4EC5\u793A\u4F8B\uFF0C\u5FC5\u987B\u66FF\u6362\u5FAE\u4FE1\u540E\u53F0\u771F\u5B9E\u9053\u5177
+              ID"
+          - m_TableId: 2
+            m_Name: "\u793A\u4F8B\u5145\u503C10\u5E01"
+            m_Kind: 1
+            m_ProductId: demo_currency_100
+            m_PriceFen: 100
+            m_Quantity: 10
+            m_EditorNote: "\u4EC5\u6F14\u793A\uFF0C\u4E0EDemo\u6BCF1\u5143\u5151\u636210\u5E01\u914D\u7F6E\u4E00\u81F4"
         m_CheckTextContentCmdName: WeChatMiniGameCheckTextContent
         m_CreateNoticeCmdName: WeChatMiniGameCreateNotice
         m_AppId: wxec64551daa21353f

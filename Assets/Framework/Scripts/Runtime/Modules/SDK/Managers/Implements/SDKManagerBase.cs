@@ -19,7 +19,7 @@ namespace NovaFramework.Runtime
     /// Priority = 16，SDK 模块在大部分核心模块（Event=7、ObjectPool=6 等）之后轮询，最后 Shutdown。
     /// 唯一实现类为 SDKManager（internal sealed partial），通过 Util.TypeCreator.Create 注入。
     /// </summary>
-    internal abstract class SDKManagerBase : FrameworkManager, ISDKManager
+    internal abstract class SDKManagerBase : FrameworkManager, ISDKManager, ISDKRegistrationManager
     {
         /// <summary>
         /// 管理器优先级，值越小越先 Update、越后 Shutdown。SDK 模块优先级为 16。
@@ -122,6 +122,9 @@ namespace NovaFramework.Runtime
         public abstract void Login(string userId);
 
         public abstract void Login(string userId, IReadOnlyDictionary<string, object> userProperties);
+
+        /// <summary>明确新用户注册并建立登录会话；同一 UID 本次生命周期内只注册一次。</summary>
+        public virtual void RegisterAndLogin(string userId) => Login(userId);
 
         /// <summary>显式结束当前登录会话。</summary>
         public abstract void EndLoginSession();

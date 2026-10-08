@@ -183,6 +183,8 @@ namespace NovaFramework.Runtime
             m_PluginsDiscoveredTcs.TrySetCanceled();
             m_PluginsDiscoveredTcs = new UniTaskCompletionSource();
             m_DeliveredSessionIds.Clear();
+            m_RegistrationDeliveredPlugins.Clear();
+            m_PendingRegistrationUserId = null;
             m_CurrentUserId = null;
             m_CurrentUserProperties = null;
             m_IsInitialized = false;
@@ -363,6 +365,7 @@ namespace NovaFramework.Runtime
             Login(userId, null);
         }
 
+        /// <summary>交付当前账号注册和本次登录，缓存属性供晚初始化插件补交。</summary>
         public override void Login(string userId, IReadOnlyDictionary<string, object> userProperties)
         {
             if (string.IsNullOrWhiteSpace(userId))
@@ -380,10 +383,24 @@ namespace NovaFramework.Runtime
                 : new Dictionary<string, object>(userProperties);
             m_CurrentSessionId++;
             foreach (ISDKPlugin plugin in m_SortedPlugins)
+            {
+                DeliverCurrentRegistration(plugin);
                 DeliverCurrentLogin(plugin);
+            }
 
             // 保留公开事件的原有每次调用都广播语义，供尚未迁移的外部消费者使用。
             m_EventManager?.Fire(this, SDKEventData.UserLogin.Create(userId));
+        }
+
+        /// <summary>确认新用户注册并发送注册、登录通知，每次有效调用均发送通知。</summary>
+        public override void RegisterAndLogin(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) return;
+            if (m_CurrentUserId != null && !string.Equals(m_CurrentUserId, userId, StringComparison.Ordinal))
+                EndLoginSession();
+            m_PendingRegistrationUserId = userId;
+            m_RegistrationDeliveredPlugins.Clear();
+            Login(userId);
         }
 
         /// <summary>显式结束当前账号会话；同 UID 再次登录也会获得新的会话编号。</summary>
@@ -391,6 +408,8 @@ namespace NovaFramework.Runtime
         {
             m_CurrentUserId = null;
             m_CurrentUserProperties = null;
+            m_PendingRegistrationUserId = null;
+            m_RegistrationDeliveredPlugins.Clear();
             m_CurrentSessionId++;
             foreach (ISDKPlugin plugin in m_SortedPlugins)
             {

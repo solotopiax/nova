@@ -111,6 +111,18 @@ namespace NovaFramework.Runtime
             return m_SDKManager.GetPluginInitializationState<TPlugin>();
         }
 
+        /// <summary>业务确认新用户后调用；每次有效调用均交付注册及一次登录。</summary>
+        public void RegisterAndLogin(string userId)
+        {
+            if (m_SDKManager is ISDKRegistrationManager registration)
+                registration.RegisterAndLogin(userId);
+            else
+            {
+                Log.Warning(LogTag.SDK, "当前SDK管理器不支持注册通知，保留原登录流程。");
+                m_SDKManager.Login(userId);
+            }
+        }
+
         /// <summary>结束当前账号会话，避免同 UID 下次登录被当作重复交付。</summary>
         public void EndLoginSession()
         {
