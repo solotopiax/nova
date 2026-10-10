@@ -38,7 +38,8 @@ SDKPluginBase
 | `m_RuntimeConfig` | `AdPluginConfig` | `null` | SDKManager 注入的广告运行时配置，提供国家码等待超时时间 |
 | `Events` | `AdPluginEvents` | `new AdPluginEvents()` | 事件容器，readonly，持有 7 个 ObservableEvent 字段 |
 | `Name` | `string` | `"AdPlugin"` | 插件友好名 |
-| `Priority` | `int` | `80` | 在现有收益打点插件之后初始化，确保广告渠道能缓存可用的打点实例 |
+| `Priority` | `int` | `80` | 稳定遍历和释放排序；初始化先后由能力依赖决定 |
+| `InitializationDependencies` | `IReadOnlyList<SDKInitializationDependency>` | 可选 `ITrackPlugin` 依赖 | 已启用该能力时等待其初始化完成；未启用时仍可初始化广告，不等待所有收益打点 SDK |
 
 ---
 

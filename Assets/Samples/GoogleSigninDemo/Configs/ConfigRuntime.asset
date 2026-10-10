@@ -23,15 +23,17 @@ MonoBehaviour:
   PrivacyConfigs:
     AESKey: YOUR_PRIVACY_AES_KEY
     AESIV: YOUR_PRIVACY_AES_IV
+    PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+    InfoPlistUsageDescriptions: '{}'
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 8085689214958567694
-  - rid: 8085689214958567695
-  - rid: 8085689214958567696
+  - rid: 2095149308307832996
+  - rid: 2095149308307832997
+  - rid: 2095149308307832998
   EnabledKitConfigs:
-  - rid: 8085689214958567697
-  - rid: 8085689214958567698
+  - rid: 2095149308307832999
+  - rid: 2095149308307833000
   HybridConfigs:
     GameEntranceProcedureName: ProcedurePreload
     AotMetadataDlls:
@@ -63,7 +65,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 8085689214958567694
+    - rid: 2095149308307832996
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -74,19 +76,19 @@ MonoBehaviour:
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
         m_AssignDeviceIdToDistinctId: 0
-    - rid: 8085689214958567695
+    - rid: 2095149308307832997
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
         m_ChannelConfigs:
           m_Items:
-          - rid: 8085689214958567699
+          - rid: 2095149308307833001
           m_EnableBidding: 1
           m_BannerIlrdInterval: 5
           m_MuteAd: 0
           m_RetryLoadAdMaxNum: 3
           m_RetryLoadAdInterv: 30
         m_CountryCodeWaitTimeoutSeconds: 5
-    - rid: 8085689214958567696
+    - rid: 2095149308307832998
       type: {class: GoogleSignInPluginConfig, ns: NovaFramework.SDK.GoogleSignIn, asm: NovaFramework.SDK.GoogleSignIn.Runtime}
       data:
         m_ClientId: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
@@ -94,19 +96,19 @@ MonoBehaviour:
         m_FilterByAuthorizedAccounts: 0
         m_AutoSelectEnabled: 1
         m_AutoRestoreOnInitialize: 0
-    - rid: 8085689214958567697
+    - rid: 2095149308307832999
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 8085689214958567698
+    - rid: 2095149308307833000
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind
         m_BindingQueryCmdName: 
         m_BindConflictCmdName: GameAccountBindConflict
         m_BindResolveCmdName: GameAccountBindResolve
-    - rid: 8085689214958567699
+    - rid: 2095149308307833001
       type: {class: MaxAdChannelConfig, ns: NovaFramework.SDK.MaxAdPlugin.Runtime, asm: NovaFramework.SDK.MaxAdPlugin.Runtime}
       data:
         m_Enabled: 1

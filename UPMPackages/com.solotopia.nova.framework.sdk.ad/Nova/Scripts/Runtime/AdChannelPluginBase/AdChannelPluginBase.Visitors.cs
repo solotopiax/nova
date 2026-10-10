@@ -22,6 +22,11 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         private IReadOnlyList<ITrackPlugin> m_TrackPlugins;
 
         /// <summary>
+        /// 初始化时缓存的文件片段管理器；存档读写前由启动流程完成 Persist.LoadAsync()。
+        /// </summary>
+        private IFileFragmentManager m_BannerIlrdPersistManager;
+
+        /// <summary>
         /// 各广告格式对应的 AdUnit 槽位列表；派生类在 InitChannelSDKAsync 内通过 RegisterAdUnits 注入。
         /// 键为 AdFormat，值为该格式下所有槽位。
         /// </summary>

@@ -31,6 +31,7 @@ auto_generated: true
 - [ADR-084 Persist 就绪前的框架启动状态使用受限 PlatformPlayerPrefs](../2-Areas/ADR/ADR-084-bootstrap-state-before-persist.md) — Persist 前启动状态使用受限 PlayerPrefs
 - [ADR-086 微信小游戏虚拟支付采用客户端订单生命周期与服务端验单](../2-Areas/ADR/ADR-086-wechat-minigame-server-authoritative-payment-orders.md) — 客户端持久化订单并发货，服务端负责签名验单
 - [ADR-089 iOS 应用权限用途说明由项目显式配置](../2-Areas/ADR/ADR-089-ios-privacy-usage-descriptions-project-owned.md) — iOS 用途文案由项目填写，框架只提供配置与注入
+- [ADR-090 资源密钥独立于资源化配置并在启动程序集提供](../2-Areas/ADR/ADR-090-resource-keys-before-config-loading.md) — 资源密钥按包名和编号管理由Config保存并导出为启动源码
 
 ## asset
 
@@ -88,7 +89,7 @@ auto_generated: true
 - [ADR-049 YooAsset Settings 路径 ConfigMaster 化（含 UPM 包本地 fork）](../2-Areas/ADR/ADR-049-yooasset-settings-via-configmaster.md) — YooAsset 设置路径收口 ConfigMaster
 - [ADR-053 Kit 配置模板化（IKitConfig + ConfigWindow Kit 一级组 + Kit 入口极简收口）](../2-Areas/ADR/ADR-053-kit-config-templating.md) — Kit 固有配置模板化，入口收口为极简形态
 - [ADR-054 Kit 配置进三维矩阵 + Network 表删维度列 PreFilter 降级纯拷贝（反转 ADR-053 决策 3）](../2-Areas/ADR/ADR-054-kit-config-three-dim-matrix.md) — 环境差异上移 Config 三维矩阵，网络表降纯拷贝
-- [ADR-058 ConfigWindow per-panel 可勾选维度（PanelDimensionMask + DimensionProjector + Override 旁路）](../2-Areas/ADR/ADR-058-per-panel-dimension-mask.md) — 面板级维度掩码 + Override 旁路按需多维配置
+- [ADR-058 ConfigWindow per-panel 可勾选维度（PanelDimensionMask + DimensionProjector + Override 旁路）](../2-Areas/ADR/ADR-058-per-panel-dimension-mask.md) — 面板独立分维且保存按当前掩码自动整理无效数据
 - [ADR-063 TGA 插件 ServerCmdName 与 ReportCmdName 双通道不可合并](../2-Areas/ADR/ADR-063-tga-dual-cmd-channel-separation.md) — TGA 埋点上报与账号绑定双通道禁合并
 - [ADR-069 云存档支持按 target_uid 跨用户查询](../2-Areas/ADR/ADR-069-gamesave-cross-user-query.md) — target_uid 空查自身、非空查指定，鉴权归服务端
 - [ADR-070 SDK 启用真相源归 ConfigMaster.EnabledSDKs，插件统一按启用配置实例化](../2-Areas/ADR/ADR-070-sdk-enable-via-configmaster-enabledsdks.md) — EnabledSDKs 唯一启用源，插件按配置统一实例化
@@ -116,4 +117,4 @@ auto_generated: true
 
 
 ---
-_共 74 条，分布于 10 个 category。_
+_共 75 条，分布于 10 个 category。_

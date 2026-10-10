@@ -25,6 +25,11 @@ namespace NovaFramework.Runtime
         bool RequiresLaunchWarmup { get; }
 
         /// <summary>
+        /// 当前 Web Player 是否按 TagsOnLaunch 使用已注入的平台原生 Downloader 准备启动缓存。
+        /// </summary>
+        bool RequiresLaunchPreload { get; }
+
+        /// <summary>
         /// 根据当前策略为默认包创建一次新的启动 WarmupGroup。
         /// </summary>
         /// <returns>尚未启动的预热组。</returns>

@@ -80,7 +80,7 @@ public interface IAdPlugin : ISDKPlugin, IBannerControl
     /// 展示指定格式广告，选 Revenue 最高的就绪渠道执行；无就绪渠道时 Log.Warning 并跳过（不抛异常）。
     /// AdFormat.Rewarded 时 AdResult.UserCompleted == true 表示用户看完，据此发放奖励。
     /// AdFormat.Banner 不适用此方法，Banner 展示请使用 IBannerControl.ShowBanner()。
-    /// customProps 会透传到渠道层 nova_ad_show / nova_ad_show_result 失败分支 / nova_ad_hidden 打点。
+    /// customProps 会透传到渠道层 nova_ad_show / nova_ad_show_result 成功与失败分支 / nova_ad_hidden 打点。
     UniTask ShowAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default);
 }
 ```

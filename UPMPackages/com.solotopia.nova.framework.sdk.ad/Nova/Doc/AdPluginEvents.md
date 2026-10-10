@@ -25,12 +25,33 @@ AdPlugin 事件容器，持有 7 个 ObservableEvent 字段，封装广告生命
 | `InitResult` | `StickyEvent<bool>` | Sticky | — | SDK 初始化结果；订阅时若已完成初始化则立即补发最新值 |
 | `AdLoaded` | `StickyEvent<AdLoadResult>` | Sticky | — | 广告加载成功；事件载荷 `Success=true`，订阅时补发最近一次加载成功结果 |
 | `AdLoadFailed` | `StickyEvent<AdLoadResult>` | Sticky | — | 广告加载失败；事件载荷 `Success=false`，订阅时补发最近一次加载失败结果 |
-| `ShowCompleted` | `ReplayEvent<AdResult>` | Replay | 32 | 广告展示成功（SDK displayed）；每条记录独立有意义，不可被后续事件覆盖，不表示广告已关闭或激励已完成 |
+| `ShowCompleted` | `ReplayEvent<AdResult>` | Replay | 32 | 广告展示成功（SDK displayed）；MAX 插屏此时 RewardGranted=true。每条记录独立有意义，不可被后续事件覆盖，不表示广告已关闭或激励已完成 |
 | `ShowFailed` | `ReplayEvent<AdResult>` | Replay | 32 | 广告播放失败；每条失败记录独立有意义，业务层需逐条处理 |
-| `RevenuePaid` | `ReplayEvent<AdEvent>` | Replay | 32 | 广告收益；每次收益须上报，不可丢失，Replay 保障无漏发 |
+| `RevenuePaid` | `ReplayEvent<AdEvent>` | Replay | 32 | 广告收益业务通知；新订阅者补收最近 32 条记录，收益埋点由渠道层处理 |
 | `AdClosed` | `ReplayEvent<AdResult>` | Replay | 32 | 广告关闭；每条关闭记录独立有意义，业务层需逐条响应 |
 
 > 所有字段均为 `readonly`，禁止外部替换实例。
+
+### 奖励资格与回调时点
+
+`Success` 表示当前回调对应的操作结果，`UserCompleted` 表示激励广告的官方奖励条件已经满足，`RewardGranted` 表示渠道给出的奖励资格。`RewardGranted` 不是“已发奖”的回执，也不是“已收到收益回调”的替代字段。
+
+当前 MAX 渠道的取值如下；其他渠道须按其实现判断：
+
+| 广告格式与回调 | Success | UserCompleted | RewardGranted | 关闭埋点 nova_can_get_reward |
+|---|---|---|---|---|
+| 激励展示成功 `ShowCompleted` | true | false | false | 不上报关闭事件 |
+| 激励关闭 `AdClosed` | true | 取官方奖励回调状态 | 同 UserCompleted | 同 UserCompleted |
+| 插屏展示成功 `ShowCompleted` | true | false | true | 不上报关闭事件 |
+| 插屏关闭 `AdClosed` | true | false | true | true |
+| 开屏展示成功 / 关闭 | true | false | false | 仅关闭时为 false |
+| 任一全屏展示失败 `ShowFailed` | false | false | false | 不上报关闭事件 |
+
+基类关闭入口保留渠道传入的 `AdResult.RewardGranted`；`RaiseAdClosed` 的 `rewarded` 参数只写入埋点属性 `nova_can_get_reward`。MAX 激励通过 `OnAdReceivedRewardEvent` 设置奖励状态，单独收到 `OnAdRevenuePaidEvent` 不会把激励奖励资格改为 true。
+
+插屏展示成功和关闭都携带奖励资格，业务应选定其中一个入口发奖。Replay 会向新订阅者补发近期记录，业务发奖应使用自己的展示请求标识防止重复处理。它是容量为 32 的内存缓冲，不保证超出容量或进程退出后的交付。
+
+`nova_ad_impression_id` 是埋点属性，不是 `AdResult` 字段；当前 MAX 会将它传到全屏关闭埋点，供分析平台串联同次展示。
 
 通用订阅模式（以 `InitResult` 为例）：
 
@@ -65,24 +86,25 @@ void OnStart()
         if (!success) Log.Warning("广告 SDK 初始化失败");
     }, m_AdBag);
 
-    // ShowCompleted：Replay，补发历史展示成功记录
+    // ShowCompleted：MAX 插屏展示成功即有奖励资格；此例选择在展示成功时处理插屏奖励。
     ev.ShowCompleted.Subscribe(result =>
     {
         Log.Debug($"广告展示成功：{result.Format} / {result.PlacementId}");
+        if (result.Format == AdFormat.Interstitial && result.Success && result.RewardGranted)
+            GiveReward(); // 业务方法：应按本次展示请求做好防重复处理。
     }, m_AdBag);
 
-    // AdClosed：Replay，关闭后再根据 UserCompleted 发奖
+    // AdClosed：此处只处理激励奖励；插屏奖励已由上面的展示成功入口处理。
     ev.AdClosed.Subscribe(result =>
     {
-        if (result.Success && result.UserCompleted)
+        if (result.Format == AdFormat.Rewarded && result.Success && result.RewardGranted)
             GiveReward();
     }, m_AdBag);
 
-    // RevenuePaid：Replay，收益不可丢失
+    // RevenuePaid：业务收入通知；MAX 适配层已负责派发 ad_ilrd 和 ad_impression。
     ev.RevenuePaid.Subscribe(e =>
     {
-        foreach (var t in Nova.SDK.GetAll<IMonetizeTrackPlugin>())
-            t.TrackAdRevenue(e);
+        Log.Debug($"广告收入通知：{e.Format} / {e.PlacementId} / {e.Revenue}");
     }, m_AdBag);
 }
 
@@ -100,4 +122,4 @@ void OnDestroyed()
 - [ObservableEvent.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Events/ObservableEvent.md) — StickyEvent / ReplayEvent 基类与 API
 - [IAdPlugin.md](./IAdPlugin.md) — 通过具体类型 `AdPlugin` 的 `Events` 属性暴露此容器
 - [AdChannelPluginBase.md](./AdChannelPluginBase.md) — 渠道侧触发各 event，AdPlugin 桥接到此容器
-- [Data.md](../../../../Assets/Framework/Docs/Runtime/Modules/SDK/Definitions/Data.md) — AdResult / AdEvent / AdLoadResult 载荷类型
+- [AdResult.cs](../Scripts/Runtime/Types/AdResult.cs) — 展示、失败和关闭结果字段的当前定义

@@ -57,6 +57,8 @@ find UPMPackages Packages Library/PackageCache -ipath '*/Nova/doc*/INDEX.md' -pr
 
 ### Tracking
 
+埋点登记、表格归属和样式统一遵循 [Tracks 维护规范](../../../TRACKS.md)。
+
 | 文档 | 说明 |
 |---|---|
 | [Plugins/Tracking/IUserPropertyPlugin.md](./Plugins/Tracking/IUserPropertyPlugin.md) | 一次性用户属性可选能力 |

@@ -45,6 +45,14 @@
       "required": true
     },
     {
+      "name": "encryptionPolicy",
+      "required": true
+    },
+    {
+      "name": "manifestEncryptionPolicy",
+      "required": false
+    },
+    {
       "name": "executionEntry",
       "required": true
     }
@@ -83,7 +91,7 @@
       "使用非默认加密器",
       "delete, external write, credential use, Git commit or push"
     ],
-    "rule": "确认绑定 Target、PackageName、BuildVersion、固定输出根和完整构建选项；任一输入改变后旧确认失效。"
+    "rule": "确认绑定 Target、PackageName、BuildVersion、固定输出根和完整构建选项，包含 Bundle/清单加密逻辑值及三个正式类型名；任一输入改变后旧确认失效。"
   },
   "minimumEvidence": "bundle-build",
   "resultStates": [
@@ -94,6 +102,7 @@
   ],
   "evidence": [
     "冻结的 Target、PackageName、BuildVersion 与 AssetBundleBuildArgs",
+    "冻结的 encryptionPolicy、manifestEncryptionPolicy 与三个正式加解密器类型名",
     "BuildResult.Success 和 OutputPackageDirectory",
     "本次输出目录及 YooAsset 构建报告",
     "未执行 CDN、商店、Git 与 UPM 发布的边界说明"

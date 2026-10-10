@@ -123,10 +123,11 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 
         /// <summary>
         /// 反注册所有 MaxSdk 广告事件回调；由 DisposeChannelSDKAsync 调用，防止资源泄露。
-        /// 与注册侧对称，同样按格式分组，仅当 placementId 有效时才执行反注册。
+        /// 先结束收益派发会话并清空插件缓存，再按格式反注册。
         /// </summary>
         protected override UniTask DisposeChannelSDKAsync(CancellationToken ct)
         {
+            ClearMaxRevenueTrackers();
             if (!m_CallbacksRegistered)
             {
                 return UniTask.CompletedTask;

@@ -71,9 +71,9 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 使用 Unity 当前 Active BuildTarget 与 Step 的渠道/模式导出 ConfigRuntime，不修改 ConfigMaster。
+        /// 使用 Unity 当前 Active BuildTarget 与 Step 的渠道/模式导出 ConfigRuntime 和密钥源码，不修改当前坐标；只更新生成文件追踪路径。
         /// </summary>
-        /// <param name="master">只读的设计态配置来源。</param>
+        /// <param name="master">已保存的设计态配置来源；仅生成文件追踪路径由 Exporter 持久化。</param>
         /// <param name="parameters">本次 Step 已固化的三维坐标。</param>
         /// <param name="assetPath">目标 ConfigRuntime 资产路径。</param>
         /// <returns>成功写入的 ConfigRuntime；未找到对应矩阵行时返回 null。</returns>

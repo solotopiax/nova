@@ -64,6 +64,7 @@ namespace NovaFramework.Editor
         /// </summary>
         private void OnEnable()
         {
+            InitializeResourceKeyPanel();
             EnsureEditingPlatform();
             bool reconciled = EditorUtil.Config.WorkspaceActive.ReconcileScene(EditorSceneManager.GetActiveScene().path);
             m_Master = reconciled ? EditorUtil.Config.WorkspaceActive.Get() : null;
@@ -90,14 +91,16 @@ namespace NovaFramework.Editor
         {
             if (!s_IsEditorQuitting && !s_IsDomainReloading &&
                 !EditorApplication.isCompiling && !EditorApplication.isUpdating)
+            {
                 HandleCloseReminder();
+            }
             DestroyWorkingCopy();
             EditorSceneManager.sceneOpened -= OnSceneOpenedRefresh;
         }
 
         /// <summary>
         /// 绘制窗口界面；Play Mode 下整体禁用并在顶部提示。
-        /// 关窗提醒由 OnDisable 统一处理，以便提供“仅保存 / 保存并导出”的明确选择。
+        /// 关窗提醒由 OnDisable 统一处理，以便提供“取消 / 仅保存 / 保存并导出”的明确选择。
         /// </summary>
         private void OnGUI()
         {
@@ -272,6 +275,7 @@ namespace NovaFramework.Editor
             m_WorkingCopy = UnityEngine.Object.Instantiate(m_Master);
             m_WorkingCopy.hideFlags = UnityEngine.HideFlags.DontSave;
             m_MasterSO = new SerializedObject(m_WorkingCopy);
+            InitializeResourceKeyPanel();
             m_IsDirty = false;
         }
 
@@ -284,14 +288,15 @@ namespace NovaFramework.Editor
             if (m_WorkingCopy == null) return;
             string before = EditorJsonUtility.ToJson(m_WorkingCopy);
             m_WorkingCopy.ApplyPrivacyInfoDefaultOnce();
+            try { ResourceKeyStore.MigrateLegacy(m_WorkingCopy); }
+            catch (System.Exception exception) { m_ResourceKeyError = exception.Message; }
             EditorUtil.Config.StructureGuard.SyncEnumGrid(m_WorkingCopy);
             m_MasterSO?.Update();
             bool structureChanged = !string.Equals(
                 before,
                 EditorJsonUtility.ToJson(m_WorkingCopy),
                 System.StringComparison.Ordinal);
-            // 复制或旧版本遗留的矩阵不一致同样需要进入保存恢复流；否则窗口刚打开时
-            // “保存”按钮会保持禁用，用户没有机会触发一键归一。
+            // 历史矩阵不一致也应点亮保存按钮，让统一保存入口自动整理旧维度残留。
             bool needsDimensionRepair = EditorUtil.Config.Validator
                 .ValidateDimensionInvariants(m_WorkingCopy).Count > 0;
             m_IsDirty = structureChanged || needsDimensionRepair;
@@ -324,27 +329,31 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 将 WorkingCopy 写回真实资产并落盘；保存后重建 WorkingCopy 保持后续编辑隔离。
+        /// 按当前编辑坐标自动整理 WorkingCopy 后写回真实资产；仅保存配置，不生成运行配置或密钥源码。
         /// </summary>
         private bool CommitWorkingCopyToAsset(bool rebuildWorkingCopy = true)
         {
             if (m_Master == null || m_WorkingCopy == null) return false;
             m_MasterSO?.ApplyModifiedProperties();
-            System.Collections.Generic.IReadOnlyList<EditorUtil.Config.Validator.ValidationIssue> invariantIssues =
-                EditorUtil.Config.Validator.ValidateDimensionInvariants(m_WorkingCopy);
-            if (invariantIssues.Count > 0)
+            try
             {
-                // 关窗保存发生在 OnDisable，WorkingCopy 随后会销毁，不能依赖 delayCall。
-                // 此路径同步完成确认与修复；普通按钮保存仍延迟弹窗，避开 OnGUI 绘制栈。
-                if (!rebuildWorkingCopy)
-                {
-                    if (!TryRepairDimensionInvariants(invariantIssues)) return false;
-                }
-                else
-                {
-                    ScheduleSaveBlockedDialog(invariantIssues);
-                    return false;
-                }
+                EditorUtil.Config.DimensionProjector.NormalizeForSave(m_WorkingCopy, m_MasterSO,
+                    new EditorUtil.Config.DimensionProjector.Coord(
+                        m_EditingPlatform, m_WorkingCopy.CurrentChannel, m_WorkingCopy.CurrentDevelopMode));
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogError("[ConfigWindow] 配置未保存：" + exception.Message);
+                ScheduleSaveFailedDialog();
+                return false;
+            }
+            // 保存只提交设计态配置；源码目录和程序集校验在导出时执行。
+            try { ResourceKeyStore.Validate(m_WorkingCopy.ResourceEncryption); }
+            catch (System.Exception exception)
+            {
+                m_ResourceKeyError = exception.Message;
+                Debug.LogError("[ConfigWindow] 配置未保存：" + exception.Message);
+                return false;
             }
             EditorUtility.CopySerialized(m_WorkingCopy, m_Master);
             // CopySerialized 会连带复制 WorkingCopy 的 (Clone) 后缀名，此处用资产文件名还原
@@ -353,10 +362,17 @@ namespace NovaFramework.Editor
                 m_Master.name = System.IO.Path.GetFileNameWithoutExtension(assetPath);
             EditorUtility.SetDirty(m_Master);
             AssetDatabase.SaveAssets();
+            // 密钥配置正式保存后再收尾旧配置迁移，不生成客户端源码。
+            try { ResourceKeyStore.CompleteLegacyMigration(m_Master); }
+            catch (System.Exception exception) { Debug.LogError("[ConfigWindow] 旧密钥文件尚未清理：" + exception.Message); }
             m_IsDirty = false;
             m_HasSavedChangesPendingExport = true;
             // 保存后重建 WorkingCopy，保持后续编辑基于最新已落盘状态
-            if (rebuildWorkingCopy) RebuildWorkingCopy();
+            if (rebuildWorkingCopy)
+            {
+                DestroyWorkingCopy();
+                RebuildWorkingCopy();
+            }
             EditorUtil.Config.Events.NotifyActiveConfigMasterSaved(m_Master);
             return true;
         }
@@ -403,6 +419,17 @@ namespace NovaFramework.Editor
                 {
                     fontSize = 12,
                     normal = { textColor = new Color(0.7f, 0.85f, 1f) }
+                };
+            }
+
+            if (m_ResourceKeyCardStyle == null)
+            {
+                // 卡片四周保留均匀内边距；卡片字段缩短标签列，保持输入起点对齐。
+                m_ResourceKeyCardStyle = new GUIStyle(EditorStyles.helpBox)
+                {
+                    margin = new RectOffset(0, 0, 2, 2),
+                    padding = new RectOffset(c_ResourceKeyCardPadding, c_ResourceKeyCardPadding,
+                        c_ResourceKeyCardPadding, c_ResourceKeyCardPadding),
                 };
             }
 

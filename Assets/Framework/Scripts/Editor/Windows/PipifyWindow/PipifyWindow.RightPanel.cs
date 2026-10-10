@@ -1082,18 +1082,22 @@ namespace NovaFramework.Editor
                 return currentClassName;
             }
 
-            int curIndex = 0;
-            for (int i = 0; i < fullNames.Length; i++)
+            int curIndex = Array.IndexOf(fullNames, currentClassName);
+            if (curIndex < 0)
             {
-                if (fullNames[i] == currentClassName) { curIndex = i; break; }
+                // 未配置或当前类型不可用时保留原值，避免重绘静默改成列表首项。
+                displays = new[] { string.IsNullOrEmpty(currentClassName) ? "未配置" : currentClassName }.Concat(displays).ToArray();
+                fullNames = new[] { currentClassName }.Concat(fullNames).ToArray();
+                curIndex = 0;
             }
             int newIndex = EditorGUI.Popup(valueRect, curIndex, displays);
             if (newIndex < 0 || newIndex >= fullNames.Length) return currentClassName;
+            if (newIndex == curIndex) return currentClassName;
             return fullNames[newIndex];
         }
 
         /// <summary>
-        /// 取或构建指定接口类型的下拉显示项缓存；选项为该接口/基类的全部可实例化实现类型 FullName。
+        /// 取或构建接口实现下拉缓存；三个资源构建接口与 YooAsset Bundle Builder 共用候选及排序。
         /// </summary>
         /// <param name="interfaceType">接口或基类类型。</param>
         /// <param name="fullNames">对应每个显示项的 FullName 数组。</param>
@@ -1107,7 +1111,11 @@ namespace NovaFramework.Editor
                 return cachedDisplays;
             }
 
-            string[] typeNames = EditorUtil.TypeCache.GetTypeNames(interfaceType);
+            bool buildService = interfaceType == typeof(YooAsset.IBundleEncryptor)
+                || interfaceType == typeof(YooAsset.IManifestEncryptor) || interfaceType == typeof(YooAsset.IManifestDecryptor);
+            string[] typeNames = buildService
+                ? YooAsset.Editor.EditorAssemblyUtility.GetBuildServiceTypes(interfaceType).Select(type => type.FullName).ToArray()
+                : EditorUtil.TypeCache.GetTypeNames(interfaceType);
             int total = typeNames?.Length ?? 0;
             string[] displays = new string[total];
             string[] names = new string[total];

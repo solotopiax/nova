@@ -30,10 +30,17 @@ namespace NovaFramework.Editor
             {
                 /// <summary>
                 /// 同步 ConfigMasterSO 矩阵与当前枚举成员：新增成员按面板维度掩码继承既有逻辑组，已废弃成员移除行；完成后 SetDirty。
-                /// <para>PlatformType.None 与 ChannelType.None 均为内部哨兵，不生成矩阵行；重复组合只保留第一条。</para>
+                /// <para>PlatformType.None 与 ChannelType.None 均为内部哨兵，不生成矩阵行；重复组合只保留列表最后一条。</para>
                 /// </summary>
                 /// <param name="master">待同步的 ConfigMasterSO 实例。</param>
                 public static void SyncEnumGrid(ConfigMasterSO master)
+                {
+                    if (master == null) return;
+                    SyncEnumGrid(master, master.CurrentPlatform);
+                }
+
+                /// <summary>保存归一使用显式编辑平台补齐矩阵，避免错误采用 Active BuildTarget 所在平台。</summary>
+                internal static void SyncEnumGrid(ConfigMasterSO master, PlatformType editingPlatform)
                 {
                     if (master == null) return;
 
@@ -104,7 +111,7 @@ namespace NovaFramework.Editor
                         addedEntries.Add(added);
                     }
 
-                    SeedAddedEntries(master, existingEntries, addedEntries);
+                    SeedAddedEntries(master, existingEntries, addedEntries, editingPlatform);
                     EditorUtility.SetDirty(master);
                 }
 
@@ -115,7 +122,8 @@ namespace NovaFramework.Editor
                 private static void SeedAddedEntries(
                     ConfigMasterSO master,
                     IReadOnlyList<PlatformChannelEntry> existingEntries,
-                    IReadOnlyList<PlatformChannelEntry> addedEntries)
+                    IReadOnlyList<PlatformChannelEntry> addedEntries,
+                    PlatformType editingPlatform)
                 {
                     if (existingEntries.Count == 0 || addedEntries.Count == 0) return;
 
@@ -125,10 +133,10 @@ namespace NovaFramework.Editor
                     {
                         foreach (DevelopMode targetMode in Enum.GetValues(typeof(DevelopMode)))
                         {
-                            SeedAppConfigs(master, existingEntries, target, targetMode);
-                            SeedPrivacyConfigs(master, existingEntries, target, targetMode);
-                            SeedTypedConfigs(master, existingEntries, target, targetMode, sdkTypes, true);
-                            SeedTypedConfigs(master, existingEntries, target, targetMode, kitTypes, false);
+                            SeedAppConfigs(master, existingEntries, target, targetMode, editingPlatform);
+                            SeedPrivacyConfigs(master, existingEntries, target, targetMode, editingPlatform);
+                            SeedTypedConfigs(master, existingEntries, target, targetMode, sdkTypes, true, editingPlatform);
+                            SeedTypedConfigs(master, existingEntries, target, targetMode, kitTypes, false, editingPlatform);
                         }
                     }
                 }
@@ -140,9 +148,10 @@ namespace NovaFramework.Editor
                     ConfigMasterSO master,
                     IReadOnlyList<PlatformChannelEntry> existingEntries,
                     PlatformChannelEntry target,
-                    DevelopMode targetMode)
+                    DevelopMode targetMode,
+                    PlatformType editingPlatform)
                 {
-                    PlatformChannelEntry source = FindSourceEntry(master, existingEntries, target, master.AppConfigsMask);
+                    PlatformChannelEntry source = FindSourceEntry(master, existingEntries, target, master.AppConfigsMask, editingPlatform);
                     if (source == null) return;
                     DevelopMode sourceMode = master.AppConfigsMask.ByDevelopMode ? targetMode : master.CurrentDevelopMode;
                     CopySerializable(source.GetAppConfigs(sourceMode), target.GetAppConfigs(targetMode));
@@ -155,9 +164,10 @@ namespace NovaFramework.Editor
                     ConfigMasterSO master,
                     IReadOnlyList<PlatformChannelEntry> existingEntries,
                     PlatformChannelEntry target,
-                    DevelopMode targetMode)
+                    DevelopMode targetMode,
+                    PlatformType editingPlatform)
                 {
-                    PlatformChannelEntry source = FindSourceEntry(master, existingEntries, target, master.PrivacyConfigsMask);
+                    PlatformChannelEntry source = FindSourceEntry(master, existingEntries, target, master.PrivacyConfigsMask, editingPlatform);
                     if (source == null) return;
                     DevelopMode sourceMode = master.PrivacyConfigsMask.ByDevelopMode ? targetMode : master.CurrentDevelopMode;
                     CopySerializable(source.GetPrivacyConfigs(sourceMode), target.GetPrivacyConfigs(targetMode));
@@ -172,12 +182,13 @@ namespace NovaFramework.Editor
                     PlatformChannelEntry target,
                     DevelopMode targetMode,
                     IEnumerable<string> typeNames,
-                    bool sdk)
+                    bool sdk,
+                    PlatformType editingPlatform)
                 {
                     foreach (string typeName in typeNames)
                     {
                         PanelDimensionMask mask = sdk ? master.GetSDKMask(typeName) : master.GetKitMask(typeName);
-                        PlatformChannelEntry source = FindSourceEntry(master, existingEntries, target, mask);
+                        PlatformChannelEntry source = FindSourceEntry(master, existingEntries, target, mask, editingPlatform);
                         if (source == null) continue;
                         DevelopMode sourceMode = mask.ByDevelopMode ? targetMode : master.CurrentDevelopMode;
                         object sourceConfig = FindTypedConfig(source, sourceMode, typeName, sdk);
@@ -197,9 +208,10 @@ namespace NovaFramework.Editor
                     ConfigMasterSO master,
                     IReadOnlyList<PlatformChannelEntry> existingEntries,
                     PlatformChannelEntry target,
-                    PanelDimensionMask mask)
+                    PanelDimensionMask mask,
+                    PlatformType editingPlatform)
                 {
-                    PlatformType preferredPlatform = mask.ByPlatform ? target.Platform : master.CurrentPlatform;
+                    PlatformType preferredPlatform = mask.ByPlatform ? target.Platform : editingPlatform;
                     ChannelType preferredChannel = mask.ByChannel ? target.Channel : master.CurrentChannel;
                     for (int i = 0; i < existingEntries.Count; i++)
                     {

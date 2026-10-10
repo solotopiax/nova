@@ -13,6 +13,12 @@
 
 ### Breaking
 
+## [0.0.17] - 2026-10-10
+
+### Fixed
+
+- AIHelpDemo 将 YooAsset 内置与缓存目录从 yooasset 统一为 yoo，重新导出配置，保持示例资源路径一致。
+
 ## [0.0.16] - 2026-09-28
 
 ### Changed

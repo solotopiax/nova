@@ -10,6 +10,14 @@
 
 ### Breaking
 
+## [0.1.13] - 2026-10-10
+
+### Fixed
+
+- 修复 AppsflyerDemo UI Excel 误留 MainDemo 条目，重新导出 UI 数据与生成代码，恢复启动时 DemoAppsflyerView 注册和打开。
+
+- AppsflyerDemo 按当前坐标整理 AppsFlyer 与全局应用配置，重新导出运行时配置；YooAsset 内置与缓存目录从 yooasset 统一为 yoo。
+
 ## [0.1.12] - 2026-09-28
 
 ### Changed

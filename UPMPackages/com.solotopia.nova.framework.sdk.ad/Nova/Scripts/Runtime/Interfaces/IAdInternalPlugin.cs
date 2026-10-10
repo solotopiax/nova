@@ -131,7 +131,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// AdFormat.Banner 不适用此方法，Banner 展示请使用 IBannerControl.ShowBanner()。
         /// </summary>
         /// <param name="format">广告格式。</param>
-        /// <param name="customProps">自定义属性字典，将合并到 show/show_result 失败分支/hidden 打点；可为 null。</param>
+        /// <param name="customProps">自定义属性字典，将合并到 show/show_result 成功与失败分支/hidden 打点；可为 null。</param>
         /// <param name="ct">取消令牌。</param>
         /// <returns>广告展示结果。</returns>
         UniTask<AdResult> ShowAsync(AdFormat format, Dictionary<string, object> customProps = null, CancellationToken ct = default);

@@ -100,8 +100,28 @@ namespace NovaFramework.Runtime
                     return false;
                 }
 
+                if (RequiresNativeLaunchPreload())
+                {
+                    return false;
+                }
                 return ResolveEffectiveWebGLStrategy() != WebGLAssetStrategy.OnDemand;
             }
+        }
+
+        /// <inheritdoc />
+        bool IAssetStartupWarmupController.RequiresLaunchPreload => RequiresNativeLaunchPreload();
+
+        /// <summary>
+        /// 仅实际启用平台预下载的 Web Host 默认包，在 TagsOnLaunch 下改用 Downloader。
+        /// AllOnLaunch 保留 Warmup 内存驻留语义，OnDemand 不提前下载。
+        /// </summary>
+        /// <returns>需要启动原生预下载时返回 true。</returns>
+        private bool RequiresNativeLaunchPreload()
+        {
+            return Application.platform == RuntimePlatform.WebGLPlayer
+                && m_Config != null
+                && m_WebPreloadPackages.Contains(ResolvePackageName(null))
+                && ResolveEffectiveWebGLStrategy() == WebGLAssetStrategy.TagsOnLaunch;
         }
 
         /// <inheritdoc />

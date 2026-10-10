@@ -169,3 +169,33 @@ HybridCLR DLL 不走 RawFile 通道，仍按标准 AssetBundle 构建并通过 `
 - [EditorUtil.Build.md](../EditorUtil.Build/EditorUtil.Build.md)
 - [PipifySteps.md](../EditorUtil.Pipify/PipifySteps.md)
 - [WebGLAssetStrategies.md](../../../Runtime/Modules/Asset/WebGLAssetStrategies.md)
+
+## Nova 资源加密方案
+
+既有 `BundleEncryptorClassName`、`ManifestEncryptorClassName`、`ManifestDecryptorClassName` 字段与官方构建页面同源，不新增方案配置字段。XOR/AES memory/AES stream Bundle 方案及 XOR/AES 清单方案从激活且已保存的 Config 资源加解密配置读取资源包密钥，缺密钥阻断。Offset 仅追加头部混淆，不需要密钥。一次 Package 构建统一使用所选 Bundle Encryptor，不按文件大小自动切换。
+
+清单的 `NovaFramework.Editor.ResourceManifestAesEncryptor` 对应 `NovaFramework.Editor.ResourceManifestAesDecryptor`，`ResourceManifestXorEncryptor` 对应同一命名空间的 `ResourceManifestXorDecryptor`；Nova/Pipify 构建前校验配对。两个构建解密器只接受各自格式，从已保存的 ConfigMaster 取密钥并委托 Runtime 解密；客户端由 Nova 自动配置 `NovaFramework.Runtime.ResourceManifestDecryptor`，读取生成代码注册的提供器。
+
+Pipify 三个字段只保留一个简短说明框。Bundle Builder 与 Pipify 共用 `EditorAssemblyUtility.GetBuildServiceTypes` 候选与排序，排除抽象基类、未闭合泛型和无公开无参构造的实现；Runtime 清单解密器需要构造参数，因此不在候选中，其他可实例化自定义实现仍可选。构建直接实例化所选类型，不保留旧通用构建类或类名映射；明确选择的错误配对不会自动纠正。自定义加密器不自动匹配 Nova 解密器。详见 [资源加解密](../../../Runtime/Modules/Asset/ResourceEncryption.md)。
+
+### 受控 Bundle Action
+
+`nova.project.bundle.build-asset` 与 `nova.project.bundle.build-raw-file` 使用逻辑值白名单，不接受直接 API 中的类型名参数。`encryptionPolicy` 必填，映射如下：
+
+| 逻辑值 | Bundle 加密器全类型名 |
+|---|---|
+| `none` | `YooAsset.Editor.EncryptionNone` |
+| `offset` | `NovaFramework.Editor.ResourceOffsetEncryptor` |
+| `xor` | `NovaFramework.Editor.ResourceXorEncryptor` |
+| `aes-memory` | `NovaFramework.Editor.ResourceAesMemoryEncryptor` |
+| `aes-stream` | `NovaFramework.Editor.ResourceAesStreamEncryptor` |
+
+`manifestEncryptionPolicy` 可选，省略或 `null` 使用 `none`；显式空串、未知值、类型名和别名被拒绝。清单与 Bundle 独立选择：
+
+| 逻辑值 | 清单加密器全类型名 | 构建清单解密器全类型名 |
+|---|---|---|
+| `none` | `YooAsset.Editor.ManifestEncryptorNone` | `YooAsset.Editor.ManifestDecryptorNone` |
+| `aes` | `NovaFramework.Editor.ResourceManifestAesEncryptor` | `NovaFramework.Editor.ResourceManifestAesDecryptor` |
+| `xor` | `NovaFramework.Editor.ResourceManifestXorEncryptor` | `NovaFramework.Editor.ResourceManifestXorDecryptor` |
+
+Plan 同时冻结两项逻辑值和三个实际正式类型名；Execute 使用冻结值调用既有 BundleBuilder，沿用已保存 ConfigMaster 的密钥来源和缺密钥阻断规则。计划不携带密钥。既有 `encryptionPolicy=none` 且不传清单参数的请求仍生成明文 Bundle 与清单。该受控入口不提供任意自定义类型或旧通用清单类名兼容。

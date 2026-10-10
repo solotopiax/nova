@@ -118,6 +118,18 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 打开独立本地资源密钥面板；无需绑定 ConfigMasterSO，不改变三维配置。
+        /// </summary>
+        public static void OpenResourceEncryptionSection()
+        {
+            Open();
+            ConfigWindow window = GetWindow<ConfigWindow>();
+            window.TryChangeSelection(LeftTreeItem.ResourceEncryptionConfig, null);
+            window.m_GroupExpandedCommon = true;
+            window.Repaint();
+        }
+
+        /// <summary>
         /// 通过 Luban 环境检测结果打开窗口并自动导航到 Luban 面板（Pipeline 调用入口）。
         /// </summary>
         /// <param name="result">Luban 环境检测结果。</param>

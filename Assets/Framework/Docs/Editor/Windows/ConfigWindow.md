@@ -23,6 +23,7 @@ Nova 全局配置窗口，三段式布局（顶栏 + 左树 + 右面板），集
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.HybridCLR.cs` | `ConfigWindow` | HybridCLR 面板：`DrawHybridCLRPanel`、`DrawHybridCLREntranceSection`、`DrawHybridCLRAotMetadataSection`、`DrawHybridCLRGameDllSection`；ReorderableList 辅助：`EnsureHybridCLRAotMetadataDllsList`、`EnsureHybridCLRGameDllsList`、`DrawHybridCLRDllEntryElementCore`（三字段：源位置 / 目标位置 / Asset 地址）、`OnAddHybridCLRAotMetadataDllEntry`、`OnAddHybridCLRGameDllEntry`、`OnAddHybridCLRDllEntry`；维度化接线：`ResolveHybridCLRDllListProp`（按当前坐标+HybridEditorConfigsMask 解析 Dll 列表 SerializedProperty，IsGlobal 回落顶层，mask 非全局时进入坐标即建份经 `EnsureHybridEditorConfigsOverrideIndexAtCoord` 含顶层快照，list 绑 Override 内嵌列表）、`CommitHybridCLRDllEntryField`（单字段写入经 Ensure 懒创建落 Override 份）、`OnPickFolderForRelativePathForDllEntry`（Dll 元素"选择"按钮，写回走 Commit）、`PickRelativeFolder`（弹面板+算相对路径共享逻辑）、`SyncFoldoutCapacity`（折叠状态容量同步）；两个 Dll 列表与字符串字段同等遵循平台/渠道/开发模式批量部署 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.CDN.cs` | `ConfigWindow` | CDN 面板包含“部署”“白名单部署”“Cloudflare 缓存清理”三个业务区；OSS 工具包缺失时显示安装引导并仅禁用前两项部署；白名单区直接编辑设备 ID 字符串数组、配置文件云端文件位置、三个 YooAsset 版本文件本地位置和版本文件云端目录，并通过独立按钮分别上传；所有字段沿用 `CDNEditorConfigsMask + CDNEditorConfigsOverrides` 维度快照、WorkingCopy 延迟保存与 `CreateCdnConfigSnapshot` 执行快照机制。 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.YooAsset.cs` | `ConfigWindow` | YooAsset 配置面板：字段和维度开关统一只修改 WorkingCopy；`ReInjectYooAsset` 从 WorkingCopy 解析当前坐标并刷新编辑期预览，点击保存后才整体写入 ConfigMaster 资产；导出时再把当前维度模板单向写入目标 YooAssetSettings.asset。 |
+| `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.ResourceEncryption.cs` | `ConfigWindow` | 资源加解密配置：统一三维头部、已有 PackageName 的密钥与当前编号、源码导出目录；编辑 WorkingCopy 并使用顶部全局保存，导出才生成客户端源码。 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.RightPanel.BindGuide.cs` | `ConfigWindow` | 绑定引导面板（m_Master 为 null 时显示）：`DrawBindGuide`、`BrowseAndBindConfigMaster`、`CreateAndBindConfigMaster`、`BindMaster`；绑定后重建 WorkingCopy，不直接将 SerializedObject 绑到真实资产 |
 | `Editor/Windows/ConfigWindow/ConfigWindow.Dialogs.cs` | `ConfigWindow` | 弹框：`HandleCloseReminder`（关窗保存/导出单次提醒）、`ConfirmDiscardDirty`、维度切换确认、校验提示与缺失引用清理；清理 SDK / Kit 失效引用也只修改 WorkingCopy，等待统一保存。 |
 
@@ -233,21 +234,25 @@ OnGUI()
 ```
 CommitWorkingCopyToAsset()
   ├─ ApplyModifiedProperties()（提交当前帧字段）
-  ├─ Validator.ValidateDimensionInvariants(m_WorkingCopy)（只读门禁）
-  │    └─ 若不一致：用户可选择按顶部当前坐标归一 WorkingCopy → 重新校验
+  ├─ DimensionProjector.NormalizeForSave(m_WorkingCopy, m_MasterSO, 当前编辑坐标)
+  │    ├─ 自动清理失效坐标和模式，补齐物理矩阵
+  │    ├─ 按当前掩码整理矩阵、顶层 Override 和资源加密编号
+  │    └─ 维度及密钥校验；异常则原子恢复草稿，不写资产
   ├─ EditorUtility.CopySerialized(m_WorkingCopy, m_Master)
   ├─ 还原资产文件名，避免 CopySerialized 带入 (Clone) 后缀
   ├─ EditorUtility.SetDirty(m_Master)
   ├─ AssetDatabase.SaveAssets()
   ├─ m_IsDirty = false
   ├─ m_HasSavedChangesPendingExport = true
-  ├─ RebuildWorkingCopy()（关窗保存时跳过）
+  ├─ DestroyWorkingCopy() → RebuildWorkingCopy()（关窗保存时跳过）
   └─ EditorUtil.Config.Events.NotifyActiveConfigMasterSaved(m_Master)
 ```
 
-正常保存不会广播，也不会猜哪个坐标是权威值。普通字段发生实际变化时，系统立即按掩码把当前值同步到所有未勾选轴；用户确认勾选或取消维度时，系统一次投影整个矩阵。保存先检查同一逻辑组是否仍有冲突，再把完整 WorkingCopy 写回资产。Exporter 入口复用同一门禁，因此 ConfigWindow、Pipify、Agent Action 与迁移导出都不能绕过。
+保存自动按当前勾选的维度整理配置，无需确认整理：未勾选轴采用顶部当前编辑坐标对应的内容，已勾选轴逐逻辑组保留。矩阵配置仍保留有效物理格，但同组值统一；顶层全局配置保留当前页面的顶层值并删除旧 Overrides；部分维度的 Overrides 优先保留规范记录，再选择当前被合并轴对应的旧分支并裁剪坐标。失效坐标、模式和非当前旧分支自动清除。
 
-例如只勾选 `DevelopMode` 时，修改任意平台/渠道的 Release 会立即同步所有平台和渠道的 Release，Debug 不变。若从其它项目复制或旧版本遗留的资产已经存在同组不一致，窗口打开后会把它视为待修复状态并启用保存按钮；点击保存可明确选择“使用当前配置自动整理”：未勾选轴以顶部当前分支为准，已勾选轴继续分别保留，修复发生在 WorkingCopy 并重新校验后才落盘。若差异本来需要保留，应取消并先勾选对应维度。弹窗只展示原因、影响和下一步，`AppConfigs[-1|-1|0]` 等字段路径、逻辑键与冲突坐标仅写入 Console / Editor.log。
+例如只勾选 `DevelopMode` 时，保存会分别保留顶部当前平台、渠道的 Debug 和 Release，推广到所有平台、渠道；取消全部分别配置后，保存只保留当前全局内容。SDK / Kit 包括暂未启用但仍存储的配置；当前来源缺失的稀疏组仅在同组已有内容一致时补齐，不凭空生成默认配置。资源加解密配置只整理当前加密编号的维度记录，全部旧解密密钥保留。
+
+普通保存与关窗保存复用同一自动整理入口；保存只写 ConfigMaster，导出才生成运行配置和客户端密钥源码。真实重复坐标或无法区分的有效重复记录等结构损坏仍会停止保存，并恢复整理前的草稿；错误详情写入 Console，失败提示延迟到 GUI 绘制结束后显示。Exporter 保持只读校验，不隐式修正或保存 Master，因此外部绕过正式保存的坏数据仍无法导出。
 
 保存事件在 WorkingCopy 写回真实资产并落盘后触发。SDKComponent Inspector 依赖该事件刷新当前 active `EnabledSDKs` 对应的 Plugin 可见列表。
 
@@ -379,7 +384,7 @@ OnClickExport()
 
 ### 关窗提醒流
 
-- 有未保存修改：只弹一次，提供“仅保存”和“保存并导出”。选择“仅保存”后直接结束，不再出现第二次导出询问。
+- 有未保存修改：只弹一次，提供“取消”“仅保存”和“保存并导出”。选择“取消”不保存、不导出，下一帧恢复配置页并保留未保存草稿；选择“仅保存”后直接结束，不再出现第二次导出询问。
 - 已手动保存、但本次修改尚未成功导出：询问“导出 / 暂不导出”。
 - 关窗联动导出校验失败、导出失败或取消选择导出文件：下一帧恢复原 Master、编辑坐标和面板，并继续保留待导出状态。
 - 已成功导出或本次没有修改：直接关闭。
@@ -400,7 +405,7 @@ OnClickExport()
 | "保存"按钮灰色点不了 | `m_IsDirty == false` 时 DisabledScope 禁用按钮；在右侧面板编辑任意字段后 ChangeCheck 自动置 `true` |
 | 切换导出目标后保存按钮仍然灰色 | 正常现象。切换导出目标（ObjectField 回调 / `OnClickSelectExportAsset`）不清零 `m_IsDirty`，也不置位；导出目标切换不影响 ConfigMasterSO 的脏状态 |
 | 编辑其他平台必须切换 Unity BuildTarget | 不需要。顶栏可直接切换编辑平台并保存；只有导出和 YooAsset 生效要求编辑平台与 Active BuildTarget 一致。 |
-| 改完字段直接关窗口 | 关闭时会一次性询问“仅保存 / 保存并导出”；选择“仅保存”不会再追问导出 |
+| 改完字段直接关窗口 | 关闭时会一次性询问“取消 / 仅保存 / 保存并导出”；取消不保存、不导出，选择“仅保存”不会再追问导出 |
 | 手动保存后忘记导出 | 当前窗口会话记录“已保存但未导出”状态，关闭时询问是否导出；成功导出后不再提示 |
 
 ---
@@ -451,3 +456,15 @@ if (!envResult.IsReady)
 - [EditorUtil.Config.DimensionalResolver.md](../EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md)（`DrawYooAssetTitleWithMask` / `ReInjectYooAsset` 取数；CDN 面板经 `ResolveCDNEditorConfigs` 取当前坐标生效份）
 - [EditorUtil.Environment.LubanChecker.md](../EditorUtil/EditorUtil.Environment/EditorUtil.Environment.LubanChecker.md)
 - [EditorUtil.Environment.Python3.md](../EditorUtil/EditorUtil.Environment/EditorUtil.Environment.Python3.md)
+
+## 资源加解密配置
+
+通用配置下的“资源加解密配置”位于“YooAsset 配置”正下方、“CDN 内容分发网络部署”上方，使用统一的 12 号浅蓝加粗标题与三维开关。页面分为客户端密钥源码、资源包选择、现有密钥；标题行右侧提供紧凑的新增密钥与显示密钥按钮，新增条目保持黄色至全局保存。只管理 YooAsset 已有 PackageName 的密钥，不创建或删除 Package。
+
+密钥、当前编号及维度掩码保存在 `ConfigMaster.ResourceEncryption`。本页编辑 `m_WorkingCopy`，数据变更同步 `SerializedObject` 并置 `m_IsDirty`；选择资源包、显示密钥等界面操作不标脏。统一使用顶部“保存”，没有本页保存、重新读取或专属未保存弹窗。旧 `ProjectSettings/NovaResourceKeys.json` 首次迁入工作副本，正式保存并核对一致后删除。密钥不导出到 ConfigRuntimeSO。
+
+客户端密钥源码导出目录支持文本输入和右侧选择按钮，保存为 Assets 相对路径。顶部保存只写入 ConfigMaster；顶部导出时生成 `ResourceKeys.Generated.cs` 与 `link.xml`，命名空间解析 Config 的有效 Namespace，不创建 asmdef。实际归属程序集须参与客户端编译、引用 NovaFramework.Runtime，且不能属于或依赖 HybridCLR 热更程序集。建议使用独立 `ResourceKeys` 子目录；目录改变时只移除本工具跟踪的旧产物，保留手写文件与全部密钥。ConfigMaster、生成文件及相关 meta 共同纳入项目私有仓库。同一项目只允许一份实际生成的提供器，空密钥配置可预存不同路径；多个 Master 的密钥不会自动合并。Demo 的目标路径统一为各自 `Scripts/Runtime/ResourceKeys/ResourceKeys.Generated.cs`。
+
+三维开关只区分各环境的当前加密编号，所有保留密钥共用。加维复制各旧逻辑组，减维按顶部当前轴合并剩余各组，不删除密钥；维度和编号经 DimensionProjector 入口修改。保存时自动清理失效 `ActiveKeyOverrides`，无需整理确认；全局时只保留共用的当前编号与全部密钥。编辑坐标取顶栏，构建取实际目标平台及激活 Config 已保存渠道、模式；Pipify export.config 参数不改写该坐标。官方清单接口不提供平台，按平台分维并启用 Nova 清单加密时须使用 Nova/Pipify，否则阻断。
+
+布局沿用 CDN 面板：内容两侧 16 像素，标签列 150 像素；大区域使用 12 像素留白及公共分隔线。卡片四周 8 像素，内部标签列 142 像素、行距 2 像素，按钮统一 singleLineHeight。“新增密钥”位于“现有密钥”标题行右侧，旁边是紧凑的“显示密钥”；新增条目暂时黄色高亮，输入方式使用“手动输入”措辞。HelpBox 只说明操作和使用约束，不暴露内部环境变量或重复当前坐标。方案在 YooAsset/Pipify 中选择，详见 [资源加解密](../../Runtime/Modules/Asset/ResourceEncryption.md)。

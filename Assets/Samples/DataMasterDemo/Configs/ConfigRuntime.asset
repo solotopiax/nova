@@ -23,13 +23,15 @@ MonoBehaviour:
   PrivacyConfigs:
     AESKey: YOUR_PRIVACY_AES_KEY
     AESIV: YOUR_PRIVACY_AES_IV
+    PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
+    InfoPlistUsageDescriptions: '{}'
   Platform: 1
   Channel: 2
   EnabledSDKConfigs:
-  - rid: 3752622509981433984
-  - rid: 3752622509981433985
+  - rid: 2095149323159077620
+  - rid: 2095149323159077621
   EnabledKitConfigs:
-  - rid: 3752622509981433986
+  - rid: 2095149323159077622
   HybridConfigs:
     GameEntranceProcedureName: ProcedurePreload
     AotMetadataDlls:
@@ -61,7 +63,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 3752622509981433984
+    - rid: 2095149323159077620
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -72,7 +74,7 @@ MonoBehaviour:
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
         m_AssignDeviceIdToDistinctId: 0
-    - rid: 3752622509981433985
+    - rid: 2095149323159077621
       type: {class: DataMasterPluginConfig, ns: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime, asm: NovaFramework.SDK.StarlusDataMaster.ABTest.Runtime}
       data:
         m_AppId: YOUR_DATAMASTER_APP_ID
@@ -84,7 +86,7 @@ MonoBehaviour:
         m_ReportRetries: 1
         m_RequestTimeoutSeconds: 10
         m_PreferLastSuccessfulHost: 1
-    - rid: 3752622509981433986
+    - rid: 2095149323159077622
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin

@@ -402,3 +402,9 @@ In the current Unity build chain, this combination produces an AAB without an up
 These fields are visible only for Android builds, and the four value fields are visible only when `UseAndroidKeystore` is enabled. Password fields use `PipifyPasswordAttribute`, so `PipifyWindow` renders them with `PasswordField`; the stored value is still a normal string for `PipifySettingsSO` and CLI overrides.
 
 When enabled, the Step temporarily writes `PlayerSettings.Android.useCustomKeystore`, `keystoreName`, `keystorePass`, `keyaliasName`, and `keyaliasPass`, calls `EditorUtil.Build.BuildPackage`, then restores the previous PlayerSettings values in `finally`. Missing signing fields fail before `BuildPlayer` runs.
+
+### Bundle 加解密字段
+
+AssetBundle 与 RawFile 构建 Step 沿用 `BundleEncryptorClassName`、`ManifestEncryptorClassName`、`ManifestDecryptorClassName`，候选与排序和 YooAsset Bundle Builder 一致；不增加另一套方案配置。三个字段共用一个简短 HelpBox，只说明密钥在 Config → 通用配置 → 资源加解密配置中配置，以及清单 AES 对 AES、XOR 对 XOR。
+
+Editor 构建按 PackageName 从激活且已保存的 `ConfigMaster.ResourceEncryption` 读取密钥，不写入 Step JSON，不从独立 JSON 或环境变量覆盖。顶部保存只保存配置；顶部导出或 `export.config` 生成客户端密钥源码。配置与生成文件共同纳入项目私有仓库，客户端解密由 Nova 自动接入。详见 [资源加解密](../../../Runtime/Modules/Asset/ResourceEncryption.md)。

@@ -76,9 +76,10 @@ IAdChannelConfig  <── MaxAdChannelConfig  (配置值对象，非插件本体
 | `m_CountryCode` | `string` | `null` | MAX SDK 初始化完成后由 `SdkConfiguration.CountryCode` 返回的国家代码；`GetCountryCode()` 对外返回该缓存值 |
 | `m_IsUserConsentSet` | `bool` | `false` | MAX SDK 初始化完成时缓存用户是否已明确作出广告隐私授权决定 |
 | `m_HasUserConsent` | `bool` | `false` | MAX SDK 初始化完成时缓存授权结果；仅在 `m_IsUserConsentSet` 为 `true` 时表示明确同意或拒绝 |
-| `m_RevenueMonetizeTracker` | `IMonetizeTrackPlugin` | `null` | 收益回调打点用的变现插件引用；初始化主线程缓存 |
-| `m_RevenueAttributionTracker` | `IAttributionPlugin` | `null` | 收益回调打点用的归因插件引用；初始化主线程缓存 |
-| `m_RevenueEventTracker` | `ITrackPlugin` | `null` | 收益回调打点用的通用埋点插件引用；初始化主线程缓存 |
+| `m_RevenueMonetizeTracker` | `IMonetizeTrackPlugin` | `null` | 变现插件缓存；通过 GetRevenueMonetizeTracker 按需获取，有值直接返回 |
+| `m_RevenueAttributionTracker` | `IAttributionPlugin` | `null` | 归因插件缓存；通过 GetRevenueAttributionTracker 按需获取，有值直接返回 |
+| `m_RevenueEventTracker` | `ITrackPlugin` | `null` | 通用埋点插件缓存；通过 GetRevenueEventTracker 按需获取，有值直接返回 |
+| `m_RevenueTrackingSession` | `object` | `null` | 当前收益派发会话；释放时置空，派发前核对会话 |
 | `m_FullscreenImpressions` | `Dictionary<AdFormat, FullscreenImpressionContext>` | 空字典 | 当前进程内各全屏格式的本地曝光关联状态，用于连接展示与收益回调 |
 | `m_CallbacksRegistered` | `bool` | `false` | MAX 全局回调注册幂等门；释放完成后恢复为 false |
 | `BannerIlrdInterval` | `int` | `5` | 继承自广告全局配置；Banner ILRD 聚合由 `AdChannelPluginBase` 统一处理，MAX 在满间隔时构造并上传自己的 `ad_ilrd` payload |
@@ -187,6 +188,10 @@ protected override UniTask OnRequestAsync(AdFormat format, string placementId, C
 
 ### 展示（Rewarded / Interstitial / AppOpen）
 
+MAX 插屏收到 displayed 回调即表示满足本项目的插屏奖励条件，`OnShowCompleted` 的结果同时携带 `Success=true` 和 `RewardGranted=true`，不等待收益回调。插屏关闭结果继续保持 `RewardGranted=true`；展示失败时 `Success`、`RewardGranted` 均为 false。激励关闭时 `UserCompleted` 和 `RewardGranted` 都取 `m_RVRewarded`，开屏为 false。基类关闭入口不会用收益到达状态重新计算奖励资格，实际发奖由业务处理。
+
+`OnShowCompleted` 在广告展示成功时通知；`ShowAsync` 的异步结果仍在关闭或展示失败时结束。插屏的这两个时点都可以带有奖励资格，业务应选定一个入口处理同次展示的奖励。
+
 ```csharp
 // 展示全屏广告并挂起等待关闭结果
 // Rewarded  → MaxSdk.ShowRewardedAd(placementId)，奖励状态由 m_RVRewarded 追踪
@@ -244,7 +249,7 @@ InitChannelSDKAsync(config, ct)
   转型 MaxAdChannelConfig
   缓存 4 类 PlacementId 列表（RV / Inter / Banner / AppOpen）
   缓存 Banner 自动刷新间隔（10–120 秒）
-  缓存收益打点插件引用
+  重置收益派发会话；插件引用在实际派发时按需获取
           │
           ▼
   FacebookAdSetting.Initialize()
@@ -285,23 +290,55 @@ InitChannelSDKAsync(config, ct)
 
 **guard 说明：** `RegisterXxxCallbacks` 方法开头检查对应广告位 ID 列表是否为空；空列表会跳过该格式。非空列表中的每个 ID 都注册为独立 `AdUnit`，一次 `RequestAsync(format)` 会并行请求该格式下全部 Idle 槽位，任一成功即可结束当前请求批次。
 
-**线程说明：** MAX 不再设置 `MaxSdkBase.InvokeEventsOnUnityMainThread = true`。MAX 回调按“打点/状态”和“业务回调”拆分处理：不依赖 UI 的打点、Nova 状态机推进、批次完成通知可以在 SDK 原始回调线程即时执行，避免用户看完广告后立即杀进程造成收益或行为打点丢失；只有 `OnAdLoaded` / `OnAdLoadFailed` / `OnAdRevenuePaid` / `OnShowCompleted` / `OnShowFailed` / `OnAdClosed` 等对外业务事件由基类通过 `PostAdCallbackToMainThread` 排入 Unity 主线程。收益回调统一调用 `RaiseRevenueImmediately`：其中 MAX 特有收益打点立即执行，`RaiseRevenue` 同步推进收益状态，`RevenuePaid` 事件由基类排入主线程。非 Banner 的 displayed 回调只触发 `OnShowCompleted`，不触发自动续杯；续杯在 hidden 或 display failed 收口时发生。Banner 不接入 `RaiseShowCompleted`，避免自动刷新期间反复触发。
+**线程说明：** MAX 不再设置 `MaxSdkBase.InvokeEventsOnUnityMainThread = true`。MAX 回调按“打点/状态”和“业务回调”拆分处理：不依赖 UI 的打点、Nova 状态机推进、批次完成通知可以在 SDK 原始回调线程即时执行，避免用户看完广告后立即杀进程造成收益或行为打点丢失；只有 `OnAdLoaded` / `OnAdLoadFailed` / `OnAdRevenuePaid` / `OnShowCompleted` / `OnShowFailed` / `OnAdClosed` 等对外业务事件由基类通过 `PostAdCallbackToMainThread` 排入 Unity 主线程。收益回调统一调用 `RaiseRevenueImmediately`：其中 MAX 特有收益打点在当前回调线程按需获取插件并派发，`RaiseRevenue` 同步推进收益状态，`RevenuePaid` 事件由基类排入主线程。非 Banner 的 displayed 回调上报成功的 `nova_ad_show_result` 并触发 `OnShowCompleted`，不触发自动续杯；续杯在 hidden 或 display failed 收口时发生。Banner 不接入 `RaiseShowCompleted`，避免自动刷新期间反复触发。
+
+### 收益打点插件的按需获取
+
+- 初始化阶段不获取收益打点插件。实际派发 `ad_ilrd` / `ad_impression` 时分别调用三个获取方法：有缓存直接返回，缓存为空才向 SDK 管理器查询，成功后保存引用，仍不可用时记录警告。
+- 插件查询沿用 `ISDKManager.TryGet` 的可用性规则。三个获取方法不判断当前线程，缓存为空时直接查询；查询失败或抛异常时逐目标 Warning，继续处理其他目标，不再排入主线程重试。底层 SDKManager 的集合没有并发同步，本适配层的异常隔离不等于为管理器提供线程安全保证。
+- 直接查询后仍缺失时，逐目标记录包含事件名、接口名和原因的 Warning，并跳过该目标本次事件；下一次事件继续尝试。此路径不等待 SDK 初始化，也不额外存储失败事件补发。
+- 释放渠道时清空缓存并结束会话，后续派发不再复用旧插件；已经进入插件的调用不撤回。
+- 单插件异常继续隔离。派发返回值仍表示至少已尝试调用一个插件，不表示分析后台确认接收。Banner ILRD 聚合入口仍在主线程累计和查询，全缺失时保留既有累计批次，至少向一个目标尝试派发后按既有规则清空，不单独为缺失目标保留批次。
 
 ### Banner 收益打点
 
-- `ad_impression` 在每次 MAX Banner 收益回调中即时上传，不因 Banner 刷新频繁而节流；非 Banner 收益打点同样在 MAX 收益回调线程即时上传。
-- Banner 的 `ad_ilrd` 按基类 `TrackBannerIlrdAggregated` 统一累计上传；默认值 `5` 表示每 5 次 Banner 收益回调上传 1 次。
-- 未达到间隔的 Banner 累计次数和累计金额由 `AdChannelPluginBase` 写入 `PlayerPrefs`，避免下次游戏启动丢失未完成批次。
+- `ad_impression` 在每次 MAX Banner 收益回调中派发，不因 Banner 刷新频繁而节流；非 Banner 同样逐次派发。插件在当前回调线程按需获取并派发。
+- MAX 全部 Banner 广告位的 `ad_ilrd` 共用同一组次数和收益累计，通过基类不带 `placementId` 的 `TrackBannerIlrdAggregated` 在主线程处理；默认值 `5` 表示总计第 5 次 Banner 收益回调时上传，已派发后清空批次。上传载荷的广告位和网络信息来自触发阈值的那次回调。
+- 未达到间隔的 Banner 累计次数和累计金额由 `AdChannelPluginBase` 通过渠道初始化时缓存的 `IFileFragmentManager` 写入 `NovaAdBannerIlrd` 分类的 `Nova.Ad.BannerIlrd.Max.Count` / `Nova.Ad.BannerIlrd.Max.Revenue` 条目；SDK 后台回调会切回主线程进行累计、保存和清理。启动链仍须先完成 `Persist.LoadAsync()`；原 `PlayerPrefs` 和旧的按广告位累计条目不自动合并。
 - `ad_impression` 保留平台字段 `ad_format`，并补充与 Nova 广告事件一致的 `nova_ad_format`，便于跨事件统一筛选；`ad_ilrd.publisher_revenue` / `ad_ilrd.value` 为数值，`ad_ilrd.af_revenue` 为文本；未满间隔的内部存档金额使用 invariant decimal 字符串保存。
 
 ### 全屏广告曝光关联
 
-- Rewarded、Interstitial、AppOpen 在调用 MAX 展示接口前生成进程内本地 `nova_ad_impression_id`；展示回调产生的 `nova_ad_show` 与收益回调产生的 `ad_ilrd`、`ad_impression` 使用同一个 ID。
+- Rewarded、Interstitial、AppOpen 在调用 MAX 展示接口前生成进程内本地 `nova_ad_impression_id`；调用播放接口前上报 `nova_ad_show`；displayed / display failed 回调分别上报 `nova_ad_show_result`（`nova_ad_result=1/0`），`nova_ad_show`、`nova_ad_show_result`、`nova_ad_hidden` 与收益事件 `ad_ilrd`、`ad_impression` 共用同一次尝试的 ID。
+- MAX 三种全屏广告关闭时，通过 `RaiseAdClosed(result, rewarded, extraProps)` 将当前曝光 ID 合并到 `nova_ad_hidden`。读取关闭属性不创建新 ID，也不删除上下文，保留晚到收益的关联；没有匹配上下文时不附加该字段，下一次展示仍生成新 ID。新增关闭重载需与包含该能力的 Ad 基础包配套发布。
 - `ad_ilrd` 与 `ad_impression` 增加 `nova_ad_revenue_callback_index`，从 1 开始记录同一本地曝光收到的收益回调次数；`nova_ad_correlation_status` 取值为 `best_effort_match`、`revenue_before_show` 或 `orphan`。`best_effort_match` 只表示回调匹配到当前展示尝试，不表示 MAX 提供了原生唯一曝光证明。
 - 收益回调先于 displayed 到达时仍复用 ShowAsync 已建立的 ID；没有展示上下文时生成诊断 ID 并标记 `orphan`。
 - 当前关联层不丢弃任何收益回调。MAX `AdInfo` 没有可依赖的原生唯一曝光 ID，仅凭时间、素材和金额硬去重可能误删连续真实曝光；分析侧可按 `nova_ad_impression_id` 与回调序号识别重复形态，取得真机证据后再决定是否抑制。
 - 同格式、同广告位的上一曝光若在下一次 `ShowAsync` 后才迟到回调，MAX 现有字段无法无歧义地区分它属于前一次还是当前一次；因此本地 ID 只能用于诊断候选重复，不能直接作为财务口径的自动去重键。
 - 以上关联只覆盖当前运行进程；进程重启后的厂商回调无法与重启前本地 ID 建立强关联。
+
+### 展示打点时序
+
+- `ShowRVAsync` / `ShowInterAsync` / `ShowAppOpenAsync`：建立曝光上下文 → `TrackAdShow` → `MaxSdk.Show*`。
+- `On*Displayed`：标记已展示并取得曝光 ID → `RaiseShowCompleted` → `nova_ad_show_result`（1）。
+- `On*DisplayFailed`：保存曝光 ID 并清理未展示上下文 → `RaiseShowFailed` → `nova_ad_show_result`（0）→ 结束等待。
+- `On*Hidden`：读取同次曝光 ID → `RaiseAdClosed` 保存业务属性并完成续杯 → `nova_ad_hidden` → 主线程关闭通知；调用方随后结束 `ShowAsync` 等待。
+- 成功、失败与关闭打点都保留业务 `ShowCustomProps`；有匹配上下文时携带同次尝试的 `nova_ad_impression_id`。关闭读取不生成新 ID，下一次 `BeginFullscreenImpression` 才建立新的展示尝试。
+- 没有就绪广告而未进入 MAX 播放接口时，不上报展示尝试；取消、同步异常不冒充厂商展示结果回调。
+
+### 回调与埋点对照
+
+| 事件 | 触发时机 | 全屏曝光关联属性 |
+|---|---|---|
+| `nova_ad_show` | 调用 MAX 展示接口前 | `nova_ad_impression_id` |
+| `nova_ad_show_result` | displayed / display failed | 同次 ID，另有 `nova_ad_result=1/0` |
+| `nova_ad_hidden` | hidden | 匹配到的同次 ID，另有 `nova_can_get_reward` |
+| `ad_ilrd` | 收益回调；Banner 达到累计阈值时派发 | 全屏 ID、收益回调序号及关联状态 |
+| `ad_impression` | 每次收益回调 | 全屏 ID、同一收益回调序号及关联状态 |
+
+以上是发送给分析平台的事件属性，不是 `AdResult` 的字段。`nova_ad_hidden` 表示广告关闭；激励是否达到奖励条件应看官方奖励回调状态。`RewardGranted` 与 `nova_can_get_reward` 的取值见展示章节及 Ad 包的 `AdPluginEvents` 文档。
+
+比较 TGA 事件数量时先按广告格式筛选：非 Banner 每次收益回调各派发一条 `ad_ilrd` 和 `ad_impression`；Banner 的默认聚合阈值为 5，因此两者条数不要求相等。插件缺失时该目标本次事件会被跳过，需同时排查客户端 Warning；派发调用本身不代表后台确认入库。
 
 ### Banner 可见性恢复
 

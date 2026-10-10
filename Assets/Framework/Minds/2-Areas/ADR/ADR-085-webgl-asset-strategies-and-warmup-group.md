@@ -193,3 +193,14 @@ WebGL 导出后 `StreamingAssets` 仍是服务器上的独立 URL 目录，不�
 缓存结论仍须按资源类型区分：未加密 AssetBundle 可利用 Unity Web Cache（Nova 默认不关闭它）；加密 AssetBundle、RawBundle 和 ArchiveBundle 走字节/内存装载，Warmup 后不承诺留在 Web Cache。`Cancel()` 只能停止 Group 等待并释放其 Handle，不能承诺已发出的 HTTP 请求立刻停止。
 
 当前代码与契约测试依据包括：`WebGLAssetStrategyContractTests`、`ProcedureAppDownloadRegressionTests`、`AssetManagerManifestFallbackRegressionTests`、`BuildActionCommonTests`、`RawFileBundleBuilderTests` 与 `YooAsset305UpgradeContractTests`。这些覆盖 API、路由和构建参数，但不替代浏览器验证；发版前仍需验证三种首包布局产物、三种策略的实际请求时序、TagsOnLaunch 释放后的缓存命中、失败/取消、浏览器缓存清理后的重新请求、内存峰值、CDN/CORS、Manifest 回退及 Android/iOS Downloader 回归。
+
+## 微信平台补充边界
+
+浏览器原决策保持适用：未配置平台策略时 Downloader 不代表 Web 缓存完整。微信小游戏使用 YooAsset 3.0.6 的独立平台预下载策略，是浏览器边界之外的实现。
+
+- 平台基础适配通过独立程序集在场景加载前注册到 Asset 模块，业务仍使用 IAssetManager；不等待业务 Plugin 初始化，不要求项目维护平台编译宏。
+- 微信 TagsOnLaunch 预下载启动 Tag 到平台缓存，不持有 Warmup 内存；OnDemand 维持按需，AllOnLaunch 维持内存常驻。显式 Warmup 始终表示加载和句柄所有权。
+- 平台缓存由微信插件管理，HTTP 成功、进程完成记录与空 Downloader 均不能证明持久离线完整性；Web Player 不写原生 Sandbox 本地可启动版本。
+- 避免逐资源同步调用缓存查询，保守让平台处理缓存命中；取消与加载/预下载冲突由 YooAsset 调度释放。
+
+来源：官方 YooAsset 3.0.6 IWebPreloadStrategy / WechatPreloadStrategy，微信转换 SDK 的预下载请求头说明；当前行为见 Framework Docs/WebGLAssetStrategies.md 及微信包 Nova/Docs/ARCHITECTURE.md。验证依据包含 AssetWebPreloadTests、微信实际适配源码编译测试和 WebGL Player 脚本编译；正式插件缓存、清缓存恢复与真机内存仍需平台验证。本补充不取代浏览器的原策略。

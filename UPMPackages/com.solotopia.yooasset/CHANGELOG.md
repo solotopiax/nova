@@ -2,6 +2,44 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Breaking
+
+## [1.2.0] - 2026-10-10
+
+### Changed
+
+- Core 基线升级为官方 YooAsset 3.0.6（commit `3b4cfb36cc2e81b9558ab74d65fee2cf2eac2804`），私包版本升为 1.2.0；完整同步上游 Runtime、Editor、Samples 与许可材料，保留 Nova Settings 注入、显式配置路径、BundleCollector 缓存重置和 `NovaFramework.Editor` 友元，以及原生下载缓存校验最终结果通知，共 6 个功能补丁。
+
+- ScriptableBuildTasks 采用官方 `SBP_2_0_1_OR_NEWER` 自动版本适配，移除原功能 fork 标记；依赖继续使用 Scriptable Build Pipeline 2.6.1，Runtime asmdef 保留私包名及 1.1.0 宏下界，所有 asmdef 元数据 GUID 保持不变。
+
+- 移除未发布资源加解密功能的旧类名解析、联动显示和附加筛选注册，仅保留 Bundle Builder 与 Nova/Pipify 共用的可实例化候选规则。
+
+### Fixed
+
+- 跟随 3.0.6 上游将相关 FileSystem Operations 目录统一为 `Internal`（含原本地 BuiltinFileSystem 小写目录），保留对应 meta GUID；保留 IDownloadBackend 的本地注释修正与既有 UXML importer 元数据。
+
+- 保留 Nova 原生下载的内容校验失败重试语义：DownloadAndCacheFileOperation 不在 HTTP 终态提前通知 URL 策略，SFSDownloadBundleOperation 在缓存校验最终成功/失败后统一通知并在失败通知后判定重试；保留 3.0.6 的资源释放与同步加载后台继续下载修复。
+
+- Bundle Builder 加解密下拉排除抽象与不可实例化类型，提供候选筛选和旧清单解密类名解析扩展，与 Nova/Pipify 共用候选及排序。
+
+### Breaking
+
+- 跟随上游移除 `AsyncOperationBase.InternalAbort()`，自定义操作清理须迁移到 `InternalDispose()`；该方法在成功、失败及中止收尾时都会调用，原来仅在中止时执行的逻辑须保留相应条件判断。
+
+- `BundleCollectorSetting.BeginCollect` 由三个参数改为四个参数，调用方须显式传入 `enableAssetPathValidation`；传入 `false` 保留原先不检测资源路径格式控制字符的行为。
+
+- 旧兼容基类 `GameAsyncOperation` 移除 `OnAbort()`；自定义操作应改为继承 `CustomAsyncOperation`，将 `OnStart` / `OnUpdate` 改为 `InternalStart` / `InternalUpdate`，需要同步等待时将 `OnWaitForAsyncComplete` 改为 `InternalWaitForCompletion`，清理迁移到 `InternalDispose` 并区分正常完成与中止。
+
+- `EFileSystemParameter` 插入 `WebPreloadStrategy`，使 `BundleUnpackPolicy` 的数值由 `28` 变为 `29`、`BuiltinFileAccessor` 由 `29` 变为 `30`；持久化或跨边界传递整数值的外部调用方须迁移，现有 `FileSystemParameters.AddParameter` 按枚举名称存储参数。
+
+- Unity 6000 及以上改用 `[UxmlElement]`，不再提供 `ResizeHandle`、`ToggleDisplay`、`ToggleFoldout`、`ToggleRecord`、`ReorderableListView`、`TableViewer`、`TreeViewer` 的嵌套 `UxmlFactory`；外部直接引用这些工厂类型的代码须迁移，旧 Unity 分支仍保留工厂。
+
 ## [1.1.1] - 2026-09-02
 
 ### Changed

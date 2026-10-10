@@ -5,8 +5,8 @@
 它负责：
 
 - 显示启动期热更进度 UI
-- 在非 WebGL 上创建整包或 Tag 切片下载器
-- 在 WebGL 的 `TagsOnLaunch` / `AllOnLaunch` 策略下执行 Bundle Warmup
+- 在非 WebGL 上创建整包或 Tag 切片下载器，在微信 TagsOnLaunch 下使用 Tag 原生预下载器
+- 在浏览器 TagsOnLaunch 与 WebGL AllOnLaunch 策略下执行 Bundle Warmup
 - 处理下载或 Warmup 的成功、失败、重试、取消分支
 - 成功后可选清理冗余缓存
 
@@ -167,3 +167,7 @@ WebGL 固定按 `false` 处理，不执行应用强退；Android/iOS 继续使�
 - [LauncherDialogType.md](LauncherDialogType.md)
 - [ProcedureCheckVersion.md](ProcedureCheckVersion.md)
 - [Procedures/ProcedureLoadDll.md](Procedures/ProcedureLoadDll.md)
+
+## 微信原生预下载分支
+
+实际注入平台预下载的微信 TagsOnLaunch 不创建 WarmupGroup，直接复用 IAssetDownloader。完成请求不持有 Unity Bundle 内存引用；取消与失败由 YooAsset 释放请求和冲突访问门。AllOnLaunch 仍持有 WarmupGroup 到 Shutdown，OnDemand 不进入本阶段。预下载成功不能证明平台缓存永久可用，Web Player 不写原生本地可启动版本。

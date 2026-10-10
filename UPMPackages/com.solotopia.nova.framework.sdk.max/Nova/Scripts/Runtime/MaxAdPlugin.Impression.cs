@@ -26,22 +26,28 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 
         /// <summary>
         /// 在调用 MAX 全屏展示接口前建立本地曝光上下文。
-        /// 本地 ID 只用于关联同一运行进程中的展示与收益回调，不冒充厂商原生曝光 ID。
+        /// 本地 ID 只用于关联同一运行进程中的展示、关闭与收益回调，不冒充厂商原生曝光 ID。
         /// </summary>
         /// <param name="format">全屏广告格式。</param>
         /// <param name="placementId">本次选择的广告位 ID。</param>
-        private void BeginFullscreenImpression(AdFormat format, string placementId)
+        /// <returns>供展示尝试打点使用的本地曝光 ID。</returns>
+        private Dictionary<string, object> BeginFullscreenImpression(AdFormat format, string placementId)
         {
             lock (m_FullscreenImpressionLock)
             {
-                m_FullscreenImpressions[format] = new FullscreenImpressionContext(
+                var context = new FullscreenImpressionContext(
                     Guid.NewGuid().ToString("N"),
                     placementId);
+                m_FullscreenImpressions[format] = context;
+                return new Dictionary<string, object>
+                {
+                    { c_ImpressionIdProperty, context.ImpressionId },
+                };
             }
         }
 
         /// <summary>
-        /// 标记全屏广告已收到展示回调，并返回需要并入 nova_ad_show 的关联属性。
+        /// 标记全屏广告已收到展示回调，并返回需要并入 nova_ad_show_result 的关联属性。
         /// 未找到展示尝试时建立孤立上下文，确保后续收益回调仍可与该展示关联。
         /// </summary>
         /// <param name="format">全屏广告格式。</param>
@@ -53,6 +59,26 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             {
                 FullscreenImpressionContext context = GetOrCreateFullscreenImpression(format, placementId);
                 context.Displayed = true;
+                return new Dictionary<string, object>
+                {
+                    { c_ImpressionIdProperty, context.ImpressionId },
+                };
+            }
+        }
+
+        /// <summary>
+        /// 获取关闭事件的曝光 ID 快照；不新建或移除上下文，保留与晚到收益回调的关联。
+        /// </summary>
+        /// <param name="format">关闭的全屏广告格式。</param>
+        /// <param name="placementId">关闭回调携带的广告位 ID。</param>
+        /// <returns>包含本地曝光 ID 的属性；没有匹配展示上下文时返回 null。</returns>
+        private Dictionary<string, object> GetFullscreenImpressionProps(AdFormat format, string placementId)
+        {
+            lock (m_FullscreenImpressionLock)
+            {
+                if (!TryGetFullscreenImpression(format, placementId, out FullscreenImpressionContext context))
+                    return null;
+
                 return new Dictionary<string, object>
                 {
                     { c_ImpressionIdProperty, context.ImpressionId },
@@ -94,19 +120,27 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 展示失败时移除尚未形成曝光的本地上下文，防止后续展示错误复用旧 ID。
+        /// 展示失败时先保存关联属性，再移除尚未形成曝光的本地上下文，防止后续展示错误复用旧 ID。
         /// </summary>
         /// <param name="format">失败的全屏广告格式。</param>
         /// <param name="placementId">失败的广告位 ID。</param>
-        private void AbandonFullscreenImpression(AdFormat format, string placementId)
+        /// <returns>供失败结果打点使用的本地曝光 ID；没有匹配的展示上下文时返回 null。</returns>
+        private Dictionary<string, object> AbandonFullscreenImpression(AdFormat format, string placementId)
         {
             lock (m_FullscreenImpressionLock)
             {
-                if (TryGetFullscreenImpression(format, placementId, out FullscreenImpressionContext context) &&
-                    !context.Displayed)
+                if (!TryGetFullscreenImpression(format, placementId, out FullscreenImpressionContext context))
+                    return null;
+
+                var props = new Dictionary<string, object>
+                {
+                    { c_ImpressionIdProperty, context.ImpressionId },
+                };
+                if (!context.Displayed)
                 {
                     m_FullscreenImpressions.Remove(format);
                 }
+                return props;
             }
         }
 
@@ -117,10 +151,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="placementId">广告位 ID。</param>
         /// <param name="context">匹配到的曝光上下文。</param>
         /// <returns>存在匹配上下文时返回 true。</returns>
-        private bool TryGetFullscreenImpression(
-            AdFormat format,
-            string placementId,
-            out FullscreenImpressionContext context)
+        private bool TryGetFullscreenImpression(AdFormat format, string placementId, out FullscreenImpressionContext context)
         {
             return m_FullscreenImpressions.TryGetValue(format, out context) &&
                    string.Equals(context.PlacementId, placementId, StringComparison.Ordinal);
@@ -133,9 +164,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="format">全屏广告格式。</param>
         /// <param name="placementId">广告位 ID。</param>
         /// <returns>匹配或新建的曝光上下文。</returns>
-        private FullscreenImpressionContext GetOrCreateFullscreenImpression(
-            AdFormat format,
-            string placementId)
+        private FullscreenImpressionContext GetOrCreateFullscreenImpression(AdFormat format, string placementId)
         {
             if (TryGetFullscreenImpression(format, placementId, out FullscreenImpressionContext context))
             {

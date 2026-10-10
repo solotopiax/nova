@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.6.37-blue.svg)
+![release](https://img.shields.io/badge/release-v0.6.38-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -32,7 +32,7 @@
 | com.solotopia.excelio | 1.0.6 |
 | com.solotopia.nicevibrations | 10.0.5 |
 | com.solotopia.luban | 10.1.0 |
-| com.solotopia.yooasset | 1.1.0 |
+| com.solotopia.yooasset | 1.2.0 |
 | com.solotopia.nova.framework.mcp | 0.1.3 |
 
 ## 架构概览
@@ -62,7 +62,7 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 | 调试 | `Nova.Debug` | 运行时调试面板与诊断工具，提供运行期日志查看、性能指标监控与变量检视，便于真机与开发期问题定位。 |
 | 配置 | `Nova.Config` | 运行时配置访问层，承载 SDK 插件配置与 Kit 套件配置的注入、查询与变更通知，业务侧不直接持有配置实例。 |
 | 持久化 | `Nova.Persist` | 多种本地存储实现，统一封装 `PlayerPrefs`、分片文件 `FileFragment` 与加密 `SQLite`，按数据规模与安全要求择优落盘。 |
-| 资源管理 | `Nova.Asset` | 资源加载、下载、缓存与热更，基于 YooAsset 封装，提供同步 / 异步加载、引用计数与场景加载，释放由加载方负责。 |
+| 资源管理 | `Nova.Asset` | 资源加载、下载、缓存与热更，基于 YooAsset 封装，提供同步 / 异步加载、引用计数与场景加载，释放由加载方负责；支持可选 Bundle 与清单加解密，Sample 默认不加密。 |
 | 预制体 | `Nova.Prefab` | 预制体实例化与回收，内部复用对象池，适合子弹、特效、列表项等高频生成销毁场景，避免运行期 GC 抖动。 |
 | 数据表 | `Nova.Table` | 基于 Luban 导出的表格数据查询，按类型强类型取表与取行，支持运行期按需加载与表存在性判断。 |
 | 本地化 | `Nova.Localization` | 多语言运行时切换，文本键取值、缺失检测与字体适配，支持运行期切换语言而无需重启。 |

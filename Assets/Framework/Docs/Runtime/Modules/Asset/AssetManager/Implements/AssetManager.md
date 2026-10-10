@@ -266,3 +266,13 @@ WebGL 下 `OfflinePlayMode` 使用 WebServer 文件系统，`HostPlayMode` 使�
 - [IAssetDownloader.md](../Interfaces/IAssetDownloader.md)
 - [IAssetWarmupGroup.md](../Interfaces/IAssetWarmupGroup.md)
 - [WebGLAssetStrategies.md](../../WebGLAssetStrategies.md)
+
+## YooAsset 3.0.6 与平台预下载
+
+当前依赖私包 1.2.0/Core 3.0.6。保留 ConfigMaster 注入与 Collector 缓存定制，SBP 使用官方按版本切换的构建任务。原生 Sandbox 的 URL 结果通知保留在缓存内容校验之后，以维持内容校验失败继续主备候选的语义；上游新版释放、中止与加载锁修复仍保留。
+
+已安装微信适配包时，Web Host 在初始化时注入平台预下载策略与下载并发配置。TagsOnLaunch 使用 Downloader 到平台缓存，OnDemand 保持按需加载，AllOnLaunch 保持 Warmup 常驻。Web Player 的 CommitBootableVersion 不写原生 Sandbox 版本记录。详见 WebGLAssetStrategies.md 的微信边界。
+
+## 资源解密初始化
+
+Offline、Host 及内置回退路径按精确包裹名绑定解密器。原生 AssetBundle 自动识别 Nova 文件头并使用解密流及内存备用；WebGL、RawBundle、ArchiveBundle 使用内存解密；Manifest 独立解密且兼容普通明文清单。密钥由启动期 IResourceKeyProvider 提供，不读取尚未加载的 ConfigRuntimeSO。详见 [资源加解密](../../ResourceEncryption.md)。

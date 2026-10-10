@@ -60,14 +60,14 @@ namespace NovaFramework.Editor
                     EditorUtil.Draw.Label("编辑器存档文件：", false, GUILayout.Width(100));
                     ConfigMasterSO newMaster = EditorUtil.Draw.ObjectField<ConfigMasterSO>(string.Empty, m_Master, false, false);
                     if (newMaster != m_Master) RebindMaster(newMaster);
-                    EditorUtil.Draw.Button("创建", false, () => CreateMasterInteractive(), GUILayout.Width(64f));
-                    EditorUtil.Draw.Button("选择", false, () => PickMasterInteractive(), GUILayout.Width(64f));
+                    EditorUtil.Draw.Button("创建", false, () => CreateMasterInteractive(), GUILayout.Width(64f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                    EditorUtil.Draw.Button("选择", false, () => PickMasterInteractive(), GUILayout.Width(64f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                     // 保存按钮：ConfigMasterSO 有改动时可用，无改动时禁用
                     EditorUtil.Draw.DisabledGroup(!m_IsDirty, () =>
                     {
-                        EditorUtil.Draw.SuccessButton("保存", false, () => OnClickSave(), GUILayout.Width(64f));
+                        EditorUtil.Draw.SuccessButton("保存", false, () => OnClickSave(), GUILayout.Width(64f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                     });
-                    EditorUtil.Draw.Button("打开文件夹", false, () => RevealMasterInFinder(), GUILayout.Width(90f));
+                    EditorUtil.Draw.Button("打开文件夹", false, () => RevealMasterInFinder(), GUILayout.Width(90f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 });
 
                 if (m_Master == null) return;
@@ -123,10 +123,10 @@ namespace NovaFramework.Editor
                         m_IsDirty = true;
                     }
 
-                    EditorUtil.Draw.Button("选择", false, () => OnClickSelectExportAsset(), GUILayout.Width(64f));
+                    EditorUtil.Draw.Button("选择", false, () => OnClickSelectExportAsset(), GUILayout.Width(64f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                     EditorUtil.Draw.DisabledGroup(!IsEditingPlatformAligned(), () =>
                     {
-                        EditorUtil.Draw.SuccessButton("导出", false, () => OnClickExport(), GUILayout.Width(64f));
+                        EditorUtil.Draw.SuccessButton("导出", false, () => OnClickExport(), GUILayout.Width(64f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                     });
                     ConfigRuntimeSO exportTarget = m_WorkingCopy != null ? m_WorkingCopy.ExportTarget : null;
                     EditorUtil.Draw.DisabledGroup(exportTarget == null, () =>
@@ -135,7 +135,7 @@ namespace NovaFramework.Editor
                         {
                             if (exportTarget == null) return;
                             EditorUtility.RevealInFinder(AssetDatabase.GetAssetPath(exportTarget));
-                        }, GUILayout.Width(90f));
+                        }, GUILayout.Width(90f), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                     });
                 });
 
@@ -323,7 +323,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 执行当前坐标的 ConfigRuntime 导出。
+        /// 按已保存的当前坐标导出 ConfigRuntime 和客户端密钥源码。
         /// </summary>
         /// <param name="showSuccessDialog">成功时是否显示结果弹窗。</param>
         /// <returns>成功完成导出时返回 true。</returns>
@@ -381,8 +381,9 @@ namespace NovaFramework.Editor
                     m_Master.CurrentDevelopMode,
                     assetPath);
             }
-            catch (System.InvalidOperationException exception)
+            catch (System.Exception exception)
             {
+                m_ResourceKeyError = exception.Message;
                 EditorUtility.DisplayDialog("导出失败", exception.Message, "知道了");
                 return false;
             }
@@ -401,6 +402,14 @@ namespace NovaFramework.Editor
                 Repaint();
             }
 
+            // 导出会更新生成文件的追踪路径，同步副本避免下次保存覆写为旧路径。
+            if (m_WorkingCopy != null)
+            {
+                m_WorkingCopy.ResourceEncryption.GeneratedCodeAssetPath = m_Master.ResourceEncryption.GeneratedCodeAssetPath;
+                m_WorkingCopy.ResourceEncryption.ClientCodeOutputDirectory = m_Master.ResourceEncryption.ClientCodeOutputDirectory;
+                m_MasterSO?.Update();
+            }
+            m_ResourceKeyError = null;
             EditorUtility.SetDirty(m_Master);
             AssetDatabase.SaveAssetIfDirty(m_Master);
             EditorUtil.Config.SceneDevelopModeWriter.WriteActiveScene(

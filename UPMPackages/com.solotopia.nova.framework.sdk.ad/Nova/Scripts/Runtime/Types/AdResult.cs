@@ -24,7 +24,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public bool Success;
 
         /// <summary>
-        /// 用户是否完整观看了广告。
+        /// 用户是否满足激励广告的完成条件；MAX 以官方奖励回调状态为准。
         /// 仅 AdFormat.Rewarded 有意义；其他格式固定为 false。
         /// </summary>
         public bool UserCompleted;
@@ -62,9 +62,10 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public string Currency;
 
         /// <summary>
-        /// 本次展示是否收到了收益回调（RaiseRevenue 已到达）。
-        /// 仅 AdFormat.Rewarded 有意义；其他格式固定为 false。
-        /// 业务层以此判断是否发放奖励，无需单独订阅 RevenuePaid 事件做标记。
+        /// 当前回调携带的奖励资格标记，不表示业务已经实际发放奖励。
+        /// 由渠道回调直接设置：MAX 插屏展示成功和关闭时为 true，激励关闭时取官方奖励回调状态，开屏为 false。
+        /// 基类关闭入口不会根据收益回调改写此字段。
+        /// 判断激励广告是否满足完成条件可使用 UserCompleted。
         /// </summary>
         public bool RewardGranted;
     }

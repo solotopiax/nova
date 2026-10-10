@@ -23,6 +23,8 @@ description: Use when Nova 项目组需要为已配置的 YooAsset Package 按�
 
 Framework 已注册并开放 `nova.project.bundle.build-asset` 与 `nova.project.bundle.build-raw-file`。先用 `describe` 读取目标 Action 的当前 Schema，再按冻结的 Package、Target、版本、缓存和拷贝参数执行 `plan -> execute -> verify`；删除或重建输出目录仍必须使用当前一次性 PlanId 确认。不得退化到 `execute_code`、反射或临时 C#。
 
+两个 Action 的 `encryptionPolicy` 必填，只接受 `none / offset / xor / aes-memory / aes-stream`；可选 `manifestEncryptionPolicy` 只接受 `none / aes / xor`，省略或 `null` 使用 `none`。两组方案独立，均固定映射当前 Framework 正式类型，AES/XOR 清单自动使用各自配套构建解密器；不传 C# 类型名、旧通用类名或别名。确认计划时核对两项逻辑值与展示的三个正式类型名。需要密钥的方案沿用已保存 ConfigMaster 的资源加解密配置，不把密钥写入请求或计划，不自动修改配置或导出客户端密钥源码。
+
 ## Artifact → Evidence
 
 Artifact 是 `BuildResult.OutputPackageDirectory` 指向的本地 Package 目录及本次 YooAsset 报告。只有 `BuildResult.Success` 为真、输出目录存在，并能对应冻结的 Target、PackageName 与 BuildVersion 时才返回 `success`；编译通过或目录里存在旧文件都不算 Bundle 构建证据。

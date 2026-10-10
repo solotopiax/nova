@@ -17,10 +17,10 @@
 | 非 WebGL，存在补丁 | `true` | `true` | `ProcedureHotfix` 创建 Downloader |
 | 非 WebGL，无补丁 | `false` | `false` | `ProcedureLoadDll` |
 | WebGL `OnDemand` | 不执行 Downloader 差异检查 | `false` | 跳过 `ProcedureHotfix`，业务异步按需加载 |
-| WebGL `TagsOnLaunch` | 不执行 Downloader 差异检查 | `true` | `ProcedureHotfix` 创建 Tag WarmupGroup |
+| 浏览器 WebGL `TagsOnLaunch` | 不执行 Downloader 差异检查 | `true` | `ProcedureHotfix` 创建 Tag WarmupGroup |
 | WebGL `AllOnLaunch` | 不执行 Downloader 差异检查 | `true` | `ProcedureHotfix` 创建全量 WarmupGroup |
 
-因此 WebGL 的 `HasAssetPatch` 固定为 `false`；只有 `RequiresStartupAssetWork` 才是启动路由真相。`OnDemand` 不会进入 Downloader / Warmup 阶段。
+未注册平台预下载的浏览器 WebGL 的 `HasAssetPatch` 固定为 `false`；只有 `RequiresStartupAssetWork` 才是启动路由真相。`OnDemand` 不会进入 Downloader / Warmup 阶段。
 
 ## EnableHotfix 的边界
 
@@ -53,3 +53,9 @@
 - [ProcedureHotfix.md](ProcedureHotfix.md)
 - [Procedures/ProcedureAppDownload.md](Procedures/ProcedureAppDownload.md)
 - [WebGLAssetStrategies.md](../Asset/WebGLAssetStrategies.md)
+
+## 微信 TagsOnLaunch
+
+Package 初始化会注入微信预下载策略，Manifest 加载后重新计算 `RequiresLaunchWarmup` / `RequiresLaunchPreload`。真实启用预下载的 TagsOnLaunch 使用 Tag Downloader 检查；有待处理项时进入 ProcedureHotfix，并沿用进度、失败重试和取消。这个检查表示待预下载范围，不表示资源版本必然发生变化；平台缓存查询保守返回 false，实际缓存复用由微信插件处理。
+
+OnDemand 不进入启动下载，AllOnLaunch 保留全量 Warmup。初始化前和再次进入检查时均考虑启动资源准备，不因 EnableHotfix 关闭而漏掉已初始化包的原生预下载。Web Player 的 CommitBootableVersion 为空操作，平台缓存不能成为原生离线启动证明。

@@ -10,6 +10,28 @@
 
 ### Breaking
 
+## [1.1.16] - 2026-10-10
+
+### Added
+
+- RaiseAdClosed 新增带渠道附加属性的重载，将曝光关联信息合并到 nova_ad_hidden；保留原调用签名、状态推进和关闭通知，Tracks 同步登记关闭曝光 ID；奖励资格字段的行为变化见 Breaking。
+
+### Changed
+
+- Banner 次数与收益通过 IFileFragmentManager 在主线程累计、即时保存和清理，按渠道与广告位隔离；新增渠道内合并累计入口并保留按广告位兼容重载，初始化缓存管理器、释放时清空，旧 PlayerPrefs 累计不自动迁移。
+
+- README、事件文档、源码注释和 Tracks 同步奖励资格与 MAX 各格式回调口径，说明 Replay 容量、初始化依赖、按需获取收益插件及缺失告警；RewardGranted 不代表业务已实际发奖。
+
+### Fixed
+
+- 统一广告展示结果打点：成功与失败分别上报 nova_ad_show_result（nova_ad_result=1/0），保留业务展示属性及渠道关联属性；既有回调入口保持兼容。
+
+- 修复打点源表插行后的事件分组与合并范围，恢复展示结果及后续事件登记，并明确 nova_ad_show 为播放接口调用前的展示尝试。
+
+### Breaking
+
+- `RaiseAdClosed` 不再根据 `rewarded` 参数或收益回调到达标记推导 `AdResult.RewardGranted`，改为保留渠道传入值；旧调用签名保留，自定义渠道须显式填写该字段，`rewarded` 仅控制 `nova_can_get_reward` 埋点属性。
+
 ## [1.1.15] - 2026-09-28
 
 ### Changed

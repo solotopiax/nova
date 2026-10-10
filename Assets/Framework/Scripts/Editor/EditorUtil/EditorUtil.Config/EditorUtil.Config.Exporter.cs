@@ -28,6 +28,7 @@ namespace NovaFramework.Editor
             {
                 /// <summary>
                 /// 执行导出操作，将指定 Platform、Channel、DevelopMode 对应的配置写入目标路径。
+                /// <para>同时按本次坐标导出客户端资源密钥源码；密钥不写入 ConfigRuntime。源码变化后须等待编译再构建。</para>
                 /// <para>若目标目录不存在则自动递归创建；目标路径已有资产时覆盖写入而非重建，以保留已有引用。</para>
                 /// </summary>
                 /// <param name="master">源数据 ConfigMasterSO 实例；为 null 时静默返回 null。</param>
@@ -40,7 +41,7 @@ namespace NovaFramework.Editor
                 /// </returns>
                 public static ConfigRuntimeSO Export(ConfigMasterSO master, PlatformType platform, ChannelType channel, DevelopMode mode, string savePath)
                 {
-                    return Export(master, platform, channel, mode, savePath, System.DateTime.Now, false);
+                    return Export(master, platform, channel, mode, savePath, System.DateTime.Now, false, true);
                 }
 
                 /// <summary>
@@ -58,7 +59,7 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 使用调用方冻结的占位符时间导出运行时配置，并允许受控 Action 仅保存、导入本次目标资产。
+                /// 使用调用方冻结的时间导出配置；受控 Action 默认仅写原有目标，ConfigWindow/Pipify 显式导出密钥源码。
                 /// </summary>
                 internal static ConfigRuntimeSO Export(
                     ConfigMasterSO master,
@@ -67,7 +68,8 @@ namespace NovaFramework.Editor
                     DevelopMode mode,
                     string savePath,
                     System.DateTime placeholderTime,
-                    bool saveOnlyTouchedAssets)
+                    bool saveOnlyTouchedAssets,
+                    bool exportResourceKeys = false)
                 {
                     if (master == null) return null;
                     if (platform == PlatformType.None || channel == ChannelType.None ||
@@ -84,6 +86,18 @@ namespace NovaFramework.Editor
                     // 先校验两类业务 DLL 的职责边界，失败时不写 YooAssetSettings 或 Runtime 资产。
                     DimensionalResolver.HybridCLRResult hybridCLR = DimensionalResolver.ResolveHybridCLR(master, platform, channel, mode);
                     EditorUtil.HybridCLR.ValidateGameDllLists(hybridCLR.StartupGameDlls, hybridCLR.RunningGameDlls);
+
+                    if (exportResourceKeys)
+                    {
+                        // 导出使用本次明确坐标，不修改 Master 的当前渠道或模式；生成路径状态单独持久化。
+                        string previousPath = master.ResourceEncryption.GeneratedCodeAssetPath;
+                        ResourceKeyCodeGenerator.Generate(master, new DimensionProjector.Coord(platform, channel, mode));
+                        if (previousPath != master.ResourceEncryption.GeneratedCodeAssetPath && !string.IsNullOrEmpty(AssetDatabase.GetAssetPath(master)))
+                        {
+                            EditorUtility.SetDirty(master);
+                            AssetDatabase.SaveAssetIfDirty(master);
+                        }
+                    }
 
                     WriteYooAssetSettings(master, platform, channel, mode, placeholderTime);
 

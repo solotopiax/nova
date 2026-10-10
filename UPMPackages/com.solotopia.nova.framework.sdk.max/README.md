@@ -1,7 +1,7 @@
 # Nova Framework - SDK - MAX
 
 > 包名：`com.solotopia.nova.framework.sdk.max`
-> 当前版本：`0.1.10`
+> 当前版本：`0.1.13`
 
 MAX 广告聚合插件，提供广告展示服务。
 
@@ -13,13 +13,17 @@ MAX 广告聚合插件，提供广告展示服务。
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework.sdk.max": "0.1.10"
+  "com.solotopia.nova.framework.sdk.max": "0.1.13"
 }
 ```
 
 ## 当前行为
 
 - RV、Inter、Banner、AppOpen 均支持配置多个广告位 ID；同一格式下的空闲广告位并行加载，展示时优先选择已就绪且收益最高的广告位。
+- 插屏 displayed 回调中的 `Success`、`RewardGranted` 均为 true；激励关闭时的奖励资格取 MAX 官方奖励回调状态，开屏保持 false。业务实际发奖由调用方处理。
+- 激励、插屏和开屏的 `nova_ad_show`、`nova_ad_show_result`、`nova_ad_hidden`、`ad_ilrd`、`ad_impression` 关联同次展示的 `nova_ad_impression_id`；关闭时没有匹配上下文则不附加 ID。
+- 收益打点插件在使用时获取并缓存：有值直接使用，空值在当前回调线程查询，仍不可用则逐目标 Warning 并跳过本次派发；下一次事件再尝试，不等待初始化或排队补发。
+- 非 Banner 每次收益回调分别派发 `ad_ilrd` 和 `ad_impression`；MAX 全部 Banner 广告位共享 ILRD 批次，默认累计 5 次派发一次，`ad_impression` 仍逐次派发。
 - Banner 控制 API 使用配置列表中的首个 ID。`ShowBanner()` 同时启动 MAX 自动刷新，`HideBanner()` 同时停止自动刷新。
 - `MaxAdChannelConfig.BannerAutoRefreshIntervalSeconds` 配置 Banner 自动刷新间隔，默认 `10` 秒，可配置范围为 `5–120` 秒。
 - Banner native view 按广告位幂等创建；加载失败后若业务仍要求显示，后续加载成功会恢复展示。
@@ -31,6 +35,7 @@ MAX 广告聚合插件，提供广告展示服务。
 
 - [Nova/Doc/INDEX.md](./Nova/Doc/INDEX.md)
 - [Nova/Doc/MaxAdPlugin.md](./Nova/Doc/MaxAdPlugin.md)
+- [奖励资格、回调与埋点的对应关系](./Nova/Doc/MaxAdPlugin.md#回调与埋点对照)
 - [Nova/Doc/MaxAdPluginBuildProcessor.md](./Nova/Doc/MaxAdPluginBuildProcessor.md)
 
 ## 维护

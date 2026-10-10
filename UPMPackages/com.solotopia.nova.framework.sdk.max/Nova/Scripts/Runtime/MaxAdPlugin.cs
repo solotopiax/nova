@@ -37,7 +37,9 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             m_BannerPlacementIds = cfg.BannerPlacementIds;
             m_BannerAutoRefreshIntervalSeconds = cfg.BannerAutoRefreshIntervalSeconds;
             m_AppOpenPlacementIds = cfg.AppOpenPlacementIds;
-            CacheMaxRevenueTrackers();
+            // 初始化只重置收益会话；插件引用在实际派发时按需获取。
+            ClearMaxRevenueTrackers();
+            m_RevenueTrackingSession = new object();
 
             // Facebook GDPR 初始化
             FacebookAdSetting.Initialize();

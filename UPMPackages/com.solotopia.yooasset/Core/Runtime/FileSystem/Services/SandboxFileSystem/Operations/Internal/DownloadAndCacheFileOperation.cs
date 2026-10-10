@@ -1,5 +1,7 @@
 using System.IO;
 
+// modify: local fork - 下载策略结果由外层 SFSDownloadBundleOperation 在缓存校验完成后统一通知，保留 Nova 内容失败重试语义。
+
 namespace YooAsset
 {
     /// <summary>
@@ -36,6 +38,9 @@ namespace YooAsset
         {
             _steps = ESteps.CreateRequest;
         }
+        /// <summary>
+        /// 推进下载与缓存校验；最终结果由外层下载操作通知 URL 策略，HTTP 成功本身不代表内容有效。
+        /// </summary>
         protected override void InternalUpdate()
         {
             if (_steps == ESteps.None || _steps == ESteps.Done)
@@ -80,8 +85,11 @@ namespace YooAsset
                     return;
 
                 // 更新下载报告
-                LatestReport = DownloadReport.CreateFinished(_downloadFileRequest.HttpCode, _downloadFileRequest.HttpError,
-                    LatestReport.DownloadedBytes, LatestReport.DownloadProgress);
+                LatestReport = DownloadReport.CreateFinished(
+                    httpCode: _downloadFileRequest.HttpCode,
+                    httpError: _downloadFileRequest.HttpError,
+                    downloadedBytes: LatestReport.DownloadedBytes,
+                    downloadProgress: LatestReport.DownloadProgress);
 
                 // 检查网络错误
                 if (_downloadFileRequest.Status == EDownloadRequestStatus.Succeeded)
@@ -146,7 +154,9 @@ namespace YooAsset
         }
         protected override void InternalWaitForCompletion()
         {
-            throw new YooInternalException($"{nameof(DownloadAndCacheFileOperation)} does not support synchronous waiting. Bundle: '{Bundle.BundleName}', Url: '{Url}'.");
+            string error = $"{GetType().Name} does not support synchronous waiting. Bundle: '{Bundle.BundleName}', Url: '{Url}'.";
+            SetError(error);
+            YooLogger.LogError(error);
         }
 
         private IDownloadFileRequest CreateResumeRequest()

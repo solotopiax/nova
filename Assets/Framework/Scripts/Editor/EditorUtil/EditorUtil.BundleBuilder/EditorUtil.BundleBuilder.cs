@@ -72,6 +72,9 @@ namespace NovaFramework.Editor
                 parameters.BundleEncryptor = CreateInstanceOrNull<IBundleEncryptor>(ResolveClassName(args.BundleEncryptorClassName, typeof(EncryptionNone)));
                 parameters.ManifestEncryptor = CreateInstanceOrNull<IManifestEncryptor>(ResolveClassName(args.ManifestEncryptorClassName, typeof(ManifestEncryptorNone)));
                 parameters.ManifestDecryptor = CreateInstanceOrNull<IManifestDecryptor>(ResolveClassName(args.ManifestDecryptorClassName, typeof(ManifestDecryptorNone)));
+                // 清单回调不携带目标平台；同步构建期间与 Bundle 共用一次性明确坐标，结束自动释放。
+                using IDisposable encryptionContext = ResourceEncryptionBuildService.EnterBuild(args.PackageName, target, parameters.BundleEncryptor, parameters.ManifestEncryptor);
+                ResourceEncryptionBuildService.ValidateSelection(args.PackageName, parameters.BundleEncryptor, parameters.ManifestEncryptor, parameters.ManifestDecryptor);
                 parameters.BuiltinShadersBundleName = ResolveBuiltinShaderBundleName(args.PackageName);
 
                 Log.Debug(LogTag.Editor,
@@ -132,6 +135,9 @@ namespace NovaFramework.Editor
                 parameters.BundleEncryptor = CreateInstanceOrNull<IBundleEncryptor>(ResolveClassName(args.BundleEncryptorClassName, typeof(EncryptionNone)));
                 parameters.ManifestEncryptor = CreateInstanceOrNull<IManifestEncryptor>(ResolveClassName(args.ManifestEncryptorClassName, typeof(ManifestEncryptorNone)));
                 parameters.ManifestDecryptor = CreateInstanceOrNull<IManifestDecryptor>(ResolveClassName(args.ManifestDecryptorClassName, typeof(ManifestDecryptorNone)));
+                // RawFile 与标准资源构建同样冻结加密坐标，避免清单误用 Unity 上次目标。
+                using IDisposable encryptionContext = ResourceEncryptionBuildService.EnterBuild(args.PackageName, target, parameters.BundleEncryptor, parameters.ManifestEncryptor);
+                ResourceEncryptionBuildService.ValidateSelection(args.PackageName, parameters.BundleEncryptor, parameters.ManifestEncryptor, parameters.ManifestDecryptor);
                 parameters.IncludePathInHash = args.IncludePathInHash;
 
                 Log.Debug(LogTag.Editor,

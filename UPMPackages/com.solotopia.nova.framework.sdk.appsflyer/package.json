@@ -1,6 +1,6 @@
 {
   "name": "com.solotopia.nova.framework.sdk.appsflyer",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "license": "SEE LICENSE IN LICENSE.md",
   "coreVersion": "6.18.1",
   "displayName": "Nova Framework - SDK - AppsFlyer",

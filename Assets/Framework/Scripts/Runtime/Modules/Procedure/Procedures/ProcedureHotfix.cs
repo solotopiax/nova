@@ -20,7 +20,7 @@ namespace NovaFramework.Runtime
     /// <summary>
     /// 资源补丁下载流程。
     /// 1. 显示进度面板（Hotfix 阶段）。
-    /// 2. 非 WebGL 使用 Downloader；WebGL TagsOnLaunch / AllOnLaunch 使用 WarmupGroup。
+    /// 2. 非 WebGL 与微信 TagsOnLaunch 使用 Downloader；浏览器 TagsOnLaunch / WebGL AllOnLaunch 使用 WarmupGroup。
     /// 3. 失败时弹出 HotfixFailed 弹窗：确认重试，取消按 QuitOnFailedOrCancel 强退或跳过补丁进入游戏。
     /// 4. 成功后若 AutoClearUnusedCacheOnHotfix 为 true 则执行清缓存（失败不阻断）。
     /// 5. m_Complete=true 时 OnUpdate 跳转 ProcedureLoadDll。

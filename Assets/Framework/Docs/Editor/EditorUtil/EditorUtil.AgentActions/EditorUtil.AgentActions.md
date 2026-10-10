@@ -39,6 +39,8 @@ Action 的 Request Schema、effects、locks、contractMajor、idempotency 和 co
 
 `platform` 与 `channel` 都只接受对应枚举中非 `None` 的精确声明名称；Config 校验、导出、插件补齐与构建预检统一拒绝两个 `None` 哨兵。
 
+`nova.project.bundle.build-asset` 与 `nova.project.bundle.build-raw-file` 的 `encryptionPolicy` 必填，只接受 `none / offset / xor / aes-memory / aes-stream`；可选 `manifestEncryptionPolicy` 只接受 `none / aes / xor`，省略或 `null` 使用 `none`，因此既有明文请求继续有效。两组选择独立，固定映射见 [BundleBuilder 资源加密方案](../EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md#受控-bundle-action)。Plan 冻结并展示两项逻辑值和实际三个正式类型名，Execute 只使用冻结类型；请求不接受 C# 类型名、旧通用类名或自定义加解密器入口，AES/XOR 清单固定配对。
+
 `nova.project.config.ensure-plugin-instances` 在写盘前先拒绝已有的维度矩阵不一致，并在完整内存副本上预演本次 Ensure；若补行、补实例或启用类型会制造新的未勾选维度冲突，或启用后仍有任一 Platform × Channel × DevelopMode 坐标缺少该类型实例，则以 `blocked` 收口且不修改资产。此时应改用 `matrix` 范围补齐，或先在 ConfigWindow 完成矩阵修复/维度调整，再重新 Plan。
 
 ## 代码组织

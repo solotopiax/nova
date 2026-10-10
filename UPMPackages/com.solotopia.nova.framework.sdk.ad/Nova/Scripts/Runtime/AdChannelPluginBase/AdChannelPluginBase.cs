@@ -130,27 +130,35 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public virtual void SetUserId(string userId) { }
 
         /// <summary>
-        /// 初始化模板方法：先缓存打点插件，再调派生类 InitChannelSDKAsync。
+        /// 初始化模板方法：先缓存存储管理器和打点插件，再调派生类 InitChannelSDKAsync。
         /// 由 AdPlugin 在创建渠道实例后调用；派生类不得重写此方法，只能实现 InitChannelSDKAsync。
         /// </summary>
         /// <param name="config">渠道配置，派生类按需转型使用。</param>
         /// <param name="ct">取消令牌。</param>
         public async UniTask InitializeAsync(IAdChannelConfig config, CancellationToken ct)
         {
+            m_BannerIlrdPersistManager = FrameworkManagersGroup.GetManager<IFileFragmentManager>();
             CacheTrackPlugins();
             await InitChannelSDKAsync(config, ct);
         }
 
         /// <summary>
-        /// 释放模板方法：先取消所有 AdUnit 的延时重试任务，再委托派生类 DisposeChannelSDKAsync。
+        /// 释放模板方法：取消延时重试任务并释放渠道 SDK，最后清除存储管理器缓存。
         /// 由 AdPlugin 在 Dispose 时调用；派生类不得重写此方法，只能重写 DisposeChannelSDKAsync。
         /// </summary>
         /// <param name="ct">取消令牌。</param>
         /// <returns>释放完成的异步任务。</returns>
-        public UniTask DisposeAsync(CancellationToken ct)
+        public async UniTask DisposeAsync(CancellationToken ct)
         {
             CancelAllRetryCts();
-            return DisposeChannelSDKAsync(ct);
+            try
+            {
+                await DisposeChannelSDKAsync(ct);
+            }
+            finally
+            {
+                m_BannerIlrdPersistManager = null;
+            }
         }
 
         /// <summary>

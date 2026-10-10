@@ -1030,7 +1030,7 @@ namespace NovaFramework.Runtime
                 case AssetPlayMode.EditorSimulateMode:
                     return BuildEditorSimulateOptions(package);
                 case AssetPlayMode.OfflinePlayMode:
-                    return BuildOfflineOptions();
+                    return BuildOfflineOptions(package);
                 case AssetPlayMode.HostPlayMode:
                     return BuildHostOptions(package);
                 default:
@@ -1063,11 +1063,13 @@ namespace NovaFramework.Runtime
         /// <summary>
         /// 构造离线运行模式初始化参数；WebGL 仅使用网页服务器文件系统，其他平台使用内置文件系统。
         /// </summary>
+        /// <param name="package">离线包名，用于绑定对应的解密密钥。</param>
         /// <returns>OfflinePlayModeOptions 实例。</returns>
-        private InitializePackageOptions BuildOfflineOptions()
+        private InitializePackageOptions BuildOfflineOptions(string package)
         {
 #if UNITY_WEBGL
             var serverParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+            ConfigureResourceDecryption(serverParams, package);
             serverParams.AddParameter(
                 EFileSystemParameter.UnityWebRequestCreator,
                 (UnityWebRequestCreator)CreateWebGLUnityWebRequest);
@@ -1078,6 +1080,7 @@ namespace NovaFramework.Runtime
             };
 #else
             var builtinParams = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
+            ConfigureResourceDecryption(builtinParams, package);
             return new OfflinePlayModeOptions
             {
                 BuiltinFileSystemParameters = builtinParams,
@@ -1100,16 +1103,25 @@ namespace NovaFramework.Runtime
             if (HasWebGLBuiltinCatalog(package))
             {
                 serverParams = FileSystemParameters.CreateDefaultWebServerFileSystemParameters();
+                ConfigureResourceDecryption(serverParams, package);
                 serverParams.AddParameter(
                     EFileSystemParameter.UnityWebRequestCreator,
                     (UnityWebRequestCreator)CreateWebGLUnityWebRequest);
             }
             var remoteParams = FileSystemParameters.CreateDefaultWebNetworkFileSystemParameters(remote);
+            ConfigureResourceDecryption(remoteParams, package);
             remoteParams.AddParameter(EFileSystemParameter.DownloadUrlPolicy, GetOrCreateDownloadUrlPolicy(package));
             remoteParams.AddParameter(EFileSystemParameter.DownloadRetryPolicy, GetOrCreateDownloadUrlPolicy(package));
             remoteParams.AddParameter(
                 EFileSystemParameter.UnityWebRequestCreator,
                 (UnityWebRequestCreator)CreateWebGLUnityWebRequest);
+            remoteParams.AddParameter(EFileSystemParameter.DownloadMaxConcurrency, Math.Max(1, m_Config.MaxDownloadConcurrency));
+            remoteParams.AddParameter(EFileSystemParameter.DownloadMaxRequestPerFrame, Math.Max(1, m_Config.MaxDownloadConcurrency));
+            m_WebPreloadPackages.Remove(package);
+            if (AssetWebPreloadRegistry.TryConfigure(remoteParams, CreateWebGLUnityWebRequest))
+            {
+                m_WebPreloadPackages.Add(package);
+            }
             // Catalog 不存在时使用纯 WebNetwork；存在时保持 WebServer 优先、WebNetwork 兜底。
             return new HostPlayModeOptions
             {
@@ -1118,7 +1130,9 @@ namespace NovaFramework.Runtime
             };
 #else
             var builtinParams = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
+            ConfigureResourceDecryption(builtinParams, package);
             var cacheParams = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remote);
+            ConfigureResourceDecryption(cacheParams, package);
             if (copyBuiltinManifest)
             {
                 // 内置清单回退仍保持 HostPlayMode；先把当前安装包清单复制进 Sandbox，供主文件系统本地激活。
@@ -1133,6 +1147,26 @@ namespace NovaFramework.Runtime
                 CacheFileSystemParameters = cacheParams,
             };
 #endif
+        }
+
+        /// <summary>
+        /// 为实际资源文件系统配置 Nova 解密器；明文清单与未加密 Bundle 保持原加载路径。
+        /// </summary>
+        /// <param name="parameters">将用于初始化的文件系统参数。</param>
+        /// <param name="package">包名；文件头必须与此包名一致。</param>
+        private void ConfigureResourceDecryption(FileSystemParameters parameters, string package)
+        {
+            string packageName = ResolvePackageName(package);
+            var memory = new ResourceBundleMemoryDecryptor(packageName);
+#if UNITY_WEBGL
+            parameters.AddParameter(EFileSystemParameter.AssetBundleDecryptor, memory);
+#else
+            parameters.AddParameter(EFileSystemParameter.AssetBundleDecryptor, new ResourceBundleAutoDecryptor(packageName));
+            parameters.AddParameter(EFileSystemParameter.AssetBundleFallbackDecryptor, memory);
+#endif
+            parameters.AddParameter(EFileSystemParameter.RawBundleDecryptor, memory);
+            parameters.AddParameter(EFileSystemParameter.ArchiveBundleDecryptor, memory);
+            parameters.AddParameter(EFileSystemParameter.ManifestDecryptor, new ResourceManifestDecryptor(packageName));
         }
 
         /// <summary>

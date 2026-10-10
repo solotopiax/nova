@@ -352,57 +352,60 @@ namespace NovaFramework.Editor
             /// <summary>
             /// Luban 环境检测面板（环境检测组下）。
             /// </summary>
-            LubanEnv,
+            LubanEnv = 0,
 
             /// <summary>
             /// Python3 环境检测面板（环境检测组下）。
             /// </summary>
-            Python3Env,
+            Python3Env = 1,
 
             /// <summary>
             /// HybridCLR 环境检测面板（环境检测组下）。
             /// </summary>
-            HybridCLREnv,
+            HybridCLREnv = 2,
 
             /// <summary>
             /// 应用配置面板（通用配置组下）。
             /// </summary>
-            AppConfig,
+            AppConfig = 3,
 
             /// <summary>
             /// 隐私配置面板（通用配置组下）。
             /// </summary>
-            PrivacyConfig,
+            PrivacyConfig = 4,
 
             /// <summary>
             /// 名字空间配置面板（通用配置组下）。
             /// </summary>
-            NamespaceConfig,
+            NamespaceConfig = 5,
 
             /// <summary>
             /// SDK Plugin 节点面板。
             /// </summary>
-            SDKNode,
+            SDKNode = 6,
 
             /// <summary>
             /// HybridCLR 配置面板（通用配置组下）。
             /// </summary>
-            HybridCLRConfig,
+            HybridCLRConfig = 7,
 
             /// <summary>
             /// YooAsset 配置面板（通用配置组下）。
             /// </summary>
-            YooAssetConfig,
+            YooAssetConfig = 8,
 
             /// <summary>
             /// CDN 内容分发网络部署面板（通用配置组下）。
             /// </summary>
-            CDNEditorConfigs,
+            CDNEditorConfigs = 9,
 
             /// <summary>
             /// Kit 配置节点面板。
             /// </summary>
-            KitNode,
+            KitNode = 10,
+
+            /// <summary>独立本地资源密钥配置面板（通用配置组下）。</summary>
+            ResourceEncryptionConfig = 11,
         }
     }
 }

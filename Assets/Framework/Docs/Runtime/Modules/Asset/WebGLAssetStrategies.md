@@ -136,3 +136,21 @@ WebGL 不使用“单文件字节流入超时”。`WebGLBundleRequestTimeout`�
 - [ProcedureCheckVersion.md](../Procedure/ProcedureCheckVersion.md)
 - [ProcedureHotfix.md](../Procedure/ProcedureHotfix.md)
 - [EditorUtil.BundleBuilder.md](../../../Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md)
+
+## 微信小游戏原生预下载
+
+安装微信 Kit 与 YooAsset 私包 `1.2.0`（Core `3.0.6`）后，`YooAsset.Custom` 程序集在 WebGL Player 场景加载前检查真实小游戏容器并注册平台策略。不依赖项目手工添加微信宏，不需要业务注册，也不等待微信 Plugin 的初始化；普通浏览器及 Editor 不注册。
+
+| 策略 | 微信 Host 行为 | 内存所有权 |
+|---|---|---|
+| `TagsOnLaunch` | Manifest 就绪后使用 `LaunchHotfixTags` 创建 Nova Downloader，向微信缓存预下载 | 不加载 AssetBundle 到 Unity 内存，不创建启动 WarmupGroup |
+| `OnDemand` | 跳过启动预下载，业务 `LoadAsync` 时由平台加载和缓存 | 由业务 Handle 持有 |
+| `AllOnLaunch` | 使用全量 WarmupGroup 加载 | AssetManager 持有到 Shutdown，保持原有常驻语义 |
+
+空白或空 Tag 仍降级为 OnDemand。Offline 与未注册的平台保持浏览器 Warmup 行为。显式 `CreateDownloader*` 在微信 Host 下可预下载全包、Tag 或 Location 及依赖；`CreateWarmup*` 始终表示实际加载及句柄持有，语义不改。
+
+平台请求使用 `wechatminigame-preload: 1` 头，沿用 Nova Bundle 超时、并发、主备 URL、重试、进度与取消；成功后下载计数和总字节由 YooAsset 根据 Manifest 回填，不能当作实时网络字节测量。预下载与同 Bundle 的加载由 YooAsset 协调，加载优先，重试及结束会释放访问门和请求。
+
+策略不逐包调用 `WX.GetCachePath`，也不在进程中伪造永久缓存命中。HTTP 成功仅代表预下载请求完成；真正的平台缓存写入取决于微信插件的 URL 缓存规则。重复预下载是否省流、清缓存后的恢复、真机内存和插件行为必须在正式转换产物中验证。Web Player 不将这些结果记录为原生 Sandbox 的本地可启动版本。
+
+基础适配注册入口为 `AssetWebPreloadRegistry.Register`，仅供平台包使用。业务继续调用 `IAssetManager`，无需了解 YooAsset 内部策略。

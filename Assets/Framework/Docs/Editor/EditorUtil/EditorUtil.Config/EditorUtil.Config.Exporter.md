@@ -1,5 +1,7 @@
 # EditorUtil.Config.Exporter
 
+ConfigWindow 保存时自动按当前维度归一设计态配置；本导出器只读取已保存数据并执行维度校验，不隐式修正或写回 ConfigMaster。
+
 **类签名**：`public static class Exporter`（嵌套于 `EditorUtil.Config`）
 **命名空间**：`NovaFramework.Editor`
 
@@ -41,6 +43,8 @@ public static ConfigRuntimeSO Export(
 ```
 
 `Export` 保留显式 `platform` 参数，作为公共底层 API 可导出调用方明确传入的任意合法矩阵坐标，不在此层读取或改写 Unity BuildTarget。生产入口的约束在调用方执行：ConfigWindow 可手工切换编辑平台，但只有编辑平台与 Unity 当前 Active BuildTarget 映射一致时才会调用导出；Pipify `export.config` 与 `nova.project.config.export-runtime` 同样在未映射或漂移时阻断。
+
+ConfigWindow 和 Pipify 使用公开 `Export` 时，同时按传入坐标生成客户端资源密钥源码与 link.xml，并持久化源码路径追踪；ConfigMaster 的当前渠道和开发模式不变。密钥不写入 ConfigRuntime。受控 Agent Action 的 internal 窄写入重载仍只写冻结的 ConfigRuntime/YooAssetSettings，不扩大其写入清单；需单独导出密钥源码。源码变化后必须等待 Unity 编译再构建。
 
 `PrivacyConfigs` 导出时深拷贝 AES Key/IV、`PrivacyInfoConfig` 与 `InfoPlistUsageDescriptions`；iOS 构建后处理读取此单格快照，不直接读取 ConfigWindow 的工作副本。
 

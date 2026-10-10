@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Breaking
+
+## [0.1.13] - 2026-10-10
+
+### Fixed
+
+- GameSaveDemo 将 YooAsset 内置与缓存目录从 yooasset 统一为 yoo，重新导出配置，保持示例资源路径一致。
+
 ## [0.1.12] - 2026-09-04
 
 ### Changed

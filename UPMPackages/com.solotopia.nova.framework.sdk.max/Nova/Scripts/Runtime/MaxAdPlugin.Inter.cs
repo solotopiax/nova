@@ -25,7 +25,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void RequestInter(string placementId) => MaxSdk.LoadInterstitial(placementId);
 
         /// <summary>
-        /// 展示插屏广告，挂起等待关闭或失败回调。
+        /// 展示插屏广告，调用 MAX 展示接口前记录展示尝试，再挂起等待关闭或失败回调。
         /// </summary>
         /// <param name="placementId">广告位 ID。</param>
         /// <param name="ct">取消令牌。</param>
@@ -33,7 +33,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private UniTask<AdResult> ShowInterAsync(string placementId, CancellationToken ct)
         {
             m_InterTcs = new UniTaskCompletionSource<AdResult>();
-            BeginFullscreenImpression(AdFormat.Interstitial, placementId);
+            TrackAdShow(AdFormat.Interstitial, placementId, BeginFullscreenImpression(AdFormat.Interstitial, placementId));
             MaxSdk.ShowInterstitial(placementId);
             return m_InterTcs.Task;
         }
@@ -77,23 +77,23 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 插屏展示成功回调，上报展示打点。
+        /// 插屏展示成功回调，标记奖励资格为 true，上报展示成功结果并通知业务层。
         /// </summary>
         /// <param name="adUnitId">广告位 ID。</param>
         /// <param name="info">广告信息。</param>
         private void OnInterDisplayed(string adUnitId, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX Interstitial 展示成功回调：placement={adUnitId}，network={info?.NetworkName}。");
-            TrackAdShow(AdFormat.Interstitial, adUnitId, MarkFullscreenDisplayed(AdFormat.Interstitial, adUnitId));
             RaiseShowCompleted(new AdResult
             {
                 Success = true,
+                RewardGranted = true,
                 Format = AdFormat.Interstitial,
                 PlacementId = adUnitId,
                 Network = info.NetworkName,
                 Revenue = info.Revenue,
                 Currency = "USD",
-            });
+            }, MarkFullscreenDisplayed(AdFormat.Interstitial, adUnitId));
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void OnInterDisplayFailed(string adUnitId, MaxSdkBase.ErrorInfo err, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX Interstitial 展示失败回调：placement={adUnitId}，network={info?.NetworkName}，code={(int)err.Code}，message={err.Message}。");
-            AbandonFullscreenImpression(AdFormat.Interstitial, adUnitId);
+            var showProps = AbandonFullscreenImpression(AdFormat.Interstitial, adUnitId);
             var result = new AdResult
             {
                 Success = false,
@@ -114,7 +114,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Network = info?.NetworkName,
                 ErrorMessage = err.Message,
             };
-            RaiseShowFailed(result);
+            RaiseShowFailed(result, showProps);
             m_InterTcs?.TrySetResult(result);
         }
 
@@ -130,7 +130,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 插屏关闭回调，触发 RaiseAdClosed 并结束 Tcs。
+        /// 插屏关闭回调，携带本次曝光 ID 触发 RaiseAdClosed 并结束 Tcs。
         /// </summary>
         /// <param name="adUnitId">广告位 ID。</param>
         /// <param name="info">广告信息。</param>
@@ -147,7 +147,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Currency = "USD",
                 RewardGranted = true,
             };
-            RaiseAdClosed(result, true);
+            RaiseAdClosed(result, true, GetFullscreenImpressionProps(AdFormat.Interstitial, adUnitId));
             m_InterTcs?.TrySetResult(result);
         }
 

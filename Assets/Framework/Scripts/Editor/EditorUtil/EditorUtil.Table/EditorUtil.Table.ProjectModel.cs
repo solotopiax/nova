@@ -485,7 +485,7 @@ namespace NovaFramework.Editor
                     }
                 }
 
-                return working.BeginCollect(packageName, false, false);
+                return working.BeginCollect(packageName, false, false, false);
             }
             finally
             {

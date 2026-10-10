@@ -82,3 +82,7 @@ bool ok = await downloader.RunAsync(ct);
 
 - [IAssetDownloader.md](../Interfaces/IAssetDownloader.md)
 - [IAssetManager.md](../Interfaces/IAssetManager.md)
+
+## 微信平台预下载
+
+微信 Host 配置平台策略后，CreateDownloader/ByTags/ByLocations 使用相同门面向平台缓存预下载，保留逻辑重试、主备轮次、取消与 OnProgress。请求成功后按 Manifest 回填已完成文件的大小；实时进度受微信插件限制。重复调用仍交由平台缓存判定，不能据空下载器或 HTTP 成功承诺永久离线可用。

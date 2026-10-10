@@ -21,7 +21,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         public override string Name => "AdPlugin";
 
         /// <summary>
-        /// 初始化优先级为 80；在现有收益打点插件之后初始化，确保广告渠道能缓存可用的打点实例。
+        /// 稳定遍历与释放排序值为 80；初始化先后由 InitializationDependencies 的能力依赖决定。
         /// </summary>
         public override int Priority => 80;
 

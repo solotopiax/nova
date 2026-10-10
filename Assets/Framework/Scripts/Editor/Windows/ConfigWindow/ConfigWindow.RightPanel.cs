@@ -77,6 +77,9 @@ namespace NovaFramework.Editor
                         case LeftTreeItem.YooAssetConfig when m_MasterSO != null:
                             DrawRightPanelYooAsset();
                             break;
+                        case LeftTreeItem.ResourceEncryptionConfig when m_MasterSO != null:
+                            DrawResourceEncryptionPanel();
+                            break;
                         case LeftTreeItem.CDNEditorConfigs when m_MasterSO != null:
                             DrawCdnDeploymentPanel();
                             break;
@@ -239,7 +242,10 @@ namespace NovaFramework.Editor
         /// <param name="mask">当前面板维度掩码。</param>
         /// <param name="titleTrailingSpace">标题后间距，0f 表示无间距。</param>
         /// <param name="onAxisToggled">toggle 变化回调；(axis, enabled) 两参数，enabled=true 为启用，false 为禁用。</param>
-        private void DrawTitleWithMaskCore(string title, PanelDimensionMask mask, float titleTrailingSpace, System.Action<EditorUtil.Config.DimensionProjector.DimensionAxis, bool> onAxisToggled)
+        /// <param name="deferConfirmation">资源密钥页自行延迟确认时为 true；其余页面保留现有确认路径。</param>
+        private void DrawTitleWithMaskCore(string title, PanelDimensionMask mask, float titleTrailingSpace,
+            System.Action<EditorUtil.Config.DimensionProjector.DimensionAxis, bool> onAxisToggled,
+            bool deferConfirmation = false)
         {
             // 内联 toggle 为行内紧凑元素，不传固定 Width（豁免 PAT-24 顶层条目对齐约束）
             EditorUtil.Draw.Layout.Horizontal(() =>
@@ -252,7 +258,7 @@ namespace NovaFramework.Editor
                 bool byPlatform = EditorUtil.Draw.ToggleInline("平台类型", mask.ByPlatform, false);
                 if (byPlatform != mask.ByPlatform)
                 {
-                    if (ConfirmDimensionToggle(EditorUtil.Config.DimensionProjector.DimensionAxis.Platform, byPlatform))
+                    if (deferConfirmation || ConfirmDimensionToggle(EditorUtil.Config.DimensionProjector.DimensionAxis.Platform, byPlatform))
                         onAxisToggled(EditorUtil.Config.DimensionProjector.DimensionAxis.Platform, byPlatform);
                     else
                         Repaint();
@@ -261,7 +267,7 @@ namespace NovaFramework.Editor
                 bool byChannel = EditorUtil.Draw.ToggleInline("渠道类型", mask.ByChannel, false);
                 if (byChannel != mask.ByChannel)
                 {
-                    if (ConfirmDimensionToggle(EditorUtil.Config.DimensionProjector.DimensionAxis.Channel, byChannel))
+                    if (deferConfirmation || ConfirmDimensionToggle(EditorUtil.Config.DimensionProjector.DimensionAxis.Channel, byChannel))
                         onAxisToggled(EditorUtil.Config.DimensionProjector.DimensionAxis.Channel, byChannel);
                     else
                         Repaint();
@@ -270,7 +276,7 @@ namespace NovaFramework.Editor
                 bool byMode = EditorUtil.Draw.ToggleInline("开发模式", mask.ByDevelopMode, false);
                 if (byMode != mask.ByDevelopMode)
                 {
-                    if (ConfirmDimensionToggle(EditorUtil.Config.DimensionProjector.DimensionAxis.DevelopMode, byMode))
+                    if (deferConfirmation || ConfirmDimensionToggle(EditorUtil.Config.DimensionProjector.DimensionAxis.DevelopMode, byMode))
                         onAxisToggled(EditorUtil.Config.DimensionProjector.DimensionAxis.DevelopMode, byMode);
                     else
                         Repaint();

@@ -101,7 +101,9 @@ public static void BroadcastWithinGroup(
 
 ```
 
-正常保存阶段不调用投影器。ConfigWindow 会先提交 `SerializedProperty` 缓冲并校验维度不变量，再通过 `CopySerialized(m_WorkingCopy, m_Master)` 完整落盘；若复制或旧版本资产已有不一致，用户可在保存门禁中明确选择按当前坐标调用 `NormalizeInvalidGroups`，重新校验通过后才落盘。Exporter 在所有入口执行同一只读门禁。
+ConfigWindow 保存前调用 internal `NormalizeForSave(master, masterSO, curCoord)`，在 WorkingCopy 上自动按当前掩码归一，无需整理确认。`curCoord.Platform` 必须使用窗口编辑平台。归一完成且校验通过后才 `CopySerialized` 落盘；Exporter 保持只读门禁，不隐式归一或写 Master。
+
+资源加解密配置通过 internal `OnDimensionEnabled(ResourceKeyStoreData, Coord, DimensionAxis)` / `OnDimensionDisabled(...)` 和 `SetResourceActiveKeyId(...)` 接入 ConfigMaster 工作副本中的资源密钥配置。它只投影当前加密编号选择，全部解密密钥保留；通过顶部全局保存写入 ConfigMaster，但不参与 ConfigRuntime 导出。
 
 ---
 
@@ -116,9 +118,15 @@ public static void BroadcastWithinGroup(
 - 矩阵类写回每个物理格；SDK / Kit 每格使用独立 `SerializeReference` 深拷贝。
 - 顶层类清理旧 Override 后，按新掩码每个逻辑键重建一条规范 Override；全局模式回写顶层字段。
 
-### 复制资产恢复归一
+### 保存自动归一
 
-`NormalizeInvalidGroups` 不改变任何维度开关，也只处理本次 `ValidationIssue` 实际点名的 App / Privacy 面板或 SDK / Kit 类型，不触碰其它配置。未勾选轴以 ConfigWindow 顶部当前坐标对应分支为权威值，已勾选轴仍逐逻辑组保留；SDK / Kit 仅在每个逻辑组都有明确来源实例时处理，并继续为每个物理格深拷贝独立实例。重复或空 Override、矩阵缺项等结构问题继续 fail-closed，不能依据列表顺序自动丢弃。整个恢复在 WorkingCopy 上原子执行，异常会完整回滚，且恢复后必须再次通过 `ValidateDimensionInvariants` 才能保存。
+`NormalizeForSave` 不改变维度开关，原子整理全部配置：
+
+- 无效平台、渠道、模式及空槽清理，缺失物理矩阵按显式编辑平台补齐；真实重复有效坐标在投影前拒绝。
+- App / Privacy 和所有实际存储的 SDK / Kit 按当前掩码逐逻辑组取值，同步未选轴，保留已选轴。SDK / Kit 稀疏组在当前来源缺失时只继承同组唯一值；已符合掩码的实例保持原引用，避免重复保存产生引用标识噪声。
+- Namespace / HybridCLR / YooAsset / CDN 全局时保留顶层当前值并清空 Overrides。部分维度优先规范裁剪键，再匹配当前未选轴的旧具体坐标，清除非当前分支并重建规范逻辑组；同优先级不同内容不得按列表顺序猜测。
+- ResourceEncryption 只整理 `ActiveKeyOverrides`，保留全部 `Keys` 和独立源码导出目录。
+- 完成维度及密钥校验后才返回；异常恢复完整 WorkingCopy，资产不被覆盖。
 
 ### GroupMembers — 同组格枚举
 
@@ -157,7 +165,7 @@ SDK / Kit 广播与投影调用此 helper 将源格的 `[SerializeReference]` �
 | 误区 | 正确做法 |
 |------|---------|
 | 直接修改 `m_Entries` 某格数据并期望其他同组格同步 | 修改后调用 `BroadcastWithinGroup`，由 ConfigWindow 负责触发 |
-| 保存时静默广播当前格 | 正常保存只校验；仅当旧/复制资产已不一致且用户明确选择“一键修复”时，才按当前坐标归一并重新校验 |
+| 保存时用一个完整坐标覆盖全部组 | 未选轴取当前值，已选轴逐组保留；自动清理旧分支并重新校验 |
 | 开启维度时只复制当前切片 | 先枚举旧掩码的全部逻辑组，再对新轴完整拆分 |
 | 取消维度时拿当前完整坐标覆盖全矩阵 | 对每个剩余逻辑组分别保留顶部当前轴值对应的旧分支 |
 | 顶层类维度切换后不刷 `YooAssetInjector.Inject` | YooAsset mask 变更后路径已更新但注入还是旧值；`ConfigWindow.RightPanel.YooAsset.cs` 的 `ReInjectYooAsset` 需在 toggle 回调中调用 |
@@ -170,7 +178,7 @@ SDK / Kit 广播与投影调用此 helper 将源格的 `[SerializeReference]` �
 ```csharp
 // ConfigWindow.RightPanel.cs 中勾选 ByPlatform 时触发；平台来自窗口本地编辑选择
 var curCoord = new DimensionProjector.Coord(
-    m_Master.CurrentPlatform,
+    editingPlatform,
     m_Master.CurrentChannel,
     m_Master.CurrentDevelopMode);
 

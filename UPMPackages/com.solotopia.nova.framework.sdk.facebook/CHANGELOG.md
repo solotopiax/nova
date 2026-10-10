@@ -12,6 +12,12 @@ This file records notable changes to `com.solotopia.nova.framework.sdk.facebook`
 
 ### Breaking
 
+## [0.1.15] - 2026-10-10
+
+### Changed
+
+- FacebookDemo 清理无效渠道行，补齐默认配置并重新导出；现有 Facebook、TGA 和广告参数保持不变。
+
 ## [0.1.14] - 2026-09-28
 
 ### Changed

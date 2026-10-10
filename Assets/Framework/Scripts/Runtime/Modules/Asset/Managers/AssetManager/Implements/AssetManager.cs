@@ -112,6 +112,7 @@ namespace NovaFramework.Runtime
             m_StartupWhitelistPreferenceStore.ClearAll();
             m_DownloadUrlPolicies.Clear();
             m_RemoteServices.Clear();
+            m_WebPreloadPackages.Clear();
             m_WebGLBuiltinCatalogAvailability.Clear();
             m_WebGLBuiltinCatalogLayoutResolved = false;
             m_WebGLBuiltinCatalogLayoutAvailable = false;
@@ -305,6 +306,11 @@ namespace NovaFramework.Runtime
         public override void CommitBootableVersion(string package = null)
         {
             string name = ResolvePackageName(package);
+            // Web 缓存由平台管理，预下载 HTTP 成功不能证明持久、可离线启动；不写原生 Sandbox 记录。
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                return;
+            }
             if (m_OfflineRecoveredPackages.Contains(name))
             {
                 return;
@@ -683,7 +689,7 @@ namespace NovaFramework.Runtime
             bool hostRestored = false;
             try
             {
-                offlineInitOp = pkg.InitializePackageAsync(BuildOfflineOptions());
+                offlineInitOp = pkg.InitializePackageAsync(BuildOfflineOptions(name));
                 await UniTask.WaitUntil(() => offlineInitOp.IsDone, cancellationToken: ct);
                 if (offlineInitOp.Status != EOperationStatus.Succeeded)
                 {

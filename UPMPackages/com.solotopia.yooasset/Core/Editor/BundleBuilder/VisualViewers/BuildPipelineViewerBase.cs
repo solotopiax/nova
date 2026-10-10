@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
+// modify: local fork - 三个构建服务下拉与 Nova/Pipify 共用可实例化候选及排序。
+
 namespace YooAsset.Editor
 {
     /// <summary>
@@ -244,7 +246,7 @@ namespace YooAsset.Editor
         /// </summary>
         protected PopupField<Type> CreateBundleEncryptorField(VisualElement container)
         {
-            var classTypes = EditorAssemblyUtility.GetAssignableTypes(typeof(IBundleEncryptor));
+            var classTypes = EditorAssemblyUtility.GetBuildServiceTypes(typeof(IBundleEncryptor));
             if (classTypes.Count > 0)
             {
                 var className = BundleBuilderSetting.GetPackageBundleEncryptorClassName(PackageName, PipelineName);
@@ -278,7 +280,7 @@ namespace YooAsset.Editor
         /// </summary>
         protected PopupField<Type> CreateManifestEncryptorField(VisualElement container)
         {
-            var classTypes = EditorAssemblyUtility.GetAssignableTypes(typeof(IManifestEncryptor));
+            var classTypes = EditorAssemblyUtility.GetBuildServiceTypes(typeof(IManifestEncryptor));
             if (classTypes.Count > 0)
             {
                 var className = BundleBuilderSetting.GetPackageManifestEncryptorClassName(PackageName, PipelineName);
@@ -312,7 +314,7 @@ namespace YooAsset.Editor
         /// </summary>
         protected PopupField<Type> CreateManifestDecryptorField(VisualElement container)
         {
-            var classTypes = EditorAssemblyUtility.GetAssignableTypes(typeof(IManifestDecryptor));
+            var classTypes = EditorAssemblyUtility.GetBuildServiceTypes(typeof(IManifestDecryptor));
             if (classTypes.Count > 0)
             {
                 var className = BundleBuilderSetting.GetPackageManifestDecryptorClassName(PackageName, PipelineName);
@@ -340,6 +342,7 @@ namespace YooAsset.Editor
                 return popupField;
             }
         }
+
         #endregion
     }
 }

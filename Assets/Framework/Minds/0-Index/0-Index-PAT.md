@@ -62,7 +62,7 @@ auto_generated: true
 - [PAT-150 Editor 多仓库渐进加载与变更就绪门](../2-Areas/Patterns/PAT-150-editor-multi-registry-progressive-load-mutation-gate.md) — 多仓库并发渐进展示，变更操作等待数据集完整
 - [PAT-155 Unity Editor 菜单分组按父菜单首项并预留 11 级差](../2-Areas/Patterns/PAT-155-unity-menuitem-priority-grouping.md) — 顶层子菜单继承首项优先级，分割线统一预留 11 级差
 - [PAT-156 CDN 上传前清理必须受本次上传计划约束](../2-Areas/Patterns/PAT-156-cdn-clean-before-deploy-bounded-by-upload-plan.md) — 远端清理只覆盖本次精确文件和目录前缀，失败时零上传
-- [PAT-161 ConfigWindow 新增配置面板必须携带三维配置头部](../2-Areas/Patterns/PAT-161-configwindow-new-panel-dimension-header.md) — ConfigWindow 新面板必须接入三维配置头部
+- [PAT-161 ConfigWindow 新增配置面板必须携带三维配置头部](../2-Areas/Patterns/PAT-161-configwindow-new-panel-dimension-header.md) — Config新面板必须接入独立三维头部工作副本保存与消费链
 - [PAT-163 ConfigWindow 导航字段名必须复用实际显示名](../2-Areas/Patterns/PAT-163-configwindow-navigation-label-source-of-truth.md) — 导航字段名复用页面显示标签
 - [PAT-18 EditorWindow 与 EditorUtil 职责分离](../2-Areas/Patterns/PAT-18-editor-window-vs-util-split.md) — EditorWindow与EditorUtil分层职责拆分
 - [PAT-35 Editor 绘制统一走 EditorUtil.Draw](../2-Areas/Patterns/PAT-35-editor-draw-only.md) — 业务侧 Editor 绘制统一走 Draw
@@ -90,7 +90,7 @@ auto_generated: true
 - [PAT-10 IMGUI 自定义 Popup 必须 Layout.Horizontal 包裹 Label + 控件](../2-Areas/Patterns/PAT-10-imgui-popup-horizontal-wrap.md) — IMGUI Popup需横向包裹避免错位抖动
 - [PAT-128 Inspector 持久化 UI 状态勿每帧强写](../2-Areas/Patterns/PAT-128-inspector-oninspectorgui-state-antipattern.md) — 持久化 UI 状态只在 OnEnable 设一次，绘制回调禁每帧强写
 - [PAT-149 IMGUI Foldout 展开位移先查布局 margin 传播](../2-Areas/Patterns/PAT-149-imgui-foldout-margin-propagation-layout-shift.md) — Foldout 位移先量 Rect 并阻断 margin 传播
-- [PAT-20 Editor 配置详情页标题与缩进规则](../2-Areas/Patterns/PAT-20-editor-panel-title-indent.md) — 复杂 Editor 配置面板应有明确标题，并给标题下条目统一缩进
+- [PAT-20 Editor 配置详情页标题与缩进规则](../2-Areas/Patterns/PAT-20-editor-panel-title-indent.md) — Editor详情页统一标题内容边界区域留白与紧凑操作层级
 - [PAT-21 Inspector HelpBox 用户视角与多语义分行规则](../2-Areas/Patterns/PAT-21-inspector-helpbox-multiline.md) — HelpBox 只写用户需要的用途影响与操作且多条信息必须分行
 - [PAT-22 IMGUI TextField 切数据源前必须先释放焦点](../2-Areas/Patterns/PAT-22-imgui-textfield-focus-release.md) — IMGUI TextField编辑后需主动释放焦点
 - [PAT-24 Inspector 同层级编辑区对齐规则](../2-Areas/Patterns/PAT-24-inspector-row-vertical-alignment.md) — Inspector 同层级编辑区垂直对齐
@@ -114,6 +114,7 @@ auto_generated: true
 - [PAT-164 Firebase 默认 Topic 分层同步与差异存档](../2-Areas/Patterns/PAT-164-firebase-default-topic-sync.md) — 默认Topic分层同步并存档差异
 - [PAT-165 Mobile IAP 支付失败打点边界](../2-Areas/Patterns/PAT-165-mobile-iap-pay-failure-track-boundary.md) — PayAsync统一失败打点，无返回链路的回调兜底
 - [PAT-167 ThirdPay 支付页终态与验单打点分层](../2-Areas/Patterns/PAT-167-thirdpay-payment-terminal-and-validation-tracking.md) — 成功 callback 与关闭终态互斥，验单和删单独立记录
+- [PAT-168 Tracks 集中归属与统一格式维护](../2-Areas/Patterns/PAT-168-tracks-workbook-ownership-and-format.md) — 集中归属与目标不变，源表生成器统一单色样式
 - [PAT-33 新增 SDK Plugin 的 6 步 SOP](../2-Areas/Patterns/PAT-33-sdk-plugin-sop.md) — SDK Plugin SOP UPM包加ISDKPlugin
 - [PAT-69 UGUI 等比铺满父宽的零脚本配置法](../2-Areas/Patterns/PAT-69-ugui-aspect-fit-fill-width.md) — ARF+水平 stretch 实现等比满宽零脚本
 
@@ -191,4 +192,4 @@ auto_generated: true
 
 
 ---
-_共 125 条，分布于 18 个 category。_
+_共 126 条，分布于 18 个 category。_

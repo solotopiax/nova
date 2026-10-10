@@ -154,7 +154,9 @@ namespace NovaFramework.Runtime
                 bool isWebGLPlayer = UnityEngine.Application.platform == UnityEngine.RuntimePlatform.WebGLPlayer;
                 bool requiresLaunchWarmup = assetManager is IAssetStartupWarmupController warmupController
                     && warmupController.RequiresLaunchWarmup;
-                if (!assetComponent.EnableHotfix && !requiresLaunchWarmup)
+                bool hasLaunchPreload = assetManager is IAssetStartupWarmupController preloadController
+                    && preloadController.RequiresLaunchPreload;
+                if (!assetComponent.EnableHotfix && !requiresLaunchWarmup && !hasLaunchPreload)
                 {
                     Log.Debug(LogTag.Procedure, "EnableHotfix=false，跳过资源热更检查。");
                     m_HasAssetPatch = false;
@@ -166,7 +168,11 @@ namespace NovaFramework.Runtime
                 await assetManager.BootstrapAsync(ct);
                 ct.ThrowIfCancellationRequested();
                 await assetManager.LoadManifestAsync(null, ct);
-                if (assetComponent.EnableHotfix && !isWebGLPlayer)
+                // 平台策略在 Package 初始化时注入；清单就绪后再确定 TagsOnLaunch 使用 Downloader 还是 Warmup。
+                IAssetStartupWarmupController startupController = assetManager as IAssetStartupWarmupController;
+                requiresLaunchWarmup = startupController?.RequiresLaunchWarmup == true;
+                bool requiresLaunchPreload = startupController?.RequiresLaunchPreload == true;
+                if ((assetComponent.EnableHotfix && !isWebGLPlayer) || requiresLaunchPreload)
                 {
                     List<string> hotfixTags = assetComponent.LaunchHotfixTags;
                     string patchScope;
@@ -185,7 +191,7 @@ namespace NovaFramework.Runtime
                 }
                 else if (isWebGLPlayer)
                 {
-                    // Web 文件系统没有 Sandbox Downloader 语义；WebGL 只刷新 Manifest，
+                    // 未启用平台原生预下载时，Web 文件系统没有 Sandbox Downloader 语义；WebGL 只刷新 Manifest，
                     // 再由 OnDemand 或 Warmup 决定 Bundle 的实际请求时机。
                     Log.Debug(LogTag.Procedure, "WebGL 不执行 Downloader 补丁差异检查，按资源策略继续启动。");
                     m_HasAssetPatch = false;
@@ -196,7 +202,7 @@ namespace NovaFramework.Runtime
                     m_HasAssetPatch = false;
                 }
 
-                m_RequiresStartupAssetWork = requiresLaunchWarmup || (!isWebGLPlayer && m_HasAssetPatch);
+                m_RequiresStartupAssetWork = requiresLaunchWarmup || ((!isWebGLPlayer || requiresLaunchPreload) && m_HasAssetPatch);
                 if (!m_RequiresStartupAssetWork)
                 {
                     assetManager.CommitBootableVersion();

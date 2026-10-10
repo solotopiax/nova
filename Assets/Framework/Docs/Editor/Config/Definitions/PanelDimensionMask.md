@@ -5,6 +5,8 @@
 
 ConfigWindow 单个配置面板的维度启用掩码；记录该面板是否按平台类型 / 渠道类型 / 开发模式分别配置。勾选的轴彼此独立，未勾选的轴共用同一逻辑份，普通字段编辑会立即同步到该逻辑组的全部物理格。全部为 false 时表示全局唯一配置（`IsGlobal == true`）。ConfigWindow 的编辑平台是窗口本地选择；只有导出和 YooAsset 注入要求它与 Unity Active BuildTarget 一致。
 
+资源加解密页复用此类型作为`ConfigMaster.ResourceEncryption.DimensionMask`；它只区分当前加密编号，真实密钥字典共用，只写入 ConfigMaster，不写入 ConfigRuntime。编辑坐标来自顶栏，构建坐标来自实际目标和激活 Config 已保存渠道、模式。
+
 ---
 
 ## §2 文件表

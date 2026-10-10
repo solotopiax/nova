@@ -11,8 +11,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
-using UnityEngine;
 
 namespace NovaFramework.SDK.AdPlugin.Runtime
 {
@@ -21,6 +21,11 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
     /// </summary>
     public abstract partial class AdChannelPluginBase
     {
+        /// <summary>
+        /// 广告 Banner 收益累计专用文件片段分类；渠道汇总与兼容的广告位累计使用独立条目。
+        /// </summary>
+        private const string c_BannerIlrdPersistClassify = "NovaAdBannerIlrd";
+
         /// <summary>
         /// 从 SDKComponent 获取所有 ITrackPlugin 并缓存到 m_TrackPlugins。
         /// </summary>
@@ -89,42 +94,68 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 全渠道共享的 Banner ILRD 累计入口；具体渠道只负责在回调中上传自己的 ad_ilrd 载荷。
+        /// 当前渠道全部 Banner 共用的 ILRD 累计入口，不按广告位拆分次数和收益。
+        /// 后台回调先排入主线程，读写使用初始化时缓存的 IFileFragmentManager。
+        /// </summary>
+        /// <param name="revenue">本次 Banner 收益回调的收入值。</param>
+        /// <param name="trackAction">达到累计间隔后的上传回调；返回 true 表示上传已派发。</param>
+        protected void TrackBannerIlrdAggregated(double revenue, Func<decimal, bool> trackAction)
+        {
+            TrackBannerIlrdState($"Nova.Ad.BannerIlrd.{Name}.Count", $"Nova.Ad.BannerIlrd.{Name}.Revenue", revenue, trackAction);
+        }
+
+        /// <summary>
+        /// 兼容既有渠道的按广告位累计入口；MAX 使用不带 placementId 的渠道汇总重载。
         /// </summary>
         /// <param name="placementId">Banner 广告位唯一标识。</param>
         /// <param name="revenue">本次 Banner 收益回调的收入值。</param>
         /// <param name="trackAction">达到累计间隔后执行的渠道侧 ad_ilrd 上传回调；返回 true 表示上传已派发。</param>
         protected void TrackBannerIlrdAggregated(string placementId, double revenue, Func<decimal, bool> trackAction)
         {
-            string countKey = BuildBannerIlrdCountKey(placementId);
-            string revenueKey = BuildBannerIlrdRevenueKey(placementId);
+            TrackBannerIlrdState(BuildBannerIlrdCountKey(placementId), BuildBannerIlrdRevenueKey(placementId), revenue, trackAction);
+        }
 
-            if (BannerIlrdInterval <= 0)
+        /// <summary>
+        /// 在主线程更新指定累计条目，达到间隔后派发并清理，未派发时保存待重试批次。
+        /// </summary>
+        /// <param name="countKey">累计次数条目名。</param>
+        /// <param name="revenueKey">累计收益条目名。</param>
+        /// <param name="revenue">本次收益。</param>
+        /// <param name="trackAction">累计收益上传回调。</param>
+        private void TrackBannerIlrdState(string countKey, string revenueKey, double revenue, Func<decimal, bool> trackAction)
+        {
+            if (!PlayerLoopHelper.IsMainThread)
             {
-                PlayerPrefs.DeleteKey(countKey);
-                PlayerPrefs.DeleteKey(revenueKey);
-                PlayerPrefs.Save();
+                PostAdCallbackToMainThread(() => TrackBannerIlrdState(countKey, revenueKey, revenue, trackAction));
                 return;
             }
 
-            int count = PlayerPrefs.GetInt(countKey, 0) + 1;
-            decimal totalRevenue = ReadBannerIlrdRevenue(revenueKey) + ToBannerIlrdRevenueDecimal(revenue);
+            IFileFragmentManager persistManager = m_BannerIlrdPersistManager;
+            if (persistManager == null)
+                throw new InvalidOperationException("广告累计存储尚未缓存，请先初始化广告渠道，并在存档读写前完成 Persist.LoadAsync()。");
+
+            if (BannerIlrdInterval <= 0)
+            {
+                ClearBannerIlrdState(persistManager, countKey, revenueKey);
+                return;
+            }
+
+            int count = persistManager.GetInt(c_BannerIlrdPersistClassify, countKey, 0) + 1;
+            decimal totalRevenue = ReadBannerIlrdRevenue(persistManager, revenueKey) + ToBannerIlrdRevenueDecimal(revenue);
 
             if (count < BannerIlrdInterval)
             {
-                SaveBannerIlrdState(countKey, revenueKey, count, totalRevenue);
+                SaveBannerIlrdState(persistManager, countKey, revenueKey, count, totalRevenue);
                 return;
             }
 
             if (trackAction != null && trackAction(totalRevenue))
             {
-                PlayerPrefs.DeleteKey(countKey);
-                PlayerPrefs.DeleteKey(revenueKey);
-                PlayerPrefs.Save();
+                ClearBannerIlrdState(persistManager, countKey, revenueKey);
             }
             else
             {
-                SaveBannerIlrdState(countKey, revenueKey, count, totalRevenue);
+                SaveBannerIlrdState(persistManager, countKey, revenueKey, count, totalRevenue);
             }
         }
 
@@ -137,7 +168,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             => (decimal)revenue;
 
         /// <summary>
-        /// 将 Banner ILRD 累计收益格式化为稳定文本，写入 PlayerPrefs 存档。
+        /// 将 Banner ILRD 累计收益格式化为稳定文本，写入文件片段存档。
         /// </summary>
         /// <param name="revenue">需要存档的累计收益。</param>
         /// <returns>使用固定区域性的收益文本。</returns>
@@ -145,13 +176,14 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             => revenue.ToString("0.#############################", CultureInfo.InvariantCulture);
 
         /// <summary>
-        /// 从 PlayerPrefs 读取 Banner ILRD 累计收益；读取失败时按 0 处理。
+        /// 从文件片段读取 Banner ILRD 累计收益；缺失或文本格式无效时按 0 处理。
         /// </summary>
+        /// <param name="persistManager">已就绪的文件片段管理器。</param>
         /// <param name="key">累计收益存档键。</param>
         /// <returns>已累计但尚未上传的 Banner ILRD 收益。</returns>
-        private static decimal ReadBannerIlrdRevenue(string key)
+        private static decimal ReadBannerIlrdRevenue(IFileFragmentManager persistManager, string key)
         {
-            string text = PlayerPrefs.GetString(key, "0");
+            string text = persistManager.GetString(c_BannerIlrdPersistClassify, key, "0");
             return decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal revenue)
                 ? revenue
                 : 0m;
@@ -160,22 +192,43 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// <summary>
         /// 保存 Banner ILRD 当前累计次数和累计收益，防止游戏重启后丢失未满间隔的批次。
         /// </summary>
+        /// <param name="persistManager">已就绪的文件片段管理器。</param>
         /// <param name="countKey">累计次数存档键。</param>
         /// <param name="revenueKey">累计收益存档键。</param>
         /// <param name="count">当前已累计的 Banner 收益回调次数。</param>
         /// <param name="revenue">当前已累计的 Banner 收益。</param>
-        private static void SaveBannerIlrdState(string countKey, string revenueKey, int count, decimal revenue)
+        private static void SaveBannerIlrdState(IFileFragmentManager persistManager, string countKey, string revenueKey, int count, decimal revenue)
         {
-            PlayerPrefs.SetInt(countKey, count);
-            PlayerPrefs.SetString(revenueKey, FormatBannerIlrdRevenue(revenue));
-            PlayerPrefs.Save();
+            persistManager.SetInt(c_BannerIlrdPersistClassify, countKey, count);
+            persistManager.SetString(c_BannerIlrdPersistClassify, revenueKey, FormatBannerIlrdRevenue(revenue));
+            if (!persistManager.Save(c_BannerIlrdPersistClassify))
+                throw new InvalidOperationException("Banner ILRD 文件片段保存失败。");
+        }
+
+        /// <summary>
+        /// 清除当前批次的累计条目，并立即处理文件片段待删除队列，避免旧批次被备份恢复。
+        /// </summary>
+        /// <param name="persistManager">已就绪的文件片段管理器。</param>
+        /// <param name="countKey">累计次数条目名。</param>
+        /// <param name="revenueKey">累计收益条目名。</param>
+        private static void ClearBannerIlrdState(IFileFragmentManager persistManager, string countKey, string revenueKey)
+        {
+            // 先检查两个条目，避免删除最后一个条目后再次查询而从尚未删除的文件中重新加载旧数据。
+            bool hasCount = persistManager.HasItem(c_BannerIlrdPersistClassify, countKey);
+            bool hasRevenue = persistManager.HasItem(c_BannerIlrdPersistClassify, revenueKey);
+            if (hasCount) persistManager.RemoveItem(c_BannerIlrdPersistClassify, countKey);
+            if (hasRevenue) persistManager.RemoveItem(c_BannerIlrdPersistClassify, revenueKey);
+
+            // Save(classify) 不处理空分类的待删文件；必须使用 Save() 清理正式文件及备份。
+            if (!persistManager.Save())
+                throw new InvalidOperationException("Banner ILRD 清理后的文件片段保存未全部完成，请检查 Persist 日志。");
         }
 
         /// <summary>
         /// 构建 Banner ILRD 累计次数存档键；按渠道名和广告位隔离不同渠道、不同广告位的批次。
         /// </summary>
         /// <param name="placementId">Banner 广告位唯一标识。</param>
-        /// <returns>用于保存累计次数的 PlayerPrefs 键。</returns>
+        /// <returns>NovaAdBannerIlrd 分类中保存累计次数的条目名。</returns>
         private string BuildBannerIlrdCountKey(string placementId)
             => $"Nova.Ad.BannerIlrd.{Name}.{placementId ?? string.Empty}.Count";
 
@@ -183,7 +236,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         /// 构建 Banner ILRD 累计收益存档键；按渠道名和广告位隔离不同渠道、不同广告位的批次。
         /// </summary>
         /// <param name="placementId">Banner 广告位唯一标识。</param>
-        /// <returns>用于保存累计收益的 PlayerPrefs 键。</returns>
+        /// <returns>NovaAdBannerIlrd 分类中保存累计收益的条目名。</returns>
         private string BuildBannerIlrdRevenueKey(string placementId)
             => $"Nova.Ad.BannerIlrd.{Name}.{placementId ?? string.Empty}.Revenue";
 
@@ -324,54 +377,94 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
         }
 
         /// <summary>
-        /// 触发 OnShowCompleted 事件，不上报 nova_ad_show_result 成功打点。
+        /// 上报 nova_ad_show_result 成功打点，再将 OnShowCompleted 事件排入主线程。
         /// 展示成功不是展示生命周期结束点，不推进 MarkShown，避免 displayed 与 hidden 各触发一次续杯。
         /// </summary>
         /// <param name="result">广告展示成功结果。</param>
         protected void RaiseShowCompleted(AdResult result)
+            => RaiseShowCompleted(result, null);
+
+        /// <summary>
+        /// 上报带渠道附加属性的展示成功结果，再将 OnShowCompleted 事件排入主线程；不结束展示生命周期。
+        /// </summary>
+        /// <param name="result">广告展示成功结果。</param>
+        /// <param name="extraProps">本次展示的渠道关联属性，可为 null；不覆盖基础字段或业务属性。</param>
+        protected void RaiseShowCompleted(AdResult result, Dictionary<string, object> extraProps)
         {
+            TrackAdShowResult(result, true, FindAdUnit(result.PlacementId)?.ShowCustomProps, extraProps);
             PostAdCallbackToMainThread(() => OnShowCompleted?.Invoke(result));
         }
 
         /// <summary>
         /// 触发 OnShowFailed 事件，并上报 nova_ad_show_result（失败）打点。
-        /// 执行顺序：先状态机推进（MarkShown，含非 Banner 续杯）→ 再事件扇出 → 再打点。
+        /// 执行顺序：先保存展示属性，再推进状态机并打点，最后将业务事件排入主线程。
         /// </summary>
         /// <param name="result">广告播放失败结果。</param>
         protected void RaiseShowFailed(AdResult result)
+            => RaiseShowFailed(result, null);
+
+        /// <summary>
+        /// 保存本次展示属性，推进失败收尾与续杯，再上报带渠道关联属性的失败结果并派发业务事件。
+        /// </summary>
+        /// <param name="result">广告展示失败结果。</param>
+        /// <param name="extraProps">清理渠道上下文前保存的关联属性，可为 null；不覆盖基础字段或业务属性。</param>
+        protected void RaiseShowFailed(AdResult result, Dictionary<string, object> extraProps)
         {
             var unit = FindAdUnit(result.PlacementId);
             var showCustomProps = unit?.ShowCustomProps;
             MarkShown(result.PlacementId);
-            var props = BuildBaseProps(result.Format, result.PlacementId);
-            props["nova_ad_result"] = 0;
-            MergeCustom(props, showCustomProps);
-            TrackEvent("nova_ad_show_result", props);
+            TrackAdShowResult(result, false, showCustomProps, extraProps);
             PostAdCallbackToMainThread(() => OnShowFailed?.Invoke(result));
         }
 
         /// <summary>
+        /// 统一上报展示结果：成功为 1，失败为 0；合并本次展示属性和渠道关联属性。
+        /// 失败调用方须在 MarkShown 清理属性前保存 showCustomProps，避免自动续杯导致属性丢失。
+        /// </summary>
+        /// <param name="result">本次展示结果，提供广告格式与广告位。</param>
+        /// <param name="success">是否收到展示成功回调；与关闭、奖励结果无关。</param>
+        /// <param name="showCustomProps">本次展示的业务属性，可为 null。</param>
+        /// <param name="extraProps">渠道附加属性，可为 null。</param>
+        private void TrackAdShowResult(AdResult result, bool success, Dictionary<string, object> showCustomProps, Dictionary<string, object> extraProps)
+        {
+            var props = BuildBaseProps(result.Format, result.PlacementId);
+            props["nova_ad_result"] = success ? 1 : 0;
+            MergeCustom(props, showCustomProps);
+            MergeProps(props, extraProps);
+            TrackEvent("nova_ad_show_result", props);
+        }
+
+        /// <summary>
         /// 触发 OnAdClosed 事件，并在基类内部上报 nova_ad_hidden 打点。
-        /// 执行顺序：先状态机推进（MarkShown，含非 Banner 续杯）→ 再事件扇出 → 再打点。
+        /// 执行顺序：保存展示属性 → MarkShown（含非 Banner 续杯）→ 关闭打点 → 将业务通知排入主线程。
         /// </summary>
         /// <param name="result">广告关闭结果。</param>
-        /// <param name="rewarded">是否满足奖励条件；激励视频使用，其他格式传 false。</param>
+        /// <param name="rewarded">写入 nova_can_get_reward 的渠道奖励判定；不改写 result.RewardGranted。</param>
         protected void RaiseAdClosed(AdResult result, bool rewarded = false)
+            => RaiseAdClosed(result, rewarded, null);
+
+        /// <summary>
+        /// 结束展示并上报带渠道附加属性的 nova_ad_hidden，再将关闭业务事件排入主线程。
+        /// 先保存业务属性再触发续杯；渠道属性不覆盖基础字段和业务属性。
+        /// </summary>
+        /// <param name="result">广告关闭结果。</param>
+        /// <param name="rewarded">写入 nova_can_get_reward 的渠道奖励判定；MAX 插屏为 true，激励取官方奖励状态，开屏为 false。</param>
+        /// <param name="extraProps">关闭前取得的渠道关联属性，可为 null。</param>
+        protected void RaiseAdClosed(AdResult result, bool rewarded, Dictionary<string, object> extraProps)
         {
             var closedUnit = FindAdUnit(result.PlacementId);
-            result.RewardGranted = rewarded || (closedUnit?.RewardGranted ?? false);
-            if (closedUnit != null) closedUnit.RewardGranted = false;
             var showCustomProps = closedUnit?.ShowCustomProps;
             MarkShown(result.PlacementId);
             var props = BuildBaseProps(result.Format, result.PlacementId);
             props["nova_can_get_reward"] = rewarded;
             MergeCustom(props, showCustomProps);
+            MergeCustom(props, extraProps);
             TrackEvent("nova_ad_hidden", props);
             PostAdCallbackToMainThread(() => OnAdClosed?.Invoke(result));
         }
 
         /// <summary>
-        /// 派生类在广告展示回调中调用，上报 nova_ad_show 事件。
+        /// 派生类在实际调用渠道展示接口前调用，上报 nova_ad_show 展示尝试事件。
         /// 基类自动从对应 AdUnit 取 ShowCustomProps 合并；派生侧调用面无需传自定义属性。
         /// </summary>
         /// <param name="format">广告格式。</param>
@@ -380,16 +473,13 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             => TrackAdShow(format, placementId, null);
 
         /// <summary>
-        /// 派生类在广告展示回调中调用，上报带渠道附加属性的 nova_ad_show 事件。
+        /// 派生类在实际调用渠道展示接口前调用，上报带渠道附加属性的 nova_ad_show 展示尝试事件。
         /// 基类先合并对应 AdUnit 的 ShowCustomProps，再合并渠道附加属性；已有键不会被覆盖。
         /// </summary>
         /// <param name="format">广告格式。</param>
         /// <param name="placementId">广告位唯一标识。</param>
         /// <param name="extraProps">渠道侧附加属性，可为 null。</param>
-        protected void TrackAdShow(
-            AdFormat format,
-            string placementId,
-            Dictionary<string, object> extraProps)
+        protected void TrackAdShow(AdFormat format, string placementId, Dictionary<string, object> extraProps)
         {
             var unit = FindAdUnit(placementId);
             var props = BuildBaseProps(format, placementId);

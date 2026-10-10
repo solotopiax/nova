@@ -25,14 +25,14 @@ MonoBehaviour:
     AESIV: YOUR_PRIVACY_AES_IV
     PrivacyInfoConfig: '{"NSPrivacyAccessedAPICategoryFileTimestamp":["C617.1","0A2A.1"],"NSPrivacyAccessedAPICategorySystemBootTime":["35F9.1"],"NSPrivacyAccessedAPICategoryDiskSpace":["E174.1"],"NSPrivacyAccessedAPICategoryActiveKeyboards":[],"NSPrivacyAccessedAPICategoryUserDefaults":["CA92.1"]}'
     InfoPlistUsageDescriptions: '{}'
-  Platform: 3
+  Platform: 1
   Channel: 4
   EnabledSDKConfigs:
-  - rid: 3752622828402246023
-  - rid: 3752622828402246024
+  - rid: 2095149308307833013
+  - rid: 2095149308307833014
   EnabledKitConfigs:
-  - rid: 3752622828402246025
-  - rid: 3752622828402246026
+  - rid: 2095149308307833015
+  - rid: 2095149308307833016
   HybridConfigs:
     GameEntranceProcedureName: ProcedurePreload
     AotMetadataDlls:
@@ -64,7 +64,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 3752622828402246023
+    - rid: 2095149308307833013
       type: {class: TGAPluginConfig, ns: NovaFramework.SDK.TGAPlugin.Runtime, asm: NovaFramework.SDK.TGAPlugin.Runtime}
       data:
         m_AppID: YOUR_TGA_APP_ID
@@ -75,18 +75,18 @@ MonoBehaviour:
         m_ReportCmdName: TGAReport
         m_IsTestUser: 1
         m_AssignDeviceIdToDistinctId: 0
-    - rid: 3752622828402246024
+    - rid: 2095149308307833014
       type: {class: WeChatMiniGamePluginConfig, ns: NovaFramework.SDK.WeChatMiniGame.Runtime, asm: NovaFramework.SDK.WeChatMiniGame.Runtime}
       data:
         m_VerifyLoginCmdName: WeChatMiniGameVerifyLogin
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
-        m_EnableGravityEngine: 1
-        m_GravityAccessToken: uSsvEV36s1ewYiFhCcgpilfXdtU9fkxN
+        m_DataNexusSdkKey: 
+        m_EnableGravityEngine: 0
+        m_GravityAccessToken: 
         m_GravityChannel: base_channel
-        m_GravityDebugMode: 1
+        m_GravityDebugMode: 0
         m_GravitySilentPeriodDays: 7
         m_GeneratePaymentSignatureCmdName: WeChatMiniGameGeneratePaymentSignature
         m_VerifyPaymentOrdersCmdName: WeChatMiniGameVerifyPaymentOrders
@@ -118,12 +118,12 @@ MonoBehaviour:
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
         m_EnableMemoryWarning: 1
-    - rid: 3752622828402246025
+    - rid: 2095149308307833015
       type: {class: LoginKitConfig, ns: NovaFramework.Kit.Network.GameLogin.Runtime, asm: NovaFramework.Kit.Network.GameLogin.Runtime}
       data:
         m_LoginCmdName: GameAccountLogin
         m_DeleteCmdName: 
-    - rid: 3752622828402246026
+    - rid: 2095149308307833016
       type: {class: BindKitConfig, ns: NovaFramework.Kit.Network.GameBind.Runtime, asm: NovaFramework.Kit.Network.GameBind.Runtime}
       data:
         m_BindCmdName: GameAccountBind

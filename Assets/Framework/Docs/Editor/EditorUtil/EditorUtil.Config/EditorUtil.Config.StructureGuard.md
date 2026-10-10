@@ -59,6 +59,8 @@ public static void CleanMissingPluginRefs(ConfigMasterSO master);
 
 ### SyncEnumGrid — 枚举网格补齐
 
+公开入口沿用 Active BuildTarget 映射平台；保存归一使用 internal `SyncEnumGrid(master, editingPlatform)`，补齐时以窗口显式编辑平台为来源。保存入口提前拒绝真实重复有效坐标，避免借结构巡检的列表去重决定保留内容。
+
 ```
 SyncEnumGrid(master):
   1. wanted = 所有非 `None` PlatformType × 所有非 `None` ChannelType 组合的 HashSet；当前渠道为 None 时先归一为 `Official`

@@ -154,6 +154,15 @@ MonoBehaviour:
     ZoneID: YOUR_CLOUDFLARE_ZONE_ID
     Token: YOUR_CLOUDFLARE_API_TOKEN
     CachePaths: YOUR_CLOUDFLARE_CACHE_PATHS
+  ResourceEncryption:
+    DimensionMask:
+      ByPlatform: 0
+      ByChannel: 0
+      ByDevelopMode: 0
+    ClientCodeOutputDirectory:
+    GeneratedCodeAssetPath:
+    Packages: []
+  ResourceKeysMigrated: 1
   CDNEditorConfigsOverrides:
   - Platform: 0
     Channel: 0
@@ -437,8 +446,8 @@ MonoBehaviour:
       - rid: 2533177004360728913
       - rid: 1000
       - rid: 2533177004360729497
-      - rid: 2533177598672896557
-      - rid: 2533177598672896629
+      - rid: 2095149323172446523
+      - rid: 2095149323172446558
       - rid: 1105
     - Mode: 1
       SDKConfigs:
@@ -446,8 +455,8 @@ MonoBehaviour:
       - rid: 2533177004360728914
       - rid: 1001
       - rid: 2533177004360729498
-      - rid: 2533177598672896558
-      - rid: 2533177598672896630
+      - rid: 2095149323172446524
+      - rid: 2095149323172446559
       - rid: 1106
     KitConfigsByMode:
     - Mode: 0
@@ -497,8 +506,8 @@ MonoBehaviour:
       - rid: 3589942986135568568
       - rid: 1002
       - rid: 2533177004360729499
-      - rid: 2533177598672896559
-      - rid: 2533177598672896631
+      - rid: 2095149323172446525
+      - rid: 2095149323172446560
       - rid: 1107
     - Mode: 1
       SDKConfigs:
@@ -506,8 +515,8 @@ MonoBehaviour:
       - rid: 2533177004360728915
       - rid: 1003
       - rid: 2533177004360729500
-      - rid: 2533177598672896560
-      - rid: 2533177598672896632
+      - rid: 2095149323172446526
+      - rid: 2095149323172446561
       - rid: 1108
     KitConfigsByMode:
     - Mode: 0
@@ -557,8 +566,8 @@ MonoBehaviour:
       - rid: 2533177004360728916
       - rid: 1004
       - rid: 2533177004360729501
-      - rid: 2533177598672896561
-      - rid: 2533177598672896633
+      - rid: 2095149323172446527
+      - rid: 2095149323172446562
       - rid: 1109
     - Mode: 1
       SDKConfigs:
@@ -566,8 +575,8 @@ MonoBehaviour:
       - rid: 2533177004360728917
       - rid: 1005
       - rid: 2533177004360729502
-      - rid: 2533177598672896562
-      - rid: 2533177598672896634
+      - rid: 2095149323172446528
+      - rid: 2095149323172446563
       - rid: 1110
     KitConfigsByMode:
     - Mode: 0
@@ -626,8 +635,8 @@ MonoBehaviour:
       - rid: 2533177004360728919
       - rid: 1007
       - rid: 2533177004360729504
-      - rid: 2533177598672896564
-      - rid: 2533177598672896636
+      - rid: 2095149323172446529
+      - rid: 2095149323172446564
       - rid: 1112
     KitConfigsByMode:
     - Mode: 0
@@ -677,8 +686,8 @@ MonoBehaviour:
       - rid: 2533177004360728920
       - rid: 1008
       - rid: 2533177004360729505
-      - rid: 2533177598672896565
-      - rid: 2533177598672896637
+      - rid: 2095149323172446530
+      - rid: 2095149323172446565
       - rid: 1113
     - Mode: 1
       SDKConfigs:
@@ -686,8 +695,8 @@ MonoBehaviour:
       - rid: 2533177004360728921
       - rid: 1009
       - rid: 2533177004360729506
-      - rid: 2533177598672896566
-      - rid: 2533177598672896638
+      - rid: 2095149323172446531
+      - rid: 2095149323172446566
       - rid: 1114
     KitConfigsByMode:
     - Mode: 0
@@ -737,8 +746,8 @@ MonoBehaviour:
       - rid: 2533177004360728922
       - rid: 1010
       - rid: 2533177004360729507
-      - rid: 2533177598672896567
-      - rid: 2533177598672896639
+      - rid: 2095149323172446532
+      - rid: 2095149323172446567
       - rid: 1115
     - Mode: 1
       SDKConfigs:
@@ -746,8 +755,8 @@ MonoBehaviour:
       - rid: 2533177004360728923
       - rid: 1011
       - rid: 2533177004360729508
-      - rid: 2533177598672896568
-      - rid: 2533177598672896640
+      - rid: 2095149323172446533
+      - rid: 2095149323172446568
       - rid: 1116
     KitConfigsByMode:
     - Mode: 0
@@ -797,8 +806,8 @@ MonoBehaviour:
       - rid: 2533177004360728924
       - rid: 1012
       - rid: 2533177004360729509
-      - rid: 2533177598672896569
-      - rid: 2533177598672896641
+      - rid: 2095149323172446534
+      - rid: 2095149323172446569
       - rid: 1117
     - Mode: 1
       SDKConfigs:
@@ -806,8 +815,8 @@ MonoBehaviour:
       - rid: 2533177004360728925
       - rid: 1013
       - rid: 2533177004360729510
-      - rid: 2533177598672896570
-      - rid: 2533177598672896642
+      - rid: 2095149323172446535
+      - rid: 2095149323172446570
       - rid: 1118
     KitConfigsByMode:
     - Mode: 0
@@ -857,8 +866,8 @@ MonoBehaviour:
       - rid: 2533177004360728926
       - rid: 1014
       - rid: 2533177004360729511
-      - rid: 2533177598672896571
-      - rid: 2533177598672896643
+      - rid: 2095149323172446536
+      - rid: 2095149323172446571
       - rid: 1119
     - Mode: 1
       SDKConfigs:
@@ -866,8 +875,8 @@ MonoBehaviour:
       - rid: 2533177004360728927
       - rid: 1015
       - rid: 2533177004360729512
-      - rid: 2533177598672896572
-      - rid: 2533177598672896644
+      - rid: 2095149323172446537
+      - rid: 2095149323172446572
       - rid: 1120
     KitConfigsByMode:
     - Mode: 0
@@ -917,8 +926,8 @@ MonoBehaviour:
       - rid: 2533177004360728928
       - rid: 1016
       - rid: 2533177004360729513
-      - rid: 2533177598672896573
-      - rid: 2533177598672896645
+      - rid: 2095149323172446538
+      - rid: 2095149323172446573
       - rid: 1121
     - Mode: 1
       SDKConfigs:
@@ -926,8 +935,8 @@ MonoBehaviour:
       - rid: 2533177004360728929
       - rid: 1017
       - rid: 2533177004360729514
-      - rid: 2533177598672896574
-      - rid: 2533177598672896646
+      - rid: 2095149323172446539
+      - rid: 2095149323172446574
       - rid: 1122
     KitConfigsByMode:
     - Mode: 0
@@ -977,8 +986,8 @@ MonoBehaviour:
       - rid: 2533177004360728930
       - rid: 1018
       - rid: 2533177004360729515
-      - rid: 2533177598672896575
-      - rid: 2533177598672896647
+      - rid: 2095149323172446540
+      - rid: 2095149323172446575
       - rid: 1123
     - Mode: 1
       SDKConfigs:
@@ -986,8 +995,8 @@ MonoBehaviour:
       - rid: 2533177004360728931
       - rid: 1019
       - rid: 2533177004360729516
-      - rid: 2533177598672896576
-      - rid: 2533177598672896648
+      - rid: 2095149323172446541
+      - rid: 2095149323172446576
       - rid: 1124
     KitConfigsByMode:
     - Mode: 0
@@ -1037,8 +1046,8 @@ MonoBehaviour:
       - rid: 2533177004360728932
       - rid: 1020
       - rid: 2533177004360729517
-      - rid: 2533177598672896577
-      - rid: 2533177598672896649
+      - rid: 2095149323172446542
+      - rid: 2095149323172446577
       - rid: 1125
     - Mode: 1
       SDKConfigs:
@@ -1046,8 +1055,8 @@ MonoBehaviour:
       - rid: 2533177004360728933
       - rid: 1021
       - rid: 2533177004360729518
-      - rid: 2533177598672896578
-      - rid: 2533177598672896650
+      - rid: 2095149323172446543
+      - rid: 2095149323172446578
       - rid: 1126
     KitConfigsByMode:
     - Mode: 0
@@ -1097,8 +1106,8 @@ MonoBehaviour:
       - rid: 2533177004360728934
       - rid: 1022
       - rid: 2533177004360729519
-      - rid: 2533177598672896579
-      - rid: 2533177598672896651
+      - rid: 2095149323172446544
+      - rid: 2095149323172446579
       - rid: 1127
     - Mode: 1
       SDKConfigs:
@@ -1106,8 +1115,8 @@ MonoBehaviour:
       - rid: 2533177004360728935
       - rid: 1023
       - rid: 2533177004360729520
-      - rid: 2533177598672896580
-      - rid: 2533177598672896652
+      - rid: 2095149323172446545
+      - rid: 2095149323172446580
       - rid: 1128
     KitConfigsByMode:
     - Mode: 0
@@ -1157,8 +1166,8 @@ MonoBehaviour:
       - rid: 2533177004360728936
       - rid: 1024
       - rid: 2533177004360729521
-      - rid: 2533177598672896581
-      - rid: 2533177598672896653
+      - rid: 2095149323172446546
+      - rid: 2095149323172446581
       - rid: 1129
     - Mode: 1
       SDKConfigs:
@@ -1166,8 +1175,8 @@ MonoBehaviour:
       - rid: 2533177004360728937
       - rid: 1025
       - rid: 2533177004360729522
-      - rid: 2533177598672896582
-      - rid: 2533177598672896654
+      - rid: 2095149323172446547
+      - rid: 2095149323172446582
       - rid: 1130
     KitConfigsByMode:
     - Mode: 0
@@ -1217,8 +1226,8 @@ MonoBehaviour:
       - rid: 2533177004360728938
       - rid: 1026
       - rid: 2533177004360729523
-      - rid: 2533177598672896583
-      - rid: 2533177598672896655
+      - rid: 2095149323172446548
+      - rid: 2095149323172446583
       - rid: 1131
     - Mode: 1
       SDKConfigs:
@@ -1226,8 +1235,8 @@ MonoBehaviour:
       - rid: 2533177004360728939
       - rid: 1027
       - rid: 2533177004360729524
-      - rid: 2533177598672896584
-      - rid: 2533177598672896656
+      - rid: 2095149323172446549
+      - rid: 2095149323172446584
       - rid: 1132
     KitConfigsByMode:
     - Mode: 0
@@ -1277,8 +1286,8 @@ MonoBehaviour:
       - rid: 2533177004360728940
       - rid: 1028
       - rid: 2533177004360729525
-      - rid: 2533177598672896585
-      - rid: 2533177598672896657
+      - rid: 2095149323172446550
+      - rid: 2095149323172446585
       - rid: 1133
     - Mode: 1
       SDKConfigs:
@@ -1286,8 +1295,8 @@ MonoBehaviour:
       - rid: 2533177004360728941
       - rid: 1029
       - rid: 2533177004360729526
-      - rid: 2533177598672896586
-      - rid: 2533177598672896658
+      - rid: 2095149323172446551
+      - rid: 2095149323172446586
       - rid: 1134
     KitConfigsByMode:
     - Mode: 0
@@ -1337,8 +1346,8 @@ MonoBehaviour:
       - rid: 2533177004360728942
       - rid: 2533177004360728729
       - rid: 2533177004360729527
-      - rid: 2533177598672896587
-      - rid: 2533177598672896659
+      - rid: 2095149323172446552
+      - rid: 2095149323172446587
       - rid: 3752622554880148093
     - Mode: 1
       SDKConfigs:
@@ -1346,8 +1355,8 @@ MonoBehaviour:
       - rid: 2533177004360728943
       - rid: 1030
       - rid: 2533177004360729528
-      - rid: 2533177598672896588
-      - rid: 2533177598672896660
+      - rid: 2095149323172446553
+      - rid: 2095149323172446588
       - rid: 1135
     KitConfigsByMode:
     - Mode: 0
@@ -1397,8 +1406,8 @@ MonoBehaviour:
       - rid: 2533177004360728944
       - rid: 1031
       - rid: 2533177004360729529
-      - rid: 2533177598672896589
-      - rid: 2533177598672896661
+      - rid: 2095149323172446554
+      - rid: 2095149323172446589
       - rid: 1136
     - Mode: 1
       SDKConfigs:
@@ -1406,8 +1415,8 @@ MonoBehaviour:
       - rid: 2533177004360728945
       - rid: 1032
       - rid: 2533177004360729530
-      - rid: 2533177598672896590
-      - rid: 2533177598672896662
+      - rid: 2095149323172446555
+      - rid: 2095149323172446590
       - rid: 1137
     KitConfigsByMode:
     - Mode: 0
@@ -1457,8 +1466,8 @@ MonoBehaviour:
       - rid: 2533177004360728946
       - rid: 1033
       - rid: 2533177004360729531
-      - rid: 2533177598672896591
-      - rid: 2533177598672896663
+      - rid: 2095149323172446556
+      - rid: 2095149323172446591
       - rid: 1138
     - Mode: 1
       SDKConfigs:
@@ -1466,8 +1475,8 @@ MonoBehaviour:
       - rid: 2533177004360728947
       - rid: 1034
       - rid: 2533177004360729532
-      - rid: 2533177598672896592
-      - rid: 2533177598672896664
+      - rid: 2095149323172446557
+      - rid: 2095149323172446592
       - rid: 1139
     KitConfigsByMode:
     - Mode: 0
@@ -2541,7 +2550,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2584,7 +2593,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2627,7 +2636,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2670,7 +2679,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2713,7 +2722,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2756,7 +2765,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2799,7 +2808,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2842,7 +2851,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2885,7 +2894,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2928,7 +2937,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -2971,7 +2980,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3014,7 +3023,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3057,7 +3066,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3100,7 +3109,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3143,7 +3152,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3186,7 +3195,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3229,7 +3238,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3272,7 +3281,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3315,7 +3324,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3358,7 +3367,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3401,7 +3410,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3444,7 +3453,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3487,7 +3496,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3530,7 +3539,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3573,7 +3582,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3616,7 +3625,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3659,7 +3668,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3702,7 +3711,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3745,7 +3754,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3788,7 +3797,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3831,7 +3840,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 1
         m_GravityAccessToken: uSsvEV36s1ewYiFhCcgpilfXdtU9fkxN
         m_GravityChannel: base_channel
@@ -3874,7 +3883,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3917,7 +3926,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -3960,7 +3969,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -4003,7 +4012,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 0
         m_GravityAccessToken: 
         m_GravityChannel: base_channel
@@ -4039,17 +4048,671 @@ MonoBehaviour:
         m_InitializationTimeoutSeconds: 15
         m_ApiTimeoutSeconds: 15
         m_EnableMemoryWarning: 1
-    - rid: 791343950849900544
-      type: {class: MobileStoreConfig, ns: NovaFramework.SDK.IAP.Mobile.Runtime, asm: NovaFramework.SDK.IAP.Mobile.Runtime}
+    - rid: 2095149323172446523
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
       data:
-        m_Enabled: 1
-        m_GoogleQueryPendingOrderCmdName: IAPGoogleQueryPendingOrder
-        m_GoogleVerifyCmdName: IAPGoogleVerify
-        m_GoogleVerifySubscriptionCmdName: IAPGoogleVerifySubscription
-        m_AppleQueryPendingOrderCmdName: IAPAppleQueryPendingOrder
-        m_AppleVerifyCmdName: IAPAppleVerify
-        m_AppleVerifySubscriptionCmdName: IAPAppleVerifySubscription
-        m_ProductFetchRetryDelaysMs: d00700008813000010270000
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446524
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446525
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446526
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446527
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446528
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446529
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446530
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446531
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446532
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446533
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446534
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446535
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446536
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446537
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446538
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446539
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446540
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446541
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446542
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446543
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446544
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446545
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446546
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446547
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446548
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446549
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446550
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446551
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446552
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446553
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446554
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446555
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446556
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446557
+      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
+      data:
+        m_FacebookAppId: 
+        m_FacebookClientToken: 
+        m_AutoDownloadAvatarOnLogin: 1
+        m_AvatarSize: 100
+    - rid: 2095149323172446558
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446559
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446560
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446561
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446562
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446563
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446564
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446565
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446566
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446567
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446568
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446569
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446570
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446571
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446572
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446573
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446574
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446575
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446576
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446577
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446578
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446579
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446580
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446581
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446582
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446583
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446584
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446585
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446586
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446587
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446588
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446589
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446590
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446591
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
+    - rid: 2095149323172446592
+      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
+      data:
+        m_EnableAlwaysPaySucceed: 0
+        m_EnableIAPLog: 0
+        m_RetryValidateMaxNum: 3
+        m_SkipLoadingForReplenish: 0
+        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
+        m_StoreConfigList:
+          m_Items: []
+        m_Products:
+          m_Items: []
     - rid: 2533177004360728729
       type: {class: AdPluginConfig, ns: NovaFramework.SDK.AdPlugin.Runtime, asm: NovaFramework.SDK.AdPlugin.Runtime}
       data:
@@ -4753,48 +5416,6 @@ MonoBehaviour:
         m_PushFlushIntervalSeconds: 100
         m_PushFlushBatchSize: 5
         m_AutoRequestNotificationPermission: 1
-    - rid: 2533177598672896557
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896558
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896559
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: YOUR_FACEBOOK_APP_ID
-        m_FacebookClientToken: YOUR_FACEBOOK_CLIENT_TOKEN
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896560
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896561
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896562
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
     - rid: 2533177598672896563
       type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
       data:
@@ -4802,631 +5423,7 @@ MonoBehaviour:
         m_FacebookClientToken: 
         m_AutoDownloadAvatarOnLogin: 1
         m_AvatarSize: 100
-    - rid: 2533177598672896564
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896565
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896566
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896567
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896568
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896569
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896570
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896571
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896572
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896573
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896574
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896575
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896576
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896577
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896578
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896579
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896580
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896581
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896582
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896583
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896584
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896585
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896586
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896587
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896588
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896589
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896590
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896591
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896592
-      type: {class: FacebookPluginConfig, ns: NovaFramework.SDK.Facebook, asm: NovaFramework.SDK.Facebook.Runtime}
-      data:
-        m_FacebookAppId: 
-        m_FacebookClientToken: 
-        m_AutoDownloadAvatarOnLogin: 1
-        m_AvatarSize: 100
-    - rid: 2533177598672896629
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896630
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896631
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items:
-          - rid: 791343950849900544
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896632
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896633
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896634
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
     - rid: 2533177598672896635
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896636
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896637
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896638
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896639
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896640
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896641
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896642
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896643
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896644
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896645
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896646
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896647
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896648
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896649
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896650
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896651
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896652
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896653
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896654
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896655
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896656
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896657
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896658
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896659
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896660
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896661
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896662
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896663
-      type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
-      data:
-        m_EnableAlwaysPaySucceed: 0
-        m_EnableIAPLog: 0
-        m_RetryValidateMaxNum: 3
-        m_SkipLoadingForReplenish: 0
-        m_LoadingPanelPrefab: IAP/IAPLoadingPanel
-        m_StoreConfigList:
-          m_Items: []
-        m_Products:
-          m_Items: []
-    - rid: 2533177598672896664
       type: {class: IAPPluginConfig, ns: NovaFramework.SDK.IAP.Runtime, asm: NovaFramework.SDK.IAP.Runtime}
       data:
         m_EnableAlwaysPaySucceed: 0
@@ -5476,7 +5473,7 @@ MonoBehaviour:
         m_AdUnits: []
         m_EnableDataNexus: 0
         m_DataNexusUserActionSetId: 0
-        m_DataNexusSdkKey:
+        m_DataNexusSdkKey: 
         m_EnableGravityEngine: 1
         m_GravityAccessToken: uSsvEV36s1ewYiFhCcgpilfXdtU9fkxN
         m_GravityChannel: base_channel

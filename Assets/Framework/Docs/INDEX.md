@@ -17,6 +17,7 @@
 | **当前 Skills 覆盖的日常 Nova 项目任务** | 用自然语言描述任务 → [Nova Project Skills](../Agents/INDEX.md)（确认匹配 Skill、影响范围与证据门）→ 该 Skill 引用的模块 Docs；全量可发现不代表全量顺序执行。 |
 | **首次接入 / 接手陌生 Nova 项目** | [START_HERE.md · Agent 快速入口](START_HERE.md) → [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md) → [资源工作流](Onboarding/RESOURCE_WORKFLOW.md) → [验证与构建](Onboarding/VALIDATION.md) |
 | **检查 Nova 场景 / Resources 边界** | [EditorUtil.ProjectGuard.md · 集中规则与 Profiles](Editor/EditorUtil/EditorUtil.ProjectGuard.md) → [ProjectGuardWindow.md · 只读窗口](Editor/Windows/ProjectGuardWindow.md) |
+| **新增、补漏或统一 Tracks 埋点表** | [Tracks 维护规范](TRACKS.md) → [TrackRegistry](Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.md) |
 | 理解框架整体架构与设计模式 | [ARCHITECTURE.md](ARCHITECTURE.md) |
 | **新增业务 UI 界面**（UIView 子类） | [UIComponent.md · 泛型 Open API + 注册表](Runtime/Modules/UI/UIComponent.md) → [UIView.md · UIView 继承模板](Runtime/Modules/UI/Definitions/UIView.md) → [UIManager.md · OpenUIView 流程](Runtime/Modules/UI/UIManager/UIManager.md) |
 | **新增全局事件** | [EventManager.md · EventData模板 + 订阅/发布](Runtime/Modules/Event/EventManager.md) |
@@ -32,7 +33,8 @@
 | **加载运行时配置（AB 加载 ConfigRuntimeSO）** | [ConfigComponent.md](Runtime/Modules/Config/ConfigComponent.md) → [ConfigManager.md · AB加载+解析+PluginConfig索引](Runtime/Modules/Config/ConfigManager.md) |
 | **加载 Excel/CSV 表格数据（Luban Project）** | [TableManager.md · 多 Binding 加载](Runtime/Modules/Table/TableManager.md) → [TableComponentInspector.md · 多 Project 与导出描述](Editor/Inspectors/TableComponentInspector/TableComponentInspector.md) → [EditorUtil.Table.Exporter.md · 多导出描述透传](Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) |
 | **编辑 Config SO / 导出 ConfigRuntime**（ConfigWindow 流程） | [ConfigWindow.md · 可选编辑平台+Active BuildTarget 导出门禁](Editor/Windows/ConfigWindow.md) → [ConfigMasterSO.md · Editor 设计态数据](Editor/Config/ConfigMasterSO.md) → [SchemaGuard.md · 当前结构版本保护](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SchemaGuard.md) → [ConfigRuntimeSO.md · Runtime 快照](Runtime/Modules/Config/ConfigRuntimeSO.md) → [EditorUtil.Config.Exporter.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.Exporter.md) → [EditorUtil.Config.WorkspaceActive.md · 激活 Master 锚点](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) → [EditorUtil.Config.YooAssetInjector.md · YooAsset 注入](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) |
-| **Config 面板按平台/渠道/模式分别配置**（per-panel 可勾选维度） | [PanelDimensionMask.md · Editor 掩码三轴+IsGlobal](Editor/Config/Definitions/PanelDimensionMask.md) → [EditorUtil.Config.DimensionProjector.md · 三操作+双路径](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) → [EditorUtil.Config.DimensionalResolver.md · 只读取数+回落逻辑](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) |
+| **配置资源加解密 / 密钥轮换** | [资源加解密 · 方案、缓存与发布文件、客户端密钥](Runtime/Modules/Asset/ResourceEncryption.md) → [ConfigWindow · 密钥配置与源码导出](Editor/Windows/ConfigWindow.md#资源加解密配置) → [Pipify · 与 Bundle Builder 同源的构建字段](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md#bundle-加解密字段) |
+| **Config 面板按平台/渠道/模式分别配置**（per-panel 可勾选维度） | [PanelDimensionMask.md · Editor 掩码三轴+IsGlobal](Editor/Config/Definitions/PanelDimensionMask.md) → [EditorUtil.Config.DimensionProjector.md · 维度切换、广播与保存归一](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) → [EditorUtil.Config.DimensionalResolver.md · 只读取数+回落逻辑](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) |
 | **新增 SDK PluginConfig**（ISDKPluginConfig + 自动注入） | [PluginBase.md · PluginBase<TConfig>泛型基类+自动注入](Runtime/Modules/SDK/Definitions/PluginBase.md) → [ISDKPluginConfig.md · 接口契约](Runtime/Modules/SDK/Definitions/ISDKPluginConfig.md) → [EditorUtil.Config.SDKPluginScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.SDKPluginScanner.md) → [PlatformChannelEntry.md · Editor 矩阵行结构](Editor/Config/Definitions/PlatformChannelEntry.md) |
 | **新增 Kit 配置（IKitConfig + ConfigWindow 配置）** | [IKitConfig.md · marker 接口](Runtime/Modules/Config/Definitions/IKitConfig.md) → [KitConfigMissingException.md · 缺失异常](Runtime/Modules/Config/Definitions/KitConfigMissingException.md) → [EditorUtil.Config.KitConfigScanner.md · 扫描工具](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.KitConfigScanner.md) → [ConfigWindow.md · Kit 配置一级组](Editor/Windows/ConfigWindow.md) |
 | **构建 AssetBundle / RawFile (CI/编辑器菜单)** | [EditorUtil.BundleBuilder.md · YooAsset Scriptable/RawFile 构建封装](Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md) → [PipifySteps.md · `bundlebuilder.build` / `bundlebuilder.build_raw_file` Step](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) |
@@ -150,6 +152,8 @@
 
 ### Asset（资源加载）
 
+资源加解密：[ResourceEncryption.md](Runtime/Modules/Asset/ResourceEncryption.md)（方案选择、Raw/Archive 区别、原始/加密/发布文件、包名与 keyId、保存和源码导出、启动解密与平台限制）。
+
 | 文档 | 说明 |
 |------|------|
 | [AssetComponent.md](Runtime/Modules/Asset/AssetComponent.md) | 资源加载 Component（全 Load/Warmup/Release API 薄代理入口） |
@@ -166,7 +170,7 @@
 | [AssetDownloader.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetDownloader.md) | IAssetDownloader 实现（YooAsset ResourceDownloaderOperation 包装） |
 | [AssetDownloadUrlPolicy.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetDownloadUrlPolicy.md) | YooAsset 候选 URL 轮换策略（传输失败与内容校验失败统一推进且去重） |
 | [AssetRemoteService.md](Runtime/Modules/Asset/AssetManager/Definitions/AssetRemoteService.md) | YooAsset 远端寻址服务（常规主备 + 白名单 metadata-only 路由 + 占位符替换） |
-| [WebGLAssetStrategies.md](Runtime/Modules/Asset/WebGLAssetStrategies.md) | WebGL 首包布局、三种资源运行策略与浏览器缓存边界 |
+| [WebGLAssetStrategies.md](Runtime/Modules/Asset/WebGLAssetStrategies.md) | WebGL 首包布局、三种资源策略、微信原生预下载与平台缓存边界 |
 | [WebGLAssetStrategy.md](Runtime/Modules/Asset/Definitions/WebGLAssetStrategy.md) | WebGL 启动资源策略枚举（TagsOnLaunch / OnDemand / AllOnLaunch） |
 | [IAssetWarmupGroup.md](Runtime/Modules/Asset/AssetManager/Interfaces/IAssetWarmupGroup.md) | 有明确 Handle 所有权的 Bundle 批量预热接口 |
 | [YooAssetHandleAdapter.md](Runtime/Modules/Asset/AssetManager/Definitions/YooAssetHandleAdapter.md) | IAssetHandle 到 YooAsset.AssetHandle 的 ReferencePool 适配器 |
@@ -531,7 +535,7 @@
 | [EditorUtil.Config.RuntimeProvider.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.RuntimeProvider.md) | 从 AssetDatabase 按三维（Platform×Channel×DevelopMode）读取 ConfigRuntimeSO（不缓存，替代已删除的 ConfigLookup）；GetChannel() 新增 |
 | [EditorUtil.Config.WorkspaceActive.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.WorkspaceActive.md) | 工程级激活 ConfigMaster 锚点；通过 Globals.json 持久化 GUID，四段回退策略，根除多 Sample 共存命中歧义 |
 | [EditorUtil.Config.YooAssetInjector.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.YooAssetInjector.md) | Asset 模块编辑期注入层；按 ConfigMaster 路径字段注入 YooAssetSettings / 加载 BundleCollectorSetting，替代全工程扫描 |
-| [EditorUtil.Config.DimensionProjector.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) | 维度投影器；按 PanelDimensionMask 在 WorkingCopy 上执行加维分裂/减维合并/广播，支持矩阵三类和顶层三类面板 |
+| [EditorUtil.Config.DimensionProjector.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionProjector.md) | 维度投影器；按 PanelDimensionMask 在 WorkingCopy 上切换、广播及保存自动归一，覆盖 App/Privacy/SDK/Kit、四类顶层 Override 和资源加密编号 |
 | [EditorUtil.Config.DimensionalResolver.md](Editor/EditorUtil/EditorUtil.Config/EditorUtil.Config.DimensionalResolver.md) | 顶层类维度取数器（只读）；按坐标 + 掩码从 Override 列表解析 Namespace / HybridCLR / YooAsset 最终值 |
 | [EditorUtil.Table.Exporter.md](Editor/EditorUtil/EditorUtil.Table/EditorUtil.Table.Exporter.md) | Table 正式 Luban Project 导出（五种格式、原始单表、Catalog、事务发布） |
 | [EditorUtil.UI.Exporter.md](Editor/EditorUtil/EditorUtil.UI/EditorUtil.UI.Exporter.md) | UI 模块 Luban 导出入口（ExportAll/ExportCode/ExportData + 单文件 ExportCodeForFile/ExportDataForFile） |
@@ -554,7 +558,7 @@
 
 | 文档 | 说明 |
 |------|------|
-| [ConfigWindow.md](Editor/Windows/ConfigWindow.md) | Nova 全局配置窗口（三段式布局：顶栏 SO 选择+窗口本地编辑 Platform+可编辑 Channel/DevelopMode+导出 ObjectField、左树 LubanEnv/Python3Env/AppConfig/NamespaceConfig/HybridCLRConfig/SDK、右面板详情；平台与 Active BuildTarget 一致时才允许导出并使 YooAsset 配置生效；支持三维导出 ConfigRuntimeSO；HybridCLR DLL 列表通过 HybridCLRConfig 面板编辑；导出目标 SO 由 ConfigMasterSO 持久化；partial 拆 10 文件） |
+| [ConfigWindow.md](Editor/Windows/ConfigWindow.md) | Nova 全局配置窗口：三段布局、独立编辑坐标、各面板三维开关、WorkingCopy 全局保存与自动维度整理、ConfigRuntime 及客户端密钥源码导出；生产导出与 YooAsset 生效受 Active BuildTarget 门禁约束。 |
 | [CheckUpdateWindow.md](Editor/Windows/CheckUpdateWindow.md) | Nova 包版本更新提示窗口（表格展示 Package/Current/Latest，支持"跳过当前版本"持久化） |
 | [PipifyWindow.md](Editor/Windows/PipifyWindow.md) | Pipify 流水线配置与执行窗口（Nova/Open Pipify） |
 | [EnvironmentWindow.md](Editor/Windows/EnvironmentWindow.md) | 空壳说明页：`EnvironmentWindow` 类不存在、`Windows/EnvironmentWindow/` 目录为空；「环境检测」UI 实际内嵌在 ConfigWindow 左树「环境检测」组（Luban / Python3 / HybridCLR 三条目），检测引擎在 `EditorUtil.Environment` |

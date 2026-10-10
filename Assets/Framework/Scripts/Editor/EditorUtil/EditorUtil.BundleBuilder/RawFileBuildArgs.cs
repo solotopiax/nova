@@ -67,6 +67,7 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 资源清单解密器全类型名。
         /// </summary>
+        [PipifyHelpBox("密钥在 Config → 通用配置 → 资源加解密配置中配置。", "清单加解密器须配套：AES 对 AES，XOR 对 XOR。")]
         [PipifyDropdown(typeof(IManifestDecryptor))]
         public string ManifestDecryptorClassName = typeof(ManifestDecryptorNone).FullName;
 

@@ -48,6 +48,7 @@ namespace NovaFramework.Editor
             public bool clearBuildCache;
             public bool useAssetDependencyDB;
             [AgentActionRequired] public string encryptionPolicy;
+            public string manifestEncryptionPolicy;
             [AgentActionRequired] public string compression;
             [AgentActionRequired] public string fileNameStyle;
             [AgentActionRequired] public string bundledCopyOption;
@@ -63,6 +64,11 @@ namespace NovaFramework.Editor
             public string ManifestPath;
             public bool ClearBuildCache;
             public bool UseAssetDependencyDB;
+            public string EncryptionPolicy;
+            public string ManifestEncryptionPolicy;
+            public string BundleEncryptorClassName;
+            public string ManifestEncryptorClassName;
+            public string ManifestDecryptorClassName;
             public ECompressOption Compression;
             public EFileNameStyle FileNameStyle;
             public EBundledCopyOption BundledCopyOption;
@@ -81,6 +87,10 @@ namespace NovaFramework.Editor
             public bool clearBuildCache;
             public bool useAssetDependencyDB;
             public string encryptionPolicy;
+            public string manifestEncryptionPolicy;
+            public string bundleEncryptorClassName;
+            public string manifestEncryptorClassName;
+            public string manifestDecryptorClassName;
             public string compression;
             public string fileNameStyle;
             public string bundledCopyOption;
@@ -88,11 +98,15 @@ namespace NovaFramework.Editor
             public BuildActionCommon.BundleInputSnapshot inputs;
         }
 
+        /// <summary>
+        /// 校验活动平台、包名与固定构建选项；加密参数只接受声明的逻辑值，不接受类型名。
+        /// </summary>
         protected override bool TryValidateRequest(Request request, out string error)
         {
             if (!BuildActionCommon.TryResolveActiveTarget(request.target, out BuildTarget target, out error) ||
                 !BuildActionCommon.TryValidateName("packageName", request.packageName, out error) ||
-                !BuildActionCommon.TryResolveEncryptionPolicy(request.encryptionPolicy, out error) ||
+                !BuildActionCommon.TryResolveEncryptionPolicy(request.encryptionPolicy, out _, out error) ||
+                !BuildActionCommon.TryResolveManifestEncryptionPolicy(request.manifestEncryptionPolicy, out _, out _, out _, out error) ||
                 !BuildActionCommon.TryResolveCompression(request.compression, out _, out error) ||
                 !BuildActionCommon.TryResolveFileNameStyle(request.fileNameStyle, out _, out error) ||
                 !BuildActionCommon.TryResolveBundledCopyOption(request.bundledCopyOption, out EBundledCopyOption copyOption, out error))
@@ -130,9 +144,18 @@ namespace NovaFramework.Editor
             return true;
         }
 
+        /// <summary>
+        /// 只读冻结构建输入、加密逻辑值及正式类型名，供一次性确认后的执行使用。
+        /// </summary>
         public override Task<AgentActionHandlerPlan> PlanAsync(Request request, AgentActionExecutionContext context)
         {
             BuildActionCommon.TryResolveActiveTarget(request.target, out BuildTarget target, out _);
+            if (!BuildActionCommon.TryResolveEncryptionPolicy(request.encryptionPolicy, out string bundleEncryptorClassName, out string encryptionError) ||
+                !BuildActionCommon.TryResolveManifestEncryptionPolicy(request.manifestEncryptionPolicy,
+                    out string manifestEncryptionPolicy, out string manifestEncryptorClassName, out string manifestDecryptorClassName, out encryptionError))
+            {
+                return Task.FromResult(new AgentActionHandlerPlan { Status = "blocked", Summary = encryptionError });
+            }
             BuildActionCommon.TryResolveCompression(request.compression, out ECompressOption compression, out _);
             BuildActionCommon.TryResolveFileNameStyle(request.fileNameStyle, out EFileNameStyle fileNameStyle, out _);
             BuildActionCommon.TryResolveBundledCopyOption(request.bundledCopyOption, out EBundledCopyOption copyOption, out _);
@@ -177,6 +200,11 @@ namespace NovaFramework.Editor
                 ManifestPath = manifestPath,
                 ClearBuildCache = request.clearBuildCache,
                 UseAssetDependencyDB = request.useAssetDependencyDB,
+                EncryptionPolicy = request.encryptionPolicy,
+                ManifestEncryptionPolicy = manifestEncryptionPolicy,
+                BundleEncryptorClassName = bundleEncryptorClassName,
+                ManifestEncryptorClassName = manifestEncryptorClassName,
+                ManifestDecryptorClassName = manifestDecryptorClassName,
                 Compression = compression,
                 FileNameStyle = fileNameStyle,
                 BundledCopyOption = copyOption,
@@ -229,7 +257,11 @@ namespace NovaFramework.Editor
                     manifestPath = manifestPath,
                     clearBuildCache = request.clearBuildCache,
                     useAssetDependencyDB = request.useAssetDependencyDB,
-                    encryptionPolicy = BuildActionCommon.NoEncryptionPolicy,
+                    encryptionPolicy = state.EncryptionPolicy,
+                    manifestEncryptionPolicy = state.ManifestEncryptionPolicy,
+                    bundleEncryptorClassName = state.BundleEncryptorClassName,
+                    manifestEncryptorClassName = state.ManifestEncryptorClassName,
+                    manifestDecryptorClassName = state.ManifestDecryptorClassName,
                     compression = request.compression,
                     fileNameStyle = request.fileNameStyle,
                     bundledCopyOption = request.bundledCopyOption,
@@ -240,6 +272,7 @@ namespace NovaFramework.Editor
                 Evidence = new[]
                 {
                     "已冻结激活 ConfigMaster 当前坐标、YooAssetSettings、BundleCollectorSetting、目标 Package 与配置 Hash。",
+                    "已冻结 Bundle 与清单加密逻辑值、正式类型名及清单解密配对；不会接受任意 C# 类型名。",
                     copyOption == EBundledCopyOption.None
                         ? "构建后只读核对输出目录、YooAsset manifest 与 SHA-256。"
                         : "构建后额外核对首包目标 Package 目录与 SHA-256。",
@@ -248,6 +281,9 @@ namespace NovaFramework.Editor
             });
         }
 
+        /// <summary>
+        /// 复核冻结输入未漂移后，用计划中的正式加解密类型执行一次构建并记录产物证据。
+        /// </summary>
         public override Task<AgentActionResult> ExecuteAsync(object state, AgentActionExecutionContext context)
         {
             if (!(state is State plan))
@@ -281,9 +317,9 @@ namespace NovaFramework.Editor
                 BuildVersion = plan.Version,
                 ClearBuildCache = plan.ClearBuildCache,
                 UseAssetDependencyDB = plan.UseAssetDependencyDB,
-                BundleEncryptorClassName = typeof(EncryptionNone).FullName,
-                ManifestEncryptorClassName = typeof(ManifestEncryptorNone).FullName,
-                ManifestDecryptorClassName = typeof(ManifestDecryptorNone).FullName,
+                BundleEncryptorClassName = plan.BundleEncryptorClassName,
+                ManifestEncryptorClassName = plan.ManifestEncryptorClassName,
+                ManifestDecryptorClassName = plan.ManifestDecryptorClassName,
                 Compression = plan.Compression,
                 FileNameStyle = plan.FileNameStyle,
                 BundledCopyOption = plan.BundledCopyOption,

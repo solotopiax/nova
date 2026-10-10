@@ -64,6 +64,11 @@ namespace NovaFramework.Runtime
         private readonly Dictionary<string, AssetRemoteService> m_RemoteServices = new();
 
         /// <summary>
+        /// 当前 Host 包实际启用了平台原生预下载；不由编译宏或空 Downloader 推断缓存完整性。
+        /// </summary>
+        private readonly HashSet<string> m_WebPreloadPackages = new();
+
+        /// <summary>
         /// WebGL Package 的官方内置 Catalog 布局结果；Host 初始化前用于决定是否启用 WebServer 文件系统。
         /// </summary>
         private readonly Dictionary<string, bool> m_WebGLBuiltinCatalogAvailability = new();

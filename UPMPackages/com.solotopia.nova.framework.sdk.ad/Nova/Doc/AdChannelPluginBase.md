@@ -43,6 +43,7 @@ classDiagram
 
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
+| `m_BannerIlrdPersistManager` | `IFileFragmentManager` | `null` | 渠道初始化时获取并缓存，释放时清除；累计回调直接复用 |
 | `m_TrackPlugins` | `IReadOnlyList<ITrackPlugin>` | `null` | 缓存的通用打点插件；`InitializeAsync` 内由 `CacheTrackPlugins` 填充 |
 | `m_AdUnits` | `Dictionary<AdFormat, List<AdUnit>>` | `new()` | 各广告格式的 AdUnit 槽位列表；派生类通过 `RegisterAdUnits` 注入 |
 | `m_AdCallbackQueue` | `Queue<Action>` | `new()` | SDK 回调切回 Unity 主线程的 FIFO 队列 |
@@ -71,7 +72,7 @@ classDiagram
 | `LastErrorMessage` | `string` | `null` | 最近一次加载失败的错误描述文本 |
 | `RetryCts` | `CancellationTokenSource` | `null` | 延时/立即重试任务的取消令牌源；`DisposeAsync` 时统一 Cancel 以防泄露 |
 | `RequestCustomProps` | `Dictionary<string, object>` | `null` | `RequestAsync` 传入的自定义属性；`fill` / `fill_fail` 打点时合并；续杯时置 null |
-| `ShowCustomProps` | `Dictionary<string, object>` | `null` | `ShowAsync` 传入的自定义属性；`show` / `show_result` 失败分支 / `hidden` 打点时合并；续杯前置 null |
+| `ShowCustomProps` | `Dictionary<string, object>` | `null` | `ShowAsync` 传入的自定义属性；`show` / `show_result` 成功与失败分支 / `hidden` 打点时合并；续杯前置 null |
 | `LastReason` | `AdRequestReason` | `Auto` | 本次 `RequestAsync` 传入的请求原因；仅 `nova_ad_request` 事件使用 |
 
 ---
@@ -228,32 +229,35 @@ protected void RaiseAdLoadFailed(AdLoadResult e);
 /// 触发 OnInitResult 事件，同时上报 nova_ad_init 打点（nova_success + nova_ad_channel）。
 protected void RaiseInitResult(bool success);
 
-/// 触发 OnShowCompleted 事件；不再上报 nova_ad_show_result（nova_ad_result=1）成功打点。
-/// 仅分发展示成功通知，不调用 MarkShown；自动续杯由关闭或展示失败链路触发。
+/// 先上报 nova_ad_show_result（nova_ad_result=1），再将 OnShowCompleted 事件排入主线程。
+/// 不调用 MarkShown；自动续杯由关闭或展示失败链路触发。
 protected void RaiseShowCompleted(AdResult result);
+protected void RaiseShowCompleted(AdResult result, Dictionary<string, object> extraProps);
 
 /// 触发 OnShowFailed 事件，并上报 nova_ad_show_result（nova_ad_result=0）打点。
 /// 内部先调 MarkShown（Showing → Idle，非 Banner 触发续杯）。
 protected void RaiseShowFailed(AdResult result);
+protected void RaiseShowFailed(AdResult result, Dictionary<string, object> extraProps);
 
 /// 触发 OnAdClosed 事件，并在基类内部上报 nova_ad_hidden 打点（含 nova_can_get_reward）。
 /// 内部先调 MarkShown（Showing → Idle，非 Banner 触发续杯）。
-/// rewarded：是否满足奖励条件，激励视频使用，其他格式传 false。
+/// rewarded 写入 nova_can_get_reward；MAX 插屏传 true，激励取官方奖励状态，开屏传 false。
+/// result.RewardGranted 由渠道设置，关闭入口保持原值，不根据收益回调重新计算。
 protected void RaiseAdClosed(AdResult result, bool rewarded = false);
+
+// 保留原签名；渠道可附加本次曝光 ID 等关闭属性，已有基础字段和业务属性不覆盖。
+protected void RaiseAdClosed(AdResult result, bool rewarded, Dictionary<string, object> extraProps);
 ```
 
 ### 打点辅助方法（protected）
 
 ```csharp
-/// 上报 nova_ad_show 事件（广告展示回调中调用）。
+/// 上报 nova_ad_show 事件（实际调用渠道展示接口前调用）。
 /// 基类自动从对应 AdUnit 取 ShowCustomProps 合并；派生侧调用面无需传 customProps。
 protected void TrackAdShow(AdFormat format, string placementId);
 
 // 上报 nova_ad_show，并在 ShowCustomProps 之后合并渠道附加属性；已有键不覆盖。
-protected void TrackAdShow(
-    AdFormat format,
-    string placementId,
-    Dictionary<string, object> extraProps);
+protected void TrackAdShow(AdFormat format, string placementId, Dictionary<string, object> extraProps);
 
 /// 上报 nova_ad_click 事件（广告点击回调中调用）。
 /// 基类自动从对应 AdUnit 取 ShowCustomProps 合并。
@@ -281,7 +285,7 @@ private static void MergeCustom(Dictionary<string, object> target, Dictionary<st
 | `OnAdLoaded` | `event Action<AdLoadResult>` | `RaiseAdLoaded` | `nova_ad_fill` |
 | `OnAdLoadFailed` | `event Action<AdLoadResult>` | `RaiseAdLoadFailed` | `nova_ad_fill_fail` |
 | `OnInitResult` | `event Action<bool>` | `RaiseInitResult` | `nova_ad_init` |
-| `OnShowCompleted` | `event Action<AdResult>` | `RaiseShowCompleted` | 无成功 `nova_ad_show_result` 打点 |
+| `OnShowCompleted` | `event Action<AdResult>` | `RaiseShowCompleted` | `nova_ad_show_result`（result=1） |
 | `OnShowFailed` | `event Action<AdResult>` | `RaiseShowFailed` | `nova_ad_show_result`（result=0） |
 | `OnAdClosed` | `event Action<AdResult>` | `RaiseAdClosed` | `nova_ad_hidden` |
 
@@ -303,7 +307,7 @@ protected sealed class AdUnit
     public string LastErrorMessage;
     public CancellationTokenSource RetryCts;
     public Dictionary<string, object> RequestCustomProps;  // fill/fill_fail 打点合并；续杯时置 null
-    public Dictionary<string, object> ShowCustomProps;     // show/show_result 失败分支/hidden 打点合并；续杯前置 null
+    public Dictionary<string, object> ShowCustomProps;     // show/show_result 成功与失败分支/hidden 打点合并；续杯前置 null
     public AdRequestReason LastReason;                     // nova_ad_request 事件使用
 }
 
@@ -332,7 +336,7 @@ public readonly struct AdUnitOptions
 ```
 [未初始化]
     ↓ InitializeAsync(config, ct)
-    │  1. CacheTrackPlugins()
+    │  1. 缓存 IFileFragmentManager，再调用 CacheTrackPlugins()
     │  2. InitChannelSDKAsync(config, ct)  ← 派生类调 RegisterAdUnits 注入多 ID 槽位
     │  3. 渠道 SDK 回调 → RaiseInitResult(true/false)
     ↓
@@ -352,11 +356,12 @@ public readonly struct AdUnitOptions
     │      ↓ PickBestReadyUnit（Revenue 降序）
     │      ↓ 置 Showing
     │      ↓ OnShowAsync(format, placementId, ct)
+    │      ↓ TrackAdShow → nova_ad_show → 调用渠道 SDK 展示接口
     │      ↓ 渠道 SDK 展示回调
     │      ├─→ RaiseRevenueImmediately(e)   → immediateAction 即时执行，RaiseRevenue 同步推进状态，RevenuePaid event 排入主线程
-    │      ├─→ RaiseShowCompleted(r)        → OnShowCompleted event（不打成功 show_result，不续杯）
-    │      ├─→ RaiseShowFailed(r)           → MarkShown → OnShowFailed event → nova_ad_show_result（非Banner续杯）
-    │      └─→ RaiseAdClosed(r, rewarded)  → MarkShown → OnAdClosed event → nova_ad_hidden（非Banner续杯）
+    │      ├─→ RaiseShowCompleted(r)        → nova_ad_show_result（result=1）→ OnShowCompleted event（不续杯）
+    │      ├─→ RaiseShowFailed(r)           → MarkShown → nova_ad_show_result（result=0）→ OnShowFailed event（非Banner续杯）
+    │      └─→ RaiseAdClosed(r, rewarded)  → 保存展示属性 → MarkShown（非Banner续杯）→ nova_ad_hidden → 主线程 OnAdClosed
     │
     └─→ DisposeAsync(ct)
            ↓ CancelAllRetryCts()   ← 取消所有 pending 重试
@@ -409,7 +414,7 @@ RaiseAdLoaded      RaiseAdLoadFailed                                         │
 1. `AdPlugin.OnInitializeAsync` 遍历 `AdPluginConfig.ChannelConfigs`，按 `IAdChannelConfig.PluginType` 通过反射创建各 `AdChannelPluginBase` 子类实例。
 2. 对每个渠道实例调用 `ApplyGlobalConfig(adConfig.ChannelConfigs)`，透传 5 个全局开关（EnableBidding / BannerIlrdInterval / MuteAd / RetryLoadAdMaxNum / RetryLoadAdInterv）。
 3. 对每个渠道实例调用 `InitializeAsync(channelConfig, ct)`。
-4. `InitializeAsync` 内部：先 `CacheTrackPlugins()`（从 `Nova.SDK.GetAll<IMonetizeTrackPlugin>()` 缓存打点插件列表），再调 `InitChannelSDKAsync`。
+4. `InitializeAsync` 内部：先缓存 `IFileFragmentManager`，再 `CacheTrackPlugins()`（从 `Nova.SDK.GetAll<IMonetizeTrackPlugin>()` 缓存打点插件列表），再调 `InitChannelSDKAsync`。
 5. 派生类在 `InitChannelSDKAsync` 内调用 `RegisterAdUnits(format, options)` 完成多 ID 槽位注入，之后初始化 SDK。
 6. `InitChannelSDKAsync` 由渠道 SDK 回调触发 `RaiseInitResult`，`AdPlugin` 订阅 `OnInitResult` 后转发到 `AdPluginEvents.InitResult`。
 
@@ -475,6 +480,28 @@ DisposeAsync 时：
   CancelAllRetryCts() 遍历 m_PendingBatches，对所有活跃批次调 Tcs.TrySetCanceled()
   m_PendingBatches.Clear()
 ```
+
+### Banner 收益累计存储
+
+- 渠道 `InitializeAsync` 在调用具体 SDK 初始化前，通过 `FrameworkManagersGroup.GetManager<IFileFragmentManager>()` 缓存存储接口；`DisposeAsync` 释放渠道后清除引用。收益回调复用该存储接口；MAX 的收益打点插件另行按需查询 `ISDKManager`。
+- 缓存引用不等于完成存档加载；启动链仍须在广告存档读写前完成 `Persist.LoadAsync()`。广告模块不自行初始化存储后端。
+- `TrackBannerIlrdAggregated(double revenue, Func<decimal, bool> trackAction)` 将同一渠道的全部 Banner 回调累计到一起。MAX 使用此入口，次数和收益不按广告位拆分；默认间隔 5 在第 5 次回调上传。
+- 汇总分类为 `NovaAdBannerIlrd`，条目为 `Nova.Ad.BannerIlrd.{Name}.Count` 与 `Nova.Ad.BannerIlrd.{Name}.Revenue`。不同渠道保持独立；上传使用触发阈值的那次回调的广告信息和整个批次的累计收益。
+- 带 `placementId` 的旧重载保留原来的按广告位累计语义及条目名，供既有渠道兼容使用；它与新汇总条目相互独立，旧条目不自动合并。
+- 后台回调通过既有回调队列切回主线程读写存档；MAX 的 `ad_impression` 仍在原收益回调中即时上报。
+- 未达阈值或上传未派发时，保存次数和 invariant decimal 金额文本，并立即 `Save(classify)`；上传已派发或间隔小于等于 0 时清除对应批次，再调用 `Save()` 处理待删文件与备份。清理后下一次回调重新计数。
+- 存储引用未缓存或保存失败会明确报错；不使用其他存储后端，不读取或迁移旧 Unity `PlayerPrefs` 数据。
+
+### 展示尝试与结果打点
+
+- `TrackAdShow` 在实际调用渠道播放接口前上报 `nova_ad_show`，表示一次展示尝试；没有 Ready 广告、未调用播放接口时不记录尝试。
+- `RaiseShowCompleted` 与 `RaiseShowFailed` 内部统一调用私有 `TrackAdShowResult`，分别上报 `nova_ad_result=1/0`；关闭回调只上报 `nova_ad_hidden`。
+- 两个结果入口保留单参数签名，并提供带 `extraProps` 的重载。基础字段优先，其次合并业务 `ShowCustomProps`，最后合并渠道属性；已有键不覆盖。
+- 关闭入口保留 `RaiseAdClosed(result, rewarded)`，并提供第三个参数为 `extraProps` 的重载，以相同优先级合并到 `nova_ad_hidden`。MAX 激励、插屏和开屏关闭时通过此入口传递同次展示的 `nova_ad_impression_id`；状态推进和业务关闭通知保持原语义。
+- `AdResult.RewardGranted` 由渠道构造结果时显式设置；基类不再根据 `rewarded` 参数或收益回调到达标记推导该字段，旧调用签名保留。参数 `rewarded` 只控制埋点属性 `nova_can_get_reward`，不能代替设置业务结果字段。这两个值不是收益金额，也不表示业务已执行发奖。MAX 各格式的具体取值见 [AdPluginEvents.md](AdPluginEvents.md#奖励资格与回调时点)。
+- 失败入口先保存 `ShowCustomProps`，避免 `MarkShown` 自动续杯清空属性；渠道应在清理自身上下文前保存曝光关联属性。
+- 打点在当前回调线程执行，业务事件排入主线程。成功展示不表示广告关闭或奖励完成，也不触发自动续杯。
+- 外部渠道需把原 displayed 中的 `TrackAdShow` 移至实际播放调用前；结果回调只调用对应的 `RaiseShow*`，避免重复上报。Banner 不接入全屏展示完成回调。
 
 ### eCPM 最高优先展示（ShowAsync）
 
@@ -544,8 +571,8 @@ DelayedRetryAsync(unit, ct):
 - **误区：`OnRequestAsync` 签名与旧版相同**：签名包含 `string placementId` 参数；派生类只需针对该 placementId 调用一次 SDK 加载，不必在 `OnRequestAsync` 内自行管理多 ID 循环。
 - **误区：在 `InitChannelSDKAsync` 中实现 `Supports` 逻辑**：`Supports` 方法已全链路删除；是否支持某 AdFormat 由 `RegisterAdUnits` 注册的槽位推导，派生类只需注册即可。
 - **误区：把收益打点和收益事件绑在同一线程**：收益打点和收益状态推进应在 SDK 原始回调线程即时执行，只有收益事件 fan-out 必须排入 Unity 主线程，避免业务/UI 回调在后台线程触发。
-- **误区：Banner 收益必须整体切主线程**：Banner 收益也应拆分；`ad_impression` / `ad_ilrd` 打点即时执行，`OnAdRevenuePaid` 事件由 `RaiseRevenueImmediately` 统一排入主线程。
-- **误区：直接触发 event 字段而不用 `Raise*` 方法**：`Raise*` 方法内部先推进状态机再 fan-out 再打点，直接触发 event 会同时跳过状态机推进和打点。
+- **误区：Banner 收益必须整体切主线程**：`ad_impression` 在收益回调中逐次派发；Banner ILRD 的累计、存档和阈值派发在主线程执行；`OnAdRevenuePaid` 业务通知也排入主线程。
+- **误区：直接触发 event 字段而不用 `Raise*` 方法**：`Raise*` 方法按各自入口维护状态、埋点和主线程业务通知，直接触发 event 会跳过对应的状态推进和打点。
 - **误区：Banner 渠道直接调 `RequestAsync` 续杯**：Banner 不自动续杯（有 SDK 自带刷新），框架层不会在 `MarkShown` 后对 Banner 触发 `RequestAsync`。
 - **误区：Banner 隐藏后不回置状态**：派生类在 `HideBanner` / `DestroyBanner` 对应的 SDK 回调中须调 `MarkBannerHidden(placementId)`，否则 AdUnit 永久停在 Showing，无法参与下次展示。
 - **误区：`OnShowAsync` 基类实现直接可用**：基类默认抛 `AdFormatNotSupportedException`，必须 override 才能实际展示广告。
@@ -605,19 +632,50 @@ public sealed class MaxAdPlugin : AdChannelPluginBase
     protected override async UniTask<AdResult> OnShowAsync(AdFormat format, string placementId, CancellationToken ct)
     {
         var tcs = new UniTaskCompletionSource<AdResult>();
-        // 注册一次性展示结果回调
+        bool rewarded = false; // 只由本次激励广告的官方奖励回调置为 true。
+        // 展示结果与关闭分别处理；播放前记录一次展示尝试。
+        MaxSdkCallbacks.Rewarded.OnAdDisplayedEvent += OnDisplayed;
+        MaxSdkCallbacks.Rewarded.OnAdDisplayFailedEvent += OnDisplayFailed;
         MaxSdkCallbacks.Rewarded.OnAdHiddenEvent += OnHidden;
+        MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent += OnReceivedReward;
+        TrackAdShow(format, placementId);
         MaxSdk.ShowRewardedAd(placementId);
         return await tcs.Task;
 
+        void OnDisplayed(string pid, MaxSdkBase.AdInfo info)
+        {
+            RaiseShowCompleted(new AdResult { Success = true, Format = format, PlacementId = pid });
+        }
+
+        void OnDisplayFailed(string pid, MaxSdkBase.ErrorInfo error, MaxSdkBase.AdInfo info)
+        {
+            Unsubscribe();
+            var result = new AdResult { Success = false, Format = format, PlacementId = pid, ErrorMessage = error.Message };
+            RaiseShowFailed(result);
+            tcs.TrySetResult(result);
+        }
+
+        // 官方奖励回调只标记奖励资格；关闭时再构造业务结果。
+        void OnReceivedReward(string pid, MaxSdk.Reward reward, MaxSdkBase.AdInfo info)
+        {
+            rewarded = true;
+        }
+
+        void Unsubscribe()
+        {
+            MaxSdkCallbacks.Rewarded.OnAdDisplayedEvent -= OnDisplayed;
+            MaxSdkCallbacks.Rewarded.OnAdDisplayFailedEvent -= OnDisplayFailed;
+            MaxSdkCallbacks.Rewarded.OnAdHiddenEvent -= OnHidden;
+            MaxSdkCallbacks.Rewarded.OnAdReceivedRewardEvent -= OnReceivedReward;
+        }
+
         void OnHidden(string pid, MaxSdkBase.AdInfo info)
         {
-            MaxSdkCallbacks.Rewarded.OnAdHiddenEvent -= OnHidden;
-            // TrackAdShow 在展示成功回调中调用（nova_ad_show）
-            TrackAdShow(format, pid);
-            // RaiseAdClosed 内部驱动状态机 + fan-out + nova_ad_hidden 打点
-            RaiseAdClosed(new AdResult { Success = true, Format = format, PlacementId = pid }, rewarded: true);
-            tcs.TrySetResult(new AdResult { Success = true, Format = format, PlacementId = pid });
+            Unsubscribe();
+            // 渠道显式填写奖励字段；关闭入口保留字段，仅用 rewarded 写关闭埋点。
+            var result = new AdResult { Success = true, Format = format, PlacementId = pid, UserCompleted = rewarded, RewardGranted = rewarded };
+            RaiseAdClosed(result, rewarded);
+            tcs.TrySetResult(result);
         }
     }
 

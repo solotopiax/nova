@@ -38,6 +38,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 广告展示成功事件，由渠道 SDK displayed 回调触发；不表示广告已关闭或激励已完成。
+        /// MAX 插屏在此时返回 RewardGranted=true，表示符合本项目的插屏奖励条件。
         /// Replay 模式（cap=32）：每条展示成功记录独立有意义，不可被后续事件覆盖。
         /// </summary>
         public readonly ReplayEvent<AdResult> ShowCompleted = new ReplayEvent<AdResult>(32);
@@ -50,12 +51,13 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
 
         /// <summary>
         /// 广告收益回调事件。
-        /// Replay 模式（cap=32）：每次收益均需上报，不可丢失，使用 Replay 保障无漏发。
+        /// Replay 模式（cap=32）：新订阅者补收最近 32 条业务通知，不替代渠道收益埋点或持久化交付。
         /// </summary>
         public readonly ReplayEvent<AdEvent> RevenuePaid = new ReplayEvent<AdEvent>(32);
 
         /// <summary>
         /// 广告关闭回调事件。
+        /// RewardGranted 保留渠道设置的奖励资格；MAX 激励取官方奖励回调状态，插屏为 true，开屏为 false。
         /// Replay 模式（cap=32）：每条关闭记录独立有意义，业务层需逐条响应。
         /// </summary>
         public readonly ReplayEvent<AdResult> AdClosed = new ReplayEvent<AdResult>(32);

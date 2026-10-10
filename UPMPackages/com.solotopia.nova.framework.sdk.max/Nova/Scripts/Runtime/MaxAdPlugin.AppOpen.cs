@@ -25,7 +25,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void RequestAppOpen(string placementId) => MaxSdk.LoadAppOpenAd(placementId);
 
         /// <summary>
-        /// 展示开屏广告，挂起等待关闭或失败回调。
+        /// 展示开屏广告，调用 MAX 展示接口前记录展示尝试，再挂起等待关闭或失败回调。
         /// </summary>
         /// <param name="placementId">广告位 ID。</param>
         /// <param name="ct">取消令牌。</param>
@@ -33,7 +33,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private UniTask<AdResult> ShowAppOpenAsync(string placementId, CancellationToken ct)
         {
             m_AppOpenTcs = new UniTaskCompletionSource<AdResult>();
-            BeginFullscreenImpression(AdFormat.AppOpen, placementId);
+            TrackAdShow(AdFormat.AppOpen, placementId, BeginFullscreenImpression(AdFormat.AppOpen, placementId));
             MaxSdk.ShowAppOpenAd(placementId);
             return m_AppOpenTcs.Task;
         }
@@ -77,14 +77,13 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 开屏展示成功回调，上报展示打点。
+        /// 开屏展示成功回调，上报展示成功结果并通知业务层。
         /// </summary>
         /// <param name="adUnitId">广告位 ID。</param>
         /// <param name="info">广告信息。</param>
         private void OnAppOpenDisplayed(string adUnitId, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX AppOpen 展示成功回调：placement={adUnitId}，network={info?.NetworkName}。");
-            TrackAdShow(AdFormat.AppOpen, adUnitId, MarkFullscreenDisplayed(AdFormat.AppOpen, adUnitId));
             RaiseShowCompleted(new AdResult
             {
                 Success = true,
@@ -93,7 +92,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Network = info.NetworkName,
                 Revenue = info.Revenue,
                 Currency = "USD",
-            });
+            }, MarkFullscreenDisplayed(AdFormat.AppOpen, adUnitId));
         }
 
         /// <summary>
@@ -105,7 +104,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void OnAppOpenDisplayFailed(string adUnitId, MaxSdkBase.ErrorInfo err, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX AppOpen 展示失败回调：placement={adUnitId}，network={info?.NetworkName}，code={(int)err.Code}，message={err.Message}。");
-            AbandonFullscreenImpression(AdFormat.AppOpen, adUnitId);
+            var showProps = AbandonFullscreenImpression(AdFormat.AppOpen, adUnitId);
             var result = new AdResult
             {
                 Success = false,
@@ -114,7 +113,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Network = info?.NetworkName,
                 ErrorMessage = err.Message,
             };
-            RaiseShowFailed(result);
+            RaiseShowFailed(result, showProps);
             m_AppOpenTcs?.TrySetResult(result);
         }
 
@@ -130,7 +129,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 开屏关闭回调，触发 RaiseAdClosed 并结束 Tcs。
+        /// 开屏关闭回调，携带本次曝光 ID 触发 RaiseAdClosed 并结束 Tcs。
         /// </summary>
         /// <param name="adUnitId">广告位 ID。</param>
         /// <param name="info">广告信息。</param>
@@ -146,7 +145,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Revenue = info.Revenue,
                 Currency = "USD",
             };
-            RaiseAdClosed(result);
+            RaiseAdClosed(result, false, GetFullscreenImpressionProps(AdFormat.AppOpen, adUnitId));
             m_AppOpenTcs?.TrySetResult(result);
         }
 

@@ -26,6 +26,12 @@ Nova 推荐业务资源采用 YooAsset/Bundle，但资源检查必须先识别�
 
 API 细节见 [AssetComponent](../Runtime/Modules/Asset/AssetComponent.md)，Bundle 构建见 [EditorUtil.BundleBuilder](../Editor/EditorUtil/EditorUtil.BundleBuilder/EditorUtil.BundleBuilder.md)。
 
+## Sample 的 UI 表源与导出
+
+各 Demo 的 `Excels/UIs/UIs.xlsx` 是 UI 注册数据的权威来源。单主题 Demo 应只保留自身入口视图，`Name` 对应 UIView 类型名，`AssetLocation` 对应本 Demo Collector 收集的 Prefab 地址，`UIGroupName` 对应场景中的 UI 分组。复制 MainDemo 后仅替换路径并不足够，还必须替换 Excel 中的导航与模块演示条目。
+
+修复 UI 注册缺失时，先修改 Excel，再通过 [UI Exporter](../Editor/EditorUtil/EditorUtil.UI/EditorUtil.UI.Exporter.md) 导出 JSON/Binary 和 C#；核对场景 UISettings、生成表属性、Prefab 与业务泛型入口一致。只修改 JSON 会在下次导出时被旧表源覆盖。AppsflyerDemo 的入口为 `DemoAppsflyerView`，数据地址为 `UIs`，UI 分组为 `Demo`。
+
 ## Resources 规则的边界
 
 - `Resources/BuiltIn/**` 可以正常通过 `Resources.Load`、`Resources.LoadAsync` 等接口加载。
@@ -40,4 +46,3 @@ ProjectGuard 若执行资源检查，只应在项目明确声明的 Nova 托管�
 ## 构建前检查
 
 普通开发构建确认当前资源能在目标平台加载即可。只有项目显式启用 Release Strict 时，才要求它声明的 Bundle fingerprint、代表资源或真实 Player Smoke 等发布证据。Pipify 可以编排这些步骤，但不是资源构建或 Player 构建的唯一合法入口。
-

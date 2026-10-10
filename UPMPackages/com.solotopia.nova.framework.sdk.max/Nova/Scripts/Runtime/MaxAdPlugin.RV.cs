@@ -25,7 +25,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void RequestRV(string placementId) => MaxSdk.LoadRewardedAd(placementId);
 
         /// <summary>
-        /// 展示激励视频广告，挂起等待关闭或失败回调。
+        /// 展示激励视频广告，调用 MAX 展示接口前记录展示尝试，再挂起等待关闭或失败回调。
         /// </summary>
         /// <param name="placementId">广告位 ID。</param>
         /// <param name="ct">取消令牌。</param>
@@ -34,7 +34,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         {
             m_RVRewarded = false;
             m_RVTcs = new UniTaskCompletionSource<AdResult>();
-            BeginFullscreenImpression(AdFormat.Rewarded, placementId);
+            TrackAdShow(AdFormat.Rewarded, placementId, BeginFullscreenImpression(AdFormat.Rewarded, placementId));
             MaxSdk.ShowRewardedAd(placementId);
             return m_RVTcs.Task;
         }
@@ -78,14 +78,13 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 激励视频展示成功回调，上报展示打点。
+        /// 激励视频展示成功回调，上报展示成功结果并通知业务层。
         /// </summary>
         /// <param name="adUnitId">广告位 ID。</param>
         /// <param name="info">广告信息。</param>
         private void OnRVDisplayed(string adUnitId, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX Rewarded 展示成功回调：placement={adUnitId}，network={info?.NetworkName}。");
-            TrackAdShow(AdFormat.Rewarded, adUnitId, MarkFullscreenDisplayed(AdFormat.Rewarded, adUnitId));
             RaiseShowCompleted(new AdResult
             {
                 Success = true,
@@ -94,7 +93,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Network = info.NetworkName,
                 Revenue = info.Revenue,
                 Currency = "USD",
-            });
+            }, MarkFullscreenDisplayed(AdFormat.Rewarded, adUnitId));
         }
 
         /// <summary>
@@ -106,7 +105,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private void OnRVDisplayFailed(string adUnitId, MaxSdkBase.ErrorInfo err, MaxSdkBase.AdInfo info)
         {
             Log.Debug(LogTag.Max, $"MAX Rewarded 展示失败回调：placement={adUnitId}，network={info?.NetworkName}，code={(int)err.Code}，message={err.Message}。");
-            AbandonFullscreenImpression(AdFormat.Rewarded, adUnitId);
+            var showProps = AbandonFullscreenImpression(AdFormat.Rewarded, adUnitId);
             var result = new AdResult
             {
                 Success = false,
@@ -115,7 +114,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Network = info?.NetworkName,
                 ErrorMessage = err.Message,
             };
-            RaiseShowFailed(result);
+            RaiseShowFailed(result, showProps);
             m_RVTcs?.TrySetResult(result);
         }
 
@@ -143,7 +142,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 激励视频关闭回调，触发 RaiseAdClosed 并结束 Tcs。
+        /// 激励视频关闭回调，携带本次曝光 ID 触发 RaiseAdClosed 并结束 Tcs。
         /// </summary>
         /// <param name="adUnitId">广告位 ID。</param>
         /// <param name="info">广告信息。</param>
@@ -154,6 +153,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             {
                 Success = true,
                 UserCompleted = m_RVRewarded,
+                RewardGranted = m_RVRewarded,
                 Format = AdFormat.Rewarded,
                 PlacementId = adUnitId,
                 Network = info.NetworkName,
@@ -161,7 +161,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
                 Currency = "USD",
             };
             m_RVRewarded = false;
-            RaiseAdClosed(result, result.UserCompleted);
+            RaiseAdClosed(result, result.UserCompleted, GetFullscreenImpressionProps(AdFormat.Rewarded, adUnitId));
             m_RVTcs?.TrySetResult(result);
         }
 

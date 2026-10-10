@@ -1,7 +1,7 @@
 # Nova Framework
 
 > 包名：`com.solotopia.nova.framework`
-> 当前版本：`0.6.37`
+> 当前版本：`0.6.38`
 > Unity：`6000.4`
 
 Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、各业务 Component 入口与默认 MainDemo Sample。
@@ -12,7 +12,7 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework": "0.6.37"
+  "com.solotopia.nova.framework": "0.6.38"
 }
 ```
 
@@ -21,7 +21,7 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 | 访问器 | 类型 | 说明 |
 |---|---|---|
 | `Nova.App` | `AppComponent` | 应用生命周期 / 全局上下文 |
-| `Nova.Asset` | `AssetComponent` | 资源加载（YooAsset 封装）、Prefab / Scene / Asset |
+| `Nova.Asset` | `AssetComponent` | 资源加载（YooAsset 封装）、Prefab / Scene / Asset；可选 Bundle 与清单加解密，Sample 默认不加密 |
 | `Nova.Config` | `ConfigComponent` | 全局配置读取与运行时缓存 |
 | `Nova.Prefab` | `PrefabComponent` | 预制体实例化与池化 |
 | `Nova.Event` | `EventComponent` | 发布-订阅事件，`Fire` / `FireNow` 两种模式 |
@@ -56,7 +56,7 @@ Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、
 | com.solotopia.excelio | 1.0.6 |
 | com.solotopia.nicevibrations | 10.0.5 |
 | com.solotopia.luban | 10.1.0 |
-| com.solotopia.yooasset | 1.1.0 |
+| com.solotopia.yooasset | 1.2.0 |
 | com.solotopia.nova.framework.mcp | 0.1.3 |
 
 ## Samples

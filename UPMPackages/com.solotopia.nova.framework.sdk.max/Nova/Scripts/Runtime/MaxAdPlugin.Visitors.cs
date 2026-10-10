@@ -114,19 +114,24 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         private readonly UniTaskCompletionSource m_PrivacyFlowCompletionSource = new UniTaskCompletionSource();
 
         /// <summary>
-        /// 收益回调即时打点用的变现插件引用，初始化阶段在主线程缓存。
+        /// 收益打点用的变现插件缓存，由 GetRevenueMonetizeTracker 在首次可用时获取并保存。
         /// </summary>
         private IMonetizeTrackPlugin m_RevenueMonetizeTracker;
 
         /// <summary>
-        /// 收益回调即时打点用的归因插件引用，初始化阶段在主线程缓存。
+        /// 收益打点用的归因插件缓存，由 GetRevenueAttributionTracker 在首次可用时获取并保存。
         /// </summary>
         private IAttributionPlugin m_RevenueAttributionTracker;
 
         /// <summary>
-        /// 收益回调即时打点用的通用埋点插件引用，初始化阶段在主线程缓存。
+        /// 收益打点用的通用插件缓存，由 GetRevenueEventTracker 在首次可用时获取并保存。
         /// </summary>
         private ITrackPlugin m_RevenueEventTracker;
+
+        /// <summary>
+        /// 当前收益派发会话，初始化时创建、释放时置空；派发时比对会话，避免继续调用已释放的插件。
+        /// </summary>
+        private object m_RevenueTrackingSession;
 
         /// <summary>
         /// 全屏广告曝光关联状态锁；MAX 回调可能来自非 Unity 主线程。

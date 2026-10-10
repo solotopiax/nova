@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Breaking
+
+## [0.1.13] - 2026-10-10
+
+### Changed
+
+- MAX 全部 Banner 广告位通过广告基类 FileFragment 存储共享累计次数与收益，后台回调切回主线程；达到阈值后上传 ad_ilrd 并清空批次，广告信息取触发回调，ad_impression 仍逐次即时上报。
+
+- 同步 MAX README 与接入文档，说明插屏和激励奖励资格、展示与关闭回调时点、全屏曝光 ID 关联，以及 Banner 聚合和插件缺失造成的收益事件条数差异。
+
+- Ad 依赖下界提升至 1.1.16，匹配 Banner 汇总和展示、关闭附加属性重载；新增直接 Framework 0.6.38 依赖，匹配 Runtime / Editor asmdef 引用。
+
+### Fixed
+
+- MAX 全屏广告在播放接口前上报 nova_ad_show，成功与失败回调分别上报 nova_ad_show_result；尝试、结果、关闭及收益关联同一 nova_ad_impression_id，失败清理前保存关联属性，关闭后保留上下文供晚到收益使用，缺失时不伪造 ID。
+
+- 收益派发按目标直接查询并缓存所需插件，修复慢初始化永久漏报；移除初始化预取、Volatile 和主线程补取队列，缺失或查询异常时逐目标告警并跳过本次派发，释放时清空缓存。
+
+- 插屏展示成功回调的 AdResult.RewardGranted 设为 true，与插屏播放成功即满足奖励条件的业务规则一致，不再等待关闭或收益回调。
+
 ## [0.1.12] - 2026-09-23
 
 ### Added

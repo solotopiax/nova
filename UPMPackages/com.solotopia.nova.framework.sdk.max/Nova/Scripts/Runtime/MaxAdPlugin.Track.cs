@@ -36,36 +36,77 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 在初始化主线程缓存收益即时打点所需的插件引用。
-        /// 收益回调可能来自 SDK 原始线程，不允许在回调内访问 FrameworkComponentsGroup 或 SDKComponent。
+        /// 获取变现插件；已有缓存直接返回，否则立即查询并保存，缺失告警由查询方法统一处理。
         /// </summary>
-        private void CacheMaxRevenueTrackers()
+        /// <param name="eventName">当前准备派发的事件名。</param>
+        /// <returns>缓存或刚取得的插件；尚不可用时返回 null。</returns>
+        private IMonetizeTrackPlugin GetRevenueMonetizeTracker(string eventName)
         {
-            var sdkComponent = FrameworkComponentsGroup.GetComponent<SDKComponent>();
-            if (sdkComponent == null)
-            {
-                Log.Warning(LogTag.Max, "MAX 收益打点插件缓存失败：SDKComponent 尚未就绪。");
-                return;
-            }
-
-            sdkComponent.TryGet(out m_RevenueMonetizeTracker);
-            sdkComponent.TryGet(out m_RevenueAttributionTracker);
-            sdkComponent.TryGet(out m_RevenueEventTracker);
-
             if (m_RevenueMonetizeTracker == null)
-            {
-                Log.Warning(LogTag.Max, "MAX 收益打点插件缓存缺失：IMonetizeTrackPlugin 未找到。");
-            }
+                m_RevenueMonetizeTracker = FindMaxRevenueTracker<IMonetizeTrackPlugin>(eventName);
+            return m_RevenueMonetizeTracker;
+        }
 
+        /// <summary>
+        /// 获取归因插件；已有缓存直接返回，否则立即查询并保存，缺失告警由查询方法统一处理。
+        /// </summary>
+        /// <param name="eventName">当前准备派发的事件名。</param>
+        /// <returns>缓存或刚取得的插件；尚不可用时返回 null。</returns>
+        private IAttributionPlugin GetRevenueAttributionTracker(string eventName)
+        {
             if (m_RevenueAttributionTracker == null)
+                m_RevenueAttributionTracker = FindMaxRevenueTracker<IAttributionPlugin>(eventName);
+            return m_RevenueAttributionTracker;
+        }
+
+        /// <summary>
+        /// 获取通用埋点插件；已有缓存直接返回，否则立即查询并保存，缺失告警由查询方法统一处理。
+        /// </summary>
+        /// <param name="eventName">当前准备派发的事件名。</param>
+        /// <returns>缓存或刚取得的插件；尚不可用时返回 null。</returns>
+        private ITrackPlugin GetRevenueEventTracker(string eventName)
+        {
+            if (m_RevenueEventTracker == null)
+                m_RevenueEventTracker = FindMaxRevenueTracker<ITrackPlugin>(eventName);
+            return m_RevenueEventTracker;
+        }
+
+        /// <summary>
+        /// 结束收益派发会话并清空缓存，后续事件不再复用已释放的插件引用。
+        /// </summary>
+        private void ClearMaxRevenueTrackers()
+        {
+            m_RevenueTrackingSession = null;
+            m_RevenueMonetizeTracker = null;
+            m_RevenueAttributionTracker = null;
+            m_RevenueEventTracker = null;
+        }
+
+        /// <summary>
+        /// 在当前回调线程从 SDK 管理器查询可用插件，未找到或查询异常时记录警告，不阻断其他目标。
+        /// </summary>
+        /// <typeparam name="TTracker">收益打点能力接口。</typeparam>
+        /// <param name="eventName">实际派发的事件名，用于缺失告警。</param>
+        /// <returns>当前可用插件；尚未就绪时返回 null。</returns>
+        private TTracker FindMaxRevenueTracker<TTracker>(string eventName) where TTracker : class, ISDKPlugin
+        {
+            try
             {
-                Log.Warning(LogTag.Max, "MAX 收益打点插件缓存缺失：IAttributionPlugin 未找到。");
+                ISDKManager sdkManager = FrameworkManagersGroup.GetManager<ISDKManager>();
+                if (sdkManager != null && sdkManager.TryGet(out TTracker tracker))
+                {
+                    return tracker;
+                }
+
+                string reason = sdkManager == null ? "SDK 管理器尚未就绪" : "插件未就绪或未启用";
+                Log.Warning(LogTag.Max, $"MAX 收益打点跳过：event={eventName}，tracker={typeof(TTracker).Name}，{reason}。");
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(LogTag.Max, $"MAX 收益打点插件获取失败：event={eventName}，tracker={typeof(TTracker).Name}，{ex.Message}");
             }
 
-            if (m_RevenueEventTracker == null)
-            {
-                Log.Warning(LogTag.Max, "MAX 收益打点插件缓存缺失：ITrackPlugin 未找到。");
-            }
+            return null;
         }
 
         /// <summary>
@@ -75,11 +116,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="adUnitId">MAX 广告位标识。</param>
         /// <param name="adInfo">MAX 收益回调携带的广告信息。</param>
         /// <param name="correlationProps">当前全屏曝光的本地关联诊断属性。</param>
-        private void TrackMaxRevenue(
-            AdFormat format,
-            string adUnitId,
-            MaxSdkBase.AdInfo adInfo,
-            Dictionary<string, object> correlationProps)
+        private void TrackMaxRevenue(AdFormat format, string adUnitId, MaxSdkBase.AdInfo adInfo, Dictionary<string, object> correlationProps)
         {
             decimal revenue = (decimal)adInfo.Revenue;
             TrackMaxAdIlrd(format, adUnitId, adInfo, revenue, correlationProps);
@@ -87,14 +124,13 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// Banner 收益路径：ad_impression 每次即时上传；ad_ilrd 委托广告基类做全渠道统一累计和持久化。
+        /// MAX 全部 Banner 广告位共用次数和收益累计；达到间隔后上传 ad_ilrd，载荷使用本次回调的广告信息。
         /// </summary>
         /// <param name="adUnitId">MAX Banner 广告位标识。</param>
         /// <param name="adInfo">MAX Banner 收益回调携带的广告信息。</param>
         private void TrackMaxBannerIlrdAggregated(string adUnitId, MaxSdkBase.AdInfo adInfo)
         {
-            TrackBannerIlrdAggregated(adUnitId, adInfo.Revenue, revenue
-                => TrackMaxAdIlrd(AdFormat.Banner, adUnitId, adInfo, revenue));
+            TrackBannerIlrdAggregated(adInfo.Revenue, revenue => TrackMaxAdIlrd(AdFormat.Banner, adUnitId, adInfo, revenue));
         }
 
         /// <summary>
@@ -105,20 +141,9 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="adInfo">MAX 收益回调携带的广告信息。</param>
         /// <param name="revenue">本次上报使用的收益；Banner 为累计收益，非 Banner 为单次收益。</param>
         /// <param name="correlationProps">当前全屏曝光的本地关联诊断属性；Banner 或无法关联时可为 null。</param>
-        /// <returns>至少存在一个收益打点插件并完成派发时返回 true；插件未缓存时返回 false。</returns>
-        private bool TrackMaxAdIlrd(
-            AdFormat format,
-            string adUnitId,
-            MaxSdkBase.AdInfo adInfo,
-            decimal revenue,
-            Dictionary<string, object> correlationProps = null)
+        /// <returns>至少向一个插件尝试派发时返回 true；全部不可用时返回 false，不代表后台接收成功。</returns>
+        private bool TrackMaxAdIlrd(AdFormat format, string adUnitId, MaxSdkBase.AdInfo adInfo, decimal revenue, Dictionary<string, object> correlationProps = null)
         {
-            if (!HasMaxRevenueTrackers())
-            {
-                Log.Warning(LogTag.Max, "MAX 收益打点插件尚未缓存，跳过 ad_ilrd 上传。");
-                return false;
-            }
-
             string revenueText = FormatRevenue(revenue);
             double revenueValue = (double)revenue;
             var ilrdProps = new Dictionary<string, object>
@@ -141,8 +166,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 
             MergeCorrelationProps(ilrdProps, correlationProps);
 
-            DispatchToAllTrackers("ad_ilrd", ilrdProps);
-            return true;
+            return DispatchToAllTrackers("ad_ilrd", ilrdProps);
         }
 
         /// <summary>
@@ -152,19 +176,9 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="adUnitId">MAX 广告位标识。</param>
         /// <param name="adInfo">MAX 收益回调携带的广告信息。</param>
         /// <param name="correlationProps">当前全屏曝光的本地关联诊断属性；Banner 或无法关联时可为 null。</param>
-        /// <returns>至少存在一个收益打点插件并完成派发时返回 true；插件未缓存时返回 false。</returns>
-        private bool TrackMaxAdImpression(
-            AdFormat format,
-            string adUnitId,
-            MaxSdkBase.AdInfo adInfo,
-            Dictionary<string, object> correlationProps = null)
+        /// <returns>至少向一个插件尝试派发时返回 true；全部不可用时返回 false，不代表后台接收成功。</returns>
+        private bool TrackMaxAdImpression(AdFormat format, string adUnitId, MaxSdkBase.AdInfo adInfo, Dictionary<string, object> correlationProps = null)
         {
-            if (!HasMaxRevenueTrackers())
-            {
-                Log.Warning(LogTag.Max, "MAX 收益打点插件尚未缓存，跳过 ad_impression 上传。");
-                return false;
-            }
-
             var impressionProps = new Dictionary<string, object>
             {
                 { "ad_source", adInfo.NetworkName },
@@ -177,8 +191,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
 
             MergeCorrelationProps(impressionProps, correlationProps);
 
-            DispatchToAllTrackers("ad_impression", impressionProps);
-            return true;
+            return DispatchToAllTrackers("ad_impression", impressionProps);
         }
 
         /// <summary>
@@ -186,9 +199,7 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// </summary>
         /// <param name="target">收益事件属性。</param>
         /// <param name="correlationProps">曝光关联诊断属性，可为 null。</param>
-        private static void MergeCorrelationProps(
-            Dictionary<string, object> target,
-            Dictionary<string, object> correlationProps)
+        private static void MergeCorrelationProps(Dictionary<string, object> target, Dictionary<string, object> correlationProps)
         {
             if (correlationProps == null)
             {
@@ -205,13 +216,6 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         }
 
         /// <summary>
-        /// 判断收益即时打点所需的任一插件是否已经缓存。
-        /// </summary>
-        /// <returns>存在至少一个可用收益打点插件时返回 true。</returns>
-        private bool HasMaxRevenueTrackers()
-            => m_RevenueMonetizeTracker != null || m_RevenueAttributionTracker != null || m_RevenueEventTracker != null;
-
-        /// <summary>
         /// 将收益格式化为不使用科学计数法的文本，供 af_revenue 和内部存档使用。
         /// </summary>
         /// <param name="revenue">需要格式化的收益值。</param>
@@ -220,15 +224,24 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
             => revenue.ToString("0.#############################", CultureInfo.InvariantCulture);
 
         /// <summary>
-        /// 将收益事件同时派发给变现、归因和通用埋点插件。
+        /// 在当前回调线程获取并派发三个目标；缺失目标告警后跳过，不排队重试或阻断其他目标。
         /// </summary>
         /// <param name="eventName">收益相关事件名。</param>
         /// <param name="props">事件属性字典。</param>
-        private void DispatchToAllTrackers(string eventName, Dictionary<string, object> props)
+        /// <returns>至少向一个插件尝试派发时返回 true；全部不可用时返回 false。</returns>
+        private bool DispatchToAllTrackers(string eventName, Dictionary<string, object> props)
         {
-            DispatchToRevenueTracker(m_RevenueMonetizeTracker == null ? null : (Action<string, Dictionary<string, object>>)m_RevenueMonetizeTracker.TrackEvent, "变现", eventName, props);
-            DispatchToRevenueTracker(m_RevenueAttributionTracker == null ? null : (Action<string, Dictionary<string, object>>)m_RevenueAttributionTracker.TrackEvent, "归因", eventName, props);
-            DispatchToRevenueTracker(m_RevenueEventTracker == null ? null : (Action<string, Dictionary<string, object>>)m_RevenueEventTracker.TrackEvent, "通用", eventName, props);
+            object session = m_RevenueTrackingSession;
+            if (session == null) return false;
+
+            var monetize = GetRevenueMonetizeTracker(eventName);
+            var attribution = GetRevenueAttributionTracker(eventName);
+            var eventTracker = GetRevenueEventTracker(eventName);
+
+            bool dispatched = DispatchToRevenueTracker(monetize == null ? null : (Action<string, Dictionary<string, object>>)monetize.TrackEvent, "IMonetizeTrackPlugin", eventName, props, session);
+            dispatched |= DispatchToRevenueTracker(attribution == null ? null : (Action<string, Dictionary<string, object>>)attribution.TrackEvent, "IAttributionPlugin", eventName, props, session);
+            dispatched |= DispatchToRevenueTracker(eventTracker == null ? null : (Action<string, Dictionary<string, object>>)eventTracker.TrackEvent, "ITrackPlugin", eventName, props, session);
+            return dispatched;
         }
 
         /// <summary>
@@ -238,11 +251,14 @@ namespace NovaFramework.SDK.MaxAdPlugin.Runtime
         /// <param name="trackerName">用于日志区分的插件类型名称。</param>
         /// <param name="eventName">收益相关事件名。</param>
         /// <param name="props">事件属性字典。</param>
-        private void DispatchToRevenueTracker(Action<string, Dictionary<string, object>> trackEvent, string trackerName, string eventName, Dictionary<string, object> props)
+        /// <param name="session">本次事件所属会话；释放后不再发起新的插件调用。</param>
+        /// <returns>已尝试调用插件时返回 true；沿用既有派发口径，插件抛异常也不证明事件未被接收。</returns>
+        private bool DispatchToRevenueTracker(Action<string, Dictionary<string, object>> trackEvent, string trackerName, string eventName, Dictionary<string, object> props, object session)
         {
-            if (trackEvent == null) return;
+            if (trackEvent == null || !ReferenceEquals(session, m_RevenueTrackingSession)) return false;
             try { trackEvent(eventName, props); }
             catch (Exception ex) { Log.Warning(LogTag.Max, $"MAX {trackerName}收益打点失败：{eventName}，{ex.Message}"); }
+            return true;
         }
 #endif
     }

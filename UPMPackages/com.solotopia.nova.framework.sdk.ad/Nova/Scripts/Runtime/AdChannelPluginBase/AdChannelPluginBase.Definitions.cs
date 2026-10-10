@@ -92,7 +92,7 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             public Dictionary<string, object> RequestCustomProps;
 
             /// <summary>
-            /// 本次 ShowAsync 传入的自定义属性；show/show_result 失败分支/hidden 打点时合并；续杯前置 null。
+            /// 本次 ShowAsync 传入的自定义属性；show/show_result 成功与失败分支/hidden 打点时合并；续杯前置 null。
             /// </summary>
             public Dictionary<string, object> ShowCustomProps;
 
@@ -102,8 +102,8 @@ namespace NovaFramework.SDK.AdPlugin.Runtime
             public AdRequestReason LastReason;
 
             /// <summary>
-            /// 本次展示期间是否已收到收益回调（RaiseRevenue 已触发）。
-            /// RaiseAdClosed 写入 AdResult.RewardGranted 后随 MarkShown 一起重置为 false。
+            /// 收益到达标记，由 RaiseRevenue 置为 true；当前关闭入口不读取或重置此字段。
+            /// 对外 AdResult.RewardGranted 由渠道回调直接设置，不从本字段推导。
             /// </summary>
             public bool RewardGranted;
         }

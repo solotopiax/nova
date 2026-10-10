@@ -17,6 +17,7 @@ namespace NovaFramework.Runtime
     {
         /// <summary>
         /// 启动时预热配置 Tag 对应的 Bundle，完成后释放预热引用，并在启动 DLL 消费完成后清理未使用内存。
+        /// 已接入平台原生预下载的微信 Host 改为下载到平台缓存，不创建预热内存引用。
         /// 该值固定为零，保证旧场景新增序列化字段后仍采用 Nova 默认策略。
         /// </summary>
         TagsOnLaunch = 0,

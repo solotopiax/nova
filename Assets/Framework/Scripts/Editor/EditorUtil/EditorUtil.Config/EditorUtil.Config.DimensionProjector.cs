@@ -167,6 +167,24 @@ namespace NovaFramework.Editor
                     ProjectDimensionAtomically(master, masterSO, panelKind, typeName, curCoord, axis, false);
                 }
 
+                /// <summary>资源密钥的独立项目草稿加维；只分裂当前编号选择，不复制真实密钥。</summary>
+                internal static void OnDimensionEnabled(ResourceKeyStoreData data, Coord current, DimensionAxis axis)
+                {
+                    ResourceKeyStore.ProjectDimension(data, current, axis, true);
+                }
+
+                /// <summary>资源密钥草稿减维；逐组保留顶部当前轴的编号，保留全部解密密钥。</summary>
+                internal static void OnDimensionDisabled(ResourceKeyStoreData data, Coord current, DimensionAxis axis)
+                {
+                    ResourceKeyStore.ProjectDimension(data, current, axis, false);
+                }
+
+                /// <summary>资源密钥当前编号写入规范逻辑组，使未勾选轴共用而已勾选轴独立。</summary>
+                internal static void SetResourceActiveKeyId(ResourceKeyStoreData data, ResourcePackageKeys package, Coord current, string keyId)
+                {
+                    ResourceKeyStore.SetActiveKeyId(data, package, current, keyId);
+                }
+
                 /// <summary>
                 /// 按当前坐标将 Namespace 值写入对应 Override 条目（仅写当前格，不广播同组）。
                 /// <para>步骤：按 NamespaceMask 裁剪坐标到勾选轴 → UpsertNamespaceOverride 写入或更新对应 Override 条目。</para>
@@ -239,37 +257,60 @@ namespace NovaFramework.Editor
                 }
 
                 /// <summary>
-                /// 按现有维度掩码重新投影校验报告点名的配置组，修复从旧项目复制或外部合并后遗留的组内不一致。
-                /// <para>未勾选轴以当前编辑坐标对应的分支为准；已勾选轴继续保留各逻辑组自己的值。</para>
-                /// <para>SDK / Kit 仅在每个逻辑组都存在来源实例时归一；同组缺失物理格会继承来源实例。</para>
-                /// <para>整个操作作用于 WorkingCopy 且具备原子回滚，不直接写入资产。</para>
+                /// 保存前按当前掩码原子整理整个 WorkingCopy；未勾选轴采用显式编辑坐标，已勾选轴逐组保留。
+                /// 清除失效坐标和旧 Override，保留完整物理矩阵及所有解密密钥；异常时恢复原草稿。
                 /// </summary>
-                internal static void NormalizeInvalidGroups(
-                    ConfigMasterSO master,
-                    SerializedObject masterSO,
-                    Coord curCoord,
-                    IReadOnlyList<Validator.ValidationIssue> issues)
+                internal static void NormalizeForSave(ConfigMasterSO master, SerializedObject masterSO, Coord current)
                 {
-                    if (master == null || issues == null || issues.Count == 0) return;
+                    if (master == null) return;
+                    if (current.Platform == PlatformType.None || current.Channel == ChannelType.None ||
+                        !Enum.IsDefined(typeof(PlatformType), current.Platform) ||
+                        !Enum.IsDefined(typeof(ChannelType), current.Channel) ||
+                        !Enum.IsDefined(typeof(DevelopMode), current.Mode))
+                        throw new InvalidOperationException("保存配置需要有效的平台、渠道和开发模式。");
                     masterSO?.ApplyModifiedProperties();
-
                     ConfigMasterSO backup = UnityEngine.Object.Instantiate(master);
                     string originalName = master.name;
                     try
                     {
-                        HashSet<string> repaired = new();
-                        for (int i = 0; i < issues.Count; i++)
+                        PrepareSaveMatrix(master);
+                        StructureGuard.SyncEnumGrid(master, current.Platform);
+                        PrepareSaveMatrix(master);
+                        NormalizePanel(master, PanelKind.AppConfigs, null, current);
+                        NormalizePanel(master, PanelKind.PrivacyConfigs, null, current);
+                        NormalizeStoredTypedPanels(master, PanelKind.SDK, current);
+                        NormalizeStoredTypedPanels(master, PanelKind.Kit, current);
+
+                        NormalizeSaveOverrides(master.NamespaceOverrides, master.NamespaceMask, current,
+                            item => new Coord(item.Platform, item.Channel, item.DevelopMode),
+                            (item, coord) => { item.Platform = coord.Platform; item.Channel = coord.Channel; item.DevelopMode = coord.Mode; });
+                        NormalizeSaveOverrides(master.HybridEditorConfigsOverrides, master.HybridEditorConfigsMask, current,
+                            item => new Coord(item.Platform, item.Channel, item.DevelopMode),
+                            (item, coord) => { item.Platform = coord.Platform; item.Channel = coord.Channel; item.DevelopMode = coord.Mode; });
+                        NormalizeSaveOverrides(master.YooAssetEditorConfigsOverrides, master.YooAssetEditorConfigsMask, current,
+                            item => new Coord(item.Platform, item.Channel, item.DevelopMode),
+                            (item, coord) => { item.Platform = coord.Platform; item.Channel = coord.Channel; item.DevelopMode = coord.Mode; });
+                        NormalizeSaveOverrides(master.CDNEditorConfigsOverrides, master.CDNEditorConfigsMask, current,
+                            item => new Coord(item.Platform, item.Channel, item.DevelopMode),
+                            (item, coord) => { item.Platform = coord.Platform; item.Channel = coord.Channel; item.DevelopMode = coord.Mode; });
+                        foreach (PanelKind panel in new[] { PanelKind.Namespace, PanelKind.HybridEditorConfigs, PanelKind.YooAssetEditorConfigs, PanelKind.CDNEditorConfigs })
+                            NormalizePanel(master, panel, null, current);
+
+                        ResourceKeyStoreData keys = master.ResourceEncryption;
+                        if (keys?.Packages != null && keys.DimensionMask != null)
                         {
-                            string path = issues[i].Path;
-                            if (path.StartsWith("AppConfigs[", StringComparison.Ordinal) && repaired.Add("AppConfigs"))
-                                NormalizePanel(master, PanelKind.AppConfigs, null, curCoord);
-                            else if (path.StartsWith("PrivacyConfigs[", StringComparison.Ordinal) && repaired.Add("PrivacyConfigs"))
-                                NormalizePanel(master, PanelKind.PrivacyConfigs, null, curCoord);
-                            else if (TryReadTypedIssue(path, "SDK", out string sdkType) && repaired.Add("SDK|" + sdkType))
-                                NormalizeTypedPanelIfComplete(master, PanelKind.SDK, sdkType, curCoord);
-                            else if (TryReadTypedIssue(path, "Kit", out string kitType) && repaired.Add("Kit|" + kitType))
-                                NormalizeTypedPanelIfComplete(master, PanelKind.Kit, kitType, curCoord);
+                            foreach (ResourcePackageKeys package in keys.Packages)
+                            {
+                                if (package == null) continue;
+                                NormalizeSaveOverrides(package.ActiveKeyOverrides, keys.DimensionMask, current,
+                                    item => new Coord(item.Platform, item.Channel, item.Mode),
+                                    (item, coord) => { item.Platform = coord.Platform; item.Channel = coord.Channel; item.Mode = coord.Mode; });
+                            }
                         }
+                        IReadOnlyList<Validator.ValidationIssue> remaining = Validator.ValidateDimensionInvariants(master);
+                        if (remaining.Count > 0)
+                            throw new InvalidOperationException(Validator.BuildDimensionInvariantMessage(remaining));
+                        ResourceKeyStore.Validate(master.ResourceEncryption);
                         masterSO?.Update();
                     }
                     catch
@@ -279,28 +320,145 @@ namespace NovaFramework.Editor
                         masterSO?.Update();
                         throw;
                     }
-                    finally
+                    finally { UnityEngine.Object.DestroyImmediate(backup); }
+                }
+
+                /// <summary>
+                /// 移除失效模式和空槽；真实重复坐标无法确定最新值，必须在投影前拒绝，避免按列表顺序覆盖。
+                /// </summary>
+                private static void PrepareSaveMatrix(ConfigMasterSO master)
+                {
+                    HashSet<string> rows = new();
+                    foreach (PlatformChannelEntry row in master.EditorEntries)
                     {
-                        UnityEngine.Object.DestroyImmediate(backup);
+                        if (row == null || row.Platform == PlatformType.None || row.Channel == ChannelType.None ||
+                            !Enum.IsDefined(typeof(PlatformType), row.Platform) || !Enum.IsDefined(typeof(ChannelType), row.Channel)) continue;
+                        if (!rows.Add($"{row.Platform}/{row.Channel}"))
+                            throw new InvalidOperationException($"存在重复配置坐标：{row.Platform}/{row.Channel}。");
+                        PrepareSaveModes(row.AppConfigsByMode, item => item.Mode);
+                        PrepareSaveModes(row.PrivacyConfigsByMode, item => item.Mode);
+                        PrepareSaveModes(row.SDKConfigsByMode, item => item.Mode);
+                        PrepareSaveModes(row.KitConfigsByMode, item => item.Mode);
+                    }
+                }
+
+                /// <summary>清除不属于当前枚举的模式分支；同一有效模式重复时保留草稿并拒绝保存。</summary>
+                private static void PrepareSaveModes<T>(List<T> entries, Func<T, DevelopMode> getMode) where T : class
+                {
+                    if (entries == null) return;
+                    entries.RemoveAll(item => item == null || !Enum.IsDefined(typeof(DevelopMode), getMode(item)));
+                    HashSet<DevelopMode> seen = new();
+                    foreach (T item in entries)
+                        if (!seen.Add(getMode(item))) throw new InvalidOperationException("同一配置坐标存在重复开发模式。");
+                }
+
+                /// <summary>
+                /// 整理所有实际存储的 SDK / Kit 类型，包括暂未启用的类型；稀疏旧组只在已有值唯一时补齐。
+                /// 已勾选轴的独立空组不从其他组继承，缺失启用配置仍由导出校验负责。
+                /// </summary>
+                private static void NormalizeStoredTypedPanels(ConfigMasterSO master, PanelKind panel, Coord current)
+                {
+                    HashSet<string> types = new();
+                    foreach (Coord coord in EnumerateAllCoords(master))
+                    {
+                        master.TryGetEntry(coord.Platform, coord.Channel, out PlatformChannelEntry row);
+                        IEnumerable<object> configs = panel == PanelKind.SDK
+                            ? row.GetSDKConfigs(coord.Mode) : row.GetKitConfigs(coord.Mode);
+                        HashSet<string> seen = new();
+                        foreach (object config in configs)
+                        {
+                            if (config == null) continue;
+                            string name = config.GetType().FullName;
+                            if (!seen.Add(name)) throw new InvalidOperationException($"{coord.Platform}/{coord.Channel}/{coord.Mode} 存在重复配置类型：{name}。");
+                            types.Add(name);
+                        }
+                    }
+                    foreach (string name in types)
+                    {
+                        PanelDimensionMask mask = GetMask(master, panel, name);
+                        List<ProjectionValue> values = new();
+                        foreach (Coord representative in EnumerateLogicalRepresentatives(master, mask, current))
+                        {
+                            object source = GetManagedConfigAtCoord(master, panel, name, ResolveProjectionSource(mask, representative, current));
+                            if (source == null)
+                            {
+                                foreach (Coord member in GroupMembers(master, mask, representative))
+                                {
+                                    object candidate = GetManagedConfigAtCoord(master, panel, name, member);
+                                    if (candidate == null) continue;
+                                    if (source != null && JsonUtility.ToJson(source) != JsonUtility.ToJson(candidate))
+                                        throw new InvalidOperationException($"配置 {name} 的当前分支缺失，旧分支内容不一致，无法确定保留内容。");
+                                    source = candidate;
+                                }
+                            }
+                            values.Add(new ProjectionValue(representative, source == null ? null : DeepCloneManagedRef(source)));
+                        }
+                        foreach (ProjectionValue value in values)
+                        {
+                            foreach (Coord target in GroupMembers(master, mask, value.Representative))
+                            {
+                                if (value.Value == null) continue;
+                                object existing = GetManagedConfigAtCoord(master, panel, name, target);
+                                if (existing == null || JsonUtility.ToJson(existing) != JsonUtility.ToJson(value.Value))
+                                    ApplyMatrixValue(master, panel, name, target, value.Value);
+                            }
+                        }
                     }
                 }
 
                 /// <summary>
-                /// 判断维度问题中是否至少有一项可通过当前坐标安全归一。
-                /// 结构缺项、空项与重复 Override 不在自动修复范围内。
+                /// 按当前掩码裁剪存量 Override。全局以页面顶层值为准；其他组优先规范记录，再匹配当前被合并轴。
+                /// 非当前旧分支及失效坐标删除；同优先级存在不同值时拒绝猜测，外层会回滚整个草稿。
                 /// </summary>
-                internal static bool HasRepairableIssues(IReadOnlyList<Validator.ValidationIssue> issues)
+                private static void NormalizeSaveOverrides<T>(List<T> entries, PanelDimensionMask mask, Coord current,
+                    Func<T, Coord> getCoord, Action<T, Coord> setCoord) where T : class
                 {
-                    if (issues == null) return false;
-                    for (int i = 0; i < issues.Count; i++)
+                    if (entries == null) return;
+                    if (mask.IsGlobal) { entries.Clear(); return; }
+                    Dictionary<string, (T Item, Coord Coord, int Rank, bool Ambiguous)> selected = new();
+                    foreach (T item in entries)
                     {
-                        string path = issues[i].Path ?? string.Empty;
-                        if (path.StartsWith("AppConfigs[", StringComparison.Ordinal) ||
-                            path.StartsWith("PrivacyConfigs[", StringComparison.Ordinal) ||
-                            TryReadTypedIssue(path, "SDK", out _) ||
-                            TryReadTypedIssue(path, "Kit", out _)) return true;
+                        if (item == null) continue;
+                        Coord source = getCoord(item);
+                        if (!IsValidOverrideCoord(mask, source)) continue;
+                        Coord clipped = ClipCoordToMask(mask, source);
+                        bool canonical = IsSameCoord(source, clipped);
+                        if (!canonical && ((!mask.ByPlatform && source.Platform != PlatformType.None && source.Platform != current.Platform) ||
+                            (!mask.ByChannel && source.Channel != ChannelType.None && source.Channel != current.Channel) ||
+                            (!mask.ByDevelopMode && source.Mode != DevelopMode.Debug && source.Mode != current.Mode))) continue;
+                        int rank = canonical ? 100 :
+                            (!mask.ByPlatform && source.Platform == current.Platform ? 1 : 0) +
+                            (!mask.ByChannel && source.Channel == current.Channel ? 1 : 0) +
+                            (!mask.ByDevelopMode && source.Mode == current.Mode ? 1 : 0);
+                        string key = BuildLogicalKey(mask, clipped);
+                        if (!selected.TryGetValue(key, out var previous) || rank > previous.Rank)
+                            selected[key] = (item, clipped, rank, false);
+                        else if (rank == previous.Rank &&
+                            NormalizedOverrideJson(item, clipped, getCoord, setCoord) != NormalizedOverrideJson(previous.Item, clipped, getCoord, setCoord))
+                            selected[key] = (previous.Item, previous.Coord, previous.Rank, true);
                     }
-                    return false;
+                    // 先完成全部候选排序；后出现的规范记录可以覆盖低优先级旧候选的歧义。
+                    foreach (var pair in selected)
+                        if (pair.Value.Ambiguous)
+                            throw new InvalidOperationException($"同一配置逻辑组存在无法区分的重复记录：{typeof(T).Name}/{pair.Key}。");
+                    entries.Clear();
+                    foreach (var value in selected.Values) { setCoord(value.Item, value.Coord); entries.Add(value.Item); }
+                }
+
+                /// <summary>比较 Override 的有效值时忽略将被裁剪的旧坐标；临时坐标在返回前必定恢复。</summary>
+                private static string NormalizedOverrideJson<T>(T item, Coord clipped, Func<T, Coord> getCoord, Action<T, Coord> setCoord)
+                {
+                    Coord original = getCoord(item);
+                    try { setCoord(item, clipped); return JsonUtility.ToJson(item); }
+                    finally { setCoord(item, original); }
+                }
+
+                /// <summary>Override 的已选轴必须是有效实坐标；未选轴允许旧实坐标和规范哨兵。</summary>
+                private static bool IsValidOverrideCoord(PanelDimensionMask mask, Coord coord)
+                {
+                    return Enum.IsDefined(typeof(PlatformType), coord.Platform) &&
+                        Enum.IsDefined(typeof(ChannelType), coord.Channel) && Enum.IsDefined(typeof(DevelopMode), coord.Mode) &&
+                        (!mask.ByPlatform || coord.Platform != PlatformType.None) && (!mask.ByChannel || coord.Channel != ChannelType.None);
                 }
 
                 /// <summary>
@@ -409,59 +567,15 @@ namespace NovaFramework.Editor
                     for (int i = 0; i < values.Count; i++)
                     {
                         foreach (Coord member in GroupMembers(master, mask, values[i].Representative))
+                        {
+                            // 已符合掩码的物理格保持原实例，避免每次保存重新分配 SerializeReference 标识。
+                            object existing = panelKind == PanelKind.AppConfigs ? GetAppConfigsFromMaster(master, member) :
+                                panelKind == PanelKind.PrivacyConfigs ? GetPrivacyConfigsFromMaster(master, member) :
+                                GetManagedConfigAtCoord(master, panelKind, typeName, member);
+                            if (existing != null && JsonUtility.ToJson(existing) == JsonUtility.ToJson(values[i].Value)) continue;
                             ApplyMatrixValue(master, panelKind, typeName, member, values[i].Value);
+                        }
                     }
-                }
-
-                /// <summary>
-                /// 对已启用的 SDK / Kit 类型做可恢复归一；来源缺失的类型保持原状，由既有必填校验报告。
-                /// </summary>
-                private static void NormalizeTypedPanelIfComplete(
-                    ConfigMasterSO master,
-                    PanelKind panelKind,
-                    string typeName,
-                    Coord curCoord)
-                {
-                    if (string.IsNullOrEmpty(typeName)) return;
-                    PanelDimensionMask mask = CloneMask(GetMask(master, panelKind, typeName));
-                    if (!CanCaptureEveryTypedGroup(master, panelKind, typeName, mask, curCoord)) return;
-                    NormalizePanel(master, panelKind, typeName, curCoord);
-                }
-
-                /// <summary>
-                /// 从 Validator 的 SDK[type] / Kit[type] 路径中提取精确类型名。
-                /// </summary>
-                private static bool TryReadTypedIssue(string path, string prefix, out string typeName)
-                {
-                    typeName = null;
-                    string marker = prefix + "[";
-                    if (string.IsNullOrEmpty(path) || !path.StartsWith(marker, StringComparison.Ordinal)) return false;
-                    int end = path.IndexOf(']', marker.Length);
-                    if (end <= marker.Length) return false;
-                    // 仅接受组值冲突路径 SDK[type][logical-key]。SDK[type]/coord 是同格重复实例，
-                    // 属于结构损坏，必须保持 fail-closed，不能尝试投影第一项。
-                    if (end + 1 >= path.Length || path[end + 1] != '[') return false;
-                    typeName = path.Substring(marker.Length, end - marker.Length);
-                    return true;
-                }
-
-                /// <summary>
-                /// SDK / Kit 归一前确认每个逻辑组都有明确来源；同组缺失的物理格会继承该来源，
-                /// 但不会在整个逻辑组都缺失时凭空构造默认实例。
-                /// </summary>
-                private static bool CanCaptureEveryTypedGroup(
-                    ConfigMasterSO master,
-                    PanelKind panelKind,
-                    string typeName,
-                    PanelDimensionMask mask,
-                    Coord curCoord)
-                {
-                    foreach (Coord representative in EnumerateLogicalRepresentatives(master, mask, curCoord))
-                    {
-                        Coord source = ResolveProjectionSource(mask, representative, curCoord);
-                        if (GetManagedConfigAtCoord(master, panelKind, typeName, source) == null) return false;
-                    }
-                    return true;
                 }
 
                 /// <summary>

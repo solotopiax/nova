@@ -118,6 +118,14 @@ namespace NovaFramework.Editor
         /// </summary>
         public CDNEditorConfigs CDNEditorConfigs = new();
 
+        /// <summary>资源加解密的 Editor 配置；密钥只生成客户端源码，不导出到 ConfigRuntime。</summary>
+        public ResourceKeyStoreData ResourceEncryption = new();
+
+        /// <summary>旧独立密钥文件的迁移状态；仅在工作副本迁移并保存后落盘。</summary>
+        [HideInInspector]
+        public bool ResourceKeysMigrated;
+
+
         /// <summary>
         /// CDN 部署维度 Override 列表（仅 Editor 期消费）；列表为空时等同全不勾。
         /// DimensionalResolver 按 CDNEditorConfigsMask 勾选轴从列表中匹配首个符合条目后取 Config，

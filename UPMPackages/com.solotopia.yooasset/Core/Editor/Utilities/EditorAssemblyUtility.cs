@@ -5,6 +5,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
+// modify: local fork - 构建服务下拉提供统一可实例化候选，供 Bundle Builder 与 Nova/Pipify 共用。
+
 namespace YooAsset.Editor
 {
     /// <summary>
@@ -12,6 +14,22 @@ namespace YooAsset.Editor
     /// </summary>
     public static class EditorAssemblyUtility
     {
+        /// <summary>收集构建下拉可实例化的服务类型，None 优先，其余按全类型名排序。</summary>
+        /// <param name="interfaceType">Bundle 加密、清单加密或清单解密接口。</param>
+        /// <returns>具备公开无参构造的具体类型；不改变通用派生类型查询的语义。</returns>
+        public static List<Type> GetBuildServiceTypes(Type interfaceType)
+        {
+            Type noneType = interfaceType == typeof(IBundleEncryptor) ? typeof(EncryptionNone)
+                : interfaceType == typeof(IManifestEncryptor) ? typeof(ManifestEncryptorNone)
+                : interfaceType == typeof(IManifestDecryptor) ? typeof(ManifestDecryptorNone) : null;
+            return GetAssignableTypes(interfaceType)
+                .Where(type => type.IsClass && !type.IsAbstract && !type.ContainsGenericParameters
+                    && type.GetConstructor(Type.EmptyTypes) != null)
+                .OrderBy(type => type == noneType ? 0 : 1)
+                .ThenBy(type => type.FullName, StringComparer.Ordinal)
+                .ToList();
+        }
+
         /// <summary>
         /// 获取带继承关系的所有类的类型
         /// </summary>

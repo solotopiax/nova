@@ -387,15 +387,67 @@ namespace NovaFramework.Editor
             return true;
         }
 
-        internal static bool TryResolveEncryptionPolicy(string value, out string error)
+        /// <summary>
+        /// 将 Bundle 加密逻辑值映射为固定正式类型；拒绝类型名、别名及未声明的方案。
+        /// </summary>
+        internal static bool TryResolveEncryptionPolicy(string value, out string bundleEncryptorClassName, out string error)
         {
-            if (value == NoEncryptionPolicy)
+            Type type;
+            switch (value)
             {
-                error = null;
-                return true;
+                case NoEncryptionPolicy: type = typeof(EncryptionNone); break;
+                case "offset": type = typeof(ResourceOffsetEncryptor); break;
+                case "xor": type = typeof(ResourceXorEncryptor); break;
+                case "aes-memory": type = typeof(ResourceAesMemoryEncryptor); break;
+                case "aes-stream": type = typeof(ResourceAesStreamEncryptor); break;
+                default:
+                    bundleEncryptorClassName = null;
+                    error = "encryptionPolicy 仅允许 none、offset、xor、aes-memory 或 aes-stream；不接受 C# 类型名或别名。";
+                    return false;
             }
-            error = "encryptionPolicy 首版仅允许逻辑值 none；不接受 C# class/type name。";
-            return false;
+            bundleEncryptorClassName = type.FullName;
+            error = null;
+            return true;
+        }
+
+        /// <summary>
+        /// 将可选清单加密逻辑值映射为固定配对类型；省略或 null 使用 none，显式无效值阻断。
+        /// </summary>
+        internal static bool TryResolveManifestEncryptionPolicy(
+            string value,
+            out string policy,
+            out string manifestEncryptorClassName,
+            out string manifestDecryptorClassName,
+            out string error)
+        {
+            policy = value ?? NoEncryptionPolicy;
+            Type encryptorType;
+            Type decryptorType;
+            switch (policy)
+            {
+                case NoEncryptionPolicy:
+                    encryptorType = typeof(ManifestEncryptorNone);
+                    decryptorType = typeof(ManifestDecryptorNone);
+                    break;
+                case "aes":
+                    encryptorType = typeof(ResourceManifestAesEncryptor);
+                    decryptorType = typeof(ResourceManifestAesDecryptor);
+                    break;
+                case "xor":
+                    encryptorType = typeof(ResourceManifestXorEncryptor);
+                    decryptorType = typeof(ResourceManifestXorDecryptor);
+                    break;
+                default:
+                    policy = null;
+                    manifestEncryptorClassName = null;
+                    manifestDecryptorClassName = null;
+                    error = "manifestEncryptionPolicy 仅允许 none、aes 或 xor；不接受 C# 类型名或别名。";
+                    return false;
+            }
+            manifestEncryptorClassName = encryptorType.FullName;
+            manifestDecryptorClassName = decryptorType.FullName;
+            error = null;
+            return true;
         }
 
         internal static bool TryResolveCompression(string value, out ECompressOption result, out string error)
