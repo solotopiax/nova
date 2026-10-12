@@ -24,11 +24,6 @@ namespace NovaFramework.Editor
         public static partial class AgentSkills
         {
             /// <summary>
-            /// 当前项目完成一次非 dry-run Skill 投影后触发，供只读视图刷新状态。
-            /// </summary>
-            internal static event Action ProjectionChanged;
-
-            /// <summary>
             /// Framework UPM 固定包名。
             /// </summary>
             private const string c_FrameworkPackageName = "com.solotopia.nova.framework";
@@ -162,10 +157,7 @@ namespace NovaFramework.Editor
                     ResumePendingTransactionForProject(projectRoot);
                 }
 
-                ReconcileResult result = ReconcileForProject(projectRoot, ResolveAgentsRoot(), dryRun);
-                if (!dryRun)
-                    ProjectionChanged?.Invoke();
-                return result;
+                return ReconcileForProject(projectRoot, ResolveAgentsRoot(), dryRun);
             }
 
             /// <summary>

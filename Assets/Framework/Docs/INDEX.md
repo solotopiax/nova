@@ -2,7 +2,7 @@
 
 > 首次接入 Nova、接手陌生项目或开始场景/资源/构建任务，先读 [Nova Agent 快速入口](START_HERE.md)。
 >
-> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 30 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
+> 对于当前 Skills 已覆盖的 Nova 日常项目任务，直接用自然语言说明目标、范围和约束。安装或升级 Nova 后首次打开 Unity，包内全部 Nova Project Skills 会自动投影到项目 `.agents/skills/` 供 Agent 发现，不需要执行 `sync` 或手工复制；当前 31 项能力、渐进式披露与 Action Adapter 边界见 [Nova Project Skills](../Agents/INDEX.md)，消费者 Git 边界见 [START_HERE.md](START_HERE.md)。
 >
 > 架构总览、设计规范、陷阱说明见 [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -15,6 +15,7 @@
 | 任务 | 必读文档（按顺序） |
 |------|-------------------|
 | **当前 Skills 覆盖的日常 Nova 项目任务** | 用自然语言描述任务 → [Nova Project Skills](../Agents/INDEX.md)（确认匹配 Skill、影响范围与证据门）→ 该 Skill 引用的模块 Docs；全量可发现不代表全量顺序执行。 |
+| **理解 Skill、Router、Workflow、Operation、Action 与 MCP 的关系** | [用人话理解 Skill、Action 与 MCP](Onboarding/AI_SKILLS_ACTIONS_MCP.md)：分别看任务拆解和请求传递，理解 Nova 为什么复用 Unity MCP。 |
 | **首次接入 / 接手陌生 Nova 项目** | [START_HERE.md · Agent 快速入口](START_HERE.md) → [项目与场景结构](Onboarding/PROJECT_STRUCTURE.md) → [资源工作流](Onboarding/RESOURCE_WORKFLOW.md) → [验证与构建](Onboarding/VALIDATION.md) |
 | **检查 Nova 场景 / Resources 边界** | [EditorUtil.ProjectGuard.md · 集中规则与 Profiles](Editor/EditorUtil/EditorUtil.ProjectGuard.md) → [ProjectGuardWindow.md · 只读窗口](Editor/Windows/ProjectGuardWindow.md) |
 | **新增、补漏或统一 Tracks 埋点表** | [Tracks 维护规范](TRACKS.md) → [TrackRegistry](Editor/EditorUtil/EditorUtil.TrackRegistry/EditorUtil.TrackRegistry.md) |
@@ -49,8 +50,9 @@
 | **HybridCLR 编辑期原子操作**（由 Pipify 编排流水线） | [EditorUtil.HybridCLR.md · link.xml/Generate/DLL 拷贝 API](Editor/EditorUtil/EditorUtil.HybridCLR/EditorUtil.HybridCLR.md) |
 | **一键流水线 Step / 批处理配置**（Pipify 自动化） | [EditorUtil.Pipify.md · Registry+Runner+Reporters](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) → [PipifySteps.md · 全 Step 清单](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) → [PipifySteps.Export.Helpers.md · 定位辅助](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.Export.Helpers.md) |
 | **Pipify 导出新模块 Step（Table/UI/Localization/Network/Sound/Vibrate）** | [PipifySteps.md · 导出分组表](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.md) → 对应 EditorUtil.\*.Exporter.md |
-| **Nova Project Skill 的确定性 C# 单元操作** | [当前架构、实施路线图与原候选决策](Editor/EditorUtil/EditorUtil.AgentActions/NovaProjectActions-Overall-Design.md) → [EditorUtil.AgentActions.md · 当前 19 项实现事实](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) |
+| **Nova Project Skill 的确定性 C# 单元操作** | [当前架构、实施路线图与原候选决策](Editor/EditorUtil/EditorUtil.AgentActions/NovaProjectActions-Overall-Design.md) → [EditorUtil.AgentActions.md · 当前 20 项实现事实](Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md) |
 | **新平台打包 / Build 封装** | [EditorUtil.Build.md · BuildPlayer 薄封装](Editor/EditorUtil/EditorUtil.Build/EditorUtil.Build.md) |
+| **Android AAB 自动上传 Google Play** | [后台配置说明 · 应用首包、API、服务账号与权限](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.Setup.md) → [nova-project-upload-google-play](../Agents/Skills/nova-project-upload-google-play/SKILL.md) → [Google Play 上传 Step · 默认配置、用途、审核与 CI](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md) → [凭据与外网物料边界](Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md#凭据与外网物料边界) |
 | **Pipify 流水线配置窗口**（UI 入口） | [PipifyWindow.md · Batch 管理+参数编辑+运行](Editor/Windows/PipifyWindow.md) |
 | **Jenkins 自动化 / CLI 批处理** | [EditorUtil.Pipify.md · RunBatchForCliAsync+参数覆盖](Editor/EditorUtil/EditorUtil.Pipify/EditorUtil.Pipify.md) |
 | **热更新业务脚本挂载**（HybridCLR 原生 MB + Prefab 直挂） | 业务 UIView / 业务逻辑类直接继承 `MonoBehaviour`，Prefab 预挂后由 HybridCLR dll 加载时 Unity 反序列化自动恢复。旧 NovaBehaviour/IBaseLife 桥接已废止（2026-05-21）。 |

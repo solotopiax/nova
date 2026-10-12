@@ -64,6 +64,7 @@ auto_generated: true
 - [PAT-156 CDN 上传前清理必须受本次上传计划约束](../2-Areas/Patterns/PAT-156-cdn-clean-before-deploy-bounded-by-upload-plan.md) — 远端清理只覆盖本次精确文件和目录前缀，失败时零上传
 - [PAT-161 ConfigWindow 新增配置面板必须携带三维配置头部](../2-Areas/Patterns/PAT-161-configwindow-new-panel-dimension-header.md) — Config新面板必须接入独立三维头部工作副本保存与消费链
 - [PAT-163 ConfigWindow 导航字段名必须复用实际显示名](../2-Areas/Patterns/PAT-163-configwindow-navigation-label-source-of-truth.md) — 导航字段名复用页面显示标签
+- [PAT-169 Google Play 上传按产物身份与远端阶段验收](../2-Areas/Patterns/PAT-169-google-play-upload-artifact-and-remote-stage-boundary.md) — 锁定成功产物，区分验证、保存、审核与可下载
 - [PAT-18 EditorWindow 与 EditorUtil 职责分离](../2-Areas/Patterns/PAT-18-editor-window-vs-util-split.md) — EditorWindow与EditorUtil分层职责拆分
 - [PAT-35 Editor 绘制统一走 EditorUtil.Draw](../2-Areas/Patterns/PAT-35-editor-draw-only.md) — 业务侧 Editor 绘制统一走 Draw
 - [PAT-39 EditorUtil.Draw 纪律强化规则](../2-Areas/Patterns/PAT-39-editor-draw-discipline-enforcement.md) — 缺 Draw 接口先补接口再改 UI
@@ -192,4 +193,4 @@ auto_generated: true
 
 
 ---
-_共 126 条，分布于 18 个 category。_
+_共 127 条，分布于 18 个 category。_

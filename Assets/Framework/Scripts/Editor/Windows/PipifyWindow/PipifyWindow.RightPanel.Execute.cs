@@ -19,10 +19,10 @@ namespace NovaFramework.Editor
         /// <summary>
         /// 绘制底部执行区。
         /// <para>顶部分割线 + 右对齐「▶ 运行」按钮；</para>
-        /// <para>禁用条件：当前 Batch 无 Item、存在未保存改动（m_IsDirty），或包含未注册 Step。</para>
-        /// <para>包含未注册 Step 时，在按钮下方用红字说明禁用原因与处理方式。</para>
+        /// <para>禁用条件：当前 Batch 无 Item、存在未保存改动（m_IsDirty）、包含未注册 Step，或 Google Play 输入未成对填写。</para>
+        /// <para>缺失步骤在按钮下方提示；Google Play 输入错误只在对应字段旁提示，避免重复。</para>
         /// <para>点击后 fire-and-forget 调用 EditorUtil.Pipify.RunBatchAsync，
-        /// 异常由 Runner 内部通过 WindowReporter 以模态对话框呈现，UI 不额外 try/catch。</para>
+        /// 异常由 WindowReporter 写入 Console 并显示结果通知，UI 不额外 try/catch。</para>
         /// </summary>
         private void DrawExecute()
         {
@@ -36,7 +36,9 @@ namespace NovaFramework.Editor
             EditorUtil.Draw.Line();
 
             string missingStepsReason = EditorUtil.Pipify.Registry.GetMissingStepsReason(batch);
-            bool disabled = batch.Items.Count == 0 || m_IsDirty || !string.IsNullOrEmpty(missingStepsReason);
+            string googlePlayInputError = GetGooglePlayBatchInputPairError(batch);
+            bool disabled = EditorUtil.Pipify.IsBatchRunning || batch.Items.Count == 0 || m_IsDirty || !string.IsNullOrEmpty(missingStepsReason) ||
+                !string.IsNullOrEmpty(googlePlayInputError);
             EditorUtil.Draw.Layout.Horizontal(() =>
             {
                 EditorUtil.Draw.FlexibleSpace();
@@ -53,9 +55,28 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 检查当前 Batch 的 Google Play 成对输入；折叠步骤也检查，避免保存后绕过运行门禁。
+        /// </summary>
+        /// <param name="batch">当前选中 Batch。</param>
+        /// <returns>首个未成对填写步骤的位置与补填提示；全部有效时返回 null。</returns>
+        private string GetGooglePlayBatchInputPairError(Batch batch)
+        {
+            for (int i = 0; i < batch.Items.Count; i++)
+            {
+                BatchItem item = batch.Items[i];
+                PipifyStepInfo info = EditorUtil.Pipify.Registry.FindById(item.StepId);
+                if (info?.ParamsType != typeof(PipifySteps.GooglePlayUploadParams)) continue;
+                var p = EnsureParamsInstance(i, item, info) as PipifySteps.GooglePlayUploadParams;
+                string error = PipifySteps.GetGooglePlayInputPairError(p);
+                if (!string.IsNullOrEmpty(error)) return $"第 {i + 1} 个步骤：{error}";
+            }
+            return null;
+        }
+
+        /// <summary>
         /// 点击「▶ 运行」后的处理器：fire-and-forget 执行当前 Batch。
         /// 用 EditorApplication.delayCall 推迟到 OnGUI 之外再启动，避免 DisplayCancelableProgressBar /
-        /// LockReloadAssemblies 等 Editor 调用在 IMGUI Layout/Repaint 阶段打断 LayoutGroup 栈
+        /// 等 Editor 调用在 IMGUI Layout/Repaint 阶段打断 LayoutGroup 栈
         /// （表现为 "EndLayoutGroup: BeginLayoutGroup must be called first"）。
         /// 把当前窗口 this 作为宿主传给 Runner，Batch 结束后 WindowReporter 通过 this.ShowNotification 弹通知。
         /// </summary>

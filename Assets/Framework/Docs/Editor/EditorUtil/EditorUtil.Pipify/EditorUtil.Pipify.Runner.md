@@ -47,7 +47,9 @@
    - 反射调用 `info.Method.Invoke`，强转 `UniTask` 后 `await`
    - `TargetInvocationException` 解包为 `InnerException`，经 `ExceptionDispatchInfo.Capture().Throw()` 保留原始栈后再抛
    - 任何异常先 `reporter.EndStep(false)` 再 throw
-5. `finally` 确保已开始的 Batch 调用 `reporter.EndBatch`
+5. 正常结束、取消或异常时由 `finally` 调用 `reporter.EndBatch`；Domain Reload 不保证执行旧异步链的 `finally`，窗口 Reporter 通过独立重载钩子清理进度并记录中断。
+
+窗口构建后、上传开始前单独执行一次编译与重载交接，恢复仍走 `RunBatchCoreAsync` 共用循环。检查点只保存原存档位置、参数指纹和确切构建身份与文件指纹，恢复时拒绝工作区、参数、平台或文件变化；不重复执行前序步骤，已经开始的上传也不重放。CLI / Job 不进入该窗口交接。Runner 与 Step 均不使用程序集重载锁或 Asset Editing 批锁。
 
 ### ApplyOverridesForItem Key 匹配优先级
 

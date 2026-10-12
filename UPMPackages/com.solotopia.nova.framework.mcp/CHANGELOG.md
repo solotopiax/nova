@@ -4,6 +4,20 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Breaking
+
+## [0.1.4] - 2026-10-12
+
+### Breaking
+
+- 移除仅供已删除能力总览视图使用的 NovaProjectActionExposureSnapshot 与 NovaProjectActionGateway.GetExposureSnapshot；保留 MCP describe、plan、execute、verify 和显式开放策略。
+
 ## [0.1.3] - 2026-09-04
 
 ### Changed

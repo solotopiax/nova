@@ -200,7 +200,7 @@ namespace NovaFramework.Editor
             // ── 展开参数区 ──
             if (!hasParams || !m_ExpandedItemIndices.Contains(index)) return;
 
-            float paramsY = rect.y + c_ItemRowHeight + 2f;
+            float paramsY = rowY + rowH + c_ParamsTopSpacing;
             DrawItemParams(rect, paramsY, index, item, info);
         }
 
@@ -226,12 +226,17 @@ namespace NovaFramework.Editor
             float fieldX = rowRect.x + 26f + c_ParamsInset;
             float fieldW = rowRect.width - (fieldX - rowRect.x) - 8f;
             float labelW = 200f;
+            if (paramsInstance is PipifySteps.GooglePlayUploadParams)
+            {
+                // 按完整凭据标题拓宽该步骤的标签列，避免项目根相对路径说明被截断。
+                FieldInfo credentialField = typeof(PipifySteps.GooglePlayUploadParams).GetField(nameof(PipifySteps.GooglePlayUploadParams.CredentialsPath));
+                labelW = Mathf.Max(labelW, EditorStyles.miniLabel.CalcSize(new GUIContent(GetParamFieldDisplayName(credentialField))).x + 6f);
+            }
             TryGetCdnAutoLinkDisplayPaths(
                 paramsInstance,
                 out IReadOnlyDictionary<string, string> resolvedDisplayPaths,
                 out string autoLinkError);
 
-            EditorGUI.BeginChangeCheck();
             float fieldY = startY;
             float helpBoxHeight = GetParamHelpBoxHeight(info.ParamsType);
             if (helpBoxHeight > 0f)
@@ -243,6 +248,16 @@ namespace NovaFramework.Editor
                     MessageType.Info);
                 fieldY += helpBoxHeight + 4f;
             }
+            string documentationUrl = GetParamDocumentationUrl(info.ParamsType);
+            if (!string.IsNullOrEmpty(documentationUrl))
+            {
+                EditorUtil.Draw.LinkButton(new Rect(fieldX, fieldY, Mathf.Min(fieldW, 110f), c_ItemRowHeight),
+                    documentationUrl, "官方参数说明");
+                fieldY += c_ItemRowHeight + 8f;
+            }
+
+            // 文档链接只打开浏览器，不参与参数变化检测和脏标记。
+            EditorGUI.BeginChangeCheck();
             for (int f = 0; f < fields.Length; f++)
             {
                 FieldInfo field = fields[f];
@@ -272,7 +287,8 @@ namespace NovaFramework.Editor
                     EditorGUI.HelpBox(
                         fieldHelpBoxRect,
                         string.Join("\n", GetResolvedParamFieldHelpBoxMessages(field, paramsInstance)),
-                        MessageType.Info);
+                        string.IsNullOrEmpty(GetGooglePlayRequiredFieldError(field, paramsInstance))
+                            ? MessageType.Info : MessageType.Error);
                     fieldY += fieldHelpBoxHeight + 4f;
                 }
             }
@@ -485,7 +501,10 @@ namespace NovaFramework.Editor
             const float c_LabelGap = 6f;
             Rect labelRect = new Rect(rect.x, rect.y, labelW - c_LabelGap, c_ParamFieldHeight);
             Rect valueRect = new Rect(rect.x + labelW, rect.y, rect.width - labelW, rect.height);
-            GUI.Label(labelRect, GetParamFieldDisplayName(field), EditorStyles.miniLabel);
+            string displayName = paramsInstance is PipifySteps.GooglePlayUploadParams googlePlay && googlePlay.ValidateOnly &&
+                field.Name == nameof(PipifySteps.GooglePlayUploadParams.ReleaseStatus)
+                ? "上传后用途（仅校验）" : GetParamFieldDisplayName(field);
+            GUI.Label(labelRect, displayName, EditorStyles.miniLabel);
 
             Type fieldType = field.FieldType;
             object currentValue = field.GetValue(paramsInstance);
@@ -513,6 +532,14 @@ namespace NovaFramework.Editor
             }
             else if (fieldType == typeof(bool))
             {
+                if (paramsInstance is PipifySteps.GooglePlayUploadParams upload &&
+                    field.Name == nameof(PipifySteps.GooglePlayUploadParams.ChangesNotSentForReview) &&
+                    !PipifySteps.IsGooglePlayManualReviewAvailable(upload))
+                {
+                    // 灰显时展示实际不生效的状态，保留原值供切换回开放下载用途后恢复，不在重绘时置脏。
+                    EditorGUI.Toggle(valueRect, false);
+                    return;
+                }
                 bool v = (bool)(currentValue ?? false);
                 bool newV = EditorGUI.Toggle(valueRect, v);
                 field.SetValue(paramsInstance, newV);
@@ -543,7 +570,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 判断 Pipify 参数字段是否只读。
+        /// 判断 Pipify 参数字段是否只读；Google Play 仅验证或保存草稿时禁用后台手动提交审核选项。
         /// </summary>
         /// <param name="field">待绘制字段。</param>
         /// <param name="paramsInstance">当前 Step 参数实例。</param>
@@ -555,7 +582,9 @@ namespace NovaFramework.Editor
                 return true;
             }
 
-            return false;
+            return paramsInstance is PipifySteps.GooglePlayUploadParams p && !PipifySteps.IsGooglePlayManualReviewAvailable(p) &&
+                field.DeclaringType == typeof(PipifySteps.GooglePlayUploadParams) &&
+                field.Name == nameof(PipifySteps.GooglePlayUploadParams.ChangesNotSentForReview);
         }
 
         /// <summary>
@@ -702,13 +731,39 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 获取参数字段当前状态对应的 HelpBox 文案；WebGL 首包拷贝选项按当前选择给出操作提示。
+        /// 获取参数字段当前状态对应的 HelpBox 文案；包含 Google Play 输入校验、验证模式和 WebGL 首包拷贝提示。
         /// </summary>
         /// <param name="field">参数字段反射信息。</param>
         /// <param name="paramsInstance">当前 Step 参数实例。</param>
         /// <returns>应显示的 HelpBox 文案。</returns>
         internal static string[] GetResolvedParamFieldHelpBoxMessages(FieldInfo field, object paramsInstance)
         {
+            string requiredFieldError = GetGooglePlayRequiredFieldError(field, paramsInstance);
+            if (!string.IsNullOrEmpty(requiredFieldError)) return new[] { requiredFieldError };
+            if (paramsInstance is PipifySteps.GooglePlayUploadParams p && p.ValidateOnly &&
+                field?.DeclaringType == typeof(PipifySteps.GooglePlayUploadParams) &&
+                field.Name == nameof(PipifySteps.GooglePlayUploadParams.ValidateOnly))
+            {
+                return new[]
+                {
+                    "(1) 会真实上传并校验，但不在目标轨道保存新版本，也不开放下载。",
+                    "(2) versionCode 可能被占用；再次上传同一版本号可能失败。",
+                    "(3) 上传后用途及比例仍参与校验；手动提交审核选项已禁用。"
+                };
+            }
+            if (paramsInstance is PipifySteps.GooglePlayUploadParams upload &&
+                field?.DeclaringType == typeof(PipifySteps.GooglePlayUploadParams) &&
+                field.Name == nameof(PipifySteps.GooglePlayUploadParams.ChangesNotSentForReview) &&
+                !PipifySteps.IsGooglePlayManualReviewAvailable(upload))
+            {
+                // 验证说明已在验证开关下显示，避免在审核字段旁重复提示。
+                if (upload.ValidateOnly) return Array.Empty<string>();
+                return new[]
+                {
+                    "(1) 本工具在保存草稿时禁用手动提交审核，不请求延后审核；草稿不开放下载。",
+                    "(2) 如需手动提交审核，请先选择开放下载用途；是否触发审核仍由 Google 后台决定。"
+                };
+            }
             if (field?.Name == nameof(AssetBundleBuildArgs.BundledCopyOption) &&
                 TryGetWebGLBundledCopyOption(paramsInstance, out YooAsset.Editor.EBundledCopyOption option))
             {
@@ -932,6 +987,16 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// 获取参数类型对应的官方参数文档；未配置的类型不显示链接。
+        /// </summary>
+        /// <param name="paramsType">当前 Step 的参数类型。</param>
+        /// <returns>官方文档 URL；未配置时返回 null。</returns>
+        private static string GetParamDocumentationUrl(Type paramsType)
+        {
+            return paramsType == typeof(PipifySteps.GooglePlayUploadParams) ? c_GooglePlayParameterDocsUrl : null;
+        }
+
+        /// <summary>
         /// 获取参数类型声明的通用 HelpBox 文案。
         /// </summary>
         internal static string[] GetParamHelpBoxMessages(Type paramsType)
@@ -949,7 +1014,7 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
-        /// 绘制 string 字段：根据 PipifyDropdown / PipifyDynamicDefault 选择绘制方式。
+        /// 绘制 string 字段：Google Play 轨道与语言使用预设下拉，其他字段按已有特性选择绘制方式。
         /// </summary>
         /// <param name="valueRect">值区 Rect。</param>
         /// <param name="field">字段元信息。</param>
@@ -958,6 +1023,23 @@ namespace NovaFramework.Editor
         private void DrawStringParamField(Rect valueRect, FieldInfo field, object paramsInstance, object currentValue)
         {
             string v = currentValue as string ?? string.Empty;
+            if (paramsInstance is PipifySteps.GooglePlayUploadParams &&
+                (field.Name == nameof(PipifySteps.GooglePlayUploadParams.AabPath) ||
+                 field.Name == nameof(PipifySteps.GooglePlayUploadParams.PackageName)))
+            {
+                field.SetValue(paramsInstance, EditorGUI.TextField(valueRect, v));
+                if (!string.IsNullOrEmpty(GetGooglePlayRequiredFieldError(field, paramsInstance)))
+                    EditorUtil.Draw.InvalidBorder(valueRect);
+                return;
+            }
+
+            if (TryGetGooglePlayDropdownOptions(field, out string[] presetValues, out string[] presetLabels))
+            {
+                string selected = DrawGooglePlayDropdownStringField(valueRect, field, v, presetValues, presetLabels);
+                if (!string.Equals(selected, v, StringComparison.Ordinal)) field.SetValue(paramsInstance, selected);
+                return;
+            }
+
             if (field.GetCustomAttribute<PipifyCdnRemotePathAttribute>() != null)
             {
                 DrawCdnRemotePathField(valueRect, field, paramsInstance, v);
@@ -1017,6 +1099,94 @@ namespace NovaFramework.Editor
 
             string plain = EditorGUI.TextField(valueRect, v);
             field.SetValue(paramsInstance, plain);
+        }
+
+        /// <summary>
+        /// 获取 Google Play 成对输入规则中当前空字段的补填提示；其他字段或完整配置不提示。
+        /// </summary>
+        /// <param name="field">正在绘制的字段。</param>
+        /// <param name="paramsInstance">当前参数实例。</param>
+        /// <returns>当前字段缺失时的提示，否则返回 null。</returns>
+        private static string GetGooglePlayRequiredFieldError(FieldInfo field, object paramsInstance)
+        {
+            if (!(paramsInstance is PipifySteps.GooglePlayUploadParams p) ||
+                field?.DeclaringType != typeof(PipifySteps.GooglePlayUploadParams) ||
+                (field.Name != nameof(PipifySteps.GooglePlayUploadParams.AabPath) &&
+                 field.Name != nameof(PipifySteps.GooglePlayUploadParams.PackageName))) return null;
+            if (!string.IsNullOrWhiteSpace(field.GetValue(p) as string)) return null;
+            return PipifySteps.GetGooglePlayInputPairError(p);
+        }
+
+        /// <summary>
+        /// 只为 Google Play 上传的 Track 和 ReleaseNotesLanguage 返回预设选项，不改变字段的字符串存储。
+        /// </summary>
+        /// <param name="field">正在绘制的参数字段。</param>
+        /// <param name="values">实际存储和传给 fastlane 的标识。</param>
+        /// <param name="labels">与标识一一对应的中文显示名。</param>
+        /// <returns>字段需要预设下拉时返回 true。</returns>
+        private static bool TryGetGooglePlayDropdownOptions(FieldInfo field, out string[] values, out string[] labels)
+        {
+            values = null;
+            labels = null;
+            if (field?.DeclaringType != typeof(PipifySteps.GooglePlayUploadParams)) return false;
+            switch (field.Name)
+            {
+                case nameof(PipifySteps.GooglePlayUploadParams.Track):
+                    values = s_GooglePlayTrackValues;
+                    labels = s_GooglePlayTrackLabels;
+                    return true;
+                case nameof(PipifySteps.GooglePlayUploadParams.ReleaseNotesLanguage):
+                    values = s_GooglePlayLanguageValues;
+                    labels = s_GooglePlayLanguageLabels;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// 绘制 Google Play 预设下拉；未知旧值单独显示并保留，“自定义…”通过已有弹窗编辑。
+        /// 未选择新值或取消弹窗时原样返回，取消不产生新的脏标记。
+        /// </summary>
+        /// <param name="valueRect">单行值区，不增加字段高度。</param>
+        /// <param name="field">用于弹窗标题和输入标签的参数字段。</param>
+        /// <param name="currentValue">当前字符串值，包括已有自定义标识。</param>
+        /// <param name="values">预设标识数组。</param>
+        /// <param name="labels">预设中文显示数组。</param>
+        /// <returns>用户选中的标识或确认的自定义值。</returns>
+        private static string DrawGooglePlayDropdownStringField(
+            Rect valueRect, FieldInfo field, string currentValue, string[] values, string[] labels)
+        {
+            int currentIndex = Array.IndexOf(values, currentValue);
+            bool hasCustomValue = currentIndex < 0;
+            string[] displayedOptions = new string[labels.Length + (hasCustomValue ? 2 : 1)];
+            Array.Copy(labels, displayedOptions, labels.Length);
+            if (hasCustomValue)
+            {
+                currentIndex = labels.Length;
+                displayedOptions[currentIndex] = string.IsNullOrEmpty(currentValue)
+                    ? "自定义（空）" : $"自定义（{currentValue}）";
+            }
+            int customInputIndex = displayedOptions.Length - 1;
+            displayedOptions[customInputIndex] = "自定义…";
+
+            bool previousChanged = GUI.changed;
+            EditorGUI.BeginChangeCheck();
+            int selectedIndex = EditorGUI.Popup(valueRect, currentIndex, displayedOptions);
+            bool selectionChanged = EditorGUI.EndChangeCheck();
+            if (!selectionChanged || selectedIndex == currentIndex) return currentValue;
+            if (selectedIndex >= 0 && selectedIndex < values.Length) return values[selectedIndex];
+            if (selectedIndex != customInputIndex) return currentValue;
+
+            string inputLabel = field.Name == nameof(PipifySteps.GooglePlayUploadParams.Track) ? "轨道标识" : "语言标识";
+            string customValue = PipifyInputDialog.Show("自定义" + GetParamFieldDisplayName(field), inputLabel, currentValue);
+            if (customValue == null || string.Equals(customValue, currentValue, StringComparison.Ordinal))
+            {
+                GUI.changed = previousChanged;
+                return currentValue;
+            }
+            GUI.changed = true;
+            return customValue;
         }
 
         /// <summary>

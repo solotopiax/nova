@@ -224,6 +224,8 @@ MonoBehaviour:
   - m_Name: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Description: "\u8D44\u6E90\u6784\u5EFA+\u6253\u5305"
     m_Items:
+    - m_StepId: edm4u.android_resolve
+      m_ParamsJson: 
     - m_StepId: export.config
       m_ParamsJson: 
     - m_StepId: export.network.hostkey.code
@@ -249,8 +251,8 @@ MonoBehaviour:
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
-  - m_Name: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
-    m_Description: "\u6784\u5EFAapk\u5E76\u6253\u5F00\u6587\u4EF6\u5939"
+  - m_Name: "\u6784\u5EFAAPK"
+    m_Description: "\u6784\u5EFAAPK"
     m_Items:
     - m_StepId: edm4u.android_resolve
       m_ParamsJson: 
@@ -262,6 +264,64 @@ MonoBehaviour:
         \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
     - m_StepId: shell.open_folder
       m_ParamsJson: '{"Path":"Build"}'
+  - m_Name: "\u8D44\u6E90\u6784\u5EFA+\u6784\u5EFAAAB+\u4E0A\u4F20GooglePlay"
+    m_Description: "\u8D44\u6E90\u6784\u5EFA+\u6784\u5EFAAAB+\u4E0A\u4F20GooglePlay"
+    m_Items:
+    - m_StepId: edm4u.android_resolve
+      m_ParamsJson: 
+    - m_StepId: hybridclr.validate_linkxml
+      m_ParamsJson: 
+    - m_StepId: hybridclr.generate_all
+      m_ParamsJson: 
+    - m_StepId: hybridclr.compile_dll_active_build_target
+      m_ParamsJson: 
+    - m_StepId: hybridclr.copy_aot_dll
+      m_ParamsJson: 
+    - m_StepId: hybridclr.copy_game_dll
+      m_ParamsJson: 
+    - m_StepId: export.config
+      m_ParamsJson: "{\n  \"Platform\": 1,\n  \"Channel\": 2,\n  \"DevelopMode\":
+        0\n}"
+    - m_StepId: export.network.hostkey.code
+      m_ParamsJson: 
+    - m_StepId: export.network.hostkey.data
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.code
+      m_ParamsJson: 
+    - m_StepId: export.network.netcmd.data
+      m_ParamsJson: 
+    - m_StepId: bundlebuilder.build
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"PackageName\": \"Default\",\n  \"BuildVersion\":
+        \"\",\n  \"ClearBuildCache\": true,\n  \"UseAssetDependencyDB\": false,\n 
+        \"BundleEncryptorClassName\": \"YooAsset.Editor.EncryptionNone\",\n  \"ManifestEncryptorClassName\":
+        \"YooAsset.Editor.ManifestEncryptorNone\",\n  \"ManifestDecryptorClassName\":
+        \"YooAsset.Editor.ManifestDecryptorNone\",\n  \"Compression\": 2,\n  \"FileNameStyle\":
+        2,\n  \"BundledCopyOption\": 1,\n  \"BundledCopyParams\": \"\"\n}"
+    - m_StepId: build.package
+      m_ParamsJson: "{\n  \"Target\": 13,\n  \"BuildMode\": 1,\n  \"DevelopmentBuild\":
+        false,\n  \"SplitApplicationBinary\": true,\n  \"BuildAppBundle\": true,\n 
+        \"UseAndroidKeystore\": false,\n  \"AndroidKeystorePath\": \"YOUR_ANDROID_KEYSTORE_PATH\",\n 
+        \"AndroidKeystorePass\": \"\",\n  \"AndroidKeyalias\": \"solotopia\",\n 
+        \"AndroidKeyaliasPass\": \"\",\n  \"OutputFolderPath\": \"Build/Android\"\n}"
+    - m_StepId: googleplay.upload_aab
+      m_ParamsJson: "{\n  \"AabPath\": \"\",\n  \"PackageName\": \"\",\n  \"Track\":
+        \"internal\",\n  \"ReleaseStatus\": 0,\n  \"Rollout\": 0.1,\n  \"CredentialsPath\":
+        \"YOUR_GOOGLE_PLAY_CREDENTIALS_PATH\",\n  \"FastlanePath\":
+        \"\",\n  \"ReleaseNotes\": \"\",\n  \"ReleaseNotesLanguage\": \"en-US\",\n 
+        \"ValidateOnly\": false,\n  \"ChangesNotSentForReview\": false,\n  \"TimeoutSeconds\":
+        1800\n}"
+    - m_StepId: shell.open_folder
+      m_ParamsJson: '{"Path":"Build"}'
+  - m_Name: "\u5355\u72EC\u6D4B\u8BD5\u4E0AAAB\u5230GooglePlay"
+    m_Description: "\u5355\u72EC\u6D4B\u8BD5\u4E0AAAB\u5230GooglePlay"
+    m_Items:
+    - m_StepId: googleplay.upload_aab
+      m_ParamsJson: "{\n  \"AabPath\": \"Build/Android/Nova_Debug_1.0.0_2026_10_12_14_07.aab\",\n 
+        \"PackageName\": \"com.solotopia.nova.samples\",\n  \"Track\": \"internal\",\n 
+        \"ReleaseStatus\": 0,\n  \"Rollout\": 0.1,\n  \"CredentialsPath\": \"YOUR_GOOGLE_PLAY_CREDENTIALS_PATH\",\n 
+        \"FastlanePath\": \"\",\n  \"ReleaseNotes\": \"\",\n  \"ReleaseNotesLanguage\":
+        \"en-US\",\n  \"ValidateOnly\": false,\n  \"ChangesNotSentForReview\": false,\n 
+        \"TimeoutSeconds\": 1800\n}"
   - m_Name: "Config\u5BFC\u51FA\u6D4B\u8BD5"
     m_Description: "Config\u5BFC\u51FA\u6D4B\u8BD5"
     m_Items:

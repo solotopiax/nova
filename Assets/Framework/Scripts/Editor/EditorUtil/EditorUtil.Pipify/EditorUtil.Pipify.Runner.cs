@@ -35,6 +35,9 @@ namespace NovaFramework.Editor
                 /// </summary>
                 private static bool s_IsRunning;
 
+                /// <summary>当前域中的执行态；窗口重载等待态由外层 SessionState 检查点补充。</summary>
+                internal static bool IsRunning => s_IsRunning;
+
                 /// <summary>
                 /// 执行 Batch。
                 /// </summary>
@@ -42,11 +45,20 @@ namespace NovaFramework.Editor
                 /// <param name="reporter">进度汇报宿主。</param>
                 /// <param name="overrides">参数覆盖字典（可为 null）。</param>
                 /// <param name="ct">取消令牌。</param>
-                public static async UniTask RunBatchAsync(Batch batch, IPipifyProgressReporter reporter, IReadOnlyDictionary<string, string> overrides, CancellationToken ct)
+                public static UniTask RunBatchAsync(Batch batch, IPipifyProgressReporter reporter, IReadOnlyDictionary<string, string> overrides, CancellationToken ct)
+                {
+                    return RunBatchCoreAsync(batch, reporter, overrides, ct, null);
+                }
+
+                /// <summary>
+                /// 共用顺序执行链；窗口仅在上传尚未开始的检查点恢复，CLI 与 Job 不自动重放。
+                /// </summary>
+                internal static async UniTask RunBatchCoreAsync(Batch batch, IPipifyProgressReporter reporter,
+                    IReadOnlyDictionary<string, string> overrides, CancellationToken ct, WindowUploadCheckpoint checkpoint)
                 {
                     if (batch == null) throw new ArgumentNullException(nameof(batch));
                     if (reporter == null) throw new ArgumentNullException(nameof(reporter));
-                    if (s_IsRunning) throw new InvalidOperationException($"{c_LogPrefix} 已有 Batch 正在执行，不能并发启动第二个 Batch。");
+                    if (IsBatchRunning) throw new InvalidOperationException($"{c_LogPrefix} 已有 Batch 正在执行，不能并发启动第二个 Batch。");
                     Registry.EnsureAllStepsRegistered(batch);
                     if (!Config.WorkspaceActive.TryGetPersistedConfigMaster(
                             out _, out string frozenMasterGuid, out _, out string masterError))
@@ -62,11 +74,12 @@ namespace NovaFramework.Editor
                     Stopwatch total = Stopwatch.StartNew();
                     reporter.BeginBatch(batch.Name, batch.Items.Count);
                     bool success = false;
+                    var buildState = new PipifyBuildState { LatestArtifact = checkpoint?.RestoreArtifact() };
                     s_IsRunning = true;
                     // 不冻结 Domain Reload 也不进入 Asset Editing：
                     // LockReloadAssemblies 期间 SBP BuildCache 看到的 .bytes contentHash 不会随 ImportAsset 同步刷新，
                     // 导致 bundlebuilder.build 命中陈旧 cache 复用上一轮 bundle 产物。
-                    // batch 流程不向 Assets 写 .cs，单纯 .bytes / .json 写入只触发 importer，不会触发 cs 编译 + Domain Reload。
+                    // HybridCLR Generate 与 Player 构建可能请求脚本编译；窗口上传前单独交接重载，不能假设整批没有重载。
                     try
                     {
                         PipifySettingsSO settings = FindSettingsContaining(batch);
@@ -74,7 +87,7 @@ namespace NovaFramework.Editor
                         {
                             throw new InvalidOperationException($"{c_LogPrefix} Batch 所属 PipifySettings 与冻结工作区不一致。");
                         }
-                        for (int i = 0; i < batch.Items.Count; i++)
+                        for (int i = checkpoint?.NextStepIndex ?? 0; i < batch.Items.Count; i++)
                         {
                             ct.ThrowIfCancellationRequested();
                             ValidateFrozenWorkspace(frozenMasterGuid, frozenPipifyGuid);
@@ -95,7 +108,8 @@ namespace NovaFramework.Editor
                                 CurrentStepIndex = i,
                                 TotalSteps = batch.Items.Count,
                                 Reporter = reporter,
-                                CancellationToken = ct
+                                CancellationToken = ct,
+                                BuildState = buildState
                             };
 
                             bool? followingDevelopmentBuild = IsHybridCLRStep(item.StepId)
@@ -117,6 +131,16 @@ namespace NovaFramework.Editor
                                 Stopwatch sw = Stopwatch.StartNew();
                                 try
                                 {
+                                    if ((checkpoint == null || checkpoint.NextStepIndex != i) && reporter is WindowReporter windowReporter &&
+                                        string.Equals(item.StepId, "googleplay.upload_aab", StringComparison.Ordinal) &&
+                                        buildState.LatestArtifact != null)
+                                    {
+                                        // 只保存尚未调用的上传位置；重载后从同一 Runner 继续，不重复构建或已经开始的远端请求。
+                                        var uploadInput = PipifySteps.ResolveGooglePlayInput(ctx,
+                                            (PipifySteps.GooglePlayUploadParams)paramsInstance, System.IO.Path.GetDirectoryName(UnityEngine.Application.dataPath));
+                                        await HandOffWindowUploadAsync(batch, i, buildState.LatestArtifact,
+                                            uploadInput, frozenMasterGuid, frozenPipifyGuid, windowReporter, ct);
+                                    }
                                     object[] args = info.ParamsType == null ? new object[] { ctx } : new object[] { ctx, paramsInstance };
                                     UniTask invoked = (UniTask)info.Method.Invoke(null, args);
                                     await invoked;
@@ -156,6 +180,7 @@ namespace NovaFramework.Editor
                         // 产物会在 Unity 下次获得焦点时由 AutoRefresh 自动扫描，用户可先看完日志再切焦点触发编译。
                         total.Stop();
                         s_IsRunning = false;
+                        ClearWindowUploadCheckpoint();
                         reporter.EndBatch(success, total.Elapsed);
                     }
                 }

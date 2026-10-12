@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.6.38-blue.svg)
+![release](https://img.shields.io/badge/release-v0.6.39-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.4-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -33,7 +33,9 @@
 | com.solotopia.nicevibrations | 10.0.5 |
 | com.solotopia.luban | 10.1.0 |
 | com.solotopia.yooasset | 1.2.0 |
-| com.solotopia.nova.framework.mcp | 0.1.3 |
+| com.solotopia.nova.framework.mcp | 0.1.4 |
+
+Android AAB 可通过 Pipify 上传 Google Play，默认内部测试草稿；配置与上传边界见 [Google Play 上传说明](./Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md)。
 
 ## 架构概览
 

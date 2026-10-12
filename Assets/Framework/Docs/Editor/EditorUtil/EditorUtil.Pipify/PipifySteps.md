@@ -121,6 +121,10 @@
 
 `build.package.Target` 同样在 PipifyWindow 中只读展示并在执行前强制同步 Unity 当前 Active BuildTarget；旧 `ParamsJson` 或 CLI `Target` override 不会改变实际 Player 目标。当前 BuildTarget 未映射为 Nova PlatformType 时，在打包前中断。
 
+### Google Play 上传
+
+Google Play 发布使用独立 Step `googleplay.upload_aab`，添加在 `build.package` 之后即可自动接收本次成功构建的 AAB；默认内部测试草稿。一次性凭据、签名、轨道、更新说明与 CI 配置见 [Google Play 上传](PipifySteps.GooglePlay.md)。
+
 ### 6. 系统外壳辅助
 
 目标：
@@ -130,6 +134,7 @@
 高频 Step：
 
 - `shell.open_folder`
+
 
 适合场景：
 

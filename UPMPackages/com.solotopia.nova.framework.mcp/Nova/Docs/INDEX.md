@@ -2,6 +2,14 @@
 
 `com.solotopia.nova.framework.mcp` 是 Nova Framework 显性依赖的 Editor 传输桥。它不实现领域逻辑，只把通过安全策略审核的 Action 以固定 Tool 协议开放给项目组 Agent。
 
+## 用人话理解本包
+
+本包是 Nova 给 Unity MCP 提供的专用扩展，当前复用 Unity MCP 服务。AI 按 Skill 明确任务后，直接选择 `nova_project_action`；Unity MCP 接收和传递这次调用，Nova 网关再分发到对应 Action。Action 已在 Unity Editor 内部，可以直接调用 Unity API 和 Nova 既有工具。
+
+“注册工具”就是告诉 Unity MCP 工具叫什么、接受什么参数、收到调用时交给哪个函数。当前注册实现见 [NovaProjectActionUnityMcpTool.cs](../UnityMcp/Editor/NovaProjectActionUnityMcpTool.cs)。通过 Unity MCP 连接是当前默认适配器的选择；中立契约与 Action 内核仍和具体 Provider 分开。
+
+完整概念说明见已安装 Framework 的 `Docs/Onboarding/AI_SKILLS_ACTIONS_MCP.md`；开发仓对应 `Assets/Framework/Docs/Onboarding/AI_SKILLS_ACTIONS_MCP.md`。
+
 ## 入口
 
 - MCP Tool：`nova_project_action`
@@ -52,7 +60,9 @@ Adapter 目前显式允许 Registry 中全部 20 个 Action：
 - `nova.project.localization.export`
 - `nova.project.pipify.run-batch`
 
-Nova Project Skills 与 MCP Tool 不是一张清单：30 个 `nova-project-*` 由 Agent 从项目 `.agents/skills/` 发现；当前默认 Adapter 只注册一个 `nova_project_action`，然后由 `describe` 返回上述当前开放 Action。
+Nova Project Skills 与 MCP Tool 不是一张清单：31 个 `nova-project-*` 由 Agent 从项目 `.agents/skills/` 发现；当前默认 Adapter 只注册一个 `nova_project_action`，然后由 `describe` 返回上述当前开放 Action。
+
+能力发现继续使用 `describe`；原能力总览视图专用的 `NovaProjectActionGateway.GetExposureSnapshot` 与 `NovaProjectActionExposureSnapshot` 已移除，外部 C# 调用方需改用现有 `describe` 协议。
 
 该清单用于说明当前包版本，不替代 live Registry。运行时必须先调用 `describe`；未注册、Registry 存在 issue、Schema 无效，或 Registry 与 ExposurePolicy 不完全一致时整个 Action 面都会 fail-closed。高风险副作用不会隐藏 Action，但仍必须由 Descriptor 准确声明并经过完整执行协议。
 

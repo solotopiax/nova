@@ -6,13 +6,15 @@
 
 所有 `nova-project-*` Skill 触发后都先读取本页。本页定义项目组消费态日常任务的共同底线；它不是需要用户手工选择或按顺序执行的 Skill。
 
+需要理解 Skill、Router、Workflow、Operation、Action 与 MCP 各自做什么，先读 [用人话理解 Skill、Action 与 MCP](Onboarding/AI_SKILLS_ACTIONS_MCP.md)。该页把任务拆解和请求传递分别说明，并解释 Nova MCP 包如何扩展 Unity MCP。
+
 所有 `nova-project-*` Skill 的对用户输出必须先说结论，用人话、简洁直接地说明必要信息；只有确有助于决策时才补充术语、过程和细节，不啰嗦。
 
 `Assets/Framework/Agents/` 是开发态和消费态共享的唯一 Git 真源。在 Nova 开发仓中，Editor 会用这份真源在仓库根 `.agents/skills/` 生成 `nova-project-*` 的自动生成受管同步副本（下文简称“投影”），让开发者快速验证项目组消费态下的发现和触发效果；发布后，消费项目从已安装的 Framework 包获得同一份内容。该目录只包含项目组消费态 Skill：每个 Skill 的目录名、Catalog id 与 `SKILL.md` 的 `name` 都必须使用 `nova-project-*`。框架开发态 Skill 保留在仓库根 `.agents/skills/` 的既有 `nova-*` 命名空间；两者可在开发仓并列发现，但只有 `nova-project-*` 进入本 Catalog 与 UPM 同步范围。
 
 Nova Project Skills 随 `com.solotopia.nova.framework` 同版本管理。用户安装或升级 Nova 后首次打开 Unity，Editor 会在编译和包更新结束后检查，并按需把包内 Catalog Skill 同步为项目根 `.agents/skills/` 下的受管同步副本，供宿主和 Agent 发现；不需要执行 `sync` 或手工复制。
 
-Skill 发现与 MCP Tool 发现是两条不同链路：30 个 `nova-project-*` 是 Agent 从 `.agents/skills/` 读取的任务说明，不会被 MCP Provider 逐个注册成 30 个 Tool。对外 Nova MCP UPM 包当前默认适配 Unity MCP，只注册一个 Nova Tool：`nova_project_action`；该 Tool 再通过 live `describe` 公开当前安全开放的 Action。NovaSpark 会先在项目 manifest 中配置 OpenUPM 与精确 scope `com.coplaydev.unity-mcp`，再安装 Framework 及其 Nova MCP 依赖；Unity MCP 由 Nova MCP 包的 semver 依赖自动解析，不作为项目 direct Git dependency。安装包不能替外部 Agent 启动 Server、占用端口或热刷新既有会话；首次连接或包升级后，宿主仍需连接当前 MCP Provider，已有会话未刷新 Tool 列表时需重连或开启新会话。
+Skill 发现与 MCP Tool 发现是两条不同链路：31 个 `nova-project-*` 是 Agent 从 `.agents/skills/` 读取的任务说明，不会被 MCP Provider 逐个注册成 31 个 Tool。对外 Nova MCP UPM 包当前默认适配 Unity MCP，只注册一个 Nova Tool：`nova_project_action`；该 Tool 再通过 live `describe` 公开当前安全开放的 Action。NovaSpark 会先在项目 manifest 中配置 OpenUPM 与精确 scope `com.coplaydev.unity-mcp`，再安装 Framework 及其 Nova MCP 依赖；Unity MCP 由 Nova MCP 包的 semver 依赖自动解析，不作为项目 direct Git dependency。安装包不能替外部 Agent 启动 Server、占用端口或热刷新既有会话；首次连接或包升级后，宿主仍需连接当前 MCP Provider，已有会话未刷新 Tool 列表时需重连或开启新会话。
 
 三处位置的职责不同：
 
@@ -31,9 +33,11 @@ Skill 发现与 MCP Tool 发现是两条不同链路：30 个 `nova-project-*` �
 /.agents/.nova-skills-staging/
 ```
 
-全量可发现不等于全量按顺序执行。当前 30 项消费态能力只根据自然语言任务的目标、范围和约束匹配需要的 Skill；写入、构建、外部发布和 Git 等副作用仍遵守对应 Skill 的确认门。当前未覆盖的任务仍按本页和具体模块 Docs 推进；完整目录和边界见 [Nova Project Skills](../Agents/INDEX.md)。
+全量可发现不等于全量按顺序执行。当前 31 项消费态能力只根据自然语言任务的目标、范围和约束匹配需要的 Skill；写入、构建、外部发布和 Git 等副作用仍遵守对应 Skill 的确认门。当前未覆盖的任务仍按本页和具体模块 Docs 推进；完整目录和边界见 [Nova Project Skills](../Agents/INDEX.md)。
 
 ## 日常任务如何无缝使用 Skills
+
+配置或上传 Google Play AAB、排查 supply 权限/版本号失败，进入 `nova-project-upload-google-play`；仅验证仍会真实上传，上传成功与审核完成、用户可下载分开核实。
 
 “导出 Tables”或“生成 Table 数据和类型”直接进入 `nova-project-export-tables`；只有还要配置表源、加载映射并验证运行时读取时，才进入 `nova-project-integrate-table`。
 

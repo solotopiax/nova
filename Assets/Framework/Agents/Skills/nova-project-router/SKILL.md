@@ -28,6 +28,7 @@ description: Use when 项目组以自然语言提出 Nova 项目接入、业务�
 | 页面 / 界面 | 只建 View，还是还需 Prefab、UI 注册、入口与运行验证 |
 | 表 / 配置 | Luban、UI、Localization、Network、Sound、Vibrate 或 ConfigMaster |
 | 打包 / 发布 | Bundle、Player、CDN、商店、UPM；外部写入或 Git 不因名称自动获授权 |
+| 上传 Google Play / AAB / supply 报错 | 配置、真实上传（含仅验证）还是只读排障；AAB/包名、轨道、用途、凭据账号及完整 Batch 范围是否已确认 |
 | 资源更新 / 热更 | 构建 Bundle、部署 CDN、运行时下载或缓存清理 |
 | HybridCLR / 热更 DLL | 业务 DLL 本地刷新、full AOT、Bundle、Player、CDN 或运行时诊断；不得把这些目标合并成一次操作 |
 | 装包 / 升级包 / 卸载包 | 最新 registry 版本的单包安装/升级、direct dependency 卸载，还是指定版本、降级、来源切换、批量升级或 Framework 发布 |
@@ -73,6 +74,7 @@ description: Use when 项目组以自然语言提出 Nova 项目接入、业务�
    - Android SDK/Kit 变更后需要 EDM4U Force Resolve：`nova-project-resolve-android-dependencies`；该 Action 含 Destructive，必须绑定精确计划确认，不能退化为任意 C# 或删目录。
    - 已冻结 Android/iOS 设备、Bundle ID、时间窗、日志源与脱敏规则的真机日志诊断：`nova-project-diagnose-device-runtime`；不安装、不清数据、不启动应用、不修复工程。
    - 本地 YooAsset Package 产物：`nova-project-build-bundles`；本地安装包或平台工程：`nova-project-build-player`。
+   - 配置 Google Play AAB 上传、执行已授权的上传 Batch，或排查 fastlane supply 权限/版本号/提交失败：`nova-project-upload-google-play`；诊断不重试，仅验证仍有远端上传副作用，不能当作本地构建或 UPM 发布。
    - 单一确定的 Operation 不强制经过 Workflow；多个写入操作仅在读写集无冲突时并行。
 5. 读取所选 Skill 的 `references/contract.json` 后，按真实 Adapter 状态标记执行方式：引用 `nova_project_action` 的分支只通过 live `describe(action_id)` 判断为“当前 MCP 可执行”；Tool 缺失或 `describe` 未返回目标 ID 时标记“传输未就绪 / 当前未开放”，不得根据静态文档猜测可用，也不得退化为任意 C#。不依赖 Project Action 的分支标记其实际 Adapter（只读检查、受控 Unity 编辑、CLI 或人工判断）。Router 只报告可用性，不调用 `plan` 或制造写入。
 6. 明确不可做的事：不扫描主仓 `Minds/` 或 `.nova/`，不套用 Sample，不猜 UIGroup / 表字段 / 资源地址，不手写 Prefab 或 Scene YAML，不把 Pipify 顺序 Batch 当作可并行 DAG。

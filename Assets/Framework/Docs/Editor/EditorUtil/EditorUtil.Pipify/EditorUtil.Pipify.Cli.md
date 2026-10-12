@@ -19,7 +19,7 @@
 
 | 方法 | 说明 |
 |---|---|
-| `public static void Run()` | CLI 主入口；成功 `EditorApplication.Exit(0)`，失败 `Exit(1)` |
+| `public static async void Run()` | CLI 主入口；异步等待 Batch，成功 `EditorApplication.Exit(0)`，失败 `Exit(1)` |
 
 ### 私有辅助方法
 
@@ -33,6 +33,7 @@
 ### 关键约束
 
 - `-executeMethod` 需要 `public static void`，`Cli` 必须为 `public static class`
+- `async void` 保留 executeMethod 所需的 void 返回类型；由 Runner 完成后自行退出。命令不得添加 `-quit`，否则异步步骤可能提前被终止。
 - JSON 解析**必须**走 `Util.Json.Deserialize<Dictionary<string, string>>`，禁 JsonUtility
 - `-configMasterGuid` 与 `-pipifySettingsGuid` 必须成对提供；显式工作区一次原子写入 Globals
 - 未提供显式 GUID 时必须已有有效 Globals 工作区；缺失或漂移直接失败，不允许 `FindAssets()[0]` 降级
@@ -45,7 +46,6 @@
 # Jenkins Pipeline 示例
 unity \
   -batchmode \
-  -quit \
   -projectPath "$UNITY_PROJECT" \
   -executeMethod NovaFramework.Editor.EditorUtil+Pipify+Cli.Run \
   -batchName "Release_Android" \
@@ -55,7 +55,7 @@ unity \
 ```
 
 ```csharp
-// 工程内直接调用（测试 / 调试用，不代替 Unity batchmode）
+// 仅供 CLI 调试：该入口最终会退出 Unity；编辑器自动化用 StartBatchJob。
 EditorUtil.Pipify.Cli.Run();
 ```
 

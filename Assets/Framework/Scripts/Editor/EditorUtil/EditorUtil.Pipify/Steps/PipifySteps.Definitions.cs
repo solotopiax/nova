@@ -104,6 +104,81 @@ namespace NovaFramework.Editor
         }
 
         /// <summary>
+        /// Google Play 版本用途；默认保存草稿，显式选择开放下载时才请求向目标轨道用户提供版本。
+        /// </summary>
+        public enum GooglePlayReleaseStatus
+        {
+            [InspectorName("保存为草稿（不开放下载）")] Draft = 0,
+            [InspectorName("向该轨道全部用户开放下载")] Completed = 1,
+            [InspectorName("向该轨道部分用户开放下载")] InProgress = 2
+        }
+
+        /// <summary>
+        /// Step 参数：上传 Google Play AAB；仅保存凭据的项目根相对路径，凭据正文不进入资产。
+        /// </summary>
+        [Serializable]
+        [PipifyHelpBox("(1) 默认保存为内部测试草稿，该版本不供测试人员下载；首次创建应用和上传首包需在 Google Play 后台完成。",
+            "(2) 构建机需安装 fastlane。凭据 JSON 路径必填，以 Unity 项目根目录为基准。",
+            "(3) 保存到后台可能影响同一应用正在审核的其他变更；已有审核时请先核对后台状态。")]
+        public sealed class GooglePlayUploadParams
+        {
+            /// <summary>与应用包名同时留空时使用同一 Batch 最新成功构建的 AAB；显式路径必须同时填写包名。</summary>
+            [InspectorName("AAB 路径（空 = 本次构建）")]
+            public string AabPath;
+
+            /// <summary>与 AAB 路径同时留空时取同一 Batch 的构建时包名；显式包名必须同时填写 AAB 路径。</summary>
+            [InspectorName("应用包名（空 = 本次构建）")]
+            public string PackageName;
+
+            /// <summary>目标轨道标识；支持 internal、alpha、beta、production 及后台自定义轨道。</summary>
+            [InspectorName("目标轨道")]
+            public string Track = "internal";
+
+            /// <summary>目标发布状态；仅验证时仍用于校验轨道变更，提交时不会绕过 Google 审核。</summary>
+            [InspectorName("上传后用途")]
+            [PipifyHelpBox("(1) 草稿只保存到后台，不向该轨道用户开放下载。",
+                "(2) 开放下载仍需满足 Google 审核和后台发布设置。",
+                "(3) 内部测试仅面向符合条件的测试人员；部分用户仅支持正式轨道。")]
+            public GooglePlayReleaseStatus ReleaseStatus = GooglePlayReleaseStatus.Draft;
+
+            /// <summary>分阶段发布比例，仅 production 的 InProgress 使用，范围严格大于 0 小于 1。</summary>
+            [InspectorName("开放下载比例（0～1）")]
+            [PipifyVisibleWhen(nameof(ReleaseStatus), (int)GooglePlayReleaseStatus.InProgress)]
+            public float Rollout = 0.1f;
+
+            /// <summary>必填的项目根相对凭据 JSON 路径；默认沿用当前项目配置，执行时转换为绝对路径，不读取凭据正文。</summary>
+            [InspectorName("凭据 JSON 路径（相对 Unity 项目根目录）")]
+            public string CredentialsPath = "YOUR_GOOGLE_PLAY_CREDENTIALS_PATH";
+
+            /// <summary>fastlane 可执行文件路径或名称；留空时按 PATH 和常见安装路径解析。</summary>
+            [InspectorName("fastlane 路径（可留空）")]
+            public string FastlanePath;
+
+            /// <summary>可选的本次更新说明；留空时不上传或覆盖更新说明。</summary>
+            [InspectorName("更新说明")]
+            [TextArea(3, 6)]
+            public string ReleaseNotes;
+
+            /// <summary>更新说明的 BCP-47 语言标识，如 zh-CN 或 en-US。</summary>
+            [InspectorName("更新说明语言")]
+            public string ReleaseNotesLanguage = "en-US";
+
+            /// <summary>先真实上传并验证 edit，成功后不 commit；仍需要网络、应用和凭据。</summary>
+            [InspectorName("仅验证上传（不保存到轨道）")]
+            public bool ValidateOnly;
+
+            /// <summary>默认不请求延后审核；开放下载用途下可手动勾选，仅验证或草稿时禁用并保留原保存值。</summary>
+            [InspectorName("稍后在后台手动提交审核")]
+            [PipifyHelpBox("(1) 提交审核是请 Google 检查本次更新。",
+                "(2) 勾选后请求先保存变更，稍后在后台提交审核；Google 后台可能不支持该请求。")]
+            public bool ChangesNotSentForReview = false;
+
+            /// <summary>整个 fastlane 步骤的超时秒数，含上传与 Google 处理时间。</summary>
+            [InspectorName("超时（秒）")]
+            public int TimeoutSeconds = 1800;
+        }
+
+        /// <summary>
         /// Step 参数：指定本次 ConfigRuntime 导出的三维配置坐标。
         /// 字段顺序同时决定 PipifyWindow 中三个枚举下拉框的绘制顺序。
         /// </summary>

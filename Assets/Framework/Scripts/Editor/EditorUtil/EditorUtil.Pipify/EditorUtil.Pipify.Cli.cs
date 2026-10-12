@@ -29,9 +29,9 @@ namespace NovaFramework.Editor
             {
                 /// <summary>
                 /// CLI 主入口。读取 -batchName / -params 命令行参数，定位 PipifySettingsSO，执行目标 Batch。
-                /// 成功退出码 0，失败退出码 1。
+                /// 保持 Editor update 运转直到异步步骤完成；成功退出码 0，失败退出码 1。
                 /// </summary>
-                public static void Run()
+                public static async void Run()
                 {
                     try
                     {
@@ -52,7 +52,8 @@ namespace NovaFramework.Editor
                             throw new InvalidOperationException(string.Format("{0}[CLI] 未找到 Batch：{1}", c_LogPrefix, batchName));
                         }
 
-                        RunBatchForCliAsync(batch, overrides).GetAwaiter().GetResult();
+                        // 上传依赖 Editor 的 UniTask 调度；同步 GetResult 无法等待未完成的异步步骤。
+                        await RunBatchForCliAsync(batch, overrides);
                         EditorApplication.Exit(0);
                     }
                     catch (Exception ex)

@@ -3842,7 +3842,7 @@ MonoBehaviour:
         m_DataNexusUserActionSetId: 0
         m_DataNexusSdkKey: 
         m_EnableGravityEngine: 1
-        m_GravityAccessToken: uSsvEV36s1ewYiFhCcgpilfXdtU9fkxN
+        m_GravityAccessToken: YOUR_GRAVITY_ACCESS_TOKEN
         m_GravityChannel: base_channel
         m_GravityDebugMode: 0
         m_GravitySilentPeriodDays: 7
@@ -5475,7 +5475,7 @@ MonoBehaviour:
         m_DataNexusUserActionSetId: 0
         m_DataNexusSdkKey: 
         m_EnableGravityEngine: 1
-        m_GravityAccessToken: uSsvEV36s1ewYiFhCcgpilfXdtU9fkxN
+        m_GravityAccessToken: YOUR_GRAVITY_ACCESS_TOKEN
         m_GravityChannel: base_channel
         m_GravityDebugMode: 1
         m_GravitySilentPeriodDays: 7

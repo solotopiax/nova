@@ -234,7 +234,7 @@ Gateway 要求 Registry 的全部 Action 与显式 `ExposurePolicy` 集合完全
 
 `nova.project.pipify.run-batch` 只接受当前活动 `PipifySettings` 的 GUID 与精确 Batch 名称。Plan 冻结设置文件 SHA-256、活动 BuildTarget 和有序 Step/参数；Execute 登记异步任务并在真实运行期重新持有资源锁；Job 状态原子写入 `Library/Nova/Pipify/Jobs/`。domain reload 前未结束的 Job 只会变为 `Interrupted`，不会恢复或重放。其 `success` 仅证明 Runner 顺序完成且无异常，不替代具体 Player、Bundle、CDN、浏览器或设备证据。
 
-Tool 只返回安全 DTO；项目根路径替换为 `<project-root>`，敏感字段打码，URL 去除认证、query 和 fragment。包依赖为 `Framework -> Nova MCP -> Unity MCP`；程序集依赖保持单向：`NovaFramework.Mcp.Editor` 只定义中立 SPI 和 Gateway，独立 `NovaFramework.Mcp.UnityMcp.Editor` 适配默认 Provider，Framework 在 domain load 注册唯一 Action Provider。30 个 Skill 不会逐个成为 MCP Tool；默认 Adapter 只注册 `nova_project_action`，再由 live `describe` 返回当前开放 Action。
+Tool 只返回安全 DTO；项目根路径替换为 `<project-root>`，敏感字段打码，URL 去除认证、query 和 fragment。包依赖为 `Framework -> Nova MCP -> Unity MCP`；程序集依赖保持单向：`NovaFramework.Mcp.Editor` 只定义中立 SPI 和 Gateway，独立 `NovaFramework.Mcp.UnityMcp.Editor` 适配默认 Provider，Framework 在 domain load 注册唯一 Action Provider。31 个 Skill 不会逐个成为 MCP Tool；默认 Adapter 只注册 `nova_project_action`，再由 live `describe` 返回当前开放 Action。
 
 ## 状态与证据
 

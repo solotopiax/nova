@@ -12,6 +12,8 @@ using System;
 using Cysharp.Threading.Tasks;
 using NovaFramework.Runtime;
 using UnityEditor;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 
 namespace NovaFramework.Editor
 {
@@ -33,6 +35,10 @@ namespace NovaFramework.Editor
         [PipifyStep("build.package", "安装包|工程", "构建打包", ParamsType = typeof(PackageParams))]
         internal static UniTask RunPackage(PipifyContext ctx, PackageParams p)
         {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            ctx.BuildState.LatestArtifact = null;
+            ctx.CancellationToken.ThrowIfCancellationRequested();
             EditorUtil.Config.ActivePlatform.RequireCurrent("[Pipify] Player 构建");
             p.Target = EditorUserBuildSettings.activeBuildTarget;
             ConfigRuntimeSO runtime = EditorUtil.Config.RuntimeProvider.GetCurrent();
@@ -44,9 +50,21 @@ namespace NovaFramework.Editor
             AndroidSigningSettingsSnapshot signingSnapshot = ApplyAndroidSigningSettings(p);
             try
             {
-                EditorUtil.Build.BuildPackage(
+                string packageName = PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.Android);
+                BuildReport report = EditorUtil.Build.BuildPackage(
                     p.Target, p.OutputFolderPath, p.DevelopmentBuild,
                     p.BuildMode, p.BuildAppBundle, p.SplitApplicationBinary, developMode);
+                // Build 的公共薄封装仍可能返回 Cancelled/Unknown；流水线只接受明确成功的报告。
+                if (report == null || report.summary.result != BuildResult.Succeeded)
+                    throw new InvalidOperationException("[Pipify] Player 构建未成功，已停止流水线，不记录上传产物。");
+                ctx.CancellationToken.ThrowIfCancellationRequested();
+                ctx.BuildState.LatestArtifact = new PipifyBuildArtifact
+                {
+                    OutputPath = report.summary.outputPath,
+                    Target = p.Target,
+                    DevelopmentBuild = p.DevelopmentBuild,
+                    PackageName = packageName
+                };
                 return UniTask.CompletedTask;
             }
             finally

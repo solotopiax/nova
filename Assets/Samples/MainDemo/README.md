@@ -87,6 +87,10 @@ DemoNavTreeView（树形导航主菜单）
 
 按提示一路确认即可，然后点 Unity Editor Play 按钮。
 
+### Google Play 上传示例
+
+`Editor/PipifySettings.asset` 提供构建 AAB 后上传的组合批次，以及手动上传已有 AAB 的独立批次。组合批次使用本次成功构建产物；独立批次中的 AAB 路径是开发示例，导入后必须同时填写自己的有效 AAB 路径和应用包名。两种批次都需填写自己的服务账号凭据路径，公开副本不会附带凭据文件。配置要求见已安装 Framework 的 `Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md`。
+
 ### 手动
 
 1. `File > Build Settings...`，把 `Assets/Samples/Nova Framework/<version>/Demo/MainDemo.unity` 拖到 `Scenes In Build` 第一项。

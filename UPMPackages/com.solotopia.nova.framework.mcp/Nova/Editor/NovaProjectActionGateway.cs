@@ -73,31 +73,6 @@ namespace NovaFramework.Mcp.Editor
         private static readonly SemaphoreSlim s_Gate = new SemaphoreSlim(1, 1);
 
         /// <summary>
-        /// 返回当前 Nova MCP Action 开放策略与实际可用结果的只读快照。
-        /// 本入口不会创建 Plan、执行 Action 或修改项目。
-        /// </summary>
-        public static NovaProjectActionExposureSnapshot GetExposureSnapshot()
-        {
-            string[] policyActionIds = s_ExposurePolicies
-                .Select(item => item.ActionId)
-                .OrderBy(item => item, StringComparer.Ordinal)
-                .ToArray();
-            bool available = TryGetExposedDescriptors(
-                out _,
-                out IReadOnlyDictionary<string, NovaProjectActionDescriptor> exposedActions,
-                out string errorMessage);
-            return new NovaProjectActionExposureSnapshot
-            {
-                IsAvailable = available,
-                PolicyActionIds = policyActionIds,
-                ExposedActionIds = available
-                    ? exposedActions.Keys.OrderBy(item => item, StringComparer.Ordinal).ToArray()
-                    : Array.Empty<string>(),
-                ErrorMessage = available ? null : SanitizeText(errorMessage),
-            };
-        }
-
-        /// <summary>
         /// Domain reload 后由请求入口重新执行同一校验；这里不缓存失败结果，避免 Registry
         /// 重建后仍被过期失败状态永久阻断。
         /// </summary>

@@ -9,6 +9,7 @@
  ***************************************************************/
 
 using System.Threading;
+using UnityEditor;
 
 namespace NovaFramework.Editor
 {
@@ -43,5 +44,29 @@ namespace NovaFramework.Editor
         /// 取消令牌，供长耗时 Step 内部响应取消。
         /// </summary>
         public CancellationToken CancellationToken { get; internal set; }
+
+        /// <summary>
+        /// 本次 Batch 独有的构建产物记录；窗口上传前可跨同次 Editor 会话的重载交接，不跨 Batch 复用。
+        /// </summary>
+        internal PipifyBuildState BuildState { get; set; } = new PipifyBuildState();
+    }
+
+    /// <summary>
+    /// 本次 Batch 的最新成功 Player 构建结果；新构建开始时清空，避免沿用旧产物。
+    /// </summary>
+    internal sealed class PipifyBuildState
+    {
+        internal PipifyBuildArtifact LatestArtifact;
+    }
+
+    /// <summary>
+    /// 成功构建的产物与构建时身份快照，供后续上传步骤核对，不读取可变的当前 PlayerSettings。
+    /// </summary>
+    internal sealed class PipifyBuildArtifact
+    {
+        internal string OutputPath;
+        internal BuildTarget Target;
+        internal bool DevelopmentBuild;
+        internal string PackageName;
     }
 }

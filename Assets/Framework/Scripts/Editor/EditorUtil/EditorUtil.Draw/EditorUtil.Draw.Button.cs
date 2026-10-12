@@ -22,6 +22,20 @@ namespace NovaFramework.Editor
         public static partial class Draw
         {
             /// <summary>
+            /// 在手动布局的输入控件边缘绘制红框；只在重绘阶段绘制，不影响 GUI 变化检测。
+            /// </summary>
+            /// <param name="rect">输入控件矩形。</param>
+            internal static void InvalidBorder(Rect rect)
+            {
+                if (Event.current.type != EventType.Repaint) return;
+                const float thickness = 1f;
+                EditorGUI.DrawRect(new Rect(rect.x, rect.y, rect.width, thickness), Color.red);
+                EditorGUI.DrawRect(new Rect(rect.x, rect.yMax - thickness, rect.width, thickness), Color.red);
+                EditorGUI.DrawRect(new Rect(rect.x, rect.y, thickness, rect.height), Color.red);
+                EditorGUI.DrawRect(new Rect(rect.xMax - thickness, rect.y, thickness, rect.height), Color.red);
+            }
+
+            /// <summary>
             /// 危险按钮启用色。
             /// </summary>
             private static readonly Color s_DangerEnabledColor = new Color(0.75f, 0.25f, 0.25f);
@@ -133,6 +147,32 @@ namespace NovaFramework.Editor
                 {
                     Application.OpenURL(url);
                 }
+            }
+
+            /// <summary>
+            /// 在指定矩形内绘制下划线链接，供程序集内的 ReorderableList 等手动布局使用。
+            /// 点击只打开浏览器，不退出当前 GUI 绘制。
+            /// </summary>
+            /// <param name="rect">链接按钮的绘制区域。</param>
+            /// <param name="url">目标 URL；为空时不绘制。</param>
+            /// <param name="label">链接文本；为空时显示 URL。</param>
+            internal static void LinkButton(Rect rect, string url, string label = null)
+            {
+                if (string.IsNullOrEmpty(url)) return;
+                GUIStyle style = EditorStyles.linkLabel;
+                GUIContent content = new GUIContent(string.IsNullOrEmpty(label) ? url : label, url);
+                EditorGUIUtility.AddCursorRect(rect, MouseCursor.Link);
+                bool clicked = GUI.Button(rect, content, style);
+                if (Event.current.type == EventType.Repaint)
+                {
+                    float underlineWidth = Mathf.Min(style.CalcSize(content).x, rect.width - style.padding.horizontal);
+                    Color underlineColor = rect.Contains(Event.current.mousePosition)
+                        ? style.hover.textColor
+                        : style.normal.textColor;
+                    EditorGUI.DrawRect(new Rect(rect.x + style.padding.left, rect.yMax - 2f,
+                        Mathf.Max(0f, underlineWidth), 1f), underlineColor);
+                }
+                if (clicked) Application.OpenURL(url);
             }
 
             /// <summary>

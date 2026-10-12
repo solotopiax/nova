@@ -113,6 +113,49 @@ namespace NovaFramework.Editor
         private const float c_ItemRowHeight = 20f;
 
         /// <summary>
+        /// 主行底部与展开参数区之间的垂直间距（单位像素），绘制与行高估算共用。
+        /// </summary>
+        private const float c_ParamsTopSpacing = 8f;
+
+        /// <summary>
+        /// Google Play 上传使用的 fastlane 官方参数文档。
+        /// </summary>
+        private const string c_GooglePlayParameterDocsUrl = "https://docs.fastlane.tools/actions/upload_to_play_store/";
+
+        /// <summary>
+        /// Google Play 标准轨道标识；自定义轨道仍由用户按后台标识填写。
+        /// </summary>
+        private static readonly string[] s_GooglePlayTrackValues = { "internal", "alpha", "beta", "production" };
+
+        /// <summary>
+        /// 标准轨道的中文显示名，与轨道标识数组顺序一致。
+        /// </summary>
+        private static readonly string[] s_GooglePlayTrackLabels =
+        {
+            "内部测试（internal）", "封闭测试（alpha）", "开放测试（beta）", "正式发布（production）"
+        };
+
+        /// <summary>
+        /// fastlane supply 支持的常用语言标识；其他语言可通过自定义入口填写。
+        /// </summary>
+        private static readonly string[] s_GooglePlayLanguageValues =
+        {
+            "zh-CN", "zh-TW", "zh-HK", "en-US", "en-GB", "ja-JP", "ko-KR", "de-DE",
+            "fr-FR", "es-ES", "pt-BR", "ru-RU", "id", "th", "vi"
+        };
+
+        /// <summary>
+        /// 常用语言的中文显示名，与语言标识数组顺序一致。
+        /// </summary>
+        private static readonly string[] s_GooglePlayLanguageLabels =
+        {
+            "简体中文（zh-CN）", "繁体中文·台湾（zh-TW）", "繁体中文·香港（zh-HK）",
+            "英语·美国（en-US）", "英语·英国（en-GB）", "日语（ja-JP）", "韩语（ko-KR）",
+            "德语（de-DE）", "法语（fr-FR）", "西班牙语（es-ES）", "葡萄牙语·巴西（pt-BR）",
+            "俄语（ru-RU）", "印度尼西亚语（id）", "泰语（th）", "越南语（vi）"
+        };
+
+        /// <summary>
         /// 参数字段行高。
         /// </summary>
         private const float c_ParamFieldHeight = 18f;

@@ -33,6 +33,7 @@ auto_generated: true
 ## editor
 
 - [GLO-17 Unity Editor 的 Inspector 与 EditorWindow](../2-Areas/Glossary/GLO-17-unity-editor-inspector-window.md) — Inspector 编辑对象契约，Window 承载独立工具流程
+- [GLO-21 Skill、Action 与 MCP 的职责边界](../2-Areas/Glossary/GLO-21-skill-action-mcp-boundary.md) — Skill 安排任务，Action 执行，MCP 传递调用
 
 ## external
 
@@ -61,4 +62,4 @@ auto_generated: true
 
 
 ---
-_共 19 条，分布于 10 个 category。_
+_共 20 条，分布于 10 个 category。_

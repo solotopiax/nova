@@ -84,6 +84,8 @@
                 "read",
                 "workspace-write",
                 "unity-write",
+                "external-write",
+                "credential",
                 "generated-output",
                 "build"
               ]

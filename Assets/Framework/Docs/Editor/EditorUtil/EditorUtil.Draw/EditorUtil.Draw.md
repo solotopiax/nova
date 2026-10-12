@@ -49,6 +49,10 @@ void Draw.Button(string label, float width, bool disableOnPlaying = true, Action
 void Draw.LinkButton(string url, string label = null)
 ```
 
+程序集内另有 `LinkButton(Rect rect, string url, string label = null)`，用于 ReorderableList 等手动布局；保留下划线与链接光标，点击后打开浏览器并继续当前 GUI 绘制。
+
+`InvalidBorder(Rect rect)` 为程序集内手动布局输入框绘制红色描边，仅在 Repaint 阶段绘制，不改变 GUI 变化检测状态。
+
 ---
 
 ## Draw.Foldout — 折叠块

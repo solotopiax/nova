@@ -16,6 +16,42 @@
 
 ### Breaking
 
+## [0.6.39] - 2026-10-12
+
+### Added
+
+- Pipify 新增 Google Play AAB 上传，支持本批次成功产物或已有 AAB、内部测试草稿、指定轨道发布与更新说明，隔离项目配置和凭据环境；失败、取消、超时或上传过程中重载时停止并清理临时目录。新增 nova-project-upload-google-play Skill，复用 Pipify Action 分别执行已授权上传或只读权限、版本号排查，独立声明外部写入与凭据使用，消费端 Skill 共 31 项。
+
+### Changed
+
+- Google Play 轨道与更新说明语言提供中文预设及自定义输入，兼容已有字符串配置，取消编辑不置脏；界面明确草稿、开放下载、轨道用户范围和审核限制，提示连续编号。官方参数链接、字段补填提示与参数区留白统一布局和行高，点击链接不修改配置。
+
+- Google Play 凭据只接受必填的 Unity 项目根相对 JSON 路径，执行前转为绝对路径；旧绝对路径或凭据环境变量配置须迁移。新建步骤使用已配置的凭据初值、内部测试草稿、英语（美国）、1800 秒超时，默认关闭仅验证和手动审核；既有参数不回写，公开副本脱敏配置及源码默认凭据路径。
+
+- Google Play 仅验证仍会真实上传并校验轨道、发布状态及适用比例，最后不提交 edit、不保存轨道版本或开放下载，versionCode 可能被占用；手动审核选项灰显且不传入验证进程，退出后恢复原选择。草稿同样禁用手动审核并显示未勾选，UI/CLI 共用限制，切换开放下载时保留原选择。
+
+- MainDemo 的资源构建打包批次加入 EDM4U Android 依赖解析，并新增资源构建、AAB 打包与 Google Play 上传组合批次及已有 AAB 单独上传批次，运行时快照按 Android/Google 坐标导出；上传前须配置本项目的产物、包名与凭据。
+
+- MCP 配套依赖下界提升至 0.1.4，消费工程升级 Framework 时同步取得移除能力总览专用 API 的新版 MCP。
+
+### Fixed
+
+- Pipify 只记录明确成功的 Player 构建产物并在取消时中断；CLI 等待完整异步流水线结束后返回退出码，CI 命令须省略 -quit。窗口构建后在上传开始前完成程序集重载，校验配置与 AAB 身份后继续；重载中断清除残留进度并提示远端状态，已启动上传不自动重试。
+
+- Google Play AAB 路径与应用包名必须成对填写或留空；缺项时在字段旁显示红框和补填提示、禁用运行，UI/CLI 执行前统一校验，避免重复提示。
+
+- Google Play 未选择手动审核时允许 fastlane 按 Google 要求兼容同一次 edit 的提交参数，不重传 AAB；保留勾选时不擅自改为自动审核，参数被拒时给出具体操作提示。
+
+- Pipify Step 复制成功通知固定使用绿色，避免沿用上次流水线失败通知的红色。
+
+- 发布脚本 dry-run 只做检查与命令预演，不改写 Sample、Nova.prefab、包元数据或发布资料，不生成临时签名产物。
+
+- UPM 与公开副仓脱敏覆盖微信小游戏引力 m_GravityAccessToken，非空值替换为字段专用占位符，strict 检查全部维度与公开副本残留；主仓开发配置不回写。
+
+### Breaking
+
+- 移除 Nova/Open Agent Capabilities View 菜单、AgentCapabilitiesWindow、EditorUtil.AgentCapabilities、视图专用刷新通知，以及 MCP 的 NovaProjectActionExposureSnapshot 与 NovaProjectActionGateway.GetExposureSnapshot；保留 Agent 模块、Skill 自动发现与投影、Project Action 和 MCP 执行链，外部快照调用方须改用 describe 协议。
+
 ## [0.6.38] - 2026-10-10
 
 ### Added

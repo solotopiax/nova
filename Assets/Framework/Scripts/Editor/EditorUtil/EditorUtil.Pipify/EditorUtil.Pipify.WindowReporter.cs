@@ -20,8 +20,8 @@ namespace NovaFramework.Editor
         public static partial class Pipify
         {
             /// <summary>
-            /// Window 宿主进度 Reporter：用 EditorUtility.DisplayCancelableProgressBar 模态阻塞主线程。
-            /// 模态期间 Unity 不会触发资源变更导致的域重载，保证 Window 不被销毁。
+            /// Window 宿主进度 Reporter：展示可取消进度条，异步步骤仍会让 Editor 继续更新。
+            /// 进度条不阻止程序集重载；重载与退出必须独立清理，不能依赖丢失的异步 finally。
             /// Batch 结束时通过宿主窗口 ShowNotification 弹一行右下角浮窗（不抢焦点，不被 Finder/Explorer 抢焦点）。
             /// </summary>
             internal sealed class WindowReporter : IPipifyProgressReporter
@@ -62,6 +62,13 @@ namespace NovaFramework.Editor
                 /// </summary>
                 private int m_TotalSteps;
 
+                private bool m_IsActive;
+                private int m_CurrentStepIndex;
+                private string m_CurrentStepName;
+
+                // 只保存中断说明，重载后重新打印，避免 Console 在编译时清空后丢失原因。
+                internal const string c_InterruptedWindowBatchKey = "Nova.Pipify.InterruptedWindowBatch";
+
                 /// <summary>
                 /// 构造 WindowReporter 并绑定宿主窗口。
                 /// </summary>
@@ -80,6 +87,11 @@ namespace NovaFramework.Editor
                 {
                     m_BatchName = batchName;
                     m_TotalSteps = totalSteps;
+                    m_IsActive = true;
+                    m_CurrentStepIndex = -1;
+                    m_CurrentStepName = "尚未开始步骤";
+                    AssemblyReloadEvents.beforeAssemblyReload += BeforeAssemblyReload;
+                    EditorApplication.quitting += BeforeEditorQuit;
                     Log.Debug(LogTag.Editor, "{0} Batch 开始：{1}（{2} 步）", c_LogPrefix, batchName, totalSteps);
                 }
 
@@ -92,6 +104,9 @@ namespace NovaFramework.Editor
                 /// <returns>true 表示用户点击了取消按钮；否则 false。</returns>
                 public bool ReportStep(int index, string stepDisplayName, float innerProgress)
                 {
+                    if (!m_IsActive) return true;
+                    m_CurrentStepIndex = index;
+                    m_CurrentStepName = stepDisplayName;
                     float outer = m_TotalSteps == 0 ? 0f : (index + Mathf.Clamp01(innerProgress)) / m_TotalSteps;
                     string title = string.Format("{0} - {1}", m_BatchName, stepDisplayName);
                     string info = string.Format("第 {0}/{1} 步：{2}", index + 1, m_TotalSteps, stepDisplayName);
@@ -107,6 +122,7 @@ namespace NovaFramework.Editor
                 /// <param name="error">异常（失败时非 null）。</param>
                 public void EndStep(int index, bool success, TimeSpan elapsed, Exception error)
                 {
+                    if (!m_IsActive) return;
                     if (success)
                     {
                         Log.Debug(LogTag.Editor, "{0} 第 {1} 步完成（耗时 {2:0.00}s）", c_LogPrefix, index + 1, elapsed.TotalSeconds);
@@ -124,6 +140,8 @@ namespace NovaFramework.Editor
                 /// <param name="totalElapsed">总耗时。</param>
                 public void EndBatch(bool success, TimeSpan totalElapsed)
                 {
+                    if (!m_IsActive) return;
+                    DetachLifecycle();
                     EditorUtility.ClearProgressBar();
                     if (success)
                     {
@@ -147,6 +165,52 @@ namespace NovaFramework.Editor
                     }
                     m_Host.ShowNotification(new GUIContent(toast));
                     m_Host.Repaint();
+                }
+
+                /// <summary>重载前立即清理；只有尚未启动上传的检查点可等待恢复，其余步骤明确中断。</summary>
+                internal void BeforeAssemblyReload()
+                {
+                    if (!m_IsActive) return;
+                    DetachLifecycle();
+                    EditorUtility.ClearProgressBar();
+                    if (HasWindowUploadCheckpoint) return;
+                    string message = string.Format("{0} Batch 中断：{1}，第 {2}/{3} 步：{4}。Unity 程序集重载打断了任务，不会自动重试。",
+                        c_LogPrefix, m_BatchName, m_CurrentStepIndex + 1, m_TotalSteps, m_CurrentStepName);
+                    if (m_CurrentStepName.StartsWith("Google Play 上传", StringComparison.Ordinal))
+                        message += " 远端提交状态可能未知，请先核对 Play Console。";
+                    SessionState.SetString(c_InterruptedWindowBatchKey, message);
+                    Log.Error(LogTag.Editor, "{0}", message);
+                }
+
+                /// <summary>Editor 退出不能自动恢复，清理进度与尚未启动的检查点。</summary>
+                internal void BeforeEditorQuit()
+                {
+                    if (!m_IsActive) return;
+                    DetachLifecycle();
+                    ClearWindowUploadCheckpoint();
+                    EditorUtility.ClearProgressBar();
+                }
+
+                /// <summary>幂等注销生命周期事件，避免正常结束后仍收到中断回调或重复成功通知。</summary>
+                private void DetachLifecycle()
+                {
+                    m_IsActive = false;
+                    AssemblyReloadEvents.beforeAssemblyReload -= BeforeAssemblyReload;
+                    EditorApplication.quitting -= BeforeEditorQuit;
+                }
+
+                /// <summary>重载后重新提示中断原因；仅清理有本模块标记的残留进度条。</summary>
+                [InitializeOnLoadMethod]
+                private static void ReportInterruptedBatchAfterReload()
+                {
+                    if (string.IsNullOrEmpty(SessionState.GetString(c_InterruptedWindowBatchKey, ""))) return;
+                    EditorApplication.delayCall += () =>
+                    {
+                        string message = SessionState.GetString(c_InterruptedWindowBatchKey, "");
+                        SessionState.EraseString(c_InterruptedWindowBatchKey);
+                        EditorUtility.ClearProgressBar();
+                        Log.Error(LogTag.Editor, "{0}", message);
+                    };
                 }
 
                 /// <summary>

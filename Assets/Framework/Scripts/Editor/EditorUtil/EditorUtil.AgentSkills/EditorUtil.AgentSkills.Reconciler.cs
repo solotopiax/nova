@@ -142,13 +142,15 @@ namespace NovaFramework.Editor
             };
 
             /// <summary>
-            /// Catalog 和 contract 允许声明的副作用集合。
+            /// Catalog 和 contract 允许声明的副作用集合，独立标记外部写入和凭据使用。
             /// </summary>
             private static readonly HashSet<string> s_SkillEffects = new HashSet<string>(StringComparer.Ordinal)
             {
                 "read",
                 "workspace-write",
                 "unity-write",
+                "external-write",
+                "credential",
                 "generated-output",
                 "build",
             };

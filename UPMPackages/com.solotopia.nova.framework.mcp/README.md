@@ -2,7 +2,7 @@
 
 > 包名：`com.solotopia.nova.framework.mcp`
 >
-> 当前版本：`0.1.3`
+> 当前版本：`0.1.4`
 >
 > 当前默认 Provider：`com.coplaydev.unity-mcp@10.2.0`
 

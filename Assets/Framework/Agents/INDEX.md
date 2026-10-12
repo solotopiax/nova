@@ -2,6 +2,8 @@
 
 这是 Nova Framework 随 UPM 包发布的、面向项目组的 AI Skill 系统。它帮助 Agent 完成项目接入、业务 UI、数据配置、构建和诊断；不用于开发或改造 Nova 框架本身。
 
+首次了解这些概念时，先读 [用人话理解 Skill、Action 与 MCP](../Docs/Onboarding/AI_SKILLS_ACTIONS_MCP.md)：Skill 安排任务，Action 执行具体操作，MCP 传递工具请求；Router、Workflow、Operation 是三种 Skill。
+
 ## 执行模型
 
 ```text
@@ -31,6 +33,8 @@
 稳定、可类型化、可验证且可跨项目复用的单元操作优先注册为 `EditorUtil.AgentActions` 下的 C# Project Action。Action 使用 `nova.project.<domain>.<verb>` 稳定 ID，并独立声明操作类型、副作用、幂等性、必需证据、确认门和资源锁；一个 Action 可以被多个 Skill 复用，不与 Skill 一对一绑定。
 
 Skill 仍负责自然语言路由、冻结业务输入和开放式决策；Action 负责确定性执行。业务代码设计、Prefab/Scene 结构设计、协议语义和真机体感不能被“万能反射 Action”替代。完整执行协议见 [EditorUtil.AgentActions](../Docs/Editor/EditorUtil/EditorUtil.AgentActions/EditorUtil.AgentActions.md)。
+
+Catalog 与 Skill 契约通过 `external-write`、`credential` 单独声明外部写入和凭据使用；Python 校验器、JSON Schema 与 Unity 自动投影器使用同一组允许值。Google Play 上传复用已有 Pipify Action，其 `static` 最低证据并不省略 fastlane 上传结果；具体配置、诊断、验证上传和保存上传的验收按 Skill 模式执行。
 
 当前 Registry 已实现的 Project Action 全部进入 MCP 显式白名单。`Destructive`、`ExternalWrite`、`Credential` 与 `Delivery` 不再作为隐藏 Action 的理由，但仍必须经过强类型 Schema、只读 Plan、一次性确认、资源锁、Receipt 与 Verify；Registry 与白名单不一致时 Gateway 整体 fail-closed，不能退化到 `execute_code`、反射或临时 C#。
 
@@ -77,6 +81,7 @@ Skill 仍负责自然语言路由、冻结业务输入和开放式决策；Actio
 | `nova-project-generate-hybridclr-artifacts` | Operation | 执行 HybridCLR Generate All 与 link.xml 验证；不含 DLL Copy、最终 Player 或发布 | 生成物 + 编译 |
 | `nova-project-build-bundles` | Operation | 构建并核验本地 YooAsset Bundle 产物 | Bundle 构建产物 |
 | `nova-project-build-player` | Operation | 构建并核验本地 Player 或平台工程 | Player `BuildReport` 与产物 |
+| `nova-project-upload-google-play` | Operation | 配置 Google Play AAB 上传、执行已授权 Pipify Batch，或只读排查权限/版本号/提交失败 | 配置/诊断证据；上传须有匹配模式的 fastlane 成功结果 |
 | `nova-project-integrate-event` | Operation | 接入业务事件定义、发布订阅、分发时序、注销和回池生命周期 | Play |
 | `nova-project-integrate-persistence` | Operation | 接入 PlayerPrefs、FileFragment 或 SQLite 业务存储并验证耐久性 | Play |
 | `nova-project-integrate-content-scene` | Operation | 接入 Nova 资源化 Content 场景并验证 ISceneHandle 加载/卸载生命周期 | Play |
@@ -86,11 +91,11 @@ Skill 仍负责自然语言路由、冻结业务输入和开放式决策；Actio
 | `nova-project-preflight-build` | Operation | 构建前只读检查 Target、场景、Config、YooAsset Package 与 HybridCLR 前置 | 静态规则 |
 | `nova-project-resolve-android-dependencies` | Operation | 冻结 EDM4U 图并受控重建、核验 Android 依赖输出 | 解析状态与产物摘要 |
 
-当前 Catalog 共 30 项。Table 单次导出由 `nova-project-export-tables` 直接调用受控 Action；完整表接入仍由 `nova-project-integrate-table` 负责。Framework 自升级独立为 `nova-project-upgrade-framework`，由包外 UPM 宿主跨 reload 执行；其余包继续走通用包管理 Skill。Build Preflight 与 Android Resolve 均使用已开放 Action，后者仍需精确确认其 Force Resolve 写入集。HybridCLR 两项继续严格分工：`refresh-hotfix-dlls` 只做当前坐标的业务 DLL compile -> copy/import，`generate-hybridclr-artifacts` 只做 Generate All 与 link.xml 验证；最终 Player 后的 `CopyAotDlls` 不归入二者。CDN 与本地 RC Workflow 仍等待发布顺序和独立 Operation 在真实项目中稳定后再组合。
+当前 Catalog 共 31 项。Table 单次导出由 `nova-project-export-tables` 直接调用受控 Action；完整表接入仍由 `nova-project-integrate-table` 负责。Framework 自升级独立为 `nova-project-upgrade-framework`，由包外 UPM 宿主跨 reload 执行；其余包继续走通用包管理 Skill。Build Preflight 与 Android Resolve 均使用已开放 Action，后者仍需精确确认其 Force Resolve 写入集。HybridCLR 两项继续严格分工：`refresh-hotfix-dlls` 只做当前坐标的业务 DLL compile -> copy/import，`generate-hybridclr-artifacts` 只做 Generate All 与 link.xml 验证；最终 Player 后的 `CopyAotDlls` 不归入二者。CDN 与本地 RC Workflow 仍等待发布顺序和独立 Operation 在真实项目中稳定后再组合。
 
 ## 当前限制
 
 - Skill 定义与 Framework UPM 同版本发布，不维护独立 Skill 版本。
 - 自动同步遇到冲突或来源问题时只做安全项，并以 `partial` 提示项目组处理；不要把受管同步副本当作可反向编辑的来源。
-- 当前包含 30 个实验性 Skill；新增 Skill 前应先按用户旅程和风险面确认其是否应成为顶层 Skill。
+- 当前包含 31 个实验性 Skill；新增 Skill 前应先按用户旅程和风险面确认其是否应成为顶层 Skill。
 - 静态检查、Unity 编译、Play 验证和真机/服务端证据彼此独立；报告必须标明实际达到的层级。

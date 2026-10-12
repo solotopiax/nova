@@ -21,6 +21,7 @@ related:
   - "[[ADR-026-pipify-runner-no-batch-locking|ADR-026]]"
   - "[[PAT-18-editor-window-vs-util-split|PAT-18]]"
   - "[[PAT-49-pipify-step-no-batch-lock-assumption|PAT-49]]"
+  - "[[GLO-21-skill-action-mcp-boundary|GLO-21]]"
 ---
 
 # ADR-081：Nova Project Action 采用按操作性质分类的受控执行层
@@ -83,6 +84,7 @@ Pipify 是顺序 Batch 与 UI/CLI 流水线，不提供每个业务单元统一�
 
 ## 关联
 
+- 术语与调用关系：[[GLO-21-skill-action-mcp-boundary|GLO-21]]
 - 程序集方向：[[ADR-020-assembly-dependency-direction|ADR-020]]
 - 禁止 Editor 批锁：[[ADR-026-pipify-runner-no-batch-locking|ADR-026]]
 - Window 与工具层分离：[[PAT-18-editor-window-vs-util-split|PAT-18]]

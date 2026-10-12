@@ -479,7 +479,7 @@ namespace NovaFramework.Editor
                 Batch b = m_Settings.Batches[m_SelectedBatchIndex];
                 if (i < 0 || i >= b.Items.Count) return c_ItemRowHeight;
                 if (!m_ExpandedItemIndices.Contains(i)) return c_ItemRowHeight + 4f;
-                return c_ItemRowHeight + 4f + EstimateParamsHeight(b, i);
+                return c_ItemRowHeight + 4f + c_ParamsTopSpacing + EstimateParamsHeight(b, i);
             };
 
             m_ItemsList.onReorderCallback = (ReorderableList list) =>
@@ -565,6 +565,14 @@ namespace NovaFramework.Editor
         private void CopyBatchItemToClipboard(BatchItem source)
         {
             m_CopiedBatchItem = CloneBatchItem(source);
+            // Unity 通知共用文字样式；复制成功时重设为绿色，避免沿用上一次失败的红色。
+            GUIStyle notificationStyle = typeof(EditorStyles)
+                .GetProperty("notificationText", BindingFlags.NonPublic | BindingFlags.Static)
+                ?.GetValue(null) as GUIStyle;
+            if (notificationStyle != null)
+            {
+                notificationStyle.normal.textColor = new Color(0.40f, 1.00f, 0.60f, 1f);
+            }
             ShowNotification(new GUIContent("已复制 Step，可在“+”菜单中粘贴"));
         }
 
@@ -622,6 +630,8 @@ namespace NovaFramework.Editor
                 out string autoLinkError);
             float helpBoxHeight = GetParamHelpBoxHeight(info.ParamsType);
             float height = 4f + (helpBoxHeight > 0f ? helpBoxHeight + 4f : 0f);
+            if (!string.IsNullOrEmpty(GetParamDocumentationUrl(info.ParamsType)))
+                height += c_ItemRowHeight + 8f;
             for (int i = 0; i < fields.Length; i++)
             {
                 FieldInfo field = fields[i];

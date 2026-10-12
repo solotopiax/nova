@@ -44,7 +44,11 @@ TRANSACTION_SCHEMA_VERSION = 1
 SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 TRANSACTION_ID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
 SKILL_KINDS = {"router", "operation", "workflow"}
-SKILL_EFFECTS = {"read", "workspace-write", "unity-write", "generated-output", "build"}
+# 外部上传与凭据使用必须单独声明，不能仅以本地写入掩盖远端副作用。
+SKILL_EFFECTS = {
+    "read", "workspace-write", "unity-write", "external-write", "credential",
+    "generated-output", "build",
+}
 MINIMUM_EVIDENCE_LEVELS = {"static", "compile", "play", "bundle-build", "player-build"}
 BUILD_ARTIFACT_EVIDENCE_LEVELS = {"bundle-build", "player-build"}
 CONTRACT_IDEMPOTENCY = {"read-only", "ensure-state", "orchestrate"}

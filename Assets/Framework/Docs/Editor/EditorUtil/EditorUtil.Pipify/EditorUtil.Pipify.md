@@ -27,6 +27,7 @@
 | `EditorUtil.Pipify/EditorUtil.Pipify.Runner.cs` | `EditorUtil.Pipify.Runner` | 纯执行引擎（internal static class） |
 | `EditorUtil.Pipify/EditorUtil.Pipify.AsyncJob.cs` | `EditorUtil.Pipify` | Editor 外部调用的异步任务启动、状态保存与查询 |
 | `EditorUtil.Pipify/EditorUtil.Pipify.WindowReporter.cs` | `EditorUtil.Pipify.WindowReporter` | Window 宿主进度 Reporter（EditorUtility 模态进度条） |
+| `EditorUtil.Pipify/EditorUtil.Pipify.WindowUpload.cs` | `EditorUtil.Pipify` | 窗口构建后、上传尚未开始时的程序集重载交接 |
 | `EditorUtil.Pipify/EditorUtil.Pipify.CliReporter.cs` | `EditorUtil.Pipify.CliReporter` | CLI 宿主进度 Reporter（纯日志，恒返回 false） |
 | `EditorUtil.Pipify/Steps/PipifySteps.HybridCLR.cs` | `PipifySteps` | 内置 Step：HybridCLR 分组 10 个 Step（3 个主流程：`hybridclr.validate_linkxml` / `hybridclr.copy_aot_dll` / `hybridclr.copy_game_dll`；仅编译 DLL 入口：`hybridclr.compile_dll_active_build_target`；对齐 HybridCLR/Generate 子菜单的 6 个细粒度入口：`hybridclr.generate_all` / `hybridclr.generate_linkxml` / `hybridclr.generate_method_bridge` / `hybridclr.generate_aot_generic_reference` / `hybridclr.generate_il2cpp_def` / `hybridclr.generate_aot_dlls`） |
 | `EditorUtil.Pipify/Steps/PipifySteps.BundleBuilder.cs` | `PipifySteps` | 内置 Step：构建资源分组 2 个独立入口（`bundlebuilder.build` / DisplayName=Bundles：标准 ScriptableBuildPipeline + AssetBundle；`bundlebuilder.build_raw_file` / DisplayName=Raw Files：PackRawFile 对应 RawFileBuildPipeline + RawBundle）；WebGL 支持纯 CDN、按 Tag 首包和全量首包三种布局 |
@@ -37,6 +38,7 @@
 | `EditorUtil.Pipify/Definitions/PipifyReadOnlyAttribute.cs` | `PipifyReadOnlyAttribute` | 字段渲染特性：PipifyWindow 禁用该字段编辑；当前用于随 Unity Active BuildTarget 同步的平台字段 |
 | `EditorUtil.Pipify/Definitions/PipifyVisibleWhenAttribute.cs` | `PipifyVisibleWhenAttribute` | 字段显隐特性：依赖另一字段当前整型化值匹配 AnyOf 时才显示 |
 | `EditorUtil.Pipify/Steps/PipifySteps.Build.cs` | `PipifySteps` | 内置 Step：打包分组 1 个 Step |
+| `EditorUtil.Pipify/Steps/PipifySteps.GooglePlay.cs` | `PipifySteps` | `googleplay.upload_aab`：同批次成功 AAB 或显式路径上传，默认内部测试草稿，凭据仅填写项目根相对路径，执行时转换为绝对路径 |
 | `EditorUtil.Pipify/Steps/PipifySteps.Export.cs` | `PipifySteps` | 内置 Step：Config 导出 |
 | `EditorUtil.Pipify/Steps/PipifySteps.Export.All.cs` | `PipifySteps` | 内置 Step：`export.excel.all`，顺序聚合所有 Excel 派生导出，排除 Config 与 Proto |
 | `EditorUtil.Pipify/Steps/PipifySteps.Notification.cs` | `PipifySteps` | 内置 Step：`notification.feishu_webhook`，发送飞书机器人文本消息 |
@@ -135,9 +137,11 @@ key 格式优先级（高 > 低）：
 2. 下一次 `EditorApplication.update` 解除调度回调后，任务进入 `Running` 并复用原有 `RunBatchForCliAsync`。
 3. Runner 正常结束后状态为 `Succeeded`；任何异常都会保存为 `Failed` 与 `Error`，同时输出 Error 日志。
 4. 外部调用方使用 `GetBatchJob(jobId)` 查询最终结果。未知任务编号返回 null。
-5. 任务状态保存在当前 Editor 域内；Domain Reload 后旧任务编号不可再查询。
+5. 任务状态另保存在 `Library/Nova/Pipify/Jobs/`；Domain Reload 后可查询旧任务编号，未结束的任务会标为 `Interrupted`，不会自动重放。
 
-该入口只把耗时 Batch 移出 `/api/exec` 的当前调用栈，不改变 Runner 顺序、Step 行为、参数覆盖或 Reporter 语义。正式 batchmode CLI 仍使用 `Cli.Run()` 同步等待并根据结果退出进程。
+该入口只把耗时 Batch 移出 `/api/exec` 的当前调用栈，不改变 Runner 顺序、Step 行为、参数覆盖或 Reporter 语义。正式 batchmode CLI 使用 `Cli.Run()` 异步等待并根据结果退出进程，调用命令须省略 `-quit`。
+
+Runner 为每个 Batch 创建独立的构建记录，不跨 Batch 复用。窗口已有成功产物并即将调用 `googleplay.upload_aab` 时，通过 `SessionState` 保存尚未执行的游标、工作区 GUID、配置与产物指纹、构建时身份，完成编译和重载后从同一 Runner 继续；不重复构建，不保存签名密码或参数正文。上传开始前消费检查点，已经开始的上传不会自动重试。CLI / Job 保留中断后不重放语义。上传配置见 [Google Play 上传](PipifySteps.GooglePlay.md)。
 
 ## §11 使用示例
 

@@ -26,6 +26,10 @@
 
 所有 setter 均为 `internal`，Step 实现侧不得修改上下文字段；Runner 在每次调用前赋值。
 
+内部 `BuildState` 在同一 Batch 共享，Batch 之间独立，不属于新增公开 API。`build.package` 开始时清空旧产物，明确成功后记录报告路径、平台、DevelopmentBuild 与构建时包名，供 `googleplay.upload_aab` 使用。
+
+窗口上传尚未开始时可将构建身份交接到同一次 Editor 会话重载后的 Runner；以原存档指纹、平台和产物文件指纹校验，不从当前 PlayerSettings 猜包名，不跨 Batch 复用。
+
 ## §11 使用示例
 
 ```csharp

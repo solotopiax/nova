@@ -19,6 +19,7 @@ related:
   - "[[PAT-49-pipify-step-no-batch-lock-assumption|PAT-49]]"
   - "[[PAT-51-sbp-buildcache-vs-lock-reload-incompat|PAT-51]]"
   - "[[PAT-58-pipeline-fail-fast-no-silent-skip|PAT-58]]"
+  - "[[PAT-169-google-play-upload-artifact-and-remote-stage-boundary|PAT-169]]"
 ---
 
 # MOC-Pipify：Pipify 构建流水线图谱
@@ -32,6 +33,7 @@ Pipify 是 Nova 的 Editor 批处理入口，用来串起导出、HybridCLR 产�
 - 要新增或修改 `PipifyStep`
 - 要调整 Excel 导出、HybridCLR、Bundle 构建顺序
 - 要判断某个构建动作属于 Runner、Step，还是邻接工作流
+- 要接入 Google Play 上传或区分验证、保存、审核与可下载
 
 ## 主入口
 
@@ -85,6 +87,7 @@ PipifyWindow / CLI
 - 改批锁 / 刷新相关假设：[[ADR-027-rule-ban-editor-refcount-batch-apis]]、[[PAT-49-pipify-step-no-batch-lock-assumption]]
 - 改 HybridCLR 构建顺序：[[ADR-028-hybridclr-copy-aot-after-buildplayer]]
 - 改失败策略：[[PAT-58-pipeline-fail-fast-no-silent-skip]]
+- Google Play 上传与远端结果验收：[[PAT-169-google-play-upload-artifact-and-remote-stage-boundary|PAT-169]]；当前参数与默认值见 `Assets/Framework/Docs/Editor/EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md`
 
 ## 关联
 

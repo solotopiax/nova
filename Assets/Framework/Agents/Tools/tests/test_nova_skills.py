@@ -538,6 +538,30 @@ class NovaSkillsToolTests(unittest.TestCase):
 
         self.assertEqual([], load_tool().validate_agents_root(self.agents_root))
 
+    def test_reconcile_preserves_external_write_and_credential_effects(self):
+        """外部上传副作用须被校验器接受并原样分发，不能降为本地写入。"""
+        catalog = self._read_catalog()
+        entry = catalog["skills"][1]
+        entry["effects"].extend(["external-write", "credential"])
+        self._write_catalog(catalog)
+        contract_path = self.agents_root / entry["path"] / "references" / "contract.json"
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        contract["effects"] = entry["effects"]
+        contract_path.write_text(json.dumps(contract, indent=2), encoding="utf-8")
+        self._write_consumer_manifest()
+        tool = load_tool()
+
+        self.assertEqual([], tool.validate_agents_root(self.agents_root))
+        result = tool.reconcile(self.project_root)
+
+        self.assertIn(entry["id"], result["added"])
+        projected_contract = (
+            self.project_root / ".agents" / "skills" / entry["id"]
+            / "references" / "contract.json"
+        )
+        self.assertEqual(contract, json.loads(projected_contract.read_text(encoding="utf-8")))
+        self.assertTrue(all(not items for items in tool.doctor(self.project_root).values()))
+
     def test_validate_rejects_build_effect_without_build_artifact_evidence(self):
         """声明 build 副作用时不能用 compile 或 play 充当构建产物证据。"""
         catalog = self._read_catalog()
@@ -586,6 +610,10 @@ class NovaSkillsToolTests(unittest.TestCase):
 
         self.assertIn("replacedBy", skill_properties)
         self.assertIn("build", skill_properties["effects"]["items"]["enum"])
+        self.assertEqual(
+            load_tool().SKILL_EFFECTS,
+            set(skill_properties["effects"]["items"]["enum"]),
+        )
         self.assertIn("bundle-build", skill_properties["minimumEvidence"]["enum"])
         self.assertIn("player-build", skill_properties["minimumEvidence"]["enum"])
 
@@ -610,6 +638,7 @@ class NovaSkillsToolTests(unittest.TestCase):
                 "nova-project-update-localization",
                 "nova-project-build-bundles",
                 "nova-project-build-player",
+                "nova-project-upload-google-play",
                 "nova-project-data-driven-ui",
                 "nova-project-integrate-network-api",
                 "nova-project-integrate-sound",
@@ -703,7 +732,7 @@ class NovaSkillsToolTests(unittest.TestCase):
         self.assertIn("内部 `NetService`", skill_content)
         self.assertIn("无测试端点、账号或成功探针时返回 `blocked`", skill_content)
         self.assertIn("输入已确认且已执行允许步骤", skill_content)
-        self.assertIn("当前 Catalog 共 30 项", agents_index)
+        self.assertIn(f"当前 Catalog 共 {len(catalog['skills'])} 项", agents_index)
         self.assertNotIn("当前包含 13 个实验性 Skill", agents_index)
         self.assertIn("必填输入未确认按 Skill 返回 `blocked`", agents_index)
         self.assertIn(
@@ -874,9 +903,9 @@ class NovaSkillsToolTests(unittest.TestCase):
             }
             <= set(contract["locks"])
         )
-        self.assertIn("当前 Catalog 共 30 项", agents_index)
+        self.assertIn(f"当前 Catalog 共 {len(catalog['skills'])} 项", agents_index)
         self.assertIn("nova-project-integrate-sound", agents_index)
-        self.assertIn("当前 30 项能力", docs_index)
+        self.assertIn(f"当前 {len(catalog['skills'])} 项能力", docs_index)
         self.assertIn("大厅 BGM", quick_start)
         router_sound_ambiguity_line = next(
             line
@@ -917,7 +946,6 @@ class NovaSkillsToolTests(unittest.TestCase):
         entries = {entry["id"]: entry for entry in catalog["skills"]}
         hotfix = entries["nova-project-refresh-hotfix-dlls"]
 
-        self.assertEqual(30, len(entries))
         self.assertEqual("operation", hotfix["kind"])
         self.assertEqual(["build", "hotfix"], hotfix["journeys"])
         self.assertEqual(
@@ -1068,11 +1096,11 @@ class NovaSkillsToolTests(unittest.TestCase):
         )
         self.assertIn("compile -> copy", router_hotfix_route_line)
         self.assertIn("full AOT、Bundle、Player", router_hotfix_route_line)
-        self.assertIn("当前 Catalog 共 30 项", agents_index)
+        self.assertIn(f"当前 Catalog 共 {len(catalog['skills'])} 项", agents_index)
         self.assertIn("仅刷新本地业务 DLL，不是发布", agents_index)
-        self.assertIn("当前 30 项能力", docs_index)
+        self.assertIn(f"当前 {len(catalog['skills'])} 项能力", docs_index)
         self.assertIn("刷新 HybridCLR 业务热更 DLL", docs_index)
-        self.assertIn("当前 30 项", quick_start)
+        self.assertIn(f"当前 {len(catalog['skills'])} 项", quick_start)
         self.assertIn("刷新 HybridCLR 业务热更 DLL", quick_start)
         self.assertIn("ConfigMasterSO.HybridEditorConfigs", hybridclr_docs)
         self.assertNotIn("ConfigMasterSO.AotMetadataDlls", hybridclr_docs)

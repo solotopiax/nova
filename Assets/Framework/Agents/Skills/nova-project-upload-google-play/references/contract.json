@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "id": "nova-project-upload-google-play",
+  "kind": "operation",
+  "compatibility": {
+    "framework": ">=0.6.38",
+    "unity": ">=6000.4",
+    "precondition": "实际安装包注册 googleplay.upload_aab；自动执行还须 live describe 返回 nova.project.pipify.run-batch；版本范围本身不证明 Step 可用。"
+  },
+  "requires": [],
+  "actionAdapters": [
+    {
+      "kind": "workspace-inspection",
+      "entry": "existing Pipify configuration, fastlane logs, AAB metadata and credential type/project_id/client_email",
+      "when": "只读预检或排查已有失败；凭据正文、私钥和 token 不进入输出"
+    },
+    {
+      "kind": "unity-menu",
+      "entry": "Nova/Open Pipify",
+      "when": "配置指定 Batch 时通过现有 Editor 界面保存 googleplay.upload_aab 参数；不自动运行"
+    },
+    {
+      "kind": "agent-action",
+      "entry": "nova.project.pipify.run-batch",
+      "when": "live describe 已确认入口、用户已授权完整 Batch 及真实上传（含仅验证），按冻结快照 plan 后 execute 一次；verify 可轮询及断线恢复"
+    },
+    {
+      "kind": "cli",
+      "entry": "NovaFramework.Editor.EditorUtil.Pipify.Cli.Run",
+      "when": "用户明确选择已有 CI 的已保存 Batch 执行；按当前 CLI 文档省略 -quit 并等待退出，不作为 MCP 失败的自动旁路"
+    }
+  ],
+  "inputs": [
+    { "name": "projectRoot", "required": true },
+    { "name": "mode", "required": true, "constraint": "configure, upload or diagnose" },
+    { "name": "activePipifySettingsGuidAndBatch", "required": false, "constraint": "配置或上传必填；上传须冻结已保存设置 Hash、有序 Step/参数和活动 BuildTarget" },
+    { "name": "aabIdentity", "required": false, "constraint": "已有 AAB 上传前核对 SHA-256、包名、versionCode 和签名来源；同批次构建前冻结预期身份、构建/签名/输出参数，执行后核对新 BuildReport/产物哈希" },
+    { "name": "trackReleaseStatusAndRollout", "required": false, "constraint": "上传必填；配置可沿用默认用途；InProgress 仅限 production 且比例在 0 与 1 之间" },
+    { "name": "validateOnlyAndChangesNotSentForReview", "required": false, "constraint": "上传必填；配置可沿用默认值；仅验证仍真实上传，手动审核选项不传入；Draft 按工具限制禁用手动审核并按 false 执行，原保存值只在非验证的开放下载用途下生效" },
+    { "name": "credentialsRelativePathAndClientEmail", "required": false, "constraint": "上传必填；只使用当前项目凭据，不使用主仓示例账号" },
+    { "name": "fastlaneEntryTimeoutAndReleaseNotes", "required": false, "constraint": "上传须解析已有 fastlane 并冻结超时与适用更新说明" },
+    { "name": "existingFailureEvidence", "required": false, "constraint": "排障必填；保留失败时间、原始参数、错误与已有远端状态证据" },
+    { "name": "authorizedBatchAndRemoteEffectScope", "required": false, "constraint": "上传前必填；绑定目标包、versionCode、文件内容、轨道、用途、凭据账号和完整流水线副作用" }
+  ],
+  "effects": ["read", "workspace-write", "unity-write", "external-write", "credential"],
+  "writeScope": {
+    "allow": [
+      "configure 模式：指定活动 PipifySettingsSO 的指定 Batch/googleplay.upload_aab 参数，经 Unity Editor 保存",
+      "upload 模式：授权目标包和轨道的 Google edit、AAB 上传、验证或 commit；仅验证同样属于远端写入",
+      "upload 模式：本轮 nova-googleplay 临时工作目录及 Pipify Job 状态；正式 AAB 保留",
+      "用户已明确授权构建后上传的完整 Batch 时，其计划逐项列出的本地构建及导出输出；该附加范围须按对应构建 Skill 另行核验",
+      "必要的限长脱敏诊断与用户要求保留的证据"
+    ],
+    "deny": [
+      "diagnose 模式的任何项目/后台写入、构建、上传或重试",
+      "其他应用、轨道、未授权步骤或既有配置/证据/产物的修改或清理",
+      "任意 C#、临时 runner、直接 shell supply 或另起 Unity 绕过当前受控执行入口",
+      "私钥、token、完整凭据 JSON 的输出、复制或公开交付；将凭据加入客户端",
+      "Cloud/Play Console 用户邀请、IAM/应用权限修改、密钥创建、签名更换或 versionCode 自动递增",
+      "失败、超时、断线、取消、重载后的自动重放",
+      "Git commit/push、UPM 发布、CDN 或其他商店部署"
+    ]
+  },
+  "locks": ["unity-editor", "pipify-batch", "Assets", "Packages", "ProjectSettings", "Build"],
+  "idempotency": "orchestrate",
+  "confirmation": {
+    "requiredFor": [
+      "真实 Google Play 上传，包括 ValidateOnly 验证上传及凭据使用",
+      "完整 Batch 中的附加构建、导出、覆盖和外部副作用",
+      "切换目标应用/轨道/用途/验证模式/凭据账号，或 AAB 与凭据文件内容发生漂移",
+      "核对远端状态后发起新一次重试"
+    ],
+    "rule": "先完成可审阅配置和只读检查；沿用已绑定本次目标与副作用的用户授权。无绑定授权时在真实上传前确认目标包、versionCode、已有 AAB SHA-256 或待构建参数、轨道、用途、审核行为、凭据账号和完整 Batch。Pipify Action SubmitOnce，只执行一次；已有文件内容不由 Action 冻结，调用前复核。"
+  },
+  "minimumEvidence": "static",
+  "resultStates": ["success", "partial", "blocked", "not_applicable"],
+  "evidence": [
+    "本次模式与范围：配置成功、诊断完成、验证上传成功或保存上传成功须明确区分",
+    "配置模式：指定资产已保存，AAB/包名配对、凭据相对路径及用途参数核对",
+    "诊断模式：Google/fastlane 原始错误、配置和必要的非秘密账号字段；后台权限未访问时标明未核实",
+    "上传模式：冻结 Settings/Batch、目标包名/versionCode、凭据账号、轨道、用途和授权；已有 AAB 的 SHA-256 在执行前核对，同批构建的哈希与 BuildReport 在执行后核对",
+    "上传模式：Pipify Job 终态与上传 Step 的 fastlane 成功结果；Summary 或通用 Runner success 不能单独替代",
+    "只有确认对应后台状态/实际下载结果时才声明审核或可下载；远端状态未知时不得自动重试",
+    "本轮临时目录/文件清理结果，正式产物和用户已有改动保留"
+  ]
+}

@@ -8,7 +8,7 @@ Nova Project Skill 负责理解项目组自然语言任务、冻结输入和组�
 
 当前基线：
 
-- 消费端 Skills 真源：`Assets/Framework/Agents/Skills/`，共 30 项，统一使用 `nova-project-*`。
+- 消费端 Skills 真源：`Assets/Framework/Agents/Skills/`，共 31 项，统一使用 `nova-project-*`。
 - Skill 发现 Catalog：`Assets/Framework/Agents/catalog.json`。它只路由 Skill，不复制 Action Descriptor。
 - Action 唯一执行真相：运行中的 C# Registry Descriptor；所有已注册 Project Action 都进入显式 MCP 白名单，并通过 `describe` 渐进读取 Schema。
 - 已注册 Action：20 个。
@@ -66,13 +66,7 @@ Assets/Framework/Agents/
 
 三个版本字段彼此独立：`Agents/catalog.json.schemaVersion` 表示 Skill Catalog 文件格式，单 Skill `references/contract.json.schemaVersion` 表示 Skill 契约文件格式，`AgentActionDescriptor.ContractMajor` 表示 Action 与 Recovery Receipt 的兼容语义；数值不能横向比较，也不代表 Framework 包版本。
 
-## 4.1 Agent 能力总览窗口
-
-- 菜单入口：`Nova/Open Agent Capabilities View`，位于 `Nova/Open Project Guard` 下方。
-- 窗口只读展示当前 Framework Skills、项目投影状态、运行中的 Action Registry 与 Nova MCP 开放状态，不执行 Action，也不修改项目。
-- Skill 数据来自 `Agents/catalog.json`、`SKILL.md` 与 `references/contract.json`；Action 数据来自 live Registry；MCP 状态来自 Nova MCP 的显式开放策略，不维护第二份手工清单。
-- 窗口明确区分“Skill 可被 Agent 发现”“Action 已注册”“Action 已向 MCP 开放”和“契约或投影异常”，并展示 Skill 与 Action 的多对多关系。
-- 窗口代码只负责筛选、选择、刷新和绘制；扫描、解析与校验统一由 `EditorUtil.AgentCapabilities` 提供。
+Skill 发现与投影继续由 `Agents/catalog.json` 和 `EditorUtil.AgentSkills` 提供；Action 能力通过 live Registry 与 MCP `describe` 查询，不再提供独立的能力总览窗口。
 
 ## 5. Action 内核
 
@@ -167,7 +161,7 @@ UPMPackages/com.solotopia.nova.framework.mcp/
 
 正式消费链还要求每个依赖版本及其 registry scope 在安装 Framework 之前就可解析。当前默认依赖为 `com.coplaydev.unity-mcp@10.2.0`，由 NovaSpark 预先配置 OpenUPM 精确 scope 后按 Nova MCP 包的 semver 传递依赖解析；正式发布前必须用真实消费工程验证该来源。开发工程中另外安装的 Provider 只用于开发态验证，不改变对外包默认适配 Unity MCP 的事实。
 
-30 个 Skill 不会逐个注册成 MCP Tool。Skill 由 Agent 从 `.agents/skills/` 发现；当前默认 Adapter 只从 `tools/list` 暴露 `nova_project_action`，再由该 Tool 的 live `describe` 返回当前安全开放的 Action。
+31 个 Skill 不会逐个注册成 MCP Tool。Skill 由 Agent 从 `.agents/skills/` 发现；当前默认 Adapter 只从 `tools/list` 暴露 `nova_project_action`，再由该 Tool 的 live `describe` 返回当前安全开放的 Action。
 
 唯一 Tool：
 

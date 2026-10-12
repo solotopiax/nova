@@ -75,15 +75,21 @@ CLI 可使用 `-configMasterGuid` 与 `-pipifySettingsGuid` 成对指定工作�
 | `EnsureItemsListForSelectedBatch()` | Batch 索引与 `m_ItemsListBoundBatchIndex` 不符时重建 ReorderableList，同时清空 `m_ExpandedItemIndices` 和 `m_ParamsCache` |
 | ReorderableList Header | 显示 `"Steps (N)"`（N = 当前 Items 数量） |
 | ReorderableList 行内容 | 序号标签 + `[Category] DisplayName` + 参数配置按钮（有参时显示）+ 复制按钮 + 自定义删除按钮（×）；Step 未注册时仍可复制并以红色 `[Missing] StepId` 显示 |
-| 参数配置按钮 | 切换 `m_ExpandedItemIndices` 集合中对应索引的存在性，展开后通过 `DrawItemParams` 绘制参数字段 |
+| 参数配置按钮 | 切换 `m_ExpandedItemIndices` 集合中对应索引的存在性，展开后通过 `DrawItemParams` 绘制参数字段；参数区与标题主行底部保留 8 像素间距，行高同步计入留白。Google Play 上传步骤在 HelpBox 下方显示“官方参数说明”链接，打开 fastlane 官方文档；链接及留白计入行高，点击不置脏 |
+| Google Play 轨道与语言 | `Track`、`ReleaseNotesLanguage` 用带中文名称和实际标识的预设下拉；“自定义…”打开现有单行弹窗，取消不置脏。预设外的旧值原样显示和保留，存储及 CLI 仍使用字符串；单行高度不变 |
+| Google Play 默认配置 | 新建上传步骤默认内部测试草稿、`en-US`、`ValidateOnly=false`、`ChangesNotSentForReview=false`、超时 1800 秒；凭据路径沿用主仓参数源码初值，其余文本留空。已保存的步骤不回写；完整默认值与公开副本差异见 [Google Play 上传配置](../EditorUtil/EditorUtil.Pipify/PipifySteps.GooglePlay.md#新建步骤的默认配置) |
+| Google Play 凭据 | 仅保留必填的 `CredentialsPath`，标题为“凭据 JSON 路径（相对 Unity 项目根目录）”；按标题实际宽度拓宽该 Step 的标签列，避免截断。执行层接受项目内外的项目根相对路径并转换为绝对路径，拒绝绝对路径、缺失文件和非 JSON 后缀；不提供凭据环境变量字段 |
+| Google Play AAB 与包名 | 两项同时填写或同时留空；只填其中一项时，缺失输入框红色描边，下方 Error HelpBox 提示补填或同时清空，提示高度计入条目高度。保存后或折叠该步骤仍禁用运行，补全后按原有保存门禁恢复；执行入口共用成对校验 |
+| Google Play 版本用途与审核 | `ReleaseStatus` 标题为“上传后用途”，选项说明保存草稿或向该轨道全部/部分用户开放下载；审核及后台设置仍生效。`Rollout` 标题为“开放下载比例（0～1）”；`ChangesNotSentForReview` 标题为“稍后在后台手动提交审核”。草稿时按本工具使用限制灰显且显示未勾选，旁边说明禁用原因；执行时忽略原保存的勾选值，不请求延后审核。切回开放下载用途后恢复原选择；仅查看不置脏，也不改写已有资产 |
+| Google Play 仅验证模式 | `ValidateOnly` 标题为“仅验证上传（不保存到轨道）”；勾选后用途仍可编辑并标为“上传后用途（仅校验）”，用途及适用比例用于验证轨道变更。说明框提示真实上传、不在目标轨道保存新版本及 versionCode 可能被占用；`ChangesNotSentForReview` 灰显并显示未勾选，执行时不传入，保留原值供非验证且开放下载时恢复；审核字段旁不重复显示验证说明，说明高度同步计入条目 |
 | 删除按钮 | 通过 `EditorApplication.delayCall` 延迟移除，防止 Layout/Repaint 阶段直接修改集合导致崩溃；同时清空 `m_ExpandedItemIndices` / `m_ParamsCache` 并设 `m_ItemsListBoundBatchIndex = -1` 强制重建 ReorderableList，避免 key 移位错位 |
-| 复制按钮 | 将当前 Step 的 `StepId + ParamsJson` 独立快照缓存到当前窗口内存；不立即创建副本、不置脏，切换 Batch 或 PipifySettingsSO 后仍可使用，窗口销毁或域重载后清空 |
+| 复制按钮 | 将当前 Step 的 `StepId + ParamsJson` 独立快照缓存到当前窗口内存；复制成功通知使用绿色，避免沿用之前失败通知的红色。不立即创建副本、不置脏，切换 Batch 或 PipifySettingsSO 后仍可使用，窗口销毁或域重载后清空 |
 | `onAddDropdownCallback` | GenericMenu 顶部固定显示“粘贴”（无缓存时禁用），随后按 Category 分组列出可新增 Step；粘贴会把独立副本追加到当前 Batch，保留缓存以支持重复粘贴，并置脏等待保存 |
 | `onReorderCallback` | 拖拽排序后清空 `m_ExpandedItemIndices` 和 `m_ParamsCache` 并 `MarkDirty()` |
 | 资源加解密参数 | 标准 AssetBundle 与 RawFile Step 的三个字段共用一个简短 HelpBox，与 YooAsset Bundle Builder 共用候选及排序。排除抽象基类和不可无参实例化的类型；Runtime 清单解密器需要构造参数，不在候选中，其他可实例化自定义实现仍可选。Nova 清单解密显示 `NovaFramework.Editor.ResourceManifestAesDecryptor`、`NovaFramework.Editor.ResourceManifestXorDecryptor`，分别配套同名 AES/XOR 加密器。直接保存和实例化所选类型，无旧类名映射；明确选择的错误配对在 Nova/Pipify 构建前阻断。其他接口候选规则保持不变 |
 | 参数内联 Drawer | 参数类型标注 `PipifyHelpBoxAttribute` 时先绘制通用说明框；随后反射遍历 `ParamsType.GetFields(Public | Instance)` 按类型分发：普通 `string`→TextField；标注 `TextAreaAttribute` 的 `string`→按 3–8 行等声明范围自适应高度的 TextArea；`bool`→Toggle；`int`→IntField；`float`→FloatField；`Enum`→Popup（优先采用 `InspectorName`，并保持 `WebGL` 连写）；标注 `PipifyReadOnlyAttribute` 的字段以 DisabledGroup 绘制；其他复杂类型→Log.Warning 跳过。`export.config.Platform`、`build.package.Target`、`bundlebuilder.build.Target`、`bundlebuilder.build_raw_file.Target` 均只读展示 Unity 当前 Active BuildTarget 的实时值。WebGL 下两个 Bundle Step 的首包拷贝模式仅显示 `None`、`ClearAndCopyByTags`、`ClearAndCopyAll`；`BundledCopyParams` 只在按 Tag 拷贝时显示，选项下方的动态 HelpBox 会说明当前选择适用的加载模式、需要准备的资源和选错影响。切回其他 Active BuildTarget 后恢复完整枚举并隐藏 WebGL 专用 HelpBox。`build.package` 首次进入 Android `DevelopmentBuild + BuildAppBundle` 风险组合时立即 Warning + 弹窗，取消会恢复编辑前快照 |
 | 参数持久化 | `EditorGUI.BeginChangeCheck/EndChangeCheck` 包住字段组；普通变化或用户确认风险组合后，`Util.Json.Serialize(paramsInstance)` 写回 `item.ParamsJson` + `MarkDirty()`；用户取消风险弹窗时不持久化，也不置脏 |
-| `DrawExecute()` | 顶部 `EditorUtil.Draw.Line()` 分割线 + 右对齐 `SuccessButton("▶ 运行")`；Batch 为空、存在未保存改动或包含未注册 Step 时禁用。缺失 Step 时，按钮下方用红字列出 StepId，并提示恢复对应 Package 或删除条目；点击后 fire-and-forget 调用 `EditorUtil.Pipify.RunBatchAsync(batch, this)`，Runner 内部通过 WindowReporter 以模态进度条呈现执行进度，结束后通过宿主窗口 `ShowNotification` 弹右下角结果浮窗 |
+| `DrawExecute()` | 顶部 `EditorUtil.Draw.Line()` 分割线 + 右对齐 `SuccessButton("▶ 运行")`；已有 Batch 在运行或等待上传前重载、Batch 为空、存在未保存改动、包含未注册 Step 或 Google Play AAB/包名未成对填写时禁用。按钮下方仅用红字说明缺失 Step；Google Play 输入补填要求只在对应字段旁提示，底部不重复。点击后 fire-and-forget 调用 `EditorUtil.Pipify.RunBatchAsync(batch, this)`，Runner 内部通过 WindowReporter 以模态进度条呈现执行进度，结束后通过宿主窗口 `ShowNotification` 弹右下角结果浮窗 |
 
 ---
 

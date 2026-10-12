@@ -73,6 +73,7 @@
       "nova-project-preflight-build",
       "nova-project-build-bundles",
       "nova-project-build-player",
+      "nova-project-upload-google-play",
       "nova-project-diagnose-build",
       "nova-project-diagnose-device-runtime"
     ],
@@ -458,6 +459,25 @@
         "build"
       ],
       "minimumEvidence": "player-build"
+    },
+    {
+      "id": "nova-project-upload-google-play",
+      "path": "Skills/nova-project-upload-google-play",
+      "kind": "operation",
+      "status": "experimental",
+      "journeys": [
+        "configuration",
+        "delivery",
+        "diagnosis"
+      ],
+      "effects": [
+        "read",
+        "workspace-write",
+        "unity-write",
+        "external-write",
+        "credential"
+      ],
+      "minimumEvidence": "static"
     },
     {
       "id": "nova-project-integrate-event",

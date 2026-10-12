@@ -36,6 +36,7 @@ related:
 - HelpBox 面向功能使用者，只说明配置用途、用户可见影响、必要操作与确实需要用户处理的限制。
 - 内部类型、方法、字段名、文件名、请求实现、Handle 生命周期、调用链、回退状态记录等实现细节不得写入 HelpBox；需要保留时写入 Docs、代码注释或诊断日志。
 - 技术术语只有在它本身就是用户需要配置、选择或排障的公开概念时才保留。
+- 对容易混淆的后台术语，字段和选项优先写实际结果；例如“保存草稿”“开放下载”“后台手动提交审核”。审核与用户可下载须分开说明，不能用“完成发布”承诺远端结果。
 - 只有 1 条语义时，用单行说明即可。
 - 出现 2 条及以上独立语义时，必须拆成多行。
 - 多行说明统一用 `(1)`、`(2)`、`(3)` 这种编号风格。
@@ -79,3 +80,4 @@ related:
 - [[PAT-09-inspector-config-i18n|PAT-09]]
 - [[PAT-24-inspector-row-vertical-alignment|PAT-24]]
 - [[PAT-46-iteration-grep-self-check|PAT-46]]：多轮视觉改动的状态矩阵与封装自检
+- [[PAT-169-google-play-upload-artifact-and-remote-stage-boundary|PAT-169]]：Google Play 上传选项的结果描述与远端阶段边界
