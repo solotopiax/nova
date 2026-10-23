@@ -116,6 +116,11 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         private bool m_IsOpen;
 
         /// <summary>
+        /// 页面关闭或应用退出后阻止异步回调写入正在销毁的 UI。
+        /// </summary>
+        private bool m_IsClosing;
+
+        /// <summary>
         /// 当前演示账号是否已登录。
         /// </summary>
         private bool m_LoggedIn;

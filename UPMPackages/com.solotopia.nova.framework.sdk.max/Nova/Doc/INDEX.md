@@ -14,6 +14,7 @@
 | `MaxAdChannelConfig` | MAX 渠道配置，包含 SDK Key、构建注入项、全屏广告组、Banner ID 列表与调试开关 | [MaxAdPlugin.md](./MaxAdPlugin.md) |
 | `MaxAdGroupConfigValidator` | 公共纯配置校验器：组语法、真实 ID 唯一性和跨格式冲突 | [MaxAdPlugin.md](./MaxAdPlugin.md#广告组配置与原厂边界) |
 | `MaxAdPluginBuildProcessor` | Editor 构建设置注入、Android ProGuard、iOS 5 项 Embed 查找名单，以及离线枚举网络后联网补齐 SKAdNetwork | [MaxAdPluginBuildProcessor.md](./MaxAdPluginBuildProcessor.md) |
+| `MaxSafeDKLauncherManifestFix` | 临时修复：Unity 6000.4.4f1+ 且 Quality Service 开启时，向生成的 launcher manifest 补写 SafeDKApplication | [MaxAdPluginBuildProcessor.md](./MaxAdPluginBuildProcessor.md#android-safedk-launcher-manifest-临时修复) |
 
 业务从 `Nova.SDK.Get<IAdPlugin>()` 获取当前聚合接口；MAX 渠道由聚合层创建，不是该查询直接返回的实例。每个 MAX 渠道实例只初始化一次；旧聚合和渠道释放后不可复用，SDKManager 的新初始化周期会创建新聚合及渠道，业务需释放旧事件订阅并重新获取、订阅新实例。共享释放和初始化取消边界见[主文档](./MaxAdPlugin.md#共享释放与新生命周期)。实际原厂 Show 与 30 回调日志、实际渠道请求及展示后补量（`AutoRefill`）和自动重试（`Retry`）的新轮日志读法见[主文档](./MaxAdPlugin.md#本地调用与回调日志)；构建处理器当前不调用组校验器。
 

@@ -3,7 +3,7 @@
 | 字段 | 说明 |
 |---|---|
 | `Enabled` | 是否启用 ThirdPay Store |
-| `SkipPaymentInformationScreen` | 是否默认跳过 Google 第三方支付信息页 |
+| `SkipPaymentInformationScreen` | 是否默认跳过当前 Google 外部结算接口的信息页；该开关不代表允许跳过目标计划强制的选择、披露或家长控制步骤 |
 | `ExternalBrowserReturnValidateDelaySeconds` | 外部浏览器未收到成功回调时，返回 App 后兜底验单前的等待秒数，非正配置回落为 `2.5` |
 | `PaymentConfigCmdName` | 获取第三方支付配置信息的 NetCmd，默认 `ThirdGetPaymentConfig` |
 | `QueryPendingOrderCmdName` | 查询支付成功但客户端尚未校验订单的 NetCmd |

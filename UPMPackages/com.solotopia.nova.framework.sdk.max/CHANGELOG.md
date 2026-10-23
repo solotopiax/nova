@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-23
+
+### Fixed
+
+- 新增 Android Quality Service 的临时构建修复：Unity 6000.4.4f1 及以上且开启 Quality Service 时，向生成的 launcher AndroidManifest.xml 补写 SafeDKApplication；已有其他自定义 Application 时保留并告警，不修改项目源 Manifest。官方修复后可移除此临时处理器。
+
 ## [0.1.14] - 2026-10-23
 
 ### Changed

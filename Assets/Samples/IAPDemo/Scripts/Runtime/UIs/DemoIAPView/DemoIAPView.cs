@@ -37,6 +37,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         public override void OnOpen(object userData)
         {
             base.OnOpen(userData);
+            m_IsClosing = false;
             m_IsOpen = true;
             EnsureIAPBridge();
             InitializeStoreModules();
@@ -56,6 +57,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         public override void OnClose(bool isShutdown, object userData)
         {
             // 先使会话失效并取消任务；取消回调仍持有本次 Bridge，不读取已清空的模块字段。
+            m_IsClosing = true;
             m_IsOpen = false;
             m_IapBridge?.Dispose();
             ClearStoreModules();
@@ -70,6 +72,16 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
             }
 
             base.OnClose(isShutdown, userData);
+        }
+
+        /// <summary>
+        /// 应用退出时先断开 IAP 事件与页面任务，避免 SDK 清理回调访问正在销毁的反馈区。
+        /// </summary>
+        private void OnApplicationQuit()
+        {
+            m_IsClosing = true;
+            m_IsOpen = false;
+            m_IapBridge?.Dispose();
         }
     }
 }

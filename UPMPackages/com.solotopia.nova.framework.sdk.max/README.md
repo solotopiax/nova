@@ -1,7 +1,7 @@
 # Nova Framework - SDK - MAX
 
 > 包名：`com.solotopia.nova.framework.sdk.max`
-> 当前版本：`0.1.14`
+> 当前版本：`0.2.0`
 
 MAX 广告聚合插件，提供广告展示服务。
 
@@ -11,6 +11,8 @@ Unity Ads Android adapter 固定为 `4200101.0.0`（AppLovin adapter `4.20.1.1`�
 
 iOS 构建时，Nova 自有顺序 `44` 后处理会将上述 LINE、Unity Ads 原生 adapter 统一交给 CocoaPods，避免其他 MAX Pods 和两项 SPM adapter 同时生产 `AppLovinSDK.framework`。Firebase 等其他 SDK 保留原有 SPM 配置，两个 iOS 原生 SDK 版本保持不变。该步骤随包自动执行，要求可运行的 CocoaPods；未知版本或工程结构会明确令构建失败，修复后重新导出。普通回写异常恢复原始两文件，超时或强制中断时必须重新导出，具体边界见[构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md#ios-原生依赖归属)。
 
+Android 构建时，若 Unity 为 `6000.4.4f1` 及以上且 AppLovin Integration Manager 开启 Quality Service（不论是否勾选 Custom Launcher Manifest），临时修复 `MaxSafeDKLauncherManifestFix` 会向生成的 launcher manifest 补写 `android:name="com.safedk.android.SafeDKApplication"`，不改动项目模板；已有其他自定义 Application 时保留并告警。MAX 修复后删除该文件即可，详见[构建文档](./Nova/Doc/MaxAdPluginBuildProcessor.md#android-safedk-launcher-manifest-临时修复)。
+
 ## 安装
 
 通过 Nova 私域 UPM 注册表以 UPM 依赖形式接入（注册表地址向 Nova Framework 内部开发人员索取）：
@@ -18,7 +20,7 @@ iOS 构建时，Nova 自有顺序 `44` 后处理会将上述 LINE、Unity Ads �
 ```json
 {
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.max": "0.1.14"
+    "com.solotopia.nova.framework.sdk.max": "0.2.0"
   }
 }
 ```

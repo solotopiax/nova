@@ -27,7 +27,7 @@
 | `sdk.ad` + `sdk.max` | 顶层 `AdPluginConfig.ChannelConfigs` 内加入 `MaxAdChannelConfig`；父 `Nova/Doc/AdPluginConfig.md/IAdPlugin.md`，MAX `Nova/Doc/MaxAdPlugin.md/MaxAdPluginBuildProcessor.md` | `IAdPlugin` 请求结果、目标格式 Ready 和对应展示/关闭事件；MAX 包安装不证明广告位可用 |
 | `sdk.admob` | 同父广告列表，内嵌 `AdMobAdChannelConfig`；`Nova/Doc/AdMobAdPlugin.md` | 独立官方 `com.google.ads.mobile` 四格式适配；asmdef 当前在 `[11.5.0,12.0.0)` 启用适配，包清单不直接安装官方 SDK。先核显式安装/配置/原生产物，源码与编译不代替真实 UMP、填充、奖励和收入 |
 | `sdk.iap` + `sdk.iap.mobile` | 顶层 `IAPPluginConfig` 内 `Products/StoreConfigs`，加入 `MobileStoreConfig`；父 `Nova/Doc/IAPPlugin.md`，Mobile `Nova/DOCS/MobileStore.md/MobileInitService.md` | 目标 Store `IAPInitResult`、商品可用与真实平台回调分别核对；核心 Ready 不证明商品已获取 |
-| `sdk.iap.thirdpay` | 同 IAP 列表内 `ThirdPayStoreConfig`；`Nova/Doc/ThirdPayStore.md/ThirdPayStoreConfig.md` | 登录后的国家与配置解析、平台资格、商品和订单结果；国家/支付页策略由服务端和平台裁决 |
+| `sdk.iap.thirdpay` | 同 IAP 列表内 `ThirdPayStoreConfig`；`Nova/Doc/ThirdPayStore.md/ThirdPayStoreConfig.md/PlatformPaymentPolicy.md` | 登录后的国家与配置、商品和订单结果分别验收；按目标商店地区核对平台计划、选择与披露、API 和上报要求，未满足时保持第三方支付入口关闭 |
 | `sdk.iap.voucher` | 同 IAP 列表内 `VoucherStoreConfig`；`Nova/Doc/VoucherStore.md/VoucherStoreConfig.md` | 只读报价/钱包与扣减结果分别验收；默认不调用测试发放或扣减 |
 
 首次接入先区分补内嵌引用与改现有字段：已注册的 IAP Mobile/ThirdPay/Voucher Store 可按共用契约使用 `nova.project.config.ensure-panel-references`，补齐后重新读取字段、patch 并导出。广告渠道不是顶层 SDK Config，该 Action 当前也不承诺补广告渠道；缺少内嵌渠道对象时核对包文档化 Inspector 和当前受控入口，没有可用入口则报告具体配置前提，不用任意对象 JSON、类型字符串或反射补齐。独立 AdMob 另核其包及官方 SDK 实际安装状态，既有 MAX 配置或广告模块业务验收不改变这些事实。

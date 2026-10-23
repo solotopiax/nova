@@ -15,6 +15,7 @@
 | `Nova/Scripts/Editor/BuildProcessor/MaxAdPluginBuildProcessor.cs` | `MaxAdPluginBuildProcessor` | 全部定义 |
 | `Nova/Scripts/Editor/BuildProcessor/MaxSkAdNetworkPlistCompleter.cs` | `MaxSkAdNetworkPlistCompleter` | 离线枚举网络，联网获取并增量补齐 SKAdNetwork ID |
 | `Nova/Scripts/Editor/BuildProcessor/MaxIOSPodOwnershipPostprocessor.cs` | `MaxIOSPodOwnershipPostprocessor` | 顺序 44 统一 MAX iOS 原生依赖归属 |
+| `Nova/Scripts/Editor/BuildProcessor/MaxSafeDKLauncherManifestFix.cs` | `MaxSafeDKLauncherManifestFix` | Unity 6000.4.4f1+ 且 Quality Service 开启时补写 SafeDKApplication（临时修复） |
 | `Nova/Scripts/Editor/BuildProcessor/MaxIOSPodOwnership.rb` | 固定 Ruby 脚本，无自定义函数 | 使用 CocoaPods 的 `xcodeproj` 公开对象 API 定向回写生成工程 |
 
 ---
@@ -116,6 +117,17 @@ EDM4U `1.2.188` 在顺序 `35` 写入 SPM、`40` 生成 Podfile、`50` 安装 Po
 固定 Ruby 脚本随本包正式携带。C# 复用 `EditorUtil.ProcessRunner.RunSync`，在当前 `pod` 子进程设置 `RUBYOPT=-r./MaxIOSPodOwnership.rb`，使用该 CocoaPods 启动器自己的 Ruby 与 gem 环境；脚本完成后在 CocoaPods CLI 前退出。包路径可以包含空格，不写死本机 Homebrew 路径，不改全局环境，不再次执行 `pod install`。脚本输入只有导出根目录与两个已解析官方 XML 路径，超时为 `120000` 毫秒。
 
 验收须分清 Unity 导出和 Xcode 原生构建：导出成功后核对两项 Pod、保留的 SPM 图、`Podfile.lock` 和最终 `SKAdNetworkItems`；再实际编译链接。未做签名、设备安装或运行时，不能把原生编译成功当作真机验证。
+
+## Android SafeDK Launcher Manifest 临时修复
+
+`MaxSafeDKLauncherManifestFix`（`IPostGenerateGradleAndroidProject`，`callbackOrder=1000`，晚于 AppLovin 自身 Gradle 后处理）在 `UNITY_ANDROID && NOVA_APPLOVIN_MAX` 下自动运行，代码标记 `[MaxSafeDK-LauncherManifest-Fix]`。同时满足以下条件时，向本次生成的 Gradle 工程 `launcher/src/main/AndroidManifest.xml` 的 `<application>` 写入 `android:name="com.safedk.android.SafeDKApplication"`：
+
+| 条件 | 判断方式 |
+|---|---|
+| Unity 版本 ≥ `6000.4.4f1` | 解析 `Application.unityVersion` 的主/次/补丁号 |
+| AppLovin Quality Service 已开启 | `AppLovinSettings.Instance.QualityServiceEnabled == true` |
+
+不论是否勾选 Custom Launcher Manifest 均生效：未勾选时 Unity 用内置模板生成 launcher manifest，同样包含 `<application>`。只改生成工程，不改 `Assets/Plugins/Android/LauncherManifest.xml`。Unity 版本不足或 Quality Service 未开启时输出 Debug 日志后跳过；找不到生成的 manifest / `<application>` 节点、`<application>` 已是 SafeDKApplication，或已声明其他 `android:name`（保留原值）时输出带 `[MaxSafeDKLauncherManifestFix]` 前缀的 Warning，均不令构建失败；写入成功输出 Debug 日志。该问题属 MAX 版本缺陷，官方修复后删除 `Nova/Scripts/Editor/BuildProcessor/MaxSafeDKLauncherManifestFix.cs` 及其 `.meta` 即可。
 
 ### 验证边界
 

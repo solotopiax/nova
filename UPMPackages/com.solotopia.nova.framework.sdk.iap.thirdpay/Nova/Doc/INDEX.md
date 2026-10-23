@@ -6,6 +6,7 @@
 |---|---|
 | [ThirdPayStore.md](./ThirdPayStore.md) | 接入与验收顺序、国家码锁定时序、统一配置、订单状态和平台支付行为 |
 | [ThirdPayStoreConfig.md](./ThirdPayStoreConfig.md) | Store 配置字段 |
+| [PlatformPaymentPolicy.md](./PlatformPaymentPolicy.md) | Google Play / Apple App Store 第三方支付政策、当前实现边界与上线验收 |
 
 主要公开类型：
 

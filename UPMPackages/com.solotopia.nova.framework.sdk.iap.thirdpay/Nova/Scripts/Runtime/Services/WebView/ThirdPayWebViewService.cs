@@ -452,7 +452,9 @@ namespace NovaFramework.SDK.IAP.ThirdPay.Runtime
             private void DismissSafeBrowsing()
             {
                 Application.deepLinkActivated -= OnDeepLinkActivated;
-                if (m_SafeBrowsing == null)
+                // UniWebViewSafeBrowsing 继承 UnityEngine.Object 但由 new 创建、无原生对象，Unity 重载的 == null 恒为 true；
+                // 必须按 C# 引用判空，否则 Dismiss 永远不会执行，支付成功后 Safe Browsing 不会自动关闭。
+                if (ReferenceEquals(m_SafeBrowsing, null))
                 {
                     return;
                 }

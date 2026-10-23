@@ -8024,6 +8024,7 @@
         "Assets/Framework/Docs/TRACKS.md",
         "Assets/Framework/Scripts/Runtime/NovaFramework.Runtime.asmdef",
         "Assets/Framework/package.json",
+        "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/PlatformPaymentPolicy.md",
         "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStore.md",
         "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Doc/ThirdPayStoreConfig.md",
         "UPMPackages/com.solotopia.nova.framework.sdk.iap.thirdpay/Nova/Resources/IAP/IAPThirdPanel.prefab",
@@ -8184,6 +8185,7 @@
       "sources": [
         "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Editor/BuildProcessor/MaxAdPluginBuildProcessor.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Editor/BuildProcessor/MaxIOSPodOwnershipPostprocessor.cs",
+        "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Editor/BuildProcessor/MaxSafeDKLauncherManifestFix.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Editor/BuildProcessor/MaxSkAdNetworkPlistCompleter.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Editor/MaxSDKUrlMenuItems.cs",
         "UPMPackages/com.solotopia.nova.framework.sdk.max/Nova/Scripts/Runtime/FacebookAdSetting/FacebookAdSetting.cs",

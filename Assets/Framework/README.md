@@ -1,7 +1,7 @@
 # Nova Framework
 
 > 包名：`com.solotopia.nova.framework`
-> 当前版本：`0.7.1`
+> 当前版本：`0.7.2`
 > Unity：`6000.6.7f1` 及以上
 
 Nova Framework 主包，Unity Component + Manager 架构，提供框架核心、各业务 Component 入口与默认 MainDemo Sample。
@@ -14,7 +14,7 @@ Android 构建可在 Pipify 的 `build.package` 后添加 `googleplay.upload_aab
 
 ```json
 "dependencies": {
-  "com.solotopia.nova.framework": "0.7.1"
+  "com.solotopia.nova.framework": "0.7.2"
 }
 ```
 

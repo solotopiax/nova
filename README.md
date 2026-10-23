@@ -3,7 +3,7 @@
 ![](Assets/Samples/AppIcons/Logo.png)
 
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
-![release](https://img.shields.io/badge/release-v0.7.1-blue.svg)
+![release](https://img.shields.io/badge/release-v0.7.2-blue.svg)
 ![unity](https://img.shields.io/badge/unity-6000.6.7f1-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)
 
@@ -94,7 +94,7 @@ Nova 以场景中的 `Nova` 根节点为统一入口，所有子系统经 `Nova.
 
 默认直接安装的包：
 
-- Nova Framework：`com.solotopia.nova.framework@0.7.1`。
+- Nova Framework：`com.solotopia.nova.framework@0.7.2`。
 - Nova Framework - MemoryProtection：`com.solotopia.nova.framework.memory.protection@0.1.1`。
 - Nova Framework - MCP：`com.solotopia.nova.framework.mcp@0.1.5`。
 - EDM：`com.google.external-dependency-manager@1.2.188`。

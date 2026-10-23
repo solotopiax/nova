@@ -32,8 +32,23 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
         {
             if (m_IapBridge == null)
             {
-                m_IapBridge = new DemoIAPBridge(AppendFeedback, SetPaymentInteractable);
+                m_IapBridge = new DemoIAPBridge(AppendSessionFeedback, SetPaymentInteractable);
             }
+        }
+
+        /// <summary>
+        /// 仅在页面仍可用时向反馈区写入异步结果；关闭和退出阶段不再创建 UI 节点。
+        /// </summary>
+        /// <param name="line">反馈文本。</param>
+        /// <param name="level">反馈级别。</param>
+        private void AppendSessionFeedback(string line, FeedbackLevel level)
+        {
+            if (m_IsClosing || this == null)
+            {
+                return;
+            }
+
+            AppendFeedback(line, level);
         }
 
         /// <summary>
@@ -81,7 +96,7 @@ namespace NovaFramework.Sdk.IAP.Samples.Runtime
                     continue;
                 }
 
-                module.Initialize(new DemoIAPStoreContext(m_IapBridge, panel, availableKinds, AppendFeedback));
+                module.Initialize(new DemoIAPStoreContext(m_IapBridge, panel, availableKinds, AppendSessionFeedback));
                 m_StoreModules.Add(module);
             }
 

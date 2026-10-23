@@ -12,6 +12,8 @@
 
 `IAPDemo` 的可选 ThirdPay 模块及示例配置见 [IAPDemo README](../../../../Assets/Samples/IAPDemo/README.md)；示例商品和服务端地址需按目标环境替换，不能作为生产商户配置。
 
+上架前还须按目标商店地区和已登记的支付计划完成 [平台支付政策核对](PlatformPaymentPolicy.md)。本包的支付页、现有 Google 外部结算接口或服务端 `enabled` 均不能单独证明符合当前平台要求；未满足对应选择、披露、Entitlement、平台 API 与交易上报条件时，应保持该地区数字商品的 ThirdPay 入口关闭。
+
 ## 商品协议兼容边界
 
 当前 `PbNetThirdProductInfo` 删除了旧 `id = 1`，并将 `local_currency` 从 tag 2 改为 1、`local_price` 从 3 改为 2、`product_id` 从 4 改为 3。Protobuf 按字段编号识别数据；这次修改会让旧币种被当作新价格、旧价格被当作新商品 ID，部分旧字段丢失，属于不兼容的 wire 协议变化。

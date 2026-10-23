@@ -1,9 +1,9 @@
 # Nova Framework - SDK - IAP - ThirdPay
 
 > 包名：`com.solotopia.nova.framework.sdk.iap.thirdpay`
-> 当前版本：`0.1.0`
+> 当前版本：`0.1.1`
 
-Nova 的应用内第三方支付 Store。客户端生成订单号与兼容 Solar InAppAuto 的加密支付 URL，包内使用 UniWebView 5.11.1 或 Android Auth Tab / Custom Tabs 外部支付页完成支付；Android 通过 Unity Purchasing 5.3.1 的 `ExternalBillingProgramClient` 完成 Google 外链政策流程。
+Nova 的应用内第三方支付 Store。客户端生成订单号与兼容 Solar InAppAuto 的加密支付 URL，包内使用 UniWebView 5.11.1 或 Android Auth Tab / Custom Tabs 外部支付页完成支付；Android 当前调用 Unity Purchasing 5.3.1 的 `ExternalBillingProgramClient` 外部结算接口。平台计划资格和现行选择、披露及上报要求须另行核对。
 
 业务按需使用 `IIAPThirdPayConfigCapable`、`IIAPThirdPayProductCapable`、`IIAPThirdPayCheckoutCapable`，分别依赖配置状态与关闭原因、商品查询和结算展示能力。
 
@@ -12,7 +12,7 @@ Nova 的应用内第三方支付 Store。客户端生成订单号与兼容 Solar
 ```json
 {
   "dependencies": {
-    "com.solotopia.nova.framework.sdk.iap.thirdpay": "0.1.0"
+    "com.solotopia.nova.framework.sdk.iap.thirdpay": "0.1.1"
   }
 }
 ```
@@ -37,5 +37,7 @@ Nova 的应用内第三方支付 Store。客户端生成订单号与兼容 Solar
 - Runtime 使用 `Services/Config/ThirdPayPaymentConfigService` 集中处理统一配置的请求、校验、缓存、并发合并和旧响应隔离；Store 只编排支付流程并消费固定快照。
 
 详细接入方式见 [Nova/Doc/INDEX.md](./Nova/Doc/INDEX.md)。
+
+面向 Google Play 或 Apple App Store 上架前，先按 [平台支付政策核对](./Nova/Doc/PlatformPaymentPolicy.md) 确认目标商店地区和计划；当前客户端不自动完成所有新计划所需的平台 API、选择/披露或交易上报。
 
 接入时先在 `IAPPluginConfig` 中登记 `ThirdPayStoreConfig` 和带 `ThirdProductID` 的商品，保存 ConfigMaster 并导出当前平台的 Runtime 配置；再核对 `ThirdGetPaymentConfig`、`ThirdQueryPendingOrder`、`ThirdVerifyIap` 三条 NetCmd 的实际路由与后端实现。登录后须取得有效国家码，服务端统一配置须允许支付并提供目标商品及 HTTPS 支付页地址，才能发起新支付。完整步骤与验证边界见 [ThirdPayStore.md](./Nova/Doc/ThirdPayStore.md#接入与验收顺序)。
